@@ -10,13 +10,13 @@ interface HeaderType {
 }
 
 export const Header: React.FC<HeaderType> = (props) => {
-
     const {fh = false, children} = props
 
-    return <div className={`${styles.header} ${fh ? styles["header--full-height"] : ""}`}>
-        <Container>
-            {children}
-        </Container>
-    </div>
-
+    return (
+        <div className={`${styles.header} ${fh ? styles["header--full-height"] : ""}`}>
+            <Container>
+                {children}
+            </Container>
+        </div>
+    )
 }
