@@ -49,7 +49,7 @@ function Navigation() {
         <div className={"fixed z-50 w-full overflow-hidden"}>
             <motion.div
                 className={cn(
-                    "my-4 p-1.5 flex flex-row items-center justify-between top-0 left-0 border rounded-2xl overflow-hidden transition-colors transition-shadow",
+                    "my-4 p-1.5 flex flex-row items-center justify-between top-0 left-0 border rounded-2xl overflow-hidden transition-colors",
                     isScrolled ? "border border-white/10 shadow-sm bg-primary/20 backdrop-blur-xl" : "border-transparent",
                 )}
                 initial={{

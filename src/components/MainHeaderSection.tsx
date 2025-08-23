@@ -10,7 +10,7 @@ export const MainHeaderSection: React.FC = () => {
         <Header fh>
             <div className={"flex flex-col gap-4 mb-24"}>
                 <Badge color={"secondary"}>
-                    Join our Discord for early access
+                    Join the closed beta
                 </Badge>
                 <h1 style={{color: "white", fontSize: "3rem"}}>Build <span
                     style={{color: "#70ffb2"}}>complex backends </span>in no-time</h1>
