@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 export default function RootLayout({children}: Readonly<{ children: ReactNode }>) {
     return (
         <html lang="en">
-            <body className={`${ubuntu.className} max-w-screen`}>
+            <body className={`${ubuntu.className} bg-primary`}>
                 {children}
                 <FooterSection/>
             </body>

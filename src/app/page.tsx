@@ -8,18 +8,22 @@ import {IntegrationsSection} from "@/static-components/IntegrationsSection"
 import {AdaptersSection} from "@/static-components/AdaptersSection"
 import {CommunitySection} from "@/static-components/CommunitySection"
 import {OpenSourceSection} from "@/static-components/OpenSourceSection"
+import {BrandSection} from "@/static-components/BrandSection"
+import {FooterSection} from "@/static-components/FooterSection"
 
 const LandingPage: NextPage = () => {
-    return <div className={"bg-primary max-w-screen"}>
-        <Navigation/>
-        <MainHeaderSection/>
-        <FlowSection/>
-        <OpenSourceSection/>
-        <IntegrationsSection/>
-        <AdaptersSection/>
-        <CommunitySection/>
-    </div>
-
+    return (
+        <div className={"bg-primary max-w-screen"}>
+            <Navigation/>
+            <MainHeaderSection/>
+            <BrandSection/>
+            <FlowSection/>
+            <OpenSourceSection/>
+            <IntegrationsSection/>
+            <AdaptersSection/>
+            <CommunitySection/>
+        </div>
+    )
 }
 
 export default LandingPage

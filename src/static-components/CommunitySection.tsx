@@ -2,7 +2,7 @@ import React from "react";
 import {Col, Container, Quote, Row} from "@code0-tech/pictor";
 
 export const CommunitySection: React.FC = () => {
-    return <Container my={5}>
+    return <Container my={0}>
         <h1 style={{color: "white", fontSize: "3rem"}}>What our <span
             style={{color: "#70ffb2"}}>Community</span> says</h1>
         <Row mt={1}>

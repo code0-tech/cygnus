@@ -1,17 +1,16 @@
 "use client"
 
 import React from "react";
-import {Col, Container, Row, Text} from "@code0-tech/pictor";
+import {Col, Row, Text} from "@code0-tech/pictor";
 import Image from "next/image";
-import {Header} from "@/components/Header/Header";
-import {RoadMapSection} from "@/static-components/RoadMapSection";
 import Link from "next/link";
 
 export const FooterSection: React.FC = () => {
-    return <Header>
-        <RoadMapSection/>
-        <Container>
-            <Image src={"/code0_logo.png"} alt={"Code0 Logo"} width={50} height={50}/>
+    return (
+        <div className={"bg-primary pt-20 px-20 overflow-hidden"}>
+
+        <div className="relative bg-black/20 p-20 border border-white/10 rounded-t-xl shadow-xl">
+            <Image src={"/code0_logo.png"} alt={"Code0 Logo"} width={400} height={400} className={"absolute top-0 left-3/4 -translate-x-1/2 opacity-10"}/>
             <Text size={"md"} display={"block"} hierarchy={"primary"} mt={1}>
                 2024-present Code0 Technology
             </Text>
@@ -61,6 +60,7 @@ export const FooterSection: React.FC = () => {
                     </Link>
                 </Col>
             </Row>
-        </Container>
-    </Header>
+        </div>
+        </div>
+    )
 }

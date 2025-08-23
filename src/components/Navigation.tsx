@@ -49,21 +49,21 @@ function Navigation() {
         <div className={"fixed z-50 w-full overflow-hidden"}>
             <motion.div
                 className={cn(
-                    "my-4 p-1.5 flex flex-row items-center justify-between top-0 left-0 rounded-2xl",
-                    "border border-white/10 shadow-sm bg-primary/20 backdrop-blur-xl overflow-hidden",
+                    "my-4 p-1.5 flex flex-row items-center justify-between top-0 left-0 border rounded-2xl overflow-hidden transition-colors transition-shadow",
+                    isScrolled ? "border border-white/10 shadow-sm bg-primary/20 backdrop-blur-xl" : "border-transparent",
                 )}
                 initial={{
-                    marginLeft: "12%",
-                    marginRight: "12%",
+                    marginLeft: "8%",
+                    marginRight: "8%",
                 }}
                 animate={{
-                    marginLeft: isScrolled ? "16%" : "12%",
-                    marginRight: isScrolled ? "16%" : "12%",
+                    marginLeft: isScrolled ? "12%" : "8%",
+                    marginRight: isScrolled ? "12%" : "8%",
                 }}
                 transition={{
                     type: "spring",
-                    stiffness: 120,
-                    damping: 20,
+                    stiffness: 40,
+                    damping: 10,
                 }}
             >
                 <motion.div className={cn("flex")}

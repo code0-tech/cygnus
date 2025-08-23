@@ -37,8 +37,8 @@ export const MainHeaderSection: React.FC = () => {
                 </div>
             </div>
 
-            <Card className={"relative aspect-video"} outline variant={"outlined"}>
-                <Image src={"/code0_software.png"} alt={"Example image of code0 software"} layout='fill' objectFit='contain'/>
+            <Card className={"relative aspect-auto w-max"} outline variant={"outlined"}>
+                <Image src={"/code0_software.png"} alt={"Example image of code0 software"} width={1040} height={492}/>
             </Card>
         </Header>
     )
