@@ -5,8 +5,8 @@ import {BusinessCard} from "@/components/BusinessCard/BusinessCard";
 import {Button, Col, Container, Row} from "@code0-tech/pictor";
 import {Header} from "@/components/Header/Header";
 import React from "react";
-import {CommunitySection} from "@/static-components/CommunitySection";
-import {FlowSection} from "@/static-components/FlowSection";
+import {CommunitySection} from "@/sections/CommunitySection";
+import {FlowSection} from "@/sections/FlowSection";
 import {IconBrandAndroid, IconBrandApple} from "@tabler/icons-react";
 import {BottomNavigation} from "@/components/BottomNavigation/BottomNavigation";
 

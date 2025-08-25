@@ -1,7 +1,7 @@
 import type {Metadata} from "next"
 import {Ubuntu} from "next/font/google"
 import './globals.css'
-import {FooterSection} from "@/static-components/FooterSection"
+import {FooterSection} from "@/sections/FooterSection"
 import {ReactNode} from "react"
 
 const ubuntu = Ubuntu({style: "normal", weight: "500", subsets: ["latin"]})

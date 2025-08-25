@@ -3,8 +3,8 @@ import React from "react"
 export const BrandSection: React.FC = () => {
     return (
         <div className={"flex flex-col gap-8 items-center justify-center my-40"}>
-            <p className={"text-xl"}>Trusted by teams who want complex backends</p>
-            <div className={"flex items-center justify-center gap-8"}>
+            <p className={"text-xl text-white/75"}>Trusted by teams who want easy backends</p>
+            <div className={"flex items-center justify-center gap-8 text-white/50"}>
                 <p className={"text-4xl font-bold"}>Logo1</p>
                 <p className={"text-4xl font-bold"}>Logo2</p>
                 <p className={"text-4xl font-bold"}>Logo3</p>

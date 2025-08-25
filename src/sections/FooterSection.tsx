@@ -8,7 +8,7 @@ import {IconBrandDiscord, IconBrandGithub, IconBrandInstagram, IconBrandX} from 
 
 export const FooterSection: React.FC = () => {
     return (
-        <div className={"bg-primary pt-20 px-[12%] overflow-hidden"}>
+        <div className={"bg-primary px-[12%] overflow-hidden"}>
             <div className="relative bg-black/20 p-20 border border-white/10 rounded-t-xl shadow-xl overflow-hidden">
                 <Image src={"/code0_logo.png"} alt={"Code0 Logo"} width={400} height={400} className={"absolute -top-12 -left-24 opacity-3"}/>
 

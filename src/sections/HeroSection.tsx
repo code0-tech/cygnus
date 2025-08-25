@@ -1,13 +1,12 @@
 import React from "react"
-import {Header} from "@/components/Header/Header"
 import {Badge, Button, Card, Text} from "@code0-tech/pictor"
 import {IconBrandDiscord, IconMail} from "@tabler/icons-react"
 import Image from "next/image"
 
-export const MainHeaderSection: React.FC = () => {
+export const HeroSection: React.FC = () => {
 
     return (
-        <Header fh>
+        <div className={"flex flex-col px-[12%] pt-32 gap-16 bg-primary"}>
             <div className={"flex flex-col gap-4 mb-24"}>
                 <Badge color={"secondary"}>
                     Join the closed beta
@@ -37,9 +36,9 @@ export const MainHeaderSection: React.FC = () => {
                 </div>
             </div>
 
-            <Card className={"relative aspect-auto w-max"} outline variant={"outlined"}>
-                <Image src={"/code0_software.png"} alt={"Example image of code0 software"} width={1040} height={492}/>
+            <Card className={"relative aspect-video"} outline variant={"outlined"}>
+                <Image src={"/code0_software.png"} alt={"Example image of code0 software"} layout='fill' objectFit='contain'/>
             </Card>
-        </Header>
+        </div>
     )
 }
