@@ -10,13 +10,15 @@
   },
   "dependencies": {
     "@code0-tech/pictor": "^0.3.0",
+    "@radix-ui/react-accordion": "^1.2.12",
     "@tabler/icons-react": "^3.34.0",
     "motion": "^12.23.12",
     "next": "15.4.2",
     "react": "^18",
     "react-dom": "^18",
     "sass": "^1.89.2",
-    "tailwind-merge": "^3.3.1"
+    "tailwind-merge": "^3.3.1",
+    "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.12",

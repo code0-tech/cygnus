@@ -6,6 +6,7 @@ import {HeroSection} from "@/sections/HeroSection"
 import {BrandSection} from "@/sections/BrandSection"
 import {FeatureSection} from "@/sections/FeatureSection"
 import {TestimonialSection} from "@/sections/TestimonialSection"
+import {FaqSection} from "@/sections/FaqSection"
 
 const LandingPage: NextPage = () => {
     return (
@@ -15,6 +16,7 @@ const LandingPage: NextPage = () => {
             <BrandSection/>
             <FeatureSection/>
             <TestimonialSection/>
+            <FaqSection/>
         </div>
     )
 }

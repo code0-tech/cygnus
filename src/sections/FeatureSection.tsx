@@ -12,8 +12,11 @@ export const FeatureSection: React.FC = () => {
                 <div className={"bg-white/5 rounded-xl border border-white/10 col-span-2 row-span-2"}/>
                 <div className={"bg-white/5 rounded-xl border border-white/10 col-span-3 row-span-2"}/>
                 <div className={"bg-white/5 rounded-xl border border-white/10 col-span-1 row-span-2"}/>
-                <div className={"bg-white/5 rounded-xl border border-white/10 col-span-4 row-span-2"}/>
             </div>
+            <div className={"flex items-center gap-2"}>
+                <p className={"text-white text-3xl"}>Try it out</p>
+            </div>
+            <div className={"h-[520px] w-full bg-white/5 rounded-xl border border-white/10"}/>
         </div>
     )
 }

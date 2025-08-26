@@ -2,11 +2,13 @@ import React from "react"
 import {Badge, Button, Card, Text} from "@code0-tech/pictor"
 import {IconBrandDiscord, IconMail} from "@tabler/icons-react"
 import Image from "next/image"
+import {Spotlight} from "@/components/Spotlight"
 
 export const HeroSection: React.FC = () => {
 
     return (
-        <div className={"flex flex-col px-[12%] pt-32 gap-16 bg-primary"}>
+        <div className={"relative flex flex-col px-[12%] pt-32 gap-16 overflow-hidden"}>
+            <Spotlight />
             <div className={"flex flex-col gap-4 mb-24"}>
                 <Badge color={"secondary"}>
                     Join the closed beta
@@ -36,7 +38,7 @@ export const HeroSection: React.FC = () => {
                 </div>
             </div>
 
-            <Card className={"relative aspect-video"} outline variant={"outlined"}>
+            <Card className={"relative aspect-video shadow-[0px_0px_60px_rgba(0,0,0,0.25)]"} outline variant={"outlined"}>
                 <Image src={"/code0_software.png"} alt={"Example image of code0 software"} layout='fill' objectFit='contain'/>
             </Card>
         </div>

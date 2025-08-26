@@ -9,8 +9,7 @@ import {IconBrandDiscord, IconBrandGithub, IconBrandInstagram, IconBrandX} from 
 export const FooterSection: React.FC = () => {
     return (
         <div className={"bg-primary px-[12%] overflow-hidden"}>
-            <div className="relative bg-black/20 p-20 border border-white/10 rounded-t-xl shadow-xl overflow-hidden">
-                <Image src={"/code0_logo.png"} alt={"Code0 Logo"} width={400} height={400} className={"absolute -top-12 -left-24 opacity-3"}/>
+            <div className="relative flex flex-col gap-16 bg-black/20 px-20 pt-20 pb-72 border border-white/10 rounded-t-xl shadow-[0px_0px_60px_rgba(0,0,0,0.25)] overflow-hidden">
 
                 <div className={"grid grid-cols-4 gap-4"}>
                     <div className={"h-40 flex flex-col justify-between gap-2"}>
@@ -96,6 +95,7 @@ export const FooterSection: React.FC = () => {
                         </Link>
                     </div>
                 </div>
+                <p className={"max-w-screen absolute -bottom-56 left-1/2 -translate-x-1/2 text-[400px] text-white/3 text-shadow-black"}>Code0</p>
             </div>
         </div>
     )
