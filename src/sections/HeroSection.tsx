@@ -1,13 +1,12 @@
-import React from "react"
+import React, {useRef} from "react"
 import {Badge, Button, Card, Text} from "@code0-tech/pictor"
 import {IconBrandDiscord, IconMail} from "@tabler/icons-react"
 import Image from "next/image"
 import {Spotlight} from "@/components/Spotlight"
 
 export const HeroSection: React.FC = () => {
-
     return (
-        <div className={"relative flex flex-col px-[12%] pt-32 gap-16 overflow-hidden"}>
+        <div className={"relative flex flex-col px-[12%] pt-28 pb-48 gap-16 overflow-hidden"}>
             <Spotlight />
             <div className={"flex flex-col gap-4 mb-24"}>
                 <Badge color={"secondary"}>
@@ -38,9 +37,16 @@ export const HeroSection: React.FC = () => {
                 </div>
             </div>
 
-            <Card className={"relative aspect-video shadow-[0px_0px_60px_rgba(0,0,0,0.25)]"} outline variant={"outlined"}>
-                <Image src={"/code0_software.png"} alt={"Example image of code0 software"} layout='fill' objectFit='contain'/>
-            </Card>
+            <div className={"relative"}>
+                <div className="absolute inset-0">
+                    <div className="absolute inset-5 bg-[#160a59] blur-[40px] rounded-lg" />
+                    <div className="absolute inset-0 bg-[#160a59] blur-[80px] rounded-lg" />
+                </div>
+
+                <Card className={" overflow-auto shadow-[0px_0px_60px_rgba(0,0,0,0.25)]"} outline variant={"outlined"}>
+                    <Image src={"/code0_software.png"} alt={"Example image of code0 software"} height={1080} width={1920} className={"rounded-sm"}/>
+                </Card>
+            </div>
         </div>
     )
 }

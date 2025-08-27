@@ -26,7 +26,7 @@ const AccordionItem = React.forwardRef<React.ComponentRef<typeof AccordionPrimit
                     className="flex px-4 rounded-t-xl data-[state=open]:text-white data-[state=open]:bg-white/5">
                     <AccordionPrimitive.Trigger
                         className={cn(
-                            "flex flex-1 gap-8 items-center justify-between py-4 font-semibold transition-all text-lg lg:text-2xl",
+                            "flex flex-1 gap-8 items-center justify-between py-4 font-semibold transition-all text-lg",
                             "[&[data-state=open]>svg]:rotate-180 text-left",
                             className
                         )}
@@ -47,7 +47,7 @@ const AccordionContent = React.forwardRef<React.ComponentRef<typeof AccordionPri
     return (
         <AccordionPrimitive.Content
             className={cn(
-                "overflow-hidden text-lg lg:text-2xl data-[state=open]:bg-white/5 px-4 rounded-b-xl font-semibold",
+                "overflow-hidden text-lg data-[state=open]:bg-white/5 px-4 rounded-b-xl font-semibold",
                 "transition-all data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down"
             )}
             ref={ref}

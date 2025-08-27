@@ -3,7 +3,7 @@ import {Accordion, AccordionContent, AccordionItem} from "@/components/Accordion
 
 export const FaqSection: React.FC = () => {
     return (
-        <div className={"flex flex-col gap-8 items-center justify-center py-40 px-[12%]"}>
+        <div className={"flex flex-col gap-8 items-center justify-center py-40 px-[18%]"}>
             <p className={"text-xl text-white/75"}>Often asked questions</p>
             <Accordion type="single" collapsible className="w-full">
                 <AccordionItem value="item-1" title={"Lorem ipsum dolor sit amet, consetetur sadipscing elitr?"}>
