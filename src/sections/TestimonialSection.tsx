@@ -9,9 +9,9 @@ export const TestimonialSection: React.FC = () => {
             </div>
 
             <div className={"grid md:grid-cols-3 grid-cols-1 gap-16"}>
-                <TestimonialCard/>
-                <TestimonialCard/>
-                <TestimonialCard/>
+                <TestimonialCard imageSrc={"/testimonial3.png"} name={"Raphael Goetz"} corporation={"CEO, Lorem ipsum gmbh"} highlight={"stunning website"} text={"CodeZero transformed our online presence with a stunning website that truly reflects our brand. Their team was professional, creative, and easy to work with. Highly recommend!"}/>
+                <TestimonialCard imageSrc={"/testimonial1.png"} name={"Marius Ahsmus"} corporation={"CEO, Lorem ipsum gmbh"} highlight={"stunning website"} text={"CodeZero transformed our online presence with a stunning website that truly reflects our brand. Their team was professional, creative, and easy to work with. Highly recommend!"}/>
+                <TestimonialCard imageSrc={"/testimonial2.png"} name={"Nico Sammito"} corporation={"CEO, Lorem ipsum gmbh"} highlight={"stunning website"} text={"CodeZero transformed our online presence with a stunning website that truly reflects our brand. Their team was professional, creative, and easy to work with. Highly recommend!"}/>
             </div>
         </div>
 
