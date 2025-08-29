@@ -1,7 +1,21 @@
 @import 'tailwindcss';
 @config "../../tailwind.config.ts";
 
+@theme {
+  --animate-cell-ripple: cell-ripple var(--cell-ripple-duration, 200ms)
+  ease-out none 1 var(--cell-ripple-delay, 0ms);
+}
+
+@keyframes cell-ripple {
+  0% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+  100% { opacity: 0.4; }
+}
+
 :root {
+  --cell-ripple-duration: 200ms;
+  --cell-ripple-delay: 0ms;
+
   --bg-primary: 249 100% 4%;
   --bg-secondary: 0 0% 100%;
   --bg-info: 151 100% 72%;
@@ -42,3 +56,4 @@
 body {
   @apply bg-secondary text-secondary;
 }
+

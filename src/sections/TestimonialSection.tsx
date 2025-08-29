@@ -3,7 +3,7 @@ import {TestimonialCard} from "@/components/TestimonialCard"
 
 export const TestimonialSection: React.FC = () => {
     return (
-        <div className={"w-full flex flex-col gap-8 py-40 px-[12%]"}>
+        <div className={"w-full flex flex-col gap-8 pt-40 px-[12%]"}>
             <div className={"flex items-center gap-2"}>
                 <p className={"text-white text-3xl"}>Why our clients love code0</p>
             </div>
