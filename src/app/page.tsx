@@ -17,15 +17,32 @@ const LandingPage: NextPage = () => {
             <Navigation/>
             <HeroSection/>
             <div className={"h-12 grid grid-cols-[10%_80%_10%]"}>
-                <div className="border-t border-white/10" />
-                <div className="border-t border-x border-white/10" />
-                <div className="border-t border-white/10" />
+                <div className="border-t border-dashed border-white/10" />
+                <div className="border-t border-dashed border-x border-white/10" />
+                <div className="border-t border-dashed border-white/10" />
             </div>
             <BrandSection/>
             <div className="h-12 mx-[10%] border-x border-white/10" />
             <FeatureSection/>
+            <div className={"h-12 grid grid-cols-[10%_80%_10%]"}>
+                <div className="border-b border-dashed border-white/10" />
+                <div className="border-b border-dashed border-x border-white/10" />
+                <div className="border-b border-dashed border-white/10" />
+            </div>
             <DemoSection/>
+
+            <div className={"h-12 grid grid-cols-[10%_80%_10%]"}>
+                <div className="border-t border-dashed border-white/10" />
+                <div className="border-t border-dashed border-x border-white/10" />
+                <div className="border-t border-dashed border-white/10" />
+            </div>
             <QuoteSection/>
+            <div className={"h-12 grid grid-cols-[10%_80%_10%]"}>
+                <div className="border-b border-dashed border-white/10" />
+                <div className="border-b border-dashed border-x border-white/10" />
+                <div className="border-b border-dashed border-white/10" />
+            </div>
+
             <TestimonialSection/>
             <FaqSection/>
             <ContactSection/>
