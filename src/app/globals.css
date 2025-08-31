@@ -13,7 +13,7 @@
 }
 
 :root {
-  --cell-ripple-duration: 200ms;
+  --cell-ripple-duration: 2000ms;
   --cell-ripple-delay: 0ms;
 
   --bg-primary: 249 100% 4%;
