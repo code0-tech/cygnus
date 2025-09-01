@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 export default function RootLayout({children}: Readonly<{ children: ReactNode }>) {
     return (
         <html lang="en">
-            <body className={`${inter.className} bg-primary`}>
+            <body className={`${inter.className} bg-primary tracking-[-0.5px] leading-[1.5]`}>
                 {children}
                 <FooterSection/>
             </body>

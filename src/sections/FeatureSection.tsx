@@ -29,12 +29,15 @@ export const FeatureSection: React.FC = () => {
                     <p className={"text-white/75 text-2xl"}>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.</p>
                 </div>
 
-                <div className={"w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-16 auto-rows-fr"}>
+                <div className={"w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-10 gap-16 auto-rows-fr"}>
                     <OpenSourceCard/>
                     <AdapterCard/>
-                    <div className={"bg-white/2 rounded-xl border border-white/10 col-span-3 row-span-2"}/>
-                    <div className={"bg-white/2 rounded-xl border border-white/10 col-span-2 row-span-2"}/>
-                    <div className={"bg-white/2 rounded-xl border border-white/10 col-span-5 row-span-2"}/>
+                    <div className={"bg-white/2 rounded-xl border border-white/10 col-span-5 row-span-2"}>Selfhosting</div>
+                    <div className={"bg-white/2 rounded-xl border border-white/10 col-span-5 row-span-2"}>NoCode</div>
+                    <div className={"bg-white/2 rounded-xl border border-white/10 col-span-3 row-span-2"}>Suggestion Logic</div>
+                    <div className={"bg-white/2 rounded-xl border border-white/10 col-span-3 row-span-2"}>Runtime</div>
+                    <div className={"bg-white/2 rounded-xl border border-white/10 col-span-4 row-span-2"}>Organization & projects</div>
+
                 </div>
 
             </div>

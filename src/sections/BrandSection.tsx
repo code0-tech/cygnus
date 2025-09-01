@@ -5,7 +5,7 @@ export const BrandSection: React.FC = () => {
         <div className={"grid grid-cols-[10%_80%_10%] w-full border-y border-white/10"}>
             <div className={""}/>
 
-            <div className={"relative w-full flex flex-col gap-8 items-center justify-center py-24 border-x border-white/10"}>
+            <div className={"relative w-full flex flex-col gap-8 items-center justify-center py-12 border-x border-white/10"}>
 
                 <div className="absolute mt-0.5 inset-0 z-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.1)_1px,transparent_0)] [background-size:20px_20px]" />
 

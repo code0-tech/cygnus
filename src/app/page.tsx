@@ -42,7 +42,6 @@ const LandingPage: NextPage = () => {
                 <div className="border-b border-dashed border-white/10" />
             </div>
 
-            <TestimonialSection/>
             <FaqSection/>
             <ContactSection/>
         </div>

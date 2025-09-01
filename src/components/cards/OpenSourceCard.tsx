@@ -1,14 +1,16 @@
 "use client"
 
 import {FlickeringGrid} from "@/components/FlickeringGrid"
-import React, {useEffect, useState} from "react"
+import React, {useEffect, useRef, useState} from "react"
 import {AnimatePresence, motion} from "framer-motion"
 import {IconGitCommit, IconGitMerge, IconGitPullRequest} from "@tabler/icons-react"
 import {cn} from "@/utils/cn"
 
 export const OpenSourceCard: React.FC = () => {
+    const cardRef = useRef<HTMLDivElement>(null)
+
     return (
-        <div className={"relative flex flex-col justify-between overflow-hidden gap-4 p-4 h-[420px] col-span-2 row-span-2 bg-white/1 rounded-xl border border-white/10"}>
+        <div className={"relative flex flex-col justify-between overflow-hidden gap-4 p-4 h-[420px] col-span-4 row-span-2 bg-white/1 rounded-xl border border-white/10"} ref={cardRef}>
             <FlickeringGrid
                 className="relative inset-0 z-0 [mask-image:radial-gradient(205px_circle_at_center,white,transparent)]"
                 squareSize={6}
@@ -17,7 +19,7 @@ export const OpenSourceCard: React.FC = () => {
                 maxOpacity={0.5}
                 flickerChance={0.1}
                 height={260}
-                width={400}
+                width={cardRef.current?.clientWidth}
             />
             <div className={"absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-3/4 w-4/5"}>
                 <MergeCard />
