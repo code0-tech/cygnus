@@ -71,7 +71,7 @@ function Navigation() {
                             animate={{opacity: 1, filter: 'blur(0px)', y: 0}}
                             transition={{duration: 0.65}}
                 >
-                    <Image src={"/code0_logo.png"} width={"30"} height={"30"} alt={"Code0 Logo"}/>
+                    <Image src={"/code0_logo_color.png"} width={"32"} height={"32"} alt={"Code0 Logo"}/>
                 </motion.div>
 
                 <div className={"relative flex items-center pl-4"}

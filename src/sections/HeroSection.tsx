@@ -9,11 +9,14 @@ export const HeroSection: React.FC = () => {
         <div className={"relative flex flex-col px-[12%] pt-28 pb-32 gap-16 overflow-hidden"}>
             <Spotlight />
             <div className={"flex flex-col gap-4 mb-24"}>
-                <div className={"bg-[#70ffb2]/10 border border-[#70ffb2]/20 text-[#70ffb2]/80 w-fit px-2 py-0.5 rounded-full flex items-center gap-1 text-xs font-medium"}>
+                <div className={"bg-white/10 border border-white/20 text-white/50 w-fit px-2 py-0.5 rounded-full flex items-center gap-1 text-xs font-medium"}>
                     Join the closed beta
                 </div>
-                <h1 style={{color: "white", fontSize: "3rem"}}>Build <span
-                    style={{color: "#70ffb2"}}>complex backends </span>in no-time</h1>
+                <h1 style={{color: "white", fontSize: "3rem"}}>
+                    Build
+                    <span className={"px-1 mx-1 rounded-xl text-[#70ffb2] bg-[#70ffb2]/10"}>complex backends</span>
+                    in no-time
+                </h1>
                 <p className={"w-2/3 text-white/75 text-md"}>
                     The backend world gets to the next era with the code0 no-code platform.
                     From database modelling to scalable backend endpoints in no-time <br/> all within our sleek and easy to use
