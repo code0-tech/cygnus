@@ -1,5 +1,6 @@
 import React from "react"
 import { OpenSourceCard } from "@/components/cards/OpenSourceCard"
+import { AdapterCard } from "@/components/cards/AdapterCard"
 
 export const FeatureSection: React.FC = () => {
     return (
@@ -29,10 +30,11 @@ export const FeatureSection: React.FC = () => {
                 </div>
 
                 <div className={"w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-16 auto-rows-fr"}>
-                    <OpenSourceCard />
-                    <div className={"bg-white/2 rounded-xl border border-white/10 col-span-3 row-span-2"}/>
+                    <OpenSourceCard/>
+                    <AdapterCard/>
                     <div className={"bg-white/2 rounded-xl border border-white/10 col-span-3 row-span-2"}/>
                     <div className={"bg-white/2 rounded-xl border border-white/10 col-span-2 row-span-2"}/>
+                    <div className={"bg-white/2 rounded-xl border border-white/10 col-span-5 row-span-2"}/>
                 </div>
 
             </div>

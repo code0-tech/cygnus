@@ -1,10 +1,10 @@
 import type {Metadata} from "next"
-import {Ubuntu} from "next/font/google"
+import {Inter} from "next/font/google"
 import './globals.css'
 import {FooterSection} from "@/sections/FooterSection"
 import {ReactNode} from "react"
 
-const ubuntu = Ubuntu({style: "normal", weight: "500", subsets: ["latin"]})
+const inter = Inter({style: "normal", weight: "400", subsets: ["latin"]})
 
 export const metadata: Metadata = {
     title: "Code0 - Revolutionize the backend development",
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 export default function RootLayout({children}: Readonly<{ children: ReactNode }>) {
     return (
         <html lang="en">
-            <body className={`${ubuntu.className} bg-primary`}>
+            <body className={`${inter.className} bg-primary`}>
                 {children}
                 <FooterSection/>
             </body>

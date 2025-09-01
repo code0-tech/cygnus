@@ -7,7 +7,6 @@ import {BrandSection} from "@/sections/BrandSection"
 import {FeatureSection} from "@/sections/FeatureSection"
 import {TestimonialSection} from "@/sections/TestimonialSection"
 import {FaqSection} from "@/sections/FaqSection"
-import {DemoSection} from "@/sections/DemoSection"
 import {QuoteSection} from "@/sections/QuoteSection"
 import {ContactSection} from "@/sections/ContactSection"
 
@@ -29,7 +28,8 @@ const LandingPage: NextPage = () => {
                 <div className="border-b border-dashed border-x border-white/10" />
                 <div className="border-b border-dashed border-white/10" />
             </div>
-            <DemoSection/>
+
+            {/*<Roadmap/>*/}
 
             <div className={"h-12 grid grid-cols-[10%_80%_10%]"}>
                 <div className="border-t border-dashed border-white/10" />
