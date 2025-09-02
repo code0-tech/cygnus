@@ -12,29 +12,23 @@ export const HeroSection: React.FC = () => {
                 <div className={"bg-white/10 border border-white/20 text-white/50 w-fit px-2 py-0.5 rounded-full flex items-center gap-1 text-xs font-medium"}>
                     Join the closed beta
                 </div>
-                <h1 style={{color: "white", fontSize: "3rem"}}>
+                <h1 className={"text-5xl"}>
                     Build
                     <span className={"px-1 mx-1 rounded-xl text-[#70ffb2] bg-[#70ffb2]/10"}>complex backends</span>
                     in no-time
                 </h1>
                 <p className={"w-2/3 text-white/75 text-md"}>
                     The backend world gets to the next era with the code0 no-code platform.
-                    From database modelling to scalable backend endpoints in no-time <br/> all within our sleek and easy to use
+                    From database modelling to scalable backend endpoints in no-time all within our sleek and easy to use
                     dashboard made for everyone.
                 </p>
                 <div className={"flex mt-4 gap-4"}>
-                    <button
-                        className={"h-10 flex items-center gap-2 bg-white/90 hover:bg-white text-primary rounded-xl px-4 py-1 border border-white/10 shadow-md"}
-                    >
+                    <button className={"h-10 flex items-center gap-2 bg-white/90 hover:bg-white text-primary rounded-xl px-4 py-1 border border-white/10 shadow-md"}>
                         <IconBrandDiscord size={16}/>
                         Join our discord
                     </button>
-                    <button
-                        className={"h-10 flex items-center gap-2 bg-primary hover:bg-white/10 text-white/75 hover:text-white rounded-xl px-4 py-1 border border-white/10 shadow-md"}
-                    >
-                        <Button.Icon>
-                            <IconMail size={16}/>
-                        </Button.Icon>
+                    <button className={"h-10 flex items-center gap-2 bg-primary hover:bg-white/10 text-white/75 hover:text-white rounded-xl px-4 py-1 border border-white/10 shadow-md"}>
+                        <IconMail size={16}/>
                         Contact
                     </button>
                 </div>

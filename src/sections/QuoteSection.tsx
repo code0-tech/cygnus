@@ -10,7 +10,7 @@ export const QuoteSection: React.FC = () => {
 
                 <div className="absolute mt-0.5 inset-0 z-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.1)_1px,transparent_0)] [background-size:20px_20px]" />
 
-                <p className={"text-white/75 text-2xl"}>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.</p>
+                <p className={"text-white/75 text-md sm:text-xl lg:text-2xl"}>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.</p>
 
                 <div className={"w-full flex items-center gap-4 justify-end"}>
                     <Image src={"/testimonial1.png"} alt={"Testimonial"} width={24} height={24} className={"rounded-full overflow-none aspect-square object-cover"}/>

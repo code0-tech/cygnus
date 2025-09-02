@@ -9,10 +9,10 @@ import {IconBrandDiscord, IconBrandGithub, IconBrandInstagram, IconBrandX} from 
 export const FooterSection: React.FC = () => {
     return (
         <div className={"bg-primary px-[8%] pt-32 overflow-hidden"}>
-            <div className="relative flex flex-col gap-16 bg-black/20 px-20 pt-20 pb-46 border border-white/10 rounded-t-xl shadow-[0px_0px_60px_rgba(0,0,0,0.25)] overflow-hidden">
+            <div className="relative flex flex-col gap-16 bg-black/20 px-8 lg:px-20 pt-20 pb-52 border border-white/10 rounded-t-xl shadow-[0px_0px_60px_rgba(0,0,0,0.25)] overflow-hidden">
 
-                <div className={"grid grid-cols-4 gap-4"}>
-                    <div className={"h-40 flex flex-col justify-between gap-2"}>
+                <div className={"grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"}>
+                    <div className={"sm:h-40 flex sm:flex-col justify-between gap-2"}>
                         <p className={"text-white"}>
                             Code0 Technology
                         </p>
@@ -95,7 +95,9 @@ export const FooterSection: React.FC = () => {
                         </Link>
                     </div>
                 </div>
-                <p className={"max-w-screen absolute -bottom-32 left-1/2 -translate-x-1/2 text-[260px] text-white/3 text-shadow-black"}>CodeZero</p>
+                <p className={"max-w-screen absolute -bottom-32 left-1/2 -translate-x-1/2 text-xl lg:text-2xl xl:text-[260px] text-white/2 text-shadow-black font-bold"}>
+                    CodeZero
+                </p>
             </div>
         </div>
     )

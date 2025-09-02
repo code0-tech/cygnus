@@ -3,13 +3,11 @@ import {Inter} from "next/font/google"
 import './globals.css'
 import {FooterSection} from "@/sections/FooterSection"
 import {ReactNode} from "react"
+import {siteConfig} from "@/utils/siteConfig"
 
 const inter = Inter({style: "normal", weight: "400", subsets: ["latin"]})
 
-export const metadata: Metadata = {
-    title: "Code0 - Revolutionize the backend development",
-    description: "Revolutionize the backend development"
-}
+export const metadata: Metadata = siteConfig
 
 export default function RootLayout({children}: Readonly<{ children: ReactNode }>) {
     return (

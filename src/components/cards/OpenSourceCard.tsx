@@ -10,7 +10,7 @@ export const OpenSourceCard: React.FC = () => {
     const cardRef = useRef<HTMLDivElement>(null)
 
     return (
-        <div className={"relative flex flex-col justify-between overflow-hidden gap-4 p-4 h-[420px] col-span-4 row-span-2 bg-white/1 rounded-xl border border-white/10"} ref={cardRef}>
+        <div className={"relative flex flex-col justify-between overflow-hidden gap-4 p-4 h-[420px] col-span-1 md:col-span-2 lg:col-span-4 row-span-2 bg-white/1 rounded-xl border border-white/10"} ref={cardRef}>
             <FlickeringGrid
                 className="relative inset-0 z-0 [mask-image:radial-gradient(205px_circle_at_center,white,transparent)]"
                 squareSize={6}
