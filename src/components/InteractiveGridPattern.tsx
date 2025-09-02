@@ -1,26 +1,19 @@
-"use client";
+"use client"
 
-import { cn } from "@/utils/cn";
-import React, { useState } from "react";
+import { cn } from "@/utils/cn"
+import React, { useState } from "react"
 
 interface InteractiveGridPatternProps extends React.SVGProps<SVGSVGElement> {
-    width?: number;
-    height?: number;
-    squares?: [number, number]; // [horizontal, vertical]
-    className?: string;
-    squaresClassName?: string;
+    width?: number
+    height?: number
+    squares?: [number, number]
+    className?: string
+    squaresClassName?: string
 }
 
-export function InteractiveGridPattern({
-                                           width = 40,
-                                           height = 40,
-                                           squares = [24, 24],
-                                           className,
-                                           squaresClassName,
-                                           ...props
-                                       }: InteractiveGridPatternProps) {
-    const [horizontal, vertical] = squares;
-    const [hoveredSquare, setHoveredSquare] = useState<number | null>(null);
+export function InteractiveGridPattern({width = 40, height = 40, squares = [24, 24], className, squaresClassName, ...props}: InteractiveGridPatternProps) {
+    const [horizontal, vertical] = squares
+    const [hoveredSquare, setHoveredSquare] = useState<number | null>(null)
 
     return (
         <svg
@@ -33,8 +26,8 @@ export function InteractiveGridPattern({
             {...props}
         >
             {Array.from({ length: horizontal * vertical }).map((_, index) => {
-                const x = (index % horizontal) * width;
-                const y = Math.floor(index / horizontal) * height;
+                const x = (index % horizontal) * width
+                const y = Math.floor(index / horizontal) * height
                 return (
                     <rect
                         key={index}
@@ -50,8 +43,8 @@ export function InteractiveGridPattern({
                         onMouseEnter={() => setHoveredSquare(index)}
                         onMouseLeave={() => setHoveredSquare(null)}
                     />
-                );
+                )
             })}
         </svg>
-    );
+    )
 }
