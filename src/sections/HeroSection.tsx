@@ -9,18 +9,24 @@ export const HeroSection: React.FC = () => {
         <div className={"relative flex flex-col px-[12%] pt-28 pb-32 gap-16 overflow-hidden"}>
             <Spotlight />
             <div className={"flex flex-col gap-4 mb-24"}>
-                <div className={"bg-white/10 border border-white/20 text-white/50 w-fit px-2 py-0.5 rounded-full flex items-center gap-1 text-xs font-medium"}>
+                <div className={"bg-white/10 border border-white/20 text-white/50 shadow-xs shadow-white/10 w-fit px-2 py-0.5 rounded-full flex items-center gap-1 text-xs font-medium"}>
                     Join the closed beta
                 </div>
-                <h1 className={"text-5xl"}>
-                    Build
-                    <span className={"px-1 mx-1 rounded-xl text-[#70ffb2] bg-[#70ffb2]/10"}>complex backends</span>
-                    in no-time
-                </h1>
-                <p className={"w-2/3 text-white/75 text-md"}>
-                    The backend world gets to the next era with the code0 no-code platform.
-                    From database modelling to scalable backend endpoints in no-time all within our sleek and easy to use
-                    dashboard made for everyone.
+
+                <div className={"flex items-center gap-2 font-semibold text-5xl"}>
+                    <h1 className={"bg-gradient-to-b from-white/50 to-white bg-clip-text text-transparent"}>
+                        Build
+                    </h1>
+                    <h1 className={"bg-gradient-to-b from-[#70ffb2]/30 to-[#70ffb2] bg-clip-text text-transparent"}>
+                        complex backends
+                    </h1>
+                    <h1 className={"bg-gradient-to-b from-white/50 to-white bg-clip-text text-transparent"}>
+                        in no-time
+                    </h1>
+                </div>
+                <p className={"font-medium bg-gradient-to-r from-white/75 to-white/50 bg-clip-text text-transparent text-lg"}>
+                    The backend world gets to the next era with the code0 no-code platform. <br/>
+                    From database modelling to scalable backend endpoints in no-time.
                 </p>
                 <div className={"flex mt-4 gap-4"}>
                     <button className={"h-10 flex items-center gap-2 bg-white/90 hover:bg-white text-primary rounded-xl px-4 py-1 border border-white/10 shadow-md"}>

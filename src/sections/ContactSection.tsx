@@ -14,7 +14,11 @@ export const ContactSection: React.FC = () => {
                 squares={[50, 10]}
             />
 
-            <Image src={"/code0_logo_color.png"} width={"112"} height={"112"} alt={"Code0 Logo"} className={"z-20 shadow-2xl"}/>
+            <div className={"z-20 size-31 border border-white/5 bg-white/5 backdrop-blur-lg flex items-center justify-center rounded-2xl"}>
+                <div className={"border border-[#2d2b3b] bg-linear-to-br from-primary to-[#70ffb2]/10 flex items-center justify-center rounded-xl"}>
+                    <Image src={"/code0_logo_color.png"} width={"112"} height={"112"} alt={"Code0 Logo"} className={"z-20 shadow-2xl"}/>
+                </div>
+            </div>
 
             <p className={"z-20 text-2xl sm:text-4xl text-white text-center font-semibold"}>Build better backends with CodeZero</p>
             <p className={"w-4/5 sm:w-2/3 lg:w-1/2 z-20 text-md sm:text-lg text-white/75 text-center"}>

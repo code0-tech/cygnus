@@ -11,8 +11,8 @@ export const FooterSection: React.FC = () => {
         <div className={"bg-primary px-[8%] pt-32 overflow-hidden"}>
             <div className="relative flex flex-col gap-16 bg-black/20 px-8 lg:px-20 pt-20 pb-52 border border-white/10 rounded-t-xl shadow-[0px_0px_60px_rgba(0,0,0,0.25)] overflow-hidden">
 
-                <div className={"grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"}>
-                    <div className={"sm:h-40 flex sm:flex-col justify-between gap-2"}>
+                <div className={"grid grid-cols-2 lg:grid-cols-4 gap-4"}>
+                    <div className={"flex flex-col lg:justify-between gap-2"}>
                         <p className={"text-white"}>
                             Code0 Technology
                         </p>
