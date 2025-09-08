@@ -13,17 +13,19 @@ export const HeroSection: React.FC = () => {
                     Join the closed beta
                 </div>
 
-                <div className={"flex items-center gap-2 font-semibold text-5xl"}>
-                    <h1 className={"bg-gradient-to-b from-white/50 to-white bg-clip-text text-transparent"}>
+                <h1 className="font-semibold text-5xl">
+                    <span className="bg-gradient-to-b from-white/50 to-white bg-clip-text text-transparent">
                         Build
-                    </h1>
-                    <h1 className={"bg-gradient-to-b from-[#70ffb2]/30 to-[#70ffb2] bg-clip-text text-transparent"}>
+                    </span>
+                    {" "}
+                    <span className="bg-gradient-to-b from-[#70ffb2]/30 to-[#70ffb2] bg-clip-text text-transparent">
                         complex backends
-                    </h1>
-                    <h1 className={"bg-gradient-to-b from-white/50 to-white bg-clip-text text-transparent"}>
+                    </span>
+                    {" "}
+                    <span className="bg-gradient-to-b from-white/50 to-white bg-clip-text text-transparent">
                         in no-time
-                    </h1>
-                </div>
+                    </span>
+                </h1>
                 <p className={"font-medium bg-gradient-to-r from-white/75 to-white/50 bg-clip-text text-transparent text-lg"}>
                     The backend world gets to the next era with the code0 no-code platform. <br/>
                     From database modelling to scalable backend endpoints in no-time.

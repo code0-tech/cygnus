@@ -7,6 +7,9 @@ import {useEffect, useRef, useState} from "react"
 import {cn} from "@/utils/cn"
 import Image from "next/image"
 import {Button} from "@code0-tech/pictor"
+import {useMediaQuery} from "@/hooks/useMediaQuery"
+import {IconMenu, IconX} from "@tabler/icons-react"
+import { useOutsideClick } from "@/hooks/useOutsideClick"
 
 type NavItem = {
     title: string
@@ -22,8 +25,12 @@ interface TabProps {
 
 function Navigation() {
     const router = useRouter()
+    const isDesktop = useMediaQuery("(min-width: 768px)")
+    const menuRef = useOutsideClick(() => setOpen(false))
+
     const [position, setPosition] = useState({ left: 0, width: 0, opacity: 0 })
     const [isScrolled, setIsScrolled] = useState(false)
+    const [open, setOpen] = useState(false)
 
     const headerItems: NavItem[] = [
         {title: "Home", href: ""},
@@ -43,6 +50,61 @@ function Navigation() {
     const handleRoute = (item: NavItem) => {
         if (item.href) router.push(item.href)
         else router.replace("/")
+    }
+
+    if (!isDesktop) {
+        return (
+            <header
+                className="fixed z-50 w-full overflow-hidden"
+                ref={menuRef}
+            >
+                <motion.div
+                    className={cn(
+                        "my-4 p-1.5 flex flex-row items-center justify-between top-0 left-0 border rounded-2xl overflow-hidden transition-colors",
+                        isScrolled ? "border border-white/10 shadow-sm bg-primary/20 backdrop-blur-xl" : "border-transparent",
+                    )}
+                    initial={{
+                        marginLeft: "6%",
+                        marginRight: "6%",
+                    }}
+                    animate={{
+                        marginLeft: isScrolled ? "10%" : "6%",
+                        marginRight: isScrolled ? "10%" : "6%",
+                    }}
+                    transition={{
+                        type: "spring",
+                        stiffness: 40,
+                        damping: 10,
+                    }}
+                >
+                    <motion.div className={cn("flex")}
+                                initial={{opacity: 0, filter: 'blur(10px)', y: -30}}
+                                animate={{opacity: 1, filter: 'blur(0px)', y: 0}}
+                                transition={{duration: 0.65}}
+                    >
+                        <Image src={"/code0_logo_color.png"} width={"32"} height={"32"} alt={"Code0 Logo"}/>
+                    </motion.div>
+                    <Button onClick={() => setOpen(!open)}>
+                        {open ? <IconX className={cn(open && "text-primary")}/> : <IconMenu className={cn(open && "text-primary")}/>}
+                    </Button>
+                    {open &&
+                        <div className={"flex flex-col gap-8"}>
+                            {headerItems.map((item) => (
+                                <Tab
+                                    key={item.title}
+                                    title={item.title}
+                                    setPosition={setPosition}
+                                    onClick={() => {
+                                        handleRoute(item)
+                                        setOpen(false)
+                                    }}
+                                />
+                            ))}
+                        </div>
+                    }
+                </motion.div>
+            </header>
+        )
     }
 
     return (
