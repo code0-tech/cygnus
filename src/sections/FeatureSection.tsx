@@ -1,6 +1,7 @@
 import React from "react"
 import { OpenSourceCard } from "@/components/cards/OpenSourceCard"
 import { AdapterCard } from "@/components/cards/AdapterCard"
+import {ProjectCard} from "@/components/cards/ProjectCard"
 
 export const FeatureSection: React.FC = () => {
     return (
@@ -36,8 +37,7 @@ export const FeatureSection: React.FC = () => {
                     <div className={"bg-white/2 rounded-xl border border-white/10 col-span-5 row-span-2"}>NoCode</div>
                     <div className={"bg-white/2 rounded-xl border border-white/10 col-span-3 row-span-2"}>Suggestion Logic</div>
                     <div className={"bg-white/2 rounded-xl border border-white/10 col-span-3 row-span-2"}>Runtime</div>
-                    <div className={"bg-white/2 rounded-xl border border-white/10 col-span-4 row-span-2"}>Organization & projects</div>
-
+                    <ProjectCard/>
                 </div>
 
             </div>
