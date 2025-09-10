@@ -5,11 +5,15 @@ import {Col, Row, Text} from "@code0-tech/pictor";
 import Image from "next/image";
 import Link from "next/link";
 import {IconBrandDiscord, IconBrandGithub, IconBrandInstagram, IconBrandX} from "@tabler/icons-react"
+import {Spotlight} from "@/components/Spotlight"
 
 export const FooterSection: React.FC = () => {
     return (
-        <div className={"bg-primary px-[8%] pt-32 overflow-hidden"}>
-            <div className="relative flex flex-col gap-16 bg-black/20 px-8 lg:px-20 pt-20 pb-52 border border-white/10 rounded-t-xl shadow-[0px_0px_60px_rgba(0,0,0,0.25)] overflow-hidden">
+        <div className={"relative bg-primary px-[8%] overflow-hidden"}>
+            <div className={"absolute inset-0 h-full w-full bg-black/20"}/>
+            <Spotlight opacity={0.2} duration={20}/>
+
+            <div className="relative flex flex-col gap-16 px-8 lg:px-20 pt-24 lg:pt-40 pb-24 rounded-t-xl overflow-hidden">
 
                 <div className={"grid grid-cols-2 lg:grid-cols-4 gap-4"}>
                     <div className={"flex flex-col lg:justify-between gap-2"}>
@@ -95,9 +99,6 @@ export const FooterSection: React.FC = () => {
                         </Link>
                     </div>
                 </div>
-                <p className={"max-w-screen absolute -bottom-32 left-1/2 -translate-x-1/2 text-xl lg:text-2xl xl:text-[260px] text-white/2 text-shadow-black font-bold"}>
-                    CodeZero
-                </p>
             </div>
         </div>
     )

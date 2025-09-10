@@ -87,7 +87,7 @@ function Navigation() {
                             <Image src={"/code0_logo_color.png"} width={"32"} height={"32"} alt={"Code0 Logo"}/>
                         </motion.div>
                         <motion.button
-                            className={cn("bg-transparent border-0 transition-colors")}
+                            className={cn("bg-transparent border-0 transition-colors mr-1.5")}
                             initial={{opacity: 0, filter: 'blur(10px)', y: -30}}
                             animate={{opacity: 1, filter: 'blur(0px)', y: 0}}
                             transition={{duration: 0.65}}

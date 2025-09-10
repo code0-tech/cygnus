@@ -8,11 +8,11 @@ export const ProjectCard: React.FC = () => {
 
                 <div className={"flex justify-center relative w-full"}>
                     <div className="absolute z-0 inset-0 left-1/2 -translate-x-1/2 w-4/5 ">
-                        <div className="absolute inset-5 bg-[#70ffb2]/60 blur-[10px] rounded-sm" />
-                        <div className="absolute inset-0 bg-[#70ffb2]/20 blur-[20px] rounded-sm" />
+                        <div className="absolute inset-5 bg-[#70ffb2]/25 blur-[10px] rounded-sm" />
+                        <div className="absolute inset-0 bg-[#70ffb2]/5 blur-[20px] rounded-sm" />
                     </div>
 
-                    <div className={"relative z-10 w-4/5 flex items-center gap-2 p-2 bg-[#1a1729] rounded-xl border border-white/5 shadow-xl"}>
+                    <div className={"relative z-10 w-4/5 flex items-center gap-2 p-2 bg-primary rounded-xl border border-white/5 shadow-xl"}>
                         <div className={"flex items-center justify-center size-12 rounded-lg bg-[#70ffb2]/10"}>
                             <IconUsersGroup className={"text-[#70ffb2]"} size={30}/>
                         </div>
@@ -22,11 +22,11 @@ export const ProjectCard: React.FC = () => {
 
                 <div className={"flex justify-center relative w-full"}>
                     <div className="absolute z-0 inset-0 left-1/2 -translate-x-1/2 w-4/5">
-                        <div className="absolute inset-5 bg-[#b570ff]/60 blur-[10px] rounded-sm" />
-                        <div className="absolute inset-0 bg-[#b570ff]/20 blur-[20px] rounded-sm" />
+                        <div className="absolute inset-5 bg-[#b570ff]/25 blur-[10px] rounded-sm" />
+                        <div className="absolute inset-0 bg-[#b570ff]/5 blur-[20px] rounded-sm" />
                     </div>
 
-                    <div className={"relative z-10 w-4/5 flex items-center gap-2 p-2 bg-[#1a1729] rounded-xl border border-white/5 shadow-xl"}>
+                    <div className={"relative z-10 w-4/5 flex items-center gap-2 p-2 bg-primary rounded-xl border border-white/5 shadow-xl"}>
                         <div className={"flex items-center justify-center size-12 rounded-lg bg-[#b570ff]/10"}>
                             <IconFolders className={"text-[#b570ff]"} size={30}/>
                         </div>
