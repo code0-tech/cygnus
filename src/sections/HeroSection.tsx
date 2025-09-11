@@ -6,7 +6,7 @@ import {Spotlight} from "@/components/Spotlight"
 
 export const HeroSection: React.FC = () => {
     return (
-        <div className={"relative flex flex-col px-[12%] pt-28 pb-32 gap-16 overflow-hidden"}>
+        <div className={"relative flex flex-col px-[12%] pt-32 pb-24 gap-12 overflow-hidden"}>
             <Spotlight />
             <div className={"flex flex-col gap-4 mb-24"}>
                 <div className={"bg-white/10 border border-white/20 text-white/50 shadow-xs shadow-white/10 w-fit px-2 py-0.5 rounded-full flex items-center gap-1 text-xs font-medium"}>
@@ -51,6 +51,16 @@ export const HeroSection: React.FC = () => {
                 <Card className={" overflow-auto shadow-[0px_0px_60px_rgba(0,0,0,0.25)]"} outline variant={"outlined"}>
                     <Image src={"/code0_software.png"} alt={"Example image of code0 software"} height={1080} width={1920} className={"rounded-sm"}/>
                 </Card>
+            </div>
+
+            <div className={"w-full flex flex-col gap-8 items-center justify-center py-12 bg-transparent"}>
+
+                <p className={"text-xl text-white/50"}>Trusted by teams who want easy backends</p>
+                <div className={"flex items-center justify-center gap-8 text-white/75"}>
+                    <p className={"text-4xl font-bold"}>Logo1</p>
+                    <p className={"text-4xl font-bold"}>Logo2</p>
+                    <p className={"text-4xl font-bold"}>Logo3</p>
+                </div>
             </div>
         </div>
     )

@@ -1,68 +1,40 @@
-"use client"
-
-import * as React from "react"
-import * as AccordionPrimitive from "@radix-ui/react-accordion"
-import { cn } from "@/utils/cn"
-import type {ReactNode} from "react"
 import {IconChevronDown} from "@tabler/icons-react"
+import React from "react"
 
-const Accordion = AccordionPrimitive.Root
-
-interface AccordionItemProps extends React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Item> {
-    children: ReactNode
-    title: string
+interface FAQItemProps {
+    question: string
+    answer: string
+    isOpen: boolean
+    onToggle: () => void
 }
-interface AccordionContentProps extends React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Content> {}
 
-const AccordionItem = React.forwardRef<React.ComponentRef<typeof AccordionPrimitive.Item>, AccordionItemProps>(({ title, children, className, ...props }, ref) => {
+export const AccordionItem = ({ question, answer, isOpen, onToggle }: FAQItemProps) => {
+    const handleClick = (e: React.MouseEvent) => {
+        e.preventDefault()
+        onToggle()
+    }
     return (
-        <>
-            <AccordionPrimitive.Item
-                className={cn("", className)}
-                ref={ref}
-                {...props}
-            >
-                <AccordionPrimitive.Header
-                    className="flex px-4 rounded-t-xl data-[state=open]:text-white data-[state=open]:bg-white/5">
-                    <AccordionPrimitive.Trigger
-                        className={cn(
-                            "flex flex-1 gap-8 items-center justify-between py-4 font-semibold transition-all text-md sm:text-lg",
-                            "[&[data-state=open]>svg]:rotate-180 text-left",
-                            className
-                        )}
-                    >
-                        {title}
-                        <IconChevronDown className="h-6 w-6 shrink-0 transition-transform duration-200 text-white/50"/>
-                    </AccordionPrimitive.Trigger>
-                </AccordionPrimitive.Header>
-                {children}
-                <div className={"h-2 border-b border-white/10 mb-4"}/>
-            </AccordionPrimitive.Item>
-        </>
-    )
-})
-AccordionItem.displayName = AccordionPrimitive.Item.displayName
-
-const AccordionContent = React.forwardRef<React.ComponentRef<typeof AccordionPrimitive.Content>, AccordionContentProps>(({ className, children, ...props }, ref) => {
-    return (
-        <AccordionPrimitive.Content
-            className={cn(
-                "overflow-hidden text-md sm:text-lg data-[state=open]:bg-white/5 px-4 rounded-b-xl font-semibold",
-                "transition-all data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down"
-            )}
-            ref={ref}
-            {...props}
+        <div
+            className={`w-full bg-white/2 border border-white/10 shadow-[0px_2px_4px_rgba(0,0,0,0.16)] overflow-hidden rounded-xl transition-all duration-200 ease-linear cursor-pointer`}
+            onClick={handleClick}
         >
-            <div className={cn("pb-4 pt-0 text-white/75", className)}>
-                {children}
+            <div className="w-full px-5 py-[18px] pr-4 flex justify-between items-center gap-5 text-left transition-all duration-300 ease-out">
+                <div className="flex-1 text-white/75 text-sm sm:text-md lg:text-lg font-medium break-words">{question}</div>
+                <IconChevronDown className={`w-6 h-6 text-white/50 transition-all duration-500 ease-out ${isOpen ? "rotate-180" : "rotate-0"}`}/>
             </div>
-        </AccordionPrimitive.Content>
+            <div
+                className={`overflow-hidden transition-all duration-500 ease-out ${isOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}`}
+                style={{
+                    transitionProperty: "max-height, opacity, padding",
+                    transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
+                }}
+            >
+                <div
+                    className={`px-5 transition-all duration-500 ease-out ${isOpen ? "pb-[18px] pt-2 translate-y-0" : "pb-0 pt-0 -translate-y-2"}`}
+                >
+                    <div className="text-white/50 text-md  break-words">{answer}</div>
+                </div>
+            </div>
+        </div>
     )
-})
-AccordionContent.displayName = AccordionPrimitive.Content.displayName
-
-export {
-    Accordion,
-    AccordionItem,
-    AccordionContent
 }

@@ -9,7 +9,7 @@ export const RoadmapSection: React.FC = () => {
             <div className={"py-16 border-x border-dashed border-white/10"}>
                 <Timeline
                     data={TIMELINE}
-                    defaultActiveStep={{ time: "2025 Q2", stepIndex: 0 }}
+                    defaultActiveStep={{ time: "2025 Q3", stepIndex: 0 }}
                     arcConfig={{
                         circleWidth: 4500,
                         angleBetweenMinorSteps: 0.4,
