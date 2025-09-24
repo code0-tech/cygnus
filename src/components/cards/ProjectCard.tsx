@@ -12,8 +12,8 @@ export const ProjectCard: React.FC = () => {
                         <div className="absolute inset-0 bg-[#70ffb2]/5 blur-[20px] rounded-sm" />
                     </div>
 
-                    <div className={"relative z-10 w-4/5 flex items-center gap-2 p-2 bg-primary rounded-xl border border-white/5 shadow-xl"}>
-                        <div className={"flex items-center justify-center size-12 rounded-lg bg-[#70ffb2]/10"}>
+                    <div className={"relative z-10 w-4/5 flex items-center gap-2 p-2 bg-primary rounded-xl border border-white/5 ring-2 ring-[#70ffb2]/2 shadow-xl"}>
+                        <div className={"flex items-center justify-center size-12 rounded-lg bg-[#70ffb2]/5"}>
                             <IconUsersGroup className={"text-[#70ffb2]"} size={30}/>
                         </div>
                         <p className={"text-white/75 font-medium"}>Join your organization</p>
@@ -26,8 +26,8 @@ export const ProjectCard: React.FC = () => {
                         <div className="absolute inset-0 bg-[#b570ff]/5 blur-[20px] rounded-sm" />
                     </div>
 
-                    <div className={"relative z-10 w-4/5 flex items-center gap-2 p-2 bg-primary rounded-xl border border-white/5 shadow-xl"}>
-                        <div className={"flex items-center justify-center size-12 rounded-lg bg-[#b570ff]/10"}>
+                    <div className={"relative z-10 w-4/5 flex items-center gap-2 p-2 bg-primary rounded-xl border border-white/5 ring-2 ring-[#b570ff]/2 shadow-xl"}>
+                        <div className={"flex items-center justify-center size-12 rounded-lg bg-[#b570ff]/5"}>
                             <IconFolders className={"text-[#b570ff]"} size={30}/>
                         </div>
                         <p className={"text-white/75 font-medium"}>Create multiple projects</p>

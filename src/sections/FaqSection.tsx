@@ -3,19 +3,16 @@ import {AccordionItem} from "@/components/Accordion"
 
 const faqData = [
     {
-        question: "What is Pointer and who is it for?",
-        answer:
-            "Pointer is an AI-powered development platform designed for developers, teams, and organizations who want toaccelerate their coding workflow. It's perfect for both individual developers looking to enhance their productivity and teams seeking seamless collaboration tools.",
+        question: "Lorem ipsum dolor sit amet, consetetur sadipscing elitr",
+        answer: "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum."
     },
     {
-        question: "How does Pointer's AI code review work?",
-        answer:
-            "Our AI analyzes your code in real-time, providing intelligent suggestions for improvements, catching potential bugs, and ensuring best practices. It learns from your coding patterns and adapts to your team's standards, making code reviews faster and more consistent.",
+        question: "Lorem ipsum dolor sit amet, consetetur sadipscing elitr?",
+        answer: "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum."
     },
     {
-        question: "Can I integrate Pointer with my existing tools?",
-        answer:
-            "Yes! Pointer offers one-click integrations with popular development tools including GitHub, GitLab, VS Code, Slack, and many more. Our MCP connectivity allows you to easily manage and configure server access across your entire development stack.",
+        question: "Lorem ipsum dolor sit amet, consetetur sadipscing elitr?",
+        answer: "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum."
     }
 ]
 
