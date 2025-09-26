@@ -12,7 +12,7 @@ export const AdapterCard: React.FC = () => {
     const div4Ref = useRef<HTMLDivElement>(null)
 
     return (
-        <div className={"relative flex flex-col justify-between items-center overflow-hidden gap-4 p-4 h-[420px] col-span-6 row-span-2 bg-white/1 rounded-xl border border-white/10"}>
+        <div className={"relative flex flex-col justify-between items-center overflow-hidden gap-4 p-4 h-[420px] col-span-6 row-span-2 bg-[#050316] rounded-xl border border-white/10"}>
 
             <div className={"relative w-4/5 h-full flex items-center justify-between"} ref={containerRef}>
                 <div className={"flex flex-col items-center gap-4"}>

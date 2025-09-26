@@ -10,21 +10,21 @@ export const OpenSourceCard: React.FC = () => {
     const cardRef = useRef<HTMLDivElement>(null)
 
     return (
-        <div className={"relative flex flex-col justify-between overflow-hidden gap-4 p-4 h-[420px] col-span-1 md:col-span-2 lg:col-span-4 row-span-2 bg-white/1 rounded-xl border border-white/10"} ref={cardRef}>
+        <div className={"relative flex flex-col justify-between overflow-hidden gap-4 pb-4 h-[420px] col-span-1 md:col-span-2 lg:col-span-4 row-span-2 bg-[#050316] rounded-xl border border-white/10"} ref={cardRef}>
             <FlickeringGrid
-                className="relative inset-0 z-0 [mask-image:radial-gradient(205px_circle_at_center,white,transparent)]"
+                className="relative inset-0 z-0"
                 squareSize={6}
                 gridGap={4}
                 color="#70ffb2"
-                maxOpacity={0.5}
+                maxOpacity={0.3}
                 flickerChance={0.1}
-                height={260}
+                height={276}
                 width={cardRef.current?.clientWidth}
             />
-            <div className={"absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-3/4 w-4/5"}>
+            <div className={"z-20 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-3/4 w-4/5"}>
                 <MergeCard />
             </div>
-            <div className={"flex flex-col gap-1"}>
+            <div className={"flex flex-col gap-1 mx-4"}>
                 <p className={"font-mono font-semibold text-lg text-white/25"}>OPEN SOURCE</p>
                 <p className={"text-white/50 text-justify"}>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna.</p>
             </div>

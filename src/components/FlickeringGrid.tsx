@@ -162,6 +162,7 @@ export const FlickeringGrid: React.FC<FlickeringGridProps> = ({squareSize = 4, g
             className={cn(`h-full w-full ${className}`)}
             {...props}
         >
+            <div className={"absolute inset-0 z-10 bg-linear-to-b from-black/0 to-[#050316]"}/>
             <canvas
                 ref={canvasRef}
                 className="pointer-events-none"

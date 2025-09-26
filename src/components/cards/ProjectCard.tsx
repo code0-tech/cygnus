@@ -3,7 +3,7 @@ import {IconFolders, IconUsersGroup} from "@tabler/icons-react"
 
 export const ProjectCard: React.FC = () => {
     return (
-        <div className={"relative flex flex-col justify-between items-center overflow-hidden gap-4 p-4 h-[420px] col-span-4 row-span-2 bg-white/1 rounded-xl border border-white/10"}>
+        <div className={"relative flex flex-col justify-between items-center overflow-hidden gap-4 p-4 h-[420px] col-span-4 row-span-2 bg-[#050316] rounded-xl border border-white/10"}>
             <div className={"h-full w-full flex flex-col items-center justify-center gap-4"}>
 
                 <div className={"flex justify-center relative w-full"}>

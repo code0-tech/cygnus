@@ -44,8 +44,8 @@ export const HeroSection: React.FC = () => {
 
             <div className={"relative"}>
                 <div className="absolute inset-0">
-                    <div className="absolute inset-5 bg-[#160a59] blur-[40px] rounded-lg" />
-                    <div className="absolute inset-0 bg-[#160a59] blur-[80px] rounded-lg" />
+                    <div className="absolute inset-5 bg-[#b570ff]/60 blur-[60px] rounded-lg" />
+                    <div className="absolute inset-0 bg-[#b570ff]/40 blur-[120px] rounded-lg" />
                 </div>
 
                 <Card className={" overflow-auto shadow-[0px_0px_60px_rgba(0,0,0,0.25)]"} outline variant={"outlined"}>
