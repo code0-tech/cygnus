@@ -11,7 +11,7 @@
   "dependencies": {
     "@code0-tech/pictor": "^0.3.0",
     "@tabler/icons-react": "^3.34.0",
-    "next": "15.4.2",
+    "next": "15.4.7",
     "react": "^18",
     "react-dom": "^18",
     "sass": "^1.89.2"
