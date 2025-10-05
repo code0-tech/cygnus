@@ -28,7 +28,7 @@ jobs:
           GLPA_C0_GH_REF: ${{ github.ref }}
 
       - name: Find existing comment
-        uses: peter-evans/find-comment@v3
+        uses: peter-evans/find-comment@v4
         id: find-comment
         if: ${{ !cancelled() && github.event_name == 'pull_request' }}
         with:
