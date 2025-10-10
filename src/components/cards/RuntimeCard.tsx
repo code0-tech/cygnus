@@ -3,7 +3,7 @@ import {ChipLogo} from "@/components/ChipLogo"
 
 export const RuntimeCard: React.FC = () => {
     return (
-        <div className={"relative flex flex-col justify-between items-center overflow-hidden gap-4 p-4 h-[420px] col-span-3 row-span-2 bg-[#050316] rounded-xl border border-white/10"}>
+        <div className={"relative flex flex-col justify-between items-center overflow-hidden gap-4 p-4 h-[420px] col-span-2 row-span-2 bg-[#050316] rounded-xl border border-white/10"}>
 
             <div className={"relative flex justify-center items-center h-full w-full"}>
                 <div className="absolute inset-10">

@@ -24,7 +24,7 @@ interface TabProps {
 
 function Navigation() {
     const router = useRouter()
-    const isDesktop = useMediaQuery("(min-width: 768px)")
+    const isDesktop = useMediaQuery("(min-width: 1024px)")
     const menuRef = useOutsideClick<HTMLElement>(() => setIsOpen(false))
 
     const [position, setPosition] = useState({ left: 0, width: 0, opacity: 0 })
@@ -34,8 +34,8 @@ function Navigation() {
 
     const headerItems: NavItem[] = [
         {title: "Home", href: ""},
-        {title: "Product", href: ""},
-        {title: "Contact", href: ""}
+        {title: "Pricing", href: "pricing"},
+        {title: "About us", href: "about-us"}
     ]
 
     useEffect(() => {
@@ -123,6 +123,21 @@ function Navigation() {
                                         {item.title}
                                     </motion.div>
                                 ))}
+                                <motion.div
+                                    key={"Discord"}
+                                    initial={{ y: -8, opacity: isScrolled ? 1 : 0 }}
+                                    animate={{ y: 0, opacity: 1 }}
+                                    exit={{ y: -8, opacity: isScrolled ? 1 : 0 }}
+                                    transition={{ duration: 0.25, delay: 0.06 * 4 }}
+                                    className="text-white/75 px-2 py-1 font-medium text-md rounded-xl cursor-pointer hover:text-white hover:bg-white/10 transition-colors"
+                                    onClick={() => {
+                                        router.push("discord")
+                                        setIsOpen(false)
+                                    }}
+                                >
+                                    {"Discord"}
+                                </motion.div>
+
                             </motion.div>
                         )}
                     </AnimatePresence>
@@ -139,12 +154,12 @@ function Navigation() {
                     isScrolled ? "border border-white/10 shadow-sm bg-primary/20 backdrop-blur-xl" : "border-transparent",
                 )}
                 initial={{
-                    marginLeft: "6%",
-                    marginRight: "6%",
+                    marginLeft: "10%",
+                    marginRight: "10%",
                 }}
                 animate={{
-                    marginLeft: isScrolled ? "10%" : "6%",
-                    marginRight: isScrolled ? "10%" : "6%",
+                    marginLeft: isScrolled ? "28%" : "10%",
+                    marginRight: isScrolled ? "28%" : "10%",
                 }}
                 transition={{
                     type: "spring",
@@ -177,7 +192,7 @@ function Navigation() {
                 <button
                     className={cn(
                         "flex items-center gap-2.5 px-4 h-8 rounded-xl transition-all",
-                        "bg-primary/30 text-white/75 hover:text-white hover:bg-primary/50 cursor-pointer font-medium",
+                        "bg-white/90 hover:bg-white text-primary cursor-pointer font-medium",
                     )}
                 >
                     Discord

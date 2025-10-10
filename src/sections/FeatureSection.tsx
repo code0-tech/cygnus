@@ -1,5 +1,4 @@
 import React from "react"
-import { OpenSourceCard } from "@/components/cards/OpenSourceCard"
 import { AdapterCard } from "@/components/cards/AdapterCard"
 import {ProjectCard} from "@/components/cards/ProjectCard"
 import {RuntimeCard} from "@/components/cards/RuntimeCard"
@@ -31,12 +30,9 @@ export const FeatureSection: React.FC = () => {
                     <p className={"text-white/75 text-lg md:text-2xl"}>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.</p>
                 </div>
 
-                <div className={"w-full grid grid-cols-1 md:grid-cols-5 lg:grid-cols-10 gap-16 auto-rows-fr"}>
-                    <OpenSourceCard/>
+                <div className={"w-full grid grid-cols-1 md:grid-cols-5 gap-16 auto-rows-fr"}>
                     <AdapterCard/>
-                    <div className={"bg-white/2 rounded-xl border border-white/10 col-span-5 row-span-2"}>Selfhosting</div>
-                    <div className={"bg-white/2 rounded-xl border border-white/10 col-span-5 row-span-2"}>NoCode</div>
-                    <div className={"bg-white/2 rounded-xl border border-white/10 col-span-3 row-span-2"}>Suggestion Logic</div>
+                    <div className={"bg-white/2 rounded-xl border border-white/10 col-span-2 row-span-2"}>Suggestion Logic</div>
                     <RuntimeCard/>
                     <ProjectCard/>
                 </div>

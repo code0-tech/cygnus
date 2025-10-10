@@ -9,7 +9,7 @@ import {Spotlight} from "@/components/Spotlight"
 
 export const FooterSection: React.FC = () => {
     return (
-        <div className={"relative bg-primary px-[8%] overflow-hidden"}>
+        <div className={"relative bg-primary px-[10%] overflow-hidden"}>
             <div className={"absolute inset-0 h-full w-full bg-black/20"}/>
             <Spotlight opacity={0.2} duration={20}/>
 
@@ -45,16 +45,6 @@ export const FooterSection: React.FC = () => {
                                 About us
                             </p>
                         </Link>
-                        <Link href={"/legal-notice"}>
-                            <p className={"text-white/50 hover:underline underline-offset-2"}>
-                                Team
-                            </p>
-                        </Link>
-                        <Link href={"/legal-notice"}>
-                            <p className={"text-white/50 hover:underline underline-offset-2"}>
-                                Career
-                            </p>
-                        </Link>
                     </div>
 
                     <div className={"flex flex-col gap-2"}>
@@ -63,17 +53,7 @@ export const FooterSection: React.FC = () => {
                         </p>
                         <Link href={"/legal-notice"}>
                             <p className={"text-white/50 hover:underline underline-offset-2"}>
-                                FAQ
-                            </p>
-                        </Link>
-                        <Link href={"/legal-notice"}>
-                            <p className={"text-white/50 hover:underline underline-offset-2"}>
-                                Support
-                            </p>
-                        </Link>
-                        <Link href={"/legal-notice"}>
-                            <p className={"text-white/50 hover:underline underline-offset-2"}>
-                                Prices
+                                Pricing
                             </p>
                         </Link>
                     </div>
@@ -90,11 +70,6 @@ export const FooterSection: React.FC = () => {
                         <Link href={"/legal-notice"}>
                             <p className={"text-white/50 hover:underline underline-offset-2"}>
                                 Terms of Service
-                            </p>
-                        </Link>
-                        <Link href={"/legal-notice"}>
-                            <p className={"text-white/50 hover:underline underline-offset-2"}>
-                                Imprint
                             </p>
                         </Link>
                     </div>

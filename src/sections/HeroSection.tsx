@@ -6,7 +6,7 @@ import {Spotlight} from "@/components/Spotlight"
 
 export const HeroSection: React.FC = () => {
     return (
-        <div className={"relative flex flex-col px-[12%] pt-32 pb-24 gap-12 overflow-hidden"}>
+        <div className={"relative flex flex-col px-[10%] pt-32 pb-24 gap-12 overflow-hidden"}>
             <Spotlight />
             <div className={"flex flex-col gap-4 mb-24"}>
                 <div className={"bg-white/10 border border-white/20 text-white/50 shadow-xs shadow-white/10 w-fit px-2 py-0.5 rounded-full flex items-center gap-1 text-xs font-medium"}>
