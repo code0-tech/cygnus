@@ -24,6 +24,7 @@
   --bg-error: 352 96% 44%;
   --bg-black: 0 0% 0%;
   --bg-white: 0 0% 100%;
+  --bg-brand: 148 100% 72%;
 
   --text-primary: 249 100% 4%;
   --text-secondary: 0 0% 100%;
@@ -33,6 +34,7 @@
   --text-error: 352 96% 44%;
   --text-black: 0 0% 0%;
   --text-white: 0 0% 100%;
+  --text-brand: 148 100% 72%;
 
   --fill-primary: 249 100% 4%;
   --fill-secondary: 0 0% 100%;
@@ -51,6 +53,7 @@
   --border-error: 352 96% 44%;
   --border-black: 0 0% 0%;
   --border-white: 0 0% 100%;
+  --border-brand: 148 100% 72%;
 }
 
 body {

@@ -36,6 +36,7 @@ export default {
                 info: withOpacity('--bg-info'),
                 black: withOpacity('--bg-black'),
                 white: withOpacity('--bg-white'),
+                brand: withOpacity('--bg-brand'),
             },
             textColor: {
                 primary: withOpacity('--text-primary'),
@@ -46,6 +47,7 @@ export default {
                 info: withOpacity('--text-info'),
                 black: withOpacity('--text-black'),
                 white: withOpacity('--text-white'),
+                brand: withOpacity('--text-brand'),
             },
             borderColor: {
                 primary: withOpacity('--border-primary'),
@@ -56,6 +58,7 @@ export default {
                 info: withOpacity('--border-info'),
                 black: withOpacity('--border-black'),
                 white: withOpacity('--border-white'),
+                brand: withOpacity('--border-brand'),
             },
         },
     },

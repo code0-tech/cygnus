@@ -1,5 +1,6 @@
 import React from "react"
 import Image from "next/image"
+import ScrollReveal from "@/components/ScrollReveal"
 
 export const QuoteSection: React.FC = () => {
     return (
@@ -7,7 +8,15 @@ export const QuoteSection: React.FC = () => {
             <div className={""}/>
 
             <div className={"w-full flex flex-col gap-4 items-center justify-center pt-16 pb-8 "}>
-                <p className={"text-white/75 text-md sm:text-xl lg:text-4xl"}>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.</p>
+                <ScrollReveal
+                    baseOpacity={0}
+                    enableBlur={true}
+                    baseRotation={5}
+                    blurStrength={10}
+                    textClassName={"text-white/75 text-md sm:text-xl lg:text-4xl"}
+                >
+                    Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.
+                </ScrollReveal>
 
                 <div className={"w-full flex items-center gap-4"}>
                     <Image src={"/testimonial1.png"} alt={"Testimonial"} width={24} height={24} className={"rounded-full overflow-none aspect-square object-cover"}/>

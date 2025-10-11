@@ -42,36 +42,41 @@ export const UseCaseSection: React.FC = () => {
     }
 
     return (
-        <div className={"grid grid-cols-[10%_80%_10%] w-full pb-24"}>
-            <div/>
-                <div className={"w-full flex flex gap-8"}>
-                    <div className="flex flex-col justify-center items-stretch gap-4">
-                        <UseCaseCard
-                            title="Business"
-                            description="Streamline customer subscriptions and billing with automated scheduling tools."
-                            isActive={activeCard === 0}
-                            progress={activeCard === 0 ? progress : 0}
-                            onClick={() => handleCardClick(0)}
-                        />
-                        <UseCaseCard
-                            title="Selfhosting"
-                            description="Transform your business data into actionable insights with real-time analytics."
-                            isActive={activeCard === 1}
-                            progress={activeCard === 1 ? progress : 0}
-                            onClick={() => handleCardClick(1)}
-                        />
-                        <UseCaseCard
-                            title="Private Cloud"
-                            description="Keep your team aligned with shared dashboards and collaborative workflows."
-                            isActive={activeCard === 2}
-                            progress={activeCard === 2 ? progress : 0}
-                            onClick={() => handleCardClick(2)}
-                        />
+        <div className={"grid grid-cols-[10%_80%_10%] w-full py-24"}>
+                <div/>
+                <div className={"w-full flex flex-col gap-16"}>
+                    <div className={"w-full flex flex-col gap-4 items-center justify-center"}>
+                        <p className={"text-6xl text-white"}>Tailored to your need</p>
+                        <p className={"text-xl text-white/75"}>Empowering teams with tailored solutions for every need</p>
                     </div>
-
-                    <div className="flex w-full h-full rounded-lg bg-white/5 shadow-xl border border-white/10"/>
+                    <div className={"w-full flex gap-8"}>
+                        <div className="flex flex-col justify-center items-stretch gap-4">
+                            <UseCaseCard
+                                title="Business"
+                                description="Streamline customer subscriptions and billing with automated scheduling tools."
+                                isActive={activeCard === 0}
+                                progress={activeCard === 0 ? progress : 0}
+                                onClick={() => handleCardClick(0)}
+                            />
+                            <UseCaseCard
+                                title="Selfhosting"
+                                description="Transform your business data into actionable insights with real-time analytics."
+                                isActive={activeCard === 1}
+                                progress={activeCard === 1 ? progress : 0}
+                                onClick={() => handleCardClick(1)}
+                            />
+                            <UseCaseCard
+                                title="Private Cloud"
+                                description="Keep your team aligned with shared dashboards and collaborative workflows."
+                                isActive={activeCard === 2}
+                                progress={activeCard === 2 ? progress : 0}
+                                onClick={() => handleCardClick(2)}
+                            />
+                        </div>
+                        <div className="flex w-full h-full rounded-lg bg-white/5 shadow-xl border border-white/10"/>
+                    <div/>
+                </div>
             </div>
-            <div/>
         </div>
 
     )

@@ -154,12 +154,12 @@ function Navigation() {
                     isScrolled ? "border border-white/10 shadow-sm bg-primary/20 backdrop-blur-xl" : "border-transparent",
                 )}
                 initial={{
-                    marginLeft: "10%",
-                    marginRight: "10%",
+                    marginLeft: "4.5%",
+                    marginRight: "4.5%",
                 }}
                 animate={{
-                    marginLeft: isScrolled ? "28%" : "10%",
-                    marginRight: isScrolled ? "28%" : "10%",
+                    marginLeft: isScrolled ? "28%" : "4.5%",
+                    marginRight: isScrolled ? "28%" : "4.5%",
                 }}
                 transition={{
                     type: "spring",
