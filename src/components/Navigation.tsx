@@ -7,8 +7,9 @@ import {ReactNode, useEffect, useRef, useState} from "react"
 import {cn} from "@/utils/cn"
 import Image from "next/image"
 import {useMediaQuery} from "@/hooks/useMediaQuery"
-import {IconChevronDown, IconChevronUp, IconCube, IconMenu2, IconX} from "@tabler/icons-react"
+import {IconBrandDiscord, IconChevronDown, IconChevronUp, IconCube, IconMenu2, IconX} from "@tabler/icons-react"
 import { useOutsideClick } from "@/hooks/useOutsideClick"
+import {useWindowWidth} from "@/hooks/useWindowWidth"
 
 type NavItem = {
     title: string
@@ -36,6 +37,7 @@ interface TabProps {
 function Navigation() {
     const router = useRouter()
     const isDesktop = useMediaQuery("(min-width: 1024px)")
+    const width = useWindowWidth()
     const menuRef = useOutsideClick<HTMLElement>(() => setIsOpen(false))
     const subMenuRef = useOutsideClick<HTMLDivElement>(() => setActiveSubMenu(null))
 
@@ -43,6 +45,8 @@ function Navigation() {
     const [isScrolled, setIsScrolled] = useState(false)
     const [isOpen, setIsOpen] = useState(false)
     const [activeSubMenu, setActiveSubMenu] = useState<SubNavItem[] | null>(null)
+
+    const [mobileOpenKey, setMobileOpenKey] = useState<string | null>(null)
 
     const headerItems = useMemo(() => ([
         {title: "Home", href: ""},
@@ -140,22 +144,78 @@ function Navigation() {
                                 style={{ overflow: "hidden" }}
                                 className="flex flex-col gap-2"
                             >
-                                {headerItems.map((item, i) => (
-                                    <motion.div
-                                        key={item.title}
-                                        initial={{ y: -8, opacity: isScrolled ? 1 : 0 }}
-                                        animate={{ y: 0, opacity: 1 }}
-                                        exit={{ y: -8, opacity: isScrolled ? 1 : 0 }}
-                                        transition={{ duration: 0.25, delay: 0.06 * i }}
-                                        className="text-white/75 px-2 py-1 font-medium text-md rounded-xl cursor-pointer hover:text-white hover:bg-white/10 transition-colors"
-                                        onClick={() => {
-                                            handleRoute(item)
-                                            setIsOpen(false)
-                                        }}
-                                    >
-                                        {item.title}
-                                    </motion.div>
-                                ))}
+                                {headerItems.map((item, i) => {
+                                    const isAccordion = !!item.subMenu?.length
+                                    const isOpenAcc = mobileOpenKey === item.title
+
+                                    return (
+                                        <div key={item.title} className="flex flex-col">
+                                            <motion.button
+                                                type="button"
+                                                initial={{ y: -8, opacity: isScrolled ? 1 : 0 }}
+                                                animate={{ y: 0, opacity: 1 }}
+                                                exit={{ y: -8, opacity: isScrolled ? 1 : 0 }}
+                                                transition={{ duration: 0.25, delay: 0.06 * i }}
+                                                className={cn(
+                                                    "w-full text-left text-white/75 px-2 py-2 font-medium text-md rounded-xl transition-colors flex items-center justify-between",
+                                                    "hover:text-white hover:bg-white/10",
+                                                    isOpenAcc && "bg-white/10 text-white",
+                                                )}
+                                                onClick={() => {
+                                                    if (isAccordion) {
+                                                        setMobileOpenKey(isOpenAcc ? null : item.title)
+                                                    } else {
+                                                        handleRoute(item)
+                                                        setIsOpen(false)
+                                                    }
+                                                }}
+                                            >
+                                                <span>{item.title}</span>
+                                                {isAccordion && (
+                                                    <IconChevronUp
+                                                        size={20}
+                                                        className={cn("transition-transform text-white/75", !isOpenAcc && "rotate-180")}
+                                                    />
+                                                )}
+                                            </motion.button>
+
+                                            {isAccordion && (
+                                                <AnimatePresence initial={false}>
+                                                    {isOpenAcc && (
+                                                        <motion.div
+                                                            key={`${item.title}-submenu`}
+                                                            initial={{ height: 0, opacity: 0 }}
+                                                            animate={{ height: "auto", opacity: 1 }}
+                                                            exit={{ height: 0, opacity: 0 }}
+                                                            transition={{ duration: 0.25, ease: "easeOut" }}
+                                                            className="overflow-hidden"
+                                                        >
+                                                            <div className="mt-1 flex flex-col gap-1 rounded-lg">
+                                                                {item.subMenu!.map((sub) => (
+                                                                    <button
+                                                                        key={sub.title}
+                                                                        className="group flex items-center gap-2 p-2 rounded-lg text-left hover:bg-white/10"
+                                                                        onClick={() => {
+                                                                            router.push(sub.href)
+                                                                            setIsOpen(false)
+                                                                            setMobileOpenKey(null)
+                                                                        }}
+                                                                    >
+                                                                        <div className="p-1 rounded-lg border border-dashed border-white/20 group-hover:border-brand/50 text-gray-400 group-hover:text-brand">{sub.icon}</div>
+                                                                        <div className="flex flex-col">
+                                                                            <span className="text-white font-medium">{sub.title}</span>
+                                                                            <span className="text-white/75 text-sm">{sub.description}</span>
+                                                                        </div>
+                                                                    </button>
+                                                                ))}
+                                                            </div>
+                                                        </motion.div>
+                                                    )}
+                                                </AnimatePresence>
+                                            )}
+                                        </div>
+                                    )
+                                })}
                                 <motion.div
                                     key={"Discord"}
                                     initial={{ y: -8, opacity: isScrolled ? 1 : 0 }}
@@ -183,7 +243,7 @@ function Navigation() {
         <div className={"fixed z-[100] h-max w-full"}>
             <motion.div
                 className={cn(
-                    "my-4 p-1.5 h-full flex flex-col justify-center gap-4 top-0 left-0 border rounded-2xl overflow-visible",
+                    "my-4 p-1.5 h-full flex flex-col justify-center gap-2 xl:gap-4 top-0 left-0 border rounded-2xl overflow-visible",
                     isScrolled ? "border border-white/10 shadow-sm bg-primary/20 backdrop-blur-xl" : "border-transparent",
                 )}
                 initial={{
@@ -191,8 +251,8 @@ function Navigation() {
                     marginRight: "4.5%",
                 }}
                 animate={{
-                    marginLeft: isScrolled ? "28%" : "4.5%",
-                    marginRight: isScrolled ? "28%" : "4.5%",
+                    marginLeft: isScrolled ? (width < 1024 ? "28%" : "22%") : "4.5%",
+                    marginRight: isScrolled ? (width < 1024 ? "28%" : "22%") : "4.5%"
                 }}
                 transition={{
                     type: "spring",
@@ -200,7 +260,7 @@ function Navigation() {
                     damping: 10,
                 }}
             >
-                <div className={"w-full h-full flex items-center justify-between"}>
+                <div className={"w-full h-full flex items-center justify-between gap-2"}>
 
                     <motion.div className={cn("flex")}
                                 initial={{opacity: 0, filter: 'blur(10px)', y: -30}}
@@ -210,10 +270,10 @@ function Navigation() {
                         <Image src={"/code0_logo_color.png"} width={"32"} height={"32"} alt={"Code0 Logo"}/>
                     </motion.div>
 
-                    <div className={"relative h-full flex items-center pl-4"}
+                    <div className={"relative h-full flex items-center"}
                          onMouseLeave={() => setPosition({ left: position.left, width: position.width, opacity: 0 })}
                     >
-                        <div className={"hidden md:flex gap-4"}>
+                        <div className={"hidden md:flex gap-2"}>
                             {headerItems.map((item) => (
                                 <Tab key={item.title}
                                      title={item.title}
@@ -259,8 +319,8 @@ function Navigation() {
                     </div>
                     <button
                         className={cn(
-                            "flex items-center gap-2.5 px-4 h-8 rounded-xl transition-all",
-                            "bg-white/90 hover:bg-white text-primary cursor-pointer font-medium",
+                            "flex items-center px-4 h-8 rounded-xl transition-all",
+                            "bg-white/90 hover:bg-white cursor-pointer font-medium text-primary",
                         )}
                     >
                         Discord
@@ -313,7 +373,7 @@ const Tab: React.FC<TabProps> = ({ setPosition, onClick, title, subMenu, activeS
 
     return (
         <motion.div
-            className={cn("relative z-50 flex items-center gap-2 px-4 py-1 font-medium text-md rounded-xl cursor-pointer")}
+            className={cn("relative z-50 flex items-center gap-2 px-4 py-1 font-medium text-md rounded-xl cursor-pointer", subMenu && "pr-1")}
             ref={ref}
             onClick={onClick}
             initial={{opacity: 0, filter: 'blur(10px)', y: -30}}
