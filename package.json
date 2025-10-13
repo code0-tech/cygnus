@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@lottielab/lottie-player": "^1.1.0-rc1",
     "@radix-ui/react-accordion": "^1.2.12",
     "@react-three/fiber": "^9.3.0",
     "@react-three/postprocessing": "^3.0.4",
