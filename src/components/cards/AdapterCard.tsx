@@ -17,7 +17,7 @@ export const AdapterCard: React.FC = () => {
             />
 
             <div className={"flex flex-col gap-1"}>
-                <p className={"font-mono font-semibold text-lg text-white/25"}>ADAPTERS</p>
+                <p className={"font-mono font-semibold text-lg text-white/75"}>ADAPTERS</p>
                 <p className={"text-white/50 text-justify"}>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna.</p>
             </div>
         </div>

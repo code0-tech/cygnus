@@ -7,7 +7,15 @@ import {ReactNode, useEffect, useRef, useState} from "react"
 import {cn} from "@/utils/cn"
 import Image from "next/image"
 import {useMediaQuery} from "@/hooks/useMediaQuery"
-import {IconBrandDiscord, IconChevronDown, IconChevronUp, IconCube, IconMenu2, IconX} from "@tabler/icons-react"
+import {
+    IconBrandDiscord,
+    IconChevronDown,
+    IconChevronUp,
+    IconCube,
+    IconGitBranch, IconLock,
+    IconMenu2,
+    IconX
+} from "@tabler/icons-react"
 import { useOutsideClick } from "@/hooks/useOutsideClick"
 import {useWindowWidth} from "@/hooks/useWindowWidth"
 
@@ -61,13 +69,13 @@ function Navigation() {
                     title: "Integrations",
                     href: "integrations",
                     description: "Seamlessly connect with your favorite tools and platforms.",
-                    icon: <IconCube size={30}/>
+                    icon: <IconGitBranch size={30}/>
                 },
                 {
                     title: "Security",
                     href: "security",
                     description: "Your data is protected with industry-leading security measures.",
-                    icon: <IconCube size={30}/>
+                    icon: <IconLock size={30}/>
                 }]
         },
         {title: "Pricing", href: "pricing"},
@@ -98,7 +106,7 @@ function Navigation() {
             >
                 <motion.div
                     className={cn(
-                        "my-4 p-1.5 flex flex-col gap-2 top-0 left-0 border rounded-2xl overflow-hidden transition-colors",
+                        "my-6 p-1.5 flex flex-col gap-2 top-0 left-0 border rounded-2xl overflow-hidden transition-colors",
                         (isScrolled || isOpen) ? "border border-white/10 shadow-sm bg-primary/20 backdrop-blur-xl" : "border-transparent",
                     )}
                     initial={{
@@ -201,7 +209,7 @@ function Navigation() {
                                                                             setMobileOpenKey(null)
                                                                         }}
                                                                     >
-                                                                        <div className="p-1 rounded-lg border border-dashed border-white/20 group-hover:border-brand/50 text-gray-400 group-hover:text-brand">{sub.icon}</div>
+                                                                        <div className="p-1 rounded-lg border border-dashed border-white/20 group-hover:bg-brand/10 group-hover:border-brand/50 text-gray-400 group-hover:text-brand">{sub.icon}</div>
                                                                         <div className="flex flex-col">
                                                                             <span className="text-white font-medium">{sub.title}</span>
                                                                             <span className="text-white/75 text-sm">{sub.description}</span>
@@ -306,7 +314,7 @@ function Navigation() {
                                                 setActiveSubMenu(null)
                                             }}
                                         >
-                                            <div className="p-1 border border-dashed border-white/20 group-hover:border-brand/50 text-gray-400 group-hover:text-brand rounded-lg">{subItem.icon}</div>
+                                            <div className="p-1 border border-dashed border-white/20 group-hover:bg-brand/10 group-hover:border-brand/50 text-gray-400 group-hover:text-brand rounded-lg">{subItem.icon}</div>
                                             <div className="flex flex-col">
                                                 <p className="text-white font-medium">{subItem.title}</p>
                                                 <p className="text-white/75 text-sm">{subItem.description}</p>
@@ -350,7 +358,7 @@ function Navigation() {
                                         setActiveSubMenu(null)
                                     }}
                                 >
-                                    <div className="p-1 border border-dashed border-white/20 group-hover:border-brand/50 text-gray-400 group-hover:text-brand rounded-lg">{subItem.icon}</div>
+                                    <div className="p-1 border border-dashed border-white/20 group-hover:bg-brand/10 group-hover:border-brand/50 text-gray-400 group-hover:text-brand rounded-lg">{subItem.icon}</div>
                                     <div className="flex flex-col">
                                         <p className="text-white font-medium">{subItem.title}</p>
                                         <p className="text-white/75 text-sm">{subItem.description}</p>

@@ -22,7 +22,7 @@ const LandingPage: NextPage = () => {
 
             <div className={"flex flex-col gap-4 items-center justify-center py-16"}>
                 <div className={"flex items-center gap-4 text-6xl text-white"}>
-                    <span>Go from</span>
+                    <span className={"hidden lg:flex"}>Go from</span>
                     <svg width="387" height="80" viewBox="0 0 387 80" fill="none" xmlns="http://www.w3.org/2000/svg" className={"-mt-2"}>
                         <mask id="path-1-outside-1_0_1" maskUnits="userSpaceOnUse" x="0" y="16" width="162" height="51" fill="black">
                             <rect fill="white" y="16" width="162" height="51"/>
@@ -35,7 +35,7 @@ const LandingPage: NextPage = () => {
                         <path d="M212.333 54.6667L225.667 41.3333" stroke="#70FFB3" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round"/>
                         <path d="M212.333 28L225.667 41.3333" stroke="#70FFB3" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
-                    <span>in minutes</span>
+                    <span className={"hidden lg:flex"}>in minutes</span>
                 </div>
 
                 <p className="relative z-10 text-center font-medium text-white/75 text-xl">

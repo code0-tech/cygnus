@@ -13,7 +13,7 @@ export const UseCaseCard: React.FC<UseCaseCardProps> = ({ title, description, is
     return (
         <div
             className={cn(
-                "w-full md:flex-1 self-stretch px-8 py-12 overflow-hidden flex flex-col justify-start items-start gap-2 cursor-pointer relative rounded-lg",
+                "w-full md:flex-1 self-stretch px-4 lg:px-8 py-2 lg:py-12 overflow-hidden flex flex-col justify-start items-start gap-2 cursor-pointer relative rounded-lg",
                 isActive && "bg-white/5 border border-white/10"
             )}
             onClick={onClick}
@@ -27,10 +27,10 @@ export const UseCaseCard: React.FC<UseCaseCardProps> = ({ title, description, is
                 </div>
             )}
 
-            <div className="self-stretch flex justify-center flex-col text-white text-xl font-semibold leading-6 md:leading-6 font-sans">
+            <div className="self-stretch flex justify-center text-center lg:text-start flex-col text-white text-md lg:text-xl font-semibold leading-6 md:leading-6 font-sans">
                 {title}
             </div>
-            <div className="self-stretch text-white/75 text-lg font-normal leading-[22px] md:leading-[22px] font-sans">
+            <div className="hidden lg:flex self-stretch text-white/75 text-lg font-normal leading-[22px] md:leading-[22px] font-sans">
                 {description}
             </div>
         </div>
