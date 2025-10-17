@@ -1,7 +1,10 @@
 import React from "react"
 import Dither from "@/components/Dither"
+import {useTranslations} from "next-intl"
+import {routing} from "@/i18n/routing"
 
 export const HeroSection: React.FC = () => {
+    const t = useTranslations('HeroSection');
     const base = [0.4392, 1.0000, 0.7020] as [number, number, number]
     const accent = [0.1, 0.2, 1] as [number, number, number]
 
@@ -27,7 +30,7 @@ export const HeroSection: React.FC = () => {
                 </div>
 
                 <h1 className="relative z-10 font-bold text-6xl text-white text-center">
-                    Build complex backends in no time
+                    {t("title")}
                 </h1>
 
                 <p className="relative z-10 text-center font-medium text-white/75 text-xl">
