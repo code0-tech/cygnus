@@ -24,6 +24,7 @@
     "motion": "^12.23.12",
     "next": "15.5.4",
     "next-intl": "^4.3.12",
+    "ogl": "^1.0.11",
     "postprocessing": "^6.37.8",
     "react": "^19",
     "react-dom": "^19",

@@ -17,7 +17,6 @@ import {IconArrowRight, IconX} from "@tabler/icons-react"
 const LandingPage: NextPage = () => {
     return (
         <div className={"w-full bg-primary max-w-screen"}>
-            <Navigation/>
             <HeroSection/>
 
             <div className={"flex flex-col gap-4 items-center justify-center py-16"}>
