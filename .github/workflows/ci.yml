@@ -13,7 +13,7 @@ jobs:
   pipeline:
     runs-on: ubuntu-latest
     steps:
-      - uses: Taucher2003/GitLab-Pipeline-Action@1.12.1
+      - uses: Taucher2003/GitLab-Pipeline-Action@1.12.2
         name: Run pipeline
         id: pipeline
         with:
