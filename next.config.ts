@@ -13,4 +13,4 @@ const nextConfig: NextConfig = {
 const withMDX = createMDX({})
 const withNextIntl = createNextIntlPlugin()
 
-export default withMDX(withNextIntl(nextConfig))
+export default withNextIntl(withMDX(nextConfig))
