@@ -57,29 +57,29 @@ function Navigation() {
     const [mobileOpenKey, setMobileOpenKey] = useState<string | null>(null)
 
     const headerItems = useMemo(() => ([
-        {title: "Home", href: ""},
+        {title: "Home", href: "/"},
         {title: "Product", href: null, subMenu: [
                 {
                     title: "Features",
-                    href: "features",
+                    href: "/blog/features",
                     description: "Discover the powerful features that make our product stand out.",
                     icon: <IconCube size={30}/>
                 },
                 {
                     title: "Integrations",
-                    href: "integrations",
+                    href: "/blog/integrations",
                     description: "Seamlessly connect with your favorite tools and platforms.",
                     icon: <IconGitBranch size={30}/>
                 },
                 {
                     title: "Security",
-                    href: "security",
+                    href: "/blog/security",
                     description: "Your data is protected with industry-leading security measures.",
                     icon: <IconLock size={30}/>
                 }]
         },
-        {title: "Pricing", href: "pricing"},
-        {title: "About us", href: "about-us"}
+        {title: "Pricing", href: "/pricing"},
+        {title: "About us", href: "/about-us"}
     ]), []);
 
     useEffect(() => {
@@ -95,7 +95,7 @@ function Navigation() {
 
     const handleRoute = (item: NavItem) => {
         if (item.href) router.push(item.href)
-        else router.replace("/")
+        else router.replace("")
     }
 
     if (!isDesktop) {

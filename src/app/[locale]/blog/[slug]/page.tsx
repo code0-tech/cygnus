@@ -4,7 +4,7 @@ import Aurora from "@/components/Aurora"
 export default async function Page({params}: { params: Promise<{ slug: string }> }) {
     const slug = (await params).slug
     return (
-        <div className={"relative h-full w-full bg-primary px-[20%] py-32 border-b border-white/5"}>
+        <div className={"relative h-full w-full max-w-screen bg-primary px-[20%] py-32 border-b border-white/5"}>
 
             <Aurora
                 className="absolute top-0 left-0 w-full opacity-10"
@@ -21,7 +21,7 @@ export default async function Page({params}: { params: Promise<{ slug: string }>
 }
 
 export function generateStaticParams() {
-    return [{ slug: 'test' }]
+    return [{ slug: 'features' }, { slug: 'integrations' }, { slug: 'security' }]
 }
 
 export const dynamicParams = false
