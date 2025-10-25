@@ -1,5 +1,102 @@
 {
+  "Navbar": {
+    "items": [
+      { "title": "Startseite", "href": "/" },
+      {
+        "title": "Produkt",
+        "href": null,
+        "subMenu": [
+          {
+            "title": "Funktionen",
+            "href": "/blog/features",
+            "description": "Entdecke die leistungsstarken Funktionen, die unser Produkt einzigartig machen."
+          },
+          {
+            "title": "Integrationen",
+            "href": "/blog/integrations",
+            "description": "Verbinde dich nahtlos mit deinen bevorzugten Tools und Plattformen."
+          },
+          {
+            "title": "Sicherheit",
+            "href": "/blog/security",
+            "description": "Deine Daten sind mit branchenführenden Sicherheitsmaßnahmen geschützt."
+          }
+        ]
+      },
+      { "title": "Preise", "href": "/pricing" },
+      { "title": "Über uns", "href": "/about-us" }
+    ]
+  },
   "HeroSection": {
-    "title": "Baue komplexe Backends in kürzester Zeit"
+    "badge": "v0.1.0-alpha",
+    "title": "Komplexe Backends in kürzester Zeit erstellen",
+    "description1": "Mit der CodeZero No-Code-Plattform beginnt eine neue Ära der Backend-Entwicklung.",
+    "description2": "Von der Datenbankmodellierung bis zu skalierbaren Backend-Endpunkten – in Rekordzeit.",
+    "ctaButton": "Jetzt starten"
+  },
+  "DemoSection": {
+    "flowText1": "Von",
+    "flowText2": "in Minuten",
+    "description": "Erstelle deinen eigenen Flow in unserer IDE ganz einfach per Drag-and-Drop – ganz ohne Programmierkenntnisse."
+  },
+  "BrandSection": {
+    "title": "Vertraut von Teams, die einfache Backends lieben"
+  },
+  "UseCaseSection": {
+    "title": "Für deine Anforderungen gemacht",
+    "description": "Wir bieten maßgeschneiderte Lösungen für jedes Einsatzgebiet.",
+    "useCase1Title": "SaaS-Anwendungen",
+    "useCase1Description": "Entwickle und deploye skalierbare Backends für deine SaaS-Projekte – ganz ohne Code.",
+    "useCase2Title": "E-Commerce-Plattformen",
+    "useCase2Description": "Erstelle und verwalte robuste Backends für deine E-Commerce-Lösungen – von Produktkatalogen bis zur Zahlungsabwicklung.",
+    "useCase3Title": "Mobile Apps",
+    "useCase3Description": "Baue leistungsstarke Backends für deine mobilen Anwendungen – mit nahtloser Datensynchronisierung und effizientem Benutzer-Management."
+  },
+  "FeatureSection": {
+    "projectTitle": "ORGANISATIONEN & PROJEKTE",
+    "projectDescription": "Verwalte mehrere Projekte und arbeite nahtlos im Team innerhalb einer Organisation.",
+    "runtimeTitle": "CODEZERO RUNTIME",
+    "runtimeDescription": "Deploye und betreibe deine Backend-Flows mühelos in einer skalierbaren und zuverlässigen Laufzeitumgebung.",
+    "suggestionTitle": "VORSCHLAGSLOGIK",
+    "suggestionDescription": "Erweitere dein Backend mit intelligenter Vorschlagslogik für bessere Nutzererlebnisse und fundiertere Entscheidungen.",
+    "adapterTitle": "ADAPTER",
+    "adapterDescription": "Integriere verschiedenste Drittanbieter-Dienste und Datenbanken mit unseren vielseitigen Adaptern."
+  },
+  "QuoteSection": {
+    "quote": "„Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.“",
+    "author": "Nico Sammito, Geschäftsführer"
+  },
+  "FaqSection": {
+    "title": "Häufig gestellte Fragen",
+    "description": "Antworten auf die häufigsten Fragen zu CodeZero und seinen Funktionen.",
+    "faqs": [
+      {
+        "question": "Wie funktioniert CodeZero?",
+        "answer": "CodeZero ermöglicht es dir, Backend-Logik über eine visuelle Oberfläche zu erstellen – ganz ohne Programmierung."
+      },
+      {
+        "question": "Kann ich mein Projekt überall deployen?",
+        "answer": "Ja, CodeZero-Projekte können in verschiedenen Umgebungen, einschließlich Cloud-Anbietern, bereitgestellt werden."
+      },
+      {
+        "question": "Gibt es eine kostenlose Version?",
+        "answer": "Ja, wir bieten einen kostenlosen Plan, um die wichtigsten Funktionen auszuprobieren."
+      }
+    ]
+  },
+  "ContactSection": {
+    "title": "Baue bessere Backends mit CodeZero",
+    "description": "Mit der CodeZero No-Code-Plattform beginnt die nächste Ära der Backend-Entwicklung – von der Datenbankmodellierung bis zu skalierbaren Endpunkten in kürzester Zeit.",
+    "ctaButton": "Demo anfordern"
+  },
+  "FooterSection": {
+    "name": "CodeZero Technology AG",
+    "company": "Unternehmen",
+    "aboutUs": "Über uns",
+    "products": "Produkte",
+    "pricing": "Preise",
+    "legal": "Rechtliches",
+    "policy": "Datenschutzrichtlinie",
+    "terms": "Nutzungsbedingungen"
   }
 }

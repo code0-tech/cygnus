@@ -1,13 +1,14 @@
 "use client"
 
 import React from "react";
-import {Col, Row, Text} from "@code0-tech/pictor";
-import Image from "next/image";
 import Link from "next/link";
 import {IconBrandDiscord, IconBrandGithub, IconBrandInstagram, IconBrandX} from "@tabler/icons-react"
 import {Spotlight} from "@/components/Spotlight"
+import {useTranslations} from "next-intl"
 
 export const FooterSection: React.FC = () => {
+    const t = useTranslations("FooterSection")
+
     return (
         <div className={"relative bg-primary px-[10%] overflow-hidden"}>
             <div className={"absolute inset-0 h-full w-full bg-black/20"}/>
@@ -18,7 +19,7 @@ export const FooterSection: React.FC = () => {
                 <div className={"grid grid-cols-2 lg:grid-cols-4 gap-4"}>
                     <div className={"flex flex-col lg:justify-between gap-2"}>
                         <p className={"text-white"}>
-                            Code0 Technology
+                            {t("name")}
                         </p>
                         <div className={"flex items-center gap-4"}>
                             <Link href={"https://instagram.com/code0.tech"}>
@@ -38,38 +39,38 @@ export const FooterSection: React.FC = () => {
 
                     <div className={"flex flex-col gap-2"}>
                         <p className={"text-white/75"}>
-                            Company
+                            {t("company")}
                         </p>
                         <Link href={"/legal-notice"}>
                             <p className={"text-white/50 hover:underline underline-offset-2"}>
-                                About us
+                                {t("aboutUs")}
                             </p>
                         </Link>
                     </div>
 
                     <div className={"flex flex-col gap-2"}>
                         <p className={"text-white/75"}>
-                            Service
+                            {t("products")}
                         </p>
                         <Link href={"/legal-notice"}>
                             <p className={"text-white/50 hover:underline underline-offset-2"}>
-                                Pricing
+                                {t("pricing")}
                             </p>
                         </Link>
                     </div>
 
                     <div className={"flex flex-col gap-2"}>
                         <p className={"text-white/75"}>
-                            Legal
+                            {t("legal")}
                         </p>
                         <Link href={"/legal-notice"}>
                             <p className={"text-white/50 hover:underline underline-offset-2"}>
-                                Privacy Policy
+                                {t("policy")}
                             </p>
                         </Link>
                         <Link href={"/legal-notice"}>
                             <p className={"text-white/50 hover:underline underline-offset-2"}>
-                                Terms of Service
+                                {t("terms")}
                             </p>
                         </Link>
                     </div>

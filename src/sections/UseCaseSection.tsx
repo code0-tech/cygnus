@@ -2,8 +2,10 @@
 
 import React, {useEffect, useRef, useState} from "react"
 import {UseCaseCard} from "@/components/cards/UseCaseCard"
+import {useTranslations} from "next-intl"
 
 export const UseCaseSection: React.FC = () => {
+    const t = useTranslations('UseCaseSection')
     const [activeCard, setActiveCard] = useState(0)
     const [progress, setProgress] = useState(0)
     const mountedRef = useRef(true)
@@ -46,28 +48,32 @@ export const UseCaseSection: React.FC = () => {
                 <div/>
                 <div className={"w-full flex flex-col gap-16"}>
                     <div className={"w-full flex flex-col gap-4 items-center justify-center text-center"}>
-                        <p className={"text-4xl lg:text-6xl text-white"}>Tailored to your need</p>
-                        <p className={"text-xl text-white/75"}>Empowering teams with tailored solutions for every need</p>
+                        <p className={"text-4xl lg:text-6xl text-white"}>
+                            {t("title")}
+                        </p>
+                        <p className={"text-xl text-white/75"}>
+                            {t("description")}
+                        </p>
                     </div>
                     <div className={"w-full flex flex-col lg:flex-row gap-8"}>
                         <div className="flex lg:flex-col justify-center items-stretch gap-4">
                             <UseCaseCard
-                                title="Business"
-                                description="Streamline customer subscriptions and billing with automated scheduling tools."
+                                title={t("useCase1Title")}
+                                description={t("useCase1Description")}
                                 isActive={activeCard === 0}
                                 progress={activeCard === 0 ? progress : 0}
                                 onClick={() => handleCardClick(0)}
                             />
                             <UseCaseCard
-                                title="Selfhosting"
-                                description="Transform your business data into actionable insights with real-time analytics."
+                                title={t("useCase2Title")}
+                                description={t("useCase2Description")}
                                 isActive={activeCard === 1}
                                 progress={activeCard === 1 ? progress : 0}
                                 onClick={() => handleCardClick(1)}
                             />
                             <UseCaseCard
-                                title="Cloud"
-                                description="Keep your team aligned with shared dashboards and collaborative workflows."
+                                title={t("useCase3Title")}
+                                description={t("useCase3Description")}
                                 isActive={activeCard === 2}
                                 progress={activeCard === 2 ? progress : 0}
                                 onClick={() => handleCardClick(2)}
