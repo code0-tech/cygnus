@@ -1,5 +1,102 @@
 {
+  "Navbar": {
+    "items": [
+      { "title": "Home", "href": "/" },
+      {
+        "title": "Product",
+        "href": null,
+        "subMenu": [
+          {
+            "title": "Features",
+            "href": "/blog/features",
+            "description": "Discover the powerful features that make our product stand out."
+          },
+          {
+            "title": "Integrations",
+            "href": "/blog/integrations",
+            "description": "Seamlessly connect with your favorite tools and platforms."
+          },
+          {
+            "title": "Security",
+            "href": "/blog/security",
+            "description": "Your data is protected with industry-leading security measures."
+          }
+        ]
+      },
+      { "title": "Pricing", "href": "/pricing" },
+      { "title": "About us", "href": "/about-us" }
+    ]
+  },
   "HeroSection": {
-    "title": "Build complex backends in no time"
+    "badge": "v0.1.0-alpha",
+    "title": "Build complex backends in no time",
+    "description1": "The backend world gets to the next era with the code0 no-code platform.",
+    "description2": "From database modelling to scalable backend endpoints in no-time.",
+    "ctaButton": "Start building"
+  },
+  "DemoSection": {
+    "flowText1": "Go from",
+    "flowText2": "in minutes",
+    "description": " Build your own flow in our IDE just by drag and drop. Without any knowledge of coding."
+  },
+  "BrandSection": {
+    "title": "Trusted by teams who want easy backends"
+  },
+  "UseCaseSection": {
+    "title": "Tailored to your needs",
+    "description": "Empowering teams with tailored solutions for every need",
+    "useCase1Title": "SaaS Applications",
+    "useCase1Description": "Rapidly develop and deploy scalable backends for your SaaS applications without writing a single line of code.",
+    "useCase2Title": "E-commerce Platforms",
+    "useCase2Description": "Easily create and manage robust backends for your e-commerce platforms, handling everything from product catalogs to payment processing.",
+    "useCase3Title": "Mobile Apps",
+    "useCase3Description": "Build powerful backends for your mobile applications, ensuring seamless data synchronization and user management across devices."
+  },
+  "FeatureSection": {
+    "projectTitle": "ORGANIZATIONS & PROJECTS",
+    "projectDescription": "Manage multiple projects and collaborate with your team seamlessly within a single organization.",
+    "runtimeTitle": "CODEZERO RUNTIME",
+    "runtimeDescription": "Deploy and run your backend flows effortlessly with our scalable and reliable runtime environment.",
+    "suggestionTitle": "SUGGESTION LOGIC",
+    "suggestionDescription": "Enhance your backend with intelligent suggestion logic to improve user experience and decision-making.",
+    "adapterTitle": "ADAPTERS",
+    "adapterDescription": "Integrate with various third-party services and databases using our versatile adapters."
+  },
+  "QuoteSection": {
+    "quote": "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.",
+    "author": "Nico Sammito, CEO"
+  },
+  "FaqSection": {
+    "title": "Frequently Asked Questions",
+    "description": "Answers to common questions about code0 and its features.",
+    "faqs": [
+      {
+        "question": "How does code0 work?",
+        "answer": "code0 allows you to build backend logic through a visual interface without writing code."
+      },
+      {
+        "question": "Can I deploy my project anywhere?",
+        "answer": "Yes, code0 projects can be deployed on various environments including cloud providers."
+      },
+      {
+        "question": "Is there a free version?",
+        "answer": "Yes, we offer a free plan to explore the core features."
+      }
+    ]
+  },
+  "ContactSection": {
+    "title": "Build better backends with CodeZero",
+    "description": "The backend world gets to the next era with the code0 no-code platform. From database modelling to scalable backend endpoints in no-time.",
+    "ctaButton": "Request a demo"
+  },
+  "FooterSection": {
+    "name": "CoeZero Technology AG",
+    "company": "Company",
+    "aboutUs": "About Us",
+    "products": "Products",
+    "pricing": "Pricing",
+    "legal": "Legal",
+    "policy": "Privacy Policy",
+    "terms": "Terms of Service"
   }
 }

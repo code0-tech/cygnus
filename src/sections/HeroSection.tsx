@@ -26,7 +26,7 @@ export const HeroSection: React.FC = () => {
                 </div>
 
                 <div className="relative z-10 bg-brand/50 cursor-pointer border border-white/10 text-white shadow-md w-fit px-4 py-0.5 rounded-full flex items-center gap-1 text-sm font-medium">
-                    v01.0-alpha
+                    {t("badge")}
                 </div>
 
                 <h1 className="relative z-10 font-bold text-6xl text-white text-center">
@@ -34,12 +34,11 @@ export const HeroSection: React.FC = () => {
                 </h1>
 
                 <p className="relative z-10 text-center font-medium text-white/75 text-xl">
-                    The backend world gets to the next era with the code0 no-code platform. <br />
-                    From database modelling to scalable backend endpoints in no-time.
+                    {t("description1")} <br/> {t("description2")}
                 </p>
 
                 <button className="h-12 z-10 flex items-center justify-center text-lg gap-2 bg-white/90 hover:bg-white text-primary rounded-xl px-4 py-1 border border-white/10 shadow-md">
-                    Start building
+                    {t("ctaButton")}
                 </button>
             </div>
         </div>

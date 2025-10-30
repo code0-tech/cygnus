@@ -3,6 +3,7 @@ import { AdapterCard } from "@/components/cards/AdapterCard"
 import {ProjectCard} from "@/components/cards/ProjectCard"
 import {RuntimeCard} from "@/components/cards/RuntimeCard"
 import {SuggestionCard} from "@/components/cards/SuggestionCard"
+import {useTranslations} from "next-intl"
 
 export const FeatureSection: React.FC = () => {
     return (

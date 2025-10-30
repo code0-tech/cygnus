@@ -1,8 +1,11 @@
 import React from "react"
 import Image from "next/image"
 import ScrollReveal from "@/components/ScrollReveal"
+import {useTranslations} from "next-intl"
 
 export const QuoteSection: React.FC = () => {
+    const t = useTranslations("QuoteSection")
+
     return (
         <div className={"grid grid-cols-[20%_60%_20%] w-full py-24"}>
             <div className={""}/>
@@ -15,12 +18,14 @@ export const QuoteSection: React.FC = () => {
                     blurStrength={10}
                     textClassName={"text-white/75 text-md sm:text-xl lg:text-4xl"}
                 >
-                    Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.
+                    {t("quote")}
                 </ScrollReveal>
 
                 <div className={"w-full flex items-center gap-4"}>
                     <Image src={"/testimonial1.png"} alt={"Testimonial"} width={24} height={24} className={"rounded-full overflow-none aspect-square object-cover"}/>
-                    <p className={"text-white/50 text-xl"}>Nico Sammito, CEO</p>
+                    <p className={"text-white/50 text-xl"}>
+                        {t("author")}
+                    </p>
                 </div>
 
             </div>

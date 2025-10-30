@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from "motion/react"
 import { useRouter } from "next/navigation"
-import React, {RefObject, useMemo} from "react"
+import React, {JSX, RefObject, useMemo} from "react"
 import {ReactNode, useEffect, useRef, useState} from "react"
 import {cn} from "@/utils/cn"
 import Image from "next/image"
@@ -18,6 +18,7 @@ import {
 } from "@tabler/icons-react"
 import { useOutsideClick } from "@/hooks/useOutsideClick"
 import {useWindowWidth} from "@/hooks/useWindowWidth"
+import {useTranslations} from "next-intl"
 
 type NavItem = {
     title: string
@@ -46,6 +47,7 @@ function Navigation() {
     const router = useRouter()
     const isDesktop = useMediaQuery("(min-width: 1024px)")
     const width = useWindowWidth()
+    const navbarItems = useNavbarItems()
     const menuRef = useOutsideClick<HTMLElement>(() => setIsOpen(false))
     const subMenuRef = useOutsideClick<HTMLDivElement>(() => setActiveSubMenu(null))
 
@@ -53,34 +55,7 @@ function Navigation() {
     const [isScrolled, setIsScrolled] = useState(false)
     const [isOpen, setIsOpen] = useState(false)
     const [activeSubMenu, setActiveSubMenu] = useState<SubNavItem[] | null>(null)
-
     const [mobileOpenKey, setMobileOpenKey] = useState<string | null>(null)
-
-    const headerItems = useMemo(() => ([
-        {title: "Home", href: ""},
-        {title: "Product", href: null, subMenu: [
-                {
-                    title: "Features",
-                    href: "features",
-                    description: "Discover the powerful features that make our product stand out.",
-                    icon: <IconCube size={30}/>
-                },
-                {
-                    title: "Integrations",
-                    href: "integrations",
-                    description: "Seamlessly connect with your favorite tools and platforms.",
-                    icon: <IconGitBranch size={30}/>
-                },
-                {
-                    title: "Security",
-                    href: "security",
-                    description: "Your data is protected with industry-leading security measures.",
-                    icon: <IconLock size={30}/>
-                }]
-        },
-        {title: "Pricing", href: "pricing"},
-        {title: "About us", href: "about-us"}
-    ]), []);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -95,7 +70,7 @@ function Navigation() {
 
     const handleRoute = (item: NavItem) => {
         if (item.href) router.push(item.href)
-        else router.replace("/")
+        else router.replace("")
     }
 
     if (!isDesktop) {
@@ -152,7 +127,7 @@ function Navigation() {
                                 style={{ overflow: "hidden" }}
                                 className="flex flex-col gap-2"
                             >
-                                {headerItems.map((item, i) => {
+                                {navbarItems.map((item, i) => {
                                     const isAccordion = !!item.subMenu?.length
                                     const isOpenAcc = mobileOpenKey === item.title
 
@@ -282,7 +257,7 @@ function Navigation() {
                          onMouseLeave={() => setPosition({ left: position.left, width: position.width, opacity: 0 })}
                     >
                         <div className={"hidden md:flex gap-2"}>
-                            {headerItems.map((item) => (
+                            {navbarItems.map((item) => (
                                 <Tab key={item.title}
                                      title={item.title}
                                      setPosition={setPosition}
@@ -419,6 +394,28 @@ const Cursor: React.FC<{ position: {left: number, width: number, opacity: number
             className={cn("absolute z-40 h-8 rounded-xl bg-white/10")}
         />
     )
+}
+
+export const useNavbarItems = () => {
+    const t = useTranslations("Navbar")
+
+    return useMemo(() => {
+        const items = t.raw("items") as NavItem[]
+
+        const iconMap: Record<string, JSX.Element> = {
+            Features: <IconCube size={30} />,
+            Integrations: <IconGitBranch size={30} />,
+            Security: <IconLock size={30} />
+        }
+
+        return items.map(item => ({
+            ...item,
+            subMenu: item.subMenu?.map(sub => ({
+                ...sub,
+                icon: iconMap[sub.title] ?? null
+            }))
+        }))
+    }, [t])
 }
 
 export { Navigation }
