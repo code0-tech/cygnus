@@ -7,16 +7,19 @@
         "href": null,
         "subMenu": [
           {
+            "key": "features",
             "title": "Funktionen",
             "href": "/blog/features",
             "description": "Entdecke die leistungsstarken Funktionen, die unser Produkt einzigartig machen."
           },
           {
+            "key": "integrations",
             "title": "Integrationen",
             "href": "/blog/integrations",
             "description": "Verbinde dich nahtlos mit deinen bevorzugten Tools und Plattformen."
           },
           {
+            "key": "security",
             "title": "Sicherheit",
             "href": "/blog/security",
             "description": "Deine Daten sind mit branchenführenden Sicherheitsmaßnahmen geschützt."

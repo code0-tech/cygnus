@@ -1,22 +1,13 @@
 "use client"
 
-import { motion, AnimatePresence } from "motion/react"
-import { useRouter } from "next/navigation"
-import React, {JSX, RefObject, useMemo} from "react"
-import {ReactNode, useEffect, useRef, useState} from "react"
+import {AnimatePresence, motion} from "motion/react"
+import {useRouter} from "next/navigation"
+import React, {JSX, ReactNode, useEffect, useMemo, useRef, useState} from "react"
 import {cn} from "@/utils/cn"
 import Image from "next/image"
 import {useMediaQuery} from "@/hooks/useMediaQuery"
-import {
-    IconBrandDiscord,
-    IconChevronDown,
-    IconChevronUp,
-    IconCube,
-    IconGitBranch, IconLock,
-    IconMenu2,
-    IconX
-} from "@tabler/icons-react"
-import { useOutsideClick } from "@/hooks/useOutsideClick"
+import {IconChevronUp, IconCube, IconGitBranch, IconLock, IconMenu2, IconX} from "@tabler/icons-react"
+import {useOutsideClick} from "@/hooks/useOutsideClick"
 import {useWindowWidth} from "@/hooks/useWindowWidth"
 import {useTranslations} from "next-intl"
 
@@ -27,6 +18,7 @@ type NavItem = {
 }
 
 type SubNavItem = {
+    key: string
     title: string
     href: string
     description: string
@@ -403,16 +395,16 @@ export const useNavbarItems = () => {
         const items = t.raw("items") as NavItem[]
 
         const iconMap: Record<string, JSX.Element> = {
-            Features: <IconCube size={30} />,
-            Integrations: <IconGitBranch size={30} />,
-            Security: <IconLock size={30} />
+            features: <IconCube size={30} />,
+            integrations: <IconGitBranch size={30} />,
+            security: <IconLock size={30} />
         }
 
         return items.map(item => ({
             ...item,
             subMenu: item.subMenu?.map(sub => ({
                 ...sub,
-                icon: iconMap[sub.title] ?? null
+                icon: iconMap[sub.key] ?? null
             }))
         }))
     }, [t])
