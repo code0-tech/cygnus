@@ -13,10 +13,11 @@ import {DemoSection} from "@/sections/DemoSection"
 import {BrandSection} from "@/sections/BrandSection"
 import React from "react"
 import {IconArrowRight, IconX} from "@tabler/icons-react"
+import {Container} from "@code0-tech/pictor"
 
 const LandingPage: NextPage = () => {
     return (
-        <div className={"w-full bg-primary max-w-screen"}>
+        <Container className={"bg-primary py-[5%]"}>
             <HeroSection/>
             <DemoSection/>
             <BrandSection/>
@@ -53,7 +54,7 @@ const LandingPage: NextPage = () => {
 
             <FaqSection/>
             <ContactSection/>
-        </div>
+        </Container>
     )
 }
 

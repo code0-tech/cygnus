@@ -9,7 +9,7 @@ export const HeroSection: React.FC = () => {
     const accent = [0.1, 0.2, 1] as [number, number, number]
 
     return (
-        <div className="relative h-screen flex flex-col p-[5%] gap-24 overflow-hidden">
+        <div className="relative h-screen flex flex-col gap-24 overflow-hidden">
             <div className="relative h-full flex flex-col justify-center items-center gap-8 rounded-xl bg-brand/50 border border-brand/50 py-32 px-16 overflow-hidden shadow-lg">
                 <div className={"absolute inset-0 opacity-50"}>
                     <Dither

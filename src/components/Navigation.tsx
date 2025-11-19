@@ -6,7 +6,7 @@ import React, {JSX, ReactNode, useEffect, useMemo, useRef, useState} from "react
 import {cn} from "@/utils/cn"
 import Image from "next/image"
 import {useMediaQuery} from "@/hooks/useMediaQuery"
-import {IconChevronUp, IconCube, IconGitBranch, IconLock, IconMenu2, IconX} from "@tabler/icons-react"
+import {IconBrandGithub, IconChevronUp, IconCube, IconGitBranch, IconLock, IconMenu2, IconX} from "@tabler/icons-react"
 import {useOutsideClick} from "@/hooks/useOutsideClick"
 import {useWindowWidth} from "@/hooks/useWindowWidth"
 import {useTranslations} from "next-intl"
@@ -96,7 +96,7 @@ function Navigation() {
                                     animate={{opacity: 1, filter: 'blur(0px)', y: 0}}
                                     transition={{duration: 0.65}}
                         >
-                            <Image src={"/code0_logo_color.png"} width={"32"} height={"32"} alt={"Code0 Logo"}/>
+                            <Image src={"/code0_logo_white.png"} width={"32"} height={"32"} alt={"Code0 Logo"}/>
                         </motion.div>
                         <motion.button
                             className={cn("bg-transparent border-0 transition-colors mr-1.5")}
@@ -192,6 +192,20 @@ function Navigation() {
                                     )
                                 })}
                                 <motion.div
+                                    key={"Github"}
+                                    initial={{ y: -8, opacity: isScrolled ? 1 : 0 }}
+                                    animate={{ y: 0, opacity: 1 }}
+                                    exit={{ y: -8, opacity: isScrolled ? 1 : 0 }}
+                                    transition={{ duration: 0.25, delay: 0.06 * 4 }}
+                                    className="text-white/75 px-2 py-1 font-medium text-md rounded-xl cursor-pointer hover:text-white hover:bg-white/10 transition-colors"
+                                    onClick={() => {
+                                        router.push("github")
+                                        setIsOpen(false)
+                                    }}
+                                >
+                                    {"Github"}
+                                </motion.div>
+                                <motion.div
                                     key={"Discord"}
                                     initial={{ y: -8, opacity: isScrolled ? 1 : 0 }}
                                     animate={{ y: 0, opacity: 1 }}
@@ -242,7 +256,7 @@ function Navigation() {
                                 animate={{opacity: 1, filter: 'blur(0px)', y: 0}}
                                 transition={{duration: 0.65}}
                     >
-                        <Image src={"/code0_logo_color.png"} width={"32"} height={"32"} alt={"Code0 Logo"}/>
+                        <Image src={"/code0_logo_white.png"} width={"32"} height={"32"} alt={"Code0 Logo"}/>
                     </motion.div>
 
                     <div className={"relative h-full flex items-center"}
@@ -292,14 +306,25 @@ function Navigation() {
                             </div>
                         )}
                     </div>
-                    <button
-                        className={cn(
-                            "flex items-center px-4 h-8 rounded-xl transition-all",
-                            "bg-white/90 hover:bg-white cursor-pointer font-medium text-primary",
-                        )}
-                    >
-                        Discord
-                    </button>
+                    <div className={"flex items-center gap-2"}>
+                        <button
+                            className={cn(
+                                "flex items-center px-4 h-8 rounded-xl transition-all",
+                                "bg-transparent hover:bg-white/10 cursor-pointer font-medium text-white/75 hover:text-white/75",
+                            )}
+                        >
+                            <IconBrandGithub/>
+                        </button>
+                        <button
+                            className={cn(
+                                "flex items-center px-4 h-8 rounded-xl transition-all",
+                                "bg-white/90 hover:bg-white cursor-pointer font-medium text-primary",
+                            )}
+                        >
+                            Discord
+                        </button>
+                    </div>
+
                 </div>
                 <AnimatePresence mode="wait">
                     {activeSubMenu && isScrolled && (

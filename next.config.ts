@@ -4,10 +4,6 @@ import createMDX from '@next/mdx'
 
 const nextConfig: NextConfig = {
     pageExtensions: ['js', 'jsx', 'md', 'mdx', 'ts', 'tsx'],
-    images: {
-        loader: 'custom',
-        loaderFile: './src/utils/image-loader.js'
-    }
 }
 
 const withMDX = createMDX({})

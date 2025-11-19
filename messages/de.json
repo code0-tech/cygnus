@@ -3,7 +3,7 @@
     "items": [
       { "title": "Startseite", "href": "/" },
       {
-        "title": "Produkt",
+        "title": "Use Cases",
         "href": null,
         "subMenu": [
           {
@@ -26,7 +26,8 @@
           }
         ]
       },
-      { "title": "Preise", "href": "/pricing" },
+      { "title": "Docs", "href":  "/docs" },
+      { "title": "Blog", "href": "/blog" },
       { "title": "Über uns", "href": "/about-us" }
     ]
   },
