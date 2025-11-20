@@ -10,8 +10,8 @@ export const FooterSection: React.FC = () => {
     const t = useTranslations("FooterSection")
 
     return (
-        <div className={"relative bg-primary px-[10%] overflow-hidden"}>
-            <div className={"absolute inset-0 h-full w-full bg-black/20"}/>
+        <div className={"relative bg-primary overflow-hidden"}>
+            <div className={"absolute inset-0 h-full w-full bg-black/20 border-t border-white/10"}/>
             <Spotlight opacity={0.2} duration={20}/>
 
             <div className="relative flex flex-col gap-16 px-8 lg:px-20 pt-24 lg:pt-40 pb-24 rounded-t-xl overflow-hidden">

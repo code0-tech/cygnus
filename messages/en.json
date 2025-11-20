@@ -36,19 +36,16 @@
     "title": "Build complex backends in no time",
     "description1": "The backend world gets to the next era with the code0 no-code platform.",
     "description2": "From database modelling to scalable backend endpoints in no-time.",
+    "docsButton":  "Read the docs",
     "ctaButton": "Start building"
-  },
-  "DemoSection": {
-    "flowText1": "Go from",
-    "flowText2": "in minutes",
-    "description": " Build your own flow in our IDE just by drag and drop. Without any knowledge of coding."
   },
   "BrandSection": {
     "title": "Trusted by teams who want easy backends"
   },
   "UseCaseSection": {
-    "title": "Tailored to your needs",
-    "description": "Empowering teams with tailored solutions for every need",
+    "flowText1": "Go from",
+    "flowText2": "in minutes",
+    "description": " Build your own flow in our IDE just by drag and drop. Without any knowledge of coding.",
     "useCase1Title": "SaaS Applications",
     "useCase1Description": "Rapidly develop and deploy scalable backends for your SaaS applications without writing a single line of code.",
     "useCase2Title": "E-commerce Platforms",
@@ -65,10 +62,6 @@
     "suggestionDescription": "Enhance your backend with intelligent suggestion logic to improve user experience and decision-making.",
     "adapterTitle": "ADAPTERS",
     "adapterDescription": "Integrate with various third-party services and databases using our versatile adapters."
-  },
-  "QuoteSection": {
-    "quote": "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.",
-    "author": "Nico Sammito, CEO"
   },
   "RoadmapSection": {
     "title": "Our journey",

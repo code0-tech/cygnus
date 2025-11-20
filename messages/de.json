@@ -36,19 +36,16 @@
     "title": "Komplexe Backends in kürzester Zeit erstellen",
     "description1": "Mit der CodeZero No-Code-Plattform beginnt eine neue Ära der Backend-Entwicklung.",
     "description2": "Von der Datenbankmodellierung bis zu skalierbaren Backend-Endpunkten – in Rekordzeit.",
+    "docsButton":  "Lese die Dokumentation",
     "ctaButton": "Jetzt starten"
-  },
-  "DemoSection": {
-    "flowText1": "Von",
-    "flowText2": "in Minuten",
-    "description": "Erstelle deinen eigenen Flow in unserer IDE ganz einfach per Drag-and-Drop – ganz ohne Programmierkenntnisse."
   },
   "BrandSection": {
     "title": "Vertraut von Teams, die einfache Backends lieben"
   },
   "UseCaseSection": {
-    "title": "Für deine Anforderungen gemacht",
-    "description": "Wir bieten maßgeschneiderte Lösungen für jedes Einsatzgebiet.",
+    "flowText1": "Von",
+    "flowText2": "in Minuten",
+    "description": "Erstelle deinen eigenen Flow in unserer IDE ganz einfach per Drag-and-Drop – ganz ohne Programmierkenntnisse.",
     "useCase1Title": "SaaS-Anwendungen",
     "useCase1Description": "Entwickle und deploye skalierbare Backends für deine SaaS-Projekte – ganz ohne Code.",
     "useCase2Title": "E-Commerce-Plattformen",
@@ -65,10 +62,6 @@
     "suggestionDescription": "Erweitere dein Backend mit intelligenter Vorschlagslogik für bessere Nutzererlebnisse und fundiertere Entscheidungen.",
     "adapterTitle": "ADAPTER",
     "adapterDescription": "Integriere verschiedenste Drittanbieter-Dienste und Datenbanken mit unseren vielseitigen Adaptern."
-  },
-  "QuoteSection": {
-    "quote": "„Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.“",
-    "author": "Nico Sammito, Geschäftsführer"
   },
   "RoadmapSection": {
     "title": "Unsere Reise",

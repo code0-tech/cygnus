@@ -1,57 +1,28 @@
 "use client"
 
 import {NextPage} from "next"
-import {Navigation} from "@/components/Navigation"
 import {HeroSection} from "@/sections/HeroSection"
 import {FeatureSection} from "@/sections/FeatureSection"
 import {FaqSection} from "@/sections/FaqSection"
-import {QuoteSection} from "@/sections/QuoteSection"
 import {ContactSection} from "@/sections/ContactSection"
 import {RoadmapSection} from "@/sections/RoadmapSection"
 import {UseCaseSection} from "@/sections/UseCaseSection"
-import {DemoSection} from "@/sections/DemoSection"
 import {BrandSection} from "@/sections/BrandSection"
 import React from "react"
-import {IconArrowRight, IconX} from "@tabler/icons-react"
 import {Container} from "@code0-tech/pictor"
 
 const LandingPage: NextPage = () => {
     return (
-        <Container className={"bg-primary py-[5%]"}>
+        <Container className={"flex flex-col bg-primary py-[5%] border-x border-white/10"}>
             <HeroSection/>
-            <DemoSection/>
+            <div className={"pt-4 -mx-4 border-b border-white/10"}/>
             <BrandSection/>
-            <div className={"h-12 grid grid-cols-[10%_80%_10%]"}>
-                <div className="border-b border-dashed border-white/10" />
-                <div className="border-b border-dashed border-x border-white/10" />
-                <div className="border-b border-dashed border-white/10" />
-            </div>
-
+            <div className={"h-16 -mx-4 border-t border-white/10"}/>
             <UseCaseSection/>
-            <div className={"h-12 grid grid-cols-[10%_80%_10%]"}>
-                <div className="border-t border-dashed border-white/10" />
-                <div className="border-t border-dashed border-x border-white/10" />
-                <div className="border-t border-dashed border-white/10" />
-            </div>
+            <div className={"h-32 -mx-4 border-t border-white/10"}/>
             <FeatureSection/>
-            <div className={"h-12 grid grid-cols-[10%_80%_10%]"}>
-                <div className="border-b border-dashed border-white/10" />
-                <div className="border-b border-dashed border-x border-white/10" />
-                <div className="border-b border-dashed border-white/10" />
-            </div>
-
-            <QuoteSection/>
-
-            <div className={"h-12 grid grid-cols-[10%_80%_10%]"}>
-                <div className="border-t border-dashed border-white/10" />
-                <div className="border-t border-dashed border-white/10" />
-            </div>
+            <div className={"h-32 -mx-4 border-t border-white/10"}/>
             <RoadmapSection/>
-            <div className={"h-12 grid grid-cols-[10%_80%_10%]"}>
-                <div className="border-b border-dashed border-white/10" />
-                <div className="border-b border-dashed border-white/10" />
-            </div>
-
             <FaqSection/>
             <ContactSection/>
         </Container>
