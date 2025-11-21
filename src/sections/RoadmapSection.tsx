@@ -3,6 +3,7 @@ import {IconCube, IconGlobe, IconLock, IconManualGearbox, IconRocket, IconWand} 
 import {useTranslations} from "next-intl"
 import {cn} from "@/utils/cn"
 import {GanttFeatureItem, GanttFeatureList, GanttFeatureListGroup, GanttHeader, GanttProvider} from "@/components/Gantt"
+import {ScrollArea} from "@/components/ScrollArea"
 
 interface RoadmapItem  {
     year: string
@@ -127,7 +128,7 @@ export const RoadmapSection: React.FC = () => {
                 <p className={"text-xl text-white/75"}>{t("description")}</p>
             </div>
 
-            <div className={"w-full h-[400px]"}>
+            <ScrollArea className={"w-full"}>
                 <GanttProvider className={"rounded-xl border border-white/10"}>
                     <GanttHeader />
                     <GanttFeatureList>
@@ -142,7 +143,7 @@ export const RoadmapSection: React.FC = () => {
                         ))}
                     </GanttFeatureList>
                 </GanttProvider>
-            </div>
+            </ScrollArea>
         </div>
     )
 }

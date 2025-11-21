@@ -9,7 +9,7 @@ export const FeatureSection: React.FC = () => {
     const t = useTranslations("FeatureSection")
 
     return (
-        <div className={"w-full flex flex-col gap-16"}>
+        <div className={"w-full flex flex-col gap-16 mb-4"}>
             <div className={"flex flex-col gap-4 items-center justify-center text-center py-16"}>
                 <p className={"text-6xl text-white"}>
                     {t("title")}

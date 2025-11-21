@@ -1,18 +1,5 @@
-import {
-    differenceInQuarters,
-    getDaysInMonth,
-} from "date-fns";
-import React, {
-    createContext,
-    useCallback,
-    useContext,
-    useEffect,
-    useRef,
-    useState,
-    type FC,
-    type CSSProperties,
-    type ReactNode,
-} from "react";
+import {getDaysInMonth,} from "date-fns";
+import React, {createContext, type CSSProperties, type FC, type ReactNode, useContext} from "react";
 
 export type GanttFeature = {
     id: string;
@@ -36,7 +23,6 @@ type GanttContextProps = {
     headerHeight: number;
     rowHeight: number;
     timelineData: TimelineData;
-    ref: React.RefObject<HTMLDivElement | null>;
 };
 
 const GanttContext = createContext<GanttContextProps | null>(null);
@@ -61,7 +47,6 @@ const createYearQuarters = (year: number) => {
 };
 
 export const GanttProvider: FC<{children: ReactNode; className?: string; }> = ({ children, className }) => {
-    const scrollRef = useRef<HTMLDivElement>(null);
     const years = [2024, 2025, 2026, 2027];
     const timelineData = years.map((year) => ({year, quarters: createYearQuarters(year)}));
 
@@ -79,16 +64,14 @@ export const GanttProvider: FC<{children: ReactNode; className?: string; }> = ({
         <GanttContext.Provider
             value={{
                 timelineData,
-                ref: scrollRef,
                 columnWidth,
                 headerHeight,
                 rowHeight
             }}
         >
             <div
-                ref={scrollRef}
-                className={`grid w-full h-full overflow-auto ${className ?? ""}`}
-                style={{...cssVars,}}
+                className={`grid h-full w-full ${className ?? ""}`}
+                style={{...cssVars}}
             >
                 <div className="relative w-max h-full">
                     {children}
