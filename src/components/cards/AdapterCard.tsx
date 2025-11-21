@@ -7,8 +7,8 @@ import {useTranslations} from "next-intl"
 const PlayerWithNoSSR = dynamic(() => import('@lottielab/lottie-player/react').then(module => module.default), {ssr: false})
 
 export const AdapterCard: React.FC = () => {
-    const t = useTranslations("FeatureSection"
-    )
+    const t = useTranslations("FeatureSection")
+
     return (
         <div className={"flex flex-col justify-between items-center overflow-hidden gap-4 p-4 h-[420px] col-span-3 row-span-2 bg-[#050316] rounded-xl border border-white/10"}>
 

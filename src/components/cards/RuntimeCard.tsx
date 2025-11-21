@@ -1,5 +1,4 @@
 import React from "react"
-import {ChipLogo} from "@/components/ChipLogo"
 import {useTranslations} from "next-intl"
 
 export const RuntimeCard: React.FC = () => {

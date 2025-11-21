@@ -1,6 +1,5 @@
 import {
-    differenceInMonths,
-    format,
+    differenceInQuarters,
     getDaysInMonth,
 } from "date-fns";
 import React, {
@@ -18,20 +17,22 @@ import React, {
 export type GanttFeature = {
     id: string;
     name: string;
+    icon?: ReactNode;
     startAt: Date;
     endAt: Date;
 };
 
 type TimelineData = {
     year: number;
-    months: { days: number }[];
+    quarters: {
+        index: number;
+        label: string;
+        days: number;
+    }[];
 }[];
 
 type GanttContextProps = {
-    zoom: number;
-    range: "monthly";
     columnWidth: number;
-    sidebarWidth: number;
     headerHeight: number;
     rowHeight: number;
     timelineData: TimelineData;
@@ -41,115 +42,57 @@ type GanttContextProps = {
 const GanttContext = createContext<GanttContextProps | null>(null);
 const useGantt = () => useContext(GanttContext)!;
 
-const createInitialTimeline = (today: Date): TimelineData => {
-    const years = [
-        today.getFullYear() - 1,
-        today.getFullYear(),
-        today.getFullYear() + 1,
-    ];
+const createYearQuarters = (year: number) => {
+    const quarters = [0, 1, 2, 3] as const;
+    return quarters.map((qIdx) => {
+        const startMonth = qIdx * 3;
+        const months = [0, 1, 2].map((m) => startMonth + m);
+        const days = months.reduce(
+            (sum, m) => sum + getDaysInMonth(new Date(year, m, 1)),
+            0
+        );
 
-    return years.map((year) => ({
-        year,
-        months: new Array(12).fill(null).map((_, month) => ({
-            days: getDaysInMonth(new Date(year, month, 1)),
-        })),
-    }));
+        return {
+            index: qIdx + 1,
+            label: `Q${qIdx + 1}`,
+            days,
+        };
+    });
 };
 
-export const GanttProvider: FC<{
-    range: "monthly";
-    zoom?: number;
-    children: ReactNode;
-    className?: string;
-}> = ({ range = "monthly", zoom = 100, children, className }) => {
+export const GanttProvider: FC<{children: ReactNode; className?: string; }> = ({ children, className }) => {
     const scrollRef = useRef<HTMLDivElement>(null);
+    const years = [2024, 2025, 2026, 2027];
+    const timelineData = years.map((year) => ({year, quarters: createYearQuarters(year)}));
 
-    const [timelineData, setTimelineData] = useState<TimelineData>(createInitialTimeline(new Date()));
-
-    const sidebarWidth = 300;
+    const columnWidth = 150;
     const headerHeight = 60;
-    const rowHeight = 36;
-    const columnWidth = 150; // monthly default
+    const rowHeight = 80;
 
-    /* CSS Vars */
     const cssVars: CSSProperties = {
-        "--gantt-column-width": `${(zoom / 100) * columnWidth}px`,
+        "--gantt-column-width": `${columnWidth}px`,
         "--gantt-header-height": `${headerHeight}px`,
         "--gantt-row-height": `${rowHeight}px`,
-        "--gantt-sidebar-width": `${sidebarWidth}px`,
-    } as CSSProperties;
-
-    /* Infinite scroll (monthly) */
-    const handleScroll = useCallback(() => {
-        const el = scrollRef.current;
-        if (!el) return;
-
-        const { scrollLeft, scrollWidth, clientWidth } = el;
-
-        // extend left
-        if (scrollLeft === 0) {
-            const firstYear = timelineData[0].year;
-            const newYear = firstYear - 1;
-
-            setTimelineData((prev) => [
-                {
-                    year: newYear,
-                    months: new Array(12).fill(null).map((_, m) => ({
-                        days: getDaysInMonth(new Date(newYear, m, 1)),
-                    })),
-                },
-                ...prev,
-            ]);
-
-            el.scrollLeft = 1;
-        }
-
-        // extend right
-        if (scrollLeft + clientWidth >= scrollWidth) {
-            const lastYear = timelineData.at(-1)!.year;
-            const newYear = lastYear + 1;
-
-            setTimelineData((prev) => [
-                ...prev,
-                {
-                    year: newYear,
-                    months: new Array(12).fill(null).map((_, m) => ({
-                        days: getDaysInMonth(new Date(newYear, m, 1)),
-                    })),
-                },
-            ]);
-        }
-    }, [timelineData]);
-
-    useEffect(() => {
-        const el = scrollRef.current;
-        if (!el) return;
-        el.addEventListener("scroll", handleScroll);
-        return () => el.removeEventListener("scroll", handleScroll);
-    }, [handleScroll]);
+    } as CSSProperties
 
     return (
         <GanttContext.Provider
             value={{
-                zoom,
-                range,
-                columnWidth,
-                sidebarWidth,
-                headerHeight,
-                rowHeight,
                 timelineData,
                 ref: scrollRef,
+                columnWidth,
+                headerHeight,
+                rowHeight
             }}
         >
             <div
                 ref={scrollRef}
-                className={`grid w-full h-full overflow-auto bg-secondary ${className}`}
-                style={{
-                    ...cssVars,
-                    gridTemplateColumns: "var(--gantt-sidebar-width) 1fr",
-                }}
+                className={`grid w-full h-full overflow-auto ${className ?? ""}`}
+                style={{...cssVars,}}
             >
-                {children}
+                <div className="relative w-max h-full">
+                    {children}
+                </div>
             </div>
         </GanttContext.Provider>
     );
@@ -160,7 +103,7 @@ export const GanttHeader: FC = () => {
 
     return (
         <div className="sticky top-0 z-20 bg-primary/80 backdrop-blur-md text-white w-max">
-            <div className="flex divide-x divide-border/30">
+            <div className="flex divide-x divide-white/10">
                 {gantt.timelineData.map((year) => (
                     <div key={year.year} className="flex flex-col">
                         <div className="px-3 py-2 text-xs font-semibold">
@@ -168,17 +111,17 @@ export const GanttHeader: FC = () => {
                         </div>
 
                         <div
-                            className="grid border-t border-border/30"
+                            className="grid border-y border-white/10"
                             style={{
-                                gridTemplateColumns: `repeat(12, var(--gantt-column-width))`,
+                                gridTemplateColumns: `repeat(4, var(--gantt-column-width))`,
                             }}
                         >
-                            {year.months.map((_, m) => (
+                            {year.quarters.map((q) => (
                                 <div
-                                    key={`${year.year}-${m}`}
-                                    className="text-center text-xs py-1 border-r border-border/20"
+                                    key={`${year.year}-Q${q.index}`}
+                                    className="text-center text-xs py-1 border-r border-white/10"
                                 >
-                                    {format(new Date(year.year, m, 1), "MMM")}
+                                    {q.label}
                                 </div>
                             ))}
                         </div>
@@ -190,7 +133,6 @@ export const GanttHeader: FC = () => {
 };
 
 export const GanttFeatureList: FC<{ children: ReactNode }> = ({ children }) => {
-    const gantt = useGantt();
     return (
         <div
             className="absolute left-0 top-0"
@@ -201,7 +143,7 @@ export const GanttFeatureList: FC<{ children: ReactNode }> = ({ children }) => {
     );
 };
 
-export const GanttFeatureListGroup: FC<{ children: ReactNode }> = ({children}) => {
+export const GanttFeatureListGroup: FC<{ children: ReactNode }> = ({ children }) => {
     return (
         <div style={{ paddingTop: "var(--gantt-row-height)" }}>
             {children}
@@ -209,32 +151,46 @@ export const GanttFeatureListGroup: FC<{ children: ReactNode }> = ({children}) =
     );
 };
 
-export const GanttFeatureItem: FC<GanttFeature> = ({name, startAt, endAt}) => {
+export const GanttFeatureItem: FC<GanttFeature> = ({ name, startAt, endAt, icon }) => {
     const gantt = useGantt();
-    const zoomWidth = (gantt.columnWidth * gantt.zoom) / 100;
+    const baseYear = gantt.timelineData[0].year;
+    const gap = 16
 
-    const timelineStart = new Date(gantt.timelineData[0].year, 0, 1);
+    const getQuarterIndex = (date: Date) => {
+        const yearOffset = date.getFullYear() - baseYear;
+        const quarter = Math.floor(date.getMonth() / 3);
+        return yearOffset * 4 + quarter;
+    };
 
-    const offset = differenceInMonths(startAt, timelineStart) * zoomWidth;
-    const width =
-        Math.max(1, differenceInMonths(endAt, startAt)) * zoomWidth;
+    const startIndex = getQuarterIndex(startAt);
+    const endIndex = getQuarterIndex(endAt);
+    const widthQuarters = Math.max(1, endIndex - startIndex + 1);
+    const width = (widthQuarters * gantt.columnWidth) - gap;
+    const height = gantt.rowHeight - gap;
+    const offset = startIndex * gantt.columnWidth
 
     return (
         <div className="relative w-max">
             <div
-                className="absolute bg-white/10 shadow p-2 rounded text-xs top-0"
-                style={{
-                    left: offset,
-                    width,
-                    height: "var(--gantt-row-height)",
-                }}
+                className="absolute flex items-center gap-2 border border-white/10 bg-white/5 shadow p-2 rounded text-xs top-0"
+                style={{left: offset + (gap/2) ?? 0, top: gap/2, width, height}}
             >
+                <div
+                    className="absolute inset-0 z-10 pointer-events-none"
+                    style={{
+                        backgroundImage: `
+                        repeating-linear-gradient(-40deg, 
+                          rgba(255, 255, 255, 0.05) 11px, 
+                          rgba(255, 255, 255, 0.05) 12px, 
+                          transparent 12px, 
+                          transparent 24px
+                        )
+                      `,
+                    }}
+                />
+                {icon}
                 {name}
             </div>
         </div>
     );
-};
-
-export const GanttTimeline: FC<{ children: ReactNode }> = ({ children }) => {
-    return <div className="relative w-max h-full">{children}</div>;
 };

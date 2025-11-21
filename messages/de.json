@@ -54,6 +54,8 @@
     "useCase3Description": "Baue leistungsstarke Backends für deine mobilen Anwendungen – mit nahtloser Datensynchronisierung und effizientem Benutzer-Management."
   },
   "FeatureSection": {
+    "title": "Leistungsstarke Funktionen für dein Backend",
+    "description": "Entdecke die vielseitigen Funktionen von CodeZero, die dir helfen, komplexe Backends schnell und effizient zu erstellen.",
     "projectTitle": "ORGANISATIONEN & PROJEKTE",
     "projectDescription": "Verwalte mehrere Projekte und arbeite nahtlos im Team innerhalb einer Organisation.",
     "runtimeTitle": "CODEZERO RUNTIME",

@@ -7,7 +7,7 @@ export const BrandSection: React.FC = () => {
     return (
         <div className={"relative w-full flex gap-8 px-8 py-24 items-center justify-between"}>
             <div
-                className="absolute inset-0 z-0 pointer-events-none"
+                className="absolute inset-0 -mx-4 z-0 pointer-events-none"
                 style={{
                     backgroundImage: `
                         repeating-linear-gradient(-40deg, 

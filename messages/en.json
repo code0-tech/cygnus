@@ -54,6 +54,8 @@
     "useCase3Description": "Build powerful backends for your mobile applications, ensuring seamless data synchronization and user management across devices."
   },
   "FeatureSection": {
+    "title": "Powerful features for your backend",
+    "description": "CodeZero offers a range of features designed to simplify backend development and enhance your application's capabilities.",
     "projectTitle": "ORGANIZATIONS & PROJECTS",
     "projectDescription": "Manage multiple projects and collaborate with your team seamlessly within a single organization.",
     "runtimeTitle": "CODEZERO RUNTIME",

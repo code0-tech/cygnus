@@ -1,46 +1,20 @@
 "use client"
 
-import React, {useEffect, useRef, useState} from "react"
-import {UseCaseCard} from "@/components/cards/UseCaseCard"
+import React, {useRef, useState, useEffect} from "react"
 import {useTranslations} from "next-intl"
+import {motion} from "motion/react"
+import {cn} from "@/utils/cn"
+
+const useCases = ["CMS", "Workflow", "Bots"] as const;
+type UseCase = typeof useCases[number];
 
 export const UseCaseSection: React.FC = () => {
     const t = useTranslations('UseCaseSection')
-    const [activeCard, setActiveCard] = useState(0)
-    const [progress, setProgress] = useState(0)
-    const mountedRef = useRef(true)
+    const [activeCase, setActiveCase] = useState<UseCase>("CMS")
+    const [position, setPosition] = useState({ left: 0, width: 0, opacity: 0 })
 
-    useEffect(() => {
-        const progressInterval = setInterval(() => {
-            if (!mountedRef.current) return
-
-            setProgress((prev) => {
-                if (prev >= 100) {
-                    if (mountedRef.current) {
-                        setActiveCard((current) => (current + 1) % 3)
-                    }
-                    return 0
-                }
-                return prev + 2 // 2% every 100ms = 5 seconds total
-            })
-        }, 100)
-
-        return () => {
-            clearInterval(progressInterval)
-            mountedRef.current = false
-        }
-    }, [])
-
-    useEffect(() => {
-        return () => {
-            mountedRef.current = false
-        }
-    }, [])
-
-    const handleCardClick = (index: number) => {
-        if (!mountedRef.current) return
-        setActiveCard(index)
-        setProgress(0)
+    const handleUseCaseClick = (item: UseCase) => {
+        setActiveCase(item)
     }
 
     return (
@@ -71,33 +45,96 @@ export const UseCaseSection: React.FC = () => {
                     {t("description")}
                 </p>
             </div>
-            <div className={"w-full flex flex-col lg:flex-row gap-8"}>
-                <div className="flex lg:flex-col justify-center items-stretch gap-4">
-                    <UseCaseCard
-                        title={t("useCase1Title")}
-                        description={t("useCase1Description")}
-                        isActive={activeCard === 0}
-                        progress={activeCard === 0 ? progress : 0}
-                        onClick={() => handleCardClick(0)}
-                    />
-                    <UseCaseCard
-                        title={t("useCase2Title")}
-                        description={t("useCase2Description")}
-                        isActive={activeCard === 1}
-                        progress={activeCard === 1 ? progress : 0}
-                        onClick={() => handleCardClick(1)}
-                    />
-                    <UseCaseCard
-                        title={t("useCase3Title")}
-                        description={t("useCase3Description")}
-                        isActive={activeCard === 2}
-                        progress={activeCard === 2 ? progress : 0}
-                        onClick={() => handleCardClick(2)}
+
+            <div className={"w-full flex flex-col items-center justify-center"}>
+                <div className={"relative w-max h-full flex items-center -mb-6 p-2 rounded-2xl bg-[#353343] border border-white/10 shadow-sm"}
+                >
+                    <div className={"flex items-center gap-2"}>
+                        {useCases.map((item) => (
+                            <UseCaseTab key={item}
+                                 title={item}
+                                 setPosition={setPosition}
+                                 selected={activeCase === item}
+                                 onClick={() => handleUseCaseClick(item)}
+                            />
+                        ))}
+                    </div>
+                    <motion.div
+                        animate={{...position}}
+                        className={cn("absolute z-40 h-8 rounded-lg bg-white")}
                     />
                 </div>
-                <div className="flex w-full h-56 lg:h-full rounded-lg bg-white/5 shadow-xl border border-white/10"/>
+                <div className="flex w-full h-[600px] rounded-lg bg-white/5 shadow-xl border border-white/10 pt-20">
+                    {activeCase === "CMS" && (
+                        <div className={"w-full flex flex-col gap-4 items-center text-center"}>
+                            <p className={"text-xl font-semibold"}>{t("useCase1Title")}</p>
+                            <p className={"w-2/5 text-white/50"}>{t("useCase1Description")}</p>
+                        </div>
+                    )}
+                    {activeCase === "Workflow" && (
+                        <div className={"w-full flex flex-col gap-4 items-center text-center"}>
+                            <p className={"text-xl font-semibold"}>{t("useCase2Title")}</p>
+                            <p className={"w-2/5 text-white/50"}>{t("useCase2Description")}</p>
+                        </div>
+                    )}
+                    {activeCase === "Bots" && (
+                        <div className={"w-full flex flex-col gap-4 items-center text-center"}>
+                            <p className={"text-xl font-semibold"}>{t("useCase3Title")}</p>
+                            <p className={"w-2/5 text-white/50"}>{t("useCase3Description")}</p>
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
 
+    )
+}
+
+interface UseCaseTabProps {
+    setPosition: React.Dispatch<React.SetStateAction<{ left: number; width: number; opacity: number }>>
+    onClick: () => void
+    selected: boolean
+    title: string
+}
+
+const UseCaseTab: React.FC<UseCaseTabProps> = ({ setPosition, onClick, title, selected }) => {
+    const ref = useRef<HTMLDivElement>(null)
+
+    useEffect(() => {
+        if (selected && ref.current) {
+            const { width } = ref.current.getBoundingClientRect()
+            setPosition({
+                left: ref.current.offsetLeft,
+                width,
+                opacity: 1,
+            })
+        }
+    }, [selected, setPosition])
+
+    const moveHighlight = () => {
+        if (!ref.current) return
+        const { width } = ref.current.getBoundingClientRect()
+        setPosition({
+            left: ref.current.offsetLeft,
+            width,
+            opacity: 1,
+        })
+        onClick()
+    }
+
+
+    return (
+        <motion.div
+            className={cn(
+                "relative z-50 flex items-center gap-2 px-4 py-1 font-medium text-md cursor-pointer transition-all",
+                selected ? "text-black" : "text-white")}
+            ref={ref}
+            onClick={moveHighlight}
+            initial={{opacity: 0, filter: 'blur(10px)'}}
+            animate={{opacity: 1, filter: 'blur(0px)'}}
+            transition={{duration: 0.65}}
+        >
+            {title}
+        </motion.div>
     )
 }

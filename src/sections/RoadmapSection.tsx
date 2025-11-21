@@ -2,20 +2,14 @@ import React, {ReactNode} from "react"
 import {IconCube, IconGlobe, IconLock, IconManualGearbox, IconRocket, IconWand} from "@tabler/icons-react"
 import {useTranslations} from "next-intl"
 import {cn} from "@/utils/cn"
-import {
-    GanttFeatureItem,
-    GanttFeatureList,
-    GanttFeatureListGroup,
-    GanttHeader,
-    GanttProvider,
-    GanttTimeline
-} from "@/components/Gantt"
+import {GanttFeatureItem, GanttFeatureList, GanttFeatureListGroup, GanttHeader, GanttProvider} from "@/components/Gantt"
 
 interface RoadmapItem  {
     year: string
     steps: {
         icon: ReactNode,
-        time: string
+        startAt: Date
+        endAt: Date
         title: string
         content: string
         isPlanned: boolean
@@ -28,7 +22,8 @@ const roadmapItems: RoadmapItem[] = [
         steps: [
             {
                 icon: <IconRocket size={20} />,
-                time: "Q1 Q2",
+                startAt: new Date(2024, 0, 1),
+                endAt: new Date(2024, 6, 0),
                 isPlanned: false,
                 title: "Unternehmensgründung",
                 content:
@@ -36,7 +31,8 @@ const roadmapItems: RoadmapItem[] = [
             },
             {
                 icon: <IconCube size={20} />,
-                time: "Q3 Q4",
+                startAt: new Date(2024, 6, 1),
+                endAt: new Date(2025, 0, 0),
                 isPlanned: false,
                 title: "Erstes Produkt-Release",
                 content:
@@ -49,14 +45,16 @@ const roadmapItems: RoadmapItem[] = [
         steps: [
             {
                 icon: <IconLock size={20} />,
-                time: "Q1",
+                startAt: new Date(2024, 0, 1),
+                endAt: new Date(2024, 3, 0),
                 isPlanned: false,
                 title: "Seed-Finanzierung",
                 content: "Erfolgreiche Seed-Runde über 3 Mio. USD bei 20 Mio. Bewertung.",
             },
             {
                 icon: <IconGlobe size={20} />,
-                time: "Q2 Q3",
+                startAt: new Date(2024, 3, 1),
+                endAt: new Date(2024, 9, 0),
                 isPlanned: false,
                 title: "Internationaler Markteintritt",
                 content:
@@ -64,7 +62,8 @@ const roadmapItems: RoadmapItem[] = [
             },
             {
                 icon: <IconManualGearbox size={20} />,
-                time: "Q4",
+                startAt: new Date(2024, 9, 1),
+                endAt: new Date(2025, 0, 0),
                 isPlanned: false,
                 title: "Algorithmus-Optimierung",
                 content:
@@ -77,7 +76,8 @@ const roadmapItems: RoadmapItem[] = [
         steps: [
             {
                 icon: <IconCube size={20} />,
-                time: "Q1 Q2",
+                startAt: new Date(2025, 0, 1),
+                endAt: new Date(2025, 6, 0),
                 isPlanned: false,
                 title: "AI-Automationsplattform",
                 content:
@@ -85,7 +85,8 @@ const roadmapItems: RoadmapItem[] = [
             },
             {
                 icon: <IconWand size={20} />,
-                time: "Q3 Q4",
+                startAt: new Date(2025, 6, 1),
+                endAt: new Date(2026, 0, 0),
                 isPlanned: true,
                 title: "VR-Integration",
                 content:
@@ -95,46 +96,21 @@ const roadmapItems: RoadmapItem[] = [
     }
 ]
 
-const quarterToDates = (year: string, quarters: string) => {
-    const qList = quarters.split(" ").filter(q => q.startsWith("Q"))
-
-    const map: Record<string, [number, number]> = {
-        Q1: [0, 2],
-        Q2: [3, 5],
-        Q3: [6, 8],
-        Q4: [9, 11],
-    }
-
-    const startQ = qList[0];
-    const endQ = qList[qList.length - 1]
-
-    const [startMonth] = map[startQ]
-    const [, endMonth] = map[endQ]
-
-    return {
-        startAt: new Date(Number(year), startMonth, 1),
-        endAt: new Date(Number(year), endMonth + 1, 0),
-    }
-}
-
 export const RoadmapSection: React.FC = () => {
     const t = useTranslations("RoadmapSection")
 
     const features = roadmapItems.flatMap((item) =>
-        item.steps.map((step) => {
-            const { startAt, endAt } = quarterToDates(item.year, step.time)
-
-            return {
-                id: item.year + "-" + step.title,
-                name: step.title,
-                startAt,
-                endAt,
-                status: step.isPlanned
-                    ? { name: "Planned", color: "#6B7280" }
-                    : { name: "Done", color: "#10B981" },
-                group: { name: item.year },
-            }
-        })
+        item.steps.map((step) => ({
+            id: item.year + "-" + step.title,
+            name: step.title,
+            startAt: step.startAt,
+            endAt: step.endAt,
+            status: step.isPlanned
+                ? { name: "Planned", color: "#6B7280" }
+                : { name: "Done", color: "#10B981" },
+            group: { name: item.year },
+            icon: step.icon,
+        }))
     )
 
     const grouped = features.reduce((acc, f) => {
@@ -151,71 +127,22 @@ export const RoadmapSection: React.FC = () => {
                 <p className={"text-xl text-white/75"}>{t("description")}</p>
             </div>
 
-            <div className={"flex flex-col gap-4 items-start"}>
-                {roadmapItems.map((item) => (
-                    <div key={item.year} className={"w-full flex flex-col lg:flex-row items-center gap-4"}>
-                        <p className={"text-white/75 text-xl"}>{item.year}</p>
-                        {item.steps.map((step) => (
-
-                            <div
-                                key={step.time}
-                                className={cn(
-                                    "relative w-full h-full flex rounded-lg text-white border border-white/10",
-                                    step.isPlanned ? "bg-white/5" : "bg-white/2"
-                                )}
-                            >
-                                <div className={"z-10 h-full w-10 text-wrap p-2 gap-2 flex flex-col items-center justify-center bg-primary rounded-l-lg border-r border-white/10 text-[#353343]"}>
-                                    <p className={"text-lg"}>{step.time}</p>
-                                </div>
-                                <div className={"w-full flex flex-col gap-2 p-4 pl-2"}>
-                                    <div
-                                        className="absolute inset-0 z-0 pointer-events-none"
-                                        style={{
-                                            backgroundImage: `
-                                            repeating-linear-gradient(-40deg, 
-                                              rgba(255, 255, 255, 0.025) 11px, 
-                                              rgba(255, 255, 255, 0.025) 12px, 
-                                              transparent 12px, 
-                                              transparent 24px
-                                            )
-                                          `,
-                                        }}
-                                    />
-                                    <div className={"z-10 w-full flex justify-between gap-2"}>
-                                        <div className={"flex gap-2 text-white items-center"}>
-                                            {step.icon}
-                                            <p className={"text-lg truncate"}>{step.title}</p>
-                                        </div>
-                                        <p className={cn("text-sm align-start text-brand/70 font-mono", step.isPlanned ? "flex" : "hidden")}>
-                                            PLANNED
-                                        </p>
-                                    </div>
-                                    <p className={"z-10 text-white/50 text-sm"}>{step.content}</p>
-                                </div>
-
-                            </div>
-
-                        ))}
-                    </div>
-                ))}
-            </div>
-
-            <GanttProvider className="border" range="monthly" zoom={100}>
-                <GanttTimeline>
+            <div className={"w-full h-[400px]"}>
+                <GanttProvider className={"rounded-xl border border-white/10"}>
                     <GanttHeader />
                     <GanttFeatureList>
-                        {Object.entries(grouped).map(([year, items]) => (
-                            <GanttFeatureListGroup key={year}>
-                                {items.map((feature) => (
+                        {Object.entries(grouped).map(([group, features]) => (
+                            <GanttFeatureListGroup key={group}>
+                                {features.map((feature) => (
                                     <div className="flex" key={feature.id}>
-                                        <GanttFeatureItem {...feature} />
+                                        <GanttFeatureItem {...feature}/>
                                     </div>
                                 ))}
                             </GanttFeatureListGroup>
                         ))}
                     </GanttFeatureList>
-                </GanttTimeline>
-            </GanttProvider>
+                </GanttProvider>
+            </div>
         </div>
     )
 }
