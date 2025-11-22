@@ -1,7 +1,12 @@
-export default function AboutPage() {
-    return (
-        <div>
+import {LandingContainer} from "@/components/LandingContainer"
+import {NextPage} from "next"
 
-        </div>
+const AboutPage: NextPage = () => {
+    return (
+        <LandingContainer>
+            <p>Test</p>
+        </LandingContainer>
     )
 }
+
+export default AboutPage

@@ -1,5 +1,3 @@
-"use client"
-
 import {NextPage} from "next"
 import {HeroSection} from "@/sections/HeroSection"
 import {FeatureSection} from "@/sections/FeatureSection"
@@ -9,24 +7,25 @@ import {RoadmapSection} from "@/sections/RoadmapSection"
 import {UseCaseSection} from "@/sections/UseCaseSection"
 import {BrandSection} from "@/sections/BrandSection"
 import React from "react"
-import {Container} from "@code0-tech/pictor"
+import {LandingContainer} from "@/components/LandingContainer"
+import {SectionDivider} from "@/components/SectionDivider"
 
-const LandingPage: NextPage = () => {
+const Page: NextPage = () => {
     return (
-        <Container className={"flex flex-col bg-primary py-[5%] border-x border-white/10"}>
+        <LandingContainer>
             <HeroSection/>
-            <div className={"pt-4 -mx-4 border-b border-white/10"}/>
+            <SectionDivider height={16} side={"bottom"}/>
             <BrandSection/>
-            <div className={"h-16 -mx-4 border-t border-white/10"}/>
+            <SectionDivider height={64} side={"top"}/>
             <UseCaseSection/>
-            <div className={"h-32 -mx-4 border-t border-white/10"}/>
+            <SectionDivider height={128} side={"top"}/>
             <FeatureSection/>
-            <div className={"h-32 -mx-4 border-t border-white/10"}/>
+            <SectionDivider height={128} side={"top"}/>
             <RoadmapSection/>
             <FaqSection/>
             <ContactSection/>
-        </Container>
+        </LandingContainer>
     )
 }
 
-export default LandingPage
+export default Page

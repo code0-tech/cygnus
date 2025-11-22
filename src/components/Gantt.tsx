@@ -156,7 +156,7 @@ export const GanttFeatureItem: FC<GanttFeature> = ({ name, startAt, endAt, icon 
         <div className="relative w-max">
             <div
                 className="absolute flex items-center gap-2 border border-white/10 bg-white/5 shadow p-2 rounded text-xs top-0"
-                style={{left: offset + (gap/2) ?? 0, top: gap/2, width, height}}
+                style={{left: offset + (gap/2), top: gap/2, width, height}}
             >
                 <div
                     className="absolute inset-0 z-10 pointer-events-none"

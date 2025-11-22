@@ -1,11 +1,11 @@
 import {BlogPost} from "@/components/BlogPost"
 import Aurora from "@/components/Aurora"
+import { LandingContainer } from "@/components/LandingContainer"
 
 export default async function Page({params}: { params: Promise<{ slug: string }> }) {
     const slug = (await params).slug
     return (
-        <div className={"relative h-full w-full max-w-screen bg-primary px-[20%] py-32 border-b border-white/5"}>
-
+        <LandingContainer className={"py-[10%]"}>
             <Aurora
                 className="absolute top-0 left-0 w-full opacity-10"
                 colorStops={["#70ffb3", "#70ffb3", "#70ffb3"]}
@@ -16,7 +16,7 @@ export default async function Page({params}: { params: Promise<{ slug: string }>
             <div className={"z-20"}>
                 <BlogPost slug={slug}/>
             </div>
-        </div>
+        </LandingContainer>
     )
 }
 
