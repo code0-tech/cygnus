@@ -4,6 +4,7 @@ import React, {useRef, useState, useEffect} from "react"
 import {useTranslations} from "next-intl"
 import {motion} from "motion/react"
 import {cn} from "@/utils/cn"
+import {IconArrowUpRight} from "@tabler/icons-react"
 
 const useCases = ["CMS", "Workflow", "Bots"] as const;
 type UseCase = typeof useCases[number];
@@ -44,6 +45,10 @@ export const UseCaseSection: React.FC = () => {
                 <p className="relative z-10 text-center font-medium text-white/75 text-xl">
                     {t("description")}
                 </p>
+                <button className={"flex items-center gap-1 border-b border-dashed border-white/25 text-sm text-white/50 hover:text-brand"}>
+                    {t("linkButton")}
+                    <IconArrowUpRight size={16} />
+                </button>
             </div>
 
             <div className={"w-full flex flex-col items-center justify-center"}>

@@ -1,3 +1,5 @@
+"use client"
+
 import {getDaysInMonth,} from "date-fns";
 import React, {createContext, type CSSProperties, type FC, type ReactNode, useContext} from "react";
 

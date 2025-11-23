@@ -1,3 +1,5 @@
+"use client"
+
 import React, {useState} from "react"
 import {AccordionItem} from "@/components/Accordion"
 import {useTranslations} from "next-intl"

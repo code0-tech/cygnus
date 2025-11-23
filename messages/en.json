@@ -46,6 +46,7 @@
     "flowText1": "Go from",
     "flowText2": "in minutes",
     "description": " Build your own flow in our IDE just by drag and drop. Without any knowledge of coding.",
+    "linkButton": "Learn more about our use cases",
     "useCase1Title": "SaaS Applications",
     "useCase1Description": "Rapidly develop and deploy scalable backends for your SaaS applications without writing a single line of code.",
     "useCase2Title": "E-commerce Platforms",
@@ -56,6 +57,7 @@
   "FeatureSection": {
     "title": "Powerful features for your backend",
     "description": "CodeZero offers a range of features designed to simplify backend development and enhance your application's capabilities.",
+    "linkButton": "Learn more about the product",
     "projectTitle": "ORGANIZATIONS & PROJECTS",
     "projectDescription": "Manage multiple projects and collaborate with your team seamlessly within a single organization.",
     "runtimeTitle": "CODEZERO RUNTIME",
@@ -67,7 +69,8 @@
   },
   "RoadmapSection": {
     "title": "Our journey",
-    "description": "What we've done so far to build the best backend builder on the current market."
+    "description": "What we've done so far to build the best backend builder on the current market.",
+    "linkButton": "Learn more"
   },
   "FaqSection": {
     "title": "Frequently Asked Questions",

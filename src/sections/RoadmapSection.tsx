@@ -1,7 +1,14 @@
 import React, {ReactNode} from "react"
-import {IconCube, IconGlobe, IconLock, IconManualGearbox, IconRocket, IconWand} from "@tabler/icons-react"
+import {
+    IconArrowUpRight,
+    IconCube,
+    IconGlobe,
+    IconLock,
+    IconManualGearbox,
+    IconRocket,
+    IconWand
+} from "@tabler/icons-react"
 import {useTranslations} from "next-intl"
-import {cn} from "@/utils/cn"
 import {GanttFeatureItem, GanttFeatureList, GanttFeatureListGroup, GanttHeader, GanttProvider} from "@/components/Gantt"
 import {ScrollArea} from "@/components/ScrollArea"
 
@@ -126,6 +133,10 @@ export const RoadmapSection: React.FC = () => {
             <div className={"w-full flex flex-col gap-4 items-center justify-center text-center"}>
                 <p className={"text-4xl lg:text-6xl text-white"}>{t("title")}</p>
                 <p className={"text-xl text-white/75"}>{t("description")}</p>
+                <button className={"flex items-center gap-1 border-b border-dashed border-white/25 text-sm text-white/50 hover:text-brand"}>
+                    {t("linkButton")}
+                    <IconArrowUpRight size={16} />
+                </button>
             </div>
 
             <ScrollArea className={"w-full"}>

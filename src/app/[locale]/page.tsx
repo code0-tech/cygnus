@@ -14,13 +14,13 @@ const Page: NextPage = () => {
     return (
         <LandingContainer>
             <HeroSection/>
-            <SectionDivider height={16} side={"bottom"}/>
+            <SectionDivider height={16}/>
             <BrandSection/>
-            <SectionDivider height={64} side={"top"}/>
+            <SectionDivider height={64}/>
             <UseCaseSection/>
-            <SectionDivider height={128} side={"top"}/>
+            <SectionDivider height={128}/>
             <FeatureSection/>
-            <SectionDivider height={128} side={"top"}/>
+            <SectionDivider height={128}/>
             <RoadmapSection/>
             <FaqSection/>
             <ContactSection/>
