@@ -111,11 +111,9 @@ export const RoadmapSection: React.FC = () => {
         item.steps.map((step) => ({
             id: item.year + "-" + step.title,
             name: step.title,
+            content: step.content,
             startAt: step.startAt,
             endAt: step.endAt,
-            status: step.isPlanned
-                ? { name: "Planned", color: "#6B7280" }
-                : { name: "Done", color: "#10B981" },
             group: { name: item.year },
             icon: step.icon,
         }))
@@ -139,8 +137,8 @@ export const RoadmapSection: React.FC = () => {
                 </button>
             </div>
 
-            <ScrollArea className={"w-full"}>
-                <GanttProvider className={"rounded-xl border border-white/10"}>
+            <ScrollArea className={"w-full rounded-xl border border-white/10"} orientation="horizontal">
+                <GanttProvider>
                     <GanttHeader />
                     <GanttFeatureList>
                         {Object.entries(grouped).map(([group, features]) => (
@@ -158,4 +156,3 @@ export const RoadmapSection: React.FC = () => {
         </div>
     )
 }
-

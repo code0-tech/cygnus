@@ -10,10 +10,10 @@ export const BrandSection: React.FC = () => {
                 className="absolute inset-0 -mx-4 z-0 pointer-events-none"
                 style={{
                     backgroundImage: `
-                        repeating-linear-gradient(-40deg, 
-                          rgba(255, 255, 255, 0.05) 11px, 
-                          rgba(255, 255, 255, 0.05) 12px, 
-                          transparent 12px, 
+                        repeating-linear-gradient(-40deg,
+                          rgba(255, 255, 255, 0.05) 11px,
+                          rgba(255, 255, 255, 0.05) 12px,
+                          transparent 12px,
                           transparent 24px
                         )
                       `,

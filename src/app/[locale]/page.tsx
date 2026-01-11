@@ -14,7 +14,7 @@ const Page: NextPage = () => {
     return (
         <LandingContainer>
             <HeroSection/>
-            <SectionDivider height={16}/>
+            <SectionDivider height={0}/>
             <BrandSection/>
             <SectionDivider height={64}/>
             <UseCaseSection/>

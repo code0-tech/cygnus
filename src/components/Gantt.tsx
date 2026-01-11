@@ -1,11 +1,20 @@
 "use client"
 
+import { cn } from "@/utils/cn";
 import {getDaysInMonth,} from "date-fns";
 import React, {createContext, type CSSProperties, type FC, type ReactNode, useContext} from "react";
+import {
+    Tooltip,
+    TooltipArrow,
+    TooltipContent,
+    TooltipPortal,
+    TooltipTrigger
+} from "@code0-tech/pictor";
 
 export type GanttFeature = {
     id: string;
     name: string;
+    content?: string;
     icon?: ReactNode;
     startAt: Date;
     endAt: Date;
@@ -72,10 +81,10 @@ export const GanttProvider: FC<{children: ReactNode; className?: string; }> = ({
             }}
         >
             <div
-                className={`grid h-full w-full ${className ?? ""}`}
+                className={cn("grid min-w-full w-max bg-[#020010] ", className)}
                 style={{...cssVars}}
             >
-                <div className="relative w-max h-full">
+                <div className="relative w-max">
                     {children}
                 </div>
             </div>
@@ -87,16 +96,16 @@ export const GanttHeader: FC = () => {
     const gantt = useGantt();
 
     return (
-        <div className="sticky top-0 z-20 bg-primary/80 backdrop-blur-md text-white w-max">
+        <div className="sticky top-0 z-20 bg-[#020010] backdrop-blur-md text-white w-max">
             <div className="flex divide-x divide-white/10">
                 {gantt.timelineData.map((year) => (
                     <div key={year.year} className="flex flex-col">
-                        <div className="px-3 py-2 text-xs font-semibold">
+                        <div className="p-2 text-md font-bold tracking-wide text-center border-b border-white/10">
                             {year.year}
                         </div>
 
                         <div
-                            className="grid border-y border-white/10"
+                            className="grid"
                             style={{
                                 gridTemplateColumns: `repeat(4, var(--gantt-column-width))`,
                             }}
@@ -104,7 +113,7 @@ export const GanttHeader: FC = () => {
                             {year.quarters.map((q) => (
                                 <div
                                     key={`${year.year}-Q${q.index}`}
-                                    className="text-center text-xs py-1 border-r border-white/10"
+                                    className="text-center text-xs py-2 font-medium text-white/70 hover:text-white hover:bg-white/5 transition-colors border-r border-b border-white/10 last:border-r-0"
                                 >
                                     {q.label}
                                 </div>
@@ -117,12 +126,35 @@ export const GanttHeader: FC = () => {
     );
 };
 
+const GanttTodayLine: FC = () => {
+    const gantt = useGantt();
+    const today = new Date();
+    const baseYear = gantt.timelineData[0].year;
+
+    if (today.getFullYear() < baseYear) return null;
+
+    const yearDiff = today.getFullYear() - baseYear;
+    const startOfYear = new Date(today.getFullYear(), 0, 1);
+    const dayOfYear = (today.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24);
+    const offset = (yearDiff * 4 * gantt.columnWidth) + ((dayOfYear / 365) * 4 * gantt.columnWidth);
+
+    return (
+        <div
+            className="absolute top-0 bottom-0 w-px bg-brand/20 z-0 pointer-events-none"
+            style={{ left: offset }}
+        >
+             <div className="absolute top-0 -translate-x-1/2 -translate-y-full text-[10px] font-bold text-brand bg-black/80 px-1.5 py-0.5 rounded border border-brand/30">TODAY</div>
+             <div className="absolute top-0 bottom-0 w-[1px] bg-gradient-to-b from-brand/20 via-transparent to-transparent opacity-50"></div>
+        </div>
+    );
+};
+
 export const GanttFeatureList: FC<{ children: ReactNode }> = ({ children }) => {
     return (
         <div
-            className="absolute left-0 top-0"
-            style={{ marginTop: "var(--gantt-header-height)" }}
+            className="pb-2 relative min-h-[400px]"
         >
+            <GanttTodayLine />
             {children}
         </div>
     );
@@ -130,13 +162,13 @@ export const GanttFeatureList: FC<{ children: ReactNode }> = ({ children }) => {
 
 export const GanttFeatureListGroup: FC<{ children: ReactNode }> = ({ children }) => {
     return (
-        <div style={{ paddingTop: "var(--gantt-row-height)" }}>
+        <div style={{ height: "var(--gantt-row-height)" }}>
             {children}
         </div>
     );
 };
 
-export const GanttFeatureItem: FC<GanttFeature> = ({ name, startAt, endAt, icon }) => {
+export const GanttFeatureItem: FC<GanttFeature> = ({ name, content, startAt, endAt, icon }) => {
     const gantt = useGantt();
     const baseYear = gantt.timelineData[0].year;
     const gap = 16
@@ -156,26 +188,52 @@ export const GanttFeatureItem: FC<GanttFeature> = ({ name, startAt, endAt, icon 
 
     return (
         <div className="relative w-max">
-            <div
-                className="absolute flex items-center gap-2 border border-white/10 bg-white/5 shadow p-2 rounded text-xs top-0"
-                style={{left: offset + (gap/2), top: gap/2, width, height}}
-            >
-                <div
-                    className="absolute inset-0 z-10 pointer-events-none"
-                    style={{
-                        backgroundImage: `
-                        repeating-linear-gradient(-40deg, 
-                          rgba(255, 255, 255, 0.05) 11px, 
-                          rgba(255, 255, 255, 0.05) 12px, 
-                          transparent 12px, 
-                          transparent 24px
-                        )
-                      `,
-                    }}
-                />
-                {icon}
-                {name}
-            </div>
+            <Tooltip delayDuration={500}>
+                <TooltipTrigger asChild>
+                        <div
+                            className={cn(
+                                "absolute flex items-center gap-2 p-2 rounded text-xs top-0",
+                                "overflow-hidden cursor-default group border border-brand/10 bg-[#070c18] hover:bg-[#0c171f]",
+                                "shadow-md transition-all"
+                            )}
+                            style={{
+                                left: offset + (gap/2),
+                                top: gap/2,
+                                width,
+                                height,
+                            }}
+                        >
+                            <div
+                                className="absolute inset-0 z-0 opacity-50 pointer-events-none"
+                                style={{
+                                    backgroundImage: `
+                                        repeating-linear-gradient(-40deg,
+                                        rgba(255, 255, 255, 0.05) 11px,
+                                        rgba(255, 255, 255, 0.05) 12px,
+                                        transparent 12px,
+                                        transparent 24px
+                                        )
+                                    `,
+                                }}
+                            />
+                            <div className="relative z-10 flex items-center gap-2 w-full overflow-hidden">
+                                {icon && <span className="shrink-0 text-white/70 group-hover:text-white transition-colors">{icon}</span>}
+                                <span className="truncate font-medium text-white/90 group-hover:text-white transition-colors">
+                                    {name}
+                                </span>
+                            </div>
+                        </div>
+                    </TooltipTrigger>
+                    <TooltipPortal>
+                        <TooltipContent sideOffset={5} className="max-w-xs bg-white!">
+                            <div className="flex flex-col gap-1 p-2 text-center">
+                                <p className="font-semibold text-sm text-black">{name}</p>
+                                {content && <p className="text-xs text-black/75">{content}</p>}
+                            </div>
+                            <TooltipArrow className="fill-white!"/>
+                        </TooltipContent>
+                    </TooltipPortal>
+                </Tooltip>
         </div>
     );
 };

@@ -21,7 +21,7 @@ export const FaqSection: React.FC = () => {
 
     return (
         <div className={"flex flex-col gap-8 items-center justify-center py-40 px-[10%] md:px-[24%]"}>
-            <p className={"text-2xl lg:text-4xl text-white/75 font-semibold text-center"}>
+            <p className={"text-2xl lg:text-4xl text-white font-semibold text-center"}>
                 {t("title")}
             </p>
             <div className={"flex flex-col gap-4"}>
