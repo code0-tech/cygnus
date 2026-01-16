@@ -16,6 +16,7 @@
     "@radix-ui/react-accordion": "^1.2.12",
     "@react-three/fiber": "^9.3.0",
     "@react-three/postprocessing": "^3.0.4",
+    "@swc/helpers": "^0.5.18",
     "@tabler/icons-react": "^3.34.0",
     "@types/mdx": "^2.0.13",
     "@uidotdev/usehooks": "^2.4.1",
