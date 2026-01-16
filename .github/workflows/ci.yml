@@ -13,7 +13,7 @@ jobs:
   pipeline:
     runs-on: ubuntu-latest
     steps:
-      - uses: Taucher2003/GitLab-Pipeline-Action@1.11.0
+      - uses: Taucher2003/GitLab-Pipeline-Action@1.14.0
         name: Run pipeline
         id: pipeline
         with:
@@ -28,7 +28,7 @@ jobs:
           GLPA_C0_GH_REF: ${{ github.ref }}
 
       - name: Find existing comment
-        uses: peter-evans/find-comment@v3
+        uses: peter-evans/find-comment@v4
         id: find-comment
         if: ${{ !cancelled() && github.event_name == 'pull_request' }}
         with:
@@ -37,7 +37,7 @@ jobs:
           body-includes: <!-- glpa_comment:pipeline -->
 
       - name: Create or update comment
-        uses: peter-evans/create-or-update-comment@v4
+        uses: peter-evans/create-or-update-comment@v5
         if: ${{ !cancelled() && github.event_name == 'pull_request' }}
         with:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
