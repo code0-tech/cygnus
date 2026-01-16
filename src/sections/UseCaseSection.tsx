@@ -127,7 +127,7 @@ export const UseCaseSection: React.FC = () => {
                 </div>
 
                 <div className={"w-full flex flex-col items-center justify-center"}>
-                    <div className={"relative w-max h-full flex items-center -mb-6 p-2 rounded-2xl bg-[#353343] border border-white/10 shadow-sm"}
+                    <div className={"z-10 relative w-max h-full flex items-center -mb-6 p-2 rounded-2xl bg-[#353343] border border-white/10 shadow-sm"}
                     >
                         <div className={"flex items-center gap-2"}>
                             {useCases.map((item) => (

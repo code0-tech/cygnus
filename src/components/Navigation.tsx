@@ -1,7 +1,7 @@
 "use client"
 
 import {AnimatePresence, motion} from "motion/react"
-import {useRouter} from "next/navigation"
+import {useRouter} from "@/i18n/navigation"
 import React, {JSX, ReactNode, useEffect, useMemo, useRef, useState} from "react"
 import {cn} from "@/utils/cn"
 import Image from "next/image"
@@ -169,7 +169,7 @@ function Navigation() {
                                                                 {item.subMenu!.map((sub) => (
                                                                     <button
                                                                         key={sub.title}
-                                                                        className="group flex items-center gap-2 p-2 rounded-lg text-left hover:bg-white/10"
+                                                                        className="group flex items-center gap-2 p-2 rounded-xl text-left hover:bg-white/10"
                                                                         onClick={() => {
                                                                             router.push(sub.href)
                                                                             setIsOpen(false)
@@ -197,7 +197,7 @@ function Navigation() {
                                     animate={{ y: 0, opacity: 1 }}
                                     exit={{ y: -8, opacity: isScrolled ? 1 : 0 }}
                                     transition={{ duration: 0.25, delay: 0.06 * 4 }}
-                                    className="text-white/75 px-2 py-1 font-medium text-md rounded-xl cursor-pointer hover:text-white hover:bg-white/10 transition-colors"
+                                    className="mt-4 p-2 font-medium text-md rounded-xl cursor-pointer hover:text-white hover:bg-white/10 transition-colors border border-white/10"
                                     onClick={() => {
                                         router.push("github")
                                         setIsOpen(false)
@@ -211,7 +211,7 @@ function Navigation() {
                                     animate={{ y: 0, opacity: 1 }}
                                     exit={{ y: -8, opacity: isScrolled ? 1 : 0 }}
                                     transition={{ duration: 0.25, delay: 0.06 * 4 }}
-                                    className="text-white/75 px-2 py-1 font-medium text-md rounded-xl cursor-pointer hover:text-white hover:bg-white/10 transition-colors"
+                                    className="text-white/75 p-2 font-medium text-md rounded-xl cursor-pointer hover:text-white hover:bg-white/10 transition-colors border border-white/10"
                                     onClick={() => {
                                         router.push("discord")
                                         setIsOpen(false)
@@ -232,7 +232,7 @@ function Navigation() {
         <div className={"fixed z-[100] h-max w-full"}>
             <motion.div
                 className={cn(
-                    "my-4 p-1.5 h-full flex flex-col justify-center gap-2 xl:gap-4 top-0 left-0 border rounded-2xl overflow-visible",
+                    "my-4 p-1.5 flex flex-col justify-center gap-2 xl:gap-4 top-0 left-0 border rounded-2xl overflow-visible",
                     isScrolled ? "border border-white/10 shadow-sm bg-primary/20 backdrop-blur-xl" : "border-transparent",
                 )}
                 initial={{
@@ -281,7 +281,7 @@ function Navigation() {
                                 className="absolute z-50 shadow-lg"
                                 style={{ left: position.left, top: "100%" }}
                             >
-                                <div className="mt-2 rounded-lg border border-white/10 bg-primary/90 backdrop-blur-xl shadow-xl p-2 w-max">
+                                <div className="mt-2 rounded-xl border border-white/10 bg-primary/90 backdrop-blur-xl shadow-xl p-2 w-max">
                                     {activeSubMenu.map((subItem) => (
                                         <motion.div
                                             key={subItem.title}
@@ -395,9 +395,9 @@ const Tab: React.FC<TabProps> = ({ setPosition, onClick, title, subMenu, activeS
             {title}
             {subMenu && (
                 active ? (
-                    <IconChevronUp size={20} className={"transition-all text-white/75"}/>
+                    <IconChevronUp size={20} className={"transition-all text-white/75 mr-1"}/>
                 ) : (
-                    <IconChevronUp size={20} className={"rotate-180 transition-all text-white/75"}/>
+                    <IconChevronUp size={20} className={"rotate-180 transition-all text-white/75 mr-1"}/>
                 )
             )}
         </motion.div>

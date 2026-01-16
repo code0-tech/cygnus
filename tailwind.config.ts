@@ -11,7 +11,8 @@ export default {
         "./src/content/**/*.{js,ts,jsx,tsx,mdx}",
         "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
         "./src/stories/*.{js,ts,jsx,tsx,mdx}",
-        "./src/mdx-components.tsx"
+        "./src/mdx-components.tsx",
+        "./src/app/not-found.tsx"
     ],
     darkMode: "class",
     theme: {
