@@ -16,7 +16,7 @@ export const AccordionItem = ({ question, answer, isOpen, onToggle }: FAQItemPro
     }
     return (
         <div
-            className={`w-full bg-white/2 border border-white/10 shadow-[0px_2px_4px_rgba(0,0,0,0.16)] overflow-hidden rounded-xl transition-colors duration-200 ease-linear cursor-pointer hover:bg-white/5`}
+            className={`w-full bg-white/2 ring ring-white/5 shadow-md overflow-hidden rounded-xl transition-colors duration-200 ease-linear cursor-pointer hover:bg-white/5`}
             onClick={handleClick}
         >
             <div className="w-full px-5 py-[18px] pr-4 flex justify-between items-center gap-5 text-left">

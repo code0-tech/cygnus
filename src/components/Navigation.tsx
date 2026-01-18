@@ -74,7 +74,7 @@ function Navigation() {
                 <motion.div
                     className={cn(
                         "my-6 p-1.5 flex flex-col gap-2 top-0 left-0 border rounded-2xl overflow-hidden transition-colors",
-                        (isScrolled || isOpen) ? "border border-white/10 shadow-sm bg-primary/20 backdrop-blur-xl" : "border-transparent",
+                        (isScrolled || isOpen) ? "border border-white/5 shadow-sm bg-primary/20 backdrop-blur-xl" : "border-transparent",
                     )}
                     initial={{
                         marginLeft: "6%",
@@ -233,7 +233,7 @@ function Navigation() {
             <motion.div
                 className={cn(
                     "my-4 p-1.5 flex flex-col justify-center gap-2 xl:gap-4 top-0 left-0 border rounded-2xl overflow-visible",
-                    isScrolled ? "border border-white/10 shadow-sm bg-primary/20 backdrop-blur-xl" : "border-transparent",
+                    isScrolled ? "border border-white/5 shadow-sm bg-primary/20 backdrop-blur-xl" : "border-transparent",
                 )}
                 initial={{
                     marginLeft: "4.5%",
@@ -281,7 +281,7 @@ function Navigation() {
                                 className="absolute z-50 shadow-lg"
                                 style={{ left: position.left, top: "100%" }}
                             >
-                                <div className="mt-2 rounded-xl border border-white/10 bg-primary/90 backdrop-blur-xl shadow-xl p-2 w-max">
+                                <div className="mt-2 rounded-xl border border-white/5 bg-primary/90 backdrop-blur-xl shadow-xl p-2 w-max">
                                     {activeSubMenu.map((subItem) => (
                                         <motion.div
                                             key={subItem.title}

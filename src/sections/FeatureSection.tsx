@@ -23,7 +23,7 @@ export const FeatureSection: React.FC = () => {
                     <IconArrowUpRight size={16} />
                 </button>
             </div>
-            <div className={"w-full grid grid-cols-1 md:grid-cols-5 gap-16 auto-rows-fr"}>
+            <div className={"w-full grid grid-cols-1 md:grid-cols-5 gap-8 auto-rows-fr"}>
                 <AdapterCard/>
                 <SuggestionCard/>
                 <RuntimeCard/>

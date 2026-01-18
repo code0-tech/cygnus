@@ -1,6 +1,10 @@
-import React from "react"
+"use client"
+
+import React, {useState} from "react"
 import {IconFolders, IconHierarchy, IconUsersGroup} from "@tabler/icons-react"
 import {useTranslations} from "next-intl"
+import { AnimatedList } from "../AnimatedList"
+import { FeatureCard } from "./FeatuerCard"
 
 export const ProjectCard: React.FC = () => {
     const t = useTranslations("FeatureSection")
@@ -21,35 +25,54 @@ export const ProjectCard: React.FC = () => {
             name: "Workflow Andromeda",
             description: "Agile development workflow for Cygnus.",
         },
+        {
+            icon: <IconHierarchy size={32} className="text-white/75" />,
+            name: "Workflow Andromeda",
+            description: "Agile development workflow for Cygnus.",
+        },
+        {
+            icon: <IconHierarchy size={32} className="text-white/75" />,
+            name: "Workflow Andromeda",
+            description: "Agile development workflow for Cygnus.",
+        },
     ]
 
 
     return (
-        <div className={"relative flex flex-col justify-between items-center overflow-hidden p-4 h-[420px] col-span-3 row-span-2 bg-[#050316] rounded-xl border border-white/10"}>
-            <div className={"flex flex-col gap-1 text-center"}>
-                <p className={"font-mono font-semibold text-lg text-white/75"}>
+        <FeatureCard className="col-span-3">
+            <div className={"w-full flex flex-col gap-1"}>
+                <p className={"font-semibold text-lg text-brand"}>
                     {t("projectTitle")}
                 </p>
                 <p className={"text-white/50 text-sm"}>
                     {t("projectDescription")}
                 </p>
             </div>
-            <div className="w-full flex flex-col items-center justify-end h-full pb-8">
-                {cards.map((card, index) => (
-                    <div
-                        key={index}
-                        className="w-5/6 h-24 flex items-center gap-4 p-4 bg-primary rounded-lg transform transition-all duration-300 -mt-20 first:mt-0 border border-white/10"
-                        style={{ scale: 100 + (index * 5) + "%" }}
-                    >
+            <div className="w-full flex flex-col items-center justify-end h-full pb-8 overflow-hidden">
+                <AnimatedList
+                    stackGap={18}
+                    columnGap={80}
+                    scaleFactor={0.025}
+                    scrollDownDuration={10}
+                    formationDuration={3}
+                >
+                    {cards.map((card, index) => {
+                    return (
+                        <div
+                            key={index}
+                            className={`w-5/6 h-18 flex items-center gap-4 p-4 bg-[#080519] rounded-lg transform transition-all duration-300 border border-white/10`}
+                        >
 
-                        {card.icon}
-                        <div>
-                            <p className="text-white/90 font-semibold">{card.name}</p>
-                            <p className="text-white/60 text-xs">{card.description}</p>
+                            {card.icon}
+                            <div>
+                                <p className="text-white/90 font-semibold">{card.name}</p>
+                                <p className="text-white/60 text-xs">{card.description}</p>
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    )
+                })}
+                    </AnimatedList>
             </div>
-        </div>
+        </FeatureCard>
     )
 }

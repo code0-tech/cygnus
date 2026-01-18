@@ -8,7 +8,7 @@ export const HeroSection: React.FC = () => {
     const t = useTranslations('HeroSection');
 
     return (
-        <div className="relative h-full mb-4 rounded-xl border border-white/10 overflow-hidden shadow-lg">
+        <div className="relative h-full mb-4 rounded-xl ring ring-white/5 overflow-hidden shadow-lg">
 
             <div className="pointer-events-none absolute inset-0 -z-10 bg-[#0f0c1f]">
             <GradientBlinds
@@ -25,34 +25,34 @@ export const HeroSection: React.FC = () => {
             />
             </div>
 
-            <div className={"z-10 flex flex-row items-center justify-between gap-8 px-16 py-24"}>
+            <div className={"z-10 flex flex-col md:flex-row items-center justify-between gap-12 px-8 md:px-16 py-12 md:py-24"}>
 
-                <div className="w-2/5 flex flex-col gap-4 text-start">
-                    <div className="relative z-10 group bg-primary cursor-pointer border border-white/10 text-white shadow-md w-fit px-4 py-0.5 rounded-full flex items-center justify-between gap-1 hover:gap-2 hover:pr-3 transition-all text-sm font-medium">
+                <div className="w-full md:w-2/5 flex flex-col gap-4 text-start">
+                    <div className="relative z-10 group bg-brand/5 cursor-pointer border border-brand/5 text-brand shadow-md w-fit px-4 py-0.5 rounded-full flex items-center justify-between gap-1 hover:gap-2 hover:pr-3 transition-all text-sm font-medium">
                         {t("badge")}
                         <IconArrowRight size={14}/>
                     </div>
 
-                    <h1 className="relative z-10 font-bold text-4xl text-white">
+                    <h1 className="relative z-10 font-bold text-3xl md:text-4xl text-white">
                         {t("title")}
                     </h1>
 
-                    <p className="relative z-10 font-medium text-white/75 text-xl">
+                    <p className="relative z-10 font-medium text-white/75 text-lg md:text-xl">
                         {t("description1")} <br/> {t("description2")}
                     </p>
 
                     <div className={"flex flex-col gap-4 mt-4"}>
-                        <button className="h-10 z-10 flex items-center justify-center text-md gap-2 bg-white/10 hover:bg-white/20 text-white rounded-xl px-4 py-1 border border-white/10 shadow-md">
+                        <button className="w-full sm:w-auto h-10 z-10 flex items-center justify-center text-md gap-2 bg-white/10 hover:bg-white/20 text-white rounded-xl px-4 py-1 border border-white/10 shadow-md">
                             {t("docsButton")}
                         </button>
-                        <button className="h-10 z-10 flex items-center justify-center text-md gap-2 bg-white/90 hover:bg-white text-primary rounded-xl px-4 py-1 border border-white/10 shadow-md">
+                        <button className="w-full sm:w-auto h-10 z-10 flex items-center justify-center text-md gap-2 bg-white/90 hover:bg-white text-primary rounded-xl px-4 py-1 border border-white/10 shadow-md">
                             {t("ctaButton")}
                         </button>
                     </div>
                 </div>
 
                 {/*Image*/}
-                <Image src={"/code0_software.png"} alt={"Code= Example"} height={620} width={900} className={"rounded-l-xl border-l border-y border-white/10 ring-4 ring-white/5 -mr-56 shadow-xl"}/>
+                <Image src={"/code0_software.png"} alt={"Code= Example"} height={620} width={900} className={"w-full h-auto rounded-xl border border-white/10 shadow-xl md:w-4/5 md:border-0 md:border-l md:border-y md:rounded-l-xl md:rounded-r-none md:ring-4 md:ring-white/5 md:-mr-56"}/>
             </div>
         </div>
     )

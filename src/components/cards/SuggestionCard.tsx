@@ -3,6 +3,7 @@
 import React from "react"
 import {useTranslations} from "next-intl"
 import {IconChevronDown} from "@tabler/icons-react"
+import { FeatureCard } from "./FeatuerCard"
 
 export const SuggestionCard: React.FC = () => {
     const t = useTranslations("FeatureSection")
@@ -19,10 +20,9 @@ export const SuggestionCard: React.FC = () => {
     ]
 
     return (
-        <div className={"relative flex flex-col justify-start items-center overflow-hidden gap-4 p-4 h-[420px] col-span-2 row-span-2 bg-[#050316] rounded-xl border border-white/10"}>
-
-            <div className={"flex flex-col gap-1 text-center"}>
-                <p className={"font-mono font-semibold text-lg text-white/75"}>
+        <FeatureCard>
+            <div className={"w-full flex flex-col gap-1"}>
+                <p className={"font-semibold text-lg text-brand"}>
                     {t("suggestionTitle")}
                 </p>
                 <p className={"text-white/50 text-sm"}>
@@ -30,7 +30,7 @@ export const SuggestionCard: React.FC = () => {
                 </p>
             </div>
 
-            <div className="absolute bottom-[-150px] right-[-150px] w-80 bg-black/20 backdrop-blur-sm rounded-lg border border-white/10 shadow-lg">
+            <div className="absolute -bottom-12 -right-2 w-96 bg-black/20 backdrop-blur-sm rounded-lg border border-white/10 shadow-lg">
                 <div className="flex items-center justify-between p-2 bg-gray-900/30 rounded-t-lg">
                     <p className="text-white/75 text-sm">Select a page</p>
                     <IconChevronDown size={20} className="text-white/75" />
@@ -41,6 +41,6 @@ export const SuggestionCard: React.FC = () => {
                     ))}
                 </div>
             </div>
-        </div>
+        </FeatureCard>
     )
 }

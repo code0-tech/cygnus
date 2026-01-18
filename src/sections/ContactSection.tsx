@@ -8,7 +8,7 @@ export const ContactSection: React.FC = () => {
     const t = useTranslations("ContactSection")
 
     return (
-        <div className={"relative overflow-hidden w-full flex flex-col items-center justify-center gap-8 py-12 rounded-xl border border-white/10"}>
+        <div className={"relative overflow-hidden w-full flex flex-col items-center justify-center gap-8 py-12 rounded-xl ring ring-white/5 shadow-lg"}>
 
             <InteractiveGridPattern
                 className={cn("[mask-image:radial-gradient(600px_circle_at_center,white,transparent)]")}

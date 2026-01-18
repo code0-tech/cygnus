@@ -11,8 +11,8 @@ export const BrandSection: React.FC = () => {
                 style={{
                     backgroundImage: `
                         repeating-linear-gradient(-40deg,
-                          rgba(255, 255, 255, 0.05) 11px,
-                          rgba(255, 255, 255, 0.05) 12px,
+                          rgba(255, 255, 255, 0.02) 11px,
+                          rgba(255, 255, 255, 0.02) 12px,
                           transparent 12px,
                           transparent 24px
                         )

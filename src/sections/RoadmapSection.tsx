@@ -137,7 +137,7 @@ export const RoadmapSection: React.FC = () => {
                 </button>
             </div>
 
-            <ScrollArea className={"w-full rounded-xl border border-white/10"} orientation="horizontal">
+            <ScrollArea className={"w-full rounded-xl ring ring-white/5 shadow-lg"} orientation="horizontal">
                 <GanttProvider>
                     <GanttHeader />
                     <GanttFeatureList>

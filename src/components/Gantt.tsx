@@ -81,7 +81,7 @@ export const GanttProvider: FC<{children: ReactNode; className?: string; }> = ({
             }}
         >
             <div
-                className={cn("grid min-w-full w-max bg-[#020010] ", className)}
+                className={cn("grid min-w-full w-max bg-[#050316]", className)}
                 style={{...cssVars}}
             >
                 <div className="relative w-max">
@@ -96,7 +96,7 @@ export const GanttHeader: FC = () => {
     const gantt = useGantt();
 
     return (
-        <div className="sticky top-0 z-20 bg-[#020010] backdrop-blur-md text-white w-max">
+        <div className="sticky top-0 z-20 bg-[#050316] backdrop-blur-md text-white w-max">
             <div className="flex divide-x divide-white/10">
                 {gantt.timelineData.map((year) => (
                     <div key={year.year} className="flex flex-col">
@@ -193,7 +193,7 @@ export const GanttFeatureItem: FC<GanttFeature> = ({ name, content, startAt, end
                         <div
                             className={cn(
                                 "absolute flex items-center gap-2 p-2 rounded text-xs top-0",
-                                "overflow-hidden cursor-default group border border-brand/10 bg-[#070c18] hover:bg-[#0c171f]",
+                                "overflow-hidden cursor-default group border border-brand/5 bg-[#070c18] hover:bg-[#0c171f]",
                                 "shadow-md transition-all"
                             )}
                             style={{

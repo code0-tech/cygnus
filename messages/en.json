@@ -58,13 +58,13 @@
     "title": "Powerful features for your backend",
     "description": "CodeZero offers a range of features designed to simplify backend development and enhance your application's capabilities.",
     "linkButton": "Learn more about the product",
-    "projectTitle": "ORGANIZATIONS & PROJECTS",
+    "projectTitle": "Organizations & Projects",
     "projectDescription": "Manage multiple projects and collaborate with your team seamlessly within a single organization.",
-    "runtimeTitle": "CODEZERO RUNTIME",
+    "runtimeTitle": "CodeZero Runtime",
     "runtimeDescription": "Deploy and run your backend flows effortlessly with our scalable and reliable runtime environment.",
-    "suggestionTitle": "SUGGESTION LOGIC",
+    "suggestionTitle": "Suggestion Logic",
     "suggestionDescription": "Enhance your backend with intelligent suggestion logic to improve user experience and decision-making.",
-    "adapterTitle": "ADAPTERS",
+    "adapterTitle": "Adapters",
     "adapterDescription": "Integrate with various third-party services and databases using our versatile adapters."
   },
   "RoadmapSection": {

@@ -5,6 +5,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { IconDatabase, IconApi, IconBrandStripe } from "@tabler/icons-react";
 import { cn } from "@/utils/cn";
+import { FeatureCard } from "./FeatuerCard";
 
 const adapters = [
   {
@@ -32,16 +33,7 @@ export const AdapterCard: React.FC = () => {
     const [selectedId, setSelectedId] = useState<number | null>(null)
 
     return (
-        <div className={"flex flex-col justify-between items-center overflow-hidden gap-4 p-4 h-[420px] col-span-3 row-span-2 bg-[#050316] rounded-xl border border-white/10"}>
-            <div className={"flex flex-col gap-1 text-center"}>
-                <p className={"font-mono font-semibold text-lg text-white/75"}>
-                    {t("adapterTitle")}
-                </p>
-                <p className={"text-white/50 text-sm max-w-md"}>
-                    {t("adapterDescription")}
-                </p>
-            </div>
-
+        <FeatureCard className="col-span-3">
             <div className="w-full flex justify-center items-center gap-4 h-full">
                 {adapters.map(adapter => (
                     <motion.div
@@ -51,7 +43,7 @@ export const AdapterCard: React.FC = () => {
                         className={cn(
                             "relative cursor-pointer rounded-lg p-4",
                             selectedId === adapter.id ? "w-3/5" : "w-1/5",
-                            "h-2/3 bg-white/5 border border-white/10 flex items-center overflow-hidden",
+                            "h-2/3 bg-white/2 border border-white/10 flex items-center overflow-hidden",
                             selectedId === adapter.id ? "justify-start" : "justify-center"
                         )}
                         transition={{ type: "spring", stiffness: 300, damping: 30 }}
@@ -76,6 +68,14 @@ export const AdapterCard: React.FC = () => {
                     </motion.div>
                 ))}
             </div>
-        </div>
+            <div className={"w-full flex flex-col gap-1"}>
+                <p className={"font-semibold text-lg text-brand"}>
+                    {t("adapterTitle")}
+                </p>
+                <p className={"text-white/50 text-sm"}>
+                    {t("adapterDescription")}
+                </p>
+            </div>
+        </FeatureCard>
     )
 }

@@ -127,7 +127,7 @@ export const UseCaseSection: React.FC = () => {
                 </div>
 
                 <div className={"w-full flex flex-col items-center justify-center"}>
-                    <div className={"z-10 relative w-max h-full flex items-center -mb-6 p-2 rounded-2xl bg-[#353343] border border-white/10 shadow-sm"}
+                    <div className={"z-10 relative w-max h-full flex items-center -mb-6 p-2 rounded-2xl bg-[#353343] border border-white/5 shadow-md"}
                     >
                         <div className={"flex items-center gap-2"}>
                             {useCases.map((item) => (
@@ -144,7 +144,7 @@ export const UseCaseSection: React.FC = () => {
                             className={cn("absolute z-40 h-8 rounded-lg bg-white")}
                         />
                     </div>
-                    <div className="flex w-full h-[600px] rounded-lg bg-white/5 shadow-xl border border-white/10">
+                    <div className="flex w-full h-[600px] rounded-lg bg-white/2 ring ring-white/5 shadow-lg">
                         {activeCase === "CMS" && (
                             <UseCaseCard flowId={"gid://sagittarius/Flow/1"} title={t("useCase1Title")} description={t("useCase1Description")}/>
                         )}
