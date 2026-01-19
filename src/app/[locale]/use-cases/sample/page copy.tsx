@@ -1,6 +1,6 @@
 import { LandingContainer } from "@/components/LandingContainer"
 
-export default function AboutPage() {
+export default function UseCaseSamplePage() {
     return (
         <LandingContainer>
             <p>Test</p>

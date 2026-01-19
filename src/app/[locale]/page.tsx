@@ -1,16 +1,14 @@
-import {NextPage} from "next"
-import {HeroSection} from "@/sections/HeroSection"
-import {FeatureSection} from "@/sections/FeatureSection"
-import {FaqSection} from "@/sections/FaqSection"
-import {ContactSection} from "@/sections/ContactSection"
-import {RoadmapSection} from "@/sections/RoadmapSection"
-import {UseCaseSection} from "@/sections/UseCaseSection"
-import {BrandSection} from "@/sections/BrandSection"
-import React from "react"
-import {LandingContainer} from "@/components/LandingContainer"
-import {SectionDivider} from "@/components/SectionDivider"
+import { LandingContainer } from "@/components/LandingContainer"
+import { SectionDivider } from "@/components/SectionDivider"
+import { BrandSection } from "@/sections/BrandSection"
+import { ContactSection } from "@/sections/ContactSection"
+import { FaqSection } from "@/sections/FaqSection"
+import { FeatureSection } from "@/sections/FeatureSection"
+import { HeroSection } from "@/sections/HeroSection"
+import { RoadmapSection } from "@/sections/RoadmapSection"
+import { UseCaseSection } from "@/sections/UseCaseSection"
 
-const Page: NextPage = () => {
+export default function Page() {
     return (
         <LandingContainer>
             <HeroSection/>
@@ -27,5 +25,3 @@ const Page: NextPage = () => {
         </LandingContainer>
     )
 }
-
-export default Page

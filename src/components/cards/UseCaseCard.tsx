@@ -16,7 +16,7 @@ export function UseCaseCard({ flowId, title, description }: UseCaseCardProps) {
                     <p className={" text-neutral-200"}>{description}</p>
                 </div>
             </div>
-            <DFlow flowId={flowId} namespaceId={undefined} projectId={undefined}/>
+            <DFlow flowId={flowId} namespaceId={undefined} projectId={undefined} />
         </div>
     )
 }

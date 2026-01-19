@@ -41,7 +41,7 @@ export const FooterSection: React.FC = () => {
                         <p className={"text-white/75"}>
                             {t("company")}
                         </p>
-                        <Link href={"/legal-notice"}>
+                        <Link href={"/about-us"}>
                             <p className={"text-white/50 hover:underline underline-offset-2"}>
                                 {t("aboutUs")}
                             </p>
@@ -52,7 +52,7 @@ export const FooterSection: React.FC = () => {
                         <p className={"text-white/75"}>
                             {t("products")}
                         </p>
-                        <Link href={"/legal-notice"}>
+                        <Link href={"/pricing"}>
                             <p className={"text-white/50 hover:underline underline-offset-2"}>
                                 {t("pricing")}
                             </p>
@@ -63,14 +63,19 @@ export const FooterSection: React.FC = () => {
                         <p className={"text-white/75"}>
                             {t("legal")}
                         </p>
-                        <Link href={"/legal-notice"}>
+                        <Link href={"/policy"}>
                             <p className={"text-white/50 hover:underline underline-offset-2"}>
                                 {t("policy")}
                             </p>
                         </Link>
-                        <Link href={"/legal-notice"}>
+                        <Link href={"/terms"}>
                             <p className={"text-white/50 hover:underline underline-offset-2"}>
                                 {t("terms")}
+                            </p>
+                        </Link>
+                        <Link href={"/imprint"}>
+                            <p className={"text-white/50 hover:underline underline-offset-2"}>
+                                {t("imprint")}
                             </p>
                         </Link>
                     </div>
