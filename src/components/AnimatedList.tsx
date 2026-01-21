@@ -96,7 +96,7 @@ function InternalAnimatedListItem({
   return (
     <motion.div
       key={index}
-      className={cn("absolute inset-x-0 flex w-full justify-center drop-shadow-[0_35px_35px_rgba(0,0,0,0.25)]", className)}
+      className={cn("absolute inset-x-0 flex w-full justify-center drop-shadow-[0_15px_15px_rgba(0,0,0,0.15)]", className)}
       variants={itemVariants}
       initial="initial"
       animate={target}

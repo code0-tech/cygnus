@@ -94,8 +94,17 @@ export const UseCaseSection: React.FC = () => {
 
     return (
         <ContextStoreProvider services={[flow, flowFunction, flowType, fileTab, dataType]}>
-            <div className={"w-full flex flex-col gap-16 mb-4"}>
-                <div className={"flex flex-col gap-4 items-center justify-center py-16"}>
+            <div className={"relative overflow-hidden w-full flex flex-col gap-16 mb-4"}>
+            <div
+                className="
+                    pointer-events-none
+                    absolute -inset-16
+                    opacity-20 blur-lg
+                    will-change-filter
+                    [background:radial-gradient(circle_at_top,rgba(112,255,179,0.45),transparent_45%)]
+                "
+            />
+                <div className={"flex flex-col gap-4 items-center justify-center pb-16 pt-32"}>
                     <div className={"flex items-center gap-4 text-6xl text-white"}>
                         <span className={"hidden lg:flex"}>
                             {t("flowText1")}

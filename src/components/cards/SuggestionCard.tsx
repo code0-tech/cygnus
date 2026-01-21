@@ -30,7 +30,7 @@ export const SuggestionCard: React.FC = () => {
                 </p>
             </div>
 
-            <div className="absolute -bottom-12 -right-2 w-96 bg-primary rounded-lg ring ring-white/10 drop-shadow-[0_65px_65px_rgba(0,0,0,0.25)]">
+            <div className="absolute -bottom-12 -right-2 w-96 bg-linear-to-t from-primary to-[#0d1120] rounded-lg ring ring-white/10 drop-shadow-[0_65px_65px_rgba(0,0,0,0.25)]">
                 <div className="flex items-center justify-between p-2 rounded-t-lg border-b border-white/10">
                     <p className="text-white/75 text-sm">Select a page</p>
                     <IconChevronDown size={20} className="text-white/75" />

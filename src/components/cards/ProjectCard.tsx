@@ -39,7 +39,7 @@ export const ProjectCard: React.FC = () => {
 
 
     return (
-        <FeatureCard className="col-span-3">
+        <FeatureCard className="col-span-1 md:col-span-3">
             <div className="relative w-full -mt-4 flex flex-col items-center justify-end h-full overflow-hidden">
                 <AnimatedList
                     stackGap={18}
@@ -51,7 +51,7 @@ export const ProjectCard: React.FC = () => {
                     {cards.map((card, index) => (
                         <div
                             key={index}
-                            className={`w-5/6 h-18 flex items-center gap-4 p-4 bg-[#080519] rounded-lg transform transition-all duration-300 border border-white/10`}
+                            className={`w-5/6 h-18 flex items-center gap-4 p-4 bg-linear-to-t from-primary to-[#0d1120] rounded-lg transform transition-all duration-300 ring ring-white/10`}
                         >
 
                             {card.icon}

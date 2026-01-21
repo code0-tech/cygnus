@@ -33,7 +33,7 @@ export const AdapterCard: React.FC = () => {
     const [selectedId, setSelectedId] = useState<number | null>(1)
 
     return (
-        <FeatureCard className="col-span-3">
+        <FeatureCard className="col-span-1 md:col-span-3">
             <div className="w-full flex justify-center items-center gap-4 h-full">
                 {adapters.map(adapter => (
                     <motion.div

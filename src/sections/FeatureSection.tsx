@@ -10,8 +10,19 @@ export const FeatureSection: React.FC = () => {
     const t = useTranslations("FeatureSection")
 
     return (
-        <div className={"w-full flex flex-col gap-16 mb-4"}>
-            <div className={"flex flex-col gap-4 items-center justify-center text-center py-16"}>
+        <div className={"relative overflow-hidden w-full flex flex-col gap-16 mb-4"}>
+
+            <div
+                className="
+                    pointer-events-none
+                    absolute -inset-16
+                    opacity-20 blur-lg
+                    will-change-filter
+                    [background:radial-gradient(circle_at_top,rgba(255,255,255,0.45),transparent_45%)]
+                "
+            />
+
+            <div className={"flex flex-col gap-4 items-center justify-center text-center pb-16 pt-48"}>
                 <p className={"text-6xl text-white"}>
                     {t("title")}
                 </p>

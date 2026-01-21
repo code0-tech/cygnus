@@ -126,9 +126,19 @@ export const RoadmapSection: React.FC = () => {
     }, {} as Record<string, any[]>)
 
     return (
-        <div className={"flex flex-col items-center justify-center gap-16"}>
+        <div className={"relative overflow-hidden flex flex-col items-center justify-center gap-16"}>
 
-            <div className={"w-full flex flex-col gap-4 items-center justify-center text-center"}>
+            <div
+                className="
+                    pointer-events-none
+                    absolute -inset-16
+                    opacity-20 blur-lg
+                    will-change-filter
+                    [background:radial-gradient(circle_at_top,rgba(255,255,255,0.45),transparent_45%)]
+                "
+            />
+
+            <div className={"w-full flex flex-col gap-4 items-center justify-center text-center pt-32"}>
                 <p className={"text-4xl lg:text-6xl text-white"}>{t("title")}</p>
                 <p className={"text-xl text-white/75"}>{t("description")}</p>
                 <button className={"flex items-center gap-1 border-b border-dashed border-white/25 text-sm text-white/50 hover:text-brand"}>

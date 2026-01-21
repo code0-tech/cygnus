@@ -15,12 +15,12 @@ export default function Page() {
         <LandingContainer>
             <HeroSection/>
             <SectionDivider height={0}/>
-            <BrandSection/>
-            <SectionDivider height={64}/>
+            <BrandSection />
+            <SectionDivider height={0}/>
             <UseCaseSection/>
-            <SectionDivider height={128}/>
+            <SectionDivider height={0}/>
             <FeatureSection/>
-            <SectionDivider height={128}/>
+            <SectionDivider height={0}/>
             <RoadmapSection/>
             <FaqSection/>
             <ContactSection/>

@@ -27,7 +27,7 @@ export function FeatureCard({children, className}: {children: ReactNode, classNa
     }, []);
 
     return (
-        <div ref={cardRef} className={cn("relative h-[420px] overflow-hidden col-span-2 row-span-2 bg-linear-to-br from-white/5 to-primary rounded-xl ring ring-white/10 shadow-lg", className)}>
+        <div ref={cardRef} className={cn("relative h-[420px] overflow-hidden col-span-1 md:col-span-2 row-span-2 bg-linear-to-br from-white/5 to-primary rounded-xl ring ring-white/10 shadow-lg", className)}>
             <div className="absolute inset-0 z-10 flex flex-col justify-start items-center gap-4 p-4">
                 {children}
             </div>
@@ -44,7 +44,7 @@ export function FeatureCard({children, className}: {children: ReactNode, classNa
                     />
                     <div className="h-full w-full relative opacity-10">
                         <div
-                            className="absolute -inset-1 z-0"
+                            className="absolute -inset-2 z-0"
                             style={{
                                 backgroundImage: `
                                 linear-gradient(to right, #e7e5e4 1px, transparent 1px),

@@ -68,7 +68,7 @@ export const AnimatedChart: React.FC = () => {
                         }}
                     />
                 </motion.div>
-                <span className="text-sm text-white/70">Other runtimes</span>
+                <span className="text-sm text-white/70 font-mono">Other runtimes</span>
             </div>
 
             <div className="flex h-full flex-1 flex-col items-center justify-end gap-2">
@@ -98,7 +98,7 @@ export const AnimatedChart: React.FC = () => {
                         }}
                     />
                 </motion.div>
-                <span className="text-sm text-brand">CodeZero-Runtime</span>
+                <span className="text-sm text-brand font-semibold font-mono">CodeZero-Runtime</span>
             </div>
         </div>
     )
