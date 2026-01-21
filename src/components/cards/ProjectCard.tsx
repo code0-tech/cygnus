@@ -39,8 +39,8 @@ export const ProjectCard: React.FC = () => {
 
 
     return (
-        <FeatureCard className="col-span-3 pt-0">
-            <div className="relative w-full flex flex-col items-center justify-end h-full overflow-hidden">
+        <FeatureCard className="col-span-3">
+            <div className="relative w-full -mt-4 flex flex-col items-center justify-end h-full overflow-hidden">
                 <AnimatedList
                     stackGap={18}
                     columnGap={80}

@@ -50,8 +50,6 @@ export const HeroSection: React.FC = () => {
                         </button>
                     </div>
                 </div>
-
-                {/*Image*/}
                 <Image src={"/code0_software.png"} alt={"Code= Example"} height={620} width={900} className={"w-full h-auto rounded-xl border border-white/10 shadow-xl md:w-4/5 md:border-0 md:border-l md:border-y md:rounded-l-xl md:rounded-r-none md:ring-4 md:ring-white/5 md:-mr-56"}/>
             </div>
         </div>

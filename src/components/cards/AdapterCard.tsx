@@ -30,7 +30,7 @@ const adapters = [
 
 export const AdapterCard: React.FC = () => {
     const t = useTranslations("FeatureSection")
-    const [selectedId, setSelectedId] = useState<number | null>(null)
+    const [selectedId, setSelectedId] = useState<number | null>(1)
 
     return (
         <FeatureCard className="col-span-3">
@@ -41,9 +41,9 @@ export const AdapterCard: React.FC = () => {
                         key={adapter.id}
                         onClick={() => setSelectedId(selectedId === adapter.id ? null : adapter.id)}
                         className={cn(
-                            "relative cursor-pointer rounded-lg p-4 drop-shadow-[0_65px_65px_rgba(0,0,0,0.5)]",
+                            "relative cursor-pointer rounded-lg p-4 drop-shadow-[0_20px_20px_rgba(0,0,0,0.15)]",
                             selectedId === adapter.id ? "w-3/5" : "w-1/5",
-                            "h-2/3 bg-white/2 border border-white/10 flex items-center overflow-hidden",
+                            "h-2/3 bg-linear-to-t from-primary to-[#0d1120] ring ring-white/10 flex items-center overflow-hidden",
                             selectedId === adapter.id ? "justify-start" : "justify-center"
                         )}
                         transition={{ type: "spring", stiffness: 300, damping: 30 }}

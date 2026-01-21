@@ -50,14 +50,14 @@ export const AnimatedChart: React.FC = () => {
                     {show ? <Counter from={0} to={competitorsValue} duration={2} /> : competitorsValue}ms
                 </motion.span>
                 <motion.div
-                    className="relative w-full overflow-hidden rounded-t-md bg-linear-to-t from-white/50 to-white/70 drop-shadow-[0_65px_65px_rgba(0,0,0,0.25)]"
+                    className="relative w-full overflow-hidden rounded-t-md bg-linear-to-b from-gray-400 to-gray-600 drop-shadow-[0_65px_65px_rgba(0,0,0,0.25)]"
                     animate={{ height: show ? `${(competitorsValue / maxValue) * 100}%` : '0%' }}
                     transition={barTransition}
                 >
                     <motion.div
                         className="absolute inset-0"
                         style={{
-                            backgroundImage: 'repeating-linear-gradient(-45deg, transparent, transparent 10px, rgba(0, 0, 0, 0.02) 10px, rgba(0, 0, 0, 0.02) 20px)',
+                            backgroundImage: 'repeating-linear-gradient(-45deg, transparent, transparent 10px, rgba(0,0,0,0.02) 10px, rgba(0,0,0,0.02) 20px)',
                             backgroundSize: '200% 200%',
                         }}
                         animate={{ backgroundPosition: ['0% 0%', '100% 100%'] }}
@@ -80,7 +80,7 @@ export const AnimatedChart: React.FC = () => {
                     {show ? <Counter from={0} to={codezeroValue} duration={2} /> : codezeroValue}ms
                 </motion.span>
                 <motion.div
-                    className="relative w-full overflow-hidden rounded-t-md bg-linear-to-t from-brand/70 to-brand drop-shadow-[0_65px_65px_rgba(0,0,0,0.25)]"
+                    className="relative w-full overflow-hidden rounded-t-md bg-linear-to-t from-[#2f6352] to-brand drop-shadow-[0_65px_65px_rgba(0,0,0,0.25)]"
                     animate={{ height: show ? `${(codezeroValue / maxValue) * 100}%` : '0%' }}
                     transition={barTransition}
                 >
@@ -98,7 +98,7 @@ export const AnimatedChart: React.FC = () => {
                         }}
                     />
                 </motion.div>
-                <span className="text-sm text-white/80">CodeZero-Runtime</span>
+                <span className="text-sm text-brand">CodeZero-Runtime</span>
             </div>
         </div>
     )
