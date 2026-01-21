@@ -4,7 +4,7 @@ import React, {useState} from "react"
 import {IconFolders, IconHierarchy, IconUsersGroup} from "@tabler/icons-react"
 import {useTranslations} from "next-intl"
 import { AnimatedList } from "../AnimatedList"
-import { FeatureCard } from "./FeatuerCard"
+import { FeatureCard } from "./FeatureCard"
 
 export const ProjectCard: React.FC = () => {
     const t = useTranslations("FeatureSection")

@@ -50,7 +50,7 @@ export const AnimatedChart: React.FC = () => {
                     {show ? <Counter from={0} to={competitorsValue} duration={2} /> : competitorsValue}ms
                 </motion.span>
                 <motion.div
-                    className="relative w-full overflow-hidden rounded-t-md bg-linear-to-t from-white/50 to-white/70"
+                    className="relative w-full overflow-hidden rounded-t-md bg-linear-to-t from-white/50 to-white/70 drop-shadow-[0_65px_65px_rgba(0,0,0,0.25)]"
                     animate={{ height: show ? `${(competitorsValue / maxValue) * 100}%` : '0%' }}
                     transition={barTransition}
                 >
@@ -80,7 +80,7 @@ export const AnimatedChart: React.FC = () => {
                     {show ? <Counter from={0} to={codezeroValue} duration={2} /> : codezeroValue}ms
                 </motion.span>
                 <motion.div
-                    className="relative w-full overflow-hidden rounded-t-md bg-linear-to-t from-brand/70 to-brand"
+                    className="relative w-full overflow-hidden rounded-t-md bg-linear-to-t from-brand/70 to-brand drop-shadow-[0_65px_65px_rgba(0,0,0,0.25)]"
                     animate={{ height: show ? `${(codezeroValue / maxValue) * 100}%` : '0%' }}
                     transition={barTransition}
                 >

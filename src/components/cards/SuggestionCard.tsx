@@ -3,7 +3,7 @@
 import React from "react"
 import {useTranslations} from "next-intl"
 import {IconChevronDown} from "@tabler/icons-react"
-import { FeatureCard } from "./FeatuerCard"
+import { FeatureCard } from "./FeatureCard"
 
 export const SuggestionCard: React.FC = () => {
     const t = useTranslations("FeatureSection")
@@ -30,12 +30,12 @@ export const SuggestionCard: React.FC = () => {
                 </p>
             </div>
 
-            <div className="absolute -bottom-12 -right-2 w-96 bg-black/20 backdrop-blur-sm rounded-lg border border-white/10 shadow-lg">
-                <div className="flex items-center justify-between p-2 bg-gray-900/30 rounded-t-lg">
+            <div className="absolute -bottom-12 -right-2 w-96 bg-primary rounded-lg ring ring-white/10 drop-shadow-[0_65px_65px_rgba(0,0,0,0.25)]">
+                <div className="flex items-center justify-between p-2 rounded-t-lg border-b border-white/10">
                     <p className="text-white/75 text-sm">Select a page</p>
                     <IconChevronDown size={20} className="text-white/75" />
                 </div>
-                <div className="flex flex-col p-2">
+                <div className="flex flex-col px-2">
                     {dropdownItems.map((item, index) => (
                         <p key={index} className="text-white/60 p-1.5 rounded-md hover:bg-white/5 text-sm">{item}</p>
                     ))}

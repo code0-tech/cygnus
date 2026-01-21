@@ -1,6 +1,6 @@
 import React from 'react'
 import { useTranslations } from 'next-intl'
-import { FeatureCard } from './FeatuerCard'
+import { FeatureCard } from './FeatureCard'
 import { AnimatedChart } from '../AnimatedChart'
 
 export const RuntimeCard: React.FC = () => {
