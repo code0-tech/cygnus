@@ -21,7 +21,8 @@ export default function Page() {
             <SectionDivider height={0}/>
             <FeatureSection/>
             <SectionDivider height={0}/>
-            <RoadmapSection/>
+            <RoadmapSection />
+            <SectionDivider height={0}/>
             <FaqSection/>
             <ContactSection/>
         </LandingContainer>

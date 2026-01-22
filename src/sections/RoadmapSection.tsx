@@ -126,7 +126,7 @@ export const RoadmapSection: React.FC = () => {
     }, {} as Record<string, any[]>)
 
     return (
-        <div className={"relative overflow-hidden flex flex-col items-center justify-center gap-16"}>
+        <div className={"relative overflow-hidden flex flex-col items-center justify-center gap-16 mb-16 -mx-4"}>
 
             <div
                 className="
@@ -147,7 +147,7 @@ export const RoadmapSection: React.FC = () => {
                 </button>
             </div>
 
-            <ScrollArea className={"w-full rounded-xl ring ring-white/5 shadow-lg"} orientation="horizontal">
+            <ScrollArea className={"mx-auto w-[90%] rounded-xl ring ring-white/5 shadow-lg"} orientation="horizontal">
                 <GanttProvider>
                     <GanttHeader />
                     <GanttFeatureList>

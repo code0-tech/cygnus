@@ -94,7 +94,7 @@ export const UseCaseSection: React.FC = () => {
 
     return (
         <ContextStoreProvider services={[flow, flowFunction, flowType, fileTab, dataType]}>
-            <div className={"relative overflow-hidden w-full flex flex-col gap-16 mb-4"}>
+            <div className={"relative overflow-hidden flex flex-col gap-16 mb-4 -mx-4"}>
             <div
                 className="
                     pointer-events-none
@@ -135,7 +135,7 @@ export const UseCaseSection: React.FC = () => {
                     </button>
                 </div>
 
-                <div className={"w-full flex flex-col items-center justify-center"}>
+                <div className={"w-[90%] flex flex-col items-center justify-center mx-auto"}>
                     <div className={"z-10 relative w-max h-full flex items-center -mb-6 p-2 rounded-2xl bg-[#353343] border border-white/5 shadow-md"}
                     >
                         <div className={"flex items-center gap-2"}>

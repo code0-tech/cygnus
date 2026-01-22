@@ -5,9 +5,9 @@ export const BrandSection: React.FC = () => {
     const t = useTranslations('BrandSection')
 
     return (
-        <div className={"relative w-full py-24"}>
+        <div className={"relative overflow-hidden -mx-4 py-24"}>
             <div
-                className="absolute inset-0 z-0 pointer-events-none -mx-4"
+                className="absolute inset-0 z-0 pointer-events-none"
                 style={{
                     backgroundImage: `
                         repeating-linear-gradient(-40deg,
