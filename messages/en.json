@@ -1,7 +1,6 @@
 {
   "Navbar": {
     "items": [
-      { "title": "Home", "href": "/" },
       {
         "title": "Use Cases",
         "href": null,

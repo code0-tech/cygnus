@@ -1,7 +1,7 @@
 "use client"
 
 import {AnimatePresence, motion} from "motion/react"
-import {useRouter} from "@/i18n/navigation"
+import {Link, useRouter} from "@/i18n/navigation"
 import React, {JSX, ReactNode, useEffect, useMemo, useRef, useState} from "react"
 import {cn} from "@/utils/cn"
 import Image from "next/image"
@@ -91,13 +91,15 @@ function Navigation() {
                     }}
                 >
                     <div className={"w-full flex items-center justify-between gap-2"}>
-                        <motion.div className={cn("flex")}
-                                    initial={{opacity: 0, filter: 'blur(10px)', y: -30}}
-                                    animate={{opacity: 1, filter: 'blur(0px)', y: 0}}
-                                    transition={{duration: 0.65}}
-                        >
-                            <Image src={"/code0_logo_white.png"} width={"32"} height={"32"} alt={"Code0 Logo"}/>
-                        </motion.div>
+                        <Link href="/">
+                            <motion.div className={cn("flex")}
+                                initial={{opacity: 0, filter: 'blur(10px)', y: -30}}
+                                animate={{opacity: 1, filter: 'blur(0px)', y: 0}}
+                                transition={{duration: 0.65}}
+                            >
+                                <Image src={"/code0_logo_white.png"} width={"32"} height={"32"} alt={"Code0 Logo"}/>
+                            </motion.div>
+                        </Link>
                         <motion.button
                             className={cn("bg-transparent border-0 transition-colors mr-1.5")}
                             initial={{opacity: 0, filter: 'blur(10px)', y: -30}}
@@ -232,7 +234,7 @@ function Navigation() {
         <div className={"fixed z-[100] h-max w-full"}>
             <motion.div
                 className={cn(
-                    "my-4 p-1.5 flex flex-col justify-center gap-2 xl:gap-4 top-0 left-0 border rounded-2xl overflow-visible",
+                    "my-4 p-1.5 flex flex-col justify-center gap-2 lg:gap-4 top-0 left-0 border rounded-2xl overflow-visible",
                     isScrolled ? "border border-white/5 shadow-sm bg-primary/20 backdrop-blur-xl" : "border-transparent",
                 )}
                 initial={{
@@ -251,13 +253,15 @@ function Navigation() {
             >
                 <div className={"w-full h-full flex items-center justify-between gap-2"}>
 
-                    <motion.div className={cn("flex")}
-                                initial={{opacity: 0, filter: 'blur(10px)', y: -30}}
-                                animate={{opacity: 1, filter: 'blur(0px)', y: 0}}
-                                transition={{duration: 0.65}}
-                    >
-                        <Image src={"/code0_logo_white.png"} width={"32"} height={"32"} alt={"Code0 Logo"}/>
-                    </motion.div>
+                    <Link href="/">
+                        <motion.div className={cn("flex")}
+                            initial={{opacity: 0, filter: 'blur(10px)', y: -30}}
+                            animate={{opacity: 1, filter: 'blur(0px)', y: 0}}
+                            transition={{duration: 0.65}}
+                        >
+                            <Image src={"/code0_logo_white.png"} width={"32"} height={"32"} alt={"Code0 Logo"}/>
+                        </motion.div>
+                    </Link>
 
                     <div className={"relative h-full flex items-center"}
                          onMouseLeave={() => setPosition({ left: position.left, width: position.width, opacity: 0 })}
@@ -318,7 +322,7 @@ function Navigation() {
                         <button
                             className={cn(
                                 "flex items-center px-4 h-8 rounded-xl transition-all",
-                                "bg-white/90 hover:bg-white cursor-pointer font-medium text-primary",
+                                "bg-white/90 hover:bg-white cursor-pointer font-medium text-primary ring ring-white/20",
                             )}
                         >
                             Discord

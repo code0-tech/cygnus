@@ -95,15 +95,15 @@ export const UseCaseSection: React.FC = () => {
     return (
         <ContextStoreProvider services={[flow, flowFunction, flowType, fileTab, dataType]}>
             <div className={"relative overflow-hidden flex flex-col gap-16 mb-4 -mx-4"}>
-            <div
-                className="
-                    pointer-events-none
-                    absolute -inset-16
-                    opacity-20 blur-lg
-                    will-change-filter
-                    [background:radial-gradient(circle_at_top,rgba(112,255,179,0.45),transparent_45%)]
-                "
-            />
+                <div
+                    className="
+                        pointer-events-none
+                        absolute -inset-16
+                        opacity-20 blur-lg
+                        will-change-filter
+                        [background:radial-gradient(circle_at_top,rgba(112,255,179,0.45),transparent_45%)]
+                    "
+                />
                 <div className={"flex flex-col gap-4 items-center justify-center pb-16 pt-32"}>
                     <div className={"flex items-center gap-4 text-6xl text-white"}>
                         <span className={"hidden lg:flex"}>
@@ -153,7 +153,7 @@ export const UseCaseSection: React.FC = () => {
                             className={cn("absolute z-40 h-8 rounded-lg bg-white")}
                         />
                     </div>
-                    <div className="flex w-full h-[600px] rounded-lg bg-white/2 ring ring-white/5 shadow-lg">
+                    <div className="flex w-full h-[600px] rounded-2xl bg-white/2 ring ring-white/5 shadow-lg">
                         {activeCase === "CMS" && (
                             <UseCaseCard flowId={"gid://sagittarius/Flow/1"} title={t("useCase1Title")} description={t("useCase1Description")}/>
                         )}

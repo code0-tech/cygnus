@@ -42,10 +42,10 @@ export const HeroSection: React.FC = () => {
                     </p>
 
                     <div className={"flex flex-col gap-4 mt-4"}>
-                        <button className="w-full sm:w-auto h-10 z-10 flex items-center justify-center text-md gap-2 bg-white/10 hover:bg-white/20 text-white rounded-xl px-4 py-1 border border-white/10 shadow-md">
+                        <button className="w-full sm:w-auto h-10 z-10 flex items-center justify-center text-md gap-2 bg-white/10 hover:bg-white/20 text-white rounded-xl px-4 py-1 ring-2 ring-white/10 shadow-xl">
                             {t("docsButton")}
                         </button>
-                        <button className="w-full sm:w-auto h-10 z-10 flex items-center justify-center text-md gap-2 bg-white/90 hover:bg-white text-primary rounded-xl px-4 py-1 border border-white/10 shadow-md">
+                        <button className="w-full sm:w-auto h-10 z-10 flex items-center justify-center text-md gap-2 bg-white/90 hover:bg-white text-primary rounded-xl px-4 py-1 ring-2 ring-white/35 shadow-xl">
                             {t("ctaButton")}
                         </button>
                     </div>

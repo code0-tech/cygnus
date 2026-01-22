@@ -19,8 +19,8 @@ export const BrandSection: React.FC = () => {
                       `,
                 }}
             />
-            <div className="w-full flex gap-8 px-8 items-center justify-between">
-                <p className={"text-md text-white/75"}>
+            <div className="w-full flex gap-8 px-8 md:px-16 items-center justify-between">
+                <p className={"hidden lg:flex text-md text-white/75"}>
                     {t("title")}
                 </p>
                 <div className={"w-full flex items-center justify-between gap-4 lg:gap-24 text-white/75"}>
