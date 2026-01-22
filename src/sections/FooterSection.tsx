@@ -4,7 +4,8 @@ import React from "react";
 import Link from "next/link";
 import {IconBrandDiscord, IconBrandGithub, IconBrandInstagram, IconBrandX} from "@tabler/icons-react"
 import {Spotlight} from "@/components/Spotlight"
-import {useTranslations} from "next-intl"
+import { useTranslations } from "next-intl"
+import Image from "next/image"
 
 export const FooterSection: React.FC = () => {
     const t = useTranslations("FooterSection")
@@ -12,15 +13,20 @@ export const FooterSection: React.FC = () => {
     return (
         <div className={"relative bg-primary overflow-hidden"}>
             <div className={"absolute inset-0 h-full w-full bg-black/20 border-t border-white/10"}/>
-            <Spotlight opacity={0.2} duration={20}/>
+            <Spotlight opacity={0.2} duration={20} />
+
+            <p className="absolute -bottom-42 left-1/2 -translate-x-1/2 text-[312px] font-bold opacity-2">CodeZero</p>
 
             <div className="relative flex flex-col gap-16 px-8 lg:px-20 pt-24 lg:pt-40 pb-24 rounded-t-xl overflow-hidden">
 
                 <div className={"grid grid-cols-2 lg:grid-cols-4 gap-4"}>
                     <div className={"flex flex-col lg:justify-between gap-2"}>
-                        <p className={"text-white"}>
-                            {t("name")}
-                        </p>
+                        <div className="flex items-center gap-2">
+                            <Image src={"/code0_logo_white.png"} width={"32"} height={"32"} alt={"Code0 Logo"}/>
+                            <p className={"text-white"}>
+                                {t("name")}
+                            </p>
+                        </div>
                         <div className={"flex items-center gap-4"}>
                             <Link href={"https://instagram.com/code0.tech"}>
                                 <IconBrandInstagram size={24} className={"text-white/75"}/>

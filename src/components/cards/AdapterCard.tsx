@@ -3,9 +3,10 @@
 import { useTranslations } from "next-intl";
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { IconDatabase, IconApi, IconBrandStripe } from "@tabler/icons-react";
+import { IconDatabase, IconApi, IconBrandStripe, IconArrowUpRight } from "@tabler/icons-react";
 import { cn } from "@/utils/cn";
 import { FeatureCard } from "./FeatureCard";
+import { Link } from "@/i18n/navigation";
 
 const adapters = [
   {
@@ -75,6 +76,12 @@ export const AdapterCard: React.FC = () => {
                 <p className={"text-white/50 text-sm"}>
                     {t("adapterDescription")}
                 </p>
+                <Link href="">
+                    <button className={"mt-2 flex items-center gap-1 text-xs text-white/50 hover:text-brand"}>
+                        {t("featureLinkButton")}
+                        <IconArrowUpRight size={16} />
+                    </button>
+                </Link>
             </div>
         </FeatureCard>
     )

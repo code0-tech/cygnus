@@ -2,8 +2,9 @@
 
 import React from "react"
 import {useTranslations} from "next-intl"
-import {IconChevronDown} from "@tabler/icons-react"
+import {IconArrowUpRight, IconChevronDown} from "@tabler/icons-react"
 import { FeatureCard } from "./FeatureCard"
+import { Link } from "@/i18n/navigation"
 
 export const SuggestionCard: React.FC = () => {
     const t = useTranslations("FeatureSection")
@@ -28,6 +29,12 @@ export const SuggestionCard: React.FC = () => {
                 <p className={"text-white/50 text-sm"}>
                     {t("suggestionDescription")}
                 </p>
+                <Link href="">
+                    <button className={"mt-2 flex items-center gap-1 text-xs text-white/50 hover:text-brand"}>
+                        {t("featureLinkButton")}
+                        <IconArrowUpRight size={16} />
+                    </button>
+                </Link>
             </div>
 
             <div className="absolute -bottom-12 -right-2 w-96 bg-linear-to-t from-primary to-[#0d1120] rounded-lg ring ring-white/10 drop-shadow-[0_65px_65px_rgba(0,0,0,0.25)]">

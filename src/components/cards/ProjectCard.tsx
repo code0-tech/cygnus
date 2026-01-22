@@ -1,10 +1,11 @@
 "use client"
 
 import React, {useState} from "react"
-import {IconFolders, IconHierarchy, IconUsersGroup} from "@tabler/icons-react"
+import {IconArrowUpRight, IconFolders, IconHierarchy, IconUsersGroup} from "@tabler/icons-react"
 import {useTranslations} from "next-intl"
 import { AnimatedList } from "../AnimatedList"
 import { FeatureCard } from "./FeatureCard"
+import { Link } from "@/i18n/navigation"
 
 export const ProjectCard: React.FC = () => {
     const t = useTranslations("FeatureSection")
@@ -71,6 +72,12 @@ export const ProjectCard: React.FC = () => {
                 <p className={"text-white/50 text-sm"}>
                     {t("projectDescription")}
                 </p>
+                <Link href="">
+                    <button className={"mt-2 flex items-center gap-1 text-xs text-white/50 hover:text-brand"}>
+                        {t("featureLinkButton")}
+                        <IconArrowUpRight size={16} />
+                    </button>
+                </Link>
             </div>
         </FeatureCard>
     )

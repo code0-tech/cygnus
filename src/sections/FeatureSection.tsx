@@ -1,10 +1,10 @@
-import React from "react"
 import { AdapterCard } from "@/components/cards/AdapterCard"
-import {ProjectCard} from "@/components/cards/ProjectCard"
-import {RuntimeCard} from "@/components/cards/RuntimeCard"
-import {SuggestionCard} from "@/components/cards/SuggestionCard"
-import {useTranslations} from "next-intl"
-import {IconArrowUpRight} from "@tabler/icons-react"
+import { ProjectCard } from "@/components/cards/ProjectCard"
+import { RuntimeCard } from "@/components/cards/RuntimeCard"
+import { SuggestionCard } from "@/components/cards/SuggestionCard"
+import { IconArrowUpRight } from "@tabler/icons-react"
+import { useTranslations } from "next-intl"
+import React from "react"
 
 export const FeatureSection: React.FC = () => {
     const t = useTranslations("FeatureSection")
