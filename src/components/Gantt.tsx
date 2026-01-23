@@ -81,7 +81,7 @@ export const GanttProvider: FC<{children: ReactNode; className?: string; }> = ({
             }}
         >
             <div
-                className={cn("grid min-w-full w-max bg-[#050316]", className)}
+                className={cn("grid min-w-full w-max bg-white/5 rounded-xl overflow-hidden", className)}
                 style={{...cssVars}}
             >
                 <div className="relative w-max">
@@ -96,7 +96,7 @@ export const GanttHeader: FC = () => {
     const gantt = useGantt();
 
     return (
-        <div className="sticky top-0 z-20 bg-[#050316] backdrop-blur-md text-white w-max">
+        <div className="sticky top-0 z-20 backdrop-blur-md text-white w-max">
             <div className="flex divide-x divide-white/10">
                 {gantt.timelineData.map((year) => (
                     <div key={year.year} className="flex flex-col">
@@ -126,35 +126,9 @@ export const GanttHeader: FC = () => {
     );
 };
 
-const GanttTodayLine: FC = () => {
-    const gantt = useGantt();
-    const today = new Date();
-    const baseYear = gantt.timelineData[0].year;
-
-    if (today.getFullYear() < baseYear) return null;
-
-    const yearDiff = today.getFullYear() - baseYear;
-    const startOfYear = new Date(today.getFullYear(), 0, 1);
-    const dayOfYear = (today.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24);
-    const offset = (yearDiff * 4 * gantt.columnWidth) + ((dayOfYear / 365) * 4 * gantt.columnWidth);
-
-    return (
-        <div
-            className="absolute top-0 bottom-0 w-px bg-brand/20 z-0 pointer-events-none"
-            style={{ left: offset }}
-        >
-             <div className="absolute top-0 -translate-x-1/2 -translate-y-full text-[10px] font-bold text-brand bg-black/80 px-1.5 py-0.5 rounded border border-brand/30">TODAY</div>
-             <div className="absolute top-0 bottom-0 w-[1px] bg-gradient-to-b from-brand/20 via-transparent to-transparent opacity-50"></div>
-        </div>
-    );
-};
-
 export const GanttFeatureList: FC<{ children: ReactNode }> = ({ children }) => {
     return (
-        <div
-            className="pb-2 relative min-h-[400px]"
-        >
-            <GanttTodayLine />
+        <div className="pb-2 relative min-h-[400px]">
             {children}
         </div>
     );
@@ -193,7 +167,7 @@ export const GanttFeatureItem: FC<GanttFeature> = ({ name, content, startAt, end
                         <div
                             className={cn(
                                 "absolute flex items-center gap-2 p-2 rounded text-xs top-0",
-                                "overflow-hidden cursor-default group border border-brand/5 bg-[#070c18] hover:bg-[#0c171f]",
+                                "overflow-hidden cursor-default group border border-brand/5 bg-primary/25 hover:bg-primary/5",
                                 "shadow-md transition-all"
                             )}
                             style={{

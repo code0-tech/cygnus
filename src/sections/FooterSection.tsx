@@ -13,7 +13,7 @@ export const FooterSection: React.FC = () => {
     return (
         <div className={"relative bg-primary overflow-hidden"}>
             <div className={"absolute inset-0 h-full w-full bg-black/20 border-t border-white/10"}/>
-            <Spotlight opacity={0.2} duration={20} />
+            <Spotlight opacity={0.4} duration={20} />
 
             <p className="absolute -bottom-42 left-1/2 -translate-x-1/2 text-[312px] font-bold opacity-2">CodeZero</p>
 
