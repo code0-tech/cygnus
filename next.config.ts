@@ -5,13 +5,13 @@ import createMDX from '@next/mdx'
 const nextConfig: NextConfig = {
     pageExtensions: ['js', 'jsx', 'md', 'mdx', 'ts', 'tsx'],
     turbopack: {
-          rules: {
+        rules: {
             "*.mdx": {
-              loaders: ["@mdx-js/loader"],
-              as: "*.js",
+                loaders: ["@mdx-js/loader"],
+                as: "*.js",
             },
-          },
         },
+    },
 }
 
 const withMDX = createMDX({})
