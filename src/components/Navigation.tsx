@@ -199,7 +199,7 @@ function Navigation() {
                                     animate={{ y: 0, opacity: 1 }}
                                     exit={{ y: -8, opacity: isScrolled ? 1 : 0 }}
                                     transition={{ duration: 0.25, delay: 0.06 * 4 }}
-                                    className="mt-4 p-2 font-medium text-md rounded-xl cursor-pointer hover:text-white hover:bg-white/10 transition-colors border border-white/10"
+                                    className="text-center mt-4 p-2 font-medium text-md rounded-xl cursor-pointer bg-secondary/50 text-white/70 hover:text-white transition-colors border border-white/10"
                                     onClick={() => {
                                         router.push("github")
                                         setIsOpen(false)
@@ -213,7 +213,7 @@ function Navigation() {
                                     animate={{ y: 0, opacity: 1 }}
                                     exit={{ y: -8, opacity: isScrolled ? 1 : 0 }}
                                     transition={{ duration: 0.25, delay: 0.06 * 4 }}
-                                    className="text-white/75 p-2 font-medium text-md rounded-xl cursor-pointer hover:text-white hover:bg-white/10 transition-colors border border-white/10"
+                                    className="text-center p-2 font-medium text-md rounded-xl cursor-pointer bg-secondary/50 text-white/70 hover:text-white transition-colors border border-white/10"
                                     onClick={() => {
                                         router.push("discord")
                                         setIsOpen(false)

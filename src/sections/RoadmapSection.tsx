@@ -126,7 +126,7 @@ export const RoadmapSection: React.FC = () => {
     }, {} as Record<string, any[]>)
 
     return (
-        <div className={"relative overflow-hidden flex flex-col items-center justify-center gap-16 mb-16 -mx-4"}>
+        <div className={"relative overflow-hidden flex flex-col items-center justify-center gap-16 mb-4 -mx-4"}>
 
             <div
                 className="
@@ -147,22 +147,24 @@ export const RoadmapSection: React.FC = () => {
                 </button>
             </div>
 
-            <ScrollArea className={"mx-auto h-full w-[90%] rounded-xl border border-white/10"} orientation="horizontal">
-                <GanttProvider>
-                    <GanttHeader />
-                    <GanttFeatureList>
-                        {Object.entries(grouped).map(([group, features]) => (
-                            <GanttFeatureListGroup key={group}>
-                                {features.map((feature) => (
-                                    <div className="flex" key={feature.id}>
-                                        <GanttFeatureItem {...feature}/>
-                                    </div>
-                                ))}
-                            </GanttFeatureListGroup>
-                        ))}
-                    </GanttFeatureList>
-                </GanttProvider>
-            </ScrollArea>
+            <div className="w-full px-4">
+                <ScrollArea className={"h-full w-full rounded-xl border border-white/10"} orientation="horizontal">
+                    <GanttProvider>
+                        <GanttHeader />
+                        <GanttFeatureList>
+                            {Object.entries(grouped).map(([group, features]) => (
+                                <GanttFeatureListGroup key={group}>
+                                    {features.map((feature) => (
+                                        <div className="flex" key={feature.id}>
+                                            <GanttFeatureItem {...feature}/>
+                                        </div>
+                                    ))}
+                                </GanttFeatureListGroup>
+                            ))}
+                        </GanttFeatureList>
+                    </GanttProvider>
+                </ScrollArea>
+            </div>
         </div>
     )
 }

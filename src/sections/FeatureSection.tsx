@@ -10,7 +10,7 @@ export const FeatureSection: React.FC = () => {
     const t = useTranslations("FeatureSection")
 
     return (
-        <div className={"relative overflow-hidden flex flex-col gap-16 mb-4 -mx-4"}>
+        <div className={"relative overflow-hidden flex flex-col gap-16 -mx-4"}>
 
             <div
                 className="
@@ -34,7 +34,7 @@ export const FeatureSection: React.FC = () => {
                     <IconArrowUpRight size={16} />
                 </button>
             </div>
-            <div className={"w-full grid grid-cols-1 md:grid-cols-5 gap-8 auto-rows-fr p-8"}>
+            <div className={"w-full grid grid-cols-1 md:grid-cols-5 gap-4 auto-rows-fr p-4"}>
                 <AdapterCard/>
                 <SuggestionCard/>
                 <RuntimeCard/>
