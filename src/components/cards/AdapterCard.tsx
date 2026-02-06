@@ -77,7 +77,7 @@ export const AdapterCard: React.FC = () => {
                     {t("adapterDescription")}
                 </p>
                 <Link href="">
-                    <button className={"mt-2 flex items-center gap-1 text-xs text-white/50 hover:text-brand"}>
+                    <button className={"mt-2 flex items-center gap-1 text-xs text-gray-500 hover:text-brand"}>
                         {t("featureLinkButton")}
                         <IconArrowUpRight size={16} />
                     </button>

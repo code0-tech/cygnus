@@ -29,7 +29,7 @@ export const FeatureSection: React.FC = () => {
                 <p className="relative z-10 max-w-[90vw] lg:w-1/2 text-center font-medium text-white/75 text-xl">
                     {t("description")}
                 </p>
-                <button className={"flex items-center gap-1 border-b border-dashed border-white/25 text-sm text-white/50 hover:text-brand"}>
+                <button className={"flex items-center gap-1 border-b border-dashed border-white/25 text-sm text-gray-500 hover:text-brand"}>
                     {t("linkButton")}
                     <IconArrowUpRight size={16} />
                 </button>
