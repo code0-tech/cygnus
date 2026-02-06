@@ -139,8 +139,8 @@ export const RoadmapSection: React.FC = () => {
             />
 
             <div className={"w-full flex flex-col gap-4 items-center justify-center text-center pt-32"}>
-                <p className={"text-4xl lg:text-6xl text-white"}>{t("title")}</p>
-                <p className={"text-xl text-white/75"}>{t("description")}</p>
+                <p className={"text-4xl md:text-6xl text-white"}>{t("title")}</p>
+                <p className={"max-w-[90vw] text-center font-medium text-white/75 text-xl"}>{t("description")}</p>
                 <button className={"flex items-center gap-1 border-b border-dashed border-white/25 text-sm text-white/50 hover:text-brand"}>
                     {t("linkButton")}
                     <IconArrowUpRight size={16} />

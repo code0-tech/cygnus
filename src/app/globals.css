@@ -1,5 +1,57 @@
 @import 'tailwindcss';
-@config "../../tailwind.config.ts";
+
+@theme inline {
+  --color-primary: var(--bg-primary);
+  --color-secondary: var(--bg-secondary);
+  --color-info: var(--bg-info);
+  --color-success: var(--bg-success);
+  --color-warning: var(--bg-warning);
+  --color-error: var(--bg-error);
+  --color-brand: var(--bg-brand);
+}
+
+:root {
+  /* BACKGROUNDS */
+  --bg-primary: oklch(0.0962 0.0562 285.05);
+  --bg-secondary: oklch(0.2175 0.035 290.84);
+  --bg-info: oklch(0.88 0.17 150);
+  --bg-success: oklch(0.62 0.19 130);
+  --bg-warning: oklch(0.78 0.18 80);
+  --bg-error: oklch(0.55 0.22 15);
+  --bg-brand: oklch(0.88 0.18 150);
+
+  /* TEXT */
+  --text-primary: oklch(0.0962 0.0562 285.05);
+  --text-secondary: oklch(0.2175 0.035 290.84);
+  --text-info: oklch(0.88 0.17 150);
+  --text-success: oklch(0.62 0.19 130);
+  --text-warning: oklch(0.78 0.18 80);
+  --text-error: oklch(0.55 0.22 15);
+  --text-brand: oklch(0.88 0.18 150);
+
+  /* FILL */
+  --fill-primary: oklch(0.0962 0.0562 285.05);
+  --fill-secondary: oklch(0.2175 0.035 290.84);
+  --fill-info: oklch(0.88 0.17 150);
+  --fill-success: oklch(0.62 0.19 130);
+  --fill-warning: oklch(0.78 0.18 80);
+  --fill-error: oklch(0.55 0.22 15);
+
+  /* BORDER */
+  --border-primary: oklch(0.0962 0.0562 285.05);
+  --border-secondary: oklch(0.2175 0.035 290.84);
+  --border-info: oklch(0.88 0.17 150);
+  --border-success: oklch(0.62 0.19 130);
+  --border-warning: oklch(0.78 0.18 80);
+  --border-error: oklch(0.55 0.22 15);
+  --border-brand: oklch(0.88 0.18 150);
+}
+
+@layer base {
+  body {
+    @apply bg-primary text-white;
+  }
+}
 
 @theme {
   --animate-cell-ripple: cell-ripple var(--cell-ripple-duration, 200ms)
@@ -11,52 +63,3 @@
   50% { opacity: 0.8; }
   100% { opacity: 0.4; }
 }
-
-:root {
-  --cell-ripple-duration: 2000ms;
-  --cell-ripple-delay: 0ms;
-
-  --bg-primary: 249 100% 4%;
-  --bg-secondary: 0 0% 100%;
-  --bg-info: 151 100% 72%;
-  --bg-success: 111 81% 41%;
-  --bg-warning: 44 100% 52%;
-  --bg-error: 352 96% 44%;
-  --bg-black: 0 0% 0%;
-  --bg-white: 0 0% 100%;
-  --bg-brand: 148 100% 72%;
-
-  --text-primary: 249 100% 4%;
-  --text-secondary: 0 0% 100%;
-  --text-info: 151 100% 72%;
-  --text-success: 111 81% 41%;
-  --text-warning: 44 100% 52%;
-  --text-error: 352 96% 44%;
-  --text-black: 0 0% 0%;
-  --text-white: 0 0% 100%;
-  --text-brand: 148 100% 72%;
-
-  --fill-primary: 249 100% 4%;
-  --fill-secondary: 0 0% 100%;
-  --fill-info: 151 100% 72%;
-  --fill-success: 111 81% 41%;
-  --fill-warning: 44 100% 52%;
-  --fill-error: 352 96% 44%;
-  --fill-black: 0 0% 0%;
-  --fill-white: 0 0% 100%;
-
-  --border-primary: 249 100% 4%;
-  --border-secondary: 0 0% 100%;
-  --border-ibordernfo: 151 100% 72%;
-  --border-success: 111 81% 41%;
-  --border-warning: 44 100% 52%;
-  --border-error: 352 96% 44%;
-  --border-black: 0 0% 0%;
-  --border-white: 0 0% 100%;
-  --border-brand: 148 100% 72%;
-}
-
-body {
-  @apply bg-secondary text-secondary;
-}
-

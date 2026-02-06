@@ -105,7 +105,7 @@ export const UseCaseSection: React.FC = () => {
                     "
                 />
                 <div className={"flex flex-col gap-4 items-center justify-center pb-16 pt-32"}>
-                    <div className={"flex items-center gap-4 text-6xl text-white"}>
+                    <div className={"flex items-center gap-4 text-4xl md:text-6xl text-white"}>
                         <span className={"hidden lg:flex"}>
                             {t("flowText1")}
                         </span>
@@ -126,7 +126,7 @@ export const UseCaseSection: React.FC = () => {
                         </span>
                     </div>
 
-                    <p className="relative z-10 text-center font-medium text-white/75 text-xl">
+                    <p className="relative z-10 max-w-[90vw] text-center font-medium text-white/75 text-xl">
                         {t("description")}
                     </p>
                     <button className={"flex items-center gap-1 border-b border-dashed border-white/25 text-sm text-white/50 hover:text-brand"}>

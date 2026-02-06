@@ -23,10 +23,10 @@ export const FeatureSection: React.FC = () => {
             />
 
             <div className={"flex flex-col gap-4 items-center justify-center text-center pb-16 pt-48"}>
-                <p className={"text-6xl text-white"}>
+                <p className={"text-4xl md:text-6xl text-white"}>
                     {t("title")}
                 </p>
-                <p className="relative z-10 lg:w-1/2 text-center font-medium text-white/75 text-xl">
+                <p className="relative z-10 max-w-[90vw] lg:w-1/2 text-center font-medium text-white/75 text-xl">
                     {t("description")}
                 </p>
                 <button className={"flex items-center gap-1 border-b border-dashed border-white/25 text-sm text-white/50 hover:text-brand"}>

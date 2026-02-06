@@ -20,7 +20,7 @@ export const FaqSection: React.FC = () => {
     }
 
     return (
-        <div className={"relative overflow-hidden flex flex-col gap-8 items-center justify-center py-40 px-[10%] md:px-[24%]"}>
+        <div className={"relative overflow-hidden flex flex-col gap-8 items-center justify-center py-40 px-1"}>
 
             <div
                 className="
@@ -32,7 +32,7 @@ export const FaqSection: React.FC = () => {
                 "
             />
 
-            <p className={"text-2xl lg:text-4xl text-white font-semibold text-center"}>
+            <p className={"text-4xl md:text-6xl text-white font-semibold text-center"}>
                 {t("title")}
             </p>
             <div className={"flex flex-col gap-4 z-10"}>

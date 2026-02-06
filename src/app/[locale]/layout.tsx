@@ -27,7 +27,7 @@ export default async function RootLayout({children, params}: Props) {
 
     return (
         <html lang="en">
-            <body className={`${inter.className} tracking-[-0.5px] leading-[1.5]`}>
+            <body className={`${inter.className} tracking-[-0.5px] leading-[1.5] bg-primary`}>
                 <NextIntlClientProvider>
                     <Navigation/>
                     <div className={"bg-primary"}>

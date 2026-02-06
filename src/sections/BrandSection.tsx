@@ -23,7 +23,7 @@ export const BrandSection: React.FC = () => {
                 <p className={"hidden lg:flex text-md text-white/75"}>
                     {t("title")}
                 </p>
-                <div className={"w-full flex items-center justify-between gap-4 lg:gap-24 text-white/75"}>
+                <div className={"w-full grid grid-cols-2 md:grid-cols-4 gap-16 text-white/75 text-center"}>
                     <p className={"text-4xl font-bold"}>Logo1</p>
                     <p className={"text-4xl font-bold"}>Logo2</p>
                     <p className={"text-4xl font-bold"}>Logo3</p>
