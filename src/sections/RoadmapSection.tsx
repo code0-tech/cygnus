@@ -11,6 +11,7 @@ import {
 import {useTranslations} from "next-intl"
 import {GanttFeatureItem, GanttFeatureList, GanttFeatureListGroup, GanttHeader, GanttProvider} from "@/components/Gantt"
 import {ScrollArea} from "@/components/ScrollArea"
+import { Section } from "@/components/Section"
 
 interface RoadmapItem  {
     year: string
@@ -126,27 +127,7 @@ export const RoadmapSection: React.FC = () => {
     }, {} as Record<string, any[]>)
 
     return (
-        <div className={"relative overflow-hidden flex flex-col items-center justify-center gap-16 mb-4 -mx-4"}>
-
-            <div
-                className="
-                    pointer-events-none
-                    absolute -inset-16
-                    opacity-20 blur-lg
-                    will-change-filter
-                    [background:radial-gradient(circle_at_top,rgba(255,255,255,0.45),transparent_45%)]
-                "
-            />
-
-            <div className={"w-full flex flex-col gap-4 items-center justify-center text-center pt-32"}>
-                <p className={"text-4xl md:text-6xl text-white"}>{t("title")}</p>
-                <p className={"max-w-[90vw] text-center font-medium text-white/75 text-xl"}>{t("description")}</p>
-                <button className={"flex items-center gap-1 border-b border-dashed border-white/25 text-sm text-gray-500 hover:text-brand"}>
-                    {t("linkButton")}
-                    <IconArrowUpRight size={16} />
-                </button>
-            </div>
-
+        <Section translationKey="RoadmapSection">
             <div className="w-full px-4">
                 <ScrollArea className={"h-full w-full rounded-xl border border-white/10"} orientation="horizontal">
                     <GanttProvider>
@@ -165,6 +146,6 @@ export const RoadmapSection: React.FC = () => {
                     </GanttProvider>
                 </ScrollArea>
             </div>
-        </div>
+        </Section>
     )
 }

@@ -10,6 +10,7 @@ import {IconBrandGithub, IconChevronUp, IconCube, IconGitBranch, IconLock, IconM
 import {useOutsideClick} from "@/hooks/useOutsideClick"
 import {useWindowWidth} from "@/hooks/useWindowWidth"
 import {useTranslations} from "next-intl"
+import { Button } from "@/components/Button"
 
 type NavItem = {
     title: string
@@ -311,22 +312,18 @@ function Navigation() {
                         )}
                     </div>
                     <div className={"flex items-center gap-2"}>
-                        <button
-                            className={cn(
-                                "flex items-center px-4 h-8 rounded-xl transition-all",
-                                "bg-transparent hover:bg-white/10 cursor-pointer font-medium text-white/75 hover:text-white/75",
-                            )}
+                        <Button
+                            variant="ghost"
+                            className="flex items-center h-8 px-4 text-sm"
                         >
                             <IconBrandGithub/>
-                        </button>
-                        <button
-                            className={cn(
-                                "flex items-center px-4 h-8 rounded-xl transition-all",
-                                "bg-white/90 hover:bg-white cursor-pointer font-medium text-primary ring ring-white/20",
-                            )}
+                        </Button>
+                        <Button
+                            variant="default"
+                            className="flex items-center h-8 px-4 text-sm"
                         >
                             Discord
-                        </button>
+                        </Button>
                     </div>
 
                 </div>

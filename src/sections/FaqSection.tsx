@@ -1,12 +1,13 @@
 "use client"
 
-import React, {useState} from "react"
-import {AccordionItem} from "@/components/Accordion"
-import {useTranslations} from "next-intl"
+import { AccordionItem } from "@/components/Accordion"
+import { Section } from "@/components/Section"
+import { useTranslations } from "next-intl"
+import React, { useState } from "react"
 
 export const FaqSection: React.FC = () => {
     const t = useTranslations("FaqSection")
-    const faqs = t.raw("faqs") as { question: string; answer: string }[];
+    const faqs = t.raw("faqs") as { question: string, answer: string }[];
 
     const [openItems, setOpenItems] = useState<Set<number>>(new Set())
 
@@ -20,26 +21,12 @@ export const FaqSection: React.FC = () => {
     }
 
     return (
-        <div className={"relative overflow-hidden flex flex-col gap-8 items-center justify-center py-40 px-1"}>
-
-            <div
-                className="
-                    pointer-events-none
-                    absolute -inset-16 z-0
-                    opacity-10 blur-lg
-                    will-change-filter
-                    [background:radial-gradient(circle_at_top,rgba(255,255,255,0.45),transparent_45%)]
-                "
-            />
-
-            <p className={"text-4xl md:text-6xl text-white font-semibold text-center"}>
-                {t("title")}
-            </p>
+        <Section translationKey="FaqSection">
             <div className={"flex flex-col gap-4 z-10"}>
                 {faqs.map((faq, index) => (
                     <AccordionItem key={index} {...faq} isOpen={openItems.has(index)} onToggle={() => toggleItem(index)} />
                 ))}
             </div>
-        </div>
+        </Section>
     )
 }

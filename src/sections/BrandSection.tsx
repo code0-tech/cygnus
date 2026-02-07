@@ -1,11 +1,12 @@
 import React from "react"
 import {useTranslations} from "next-intl"
+import { Section } from "@/components/Section"
 
 export const BrandSection: React.FC = () => {
     const t = useTranslations('BrandSection')
 
     return (
-        <div className={"relative overflow-hidden -mx-4 py-24"}>
+        <Section translationKey="BrandSection" showBlur={false} showFunnel={false}>
             <div
                 className="absolute inset-0 z-0 pointer-events-none"
                 style={{
@@ -30,6 +31,6 @@ export const BrandSection: React.FC = () => {
                     <p className={"text-4xl font-bold"}>Logo4</p>
                 </div>
             </div>
-        </div>
+        </Section>
     )
 }

@@ -1,5 +1,5 @@
-import {BlogPost} from "@/components/BlogPost"
 import Aurora from "@/components/Aurora"
+import {BlogPost} from "@/components/BlogPost"
 import { LandingContainer } from "@/components/LandingContainer"
 
 export default async function Page({params}: { params: Promise<{ slug: string }> }) {
