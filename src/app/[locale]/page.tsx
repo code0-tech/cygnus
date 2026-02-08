@@ -1,5 +1,4 @@
 import { LandingContainer } from "@/components/LandingContainer";
-import { SectionDivider } from "@/components/SectionDivider";
 import { HeroSection } from "@/sections/HeroSection";
 import dynamic from "next/dynamic";
 
@@ -14,15 +13,10 @@ export default function Page() {
     return (
         <LandingContainer>
             <HeroSection/>
-            <SectionDivider height={0}/>
             <BrandSection />
-            <SectionDivider height={0}/>
             <UseCaseSection/>
-            <SectionDivider height={0}/>
             <FeatureSection/>
-            <SectionDivider height={0}/>
             <RoadmapSection />
-            <SectionDivider height={0}/>
             <FaqSection/>
             <ContactSection/>
         </LandingContainer>

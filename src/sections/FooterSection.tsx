@@ -6,19 +6,15 @@ import {IconBrandDiscord, IconBrandGithub, IconBrandInstagram, IconBrandX} from 
 import {Spotlight} from "@/components/Spotlight"
 import { useTranslations } from "next-intl"
 import Image from "next/image"
+import { LandingContainer } from "@/components/LandingContainer";
 
 export const FooterSection: React.FC = () => {
     const t = useTranslations("FooterSection")
 
     return (
-        <div className={"relative bg-primary overflow-hidden"}>
-            <div className={"absolute inset-0 h-full w-full bg-black/20 border-t border-white/10"}/>
-            <Spotlight opacity={0.4} duration={20} />
+        <LandingContainer className="min-h-full py-48">
 
-            <p className="absolute -bottom-42 left-1/2 -translate-x-1/2 text-[312px] font-bold opacity-2">CodeZero</p>
-
-            <div className="relative flex flex-col gap-16 px-8 lg:px-20 pt-24 lg:pt-40 pb-24 rounded-t-xl overflow-hidden">
-
+            <div className={"relative flex flex-col gap-16 overflow-hidden"}>
                 <div className={"grid grid-cols-2 lg:grid-cols-4 gap-4"}>
                     <div className={"flex flex-col lg:justify-between gap-2"}>
                         <div className="flex items-center gap-2">
@@ -87,6 +83,6 @@ export const FooterSection: React.FC = () => {
                     </div>
                 </div>
             </div>
-        </div>
+        </LandingContainer>
     )
 }

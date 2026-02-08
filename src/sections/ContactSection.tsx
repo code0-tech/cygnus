@@ -10,7 +10,7 @@ export const ContactSection: React.FC = () => {
 
     return (
         <Section translationKey="ContactSection" showBlur={false} showFunnel={false}>
-            <div className={"relative overflow-hidden w-full flex flex-col items-center justify-center gap-8 py-12 rounded-xl ring ring-white/5 shadow-xl"}>
+            <div className={"relative overflow-hidden w-full flex flex-col items-center justify-center gap-8 py-12 rounded-xl border border-white/5 shadow-xl"}>
 
                 <InteractiveGridPattern
                     className={cn("[mask-image:radial-gradient(600px_circle_at_center,white,transparent)]")}

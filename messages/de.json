@@ -42,8 +42,7 @@
     "title": "Vertraut von Teams, die einfache Backends lieben"
   },
   "UseCaseSection": {
-    "flowText1": "Von",
-    "flowText2": "in Minuten",
+    "title": "Usecase Title",
     "description": "Erstelle deinen eigenen Flow in unserer IDE ganz einfach per Drag-and-Drop – ganz ohne Programmierkenntnisse.",
     "linkButton": "Lerne mehr über unsere Use Cases",
     "useCase1Title": "SaaS-Anwendungen",
@@ -96,7 +95,7 @@
     "ctaButton": "Demo anfordern"
   },
   "FooterSection": {
-    "name": "CodeZero Technology AG",
+    "name": "CodeZero",
     "company": "Unternehmen",
     "aboutUs": "Über uns",
     "products": "Produkte",

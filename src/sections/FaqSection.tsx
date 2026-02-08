@@ -21,8 +21,8 @@ export const FaqSection: React.FC = () => {
     }
 
     return (
-        <Section translationKey="FaqSection">
-            <div className={"flex flex-col gap-4 z-10"}>
+        <Section translationKey="FaqSection" showLinkButton={false}>
+            <div className={"flex flex-col gap-4 z-10 m-4"}>
                 {faqs.map((faq, index) => (
                     <AccordionItem key={index} {...faq} isOpen={openItems.has(index)} onToggle={() => toggleItem(index)} />
                 ))}

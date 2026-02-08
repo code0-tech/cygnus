@@ -42,8 +42,7 @@
     "title": "Trusted by teams who want easy backends"
   },
   "UseCaseSection": {
-    "flowText1": "Go from",
-    "flowText2": "in minutes",
+    "title": "Usecase Title",
     "description": " Build your own flow in our IDE just by drag and drop. Without any knowledge of coding.",
     "linkButton": "Learn more about our use cases",
     "useCase1Title": "SaaS Applications",
@@ -96,7 +95,7 @@
     "ctaButton": "Request a demo"
   },
   "FooterSection": {
-    "name": "CoeZero Technology AG",
+    "name": "CoeZero",
     "company": "Company",
     "aboutUs": "About Us",
     "products": "Products",

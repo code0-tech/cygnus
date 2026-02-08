@@ -7,6 +7,7 @@ import { IconDatabase, IconApi, IconBrandStripe, IconArrowUpRight } from "@table
 import { cn } from "@/utils/cn";
 import { FeatureCard } from "./FeatureCard";
 import { Link } from "@/i18n/navigation";
+import { Button } from "@/components/Button";
 
 const adapters = [
   {
@@ -77,10 +78,10 @@ export const AdapterCard: React.FC = () => {
                     {t("adapterDescription")}
                 </p>
                 <Link href="">
-                    <button className={"mt-2 flex items-center gap-1 text-xs text-gray-500 hover:text-brand"}>
+                    <Button variant="link" className="mt-2 gap-1 text-xs">
                         {t("featureLinkButton")}
                         <IconArrowUpRight size={16} />
-                    </button>
+                    </Button>
                 </Link>
             </div>
         </FeatureCard>
