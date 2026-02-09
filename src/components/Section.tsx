@@ -21,9 +21,9 @@ export function Section({ translationKey, children, showBlur = true, showFunnel 
             }
             {showFunnel &&
                 <div className={"flex flex-col gap-4 items-center justify-center text-center pb-16 pt-48"}>
-                    <p className={"text-4xl md:text-6xl text-white"}>
+                    <h1 className={"text-4xl md:text-6xl text-white font-semibold"}>
                         {t("title")}
-                    </p>
+                    </h1>
                     <p className="relative z-10 max-w-[90vw] lg:w-1/2 text-center font-medium text-white/75 text-xl">
                         {t("description")}
                     </p>
