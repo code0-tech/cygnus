@@ -12,7 +12,7 @@ export const HeroSection: React.FC = () => {
     return (
         <Section translationKey="HeroSection" showBlur={false} showFunnel={false}>
 
-            <div className="relative h-full mb-4 rounded-xl ring ring-white/5 overflow-hidden shadow-lg">
+            <div className="relative h-[85vh] rounded-xl ring ring-white/5 overflow-hidden shadow-lg">
 
                 <div className="pointer-events-none absolute inset-0 -z-10 bg-[#0f0c1f]">
                 <GradientBlinds

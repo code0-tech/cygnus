@@ -7,7 +7,7 @@ export const BrandSection: React.FC = () => {
 
     return (
         <Section translationKey="BrandSection" showBlur={false} showFunnel={false}>
-            <div className="w-full flex gap-8 px-8 md:px-16 pb-32 items-center justify-center">
+            <div className="w-full flex gap-8 px-8 md:px-16 pb-16 items-center justify-center">
                 <p className={"hidden lg:flex text-md text-white/75"}>
                     {t("title")}
                 </p>

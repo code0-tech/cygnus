@@ -6,7 +6,7 @@ import {cn} from "@/utils/cn"
 
 export function LandingContainer({ children, className }: { children: React.ReactNode, className?: string }) {
     return (
-        <Container className={cn("min-h-dvh flex flex-col -top-12", className)}>
+        <Container className={cn("min-h-dvh flex flex-col pt-4", className)}>
             {children}
         </Container>
     )

@@ -15,9 +15,9 @@ export function Section({ translationKey, children, showBlur = true, showFunnel 
     const t = useTranslations(translationKey)
 
     return (
-        <section className={"relative overflow-hidden flex flex-col gap-16 pt-32"}>
+        <section className={"relative overflow-hidden flex flex-col gap-16 pt-16"}>
             {showBlur &&
-                <div className="pointer-events-none absolute -inset-16 opacity-20 blur-lg will-change-filter [background:radial-gradient(circle_at_top,rgba(255,255,255,0.45),transparent_45%)]" />
+                <div className="pointer-events-none absolute -inset-0 opacity-30 blur-xl will-change-filter [background:radial-gradient(circle,rgba(255,255,255,0.45),transparent_60%)]" />
             }
             {showFunnel &&
                 <div className={"flex flex-col gap-4 items-center justify-center text-center pb-16 pt-48"}>

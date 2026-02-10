@@ -12,6 +12,7 @@ import {useTranslations} from "next-intl"
 import {GanttFeatureItem, GanttFeatureList, GanttFeatureListGroup, GanttHeader, GanttProvider} from "@/components/Gantt"
 import {ScrollArea} from "@/components/ScrollArea"
 import { Section } from "@/components/Section"
+import { FeatureCard } from "@/components/cards/FeatureCard"
 
 interface RoadmapItem  {
     year: string
@@ -128,23 +129,10 @@ export const RoadmapSection: React.FC = () => {
 
     return (
         <Section translationKey="RoadmapSection">
-            <div className="w-full px-4">
-                <ScrollArea className={"h-full w-full rounded-xl border border-white/10"} orientation="horizontal">
-                    <GanttProvider>
-                        <GanttHeader />
-                        <GanttFeatureList>
-                            {Object.entries(grouped).map(([group, features]) => (
-                                <GanttFeatureListGroup key={group}>
-                                    {features.map((feature) => (
-                                        <div className="flex" key={feature.id}>
-                                            <GanttFeatureItem {...feature}/>
-                                        </div>
-                                    ))}
-                                </GanttFeatureListGroup>
-                            ))}
-                        </GanttFeatureList>
-                    </GanttProvider>
-                </ScrollArea>
+            <div className="w-full h-dvh py-16 px-4">
+                <FeatureCard className="w-full h-full">
+                    test
+                </FeatureCard>
             </div>
         </Section>
     )
