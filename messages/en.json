@@ -52,19 +52,19 @@
     "useCase3Title": "Mobile Apps",
     "useCase3Description": "Build powerful backends for your mobile applications, ensuring seamless data synchronization and user management across devices."
   },
-  "FeatureSection": {
-    "title": "Powerful features for your backend",
-    "description": "CodeZero offers a range of features designed to simplify backend development and enhance your application's capabilities.",
-    "linkButton": "Learn more about the product",
+  "RuntimeFeatureSection": {
+    "title": "Runtime and operations that scale",
+    "description": "Launch flows in seconds, monitor load, and scale without downtime.",
+    "linkButton": "Learn about the runtime",
     "featureLinkButton": "Learn more",
-    "projectTitle": "Organizations & Projects",
-    "projectDescription": "Manage multiple projects and collaborate with your team seamlessly within a single organization.",
-    "runtimeTitle": "CodeZero Runtime",
-    "runtimeDescription": "Deploy and run your backend flows effortlessly with our scalable and reliable runtime environment.",
-    "suggestionTitle": "Suggestion Logic",
-    "suggestionDescription": "Enhance your backend with intelligent suggestion logic to improve user experience and decision-making.",
-    "adapterTitle": "Adapters",
-    "adapterDescription": "Integrate with various third-party services and databases using our versatile adapters."
+    "projectTitle": "Environments & releases",
+    "projectDescription": "Manage staging and production with clear deploys and rollbacks.",
+    "runtimeTitle": "Observability",
+    "runtimeDescription": "Logs, metrics, and traces in one place so you can fix issues fast.",
+    "suggestionTitle": "Autoscaling",
+    "suggestionDescription": "Adjust resources automatically for traffic spikes and keep costs in check.",
+    "adapterTitle": "Secure execution",
+    "adapterDescription": "Isolated workers, secrets management, and roles for clean access control."
   },
   "RoadmapSection": {
     "title": "Our journey",

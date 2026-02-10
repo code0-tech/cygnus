@@ -1,12 +1,11 @@
 "use client"
 
-import React from "react";
-import Link from "next/link";
-import {IconBrandDiscord, IconBrandGithub, IconBrandInstagram, IconBrandX} from "@tabler/icons-react"
-import {Spotlight} from "@/components/Spotlight"
-import { useTranslations } from "next-intl"
-import Image from "next/image"
 import { LandingContainer } from "@/components/LandingContainer";
+import { IconBrandDiscord, IconBrandGithub, IconBrandInstagram, IconBrandX } from "@tabler/icons-react";
+import { useTranslations } from "next-intl";
+import Image from "next/image";
+import Link from "next/link";
+import React from "react";
 
 export const FooterSection: React.FC = () => {
     const t = useTranslations("FooterSection")

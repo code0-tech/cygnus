@@ -27,7 +27,7 @@ export function FeatureCard({children, className}: {children: ReactNode, classNa
     }, []);
 
     return (
-        <div ref={cardRef} className={cn("relative h-[420px] overflow-hidden col-span-1 md:col-span-2 row-span-2 bg-linear-to-br from-white/5 to-primary rounded-xl ring-1 ring-white/10 shadow-2xl", className)}>
+        <div ref={cardRef} className={cn("relative h-full overflow-hidden bg-linear-to-br from-white/5 to-primary rounded-xl ring-1 ring-white/10 shadow-2xl", className)}>
             <div className="absolute inset-0 z-10 flex flex-col justify-start items-center gap-4 p-4">
                 {children}
             </div>

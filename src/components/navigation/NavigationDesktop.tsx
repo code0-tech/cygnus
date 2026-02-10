@@ -60,7 +60,7 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({
                     <div className={"w-full h-full flex items-center justify-between gap-2"}>
 
                         <Link href="/">
-                            <motion.div className={cn("flex")}
+                            <motion.div className={cn("flex transition-all", !isScrolled && "-ml-4")}
                                 initial={fadeInUp.initial}
                                 animate={fadeInUp.animate}
                                 transition={fadeInUp.transition}
@@ -105,16 +105,10 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({
                             )}
                         </div>
                         <div className={"flex items-center gap-2"}>
-                            <Button
-                                variant="ghost"
-                                className="flex items-center h-8 px-4 text-sm"
-                            >
+                            <Button variant="ghost">
                                 <IconBrandGithub/>
                             </Button>
-                            <Button
-                                variant="default"
-                                className="flex items-center h-8 px-4 text-sm"
-                            >
+                            <Button variant="default">
                                 Discord
                             </Button>
                         </div>

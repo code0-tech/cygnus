@@ -59,7 +59,7 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
             >
                 <div className={"w-full flex items-center justify-between gap-2"}>
                     <Link href="/">
-                        <motion.div className={cn("flex")}
+                        <motion.div className={cn("flex transition-all", !isScrolled && "-ml-4")}
                             initial={fadeInUp.initial}
                             animate={fadeInUp.animate}
                             transition={fadeInUp.transition}
@@ -68,7 +68,7 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
                         </motion.div>
                     </Link>
                     <motion.button
-                        className={cn("bg-transparent border-0 transition-colors mr-1.5")}
+                        className={cn("bg-transparent border-0 transition-all mr-1.5", !isScrolled && "-mr-2")}
                         initial={fadeInUp.initial}
                         animate={fadeInUp.animate}
                         transition={fadeInUp.transition}

@@ -7,20 +7,7 @@ export const BrandSection: React.FC = () => {
 
     return (
         <Section translationKey="BrandSection" showBlur={false} showFunnel={false}>
-            <div
-                className="absolute inset-0 z-0 pointer-events-none"
-                style={{
-                    backgroundImage: `
-                        repeating-linear-gradient(-40deg,
-                          rgba(255, 255, 255, 0.04) 11px,
-                          rgba(255, 255, 255, 0.04) 12px,
-                          transparent 12px,
-                          transparent 24px
-                        )
-                      `,
-                }}
-            />
-            <div className="w-full flex gap-8 px-8 md:px-16 items-center justify-between">
+            <div className="w-full flex gap-8 px-8 md:px-16 pb-32 items-center justify-center">
                 <p className={"hidden lg:flex text-md text-white/75"}>
                     {t("title")}
                 </p>
