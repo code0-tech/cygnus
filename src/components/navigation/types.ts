@@ -12,6 +12,7 @@ export type SubNavItem = {
     href: string
     description: string
     icon: ReactNode
+    color: string
 }
 
 export const fadeInUp = {

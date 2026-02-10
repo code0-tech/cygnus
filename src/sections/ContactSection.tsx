@@ -18,7 +18,7 @@ export const ContactSection: React.FC = () => {
                     height={48}
                     squares={[50, 10]}
                 />
-                <div className="pointer-events-none absolute inset-0 mt-8 opacity-35 blur-2xl will-change-filter [background:radial-gradient(circle_at_top,rgba(112,255,179,0.45),transparent_65%)]" />
+                <div className="pointer-events-none absolute -inset-16 opacity-20 blur-xl will-change-filter [background:radial-gradient(circle,rgba(112,255,179,0.45),transparent_95%)]" />
 
                 <div className={"z-20 size-31 border border-white/5 bg-white/5 backdrop-blur-lg flex items-center justify-center rounded-2xl"}>
                     <div className={"border border-white/10 bg-linear-to-br from-primary to-[#70ffb2]/10 flex items-center justify-center rounded-xl"}>
