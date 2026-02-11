@@ -1,6 +1,6 @@
 import { MDXComponents } from 'mdx/types'
 
-const components = {
+const components: MDXComponents = {
     h1: ({ children }) => (
         <h1 className={"text-4xl font-semibold mb-8"}>{children}</h1>
     ),
@@ -19,7 +19,7 @@ const components = {
     a: ({ children, href }) => (
         <a className={"text-indigo-400 hover:underline"} href={href}>{children}</a>
     ),
-} satisfies MDXComponents
+}
 
 export function useMDXComponents(): MDXComponents {
     return components

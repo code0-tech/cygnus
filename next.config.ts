@@ -4,14 +4,9 @@ import createMDX from '@next/mdx'
 
 const nextConfig: NextConfig = {
     pageExtensions: ['js', 'jsx', 'md', 'mdx', 'ts', 'tsx'],
-    turbopack: {
-        rules: {
-            "*.mdx": {
-                loaders: ["@mdx-js/loader"],
-                as: "*.js",
-            },
-        },
-    },
+    experimental: {
+        mdxRs: { mdxType: 'gfm' }
+    }
 }
 
 const withMDX = createMDX({})

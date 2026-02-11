@@ -13,5 +13,5 @@ export function BlogPost({ slug }: { slug: string }) {
     }, [slug])
 
     if (!Post) return <BlogSkeleton/>
-    return <Post/>
+    return <Post />
 }

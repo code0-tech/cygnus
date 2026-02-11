@@ -18,7 +18,6 @@
     "@react-three/postprocessing": "^3.0.4",
     "@swc/helpers": "^0.5.18",
     "@tabler/icons-react": "^3.34.0",
-    "@types/mdx": "^2.0.13",
     "@uidotdev/usehooks": "^2.4.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -42,6 +41,7 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.12",
     "@types/lodash.throttle": "^4.1.9",
+    "@types/mdx": "^2.0.13",
     "@types/node": "^22.15.33",
     "@types/react": "^19.2.11",
     "@types/react-dom": "^19.2.3",
