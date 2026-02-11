@@ -33,7 +33,8 @@ export const NavbarItems: CollectionConfig = {
     },
     {
       name: "subMenu",
-      type: "array",
+        type: "array",
+        required: false,
       fields: [
         {
           name: "key",

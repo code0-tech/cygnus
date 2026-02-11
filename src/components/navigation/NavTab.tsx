@@ -17,11 +17,12 @@ type TabProps = {
 
 const NavTab: React.FC<TabProps> = ({ setPosition, onClick, title, subMenu, activeSubMenu, onMouseEnter }) => {
     const ref = useRef<HTMLDivElement>(null)
+    const hasSubMenu = Boolean(subMenu?.length)
     const active = activeSubMenu && activeSubMenu === subMenu
 
     return (
         <motion.div
-            className={cn("relative z-50 flex items-center gap-2 px-4 py-1 font-medium text-md rounded-xl cursor-pointer", subMenu && "pr-1")}
+            className={cn("relative z-50 flex items-center gap-2 px-4 py-1 font-medium text-md rounded-xl cursor-pointer", hasSubMenu && "pr-1")}
             ref={ref}
             onClick={onClick}
             initial={fadeInUp.initial}
@@ -41,7 +42,7 @@ const NavTab: React.FC<TabProps> = ({ setPosition, onClick, title, subMenu, acti
             }}
         >
             {title}
-            {subMenu && (
+            {hasSubMenu && (
                 active ? (
                     <IconChevronUp size={20} className={"transition-all text-white/75 mr-1"}/>
                 ) : (

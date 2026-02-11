@@ -45,21 +45,27 @@ function Navigation() {
     }, [])
 
     const navbarItems = useMemo(() => {
-      const iconMap: Record<string, ExtendedSubNavItem> = {
-        features: { icon: <IconCube size={30} />, color: "pink" },
-        integrations: { icon: <IconGitBranch size={30} />, color: "yellow" },
-        security: { icon: <IconLock size={30} />, color: "aqua" },
-      }
+        const iconMap: Record<string, ExtendedSubNavItem> = {
+            features: { icon: <IconCube size={30} />, color: "pink" },
+            integrations: { icon: <IconGitBranch size={30} />, color: "yellow" },
+            security: { icon: <IconLock size={30} />, color: "aqua" },
+        }
 
-      return items.map((item) => ({
-        title: item.title,
-        href: item.href ?? null,
-        subMenu: item.subMenu?.map((sub) => ({
-          ...sub,
-          icon: iconMap[sub.key]?.icon ?? null,
-          color: iconMap[sub.key]?.color ?? "brand",
-        })),
-      }))
+        return items.map((item) => {
+            const mappedSubMenu = (item.subMenu ?? [])
+                .filter((sub) => Boolean(sub?.title && sub?.href))
+                .map((sub) => ({
+                    ...sub,
+                    icon: iconMap[sub.key]?.icon ?? null,
+                    color: iconMap[sub.key]?.color ?? "brand",
+                }))
+
+            return {
+                title: item.title,
+                href: item.href ?? null,
+                subMenu: mappedSubMenu.length > 0 ? mappedSubMenu : undefined,
+            }
+        })
     }, [items])
 
     useEffect(() => {
