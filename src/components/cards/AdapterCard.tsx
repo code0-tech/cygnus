@@ -1,12 +1,11 @@
 "use client"
 
-import { useTranslations } from "next-intl";
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { IconDatabase, IconApi, IconBrandStripe, IconArrowUpRight } from "@tabler/icons-react";
 import { cn } from "@/utils/cn";
 import { FeatureCard } from "./FeatureCard";
-import { Link } from "@/i18n/navigation";
+import Link from "next/link"
 import { Button } from "@/components/Button";
 
 const adapters = [
@@ -31,7 +30,6 @@ const adapters = [
 ];
 
 export const AdapterCard: React.FC = () => {
-    const t = useTranslations("FeatureSection")
     const [selectedId, setSelectedId] = useState<number | null>(1)
 
     return (
@@ -72,14 +70,14 @@ export const AdapterCard: React.FC = () => {
             </div>
             <div className={"w-full flex flex-col gap-1"}>
                 <p className={"font-semibold text-lg text-brand"}>
-                    {t("adapterTitle")}
+                    adapterTitle
                 </p>
                 <p className={"text-white/50 text-sm"}>
-                    {t("adapterDescription")}
+                    adapterDescription
                 </p>
                 <Link href="">
                     <Button variant="link" className="mt-2 gap-1 text-xs">
-                        {t("featureLinkButton")}
+                        featureLinkButton
                         <IconArrowUpRight size={16} />
                     </Button>
                 </Link>

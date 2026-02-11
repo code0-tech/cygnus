@@ -1,6 +1,6 @@
 "use client"
 
-import { Link } from "@/i18n/navigation"
+import Link from "next/link"
 import { cn } from "@/utils/cn"
 import { IconChevronUp, IconMenu2, IconX } from "@tabler/icons-react"
 import { AnimatePresence, motion } from "motion/react"

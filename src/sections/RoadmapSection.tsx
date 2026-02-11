@@ -1,6 +1,5 @@
 import React, {ReactNode} from "react"
 import {
-    IconArrowUpRight,
     IconCube,
     IconGlobe,
     IconLock,
@@ -8,9 +7,6 @@ import {
     IconRocket,
     IconWand
 } from "@tabler/icons-react"
-import {useTranslations} from "next-intl"
-import {GanttFeatureItem, GanttFeatureList, GanttFeatureListGroup, GanttHeader, GanttProvider} from "@/components/Gantt"
-import {ScrollArea} from "@/components/ScrollArea"
 import { Section } from "@/components/Section"
 import { FeatureCard } from "@/components/cards/FeatureCard"
 
@@ -107,8 +103,6 @@ const roadmapItems: RoadmapItem[] = [
 ]
 
 export const RoadmapSection: React.FC = () => {
-    const t = useTranslations("RoadmapSection")
-
     const features = roadmapItems.flatMap((item) =>
         item.steps.map((step) => ({
             id: item.year + "-" + step.title,
@@ -128,7 +122,7 @@ export const RoadmapSection: React.FC = () => {
     }, {} as Record<string, any[]>)
 
     return (
-        <Section translationKey="RoadmapSection">
+        <Section>
             <div className="w-full h-dvh py-16 px-4">
                 <FeatureCard className="w-full h-full">
                     test

@@ -1,18 +1,24 @@
 "use client"
 
-import { useEffect, useState } from "react"
 import { useMediaQuery } from "@/hooks/useMediaQuery"
 import { useOutsideClick } from "@/hooks/useOutsideClick"
-import { useRouter } from "@/i18n/navigation"
+import { getNavbarItems } from "@/utils/getNavbarItems"
+import { IconCube, IconGitBranch, IconLock } from "@tabler/icons-react"
+import { useRouter } from "next/navigation"
+import { JSX, useEffect, useMemo, useState } from "react"
 import { NavigationDesktop } from "./NavigationDesktop"
 import { NavigationMobile } from "./NavigationMobile"
 import { NavItem, SubNavItem } from "./types"
-import { useNavbarItems } from "./useNavbarItems"
+import { NavbarItem } from "@/payload-types"
+
+interface ExtendedSubNavItem {
+    icon: JSX.Element
+    color: string
+}
 
 function Navigation() {
     const router = useRouter()
     const isDesktop = useMediaQuery("(min-width: 1024px)")
-    const navbarItems = useNavbarItems()
     const menuRef = useOutsideClick<HTMLElement>(() => setIsOpen(false))
     const subMenuRef = useOutsideClick<HTMLDivElement>(() => setActiveSubMenu(null))
 
@@ -21,6 +27,40 @@ function Navigation() {
     const [isOpen, setIsOpen] = useState(false)
     const [activeSubMenu, setActiveSubMenu] = useState<SubNavItem[] | null>(null)
     const [mobileOpenKey, setMobileOpenKey] = useState<string | null>(null)
+
+    const [items, setItems] = useState<NavbarItem[]>([])
+
+    useEffect(() => {
+      let active = true
+
+      const load = async () => {
+        const data = await getNavbarItems()
+        if (active) setItems(data)
+      }
+
+      void load()
+      return () => {
+        active = false
+      }
+    }, [])
+
+    const navbarItems = useMemo(() => {
+      const iconMap: Record<string, ExtendedSubNavItem> = {
+        features: { icon: <IconCube size={30} />, color: "pink" },
+        integrations: { icon: <IconGitBranch size={30} />, color: "yellow" },
+        security: { icon: <IconLock size={30} />, color: "aqua" },
+      }
+
+      return items.map((item) => ({
+        title: item.title,
+        href: item.href ?? null,
+        subMenu: item.subMenu?.map((sub) => ({
+          ...sub,
+          icon: iconMap[sub.key]?.icon ?? null,
+          color: iconMap[sub.key]?.color ?? "brand",
+        })),
+      }))
+    }, [items])
 
     useEffect(() => {
         const handleScroll = () => {

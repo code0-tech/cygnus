@@ -2,14 +2,11 @@
 
 import { LandingContainer } from "@/components/LandingContainer";
 import { IconBrandDiscord, IconBrandGithub, IconBrandInstagram, IconBrandX } from "@tabler/icons-react";
-import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 
 export const FooterSection: React.FC = () => {
-    const t = useTranslations("FooterSection")
-
     return (
         <LandingContainer className="min-h-full py-48">
 
@@ -19,7 +16,7 @@ export const FooterSection: React.FC = () => {
                         <div className="flex items-center gap-2">
                             <Image src={"/code0_logo_white.png"} width={"32"} height={"32"} alt={"Code0 Logo"}/>
                             <p className={"text-white"}>
-                                {t("name")}
+                                Name
                             </p>
                         </div>
                         <div className={"flex items-center gap-4"}>
@@ -40,43 +37,43 @@ export const FooterSection: React.FC = () => {
 
                     <div className={"flex flex-col gap-2"}>
                         <p className={"text-white/75"}>
-                            {t("company")}
+                            Company
                         </p>
                         <Link href={"/about-us"}>
                             <p className={"text-white/50 hover:underline underline-offset-2"}>
-                                {t("aboutUs")}
+                                AboutUs
                             </p>
                         </Link>
                     </div>
 
                     <div className={"flex flex-col gap-2"}>
                         <p className={"text-white/75"}>
-                            {t("products")}
+                            Products
                         </p>
                         <Link href={"/pricing"}>
                             <p className={"text-white/50 hover:underline underline-offset-2"}>
-                                {t("pricing")}
+                                Pricing
                             </p>
                         </Link>
                     </div>
 
                     <div className={"flex flex-col gap-2"}>
                         <p className={"text-white/75"}>
-                            {t("legal")}
+                            Legal
                         </p>
                         <Link href={"/policy"}>
                             <p className={"text-white/50 hover:underline underline-offset-2"}>
-                                {t("policy")}
+                                Policy
                             </p>
                         </Link>
                         <Link href={"/terms"}>
                             <p className={"text-white/50 hover:underline underline-offset-2"}>
-                                {t("terms")}
+                                Terms
                             </p>
                         </Link>
                         <Link href={"/imprint"}>
                             <p className={"text-white/50 hover:underline underline-offset-2"}>
-                                {t("imprint")}
+                                Imprint
                             </p>
                         </Link>
                     </div>

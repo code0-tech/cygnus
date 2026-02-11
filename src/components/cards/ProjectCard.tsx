@@ -2,15 +2,12 @@
 
 import React, {useState} from "react"
 import {IconArrowUpRight, IconFolders, IconHierarchy, IconUsersGroup} from "@tabler/icons-react"
-import {useTranslations} from "next-intl"
 import { AnimatedList } from "../AnimatedList"
 import { FeatureCard } from "./FeatureCard"
-import { Link } from "@/i18n/navigation"
+import Link from "next/link"
 import { Button } from "@/components/Button"
 
 export const ProjectCard: React.FC = () => {
-    const t = useTranslations("FeatureSection")
-
     const cards = [
         {
             icon: <IconFolders size={32} className="text-white/75" />,
@@ -68,14 +65,14 @@ export const ProjectCard: React.FC = () => {
             </div>
             <div className={"w-full flex flex-col gap-1"}>
                 <p className={"font-semibold text-lg text-brand"}>
-                    {t("projectTitle")}
+                    projectTitle
                 </p>
                 <p className={"text-white/50 text-sm"}>
-                    {t("projectDescription")}
+                    projectDescription
                 </p>
                 <Link href="">
                     <Button variant="link" className="mt-2 gap-1 text-xs">
-                        {t("featureLinkButton")}
+                        featureLinkButton
                         <IconArrowUpRight size={16} />
                     </Button>
                 </Link>

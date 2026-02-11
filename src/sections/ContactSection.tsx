@@ -1,15 +1,12 @@
 import { InteractiveGridPattern } from "@/components/InteractiveGridPattern"
 import { Section } from "@/components/Section"
 import { cn } from "@/utils/cn"
-import { useTranslations } from "next-intl"
 import Image from "next/image"
 import React from "react"
 
 export const ContactSection: React.FC = () => {
-    const t = useTranslations("ContactSection")
-
     return (
-        <Section translationKey="ContactSection" showBlur={false} showFunnel={false}>
+        <Section showBlur={false} showFunnel={false}>
             <div className={"relative overflow-hidden w-full flex flex-col items-center justify-center gap-8 py-12 rounded-xl border border-white/5 shadow-xl"}>
 
                 <InteractiveGridPattern
@@ -27,15 +24,15 @@ export const ContactSection: React.FC = () => {
                 </div>
 
                 <p className={"z-20 text-2xl sm:text-4xl text-white text-center font-semibold"}>
-                    {t("title")}
+                    Titel
                 </p>
                 <p className={"w-4/5 sm:w-2/3 lg:w-1/2 z-20 text-md sm:text-lg text-white/75 text-center"}>
-                    {t("description")}
+                    Beschreibung
                 </p>
 
                 <div className={"z-20 flex items-center gap-4"}>
                     <button className={"h-10 flex items-center gap-2 bg-white/90 hover:bg-white text-primary rounded-xl px-4 py-1 ring-2 ring-white/35 shadow-xl"}>
-                        {t("ctaButton")}
+                        cta
                     </button>
                 </div>
             </div>

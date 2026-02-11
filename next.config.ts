@@ -1,6 +1,6 @@
-import {NextConfig} from 'next'
-import createNextIntlPlugin from 'next-intl/plugin'
 import createMDX from '@next/mdx'
+import { withPayload } from '@payloadcms/next/withPayload'
+import { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
     pageExtensions: ['js', 'jsx', 'md', 'mdx', 'ts', 'tsx'],
@@ -10,6 +10,5 @@ const nextConfig: NextConfig = {
 }
 
 const withMDX = createMDX({})
-const withNextIntl = createNextIntlPlugin()
 
-export default withNextIntl(withMDX(nextConfig))
+export default withPayload(withMDX(nextConfig))

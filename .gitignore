@@ -39,3 +39,4 @@ next-env.d.ts
 .idea/cygnus.iml
 .idea/modules.xml
 .idea/vcs.xml
+.env

@@ -2,12 +2,23 @@
 
 import { AccordionItem } from "@/components/Accordion"
 import { Section } from "@/components/Section"
-import { useTranslations } from "next-intl"
 import React, { useState } from "react"
 
 export const FaqSection: React.FC = () => {
-    const t = useTranslations("FaqSection")
-    const faqs = t.raw("faqs") as { question: string, answer: string }[];
+    const faqs = [
+      {
+        "question": "Wie funktioniert CodeZero?",
+        "answer": "CodeZero ermöglicht es dir, Backend-Logik über eine visuelle Oberfläche zu erstellen – ganz ohne Programmierung."
+      },
+      {
+        "question": "Kann ich mein Projekt überall deployen?",
+        "answer": "Ja, CodeZero-Projekte können in verschiedenen Umgebungen, einschließlich Cloud-Anbietern, bereitgestellt werden."
+      },
+      {
+        "question": "Gibt es eine kostenlose Version?",
+        "answer": "Ja, wir bieten einen kostenlosen Plan, um die wichtigsten Funktionen auszuprobieren."
+      }
+    ]
 
     const [openItems, setOpenItems] = useState<Set<number>>(new Set())
 
@@ -21,7 +32,7 @@ export const FaqSection: React.FC = () => {
     }
 
     return (
-        <Section translationKey="FaqSection" showLinkButton={false}>
+        <Section showLinkButton={false}>
             <div className={"h-[60vh] flex flex-col gap-4 mx-4"}>
                 {faqs.map((faq, index) => (
                     <AccordionItem key={index} {...faq} isOpen={openItems.has(index)} onToggle={() => toggleItem(index)} />

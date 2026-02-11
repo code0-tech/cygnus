@@ -1,15 +1,12 @@
 "use client"
 
 import React from "react"
-import {useTranslations} from "next-intl"
 import {IconArrowUpRight, IconChevronDown} from "@tabler/icons-react"
 import { FeatureCard } from "./FeatureCard"
-import { Link } from "@/i18n/navigation"
 import { Button } from "@/components/Button"
+import Link from "next/link"
 
 export const SuggestionCard: React.FC = () => {
-    const t = useTranslations("FeatureSection")
-
     const dropdownItems = [
         "Dashboard",
         "Analytics",
@@ -25,14 +22,14 @@ export const SuggestionCard: React.FC = () => {
         <FeatureCard>
             <div className={"w-full flex flex-col gap-1"}>
                 <p className={"font-semibold text-lg text-brand"}>
-                    {t("suggestionTitle")}
+                    suggestionTitle
                 </p>
                 <p className={"text-white/50 text-sm"}>
-                    {t("suggestionDescription")}
+                    suggestionDescription
                 </p>
                 <Link href="">
                     <Button variant="link" className="mt-2 gap-1 text-xs">
-                        {t("featureLinkButton")}
+                        featureLinkButton
                         <IconArrowUpRight size={16} />
                     </Button>
                 </Link>

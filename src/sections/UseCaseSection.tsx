@@ -4,34 +4,32 @@ import { UseCaseCard } from "@/components/cards/UseCaseCard"
 import { Section } from "@/components/Section"
 import { cn } from "@/utils/cn"
 import { motion } from "motion/react"
-import { useTranslations } from "next-intl"
 import React, { useEffect, useRef, useState } from "react"
 
 const useCases = ["CMS", "Workflow", "Bots"] as const
 type UseCase = typeof useCases[number]
 
 export const UseCaseSection: React.FC = () => {
-    const t = useTranslations('UseCaseSection')
     const [activeCase, setActiveCase] = useState<UseCase>("CMS")
     const [position, setPosition] = useState({ left: 0, top: 0, width: 0, height: 0, opacity: 0 })
     const contentByCase: Record<UseCase, { title: string; description: string }> = {
         CMS: {
-            title: t("useCase1Title"),
-            description: t("useCase1Description")
+            title: "useCase1Title",
+            description: "useCase1Description"
         },
         Workflow: {
-            title: t("useCase2Title"),
-            description: t("useCase2Description")
+            title: "useCase2Title",
+            description: "useCase2Description"
         },
         Bots: {
-            title: t("useCase3Title"),
-            description: t("useCase3Description")
+            title: "useCase3Title",
+            description: "useCase3Description"
         }
     }
     const activeContent = contentByCase[activeCase]
 
     return (
-        <Section translationKey="UseCaseSection">
+        <Section>
             <div className={"w-full mx-auto flex flex-col items-center justify-center"}>
                 <div className="w-full flex flex-col md:flex-row gap-6 md:gap-8">
                     <div className={"z-10 relative w-full md:w-1/3 h-full flex md:flex-col items-center md:items-stretch p-2 rounded-2xl bg-[#353343] border border-white/5 shadow-md"}>

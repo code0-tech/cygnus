@@ -1,5 +1,4 @@
 import React from "react"
-import {useTranslations} from "next-intl"
 import GradientBlinds from "@/components/GradientBlinds"
 import Image from "next/image"
 import { IconArrowRight } from "@tabler/icons-react"
@@ -7,10 +6,8 @@ import { Section } from "@/components/Section"
 import { Button } from "@/components/Button"
 
 export const HeroSection: React.FC = () => {
-    const t = useTranslations('HeroSection')
-
     return (
-        <Section translationKey="HeroSection" showBlur={false} showFunnel={false}>
+        <Section showBlur={false} showFunnel={false}>
 
             <div className="relative h-[85vh] rounded-xl ring ring-white/5 overflow-hidden shadow-lg">
 
@@ -33,16 +30,16 @@ export const HeroSection: React.FC = () => {
 
                     <div className="w-full md:w-2/5 flex flex-col gap-4 text-start">
                         <div className="relative z-10 group bg-brand/5 cursor-pointer border border-brand/5 text-brand shadow-md w-fit px-4 py-0.5 rounded-full flex items-center justify-between gap-1 hover:gap-2 hover:pr-3 transition-all text-sm font-medium">
-                            {t("badge")}
+                            Badge
                             <IconArrowRight size={14}/>
                         </div>
 
                         <h1 className="relative z-10 font-bold text-3xl md:text-4xl text-white">
-                            {t("title")}
+                            Title
                         </h1>
 
                         <p className="relative z-10 font-medium text-white/75 text-lg md:text-xl">
-                            {t("description1")} <br/> {t("description2")}
+                            Beschreibung1 <br/> Beschreibung2
                         </p>
 
                         <div className={"flex flex-col gap-4 mt-4"}>
@@ -50,13 +47,13 @@ export const HeroSection: React.FC = () => {
                                 variant="ghost"
                                 className="w-full sm:w-auto z-10"
                             >
-                                {t("docsButton")}
+                                Docs
                             </Button>
                             <Button
                                 variant="default"
                                 className="w-full sm:w-auto z-10"
                             >
-                                {t("ctaButton")}
+                                cta
                             </Button>
                         </div>
                     </div>

@@ -1,18 +1,15 @@
 import { IconArrowUpRight } from "@tabler/icons-react"
-import { useTranslations } from "next-intl"
 import { ReactNode } from "react"
 import { Button } from "@/components/Button"
 
 interface SectionProps {
-    translationKey: string
     children: ReactNode
     showBlur?: boolean
     showFunnel?: boolean
     showLinkButton?: boolean
 }
 
-export function Section({ translationKey, children, showBlur = true, showFunnel = true, showLinkButton = true }: SectionProps) {
-    const t = useTranslations(translationKey)
+export function Section({ children, showBlur = true, showFunnel = true, showLinkButton = true }: SectionProps) {
 
     return (
         <section className={"relative overflow-hidden flex flex-col gap-16 pt-16"}>
@@ -22,14 +19,14 @@ export function Section({ translationKey, children, showBlur = true, showFunnel 
             {showFunnel &&
                 <div className={"flex flex-col gap-4 items-center justify-center text-center pb-16 pt-48"}>
                     <h1 className={"text-4xl md:text-6xl text-white font-semibold"}>
-                        {t("title")}
+                        Titel
                     </h1>
                     <p className="relative z-10 max-w-[90vw] lg:w-1/2 text-center font-medium text-white/75 text-xl">
-                        {t("description")}
+                        Beschreibung
                     </p>
                     {showLinkButton &&
                         <Button variant="link" className="gap-1">
-                            {t("linkButton")}
+                            Link
                             <IconArrowUpRight size={16} />
                         </Button>
                     }

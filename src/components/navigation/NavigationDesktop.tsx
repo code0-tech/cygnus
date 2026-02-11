@@ -1,7 +1,6 @@
 "use client"
 
 import { Button } from "@/components/Button"
-import { Link } from "@/i18n/navigation"
 import { cn } from "@/utils/cn"
 import { IconBrandGithub } from "@tabler/icons-react"
 import { AnimatePresence, motion } from "motion/react"
@@ -11,6 +10,7 @@ import { NavSubMenu } from "./NavSubMenu"
 import { NavTab } from "./NavTab"
 import { fadeInUp, NavItem, SubNavItem } from "./types"
 import { Container } from "@code0-tech/pictor"
+import Link from "next/link"
 
 type NavigationDesktopProps = {
     isScrolled: boolean
