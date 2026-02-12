@@ -1,12 +1,15 @@
 "use client"
 
 import React from "react"
-import {IconArrowUpRight, IconChevronDown} from "@tabler/icons-react"
+import { IconChevronDown } from "@tabler/icons-react"
 import { FeatureCard } from "./FeatureCard"
-import { Button } from "@/components/Button"
-import Link from "next/link"
+import { FeatureCardContent, FeatureCardText } from "../FeatureCardText"
 
-export const SuggestionCard: React.FC = () => {
+interface SuggestionCardProps {
+    content?: FeatureCardContent | null
+}
+
+export const SuggestionCard: React.FC<SuggestionCardProps> = ({ content }) => {
     const dropdownItems = [
         "Dashboard",
         "Analytics",
@@ -20,21 +23,7 @@ export const SuggestionCard: React.FC = () => {
 
     return (
         <FeatureCard>
-            <div className={"w-full flex flex-col gap-1"}>
-                <p className={"font-semibold text-lg text-brand"}>
-                    suggestionTitle
-                </p>
-                <p className={"text-white/50 text-sm"}>
-                    suggestionDescription
-                </p>
-                <Link href="">
-                    <Button variant="link" className="mt-2 gap-1 text-xs">
-                        featureLinkButton
-                        <IconArrowUpRight size={16} />
-                    </Button>
-                </Link>
-            </div>
-
+            <FeatureCardText content={content}/>
             <div className="absolute -bottom-12 -right-2 w-96 bg-linear-to-t from-primary to-[#0d1120] rounded-lg ring ring-white/10 drop-shadow-[0_65px_65px_rgba(0,0,0,0.25)]">
                 <div className="flex items-center justify-between p-2 rounded-t-lg border-b border-white/10">
                     <p className="text-white/75 text-sm">Select a page</p>

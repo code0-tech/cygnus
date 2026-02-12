@@ -4,22 +4,21 @@ import { AccordionItem } from "@/components/Accordion"
 import { Section } from "@/components/Section"
 import React, { useState } from "react"
 
-export const FaqSection: React.FC = () => {
-    const faqs = [
-      {
-        "question": "Wie funktioniert CodeZero?",
-        "answer": "CodeZero ermöglicht es dir, Backend-Logik über eine visuelle Oberfläche zu erstellen – ganz ohne Programmierung."
-      },
-      {
-        "question": "Kann ich mein Projekt überall deployen?",
-        "answer": "Ja, CodeZero-Projekte können in verschiedenen Umgebungen, einschließlich Cloud-Anbietern, bereitgestellt werden."
-      },
-      {
-        "question": "Gibt es eine kostenlose Version?",
-        "answer": "Ja, wir bieten einen kostenlosen Plan, um die wichtigsten Funktionen auszuprobieren."
-      }
-    ]
+interface FaqItem {
+    question: string
+    answer: string
+    id?: string | null
+}
 
+interface FaqSectionContent {
+    items: FaqItem[] | null
+}
+
+interface FaqSectionProps {
+    content?: FaqSectionContent | null
+}
+
+export const FaqSection: React.FC<FaqSectionProps> = ({ content }) => {
     const [openItems, setOpenItems] = useState<Set<number>>(new Set())
 
     const toggleItem = (index: number) => {
@@ -31,11 +30,17 @@ export const FaqSection: React.FC = () => {
         setOpenItems(newOpenItems)
     }
 
+    if (!content || !content.items) return
+
     return (
-        <Section showLinkButton={false}>
+        <Section sectionType="FaqSection" showLinkButton={false}>
             <div className={"h-[60vh] flex flex-col gap-4 mx-4"}>
-                {faqs.map((faq, index) => (
-                    <AccordionItem key={index} {...faq} isOpen={openItems.has(index)} onToggle={() => toggleItem(index)} />
+                {content.items.map((faq, index) => (
+                    <AccordionItem
+                        key={`${faq.question}-${index}`} {...faq}
+                        isOpen={openItems.has(index)}
+                        onToggle={() => toggleItem(index)}
+                    />
                 ))}
             </div>
         </Section>

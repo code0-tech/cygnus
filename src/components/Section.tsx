@@ -1,15 +1,44 @@
+"use client"
+
 import { IconArrowUpRight } from "@tabler/icons-react"
-import { ReactNode } from "react"
+import { Section as SectionDocument } from "@/payload-types"
+import { getSectionByType } from "@/utils/getSectionByType"
+import { ReactNode, useEffect, useState } from "react"
 import { Button } from "@/components/Button"
+import Link from "next/link"
 
 interface SectionProps {
     children: ReactNode
+    sectionType?: NonNullable<SectionDocument["sectionType"]>
     showBlur?: boolean
     showFunnel?: boolean
     showLinkButton?: boolean
 }
 
-export function Section({ children, showBlur = true, showFunnel = true, showLinkButton = true }: SectionProps) {
+export function Section({ sectionType, children, showBlur = true, showFunnel = true, showLinkButton = true }: SectionProps) {
+    const [sectionData, setSectionData] = useState<SectionDocument | null>(null)
+
+    useEffect(() => {
+        if (!sectionType) {
+            setSectionData(null)
+            return
+        }
+
+        let active = true
+
+        const loadSectionData = async () => {
+            const data = await getSectionByType(sectionType)
+            if (active) setSectionData(data)
+        }
+
+        void loadSectionData()
+
+        return () => {
+            active = false
+        }
+    }, [sectionType])
+
+    if (sectionType && !sectionData) return
 
     return (
         <section className={"relative overflow-hidden flex flex-col gap-16 pt-16"}>
@@ -19,16 +48,18 @@ export function Section({ children, showBlur = true, showFunnel = true, showLink
             {showFunnel &&
                 <div className={"flex flex-col gap-4 items-center justify-center text-center pb-16 pt-48"}>
                     <h1 className={"text-4xl md:text-6xl text-white font-semibold"}>
-                        Titel
+                        {sectionData?.heading}
                     </h1>
                     <p className="relative z-10 max-w-[90vw] lg:w-1/2 text-center font-medium text-white/75 text-xl">
-                        Beschreibung
+                        {sectionData?.subheading}
                     </p>
                     {showLinkButton &&
-                        <Button variant="link" className="gap-1">
-                            Link
-                            <IconArrowUpRight size={16} />
-                        </Button>
+                        <Link href={sectionData?.link_button?.url ?? ""}>
+                            <Button variant="link" className="gap-1">
+                                {sectionData?.link_button?.label}
+                                <IconArrowUpRight size={16} />
+                            </Button>
+                        </Link>
                     }
                 </div>
             }

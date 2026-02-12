@@ -2,11 +2,14 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { IconDatabase, IconApi, IconBrandStripe, IconArrowUpRight } from "@tabler/icons-react";
+import { IconDatabase, IconApi, IconBrandStripe } from "@tabler/icons-react";
 import { cn } from "@/utils/cn";
 import { FeatureCard } from "./FeatureCard";
-import Link from "next/link"
-import { Button } from "@/components/Button";
+import { FeatureCardContent, FeatureCardText } from "../FeatureCardText";
+
+interface AdapterCardProps {
+    content?: FeatureCardContent | null
+}
 
 const adapters = [
   {
@@ -29,7 +32,7 @@ const adapters = [
   },
 ];
 
-export const AdapterCard: React.FC = () => {
+export const AdapterCard: React.FC<AdapterCardProps> = ({ content }) => {
     const [selectedId, setSelectedId] = useState<number | null>(1)
 
     return (
@@ -68,20 +71,7 @@ export const AdapterCard: React.FC = () => {
                     </motion.div>
                 ))}
             </div>
-            <div className={"w-full flex flex-col gap-1"}>
-                <p className={"font-semibold text-lg text-brand"}>
-                    adapterTitle
-                </p>
-                <p className={"text-white/50 text-sm"}>
-                    adapterDescription
-                </p>
-                <Link href="">
-                    <Button variant="link" className="mt-2 gap-1 text-xs">
-                        featureLinkButton
-                        <IconArrowUpRight size={16} />
-                    </Button>
-                </Link>
-            </div>
+            <FeatureCardText content={content} />
         </FeatureCard>
     )
 }

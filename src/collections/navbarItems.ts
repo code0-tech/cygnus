@@ -1,7 +1,7 @@
 import type { CollectionConfig } from "payload"
 
 export const NavbarItems: CollectionConfig = {
-  slug: "navbar-items",
+  slug: "navbarItems",
   admin: {
     useAsTitle: "title",
     defaultColumns: ["title", "href", "order", "updatedAt"],

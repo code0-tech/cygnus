@@ -1,0 +1,34 @@
+import type { Block } from "payload"
+
+export const UseCaseBlock: Block = {
+  slug: "usecase",
+  labels: {
+    singular: "Use Case",
+    plural: "Use Case Blocks",
+  },
+  fields: [
+    {
+      name: "useCases",
+      label: "Use Cases",
+      type: "array",
+      required: true,
+      fields: [
+        {
+          name: "label",
+          type: "text",
+          required: true,
+        },
+        {
+          name: "title",
+          type: "text",
+          required: true,
+        },
+        {
+          name: "description",
+          type: "textarea",
+          required: true,
+        },
+      ],
+    },
+  ],
+}

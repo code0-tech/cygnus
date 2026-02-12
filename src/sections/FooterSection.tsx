@@ -1,15 +1,35 @@
 "use client"
 
-import { LandingContainer } from "@/components/LandingContainer";
-import { IconBrandDiscord, IconBrandGithub, IconBrandInstagram, IconBrandX } from "@tabler/icons-react";
-import Image from "next/image";
-import Link from "next/link";
-import React from "react";
+import { LandingContainer } from "@/components/LandingContainer"
+import type { Footer } from "@/payload-types"
+import { getFooter } from "@/utils/getFooter"
+import { IconBrandDiscord, IconBrandGithub, IconBrandInstagram, IconBrandX } from "@tabler/icons-react"
+import Image from "next/image"
+import Link from "next/link"
+import React, { useEffect, useState } from "react"
 
 export const FooterSection: React.FC = () => {
+    const [footer, setFooter] = useState<Footer | null>(null)
+
+    useEffect(() => {
+        let active = true
+
+        const load = async () => {
+            const data = await getFooter()
+            if (active) setFooter(data)
+        }
+
+        void load()
+
+        return () => {
+            active = false
+        }
+    }, [])
+
+    if (!footer?.groups) return
+
     return (
         <LandingContainer className="min-h-full py-48">
-
             <div className={"relative flex flex-col gap-16 overflow-hidden"}>
                 <div className={"grid grid-cols-2 lg:grid-cols-4 gap-4"}>
                     <div className={"flex flex-col lg:justify-between gap-2"}>
@@ -35,48 +55,20 @@ export const FooterSection: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className={"flex flex-col gap-2"}>
-                        <p className={"text-white/75"}>
-                            Company
-                        </p>
-                        <Link href={"/about-us"}>
-                            <p className={"text-white/50 hover:underline underline-offset-2"}>
-                                AboutUs
+                    {footer.groups.map((group) => (
+                        <div className={"flex flex-col gap-2"} key={`${group.heading}-${group.id ?? "group"}`}>
+                            <p className={"text-white/75"}>
+                                {group.heading}
                             </p>
-                        </Link>
-                    </div>
-
-                    <div className={"flex flex-col gap-2"}>
-                        <p className={"text-white/75"}>
-                            Products
-                        </p>
-                        <Link href={"/pricing"}>
-                            <p className={"text-white/50 hover:underline underline-offset-2"}>
-                                Pricing
-                            </p>
-                        </Link>
-                    </div>
-
-                    <div className={"flex flex-col gap-2"}>
-                        <p className={"text-white/75"}>
-                            Legal
-                        </p>
-                        <Link href={"/policy"}>
-                            <p className={"text-white/50 hover:underline underline-offset-2"}>
-                                Policy
-                            </p>
-                        </Link>
-                        <Link href={"/terms"}>
-                            <p className={"text-white/50 hover:underline underline-offset-2"}>
-                                Terms
-                            </p>
-                        </Link>
-                        <Link href={"/imprint"}>
-                            <p className={"text-white/50 hover:underline underline-offset-2"}>
-                                Imprint
-                            </p>
-                        </Link>
-                    </div>
+                            {(group.items ?? []).map((item) => (
+                                <Link href={item.url} key={`${item.label}-${item.id ?? item.url}`}>
+                                    <p className={"text-white/50 hover:underline underline-offset-2"}>
+                                        {item.label}
+                                    </p>
+                                </Link>
+                            ))}
+                        </div>
+                    ))}
                 </div>
             </div>
         </LandingContainer>

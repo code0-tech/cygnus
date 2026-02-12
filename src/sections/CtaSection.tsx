@@ -3,8 +3,25 @@ import { Section } from "@/components/Section"
 import { cn } from "@/utils/cn"
 import Image from "next/image"
 import React from "react"
+import Link from "next/link"
+import { Button } from "@/components/Button"
 
-export const ContactSection: React.FC = () => {
+interface CtaSectionContent {
+    heading: string
+    subheading: string
+    ctaLink: {
+        label: string
+        url: string
+    }
+}
+
+interface CtaSectionProps {
+    content?: CtaSectionContent | null
+}
+
+export const CtaSection: React.FC<CtaSectionProps> = ({ content }) => {
+    if (!content) return
+
     return (
         <Section showBlur={false} showFunnel={false}>
             <div className={"relative overflow-hidden w-full flex flex-col items-center justify-center gap-8 py-12 rounded-xl border border-white/5 shadow-xl"}>
@@ -24,16 +41,18 @@ export const ContactSection: React.FC = () => {
                 </div>
 
                 <p className={"z-20 text-2xl sm:text-4xl text-white text-center font-semibold"}>
-                    Titel
+                    {content.heading}
                 </p>
                 <p className={"w-4/5 sm:w-2/3 lg:w-1/2 z-20 text-md sm:text-lg text-white/75 text-center"}>
-                    Beschreibung
+                    {content?.subheading}
                 </p>
 
                 <div className={"z-20 flex items-center gap-4"}>
-                    <button className={"h-10 flex items-center gap-2 bg-white/90 hover:bg-white text-primary rounded-xl px-4 py-1 ring-2 ring-white/35 shadow-xl"}>
-                        cta
-                    </button>
+                    <Link href={content.ctaLink.url}>
+                        <Button variant="default" className={"h-10 flex items-center gap-2"}>
+                            {content.ctaLink.label}
+                        </Button>
+                    </Link>
                 </div>
             </div>
         </Section>

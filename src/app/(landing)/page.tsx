@@ -1,5 +1,11 @@
 import { LandingContainer } from "@/components/LandingContainer"
 import { HeroSection } from "@/sections/HeroSection"
+import { getLandingPage } from "@/utils/getLandingPage"
+import type { HeroLayoutBlock } from "@/utils/getLandingPage"
+import type { BrandLayoutBlock } from "@/utils/getLandingPage"
+import type { CtaLayoutBlock } from "@/utils/getLandingPage"
+import type { FaqLayoutBlock } from "@/utils/getLandingPage"
+import type { UseCaseLayoutBlock } from "@/utils/getLandingPage"
 import dynamic from "next/dynamic"
 
 const BrandSection = dynamic(() => import('@/sections/BrandSection').then(mod => mod.BrandSection))
@@ -8,19 +14,27 @@ const AppFeatureSection = dynamic(() => import('@/sections/AppFeatureSection').t
 const RuntimeFeatureSection = dynamic(() => import('@/sections/RuntimeFeatureSection').then(mod => mod.RuntimeFeatureSection))
 const RoadmapSection = dynamic(() => import('@/sections/RoadmapSection').then(mod => mod.RoadmapSection))
 const FaqSection = dynamic(() => import('@/sections/FaqSection').then(mod => mod.FaqSection))
-const ContactSection = dynamic(() => import('@/sections/ContactSection').then(mod => mod.ContactSection))
+const CtaSection = dynamic(() => import('@/sections/CtaSection').then(mod => mod.CtaSection))
 
-export default function Page() {
+export default async function Page() {
+    const page = await getLandingPage("home")
+    const layout = page?.layout ?? []
+    const heroBlock = layout.find((block): block is HeroLayoutBlock => block.blockType === "hero") ?? null
+    const brandBlock = layout.find((block): block is BrandLayoutBlock => block.blockType === "brand") ?? null
+    const useCaseBlock = layout.find((block): block is UseCaseLayoutBlock => block.blockType === "usecase") ?? null
+    const faqBlock = layout.find((block): block is FaqLayoutBlock => block.blockType === "faq") ?? null
+    const ctaBlock = layout.find((block): block is CtaLayoutBlock => block.blockType === "cta") ?? null
+
     return (
         <LandingContainer>
-            <HeroSection/>
-            <BrandSection />
-            <UseCaseSection/>
+            <HeroSection content={heroBlock}/>
+            <BrandSection content={brandBlock} />
+            <UseCaseSection content={useCaseBlock}/>
             <AppFeatureSection />
             <RuntimeFeatureSection/>
             <RoadmapSection />
-            <FaqSection/>
-            <ContactSection/>
+            <FaqSection content={faqBlock}/>
+            <CtaSection content={ctaBlock} />
         </LandingContainer>
     )
 }

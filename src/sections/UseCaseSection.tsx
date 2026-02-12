@@ -6,50 +6,55 @@ import { cn } from "@/utils/cn"
 import { motion } from "motion/react"
 import React, { useEffect, useRef, useState } from "react"
 
-const useCases = ["CMS", "Workflow", "Bots"] as const
-type UseCase = typeof useCases[number]
+interface UseCaseItem {
+    label: string
+    title: string
+    description: string
+    id?: string | null
+}
 
-export const UseCaseSection: React.FC = () => {
-    const [activeCase, setActiveCase] = useState<UseCase>("CMS")
+interface UseCaseSectionContent {
+    useCases: UseCaseItem[] | null
+}
+
+interface UseCaseSectionProps {
+    content?: UseCaseSectionContent | null
+}
+
+export const UseCaseSection: React.FC<UseCaseSectionProps> = ({ content }) => {
+    const [activeCase, setActiveCase] = useState<string>("")
     const [position, setPosition] = useState({ left: 0, top: 0, width: 0, height: 0, opacity: 0 })
-    const contentByCase: Record<UseCase, { title: string; description: string }> = {
-        CMS: {
-            title: "useCase1Title",
-            description: "useCase1Description"
-        },
-        Workflow: {
-            title: "useCase2Title",
-            description: "useCase2Description"
-        },
-        Bots: {
-            title: "useCase3Title",
-            description: "useCase3Description"
-        }
-    }
-    const activeContent = contentByCase[activeCase]
+
+    useEffect(() => {
+        setActiveCase(content?.useCases?.[0]?.label ?? "")
+    }, [content?.useCases])
+
+    const activeContent = content?.useCases?.find((item) => item.label === activeCase) ?? content?.useCases?.[0]
+
+    if (!content || !content?.useCases) return
 
     return (
-        <Section>
+        <Section sectionType="UseCaseSection">
             <div className={"w-full mx-auto flex flex-col items-center justify-center"}>
                 <div className="w-full flex flex-col md:flex-row gap-6 md:gap-8">
                     <div className={"z-10 relative w-full md:w-1/3 h-full flex md:flex-col items-center md:items-stretch p-2 rounded-2xl bg-[#353343] border border-white/5 shadow-md"}>
                         <div className={"relative w-full flex md:flex-col items-center md:items-stretch gap-2"}>
-                            {useCases.map((item) => (
-                                <UseCaseTab key={item}
-                                    title={item}
+                            {content.useCases.map((item) => (
+                                <UseCaseTab key={`${item.label}-${item.id ?? item.title}`}
+                                    title={item.label}
                                     setPosition={setPosition}
-                                    selected={activeCase === item}
-                                    onClick={() => setActiveCase(item)}
+                                    selected={activeCase === item.label}
+                                    onClick={() => setActiveCase(item.label)}
                                 />
                             ))}
                             <motion.div
-                                animate={{...position}}
+                                animate={{ ...position }}
                                 className={cn("absolute z-40 rounded-lg bg-white ring ring-white/20")}
                             />
                         </div>
                         <div className="mt-4 px-2 pb-2 text-center md:text-left">
-                            <p className="text-xl md:text-2xl font-semibold text-white">{activeContent.title}</p>
-                            <p className="mt-2 text-sm md:text-base text-white/75">{activeContent.description}</p>
+                            <p className="text-xl md:text-2xl font-semibold text-white">{activeContent?.title}</p>
+                            <p className="mt-2 text-sm md:text-base text-white/75">{activeContent?.description}</p>
                         </div>
                     </div>
                     <div className="flex w-full md:w-2/3 h-[600px] rounded-2xl bg-white/2 ring ring-white/5 shadow-lg">
@@ -97,7 +102,6 @@ const UseCaseTab: React.FC<UseCaseTabProps> = ({ setPosition, onClick, title, se
         onClick()
     }
 
-
     return (
         <motion.div
             className={cn(
@@ -105,9 +109,9 @@ const UseCaseTab: React.FC<UseCaseTabProps> = ({ setPosition, onClick, title, se
                 selected ? "text-black" : "text-white")}
             ref={ref}
             onClick={moveHighlight}
-            initial={{opacity: 0, filter: 'blur(10px)'}}
-            animate={{opacity: 1, filter: 'blur(0px)'}}
-            transition={{duration: 0.65}}
+            initial={{ opacity: 0, filter: "blur(10px)" }}
+            animate={{ opacity: 1, filter: "blur(0px)" }}
+            transition={{ duration: 0.65 }}
         >
             {title}
         </motion.div>

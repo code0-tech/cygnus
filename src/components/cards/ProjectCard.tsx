@@ -1,13 +1,16 @@
 "use client"
 
-import React, {useState} from "react"
-import {IconArrowUpRight, IconFolders, IconHierarchy, IconUsersGroup} from "@tabler/icons-react"
+import React from "react"
+import {IconFolders, IconHierarchy, IconUsersGroup} from "@tabler/icons-react"
 import { AnimatedList } from "../AnimatedList"
 import { FeatureCard } from "./FeatureCard"
-import Link from "next/link"
-import { Button } from "@/components/Button"
+import { FeatureCardContent, FeatureCardText } from "../FeatureCardText"
 
-export const ProjectCard: React.FC = () => {
+interface ProjectCardProps {
+    content?: FeatureCardContent | null
+}
+
+export const ProjectCard: React.FC<ProjectCardProps> = ({ content }) => {
     const cards = [
         {
             icon: <IconFolders size={32} className="text-white/75" />,
@@ -36,7 +39,6 @@ export const ProjectCard: React.FC = () => {
         },
     ]
 
-
     return (
         <FeatureCard className="col-span-1 md:col-span-3">
             <div className="relative w-full -mt-4 flex flex-col items-center justify-end h-full overflow-hidden">
@@ -63,20 +65,7 @@ export const ProjectCard: React.FC = () => {
                 </AnimatedList>
                 <div className="absolute bottom-0 left-0 w-full h-1/4 bg-gradient-to-t from-[#050316] to-transparent pointer-events-none" />
             </div>
-            <div className={"w-full flex flex-col gap-1"}>
-                <p className={"font-semibold text-lg text-brand"}>
-                    projectTitle
-                </p>
-                <p className={"text-white/50 text-sm"}>
-                    projectDescription
-                </p>
-                <Link href="">
-                    <Button variant="link" className="mt-2 gap-1 text-xs">
-                        featureLinkButton
-                        <IconArrowUpRight size={16} />
-                    </Button>
-                </Link>
-            </div>
+            <FeatureCardText content={content}/>
         </FeatureCard>
     )
 }

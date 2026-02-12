@@ -122,7 +122,7 @@ export const RoadmapSection: React.FC = () => {
     }, {} as Record<string, any[]>)
 
     return (
-        <Section>
+        <Section sectionType="RoadmapSection">
             <div className="w-full h-dvh py-16 px-4">
                 <FeatureCard className="w-full h-full">
                     test

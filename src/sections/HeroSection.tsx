@@ -4,8 +4,34 @@ import Image from "next/image"
 import { IconArrowRight } from "@tabler/icons-react"
 import { Section } from "@/components/Section"
 import { Button } from "@/components/Button"
+import Link from "next/link"
 
-export const HeroSection: React.FC = () => {
+interface HeroSectionButton {
+    label: string
+    url: string
+    variant?: "default" | "ghost" | "link" | null
+    id?: string | null
+}
+
+interface HeroSectionText {
+    text: string
+    id?: string | null
+}
+
+interface HeroSectionContent {
+    badge?: string | null
+    heading?: string | null
+    texts?: HeroSectionText[] | null
+    buttons?: HeroSectionButton[] | null
+}
+
+interface HeroSectionProps {
+    content?: HeroSectionContent | null
+}
+
+export const HeroSection: React.FC<HeroSectionProps> = ({ content }) => {
+    if (!content || !content.texts || !content.buttons) return
+
     return (
         <Section showBlur={false} showFunnel={false}>
 
@@ -30,31 +56,36 @@ export const HeroSection: React.FC = () => {
 
                     <div className="w-full md:w-2/5 flex flex-col gap-4 text-start">
                         <div className="relative z-10 group bg-brand/5 cursor-pointer border border-brand/5 text-brand shadow-md w-fit px-4 py-0.5 rounded-full flex items-center justify-between gap-1 hover:gap-2 hover:pr-3 transition-all text-sm font-medium">
-                            Badge
+                            {content.badge}
                             <IconArrowRight size={14}/>
                         </div>
 
                         <h1 className="relative z-10 font-bold text-3xl md:text-4xl text-white">
-                            Title
+                            {content.heading}
                         </h1>
 
                         <p className="relative z-10 font-medium text-white/75 text-lg md:text-xl">
-                            Beschreibung1 <br/> Beschreibung2
+                            {content.texts.length > 0
+                                ? content.texts.map((item, index) => (
+                                    <React.Fragment key={`${item.id ?? item.text}-${index}`}>
+                                        {item.text}
+                                        {index < content.texts!!.length - 1 && <br />}
+                                    </React.Fragment>
+                                ))
+                                : <>Beschreibung1 <br /> Beschreibung2</>}
                         </p>
 
                         <div className={"flex flex-col gap-4 mt-4"}>
-                            <Button
-                                variant="ghost"
-                                className="w-full sm:w-auto z-10"
-                            >
-                                Docs
-                            </Button>
-                            <Button
-                                variant="default"
-                                className="w-full sm:w-auto z-10"
-                            >
-                                cta
-                            </Button>
+                            {content.buttons.map((button, index) => (
+                                <Link href={button.url} key={`${button.label}-${button.id ?? index}`} className="w-full sm:w-auto">
+                                    <Button
+                                        variant={button.variant ?? "default"}
+                                        className="w-full sm:w-auto z-10"
+                                    >
+                                        {button.label}
+                                    </Button>
+                                </Link>
+                            ))}
                         </div>
                     </div>
                     <Image src={"/code0_software.png"} alt={"Code= Example"} height={620} width={900} className={"w-full h-auto rounded-xl border border-white/10 shadow-xl md:w-4/5 md:border-0 md:border-l md:border-y md:rounded-l-xl md:rounded-r-none md:ring-4 md:ring-white/5 md:-mr-56"}/>
