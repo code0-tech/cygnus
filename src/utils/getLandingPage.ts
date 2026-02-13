@@ -87,7 +87,7 @@ interface LandingPageDoc {
     createdAt: string
 }
 
-export async function getLandingPage(slug = "home"): Promise<LandingPageDoc | null> {
+export async function getLandingPage(slug = "main"): Promise<LandingPageDoc | null> {
     const payload = await getPayload({ config })
 
     const result = await payload.find({
@@ -101,6 +101,8 @@ export async function getLandingPage(slug = "home"): Promise<LandingPageDoc | nu
         depth: 1,
         pagination: false,
     })
+
+    console.log(result)
 
     return (result.docs[0] as unknown as LandingPageDoc | undefined) ?? null
 }

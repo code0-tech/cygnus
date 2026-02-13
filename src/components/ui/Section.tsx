@@ -4,7 +4,7 @@ import { IconArrowUpRight } from "@tabler/icons-react"
 import { Section as SectionDocument } from "@/payload-types"
 import { getSectionByType } from "@/utils/getSectionByType"
 import { ReactNode, useEffect, useState } from "react"
-import { Button } from "@/components/Button"
+import { Button } from "@/components/ui/Button"
 import Link from "next/link"
 
 interface SectionProps {
@@ -17,6 +17,7 @@ interface SectionProps {
 
 export function Section({ sectionType, children, showBlur = true, showFunnel = true, showLinkButton = true }: SectionProps) {
     const [sectionData, setSectionData] = useState<SectionDocument | null>(null)
+    const linkUrl = sectionData?.link_button?.url?.trim()
 
     useEffect(() => {
         if (!sectionType) {
@@ -38,12 +39,12 @@ export function Section({ sectionType, children, showBlur = true, showFunnel = t
         }
     }, [sectionType])
 
-    if (sectionType && !sectionData) return
+    console.log(sectionType)
 
     return (
         <section className={"relative overflow-hidden flex flex-col gap-16 pt-16"}>
             {showBlur &&
-                <div className="pointer-events-none absolute -inset-0 opacity-30 blur-xl will-change-filter [background:radial-gradient(circle,rgba(255,255,255,0.45),transparent_60%)]" />
+                <div className="pointer-events-none absolute inset-0 opacity-30 blur-xl will-change-filter [background:radial-gradient(circle,rgba(255,255,255,0.45),transparent_60%)]" />
             }
             {showFunnel &&
                 <div className={"flex flex-col gap-4 items-center justify-center text-center pb-16 pt-48"}>
@@ -53,8 +54,8 @@ export function Section({ sectionType, children, showBlur = true, showFunnel = t
                     <p className="relative z-10 max-w-[90vw] lg:w-1/2 text-center font-medium text-white/75 text-xl">
                         {sectionData?.subheading}
                     </p>
-                    {showLinkButton &&
-                        <Link href={sectionData?.link_button?.url ?? ""}>
+                    {showLinkButton && linkUrl &&
+                        <Link href={linkUrl}>
                             <Button variant="link" className="gap-1">
                                 {sectionData?.link_button?.label}
                                 <IconArrowUpRight size={16} />

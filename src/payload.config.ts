@@ -11,6 +11,8 @@ import { Sections } from './collections/sections'
 import { Footer } from './collections/footer'
 import { Pages } from './collections/pages'
 import { Features } from './collections/features'
+import { Jobs } from './collections/jobs'
+import { Blog } from './collections/blog'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -19,23 +21,23 @@ export default buildConfig({
     admin: {
         user: Users.slug,
         importMap: {
-        baseDir: path.resolve(dirname),
+            baseDir: path.resolve(dirname),
         },
     },
     localization: {
         locales: ['en', 'de'],
         defaultLocale: 'en',
     },
-    collections: [Users, Media, NavbarItems, Sections, Footer, Pages, Features],
-    editor: lexicalEditor(),
+    collections: [Users, Media, NavbarItems, Sections, Footer, Pages, Features, Jobs, Blog],
+    editor: lexicalEditor({}),
     secret: process.env.PAYLOAD_SECRET || '',
     typescript: {
         outputFile: path.resolve(dirname, 'payload-types.ts'),
     },
     db: postgresAdapter({
         pool: {
-                connectionString: process.env.DATABASE_URL,
-            },
+            connectionString: process.env.DATABASE_URL,
+        },
     }),
     sharp,
     plugins: [],

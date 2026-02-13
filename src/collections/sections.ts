@@ -27,10 +27,6 @@ export const Sections: CollectionConfig = {
                     value: 'AppFeatureSection',
                 },
                 {
-                    label: 'BrandSection',
-                    value: 'BrandSection',
-                },
-                {
                     label: 'FaqSection',
                     value: 'FaqSection',
                 },

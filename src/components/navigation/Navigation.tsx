@@ -31,18 +31,20 @@ function Navigation() {
     const [items, setItems] = useState<NavbarItem[]>([])
 
     useEffect(() => {
-      let active = true
+        let active = true
 
-      const load = async () => {
-        const data = await getNavbarItems()
-        if (active) setItems(data)
-      }
+        const load = async () => {
+            const data = await getNavbarItems()
+            if (active) setItems(data)
+        }
 
-      void load()
-      return () => {
-        active = false
-      }
+        void load()
+        return () => {
+            active = false
+        }
     }, [])
+
+    console.log(items)
 
     const navbarItems = useMemo(() => {
         const iconMap: Record<string, ExtendedSubNavItem> = {

@@ -7,7 +7,7 @@ import {
     IconRocket,
     IconWand
 } from "@tabler/icons-react"
-import { Section } from "@/components/Section"
+import { Section } from "@/components/ui/Section"
 import { FeatureCard } from "@/components/cards/FeatureCard"
 
 interface RoadmapItem  {

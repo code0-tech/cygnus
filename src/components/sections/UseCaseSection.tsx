@@ -1,7 +1,7 @@
 "use client"
 
 import { UseCaseCard } from "@/components/cards/UseCaseCard"
-import { Section } from "@/components/Section"
+import { Section } from "@/components/ui/Section"
 import { cn } from "@/utils/cn"
 import { motion } from "motion/react"
 import React, { useEffect, useRef, useState } from "react"

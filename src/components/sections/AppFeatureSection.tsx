@@ -1,5 +1,5 @@
 import { FeatureCard } from "@/components/cards/FeatureCard"
-import { Section } from "@/components/Section"
+import { Section } from "@/components/ui/Section"
 
 export const AppFeatureSection: React.FC = () => {
     return (

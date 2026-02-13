@@ -1,7 +1,7 @@
 "use client"
 
-import { AccordionItem } from "@/components/Accordion"
-import { Section } from "@/components/Section"
+import { AccordionItem } from "@/components/ui/Accordion"
+import { Section } from "@/components/ui/Section"
 import React, { useState } from "react"
 
 interface FaqItem {

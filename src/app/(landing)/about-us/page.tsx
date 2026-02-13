@@ -1,4 +1,4 @@
-import { LandingContainer } from "@/components/LandingContainer"
+import { LandingContainer } from "@/components/ui/LandingContainer"
 
 export default function AboutPage() {
     return (

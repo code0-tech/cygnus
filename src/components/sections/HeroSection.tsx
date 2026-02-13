@@ -2,8 +2,8 @@ import React from "react"
 import GradientBlinds from "@/components/GradientBlinds"
 import Image from "next/image"
 import { IconArrowRight } from "@tabler/icons-react"
-import { Section } from "@/components/Section"
-import { Button } from "@/components/Button"
+import { Section } from "@/components/ui/Section"
+import { Button } from "@/components/ui/Button"
 import Link from "next/link"
 
 interface HeroSectionButton {
@@ -30,6 +30,7 @@ interface HeroSectionProps {
 }
 
 export const HeroSection: React.FC<HeroSectionProps> = ({ content }) => {
+    console.log(content)
     if (!content || !content.texts || !content.buttons) return
 
     return (
@@ -80,7 +81,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ content }) => {
                                 <Link href={button.url} key={`${button.label}-${button.id ?? index}`} className="w-full sm:w-auto">
                                     <Button
                                         variant={button.variant ?? "default"}
-                                        className="w-full sm:w-auto z-10"
+                                        className="w-full z-10"
                                     >
                                         {button.label}
                                     </Button>

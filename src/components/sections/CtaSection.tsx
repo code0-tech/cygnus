@@ -1,10 +1,10 @@
 import { InteractiveGridPattern } from "@/components/InteractiveGridPattern"
-import { Section } from "@/components/Section"
+import { Section } from "@/components/ui/Section"
 import { cn } from "@/utils/cn"
 import Image from "next/image"
 import React from "react"
 import Link from "next/link"
-import { Button } from "@/components/Button"
+import { Button } from "@/components/ui/Button"
 
 interface CtaSectionContent {
     heading: string

@@ -1,5 +1,5 @@
 import { Navigation } from "@/components/navigation/Navigation"
-import { FooterSection } from "@/sections/FooterSection"
+import { FooterSection } from "@/components/sections/FooterSection"
 import { siteConfig } from "@/utils/siteConfig"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"

@@ -1,6 +1,6 @@
 "use client"
 
-import { LandingContainer } from "@/components/LandingContainer"
+import { LandingContainer } from "@/components/ui/LandingContainer"
 import type { Footer } from "@/payload-types"
 import { getFooter } from "@/utils/getFooter"
 import { IconBrandDiscord, IconBrandGithub, IconBrandInstagram, IconBrandX } from "@tabler/icons-react"
