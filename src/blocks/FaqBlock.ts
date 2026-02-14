@@ -17,11 +17,13 @@ export const FaqBlock: Block = {
           name: "question",
           type: "text",
           required: true,
+          localized: true,
         },
         {
           name: "answer",
           type: "textarea",
           required: true,
+          localized: true,
         },
       ],
     },

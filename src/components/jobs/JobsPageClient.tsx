@@ -11,19 +11,40 @@ import {
 import { IconChevronDown } from "@tabler/icons-react"
 import { JobsCard } from "@/components/jobs/JobsCard"
 
-interface JobsPageClientProps {
-    jobs: JobItem[]
+interface JobsPageContent {
+    heading: string
+    searchPlaceholder: string
+    allLocationsLabel: string
+    allJobTypesLabel: string
+    allCategoriesLabel: string
+    noJobsFoundLabel: string
 }
 
-export function JobsPageClient({ jobs }: JobsPageClientProps) {
-    const [search, setSearch] = useState("")
-    const [selectedLocation, setSelectedLocation] = useState("All locations")
-    const [selectedType, setSelectedType] = useState("All job types")
-    const [selectedCategory, setSelectedCategory] = useState("All categories")
+interface JobsPageClientProps {
+    jobs: JobItem[]
+    locale: string
+    content?: Partial<JobsPageContent> | null
+}
 
-    const locations = useMemo(() => ["All locations", ...Array.from(new Set(jobs.map((job) => job.location)))], [jobs])
-    const jobTypes = useMemo(() => ["All job types", ...Array.from(new Set(jobs.map((job) => job.type)))], [jobs])
-    const categories = useMemo(() => ["All categories", ...Array.from(new Set(jobs.map((job) => job.category)))], [jobs])
+const defaultContent: JobsPageContent = {
+    heading: "Join Our Team",
+    searchPlaceholder: "Search jobs",
+    allLocationsLabel: "All locations",
+    allJobTypesLabel: "All job types",
+    allCategoriesLabel: "All categories",
+    noJobsFoundLabel: "No jobs found for your filter.",
+}
+
+export function JobsPageClient({ jobs, locale, content }: JobsPageClientProps) {
+    const labels = { ...defaultContent, ...content }
+    const [search, setSearch] = useState("")
+    const [selectedLocation, setSelectedLocation] = useState(labels.allLocationsLabel)
+    const [selectedType, setSelectedType] = useState(labels.allJobTypesLabel)
+    const [selectedCategory, setSelectedCategory] = useState(labels.allCategoriesLabel)
+
+    const locations = useMemo(() => [labels.allLocationsLabel, ...Array.from(new Set(jobs.map((job) => job.location)))], [jobs, labels.allLocationsLabel])
+    const jobTypes = useMemo(() => [labels.allJobTypesLabel, ...Array.from(new Set(jobs.map((job) => job.type)))], [jobs, labels.allJobTypesLabel])
+    const categories = useMemo(() => [labels.allCategoriesLabel, ...Array.from(new Set(jobs.map((job) => job.category)))], [jobs, labels.allCategoriesLabel])
 
     const filteredJobs = useMemo(() => {
         const searchTerm = search.trim().toLowerCase()
@@ -35,13 +56,13 @@ export function JobsPageClient({ jobs }: JobsPageClientProps) {
                 .toLowerCase()
                 .includes(searchTerm)
 
-            const matchesLocation = selectedLocation === "All locations" || job.location === selectedLocation
-            const matchesType = selectedType === "All job types" || job.type === selectedType
-            const matchesCategory = selectedCategory === "All categories" || job.category === selectedCategory
+            const matchesLocation = selectedLocation === labels.allLocationsLabel || job.location === selectedLocation
+            const matchesType = selectedType === labels.allJobTypesLabel || job.type === selectedType
+            const matchesCategory = selectedCategory === labels.allCategoriesLabel || job.category === selectedCategory
 
             return matchesSearch && matchesLocation && matchesType && matchesCategory
         })
-    }, [jobs, search, selectedLocation, selectedType, selectedCategory])
+    }, [jobs, labels.allCategoriesLabel, labels.allJobTypesLabel, labels.allLocationsLabel, search, selectedCategory, selectedLocation, selectedType])
 
     const groupedJobs = useMemo(() => {
         return filteredJobs.reduce<Record<string, JobItem[]>>((acc, job) => {
@@ -53,13 +74,13 @@ export function JobsPageClient({ jobs }: JobsPageClientProps) {
 
     return (
         <div className={"md:w-[50vw] mx-auto flex flex-col gap-8"}>
-            <h1 className={"text-4xl font-semibold mb-8 text-center"}>Join Our Team</h1>
+            <h1 className={"text-4xl font-semibold mb-8 text-center"}>{labels.heading}</h1>
 
             <div className="w-full flex flex-col gap-2 mb-2">
                 <input
                     value={search}
                     onChange={(event) => setSearch(event.target.value)}
-                    placeholder="Search jobs"
+                    placeholder={labels.searchPlaceholder}
                     className="w-full rounded-xl bg-white/10 border border-white/15 text-white/85 px-3 h-10"
                 />
 
@@ -130,13 +151,13 @@ export function JobsPageClient({ jobs }: JobsPageClientProps) {
                         <div className="h-0.5 flex-1 bg-white/10 rounded-full" />
                     </div>
                     {items.map((job) => (
-                        <JobsCard key={job.id} job={job} />
+                        <JobsCard key={job.id} job={job} locale={locale} />
                     ))}
                 </div>
             ))}
 
             {filteredJobs.length === 0 && (
-                <p className="text-white/60 text-center">No jobs found for your filter.</p>
+                <p className="text-white/60 text-center">{labels.noJobsFoundLabel}</p>
             )}
         </div>
     )

@@ -11,11 +11,13 @@ export const HeroBlock: Block = {
       name: "badge",
       type: "text",
       required: false,
+      localized: true,
     },
     {
       name: "heading",
       type: "text",
       required: true,
+      localized: true,
     },
     {
       name: "texts",
@@ -27,6 +29,7 @@ export const HeroBlock: Block = {
           name: "text",
           type: "text",
           required: true,
+          localized: true,
         },
       ],
     },
@@ -41,6 +44,7 @@ export const HeroBlock: Block = {
           name: "label",
           type: "text",
           required: true,
+          localized: true,
         },
         {
           name: "url",

@@ -14,6 +14,7 @@ export const Footer: CollectionConfig = {
       type: "text",
       required: true,
       defaultValue: "CodeZero GmbH",
+      localized: true,
     },
     {
       name: "groups",
@@ -26,6 +27,7 @@ export const Footer: CollectionConfig = {
           label: "Heading",
           type: "text",
           required: true,
+          localized: true,
         },
         {
           name: "items",
@@ -37,6 +39,7 @@ export const Footer: CollectionConfig = {
               name: "label",
               type: "text",
               required: true,
+              localized: true,
             },
             {
               name: "url",

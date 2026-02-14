@@ -3,6 +3,7 @@ import { BrandBlock } from "@/blocks/BrandBlock"
 import { CtaBlock } from "@/blocks/CtaBlock"
 import { FaqBlock } from "@/blocks/FaqBlock"
 import { UseCaseBlock } from "@/blocks/UseCaseBlock"
+import { JobsBlock } from "@/blocks/JobsBlock"
 import type { CollectionConfig } from "payload"
 
 export const Pages: CollectionConfig = {
@@ -22,6 +23,7 @@ export const Pages: CollectionConfig = {
       name: "title",
       type: "text",
       required: true,
+      localized: true,
     },
     {
       name: "slug",
@@ -34,8 +36,9 @@ export const Pages: CollectionConfig = {
       name: "layout",
       label: "Layout",
       type: "blocks",
-      blocks: [HeroBlock, BrandBlock, UseCaseBlock, FaqBlock, CtaBlock],
+      blocks: [HeroBlock, BrandBlock, UseCaseBlock, FaqBlock, CtaBlock, JobsBlock],
       required: false,
+      localized: true,
     },
   ],
 }

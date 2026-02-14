@@ -1,15 +1,17 @@
+import { MarkdownContent } from "@/components/MarkdownContent"
+import { Button } from "@/components/ui/Button"
 import { Aurora } from "@/components/ui/Aurora"
 import { LandingContainer } from "@/components/ui/LandingContainer"
-import { Button } from "@/components/ui/Button"
+import { SUPPORTED_LOCALES, isSupportedLocale } from "@/utils/i18n"
 import { getJobBySlug, getJobSlugs } from "@/utils/getJobs"
 import { convertLexicalToHTML } from "@payloadcms/richtext-lexical/html"
 import { notFound } from "next/navigation"
-import { MarkdownContent } from "@/components/MarkdownContent"
 
-export default async function JobDetailPage({ params }: { params: Promise<{ slug: string }> }) {
-    const { slug } = await params
-    const job = await getJobBySlug(slug)
+export default async function JobDetailPage({ params }: { params: Promise<{ locale: string, slug: string }> }) {
+    const { locale, slug } = await params
+    if (!isSupportedLocale(locale)) notFound()
 
+    const job = await getJobBySlug(slug, locale)
     if (!job) notFound()
 
     const contentHtml = convertLexicalToHTML({
@@ -22,7 +24,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ slug
             <Aurora />
             <LandingContainer className="py-[20vh]">
                 <div className={"md:w-[50vw] mx-auto"}>
-                    <MarkdownContent content={contentHtml}/>
+                    <MarkdownContent content={contentHtml} />
                     <div className="mt-10">
                         <Button variant="default">Apply now</Button>
                     </div>
@@ -33,8 +35,13 @@ export default async function JobDetailPage({ params }: { params: Promise<{ slug
 }
 
 export async function generateStaticParams() {
-    const slugs = await getJobSlugs()
-    return slugs.map((slug) => ({ slug }))
+    const all = await Promise.all(
+        SUPPORTED_LOCALES.map(async (locale) => {
+            const slugs = await getJobSlugs(locale)
+            return slugs.map((slug) => ({ locale, slug }))
+        })
+    )
+    return all.flat()
 }
 
 export const dynamicParams = false

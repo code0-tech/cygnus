@@ -18,6 +18,7 @@ export const Blog: CollectionConfig = {
       name: "title",
       type: "text",
       required: true,
+      localized: true,
     },
     {
       name: "slug",
@@ -30,6 +31,7 @@ export const Blog: CollectionConfig = {
       name: "content",
       type: "richText",
       required: true,
+      localized: true,
     },
   ],
 }

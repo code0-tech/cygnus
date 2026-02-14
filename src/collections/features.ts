@@ -17,11 +17,13 @@ export const Features: CollectionConfig = {
       name: "title",
       type: "text",
       required: true,
+      localized: true,
     },
     {
       name: "description",
       type: "textarea",
       required: true,
+      localized: true,
     },
     {
       name: "link",
@@ -33,6 +35,7 @@ export const Features: CollectionConfig = {
           name: "label",
           type: "text",
           required: true,
+          localized: true,
         },
         {
           name: "url",

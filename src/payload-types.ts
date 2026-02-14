@@ -191,7 +191,7 @@ export interface NavbarItem {
         href: string;
         description: string;
         icon: 'cube' | 'gitBranch' | 'lock';
-        color: 'brand' | 'pink' | 'yellow' | 'aqua';
+        color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue';
         id?: string | null;
       }[]
     | null;
@@ -307,6 +307,17 @@ export interface Page {
             id?: string | null;
             blockName?: string | null;
             blockType: 'cta';
+          }
+        | {
+            heading: string;
+            searchPlaceholder: string;
+            allLocationsLabel: string;
+            allJobTypesLabel: string;
+            allCategoriesLabel: string;
+            noJobsFoundLabel: string;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'jobs';
           }
       )[]
     | null;
@@ -674,6 +685,18 @@ export interface PagesSelect<T extends boolean = true> {
                     label?: T;
                     url?: T;
                   };
+              id?: T;
+              blockName?: T;
+            };
+        jobs?:
+          | T
+          | {
+              heading?: T;
+              searchPlaceholder?: T;
+              allLocationsLabel?: T;
+              allJobTypesLabel?: T;
+              allCategoriesLabel?: T;
+              noJobsFoundLabel?: T;
               id?: T;
               blockName?: T;
             };

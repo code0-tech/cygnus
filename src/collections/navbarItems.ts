@@ -17,6 +17,7 @@ export const NavbarItems: CollectionConfig = {
       name: "title",
       type: "text",
       required: true,
+      localized: true,
     },
     {
       name: "href",
@@ -45,6 +46,7 @@ export const NavbarItems: CollectionConfig = {
           name: "title",
           type: "text",
           required: true,
+          localized: true,
         },
         {
           name: "href",
@@ -55,6 +57,7 @@ export const NavbarItems: CollectionConfig = {
           name: "description",
           type: "textarea",
           required: true,
+          localized: true,
         },
         {
           name: "icon",

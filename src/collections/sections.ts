@@ -10,11 +10,13 @@ export const Sections: CollectionConfig = {
             name: 'heading',
             type: 'text',
             required: true,
+            localized: true,
         },
         {
             name: 'subheading',
             type: 'text',
             required: false,
+            localized: true,
         },
         {
             name: 'sectionType',
@@ -53,6 +55,7 @@ export const Sections: CollectionConfig = {
                     name: 'label',
                     type: 'text',
                     required: false,
+                    localized: true,
                 },
                 {
                     name: 'url',

@@ -3,6 +3,7 @@
 import config from "@/payload.config"
 import { getPayload } from "payload"
 import type { SerializedEditorState } from "lexical"
+import { DEFAULT_LOCALE, type AppLocale } from "@/utils/i18n"
 
 export interface JobItem {
     id: number
@@ -19,11 +20,13 @@ export interface JobDetailItem extends JobItem {
     content: SerializedEditorState
 }
 
-export async function getJobs(): Promise<JobItem[]> {
+export async function getJobs(locale: AppLocale = DEFAULT_LOCALE): Promise<JobItem[]> {
     const payload = await getPayload({ config })
 
     const result = await payload.find({
         collection: "jobs",
+        locale,
+        fallbackLocale: DEFAULT_LOCALE,
         sort: "order",
         pagination: false,
     })
@@ -31,11 +34,13 @@ export async function getJobs(): Promise<JobItem[]> {
     return (result.docs as unknown as JobItem[]) ?? []
 }
 
-export async function getJobBySlug(slug: string): Promise<JobDetailItem | null> {
+export async function getJobBySlug(slug: string, locale: AppLocale = DEFAULT_LOCALE): Promise<JobDetailItem | null> {
     const payload = await getPayload({ config })
 
     const result = await payload.find({
         collection: "jobs",
+        locale,
+        fallbackLocale: DEFAULT_LOCALE,
         where: {
             slug: {
                 equals: slug,
@@ -48,11 +53,13 @@ export async function getJobBySlug(slug: string): Promise<JobDetailItem | null> 
     return (result.docs[0] as JobDetailItem | undefined) ?? null
 }
 
-export async function getJobSlugs(): Promise<string[]> {
+export async function getJobSlugs(locale: AppLocale = DEFAULT_LOCALE): Promise<string[]> {
     const payload = await getPayload({ config })
 
     const result = await payload.find({
         collection: "jobs",
+        locale,
+        fallbackLocale: DEFAULT_LOCALE,
         pagination: false,
         limit: 1000,
     })

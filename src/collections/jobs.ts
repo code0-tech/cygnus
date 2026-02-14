@@ -17,6 +17,7 @@ export const Jobs: CollectionConfig = {
       name: "title",
       type: "text",
       required: true,
+      localized: true,
     },
     {
       name: "slug",
@@ -114,11 +115,13 @@ export const Jobs: CollectionConfig = {
       name: "description",
       type: "textarea",
       required: true,
+      localized: true,
     },
     {
       name: "content",
       type: "richText",
       required: true,
+      localized: true,
     },
     {
       name: "order",

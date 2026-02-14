@@ -2,9 +2,10 @@
 
 import { useMediaQuery } from "@/hooks/useMediaQuery"
 import { useOutsideClick } from "@/hooks/useOutsideClick"
+import { getLocaleFromPath, localizeHref, type AppLocale } from "@/utils/i18n"
 import { getNavbarItems } from "@/utils/getNavbarItems"
 import { IconCube, IconGitBranch, IconLock } from "@tabler/icons-react"
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { useEffect, useMemo, useState } from "react"
 import { NavigationDesktop } from "./NavigationDesktop"
 import { NavigationMobile } from "./NavigationMobile"
@@ -15,6 +16,7 @@ type SubMenuIcon = "cube" | "gitBranch" | "lock"
 
 function Navigation() {
     const router = useRouter()
+    const pathname = usePathname()
     const isDesktop = useMediaQuery("(min-width: 1024px)")
     const menuRef = useOutsideClick<HTMLElement>(() => setIsOpen(false))
     const subMenuRef = useOutsideClick<HTMLDivElement>(() => setActiveSubMenu(null))
@@ -26,12 +28,19 @@ function Navigation() {
     const [mobileOpenKey, setMobileOpenKey] = useState<string | null>(null)
 
     const [items, setItems] = useState<NavbarItem[]>([])
+    const locale = useMemo(() => getLocaleFromPath(pathname), [pathname])
+    const homeHref = `/${locale}`
+    const switchLocale = (nextLocale: AppLocale) => {
+        const segments = pathname.split("/").filter(Boolean)
+        const rest = segments.length > 1 ? `/${segments.slice(1).join("/")}` : ""
+        router.push(`/${nextLocale}${rest}`)
+    }
 
     useEffect(() => {
         let active = true
 
         const load = async () => {
-            const data = await getNavbarItems()
+            const data = await getNavbarItems(locale)
             if (active) setItems(data)
         }
 
@@ -39,7 +48,7 @@ function Navigation() {
         return () => {
             active = false
         }
-    }, [])
+    }, [locale])
 
     const navbarItems = useMemo(() => {
         const getSubMenuIcon = (icon: string | null | undefined) => {
@@ -78,7 +87,7 @@ function Navigation() {
     }, [])
 
     const handleRoute = (item: NavItem) => {
-        if (item.href) router.push(item.href)
+        if (item.href) router.push(localizeHref(item.href, locale))
         else router.replace("")
     }
 
@@ -93,7 +102,8 @@ function Navigation() {
                 mobileOpenKey={mobileOpenKey}
                 setMobileOpenKey={setMobileOpenKey}
                 handleRoute={handleRoute}
-                onNavigate={(href) => router.push(href)}
+                onNavigate={(href) => router.push(localizeHref(href, locale))}
+                homeHref={homeHref}
             />
         )
     }
@@ -108,7 +118,8 @@ function Navigation() {
             setActiveSubMenu={setActiveSubMenu}
             subMenuRef={subMenuRef}
             handleRoute={handleRoute}
-            onNavigate={(href) => router.push(href)}
+            onNavigate={(href) => router.push(localizeHref(href, locale))}
+            homeHref={homeHref}
         />
     )
 }

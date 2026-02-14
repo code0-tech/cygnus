@@ -3,6 +3,7 @@
 import config from "@/payload.config"
 import { getPayload } from "payload"
 import type { SerializedEditorState } from "lexical"
+import { DEFAULT_LOCALE, type AppLocale } from "@/utils/i18n"
 
 export interface BlogPostItem {
     id: number
@@ -11,11 +12,13 @@ export interface BlogPostItem {
     content: SerializedEditorState
 }
 
-export async function getBlogPostBySlug(slug: string): Promise<BlogPostItem | null> {
+export async function getBlogPostBySlug(slug: string, locale: AppLocale = DEFAULT_LOCALE): Promise<BlogPostItem | null> {
     const payload = await getPayload({ config })
 
     const result = await payload.find({
         collection: "blog",
+        locale,
+        fallbackLocale: DEFAULT_LOCALE,
         where: {
             slug: {
                 equals: slug,
@@ -28,11 +31,13 @@ export async function getBlogPostBySlug(slug: string): Promise<BlogPostItem | nu
     return (result.docs[0] as BlogPostItem | undefined) ?? null
 }
 
-export async function getBlogSlugs(): Promise<string[]> {
+export async function getBlogSlugs(locale: AppLocale = DEFAULT_LOCALE): Promise<string[]> {
     const payload = await getPayload({ config })
 
     const result = await payload.find({
         collection: "blog",
+        locale,
+        fallbackLocale: DEFAULT_LOCALE,
         pagination: false,
         limit: 1000,
     })

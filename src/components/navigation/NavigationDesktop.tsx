@@ -2,15 +2,15 @@
 
 import { Button } from "@/components/ui/Button"
 import { cn } from "@/utils/cn"
+import { Container } from "@code0-tech/pictor"
 import { IconBrandGithub } from "@tabler/icons-react"
 import { AnimatePresence, motion } from "motion/react"
 import Image from "next/image"
+import Link from "next/link"
 import React from "react"
 import { NavSubMenu } from "./NavSubMenu"
 import { NavTab } from "./NavTab"
 import { fadeInUp, NavItem, SubNavItem } from "./types"
-import { Container } from "@code0-tech/pictor"
-import Link from "next/link"
 
 type NavigationDesktopProps = {
     isScrolled: boolean
@@ -22,6 +22,7 @@ type NavigationDesktopProps = {
     subMenuRef: React.RefObject<HTMLDivElement | null>
     handleRoute: (item: NavItem) => void
     onNavigate: (href: string) => void
+    homeHref: string
 }
 
 const NavigationDesktop: React.FC<NavigationDesktopProps> = ({
@@ -33,10 +34,11 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({
     setActiveSubMenu,
     subMenuRef,
     handleRoute,
-    onNavigate
+    onNavigate,
+    homeHref
 }) => {
     return (
-        <div className={"fixed z-[100] h-max w-full pt-4"}>
+        <div className={"fixed z-100 h-max w-full pt-4"}>
             <Container>
                 <motion.div
                     className={cn(
@@ -59,7 +61,7 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({
                 >
                     <div className={"w-full h-full flex items-center justify-between gap-2"}>
 
-                        <Link href="/">
+                        <Link href={homeHref}>
                             <motion.div className={cn("flex transition-all", !isScrolled && "-ml-4")}
                                 initial={fadeInUp.initial}
                                 animate={fadeInUp.animate}

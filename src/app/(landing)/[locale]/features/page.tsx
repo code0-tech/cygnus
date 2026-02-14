@@ -1,6 +1,11 @@
 import { LandingContainer } from "@/components/ui/LandingContainer"
+import { isSupportedLocale } from "@/utils/i18n"
+import { notFound } from "next/navigation"
 
-export default async function FeaturesPage() {
+export default async function FeaturesPage({ params }: { params: Promise<{ locale: string }> }) {
+    const { locale } = await params
+    if (!isSupportedLocale(locale)) notFound()
+
     return (
         <LandingContainer className="py-[18vh] gap-8">
             <section className="max-w-3xl">

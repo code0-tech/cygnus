@@ -11,6 +11,7 @@ export const BrandBlock: Block = {
       name: "description",
       type: "text",
       required: true,
+      localized: true,
     },
     {
       name: "logos",

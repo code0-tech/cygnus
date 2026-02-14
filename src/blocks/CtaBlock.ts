@@ -11,11 +11,13 @@ export const CtaBlock: Block = {
       name: "heading",
       type: "text",
       required: true,
+      localized: true,
     },
     {
       name: "subheading",
       type: "text",
       required: true,
+      localized: true,
     },
     {
       name: "ctaLink",
@@ -27,6 +29,7 @@ export const CtaBlock: Block = {
           name: "label",
           type: "text",
           required: true,
+          localized: true,
         },
         {
           name: "url",

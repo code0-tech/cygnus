@@ -3,9 +3,11 @@
 import { IconArrowUpRight } from "@tabler/icons-react"
 import { Section as SectionDocument } from "@/payload-types"
 import { getSectionByType } from "@/utils/getSectionByType"
+import { getLocaleFromPath, localizeHref } from "@/utils/i18n"
 import { ReactNode, useEffect, useState } from "react"
 import { Button } from "@/components/ui/Button"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 
 interface SectionProps {
     children: ReactNode
@@ -17,7 +19,10 @@ interface SectionProps {
 
 export function Section({ sectionType, children, showBlur = true, showFunnel = true, showLinkButton = true }: SectionProps) {
     const [sectionData, setSectionData] = useState<SectionDocument | null>(null)
-    const linkUrl = sectionData?.link_button?.url?.trim()
+    const pathname = usePathname()
+    const locale = getLocaleFromPath(pathname)
+    const rawLinkUrl = sectionData?.link_button?.url?.trim()
+    const linkUrl = rawLinkUrl ? localizeHref(rawLinkUrl, locale) : undefined
 
     useEffect(() => {
         if (!sectionType) {
@@ -28,7 +33,7 @@ export function Section({ sectionType, children, showBlur = true, showFunnel = t
         let active = true
 
         const loadSectionData = async () => {
-            const data = await getSectionByType(sectionType)
+            const data = await getSectionByType(sectionType, locale)
             if (active) setSectionData(data)
         }
 
@@ -37,9 +42,7 @@ export function Section({ sectionType, children, showBlur = true, showFunnel = t
         return () => {
             active = false
         }
-    }, [sectionType])
-
-    console.log(sectionType)
+    }, [locale, sectionType])
 
     return (
         <section className={"relative overflow-hidden flex flex-col gap-16 pt-16"}>

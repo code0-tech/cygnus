@@ -19,6 +19,7 @@ type NavigationMobileProps = {
     setMobileOpenKey: React.Dispatch<React.SetStateAction<string | null>>
     handleRoute: (item: NavItem) => void
     onNavigate: (href: string) => void
+    homeHref: string
 }
 
 const NavigationMobile: React.FC<NavigationMobileProps> = ({
@@ -30,7 +31,8 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
     mobileOpenKey,
     setMobileOpenKey,
     handleRoute,
-    onNavigate
+    onNavigate,
+    homeHref
 }) => {
     const colorClassMap: Record<string, string> = {
         brand: "group-hover:bg-brand/10 group-hover:border-brand/50 group-hover:text-brand",
@@ -66,7 +68,7 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
                 }}
             >
                 <div className={"w-full flex items-center justify-between gap-2"}>
-                    <Link href="/">
+                    <Link href={homeHref}>
                         <motion.div className={cn("flex transition-all", (!isScrolled && !isOpen) && "-ml-4")}
                             initial={fadeInUp.initial}
                             animate={fadeInUp.animate}
@@ -203,7 +205,6 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
                             >
                                 {"Discord"}
                             </motion.div>
-
                         </motion.div>
                     )}
                 </AnimatePresence>

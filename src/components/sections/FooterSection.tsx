@@ -3,19 +3,24 @@
 import { LandingContainer } from "@/components/ui/LandingContainer"
 import type { Footer } from "@/payload-types"
 import { getFooter } from "@/utils/getFooter"
+import { getLocaleFromPath, localizeHref } from "@/utils/i18n"
 import { IconBrandDiscord, IconBrandGithub, IconBrandInstagram, IconBrandX } from "@tabler/icons-react"
 import Image from "next/image"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import React, { useEffect, useState } from "react"
 
 export const FooterSection: React.FC = () => {
+    const pathname = usePathname()
+    const locale = getLocaleFromPath(pathname)
+
     const [footer, setFooter] = useState<Footer | null>(null)
 
     useEffect(() => {
         let active = true
 
         const load = async () => {
-            const data = await getFooter()
+            const data = await getFooter(locale)
             if (active) setFooter(data)
         }
 
@@ -24,7 +29,7 @@ export const FooterSection: React.FC = () => {
         return () => {
             active = false
         }
-    }, [])
+    }, [locale])
 
     if (!footer?.groups) return
 
@@ -61,7 +66,7 @@ export const FooterSection: React.FC = () => {
                                 {group.heading}
                             </p>
                             {(group.items ?? []).map((item) => (
-                                <Link href={item.url} key={`${item.label}-${item.id ?? item.url}`}>
+                                <Link href={localizeHref(item.url, locale)} key={`${item.label}-${item.id ?? item.url}`}>
                                     <p className={"text-white/50 hover:underline underline-offset-2"}>
                                         {item.label}
                                     </p>

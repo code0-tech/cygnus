@@ -2,6 +2,7 @@
 
 import config from "@/payload.config"
 import type { Media } from "@/payload-types"
+import { DEFAULT_LOCALE, type AppLocale } from "@/utils/i18n"
 import { getPayload } from "payload"
 
 export interface HeroLayoutBlock {
@@ -78,20 +79,34 @@ export interface UseCaseLayoutBlock {
     | null
 }
 
+export interface JobsLayoutBlock {
+    blockType: "jobs"
+    id?: string | null
+    blockName?: string | null
+    heading: string
+    searchPlaceholder: string
+    allLocationsLabel: string
+    allJobTypesLabel: string
+    allCategoriesLabel: string
+    noJobsFoundLabel: string
+}
+
 interface LandingPageDoc {
     id: number
     title: string
     slug: string
-    layout?: (HeroLayoutBlock | BrandLayoutBlock | UseCaseLayoutBlock | FaqLayoutBlock | CtaLayoutBlock | ({ blockType?: string } & Record<string, unknown>))[] | null
+    layout?: (HeroLayoutBlock | BrandLayoutBlock | UseCaseLayoutBlock | FaqLayoutBlock | CtaLayoutBlock | JobsLayoutBlock | ({ blockType?: string } & Record<string, unknown>))[] | null
     updatedAt: string
     createdAt: string
 }
 
-export async function getLandingPage(slug = "main"): Promise<LandingPageDoc | null> {
+export async function getLandingPage(slug = "main", locale: AppLocale = DEFAULT_LOCALE): Promise<LandingPageDoc | null> {
     const payload = await getPayload({ config })
 
     const result = await payload.find({
         collection: "pages",
+        locale,
+        fallbackLocale: DEFAULT_LOCALE,
         where: {
             slug: {
                 equals: slug,
@@ -101,8 +116,6 @@ export async function getLandingPage(slug = "main"): Promise<LandingPageDoc | nu
         depth: 1,
         pagination: false,
     })
-
-    console.log(result)
 
     return (result.docs[0] as unknown as LandingPageDoc | undefined) ?? null
 }
