@@ -190,6 +190,8 @@ export interface NavbarItem {
         title: string;
         href: string;
         description: string;
+        icon: 'cube' | 'gitBranch' | 'lock';
+        color: 'brand' | 'pink' | 'yellow' | 'aqua';
         id?: string | null;
       }[]
     | null;
@@ -334,9 +336,9 @@ export interface Job {
   id: number;
   title: string;
   slug: string;
-  category: string;
-  type: string;
-  location: string;
+  category: 'engineering' | 'marketing' | 'design' | 'product' | 'sales' | 'operations';
+  type: 'full-time' | 'part-time' | 'contract' | 'internship' | 'working-student' | 'freelance';
+  location: 'remote' | 'hybrid' | 'leipzig' | 'solingen';
   description: string;
   content: {
     root: {
@@ -543,6 +545,8 @@ export interface NavbarItemsSelect<T extends boolean = true> {
         title?: T;
         href?: T;
         description?: T;
+        icon?: T;
+        color?: T;
         id?: T;
       };
   updatedAt?: T;

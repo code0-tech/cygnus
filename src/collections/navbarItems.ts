@@ -33,8 +33,8 @@ export const NavbarItems: CollectionConfig = {
     },
     {
       name: "subMenu",
-        type: "array",
-        required: false,
+      type: "array",
+      required: false,
       fields: [
         {
           name: "key",
@@ -55,6 +55,53 @@ export const NavbarItems: CollectionConfig = {
           name: "description",
           type: "textarea",
           required: true,
+        },
+        {
+          name: "icon",
+          type: "select",
+          required: true,
+          options: [
+            {
+              label: "Cube",
+              value: "cube",
+            },
+            {
+              label: "Git Branch",
+              value: "gitBranch",
+            },
+            {
+              label: "Lock",
+              value: "lock",
+            },
+          ],
+        },
+        {
+          name: "color",
+          type: "select",
+          required: true,
+          options: [
+            {
+              label: "Brand",
+              value: "brand",
+            },
+            {
+              label: "Pink",
+              value: "pink",
+            },
+            {
+              label: "Yellow",
+              value: "yellow",
+            },
+            {
+              label: "Aqua",
+              value: "aqua",
+              },
+            {
+              label: "Blue",
+              value: "blue",
+            },
+          ],
+          defaultValue: "brand",
         },
       ],
     },

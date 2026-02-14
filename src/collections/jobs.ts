@@ -27,18 +27,88 @@ export const Jobs: CollectionConfig = {
     },
     {
       name: "category",
-      type: "text",
+      type: "select",
       required: true,
+      options: [
+        {
+          label: "Engineering",
+          value: "engineering",
+        },
+        {
+          label: "Marketing",
+          value: "marketing",
+        },
+        {
+          label: "Design",
+          value: "design",
+        },
+        {
+          label: "Product",
+          value: "product",
+        },
+        {
+          label: "Sales",
+          value: "sales",
+        },
+        {
+          label: "Operations",
+          value: "operations",
+        },
+      ],
     },
     {
       name: "type",
-      type: "text",
+      type: "select",
       required: true,
+      options: [
+        {
+          label: "Full-time",
+          value: "full-time",
+        },
+        {
+          label: "Part-time",
+          value: "part-time",
+        },
+        {
+          label: "Contract",
+          value: "contract",
+        },
+        {
+          label: "Internship",
+          value: "internship",
+        },
+        {
+          label: "Working Student",
+          value: "working-student",
+        },
+        {
+          label: "Freelance",
+          value: "freelance",
+        },
+      ],
     },
     {
       name: "location",
-      type: "text",
+      type: "select",
       required: true,
+      options: [
+        {
+          label: "Remote",
+          value: "remote",
+        },
+        {
+          label: "Hybrid",
+          value: "hybrid",
+        },
+        {
+          label: "Leipzig",
+          value: "leipzig",
+        },
+        {
+          label: "Solingen",
+          value: "solingen",
+        },
+      ],
     },
     {
       name: "description",

@@ -5,16 +5,13 @@ import { useOutsideClick } from "@/hooks/useOutsideClick"
 import { getNavbarItems } from "@/utils/getNavbarItems"
 import { IconCube, IconGitBranch, IconLock } from "@tabler/icons-react"
 import { useRouter } from "next/navigation"
-import { JSX, useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { NavigationDesktop } from "./NavigationDesktop"
 import { NavigationMobile } from "./NavigationMobile"
 import { NavItem, SubNavItem } from "./types"
 import { NavbarItem } from "@/payload-types"
 
-interface ExtendedSubNavItem {
-    icon: JSX.Element
-    color: string
-}
+type SubMenuIcon = "cube" | "gitBranch" | "lock"
 
 function Navigation() {
     const router = useRouter()
@@ -44,22 +41,21 @@ function Navigation() {
         }
     }, [])
 
-    console.log(items)
-
     const navbarItems = useMemo(() => {
-        const iconMap: Record<string, ExtendedSubNavItem> = {
-            features: { icon: <IconCube size={30} />, color: "pink" },
-            integrations: { icon: <IconGitBranch size={30} />, color: "yellow" },
-            security: { icon: <IconLock size={30} />, color: "aqua" },
+        const getSubMenuIcon = (icon: string | null | undefined) => {
+            if (icon === "cube") return <IconCube size={30} />
+            if (icon === "gitBranch") return <IconGitBranch size={30} />
+            if (icon === "lock") return <IconLock size={30} />
+            return null
         }
 
         return items.map((item) => {
             const mappedSubMenu = (item.subMenu ?? [])
-                .filter((sub) => Boolean(sub?.title && sub?.href))
+                .filter((sub) => Boolean(sub?.title && sub?.href && sub?.description))
                 .map((sub) => ({
                     ...sub,
-                    icon: iconMap[sub.key]?.icon ?? null,
-                    color: iconMap[sub.key]?.color ?? "brand",
+                    icon: getSubMenuIcon((sub.icon as SubMenuIcon | null | undefined) ?? null),
+                    color: sub.color ?? "brand",
                 }))
 
             return {
