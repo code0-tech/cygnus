@@ -14,6 +14,38 @@ export const Features: CollectionConfig = {
   },
   fields: [
     {
+      name: "slug",
+      type: "select",
+      required: true,
+      unique: true,
+      options: [
+        {
+          label: "Welcome User",
+          value: "welcome-user",
+        },
+        {
+          label: "Pro Subscription",
+          value: "pro-subscirption",
+        },
+        {
+          label: "Team Subscription",
+          value: "team-subscription",
+        },
+        {
+          label: "Role System",
+          value: "role-system",
+        },
+        {
+          label: "Member Management",
+          value: "member-management",
+        },
+        {
+          label: "Organizations",
+          value: "organizations",
+        },
+      ],
+    },
+    {
       name: "title",
       type: "text",
       required: true,
@@ -22,25 +54,25 @@ export const Features: CollectionConfig = {
     {
       name: "description",
       type: "textarea",
-      required: true,
+      required: false,
       localized: true,
     },
     {
       name: "link",
       label: "Link",
       type: "group",
-      required: true,
+      required: false,
       fields: [
         {
           name: "label",
           type: "text",
-          required: true,
+          required: false,
           localized: true,
         },
         {
           name: "url",
           type: "text",
-          required: true,
+          required: false,
         },
       ],
     },

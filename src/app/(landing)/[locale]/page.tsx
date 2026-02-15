@@ -41,7 +41,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
             <HeroSection content={heroBlock} />
             <BrandSection content={brandBlock} />
             <UseCaseSection content={useCaseBlock} />
-            <AppFeatureSection />
+            <AppFeatureSection locale={locale} />
             <RuntimeFeatureSection />
             <RoadmapSection />
             <FaqSection content={faqBlock} />

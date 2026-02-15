@@ -30,7 +30,6 @@ interface HeroSectionProps {
 }
 
 export const HeroSection: React.FC<HeroSectionProps> = ({ content }) => {
-    console.log(content)
     if (!content || !content.texts || !content.buttons) return
 
     return (

@@ -3,7 +3,7 @@
 import { cn } from "@/utils/cn";
 import { ReactNode, useEffect, useRef, useState } from "react";
 
-export function FeatureCard({children, className}: {children: ReactNode, className?: string}) {
+export function FeatureCard({children, className, contentClassName}: {children: ReactNode, className?: string, contentClassName?: string}) {
     const [isVisible, setIsVisible] = useState(false);
     const cardRef = useRef<HTMLDivElement>(null);
 
@@ -28,7 +28,7 @@ export function FeatureCard({children, className}: {children: ReactNode, classNa
 
     return (
         <div ref={cardRef} className={cn("relative h-full overflow-hidden bg-linear-to-br from-white/5 to-primary rounded-xl ring-1 ring-white/10 shadow-2xl", className)}>
-            <div className="absolute inset-0 z-10 flex flex-col justify-start items-center gap-4 p-4">
+            <div className={cn("absolute inset-0 z-10 flex flex-col justify-start items-center gap-4 p-4", contentClassName)}>
                 {children}
             </div>
             {isVisible && (

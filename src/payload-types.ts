@@ -330,11 +330,18 @@ export interface Page {
  */
 export interface Feature {
   id: number;
+  slug:
+    | 'welcome-user'
+    | 'pro-subscirption'
+    | 'team-subscription'
+    | 'role-system'
+    | 'member-management'
+    | 'organizations';
   title: string;
-  description: string;
-  link: {
-    label: string;
-    url: string;
+  description?: string | null;
+  link?: {
+    label?: string | null;
+    url?: string | null;
   };
   updatedAt: string;
   createdAt: string;
@@ -709,6 +716,7 @@ export interface PagesSelect<T extends boolean = true> {
  * via the `definition` "features_select".
  */
 export interface FeaturesSelect<T extends boolean = true> {
+  slug?: T;
   title?: T;
   description?: T;
   link?:
