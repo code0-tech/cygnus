@@ -21,7 +21,7 @@ export function FeatureCardText({ content, className }: FeatureCardTextProps) {
     if (!content) return null
 
     return (
-        <div className={cn("z-30 w-full flex flex-col gap-1", className)}>
+        <div className={cn("z-30 w-full flex flex-col", className)}>
             <p className={"font-semibold text-lg text-brand"}>
                 {content.title}
             </p>
@@ -32,9 +32,9 @@ export function FeatureCardText({ content, className }: FeatureCardTextProps) {
             }
             {content.link && content.link.label && content.link.url &&
                 <Link href={content.link.url}>
-                    <Button variant="link" className="mt-2 gap-1 text-xs">
+                    <Button variant="link" className="mt-3 gap-1 text-xs font-normal text-nowrap">
                         {content.link.label}
-                        <IconArrowUpRight size={16} />
+                        <IconArrowUpRight size={14} />
                     </Button>
                 </Link>
             }

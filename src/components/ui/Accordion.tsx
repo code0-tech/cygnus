@@ -19,8 +19,8 @@ export const AccordionItem = ({ question, answer, isOpen, onToggle }: FAQItemPro
             className={`w-full bg-primary ring ring-white/5 shadow-md overflow-hidden rounded-xl transition-colors duration-200 ease-linear cursor-pointer hover:bg-[#0f0c1f]`}
             onClick={handleClick}
         >
-            <div className="w-full px-5 py-[18px] pr-4 flex justify-between items-center gap-5 text-left">
-                <div className="flex-1 text-white/75 text-sm sm:text-md lg:text-lg font-medium break-words">{question}</div>
+            <div className="w-full px-5 py-4.5 pr-4 flex justify-between items-center gap-5 text-left">
+                <div className="flex-1 text-white/75 text-sm sm:text-md lg:text-lg font-medium wrap-break-word">{question}</div>
                 <motion.div
                     animate={{ rotate: isOpen ? 180 : 0 }}
                     transition={{ duration: 0.3, ease: "circOut" }}
@@ -34,8 +34,8 @@ export const AccordionItem = ({ question, answer, isOpen, onToggle }: FAQItemPro
                 }`}
             >
                 <div className="overflow-hidden">
-                    <div className="px-5 pb-[18px] pt-2">
-                        <div className="text-white/50 text-md break-words">{answer}</div>
+                    <div className="px-5 pb-4.5 pt-2">
+                        <div className="text-white/50 text-md wrap-break-word">{answer}</div>
                     </div>
                 </div>
             </div>

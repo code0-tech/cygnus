@@ -27,10 +27,19 @@ export const Pages: CollectionConfig = {
     },
     {
       name: "slug",
-      type: "text",
+      type: "select",
       required: true,
       unique: true,
       index: true,
+      options: [
+        { label: "main", value: "main" },
+        { label: "jobs", value: "jobs" },
+        { label: "features", value: "features" },
+        { label: "about-us", value: "about-us" },
+        { label: "imprint", value: "imprint" },
+        { label: "policy", value: "policy" },
+        { label: "terms", value: "terms" },
+      ],
     },
     {
       name: "layout",

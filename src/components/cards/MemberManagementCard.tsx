@@ -12,18 +12,18 @@ export async function MemberManagementCard({ locale }: MemberMangementCardProps)
 
     return (
         <FeatureCard className="col-span-1 md:col-span-2 row-span-1" contentClassName="flex flex-row items-center">
-            <div className="w-[70%] rounded-lg bg-primary ring ring-white/5 p-3">
+            <div className="w-[70%] rounded-t-lg bg-linear-to-b from-primary to-primary/30 border border-b-0 border-white/10 p-2">
                 <div className="flex items-center gap-2">
-                    <div className="h-9 w-9 rounded-full bg-brand/30 ring ring-brand/60 flex items-center justify-center text-xs font-semibold text-brand">
+                    <div className="h-7 w-7 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-xs font-semibold text-brand">
                         NS
                     </div>
                     <div>
-                        <p className="text-sm font-semibold text-white/90">Nico Sammito</p>
+                        <p className="text-sm font-semibold text-brand">@Nico</p>
                         <p className="text-[11px] text-white/55">nico@codezero.tech</p>
                     </div>
                 </div>
-                <div className="mt-2 inline-flex rounded-md bg-primary px-2 py-1 ring ring-white/5">
-                    <p className="text-[11px] text-white/70">Current role: Member</p>
+                <div className="mt-3 inline-flex rounded-md bg-primary ring ring-white/5">
+                    <p className="text-[11px] text-white/60">Member since: 2 months ago</p>
                 </div>
             </div>
 

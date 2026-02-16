@@ -25,7 +25,7 @@ export const Features: CollectionConfig = {
         },
         {
           label: "Pro Subscription",
-          value: "pro-subscirption",
+          value: "pro-subscription",
         },
         {
           label: "Team Subscription",

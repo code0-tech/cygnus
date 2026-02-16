@@ -240,7 +240,7 @@ export interface Footer {
 export interface Page {
   id: number;
   title: string;
-  slug: string;
+  slug: 'main' | 'jobs' | 'features' | 'about-us' | 'imprint' | 'policy' | 'terms';
   layout?:
     | (
         | {
@@ -332,7 +332,7 @@ export interface Feature {
   id: number;
   slug:
     | 'welcome-user'
-    | 'pro-subscirption'
+    | 'pro-subscription'
     | 'team-subscription'
     | 'role-system'
     | 'member-management'

@@ -36,7 +36,7 @@ export function InteractiveGridPattern({width = 40, height = 40, squares = [24, 
                         width={width}
                         height={height}
                         className={cn(
-                            "stroke-gray-400/30 transition-all duration-100 ease-in-out [&:not(:hover)]:duration-1000",
+                            "stroke-gray-400/30 transition-all duration-100 ease-in-out not-[&:hover]:duration-1000",
                             hoveredSquare === index ? "fill-gray-300/30" : "fill-transparent",
                             squaresClassName,
                         )}

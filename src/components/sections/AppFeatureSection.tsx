@@ -1,11 +1,12 @@
-import { FeatureCard } from "@/components/cards/FeatureCard"
-import { type AppLocale } from "@/utils/i18n"
 import { Section } from "@/components/ui/Section"
-import { WelcomeUserCard } from "../cards/WelcomeUserCard"
-import { RoleSystemCard } from "../cards/RoleSystemCard"
+import { type AppLocale } from "@/utils/i18n"
 import { MemberManagementCard } from "../cards/MemberManagementCard"
-import { TeamSubscriptionCard } from "../cards/TeamSubscriptionCard"
 import { OrganizationCard } from "../cards/OrganizationCard"
+import { ProSubscriptionCard } from "../cards/ProSubscriptionCard"
+import { RoleSystemCard } from "../cards/RoleSystemCard"
+import { TeamSubscriptionCard } from "../cards/TeamSubscriptionCard"
+import { WelcomeUserCard } from "../cards/WelcomeUserCard"
+import { BentoGrid } from "../ui/BentoGrid"
 
 interface AppFeatureSectionProps {
     locale: AppLocale
@@ -14,14 +15,14 @@ interface AppFeatureSectionProps {
 export const AppFeatureSection: React.FC<AppFeatureSectionProps> = ({ locale }) => {
     return (
         <Section sectionType="AppFeatureSection">
-            <div className={"w-full h-dvh grid grid-cols-1 md:grid-cols-5 gap-4 grid-rows-auto p-4 py-16"}>
+            <BentoGrid>
                 <WelcomeUserCard locale={locale} />
                 <RoleSystemCard locale={locale} />
                 <MemberManagementCard locale={locale} />
-                <TeamSubscriptionCard locale={locale} />
+                <TeamSubscriptionCard />
                 <OrganizationCard locale={locale} />
-                <FeatureCard className="col-span-1 md:col-span-2 row-span-2">test</FeatureCard>
-            </div>
+                <ProSubscriptionCard locale={locale} />
+            </BentoGrid>
         </Section>
     )
 }
