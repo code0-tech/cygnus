@@ -89,6 +89,14 @@ export interface JobsLayoutBlock {
     allJobTypesLabel: string
     allCategoriesLabel: string
     noJobsFoundLabel: string
+    applicationHeading: string
+    applicationNameLabel: string
+    applicationNamePlaceholder: string
+    applicationEmailLabel: string
+    applicationEmailPlaceholder: string
+    applicationMessageLabel: string
+    applicationMessagePlaceholder: string
+    applicationSubmitLabel: string
 }
 
 interface LandingPageDoc {
