@@ -10,7 +10,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@code0-tech/pictor": "^0.0.0-mvp.33",
+    "@code0-tech/pictor": "^0.0.0-mvp.45",
     "@payloadcms/db-postgres": "^3.76.1",
     "@payloadcms/next": "^3.76.1",
     "@payloadcms/richtext-lexical": "^3.76.1",

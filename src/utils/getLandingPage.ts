@@ -4,6 +4,7 @@ import config from "@/payload.config"
 import type { Media } from "@/payload-types"
 import { DEFAULT_LOCALE, type AppLocale } from "@/utils/i18n"
 import { getPayload } from "payload"
+import type { SerializedEditorState } from "lexical"
 
 export interface HeroLayoutBlock {
     blockType: "hero"
@@ -21,7 +22,7 @@ export interface HeroLayoutBlock {
     | {
         label: string
         url: string
-        variant?: "default" | "ghost" | "link" | null
+        variant?: "none" | "normal" | "outlined" | "filled" | null
         id?: string | null
     }[]
     | null
@@ -99,11 +100,32 @@ export interface JobsLayoutBlock {
     applicationSubmitLabel: string
 }
 
+export interface MarkdownLayoutBlock {
+    blockType: "markdown"
+    id?: string | null
+    blockName?: string | null
+    content: SerializedEditorState
+}
+
+export interface ContactLayoutBlock {
+    blockType: "contact"
+    id?: string | null
+    blockName?: string | null
+    heading: string
+    nameLabel: string
+    namePlaceholder: string
+    emailLabel: string
+    emailPlaceholder: string
+    messageLabel: string
+    messagePlaceholder: string
+    submitLabel: string
+}
+
 interface LandingPageDoc {
     id: number
     title: string
     slug: string
-    layout?: (HeroLayoutBlock | BrandLayoutBlock | UseCaseLayoutBlock | FaqLayoutBlock | CtaLayoutBlock | JobsLayoutBlock | ({ blockType?: string } & Record<string, unknown>))[] | null
+    layout?: (HeroLayoutBlock | BrandLayoutBlock | UseCaseLayoutBlock | FaqLayoutBlock | CtaLayoutBlock | JobsLayoutBlock | MarkdownLayoutBlock | ContactLayoutBlock | ({ blockType?: string } & Record<string, unknown>))[] | null
     updatedAt: string
     createdAt: string
 }

@@ -1,4 +1,6 @@
-import { Button } from "@/components/ui/Button"
+"use client"
+
+import { Button } from "@code0-tech/pictor"
 
 interface JobApplicationCardContent {
     applicationHeading: string
@@ -75,7 +77,7 @@ export function JobApplicationCard({ content }: JobApplicationCardProps) {
                     />
                 </div>
 
-                <Button type="submit" variant="default" className="mt-2 w-full">
+                <Button type="submit" variant="normal" className="mt-2 w-full! text-base!">
                     {labels.applicationSubmitLabel}
                 </Button>
             </form>

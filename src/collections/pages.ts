@@ -4,6 +4,8 @@ import { CtaBlock } from "@/blocks/CtaBlock"
 import { FaqBlock } from "@/blocks/FaqBlock"
 import { UseCaseBlock } from "@/blocks/UseCaseBlock"
 import { JobsBlock } from "@/blocks/JobsBlock"
+import { MarkdownBlock } from "@/blocks/MarkdownBlock"
+import { ContactBlock } from "@/blocks/ContactBlock"
 import type { CollectionConfig } from "payload"
 
 export const Pages: CollectionConfig = {
@@ -36,16 +38,17 @@ export const Pages: CollectionConfig = {
         { label: "jobs", value: "jobs" },
         { label: "features", value: "features" },
         { label: "about-us", value: "about-us" },
-        { label: "imprint", value: "imprint" },
-        { label: "policy", value: "policy" },
+        { label: "legal-notice", value: "legal-notice" },
+        { label: "privacy", value: "privacy" },
         { label: "terms", value: "terms" },
+        { label: "contact", value: "contact" },
       ],
     },
     {
       name: "layout",
       label: "Layout",
       type: "blocks",
-      blocks: [HeroBlock, BrandBlock, UseCaseBlock, FaqBlock, CtaBlock, JobsBlock],
+      blocks: [HeroBlock, BrandBlock, UseCaseBlock, FaqBlock, CtaBlock, JobsBlock, MarkdownBlock, ContactBlock],
       required: false,
       localized: true,
     },

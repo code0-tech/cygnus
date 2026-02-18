@@ -2,12 +2,12 @@
 
 import Link from "next/link"
 import { cn } from "@/utils/cn"
-import { IconChevronUp, IconMenu2, IconX } from "@tabler/icons-react"
+import { IconBrandGithub, IconChevronUp, IconMenu2, IconX } from "@tabler/icons-react"
 import { AnimatePresence, motion } from "motion/react"
 import Image from "next/image"
 import React from "react"
 import { fadeInUp, NavItem } from "./types"
-import { Container } from "@code0-tech/pictor"
+import { Button, Container } from "@code0-tech/pictor"
 
 type NavigationMobileProps = {
     menuRef: React.RefObject<HTMLElement | null>
@@ -177,34 +177,47 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
                                     </div>
                                 )
                             })}
-                            <motion.div
-                                key={"Github"}
-                                initial={{ y: -8, opacity: isScrolled ? 1 : 0 }}
-                                animate={{ y: 0, opacity: 1 }}
-                                exit={{ y: -8, opacity: isScrolled ? 1 : 0 }}
-                                transition={{ duration: 0.25, delay: 0.06 * 4 }}
-                                className="text-center mt-4 p-2 font-medium text-md rounded-xl cursor-pointer bg-secondary/50 text-white/70 hover:text-white transition-colors border border-white/10"
-                                onClick={() => {
-                                    onNavigate("github")
-                                    setIsOpen(false)
-                                }}
-                            >
-                                {"Github"}
-                            </motion.div>
-                            <motion.div
-                                key={"Discord"}
-                                initial={{ y: -8, opacity: isScrolled ? 1 : 0 }}
-                                animate={{ y: 0, opacity: 1 }}
-                                exit={{ y: -8, opacity: isScrolled ? 1 : 0 }}
-                                transition={{ duration: 0.25, delay: 0.06 * 4 }}
-                                className="text-center p-2 font-medium text-md rounded-xl cursor-pointer bg-secondary/50 text-white/70 hover:text-white transition-colors border border-white/10"
-                                onClick={() => {
-                                    onNavigate("discord")
-                                    setIsOpen(false)
-                                }}
-                            >
-                                {"Discord"}
-                            </motion.div>
+                            <div className="mt-4 w-full flex flex-col items-center gap-2">
+                                <motion.div
+                                    key={"Github"}
+                                    initial={{ y: -8, opacity: isScrolled ? 1 : 0 }}
+                                    animate={{ y: 0, opacity: 1 }}
+                                    exit={{ y: -8, opacity: isScrolled ? 1 : 0 }}
+                                    transition={{ duration: 0.25, delay: 0.06 * navbarItems.length }}
+                                    className="flex-1 w-full"
+                                >
+                                    <Button
+                                        variant="outlined"
+                                        className="h-9! w-full! text-base! justify-center"
+                                        onClick={() => {
+                                            onNavigate("github")
+                                            setIsOpen(false)
+                                        }}
+                                    >
+                                        <IconBrandGithub size={20}/>
+                                        Github
+                                    </Button>
+                                </motion.div>
+                                <motion.div
+                                    key={"Discord"}
+                                    initial={{ y: -8, opacity: isScrolled ? 1 : 0 }}
+                                    animate={{ y: 0, opacity: 1 }}
+                                    exit={{ y: -8, opacity: isScrolled ? 1 : 0 }}
+                                    transition={{ duration: 0.25, delay: 0.06 * (navbarItems.length + 1) }}
+                                    className="flex-1 w-full"
+                                >
+                                    <Button
+                                        variant="outlined"
+                                        className="h-9! w-full! text-base! justify-center bg-white/80! hover:bg-white! text-primary!"
+                                        onClick={() => {
+                                            onNavigate("discord")
+                                            setIsOpen(false)
+                                        }}
+                                    >
+                                        Discord
+                                    </Button>
+                                </motion.div>
+                            </div>
                         </motion.div>
                     )}
                 </AnimatePresence>

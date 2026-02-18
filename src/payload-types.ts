@@ -240,7 +240,7 @@ export interface Footer {
 export interface Page {
   id: number;
   title: string;
-  slug: 'main' | 'jobs' | 'features' | 'about-us' | 'imprint' | 'policy' | 'terms';
+  slug: 'main' | 'jobs' | 'features' | 'about-us' | 'legal-notice' | 'privacy' | 'terms' | 'contact';
   layout?:
     | (
         | {
@@ -256,7 +256,7 @@ export interface Page {
               | {
                   label: string;
                   url: string;
-                  variant?: ('default' | 'ghost' | 'link') | null;
+                  variant?: ('none' | 'normal' | 'outlined' | 'filled') | null;
                   id?: string | null;
                 }[]
               | null;
@@ -326,6 +326,39 @@ export interface Page {
             id?: string | null;
             blockName?: string | null;
             blockType: 'jobs';
+          }
+        | {
+            content: {
+              root: {
+                type: string;
+                children: {
+                  type: any;
+                  version: number;
+                  [k: string]: unknown;
+                }[];
+                direction: ('ltr' | 'rtl') | null;
+                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                indent: number;
+                version: number;
+              };
+              [k: string]: unknown;
+            };
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'markdown';
+          }
+        | {
+            heading: string;
+            nameLabel: string;
+            namePlaceholder: string;
+            emailLabel: string;
+            emailPlaceholder: string;
+            messageLabel: string;
+            messagePlaceholder: string;
+            submitLabel: string;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'contact';
           }
       )[]
     | null;
@@ -720,6 +753,27 @@ export interface PagesSelect<T extends boolean = true> {
               applicationMessageLabel?: T;
               applicationMessagePlaceholder?: T;
               applicationSubmitLabel?: T;
+              id?: T;
+              blockName?: T;
+            };
+        markdown?:
+          | T
+          | {
+              content?: T;
+              id?: T;
+              blockName?: T;
+            };
+        contact?:
+          | T
+          | {
+              heading?: T;
+              nameLabel?: T;
+              namePlaceholder?: T;
+              emailLabel?: T;
+              emailPlaceholder?: T;
+              messageLabel?: T;
+              messagePlaceholder?: T;
+              submitLabel?: T;
               id?: T;
               blockName?: T;
             };

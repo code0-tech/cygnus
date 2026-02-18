@@ -12,7 +12,7 @@ const buttonVariants = cva(
                 ghost:
                     "py-1 bg-secondary text-white/70 hover:text-white ring-2 ring-white/5 shadow-xl",
                 link:
-                    "h-auto px-0 py-0 text-sm text-gray-500 border-b border-dashed border-white/25 hover:text-brand hover:border-brand rounded-none",
+                    "h-auto px-0 py-0 text-sm text-gray-500 border-b border-dashed border-white/25 hover:text-brand hover:border-brand rounded-none cursor-pointer",
             },
         },
         defaultVariants: {

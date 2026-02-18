@@ -1,10 +1,12 @@
+"use client"
+
 import { InteractiveGridPattern } from "@/components/InteractiveGridPattern"
 import { Section } from "@/components/ui/Section"
 import { cn } from "@/utils/cn"
 import Image from "next/image"
 import React from "react"
 import Link from "next/link"
-import { Button } from "@/components/ui/Button"
+import { Button } from "@code0-tech/pictor"
 
 interface CtaSectionContent {
     heading: string
@@ -24,7 +26,7 @@ export const CtaSection: React.FC<CtaSectionProps> = ({ content }) => {
 
     return (
         <Section showBlur={false} showFunnel={false}>
-            <div className={"relative overflow-hidden w-full flex flex-col items-center justify-center gap-8 py-12 rounded-xl border border-white/5 shadow-xl"}>
+            <div className={"relative overflow-hidden w-full flex flex-col items-center justify-center gap-8 py-12 rounded-xl border border-white/5 drop-shadow-lg"}>
 
                 <InteractiveGridPattern
                     className={cn("mask-[radial-gradient(600px_circle_at_center,white,transparent)]")}
@@ -36,7 +38,7 @@ export const CtaSection: React.FC<CtaSectionProps> = ({ content }) => {
 
                 <div className={"z-20 size-31 border border-white/5 bg-white/5 backdrop-blur-lg flex items-center justify-center rounded-2xl"}>
                     <div className={"border border-white/10 bg-linear-to-br from-primary to-[#70ffb2]/10 flex items-center justify-center rounded-xl"}>
-                        <Image src={"/code0_logo_color.png"} width={"112"} height={"112"} alt={"Code0 Logo"} className={"z-20 shadow-2xl"}/>
+                        <Image src={"/code0_logo_color.png"} width={"112"} height={"112"} alt={"Code0 Logo"} className={"z-20"}/>
                     </div>
                 </div>
 
@@ -49,7 +51,7 @@ export const CtaSection: React.FC<CtaSectionProps> = ({ content }) => {
 
                 <div className={"z-20 flex items-center gap-4"}>
                     <Link href={content.ctaLink.url}>
-                        <Button variant="default" className={"h-10 flex items-center gap-2"}>
+                        <Button variant="filled" className={"h-10 flex items-center gap-2 text-base! bg-white/80! hover:bg-white! text-primary!"}>
                             {content.ctaLink.label}
                         </Button>
                     </Link>

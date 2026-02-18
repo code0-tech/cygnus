@@ -9,7 +9,7 @@ import {
     MenuTrigger,
 } from "@code0-tech/pictor"
 import { IconChevronDown } from "@tabler/icons-react"
-import { JobsCard } from "@/components/jobs/JobsCard"
+import { JobsCard } from "@/components/cards/JobsCard"
 
 interface JobsPageContent {
     heading: string

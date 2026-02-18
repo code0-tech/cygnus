@@ -55,20 +55,24 @@ export const HeroBlock: Block = {
           name: "variant",
           type: "select",
           required: false,
-          defaultValue: "default",
+          defaultValue: "normal",
           options: [
             {
-              label: "Default",
-              value: "default",
+              label: "None",
+              value: "none",
             },
             {
-              label: "Ghost",
-              value: "ghost",
+              label: "Normal",
+              value: "normal",
             },
             {
-              label: "Link",
-              value: "link",
+              label: "Outlined",
+              value: "outlined",
             },
+            {
+              label: "Filled",
+              value: "filled",
+              },
           ],
         },
       ],

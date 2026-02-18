@@ -1,4 +1,4 @@
-import { JobsPageClient } from "@/components/jobs/JobsPageClient"
+import { JobsPageClient } from "@/components/JobsPageClient"
 import { Aurora } from "@/components/ui/Aurora"
 import { LandingContainer } from "@/components/ui/LandingContainer"
 import { isSupportedLocale } from "@/utils/i18n"

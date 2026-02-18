@@ -1,8 +1,7 @@
 "use client"
 
-import { Button } from "@/components/ui/Button"
 import { cn } from "@/utils/cn"
-import { Container } from "@code0-tech/pictor"
+import { Button, Container } from "@code0-tech/pictor"
 import { IconBrandGithub } from "@tabler/icons-react"
 import { AnimatePresence, motion } from "motion/react"
 import Image from "next/image"
@@ -107,10 +106,10 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({
                             )}
                         </div>
                         <div className={"flex items-center gap-2"}>
-                            <Button variant="ghost">
+                            <Button variant="normal" className="h-9!">
                                 <IconBrandGithub/>
                             </Button>
-                            <Button variant="default">
+                            <Button variant="filled" className="h-9! bg-white/80! hover:bg-white! text-primary!">
                                 Discord
                             </Button>
                         </div>
