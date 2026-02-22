@@ -80,6 +80,24 @@ export interface UseCaseLayoutBlock {
     | null
 }
 
+export interface DeploymentLayoutBlock {
+    blockType: "deployment"
+    id?: string | null
+    blockName?: string | null
+    cloudTitle: string
+    cloudDescription: string
+    cloudLink: {
+        label: string
+        url: string
+    }
+    selfhostTitle: string
+    selfhostDescription: string
+    selfhostLink: {
+        label: string
+        url: string
+    }
+}
+
 export interface JobsLayoutBlock {
     blockType: "jobs"
     id?: string | null
@@ -125,7 +143,7 @@ interface LandingPageDoc {
     id: number
     title: string
     slug: string
-    layout?: (HeroLayoutBlock | BrandLayoutBlock | UseCaseLayoutBlock | FaqLayoutBlock | CtaLayoutBlock | JobsLayoutBlock | MarkdownLayoutBlock | ContactLayoutBlock | ({ blockType?: string } & Record<string, unknown>))[] | null
+    layout?: (HeroLayoutBlock | BrandLayoutBlock | UseCaseLayoutBlock | DeploymentLayoutBlock | FaqLayoutBlock | CtaLayoutBlock | JobsLayoutBlock | MarkdownLayoutBlock | ContactLayoutBlock | ({ blockType?: string } & Record<string, unknown>))[] | null
     updatedAt: string
     createdAt: string
 }

@@ -206,7 +206,13 @@ export interface Section {
   id: number;
   heading: string;
   subheading?: string | null;
-  sectionType: 'AppFeatureSection' | 'FaqSection' | 'RoadmapSection' | 'RuntimeFeatureSection' | 'UseCaseSection';
+  sectionType:
+    | 'AppFeatureSection'
+    | 'FaqSection'
+    | 'RoadmapSection'
+    | 'RuntimeFeatureSection'
+    | 'UseCaseSection'
+    | 'DeploymentSection';
   link_button?: {
     label?: string | null;
     url?: string | null;
@@ -360,6 +366,23 @@ export interface Page {
             blockName?: string | null;
             blockType: 'contact';
           }
+        | {
+            cloudTitle?: string | null;
+            cloudDescription?: string | null;
+            cloudLink?: {
+              label?: string | null;
+              url?: string | null;
+            };
+            selfhostTitle?: string | null;
+            selfhostDescription?: string | null;
+            selfhostLink?: {
+              label?: string | null;
+              url?: string | null;
+            };
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'deployment';
+          }
       )[]
     | null;
   updatedAt: string;
@@ -371,13 +394,7 @@ export interface Page {
  */
 export interface Feature {
   id: number;
-  slug:
-    | 'welcome-user'
-    | 'pro-subscription'
-    | 'team-subscription'
-    | 'role-system'
-    | 'member-management'
-    | 'organizations';
+  slug: 'welcome-user' | 'pro-subscription' | 'role-system' | 'member-management' | 'organizations';
   title: string;
   description?: string | null;
   link?: {
@@ -774,6 +791,28 @@ export interface PagesSelect<T extends boolean = true> {
               messageLabel?: T;
               messagePlaceholder?: T;
               submitLabel?: T;
+              id?: T;
+              blockName?: T;
+            };
+        deployment?:
+          | T
+          | {
+              cloudTitle?: T;
+              cloudDescription?: T;
+              cloudLink?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                  };
+              selfhostTitle?: T;
+              selfhostDescription?: T;
+              selfhostLink?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                  };
               id?: T;
               blockName?: T;
             };

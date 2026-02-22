@@ -28,10 +28,6 @@ export const Features: CollectionConfig = {
           value: "pro-subscription",
         },
         {
-          label: "Team Subscription",
-          value: "team-subscription",
-        },
-        {
           label: "Role System",
           value: "role-system",
         },

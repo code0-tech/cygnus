@@ -34,7 +34,7 @@ export const FaqSection: React.FC<FaqSectionProps> = ({ content }) => {
 
     return (
         <Section sectionType="FaqSection" showLinkButton={false}>
-            <div className={"h-[60vh] flex flex-col gap-4 mx-4"}>
+            <div className={"h-[60vh] md:w-[50vw] flex flex-col gap-4 mx-auto"}>
                 {content.items.map((faq, index) => (
                     <AccordionItem
                         key={`${faq.question}-${index}`} {...faq}

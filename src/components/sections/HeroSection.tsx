@@ -38,7 +38,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ content }) => {
     return (
         <Section showBlur={false} showFunnel={false}>
 
-            <div className="relative h-[85vh] rounded-xl ring ring-white/5 overflow-hidden drop-shadow-lg">
+            <div className="relative h-[85vh] rounded-xl ring ring-white/5 overflow-hidden shadow-md">
 
                 <div className="pointer-events-none absolute inset-0 -z-10 bg-[#0f0c1f]">
                 <GradientBlinds

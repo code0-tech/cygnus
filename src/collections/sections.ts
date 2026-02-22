@@ -44,6 +44,10 @@ export const Sections: CollectionConfig = {
                     label: 'UseCaseSection',
                     value: 'UseCaseSection',
                 },
+                {
+                    label: 'DeploymentSection',
+                    value: 'DeploymentSection',
+                },
             ],
         },
         {

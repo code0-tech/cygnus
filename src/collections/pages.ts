@@ -7,6 +7,7 @@ import { JobsBlock } from "@/blocks/JobsBlock"
 import { MarkdownBlock } from "@/blocks/MarkdownBlock"
 import { ContactBlock } from "@/blocks/ContactBlock"
 import type { CollectionConfig } from "payload"
+import { DeploymentBlock } from "@/blocks/DeploymentBlock"
 
 export const Pages: CollectionConfig = {
   slug: "pages",
@@ -48,7 +49,7 @@ export const Pages: CollectionConfig = {
       name: "layout",
       label: "Layout",
       type: "blocks",
-      blocks: [HeroBlock, BrandBlock, UseCaseBlock, FaqBlock, CtaBlock, JobsBlock, MarkdownBlock, ContactBlock],
+      blocks: [HeroBlock, BrandBlock, UseCaseBlock, FaqBlock, CtaBlock, JobsBlock, MarkdownBlock, ContactBlock, DeploymentBlock],
       required: false,
       localized: true,
     },

@@ -1,7 +1,7 @@
 import { LandingContainer } from "@/components/ui/LandingContainer"
 import { HeroSection } from "@/components/sections/HeroSection"
 import { getLandingPage } from "@/utils/getLandingPage"
-import type { HeroLayoutBlock } from "@/utils/getLandingPage"
+import type { DeploymentLayoutBlock, HeroLayoutBlock } from "@/utils/getLandingPage"
 import type { BrandLayoutBlock } from "@/utils/getLandingPage"
 import type { CtaLayoutBlock } from "@/utils/getLandingPage"
 import type { FaqLayoutBlock } from "@/utils/getLandingPage"
@@ -13,6 +13,7 @@ import { notFound } from "next/navigation"
 const BrandSection = dynamic(() => import("@/components/sections/BrandSection").then((mod) => mod.BrandSection))
 const UseCaseSection = dynamic(() => import("@/components/sections/UseCaseSection").then((mod) => mod.UseCaseSection))
 const AppFeatureSection = dynamic(() => import("@/components/sections/AppFeatureSection").then((mod) => mod.AppFeatureSection))
+const DeploymentSection = dynamic(() => import("@/components/sections/DeploymentSection").then((mod) => mod.DeploymentSection))
 const RuntimeFeatureSection = dynamic(() => import("@/components/sections/RuntimeFeatureSection").then((mod) => mod.RuntimeFeatureSection))
 const RoadmapSection = dynamic(() => import("@/components/sections/RoadmapSection").then((mod) => mod.RoadmapSection))
 const FaqSection = dynamic(() => import("@/components/sections/FaqSection").then((mod) => mod.FaqSection))
@@ -35,6 +36,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
     const useCaseBlock = layout.find((block): block is UseCaseLayoutBlock => block.blockType === "usecase") ?? null
     const faqBlock = layout.find((block): block is FaqLayoutBlock => block.blockType === "faq") ?? null
     const ctaBlock = layout.find((block): block is CtaLayoutBlock => block.blockType === "cta") ?? null
+    const deploymentBlock = layout.find((block): block is DeploymentLayoutBlock => block.blockType === "deployment") ?? null
 
     return (
         <LandingContainer>
@@ -42,6 +44,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
             <BrandSection content={brandBlock} />
             <UseCaseSection content={useCaseBlock} />
             <AppFeatureSection locale={locale} />
+            <DeploymentSection content={deploymentBlock} />
             <RuntimeFeatureSection />
             <RoadmapSection />
             <FaqSection content={faqBlock} />

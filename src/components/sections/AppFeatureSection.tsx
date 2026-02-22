@@ -4,7 +4,6 @@ import { MemberManagementCard } from "../cards/MemberManagementCard"
 import { OrganizationCard } from "../cards/OrganizationCard"
 import { ProSubscriptionCard } from "../cards/ProSubscriptionCard"
 import { RoleSystemCard } from "../cards/RoleSystemCard"
-import { TeamSubscriptionCard } from "../cards/TeamSubscriptionCard"
 import { WelcomeUserCard } from "../cards/WelcomeUserCard"
 import { BentoGrid } from "../ui/BentoGrid"
 
@@ -19,7 +18,6 @@ export const AppFeatureSection: React.FC<AppFeatureSectionProps> = ({ locale }) 
                 <WelcomeUserCard locale={locale} />
                 <RoleSystemCard locale={locale} />
                 <MemberManagementCard locale={locale} />
-                <TeamSubscriptionCard />
                 <OrganizationCard locale={locale} />
                 <ProSubscriptionCard locale={locale} />
             </BentoGrid>

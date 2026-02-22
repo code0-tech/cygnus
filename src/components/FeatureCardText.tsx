@@ -1,7 +1,5 @@
-import { Button } from "@/components/ui/Button"
+import { LinkButton } from "@/components/ui/LinkButton"
 import { cn } from "@/utils/cn"
-import { IconArrowUpRight } from "@tabler/icons-react"
-import Link from "next/link"
 
 export interface FeatureCardContent {
     title: string
@@ -31,12 +29,9 @@ export function FeatureCardText({ content, className }: FeatureCardTextProps) {
                 </p>
             }
             {content.link && content.link.label && content.link.url &&
-                <Link href={content.link.url}>
-                    <Button variant="link" className="mt-3 gap-1 text-xs font-normal text-nowrap">
-                        {content.link.label}
-                        <IconArrowUpRight size={14} />
-                    </Button>
-                </Link>
+                <LinkButton href={content.link.url} className="mt-3 text-xs font-normal text-nowrap">
+                    {content.link.label}
+                </LinkButton>
             }
         </div>
     )
