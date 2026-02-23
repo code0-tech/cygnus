@@ -6,6 +6,7 @@ import { getLocaleFromPath, localizeHref } from "@/utils/i18n"
 import { ReactNode, useEffect, useState } from "react"
 import { LinkButton } from "@/components/ui/LinkButton"
 import { usePathname } from "next/navigation"
+import { cn } from "@/utils/cn"
 
 interface SectionProps {
     children: ReactNode
@@ -14,9 +15,10 @@ interface SectionProps {
     showBlur?: boolean
     showFunnel?: boolean
     showLinkButton?: boolean
+    fullHeight?: boolean
 }
 
-export function Section({ sectionType, children, funnelType = "center", showBlur = true, showFunnel = true, showLinkButton = true }: SectionProps) {
+export function Section({ sectionType, children, funnelType = "center", showBlur = true, showFunnel = true, showLinkButton = true, fullHeight = false }: SectionProps) {
     const [sectionData, setSectionData] = useState<SectionDocument | null>(null)
     const pathname = usePathname()
     const locale = getLocaleFromPath(pathname)
@@ -44,13 +46,13 @@ export function Section({ sectionType, children, funnelType = "center", showBlur
     }, [locale, sectionType])
 
     return (
-        <section className={"relative overflow-hidden flex flex-col gap-16 pt-16"}>
+        <section className={cn("relative overflow-hidden flex flex-col gap-8 pt-16", fullHeight && "h-[200dvh] md:h-dvh")}>
             {showBlur &&
                 <div className="pointer-events-none absolute inset-0 opacity-30 blur-xl will-change-filter [background:radial-gradient(circle,rgba(255,255,255,0.45),transparent_60%)]" />
             }
             {showFunnel && (
                 funnelType === "center" ? (
-                    <div className={"flex flex-col gap-4 items-center justify-center text-center pb-16 pt-48"}>
+                    <div className={"flex flex-col gap-4 items-center justify-center text-center"}>
                         <h1 className={"text-4xl text-white font-semibold"}>
                             {sectionData?.heading}
                         </h1>
@@ -64,7 +66,7 @@ export function Section({ sectionType, children, funnelType = "center", showBlur
                         }
                     </div>
                 ) : (
-                    <div className={"flex flex-col gap-4 text-left pb-16 pt-48"}>
+                    <div className={"flex flex-col gap-4 text-left"}>
                         <h1 className={"text-4xl text-white font-semibold"}>
                             {sectionData?.heading}
                         </h1>

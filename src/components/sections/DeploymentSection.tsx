@@ -28,7 +28,7 @@ export const DeploymentSection: React.FC<DeploymentSectionProps> = ({ content })
     if (!content) return null
 
     return (
-        <Section sectionType="DeploymentSection" funnelType="left">
+        <Section sectionType="DeploymentSection" funnelType="left" fullHeight>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <article>
                     <div className="rounded-2xl overflow-hidden border border-white/10 shadow-md">

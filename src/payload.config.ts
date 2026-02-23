@@ -13,6 +13,7 @@ import { Pages } from './collections/pages'
 import { Features } from './collections/features'
 import { Jobs } from './collections/jobs'
 import { Blog } from './collections/blog'
+import { RoadmapItems } from './collections/roadmapItems'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -28,7 +29,7 @@ export default buildConfig({
         locales: ['en', 'de'],
         defaultLocale: 'en',
     },
-    collections: [Users, Media, NavbarItems, Sections, Footer, Pages, Features, Jobs, Blog],
+    collections: [Users, Media, NavbarItems, Sections, Footer, Pages, Features, Jobs, Blog, RoadmapItems],
     editor: lexicalEditor({}),
     secret: process.env.PAYLOAD_SECRET || '',
     typescript: {

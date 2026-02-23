@@ -30,7 +30,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ loca
                 <div className={"md:w-[50vw] mx-auto"}>
                     <MarkdownContent content={contentHtml} />
                     <div className="mt-10">
-                        <JobApplicationCard content={jobsBlock} />
+                        <JobApplicationCard jobSlug={job.slug} content={jobsBlock} />
                     </div>
                 </div>
             </LandingContainer>

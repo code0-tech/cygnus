@@ -5,7 +5,7 @@ import { BentoGrid } from "../ui/BentoGrid"
 
 export const RuntimeFeatureSection: React.FC = () => {
     return (
-        <Section sectionType="RuntimeFeatureSection">
+        <Section sectionType="RuntimeFeatureSection" fullHeight>
             <BentoGrid columns={3}>
                 <FeatureCard className="col-span-2 row-span-1">test</FeatureCard>
                 <FeatureCard className="col-span-1 row-span-3">test</FeatureCard>

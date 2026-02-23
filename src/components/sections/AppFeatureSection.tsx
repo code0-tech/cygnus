@@ -13,7 +13,7 @@ interface AppFeatureSectionProps {
 
 export const AppFeatureSection: React.FC<AppFeatureSectionProps> = ({ locale }) => {
     return (
-        <Section sectionType="AppFeatureSection">
+        <Section sectionType="AppFeatureSection" fullHeight>
             <BentoGrid>
                 <WelcomeUserCard locale={locale} />
                 <RoleSystemCard locale={locale} />

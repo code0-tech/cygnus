@@ -1,132 +1,42 @@
-import React, {ReactNode} from "react"
-import {
-    IconCube,
-    IconGlobe,
-    IconLock,
-    IconManualGearbox,
-    IconRocket,
-    IconWand
-} from "@tabler/icons-react"
 import { Section } from "@/components/ui/Section"
-import { FeatureCard } from "@/components/cards/FeatureCard"
+import { getRoadmapItems } from "@/utils/getRoadmapItems"
+import { AppLocale } from "@/utils/i18n"
+import React from "react"
 
-interface RoadmapItem  {
-    year: string
-    steps: {
-        icon: ReactNode,
-        startAt: Date
-        endAt: Date
-        title: string
-        content: string
-        isPlanned: boolean
-    }[]
+interface RoadmapSectionProps {
+    locale: AppLocale
 }
 
-const roadmapItems: RoadmapItem[] = [
-    {
-        year: "2022",
-        steps: [
-            {
-                icon: <IconRocket size={20} />,
-                startAt: new Date(2024, 0, 1),
-                endAt: new Date(2024, 6, 0),
-                isPlanned: false,
-                title: "Unternehmensgründung",
-                content:
-                    "Gründung von Visionary Tech als spezialisierte Entwicklungsfirma für KI-Lösungen.",
-            },
-            {
-                icon: <IconCube size={20} />,
-                startAt: new Date(2024, 6, 1),
-                endAt: new Date(2025, 0, 0),
-                isPlanned: false,
-                title: "Erstes Produkt-Release",
-                content:
-                    "Launch der ersten KI-gestützten Mobile App für personalisierte Empfehlungen.",
-            }
-        ]
-    },
-    {
-        year: "2023",
-        steps: [
-            {
-                icon: <IconLock size={20} />,
-                startAt: new Date(2024, 0, 1),
-                endAt: new Date(2024, 3, 0),
-                isPlanned: false,
-                title: "Seed-Finanzierung",
-                content: "Erfolgreiche Seed-Runde über 3 Mio. USD bei 20 Mio. Bewertung.",
-            },
-            {
-                icon: <IconGlobe size={20} />,
-                startAt: new Date(2024, 3, 1),
-                endAt: new Date(2024, 9, 0),
-                isPlanned: false,
-                title: "Internationaler Markteintritt",
-                content:
-                    "Einführung lokalisierter App-Versionen in fünf internationalen Märkten.",
-            },
-            {
-                icon: <IconManualGearbox size={20} />,
-                startAt: new Date(2024, 9, 1),
-                endAt: new Date(2025, 0, 0),
-                isPlanned: false,
-                title: "Algorithmus-Optimierung",
-                content:
-                    "Weiterentwicklung der Machine-Learning-Modelle für präzisere Vorhersagen.",
-            }
-        ]
-    },
-    {
-        year: "2025",
-        steps: [
-            {
-                icon: <IconCube size={20} />,
-                startAt: new Date(2025, 0, 1),
-                endAt: new Date(2025, 6, 0),
-                isPlanned: false,
-                title: "AI-Automationsplattform",
-                content:
-                    "Release einer autonomen KI-Plattform zur industriellen Prozessautomatisierung.",
-            },
-            {
-                icon: <IconWand size={20} />,
-                startAt: new Date(2025, 6, 1),
-                endAt: new Date(2026, 0, 0),
-                isPlanned: true,
-                title: "VR-Integration",
-                content:
-                    "Geplante Erweiterung des Produktportfolios um immersive VR-Funktionen.",
-            }
-        ]
-    }
-]
-
-export const RoadmapSection: React.FC = () => {
-    const features = roadmapItems.flatMap((item) =>
-        item.steps.map((step) => ({
-            id: item.year + "-" + step.title,
-            name: step.title,
-            content: step.content,
-            startAt: step.startAt,
-            endAt: step.endAt,
-            group: { name: item.year },
-            icon: step.icon,
-        }))
-    )
-
-    const grouped = features.reduce((acc, f) => {
-        acc[f.group.name] = acc[f.group.name] || []
-        acc[f.group.name].push(f)
-        return acc
-    }, {} as Record<string, any[]>)
+export const RoadmapSection: React.FC<RoadmapSectionProps> = async ({ locale }) => {
+    const items = await getRoadmapItems(locale)
+    if (!items?.length) return null
 
     return (
         <Section sectionType="RoadmapSection" funnelType="left">
-            <div className="w-full h-dvh py-16 px-4">
-                <FeatureCard className="w-full h-full">
-                    test
-                </FeatureCard>
+            <div className="relative w-full py-8 md:py-16">
+                <div className="pointer-events-none absolute left-3 top-0 h-full w-px bg-white/15 md:left-1/2 md:-translate-x-1/2" />
+
+                <div className="flex flex-col gap-10 md:gap-14">
+                    {items.map((item, index) => {
+                        const isEven = index % 2 === 0
+
+                        return (
+                            <article key={item.id} id={`roadmap-item-${item.id}`} className="relative">
+                                <div className="absolute left-3 top-6 h-3 w-3 -translate-x-1/2 rounded-full border border-white/60 bg-white md:left-1/2" />
+
+                                <div className={`grid grid-cols-1 md:grid-cols-2 md:gap-10 ${isEven ? "" : "md:[&>*:first-child]:order-2 md:[&>*:last-child]:order-1"}`}>
+                                    <div className="hidden md:block" />
+
+                                    <div className="ml-8 rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-md md:ml-0">
+                                        <p className="mb-2 text-sm font-medium uppercase tracking-wider text-white/60">{item.time}</p>
+                                        <h3 className="text-xl font-semibold text-white">{item.title}</h3>
+                                        <p className="mt-3 text-sm leading-relaxed text-white/75">{item.description}</p>
+                                    </div>
+                                </div>
+                            </article>
+                        )
+                    })}
+                </div>
             </div>
         </Section>
     )

@@ -7,6 +7,7 @@ import type { CtaLayoutBlock } from "@/utils/getLandingPage"
 import type { FaqLayoutBlock } from "@/utils/getLandingPage"
 import type { UseCaseLayoutBlock } from "@/utils/getLandingPage"
 import { isSupportedLocale, SUPPORTED_LOCALES } from "@/utils/i18n"
+import { getRoadmapItems } from "@/utils/getRoadmapItems"
 import dynamic from "next/dynamic"
 import { notFound } from "next/navigation"
 
@@ -42,11 +43,17 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
         <LandingContainer>
             <HeroSection content={heroBlock} />
             <BrandSection content={brandBlock} />
+            <div className="h-32"/>
             <UseCaseSection content={useCaseBlock} />
+            <div className="h-32"/>
             <AppFeatureSection locale={locale} />
+            <div className="h-32"/>
             <DeploymentSection content={deploymentBlock} />
+            <div className="h-32"/>
             <RuntimeFeatureSection />
-            <RoadmapSection />
+            <div className="h-32"/>
+            <RoadmapSection locale={locale} />
+            <div className="h-32"/>
             <FaqSection content={faqBlock} />
             <CtaSection content={ctaBlock} />
         </LandingContainer>

@@ -16,7 +16,7 @@ export function BentoGrid({ children, columns = 5 }: BentoGridProps) {
     }[columns] ?? "md:grid-cols-5"
 
     return (
-        <div className={`w-full h-[200dvh] md:h-dvh grid grid-cols-1 ${colClass} gap-4 grid-rows-auto p-4 py-16`}>
+        <div className={`w-full h-full grid grid-cols-1 ${colClass} gap-4 grid-rows-auto p-4`}>
             {children}
         </div>
     )
