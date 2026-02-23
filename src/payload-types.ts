@@ -396,7 +396,16 @@ export interface Page {
  */
 export interface Feature {
   id: number;
-  slug: 'welcome-user' | 'pro-subscription' | 'role-system' | 'member-management' | 'organizations';
+  slug:
+    | 'welcome-user'
+    | 'pro-subscription'
+    | 'role-system'
+    | 'member-management'
+    | 'organizations'
+    | 'suggestion-menu'
+    | 'node-tabs'
+    | 'runtime-types'
+    | 'action-list';
   title: string;
   description?: string | null;
   link?: {

@@ -11,6 +11,10 @@ export type FeatureSlug =
     | "role-system"
     | "member-management"
     | "organizations"
+    | "suggestion-menu"
+    | "node-tabs"
+    | "runtime-types"
+    | "action-list"
 
 export interface FeatureItem {
     id: number

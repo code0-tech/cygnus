@@ -7,7 +7,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "pl:generate": "payload generate:types"
   },
   "dependencies": {
     "@code0-tech/pictor": "^0.0.0-mvp.45",

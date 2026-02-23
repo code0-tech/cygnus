@@ -50,7 +50,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
             <div className="h-32"/>
             <DeploymentSection content={deploymentBlock} />
             <div className="h-32"/>
-            <RuntimeFeatureSection />
+            <RuntimeFeatureSection locale={locale} />
             <div className="h-32"/>
             <RoadmapSection locale={locale} />
             <div className="h-32"/>

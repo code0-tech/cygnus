@@ -39,6 +39,22 @@ export const Features: CollectionConfig = {
           label: "Organizations",
           value: "organizations",
         },
+        {
+          label: "Suggestion Menu",
+          value: "suggestion-menu",
+        },
+        {
+          label: "Node Tabs",
+          value: "node-tabs",
+        },
+        {
+          label: "Runtime Types",
+          value: "runtime-types",
+        },
+        {
+          label: "Action List",
+          value: "action-list",
+        },
       ],
     },
     {
