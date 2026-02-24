@@ -1,13 +1,12 @@
 "use client"
 
-import React from "react"
-import GradientBlinds from "@/components/GradientBlinds"
-import Image from "next/image"
-import { IconArrowRight } from "@tabler/icons-react"
 import { Section } from "@/components/ui/Section"
-import Link from "next/link"
-import { Button } from "@code0-tech/pictor"
 import { cn } from "@/utils/cn"
+import { Button } from "@code0-tech/pictor"
+import { IconArrowRight } from "@tabler/icons-react"
+import Image from "next/image"
+import Link from "next/link"
+import React from "react"
 import Grainient from "../ui/Granient"
 
 interface HeroSectionButton {
