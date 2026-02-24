@@ -58,7 +58,7 @@ export const DeploymentSection: React.FC<DeploymentSectionProps> = ({ content })
                     <div className="rounded-2xl overflow-hidden border border-white/10 shadow-md">
                         <div className="relative h-100 bg-primary/40">
                         <Image
-                            src="/code0_background.png"
+                            src="/code0_software.png"
                             alt="Self-hosted deployment"
                             fill
                             className="object-cover"
