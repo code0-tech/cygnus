@@ -6,7 +6,6 @@ import { getPayload } from "payload"
 
 export type FeatureSlug =
     | "welcome-user"
-    | "pro-subscription"
     | "team-subscription"
     | "role-system"
     | "member-management"

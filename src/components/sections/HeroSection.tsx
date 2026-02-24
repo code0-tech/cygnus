@@ -8,6 +8,7 @@ import { Section } from "@/components/ui/Section"
 import Link from "next/link"
 import { Button } from "@code0-tech/pictor"
 import { cn } from "@/utils/cn"
+import Grainient from "../ui/Granient"
 
 interface HeroSectionButton {
     label: string
@@ -41,18 +42,30 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ content }) => {
             <div className="relative h-[85vh] rounded-xl ring ring-white/5 overflow-hidden shadow-md">
 
                 <div className="pointer-events-none absolute inset-0 -z-10 bg-[#0f0c1f]">
-                <GradientBlinds
-                    className={"opacity-30"}
-                    gradientColors={['#030014', '#70ffb3']}
-                    angle={0}
-                    noise={0.3}
-                    blindCount={16}
-                    blindMinWidth={50}
-                    mouseDampening={0.15}
-                    distortAmount={0}
-                    spotlightRadius={0.8}
-                    shineDirection="left"
-                />
+                    <Grainient
+                        color1="#13102d"
+                        color2="#f872e2"
+                        color3="#7472f8"
+                        timeSpeed={0.25}
+                        colorBalance={0}
+                        warpStrength={1}
+                        warpFrequency={5}
+                        warpSpeed={2}
+                        warpAmplitude={50}
+                        blendAngle={0}
+                        blendSoftness={0.05}
+                        rotationAmount={500}
+                        noiseScale={2}
+                        grainAmount={0.1}
+                        grainScale={2}
+                        grainAnimated={false}
+                        contrast={1.5}
+                        gamma={1}
+                        saturation={1}
+                        centerX={0}
+                        centerY={0}
+                        zoom={0.9}
+                    />
                 </div>
 
                 <div className={"z-10 h-full flex flex-col md:flex-row items-center justify-between gap-12 px-8 md:px-16 py-12 md:py-24"}>

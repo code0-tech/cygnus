@@ -24,10 +24,6 @@ export const Features: CollectionConfig = {
           value: "welcome-user",
         },
         {
-          label: "Pro Subscription",
-          value: "pro-subscription",
-        },
-        {
           label: "Role System",
           value: "role-system",
         },

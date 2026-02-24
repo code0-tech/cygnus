@@ -33,8 +33,14 @@ export const UseCaseSection: React.FC<UseCaseSectionProps> = ({ content }) => {
                             <p className="text-xl md:text-2xl font-semibold text-white">{item.title}</p>
                             <p className="mt-2 text-sm md:text-base text-white/75">{item.description}</p>
                         </div>
-                        <div className="relative h-112 w-2/3 rounded-2xl overflow-hidden bg-primary border border-white/10 shadow-md">
-                            {/* Flows darstellen */}
+                        <div className="relative w-2/3">
+                            <div
+                                aria-hidden="true"
+                                className="pointer-events-none absolute -inset-16 -z-10 rounded-4xl bg-pink/5 blur-3xl"
+                            />
+                            <div className="relative z-10 h-112 rounded-2xl overflow-hidden bg-primary border border-white/10 shadow-md">
+                                {/* Flows darstellen */}
+                            </div>
                         </div>
                     </div>
                 ))}

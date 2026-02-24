@@ -39,7 +39,7 @@ export function FeatureCard({children, className, contentClassName}: {children: 
                             absolute -inset-12
                             opacity-25 blur-lg
                             will-change-filter
-                            [background:radial-gradient(circle_at_top,rgba(112,255,179,0.45),transparent_45%)]
+                            [background:radial-gradient(circle_at_top,rgba(112,255,179,0.3),transparent_45%)]
                         "
                     />
                     <div className="h-full w-full relative opacity-4">

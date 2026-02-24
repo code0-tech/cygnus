@@ -16,19 +16,17 @@ export async function OrganizationCard({ locale }: OrganizationCardProps) {
             <div className="relative w-full h-full overflow-hidden pt-4 px-4">
                 <div className="w-full border-b border-white/10 pb-1">
                     <div className="inline-flex items-center gap-4">
-                        <button
-                            type="button"
+                        <div
                             className="relative pb-2 text-xs font-semibold text-white/90"
                         >
                             Created
                             <span className="absolute inset-x-0 -bottom-1px h-0.5 bg-brand" />
-                        </button>
-                        <button
-                            type="button"
+                        </div>
+                        <div
                             className="pb-2 text-xs font-semibold text-white/50"
                         >
                             Member
-                        </button>
+                        </div>
                     </div>
                 </div>
 

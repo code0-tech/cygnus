@@ -398,7 +398,6 @@ export interface Feature {
   id: number;
   slug:
     | 'welcome-user'
-    | 'pro-subscription'
     | 'role-system'
     | 'member-management'
     | 'organizations'

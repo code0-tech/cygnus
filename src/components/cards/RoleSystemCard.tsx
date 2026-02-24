@@ -31,7 +31,7 @@ export async function RoleSystemCard({ locale }: RoleSystemCardProps) {
 
     return (
         <FeatureCard
-            className="col-span-1 md:col-span-3 row-span-1"
+            className="col-span-1 md:col-span-3 row-span-2"
             contentClassName="w-full flex flex-row items-center justify-between"
         >
             <div className="relative w-2/3 h-full overflow-hidden flex items-center -ml-4">
