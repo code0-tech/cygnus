@@ -33,8 +33,9 @@ export const FaqSection: React.FC<FaqSectionProps> = ({ content }) => {
     if (!content || !content.items) return
 
     return (
-        <Section sectionType="FaqSection" showLinkButton={false}>
+        <Section sectionType="FaqSection" showLinkButton={false} showBlur={false}>
             <div className={"h-[60vh] md:w-[50vw] flex flex-col gap-4 mx-auto"}>
+                <div className="pointer-events-none absolute inset-0 opacity-10 blur-xs will-change-filter [background:radial-gradient(circle,rgba(255,255,255,0.5),transparent_50%)]" />
                 {content.items.map((faq, index) => (
                     <AccordionItem
                         key={`${faq.question}-${index}`} {...faq}

@@ -46,10 +46,12 @@ export function Section({ sectionType, children, funnelType = "center", showBlur
     }, [locale, sectionType])
 
     return (
-        <section className={cn("relative overflow-hidden flex flex-col gap-8 pt-16", fullHeight && "h-[200dvh] md:h-dvh")}>
-            {showBlur &&
-                <div className="pointer-events-none absolute inset-0 opacity-30 blur-xl will-change-filter [background:radial-gradient(circle,rgba(255,255,255,0.45),transparent_60%)]" />
-            }
+        <section className={cn("relative overflow-visible flex flex-col gap-8 pt-16", fullHeight && "h-[200dvh] md:h-dvh")}>
+            {showBlur && (funnelType === "center" ? (
+                <div className="pointer-events-none absolute inset-0 opacity-30 blur-md will-change-filter [background:radial-gradient(circle,rgba(255,255,255,0.45),transparent_60%)]" />
+            ) : (
+                    <div/>
+            ))}
             {showFunnel && (
                 funnelType === "center" ? (
                     <div className={"flex flex-col gap-4 items-center justify-center text-center"}>

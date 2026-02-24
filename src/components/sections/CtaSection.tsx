@@ -34,10 +34,10 @@ export const CtaSection: React.FC<CtaSectionProps> = ({ content }) => {
                     height={48}
                     squares={[50, 10]}
                 />
-                <div className="pointer-events-none absolute -inset-16 opacity-20 blur-xl will-change-filter [background:radial-gradient(circle,rgba(112,255,179,0.45),transparent_95%)]" />
+                <div className="pointer-events-none absolute -inset-16 opacity-10 blur-xl will-change-filter [background:radial-gradient(circle,rgba(248,114,226,0.35),transparent_95%)]" />
 
                 <div className={"z-20 size-31 border border-white/5 bg-white/5 backdrop-blur-lg flex items-center justify-center rounded-2xl"}>
-                    <div className={"border border-white/10 bg-linear-to-br from-primary to-[#70ffb2]/10 flex items-center justify-center rounded-xl"}>
+                    <div className={"border border-white/10 bg-linear-to-br from-primary to-pink/5 flex items-center justify-center rounded-xl"}>
                         <Image src={"/code0_logo_color.png"} width={"112"} height={"112"} alt={"Code0 Logo"} className={"z-20"}/>
                     </div>
                 </div>

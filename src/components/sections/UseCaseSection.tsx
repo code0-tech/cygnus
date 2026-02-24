@@ -22,7 +22,7 @@ export const UseCaseSection: React.FC<UseCaseSectionProps> = ({ content }) => {
     if (!content?.useCases?.length) return null
 
     return (
-        <Section sectionType="UseCaseSection">
+        <Section sectionType="UseCaseSection" showBlur={false}>
             <div className="relative w-full flex flex-col items-stretch gap-32">
                 {content.useCases.map((item, index) => (
                     <div

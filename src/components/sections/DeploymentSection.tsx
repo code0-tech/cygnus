@@ -29,6 +29,8 @@ export const DeploymentSection: React.FC<DeploymentSectionProps> = ({ content })
 
     return (
         <Section sectionType="DeploymentSection" funnelType="left" fullHeight>
+            <div className="pointer-events-none absolute -inset-y-32 inset-x-0 opacity-20 blur-xl will-change-filter [background:radial-gradient(circle,rgba(114,201,248,0.5),transparent_70%)]" />
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <article>
                     <div className="rounded-2xl overflow-hidden border border-white/10 shadow-md">

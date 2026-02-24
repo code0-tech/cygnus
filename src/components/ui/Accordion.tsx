@@ -1,6 +1,7 @@
 import {IconChevronDown} from "@tabler/icons-react"
 import React from "react"
 import {motion} from "motion/react"
+import { cn } from "@/utils/cn"
 
 interface FAQItemProps {
     question: string
@@ -16,7 +17,12 @@ export const AccordionItem = ({ question, answer, isOpen, onToggle }: FAQItemPro
     }
     return (
         <div
-            className={`w-full bg-primary ring ring-white/5 shadow-md overflow-hidden rounded-xl transition-colors duration-200 ease-linear cursor-pointer hover:bg-[#0f0c1f]`}
+            className={cn(
+                "z-10 w-full bg-white/5 ring ring-white/10 shadow-md overflow-hidden",
+                "rounded-xl transition-colors duration-200 ease-linear cursor-pointer",
+                "hover:bg-white/10 hover:ring-white/15",
+                isOpen && "bg-white/10 ring-white/15"
+            )}
             onClick={handleClick}
         >
             <div className="w-full px-5 py-4.5 pr-4 flex justify-between items-center gap-5 text-left">
