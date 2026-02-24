@@ -42,6 +42,10 @@ export const UseCaseSection: React.FC<UseCaseSectionProps> = ({ content }) => {
                                 {/* Flows darstellen */}
                             </div>
                         </div>
+                        <div className="w-2/3 md:hidden px-2 pb-2 text-center">
+                            <p className="text-xl font-semibold text-white">{item.title}</p>
+                            <p className="mt-2 text-sm text-white/75">{item.description}</p>
+                        </div>
                     </div>
                 ))}
             </div>
