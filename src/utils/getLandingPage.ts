@@ -143,6 +143,10 @@ interface LandingPageDoc {
     id: number
     title: string
     slug: string
+    meta?: {
+        title?: string | null
+        description?: string | null
+    } | null
     layout?: (HeroLayoutBlock | BrandLayoutBlock | UseCaseLayoutBlock | DeploymentLayoutBlock | FaqLayoutBlock | CtaLayoutBlock | JobsLayoutBlock | MarkdownLayoutBlock | ContactLayoutBlock | ({ blockType?: string } & Record<string, unknown>))[] | null
     updatedAt: string
     createdAt: string

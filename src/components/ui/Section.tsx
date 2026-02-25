@@ -69,7 +69,7 @@ export function Section({ sectionType, children, funnelType = "center", showBlur
                     </div>
                 ) : (
                     <div className={"flex flex-col gap-4 text-left"}>
-                        <h1 className={"text-4xl text-white font-semibold"}>
+                        <h1 className={"text-4xl text-pink font-semibold"}>
                             {sectionData?.heading}
                         </h1>
                         <p className="relative z-10 max-w-[90vw] lg:w-1/2 font-medium text-white/75 text-xl">

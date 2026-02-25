@@ -70,7 +70,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ content }) => {
                 <div className={"z-10 h-full flex flex-col md:flex-row items-center justify-between gap-12 px-8 md:px-16 py-12 md:py-24"}>
 
                     <div className="w-full md:w-2/5 flex flex-col gap-4 text-start">
-                        <div className="relative z-10 group bg-brand/5 cursor-pointer border border-brand/5 text-brand w-fit px-4 py-0.5 rounded-full flex items-center justify-between gap-1 hover:gap-2 hover:pr-3 transition-all text-sm font-medium">
+                        <div className="relative z-10 group bg-brand/10 cursor-pointer border border-brand/20 text-brand w-fit px-4 py-0.5 rounded-full flex items-center justify-between gap-1 hover:gap-2 hover:pr-3 transition-all text-sm font-medium">
                             {content.badge}
                             <IconArrowRight size={14}/>
                         </div>

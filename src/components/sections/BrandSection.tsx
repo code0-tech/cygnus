@@ -32,17 +32,33 @@ export const BrandSection: React.FC<BrandSectionProps> = ({ content }) => {
                 </p>
                 <div className={"w-full grid grid-cols-2 md:grid-cols-4 gap-16 text-white/75 text-center"}>
                     {logos.length > 0 ? (
-                        logos.map((logo, index) => (
-                            <div className="relative w-full h-14" key={`${logo.id ?? logo.url ?? index}`}>
-                                <Image
-                                    src={logo.url ?? ""}
-                                    alt={logo.alt}
-                                    fill
-                                    className="object-contain"
-                                    sizes="(min-width: 768px) 20vw, 40vw"
-                                />
-                            </div>
-                        ))
+                        logos.map((logo, index) => {
+                            const href = (logo as Media & { href?: string | null }).href
+
+                            return (
+                                <div className="relative w-full h-14" key={`${logo.id ?? logo.url ?? index}`}>
+                                    {href ? (
+                                        <a href={href} className="relative block h-full w-full">
+                                            <Image
+                                                src={logo.url ?? ""}
+                                                alt={logo.alt}
+                                                fill
+                                                className="object-contain brightness-0 invert opacity-75"
+                                                sizes="(min-width: 768px) 20vw, 40vw"
+                                            />
+                                        </a>
+                                    ) : (
+                                        <Image
+                                            src={logo.url ?? ""}
+                                            alt={logo.alt}
+                                            fill
+                                            className="object-contain brightness-0 invert opacity-75"
+                                            sizes="(min-width: 768px) 20vw, 40vw"
+                                        />
+                                    )}
+                                </div>
+                            )
+                        })
                     ) : (
                         <>
                             <p className={"text-4xl font-bold"}>Logo1</p>

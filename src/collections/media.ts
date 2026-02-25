@@ -11,6 +11,11 @@ export const Media: CollectionConfig = {
       type: 'text',
       required: true,
     },
+    {
+      name: 'href',
+      type: 'text',
+      required: false,
+    },
   ],
   upload: true,
 }

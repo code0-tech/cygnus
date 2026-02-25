@@ -20,6 +20,8 @@
     "@react-three/postprocessing": "^3.0.4",
     "@swc/helpers": "^0.5.18",
     "@tabler/icons-react": "^3.34.0",
+    "@takumi-rs/core": "^0.68.17",
+    "@takumi-rs/image-response": "^0.68.17",
     "@types/nodemailer": "^7.0.11",
     "@uidotdev/usehooks": "^2.4.1",
     "class-variance-authority": "^0.7.1",
