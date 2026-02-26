@@ -38,7 +38,7 @@ export const CtaSection: React.FC<CtaSectionProps> = ({ content }) => {
 
                 <div className={"z-20 size-31 border border-white/5 bg-white/5 backdrop-blur-lg flex items-center justify-center rounded-2xl"}>
                     <div className={"border border-white/10 bg-linear-to-br from-primary to-pink/5 flex items-center justify-center rounded-xl"}>
-                        <Image src={"/code0_logo_color.png"} width={"112"} height={"112"} alt={"Code0 Logo"} className={"z-20"}/>
+                        <Image src={"/code0_logo_white.png"} width={"112"} height={"112"} alt={"Code0 Logo"} className={"z-20"}/>
                     </div>
                 </div>
 
@@ -51,7 +51,7 @@ export const CtaSection: React.FC<CtaSectionProps> = ({ content }) => {
 
                 <div className={"z-20 flex items-center gap-4"}>
                     <Link href={content.ctaLink.url}>
-                        <Button variant="filled" className={"h-10 flex items-center gap-2 text-base! bg-white/80! hover:bg-white! text-primary!"}>
+                        <Button variant="normal" className={"h-10 flex items-center gap-2 px-8! text-base! bg-white/80! hover:bg-white! text-primary!"}>
                             {content.ctaLink.label}
                         </Button>
                     </Link>

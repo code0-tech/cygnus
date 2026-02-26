@@ -28,10 +28,45 @@ export const Blog: CollectionConfig = {
       index: true,
     },
     {
+      name: "author",
+      type: "relationship",
+      relationTo: "users",
+      required: true,
+    },
+    {
       name: "content",
       type: "richText",
       required: true,
       localized: true,
+    },
+    {
+      name: "ogImage",
+      type: "upload",
+      relationTo: "media",
+    },
+    {
+      name: "twitterImage",
+      type: "upload",
+      relationTo: "media",
+    },
+    {
+      name: "meta",
+      type: "group",
+      fields: [
+        {
+          name: "description",
+          type: "textarea",
+          localized: true,
+        },
+        {
+          name: "keywords",
+          type: "text",
+          localized: true,
+          admin: {
+            description: "Comma-separated keywords for SEO metadata.",
+          },
+        },
+      ],
     },
   ],
 }

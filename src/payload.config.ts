@@ -1,19 +1,20 @@
 import { postgresAdapter } from '@payloadcms/db-postgres'
+import { importExportPlugin } from '@payloadcms/plugin-import-export'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import path from 'path'
 import { buildConfig } from 'payload'
 import sharp from 'sharp'
 import { fileURLToPath } from 'url'
+import { Blog } from './collections/blog'
+import { Features } from './collections/features'
+import { Footer } from './collections/footer'
+import { Jobs } from './collections/jobs'
 import { Media } from './collections/media'
 import { NavbarItems } from './collections/navbarItems'
-import { Users } from './collections/users'
-import { Sections } from './collections/sections'
-import { Footer } from './collections/footer'
 import { Pages } from './collections/pages'
-import { Features } from './collections/features'
-import { Jobs } from './collections/jobs'
-import { Blog } from './collections/blog'
 import { RoadmapItems } from './collections/roadmapItems'
+import { Sections } from './collections/sections'
+import { Users } from './collections/users'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -41,5 +42,19 @@ export default buildConfig({
         },
     }),
     sharp,
-    plugins: [],
+    plugins: [
+        importExportPlugin({
+            collections: [
+                { slug: 'media', },
+                { slug: 'navbarItems' },
+                { slug: 'sections' },
+                { slug: 'footer' },
+                { slug: 'pages' },
+                { slug: 'features' },
+                { slug: 'jobs' },
+                { slug: 'blog' },
+                { slug: 'roadmapItems' }
+            ]
+        })
+    ],
 })

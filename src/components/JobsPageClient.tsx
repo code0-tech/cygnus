@@ -3,6 +3,8 @@
 import type { JobItem } from "@/utils/getJobs"
 import { useMemo, useState } from "react"
 import {
+    Button,
+    Input,
     Menu,
     MenuContent,
     MenuItem,
@@ -77,7 +79,7 @@ export function JobsPageClient({ jobs, locale, content }: JobsPageClientProps) {
             <h1 className={"text-4xl font-semibold mb-8 text-center"}>{labels.heading}</h1>
 
             <div className="w-full flex flex-col gap-2 mb-2">
-                <input
+                <Input
                     value={search}
                     onChange={(event) => setSearch(event.target.value)}
                     placeholder={labels.searchPlaceholder}
@@ -85,17 +87,14 @@ export function JobsPageClient({ jobs, locale, content }: JobsPageClientProps) {
                 />
 
                 <div className="w-full flex flex-col md:flex-row md:justify-between gap-2">
-                    <Menu>
+                    <Menu modal={false}>
                         <MenuTrigger asChild>
-                            <button
-                                type="button"
-                                className="h-10 min-w-40 w-full px-3 rounded-xl bg-white/10 border border-white/15 text-white/85 inline-flex items-center justify-between gap-2"
-                            >
+                            <Button className="group min-w-40 w-full!">
                                 {selectedLocation}
                                 <IconChevronDown size={16} />
-                            </button>
+                            </Button>
                         </MenuTrigger>
-                        <MenuContent>
+                        <MenuContent className="w-(--radix-dropdown-menu-trigger-width)">
                         {locations.map((location) => (
                             <MenuItem key={location} onClick={() => setSelectedLocation(location)}>
                                 {location}
@@ -104,17 +103,14 @@ export function JobsPageClient({ jobs, locale, content }: JobsPageClientProps) {
                         </MenuContent>
                     </Menu>
 
-                    <Menu>
+                    <Menu modal={false}>
                         <MenuTrigger asChild>
-                            <button
-                                type="button"
-                                className="h-10 min-w-40 w-full px-3 rounded-xl bg-white/10 border border-white/15 text-white/85 inline-flex items-center justify-between gap-2"
-                            >
+                            <Button className="min-w-40 w-full!">
                                 {selectedType}
                                 <IconChevronDown size={16} />
-                            </button>
+                            </Button>
                         </MenuTrigger>
-                        <MenuContent>
+                        <MenuContent className="w-(--radix-dropdown-menu-trigger-width)">
                         {jobTypes.map((type) => (
                             <MenuItem key={type} onClick={() => setSelectedType(type)}>
                                 {type}
@@ -123,17 +119,14 @@ export function JobsPageClient({ jobs, locale, content }: JobsPageClientProps) {
                         </MenuContent>
                     </Menu>
 
-                    <Menu>
+                    <Menu modal={false}>
                         <MenuTrigger asChild>
-                            <button
-                                type="button"
-                                className="h-10 min-w-40 w-full px-3 rounded-xl bg-white/10 border border-white/15 text-white/85 inline-flex items-center justify-between gap-2"
-                            >
+                            <Button className="min-w-40 w-full!">
                                 {selectedCategory}
                                 <IconChevronDown size={16} />
-                            </button>
+                            </Button>
                         </MenuTrigger>
-                        <MenuContent>
+                        <MenuContent className="w-(--radix-dropdown-menu-trigger-width)">
                         {categories.map((category) => (
                             <MenuItem key={category} onClick={() => setSelectedCategory(category)}>
                                 {category}
