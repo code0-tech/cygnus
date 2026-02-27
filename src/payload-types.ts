@@ -303,6 +303,8 @@ export interface Page {
               label: string;
               title: string;
               description: string;
+              bulletPoints: string[];
+              actions: string[];
               id?: string | null;
             }[];
             id?: string | null;
@@ -554,16 +556,7 @@ export interface Export {
  */
 export interface Import {
   id: number;
-  collectionSlug:
-    | 'media'
-    | 'navbarItems'
-    | 'sections'
-    | 'footer'
-    | 'pages'
-    | 'features'
-    | 'jobs'
-    | 'blog'
-    | 'roadmapItems';
+  collectionSlug: string;
   importMode?: ('create' | 'update' | 'upsert') | null;
   matchField?: string | null;
   status?: ('pending' | 'completed' | 'partial' | 'failed') | null;
@@ -948,6 +941,8 @@ export interface PagesSelect<T extends boolean = true> {
                     label?: T;
                     title?: T;
                     description?: T;
+                    bulletPoints?: T;
+                    actions?: T;
                     id?: T;
                   };
               id?: T;
@@ -1267,6 +1262,8 @@ export interface TaskCreateCollectionExport {
       | number
       | boolean
       | null;
+    id?: string | null;
+    batchSize?: number | null;
     userID?: string | null;
     userCollection?: string | null;
     exportCollection?: string | null;

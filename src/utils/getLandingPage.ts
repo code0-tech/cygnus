@@ -75,6 +75,8 @@ export interface UseCaseLayoutBlock {
         label: string
         title: string
         description: string
+        bulletPoints: string[]
+        actions: string[]
         id?: string | null
     }[]
     | null

@@ -12,6 +12,8 @@
   },
   "dependencies": {
     "@code0-tech/pictor": "^0.0.0-mvp.45",
+    "@hugeicons/core-free-icons": "^3.3.0",
+    "@hugeicons/react": "^1.1.5",
     "@payloadcms/db-postgres": "^3.77.0",
     "@payloadcms/next": "^3.77.0",
     "@payloadcms/plugin-import-export": "3.77.0",

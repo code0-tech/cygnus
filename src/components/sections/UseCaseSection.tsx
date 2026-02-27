@@ -7,6 +7,8 @@ interface UseCaseItem {
     label: string
     title: string
     description: string
+    bulletPoints: string[]
+    actions: string[]
     id?: string | null
 }
 
@@ -32,6 +34,25 @@ export const UseCaseSection: React.FC<UseCaseSectionProps> = ({ content }) => {
                         <div className="w-1/2 hidden md:block mt-4 px-2 pb-2 text-center md:text-left">
                             <p className="text-xl md:text-2xl font-semibold text-white">{item.title}</p>
                             <p className="mt-2 text-sm md:text-base text-white/75">{item.description}</p>
+                            {item.bulletPoints?.length ? (
+                                <ul className="mt-4 space-y-2 text-sm md:text-base text-white/80 list-disc list-inside">
+                                    {item.bulletPoints.map((point, pointIndex) => (
+                                        <li key={`${item.id ?? item.label}-point-${pointIndex}`}>{point}</li>
+                                    ))}
+                                </ul>
+                            ) : null}
+                            {item.actions?.length ? (
+                                <div className="mt-5 flex flex-wrap gap-2">
+                                    {item.actions.map((action, actionIndex) => (
+                                        <span
+                                            key={`${item.id ?? item.label}-action-${actionIndex}`}
+                                            className="inline-flex items-center rounded-full border border-white/15 px-3 py-1 text-xs text-white/85"
+                                        >
+                                            {action}
+                                        </span>
+                                    ))}
+                                </div>
+                            ) : null}
                         </div>
                         <div className="relative w-2/3">
                             <div
@@ -45,6 +66,25 @@ export const UseCaseSection: React.FC<UseCaseSectionProps> = ({ content }) => {
                         <div className="w-2/3 md:hidden px-2 pb-2 text-center">
                             <p className="text-xl font-semibold text-white">{item.title}</p>
                             <p className="mt-2 text-sm text-white/75">{item.description}</p>
+                            {item.bulletPoints?.length ? (
+                                <ul className="mt-4 space-y-2 text-sm text-white/80 list-disc list-inside text-left">
+                                    {item.bulletPoints.map((point, pointIndex) => (
+                                        <li key={`${item.id ?? item.label}-mobile-point-${pointIndex}`}>{point}</li>
+                                    ))}
+                                </ul>
+                            ) : null}
+                            {item.actions?.length ? (
+                                <div className="mt-5 flex flex-wrap gap-2 justify-center">
+                                    {item.actions.map((action, actionIndex) => (
+                                        <span
+                                            key={`${item.id ?? item.label}-mobile-action-${actionIndex}`}
+                                            className="inline-flex items-center rounded-full border border-white/15 px-3 py-1 text-xs text-white/85"
+                                        >
+                                            {action}
+                                        </span>
+                                    ))}
+                                </div>
+                            ) : null}
                         </div>
                     </div>
                 ))}

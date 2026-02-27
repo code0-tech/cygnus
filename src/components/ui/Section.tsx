@@ -1,12 +1,50 @@
 "use client"
 
+import { LinkButton } from "@/components/ui/LinkButton"
 import { Section as SectionDocument } from "@/payload-types"
+import { cn } from "@/utils/cn"
 import { getSectionByType } from "@/utils/getSectionByType"
 import { getLocaleFromPath, localizeHref } from "@/utils/i18n"
-import { ReactNode, useEffect, useState } from "react"
-import { LinkButton } from "@/components/ui/LinkButton"
+import { motion } from "motion/react"
 import { usePathname } from "next/navigation"
-import { cn } from "@/utils/cn"
+import { ReactNode, useEffect, useState } from "react"
+
+type SectionAnimationPreset = "none" | "fade-up" | "fade-in" | "slide-left" | "slide-right" | "zoom-in"
+
+const SECTION_ANIMATION_PRESETS: Record<
+    Exclude<SectionAnimationPreset, "none">,
+    {
+        initial: Record<string, number>
+        whileInView: Record<string, number>
+        transition: { duration: number; ease: "easeOut" | "easeInOut" | "easeIn" }
+    }
+> = {
+    "fade-up": {
+        initial: { opacity: 0, y: 32 },
+        whileInView: { opacity: 1, y: 0 },
+        transition: { duration: 0.65, ease: "easeOut" },
+    },
+    "fade-in": {
+        initial: { opacity: 0 },
+        whileInView: { opacity: 1 },
+        transition: { duration: 0.6, ease: "easeOut" },
+    },
+    "slide-left": {
+        initial: { opacity: 0, x: 36 },
+        whileInView: { opacity: 1, x: 0 },
+        transition: { duration: 0.7, ease: "easeOut" },
+    },
+    "slide-right": {
+        initial: { opacity: 0, x: -36 },
+        whileInView: { opacity: 1, x: 0 },
+        transition: { duration: 0.7, ease: "easeOut" },
+    },
+    "zoom-in": {
+        initial: { opacity: 0, scale: 0.96 },
+        whileInView: { opacity: 1, scale: 1 },
+        transition: { duration: 0.6, ease: "easeOut" },
+    },
+}
 
 interface SectionProps {
     children: ReactNode
@@ -16,14 +54,31 @@ interface SectionProps {
     showFunnel?: boolean
     showLinkButton?: boolean
     fullHeight?: boolean
+    animationPreset?: SectionAnimationPreset
+    animationDelay?: number
+    animationDuration?: number
+    animationOnce?: boolean
 }
 
-export function Section({ sectionType, children, funnelType = "center", showBlur = true, showFunnel = true, showLinkButton = true, fullHeight = false }: SectionProps) {
+export function Section({
+    sectionType,
+    children,
+    funnelType = "center",
+    showBlur = true,
+    showFunnel = true,
+    showLinkButton = true,
+    fullHeight = false,
+    animationPreset = "fade-up",
+    animationDelay = 0,
+    animationDuration,
+    animationOnce = true,
+}: SectionProps) {
     const [sectionData, setSectionData] = useState<SectionDocument | null>(null)
     const pathname = usePathname()
     const locale = getLocaleFromPath(pathname)
     const rawLinkUrl = sectionData?.link_button?.url?.trim()
     const linkUrl = rawLinkUrl ? localizeHref(rawLinkUrl, locale) : undefined
+    const animationConfig = animationPreset === "none" ? null : SECTION_ANIMATION_PRESETS[animationPreset]
 
     useEffect(() => {
         if (!sectionType) {
@@ -46,11 +101,23 @@ export function Section({ sectionType, children, funnelType = "center", showBlur
     }, [locale, sectionType])
 
     return (
-        <section className={cn("relative overflow-visible flex flex-col gap-8 pt-16", fullHeight && "h-[200dvh] md:h-dvh")}>
+        <motion.section
+            className={cn("relative overflow-visible flex flex-col gap-8 pt-16", fullHeight && "h-[200dvh] md:h-dvh")}
+            initial={animationConfig?.initial}
+            whileInView={animationConfig?.whileInView}
+            viewport={animationConfig ? { once: animationOnce, amount: 0.2 } : undefined}
+            transition={animationConfig
+                ? {
+                    ...animationConfig.transition,
+                    delay: animationDelay,
+                    duration: animationDuration ?? animationConfig.transition.duration,
+                }
+                : undefined}
+        >
             {showBlur && (funnelType === "center" ? (
                 <div className="pointer-events-none absolute inset-0 opacity-30 blur-md will-change-filter [background:radial-gradient(circle,rgba(255,255,255,0.45),transparent_60%)]" />
             ) : (
-                    <div/>
+                <div />
             ))}
             {showFunnel && (
                 funnelType === "center" ? (
@@ -84,6 +151,7 @@ export function Section({ sectionType, children, funnelType = "center", showBlur
                 )
             )}
             {children}
-        </section>
+        </motion.section>
     )
 }
+
