@@ -9,7 +9,7 @@ export interface BlogPostItem {
     id: number
     title: string
     slug: string
-    author: number | { email: string }
+    author: number | { email: string, name: string }
     content: SerializedEditorState
     createdAt: string
 }

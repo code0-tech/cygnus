@@ -70,7 +70,7 @@ export async function BlogPost({ slug, locale }: BlogPostProps) {
     const post = await getBlogPostBySlug(slug, locale)
     if (!post) notFound()
 
-    const author = typeof post.author === "object" && post.author !== null ? post.author.email : "Unknown author"
+    const author = typeof post.author === "object" && post.author !== null ? post.author.name : "Unknown author"
     const publishedDate = new Intl.DateTimeFormat(locale === "de" ? "de-DE" : "en-US", {
         dateStyle: "long",
     }).format(new Date(post.createdAt))
