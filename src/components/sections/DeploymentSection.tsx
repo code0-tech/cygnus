@@ -28,7 +28,7 @@ export const DeploymentSection: React.FC<DeploymentSectionProps> = ({ content })
     if (!content) return null
 
     return (
-        <Section sectionType="DeploymentSection" funnelType="left" fullHeight>
+        <Section sectionType="DeploymentSection" funnelType="left" animationPreset="zoom-in" fullHeight>
             <div className="pointer-events-none absolute -inset-y-32 inset-x-0 opacity-20 blur-xl will-change-filter [background:radial-gradient(circle,rgba(114,201,248,0.5),transparent_70%)]" />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-16 md:8">

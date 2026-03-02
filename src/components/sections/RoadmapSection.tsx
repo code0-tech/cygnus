@@ -12,7 +12,7 @@ export const RoadmapSection: React.FC<RoadmapSectionProps> = async ({ locale }) 
     if (!items?.length) return null
 
     return (
-        <Section sectionType="RoadmapSection" funnelType="left" >
+        <Section sectionType="RoadmapSection" funnelType="left" animationPreset="zoom-in">
             <div className="relative w-full py-8 md:py-16">
                 <div className="pointer-events-none absolute left-3 top-0 h-full w-0.5 rounded-full bg-white/15 md:left-1/2 md:-translate-x-1/2" />
 

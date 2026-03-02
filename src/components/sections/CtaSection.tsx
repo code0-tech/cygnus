@@ -25,7 +25,7 @@ export const CtaSection: React.FC<CtaSectionProps> = ({ content }) => {
     if (!content) return
 
     return (
-        <Section showBlur={false} showFunnel={false}>
+        <Section showBlur={false} showFunnel={false} animationPreset="fade-in">
             <div className={"relative overflow-hidden w-full flex flex-col items-center justify-center gap-8 py-12 rounded-xl border border-white/5 shadow-md"}>
 
                 <InteractiveGridPattern

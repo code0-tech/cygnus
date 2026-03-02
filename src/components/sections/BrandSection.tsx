@@ -25,7 +25,7 @@ export const BrandSection: React.FC<BrandSectionProps> = ({ content }) => {
         .filter((logo): logo is Media => typeof logo !== "string" && Boolean(logo?.url))
 
     return (
-        <Section showBlur={false} showFunnel={false}>
+        <Section showBlur={false} showFunnel={false} animationPreset="slide-right">
             <div className="w-full flex gap-8 px-8 md:px-16 pb-16 items-center justify-center">
                 <p className={"hidden lg:flex text-md text-white/75"}>
                     {content.description}
