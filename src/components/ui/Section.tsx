@@ -1,14 +1,13 @@
 "use client"
 
+import { usePreloadedSection } from "@/components/providers/SectionsProvider"
 import { LinkButton } from "@/components/ui/LinkButton"
+import { getLocaleFromPath, localizeHref } from "@/lib/i18n"
+import { ANIMATION_PRESETS, cn, type AnimationPreset } from "@/lib/utils"
 import { Section as SectionDocument } from "@/payload-types"
-import { cn } from "@/utils/cn"
-import { getSectionByType } from "@/utils/getSectionByType"
-import { getLocaleFromPath, localizeHref } from "@/utils/i18n"
-import { ANIMATION_PRESETS, type AnimationPreset } from "@/utils/sectionAnimationPresets"
 import { motion } from "motion/react"
 import { usePathname } from "next/navigation"
-import { ReactNode, useEffect, useState } from "react"
+import { ReactNode } from "react"
 
 interface SectionProps {
     children: ReactNode
@@ -37,32 +36,12 @@ export function Section({
     animationDuration,
     animationOnce = true,
 }: SectionProps) {
-    const [sectionData, setSectionData] = useState<SectionDocument | null>(null)
+    const sectionData = usePreloadedSection(sectionType) as SectionDocument | null
     const pathname = usePathname()
     const locale = getLocaleFromPath(pathname)
     const rawLinkUrl = sectionData?.link_button?.url?.trim()
     const linkUrl = rawLinkUrl ? localizeHref(rawLinkUrl, locale) : undefined
     const animationConfig = animationPreset === "none" ? null : ANIMATION_PRESETS[animationPreset]
-
-    useEffect(() => {
-        if (!sectionType) {
-            setSectionData(null)
-            return
-        }
-
-        let active = true
-
-        const loadSectionData = async () => {
-            const data = await getSectionByType(sectionType, locale)
-            if (active) setSectionData(data)
-        }
-
-        void loadSectionData()
-
-        return () => {
-            active = false
-        }
-    }, [locale, sectionType])
 
     return (
         <motion.section

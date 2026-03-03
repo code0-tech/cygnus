@@ -1,14 +1,14 @@
 import config from "@/payload.config"
 import { getPayload } from "payload"
 import { NextResponse } from "next/server"
-import { createSmtpTransporter } from "@/utils/smtp"
+import { createSmtpTransporter } from "@/lib/smtp"
 import {
     EMAIL_REGEX,
     createRateLimitChecker,
     escapeHtml,
     getClientIdentifier,
     getRateLimitConfig,
-} from "@/utils/apiRouteUtils"
+} from "@/lib/smtp"
 
 export const runtime = "nodejs"
 

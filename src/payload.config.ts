@@ -45,6 +45,7 @@ export default buildConfig({
     plugins: [
         importExportPlugin({
             collections: [
+                { slug: 'users', },
                 { slug: 'media', },
                 { slug: 'navbarItems' },
                 { slug: 'sections' },

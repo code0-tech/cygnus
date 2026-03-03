@@ -1,13 +1,14 @@
-import { HeroBlock } from "@/blocks/HeroBlock"
-import { BrandBlock } from "@/blocks/BrandBlock"
-import { CtaBlock } from "@/blocks/CtaBlock"
-import { FaqBlock } from "@/blocks/FaqBlock"
-import { UseCaseBlock } from "@/blocks/UseCaseBlock"
-import { JobsBlock } from "@/blocks/JobsBlock"
-import { MarkdownBlock } from "@/blocks/MarkdownBlock"
-import { ContactBlock } from "@/blocks/ContactBlock"
+import { AboutBlock } from "../blocks/AboutBlock"
+import { BrandBlock } from "../blocks/BrandBlock"
+import { ContactBlock } from "../blocks/ContactBlock"
+import { CtaBlock } from "../blocks/CtaBlock"
+import { DeploymentBlock } from "../blocks/DeploymentBlock"
+import { FaqBlock } from "../blocks/FaqBlock"
+import { HeroBlock } from "../blocks/HeroBlock"
+import { JobsBlock } from "../blocks/JobsBlock"
+import { MarkdownBlock } from "../blocks/MarkdownBlock"
+import { UseCaseBlock } from "../blocks/UseCaseBlock"
 import type { CollectionConfig } from "payload"
-import { DeploymentBlock } from "@/blocks/DeploymentBlock"
 
 export const Pages: CollectionConfig = {
   slug: "pages",
@@ -49,7 +50,7 @@ export const Pages: CollectionConfig = {
       name: "layout",
       label: "Layout",
       type: "blocks",
-      blocks: [HeroBlock, BrandBlock, UseCaseBlock, FaqBlock, CtaBlock, JobsBlock, MarkdownBlock, ContactBlock, DeploymentBlock],
+      blocks: [HeroBlock, BrandBlock, UseCaseBlock, FaqBlock, CtaBlock, JobsBlock, MarkdownBlock, ContactBlock, DeploymentBlock, AboutBlock],
       required: false,
       localized: true,
     },

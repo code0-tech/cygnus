@@ -1,6 +1,6 @@
 "use client"
 
-import { cn } from "@/utils/cn"
+import { cn } from "@/lib/utils"
 import { motion } from "motion/react"
 import React from "react"
 import { SubNavItem } from "./types"

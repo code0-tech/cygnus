@@ -1,5 +1,5 @@
-import { getFeatureBySlug } from "@/utils/getFeatures"
-import { type AppLocale } from "@/utils/i18n"
+import { getFeatureBySlug } from "@/lib/cms"
+import { type AppLocale } from "@/lib/i18n"
 import { FeatureCardText } from "../FeatureCardText"
 import { FeatureCard } from "./FeatureCard"
 

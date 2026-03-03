@@ -1,7 +1,7 @@
 "use client"
 
 import { Section } from "@/components/ui/Section"
-import { ANIMATION_PRESETS, type AnimationPreset } from "@/utils/sectionAnimationPresets"
+import { ANIMATION_PRESETS, type AnimationPreset } from "@/lib/utils"
 import { motion } from "motion/react"
 import React from "react"
 

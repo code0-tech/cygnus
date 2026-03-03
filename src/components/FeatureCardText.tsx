@@ -1,7 +1,7 @@
 import { LinkButton } from "@/components/ui/LinkButton"
-import { cn } from "@/utils/cn"
+import { cn } from "@/lib/utils"
 
-export interface FeatureCardContent {
+interface FeatureCardContent {
     title: string
     description: string
     link: {

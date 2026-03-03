@@ -4,8 +4,8 @@ import {
     escapeHtml,
     getClientIdentifier,
     getRateLimitConfig
-} from "@/utils/apiRouteUtils"
-import { createSmtpTransporter } from "@/utils/smtp"
+} from "@/lib/smtp"
+import { createSmtpTransporter } from "@/lib/smtp"
 import { NextResponse } from "next/server"
 
 export const runtime = "nodejs"

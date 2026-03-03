@@ -1,27 +1,23 @@
-import { MarkdownContent } from "@/components/MarkdownContent"
+import { AboutUsPageClient } from "@/components/pages/AboutUsPageClient"
 import { Aurora } from "@/components/ui/Aurora"
 import { LandingContainer } from "@/components/ui/LandingContainer"
-import { getLandingPage, type MarkdownLayoutBlock } from "@/utils/getLandingPage"
-import { isSupportedLocale } from "@/utils/i18n"
-import { convertLexicalToHTML } from "@payloadcms/richtext-lexical/html"
+import { AboutUsLayoutBlock, getLandingPage } from "@/lib/cms"
+import { isSupportedLocale } from "@/lib/i18n"
 import { notFound } from "next/navigation"
 
 export default async function AboutPage({ params }: { params: Promise<{ locale: string }> }) {
     const { locale } = await params
     if (!isSupportedLocale(locale)) notFound()
-    const page = await getLandingPage("about-us", locale)
-    if (!page) notFound()
-    const markdownBlock = page.layout?.find((block): block is MarkdownLayoutBlock => block.blockType === "markdown") ?? null
-    const contentHtml = markdownBlock
-        ? convertLexicalToHTML({ data: markdownBlock.content, disableContainer: true })
-        : ""
+
+    const aboutUsPage = await getLandingPage("about-us", locale)
+    const aboutUsBlock = aboutUsPage?.layout?.find((block): block is AboutUsLayoutBlock => block.blockType === "about") ?? null
 
     return (
         <>
             <Aurora />
             <LandingContainer>
                 <div className="md:w-[50vw] mx-auto py-[20vh]">
-                    <MarkdownContent content={contentHtml} />
+                    <AboutUsPageClient content={aboutUsBlock} locale={locale}/>
                 </div>
             </LandingContainer>
         </>

@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@/utils/cn";
+import { cn } from "@/lib/utils";
 import { ReactNode, useEffect, useRef, useState } from "react";
 
 export function FeatureCard({children, className, contentClassName}: {children: ReactNode, className?: string, contentClassName?: string}) {

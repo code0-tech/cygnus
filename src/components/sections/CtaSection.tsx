@@ -2,7 +2,7 @@
 
 import { InteractiveGridPattern } from "@/components/InteractiveGridPattern"
 import { Section } from "@/components/ui/Section"
-import { cn } from "@/utils/cn"
+import { cn } from "@/lib/utils"
 import Image from "next/image"
 import React from "react"
 import Link from "next/link"

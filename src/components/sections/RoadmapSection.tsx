@@ -1,6 +1,6 @@
 import { Section } from "@/components/ui/Section"
-import { getRoadmapItems } from "@/utils/getRoadmapItems"
-import { AppLocale } from "@/utils/i18n"
+import { getRoadmapItems } from "@/lib/cms"
+import { AppLocale } from "@/lib/i18n"
 import React from "react"
 
 interface RoadmapSectionProps {

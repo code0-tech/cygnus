@@ -1,7 +1,7 @@
 import {IconChevronDown} from "@tabler/icons-react"
 import React from "react"
 import {motion} from "motion/react"
-import { cn } from "@/utils/cn"
+import { cn } from "@/lib/utils"
 
 interface FAQItemProps {
     question: string

@@ -1,5 +1,5 @@
-import { getFeatureBySlug } from "@/utils/getFeatures"
-import { type AppLocale } from "@/utils/i18n"
+import { getFeatureBySlug } from "@/lib/cms"
+import { type AppLocale } from "@/lib/i18n"
 import { FeatureCardText } from "../FeatureCardText"
 import { FeatureCard } from "./FeatureCard"
 
@@ -13,7 +13,7 @@ export async function SuggestionMenuCard({ locale }: SuggestionMenuCardProps) {
     return (
         <FeatureCard className="col-span-1 row-span-7">
             <FeatureCardText content={content} />
-            
+
             <div className="pointer-events-none absolute inset-x-0 bottom-0 h-72 bg-linear-to-t from-primary via-primary/70 to-transparent" />
         </FeatureCard>
     )

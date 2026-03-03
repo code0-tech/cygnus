@@ -6,17 +6,17 @@ import Image from "next/image"
 import React from "react"
 
 interface DeploymentSectionContent {
-    cloudTitle: string
-    cloudDescription: string
-    cloudLink: {
-        label: string
-        url: string
+    cloudTitle?: string | null
+    cloudDescription?: string | null
+    cloudLink?: {
+        label?: string | null
+        url?: string | null
     }
-    selfhostTitle: string
-    selfhostDescription: string
-    selfhostLink: {
-        label: string
-        url: string
+    selfhostTitle?: string | null
+    selfhostDescription?: string | null
+    selfhostLink?: {
+        label?: string | null
+        url?: string | null
     }
 }
 

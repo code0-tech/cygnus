@@ -1,9 +1,11 @@
 import { BlogPost } from "@/components/blog/BlogPost"
+import { BlogSkeleton } from "@/components/blog/BlogSkeleton"
 import { Aurora } from "@/components/ui/Aurora"
 import { LandingContainer } from "@/components/ui/LandingContainer"
-import { SUPPORTED_LOCALES, isSupportedLocale } from "@/utils/i18n"
-import { getBlogSlugs } from "@/utils/getBlogPostBySlug"
+import { SUPPORTED_LOCALES, isSupportedLocale } from "@/lib/i18n"
+import { getBlogSlugs } from "@/lib/cms"
 import { notFound } from "next/navigation"
+import { Suspense } from "react"
 
 export default async function Page({ params }: { params: Promise<{ locale: string, slug: string[] }> }) {
     const { locale, slug } = await params
@@ -16,7 +18,9 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
             <Aurora />
             <LandingContainer className="py-[20vh]">
                 <div className={"w-full max-w-4xl mx-auto"}>
-                    <BlogPost slug={normalizedSlug} locale={locale} />
+                    <Suspense fallback={<BlogSkeleton />}>
+                        <BlogPost slug={normalizedSlug} locale={locale} />
+                    </Suspense>
                 </div>
             </LandingContainer>
         </>

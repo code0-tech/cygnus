@@ -1,6 +1,25 @@
+import nodemailer from "nodemailer"
+import type SMTPTransport from "nodemailer/lib/smtp-transport"
+
+export const createSmtpTransporter = () => {
+    const port = Number(process.env.SMTP_PORT ?? 587)
+
+    const transportConfig: SMTPTransport.Options = {
+        host: process.env.SMTP_HOST,
+        port,
+        secure: port === 465,
+        auth: {
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASS,
+        },
+    }
+
+    return nodemailer.createTransport(transportConfig)
+}
+
 export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-export const DEFAULT_RATE_LIMIT_MAX = 5
-export const DEFAULT_RATE_LIMIT_WINDOW_SECONDS = 60 * 10
+const DEFAULT_RATE_LIMIT_MAX = 5
+const DEFAULT_RATE_LIMIT_WINDOW_SECONDS = 60 * 10
 
 type RateLimitRecord = {
     count: number
@@ -11,14 +30,6 @@ export function getClientIdentifier(request: Request) {
     const forwardedFor = request.headers.get("x-forwarded-for")
     const ip = forwardedFor?.split(",")[0]?.trim()
     return ip || request.headers.get("x-real-ip") || "unknown"
-}
-
-export const getRequiredEnv = (key: string): string => {
-    const value = process.env[key]?.trim()
-    if (!value) {
-        throw new Error(`Fehlende Umgebungsvariable: ${key}`)
-    }
-    return value
 }
 
 export const escapeHtml = (value: string): string =>

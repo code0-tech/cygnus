@@ -1,7 +1,7 @@
 "use client"
 
 import { Section } from "@/components/ui/Section"
-import { cn } from "@/utils/cn"
+import { cn } from "@/lib/utils"
 import { Button } from "@code0-tech/pictor"
 import { IconArrowRight } from "@tabler/icons-react"
 import Image from "next/image"

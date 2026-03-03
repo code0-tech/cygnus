@@ -4,7 +4,7 @@ import Image from "next/image"
 import type { Media } from "@/payload-types"
 
 interface BrandSectionLogo {
-    logo: string | Media
+    logo: number | Media
     id?: string | null
 }
 
@@ -22,7 +22,7 @@ export const BrandSection: React.FC<BrandSectionProps> = ({ content }) => {
 
     const logos = (content.logos ?? [])
         .map((item) => item.logo)
-        .filter((logo): logo is Media => typeof logo !== "string" && Boolean(logo?.url))
+        .filter((logo): logo is Media => typeof logo !== "number" && Boolean(logo?.url))
 
     return (
         <Section showBlur={false} showFunnel={false} animationPreset="slide-right">

@@ -1,4 +1,3 @@
-
 export function BlogSkeleton() {
     return (
         <div className="h-full w-full animate-pulse space-y-6">

@@ -1,9 +1,9 @@
-import { JobsPageClient } from "@/components/JobsPageClient"
+import { JobsPageClient } from "@/components/pages/JobsPageClient"
 import { Aurora } from "@/components/ui/Aurora"
 import { LandingContainer } from "@/components/ui/LandingContainer"
-import { isSupportedLocale } from "@/utils/i18n"
-import { getLandingPage, type JobsLayoutBlock } from "@/utils/getLandingPage"
-import { getJobs } from "@/utils/getJobs"
+import { isSupportedLocale } from "@/lib/i18n"
+import { getLandingPage, type JobsLayoutBlock } from "@/lib/cms"
+import { getJobs } from "@/lib/cms"
 import { notFound } from "next/navigation"
 
 export default async function JobPage({ params }: { params: Promise<{ locale: string }> }) {

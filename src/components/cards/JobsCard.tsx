@@ -1,4 +1,4 @@
-import type { JobItem } from "@/utils/getJobs"
+import type { JobItem } from "@/lib/cms"
 import Link from "next/link"
 
 interface JobsCardProps {

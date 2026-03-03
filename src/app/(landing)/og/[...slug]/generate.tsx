@@ -1,7 +1,7 @@
 import { ImageResponseOptions } from "@takumi-rs/image-response"
 import { ReactNode } from "react";
 
-export interface GenerateProps {
+interface GenerateProps {
     title: ReactNode
     backgroundSrc?: string
 }

@@ -1,6 +1,4 @@
-import { Navigation } from "@/components/navigation/Navigation"
-import { FooterSection } from "@/components/sections/FooterSection"
-import { baseUrl, createMetadata } from "@/utils/siteConfig"
+import { baseUrl, createMetadata } from "@/lib/siteConfig"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import { ReactNode } from "react"
@@ -21,11 +19,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
     return (
         <html lang="en">
             <body className={`${inter.className} tracking-[-0.5px] leading-normal bg-primary`}>
-                <Navigation/>
-                <div className={"bg-primary"}>
-                    {children}
-                </div>
-                <FooterSection/>
+                <div className={"bg-primary"}>{children}</div>
             </body>
         </html>
     )

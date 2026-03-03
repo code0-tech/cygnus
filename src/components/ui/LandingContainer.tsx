@@ -2,7 +2,7 @@
 
 import {Container} from "@code0-tech/pictor"
 import React from "react"
-import {cn} from "@/utils/cn"
+import {cn} from "@/lib/utils"
 
 export function LandingContainer({ children, className }: { children: React.ReactNode, className?: string }) {
     return (

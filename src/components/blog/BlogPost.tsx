@@ -1,7 +1,7 @@
-import { getBlogPostBySlug } from "@/utils/getBlogPostBySlug"
-import type { AppLocale } from "@/utils/i18n"
+import { getBlogPostBySlug } from "@/lib/cms"
+import type { AppLocale } from "@/lib/i18n"
+import type { Blog } from "@/payload-types"
 import { convertLexicalToHTML } from "@payloadcms/richtext-lexical/html"
-import type { SerializedEditorState } from "lexical"
 import { notFound } from "next/navigation"
 import { MarkdownContent } from "../MarkdownContent"
 import { TableOfContents, type TocHeading } from "./TableOfContents"
@@ -33,7 +33,7 @@ const extractText = (node?: LexicalNode): string => {
     return node.children.map((child) => extractText(child)).join("")
 }
 
-const getTocHeadings = (content: SerializedEditorState): TocHeading[] => {
+const getTocHeadings = (content: Blog["content"]): TocHeading[] => {
     const rootChildren = (content as { root?: { children?: LexicalNode[] } })?.root?.children ?? []
     const counts = new Map<string, number>()
 

@@ -1,7 +1,7 @@
-﻿import { Aurora } from "@/components/ui/Aurora"
+import { Aurora } from "@/components/ui/Aurora"
 import { LandingContainer } from "@/components/ui/LandingContainer"
-import { getBlogPosts } from "@/utils/getBlogPostBySlug"
-import { isSupportedLocale } from "@/utils/i18n"
+import { getBlogPosts } from "@/lib/cms"
+import { isSupportedLocale } from "@/lib/i18n"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 
@@ -34,7 +34,7 @@ export default async function BlogPage({ params }: { params: Promise<{ locale: s
                                 href={`/${locale}/blog/${post.slug}`}
                                 className="rounded-xl border border-white/10 bg-white/5 p-4 transition hover:bg-white/10"
                             >
-                                <p className="text-xs text-white/50 mb-1">{author} · {publishedDate}</p>
+                                <p className="text-xs text-white/50 mb-1">{author} - {publishedDate}</p>
                                 <h2 className="text-xl text-white/90">{post.title}</h2>
                             </Link>
                         )
@@ -44,4 +44,3 @@ export default async function BlogPage({ params }: { params: Promise<{ locale: s
         </>
     )
 }
-

@@ -1,5 +1,5 @@
 import { Section } from "@/components/ui/Section"
-import { type AppLocale } from "@/utils/i18n"
+import { type AppLocale } from "@/lib/i18n"
 import React from "react"
 import { ActionListCard } from "../cards/ActionListCard"
 import { NodeTabsCard } from "../cards/NodeTabsCard"

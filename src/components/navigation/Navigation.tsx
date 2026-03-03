@@ -1,22 +1,25 @@
 "use client"
 
+import type { NavbarItem } from "@/payload-types"
 import { useMediaQuery } from "@/hooks/useMediaQuery"
 import { useOutsideClick } from "@/hooks/useOutsideClick"
-import { getLocaleFromPath, localizeHref, type AppLocale } from "@/utils/i18n"
-import { getNavbarItems } from "@/utils/getNavbarItems"
+import { localizeHref, type AppLocale } from "@/lib/i18n"
 import { IconCube, IconGitBranch, IconLock } from "@tabler/icons-react"
-import { usePathname, useRouter } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { useEffect, useMemo, useState } from "react"
 import { NavigationDesktop } from "./NavigationDesktop"
 import { NavigationMobile } from "./NavigationMobile"
 import { NavItem, SubNavItem } from "./types"
-import { NavbarItem } from "@/payload-types"
 
 type SubMenuIcon = "cube" | "gitBranch" | "lock"
 
-function Navigation() {
+interface NavigationProps {
+    locale: AppLocale
+    items: NavbarItem[]
+}
+
+function Navigation({ locale, items }: NavigationProps) {
     const router = useRouter()
-    const pathname = usePathname()
     const isDesktop = useMediaQuery("(min-width: 1024px)")
     const menuRef = useOutsideClick<HTMLElement>(() => setIsOpen(false))
     const subMenuRef = useOutsideClick<HTMLDivElement>(() => setActiveSubMenu(null))
@@ -26,29 +29,7 @@ function Navigation() {
     const [isOpen, setIsOpen] = useState(false)
     const [activeSubMenu, setActiveSubMenu] = useState<SubNavItem[] | null>(null)
     const [mobileOpenKey, setMobileOpenKey] = useState<string | null>(null)
-
-    const [items, setItems] = useState<NavbarItem[]>([])
-    const locale = useMemo(() => getLocaleFromPath(pathname), [pathname])
     const homeHref = `/${locale}`
-    const switchLocale = (nextLocale: AppLocale) => {
-        const segments = pathname.split("/").filter(Boolean)
-        const rest = segments.length > 1 ? `/${segments.slice(1).join("/")}` : ""
-        router.push(`/${nextLocale}${rest}`)
-    }
-
-    useEffect(() => {
-        let active = true
-
-        const load = async () => {
-            const data = await getNavbarItems(locale)
-            if (active) setItems(data)
-        }
-
-        void load()
-        return () => {
-            active = false
-        }
-    }, [locale])
 
     const navbarItems = useMemo(() => {
         const getSubMenuIcon = (icon: string | null | undefined) => {

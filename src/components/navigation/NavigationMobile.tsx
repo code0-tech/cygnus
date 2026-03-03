@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { cn } from "@/utils/cn"
+import { cn } from "@/lib/utils"
 import { IconBrandGithub, IconChevronUp, IconMenu2, IconX } from "@tabler/icons-react"
 import { AnimatePresence, motion } from "motion/react"
 import Image from "next/image"

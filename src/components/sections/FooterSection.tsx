@@ -1,37 +1,18 @@
-"use client"
-
 import { LandingContainer } from "@/components/ui/LandingContainer"
 import type { Footer } from "@/payload-types"
-import { getFooter } from "@/utils/getFooter"
-import { getLocaleFromPath, localizeHref } from "@/utils/i18n"
+import { localizeHref, type AppLocale } from "@/lib/i18n"
 import { IconBrandDiscord, IconBrandGithub, IconBrandInstagram, IconBrandX } from "@tabler/icons-react"
 import Image from "next/image"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
-import React, { useEffect, useState } from "react"
+import React from "react"
 
-export const FooterSection: React.FC = () => {
-    const pathname = usePathname()
-    const locale = getLocaleFromPath(pathname)
+interface FooterSectionProps {
+    locale: AppLocale
+    footer: Footer | null
+}
 
-    const [footer, setFooter] = useState<Footer | null>(null)
-
-    useEffect(() => {
-        let active = true
-
-        const load = async () => {
-            const data = await getFooter(locale)
-            if (active) setFooter(data)
-        }
-
-        void load()
-
-        return () => {
-            active = false
-        }
-    }, [locale])
-
-    if (!footer?.groups) return
+export const FooterSection: React.FC<FooterSectionProps> = ({ locale, footer }) => {
+    if (!footer?.groups) return null
 
     return (
         <LandingContainer className="min-h-full py-48 overflow-visible">

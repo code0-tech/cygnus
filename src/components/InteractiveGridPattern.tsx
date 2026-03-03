@@ -1,6 +1,6 @@
 "use client"
 
-import { cn } from "@/utils/cn"
+import { cn } from "@/lib/utils"
 import React, { useState } from "react"
 
 interface InteractiveGridPatternProps extends React.SVGProps<SVGSVGElement> {

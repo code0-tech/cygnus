@@ -1,6 +1,6 @@
 "use client"
 
-import type { JobItem } from "@/utils/getJobs"
+import type { JobItem } from "@/lib/cms"
 import { useMemo, useState } from "react"
 import {
     Button,

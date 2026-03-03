@@ -1,6 +1,6 @@
 import * as React from "react"
 import { IconArrowUpRight } from "@tabler/icons-react"
-import { cn } from "@/utils/cn"
+import { cn } from "@/lib/utils"
 import Link from "next/link"
 
 interface LinkButtonProps extends  React.ButtonHTMLAttributes<HTMLButtonElement> {

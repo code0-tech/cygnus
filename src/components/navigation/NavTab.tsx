@@ -1,6 +1,6 @@
 "use client"
 
-import { cn } from "@/utils/cn"
+import { cn } from "@/lib/utils"
 import { IconChevronUp } from "@tabler/icons-react"
 import { motion } from "motion/react"
 import React, { useRef } from "react"

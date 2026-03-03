@@ -1,6 +1,11 @@
+import clsx, { type ClassValue } from "clsx"
+import { twMerge } from "tailwind-merge"
+
+export const cn = (...classes: ClassValue[]) => twMerge(clsx(classes))
+
 export type AnimationPreset = "none" | "fade-up" | "fade-in" | "slide-left" | "slide-right" | "zoom-in"
 
-export type AnimationConfig = {
+type AnimationConfig = {
     initial: Record<string, number>
     whileInView: Record<string, number>
     transition: { duration: number; ease: "easeOut" | "easeInOut" | "easeIn" }

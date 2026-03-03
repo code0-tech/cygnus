@@ -1,6 +1,6 @@
 "use client"
 
-import { cn } from "@/utils/cn"
+import { cn } from "@/lib/utils"
 import { IconAlignLeft } from "@tabler/icons-react"
 import { useEffect, useRef, useState } from "react"
 

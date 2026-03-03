@@ -402,6 +402,13 @@ export interface Page {
             blockName?: string | null;
             blockType: 'deployment';
           }
+        | {
+            title: string;
+            description: string;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'about';
+          }
       )[]
     | null;
   updatedAt: string;
@@ -1037,6 +1044,14 @@ export interface PagesSelect<T extends boolean = true> {
                     label?: T;
                     url?: T;
                   };
+              id?: T;
+              blockName?: T;
+            };
+        about?:
+          | T
+          | {
+              title?: T;
+              description?: T;
               id?: T;
               blockName?: T;
             };

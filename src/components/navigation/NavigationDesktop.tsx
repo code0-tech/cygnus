@@ -1,6 +1,6 @@
 "use client"
 
-import { cn } from "@/utils/cn"
+import { cn } from "@/lib/utils"
 import { Button, Container } from "@code0-tech/pictor"
 import { IconBrandGithub } from "@tabler/icons-react"
 import { AnimatePresence, motion } from "motion/react"
