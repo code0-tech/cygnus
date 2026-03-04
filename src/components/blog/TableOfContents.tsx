@@ -1,8 +1,10 @@
 "use client"
 
 import { cn } from "@/lib/utils"
-import { IconAlignLeft } from "@tabler/icons-react"
+import { IconAlignLeft, IconChevronDown } from "@tabler/icons-react"
+import { AnimatePresence, motion } from "motion/react"
 import { useEffect, useRef, useState } from "react"
+import { useWebHaptics } from "web-haptics/react"
 
 export interface TocHeading {
     id: string
@@ -36,18 +38,22 @@ const throttle = (func: () => void, delay: number) => {
 }
 
 export function TableOfContents({ headings }: TableOfContentsProps) {
+    const { trigger } = useWebHaptics()
+
     const [activeIds, setActiveIds] = useState<string[]>([])
     const [isOpen, setIsOpen] = useState(false)
     const [isMobile, setIsMobile] = useState(false)
+    const [showMobileToc, setShowMobileToc] = useState(false)
+    const [barStyle, setBarStyle] = useState({ top: 0, height: 0, opacity: 0 })
+
     const mobileTocRef = useRef<HTMLDivElement>(null)
     const desktopTocRef = useRef<HTMLDivElement>(null)
-    const [barStyle, setBarStyle] = useState({ top: 0, height: 0, opacity: 0 })
 
     useEffect(() => {
         const mediaQuery = window.matchMedia("(max-width: 1023px)")
         const handleMediaChange = (e: MediaQueryListEvent | { matches: boolean }) => {
             setIsMobile(e.matches)
-            setIsOpen(!e.matches)
+            setIsOpen(false)
         }
 
         handleMediaChange(mediaQuery)
@@ -114,21 +120,103 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
     }, [activeIds, isOpen, isMobile])
 
     useEffect(() => {
-        if (isMobile && isOpen) {
-            document.body.style.overflow = "hidden"
-            return () => {
-                document.body.style.overflow = ""
-            }
+        if (!isMobile) {
+            setShowMobileToc(true)
+            return
         }
 
-        document.body.style.overflow = ""
-        return undefined
-    }, [isMobile, isOpen])
+        const handleScrollVisibility = () => {
+            setShowMobileToc(window.scrollY > 32)
+            setIsOpen(false)
+        }
+
+        handleScrollVisibility()
+        window.addEventListener("scroll", handleScrollVisibility, { passive: true })
+        return () => window.removeEventListener("scroll", handleScrollVisibility)
+    }, [isMobile])
 
     if (!headings.length) return null
 
     return (
         <>
+            <AnimatePresence initial={false}>
+                {showMobileToc && (
+                    <motion.div
+                        className="lg:hidden fixed left-0 right-0 top-18 z-60 px-[20%]"
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.2, ease: "easeOut" }}
+                    >
+                        <div className="mx-auto w-[calc(100%-1rem)] max-w-7xl">
+                            <div className="rounded-2xl border border-white/5 bg-primary/20 p-1.5 shadow-sm backdrop-blur-xl">
+                                <button
+                                    type="button"
+                                    className="flex w-full items-center justify-between rounded-xl px-2 py-2 text-white/75 transition-colors hover:bg-white/10 hover:text-white"
+                                    onClick={() => {
+                                        trigger("soft")
+                                        setIsOpen((prev) => !prev)
+                                    }}
+                                    aria-expanded={isOpen}
+                                    aria-controls="mobile-toc-panel"
+                                >
+                                    <span className="flex items-center gap-2 text-sm font-medium">
+                                        <IconAlignLeft size={16} />
+                                        Content
+                                    </span>
+                                    <IconChevronDown
+                                        size={16}
+                                        className={cn("text-white/75 transition-transform", isOpen && "rotate-180")}
+                                    />
+                                </button>
+
+                                <AnimatePresence initial={false}>
+                                    {isOpen && (
+                                        <motion.div
+                                            id="mobile-toc-panel"
+                                            ref={mobileTocRef}
+                                            className="relative overflow-hidden py-2"
+                                            initial={{ height: 0, opacity: 0 }}
+                                            animate={{ height: "auto", opacity: 1 }}
+                                            exit={{ height: 0, opacity: 0 }}
+                                            transition={{ duration: 0.25, ease: "easeOut" }}
+                                        >
+                                            <div
+                                                className="absolute bottom-2 top-2 w-px bg-white/20"
+                                                style={{ left: "11px" }}
+                                            />
+                                            <div
+                                                className="absolute w-px bg-white transition-all duration-300 ease-in-out"
+                                                style={{ left: "11px", ...barStyle }}
+                                            />
+                                            {headings.map((heading) => (
+                                                <div
+                                                    key={heading.id} id={`toc-${heading.id}`}
+                                                    onClick={() => trigger("light")}
+                                                    data-toc-item="true"
+                                                >
+                                                    <a
+                                                        href={`#${heading.id}`}
+                                                        onClick={() => setIsOpen(false)}
+                                                        className={cn(
+                                                            "ml-5 block rounded-xl py-1.5 pl-4 pr-3 text-sm text-white/60 transition-colors hover:bg-white/10 hover:text-white",
+                                                            heading.level >= 3 && "pl-8",
+                                                            activeIds.includes(heading.id) && "text-white",
+                                                        )}
+                                                    >
+                                                        {heading.text}
+                                                    </a>
+                                                </div>
+                                            ))}
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             <div className="hidden lg:block sticky top-24 self-start max-h-[calc(100vh-8rem)] overflow-y-auto ml-1">
                 <div className="flex items-start gap-2">
                     <IconAlignLeft size={20}/>
