@@ -69,19 +69,19 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ content }) => {
                     />
                 </div>
 
-                <div className={"z-10 h-full flex flex-col md:flex-row items-center justify-between gap-12 px-8 md:px-16 py-12 md:py-24"}>
+                <div className={"z-10 h-full flex flex-col lg:flex-row items-center justify-between gap-12 px-8 lg:px-16 py-12 lg:py-24"}>
 
-                    <div className="w-full md:w-2/5 flex flex-col gap-4 text-start">
+                    <div className="w-full lg:w-2/5 flex flex-col gap-4 text-start">
                         <div className="relative z-10 group bg-brand/10 cursor-pointer border border-brand/20 text-brand w-fit px-4 py-0.5 rounded-full flex items-center justify-between gap-1 hover:gap-2 hover:pr-3 transition-all text-sm font-medium">
                             {content.badge}
                             <IconArrowRight size={14}/>
                         </div>
 
-                        <h1 className="relative z-10 font-bold text-3xl md:text-4xl text-white text-balance">
+                        <h1 className="relative z-10 font-bold text-3xl lg:text-4xl text-white text-balance">
                             {content.heading}
                         </h1>
 
-                        <p className="relative z-10 font-medium text-white/75 text-lg md:text-xl text-balance">
+                        <p className="relative z-10 font-medium text-white/75 text-lg lg:text-xl text-balance">
                             {content.texts.length > 0
                                 ? content.texts.map((item, index) => (
                                     <React.Fragment key={`${item.id ?? item.text}-${index}`}>
@@ -106,7 +106,16 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ content }) => {
                             ))}
                         </div>
                     </div>
-                    <Image src={"/code0_software.png"} alt={"Code= Example"} height={620} width={900} className={"w-full h-auto rounded-xl border border-white/10 md:w-4/5 md:border-0 md:border-l md:border-y md:rounded-l-xl md:rounded-r-none md:ring-4 md:ring-white/5 md:-mr-56"}/>
+                    <Image
+                        src={"/code0_software.png"}
+                        alt={"Code= Example"}
+                        height={620}
+                        width={900}
+                        className={
+                            "w-full h-auto rounded-xl border border-white/10 lg:w-4/5 lg:border-0 lg:border-l lg:border-y lg:rounded-l-xl" +
+                            "lg:rounded-r-none lg:ring-4 lg:ring-white/5 lg:-mr-56"
+                        }
+                    />
                 </div>
             </div>
         </Section>
