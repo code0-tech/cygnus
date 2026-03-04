@@ -37,8 +37,8 @@ type RoadmapItem = Pick<PayloadRoadmapItem, "id" | "time" | "title" | "descripti
 type BlogPostItem = Pick<Blog, "id" | "title" | "slug" | "content" | "createdAt"> & {
     author: number | Pick<User, "email" | "name">
 }
-type BlogListItem = Pick<Blog, "id" | "title" | "slug" | "createdAt"> & {
-    author: number | Pick<User, "email">
+export type BlogListItem = Pick<Blog, "id" | "title" | "slug" | "createdAt"> & {
+    author: number | Pick<User, "name">
 }
 
 const getLandingPageCached = unstable_cache(

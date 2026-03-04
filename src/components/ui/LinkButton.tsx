@@ -1,7 +1,10 @@
+"use client"
+
 import * as React from "react"
 import { IconArrowUpRight } from "@tabler/icons-react"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
+import { useWebHaptics } from "web-haptics/react"
 
 interface LinkButtonProps extends  React.ButtonHTMLAttributes<HTMLButtonElement> {
     href: string
@@ -17,11 +20,14 @@ const baseClassName = cn(
 )
 
 export function LinkButton({ className, children, href, ...props }: LinkButtonProps) {
+    const { trigger } = useWebHaptics()
+
     return (
         <Link href={href}>
             <button
                 type={"button"}
                 className={cn(baseClassName, className)}
+                onClick={() => trigger("medium")}
                 {...props}
             >
                 {children}

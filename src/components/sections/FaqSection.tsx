@@ -3,6 +3,7 @@
 import { AccordionItem } from "@/components/ui/Accordion"
 import { Section } from "@/components/ui/Section"
 import React, { useState } from "react"
+import { useWebHaptics } from "web-haptics/react"
 
 interface FaqItem {
     question: string
@@ -20,8 +21,10 @@ interface FaqSectionProps {
 
 export const FaqSection: React.FC<FaqSectionProps> = ({ content }) => {
     const [openItems, setOpenItems] = useState<Set<number>>(new Set())
+    const { trigger } =useWebHaptics()
 
     const toggleItem = (index: number) => {
+        trigger("soft")
         const newOpenItems = new Set(openItems)
 
         if (newOpenItems.has(index)) newOpenItems.delete(index)

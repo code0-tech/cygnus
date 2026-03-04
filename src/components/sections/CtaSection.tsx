@@ -7,6 +7,7 @@ import Image from "next/image"
 import React from "react"
 import Link from "next/link"
 import { Button } from "@code0-tech/pictor"
+import { useWebHaptics } from "web-haptics/react"
 
 interface CtaSectionContent {
     heading: string
@@ -22,6 +23,7 @@ interface CtaSectionProps {
 }
 
 export const CtaSection: React.FC<CtaSectionProps> = ({ content }) => {
+    const { trigger } = useWebHaptics()
     if (!content) return
 
     return (
@@ -51,7 +53,11 @@ export const CtaSection: React.FC<CtaSectionProps> = ({ content }) => {
 
                 <div className={"z-20 flex items-center gap-4"}>
                     <Link href={content.ctaLink.url}>
-                        <Button variant="normal" className={"h-10 flex items-center gap-2 px-8! text-base! bg-white/80! hover:bg-white! text-primary!"}>
+                        <Button
+                            variant="normal"
+                            onClick={() => trigger("heavy")}
+                            className={"h-10 flex items-center gap-2 px-8! text-base! bg-white/80! hover:bg-white! text-primary!"}
+                        >
                             {content.ctaLink.label}
                         </Button>
                     </Link>

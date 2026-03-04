@@ -8,6 +8,7 @@ import Image from "next/image"
 import Link from "next/link"
 import React from "react"
 import Grainient from "../ui/Granient"
+import { useWebHaptics } from "web-haptics/react"
 
 interface HeroSectionButton {
     label: string
@@ -33,6 +34,7 @@ interface HeroSectionProps {
 }
 
 export const HeroSection: React.FC<HeroSectionProps> = ({ content }) => {
+    const { trigger } = useWebHaptics()
     if (!content || !content.texts || !content.buttons) return
 
     return (
@@ -95,6 +97,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ content }) => {
                                 <Link href={button.url} key={`${button.label}-${button.id ?? index}`} className="w-full sm:w-auto">
                                     <Button
                                         variant={button.variant ?? "normal"}
+                                        onClick={() => trigger("heavy")}
                                         className={cn("w-full! text-base! z-10", button.variant === "filled" && "bg-white/80! hover:bg-white! text-primary!")}
                                     >
                                         {button.label}

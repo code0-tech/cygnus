@@ -2,6 +2,7 @@
 
 import { Button, EmailInput, emailValidation, Input, TextInput, useForm } from "@code0-tech/pictor"
 import { useState } from "react"
+import { useWebHaptics } from "web-haptics/react"
 
 interface JobApplicationCardContent {
     applicationHeading: string
@@ -31,6 +32,7 @@ const defaultContent: JobApplicationCardContent = {
 }
 
 export function JobApplicationCard({ jobSlug, content }: JobApplicationCardProps) {
+    const { trigger } = useWebHaptics()
     const labels = { ...defaultContent, ...content }
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [submitStatus, setSubmitStatus] = useState<{ type: "success" | "error", message: string } | null>(null)
@@ -124,7 +126,10 @@ export function JobApplicationCard({ jobSlug, content }: JobApplicationCardProps
                 type="submit"
                 variant="normal"
                 className="mt-2 w-full! text-base!"
-                onClick={validate}
+                onClick={() => {
+                    trigger("heavy")
+                    validate()
+                }}
                 disabled={isSubmitting}
             >
                 {labels.applicationSubmitLabel}

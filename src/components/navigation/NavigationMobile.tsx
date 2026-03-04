@@ -8,6 +8,7 @@ import Image from "next/image"
 import React from "react"
 import { fadeInUp, NavItem } from "./types"
 import { Button, Container } from "@code0-tech/pictor"
+import { useWebHaptics } from "web-haptics/react"
 
 type NavigationMobileProps = {
     menuRef: React.RefObject<HTMLElement | null>
@@ -34,6 +35,8 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
     onNavigate,
     homeHref
 }) => {
+    const { trigger } = useWebHaptics()
+
     const colorClassMap: Record<string, string> = {
         brand: "group-hover:bg-brand/10 group-hover:border-brand/50 group-hover:text-brand",
         yellow: "group-hover:bg-yellow/10 group-hover:border-yellow/50 group-hover:text-yellow",
@@ -68,7 +71,7 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
                 }}
             >
                 <div className={"w-full flex items-center justify-between gap-2"}>
-                    <Link href={homeHref}>
+                    <Link href={homeHref} onClick={() => trigger("medium")}>
                         <motion.div className={cn("flex transition-all", (!isScrolled && !isOpen) && "-ml-4")}
                             initial={fadeInUp.initial}
                             animate={fadeInUp.animate}
@@ -78,11 +81,14 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
                         </motion.div>
                     </Link>
                     <motion.button
-                        className={cn("bg-transparent border-0 transition-all mr-1.5", (!isScrolled && !isOpen) && "-mr-2")}
-                        initial={fadeInUp.initial}
-                        animate={fadeInUp.animate}
-                        transition={fadeInUp.transition}
-                        onClick={() => setIsOpen(!isOpen)}
+                            className={cn("bg-transparent border-0 transition-all mr-1.5", (!isScrolled && !isOpen) && "-mr-2")}
+                            initial={fadeInUp.initial}
+                            animate={fadeInUp.animate}
+                            transition={fadeInUp.transition}
+                            onClick={() => {
+                                trigger("medium")
+                                setIsOpen(!isOpen)
+                            }}
                     >
                         {isOpen ? <IconX className={cn("text-white/75")}/> : <IconMenu2 className={cn("text-white/75")}/>}
                     </motion.button>
@@ -117,8 +123,10 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
                                             )}
                                             onClick={() => {
                                                 if (isAccordion) {
+                                                    trigger("soft")
                                                     setMobileOpenKey(isOpenAcc ? null : item.title)
                                                 } else {
+                                                    trigger("medium")
                                                     handleRoute(item)
                                                     setIsOpen(false)
                                                 }
@@ -150,6 +158,7 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
                                                                     key={sub.title}
                                                                     className="group flex items-center gap-2 p-2 rounded-xl text-left hover:bg-white/10"
                                                                     onClick={() => {
+                                                                        trigger("medium")
                                                                         onNavigate(sub.href)
                                                                         setIsOpen(false)
                                                                         setMobileOpenKey(null)
@@ -190,6 +199,7 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
                                         variant="outlined"
                                         className="h-9! w-full! text-base! justify-center"
                                         onClick={() => {
+                                            trigger("medium")
                                             onNavigate("github")
                                             setIsOpen(false)
                                         }}
@@ -210,6 +220,7 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
                                         variant="outlined"
                                         className="h-9! w-full! text-base! justify-center bg-white/80! hover:bg-white! text-primary!"
                                         onClick={() => {
+                                            trigger("medium")
                                             onNavigate("discord")
                                             setIsOpen(false)
                                         }}

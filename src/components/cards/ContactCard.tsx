@@ -2,6 +2,7 @@
 
 import { Button, EmailInput, emailValidation, Input, TextInput, useForm } from "@code0-tech/pictor"
 import { useState } from "react"
+import { useWebHaptics } from "web-haptics/react"
 
 interface ContactCardContent {
     heading: string
@@ -30,6 +31,7 @@ const defaultContent: ContactCardContent = {
 }
 
 export function ContactCard({ content }: ContactCardProps) {
+    const { trigger } = useWebHaptics()
     const labels = { ...defaultContent, ...content }
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [submitStatus, setSubmitStatus] = useState<{ type: "success" | "error", message: string } | null>(null)
@@ -123,7 +125,10 @@ export function ContactCard({ content }: ContactCardProps) {
                 type="submit"
                 variant="normal"
                 className="mt-2 w-full! text-base!"
-                onClick={validate}
+                onClick={() => {
+                    trigger("heavy")
+                    validate()
+                }}
                 disabled={isSubmitting}
             >
                 {labels.submitLabel}

@@ -1,7 +1,7 @@
 "use client"
 
+import { JobsCard } from "@/components/cards/JobsCard"
 import type { JobItem } from "@/lib/cms"
-import { useMemo, useState } from "react"
 import {
     Button,
     Input,
@@ -11,7 +11,7 @@ import {
     MenuTrigger,
 } from "@code0-tech/pictor"
 import { IconChevronDown } from "@tabler/icons-react"
-import { JobsCard } from "@/components/cards/JobsCard"
+import { useMemo, useState } from "react"
 
 interface JobsPageContent {
     heading: string
