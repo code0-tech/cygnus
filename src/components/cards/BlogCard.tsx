@@ -1,6 +1,7 @@
 "use client"
 
 import { BlogListItem } from "@/lib/cms"
+import { Card } from "@code0-tech/pictor"
 import Link from "next/link"
 import { useWebHaptics } from "web-haptics/react"
 
@@ -17,10 +18,11 @@ export function BlogCard({ locale, post }: { locale: string, post: BlogListItem 
             key={post.id}
             href={`/${locale}/blog/${post.slug}`}
             onClick={() => trigger("medium")}
-            className="rounded-xl border border-white/10 bg-white/5 p-4 transition hover:bg-white/10"
         >
-            <p className="text-xs text-white/50 mb-1">{author} - {publishedDate}</p>
-            <h2 className="text-xl text-white/90">{post.title}</h2>
+            <Card variant="filled" className="bg-white/10! hover:bg-white/15! transition-all!">
+                <p className="text-xs text-white/50 mb-1">{author} - {publishedDate}</p>
+                <h2 className="text-xl text-white/90">{post.title}</h2>
+            </Card>
         </Link>
     )
 }

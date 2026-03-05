@@ -27,7 +27,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ loca
         <>
             <Aurora />
             <LandingContainer className="py-[20vh]">
-                <div className={"md:w-[50vw] mx-auto"}>
+                <div className={"w-full md:w-[50vw] mx-auto"}>
                     <MarkdownContent content={contentHtml} />
                     <div className="mt-10">
                         <JobApplicationCard jobSlug={job.slug} content={jobsBlock} />

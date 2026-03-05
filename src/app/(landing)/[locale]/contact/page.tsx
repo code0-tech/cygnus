@@ -22,7 +22,7 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
         <>
             <Aurora />
             <LandingContainer>
-                <div className="md:w-[50vw] mx-auto py-[20vh]">
+                <div className="w-full md:w-[50vw] mx-auto py-[20vh]">
                     <MarkdownContent content={contentHtml} />
                     <div className="mt-10">
                         <ContactCard content={contactBlock} />

@@ -75,7 +75,7 @@ export function JobsPageClient({ jobs, locale, content }: JobsPageClientProps) {
     }, [filteredJobs])
 
     return (
-        <div className={"md:w-[50vw] mx-auto flex flex-col gap-8"}>
+        <div className={"w-full md:w-[50vw] mx-auto flex flex-col gap-8"}>
             <h1 className={"text-4xl font-semibold mb-8 text-center"}>{labels.heading}</h1>
 
             <div className="w-full flex flex-col gap-2 mb-2">
