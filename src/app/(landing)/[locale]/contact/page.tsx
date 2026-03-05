@@ -10,8 +10,10 @@ import { notFound } from "next/navigation"
 export default async function ContactPage({ params }: { params: Promise<{ locale: string }> }) {
     const { locale } = await params
     if (!isSupportedLocale(locale)) notFound()
+
     const page = await getLandingPage("contact", locale)
     if (!page) notFound()
+
     const markdownBlock = page.layout?.find((block): block is MarkdownLayoutBlock => block.blockType === "markdown") ?? null
     const contactBlock = page.layout?.find((block): block is ContactLayoutBlock => block.blockType === "contact") ?? null
     const contentHtml = markdownBlock

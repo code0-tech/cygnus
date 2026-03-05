@@ -10,6 +10,7 @@ import { Suspense } from "react"
 export default async function Page({ params }: { params: Promise<{ locale: string, slug: string[] }> }) {
     const { locale, slug } = await params
     if (!isSupportedLocale(locale)) notFound()
+
     const normalizedSlug = slug?.join("/")?.trim()
     if (!normalizedSlug) notFound()
 
