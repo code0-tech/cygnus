@@ -22,6 +22,7 @@ type NavigationDesktopProps = {
     handleRoute: (item: NavItem) => void
     onNavigate: (href: string) => void
     homeHref: string
+    disableIntroAnimation: boolean
 }
 
 const NavigationDesktop: React.FC<NavigationDesktopProps> = ({
@@ -34,7 +35,8 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({
     subMenuRef,
     handleRoute,
     onNavigate,
-    homeHref
+    homeHref,
+    disableIntroAnimation,
 }) => {
     return (
         <div className={"fixed z-100 h-max w-full pt-4"}>
@@ -62,7 +64,7 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({
 
                         <Link href={homeHref}>
                             <motion.div className={cn("flex transition-all", !isScrolled && "-ml-4")}
-                                initial={fadeInUp.initial}
+                                initial={disableIntroAnimation ? false : fadeInUp.initial}
                                 animate={fadeInUp.animate}
                                 transition={fadeInUp.transition}
                             >
@@ -82,6 +84,7 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({
                                         activeSubMenu={activeSubMenu}
                                         onClick={() => item.href && handleRoute(item)}
                                         onMouseEnter={() => setActiveSubMenu(item.subMenu || null)}
+                                        disableIntroAnimation={disableIntroAnimation}
                                     />
                                 ))}
                             </div>

@@ -21,6 +21,7 @@ type NavigationMobileProps = {
     handleRoute: (item: NavItem) => void
     onNavigate: (href: string) => void
     homeHref: string
+    disableIntroAnimation: boolean
 }
 
 const NavigationMobile: React.FC<NavigationMobileProps> = ({
@@ -33,7 +34,8 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
     setMobileOpenKey,
     handleRoute,
     onNavigate,
-    homeHref
+    homeHref,
+    disableIntroAnimation,
 }) => {
     const { trigger } = useWebHaptics()
 
@@ -73,7 +75,7 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
                 <div className={"w-full flex items-center justify-between gap-2"}>
                     <Link href={homeHref} onClick={() => trigger("medium")}>
                         <motion.div className={cn("flex transition-all", (!isScrolled && !isOpen) && "-ml-4")}
-                            initial={fadeInUp.initial}
+                            initial={disableIntroAnimation ? false : fadeInUp.initial}
                             animate={fadeInUp.animate}
                             transition={fadeInUp.transition}
                         >
@@ -82,7 +84,7 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
                     </Link>
                     <motion.button
                             className={cn("bg-transparent border-0 transition-all mr-1.5", (!isScrolled && !isOpen) && "-mr-2")}
-                            initial={fadeInUp.initial}
+                            initial={disableIntroAnimation ? false : fadeInUp.initial}
                             animate={fadeInUp.animate}
                             transition={fadeInUp.transition}
                             onClick={() => {

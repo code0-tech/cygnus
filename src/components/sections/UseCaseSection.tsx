@@ -73,7 +73,7 @@ export const UseCaseSection: React.FC<UseCaseSectionProps> = ({ content }) => {
                                     </div>
                                 ) : null}
                             </div>
-                            <div className="relative w-2/3">
+                            <div className="relative w-full md:w-2/3">
                                 <div
                                     aria-hidden="true"
                                     className="pointer-events-none absolute -inset-16 -z-10 rounded-4xl bg-pink/5 blur-3xl"
@@ -82,7 +82,7 @@ export const UseCaseSection: React.FC<UseCaseSectionProps> = ({ content }) => {
                                     {/* Flows darstellen */}
                                 </div>
                             </div>
-                            <div className="w-2/3 md:hidden px-2 pb-2 text-center">
+                            <div className="w-full md:hidden px-2 pb-2 text-left md:text-center">
                                 <p className="text-xl font-semibold text-white">{item.title}</p>
                                 <p className="mt-2 text-sm text-white/75">{item.description}</p>
                                 {item.bulletPoints?.length ? (
@@ -93,7 +93,7 @@ export const UseCaseSection: React.FC<UseCaseSectionProps> = ({ content }) => {
                                     </ul>
                                 ) : null}
                                 {item.actions?.length ? (
-                                    <div className="mt-5 flex flex-wrap gap-2 justify-center">
+                                    <div className="mt-5 flex flex-wrap gap-2 md:justify-center">
                                         {item.actions.map((action, actionIndex) => (
                                             <span
                                                 key={`${item.id ?? item.label}-mobile-action-${actionIndex}`}

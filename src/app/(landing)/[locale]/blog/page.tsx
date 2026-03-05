@@ -15,7 +15,7 @@ export default async function BlogPage({ params }: { params: Promise<{ locale: s
         <>
             <Aurora />
             <LandingContainer className="py-[20vh]">
-                <div className="md:w-[50vw] mx-auto flex flex-col gap-4">
+                <div className="w-full md:w-[50vw] mx-auto flex flex-col gap-4">
                     <h1 className="text-4xl font-semibold mb-4">Blog</h1>
                     {posts.length === 0 && <p className="text-white/60">No blog posts available.</p>}
                     {posts.map((post) => <BlogCard key={post.id} post={post} locale={locale} />)}

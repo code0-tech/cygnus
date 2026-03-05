@@ -137,6 +137,15 @@ const getJobsCached = unstable_cache(
             sort: "order",
             pagination: false,
             depth: 0,
+            select: {
+                title: true,
+                slug: true,
+                category: true,
+                type: true,
+                location: true,
+                description: true,
+                order: true,
+            },
         })
         return (result.docs as JobItem[]) ?? []
     },
@@ -210,6 +219,12 @@ const getBlogPostsCached = unstable_cache(
             depth: 1,
             sort: "-createdAt",
             pagination: false,
+            select: {
+                title: true,
+                slug: true,
+                createdAt: true,
+                author: true,
+            },
         })
         return (result.docs as BlogListItem[]) ?? []
     },

@@ -10,8 +10,10 @@ export default async function JobPage({ params }: { params: Promise<{ locale: st
     const { locale } = await params
     if (!isSupportedLocale(locale)) notFound()
 
-    const jobs = await getJobs(locale)
-    const jobsPage = await getLandingPage("jobs", locale)
+    const [jobs, jobsPage] = await Promise.all([
+        getJobs(locale),
+        getLandingPage("jobs", locale),
+    ])
     const jobsBlock = jobsPage?.layout?.find((block): block is JobsLayoutBlock => block.blockType === "jobs") ?? null
 
     return (
