@@ -5,11 +5,10 @@ import { useMediaQuery } from "@/hooks/useMediaQuery"
 import { useOutsideClick } from "@/hooks/useOutsideClick"
 import { localizeHref, type AppLocale } from "@/lib/i18n"
 import { IconCube, IconGitBranch, IconLock } from "@tabler/icons-react"
-import { useRouter } from "next/navigation"
 import { useEffect, useMemo, useState } from "react"
 import { NavigationDesktop } from "./NavigationDesktop"
 import { NavigationMobile } from "./NavigationMobile"
-import { NavItem, SubNavItem } from "./types"
+import { SubNavItem } from "./types"
 
 type SubMenuIcon = "cube" | "gitBranch" | "lock"
 
@@ -19,7 +18,6 @@ interface NavigationProps {
 }
 
 function Navigation({ locale, items }: NavigationProps) {
-    const router = useRouter()
     const isDesktop = useMediaQuery("(min-width: 1024px)")
     const menuRef = useOutsideClick<HTMLElement>(() => setIsOpen(false))
     const subMenuRef = useOutsideClick<HTMLDivElement>(() => setActiveSubMenu(null))
@@ -54,11 +52,13 @@ function Navigation({ locale, items }: NavigationProps) {
 
             return {
                 title: item.title,
-                href: item.href ?? null,
-                subMenu: mappedSubMenu.length > 0 ? mappedSubMenu : undefined,
+                href: item.href ? localizeHref(item.href, locale) : null,
+                subMenu: mappedSubMenu.length > 0
+                    ? mappedSubMenu.map((sub) => ({ ...sub, href: localizeHref(sub.href, locale) }))
+                    : undefined,
             }
         })
-    }, [items])
+    }, [items, locale])
 
     useEffect(() => {
         const handleScroll = () => {
@@ -77,11 +77,6 @@ function Navigation({ locale, items }: NavigationProps) {
         setDisableIntroAnimation(true)
     }, [disableIntroAnimation])
 
-    const handleRoute = (item: NavItem) => {
-        if (item.href) router.push(localizeHref(item.href, locale))
-        else router.replace("")
-    }
-
     if (!isDesktop) {
         return (
             <NavigationMobile
@@ -92,8 +87,6 @@ function Navigation({ locale, items }: NavigationProps) {
                 navbarItems={navbarItems}
                 mobileOpenKey={mobileOpenKey}
                 setMobileOpenKey={setMobileOpenKey}
-                handleRoute={handleRoute}
-                onNavigate={(href) => router.push(localizeHref(href, locale))}
                 homeHref={homeHref}
                 disableIntroAnimation={disableIntroAnimation}
             />
@@ -109,8 +102,6 @@ function Navigation({ locale, items }: NavigationProps) {
             activeSubMenu={activeSubMenu}
             setActiveSubMenu={setActiveSubMenu}
             subMenuRef={subMenuRef}
-            handleRoute={handleRoute}
-            onNavigate={(href) => router.push(localizeHref(href, locale))}
             homeHref={homeHref}
             disableIntroAnimation={disableIntroAnimation}
         />

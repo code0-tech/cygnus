@@ -1,8 +1,9 @@
 "use client"
 
 import { cn } from "@/lib/utils"
+import { DEFAULT_DISCORD_URL, DEFAULT_GITHUB_URL } from "@/lib/siteConfig"
 import { Button, Container } from "@code0-tech/pictor"
-import { IconBrandGithub } from "@tabler/icons-react"
+import { SiGithub } from "@icons-pack/react-simple-icons"
 import { AnimatePresence, motion } from "motion/react"
 import Image from "next/image"
 import Link from "next/link"
@@ -19,8 +20,6 @@ type NavigationDesktopProps = {
     activeSubMenu: SubNavItem[] | null
     setActiveSubMenu: React.Dispatch<React.SetStateAction<SubNavItem[] | null>>
     subMenuRef: React.RefObject<HTMLDivElement | null>
-    handleRoute: (item: NavItem) => void
-    onNavigate: (href: string) => void
     homeHref: string
     disableIntroAnimation: boolean
 }
@@ -33,8 +32,6 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({
     activeSubMenu,
     setActiveSubMenu,
     subMenuRef,
-    handleRoute,
-    onNavigate,
     homeHref,
     disableIntroAnimation,
 }) => {
@@ -79,10 +76,10 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({
                                 {navbarItems.map((item) => (
                                     <NavTab key={item.title}
                                         title={item.title}
+                                        href={item.href}
                                         setPosition={setPosition}
                                         subMenu={item.subMenu}
                                         activeSubMenu={activeSubMenu}
-                                        onClick={() => item.href && handleRoute(item)}
                                         onMouseEnter={() => setActiveSubMenu(item.subMenu || null)}
                                         disableIntroAnimation={disableIntroAnimation}
                                     />
@@ -98,10 +95,7 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({
                                     <div className="mt-2 rounded-xl border border-white/5 bg-primary/90 backdrop-blur-xl shadow-xl p-2 w-max">
                                         <NavSubMenu
                                             items={activeSubMenu}
-                                            onSelect={(subItem) => {
-                                                onNavigate(subItem.href)
-                                                setActiveSubMenu(null)
-                                            }}
+                                            onSelect={() => setActiveSubMenu(null)}
                                             variant="overlay"
                                         />
                                     </div>
@@ -109,12 +103,17 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({
                             )}
                         </div>
                         <div className={"flex items-center gap-2"}>
-                            <Button variant="normal" className="h-9!">
-                                <IconBrandGithub/>
-                            </Button>
-                            <Button variant="filled" className="h-9! bg-white/80! hover:bg-white! text-primary!">
-                                Discord
-                            </Button>
+                            <Link href={DEFAULT_GITHUB_URL} target="_blank" rel="noreferrer">
+                                <Button variant="normal" className="h-9!">
+                                    <SiGithub size={18} />
+                                    Github
+                                </Button>
+                            </Link>
+                            <Link href={DEFAULT_DISCORD_URL} target="_blank" rel="noreferrer">
+                                <Button variant="filled" className="h-9! bg-white/80! hover:bg-white! text-primary!">
+                                    Discord
+                                </Button>
+                            </Link>
                         </div>
 
                     </div>
@@ -131,10 +130,7 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({
                             >
                                 <NavSubMenu
                                     items={activeSubMenu}
-                                    onSelect={(subItem) => {
-                                        onNavigate(subItem.href)
-                                        setActiveSubMenu(null)
-                                    }}
+                                    onSelect={() => setActiveSubMenu(null)}
                                     variant="inline"
                                 />
                             </motion.div>

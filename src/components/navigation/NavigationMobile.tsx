@@ -1,14 +1,16 @@
 "use client"
 
-import Link from "next/link"
 import { cn } from "@/lib/utils"
-import { IconBrandGithub, IconChevronUp, IconMenu2, IconX } from "@tabler/icons-react"
+import { DEFAULT_DISCORD_URL, DEFAULT_GITHUB_URL } from "@/lib/siteConfig"
+import { Button, Container } from "@code0-tech/pictor"
+import { SiGithub } from '@icons-pack/react-simple-icons'
+import { IconChevronUp, IconMenu2, IconX } from "@tabler/icons-react"
 import { AnimatePresence, motion } from "motion/react"
 import Image from "next/image"
+import Link from "next/link"
 import React from "react"
-import { fadeInUp, NavItem } from "./types"
-import { Button, Container } from "@code0-tech/pictor"
 import { useWebHaptics } from "web-haptics/react"
+import { fadeInUp, NavItem } from "./types"
 
 type NavigationMobileProps = {
     menuRef: React.RefObject<HTMLElement | null>
@@ -18,8 +20,6 @@ type NavigationMobileProps = {
     navbarItems: NavItem[]
     mobileOpenKey: string | null
     setMobileOpenKey: React.Dispatch<React.SetStateAction<string | null>>
-    handleRoute: (item: NavItem) => void
-    onNavigate: (href: string) => void
     homeHref: string
     disableIntroAnimation: boolean
 }
@@ -32,8 +32,6 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
     navbarItems,
     mobileOpenKey,
     setMobileOpenKey,
-    handleRoute,
-    onNavigate,
     homeHref,
     disableIntroAnimation,
 }) => {
@@ -110,38 +108,52 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
                                 const isAccordion = !!item.subMenu?.length
                                 const isOpenAcc = mobileOpenKey === item.title
 
+                                const hasRoute = Boolean(item.href)
                                 return (
                                     <div key={item.title} className="flex flex-col">
-                                        <motion.button
-                                            type="button"
+                                        <motion.div
                                             initial={{ y: -8, opacity: isScrolled ? 1 : 0 }}
                                             animate={{ y: 0, opacity: 1 }}
                                             exit={{ y: -8, opacity: isScrolled ? 1 : 0 }}
                                             transition={{ duration: 0.25, delay: 0.06 * i }}
-                                            className={cn(
-                                                "w-full text-left text-white/75 px-2 py-2 font-medium text-md rounded-xl transition-colors flex items-center justify-between",
-                                                "hover:text-white hover:bg-white/10",
-                                                isOpenAcc && "bg-white/10 text-white",
-                                            )}
-                                            onClick={() => {
-                                                if (isAccordion) {
-                                                    trigger("soft")
-                                                    setMobileOpenKey(isOpenAcc ? null : item.title)
-                                                } else {
-                                                    trigger("medium")
-                                                    handleRoute(item)
-                                                    setIsOpen(false)
-                                                }
-                                            }}
                                         >
-                                            <span>{item.title}</span>
-                                            {isAccordion && (
-                                                <IconChevronUp
-                                                    size={20}
-                                                    className={cn("transition-transform text-white/75", !isOpenAcc && "rotate-180")}
-                                                />
+                                            {isAccordion ? (
+                                                <button
+                                                    type="button"
+                                                    className={cn(
+                                                        "w-full text-left text-white/75 px-2 py-2 font-medium text-md rounded-xl transition-colors flex items-center justify-between",
+                                                        "hover:text-white hover:bg-white/10",
+                                                        isOpenAcc && "bg-white/10 text-white",
+                                                    )}
+                                                    onClick={() => {
+                                                        trigger("soft")
+                                                        setMobileOpenKey(isOpenAcc ? null : item.title)
+                                                    }}
+                                                >
+                                                    <span>{item.title}</span>
+                                                    <IconChevronUp
+                                                        size={20}
+                                                        className={cn("transition-transform text-white/75", !isOpenAcc && "rotate-180")}
+                                                    />
+                                                </button>
+                                            ) : (
+                                                <Link
+                                                    href={item.href ?? "#"}
+                                                    className={cn(
+                                                        "w-full text-left text-white/75 px-2 py-2 font-medium text-md rounded-xl transition-colors flex items-center justify-between",
+                                                        "hover:text-white hover:bg-white/10",
+                                                        isOpenAcc && "bg-white/10 text-white",
+                                                        !hasRoute && "pointer-events-none opacity-60",
+                                                    )}
+                                                    onClick={() => {
+                                                        trigger("medium")
+                                                        setIsOpen(false)
+                                                    }}
+                                                >
+                                                    <span>{item.title}</span>
+                                                </Link>
                                             )}
-                                        </motion.button>
+                                        </motion.div>
 
                                         {isAccordion && (
                                             <AnimatePresence initial={false}>
@@ -156,12 +168,12 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
                                                     >
                                                         <div className="mt-1 flex flex-col gap-1 rounded-lg">
                                                             {item.subMenu!.map((sub) => (
-                                                                <button
+                                                                <Link
                                                                     key={sub.title}
+                                                                    href={sub.href}
                                                                     className="group flex items-center gap-2 p-2 rounded-xl text-left hover:bg-white/10"
                                                                     onClick={() => {
                                                                         trigger("medium")
-                                                                        onNavigate(sub.href)
                                                                         setIsOpen(false)
                                                                         setMobileOpenKey(null)
                                                                     }}
@@ -178,7 +190,7 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
                                                                         <span className="text-white font-medium">{sub.title}</span>
                                                                         <span className="text-white/75 text-sm">{sub.description}</span>
                                                                     </div>
-                                                                </button>
+                                                                </Link>
                                                             ))}
                                                         </div>
                                                     </motion.div>
@@ -197,18 +209,23 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
                                     transition={{ duration: 0.25, delay: 0.06 * navbarItems.length }}
                                     className="flex-1 w-full"
                                 >
-                                    <Button
-                                        variant="outlined"
-                                        className="h-9! w-full! text-base! justify-center"
+                                    <Link
+                                        href={DEFAULT_GITHUB_URL}
+                                        target="_blank"
+                                        rel="noreferrer"
                                         onClick={() => {
                                             trigger("medium")
-                                            onNavigate("github")
                                             setIsOpen(false)
                                         }}
                                     >
-                                        <IconBrandGithub size={20}/>
-                                        Github
-                                    </Button>
+                                        <Button
+                                            variant="outlined"
+                                            className="h-9! w-full! text-base! justify-center"
+                                        >
+                                            <SiGithub size={20}/>
+                                            Github
+                                        </Button>
+                                    </Link>
                                 </motion.div>
                                 <motion.div
                                     key={"Discord"}
@@ -218,17 +235,22 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
                                     transition={{ duration: 0.25, delay: 0.06 * (navbarItems.length + 1) }}
                                     className="flex-1 w-full"
                                 >
-                                    <Button
-                                        variant="outlined"
-                                        className="h-9! w-full! text-base! justify-center bg-white/80! hover:bg-white! text-primary!"
+                                    <Link
+                                        href={DEFAULT_DISCORD_URL}
+                                        target="_blank"
+                                        rel="noreferrer"
                                         onClick={() => {
                                             trigger("medium")
-                                            onNavigate("discord")
                                             setIsOpen(false)
                                         }}
                                     >
-                                        Discord
-                                    </Button>
+                                        <Button
+                                            variant="outlined"
+                                            className="h-9! w-full! text-base! justify-center bg-white/80! hover:bg-white! text-primary!"
+                                        >
+                                            Discord
+                                        </Button>
+                                    </Link>
                                 </motion.div>
                             </div>
                         </motion.div>

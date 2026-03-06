@@ -3,10 +3,10 @@
 import * as React from "react"
 import { IconArrowUpRight } from "@tabler/icons-react"
 import { cn } from "@/lib/utils"
-import Link from "next/link"
+import Link, { LinkProps } from "next/link"
 import { useWebHaptics } from "web-haptics/react"
 
-interface LinkButtonProps extends  React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface LinkButtonProps extends LinkProps {
     href: string
     children: React.ReactNode
     className?: string
@@ -23,16 +23,14 @@ export function LinkButton({ className, children, href, ...props }: LinkButtonPr
     const { trigger } = useWebHaptics()
 
     return (
-        <Link href={href}>
-            <button
-                type={"button"}
-                className={cn(baseClassName, className)}
-                onClick={() => trigger("medium")}
-                {...props}
-            >
-                {children}
-                <IconArrowUpRight size={16} />
-            </button>
+        <Link
+            href={href}
+            onClick={() => trigger("medium")}
+            className={cn(baseClassName, className)}
+            {...props}
+        >
+            {children}
+            <IconArrowUpRight size={16} />
         </Link>
     )
 }

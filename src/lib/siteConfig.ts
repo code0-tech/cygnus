@@ -4,6 +4,8 @@ const TITLE = "Code0 - Revolutionize the backend development"
 const DESCRIPTION = "Revolutionize the backend development"
 const DEFAULT_OG_IMAGE = "/og/home/image.webp"
 const DEFAULT_BASE_URL = "https://code0.tech"
+export const DEFAULT_DISCORD_URL = "https://discrod.gg/"
+export const DEFAULT_GITHUB_URL = "https://github.com/code0-tech"
 
 function resolveMetadataBase() {
     const envUrl = process.env.NEXT_PUBLIC_APP_URL
