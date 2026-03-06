@@ -22,7 +22,7 @@ export const FooterSection: React.FC<FooterSectionProps> = ({ locale, footer }) 
         <LandingContainer className="min-h-full pt-48 pb-24 overflow-visible">
             <div className={"relative flex flex-col gap-16 overflow-hidden"}>
 
-                <div className={"grid grid-cols-2 lg:grid-cols-4 gap-4"}>
+                <div className={"grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-4"}>
                     <div className={"flex flex-col lg:justify-between gap-2"}>
                         <div className="flex items-center gap-2 -ml-1.5">
                             <Image src={"/code0_logo_white.png"} width={"32"} height={"32"} alt={"Code0 Logo"}/>
