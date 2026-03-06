@@ -71,7 +71,13 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
                 }}
             >
                 <div className={"w-full flex items-center justify-between gap-2"}>
-                    <Link href={homeHref} onClick={() => trigger("medium")}>
+                        <Link
+                            href={homeHref}
+                            onClick={() => {
+                                trigger("medium")
+                                setIsOpen(false)
+                            }}
+                        >
                         <motion.div className={cn("flex transition-all", (!isScrolled && !isOpen) && "-ml-4")}
                             initial={disableIntroAnimation ? false : fadeInUp.initial}
                             animate={fadeInUp.animate}
