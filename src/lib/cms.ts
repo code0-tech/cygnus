@@ -32,6 +32,7 @@ interface FeatureItem {
 
 export type JobItem = Pick<Job, "id" | "title" | "slug" | "category" | "type" | "location" | "description" | "order">
 type JobDetailItem = Pick<Job, "id" | "title" | "slug" | "category" | "type" | "location" | "description" | "order" | "content">
+export type TeamMemberItem = Pick<User, "id" | "name" | "image" | "shortDescription" | "about" | "role" | "joinedAt">
 type RoadmapItem = Pick<PayloadRoadmapItem, "id" | "time" | "title" | "description">
 
 type BlogPostItem = Pick<Blog, "id" | "title" | "slug" | "content" | "createdAt"> & {
@@ -169,6 +170,29 @@ const getJobBySlugCached = unstable_cache(
     },
     ["job-by-slug"],
     { revalidate: 300, tags: ["jobs"] },
+)
+
+const getTeamMembersCached = unstable_cache(
+    async (): Promise<TeamMemberItem[]> => {
+        const payload = await getPayloadClient()
+        const result = await payload.find({
+            collection: "users",
+            pagination: false,
+            sort: "name",
+            depth: 1,
+            select: {
+                name: true,
+                image: true,
+                shortDescription: true,
+                about: true,
+                role: true,
+                joinedAt: true,
+            },
+        })
+        return (result.docs as TeamMemberItem[]) ?? []
+    },
+    ["team-members"],
+    { revalidate: 300, tags: ["users"] },
 )
 
 const getJobSlugsCached = unstable_cache(
@@ -323,6 +347,10 @@ export async function getJobs(locale: AppLocale = DEFAULT_LOCALE): Promise<JobIt
 
 export async function getJobBySlug(slug: string, locale: AppLocale = DEFAULT_LOCALE): Promise<JobDetailItem | null> {
     return getJobBySlugCached(slug, locale)
+}
+
+export async function getTeamMembers(): Promise<TeamMemberItem[]> {
+    return getTeamMembersCached()
 }
 
 export async function getJobSlugs(locale: AppLocale = DEFAULT_LOCALE): Promise<string[]> {
