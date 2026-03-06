@@ -19,7 +19,7 @@ export const FooterSection: React.FC<FooterSectionProps> = ({ locale, footer }) 
     if (!footer?.groups) return null
 
     return (
-        <LandingContainer className="min-h-full py-48 overflow-visible">
+        <LandingContainer className="min-h-full pt-48 pb-24 overflow-visible">
             <div className={"relative flex flex-col gap-16 overflow-hidden"}>
 
                 <div className={"grid grid-cols-2 lg:grid-cols-4 gap-4"}>
