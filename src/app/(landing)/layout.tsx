@@ -19,7 +19,9 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
     return (
         <html lang="en">
             <body className={`${inter.className} tracking-[-0.5px] leading-normal bg-primary`}>
-                <div className={"bg-primary"}>{children}</div>
+                <div className={"bg-primary"}>
+                    {children}
+                </div>
             </body>
         </html>
     )
