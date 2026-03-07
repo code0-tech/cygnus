@@ -32,8 +32,9 @@ export const BrandSection: React.FC<BrandSectionProps> = ({ content }) => {
                 </p>
                 <div className={"w-full grid grid-cols-2 md:grid-cols-4 gap-16 text-white/75 text-center"}>
                     {logos.length > 0 ? (
-                        logos.map((logo, index) => {
-                            const href = (logo as Media & { href?: string | null }).href
+                        logos.map((item, index) => {
+                            const href = (item as Media & { href?: string | null }).href
+                            const logo = item as Media
 
                             return (
                                 <div className="relative w-full h-14" key={`${logo.id ?? logo.url ?? index}`}>
