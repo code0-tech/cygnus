@@ -1,7 +1,8 @@
 import { getBlogPostBySlug } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
-import type { Blog } from "@/payload-types"
+import type { Blog, Media, User } from "@/payload-types"
 import { convertLexicalToHTML } from "@payloadcms/richtext-lexical/html"
+import Image from "next/image"
 import { notFound } from "next/navigation"
 import { MarkdownContent } from "../MarkdownContent"
 import { TableOfContents, type TocHeading } from "./TableOfContents"
@@ -70,7 +71,7 @@ export async function BlogPost({ slug, locale }: BlogPostProps) {
     const post = await getBlogPostBySlug(slug, locale)
     if (!post) notFound()
 
-    const author = typeof post.author === "object" && post.author !== null ? post.author.name : "Unknown author"
+    const heroImage = post.heroImage as Media
     const publishedDate = new Intl.DateTimeFormat(locale === "de" ? "de-DE" : "en-US", {
         dateStyle: "long",
     }).format(new Date(post.createdAt))
@@ -83,15 +84,33 @@ export async function BlogPost({ slug, locale }: BlogPostProps) {
     const contentHtmlWithIds = injectHeadingIds(contentHtml, headings)
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
-            <TableOfContents headings={headings} />
-            <article className="lg:col-span-3">
+        <div className="space-y-8">
+            {heroImage?.url ? (
+                <div className="relative aspect-video md:aspect-16/7 lg:aspect-16/5 w-full overflow-hidden rounded-2xl ring ring-white/10">
+                    <Image
+                        src={heroImage.url}
+                        alt={heroImage.alt ?? post.title}
+                        fill
+                        priority
+                        className="object-cover"
+                    />
+                </div>
+            ) : (
+                <div className="aspect-video md:aspect-16/7 lg:aspect-16/5 w-full rounded-2xl ring ring-white/10 bg-white/5 flex items-center justify-center text-white/50 text-sm">
+                    {locale === "de" ? "Kein Hero-Bild vorhanden" : "No hero image available"}
+                </div>
+            )}
+
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
+                <TableOfContents headings={headings} />
+                <article className="lg:col-span-3">
                 <h1 className={"text-4xl font-semibold mb-2"}>{post.title}</h1>
                 <p className="text-sm text-white/60 mb-8">
-                    {author} - {publishedDate}
+                    {(post.author as User).name} - {publishedDate}
                 </p>
                 <MarkdownContent content={contentHtmlWithIds}/>
-            </article>
+                </article>
+            </div>
         </div>
     )
 }

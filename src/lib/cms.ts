@@ -1,6 +1,6 @@
 "use server"
 
-import type { Blog, Feature, Footer, Job, NavbarItem, Page, RoadmapItem as PayloadRoadmapItem, Section, User } from "@/payload-types"
+import type { Blog, Feature, Footer, Job, Media, NavbarItem, Page, RoadmapItem as PayloadRoadmapItem, Section, User } from "@/payload-types"
 import { DEFAULT_LOCALE, type AppLocale } from "@/lib/i18n"
 import { getPayloadClient } from "@/lib/payloadClient"
 import { unstable_cache } from "next/cache"
@@ -36,6 +36,7 @@ export type TeamMemberItem = Pick<User, "id" | "name" | "image" | "shortDescript
 type RoadmapItem = Pick<PayloadRoadmapItem, "id" | "time" | "title" | "description">
 
 type BlogPostItem = Pick<Blog, "id" | "title" | "slug" | "content" | "createdAt"> & {
+    heroImage?: (number | null) | Media
     author: number | Pick<User, "email" | "name">
 }
 export type BlogListItem = Pick<Blog, "id" | "title" | "slug" | "createdAt"> & {
@@ -209,7 +210,7 @@ const getJobSlugsCached = unstable_cache(
         })
         return result.docs
             .map((job) => job.slug)
-            .filter((slug): slug is string => typeof slug === "string" && slug.length > 0)
+            .filter((slug) => slug.length > 0)
     },
     ["job-slugs"],
     { revalidate: 300, tags: ["jobs"] },
@@ -270,7 +271,7 @@ const getBlogSlugsCached = unstable_cache(
         })
         return result.docs
             .map((post) => post.slug)
-            .filter((slug): slug is string => typeof slug === "string" && slug.length > 0)
+            .filter((slug) => slug.length > 0)
     },
     ["blog-slugs"],
     { revalidate: 300, tags: ["blog"] },

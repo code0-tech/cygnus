@@ -21,16 +21,19 @@ export const Users: CollectionConfig = {
     {
       name: 'shortDescription',
       type: 'textarea',
+      localized: true,
       required: false,
     },
     {
       name: 'about',
       type: 'textarea',
+      localized: true,
       required: false,
     },
     {
       name: 'role',
       type: 'text',
+      localized: true,
       required: false,
     },
     {

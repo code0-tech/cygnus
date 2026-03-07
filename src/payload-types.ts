@@ -501,6 +501,7 @@ export interface Blog {
     };
     [k: string]: unknown;
   };
+  heroImage?: (number | null) | Media;
   ogImage?: (number | null) | Media;
   twitterImage?: (number | null) | Media;
   meta?: {
@@ -1111,6 +1112,7 @@ export interface BlogSelect<T extends boolean = true> {
   slug?: T;
   author?: T;
   content?: T;
+  heroImage?: T;
   ogImage?: T;
   twitterImage?: T;
   meta?:

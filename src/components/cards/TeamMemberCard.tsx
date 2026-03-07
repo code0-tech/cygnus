@@ -1,10 +1,13 @@
 "use client"
 
+import { AnimatePresence, motion } from "motion/react"
+import { useState } from "react"
 import type { TeamMemberItem } from "@/lib/cms"
 import type { Media } from "@/payload-types"
 import { Card } from "@code0-tech/pictor"
 import Image from "next/image"
 import { useWebHaptics } from "web-haptics/react"
+import { IconX } from "@tabler/icons-react"
 
 interface TeamMemberCardProps {
     member: TeamMemberItem
@@ -17,40 +20,111 @@ function getInitials(name: string): string {
 }
 
 export function TeamMemberCard({ member, locale }: TeamMemberCardProps) {
+    const [isOpen, setIsOpen] = useState(false)
     const { trigger } = useWebHaptics()
-    const image = typeof member.image === "object" && member.image !== null ? (member.image as Media) : null
+
+    const image = member.image as Media
+    const cardLayoutId = `team-member-card-${member.id ?? member.name}`
     const joinedAtLabel = member.joinedAt
         ? new Intl.DateTimeFormat(locale === "de" ? "de-DE" : "en-US", { dateStyle: "medium" }).format(new Date(member.joinedAt))
         : null
+    const joinedLabel = locale === "de" ? "Beigetreten" : "Joined"
 
     return (
-        <div
-            onClick={() => trigger("medium")}>
-            <Card variant="filled" className="bg-white/10! hover:bg-white/15! transition-all! h-full">
-                <div className="flex items-center gap-4 mb-4">
-                    {image?.url ? (
-                        <Image
-                            src={image.url}
-                            alt={image.alt ?? member.name}
-                            width={56}
-                            height={56}
-                            className="h-14 w-14 rounded-full object-cover"
-                        />
-                    ) : (
-                        <div className="h-14 w-14 rounded-full bg-white/15 flex items-center justify-center text-sm font-semibold text-white/80">
-                            {getInitials(member.name)}
+        <>
+            <motion.div
+                layoutId={cardLayoutId}
+                onClick={() => {
+                    trigger("medium")
+                    setIsOpen(true)
+                }}
+                onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault()
+                        trigger("medium")
+                        setIsOpen(true)
+                    }
+                }}
+                role="button"
+                tabIndex={0}
+                aria-haspopup="dialog"
+                aria-label={`${member.name} details`}
+                whileTap={{ scale: 0.98 }}
+            >
+                <Card variant="filled" className="bg-white/10! hover:bg-white/15! transition-all! h-full cursor-pointer">
+                    <div className="flex items-center gap-4 mb-4">
+                        {image?.url ? (
+                            <Image
+                                src={image.url}
+                                alt={image.alt ?? member.name}
+                                width={56}
+                                height={56}
+                                className="h-14 w-14 rounded-full object-cover"
+                            />
+                        ) : (
+                            <div className="h-14 w-14 rounded-full bg-white/15 flex items-center justify-center text-sm font-semibold text-white/80">
+                                {getInitials(member.name)}
+                            </div>
+                        )}
+                        <div>
+                            <h3 className="text-xl font-medium">{member.name}</h3>
+                            {member.role ? <p className="text-sm text-gray-400">{member.role}</p> : null}
                         </div>
-                    )}
-                    <div>
-                        <h3 className="text-xl font-semibold">{member.name}</h3>
-                        {member.role ? <p className="text-sm text-gray-400">{member.role}</p> : null}
                     </div>
-                </div>
 
-                {member.shortDescription ? <p className="text-white/80 mb-3">{member.shortDescription}</p> : null}
-                {member.about ? <p className="text-sm text-white/65">{member.about}</p> : null}
-                {joinedAtLabel ? <p className="text-xs text-white/50 mt-4">Joined: {joinedAtLabel}</p> : null}
-            </Card>
-        </div>
+                    {member.shortDescription ? <p className="text-white/80 mb-3">{member.shortDescription}</p> : null}
+                    {joinedAtLabel ? <p className="text-xs text-white/50 mt-4">{joinedLabel}: {joinedAtLabel}</p> : null}
+                </Card>
+            </motion.div>
+
+            <AnimatePresence>
+                {isOpen ? (
+                    <motion.div
+                        className="fixed inset-0 z-50 bg-black/65 backdrop-blur-sm p-4 md:p-8 flex items-center justify-center"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setIsOpen(false)}
+                    >
+                        <motion.div layoutId={cardLayoutId} className="w-full max-w-2xl" onClick={(event) => event.stopPropagation()}>
+                            <Card variant="filled" className="bg-primary/50! ring-1 ring-white/15 h-full">
+                                <div className="flex items-start justify-between gap-4 mb-4">
+                                    <div className="flex items-center gap-4">
+                                        {image?.url ? (
+                                            <Image
+                                                src={image.url}
+                                                alt={image.alt ?? member.name}
+                                                width={64}
+                                                height={64}
+                                                className="h-16 w-16 rounded-full object-cover"
+                                            />
+                                        ) : (
+                                            <div className="h-16 w-16 rounded-full bg-white/15 flex items-center justify-center text-base font-semibold text-white/80">
+                                                {getInitials(member.name)}
+                                            </div>
+                                        )}
+                                        <div>
+                                            <h3 className="text-2xl font-medium">{member.name}</h3>
+                                            {member.role ? <p className="text-sm text-gray-300">{member.role}</p> : null}
+                                        </div>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsOpen(false)}
+                                        className="rounded-lg p-1 text-sm text-gray-300 hover:text-white hover:bg-white/10 transition-colors"
+                                        aria-label={locale === "de" ? "Dialog schliessen" : "Close dialog"}
+                                    >
+                                        <IconX size={20}/>
+                                    </button>
+                                </div>
+
+                                {member.about ? <p className="text-white/80 leading-relaxed text-base">{member.about}</p> : null}
+                                {joinedAtLabel ? <p className="text-xs text-white/50 mt-6">{joinedLabel}: {joinedAtLabel}</p> : null}
+                            </Card>
+                        </motion.div>
+                    </motion.div>
+                ) : null}
+            </AnimatePresence>
+        </>
     )
 }

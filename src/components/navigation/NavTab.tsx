@@ -14,10 +14,9 @@ type TabProps = {
     activeSubMenu?: SubNavItem[] | null
     onMouseEnter: () => void
     title: string
-    disableIntroAnimation: boolean
 }
 
-const NavTab: React.FC<TabProps> = ({ setPosition, href, title, subMenu, activeSubMenu, onMouseEnter, disableIntroAnimation }) => {
+const NavTab: React.FC<TabProps> = ({ setPosition, href, title, subMenu, activeSubMenu, onMouseEnter }) => {
     const ref = useRef<HTMLDivElement>(null)
     const hasSubMenu = Boolean(subMenu?.length)
     const active = activeSubMenu && activeSubMenu === subMenu
@@ -30,7 +29,7 @@ const NavTab: React.FC<TabProps> = ({ setPosition, href, title, subMenu, activeS
         <motion.div
             className="relative z-50"
             ref={ref}
-            initial={disableIntroAnimation ? false : fadeInUp.initial}
+            initial={false}
             animate={fadeInUp.animate}
             transition={fadeInUp.transition}
             onMouseEnter={() => {

@@ -27,10 +27,6 @@ function Navigation({ locale, items }: NavigationProps) {
     const [isOpen, setIsOpen] = useState(false)
     const [activeSubMenu, setActiveSubMenu] = useState<SubNavItem[] | null>(null)
     const [mobileOpenKey, setMobileOpenKey] = useState<string | null>(null)
-    const [disableIntroAnimation, setDisableIntroAnimation] = useState<boolean>(() => {
-        if (typeof window === "undefined") return true
-        return window.sessionStorage.getItem("nav-intro-seen") === "1"
-    })
     const homeHref = `/${locale}`
 
     const navbarItems = useMemo(() => {
@@ -71,12 +67,6 @@ function Navigation({ locale, items }: NavigationProps) {
         return () => window.removeEventListener("scroll", handleScroll)
     }, [])
 
-    useEffect(() => {
-        if (disableIntroAnimation) return
-        window.sessionStorage.setItem("nav-intro-seen", "1")
-        setDisableIntroAnimation(true)
-    }, [disableIntroAnimation])
-
     if (!isDesktop) {
         return (
             <NavigationMobile
@@ -88,7 +78,6 @@ function Navigation({ locale, items }: NavigationProps) {
                 mobileOpenKey={mobileOpenKey}
                 setMobileOpenKey={setMobileOpenKey}
                 homeHref={homeHref}
-                disableIntroAnimation={disableIntroAnimation}
             />
         )
     }
@@ -103,7 +92,6 @@ function Navigation({ locale, items }: NavigationProps) {
             setActiveSubMenu={setActiveSubMenu}
             subMenuRef={subMenuRef}
             homeHref={homeHref}
-            disableIntroAnimation={disableIntroAnimation}
         />
     )
 }

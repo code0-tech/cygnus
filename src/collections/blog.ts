@@ -40,6 +40,11 @@ export const Blog: CollectionConfig = {
       localized: true,
     },
     {
+      name: "heroImage",
+      type: "upload",
+      relationTo: "media",
+    },
+    {
       name: "ogImage",
       type: "upload",
       relationTo: "media",
