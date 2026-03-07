@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "motion/react"
 import { useState } from "react"
 import type { TeamMemberItem } from "@/lib/cms"
 import type { Media } from "@/payload-types"
-import { Card } from "@code0-tech/pictor"
+import { Card, ScrollArea } from "@code0-tech/pictor"
 import Image from "next/image"
 import { useWebHaptics } from "web-haptics/react"
 import { IconX } from "@tabler/icons-react"
@@ -86,8 +86,12 @@ export function TeamMemberCard({ member, locale }: TeamMemberCardProps) {
                         exit={{ opacity: 0 }}
                         onClick={() => setIsOpen(false)}
                     >
-                        <motion.div layoutId={cardLayoutId} className="w-full max-w-2xl" onClick={(event) => event.stopPropagation()}>
-                            <Card variant="filled" className="bg-primary/50! ring-1 ring-white/15 h-full">
+                        <motion.div
+                            layoutId={cardLayoutId}
+                            className="w-full max-w-2xl max-h-[70vh]"
+                            onClick={(event) => event.stopPropagation()}
+                        >
+                            <Card variant="filled" className="bg-primary/50! ring ring-white/15 h-full max-h-[80vh] overflow-y-auto">
                                 <div className="flex items-start justify-between gap-4 mb-4">
                                     <div className="flex items-center gap-4">
                                         {image?.url ? (
