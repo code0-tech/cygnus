@@ -6,10 +6,12 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "postbuild": "node scripts/prepare-standalone.mjs",
     "start": "next start",
+    "standalone": "node .next/standalone/server.js",
     "lint": "next lint",
     "knip": "knip",
-    "pl:generate": "payload generate:types"
+    "generate": "payload generate:types"
   },
   "dependencies": {
     "@code0-tech/pictor": "^0.0.0-mvp.45",

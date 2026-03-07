@@ -1,13 +1,13 @@
 "use client"
 
-import { AnimatePresence, motion } from "motion/react"
-import { useState } from "react"
 import type { TeamMemberItem } from "@/lib/cms"
 import type { Media } from "@/payload-types"
-import { Card, ScrollArea } from "@code0-tech/pictor"
-import Image from "next/image"
-import { useWebHaptics } from "web-haptics/react"
+import { Card } from "@code0-tech/pictor"
 import { IconX } from "@tabler/icons-react"
+import { AnimatePresence, motion } from "motion/react"
+import Image from "next/image"
+import { useState } from "react"
+import { useWebHaptics } from "web-haptics/react"
 
 interface TeamMemberCardProps {
     member: TeamMemberItem
