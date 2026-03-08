@@ -14,12 +14,12 @@
     "generate": "payload generate:types"
   },
   "dependencies": {
-    "@code0-tech/pictor": "^0.0.0-mvp.45",
+    "@code0-tech/pictor": "^0.0.0-mvp.47",
     "@icons-pack/react-simple-icons": "^13.11.1",
-    "@payloadcms/db-postgres": "^3.77.0",
-    "@payloadcms/next": "^3.77.0",
-    "@payloadcms/plugin-import-export": "3.77.0",
-    "@payloadcms/richtext-lexical": "^3.77.0",
+    "@payloadcms/db-postgres": "3.79.0",
+    "@payloadcms/next": "3.79.0",
+    "@payloadcms/plugin-import-export": "3.79.0",
+    "@payloadcms/richtext-lexical": "3.79.0",
     "@tabler/icons-react": "^3.34.0",
     "@takumi-rs/image-response": "^0.68.17",
     "@types/nodemailer": "^7.0.11",
@@ -27,15 +27,14 @@
     "graphql": "^16.12.0",
     "knip": "^5.85.0",
     "motion": "^12.23.12",
-    "next": "15.4.11",
+    "next": "16.2.0-canary.85",
     "nodemailer": "^8.0.1",
     "ogl": "^1.0.11",
-    "payload": "^3.77.0",
+    "payload": "3.79.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "sass": "^1.89.2",
     "sharp": "^0.34.5",
-    "simple-icons": "^16.10.0",
     "tailwind-merge": "^3.3.1",
     "web-haptics": "^0.0.6"
   },
@@ -49,31 +48,12 @@
     "typescript": "^5.8.3"
   },
   "overrides": {
-    "@typescript-eslint/typescript-estree": {
-      "minimatch": "^9.0.6"
+    "dompurify": "3.3.2",
+    "@esbuild-kit/core-utils": {
+      "esbuild": "0.25.12"
     },
     "payload": {
       "ajv": "8.18.0"
-    },
-    "eslint": {
-      "ajv": "6.14.0",
-      "minimatch": "^3.1.3"
-    },
-    "@eslint/config-array": {
-      "minimatch": "^3.1.3"
-    },
-    "@eslint/eslintrc": {
-      "ajv": "6.14.0",
-      "minimatch": "^3.1.3"
-    },
-    "eslint-plugin-import": {
-      "minimatch": "^3.1.3"
-    },
-    "eslint-plugin-jsx-a11y": {
-      "minimatch": "^3.1.3"
-    },
-    "eslint-plugin-react": {
-      "minimatch": "^3.1.3"
     }
   }
 }
