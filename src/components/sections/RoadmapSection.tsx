@@ -29,7 +29,7 @@ export const RoadmapSection: React.FC<RoadmapSectionProps> = async ({ locale }) 
 
                                     <div className="relative ml-8 md:ml-0">
                                         <div className="pointer-events-none absolute -inset-8 rounded-4xl bg-blue/8 blur-3xl" />
-                                        <div className="relative z-10 rounded-2xl border border-white/10 bg-linear-to-br from-primary to-blue/2 p-5 backdrop-blur-md">
+                                        <div className="relative z-10 rounded-2xl border border-white/10 bg-linear-to-br from-primary to-blue/2 p-5 backdrop-blur-md hover:scale-102 transition-transform ease-in-out duration-300">
                                             <p className="mb-2 text-sm font-medium uppercase tracking-wider text-white/60">{item.time}</p>
                                             <h3 className="text-xl font-semibold text-white">{item.title}</h3>
                                             <p className="mt-3 text-sm leading-relaxed text-white/75">{item.description}</p>

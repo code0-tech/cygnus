@@ -21,7 +21,6 @@
     "@payloadcms/plugin-import-export": "3.79.0",
     "@payloadcms/richtext-lexical": "3.79.0",
     "@tabler/icons-react": "^3.34.0",
-    "@takumi-rs/image-response": "^0.68.17",
     "@types/nodemailer": "^7.0.11",
     "clsx": "^2.1.1",
     "graphql": "^16.12.0",

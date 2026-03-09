@@ -27,7 +27,7 @@ export function FeatureCard({children, className, contentClassName}: {children: 
     }, []);
 
     return (
-        <div ref={cardRef} className={cn("relative h-full overflow-hidden bg-linear-to-br from-white/5 to-primary rounded-xl ring ring-white/10 shadow-md", className)}>
+        <div ref={cardRef} className={cn("relative h-full overflow-hidden bg-linear-to-br from-white/5 to-primary rounded-xl ring ring-white/5 shadow-md", className)}>
             <div className={cn("absolute inset-0 z-10 flex flex-col justify-start items-center gap-4 p-4", contentClassName)}>
                 {children}
             </div>
