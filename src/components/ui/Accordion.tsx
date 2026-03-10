@@ -18,20 +18,25 @@ export const AccordionItem = ({ question, answer, isOpen, onToggle }: FAQItemPro
     return (
         <div
             className={cn(
-                "z-10 w-full bg-white/5 ring ring-white/10 shadow-md overflow-hidden",
-                "rounded-xl transition-colors duration-200 ease-linear cursor-pointer",
-                "hover:bg-white/10 hover:ring-white/15",
-                isOpen && "bg-white/10 ring-white/15"
+                "group relative z-10 w-full cursor-pointer overflow-hidden rounded-[1.4rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] shadow-[0_18px_50px_rgba(0,0,0,0.22)] transition-all duration-300 ease-out before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-linear-to-r before:from-transparent before:via-white/30 before:to-transparent before:content-['']",
+                "hover:-translate-y-0.5 hover:border-white/14 hover:shadow-[0_24px_70px_rgba(0,0,0,0.3)]",
+                isOpen && "border-white/16 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.03))] shadow-[0_24px_70px_rgba(0,0,0,0.3)]"
             )}
             onClick={handleClick}
         >
-            <div className="w-full px-5 py-4.5 pr-4 flex justify-between items-center gap-5 text-left">
-                <div className="flex-1 text-white/75 text-sm sm:text-md lg:text-lg font-medium wrap-break-word">{question}</div>
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),transparent_30%)]" />
+            <div className="pointer-events-none absolute -left-8 top-0 h-28 w-28 rounded-full bg-brand/10 blur-3xl transition-opacity duration-300 group-hover:opacity-100 opacity-70" />
+
+            <div className="relative z-10 flex w-full items-center justify-between gap-5 px-5 py-4.5 pr-4 text-left">
+                <div className={cn("flex-1 text-sm font-medium text-white/80 sm:text-base lg:text-lg wrap-break-word transition-colors", isOpen && "text-white")}>{question}</div>
                 <motion.div
                     animate={{ rotate: isOpen ? 180 : 0 }}
                     transition={{ duration: 0.3, ease: "circOut" }}
+                    className={cn(
+                        "flex h-10 w-10 shrink-0 items-center justify-center text-white/55 transition-colors duration-300",
+                    )}
                 >
-                    <IconChevronDown className="w-6 h-6 text-white/50"/>
+                    <IconChevronDown className="h-5 w-5"/>
                 </motion.div>
             </div>
             <div
@@ -40,8 +45,8 @@ export const AccordionItem = ({ question, answer, isOpen, onToggle }: FAQItemPro
                 }`}
             >
                 <div className="overflow-hidden">
-                    <div className="px-5 pb-4.5 pt-2">
-                        <div className="text-white/50 text-md wrap-break-word">{answer}</div>
+                    <div className="relative z-10 px-5 pb-5 pt-1">
+                        <div className="text-sm leading-7 text-white/62 sm:text-base wrap-break-word">{answer}</div>
                     </div>
                 </div>
             </div>

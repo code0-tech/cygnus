@@ -19,7 +19,7 @@ export async function WelcomeUserCard({ locale }: WelcomeUserCardProps) {
     ]
 
     return (
-        <FeatureCard className="col-span-1 md:col-span-2 row-span-3">
+        <FeatureCard className="col-span-1 md:col-span-2 row-span-3" tone="aqua">
             <div className="relative w-[90%] mt-4 h-full overflow-hidden pt-4 px-4 bg-linear-to-b from-primary to-primary/50 rounded-t-lg border border-b-0 border-white/10">
                 <p className="mb-4 text-lg font-semibold text-gray-300">Welcome @Nico</p>
 

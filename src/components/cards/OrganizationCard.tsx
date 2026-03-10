@@ -12,7 +12,7 @@ export async function OrganizationCard({ locale }: OrganizationCardProps) {
     const organizations = ["Cygnus Labs", "Atlas Systems", "Nova Ops", "Orion Collective", "Pulse Ventures"]
 
     return (
-        <FeatureCard className="col-span-1 md:col-span-3 row-span-3">
+        <FeatureCard className="col-span-1 md:col-span-3 row-span-3" tone="blue">
             <div className="relative w-full h-full overflow-hidden pt-4 px-4">
                 <div className="w-full border-b border-white/10 pb-1">
                     <div className="inline-flex items-center gap-4">

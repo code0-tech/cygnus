@@ -44,7 +44,7 @@ export async function SuggestionMenuCard({ locale }: SuggestionMenuCardProps) {
     ]
 
     return (
-        <FeatureCard className="col-span-1 row-span-7">
+        <FeatureCard className="col-span-1 row-span-7" tone="aqua">
             <SuggesstionMenuClient suggestions={suggestions} />
             <FeatureCardText content={content} />
             <div className="pointer-events-none absolute inset-x-0 bottom-0 h-72 bg-linear-to-t from-primary via-primary/70 to-transparent" />

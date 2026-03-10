@@ -12,7 +12,7 @@ export async function RuntimeTypesCard({ locale }: RuntimeTypesCardProps) {
     const content = await getFeatureBySlug("runtime-types", locale)
 
     return (
-        <FeatureCard className="col-span-1 row-span-4">
+        <FeatureCard className="col-span-1 row-span-4" tone="brand">
 
             <div className="flex flex-col items-center justify-center flex-1 gap-2 text-lg">
                 <div className="w-64 flex items-center justify-center gap-2 px-4 py-1 rounded-full text-pink bg-linear-to-br from-pink/10 to-pink/40 ring ring-pink/40 shadow-md">

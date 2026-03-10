@@ -14,7 +14,8 @@ export const RoadmapSection: React.FC<RoadmapSectionProps> = async ({ locale }) 
     return (
         <Section sectionType="RoadmapSection" funnelType="left" animationPreset="zoom-in">
             <div className="relative w-full py-8 md:py-16">
-                <div className="pointer-events-none absolute left-3 top-0 h-full w-0.5 rounded-full bg-white/15 md:left-1/2 md:-translate-x-1/2" />
+                <div className="pointer-events-none absolute left-3 top-0 h-full w-0.5 rounded-full bg-linear-to-b from-brand/10 via-white/20 to-blue/10 md:left-1/2 md:-translate-x-1/2" />
+                <div className="pointer-events-none absolute left-3 top-0 h-full w-8 -translate-x-1/2 bg-[radial-gradient(circle,rgba(122,203,255,0.12),transparent_70%)] blur-2xl md:left-1/2" />
 
                 <div className="flex flex-col gap-10 md:gap-14">
                     {items.map((item, index) => {
@@ -22,17 +23,22 @@ export const RoadmapSection: React.FC<RoadmapSectionProps> = async ({ locale }) 
 
                         return (
                             <article key={item.id} id={`roadmap-item-${item.id}`} className="relative">
-                                <div className="absolute left-3 top-6 h-3 w-3 -translate-x-1/2 rounded-full border border-brand/60 bg-brand md:left-1/2" />
+                                <div className="absolute left-3 top-6 h-6 w-6 -translate-x-1/2 rounded-full border border-brand/18 bg-brand/12 blur-md md:left-1/2" />
+                                <div className="absolute left-3 top-6 h-3 w-3 -translate-x-1/2 rounded-full border border-brand/70 bg-brand shadow-[0_0_18px_rgba(134,255,190,0.55)] md:left-1/2" />
 
                                 <div className={`grid grid-cols-1 md:grid-cols-2 md:gap-10 ${isEven ? "" : "md:[&>*:first-child]:order-2 md:[&>*:last-child]:order-1"}`}>
                                     <div className="hidden md:block" />
 
                                     <div className="relative ml-8 md:ml-0">
-                                        <div className="pointer-events-none absolute -inset-8 rounded-4xl bg-blue/8 blur-3xl" />
-                                        <div className="relative z-10 rounded-2xl border border-white/10 bg-linear-to-br from-primary to-blue/2 p-5 backdrop-blur-md hover:scale-102 transition-transform ease-in-out duration-300">
-                                            <p className="mb-2 text-sm font-medium uppercase tracking-wider text-white/60">{item.time}</p>
-                                            <h3 className="text-xl font-semibold text-white">{item.title}</h3>
-                                            <p className="mt-3 text-sm leading-relaxed text-white/75">{item.description}</p>
+                                        <div className="pointer-events-none absolute -inset-8 rounded-4xl bg-blue/10 blur-3xl" />
+                                        <div className="relative z-10 overflow-hidden rounded-3xl border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-6 shadow-[0_18px_50px_rgba(0,0,0,0.24)] backdrop-blur-md transition-all duration-300 ease-in-out before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-linear-to-r before:from-transparent before:via-white/30 before:to-transparent before:content-[''] hover:-translate-y-1 hover:border-white/14 hover:shadow-[0_24px_70px_rgba(0,0,0,0.34)]">
+                                            <div className="mb-4 flex items-center gap-3 text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-white/42">
+                                                <span className="inline-flex rounded-full border border-brand/20 bg-brand/10 px-3 py-1 text-brand">
+                                                    {item.time}
+                                                </span>
+                                            </div>
+                                            <h3 className="text-xl font-semibold tracking-tight text-white md:text-2xl">{item.title}</h3>
+                                            <p className="mt-3 text-sm leading-7 text-white/75 md:text-[0.95rem]">{item.description}</p>
                                         </div>
                                     </div>
                                 </div>

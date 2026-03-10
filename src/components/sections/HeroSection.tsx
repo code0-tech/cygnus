@@ -40,7 +40,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ content }) => {
     return (
         <Section showBlur={false} showFunnel={false}>
 
-            <div className="relative h-[85vh] rounded-xl ring ring-white/5 overflow-hidden shadow-md">
+            <div className="relative h-[85vh] overflow-hidden rounded-4xl border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] shadow-[0_24px_80px_rgba(0,0,0,0.34)] before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-linear-to-r before:from-transparent before:via-white/30 before:to-transparent before:content-['']">
 
                 <div className="pointer-events-none absolute inset-0 -z-10 bg-[#0f0c1f]">
                     <Grainient
@@ -69,7 +69,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ content }) => {
                     />
                 </div>
 
-                <div className={"z-10 h-full flex flex-col lg:flex-row items-center justify-between gap-12 px-8 lg:px-16 py-12 lg:py-24"}>
+                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.08),transparent_36%)]" />
+
+                <div className={"relative z-10 flex h-full flex-col items-center justify-between gap-12 rounded-[calc(1.9rem-1px)] px-8 py-12 lg:flex-row lg:px-16 lg:py-24"}>
 
                     <div className="w-full lg:w-2/5 flex flex-col gap-4 text-start">
                         <div className="relative z-10 group bg-brand/10 cursor-pointer border border-brand/20 text-brand w-fit px-4 py-0.5 rounded-full flex items-center justify-between gap-1 hover:gap-2 hover:pr-3 transition-all text-sm font-medium">
@@ -112,8 +114,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ content }) => {
                         height={620}
                         width={900}
                         className={
-                            "w-full h-auto rounded-xl border border-white/10 lg:w-4/5 lg:border-0 lg:border-l lg:border-y lg:rounded-l-xl" +
-                            "lg:rounded-r-none lg:ring-4 lg:ring-white/5 lg:-mr-56"
+                            "h-auto w-full rounded-[1.2rem] border border-white/10 shadow-[0_18px_50px_rgba(0,0,0,0.28)] lg:w-4/5 lg:rounded-l-[1.2rem] lg:rounded-r-none lg:border-0 lg:border-l lg:border-y lg:ring-4 lg:ring-white/5 lg:-mr-56"
                         }
                     />
                 </div>
