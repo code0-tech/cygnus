@@ -1,9 +1,10 @@
 "use client"
 
 import { LandingContainer } from "@/components/ui/LandingContainer"
-import type { Footer } from "@/payload-types"
 import { localizeHref, type AppLocale } from "@/lib/i18n"
-import { IconBrandDiscord, IconBrandGithub, IconBrandInstagram, IconBrandX } from "@tabler/icons-react"
+import { DEFAULT_DISCORD_URL, DEFAULT_GITHUB_URL, DEFAULT_INSTAGRAM_URL, DEFAULT_X_URL } from "@/lib/siteConfig"
+import type { Footer } from "@/payload-types"
+import { SiDiscord, SiGithub, SiInstagram, SiX } from "@icons-pack/react-simple-icons"
 import Image from "next/image"
 import Link from "next/link"
 import React from "react"
@@ -30,18 +31,18 @@ export const FooterSection: React.FC<FooterSectionProps> = ({ locale, footer }) 
                                 {footer.company_name}
                             </p>
                         </div>
-                        <div className={"flex items-center gap-4"} onClick={() => trigger("medium")}>
-                            <Link href={"https://instagram.com/code0.tech"}>
-                                <IconBrandInstagram size={24} className={"text-white/75"}/>
+                        <div className={"flex items-center gap-4"}>
+                            <Link href={DEFAULT_INSTAGRAM_URL} onClick={() => trigger("medium")} className="group">
+                                <SiInstagram size={20} className={"text-white/75 group-hover:text-white"}/>
                             </Link>
-                            <Link href={"https://discord.com/invite/vsMtqBBqC7"} onClick={() => trigger("medium")}>
-                                <IconBrandDiscord size={24} className={"text-white/75"}/>
+                            <Link href={DEFAULT_DISCORD_URL} onClick={() => trigger("medium")} className="group">
+                                <SiDiscord size={20} className={"text-white/75 group-hover:text-white"}/>
                             </Link>
-                            <Link href={"https://x.com"} onClick={() => trigger("medium")}>
-                                <IconBrandX size={24} className={"text-white/75"}/>
+                            <Link href={DEFAULT_X_URL} onClick={() => trigger("medium")} className="group">
+                                <SiX size={20} className={"text-white/75 group-hover:text-white"}/>
                             </Link>
-                            <Link href={"https://github.com/code0-tech"} onClick={() => trigger("medium")}>
-                                <IconBrandGithub size={24} className={"text-white/75"}/>
+                            <Link href={DEFAULT_GITHUB_URL} onClick={() => trigger("medium")} className="group">
+                                <SiGithub size={20} className={"text-white/75 group-hover:text-white"}/>
                             </Link>
                         </div>
                     </div>
