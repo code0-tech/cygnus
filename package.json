@@ -14,7 +14,7 @@
     "generate": "payload generate:types"
   },
   "dependencies": {
-    "@code0-tech/pictor": "^0.0.0-mvp.47",
+    "@code0-tech/pictor": "^0.4.0",
     "@icons-pack/react-simple-icons": "^13.11.1",
     "@payloadcms/db-postgres": "3.79.0",
     "@payloadcms/next": "3.79.0",

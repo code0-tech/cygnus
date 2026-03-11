@@ -1,6 +1,6 @@
 "use client"
 
-import { Button, EmailInput, emailValidation, Input, TextInput, useForm } from "@code0-tech/pictor"
+import { Button, EmailInput, emailValidation, Input, TextAreaInput, TextInput, useForm } from "@code0-tech/pictor"
 import { useState } from "react"
 import { useWebHaptics } from "web-haptics/react"
 
@@ -38,6 +38,7 @@ export function JobApplicationCard({ jobSlug, content }: JobApplicationCardProps
     const [submitStatus, setSubmitStatus] = useState<{ type: "success" | "error", message: string } | null>(null)
 
     const [inputs, validate] = useForm({
+        useInitialValidation: false,
         initialValues: {
             name: "",
             email: "",
@@ -97,7 +98,7 @@ export function JobApplicationCard({ jobSlug, content }: JobApplicationCardProps
     })
 
     return (
-        <div className="flex flex-col">
+        <div className="flex flex-col gap-4">
             <h1 className="text-4xl font-semibold text-white">{labels.applicationHeading}</h1>
             <div className="flex flex-col gap-2 mt-6">
                 <TextInput
@@ -115,7 +116,7 @@ export function JobApplicationCard({ jobSlug, content }: JobApplicationCardProps
             </div>
 
             <div className="flex flex-col gap-2">
-                <Input
+                <TextAreaInput
                     placeholder={labels.applicationMessagePlaceholder}
                     label={labels.applicationMessageLabel}
                     {...inputs.getInputProps("text")}

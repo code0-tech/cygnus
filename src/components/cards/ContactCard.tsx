@@ -1,6 +1,6 @@
 "use client"
 
-import { Button, EmailInput, emailValidation, Input, TextInput, useForm } from "@code0-tech/pictor"
+import { Button, EmailInput, emailValidation, Input, TextAreaInput, TextInput, useForm } from "@code0-tech/pictor"
 import { useState } from "react"
 import { useWebHaptics } from "web-haptics/react"
 
@@ -37,6 +37,7 @@ export function ContactCard({ content }: ContactCardProps) {
     const [submitStatus, setSubmitStatus] = useState<{ type: "success" | "error", message: string } | null>(null)
 
     const [inputs, validate] = useForm({
+        useInitialValidation: false,
         initialValues: {
             name: "",
             email: "",
@@ -96,7 +97,7 @@ export function ContactCard({ content }: ContactCardProps) {
     })
 
     return (
-        <div className="flex flex-col">
+        <div className="flex flex-col gap-4">
             <h1 className="text-4xl font-semibold text-white">{labels.heading}</h1>
             <div className="flex flex-col gap-2 mt-6">
                 <TextInput
@@ -114,7 +115,7 @@ export function ContactCard({ content }: ContactCardProps) {
             </div>
 
             <div className="flex flex-col gap-2">
-                <Input
+                <TextAreaInput
                     placeholder={labels.messagePlaceholder}
                     label={labels.messageLabel}
                     {...inputs.getInputProps("message")}
