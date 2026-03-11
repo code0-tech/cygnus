@@ -13,34 +13,43 @@ export async function RoleSystemCard({ locale }: RoleSystemCardProps) {
 
     const roles = [
         {
-            name: "Workspace Admin",
-            scope: "Global",
-            assign: "Team Orion",
+            name: "Owner",
+            description: "Can manage",
+            badges: ["everything"],
+            updatedAt: "Updated 16 days ago",
         },
         {
-            name: "Project Maintainer",
-            scope: "Cygnus",
-            assign: "Cygnus Platform",
+            name: "Maintainer",
+            description: "Can manage",
+            badges: ["projects", "organization", "runtimes"],
+            updatedAt: "Updated 16 days ago",
         },
         {
-            name: "Billing Viewer",
-            scope: "Finance",
-            assign: "Nova Billing",
+            name: "Member",
+            description: "Can manage",
+            badges: ["flows", "projects"],
+            updatedAt: "Updated 16 days ago",
+        },
+        {
+            name: "Test",
+            description: "Can manage",
+            badges: ["projects", "roles", "flows",],
+            updatedAt: "Updated 4 days ago",
         },
     ]
 
     return (
         <FeatureCard
             className="col-span-1 md:col-span-3 row-span-2"
-            contentClassName="w-full flex flex-row items-center justify-between"
+            contentClassName="w-full flex flex-col gap-8 md:flex-row md:items-center md:justify-between"
             tone="pink"
         >
-            <div className="relative w-2/3 h-full overflow-hidden flex items-center -ml-4">
+            <div className="relative h-88 w-full overflow-hidden md:h-full md:w-2/3">
                 <RoleSystemAnimation roles={roles} />
             </div>
-            <div className="pointer-events-none absolute left-0 inset-y-0 w-48 bg-linear-to-r from-primary via-primary/70 to-transparent" />
-            <div className="pointer-events-none absolute right-20 inset-y-0 w-96 bg-linear-to-r from-transparent via-primary to-transparent" />
-            <FeatureCardText content={content} className="w-1/3"/>
+            <div className="pointer-events-none absolute left-0 inset-y-0 hidden w-48 bg-linear-to-r from-primary via-primary/90 to-transparent md:block" />
+            <div className="pointer-events-none absolute right-0 inset-y-0 hidden w-152 bg-linear-to-r from-transparent via-primary to-primary md:block" />
+            <FeatureCardText content={content} className="w-full md:w-1/3" />
         </FeatureCard>
     )
 }

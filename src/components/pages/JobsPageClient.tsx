@@ -4,13 +4,13 @@ import { JobsCard } from "@/components/cards/JobsCard"
 import type { JobItem } from "@/lib/cms"
 import {
     Button,
-    Input,
     Menu,
     MenuContent,
     MenuItem,
     MenuTrigger,
+    TextInput
 } from "@code0-tech/pictor"
-import { IconChevronDown } from "@tabler/icons-react"
+import { IconChevronDown, IconSearch } from "@tabler/icons-react"
 import { useMemo, useState } from "react"
 
 interface JobsPageContent {
@@ -79,11 +79,13 @@ export function JobsPageClient({ jobs, locale, content }: JobsPageClientProps) {
             <h1 className={"text-4xl font-semibold mb-8 text-center"}>{labels.heading}</h1>
 
             <div className="w-full flex flex-col gap-2 mb-2">
-                <Input
+                <TextInput
                     value={search}
                     onChange={(event) => setSearch(event.target.value)}
                     placeholder={labels.searchPlaceholder}
-                    className="w-full rounded-xl bg-white/10 border border-white/15 text-white/85 px-3 h-10"
+                    left={<IconSearch size={13} />}
+                    clearable
+                    className="w-full rounded-xl bg-white/10 border border-white/15 text-white/85"
                 />
 
                 <div className="w-full flex flex-col md:flex-row md:justify-between gap-2">

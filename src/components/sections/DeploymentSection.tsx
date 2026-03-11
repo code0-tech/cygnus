@@ -66,7 +66,7 @@ export const DeploymentSection: React.FC<DeploymentSectionProps> = ({ content })
                                     src="/code0_software.png"
                                     alt={card.alt}
                                     fill
-                                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                                    className="object-cover transition-transform duration-700"
                                 />
                             </div>
                             <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-28 bg-linear-to-t from-primary via-primary/70 to-transparent" />

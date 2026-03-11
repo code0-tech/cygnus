@@ -44,7 +44,7 @@ export const BrandSection: React.FC<BrandSectionProps> = ({ content }) => {
                                                 src={logo.url ?? ""}
                                                 alt={logo.alt}
                                                 fill
-                                                className="object-contain brightness-0 invert opacity-75"
+                                                className="object-contain brightness-0 invert"
                                                 sizes="(min-width: 768px) 20vw, 40vw"
                                             />
                                         </a>
@@ -53,7 +53,7 @@ export const BrandSection: React.FC<BrandSectionProps> = ({ content }) => {
                                             src={logo.url ?? ""}
                                             alt={logo.alt}
                                             fill
-                                            className="object-contain brightness-0 invert opacity-75"
+                                            className="object-contain brightness-0 invert"
                                             sizes="(min-width: 768px) 20vw, 40vw"
                                         />
                                     )}

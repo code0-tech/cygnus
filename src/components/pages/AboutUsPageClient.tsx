@@ -22,8 +22,8 @@ export async function AboutUsPageClient({ locale, content }: AboutUsPageClientPr
 
     return (
         <div className={"w-full md:w-[50vw] mx-auto flex flex-col gap-8"}>
-            <h1 className={"text-4xl font-semibold mb-4 text-center"}>{labels.title}</h1>
-            <p className="text-center text-white/75 text-text-balance mb-4">{labels.description}</p>
+            <h1 className={"text-4xl font-semibold mb-4"}>{labels.title}</h1>
+            <p className="text-white/75 text-text-balance mb-4">{labels.description}</p>
             {teamMembers.length > 0 ? (
                 <div className="flex flex-col gap-4 mt-2">
                     {teamMembers.map((member) => (
