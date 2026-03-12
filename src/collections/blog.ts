@@ -40,6 +40,11 @@ export const Blog: CollectionConfig = {
       localized: true,
     },
     {
+      name: "shortDescription",
+      type: "textarea",
+      localized: true,
+    },
+    {
       name: "heroImage",
       type: "upload",
       relationTo: "media",

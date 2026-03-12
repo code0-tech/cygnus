@@ -34,12 +34,9 @@ type JobDetailItem = Pick<Job, "id" | "title" | "slug" | "category" | "type" | "
 export type TeamMemberItem = Pick<User, "id" | "name" | "image" | "shortDescription" | "about" | "role" | "joinedAt">
 type RoadmapItem = Pick<PayloadRoadmapItem, "id" | "time" | "title" | "description">
 
-type BlogPostItem = Pick<Blog, "id" | "title" | "slug" | "content" | "createdAt"> & {
+export type BlogPostItem = Pick<Blog, "id" | "title" | "slug" | "content" | "createdAt" | "shortDescription"> & {
     heroImage?: (number | null) | Media
     author: number | Pick<User, "email" | "name">
-}
-export type BlogListItem = Pick<Blog, "id" | "title" | "slug" | "createdAt"> & {
-    author: number | Pick<User, "name">
 }
 
 const getLandingPageCached = unstable_cache(
@@ -234,7 +231,7 @@ const getBlogPostBySlugCached = unstable_cache(
 )
 
 const getBlogPostsCached = unstable_cache(
-    async (locale: AppLocale): Promise<BlogListItem[]> => {
+    async (locale: AppLocale): Promise<BlogPostItem[]> => {
         const payload = await getPayloadClient()
         const result = await payload.find({
             collection: "blog",
@@ -246,11 +243,14 @@ const getBlogPostsCached = unstable_cache(
             select: {
                 title: true,
                 slug: true,
+                content: true,
+                shortDescription: true,
                 createdAt: true,
+                heroImage: true,
                 author: true,
             },
         })
-        return (result.docs as BlogListItem[]) ?? []
+        return (result.docs as BlogPostItem[]) ?? []
     },
     ["blog-posts"],
     { revalidate: 300, tags: ["blog"] },
@@ -332,10 +332,6 @@ export async function getFooter(locale: AppLocale = DEFAULT_LOCALE) {
     return getFooterCached(locale)
 }
 
-async function getFeatures(locale: AppLocale = DEFAULT_LOCALE) {
-    return getFeaturesCached(locale)
-}
-
 export async function getFeatureBySlug(slug: FeatureSlug, locale: AppLocale = DEFAULT_LOCALE) {
     const features = await getFeaturesCached(locale)
     return features.find((feature) => feature.slug === slug) ?? null
@@ -361,7 +357,7 @@ export async function getBlogPostBySlug(slug: string, locale: AppLocale = DEFAUL
     return getBlogPostBySlugCached(slug, locale)
 }
 
-export async function getBlogPosts(locale: AppLocale = DEFAULT_LOCALE): Promise<BlogListItem[]> {
+export async function getBlogPosts(locale: AppLocale = DEFAULT_LOCALE): Promise<BlogPostItem[]> {
     return getBlogPostsCached(locale)
 }
 

@@ -1,11 +1,14 @@
 import { getBlogPostBySlug } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import type { Blog, Media, User } from "@/payload-types"
+import { IconArrowLeft } from "@tabler/icons-react"
 import { convertLexicalToHTML } from "@payloadcms/richtext-lexical/html"
 import Image from "next/image"
+import Link from "next/link"
 import { notFound } from "next/navigation"
 import { MarkdownContent } from "../MarkdownContent"
 import { TableOfContents, type TocHeading } from "./TableOfContents"
+import { LinkButton } from "../ui/LinkButton"
 
 interface BlogPostProps {
     slug: string
@@ -85,30 +88,51 @@ export async function BlogPost({ slug, locale }: BlogPostProps) {
 
     return (
         <div className="space-y-8">
+            <div className="flex justify-start">
+                <LinkButton
+                    href={`/${locale}/blog`}
+                    showArrow={false}
+                    className="border-0"
+                >
+                    <IconArrowLeft size={16} />
+                    {locale === "de" ? "Zurück" : "Back"}
+                </LinkButton>
+            </div>
+
+            <header className="text-center">
+                <h1 className="text-4xl font-semibold mb-3">{post.title}</h1>
+                {post.shortDescription ? <p className="text-balance text-lg text-white/70 mb-4">{post.shortDescription}</p> : null}
+                <p className="text-sm text-white/60">
+                    {(post.author as User).name} - {publishedDate}
+                </p>
+            </header>
+
             {heroImage?.url ? (
-                <div className="relative aspect-video md:aspect-16/7 lg:aspect-16/5 w-full overflow-hidden rounded-2xl ring ring-white/10">
-                    <Image
-                        src={heroImage.url}
-                        alt={heroImage.alt ?? post.title}
-                        fill
-                        priority
-                        className="object-cover"
-                    />
+                <div className="relative rounded-3xl border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.07),rgba(255,255,255,0.02))] p-2 shadow-[0_24px_70px_rgba(0,0,0,0.34)] backdrop-blur-md">
+                    <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-linear-to-r from-transparent via-white/35 to-transparent" />
+                    <div className="relative aspect-video md:aspect-16/7 lg:aspect-16/5 w-full overflow-hidden rounded-2xl ring ring-white/10">
+                        <Image
+                            src={heroImage.url}
+                            alt={heroImage.alt ?? post.title}
+                            fill
+                            priority
+                            className="object-cover"
+                        />
+                    </div>
                 </div>
             ) : (
-                <div className="aspect-video md:aspect-16/7 lg:aspect-16/5 w-full rounded-2xl ring ring-white/10 bg-white/5 flex items-center justify-center text-white/50 text-sm">
-                    {locale === "de" ? "Kein Hero-Bild vorhanden" : "No hero image available"}
+                <div className="relative rounded-3xl border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.07),rgba(255,255,255,0.02))] p-3 shadow-[0_24px_70px_rgba(0,0,0,0.34)] backdrop-blur-md">
+                    <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-linear-to-r from-transparent via-white/35 to-transparent" />
+                    <div className="aspect-video md:aspect-16/7 lg:aspect-16/5 w-full rounded-2xl ring ring-white/10 bg-white/5 flex items-center justify-center text-white/50 text-sm">
+                        {locale === "de" ? "Kein Hero-Bild vorhanden" : "No hero image available"}
+                    </div>
                 </div>
             )}
 
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
                 <TableOfContents headings={headings} />
                 <article className="lg:col-span-3">
-                <h1 className={"text-4xl font-semibold mb-2"}>{post.title}</h1>
-                <p className="text-sm text-white/60 mb-8">
-                    {(post.author as User).name} - {publishedDate}
-                </p>
-                <MarkdownContent content={contentHtmlWithIds}/>
+                    <MarkdownContent content={contentHtmlWithIds} />
                 </article>
             </div>
         </div>

@@ -9,7 +9,9 @@ export default async function BlogPage({ params }: { params: Promise<{ locale: s
     const { locale } = await params
     if (!isSupportedLocale(locale)) notFound()
 
-    const posts = await getBlogPosts(locale)
+    const posts = (await getBlogPosts(locale)).sort((left, right) =>
+        new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime(),
+    )
 
     return (
         <>

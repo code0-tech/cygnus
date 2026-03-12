@@ -497,6 +497,7 @@ export interface Blog {
     };
     [k: string]: unknown;
   };
+  shortDescription?: string | null;
   heroImage?: (number | null) | Media;
   ogImage?: (number | null) | Media;
   twitterImage?: (number | null) | Media;
@@ -1100,6 +1101,7 @@ export interface BlogSelect<T extends boolean = true> {
   slug?: T;
   author?: T;
   content?: T;
+  shortDescription?: T;
   heroImage?: T;
   ogImage?: T;
   twitterImage?: T;
