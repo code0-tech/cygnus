@@ -1,4 +1,3 @@
-import { AboutBlock } from "../blocks/AboutBlock"
 import { BrandBlock } from "../blocks/BrandBlock"
 import { ContactBlock } from "../blocks/ContactBlock"
 import { CtaBlock } from "../blocks/CtaBlock"
@@ -50,7 +49,7 @@ export const Pages: CollectionConfig = {
       name: "layout",
       label: "Layout",
       type: "blocks",
-      blocks: [HeroBlock, BrandBlock, UseCaseBlock, FaqBlock, CtaBlock, JobsBlock, MarkdownBlock, ContactBlock, DeploymentBlock, AboutBlock],
+      blocks: [HeroBlock, BrandBlock, UseCaseBlock, FaqBlock, CtaBlock, JobsBlock, MarkdownBlock, ContactBlock, DeploymentBlock],
       required: false,
       localized: true,
     },

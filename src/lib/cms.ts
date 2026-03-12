@@ -14,7 +14,6 @@ export type FaqLayoutBlock = Extract<PageLayoutBlock, { blockType: "faq" }>
 export type UseCaseLayoutBlock = Extract<PageLayoutBlock, { blockType: "usecase" }>
 export type DeploymentLayoutBlock = Extract<PageLayoutBlock, { blockType: "deployment" }>
 export type JobsLayoutBlock = Extract<PageLayoutBlock, { blockType: "jobs" }>
-export type AboutUsLayoutBlock = Extract<PageLayoutBlock, { blockType: "about" }>
 export type MarkdownLayoutBlock = Extract<PageLayoutBlock, { blockType: "markdown" }>
 export type ContactLayoutBlock = Extract<PageLayoutBlock, { blockType: "contact" }>
 
