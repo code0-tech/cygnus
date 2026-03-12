@@ -9,6 +9,7 @@ export function NodeBadge({ value }: { value: string }) {
             style={{ verticalAlign: "middle", textWrap: "nowrap" }}
             color={"bluie"}
             border
+            suppressHydrationWarning
         >
             <IconNote size={12}/>
             <Text size={"sm"} style={{color: "inherit"}}>

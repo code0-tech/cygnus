@@ -14,6 +14,7 @@ export function ClientMemberCard() {
                 <Badge
                     color="info"
                     className="ml-auto align-middle"
+                    suppressHydrationWarning
                 >
                     <Text size="xs" style={{color: "inherit"}}>Maintainer</Text>
                 </Badge>

@@ -1,26 +1,32 @@
 import {IconChevronDown} from "@tabler/icons-react"
 import React from "react"
-import {motion} from "motion/react"
 import { cn } from "@/lib/utils"
 
+const accordionCardBaseClassName =
+    "group relative z-10 w-full cursor-pointer overflow-hidden rounded-2xl hover:bg-white/5 transition-colors border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] shadow-[0_18px_50px_rgba(0,0,0,0.22)] before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-linear-to-r before:from-transparent before:via-white/30 before:to-transparent before:content-['']"
+
+const accordionCardOpenClassName =
+    "border-white/16 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.03))] shadow-[0_24px_70px_rgba(0,0,0,0.3)]"
+
 interface FAQItemProps {
+    index: number
     question: string
     answer: string
     isOpen: boolean
-    onToggle: () => void
+    onToggle: (index: number) => void
 }
 
-export const AccordionItem = ({ question, answer, isOpen, onToggle }: FAQItemProps) => {
+const AccordionItemComponent = ({ index, question, answer, isOpen, onToggle }: FAQItemProps) => {
     const handleClick = (e: React.MouseEvent) => {
         e.preventDefault()
-        onToggle()
+        onToggle(index)
     }
+
     return (
         <div
             className={cn(
-                "group relative z-10 w-full cursor-pointer overflow-hidden rounded-[1.4rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] shadow-[0_18px_50px_rgba(0,0,0,0.22)] transition-all duration-300 ease-out before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-linear-to-r before:from-transparent before:via-white/30 before:to-transparent before:content-['']",
-                "hover:-translate-y-0.5 hover:border-white/14 hover:shadow-[0_24px_70px_rgba(0,0,0,0.3)]",
-                isOpen && "border-white/16 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.03))] shadow-[0_24px_70px_rgba(0,0,0,0.3)]"
+                accordionCardBaseClassName,
+                isOpen && accordionCardOpenClassName
             )}
             onClick={handleClick}
         >
@@ -29,15 +35,14 @@ export const AccordionItem = ({ question, answer, isOpen, onToggle }: FAQItemPro
 
             <div className="relative z-10 flex w-full items-center justify-between gap-5 px-5 py-4.5 pr-4 text-left">
                 <div className={cn("flex-1 text-sm font-medium text-white/80 sm:text-base lg:text-lg wrap-break-word transition-colors", isOpen && "text-white")}>{question}</div>
-                <motion.div
-                    animate={{ rotate: isOpen ? 180 : 0 }}
-                    transition={{ duration: 0.3, ease: "circOut" }}
+                <div
                     className={cn(
-                        "flex h-10 w-10 shrink-0 items-center justify-center text-white/55 transition-colors duration-300",
+                        "flex h-10 w-10 shrink-0 items-center justify-center text-white/55 transition-transform duration-300 will-change-transform",
+                        isOpen && "rotate-180"
                     )}
                 >
                     <IconChevronDown className="h-5 w-5"/>
-                </motion.div>
+                </div>
             </div>
             <div
                 className={`grid transition-[grid-template-rows] duration-300 ease-out ${
@@ -53,3 +58,5 @@ export const AccordionItem = ({ question, answer, isOpen, onToggle }: FAQItemPro
         </div>
     )
 }
+
+export const AccordionItem = React.memo(AccordionItemComponent)

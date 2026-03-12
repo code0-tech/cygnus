@@ -18,6 +18,8 @@ interface NavigationProps {
 }
 
 function Navigation({ locale, items }: NavigationProps) {
+    const scrollOpenThreshold = 8
+    const scrollCloseThreshold = 3
     const isDesktop = useMediaQuery("(min-width: 1024px)")
     const menuRef = useOutsideClick<HTMLElement>(() => setIsOpen(false))
     const subMenuRef = useOutsideClick<HTMLDivElement>(() => setActiveSubMenu(null))
@@ -26,6 +28,7 @@ function Navigation({ locale, items }: NavigationProps) {
     const [isScrolled, setIsScrolled] = useState(false)
     const [isOpen, setIsOpen] = useState(false)
     const [activeSubMenu, setActiveSubMenu] = useState<SubNavItem[] | null>(null)
+    const [hoveredSubMenu, setHoveredSubMenu] = useState<SubNavItem[] | null>(null)
     const [mobileOpenKey, setMobileOpenKey] = useState<string | null>(null)
     const homeHref = `/${locale}`
 
@@ -58,14 +61,29 @@ function Navigation({ locale, items }: NavigationProps) {
 
     useEffect(() => {
         const handleScroll = () => {
-            setIsScrolled(window.scrollY > 5)
-            setActiveSubMenu(null)
+            setIsScrolled((prevIsScrolled) => {
+                const nextIsScrolled = prevIsScrolled
+                    ? window.scrollY > scrollCloseThreshold
+                    : window.scrollY > scrollOpenThreshold
+
+                if (prevIsScrolled !== nextIsScrolled && nextIsScrolled) {
+                    setActiveSubMenu(null)
+                }
+
+                return nextIsScrolled
+            })
             setIsOpen(false)
         }
         window.addEventListener("scroll", handleScroll)
 
         return () => window.removeEventListener("scroll", handleScroll)
-    }, [])
+    }, [scrollCloseThreshold, scrollOpenThreshold])
+
+    useEffect(() => {
+        if (!isScrolled && hoveredSubMenu) {
+            setActiveSubMenu(hoveredSubMenu)
+        }
+    }, [hoveredSubMenu, isScrolled])
 
     if (!isDesktop) {
         return (
@@ -90,6 +108,7 @@ function Navigation({ locale, items }: NavigationProps) {
             setPosition={setPosition}
             activeSubMenu={activeSubMenu}
             setActiveSubMenu={setActiveSubMenu}
+            setHoveredSubMenu={setHoveredSubMenu}
             subMenuRef={subMenuRef}
             homeHref={homeHref}
         />

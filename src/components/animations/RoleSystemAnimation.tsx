@@ -46,6 +46,7 @@ function RoleRow({
                                 key={`${role.name}-${badge}`}
                                 color="info"
                                 className="align-middle"
+                                suppressHydrationWarning
                             >
                                 <Text size="xs" style={{color: "inherit"}}>{badge}</Text>
                             </Badge>

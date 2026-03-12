@@ -7,6 +7,7 @@ export function LiteralBadge({ value }: { value: string }) {
         <Badge
             style={{ verticalAlign: "middle" }}
             color={"secondary"}
+            suppressHydrationWarning
         >
             <Text size={"sm"}>
                 {value}

@@ -19,6 +19,7 @@ type NavigationDesktopProps = {
     setPosition: React.Dispatch<React.SetStateAction<{ left: number; width: number; opacity: number }>>
     activeSubMenu: SubNavItem[] | null
     setActiveSubMenu: React.Dispatch<React.SetStateAction<SubNavItem[] | null>>
+    setHoveredSubMenu: React.Dispatch<React.SetStateAction<SubNavItem[] | null>>
     subMenuRef: React.RefObject<HTMLDivElement | null>
     homeHref: string
 }
@@ -30,6 +31,7 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({
     setPosition,
     activeSubMenu,
     setActiveSubMenu,
+    setHoveredSubMenu,
     subMenuRef,
     homeHref,
 }) => {
@@ -41,6 +43,11 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({
                         "my-4 p-1.5 flex flex-col justify-center gap-2 lg:gap-4 top-0 left-0 border rounded-2xl overflow-visible",
                         isScrolled ? "border border-white/5 shadow-sm bg-primary/20 backdrop-blur-xl" : "border-transparent",
                     )}
+                    onMouseLeave={() => {
+                        setPosition({ left: position.left, width: position.width, opacity: 0 })
+                        setActiveSubMenu(null)
+                        setHoveredSubMenu(null)
+                    }}
                     initial={{
                         marginLeft: "0%",
                         marginRight: "0%",
@@ -67,9 +74,7 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({
                             </motion.div>
                         </Link>
 
-                        <div className={"relative h-full flex items-center"}
-                            onMouseLeave={() => setPosition({ left: position.left, width: position.width, opacity: 0 })}
-                        >
+                        <div className={"relative h-full flex items-center"}>
                             <div className={"hidden md:flex gap-2"}>
                                 {navbarItems.map((item) => (
                                     <NavTab key={item.title}
@@ -78,8 +83,11 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({
                                         setPosition={setPosition}
                                         subMenu={item.subMenu}
                                         activeSubMenu={activeSubMenu}
-                                    onMouseEnter={() => setActiveSubMenu(item.subMenu || null)}
-                                />
+                                        onMouseEnter={() => {
+                                            setActiveSubMenu(item.subMenu || null)
+                                            setHoveredSubMenu(item.subMenu || null)
+                                        }}
+                                    />
                                 ))}
                             </div>
                             <Cursor position={position} />
@@ -92,7 +100,10 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({
                                     <div className="mt-2 rounded-xl border border-white/5 bg-primary/90 backdrop-blur-xl shadow-xl p-2 w-max">
                                         <NavSubMenu
                                             items={activeSubMenu}
-                                            onSelect={() => setActiveSubMenu(null)}
+                                            onSelect={() => {
+                                                setActiveSubMenu(null)
+                                                setHoveredSubMenu(null)
+                                            }}
                                             variant="overlay"
                                         />
                                     </div>
@@ -112,7 +123,6 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({
                                 </Button>
                             </Link>
                         </div>
-
                     </div>
                     <AnimatePresence mode="wait">
                         {activeSubMenu && isScrolled && (
@@ -127,7 +137,10 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({
                             >
                                 <NavSubMenu
                                     items={activeSubMenu}
-                                    onSelect={() => setActiveSubMenu(null)}
+                                    onSelect={() => {
+                                        setActiveSubMenu(null)
+                                        setHoveredSubMenu(null)
+                                    }}
                                     variant="inline"
                                 />
                             </motion.div>

@@ -9,6 +9,7 @@ import Link from "next/link"
 import React from "react"
 import Grainient from "../ui/Granient"
 import { useWebHaptics } from "web-haptics/react"
+import { HeroBadge } from "../badges/HeroBadge"
 
 interface HeroSectionButton {
     label: string
@@ -74,10 +75,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ content }) => {
                 <div className={"relative z-10 flex h-full flex-col items-center justify-between gap-12 rounded-[calc(1.9rem-1px)] px-8 py-12 lg:flex-row lg:px-16 lg:py-24"}>
 
                     <div className="w-full lg:w-2/5 flex flex-col gap-4 text-start">
-                        <Badge className="relative z-10 text-xs! px-2! cursor-default!" color="#72f896">
-                            {content.badge}
-                            <IconArrowRight size={14}/>
-                        </Badge>
+                        <HeroBadge badge={content.badge}/>
 
                         <h1 className="relative z-10 font-bold text-3xl lg:text-4xl text-white text-balance">
                             {content.heading}

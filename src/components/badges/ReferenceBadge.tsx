@@ -10,6 +10,7 @@ export function ReferenceBadge({ value }: { value: string }) {
             color={"warning"}
             py={"0"}
             border
+            suppressHydrationWarning
         >
             <IconVariable size={12}/>
             <Text size={"sm"} style={{color: "inherit"}}>
