@@ -4,12 +4,12 @@ import { FeatureCardText } from "../FeatureCardText"
 import { ProjectDataTable } from "../tables/ProjectDataTable"
 import { FeatureCard } from "./FeatureCard"
 
-interface WelcomeUserCardProps {
+interface ProjectsCardProps {
     locale: AppLocale
 }
 
-export async function WelcomeUserCard({ locale }: WelcomeUserCardProps) {
-    const content = await getFeatureBySlug("welcome-user", locale)
+export async function ProjectsCard({ locale }: ProjectsCardProps) {
+    const content = await getFeatureBySlug("projects", locale)
 
     return (
         <FeatureCard className="col-span-1 md:col-span-2 row-span-3" tone="aqua">

@@ -20,8 +20,8 @@ export const Features: CollectionConfig = {
       unique: true,
       options: [
         {
-          label: "Welcome User",
-          value: "welcome-user",
+          label: "Projects",
+          value: "projects",
         },
         {
           label: "Role System",
@@ -40,8 +40,8 @@ export const Features: CollectionConfig = {
           value: "suggestion-menu",
         },
         {
-          label: "Node Tabs",
-          value: "node-tabs",
+          label: "Nodes",
+          value: "nodes",
         },
         {
           label: "Runtime Types",

@@ -429,12 +429,12 @@ export interface Page {
 export interface Feature {
   id: number;
   slug:
-    | 'welcome-user'
+    | 'projects'
     | 'role-system'
     | 'member-management'
     | 'organizations'
     | 'suggestion-menu'
-    | 'node-tabs'
+    | 'nodes'
     | 'runtime-types'
     | 'action-list';
   title: string;

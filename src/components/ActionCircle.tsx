@@ -3,7 +3,7 @@ import { OrbitingCircles } from "./animations/OrbitingCircles"
 
 export function ActionCircle({ className }: { className?: string }) {
   return (
-    <div className={cn("relative flex h-[500px] w-full flex-col items-center justify-center overflow-hidden", className)}>
+    <div className={cn("relative flex h-125 w-full flex-col items-center justify-center overflow-hidden", className)}>
       <OrbitingCircles iconSize={40}>
         <Icons.whatsapp />
         <Icons.notion />

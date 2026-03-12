@@ -2,7 +2,7 @@
 
 import { Section } from "@/components/ui/Section"
 import { cn } from "@/lib/utils"
-import { Button } from "@code0-tech/pictor"
+import { Badge, Button } from "@code0-tech/pictor"
 import { IconArrowRight } from "@tabler/icons-react"
 import Image from "next/image"
 import Link from "next/link"
@@ -74,10 +74,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ content }) => {
                 <div className={"relative z-10 flex h-full flex-col items-center justify-between gap-12 rounded-[calc(1.9rem-1px)] px-8 py-12 lg:flex-row lg:px-16 lg:py-24"}>
 
                     <div className="w-full lg:w-2/5 flex flex-col gap-4 text-start">
-                        <div className="relative z-10 group bg-brand/10 cursor-pointer border border-brand/20 text-brand w-fit px-4 py-0.5 rounded-full flex items-center justify-between gap-1 hover:gap-2 hover:pr-3 transition-all text-sm font-medium">
+                        <Badge className="relative z-10 text-xs! px-2! cursor-default!" color="#72f896">
                             {content.badge}
                             <IconArrowRight size={14}/>
-                        </div>
+                        </Badge>
 
                         <h1 className="relative z-10 font-bold text-3xl lg:text-4xl text-white text-balance">
                             {content.heading}
