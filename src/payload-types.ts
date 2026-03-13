@@ -406,6 +406,12 @@ export interface Page {
               label?: string | null;
               url?: string | null;
             };
+            dynamicTitle?: string | null;
+            dynamicDescription?: string | null;
+            dynamicLink?: {
+              label?: string | null;
+              url?: string | null;
+            };
             id?: string | null;
             blockName?: string | null;
             blockType: 'deployment';
@@ -1047,6 +1053,14 @@ export interface PagesSelect<T extends boolean = true> {
               selfhostTitle?: T;
               selfhostDescription?: T;
               selfhostLink?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                  };
+              dynamicTitle?: T;
+              dynamicDescription?: T;
+              dynamicLink?:
                 | T
                 | {
                     label?: T;

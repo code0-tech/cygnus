@@ -1,7 +1,7 @@
 "use client"
 
-import { Button, EmailInput, emailValidation, Input, TextAreaInput, TextInput, useForm } from "@code0-tech/pictor"
-import { useState } from "react"
+import { Button, EmailInput, emailValidation, TextAreaInput, TextInput, useForm } from "@code0-tech/pictor"
+import { useMemo, useState } from "react"
 import { useWebHaptics } from "web-haptics/react"
 
 interface JobApplicationCardContent {
@@ -36,29 +36,37 @@ export function JobApplicationCard({ jobSlug, content }: JobApplicationCardProps
     const labels = { ...defaultContent, ...content }
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [submitStatus, setSubmitStatus] = useState<{ type: "success" | "error", message: string } | null>(null)
-
-    const [inputs, validate] = useForm({
-        useInitialValidation: false,
-        initialValues: {
+    const initialValues = useMemo(
+        () => ({
             name: "",
             email: "",
-            text: ""
-        },
-        validate: {
-            name: (value) => {
+            text: "",
+        }),
+        [],
+    )
+    const validation = useMemo(
+        () => ({
+            name: (value: string) => {
                 if (!value) return "Name is required"
                 return null
             },
-            email: (value) => {
+            email: (value: string) => {
                 if (!value) return "Email is required"
                 if (!emailValidation(value)) return "Please provide a valid email"
                 return null
             },
-            text: (value) => {
+            text: (value: string) => {
                 if (!value) return "Message is required"
                 return null
-            }
-        },
+            },
+        }),
+        [],
+    )
+
+    const [inputs, validate] = useForm({
+        useInitialValidation: false,
+        initialValues,
+        validate: validation,
         onSubmit: (values) => {
             if (isSubmitting) return
 
@@ -94,7 +102,7 @@ export function JobApplicationCard({ jobSlug, content }: JobApplicationCardProps
                     setIsSubmitting(false)
                 }
             })()
-        }
+        },
     })
 
     return (

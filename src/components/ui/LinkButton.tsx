@@ -29,7 +29,7 @@ export function LinkButton({ className, children, href, showArrow = true, ...pro
             className={cn(baseClassName, className)}
             {...props}
         >
-            <span className="min-w-0 truncate">{children}</span>
+            <span className="flex items-center gap-1 min-w-0 truncate">{children}</span>
             {showArrow && <IconArrowUpRight size={16} className="shrink-0" />}
         </Link>
     )

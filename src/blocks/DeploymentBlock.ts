@@ -67,5 +67,35 @@ export const DeploymentBlock: Block = {
         },
       ],
     },
+    {
+      name: "dynamicTitle",
+      type: "text",
+      required: false,
+      localized: true,
+    },
+    {
+      name: "dynamicDescription",
+      type: "textarea",
+      required: false,
+      localized: true,
+    },
+    {
+      name: "dynamicLink",
+      label: "Dynamic Link",
+      type: "group",
+      fields: [
+        {
+          name: "label",
+          type: "text",
+          required: false,
+          localized: true,
+        },
+        {
+          name: "url",
+          type: "text",
+          required: false,
+        },
+      ],
+    },
   ],
 }

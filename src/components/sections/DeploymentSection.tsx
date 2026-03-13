@@ -19,6 +19,12 @@ interface DeploymentSectionContent {
         label?: string | null
         url?: string | null
     }
+    dynamicTitle?: string | null
+    dynamicDescription?: string | null
+    dynamicLink?: {
+        label?: string | null
+        url?: string | null
+    }
 }
 
 interface DeploymentSectionProps {
@@ -69,14 +75,23 @@ export const DeploymentSection: React.FC<DeploymentSectionProps> = ({ content })
             glowClass: "from-pink/20 via-blue/10 to-primary/70",
             badgeClass: "border-pink/25 bg-pink/12 text-pink",
         },
+        {
+            badge: "Dynamic",
+            alt: "Dynamic deployment",
+            title: content.dynamicTitle,
+            description: content.dynamicDescription,
+            link: content.dynamicLink,
+            glowClass: "from-brand/24 via-aqua/10 to-primary/70",
+            badgeClass: "border-brand/25 bg-brand/12 text-brand",
+        },
     ] as const
 
     return (
-        <Section sectionType="DeploymentSection" funnelType="left" animationPreset="zoom-in" fullHeight>
+        <Section sectionType="DeploymentSection" funnelType="left" animationPreset="zoom-in" fullHeight className="h-auto md:h-auto lg:h-dvh">
             <div className="pointer-events-none absolute -inset-y-32 inset-x-0 opacity-20 blur-xl will-change-filter [background:radial-gradient(circle,rgba(114,201,248,0.5),transparent_70%)]" />
 
             <motion.div
-                className="grid grid-cols-1 gap-16 md:grid-cols-2 md:gap-8"
+                className="grid grid-cols-1 gap-16 lg:grid-cols-3 lg:gap-8"
                 variants={staggerContainer}
                 initial="hidden"
                 whileInView="show"
