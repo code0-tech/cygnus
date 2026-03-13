@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils"
 import { DEFAULT_DISCORD_URL, DEFAULT_GITHUB_URL } from "@/lib/siteConfig"
 import { Button, Container } from "@code0-tech/pictor"
-import { SiGithub } from "@icons-pack/react-simple-icons"
+import { SiDiscord, SiGithub } from "@icons-pack/react-simple-icons"
 import { AnimatePresence, motion } from "motion/react"
 import Image from "next/image"
 import Link from "next/link"
@@ -112,14 +112,15 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({
                         </div>
                         <div className={"flex items-center gap-2"}>
                             <Link href={DEFAULT_GITHUB_URL} target="_blank" rel="noreferrer">
-                                <Button variant="normal" className="h-9!">
+                                <Button variant="normal" className="h-9! px-2!">
                                     <SiGithub size={18} />
-                                    Github
+                                    <span className="hidden xl:inline">Github</span>
                                 </Button>
                             </Link>
                             <Link href={DEFAULT_DISCORD_URL} target="_blank" rel="noreferrer">
-                                <Button variant="filled" className="h-9! bg-white/80! hover:bg-white! text-primary!">
-                                    Discord
+                                <Button variant="filled" className="h-9! px-2! bg-white/80! hover:bg-white! text-primary!">
+                                    <span className="hidden xl:inline">Discord</span>
+                                    <SiDiscord size={18} className="xl:hidden"/>
                                 </Button>
                             </Link>
                         </div>

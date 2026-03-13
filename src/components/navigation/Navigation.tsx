@@ -74,6 +74,10 @@ function Navigation({ locale, items }: NavigationProps) {
             })
             setIsOpen(false)
         }
+
+        if (window.scrollY > scrollOpenThreshold) {
+            setIsScrolled(true)
+        }
         window.addEventListener("scroll", handleScroll)
 
         return () => window.removeEventListener("scroll", handleScroll)
