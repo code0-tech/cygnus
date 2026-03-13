@@ -5,7 +5,7 @@ import { LinkButton } from "@/components/ui/LinkButton"
 import { getLocaleFromPath, localizeHref } from "@/lib/i18n"
 import { ANIMATION_PRESETS, cn, type AnimationPreset } from "@/lib/utils"
 import { Section as SectionDocument } from "@/payload-types"
-import { motion } from "motion/react"
+import { motion, type Variants } from "motion/react"
 import { usePathname } from "next/navigation"
 import { ReactNode } from "react"
 
@@ -42,6 +42,26 @@ export function Section({
     const rawLinkUrl = sectionData?.link_button?.url?.trim()
     const linkUrl = rawLinkUrl ? localizeHref(rawLinkUrl, locale) : undefined
     const animationConfig = animationPreset === "none" ? null : ANIMATION_PRESETS[animationPreset]
+    const staggerContainer: Variants = {
+        hidden: {},
+        show: {
+            transition: {
+                staggerChildren: 0.1,
+                delayChildren: 0.04,
+            },
+        },
+    }
+    const staggerItem: Variants = {
+        hidden: { opacity: 0, y: 16 },
+        show: {
+            opacity: 1,
+            y: 0,
+            transition: {
+                duration: 0.4,
+                ease: [0.22, 1, 0.36, 1],
+            },
+        },
+    }
 
     return (
         <motion.section
@@ -64,33 +84,49 @@ export function Section({
             ))}
             {showFunnel && (
                 funnelType === "center" ? (
-                    <div className={"flex flex-col gap-4 items-center justify-center text-center"}>
-                        <h1 className={"text-4xl text-white font-semibold"}>
+                    <motion.div
+                        className={"flex flex-col gap-4 items-center justify-center text-center"}
+                        variants={staggerContainer}
+                        initial="hidden"
+                        whileInView="show"
+                        viewport={{ once: animationOnce, amount: 0.3 }}
+                    >
+                        <motion.h1 variants={staggerItem} className={"text-4xl text-white font-semibold"}>
                             {sectionData?.heading}
-                        </h1>
-                        <p className="relative z-10 max-w-[90vw] lg:w-1/2 text-center font-medium text-white/75 text-xl">
+                        </motion.h1>
+                        <motion.p variants={staggerItem} className="relative z-10 max-w-[90vw] lg:w-1/2 text-center font-medium text-white/75 text-xl">
                             {sectionData?.subheading}
-                        </p>
+                        </motion.p>
                         {showLinkButton && linkUrl &&
-                            <LinkButton href={linkUrl}>
-                                {sectionData?.link_button?.label}
-                            </LinkButton>
+                            <motion.div variants={staggerItem}>
+                                <LinkButton href={linkUrl}>
+                                    {sectionData?.link_button?.label}
+                                </LinkButton>
+                            </motion.div>
                         }
-                    </div>
+                    </motion.div>
                 ) : (
-                    <div className={"flex flex-col gap-4 text-left"}>
-                        <h1 className={"text-4xl text-pink font-semibold"}>
+                    <motion.div
+                        className={"flex flex-col gap-4 text-left"}
+                        variants={staggerContainer}
+                        initial="hidden"
+                        whileInView="show"
+                        viewport={{ once: animationOnce, amount: 0.3 }}
+                    >
+                        <motion.h1 variants={staggerItem} className={"text-4xl text-pink font-semibold"}>
                             {sectionData?.heading}
-                        </h1>
-                        <p className="relative z-10 max-w-[90vw] lg:w-1/2 font-medium text-white/75 text-xl">
+                        </motion.h1>
+                        <motion.p variants={staggerItem} className="relative z-10 max-w-[90vw] lg:w-1/2 font-medium text-white/75 text-xl">
                             {sectionData?.subheading}
-                        </p>
+                        </motion.p>
                         {showLinkButton && linkUrl &&
-                            <LinkButton href={linkUrl}>
-                                {sectionData?.link_button?.label}
-                            </LinkButton>
+                            <motion.div variants={staggerItem}>
+                                <LinkButton href={linkUrl}>
+                                    {sectionData?.link_button?.label}
+                                </LinkButton>
+                            </motion.div>
                         }
-                    </div>
+                    </motion.div>
                 )
             )}
             {children}

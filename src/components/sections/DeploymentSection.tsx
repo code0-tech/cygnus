@@ -2,6 +2,7 @@
 
 import { Section } from "@/components/ui/Section"
 import { LinkButton } from "@/components/ui/LinkButton"
+import { motion, type Variants } from "motion/react"
 import Image from "next/image"
 import React from "react"
 
@@ -26,6 +27,28 @@ interface DeploymentSectionProps {
 
 export const DeploymentSection: React.FC<DeploymentSectionProps> = ({ content }) => {
     if (!content) return null
+
+    const staggerContainer: Variants = {
+        hidden: {},
+        show: {
+            transition: {
+                staggerChildren: 0.12,
+                delayChildren: 0.08,
+            },
+        },
+    }
+
+    const staggerItem: Variants = {
+        hidden: { opacity: 0, y: 20 },
+        show: {
+            opacity: 1,
+            y: 0,
+            transition: {
+                duration: 0.42,
+                ease: [0.22, 1, 0.36, 1],
+            },
+        },
+    }
 
     const deploymentCards = [
         {
@@ -52,10 +75,17 @@ export const DeploymentSection: React.FC<DeploymentSectionProps> = ({ content })
         <Section sectionType="DeploymentSection" funnelType="left" animationPreset="zoom-in" fullHeight>
             <div className="pointer-events-none absolute -inset-y-32 inset-x-0 opacity-20 blur-xl will-change-filter [background:radial-gradient(circle,rgba(114,201,248,0.5),transparent_70%)]" />
 
-            <div className="grid grid-cols-1 gap-16 md:grid-cols-2 md:gap-8">
+            <motion.div
+                className="grid grid-cols-1 gap-16 md:grid-cols-2 md:gap-8"
+                variants={staggerContainer}
+                initial="hidden"
+                whileInView="show"
+                viewport={{ once: true, amount: 0.2 }}
+            >
                 {deploymentCards.map((card) => (
-                    <article
+                    <motion.article
                         key={card.badge}
+                        variants={staggerItem}
                         className="group rounded-[1.75rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] p-3 shadow-[0_18px_60px_rgba(0,0,0,0.28)] transition-all duration-500 hover:-translate-y-1 hover:border-white/14 hover:shadow-[0_26px_80px_rgba(0,0,0,0.38)]"
                     >
                         <div className="relative overflow-hidden rounded-[1.2rem] border border-white/8 bg-primary/40">
@@ -81,9 +111,9 @@ export const DeploymentSection: React.FC<DeploymentSectionProps> = ({ content })
                                 </LinkButton>
                             )}
                         </div>
-                    </article>
+                    </motion.article>
                 ))}
-            </div>
+            </motion.div>
         </Section>
     )
 }

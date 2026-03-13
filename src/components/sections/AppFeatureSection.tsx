@@ -14,10 +14,10 @@ export const AppFeatureSection: React.FC<AppFeatureSectionProps> = ({ locale }) 
     return (
         <Section sectionType="AppFeatureSection" fullHeight>
             <BentoGrid>
-                <ProjectsCard locale={locale} />
-                <RoleSystemCard locale={locale} />
-                <OrganizationCard locale={locale} />
-                <MemberManagementCard locale={locale} />
+                <ProjectsCard locale={locale} animationDelay={0} />
+                <RoleSystemCard locale={locale} animationDelay={120} />
+                <OrganizationCard locale={locale} animationDelay={240} />
+                <MemberManagementCard locale={locale} animationDelay={360} />
             </BentoGrid>
         </Section>
     )

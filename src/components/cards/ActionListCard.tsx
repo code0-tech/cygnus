@@ -7,9 +7,10 @@ import { FeatureCard } from "./FeatureCard"
 
 interface ActionListCardProps {
     locale: AppLocale
+    animationDelay?: number
 }
 
-export async function ActionListCard({ locale }: ActionListCardProps) {
+export async function ActionListCard({ locale, animationDelay = 0 }: ActionListCardProps) {
     const content = await getFeatureBySlug("action-list", locale)
 
     return (
@@ -17,6 +18,7 @@ export async function ActionListCard({ locale }: ActionListCardProps) {
             className="col-span-1 row-span-4"
             contentClassName="h-full items-start justify-end"
             tone="aqua"
+            animationDelay={animationDelay}
         >
             <div className={"pointer-events-none absolute flex -left-8 top-1/2 z-0 size-120 flex-col items-center justify-center overflow-hidden -translate-y-1/2 opacity-95"}>
                 <OrbitingCircles iconSize={40}>

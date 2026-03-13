@@ -6,9 +6,10 @@ import { RoleSystemAnimation } from "../animations/RoleSystemAnimation"
 
 interface RoleSystemCardProps {
     locale: AppLocale
+    animationDelay?: number
 }
 
-export async function RoleSystemCard({ locale }: RoleSystemCardProps) {
+export async function RoleSystemCard({ locale, animationDelay = 0 }: RoleSystemCardProps) {
     const content = await getFeatureBySlug("role-system", locale)
 
     const roles = [
@@ -43,6 +44,7 @@ export async function RoleSystemCard({ locale }: RoleSystemCardProps) {
             className="col-span-1 md:col-span-3 row-span-2"
             contentClassName="w-full h-full items-stretch justify-end pt-0.5! xl:flex-row xl:items-center xl:justify-between"
             tone="pink"
+            animationDelay={animationDelay}
         >
             <div className="absolute inset-0 xl:inset-y-0 xl:left-0 xl:right-auto xl:w-2/3">
                 <RoleSystemAnimation roles={roles} />

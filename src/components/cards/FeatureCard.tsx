@@ -44,12 +44,14 @@ export function FeatureCard({
     contentClassName,
     tone = "brand",
     style,
+    animationDelay = 0,
 }: {
     children: ReactNode,
     className?: string,
     contentClassName?: string,
     tone?: FeatureCardTone,
     style?: FeatureCardStyle,
+    animationDelay?: number,
 }) {
     const [isVisible, setIsVisible] = useState(false);
     const cardRef = useRef<HTMLDivElement>(null);
@@ -86,6 +88,7 @@ export function FeatureCard({
                 isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0",
                 className,
             )}
+            style={{ transitionDelay: `${animationDelay}ms` }}
         >
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),transparent_32%),linear-gradient(180deg,rgba(255,255,255,0.04),transparent_40%)]" />
             <div className={cn("pointer-events-none absolute -left-16 -top-16 h-44 w-44 rounded-full blur-3xl transition-transform duration-700 group-hover:scale-115", toneStyle.orb)} />

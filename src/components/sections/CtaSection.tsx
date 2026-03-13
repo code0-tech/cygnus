@@ -7,6 +7,7 @@ import Image from "next/image"
 import React from "react"
 import Link from "next/link"
 import { Button } from "@code0-tech/pictor"
+import { motion, type Variants } from "motion/react"
 import { useWebHaptics } from "web-haptics/react"
 
 interface CtaSectionContent {
@@ -26,9 +27,37 @@ export const CtaSection: React.FC<CtaSectionProps> = ({ content }) => {
     const { trigger } = useWebHaptics()
     if (!content) return
 
+    const staggerContainer: Variants = {
+        hidden: {},
+        show: {
+            transition: {
+                staggerChildren: 0.12,
+                delayChildren: 0.06,
+            },
+        },
+    }
+
+    const staggerItem: Variants = {
+        hidden: { opacity: 0, y: 18 },
+        show: {
+            opacity: 1,
+            y: 0,
+            transition: {
+                duration: 0.42,
+                ease: [0.22, 1, 0.36, 1],
+            },
+        },
+    }
+
     return (
         <Section showBlur={false} showFunnel={false} animationPreset="fade-in">
-            <div className={"relative w-full overflow-hidden rounded-[1.8rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] shadow-[0_20px_70px_rgba(0,0,0,0.3)] before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-linear-to-r before:from-transparent before:via-white/30 before:to-transparent before:content-['']"}>
+            <motion.div
+                className={"relative w-full overflow-hidden rounded-[1.8rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] shadow-[0_20px_70px_rgba(0,0,0,0.3)] before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-linear-to-r before:from-transparent before:via-white/30 before:to-transparent before:content-['']"}
+                variants={staggerContainer}
+                initial="hidden"
+                whileInView="show"
+                viewport={{ once: true, amount: 0.25 }}
+            >
                 <div className={"relative flex w-full flex-col items-center justify-center gap-8 overflow-hidden rounded-[calc(1.8rem-1px)] px-6 py-12 sm:px-10"}>
 
                     <InteractiveGridPattern
@@ -41,21 +70,21 @@ export const CtaSection: React.FC<CtaSectionProps> = ({ content }) => {
                     <div className="pointer-events-none absolute -inset-16 opacity-14 blur-2xl will-change-filter [background:radial-gradient(circle,rgba(248,114,226,0.35),transparent_95%)]" />
                     <div className="pointer-events-none absolute inset-x-0 -top-24 h-56 bg-[radial-gradient(circle,rgba(122,203,255,0.18),transparent_70%)] blur-3xl" />
 
-                    <div className={"relative z-20 flex size-32 items-center justify-center rounded-2xl bg-white/5 shadow-[0_18px_50px_rgba(0,0,0,0.25)] backdrop-blur-xl"}>
+                    <motion.div variants={staggerItem} className={"relative z-20 flex size-32 items-center justify-center rounded-2xl bg-white/5 shadow-[0_18px_50px_rgba(0,0,0,0.25)] backdrop-blur-xl"}>
                         <div className="pointer-events-none absolute inset-0 rounded-2xl bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),transparent_35%)]" />
                         <div className={"relative flex items-center justify-center rounded-2xl ring ring-white/10 bg-linear-to-br from-primary via-primary to-pink/8 px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"}>
                             <Image src={"/code0_logo_white.png"} width={"112"} height={"112"} alt={"Code0 Logo"} className={"z-20"}/>
                         </div>
-                    </div>
+                    </motion.div>
 
-                    <p className={"z-20 text-2xl sm:text-4xl text-white text-center font-semibold"}>
+                    <motion.p variants={staggerItem} className={"z-20 text-2xl sm:text-4xl text-white text-center font-semibold"}>
                         {content.heading}
-                    </p>
-                    <p className={"w-4/5 sm:w-2/3 lg:w-1/2 z-20 text-md sm:text-lg text-white/75 text-center"}>
+                    </motion.p>
+                    <motion.p variants={staggerItem} className={"w-4/5 sm:w-2/3 lg:w-1/2 z-20 text-md sm:text-lg text-white/75 text-center"}>
                         {content?.subheading}
-                    </p>
+                    </motion.p>
 
-                    <div className={"z-20 flex items-center gap-4"}>
+                    <motion.div variants={staggerItem} className={"z-20 flex items-center gap-4"}>
                         <Link href={content.ctaLink.url}>
                             <Button
                                 variant="normal"
@@ -65,9 +94,9 @@ export const CtaSection: React.FC<CtaSectionProps> = ({ content }) => {
                                 {content.ctaLink.label}
                             </Button>
                         </Link>
-                    </div>
+                    </motion.div>
                 </div>
-            </div>
+            </motion.div>
         </Section>
     )
 }

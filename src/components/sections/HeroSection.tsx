@@ -2,8 +2,8 @@
 
 import { Section } from "@/components/ui/Section"
 import { cn } from "@/lib/utils"
-import { Badge, Button } from "@code0-tech/pictor"
-import { IconArrowRight } from "@tabler/icons-react"
+import { Button } from "@code0-tech/pictor"
+import { motion, type Variants } from "motion/react"
 import Image from "next/image"
 import Link from "next/link"
 import React from "react"
@@ -37,6 +37,25 @@ interface HeroSectionProps {
 export const HeroSection: React.FC<HeroSectionProps> = ({ content }) => {
     const { trigger } = useWebHaptics()
     if (!content || !content.texts || !content.buttons) return
+
+    const staggerContainer: Variants = {
+        hidden: {},
+        show: {
+            transition: {
+                staggerChildren: 0.12,
+                delayChildren: 0.08,
+            },
+        },
+    }
+
+    const staggerItem: Variants = {
+        hidden: { opacity: 0, y: 18 },
+        show: {
+            opacity: 1,
+            y: 0,
+            transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] },
+        },
+    }
 
     return (
         <Section showBlur={false} showFunnel={false}>
@@ -72,16 +91,24 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ content }) => {
 
                 <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.08),transparent_36%)]" />
 
-                <div className={"relative z-10 flex h-full flex-col items-center justify-between gap-12 rounded-[calc(1.9rem-1px)] px-8 py-12 lg:flex-row lg:px-16 lg:py-24"}>
+                <motion.div
+                    className={"relative z-10 flex h-full flex-col items-center justify-between gap-12 rounded-[calc(1.9rem-1px)] px-8 py-12 lg:flex-row lg:px-16 lg:py-24"}
+                    variants={staggerContainer}
+                    initial="hidden"
+                    whileInView="show"
+                    viewport={{ once: true, amount: 0.25 }}
+                >
 
                     <div className="w-full lg:w-2/5 flex flex-col gap-4 text-start">
-                        <HeroBadge badge={content.badge}/>
+                        <motion.div variants={staggerItem}>
+                            <HeroBadge badge={content.badge}/>
+                        </motion.div>
 
-                        <h1 className="relative z-10 font-bold text-3xl lg:text-4xl text-white text-balance">
+                        <motion.h1 variants={staggerItem} className="relative z-10 font-bold text-3xl lg:text-4xl text-white text-balance">
                             {content.heading}
-                        </h1>
+                        </motion.h1>
 
-                        <p className="relative z-10 font-medium text-white/75 text-lg lg:text-xl text-balance">
+                        <motion.p variants={staggerItem} className="relative z-10 font-medium text-white/75 text-lg lg:text-xl text-balance">
                             {content.texts.length > 0
                                 ? content.texts.map((item, index) => (
                                     <React.Fragment key={`${item.id ?? item.text}-${index}`}>
@@ -90,9 +117,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ content }) => {
                                     </React.Fragment>
                                 ))
                                 : <>Beschreibung1 <br /> Beschreibung2</>}
-                        </p>
+                        </motion.p>
 
-                        <div className={"flex flex-col gap-4 mt-4"}>
+                        <motion.div variants={staggerItem} className={"flex flex-col gap-4 mt-4"}>
                             {content.buttons.map((button, index) => (
                                 <Link href={button.url} key={`${button.label}-${button.id ?? index}`} className="w-full sm:w-auto">
                                     <Button
@@ -104,18 +131,20 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ content }) => {
                                     </Button>
                                 </Link>
                             ))}
-                        </div>
+                        </motion.div>
                     </div>
-                    <Image
-                        src={"/code0_software.png"}
-                        alt={"Code= Example"}
-                        height={620}
-                        width={900}
-                        className={
-                            "h-auto w-full rounded-[1.2rem] border border-white/10 shadow-[0_18px_50px_rgba(0,0,0,0.28)] lg:w-4/5 lg:rounded-l-[1.2rem] lg:rounded-r-none lg:border-0 lg:border-l lg:border-y lg:ring-4 lg:ring-white/5 lg:-mr-56"
-                        }
-                    />
-                </div>
+                    <motion.div variants={staggerItem} className="h-auto w-full lg:w-4/5 lg:-mr-56">
+                        <Image
+                            src={"/code0_software.png"}
+                            alt={"Code= Example"}
+                            height={620}
+                            width={900}
+                            className={
+                                "rounded-[1.2rem] border border-white/10 shadow-[0_18px_50px_rgba(0,0,0,0.28)] lg:rounded-l-[1.2rem] lg:rounded-r-none lg:border-0 lg:border-l lg:border-y lg:ring-4 lg:ring-white/5"
+                            }
+                        />
+                    </motion.div>
+                </motion.div>
             </div>
         </Section>
     )

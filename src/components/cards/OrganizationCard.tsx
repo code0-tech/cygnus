@@ -6,9 +6,10 @@ import { OrganizationsDataTable } from "../tables/OrganizationsDataTable"
 
 interface OrganizationCardProps {
     locale: AppLocale
+    animationDelay?: number
 }
 
-export async function OrganizationCard({ locale }: OrganizationCardProps) {
+export async function OrganizationCard({ locale, animationDelay = 0 }: OrganizationCardProps) {
     const content = await getFeatureBySlug("organizations", locale)
 
     return (
@@ -16,6 +17,7 @@ export async function OrganizationCard({ locale }: OrganizationCardProps) {
             className="col-span-1 md:col-span-3 row-span-3"
             contentClassName="h-full items-stretch"
             tone="blue"
+            animationDelay={animationDelay}
         >
             <div className="flex w-full flex-1 items-start justify-center min-h-0">
                 <OrganizationsDataTable />

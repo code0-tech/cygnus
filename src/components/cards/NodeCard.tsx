@@ -6,13 +6,14 @@ import { NodesAnimation } from "../animations/NodesAnimation"
 
 interface NodeTabsCardProps {
     locale: AppLocale
+    animationDelay?: number
 }
 
-export async function NodeCard({ locale }: NodeTabsCardProps) {
+export async function NodeCard({ locale, animationDelay = 0 }: NodeTabsCardProps) {
     const content = await getFeatureBySlug("nodes", locale)
 
     return (
-        <FeatureCard className="col-span-1 md:col-span-2 row-span-3" tone="pink">
+        <FeatureCard className="col-span-1 md:col-span-2 row-span-3" tone="pink" animationDelay={animationDelay}>
             <NodesAnimation/>
             <FeatureCardText content={content} />
             <div className="pointer-events-none absolute inset-x-0 bottom-0 h-60 bg-linear-to-t from-primary via-primary/70 to-transparent" />

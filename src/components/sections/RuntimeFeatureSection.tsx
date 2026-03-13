@@ -15,10 +15,10 @@ export const RuntimeFeatureSection: React.FC<RuntimeFeatureSectionProps> = ({ lo
     return (
         <Section sectionType="RuntimeFeatureSection" fullHeight>
             <BentoGrid columns={3}>
-                <NodeCard locale={locale} />
-                <SuggestionMenuCard locale={locale} />
-                <ActionListCard locale={locale} />
-                <RuntimeTypesCard locale={locale} />
+                <NodeCard locale={locale} animationDelay={0} />
+                <SuggestionMenuCard locale={locale} animationDelay={120} />
+                <ActionListCard locale={locale} animationDelay={240} />
+                <RuntimeTypesCard locale={locale} animationDelay={360} />
             </BentoGrid>
         </Section>
     )
