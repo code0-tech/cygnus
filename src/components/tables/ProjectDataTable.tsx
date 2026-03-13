@@ -10,11 +10,8 @@ export function ProjectDataTable() {
     ]
 
     return (
-        <Card className="relative mx-auto w-[90%] self-start -mb-16 pb-16 mask-[linear-gradient(to_bottom,black_0%,black_50%,transparent_100%)]">
-            <p className="mb-2 text-white text-lg font-medium">Personal Projects</p>
-            <p className="text-sm text-white/50">
-                Projects created in your personal namespace. You can also create organization projects if you are a member of any organization.
-            </p>
+        <Card className="relative mx-auto w-[90%] pb-6 md:-mb-16 md:pb-16 mask-[linear-gradient(to_bottom,black_0%,black_50%,transparent_100%)]">
+            <p className="mb-2 text-white/75 text-lg font-medium">Personal Projects</p>
             <div className="mt-3 w-full overflow-hidden rounded-xl">
                 {projects.map((project) => (
                     <div

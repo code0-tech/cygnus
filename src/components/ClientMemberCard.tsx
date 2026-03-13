@@ -9,11 +9,11 @@ export function ClientMemberCard() {
                 <Avatar identifier="Nico"/>
                 <div>
                     <p className="text-base font-semibold text-white">@Nico</p>
-                    <p className="text-sm text-white/75">nico@codezero.tech</p>
+                    <p className="text-xs lg:text-sm text-white/75">nico@codezero.tech</p>
                 </div>
                 <Badge
                     color="info"
-                    className="ml-auto align-middle"
+                    className="hidden! lg:flex! ml-auto align-middle"
                     suppressHydrationWarning
                 >
                     <Text size="xs" style={{color: "inherit"}}>Maintainer</Text>

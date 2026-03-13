@@ -12,10 +12,15 @@ export async function MemberManagementCard({ locale }: MemberMangementCardProps)
     const content = await getFeatureBySlug("member-management", locale)
 
     return (
-        <FeatureCard className="col-span-1 md:col-span-2 row-span-2">
-            <ClientMemberCard/>
-            <FeatureCardText content={content} />
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-linear-to-t from-primary via-primary/70 to-transparent" />
+        <FeatureCard
+            className="col-span-1 md:col-span-2 row-span-2"
+            contentClassName="h-full items-stretch"
+        >
+            <div className="flex w-full flex-1 items-start justify-center min-h-0">
+                <ClientMemberCard />
+            </div>
+            <FeatureCardText content={content} className="relative z-20 mt-auto w-full shrink-0 pt-4" />
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-52 bg-linear-to-t from-primary via-primary/70 to-transparent" />
         </FeatureCard>
     )
 }
