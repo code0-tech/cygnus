@@ -174,8 +174,6 @@ export function NodesAnimation() {
 
     return (
         <div className="relative flex h-full flex-col justify-center gap-3 overflow-hidden">
-            <div className="pointer-events-none absolute left-0 inset-y-0 z-10 w-16 bg-linear-to-r from-primary via-primary/75 to-transparent" />
-            <div className="pointer-events-none absolute right-0 inset-y-0 z-10 w-16 bg-linear-to-l from-primary via-primary/75 to-transparent" />
             <div className="relative">
                 <NodeRow nodes={topRowNodes} direction="left" />
             </div>

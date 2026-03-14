@@ -7,7 +7,7 @@ export function NodeBadge({ value }: { value: string }) {
     return (
         <Badge
             style={{ verticalAlign: "middle", textWrap: "nowrap" }}
-            color={"bluie"}
+            color={"primary"}
             border
             suppressHydrationWarning
         >

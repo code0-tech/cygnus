@@ -15,7 +15,7 @@ export async function MemberManagementCard({ locale, animationDelay = 0 }: Membe
     return (
         <FeatureCard
             className="col-span-1 md:col-span-2 row-span-2"
-            contentClassName="h-full items-stretch"
+            contentClassName="h-full items-stretch justify-between"
             animationDelay={animationDelay}
         >
             <div className="flex w-full flex-1 items-start justify-center min-h-0">
