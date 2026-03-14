@@ -1,4 +1,5 @@
 import {IconChevronDown} from "@tabler/icons-react"
+import { AnimatePresence, motion } from "motion/react"
 import React from "react"
 import { cn } from "@/lib/utils"
 
@@ -30,31 +31,34 @@ const AccordionItemComponent = ({ index, question, answer, isOpen, onToggle }: F
             )}
             onClick={handleClick}
         >
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),transparent_30%)]" />
-            <div className="pointer-events-none absolute -left-8 top-0 h-28 w-28 rounded-full bg-brand/10 blur-3xl transition-opacity duration-300 group-hover:opacity-100 opacity-70" />
 
             <div className="relative z-10 flex w-full items-center justify-between gap-5 px-5 py-4.5 pr-4 text-left">
                 <div className={cn("flex-1 text-sm font-medium text-white/80 sm:text-base lg:text-lg wrap-break-word transition-colors", isOpen && "text-white")}>{question}</div>
                 <div
                     className={cn(
-                        "flex h-10 w-10 shrink-0 items-center justify-center text-white/55 transition-transform duration-300 will-change-transform",
+                        "flex h-10 w-10 shrink-0 items-center justify-center text-white/55 transition-transform",
                         isOpen && "rotate-180"
                     )}
                 >
                     <IconChevronDown className="h-5 w-5"/>
                 </div>
             </div>
-            <div
-                className={`grid transition-[grid-template-rows] duration-300 ease-out ${
-                    isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
-                }`}
-            >
-                <div className="overflow-hidden">
-                    <div className="relative z-10 px-5 pb-5 pt-1">
-                        <div className="text-sm leading-7 text-white/62 sm:text-base wrap-break-word">{answer}</div>
-                    </div>
-                </div>
-            </div>
+            <AnimatePresence initial={false}>
+                {isOpen ? (
+                    <motion.div
+                        key="accordion-content"
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                        className="overflow-hidden"
+                    >
+                        <div className="relative z-10 px-5 pb-5 pt-1">
+                            <div className="text-sm leading-7 text-white/62 sm:text-base wrap-break-word">{answer}</div>
+                        </div>
+                    </motion.div>
+                ) : null}
+            </AnimatePresence>
         </div>
     )
 }

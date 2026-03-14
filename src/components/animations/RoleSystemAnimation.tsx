@@ -18,7 +18,7 @@ export function RoleSystemAnimation({ roles }: RoleSystemAnimationProps) {
     const loopRoles = [...roles, ...roles]
 
     return (
-        <div className="relative flex h-full w-full items-center justify-center overflow-hidden">
+        <div className="relative flex h-full w-full items-center justify-center overflow-hidden cursor-default">
             <motion.div
                 className="flex flex-col items-center gap-4"
                 animate={{ y: ["0%", "-50%"] }}
@@ -43,7 +43,7 @@ export function RoleSystemAnimation({ roles }: RoleSystemAnimationProps) {
                                     className="align-middle"
                                     suppressHydrationWarning
                                 >
-                                    <Text size="xs" style={{color: "inherit"}}>{badge}</Text>
+                                    <Text size="xs" className="text-inherit!">{badge}</Text>
                                 </Badge>
                             ))}
                         </div>

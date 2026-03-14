@@ -4,7 +4,7 @@ import { Avatar, Badge, Card, Text } from "@code0-tech/pictor"
 
 export function ClientMemberCard() {
     return (
-        <Card className="mx-auto w-[90%] shadow-md!">
+        <Card className="mx-auto w-[90%] shadow-md! cursor-default">
             <div className="flex items-center gap-2">
                 <Avatar identifier="Nico"/>
                 <div>

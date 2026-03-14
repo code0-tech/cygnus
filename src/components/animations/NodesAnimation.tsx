@@ -173,7 +173,7 @@ export function NodesAnimation() {
     const bottomRowNodes = nodes.slice(splitIndex)
 
     return (
-        <div className="relative flex h-full flex-col justify-center gap-3 overflow-hidden">
+        <div className="relative flex h-full flex-col justify-center gap-3 overflow-hidden cursor-default">
             <div className="relative">
                 <NodeRow nodes={topRowNodes} direction="left" />
             </div>

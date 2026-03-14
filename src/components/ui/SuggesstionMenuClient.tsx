@@ -166,7 +166,7 @@ export function SuggesstionMenuClient() {
     return (
         <Card
             paddingSize="xxs"
-            className="w-full! rounded-[1.35rem]! border! border-white/10! bg-secondary! shadow-[0_20px_50px_rgba(0,0,0,0.34)]!"
+            className="w-full! rounded-[1.35rem]! border! border-white/10! bg-secondary! shadow-[0_20px_50px_rgba(0,0,0,0.34)]! cursor-default!"
         >
             <div className="relative z-20 flex flex-col gap-2 rounded-[1.2rem] bg-primary p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
                 {groupedEntries
