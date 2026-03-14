@@ -70,7 +70,7 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({
                                 animate={fadeInUp.animate}
                                 transition={fadeInUp.transition}
                             >
-                                <Image src={"/code0_logo_white.png"} width={"32"} height={"32"} alt={"Code0 Logo"}/>
+                                <Image src={"/code0_logo_white.png"} width={"32"} height={"32"} alt={"Code0 Logo"} loading="eager"/>
                             </motion.div>
                         </Link>
 

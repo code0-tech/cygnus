@@ -83,7 +83,7 @@ export function JobsPageClient({ jobs, locale, content }: JobsPageClientProps) {
                     value={search}
                     onChange={(event) => setSearch(event.target.value)}
                     placeholder={labels.searchPlaceholder}
-                    left={<IconSearch size={13} />}
+                    left={[<IconSearch key="jobs-search-icon" size={13} />]}
                     clearable
                     className="w-full rounded-xl bg-white/10 border border-white/15 text-white/85"
                 />

@@ -123,10 +123,6 @@ export const UseCaseSection: React.FC<UseCaseSectionProps> = ({ content }) => {
                                 whileInView="show"
                                 viewport={{ once: true, amount: 0.35 }}
                             >
-                                <motion.div variants={staggerItem} className="mb-4 flex items-center gap-3 text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-white/42">
-                                    <span className="h-px w-8 bg-linear-to-r from-brand/70 to-transparent" />
-                                    {item.label}
-                                </motion.div>
                                 <motion.p variants={staggerItem} className="text-xl font-semibold tracking-tight text-white">{item.title}</motion.p>
                                 <motion.p variants={staggerItem} className="mt-3 text-sm leading-7 text-white/75">{item.description}</motion.p>
                                 {item.bulletPoints?.length ? (
