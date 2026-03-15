@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils"
 import { IconChevronUp } from "@tabler/icons-react"
-import { motion } from "motion/react"
+import { m as motion } from "motion/react"
 import Link from "next/link"
 import React, { useRef } from "react"
 import { fadeInUp, SubNavItem } from "./types"
@@ -50,9 +50,9 @@ const NavTab: React.FC<TabProps> = ({ setPosition, href, title, subMenu, activeS
                     {title}
                     {hasSubMenu && (
                         active ? (
-                            <IconChevronUp size={20} className={"transition-all text-white/75 mr-1"}/>
+                            <IconChevronUp size={20} className={"mr-1 text-white/75 transition-transform"}/>
                         ) : (
-                            <IconChevronUp size={20} className={"rotate-180 transition-all text-white/75 mr-1"}/>
+                            <IconChevronUp size={20} className={"mr-1 rotate-180 text-white/75 transition-transform"}/>
                         )
                     )}
                 </Link>
@@ -61,9 +61,9 @@ const NavTab: React.FC<TabProps> = ({ setPosition, href, title, subMenu, activeS
                     {title}
                     {hasSubMenu && (
                         active ? (
-                            <IconChevronUp size={20} className={"transition-all text-white/75 mr-1"}/>
+                            <IconChevronUp size={20} className={"mr-1 text-white/75 transition-transform"}/>
                         ) : (
-                            <IconChevronUp size={20} className={"rotate-180 transition-all text-white/75 mr-1"}/>
+                            <IconChevronUp size={20} className={"mr-1 rotate-180 text-white/75 transition-transform"}/>
                         )
                     )}
                 </button>

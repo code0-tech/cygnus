@@ -2,7 +2,7 @@
 
 import { Section } from "@/components/ui/Section"
 import { ANIMATION_PRESETS, type AnimationPreset } from "@/lib/utils"
-import { motion, type Variants } from "motion/react"
+import { m as motion, type Variants } from "motion/react"
 import React from "react"
 
 interface UseCaseItem {

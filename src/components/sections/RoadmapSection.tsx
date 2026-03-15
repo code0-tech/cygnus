@@ -36,7 +36,7 @@ export const RoadmapSection: React.FC<RoadmapSectionProps> = async ({ locale }) 
 
                                         <div className="relative ml-8 md:ml-0">
                                             <div className="pointer-events-none absolute -inset-4 rounded-4xl bg-blue/4 blur-lg" />
-                                            <div className="relative z-10 overflow-hidden rounded-3xl border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))] p-6 shadow-[0_16px_42px_rgba(0,0,0,0.22)] backdrop-blur-xs transition-all duration-300 ease-in-out before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-linear-to-r before:from-transparent before:via-white/22 before:to-transparent before:content-[''] hover:-translate-y-1 hover:border-white/10 hover:shadow-[0_22px_60px_rgba(0,0,0,0.2)]">
+                                            <div className="relative z-10 overflow-hidden rounded-3xl border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))] p-6 shadow-[0_16px_42px_rgba(0,0,0,0.22)] backdrop-blur-xs transition-transform duration-300 ease-in-out before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-linear-to-r before:from-transparent before:via-white/22 before:to-transparent before:content-['']">
                                                 <div className="mb-4 flex items-center gap-3 text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-white/42">
                                                     <span className="inline-flex rounded-full border border-brand/20 bg-brand/10 px-3 py-1 text-brand">
                                                         {item.time}

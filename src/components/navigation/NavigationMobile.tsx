@@ -5,7 +5,7 @@ import { DEFAULT_DISCORD_URL, DEFAULT_GITHUB_URL } from "@/lib/siteConfig"
 import { Button, Container } from "@code0-tech/pictor"
 import { SiGithub } from '@icons-pack/react-simple-icons'
 import { IconChevronUp, IconMenu2, IconX } from "@tabler/icons-react"
-import { AnimatePresence, motion } from "motion/react"
+import { AnimatePresence, m as motion } from "motion/react"
 import Image from "next/image"
 import Link from "next/link"
 import React from "react"
@@ -42,8 +42,10 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
         >
             <Container>
             <motion.div
+                layout
                 className={cn(
-                    "my-6 p-1.5 flex flex-col gap-2 top-0 left-0 border rounded-2xl overflow-hidden transition-colors",
+                    "my-6 flex flex-col gap-2 overflow-hidden rounded-2xl border p-1.5 top-0 left-0 transition-colors",
+                    isScrolled && !isOpen && "mx-[10%]",
                     (isScrolled || isOpen) ? "border border-white/5 shadow-sm bg-primary/20 backdrop-blur-xl" : "border-transparent",
                 )}
                 initial={{
@@ -93,10 +95,11 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
                     {isOpen && (
                         <motion.div
                             key="mobile-menu"
-                            initial={{ height: 0, opacity: isScrolled ? 1 : 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: isScrolled ? 1 : 0 }}
-                            transition={{ type: "spring", bounce: 0, duration: 0.45 }}
+                            layout
+                            initial={{ opacity: isScrolled ? 1 : 0, y: -8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: isScrolled ? 1 : 0, y: -8 }}
+                            transition={{ duration: 0.2, ease: "easeOut" }}
                             style={{ overflow: "hidden" }}
                             className="flex flex-col gap-2"
                         >
@@ -156,10 +159,11 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
                                                 {isOpenAcc && (
                                                     <motion.div
                                                         key={`${item.title}-submenu`}
-                                                        initial={{ height: 0, opacity: 0 }}
-                                                        animate={{ height: "auto", opacity: 1 }}
-                                                        exit={{ height: 0, opacity: 0 }}
-                                                        transition={{ duration: 0.25, ease: "easeOut" }}
+                                                        layout
+                                                        initial={{ opacity: 0, y: -6 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        exit={{ opacity: 0, y: -6 }}
+                                                        transition={{ duration: 0.18, ease: "easeOut" }}
                                                         className="overflow-hidden"
                                                     >
                                                         <div className="mt-1 flex flex-col gap-1 rounded-lg">

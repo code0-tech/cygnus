@@ -7,7 +7,7 @@ import Image from "next/image"
 import React from "react"
 import Link from "next/link"
 import { Button } from "@code0-tech/pictor"
-import { motion, type Variants } from "motion/react"
+import { m as motion, type Variants } from "motion/react"
 import { useWebHaptics } from "web-haptics/react"
 
 interface CtaSectionContent {

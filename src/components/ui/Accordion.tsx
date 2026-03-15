@@ -1,5 +1,5 @@
 import {IconChevronDown} from "@tabler/icons-react"
-import { AnimatePresence, motion } from "motion/react"
+import { m as motion } from "motion/react"
 import React from "react"
 import { cn } from "@/lib/utils"
 
@@ -24,7 +24,16 @@ const AccordionItemComponent = ({ index, question, answer, isOpen, onToggle }: F
     }
 
     return (
-        <div
+        <motion.div
+            layout
+            transition={{
+                layout: {
+                    type: "spring",
+                    stiffness: 220,
+                    damping: 28,
+                    mass: 0.95,
+                },
+            }}
             className={cn(
                 accordionCardBaseClassName,
                 isOpen && accordionCardOpenClassName
@@ -43,23 +52,38 @@ const AccordionItemComponent = ({ index, question, answer, isOpen, onToggle }: F
                     <IconChevronDown className="h-5 w-5"/>
                 </div>
             </div>
-            <AnimatePresence initial={false}>
-                {isOpen ? (
-                    <motion.div
-                        key="accordion-content"
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                        className="overflow-hidden"
-                    >
-                        <div className="relative z-10 px-5 pb-5 pt-1">
-                            <div className="text-sm leading-7 text-white/62 sm:text-base wrap-break-word">{answer}</div>
-                        </div>
-                    </motion.div>
-                ) : null}
-            </AnimatePresence>
-        </div>
+            <motion.div
+                initial={false}
+                animate={{
+                    gridTemplateRows: isOpen ? "1fr" : "0fr",
+                    opacity: isOpen ? 1 : 0,
+                }}
+                transition={{
+                    gridTemplateRows: {
+                        duration: 0.32,
+                        ease: [0.22, 1, 0.36, 1],
+                    },
+                    opacity: {
+                        duration: isOpen ? 0.2 : 0.14,
+                        delay: isOpen ? 0.06 : 0,
+                        ease: "easeOut",
+                    },
+                }}
+                aria-hidden={!isOpen}
+                className="grid overflow-hidden"
+            >
+                <motion.div
+                    initial={false}
+                    animate={{ y: isOpen ? 0 : -2 }}
+                    transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                    className="min-h-0"
+                >
+                    <div className="relative z-10 px-5 pb-5 pt-1">
+                        <div className="text-sm leading-7 text-white/62 sm:text-base wrap-break-word">{answer}</div>
+                    </div>
+                </motion.div>
+            </motion.div>
+        </motion.div>
     )
 }
 

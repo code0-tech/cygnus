@@ -4,7 +4,7 @@ import type { TeamMemberItem } from "@/lib/cms"
 import type { Media } from "@/payload-types"
 import { Card } from "@code0-tech/pictor"
 import { IconX } from "@tabler/icons-react"
-import { AnimatePresence, motion } from "motion/react"
+import { AnimatePresence, m as motion } from "motion/react"
 import Image from "next/image"
 import { useState } from "react"
 import { useWebHaptics } from "web-haptics/react"
@@ -53,7 +53,7 @@ export function TeamMemberCard({ member, locale }: TeamMemberCardProps) {
             >
                 <Card
                     variant="filled"
-                    className="group relative overflow-hidden rounded-3xl! border! border-white/8! bg-[linear-gradient(160deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02)_28%,rgba(8,10,20,0.92)_100%)]! shadow-[0_18px_60px_rgba(0,0,0,0.35)]! transition-all! duration-500! hover:-translate-y-1! hover:shadow-[0_26px_80px_rgba(0,0,0,0.42)]! h-full cursor-pointer p-5!"
+                    className="group relative h-full cursor-pointer overflow-hidden rounded-3xl! border! border-white/8! bg-[linear-gradient(160deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02)_28%,rgba(8,10,20,0.92)_100%)]! p-5! shadow-[0_18px_60px_rgba(0,0,0,0.35)]!"
                 >
                     <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),transparent_32%),linear-gradient(180deg,rgba(255,255,255,0.04),transparent_40%)]" />
                     <div className="pointer-events-none absolute -left-12 -top-12 h-36 w-36 rounded-full bg-aqua/14 blur-3xl transition-transform duration-700 group-hover:scale-115" />

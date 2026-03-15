@@ -1,7 +1,8 @@
 "use client"
 
 import { Badge, Card, Text } from "@code0-tech/pictor"
-import { motion } from "motion/react"
+import { useInView, useReducedMotion } from "motion/react"
+import { useRef } from "react"
 
 interface RoleItem {
     name: string
@@ -15,17 +16,21 @@ interface RoleSystemAnimationProps {
 }
 
 export function RoleSystemAnimation({ roles }: RoleSystemAnimationProps) {
+    const containerRef = useRef<HTMLDivElement>(null)
+    const isInView = useInView(containerRef, { amount: 0.2 })
+    const prefersReducedMotion = useReducedMotion()
     const loopRoles = [...roles, ...roles]
 
     return (
-        <div className="relative flex h-full w-full items-center justify-center overflow-hidden cursor-default">
-            <motion.div
-                className="flex flex-col items-center gap-4"
-                animate={{ y: ["0%", "-50%"] }}
-                transition={{
-                    duration: 20,
-                    ease: "linear",
-                    repeat: Number.POSITIVE_INFINITY,
+        <div ref={containerRef} className="relative flex h-full w-full cursor-default items-center justify-center overflow-hidden">
+            <div
+                className="flex flex-col items-center gap-4 will-change-transform"
+                style={{
+                    animationDuration: "20s",
+                    animationIterationCount: "infinite",
+                    animationTimingFunction: "linear",
+                    animationName: "role-marquee-up",
+                    animationPlayState: isInView && !prefersReducedMotion ? "running" : "paused",
                 }}
             >
                 {loopRoles.map((role, index) => (
@@ -49,7 +54,7 @@ export function RoleSystemAnimation({ roles }: RoleSystemAnimationProps) {
                         </div>
                     </Card>
                 ))}
-            </motion.div>
+            </div>
         </div>
     )
 }

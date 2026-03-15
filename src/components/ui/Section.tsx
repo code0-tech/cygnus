@@ -5,7 +5,7 @@ import { LinkButton } from "@/components/ui/LinkButton"
 import { getLocaleFromPath, localizeHref } from "@/lib/i18n"
 import { ANIMATION_PRESETS, cn, type AnimationPreset } from "@/lib/utils"
 import { Section as SectionDocument } from "@/payload-types"
-import { motion, type Variants } from "motion/react"
+import { m as motion, type Variants } from "motion/react"
 import { usePathname } from "next/navigation"
 import { ReactNode } from "react"
 

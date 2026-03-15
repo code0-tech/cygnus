@@ -3,7 +3,7 @@
 import { Section } from "@/components/ui/Section"
 import { cn } from "@/lib/utils"
 import { Button } from "@code0-tech/pictor"
-import { motion, type Variants } from "motion/react"
+import { m as motion, type Variants } from "motion/react"
 import Image from "next/image"
 import Link from "next/link"
 import React from "react"

@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils"
 import { DEFAULT_DISCORD_URL, DEFAULT_GITHUB_URL } from "@/lib/siteConfig"
 import { Button, Container } from "@code0-tech/pictor"
 import { SiDiscord, SiGithub } from "@icons-pack/react-simple-icons"
-import { AnimatePresence, motion } from "motion/react"
+import { AnimatePresence, m as motion } from "motion/react"
 import Image from "next/image"
 import Link from "next/link"
 import React from "react"
@@ -39,8 +39,10 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({
         <div className={"fixed z-100 h-max w-full pt-4"}>
             <Container>
                 <motion.div
+                    layout
                     className={cn(
-                        "my-4 p-1.5 flex flex-col justify-center gap-2 lg:gap-4 top-0 left-0 border rounded-2xl overflow-visible",
+                        "my-4 flex flex-col justify-center gap-2 overflow-visible rounded-2xl border p-1.5 top-0 left-0 lg:gap-4",
+                        isScrolled && "lg:mx-[10%]",
                         isScrolled ? "border border-white/5 shadow-sm bg-primary/20 backdrop-blur-xl" : "border-transparent",
                     )}
                     onMouseLeave={() => {
@@ -130,10 +132,11 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({
                             <motion.div
                                 key="submenu"
                                 ref={subMenuRef}
-                                initial={{ opacity: 0, height: 0, y: -10 }}
-                                animate={{ opacity: 1, height: "auto", y: 0 }}
-                                exit={{ opacity: 0, height: 0, y: -10 }}
-                                transition={{ duration: 0.25, ease: "easeOut" }}
+                                layout
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                transition={{ duration: 0.2, ease: "easeOut" }}
                                 className="flex flex-col gap-2 overflow-hidden"
                             >
                                 <NavSubMenu
@@ -156,8 +159,10 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({
 const Cursor: React.FC<{ position: {left: number, width: number, opacity: number} }> = ({ position }) => {
     return (
         <motion.div
-            animate={{...position}}
-            className={cn("absolute z-40 h-8 rounded-xl bg-white/10")}
+            animate={{ x: position.left, opacity: position.opacity }}
+            transition={{ type: "spring", stiffness: 260, damping: 30, mass: 0.9 }}
+            className={cn("absolute z-40 h-8 rounded-xl bg-white/10 will-change-transform")}
+            style={{ width: position.width }}
         />
     )
 }

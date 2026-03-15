@@ -2,7 +2,7 @@
 
 import { Section } from "@/components/ui/Section"
 import { LinkButton } from "@/components/ui/LinkButton"
-import { motion, type Variants } from "motion/react"
+import { m as motion, type Variants } from "motion/react"
 import Image from "next/image"
 import React from "react"
 
@@ -101,7 +101,7 @@ export const DeploymentSection: React.FC<DeploymentSectionProps> = ({ content })
                     <motion.article
                         key={card.badge}
                         variants={staggerItem}
-                        className="group flex h-full flex-col rounded-[1.75rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] p-3 shadow-[0_18px_60px_rgba(0,0,0,0.28)] transition-all duration-500 hover:-translate-y-1 hover:border-white/14 hover:shadow-[0_26px_80px_rgba(0,0,0,0.38)]"
+                        className="group flex h-full flex-col rounded-[1.75rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] p-3 shadow-[0_18px_60px_rgba(0,0,0,0.28)] transition-[transform,border-color] duration-500 hover:border-white/14"
                     >
                         <div className="relative overflow-hidden rounded-[1.2rem] border border-white/8 bg-primary/40">
                             <div className={`pointer-events-none absolute inset-0 z-10 bg-linear-to-br ${card.glowClass}`} />

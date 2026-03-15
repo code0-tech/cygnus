@@ -4,7 +4,7 @@ import React from "react"
 import { Section } from "@/components/ui/Section"
 import Image from "next/image"
 import type { Media } from "@/payload-types"
-import { motion, type Variants } from "motion/react"
+import { m as motion, type Variants } from "motion/react"
 
 interface BrandSectionLogo {
     logo: number | Media

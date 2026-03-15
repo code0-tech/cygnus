@@ -2,7 +2,8 @@
 
 import { Card, Flex, Text } from "@code0-tech/pictor"
 import { IconNote } from "@tabler/icons-react"
-import { motion } from "motion/react"
+import { useInView, useReducedMotion } from "motion/react"
+import { useRef } from "react"
 import { LiteralBadge } from "../badges/LiteralBadge"
 import { ReferenceBadge } from "../badges/ReferenceBadge"
 import { NodeBadge } from "../badges/NodeBadge"
@@ -24,9 +25,11 @@ interface NodeItem {
 function NodeRow({
     nodes,
     direction,
+    active,
 }: {
     nodes: NodeItem[]
     direction: "left" | "right"
+    active: boolean
 }) {
     const repeatedNodes = Array.from({ length: 2 }, () => nodes).flat()
     const loopNodes = [...repeatedNodes, ...repeatedNodes]
@@ -56,13 +59,14 @@ function NodeRow({
     }
 
     return (
-        <motion.div
-            className="flex w-max items-start gap-4"
-            animate={direction === "left" ? { x: ["0%", "-50%"] } : { x: ["-50%", "0%"] }}
-            transition={{
-                duration: 90,
-                ease: "linear",
-                repeat: Number.POSITIVE_INFINITY,
+        <div
+            className="flex w-max items-start gap-4 will-change-transform"
+            style={{
+                animationDuration: "90s",
+                animationIterationCount: "infinite",
+                animationTimingFunction: "linear",
+                animationName: direction === "left" ? "node-marquee-left" : "node-marquee-right",
+                animationPlayState: active ? "running" : "paused",
             }}
         >
             {loopNodes.map((node, index) => (
@@ -82,11 +86,14 @@ function NodeRow({
                     </Flex>
                 </Card>
             ))}
-        </motion.div>
+        </div>
     )
 }
 
 export function NodesAnimation() {
+    const containerRef = useRef<HTMLDivElement>(null)
+    const isInView = useInView(containerRef, { amount: 0.2 })
+    const prefersReducedMotion = useReducedMotion()
     const nodes: NodeItem[] = [
         {
             color: "pink",
@@ -173,12 +180,12 @@ export function NodesAnimation() {
     const bottomRowNodes = nodes.slice(splitIndex)
 
     return (
-        <div className="relative flex h-full flex-col justify-center gap-3 overflow-hidden cursor-default">
+        <div ref={containerRef} className="relative flex h-full cursor-default flex-col justify-center gap-3 overflow-hidden">
             <div className="relative">
-                <NodeRow nodes={topRowNodes} direction="left" />
+                <NodeRow nodes={topRowNodes} direction="left" active={isInView && !prefersReducedMotion} />
             </div>
             <div className="relative pl-10">
-                <NodeRow nodes={bottomRowNodes} direction="right" />
+                <NodeRow nodes={bottomRowNodes} direction="right" active={isInView && !prefersReducedMotion} />
             </div>
         </div>
     )
