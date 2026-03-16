@@ -11,9 +11,9 @@ interface RoadmapRevealItemProps {
 export function RoadmapRevealItem({ children, delay = 0 }: RoadmapRevealItemProps) {
     return (
         <motion.div
-            className="relative"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            className="relative will-change-transform"
+            initial={{ y: 20 }}
+            whileInView={{ y: 0 }}
             viewport={{ once: true, amount: 0.2 }}
             transition={{
                 duration: 0.42,

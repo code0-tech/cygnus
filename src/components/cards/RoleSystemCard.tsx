@@ -46,7 +46,13 @@ export async function RoleSystemCard({ locale, animationDelay = 0 }: RoleSystemC
             tone="pink"
             animationDelay={animationDelay}
         >
-            <div className="absolute inset-0 xl:inset-y-0 xl:left-0 xl:right-auto xl:w-2/3">
+            <div
+                className="absolute inset-0 xl:inset-y-0 xl:left-0 xl:right-auto xl:w-2/3"
+                style={{
+                    maskImage: "linear-gradient(to bottom, transparent 0%, black 14%, black 100%)",
+                    WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 14%, black 100%)",
+                }}
+            >
                 <RoleSystemAnimation roles={roles} />
             </div>
             <div className="pointer-events-none absolute inset-x-0 bottom-0 h-80 xl:h-32 bg-linear-to-t from-primary to-transparent" />
