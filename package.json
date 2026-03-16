@@ -17,6 +17,7 @@
     "@code0-tech/pictor": "^0.4.0",
     "@icons-pack/react-simple-icons": "^13.11.1",
     "@payloadcms/db-postgres": "3.79.0",
+    "@payloadcms/email-nodemailer": "3.79.0",
     "@payloadcms/next": "3.79.0",
     "@payloadcms/plugin-import-export": "3.79.0",
     "@payloadcms/richtext-lexical": "3.79.0",
@@ -47,6 +48,8 @@
     "typescript": "^5.8.3"
   },
   "overrides": {
+    "file-type": "21.3.1",
+    "undici": "7.24.4",
     "dompurify": "3.3.2",
     "@esbuild-kit/core-utils": {
       "esbuild": "0.25.12"

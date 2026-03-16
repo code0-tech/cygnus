@@ -1,23 +1,17 @@
-import nodemailer from "nodemailer"
 import type SMTPTransport from "nodemailer/lib/smtp-transport"
 
-export const createSmtpTransporter = () => {
-    const port = Number(process.env.SMTP_PORT ?? 587)
-
-    const transportConfig: SMTPTransport.Options = {
+export const getSmtpTransportOptions = (): SMTPTransport.Options => {
+    return {
         host: process.env.SMTP_HOST,
-        port,
-        secure: port === 465,
+        port: Number(process.env.SMTP_PORT),
+        secure: Number(process.env.SMTP_PORT) === 465,
         auth: {
             user: process.env.SMTP_USER,
             pass: process.env.SMTP_PASS,
         },
     }
-
-    return nodemailer.createTransport(transportConfig)
 }
 
-export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const DEFAULT_RATE_LIMIT_MAX = 5
 const DEFAULT_RATE_LIMIT_WINDOW_SECONDS = 60 * 10
 

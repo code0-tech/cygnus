@@ -1,35 +1,13 @@
 import {
-    EMAIL_REGEX,
     createRateLimitChecker,
     escapeHtml,
     getClientIdentifier,
-    getRateLimitConfig
+    getRateLimitConfig,
 } from "@/lib/smtp"
-import { createSmtpTransporter } from "@/lib/smtp"
+import { getPayloadClient } from "@/lib/payloadClient"
 import { NextResponse } from "next/server"
 
 export const runtime = "nodejs"
-
-type ContactPayload = {
-    name: string
-    email: string
-    message: string
-}
-
-const parsePayload = (raw: unknown): ContactPayload | null => {
-    if (!raw || typeof raw !== "object") return null
-
-    const candidate = raw as Partial<Record<keyof ContactPayload, unknown>>
-    const name = typeof candidate.name === "string" ? candidate.name.trim() : ""
-    const email = typeof candidate.email === "string" ? candidate.email.trim() : ""
-    const message = typeof candidate.message === "string" ? candidate.message.trim() : ""
-
-    if (!name || !email || !message) return null
-    if (!EMAIL_REGEX.test(email)) return null
-    if (name.length > 120 || email.length > 254 || message.length > 5000) return null
-
-    return { name, email, message }
-}
 
 const checkContactRateLimit = createRateLimitChecker(
     getRateLimitConfig("CONTACT_RATE_LIMIT_MAX", "CONTACT_RATE_LIMIT_WINDOW_SECONDS")
@@ -41,7 +19,7 @@ export async function POST(req: Request) {
 
     if (!rateLimit.allowed) {
         return NextResponse.json(
-            { error: "Zu viele Anfragen. Bitte spaeter erneut versuchen." },
+            { error: "Too many requests. Please try again later." },
             {
                 status: 429,
                 headers: {
@@ -51,35 +29,32 @@ export async function POST(req: Request) {
         )
     }
 
-    const payload = parsePayload(await req.json().catch(() => null))
+    const payload = await req.json()
     if (!payload) {
-        return new Response("Ungueltige Anfrage. Bitte pruefen Sie Ihre Eingaben.", { status: 400 })
+        return new Response("Invalid request. Please check your input.", { status: 400 })
     }
 
     try {
-        const toEmail = (process.env.JOBS_TO_EMAIL?.trim() || process.env.CONTACT_TO_EMAIL?.trim() || "").trim()
-        const fromEmail = (process.env.JOBS_FROM_EMAIL?.trim() || process.env.CONTACT_FROM_EMAIL?.trim() || "").trim()
-        const transporter = createSmtpTransporter()
+        const payloadClient = await getPayloadClient()
 
-        await transporter.sendMail({
-            from: fromEmail,
-            to: toEmail,
-            subject: `Neue Kontaktanfrage von ${payload.name}`,
+        await payloadClient.sendEmail({
+            to: process.env.CONTACT_TO_EMAIL,
+            subject: `New contact request from ${payload.name}`,
             replyTo: payload.email,
             text: [
-                "Neue Kontaktanfrage",
+                "New contact request",
                 "",
                 `Name: ${payload.name}`,
-                `E-Mail: ${payload.email}`,
+                `Email: ${payload.email}`,
                 "",
-                "Nachricht:",
+                "Message:",
                 payload.message,
             ].join("\n"),
             html: `
-                <h2>Neue Kontaktanfrage</h2>
+                <h2>New contact request</h2>
                 <p><strong>Name:</strong> ${escapeHtml(payload.name)}</p>
-                <p><strong>E-Mail:</strong> ${escapeHtml(payload.email)}</p>
-                <p><strong>Nachricht:</strong></p>
+                <p><strong>Email:</strong> ${escapeHtml(payload.email)}</p>
+                <p><strong>Message:</strong></p>
                 <p>${escapeHtml(payload.message).replace(/\n/g, "<br />")}</p>
             `,
         })
@@ -87,7 +62,7 @@ export async function POST(req: Request) {
         return NextResponse.json({ ok: true }, { status: 200 })
     } catch (error) {
         console.error("Contact route error:", error)
-        return new Response("Beim Senden ist ein Fehler aufgetreten. Bitte versuchen Sie es spaeter erneut.", {
+        return new Response("An error occurred while sending. Please try again later.", {
             status: 500,
         })
     }
