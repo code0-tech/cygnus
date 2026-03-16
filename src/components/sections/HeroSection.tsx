@@ -60,7 +60,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ content }) => {
     return (
         <Section showBlur={false} showFunnel={false}>
 
-            <div className="relative h-[85vh] overflow-hidden rounded-4xl border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] shadow-[0_24px_80px_rgba(0,0,0,0.34)] before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-linear-to-r before:from-transparent before:via-white/30 before:to-transparent before:content-['']">
+            <div className="relative h-[min(85dvh,918px)] overflow-hidden rounded-4xl border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] shadow-[0_24px_80px_rgba(0,0,0,0.34)] before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-linear-to-r before:from-transparent before:via-white/30 before:to-transparent before:content-['']">
 
                 <div className="pointer-events-none absolute inset-0 -z-10 bg-[#0f0c1f]">
                     <Grainient

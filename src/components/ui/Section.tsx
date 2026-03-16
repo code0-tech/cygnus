@@ -67,7 +67,11 @@ export function Section({
 
     return (
         <motion.section
-            className={cn("relative overflow-visible flex flex-col gap-8 pt-16", fullHeight && "h-[200dvh] md:h-dvh", className)}
+            className={cn(
+                "relative overflow-visible flex flex-col gap-8 pt-16",
+                fullHeight && "h-[200dvh] md:h-[min(100dvh,1080px)]",
+                className,
+            )}
             initial={animationConfig?.initial}
             whileInView={animationConfig?.whileInView}
             viewport={animationConfig ? { once: animationOnce, amount: 0.2 } : undefined}
