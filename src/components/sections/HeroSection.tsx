@@ -140,6 +140,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ content }) => {
                                 alt={"Code= Example"}
                                 height={620}
                                 width={900}
+                                loading="eager"
                                 className={
                                     "rounded-2xl border border-white/10 shadow-[0_18px_50px_rgba(0,0,0,0.28)] lg:rounded-l-2xl lg:rounded-r-none lg:border-0 lg:border-l lg:border-y lg:ring-4 lg:ring-white/5"
                                 }

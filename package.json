@@ -11,7 +11,9 @@
     "standalone": "node .next/standalone/server.js",
     "lint": "next lint",
     "knip": "knip",
-    "generate": "payload generate:types"
+    "generate": "payload generate:types",
+    "export-data": "node --import tsx scripts/export-data.ts",
+    "import-data": "node --import tsx scripts/import-data.ts"
   },
   "dependencies": {
     "@code0-tech/pictor": "^0.4.0",

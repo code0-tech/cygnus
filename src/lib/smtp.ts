@@ -1,17 +1,3 @@
-import type SMTPTransport from "nodemailer/lib/smtp-transport"
-
-export const getSmtpTransportOptions = (): SMTPTransport.Options => {
-    return {
-        host: process.env.SMTP_HOST,
-        port: Number(process.env.SMTP_PORT),
-        secure: Number(process.env.SMTP_PORT) === 465,
-        auth: {
-            user: process.env.SMTP_USER,
-            pass: process.env.SMTP_PASS,
-        },
-    }
-}
-
 const DEFAULT_RATE_LIMIT_MAX = 5
 const DEFAULT_RATE_LIMIT_WINDOW_SECONDS = 60 * 10
 

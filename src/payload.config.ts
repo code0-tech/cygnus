@@ -32,6 +32,12 @@ export default buildConfig({
         defaultLocale: 'en',
     },
     collections: [Users, Media, NavbarItems, Sections, Footer, Pages, Features, Jobs, Blog, RoadmapItems],
+    jobs: {
+        autoRun: [{
+            cron: '*/5 * * * *', // Check every 5 minutes
+            queue: 'default',
+        }]
+    },
     editor: lexicalEditor({}),
     email: nodemailerAdapter({
         defaultFromAddress: process.env.CONTACT_FROM_EMAIL!,

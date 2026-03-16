@@ -29,7 +29,7 @@ export function createMetadata(override: Metadata): Metadata {
         ...override,
         title: TITLE,
         description: DESCRIPTION,
-        icons: { icon: "/icon.png" },
+        icons: { icon: "/icon.svg" },
         applicationName: TITLE,
         creator: "",
         openGraph: {

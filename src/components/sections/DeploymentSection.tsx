@@ -111,6 +111,7 @@ export const DeploymentSection: React.FC<DeploymentSectionProps> = ({ content })
                                     src="/code0_software.png"
                                     alt={card.alt}
                                     fill
+                                    sizes="(min-width: 1024px) calc((100vw - 4rem) / 3), 100vw"
                                     className="object-cover transition-transform duration-700"
                                 />
                             </div>
