@@ -50,7 +50,7 @@
     "typescript": "^5.8.3"
   },
   "overrides": {
-    "file-type": "21.3.1",
+    "file-type": "21.3.2",
     "undici": "7.24.4",
     "dompurify": "3.3.2",
     "@esbuild-kit/core-utils": {
