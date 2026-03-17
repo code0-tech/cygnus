@@ -3,7 +3,9 @@
 import type { Blog, Feature, Footer, Job, Media, NavbarItem, Page, RoadmapItem as PayloadRoadmapItem, Section, User } from "@/payload-types"
 import { DEFAULT_LOCALE, type AppLocale } from "@/lib/i18n"
 import { getPayloadClient } from "@/lib/payloadClient"
-import { unstable_cache } from "next/cache"
+import { cache } from "react"
+
+const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build" || process.env.npm_lifecycle_event === "build"
 
 type PageLayoutBlock = NonNullable<Page["layout"]>[number]
 
@@ -39,10 +41,42 @@ export type BlogPostItem = Pick<Blog, "id" | "title" | "slug" | "content" | "cre
     author: number | Pick<User, "email" | "name">
 }
 
-const getLandingPageCached = unstable_cache(
-    async (cachedSlug: string, cachedLocale: AppLocale): Promise<Page | null> => {
-        const payload = await getPayloadClient()
+function isMissingPayloadTablesError(error: unknown): boolean {
+    if (!error || typeof error !== "object") {
+        return false
+    }
 
+    const pgCode = "code" in error ? error.code : undefined
+    const message = "message" in error && typeof error.message === "string"
+        ? error.message.toLowerCase()
+        : ""
+    const cause = "cause" in error ? error.cause : undefined
+
+    return pgCode === "42P01"
+        || pgCode === "3F000"
+        || (message.includes("relation") && message.includes("does not exist"))
+        || (message.includes("schema") && message.includes("does not exist"))
+        || isMissingPayloadTablesError(cause)
+}
+
+async function withCmsFallback<T>(operation: string, fallback: T, run: () => Promise<T>): Promise<T> {
+    try {
+        return await run()
+    } catch (error) {
+        if (!isBuildPhase && !isMissingPayloadTablesError(error)) {
+            throw error
+        }
+
+        if (!isBuildPhase) {
+            console.warn(`[cms] ${operation} skipped because the Payload data is unavailable.`)
+        }
+        return fallback
+    }
+}
+
+const getLandingPageCached = cache(async (cachedSlug: string, cachedLocale: AppLocale): Promise<Page | null> => {
+    return withCmsFallback(`getLandingPage(${cachedSlug}, ${cachedLocale})`, null, async () => {
+        const payload = await getPayloadClient()
         const result = await payload.find({
             collection: "pages",
             locale: cachedLocale,
@@ -54,15 +88,12 @@ const getLandingPageCached = unstable_cache(
         })
 
         return (result.docs[0] as Page | undefined) ?? null
-    },
-    ["landing-page"],
-    { revalidate: 300, tags: ["pages"] },
-)
+    })
+})
 
-const getNavbarItemsCached = unstable_cache(
-    async (locale: AppLocale): Promise<NavbarItem[]> => {
+const getNavbarItemsCached = cache(async (locale: AppLocale): Promise<NavbarItem[]> => {
+    return withCmsFallback(`getNavbarItems(${locale})`, [], async () => {
         const payload = await getPayloadClient()
-
         const result = await payload.find({
             collection: "navbarItems",
             locale,
@@ -73,15 +104,12 @@ const getNavbarItemsCached = unstable_cache(
         })
 
         return result.docs as NavbarItem[]
-    },
-    ["navbar-items"],
-    { revalidate: 300, tags: ["navbarItems"] },
-)
+    })
+})
 
-const getFooterCached = unstable_cache(
-    async (locale: AppLocale): Promise<Footer | null> => {
+const getFooterCached = cache(async (locale: AppLocale): Promise<Footer | null> => {
+    return withCmsFallback(`getFooter(${locale})`, null, async () => {
         const payload = await getPayloadClient()
-
         const result = await payload.find({
             collection: "footer",
             locale,
@@ -92,15 +120,12 @@ const getFooterCached = unstable_cache(
         })
 
         return (result.docs[0] as Footer | undefined) ?? null
-    },
-    ["footer"],
-    { revalidate: 300, tags: ["footer"] },
-)
+    })
+})
 
-const getFeaturesCached = unstable_cache(
-    async (locale: AppLocale): Promise<FeatureItem[]> => {
+const getFeaturesCached = cache(async (locale: AppLocale): Promise<FeatureItem[]> => {
+    return withCmsFallback(`getFeatures(${locale})`, [], async () => {
         const payload = await getPayloadClient()
-
         const result = await payload.find({
             collection: "features",
             locale,
@@ -120,13 +145,11 @@ const getFeaturesCached = unstable_cache(
                 description: feature.description,
                 link: { label: feature.link.label, url: feature.link.url },
             }))
-    },
-    ["features"],
-    { revalidate: 300, tags: ["features"] },
-)
+    })
+})
 
-const getJobsCached = unstable_cache(
-    async (locale: AppLocale): Promise<JobItem[]> => {
+const getJobsCached = cache(async (locale: AppLocale): Promise<JobItem[]> => {
+    return withCmsFallback(`getJobs(${locale})`, [], async () => {
         const payload = await getPayloadClient()
         const result = await payload.find({
             collection: "jobs",
@@ -145,14 +168,13 @@ const getJobsCached = unstable_cache(
                 order: true,
             },
         })
-        return (result.docs as JobItem[]) ?? []
-    },
-    ["jobs"],
-    { revalidate: 300, tags: ["jobs"] },
-)
 
-const getJobBySlugCached = unstable_cache(
-    async (slug: string, locale: AppLocale): Promise<JobDetailItem | null> => {
+        return (result.docs as JobItem[]) ?? []
+    })
+})
+
+const getJobBySlugCached = cache(async (slug: string, locale: AppLocale): Promise<JobDetailItem | null> => {
+    return withCmsFallback(`getJobBySlug(${slug}, ${locale})`, null, async () => {
         const payload = await getPayloadClient()
         const result = await payload.find({
             collection: "jobs",
@@ -163,14 +185,13 @@ const getJobBySlugCached = unstable_cache(
             pagination: false,
             depth: 0,
         })
-        return (result.docs[0] as JobDetailItem | undefined) ?? null
-    },
-    ["job-by-slug"],
-    { revalidate: 300, tags: ["jobs"] },
-)
 
-const getTeamMembersCached = unstable_cache(
-    async (): Promise<TeamMemberItem[]> => {
+        return (result.docs[0] as JobDetailItem | undefined) ?? null
+    })
+})
+
+const getTeamMembersCached = cache(async (): Promise<TeamMemberItem[]> => {
+    return withCmsFallback("getTeamMembers()", [], async () => {
         const payload = await getPayloadClient()
         const result = await payload.find({
             collection: "users",
@@ -186,14 +207,13 @@ const getTeamMembersCached = unstable_cache(
                 joinedAt: true,
             },
         })
-        return (result.docs as TeamMemberItem[]) ?? []
-    },
-    ["team-members"],
-    { revalidate: 300, tags: ["users"] },
-)
 
-const getJobSlugsCached = unstable_cache(
-    async (locale: AppLocale): Promise<string[]> => {
+        return (result.docs as TeamMemberItem[]) ?? []
+    })
+})
+
+const getJobSlugsCached = cache(async (locale: AppLocale): Promise<string[]> => {
+    return withCmsFallback(`getJobSlugs(${locale})`, [], async () => {
         const payload = await getPayloadClient()
         const result = await payload.find({
             collection: "jobs",
@@ -204,16 +224,15 @@ const getJobSlugsCached = unstable_cache(
             depth: 0,
             select: { slug: true },
         })
+
         return result.docs
             .map((job) => job.slug)
             .filter((slug) => slug.length > 0)
-    },
-    ["job-slugs"],
-    { revalidate: 300, tags: ["jobs"] },
-)
+    })
+})
 
-const getBlogPostBySlugCached = unstable_cache(
-    async (slug: string, locale: AppLocale): Promise<BlogPostItem | null> => {
+const getBlogPostBySlugCached = cache(async (slug: string, locale: AppLocale): Promise<BlogPostItem | null> => {
+    return withCmsFallback(`getBlogPostBySlug(${slug}, ${locale})`, null, async () => {
         const payload = await getPayloadClient()
         const result = await payload.find({
             collection: "blog",
@@ -224,14 +243,13 @@ const getBlogPostBySlugCached = unstable_cache(
             limit: 1,
             pagination: false,
         })
-        return (result.docs[0] as BlogPostItem | undefined) ?? null
-    },
-    ["blog-post-by-slug"],
-    { revalidate: 300, tags: ["blog"] },
-)
 
-const getBlogPostsCached = unstable_cache(
-    async (locale: AppLocale): Promise<BlogPostItem[]> => {
+        return (result.docs[0] as BlogPostItem | undefined) ?? null
+    })
+})
+
+const getBlogPostsCached = cache(async (locale: AppLocale): Promise<BlogPostItem[]> => {
+    return withCmsFallback(`getBlogPosts(${locale})`, [], async () => {
         const payload = await getPayloadClient()
         const result = await payload.find({
             collection: "blog",
@@ -250,14 +268,13 @@ const getBlogPostsCached = unstable_cache(
                 author: true,
             },
         })
-        return (result.docs as BlogPostItem[]) ?? []
-    },
-    ["blog-posts"],
-    { revalidate: 300, tags: ["blog"] },
-)
 
-const getBlogSlugsCached = unstable_cache(
-    async (locale: AppLocale): Promise<string[]> => {
+        return (result.docs as BlogPostItem[]) ?? []
+    })
+})
+
+const getBlogSlugsCached = cache(async (locale: AppLocale): Promise<string[]> => {
+    return withCmsFallback(`getBlogSlugs(${locale})`, [], async () => {
         const payload = await getPayloadClient()
         const result = await payload.find({
             collection: "blog",
@@ -268,16 +285,15 @@ const getBlogSlugsCached = unstable_cache(
             depth: 0,
             select: { slug: true },
         })
+
         return result.docs
             .map((post) => post.slug)
             .filter((slug) => slug.length > 0)
-    },
-    ["blog-slugs"],
-    { revalidate: 300, tags: ["blog"] },
-)
+    })
+})
 
-const getRoadmapItemsCached = unstable_cache(
-    async (locale: AppLocale): Promise<RoadmapItem[]> => {
+const getRoadmapItemsCached = cache(async (locale: AppLocale): Promise<RoadmapItem[]> => {
+    return withCmsFallback(`getRoadmapItems(${locale})`, [], async () => {
         const payload = await getPayloadClient()
         const result = await payload.find({
             collection: "roadmapItems",
@@ -287,14 +303,13 @@ const getRoadmapItemsCached = unstable_cache(
             sort: "-createdAt",
             depth: 0,
         })
-        return (result.docs as RoadmapItem[]) ?? []
-    },
-    ["roadmap-items"],
-    { revalidate: 300, tags: ["roadmapItems"] },
-)
 
-const getSectionsCached = unstable_cache(
-    async (locale: AppLocale): Promise<Section[]> => {
+        return (result.docs as RoadmapItem[]) ?? []
+    })
+})
+
+const getSectionsCached = cache(async (locale: AppLocale): Promise<Section[]> => {
+    return withCmsFallback(`getSections(${locale})`, [], async () => {
         const payload = await getPayloadClient()
         const result = await payload.find({
             collection: "sections",
@@ -303,22 +318,17 @@ const getSectionsCached = unstable_cache(
             pagination: false,
             depth: 0,
         })
+
         return result.docs as Section[]
-    },
-    ["sections-all"],
-    { revalidate: 300, tags: ["sections"] },
-)
+    })
+})
 
 type SectionType = NonNullable<Section["sectionType"]>
 
-const getSectionByTypeCached = unstable_cache(
-    async (cachedSectionType: SectionType, cachedLocale: AppLocale) => {
-        const sections = await getSectionsCached(cachedLocale)
-        return sections.find((section) => section.sectionType === cachedSectionType) ?? null
-    },
-    ["section-by-type"],
-    { revalidate: 300, tags: ["sections"] },
-)
+const getSectionByTypeCached = cache(async (cachedSectionType: SectionType, cachedLocale: AppLocale) => {
+    const sections = await getSectionsCached(cachedLocale)
+    return sections.find((section) => section.sectionType === cachedSectionType) ?? null
+})
 
 export async function getLandingPage(slug = "main", locale: AppLocale = DEFAULT_LOCALE): Promise<Page | null> {
     return getLandingPageCached(slug, locale)

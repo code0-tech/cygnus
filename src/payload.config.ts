@@ -19,6 +19,9 @@ import { Users } from './collections/users'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
+const smtpHost = process.env.SMTP_HOST
+const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build" || process.env.npm_lifecycle_event === "build"
+const shouldSkipEmailVerify = isBuildPhase || !smtpHost
 
 export default buildConfig({
     admin: {
@@ -42,8 +45,9 @@ export default buildConfig({
     email: nodemailerAdapter({
         defaultFromAddress: process.env.CONTACT_FROM_EMAIL!,
         defaultFromName: 'Payload Mail',
+        skipVerify: shouldSkipEmailVerify,
         transportOptions: {
-            host: process.env.SMTP_HOST,
+            host: smtpHost,
             port: Number(process.env.SMTP_PORT),
             secure: Number(process.env.SMTP_PORT) === 465,
             auth: {
