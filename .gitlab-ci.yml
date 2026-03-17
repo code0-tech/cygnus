@@ -23,10 +23,8 @@ build:
     paths:
       - out
     expire_in: 7 days
-  rules:
-    - if: $C0_GH_REF != "refs/heads/main"
 
-pages:
+.pages:
   extends:
     - .build-base
   stage: deploy
@@ -36,5 +34,3 @@ pages:
   artifacts:
     paths:
       - public
-  rules:
-    - if: $C0_GH_REF == "refs/heads/main"

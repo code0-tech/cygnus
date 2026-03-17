@@ -1,36 +1,53 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Next.js Standalone Start
 
-## Getting Started
+`npm run build` automatically prepares standalone assets via `postbuild` (`.next/static` and `public` are copied into `.next/standalone`).
 
-First, run the development server:
+## 1) Build
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```powershell
+npm run build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 2) Start the standalone server
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```powershell
+npm run standalone
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+## Data Export
 
-## Learn More
+Exports all import/export-enabled Payload collections as JSON files into [`Export/`](/C:/Users/Marius/OneDrive/Desktop/Projects/code0/cygnus/Export).
 
-To learn more about Next.js, take a look at the following resources:
+```powershell
+npm run export-data
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Notes:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+- The script requires a valid Payload user.
+- The script loads environment variables from your Next.js `.env` files.
+- Existing JSON files in `export/` are overwritten.
 
-## Deploy on Vercel
+## Data Import
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Imports all `*.json` files from [`export/`](/C:/Users/Marius/OneDrive/Desktop/Projects/code0/cygnus/export) into the matching Payload collections.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+```powershell
+npm run import-data
+```
+
+Optional: import with a specific Payload user
+
+```powershell
+$env:PAYLOAD_IMPORT_USER_EMAIL="you@example.com"
+npm run import-data
+```
+
+Notes:
+
+- The database schema / tables must already exist before running the import.
+- The script uses `upsert` with `matchField: "id"`.
+- If a document with the same `id` already exists, it is updated.
+- If no document with that `id` exists, it is created.
+- Existing documents with different IDs remain untouched.
+- JSON files without a matching import-enabled collection are skipped.
