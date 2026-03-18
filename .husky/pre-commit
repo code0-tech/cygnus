@@ -2,3 +2,4 @@
 
 npm run build
 npm run export-data
+git add export/*.json
