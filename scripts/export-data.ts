@@ -19,6 +19,7 @@ const EXPORT_FORMAT = "json"
 const { loadEnvConfig } = nextEnv
 
 loadEnvConfig(process.cwd())
+process.env.PAYLOAD_SKIP_EMAIL_VERIFY = "true"
 
 const getExportCollectionSlugs = (collections: Array<{ slug: string } & ExportableCollectionConfig>) => {
     const exportCollection = collections.find((collection) => collection.slug === "exports") as
@@ -90,8 +91,12 @@ const main = async () => {
     }
 }
 
-main().catch((error) => {
-    console.error("Export failed.")
-    console.error(error)
-    process.exitCode = 1
-})
+main()
+    .then(() => {
+        process.exit(process.exitCode ?? 0)
+    })
+    .catch((error) => {
+        console.error("Export failed.")
+        console.error(error)
+        process.exit(1)
+    })

@@ -21,7 +21,10 @@ const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 const smtpHost = process.env.SMTP_HOST
 const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build" || process.env.npm_lifecycle_event === "build"
-const shouldSkipEmailVerify = isBuildPhase || !smtpHost
+const shouldSkipEmailVerify =
+    isBuildPhase ||
+    process.env.PAYLOAD_SKIP_EMAIL_VERIFY === "true" ||
+    !smtpHost
 
 export default buildConfig({
     admin: {

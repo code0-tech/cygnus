@@ -16,7 +16,8 @@
     "knip": "knip",
     "generate": "payload generate:types",
     "export-data": "node --import tsx scripts/export-data.ts",
-    "import-data": "node --import tsx scripts/import-data.ts"
+    "import-data": "node --import tsx scripts/import-data.ts",
+    "prepare": "husky"
   },
   "dependencies": {
     "@code0-tech/pictor": "^0.4.0",
@@ -48,6 +49,7 @@
     "@types/node": "^22.15.33",
     "@types/react": "^19.2.11",
     "@types/react-dom": "^19.2.3",
+    "husky": "^9.1.7",
     "postcss": "^8.5.8",
     "tailwindcss": "^4.1.12",
     "typescript": "^5.8.3"

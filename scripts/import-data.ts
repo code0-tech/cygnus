@@ -1,4 +1,4 @@
-import { mkdir, readdir, readFile } from "node:fs/promises"
+import { access, mkdir, readdir, readFile } from "node:fs/promises"
 import path from "node:path"
 import nextEnv from "@next/env"
 import { createLocalReq, getPayload } from "payload"
@@ -15,12 +15,42 @@ type ImportableCollectionConfig = {
 }
 
 const IMPORT_FORMAT = "json"
-const IMPORT_MODE = "upsert"
 const MATCH_FIELD = "id"
+const DELETE_BATCH_SIZE = 100
+const DEFAULT_DATA_DIR = "export"
+const AUTH_COLLECTION_SLUG = "users"
+const TEMP_IMPORT_USER_ID = 2147483647
+const TEMP_IMPORT_USER_EMAIL = "payload-import-temp@local.invalid"
+const TEMP_IMPORT_USER_NAME = "Payload Import"
+const TEMP_IMPORT_USER_PASSWORD = "TempImportPass123!"
+const IMPORTED_USER_PASSWORD = "ImportedUserPass123!"
+const MEDIA_COLLECTION_SLUG = "media"
+const NAVBAR_COLLECTION_SLUG = "navbarItems"
+const FOOTER_COLLECTION_SLUG = "footer"
+const FEATURES_COLLECTION_SLUG = "features"
+const SECTIONS_COLLECTION_SLUG = "sections"
+const IMPORT_ORDER = [
+    "media",
+    "users",
+    "navbarItems",
+    "sections",
+    "footer",
+    "pages",
+    "features",
+    "jobs",
+    "blog",
+    "roadmapItems",
+] as const
 
 const { loadEnvConfig } = nextEnv
 
 loadEnvConfig(process.cwd())
+process.env.PAYLOAD_SKIP_EMAIL_VERIFY = "true"
+
+type PayloadInstance = Awaited<ReturnType<typeof getPayload>>
+type ImportUser = Awaited<ReturnType<typeof resolveImportUser>>["user"] & { collection: "users" }
+type ImportLocale = "all" | "en" | "de"
+type ImportErrorEntry<TDocument> = { error: string; index: number; doc: TDocument }
 
 const getImportCollectionSlugs = (collections: Array<{ slug: string } & ImportableCollectionConfig>) => {
     const importCollection = collections.find((collection) => collection.slug === "imports") as
@@ -33,10 +63,40 @@ const getImportCollectionSlugs = (collections: Array<{ slug: string } & Importab
         throw new Error("Could not determine importable collections from the import-export plugin configuration.")
     }
 
-    return new Set(slugs)
+    return slugs
 }
 
-const resolveImportUser = async (payload: Awaited<ReturnType<typeof getPayload>>) => {
+const createTemporaryImportUser = async (payload: PayloadInstance) => {
+    const user = await payload.create({
+        collection: AUTH_COLLECTION_SLUG,
+        data: {
+            id: TEMP_IMPORT_USER_ID,
+            email: TEMP_IMPORT_USER_EMAIL,
+            name: TEMP_IMPORT_USER_NAME,
+            password: TEMP_IMPORT_USER_PASSWORD,
+        },
+        overrideAccess: true,
+    })
+
+    console.log(`Created temporary import user ${user.id} (${TEMP_IMPORT_USER_EMAIL}).`)
+
+    return user
+}
+
+const recreateTemporaryImportUser = async (
+    payload: PayloadInstance,
+    existingUserID: number | string
+) => {
+    await payload.delete({
+        collection: AUTH_COLLECTION_SLUG,
+        id: existingUserID,
+        overrideAccess: true,
+    })
+
+    return createTemporaryImportUser(payload)
+}
+
+const resolveImportUser = async (payload: PayloadInstance) => {
     const requestedEmail = process.env.PAYLOAD_IMPORT_USER_EMAIL?.trim() || process.env.PAYLOAD_EXPORT_USER_EMAIL?.trim()
 
     const users = await payload.find({
@@ -56,53 +116,1040 @@ const resolveImportUser = async (payload: Awaited<ReturnType<typeof getPayload>>
     const user = users.docs[0]
 
     if (!user) {
-        throw new Error(
-            requestedEmail
-                ? `Could not find a user with email "${requestedEmail}" for import authentication.`
-                : "No users found. Create a Payload user first or set PAYLOAD_IMPORT_USER_EMAIL."
-        )
+        if (requestedEmail) {
+            throw new Error(`Could not find a user with email "${requestedEmail}" for import authentication.`)
+        }
+
+        return {
+            isTemporary: true,
+            user: await createTemporaryImportUser(payload),
+        }
     }
 
-    return user
+    if (!requestedEmail && user.email === TEMP_IMPORT_USER_EMAIL) {
+        if (String(user.id) !== String(TEMP_IMPORT_USER_ID)) {
+            return {
+                isTemporary: true,
+                user: await recreateTemporaryImportUser(payload, user.id),
+            }
+        }
+
+        return {
+            isTemporary: true,
+            user,
+        }
+    }
+
+    return {
+        isTemporary: false,
+        user,
+    }
+}
+
+const resolveInputDir = async () => {
+    const preferredDir = path.resolve(process.cwd(), process.env.PAYLOAD_DATA_DIR?.trim() || DEFAULT_DATA_DIR)
+
+    try {
+        await readdir(preferredDir)
+        return preferredDir
+    } catch (error) {
+        if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
+            throw error
+        }
+    }
+
+    const legacyDir = path.resolve(process.cwd(), "export")
+
+    try {
+        await readdir(legacyDir)
+        return legacyDir
+    } catch (error) {
+        if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
+            throw error
+        }
+    }
+
+    await mkdir(preferredDir, { recursive: true })
+
+    return preferredDir
+}
+
+const clearCollection = async (
+    payload: PayloadInstance,
+    collectionSlug: string,
+    options?: {
+        keepDocumentID?: number | string
+    }
+) => {
+    let deletedCount = 0
+    const keepDocumentID = options?.keepDocumentID
+
+    while (true) {
+        let deletedInPass = 0
+        const existingDocs = await payload.find({
+            collection: collectionSlug as "users",
+            depth: 0,
+            limit: DELETE_BATCH_SIZE,
+            overrideAccess: true,
+            page: 1,
+        })
+
+        if (existingDocs.docs.length === 0) {
+            break
+        }
+
+        for (const doc of existingDocs.docs) {
+            if (keepDocumentID && String(doc.id) === String(keepDocumentID)) {
+                continue
+            }
+
+            await payload.delete({
+                collection: collectionSlug as "users",
+                id: doc.id,
+                overrideAccess: true,
+            })
+
+            deletedCount += 1
+            deletedInPass += 1
+        }
+
+        if (deletedInPass === 0) {
+            break
+        }
+    }
+
+    console.log(`Cleared ${collectionSlug}: deleted=${deletedCount}`)
+}
+
+const getImportedDocumentIDs = (buffer: Buffer) => {
+    const parsed = JSON.parse(buffer.toString("utf8")) as unknown
+
+    if (!Array.isArray(parsed)) {
+        throw new Error("Import file must contain a JSON array of documents.")
+    }
+
+    return new Set(
+        parsed
+            .map((doc) => (typeof doc === "object" && doc !== null ? (doc as { id?: number | string }).id : undefined))
+            .filter((id): id is number | string => id !== undefined && id !== null)
+            .map((id) => String(id))
+    )
+}
+
+const sortCollectionSlugs = (collectionSlugs: string[], direction: "import" | "clear") => {
+    const orderedSlugs = IMPORT_ORDER.filter((slug) => collectionSlugs.includes(slug))
+    const remainingSlugs = collectionSlugs.filter((slug) => !IMPORT_ORDER.includes(slug as (typeof IMPORT_ORDER)[number]))
+    const sorted = [...orderedSlugs, ...remainingSlugs]
+
+    return direction === "clear" ? sorted.reverse() : sorted
+}
+
+type ImportedMediaDocument = {
+    id?: number | string
+    alt?: string
+    createdAt?: string
+    filename?: string
+    focalX?: number | null
+    focalY?: number | null
+    href?: string | null
+    updatedAt?: string
+}
+
+type ImportedUserDocument = {
+    about?: Record<string, string> | null
+    collection?: string
+    createdAt?: string
+    email: string
+    id?: number | string
+    image?: {
+        id?: number | string
+    } | number | string | null
+    joinedAt?: string | null
+    name?: string
+    role?: Record<string, string> | null
+    sessions?: unknown[]
+    shortDescription?: Record<string, string> | null
+    updatedAt?: string
+}
+
+type ImportedNavbarItemDocument = {
+    createdAt?: string
+    href?: string | null
+    id?: number | string
+    order?: number
+    subMenu?:
+        | Array<{
+            color?: "brand" | "pink" | "yellow" | "aqua" | "blue"
+            description?: Record<string, string> | null
+            href?: string
+            icon?: "cube" | "gitBranch" | "lock"
+            id?: string | null
+            key?: string
+            title?: Record<string, string> | null
+        }>
+        | null
+    title?: Record<string, string> | null
+    updatedAt?: string
+}
+
+type ImportedFooterDocument = {
+    company_name?: Record<string, string> | null
+    createdAt?: string
+    groups?:
+        | Array<{
+            heading?: Record<string, string> | null
+            id?: string | null
+            items?:
+                | Array<{
+                    id?: string | null
+                    label?: Record<string, string> | null
+                    url?: string
+                }>
+                | null
+        }>
+        | null
+    id?: number | string
+    updatedAt?: string
+}
+
+type ImportedFeatureDocument = {
+    createdAt?: string
+    description?: Record<string, string> | null
+    id?: number | string
+    link?: {
+        label?: Record<string, string> | null
+        url?: string | null
+    } | null
+    slug?: string
+    title?: Record<string, string> | null
+    updatedAt?: string
+}
+
+type ImportedSectionDocument = {
+    createdAt?: string
+    heading?: Record<string, string> | null
+    id?: number | string
+    link_button?: {
+        label?: Record<string, string | null> | null
+        url?: string | null
+    } | null
+    sectionType?:
+        | "AppFeatureSection"
+        | "FaqSection"
+        | "RoadmapSection"
+        | "RuntimeFeatureSection"
+        | "UseCaseSection"
+        | "DeploymentSection"
+    subheading?: Record<string, string> | null
+    updatedAt?: string
+}
+
+const parseImportDocuments = <T>(buffer: Buffer) => {
+    const parsed = JSON.parse(buffer.toString("utf8")) as unknown
+
+    if (!Array.isArray(parsed)) {
+        throw new Error("Import file must contain a JSON array of documents.")
+    }
+
+    return parsed as T[]
+}
+
+const normalizeNumericID = (value: number | string | undefined) => {
+    if (typeof value === "number") {
+        return value
+    }
+
+    if (typeof value === "string" && value.trim().length > 0) {
+        const parsed = Number(value)
+
+        if (Number.isFinite(parsed)) {
+            return parsed
+        }
+    }
+
+    return undefined
+}
+
+const resolveMediaFilePath = async (filename: string) => {
+    const candidatePaths = [
+        path.resolve(process.cwd(), "media", filename),
+        path.resolve(process.cwd(), ".next", "standalone", "media", filename),
+    ]
+
+    for (const candidatePath of candidatePaths) {
+        try {
+            await access(candidatePath)
+            return candidatePath
+        } catch {
+            // Continue until a readable file is found.
+        }
+    }
+
+    return undefined
+}
+
+const importMediaCollection = async (
+    payload: PayloadInstance,
+    importUser: ImportUser,
+    file: { name: string },
+    buffer: Buffer
+) => {
+    const mediaDocuments = parseImportDocuments<ImportedMediaDocument>(buffer)
+    let imported = 0
+    const errors: ImportErrorEntry<ImportedMediaDocument>[] = []
+    const mediaIDMap = new Map<string, number | string>()
+
+    for (const [index, doc] of mediaDocuments.entries()) {
+        if (!doc.filename) {
+            errors.push({
+                doc,
+                error: "Missing filename in media import document.",
+                index,
+            })
+            continue
+        }
+
+        const filePath = await resolveMediaFilePath(doc.filename)
+
+        if (!filePath) {
+            errors.push({
+                doc,
+                error: `Media file "${doc.filename}" was not found in media/ or .next/standalone/media/.`,
+                index,
+            })
+            continue
+        }
+
+        const req = await createLocalReq({ locale: "all", user: importUser }, payload)
+
+        try {
+            const createdMedia = await payload.create({
+                collection: MEDIA_COLLECTION_SLUG,
+                data: {
+                    alt: doc.alt ?? doc.filename,
+                    createdAt: doc.createdAt,
+                    focalX: doc.focalX ?? undefined,
+                    focalY: doc.focalY ?? undefined,
+                    href: doc.href ?? undefined,
+                    id: normalizeNumericID(doc.id),
+                    updatedAt: doc.updatedAt,
+                },
+                filePath,
+                overrideAccess: true,
+                overwriteExistingFiles: true,
+                req,
+            })
+
+            if (doc.id !== undefined) {
+                mediaIDMap.set(String(doc.id), createdMedia.id)
+            }
+
+            imported += 1
+        } catch (error) {
+            errors.push({
+                doc,
+                error: formatImportError(error),
+                index,
+            })
+        }
+    }
+
+    console.log(`Imported media: total=${mediaDocuments.length}, imported=${imported}, updated=0, errors=${errors.length}`)
+
+    if (errors.length > 0) {
+        throw new Error(`Import errors in ${file.name}: ${JSON.stringify(errors)}`)
+    }
+
+    return mediaIDMap
+}
+
+const normalizeRelationshipID = (
+    value: ImportedUserDocument["image"]
+) => {
+    if (typeof value === "number" || typeof value === "string") {
+        return normalizeNumericID(value)
+    }
+
+    if (typeof value === "object" && value !== null && "id" in value) {
+        return normalizeNumericID(value.id)
+    }
+
+    return undefined
+}
+
+const remapKnownRelationshipID = (
+    originalID: number | string | undefined,
+    idMap: Map<string, number | string>
+) => {
+    if (originalID === undefined) {
+        return undefined
+    }
+
+    return idMap.get(String(originalID)) ?? normalizeNumericID(originalID) ?? originalID
+}
+
+const createImportReq = async (payload: PayloadInstance, importUser: ImportUser, locale: ImportLocale) => {
+    return createLocalReq({ locale, user: importUser }, payload)
+}
+
+const syncLocalizedDocument = async (
+    payload: PayloadInstance,
+    importUser: ImportUser,
+    collection: string,
+    id: number | string,
+    englishData: Record<string, unknown>,
+    germanData: Record<string, unknown>
+) => {
+    const englishReq = await createImportReq(payload, importUser, "en")
+    await payload.update({
+        collection: collection as "users",
+        id,
+        data: englishData as never,
+        locale: "en",
+        overrideAccess: true,
+        req: englishReq,
+    })
+
+    const germanReq = await createImportReq(payload, importUser, "de")
+    await payload.update({
+        collection: collection as "users",
+        id,
+        data: germanData as never,
+        locale: "de",
+        overrideAccess: true,
+        req: germanReq,
+    })
+}
+
+const importLocalizedCollection = async <TDocument extends { id?: number | string }>(args: {
+    buildEnglishData: (doc: TDocument) => Record<string, unknown>
+    buildGermanData: (doc: TDocument) => Record<string, unknown>
+    buffer: Buffer
+    collection: string
+    file: { name: string }
+    importUser: ImportUser
+    label: string
+    payload: PayloadInstance
+}) => {
+    const { buildEnglishData, buildGermanData, buffer, collection, file, importUser, label, payload } = args
+    const documents = parseImportDocuments<TDocument>(buffer)
+    let imported = 0
+    let updated = 0
+    const errors: ImportErrorEntry<TDocument>[] = []
+
+    for (const [index, doc] of documents.entries()) {
+        const normalizedID = normalizeNumericID(doc.id)
+
+        try {
+            const createReq = await createImportReq(payload, importUser, "en")
+            const createdDocument = await payload.create({
+                collection: collection as "users",
+                data: buildEnglishData(doc) as never,
+                locale: "en",
+                overrideAccess: true,
+                req: createReq,
+            })
+
+            imported += 1
+
+            await syncLocalizedDocument(
+                payload,
+                importUser,
+                collection,
+                createdDocument.id,
+                buildEnglishData(doc),
+                buildGermanData(doc),
+            )
+
+            updated += 1
+        } catch (error) {
+            errors.push({
+                doc,
+                error: formatImportError(error),
+                index,
+            })
+        }
+    }
+
+    console.log(`Imported ${label}: total=${documents.length}, imported=${imported}, updated=${updated}, errors=${errors.length}`)
+
+    if (errors.length > 0) {
+        throw new Error(`Import errors in ${file.name}: ${JSON.stringify(errors)}`)
+    }
+}
+
+const findExistingUserByEmail = async (
+    payload: PayloadInstance,
+    importUser: ImportUser,
+    email: string
+) => {
+    const req = await createImportReq(payload, importUser, "en")
+    const result = await payload.find({
+        collection: AUTH_COLLECTION_SLUG,
+        limit: 1,
+        overrideAccess: true,
+        pagination: false,
+        req,
+        where: {
+            email: {
+                equals: email,
+            },
+        },
+    })
+
+    return result.docs[0]
+}
+
+const importUsersCollection = async (
+    payload: PayloadInstance,
+    importUser: ImportUser,
+    file: { name: string },
+    buffer: Buffer,
+    mediaIDMap: Map<string, number | string>,
+    temporaryImportUserID?: number | string
+) => {
+    const userDocuments = parseImportDocuments<ImportedUserDocument>(buffer)
+    let imported = 0
+    let updated = 0
+    const errors: ImportErrorEntry<ImportedUserDocument>[] = []
+    const userIDMap = new Map<string, number | string>()
+    let temporaryUserConsumed = false
+
+    for (const [index, doc] of userDocuments.entries()) {
+        const normalizedID = normalizeNumericID(doc.id)
+        const userDataBase: Record<string, unknown> = {
+            createdAt: doc.createdAt,
+            email: doc.email,
+            image: remapKnownRelationshipID(normalizeRelationshipID(doc.image), mediaIDMap),
+            joinedAt: doc.joinedAt ?? undefined,
+            name: doc.name ?? doc.email,
+            updatedAt: doc.updatedAt,
+        }
+        const englishLocalizedData: Record<string, unknown> = {
+            about: doc.about?.en ?? undefined,
+            role: doc.role?.en ?? undefined,
+            shortDescription: doc.shortDescription?.en ?? undefined,
+        }
+        const germanLocalizedData: Record<string, unknown> = {
+            about: doc.about?.de ?? undefined,
+            role: doc.role?.de ?? undefined,
+            shortDescription: doc.shortDescription?.de ?? undefined,
+        }
+
+        try {
+            if (!temporaryUserConsumed && temporaryImportUserID !== undefined) {
+                await syncLocalizedDocument(
+                    payload,
+                    importUser,
+                    AUTH_COLLECTION_SLUG,
+                    temporaryImportUserID,
+                    { ...userDataBase, ...englishLocalizedData },
+                    germanLocalizedData,
+                )
+
+                if (normalizedID !== undefined) {
+                    userIDMap.set(String(normalizedID), temporaryImportUserID)
+                }
+
+                updated += 1
+                temporaryUserConsumed = true
+                continue
+            }
+
+            if (normalizedID !== undefined) {
+                const findReq = await createImportReq(payload, importUser, "en")
+                const existingUser = await payload.findByID({
+                    collection: AUTH_COLLECTION_SLUG,
+                    id: normalizedID,
+                    overrideAccess: true,
+                    req: findReq,
+                }).catch(() => undefined)
+
+                if (existingUser) {
+                    await syncLocalizedDocument(
+                        payload,
+                        importUser,
+                        AUTH_COLLECTION_SLUG,
+                        normalizedID,
+                        { ...userDataBase, ...englishLocalizedData },
+                        germanLocalizedData,
+                    )
+
+                    userIDMap.set(String(normalizedID), normalizedID)
+                    updated += 1
+                    continue
+                }
+            }
+
+            const existingUserByEmail = await findExistingUserByEmail(payload, importUser, doc.email)
+
+            if (existingUserByEmail) {
+                await syncLocalizedDocument(
+                    payload,
+                    importUser,
+                    AUTH_COLLECTION_SLUG,
+                    existingUserByEmail.id,
+                    { ...userDataBase, ...englishLocalizedData },
+                    germanLocalizedData,
+                )
+
+                if (normalizedID !== undefined) {
+                    userIDMap.set(String(normalizedID), existingUserByEmail.id)
+                }
+
+                updated += 1
+                continue
+            }
+
+            const createReq = await createImportReq(payload, importUser, "en")
+            const createdUser = await payload.create({
+                collection: AUTH_COLLECTION_SLUG,
+                data: {
+                    ...userDataBase,
+                    ...englishLocalizedData,
+                    password: IMPORTED_USER_PASSWORD,
+                } as never,
+                locale: "en",
+                overrideAccess: true,
+                req: createReq,
+            })
+
+            await syncLocalizedDocument(
+                payload,
+                importUser,
+                AUTH_COLLECTION_SLUG,
+                createdUser.id,
+                { ...userDataBase, ...englishLocalizedData },
+                germanLocalizedData,
+            )
+
+            if (normalizedID !== undefined) {
+                userIDMap.set(String(normalizedID), createdUser.id)
+            }
+
+            imported += 1
+        } catch (error) {
+            errors.push({
+                doc,
+                error: formatImportError(error),
+                index,
+            })
+        }
+    }
+
+    console.log(`Imported users: total=${userDocuments.length}, imported=${imported}, updated=${updated}, errors=${errors.length}`)
+    console.log(`Imported users receive the temporary password "${IMPORTED_USER_PASSWORD}" unless already present in the database.`)
+
+    if (errors.length > 0) {
+        throw new Error(`Import errors in ${file.name}: ${JSON.stringify(errors)}`)
+    }
+
+    return userIDMap
+}
+
+const mapNavbarSubMenuForLocale = (
+    subMenu: ImportedNavbarItemDocument["subMenu"],
+    locale: "en" | "de"
+) => {
+    if (!subMenu) {
+        return []
+    }
+
+    return subMenu.map((item) => ({
+        color: item.color ?? "brand",
+        description: item.description?.[locale] ?? "",
+        href: item.href ?? "",
+        icon: item.icon ?? "cube",
+        id: item.id ?? undefined,
+        key: item.key ?? "",
+        title: item.title?.[locale] ?? "",
+    }))
+}
+
+const importNavbarItemsCollection = async (
+    payload: PayloadInstance,
+    importUser: ImportUser,
+    file: { name: string },
+    buffer: Buffer
+) => {
+    await importLocalizedCollection<ImportedNavbarItemDocument>({
+        payload,
+        importUser,
+        file,
+        buffer,
+        collection: NAVBAR_COLLECTION_SLUG,
+        label: NAVBAR_COLLECTION_SLUG,
+        buildEnglishData: (doc) => ({
+            createdAt: doc.createdAt,
+            href: doc.href ?? "",
+            id: normalizeNumericID(doc.id),
+            order: doc.order ?? 0,
+            subMenu: mapNavbarSubMenuForLocale(doc.subMenu, "en"),
+            title: doc.title?.en ?? "",
+            updatedAt: doc.updatedAt,
+        }),
+        buildGermanData: (doc) => ({
+            subMenu: mapNavbarSubMenuForLocale(doc.subMenu, "de"),
+            title: doc.title?.de ?? "",
+        }),
+    })
+}
+
+const mapFooterGroupsForLocale = (
+    groups: ImportedFooterDocument["groups"],
+    locale: "en" | "de"
+) => {
+    if (!groups) {
+        return []
+    }
+
+    return groups.map((group) => ({
+        heading: group.heading?.[locale] ?? "",
+        id: group.id ?? undefined,
+        items: (group.items ?? []).map((item) => ({
+            id: item.id ?? undefined,
+            label: item.label?.[locale] ?? "",
+            url: item.url ?? "",
+        })),
+    }))
+}
+
+const importFooterCollection = async (
+    payload: PayloadInstance,
+    importUser: ImportUser,
+    file: { name: string },
+    buffer: Buffer
+) => {
+    await importLocalizedCollection<ImportedFooterDocument>({
+        payload,
+        importUser,
+        file,
+        buffer,
+        collection: FOOTER_COLLECTION_SLUG,
+        label: FOOTER_COLLECTION_SLUG,
+        buildEnglishData: (doc) => ({
+            company_name: doc.company_name?.en ?? "",
+            createdAt: doc.createdAt,
+            groups: mapFooterGroupsForLocale(doc.groups, "en"),
+            id: normalizeNumericID(doc.id),
+            updatedAt: doc.updatedAt,
+        }),
+        buildGermanData: (doc) => ({
+            company_name: doc.company_name?.de ?? "",
+            groups: mapFooterGroupsForLocale(doc.groups, "de"),
+        }),
+    })
+}
+
+const importFeaturesCollection = async (
+    payload: PayloadInstance,
+    importUser: ImportUser,
+    file: { name: string },
+    buffer: Buffer
+) => {
+    await importLocalizedCollection<ImportedFeatureDocument>({
+        payload,
+        importUser,
+        file,
+        buffer,
+        collection: FEATURES_COLLECTION_SLUG,
+        label: FEATURES_COLLECTION_SLUG,
+        buildEnglishData: (doc) => ({
+            createdAt: doc.createdAt,
+            description: doc.description?.en ?? undefined,
+            id: normalizeNumericID(doc.id),
+            link: doc.link
+                ? {
+                    label: doc.link.label?.en ?? undefined,
+                    url: doc.link.url ?? undefined,
+                }
+                : undefined,
+            slug: doc.slug,
+            title: doc.title?.en ?? "",
+            updatedAt: doc.updatedAt,
+        }),
+        buildGermanData: (doc) => ({
+            description: doc.description?.de ?? undefined,
+            link: doc.link
+                ? {
+                    label: doc.link.label?.de ?? undefined,
+                    url: doc.link.url ?? undefined,
+                }
+                : undefined,
+            title: doc.title?.de ?? "",
+        }),
+    })
+}
+
+const importSectionsCollection = async (
+    payload: PayloadInstance,
+    importUser: ImportUser,
+    file: { name: string },
+    buffer: Buffer
+) => {
+    await importLocalizedCollection<ImportedSectionDocument>({
+        payload,
+        importUser,
+        file,
+        buffer,
+        collection: SECTIONS_COLLECTION_SLUG,
+        label: SECTIONS_COLLECTION_SLUG,
+        buildEnglishData: (doc) => ({
+            createdAt: doc.createdAt,
+            heading: doc.heading?.en ?? "",
+            id: normalizeNumericID(doc.id),
+            link_button: doc.link_button
+                ? {
+                    label: doc.link_button.label?.en ?? undefined,
+                    url: doc.link_button.url ?? undefined,
+                }
+                : undefined,
+            sectionType: doc.sectionType,
+            subheading: doc.subheading?.en ?? undefined,
+            updatedAt: doc.updatedAt,
+        }),
+        buildGermanData: (doc) => ({
+            heading: doc.heading?.de ?? "",
+            link_button: doc.link_button
+                ? {
+                    label: doc.link_button.label?.de ?? undefined,
+                    url: doc.link_button.url ?? undefined,
+                }
+                : undefined,
+            subheading: doc.subheading?.de ?? undefined,
+        }),
+    })
+}
+
+const remapRelationshipsDeep = (
+    value: unknown,
+    relationshipMaps: {
+        mediaIDMap: Map<string, number | string>
+        userIDMap: Map<string, number | string>
+    }
+): unknown => {
+    if (Array.isArray(value)) {
+        return value.map((item) => remapRelationshipsDeep(item, relationshipMaps))
+    }
+
+    if (!value || typeof value !== "object") {
+        return value
+    }
+
+    const objectValue = value as Record<string, unknown>
+    const objectID = objectValue.id
+
+    const looksLikeMediaDocument =
+        objectID !== undefined &&
+        typeof objectValue.filename === "string" &&
+        typeof objectValue.mimeType === "string"
+
+    if (looksLikeMediaDocument) {
+        return remapKnownRelationshipID(objectID as number | string, relationshipMaps.mediaIDMap)
+    }
+
+    const looksLikeUserDocument =
+        objectID !== undefined &&
+        typeof objectValue.email === "string" &&
+        (objectValue.collection === AUTH_COLLECTION_SLUG || "sessions" in objectValue)
+
+    if (looksLikeUserDocument) {
+        return remapKnownRelationshipID(objectID as number | string, relationshipMaps.userIDMap)
+    }
+
+    return Object.fromEntries(
+        Object.entries(objectValue).map(([key, nestedValue]) => [key, remapRelationshipsDeep(nestedValue, relationshipMaps)])
+    )
+}
+
+const remapImportBuffer = (
+    buffer: Buffer,
+    relationshipMaps: {
+        mediaIDMap: Map<string, number | string>
+        userIDMap: Map<string, number | string>
+    }
+) => {
+    const documents = parseImportDocuments<Record<string, unknown>>(buffer)
+    const remappedDocuments = documents.map((doc) => remapRelationshipsDeep(doc, relationshipMaps))
+
+    return Buffer.from(JSON.stringify(remappedDocuments))
+}
+
+const formatImportError = (error: unknown) => {
+    if (!(error instanceof Error)) {
+        return String(error)
+    }
+
+    const cause = error.cause as
+        | {
+            code?: string
+            column?: string
+            constraint?: string
+            detail?: string
+            routine?: string
+            schema?: string
+            table?: string
+        }
+        | undefined
+
+    if (!cause) {
+        return error.message
+    }
+
+    return JSON.stringify({
+        cause: {
+            code: cause.code,
+            column: cause.column,
+            constraint: cause.constraint,
+            detail: cause.detail,
+            routine: cause.routine,
+            schema: cause.schema,
+            table: cause.table,
+        },
+        message: error.message,
+    })
+}
+
+const mapContainsValue = (
+    map: Map<string, number | string>,
+    expectedValue: number | string
+) => {
+    for (const value of map.values()) {
+        if (String(value) === String(expectedValue)) {
+            return true
+        }
+    }
+
+    return false
 }
 
 const main = async () => {
     let payload: Awaited<ReturnType<typeof getPayload>> | undefined
+    let temporaryImportUserID: number | string | undefined
+    let mediaIDMap = new Map<string, number | string>()
+    let userIDMap = new Map<string, number | string>()
 
     try {
         const { default: config } = await import("../src/payload.config")
         const resolvedConfig = await config
         payload = await getPayload({ config: resolvedConfig })
-        const user = await resolveImportUser(payload)
+        console.log("Payload initialized.")
+        const { user, isTemporary } = await resolveImportUser(payload)
+        console.log(`Import user resolved: id=${user.id}, email=${user.email}`)
         const importUser = { ...user, collection: "users" as const }
-        const importableCollections = getImportCollectionSlugs(resolvedConfig.collections)
-        const inputDir = path.resolve(process.cwd(), "Export")
 
-        await mkdir(inputDir, { recursive: true })
+        if (isTemporary) {
+            temporaryImportUserID = importUser.id
+        }
+
+        const importableCollections = getImportCollectionSlugs(resolvedConfig.collections)
+        const inputDir = await resolveInputDir()
+        console.log(`Input directory resolved: ${inputDir}`)
+        const importableCollectionSet = new Set(importableCollections)
+        const clearOrder = sortCollectionSlugs(importableCollections, "clear")
+        const importOrder = sortCollectionSlugs(importableCollections, "import")
 
         const entries = await readdir(inputDir, { withFileTypes: true })
-        const files = entries.filter((entry) => entry.isFile() && entry.name.endsWith(`.${IMPORT_FORMAT}`))
+        const filesByCollection = new Map(
+            entries
+                .filter((entry) => entry.isFile() && entry.name.endsWith(`.${IMPORT_FORMAT}`))
+                .map((entry) => [entry.name.slice(0, -(`.${IMPORT_FORMAT}`.length)), entry])
+        )
 
-        for (const file of files) {
-            const collectionSlug = file.name.slice(0, -(`.${IMPORT_FORMAT}`.length))
-
-            if (!importableCollections.has(collectionSlug)) {
+        for (const [collectionSlug, file] of filesByCollection) {
+            if (!importableCollectionSet.has(collectionSlug)) {
                 console.log(`Skipping ${file.name}: no matching importable collection.`)
                 continue
             }
+        }
 
+        console.log(`Starting clear phase: ${clearOrder.join(", ")}`)
+        for (const collectionSlug of clearOrder) {
+            const isAuthCollection = collectionSlug === AUTH_COLLECTION_SLUG
+
+            await clearCollection(
+                payload,
+                collectionSlug,
+                isAuthCollection
+                    ? {
+                        keepDocumentID: importUser.id,
+                    }
+                    : undefined
+            )
+        }
+
+        console.log(`Starting import phase: ${importOrder.join(", ")}`)
+        for (const collectionSlug of importOrder) {
+            const file = filesByCollection.get(collectionSlug)
+
+            if (!file) {
+                console.log(`Skipping ${collectionSlug}: no ${collectionSlug}.${IMPORT_FORMAT} file found.`)
+                continue
+            }
+
+            console.log(`Importing collection: ${collectionSlug}`)
             const filePath = path.join(inputDir, file.name)
             const buffer = await readFile(filePath)
+
+            if (collectionSlug === MEDIA_COLLECTION_SLUG) {
+                mediaIDMap = await importMediaCollection(payload, importUser, file, buffer)
+                continue
+            }
+
+            if (collectionSlug === AUTH_COLLECTION_SLUG) {
+                userIDMap = await importUsersCollection(payload, importUser, file, buffer, mediaIDMap, temporaryImportUserID)
+
+                if (temporaryImportUserID) {
+                    if (mapContainsValue(userIDMap, temporaryImportUserID)) {
+                        console.log(`Reused temporary auth user ${temporaryImportUserID} as imported user.`)
+                        temporaryImportUserID = undefined
+                    } else {
+                        await payload.delete({
+                            collection: importUser.collection,
+                            id: temporaryImportUserID,
+                            overrideAccess: true,
+                        })
+
+                        console.log(`Removed temporary auth user ${temporaryImportUserID} after users import.`)
+                        temporaryImportUserID = undefined
+                    }
+                }
+
+                continue
+            }
+
+            if (collectionSlug === NAVBAR_COLLECTION_SLUG) {
+                await importNavbarItemsCollection(payload, importUser, file, buffer)
+                continue
+            }
+
+            if (collectionSlug === FOOTER_COLLECTION_SLUG) {
+                await importFooterCollection(payload, importUser, file, buffer)
+                continue
+            }
+
+            if (collectionSlug === FEATURES_COLLECTION_SLUG) {
+                await importFeaturesCollection(payload, importUser, file, buffer)
+                continue
+            }
+
+            if (collectionSlug === SECTIONS_COLLECTION_SLUG) {
+                await importSectionsCollection(payload, importUser, file, buffer)
+                continue
+            }
+
+            const importBuffer = remapImportBuffer(buffer, { mediaIDMap, userIDMap })
+
             const req = await createLocalReq({ locale: "all", user: importUser }, payload)
             const result = await createImport({
                 collectionSlug,
                 file: {
-                    data: buffer,
+                    data: importBuffer,
                     mimetype: "application/json",
                     name: file.name,
                 },
                 format: IMPORT_FORMAT,
-                importMode: IMPORT_MODE,
+                importMode: "create",
                 matchField: MATCH_FIELD,
                 name: file.name,
                 req,
@@ -115,18 +1162,45 @@ const main = async () => {
             )
 
             if (result.errors.length > 0) {
-                console.error(`Import errors in ${file.name}:`)
-                console.error(result.errors)
-                process.exitCode = 1
+                throw new Error(`Import errors in ${file.name}: ${JSON.stringify(result.errors)}`)
             }
         }
     } finally {
-        await payload?.destroy()
+        if (payload && temporaryImportUserID) {
+            try {
+                await payload.delete({
+                    collection: AUTH_COLLECTION_SLUG,
+                    id: temporaryImportUserID,
+                    overrideAccess: true,
+                })
+
+                console.log(`Removed temporary import user ${temporaryImportUserID}.`)
+            } catch (cleanupError) {
+                console.error("Temporary import user cleanup failed.")
+                console.error(cleanupError)
+            }
+        }
+
+        if (payload) {
+            try {
+                await payload.destroy()
+            } catch (cleanupError) {
+                console.error("Payload cleanup failed.")
+                console.error(cleanupError)
+            }
+        }
     }
 }
 
-main().catch((error) => {
-    console.error("Import failed.")
-    console.error(error)
-    process.exitCode = 1
-})
+main()
+    .then(() => {
+        process.exit(process.exitCode ?? 0)
+    })
+    .catch((error) => {
+        console.error("Import failed.")
+        if ((error as NodeJS.ErrnoException)?.code === "ENOTFOUND") {
+            console.error("Database host could not be resolved. Check DATABASE_URL, DNS, or your internet/VPN connection.")
+        }
+        console.error(error)
+        process.exit(1)
+    })
