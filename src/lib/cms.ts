@@ -6,6 +6,7 @@ import { getPayloadClient } from "@/lib/payloadClient"
 import { cache } from "react"
 
 const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build" || process.env.npm_lifecycle_event === "build"
+const hasDatabaseUrl = Boolean(process.env.DATABASE_URL?.trim())
 
 type PageLayoutBlock = NonNullable<Page["layout"]>[number]
 
@@ -60,6 +61,10 @@ function isMissingPayloadTablesError(error: unknown): boolean {
 }
 
 async function withCmsFallback<T>(operation: string, fallback: T, run: () => Promise<T>): Promise<T> {
+    if (isBuildPhase && !hasDatabaseUrl) {
+        return fallback
+    }
+
     try {
         return await run()
     } catch (error) {
