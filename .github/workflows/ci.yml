@@ -6,43 +6,37 @@ on:
       - main
   pull_request:
 
-permissions:
-  pull-requests: write
-
 jobs:
-  pipeline:
+  build:
+    name: Build Image
     runs-on: ubuntu-latest
+
+    permissions:
+      packages: write
+
+    env:
+      PAYLOAD_SECRET: build-secret
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/payload
+      NEXT_PUBLIC_APP_URL: https://code0.tech
+
     steps:
-      - uses: Taucher2003/GitLab-Pipeline-Action@1.14.0
-        name: Run pipeline
-        id: pipeline
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
-          GL_SERVER_URL: https://gitlab.com
-          GL_PROJECT_ID: '57513325'
-          GL_RUNNER_TOKEN: ${{ secrets.GL_RUNNER_TOKEN }}
-          GL_API_TOKEN: ${{ secrets.GL_API_TOKEN }}
-          SHOW_JOB_LOGS: all
-          OVERRIDE_GITHUB_SHA: ${{ github.event_name == 'push' && github.sha || github.event.pull_request.head.sha }}
-          OVERRIDE_GITHUB_REF_NAME: ${{ github.event_name == 'push' && github.ref_name || github.event.pull_request.head.ref }}
-        env:
-          GLPA_C0_GH_REF: ${{ github.ref }}
-
-      - name: Find existing comment
-        uses: peter-evans/find-comment@v4
-        id: find-comment
-        if: ${{ !cancelled() && github.event_name == 'pull_request' }}
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          comment-author: 'github-actions[bot]'
-          body-includes: <!-- glpa_comment:pipeline -->
-
-      - name: Create or update comment
-        uses: peter-evans/create-or-update-comment@v5
-        if: ${{ !cancelled() && github.event_name == 'pull_request' }}
-        with:
-          comment-id: ${{ steps.find-comment.outputs.comment-id }}
-          issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            <!-- glpa_comment:pipeline -->
-            ${{ steps.pipeline.outputs.SUMMARY_TEXT }}
-          edit-mode: replace
+          node-version: '22.x'
+          registry-url: 'https://registry.npmjs.org'
+      - run: npm ci
+      - run: docker compose up -d --wait
+      - run: npm run migrate
+      - run: npm run import-data
+      - run: npm run build
+      - run: >-
+          docker build
+          -t ghcr.io/code0-tech/cygnus:${{ github.run_number }}
+          -f Dockerfile
+          .
+      - run: echo ${{ secrets.GITHUB_TOKEN }} | docker login -u $ --password-stdin ghcr.io
+        name: Login to registry
+        if: ${{ github.event_name == 'push' }}
+      - run: docker push ghcr.io/code0-tech/cygnus:${{ github.run_number }}
+        if: ${{ github.event_name == 'push' }}
