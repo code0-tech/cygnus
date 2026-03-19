@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { Renderer, Program, Mesh, Triangle } from 'ogl';
 
 interface GrainientProps {
+  maxDpr?: number;
   timeSpeed?: number;
   colorBalance?: number;
   warpStrength?: number;
@@ -147,7 +148,8 @@ const Grainient: React.FC<GrainientProps> = ({
   color1 = '#FF9FFC',
   color2 = '#5227FF',
   color3 = '#B19EEF',
-  className = ''
+  className = '',
+  maxDpr = 2
 }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -158,7 +160,7 @@ const Grainient: React.FC<GrainientProps> = ({
       webgl: 2,
       alpha: true,
       antialias: false,
-      dpr: Math.min(window.devicePixelRatio || 1, 2)
+      dpr: Math.min(window.devicePixelRatio || 1, maxDpr)
     });
 
     const gl = renderer.gl;
@@ -257,7 +259,8 @@ const Grainient: React.FC<GrainientProps> = ({
     zoom,
     color1,
     color2,
-    color3
+    color3,
+    maxDpr
   ]);
 
   return <div ref={containerRef} className={`relative h-full w-full overflow-hidden ${className}`.trim()} />;

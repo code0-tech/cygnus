@@ -1,5 +1,6 @@
 "use client"
 
+import { useMediaQuery } from "@/hooks/useMediaQuery"
 import { Section } from "@/components/ui/Section"
 import { cn } from "@/lib/utils"
 import { Button } from "@code0-tech/pictor"
@@ -36,6 +37,7 @@ interface HeroSectionProps {
 
 export const HeroSection: React.FC<HeroSectionProps> = ({ content }) => {
     const { trigger } = useWebHaptics()
+    const isMobile = useMediaQuery("(max-width: 1023px)")
     if (!content || !content.texts || !content.buttons) return
 
     const staggerContainer: Variants = {
@@ -86,6 +88,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ content }) => {
                         centerX={0}
                         centerY={0}
                         zoom={0.9}
+                        maxDpr={isMobile ? 1 : 1.5}
                     />
                 </div>
 
