@@ -22,8 +22,6 @@ const AUTH_COLLECTION_SLUG = "users"
 const TEMP_IMPORT_USER_ID = 2147483647
 const TEMP_IMPORT_USER_EMAIL = "payload-import-temp@local.invalid"
 const TEMP_IMPORT_USER_NAME = "Payload Import"
-const TEMP_IMPORT_USER_PASSWORD = "TempImportPass123!"
-const IMPORTED_USER_PASSWORD = "ImportedUserPass123!"
 const MEDIA_COLLECTION_SLUG = "media"
 const NAVBAR_COLLECTION_SLUG = "navbarItems"
 const FOOTER_COLLECTION_SLUG = "footer"
@@ -73,7 +71,7 @@ const createTemporaryImportUser = async (payload: PayloadInstance) => {
             id: TEMP_IMPORT_USER_ID,
             email: TEMP_IMPORT_USER_EMAIL,
             name: TEMP_IMPORT_USER_NAME,
-            password: TEMP_IMPORT_USER_PASSWORD,
+            password: process.env.PAYLOAD_USER_PASS ?? "TempImportPass123!",
         },
         overrideAccess: true,
     })
@@ -707,7 +705,7 @@ const importUsersCollection = async (
                 data: {
                     ...userDataBase,
                     ...englishLocalizedData,
-                    password: IMPORTED_USER_PASSWORD,
+                    password: process.env.PAYLOAD_USER_PASS ?? "TempImportPass123!",
                 } as never,
                 locale: "en",
                 overrideAccess: true,
@@ -738,7 +736,7 @@ const importUsersCollection = async (
     }
 
     console.log(`Imported users: total=${userDocuments.length}, imported=${imported}, updated=${updated}, errors=${errors.length}`)
-    console.log(`Imported users receive the temporary password "${IMPORTED_USER_PASSWORD}" unless already present in the database.`)
+    console.log(`Imported users receive the password from PAYLOAD_USER_PASS unless already present in the database.`)
 
     if (errors.length > 0) {
         throw new Error(`Import errors in ${file.name}: ${JSON.stringify(errors)}`)
