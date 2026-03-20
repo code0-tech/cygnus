@@ -10,7 +10,7 @@ import Link from "next/link"
 import React from "react"
 import { NavSubMenu } from "./NavSubMenu"
 import { NavTab } from "./NavTab"
-import { fadeInUp, NavItem, SubNavItem } from "./types"
+import { fadeInUp, NavItem, SubNavItem } from "./Navigation"
 
 type NavigationDesktopProps = {
     isScrolled: boolean
@@ -42,8 +42,7 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({
                     layout
                     className={cn(
                         "my-4 flex flex-col justify-center gap-2 overflow-visible rounded-2xl border p-1.5 top-0 left-0 lg:gap-4",
-                        isScrolled && "lg:mx-[10%]",
-                        isScrolled ? "border border-white/5 shadow-sm bg-primary/20 backdrop-blur-xl" : "border-transparent",
+                        isScrolled ? "border border-white/5 shadow-sm bg-primary/20 backdrop-blur-xl lg:mx-[10%]" : "border-transparent",
                     )}
                     onMouseLeave={() => {
                         setPosition({ left: position.left, width: position.width, opacity: 0 })
@@ -160,7 +159,7 @@ const Cursor: React.FC<{ position: {left: number, width: number, opacity: number
         <motion.div
             animate={{ x: position.left, opacity: position.opacity }}
             transition={{ type: "spring", stiffness: 260, damping: 30, mass: 0.9 }}
-            className={cn("absolute z-40 h-8 rounded-xl bg-white/10 will-change-transform")}
+            className="absolute z-40 h-8 rounded-xl bg-white/10 will-change-transform"
             style={{ width: position.width }}
         />
     )

@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils"
 import { m as motion } from "motion/react"
 import Link from "next/link"
 import React from "react"
-import { SubNavItem } from "./types"
+import { SubNavItem } from "./Navigation"
 
 type NavSubMenuProps = {
     items: SubNavItem[]

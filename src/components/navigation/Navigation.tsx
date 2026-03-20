@@ -5,16 +5,36 @@ import { useMediaQuery } from "@/hooks/useMediaQuery"
 import { useOutsideClick } from "@/hooks/useOutsideClick"
 import { localizeHref, type AppLocale } from "@/lib/i18n"
 import { IconCube, IconGitBranch, IconLock } from "@tabler/icons-react"
-import { useEffect, useMemo, useState } from "react"
+import { ReactNode, useEffect, useMemo, useState } from "react"
 import { NavigationDesktop } from "./NavigationDesktop"
 import { NavigationMobile } from "./NavigationMobile"
-import { SubNavItem } from "./types"
 
 type SubMenuIcon = "cube" | "gitBranch" | "lock"
+
+export type NavItem = {
+    title: string
+    href: string | null
+    subMenu?: SubNavItem[]
+}
+
+export type SubNavItem = {
+    key: string
+    title: string
+    href: string
+    description: string
+    icon: ReactNode
+    color: string
+}
 
 interface NavigationProps {
     locale: AppLocale
     items: NavbarItem[]
+}
+
+export const fadeInUp = {
+    initial: { opacity: 0, y: -16 },
+    animate: { opacity: 1, y: 0 },
+    transition: {duration: 0.65}
 }
 
 function Navigation({ locale, items }: NavigationProps) {

@@ -5,7 +5,7 @@ import { IconChevronUp } from "@tabler/icons-react"
 import { m as motion } from "motion/react"
 import Link from "next/link"
 import React, { useRef } from "react"
-import { fadeInUp, SubNavItem } from "./types"
+import { fadeInUp, SubNavItem } from "./Navigation"
 
 type TabProps = {
     setPosition: React.Dispatch<React.SetStateAction<{ left: number; width: number; opacity: number }>>
@@ -48,24 +48,16 @@ const NavTab: React.FC<TabProps> = ({ setPosition, href, title, subMenu, activeS
             {href ? (
                 <Link href={href} className={interactiveClassName}>
                     {title}
-                    {hasSubMenu && (
-                        active ? (
-                            <IconChevronUp size={20} className={"mr-1 text-white/75 transition-transform"}/>
-                        ) : (
-                            <IconChevronUp size={20} className={"mr-1 rotate-180 text-white/75 transition-transform"}/>
-                        )
-                    )}
+                    {hasSubMenu &&
+                        <IconChevronUp size={20} className={cn("mr-1 text-white/75 transition-transform", active && "rotate-180")}/>
+                    }
                 </Link>
             ) : (
                 <button type="button" className={interactiveClassName}>
                     {title}
-                    {hasSubMenu && (
-                        active ? (
-                            <IconChevronUp size={20} className={"mr-1 text-white/75 transition-transform"}/>
-                        ) : (
-                            <IconChevronUp size={20} className={"mr-1 rotate-180 text-white/75 transition-transform"}/>
-                        )
-                    )}
+                    {hasSubMenu &&
+                        <IconChevronUp size={20} className={cn("mr-1 text-white/75 transition-transform", active && "rotate-180")}/>
+                    }
                 </button>
             )}
         </motion.div>

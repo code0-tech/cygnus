@@ -4,18 +4,18 @@ import { useState } from "react"
 import { SegmentedControl, SegmentedControlItem, Text } from "@code0-tech/pictor"
 import { cn } from "@/lib/utils"
 
-export const runtimeStyles = {
+const runtimeStyles = {
     dynamic: "bg-brand/20",
     static: "bg-yellow/20",
 } as const
 
-export const executionStyles = {
+const executionStyles = {
     compiled: "bg-pink/20",
     interpreted: "bg-aqua/20",
 } as const
 
-export type RuntimeType = keyof typeof runtimeStyles
-export type ExecutionType = keyof typeof executionStyles
+type RuntimeType = keyof typeof runtimeStyles
+type ExecutionType = keyof typeof executionStyles
 
 export function RuntimeControlClient() {
     const [runtimeType, setRuntimeType] = useState<RuntimeType>("static")

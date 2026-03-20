@@ -14,7 +14,6 @@ export function BlogCard({ locale, post }: { locale: string, post: BlogPostItem 
     const publishedDate = new Intl.DateTimeFormat(locale === "de" ? "de-DE" : "en-US", {
         dateStyle: "long",
     }).format(new Date(post.createdAt))
-    const authorName = typeof post.author === "number" ? "" : (post.author as User).name
 
     return (
         <Link
@@ -50,7 +49,9 @@ export function BlogCard({ locale, post }: { locale: string, post: BlogPostItem 
                     )}
 
                     <div className="min-w-0 flex-1 h-32 py-2 flex flex-col justify-center overflow-hidden">
-                        <p className="text-xs text-white/50 mb-1">{authorName ? `${authorName} - ${publishedDate}` : publishedDate}</p>
+                        <p className="text-xs text-white/50 mb-1">
+                            {(post.author as User).name} - {publishedDate}
+                        </p>
                         <h2 className="text-xl font-semibold tracking-tight text-white/92 line-clamp-2">{post.title}</h2>
                         {post.shortDescription ? <p className="text-sm leading-6 text-white/70 mt-2 line-clamp-2">{post.shortDescription}</p> : null}
                     </div>

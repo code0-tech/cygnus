@@ -36,32 +36,27 @@ export function JobApplicationCard({ jobSlug, content }: JobApplicationCardProps
     const labels = { ...defaultContent, ...content }
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [submitStatus, setSubmitStatus] = useState<{ type: "success" | "error", message: string } | null>(null)
-    const initialValues = useMemo(
-        () => ({
-            name: "",
-            email: "",
-            text: "",
-        }),
-        [],
-    )
-    const validation = useMemo(
-        () => ({
-            name: (value: string) => {
-                if (!value) return "Name is required"
-                return null
-            },
-            email: (value: string) => {
-                if (!value) return "Email is required"
-                if (!emailValidation(value)) return "Please provide a valid email"
-                return null
-            },
-            text: (value: string) => {
-                if (!value) return "Message is required"
-                return null
-            },
-        }),
-        [],
-    )
+    const initialValues = useMemo(() => ({
+        name: "",
+        email: "",
+        text: "",
+    }), [])
+
+    const validation = useMemo(() => ({
+        name: (value: string) => {
+            if (!value) return "Name is required"
+            return null
+        },
+        email: (value: string) => {
+            if (!value) return "Email is required"
+            if (!emailValidation(value)) return "Please provide a valid email"
+            return null
+        },
+        text: (value: string) => {
+            if (!value) return "Message is required"
+            return null
+        },
+    }), [])
 
     const [inputs, validate] = useForm({
         useInitialValidation: false,

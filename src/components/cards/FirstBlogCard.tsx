@@ -15,8 +15,6 @@ export function FirstBlogCard({ locale, post }: { locale: string, post: BlogPost
         dateStyle: "long",
     }).format(new Date(post.createdAt))
 
-    const authorName = typeof post.author === "number" ? "" : (post.author as User).name
-
     return (
         <Link
             href={`/${locale}/blog/${post.slug}`}
@@ -53,7 +51,7 @@ export function FirstBlogCard({ locale, post }: { locale: string, post: BlogPost
 
                     <div className="px-1 pb-1">
                         <p className="text-xs text-white/50 mb-3">
-                            {authorName ? `${authorName} - ${publishedDate}` : publishedDate}
+                            {(post.author as User).name} - {publishedDate}
                         </p>
                         <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-white/95 leading-tight">{post.title}</h2>
                         {post.shortDescription ? (

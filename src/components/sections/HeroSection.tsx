@@ -150,9 +150,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ content }) => {
                                 height={620}
                                 width={900}
                                 loading="eager"
-                                className={
-                                    "rounded-2xl border border-white/10 shadow-[0_18px_50px_rgba(0,0,0,0.28)] lg:rounded-l-2xl lg:rounded-r-none lg:border-0 lg:border-l lg:border-y lg:ring-4 lg:ring-white/5"
-                                }
+                                className="rounded-2xl border border-white/10 shadow-[0_18px_50px_rgba(0,0,0,0.28)] lg:rounded-l-2xl lg:rounded-r-none lg:border-0 lg:border-l lg:border-y lg:ring-4 lg:ring-white/5"
                             />
                             <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(15,12,31,0.18),transparent_30%,transparent_62%,rgba(15,12,31,0.5)_100%),radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),transparent_34%),linear-gradient(to_top,rgba(15,12,31,0.42),transparent_30%)]" />
                         </div>
