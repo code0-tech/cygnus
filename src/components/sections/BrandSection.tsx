@@ -26,6 +26,7 @@ export const BrandSection: React.FC<BrandSectionProps> = ({ content }) => {
     const logos = (content.logos ?? [])
         .map((item) => item.logo)
         .filter((logo) => Boolean((logo as Media)?.url))
+        .slice(0, 4)
 
     const staggerContainer: Variants = {
         hidden: {},

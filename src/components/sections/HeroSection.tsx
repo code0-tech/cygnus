@@ -106,9 +106,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ content }) => {
                     <div className="w-full lg:w-2/5 flex flex-col gap-4 text-start">
                         <motion.div variants={staggerItem}>
                             <Link href={content.badge_link ?? ""}>
-                                <Badge className="relative z-10 text-xs! px-2! cursor-pointer!" color="info" suppressHydrationWarning>
+                                <Badge className="group relative z-10 text-xs! px-3! cursor-pointer!" color="info" suppressHydrationWarning>
                                     {content.badge}
-                                    <IconArrowRight size={14} />
+                                    <IconArrowRight size={14} className="group-hover:translate-x-1 transition-transform"/>
                                 </Badge>
                             </Link>
                         </motion.div>

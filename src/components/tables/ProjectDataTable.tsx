@@ -4,9 +4,9 @@ import { Avatar, Card, Text } from "@code0-tech/pictor"
 
 export function ProjectDataTable() {
     const projects = [
-        { name: "Test" },
-        { name: "Test2" },
-        { name: "Test3" }
+        { name: "OpsCanvas" },
+        { name: "FlowForge" },
+        { name: "SignalStack" },
     ]
 
     return (

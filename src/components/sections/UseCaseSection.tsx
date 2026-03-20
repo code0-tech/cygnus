@@ -1,5 +1,6 @@
 "use client"
 
+import { LinkButton } from "@/components/ui/LinkButton"
 import { Section } from "@/components/ui/Section"
 import { ANIMATION_PRESETS, type AnimationPreset } from "@/lib/utils"
 import type { Media } from "@/payload-types"
@@ -13,7 +14,10 @@ interface UseCaseItem {
     description: string
     image?: Media | number | null
     bulletPoints: string[]
-    actions: string[]
+    link?: {
+        label?: string | null
+        url?: string | null
+    } | null
     id?: string | null
 }
 
@@ -95,16 +99,11 @@ export const UseCaseSection: React.FC<UseCaseSectionProps> = ({ content }) => {
                                         ))}
                                     </motion.ul>
                                 ) : null}
-                                {item.actions?.length ? (
-                                    <motion.div variants={staggerItem} className="mt-5 flex flex-wrap gap-2">
-                                        {item.actions.map((action, actionIndex) => (
-                                            <span
-                                                key={`${item.id ?? item.label}-action-${actionIndex}`}
-                                                className="inline-flex items-center rounded-full border border-white/15 bg-white/4 px-3 py-1 text-xs text-white/85 backdrop-blur-md"
-                                            >
-                                                {action}
-                                            </span>
-                                        ))}
+                                {item.link?.label && item.link?.url ? (
+                                    <motion.div variants={staggerItem} className="mt-5">
+                                        <LinkButton href={item.link.url}>
+                                            {item.link.label}
+                                        </LinkButton>
                                     </motion.div>
                                 ) : null}
                             </motion.div>
@@ -143,16 +142,11 @@ export const UseCaseSection: React.FC<UseCaseSectionProps> = ({ content }) => {
                                         ))}
                                     </motion.ul>
                                 ) : null}
-                                {item.actions?.length ? (
-                                    <motion.div variants={staggerItem} className="mt-5 flex flex-wrap gap-2 md:justify-center">
-                                        {item.actions.map((action, actionIndex) => (
-                                            <span
-                                                key={`${item.id ?? item.label}-mobile-action-${actionIndex}`}
-                                                className="inline-flex items-center rounded-full border border-white/15 bg-white/4 px-3 py-1 text-xs text-white/85 backdrop-blur-md"
-                                            >
-                                                {action}
-                                            </span>
-                                        ))}
+                                {item.link?.label && item.link?.url ? (
+                                    <motion.div variants={staggerItem} className="mt-5">
+                                        <LinkButton href={item.link.url}>
+                                            {item.link.label}
+                                        </LinkButton>
                                     </motion.div>
                                 ) : null}
                             </motion.div>

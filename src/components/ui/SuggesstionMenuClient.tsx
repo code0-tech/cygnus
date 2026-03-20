@@ -1,11 +1,9 @@
 "use client"
 
-import type { ReactNode } from "react"
 import type { InputSuggestion } from "@code0-tech/pictor"
-import { Badge, Card, Flex, Text } from "@code0-tech/pictor"
+import { Badge, Card, Text } from "@code0-tech/pictor"
 import { IconBulb, IconChevronUp, IconCircleDot, IconNote, IconVariable } from "@tabler/icons-react"
-import { ReferenceBadge } from "../badges/ReferenceBadge"
-import { NodeBadge } from "../badges/NodeBadge"
+import type { ReactNode } from "react"
 
 const FunctionSuggestionType = {
     FUNCTION: "FUNCTION",
@@ -45,7 +43,12 @@ export function SuggesstionMenuClient() {
                     suppressHydrationWarning
                 >
                     <IconVariable size={12}/>
-                    <NodeBadge value={label} color="#f872e2"/>
+                    <Badge color="secondary" border className="border-pink! bg-[#1c0b29]!">
+                        <IconNote size={12} color="#f872e2" />
+                        <Text size="sm" style={{ color: "#f872e2" }}>
+                            {label}
+                        </Text>
+                    </Badge>
                 </Badge>
             )
         }

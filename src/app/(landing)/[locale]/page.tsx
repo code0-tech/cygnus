@@ -42,17 +42,17 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
         <LandingContainer>
             <HeroSection content={heroBlock} />
             <BrandSection content={brandBlock} />
-            <div className="h-32"/>
+            <div className="h-32" aria-hidden="true" />
             <UseCaseSection content={useCaseBlock} />
-            <div className="h-32"/>
+            <div className="h-32" aria-hidden="true" />
             <AppFeatureSection locale={locale} />
-            <div className="h-32"/>
+            <div className="h-32" aria-hidden="true" />
             <DeploymentSection content={deploymentBlock} />
-            <div className="h-32"/>
+            <div className="h-32" aria-hidden="true" />
             <RuntimeFeatureSection locale={locale} />
-            <div className="h-32"/>
+            <div className="h-32" aria-hidden="true" />
             <RoadmapSection locale={locale} />
-            <div className="h-32"/>
+            <div className="h-32" aria-hidden="true" />
             <FaqSection content={faqBlock} />
             <CtaSection content={ctaBlock} />
         </LandingContainer>

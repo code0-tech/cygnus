@@ -315,7 +315,10 @@ export interface Page {
               description: string;
               image?: (number | null) | Media;
               bulletPoints: string[];
-              actions: string[];
+              link?: {
+                label?: string | null;
+                url?: string | null;
+              };
               id?: string | null;
             }[];
             id?: string | null;
@@ -969,7 +972,12 @@ export interface PagesSelect<T extends boolean = true> {
                     description?: T;
                     image?: T;
                     bulletPoints?: T;
-                    actions?: T;
+                    link?:
+                      | T
+                      | {
+                          label?: T;
+                          url?: T;
+                        };
                     id?: T;
                   };
               id?: T;

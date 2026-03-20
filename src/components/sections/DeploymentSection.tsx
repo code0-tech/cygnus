@@ -3,8 +3,8 @@
 import { Section } from "@/components/ui/Section"
 import { LinkButton } from "@/components/ui/LinkButton"
 import { m as motion, type Variants } from "motion/react"
-import Image from "next/image"
 import React from "react"
+import { DeploymentImage } from "../DeploymentImage"
 
 interface DeploymentSectionContent {
     cloudTitle?: string | null
@@ -59,30 +59,30 @@ export const DeploymentSection: React.FC<DeploymentSectionProps> = ({ content })
     const deploymentCards = [
         {
             badge: "Cloud",
-            alt: "Cloud deployment",
             title: content.cloudTitle,
             description: content.cloudDescription,
             link: content.cloudLink,
-            glowClass: "from-aqua/24 via-blue/10 to-primary/70",
-            badgeClass: "border-aqua/25 bg-aqua/12 text-aqua",
+            imageColor: "aqua",
+            imageIcon: "cloud",
+            imageText: "Cloud",
         },
         {
             badge: "Self-hosted",
-            alt: "Self-hosted deployment",
             title: content.selfhostTitle,
             description: content.selfhostDescription,
             link: content.selfhostLink,
-            glowClass: "from-pink/20 via-blue/10 to-primary/70",
-            badgeClass: "border-pink/25 bg-pink/12 text-pink",
+            imageColor: "pink",
+            imageIcon: "server",
+            imageText: "Selfhost",
         },
         {
             badge: "Dynamic",
-            alt: "Dynamic deployment",
             title: content.dynamicTitle,
             description: content.dynamicDescription,
             link: content.dynamicLink,
-            glowClass: "from-brand/24 via-aqua/10 to-primary/70",
-            badgeClass: "border-brand/25 bg-brand/12 text-brand",
+            imageColor: "brand",
+            imageIcon: "cloud-computing",
+            imageText: "Dynamic",
         },
     ] as const
 
@@ -103,21 +103,7 @@ export const DeploymentSection: React.FC<DeploymentSectionProps> = ({ content })
                         variants={staggerItem}
                         className="group flex h-full flex-col rounded-[1.75rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] p-3 shadow-[0_18px_60px_rgba(0,0,0,0.28)] transition-[transform,border-color] duration-500 hover:border-white/14"
                     >
-                        <div className="relative overflow-hidden rounded-[1.2rem] border border-white/8 bg-primary/40">
-                            <div className={`pointer-events-none absolute inset-0 z-10 bg-linear-to-br ${card.glowClass}`} />
-                            <div className="pointer-events-none absolute inset-0 z-10 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.14),transparent_32%)]" />
-                            <div className="relative h-100">
-                                <Image
-                                    src="/code0_software.png"
-                                    alt={card.alt}
-                                    fill
-                                    sizes="(min-width: 1024px) calc((100vw - 4rem) / 3), 100vw"
-                                    className="object-cover transition-transform duration-700"
-                                />
-                            </div>
-                            <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-28 bg-linear-to-t from-primary via-primary/70 to-transparent" />
-                        </div>
-
+                        <DeploymentImage color={card.imageColor} icon={card.imageIcon} text={card.imageText} />
                         <div className="flex h-full flex-1 flex-col px-2 pb-2 pt-6">
                             <h3 className="text-2xl font-semibold tracking-tight text-white">{card.title}</h3>
                             <p className="mt-2 max-w-xl text-base leading-7 text-white/75">{card.description}</p>
