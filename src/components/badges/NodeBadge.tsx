@@ -3,11 +3,11 @@
 import { Badge, Text } from "@code0-tech/pictor"
 import { IconNote } from "@tabler/icons-react"
 
-export function NodeBadge({ value }: { value: string }) {
+export function NodeBadge({ value, color }: { value: string, color?: string }) {
     return (
         <Badge
             style={{ verticalAlign: "middle", textWrap: "nowrap" }}
-            color={"primary"}
+            color={color ?? "primary"}
             border
             suppressHydrationWarning
         >

@@ -2,8 +2,10 @@
 
 import type { ReactNode } from "react"
 import type { InputSuggestion } from "@code0-tech/pictor"
-import { Card, Text } from "@code0-tech/pictor"
-import { IconBulb, IconChevronUp, IconCircleDot, IconCirclesRelation, IconFileFunctionFilled } from "@tabler/icons-react"
+import { Badge, Card, Flex, Text } from "@code0-tech/pictor"
+import { IconBulb, IconChevronUp, IconCircleDot, IconNote, IconVariable } from "@tabler/icons-react"
+import { ReferenceBadge } from "../badges/ReferenceBadge"
+import { NodeBadge } from "../badges/NodeBadge"
 
 const FunctionSuggestionType = {
     FUNCTION: "FUNCTION",
@@ -21,18 +23,45 @@ type SuggestionWithType = InputSuggestion & {
 
 export function SuggesstionMenuClient() {
     const iconMap: Record<FunctionSuggestionType, ReactNode> = {
-        [FunctionSuggestionType.FUNCTION]: <IconFileFunctionFilled color="#70ffb2" size={16} />,
-        [FunctionSuggestionType.FUNCTION_COMBINATION]: <IconFileFunctionFilled color="#70ffb2" size={16} />,
-        [FunctionSuggestionType.REF_OBJECT]: <IconCirclesRelation color="#FFBE0B" size={16} />,
-        [FunctionSuggestionType.VALUE]: <IconCircleDot color="#D90429" size={16} />,
-        [FunctionSuggestionType.DATA_TYPE]: <IconCircleDot color="#D90429" size={16} />,
+        [FunctionSuggestionType.FUNCTION]: <IconNote color="#70ffb2" size={16}/>,
+        [FunctionSuggestionType.FUNCTION_COMBINATION]: <IconNote color="#70ffb2" size={16}/>,
+        [FunctionSuggestionType.REF_OBJECT]: <IconVariable color="#FFBE0B" size={16}/>,
+        [FunctionSuggestionType.VALUE]: <IconCircleDot color="#D90429" size={16}/>,
+        [FunctionSuggestionType.DATA_TYPE]: <IconCircleDot color="#D90429" size={16}/>,
+    }
+
+    const renderSuggestionContent = (suggestion: SuggestionWithType) => {
+        const label = String(suggestion.children ?? suggestion.value)
+        const isVariableReference = suggestion.suggestionType === FunctionSuggestionType.REF_OBJECT
+            && suggestion.valueData?.type === "variable"
+
+        if (isVariableReference) {
+            return (
+                <Badge
+                    style={{ verticalAlign: "middle" }}
+                    color={"warning"}
+                    py={"0"}
+                    border
+                    suppressHydrationWarning
+                >
+                    <IconVariable size={12}/>
+                    <NodeBadge value={label} color="#f872e2"/>
+                </Badge>
+            )
+        }
+
+        return (
+            <Text size="sm" className="truncate" style={{ color: "inherit" }}>
+                {label}
+            </Text>
+        )
     }
 
     const suggestions: SuggestionWithType[] = [
         {
-            children: "0-0-2-",
-            value: "0-0-2-",
-            valueData: { id: "variable_1", type: "variable", label: "0-0-2-" },
+            children: "Boolean as Number",
+            value: "Boolean as Number",
+            valueData: { id: "variable_1", type: "variable", label: "Boolean as Number" },
             groupBy: "Variables",
             insertMode: "insert",
             suggestionType: FunctionSuggestionType.REF_OBJECT,
@@ -173,7 +202,7 @@ export function SuggesstionMenuClient() {
                     .filter(([group]) => group === "Variables")
                     .map(([group, items]) => (
                         <div key={group} className="flex flex-col gap-1">
-                            <div className="flex items-center justify-between px-2 py-1 text-[11px] uppercase tracking-[0.06em] text-[#8a88a8]">
+                            <div className="flex items-center justify-between px-2 py-1 text-[11px] uppercase text-[#8a88a8]">
                                 <span>{group}</span>
                                 <IconChevronUp size={14} className="text-[#8a88a8]" />
                             </div>
@@ -181,14 +210,12 @@ export function SuggesstionMenuClient() {
                                 {items.map((suggestion) => (
                                     <div
                                         key={`${group}-${suggestion.value}`}
-                                        className="flex w-full items-center gap-3 px-3 py-1.5 text-left text-white/92 transition-colors"
+                                        className="flex w-full items-center gap-3 px-3 py-1.5 text-left text-white/92 transition-colors bg-secondary rounded-xl"
                                     >
                                         <span className="flex h-4 w-4 shrink-0 items-center justify-center">
                                             {iconMap[suggestion.suggestionType]}
                                         </span>
-                                        <Text size="sm" className="truncate" style={{ color: "inherit" }}>
-                                            {String(suggestion.children ?? suggestion.value)}
-                                        </Text>
+                                        {renderSuggestionContent(suggestion)}
                                     </div>
                                 ))}
                             </div>
@@ -200,7 +227,7 @@ export function SuggesstionMenuClient() {
                         .filter(([group]) => group !== "Variables")
                         .map(([group, items]) => (
                             <div key={group} className="flex flex-col">
-                                <div className="flex items-center justify-between px-3 py-1 text-[11px] uppercase tracking-[0.06em] text-[#8a88a8]">
+                                <div className="flex items-center justify-between px-3 py-1 text-[11px] uppercase text-[#8a88a8]">
                                     <span>{group}</span>
                                     <IconChevronUp size={14} className="text-[#8a88a8]" />
                                 </div>
@@ -213,9 +240,7 @@ export function SuggesstionMenuClient() {
                                             <span className="flex h-4 w-4 shrink-0 items-center justify-center">
                                                 {iconMap[suggestion.suggestionType]}
                                             </span>
-                                            <Text size="sm" className="truncate" style={{ color: "inherit" }}>
-                                                {String(suggestion.children ?? suggestion.value)}
-                                            </Text>
+                                            {renderSuggestionContent(suggestion)}
                                         </div>
                                     ))}
                                 </div>
@@ -223,7 +248,7 @@ export function SuggesstionMenuClient() {
                         ))}
                 </div>
             </div>
-            <div className="flex items-center gap-2 px-3 py-1 text-[11px] uppercase tracking-[0.06em] text-[#8a88a8]">
+            <div className="flex items-center gap-2 px-3 py-1 text-[11px] uppercase text-[#8a88a8]">
                 <span>Press</span>
                 <span className="text-white/70">↵</span>
                 <span>to insert</span>
