@@ -1,5 +1,7 @@
 "use client"
 
+import { AcceptTermsCheckbox } from "@/components/AcceptTermsCheckbox"
+import type { AppLocale } from "@/lib/i18n"
 import { Button, EmailInput, emailValidation, TextAreaInput, TextInput, useForm } from "@code0-tech/pictor"
 import { useMemo, useState } from "react"
 import { useWebHaptics } from "web-haptics/react"
@@ -18,6 +20,7 @@ interface JobApplicationCardContent {
 interface JobApplicationCardProps {
     jobSlug: string
     content?: Partial<JobApplicationCardContent> | null
+    locale: AppLocale
 }
 
 const defaultContent: JobApplicationCardContent = {
@@ -31,7 +34,7 @@ const defaultContent: JobApplicationCardContent = {
     applicationSubmitLabel: "Send application",
 }
 
-export function JobApplicationCard({ jobSlug, content }: JobApplicationCardProps) {
+export function JobApplicationCard({ jobSlug, content, locale }: JobApplicationCardProps) {
     const { trigger } = useWebHaptics()
     const labels = { ...defaultContent, ...content }
     const [isSubmitting, setIsSubmitting] = useState(false)
@@ -40,6 +43,7 @@ export function JobApplicationCard({ jobSlug, content }: JobApplicationCardProps
         name: "",
         email: "",
         text: "",
+        acceptTerms: false,
     }), [])
 
     const validation = useMemo(() => ({
@@ -56,7 +60,11 @@ export function JobApplicationCard({ jobSlug, content }: JobApplicationCardProps
             if (!value) return "Message is required"
             return null
         },
-    }), [])
+        acceptTerms: (value: boolean) => {
+            if (!value) return locale === "de" ? "Bitte akzeptiere die Bedingungen." : "Please accept the terms."
+            return null
+        },
+    }), [locale])
 
     const [inputs, validate] = useForm({
         useInitialValidation: false,
@@ -86,6 +94,7 @@ export function JobApplicationCard({ jobSlug, content }: JobApplicationCardProps
                     inputs.getInputProps("name").formValidation?.setValue("")
                     inputs.getInputProps("email").formValidation?.setValue("")
                     inputs.getInputProps("text").formValidation?.setValue("")
+                    inputs.getInputProps("acceptTerms").formValidation?.setValue(false)
                     setSubmitStatus({ type: "success", message: "Application sent successfully." })
                 } catch (error) {
                     console.error("Job application submit error:", error)
@@ -126,6 +135,11 @@ export function JobApplicationCard({ jobSlug, content }: JobApplicationCardProps
                 />
             </div>
 
+            <AcceptTermsCheckbox
+                locale={locale}
+                {...inputs.getInputProps("acceptTerms")}
+            />
+
             <Button
                 type="submit"
                 variant="normal"
@@ -134,7 +148,7 @@ export function JobApplicationCard({ jobSlug, content }: JobApplicationCardProps
                     trigger("heavy")
                     validate()
                 }}
-                disabled={isSubmitting}
+                disabled={isSubmitting || !inputs.isValid()}
             >
                 {labels.applicationSubmitLabel}
             </Button>
