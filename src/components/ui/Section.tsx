@@ -119,7 +119,7 @@ export function Section({
                         whileInView="show"
                         viewport={{ once: animationOnce, amount: 0.3 }}
                     >
-                        <motion.h1 variants={staggerItem} className={"text-4xl text-pink font-semibold"}>
+                        <motion.h1 variants={staggerItem} className={"text-4xl text-white font-semibold"}>
                             {sectionData?.heading}
                         </motion.h1>
                         <motion.p variants={staggerItem} className="relative z-10 max-w-[90vw] lg:w-1/2 font-medium text-white/75 text-xl">

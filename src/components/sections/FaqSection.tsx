@@ -21,19 +21,12 @@ interface FaqSectionProps {
 }
 
 export const FaqSection: React.FC<FaqSectionProps> = ({ content }) => {
-    const [openItems, setOpenItems] = useState<Set<number>>(new Set())
+    const [openItem, setOpenItem] = useState<number | null>(null)
     const { trigger } =useWebHaptics()
 
     const toggleItem = useCallback((index: number) => {
         trigger("soft")
-        setOpenItems((prevOpenItems) => {
-            const nextOpenItems = new Set(prevOpenItems)
-
-            if (nextOpenItems.has(index)) nextOpenItems.delete(index)
-            else nextOpenItems.add(index)
-
-            return nextOpenItems
-        })
+        setOpenItem((prevOpenItem) => prevOpenItem === index ? null : index)
     }, [trigger])
 
     if (!content || !content.items) return
@@ -56,9 +49,9 @@ export const FaqSection: React.FC<FaqSectionProps> = ({ content }) => {
                     >
                         <AccordionItem
                             index={index}
-                            {...faq}
-                            isOpen={openItems.has(index)}
+                            isOpen={openItem === index}
                             onToggle={toggleItem}
+                            {...faq}
                         />
                     </motion.div>
                 ))}

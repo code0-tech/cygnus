@@ -12,7 +12,12 @@ export const HeroBlock: Block = {
       type: "text",
       required: false,
       localized: true,
-    },
+      },
+      {
+        name: "badge_link",
+        type: "text",
+        required: false,
+      },
     {
       name: "heading",
       type: "text",

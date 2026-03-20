@@ -84,7 +84,7 @@ function Navigation({ locale, items }: NavigationProps) {
     }, [scrollCloseThreshold, scrollOpenThreshold])
 
     useEffect(() => {
-        if (!isScrolled && hoveredSubMenu) {
+        if (hoveredSubMenu) {
             setActiveSubMenu(hoveredSubMenu)
         }
     }, [hoveredSubMenu, isScrolled])

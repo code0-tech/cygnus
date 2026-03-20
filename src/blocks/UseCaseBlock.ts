@@ -32,6 +32,13 @@ export const UseCaseBlock: Block = {
           localized: true,
         },
         {
+          name: "image",
+          label: "Image",
+          type: "upload",
+          relationTo: "media",
+          required: false,
+        },
+        {
           name: "bulletPoints",
           label: "Bullet Points",
           type: "text",

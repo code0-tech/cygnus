@@ -276,6 +276,7 @@ export interface Page {
     | (
         | {
             badge?: string | null;
+            badge_link?: string | null;
             heading: string;
             texts?:
               | {
@@ -312,6 +313,7 @@ export interface Page {
               label: string;
               title: string;
               description: string;
+              image?: (number | null) | Media;
               bulletPoints: string[];
               actions: string[];
               id?: string | null;
@@ -924,6 +926,7 @@ export interface PagesSelect<T extends boolean = true> {
           | T
           | {
               badge?: T;
+              badge_link?: T;
               heading?: T;
               texts?:
                 | T
@@ -964,6 +967,7 @@ export interface PagesSelect<T extends boolean = true> {
                     label?: T;
                     title?: T;
                     description?: T;
+                    image?: T;
                     bulletPoints?: T;
                     actions?: T;
                     id?: T;

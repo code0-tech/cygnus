@@ -1,16 +1,16 @@
 "use client"
 
-import { useMediaQuery } from "@/hooks/useMediaQuery"
 import { Section } from "@/components/ui/Section"
+import { useMediaQuery } from "@/hooks/useMediaQuery"
 import { cn } from "@/lib/utils"
-import { Button } from "@code0-tech/pictor"
+import { Badge, Button } from "@code0-tech/pictor"
+import { IconArrowRight } from "@tabler/icons-react"
 import { m as motion, type Variants } from "motion/react"
 import Image from "next/image"
 import Link from "next/link"
 import React from "react"
-import Grainient from "../ui/Granient"
 import { useWebHaptics } from "web-haptics/react"
-import { HeroBadge } from "../badges/HeroBadge"
+import Grainient from "../ui/Granient"
 
 interface HeroSectionButton {
     label: string
@@ -26,6 +26,7 @@ interface HeroSectionText {
 
 interface HeroSectionContent {
     badge?: string | null
+    badge_link?: string | null
     heading?: string | null
     texts?: HeroSectionText[] | null
     buttons?: HeroSectionButton[] | null
@@ -67,7 +68,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ content }) => {
                 <div className="pointer-events-none absolute inset-0 -z-10 bg-[#0f0c1f]">
                     <Grainient
                         color1="#13102d"
-                        color2="#f872e2"
+                        color2="#72f896"
                         color3="#7472f8"
                         timeSpeed={0.25}
                         colorBalance={0}
@@ -104,7 +105,12 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ content }) => {
 
                     <div className="w-full lg:w-2/5 flex flex-col gap-4 text-start">
                         <motion.div variants={staggerItem}>
-                            <HeroBadge badge={content.badge}/>
+                            <Link href={content.badge_link ?? ""}>
+                                <Badge className="relative z-10 text-xs! px-2! cursor-pointer!" color="info" suppressHydrationWarning>
+                                    {content.badge}
+                                    <IconArrowRight size={14} />
+                                </Badge>
+                            </Link>
                         </motion.div>
 
                         <motion.h1 variants={staggerItem} className="relative z-10 font-bold text-3xl lg:text-4xl text-white text-balance">

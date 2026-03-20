@@ -127,17 +127,16 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({
                             </Link>
                         </div>
                     </div>
-                    <AnimatePresence mode="wait">
+                    <AnimatePresence initial={false} mode="wait">
                         {activeSubMenu && isScrolled && (
                             <motion.div
                                 key="submenu"
                                 ref={subMenuRef}
-                                layout
-                                initial={{ opacity: 0, y: -10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -10 }}
+                                initial={{ opacity: 0, y: -10, height: 0, marginTop: 0 }}
+                                animate={{ opacity: 1, y: 0, height: "auto", marginTop: 0 }}
+                                exit={{ opacity: 0, y: -10, height: 0, marginTop: 0 }}
                                 transition={{ duration: 0.2, ease: "easeOut" }}
-                                className="flex flex-col gap-2 overflow-hidden"
+                                className="flex flex-col overflow-hidden"
                             >
                                 <NavSubMenu
                                     items={activeSubMenu}

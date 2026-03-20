@@ -2,13 +2,16 @@
 
 import { Section } from "@/components/ui/Section"
 import { ANIMATION_PRESETS, type AnimationPreset } from "@/lib/utils"
+import type { Media } from "@/payload-types"
 import { m as motion, type Variants } from "motion/react"
+import Image from "next/image"
 import React from "react"
 
 interface UseCaseItem {
     label: string
     title: string
     description: string
+    image?: Media | number | null
     bulletPoints: string[]
     actions: string[]
     id?: string | null
@@ -59,6 +62,7 @@ export const UseCaseSection: React.FC<UseCaseSectionProps> = ({ content }) => {
                 {content.useCases.map((item, index) => {
                     const animationPreset = USE_CASE_ANIMATION_SEQUENCE[index % USE_CASE_ANIMATION_SEQUENCE.length]
                     const animationConfig = ANIMATION_PRESETS[animationPreset]
+                    const image = typeof item.image === "object" ? item.image : null
 
                     return (
                         <motion.div
@@ -109,11 +113,15 @@ export const UseCaseSection: React.FC<UseCaseSectionProps> = ({ content }) => {
                                     aria-hidden="true"
                                     className="pointer-events-none absolute -inset-10 -z-10 rounded-4xl bg-aqua/2 blur-2xl"
                                 />
-                                <div className="relative z-10 h-112 overflow-hidden rounded-[1.7rem] border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] shadow-[0_12px_40px_rgba(0,0,0,0.18)] before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-linear-to-r before:from-transparent before:via-white/18 before:to-transparent before:content-['']">
-                                    <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.08),transparent_30%)]" />
-                                    <div className="pointer-events-none absolute -left-10 -top-10 h-36 w-36 rounded-full bg-pink/6 blur-3xl" />
-                                    <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-linear-to-t from-primary/70 via-primary/35 to-transparent" />
-                                    {/* Flows darstellen */}
+                                <div className="relative z-10 h-112 overflow-hidden rounded-3xl border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] shadow-[0_12px_40px_rgba(0,0,0,0.18)] before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-linear-to-r before:from-transparent before:via-white/18 before:to-transparent before:content-['']">
+                                    {image?.url ? (
+                                        <Image
+                                            src={image.url}
+                                            alt={image.alt ?? item.title}
+                                            fill
+                                            className="object-cover"
+                                        />
+                                    ) : null}
                                 </div>
                             </div>
                             <motion.div

@@ -18,15 +18,20 @@ interface TableOfContentsProps {
 
 export function TableOfContents({ headings }: TableOfContentsProps) {
     const { trigger } = useWebHaptics()
+    const desktopTopOffset = 96
+    const headingScrollOffset = 120
 
     const [activeIds, setActiveIds] = useState<string[]>([])
     const [isOpen, setIsOpen] = useState(false)
     const [isMobile, setIsMobile] = useState(false)
     const [showMobileToc, setShowMobileToc] = useState(false)
     const [barStyle, setBarStyle] = useState({ y: 0, scaleY: 0, opacity: 0 })
+    const [isDesktopFixed, setIsDesktopFixed] = useState(false)
+    const [desktopStyle, setDesktopStyle] = useState<{ left: number, width: number } | null>(null)
 
     const mobileTocRef = useRef<HTMLDivElement>(null)
     const desktopTocRef = useRef<HTMLDivElement>(null)
+    const desktopWrapperRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
         const mediaQuery = window.matchMedia("(max-width: 1023px)")
@@ -48,27 +53,30 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
 
         if (!elements.length) return
 
-        const visibleIds = new Set<string>()
-        const syncActiveIds = () => {
-            setActiveIds(elements.filter((element) => visibleIds.has(element.id)).map((element) => element.id))
-        }
-        const observer = new IntersectionObserver((entries) => {
-            for (const entry of entries) {
-                if (entry.isIntersecting) visibleIds.add((entry.target as HTMLElement).id)
-                else visibleIds.delete((entry.target as HTMLElement).id)
+        const updateActiveHeading = () => {
+            const activationOffset = isMobile ? headingScrollOffset + 16 : desktopTopOffset + 24
+            let currentId = elements[0].id
+
+            for (const element of elements) {
+                if (element.getBoundingClientRect().top <= activationOffset) {
+                    currentId = element.id
+                } else {
+                    break
+                }
             }
-            syncActiveIds()
-        }, {
-            root: null,
-            rootMargin: "-15% 0px -15% 0px",
-            threshold: 0,
-        })
 
-        elements.forEach((element) => observer.observe(element))
-        syncActiveIds()
+            setActiveIds([currentId])
+        }
 
-        return () => observer.disconnect()
-    }, [headings])
+        updateActiveHeading()
+        window.addEventListener("scroll", updateActiveHeading, { passive: true })
+        window.addEventListener("resize", updateActiveHeading)
+
+        return () => {
+            window.removeEventListener("scroll", updateActiveHeading)
+            window.removeEventListener("resize", updateActiveHeading)
+        }
+    }, [headings, isMobile])
 
     useEffect(() => {
         const currentRef = isMobile ? mobileTocRef : desktopTocRef
@@ -114,6 +122,48 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
         window.addEventListener("scroll", handleScrollVisibility, { passive: true })
         return () => window.removeEventListener("scroll", handleScrollVisibility)
     }, [isMobile])
+
+    useEffect(() => {
+        if (isMobile) {
+            setIsDesktopFixed(false)
+            return
+        }
+
+        const updateDesktopPosition = () => {
+            const wrapper = desktopWrapperRef.current
+            if (!wrapper) return
+
+            const rect = wrapper.getBoundingClientRect()
+            const nextFixed = rect.top <= desktopTopOffset
+
+            setIsDesktopFixed(nextFixed)
+            setDesktopStyle({
+                left: rect.left,
+                width: rect.width,
+            })
+        }
+
+        updateDesktopPosition()
+        window.addEventListener("scroll", updateDesktopPosition, { passive: true })
+        window.addEventListener("resize", updateDesktopPosition)
+
+        return () => {
+            window.removeEventListener("scroll", updateDesktopPosition)
+            window.removeEventListener("resize", updateDesktopPosition)
+        }
+    }, [isMobile, desktopTopOffset])
+
+    const scrollToHeading = (id: string) => {
+        const element = document.getElementById(id)
+        if (!element) return
+
+        const top = window.scrollY + element.getBoundingClientRect().top - headingScrollOffset
+        window.history.replaceState(null, "", `#${id}`)
+        window.scrollTo({
+            top,
+            behavior: "smooth",
+        })
+    }
 
     if (!headings.length) return null
 
@@ -180,7 +230,11 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
                                                 >
                                                     <a
                                                         href={`#${heading.id}`}
-                                                        onClick={() => setIsOpen(false)}
+                                                        onClick={(event) => {
+                                                            event.preventDefault()
+                                                            scrollToHeading(heading.id)
+                                                            setIsOpen(false)
+                                                        }}
                                                         className={cn(
                                                             "ml-5 block rounded-xl py-1.5 pl-4 pr-3 text-sm text-white/60 transition-colors hover:bg-white/10 hover:text-white",
                                                             heading.level >= 3 && "pl-8",
@@ -200,32 +254,48 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
                 )}
             </AnimatePresence>
 
-            <div className="hidden lg:block sticky top-24 self-start max-h-[calc(100vh-8rem)] overflow-y-auto ml-1">
-                <div className="flex items-start gap-2">
-                    <IconAlignLeft size={20}/>
-                    <h3 className="mb-2 text-sm font-semibold">Content</h3>
-                </div>
-                <div ref={desktopTocRef} className="relative border-l border-white/20 ml-1">
-                    <motion.div
-                        className="absolute top-0 w-px origin-top bg-white will-change-transform"
-                        animate={barStyle}
-                        transition={{ duration: 0.2, ease: "easeOut" }}
-                        style={{ left: "-1.5px", height: 1 }}
-                    />
-                    {headings.map((heading) => (
-                        <div key={heading.id} id={`toc-${heading.id}`} data-toc-item="true">
-                            <a
-                                href={`#${heading.id}`}
-                                className={cn(
-                                    "block py-1 pl-4 text-sm text-white/60 transition-colors hover:text-white",
-                                    heading.level >= 3 && "pl-7",
-                                    activeIds.includes(heading.id) && "text-white",
-                                )}
-                            >
-                                {heading.text}
-                            </a>
-                        </div>
-                    ))}
+            <div ref={desktopWrapperRef} className="hidden lg:block w-52">
+                <div
+                    className={cn(
+                        "max-h-[calc(100vh-8rem)] overflow-y-auto",
+                        isDesktopFixed && "fixed z-30",
+                    )}
+                    style={isDesktopFixed && desktopStyle ? {
+                        top: `${desktopTopOffset}px`,
+                        left: `${desktopStyle.left}px`,
+                        width: `${desktopStyle.width}px`,
+                    } : undefined}
+                >
+                    <div className="flex items-start gap-2">
+                        <IconAlignLeft size={20}/>
+                        <h3 className="mb-2 text-sm font-semibold">Content</h3>
+                    </div>
+                    <div ref={desktopTocRef} className="relative border-l border-white/20 ml-1">
+                        <motion.div
+                            className="absolute top-0 w-px origin-top bg-white will-change-transform"
+                            animate={barStyle}
+                            transition={{ duration: 0.2, ease: "easeOut" }}
+                            style={{ left: "-1.5px", height: 1 }}
+                        />
+                        {headings.map((heading) => (
+                            <div key={heading.id} id={`toc-${heading.id}`} data-toc-item="true">
+                                <a
+                                    href={`#${heading.id}`}
+                                    onClick={(event) => {
+                                        event.preventDefault()
+                                        scrollToHeading(heading.id)
+                                    }}
+                                    className={cn(
+                                        "block py-1 pl-4 text-sm text-white/60 transition-colors hover:text-white",
+                                        heading.level >= 3 && "pl-7",
+                                        activeIds.includes(heading.id) && "text-white",
+                                    )}
+                                >
+                                    {heading.text}
+                                </a>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </div>
         </>

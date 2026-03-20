@@ -7,7 +7,6 @@ import type { CtaLayoutBlock } from "@/lib/cms"
 import type { FaqLayoutBlock } from "@/lib/cms"
 import type { UseCaseLayoutBlock } from "@/lib/cms"
 import { isSupportedLocale, SUPPORTED_LOCALES } from "@/lib/i18n"
-import { getRoadmapItems } from "@/lib/cms"
 import dynamic from "next/dynamic"
 import { notFound } from "next/navigation"
 

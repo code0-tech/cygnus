@@ -42,16 +42,12 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
         >
             <Container>
             <motion.div
-                layout
                 className={cn(
-                    "my-6 flex flex-col gap-2 overflow-hidden rounded-2xl border p-1.5 top-0 left-0 transition-colors",
+                    "my-6 flex flex-col overflow-hidden rounded-2xl border p-1.5 top-0 left-0 transition-colors",
                     isScrolled && !isOpen && "mx-[10%]",
                     (isScrolled || isOpen) ? "border border-white/5 shadow-sm bg-primary/20 backdrop-blur-xl" : "border-transparent",
                 )}
-                initial={{
-                    marginLeft: "0%",
-                    marginRight: "0%",
-                }}
+                initial={false}
                 animate={{
                     marginLeft: isScrolled && !isOpen ? "10%" : "0%",
                     marginRight: isScrolled && !isOpen ? "10%" : "0%",
@@ -95,10 +91,9 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
                     {isOpen && (
                         <motion.div
                             key="mobile-menu"
-                            layout
-                            initial={{ opacity: isScrolled ? 1 : 0, y: -8 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: isScrolled ? 1 : 0, y: -8 }}
+                            initial={{ opacity: isScrolled ? 1 : 0, y: -8, height: 0, marginTop: 0 }}
+                            animate={{ opacity: 1, y: 0, height: "auto", marginTop: 8 }}
+                            exit={{ opacity: isScrolled ? 1 : 0, y: -8, height: 0, marginTop: 0 }}
                             transition={{ duration: 0.2, ease: "easeOut" }}
                             style={{ overflow: "hidden" }}
                             className="flex flex-col gap-2"

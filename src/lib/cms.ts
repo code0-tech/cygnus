@@ -328,13 +328,6 @@ const getSectionsCached = cache(async (locale: AppLocale): Promise<Section[]> =>
     })
 })
 
-type SectionType = NonNullable<Section["sectionType"]>
-
-const getSectionByTypeCached = cache(async (cachedSectionType: SectionType, cachedLocale: AppLocale) => {
-    const sections = await getSectionsCached(cachedLocale)
-    return sections.find((section) => section.sectionType === cachedSectionType) ?? null
-})
-
 export async function getLandingPage(slug = "main", locale: AppLocale = DEFAULT_LOCALE): Promise<Page | null> {
     return getLandingPageCached(slug, locale)
 }
@@ -386,8 +379,4 @@ export async function getRoadmapItems(locale: AppLocale = DEFAULT_LOCALE): Promi
 
 export async function getSections(locale: AppLocale = DEFAULT_LOCALE): Promise<Section[]> {
     return getSectionsCached(locale)
-}
-
-async function getSectionByType(sectionType: SectionType, locale: AppLocale = DEFAULT_LOCALE) {
-    return getSectionByTypeCached(sectionType, locale)
 }

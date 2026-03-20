@@ -65,8 +65,13 @@ const injectHeadingIds = (html: string, headings: TocHeading[]): string => {
         const heading = headings[index]
         index += 1
         if (!heading) return match
-        if (/\sid=/.test(attributes)) return match
-        return `<h${level}${attributes} id="${heading.id}">`
+
+        const nextAttributes = /\sclass=/.test(attributes)
+            ? attributes.replace(/\sclass=(['"])(.*?)\1/, (_classMatch: string, quote: string, className: string) => ` class=${quote}${className} scroll-mt-32${quote}`)
+            : `${attributes} class="scroll-mt-32"`
+
+        if (/\sid=/.test(nextAttributes)) return `<h${level}${nextAttributes}>`
+        return `<h${level}${nextAttributes} id="${heading.id}">`
     })
 }
 
@@ -129,7 +134,7 @@ export async function BlogPost({ slug, locale }: BlogPostProps) {
                 </div>
             )}
 
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
+            <div className="grid grid-cols-1 gap-12 lg:grid-cols-4 lg:items-start">
                 <TableOfContents headings={headings} />
                 <article className="lg:col-span-3">
                     <MarkdownContent content={contentHtmlWithIds} />
