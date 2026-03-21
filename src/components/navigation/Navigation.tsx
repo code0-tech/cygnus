@@ -44,7 +44,6 @@ function Navigation({ locale, items }: NavigationProps) {
     const menuRef = useOutsideClick<HTMLElement>(() => setIsOpen(false))
     const subMenuRef = useOutsideClick<HTMLDivElement>(() => setActiveSubMenu(null))
 
-    const [position, setPosition] = useState({ left: 0, width: 0, opacity: 0 })
     const [isScrolled, setIsScrolled] = useState(false)
     const [isOpen, setIsOpen] = useState(false)
     const [activeSubMenu, setActiveSubMenu] = useState<SubNavItem[] | null>(null)
@@ -80,19 +79,28 @@ function Navigation({ locale, items }: NavigationProps) {
     }, [items, locale])
 
     useEffect(() => {
+        let frame = 0
+
         const handleScroll = () => {
-            setIsScrolled((prevIsScrolled) => {
-                const nextIsScrolled = prevIsScrolled
-                    ? window.scrollY > scrollCloseThreshold
-                    : window.scrollY > scrollOpenThreshold
+            if (frame) return
 
-                if (prevIsScrolled !== nextIsScrolled && nextIsScrolled) {
-                    setActiveSubMenu(null)
-                }
+            frame = window.requestAnimationFrame(() => {
+                frame = 0
 
-                return nextIsScrolled
+                setIsScrolled((prevIsScrolled) => {
+                    const nextIsScrolled = prevIsScrolled
+                        ? window.scrollY > scrollCloseThreshold
+                        : window.scrollY > scrollOpenThreshold
+
+                    if (prevIsScrolled !== nextIsScrolled && nextIsScrolled) {
+                        setActiveSubMenu(null)
+                    }
+
+                    return prevIsScrolled === nextIsScrolled ? prevIsScrolled : nextIsScrolled
+                })
+
+                setIsOpen((prevIsOpen) => (prevIsOpen ? false : prevIsOpen))
             })
-            setIsOpen(false)
         }
 
         if (window.scrollY > scrollOpenThreshold) {
@@ -100,7 +108,12 @@ function Navigation({ locale, items }: NavigationProps) {
         }
         window.addEventListener("scroll", handleScroll)
 
-        return () => window.removeEventListener("scroll", handleScroll)
+        return () => {
+            if (frame) {
+                window.cancelAnimationFrame(frame)
+            }
+            window.removeEventListener("scroll", handleScroll)
+        }
     }, [scrollCloseThreshold, scrollOpenThreshold])
 
     useEffect(() => {
@@ -128,8 +141,6 @@ function Navigation({ locale, items }: NavigationProps) {
         <NavigationDesktop
             isScrolled={isScrolled}
             navbarItems={navbarItems}
-            position={position}
-            setPosition={setPosition}
             activeSubMenu={activeSubMenu}
             setActiveSubMenu={setActiveSubMenu}
             setHoveredSubMenu={setHoveredSubMenu}

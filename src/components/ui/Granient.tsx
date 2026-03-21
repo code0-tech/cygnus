@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { useReducedMotion } from 'motion/react';
 import { Renderer, Program, Mesh, Triangle } from 'ogl';
 
 interface GrainientProps {
@@ -152,6 +153,7 @@ const Grainient: React.FC<GrainientProps> = ({
   maxDpr = 2
 }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const prefersReducedMotion = useReducedMotion();
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -221,16 +223,93 @@ const Grainient: React.FC<GrainientProps> = ({
 
     let raf = 0;
     const t0 = performance.now();
-    const loop = (t: number) => {
+    let disposed = false;
+    let running = false;
+    let isInViewport = true;
+    let isPageVisible = document.visibilityState === 'visible';
+    let lastFrameTime = 0;
+    const frameInterval = 1000 / 30;
+
+    const renderFrame = (t: number) => {
       (program.uniforms.iTime as { value: number }).value = (t - t0) * 0.001;
       renderer.render({ scene: mesh });
+    };
+
+    const stopLoop = () => {
+      running = false;
+      if (raf) {
+        cancelAnimationFrame(raf);
+        raf = 0;
+      }
+    };
+
+    const loop = (t: number) => {
+      if (disposed || !running) return;
+
+      if (t - lastFrameTime >= frameInterval) {
+        lastFrameTime = t;
+        renderFrame(t);
+      }
+
       raf = requestAnimationFrame(loop);
     };
-    raf = requestAnimationFrame(loop);
+
+    const startLoop = () => {
+      if (disposed || prefersReducedMotion || running || !isInViewport || !isPageVisible) return;
+
+      running = true;
+      lastFrameTime = 0;
+      raf = requestAnimationFrame(loop);
+    };
+
+    const visibilityObserver = new IntersectionObserver(
+      ([entry]) => {
+        isInViewport = Boolean(entry?.isIntersecting);
+
+        if (isInViewport) {
+          if (prefersReducedMotion) {
+            renderFrame(performance.now());
+          } else {
+            startLoop();
+          }
+        } else {
+          stopLoop();
+        }
+      },
+      { threshold: 0.05 },
+    );
+
+    visibilityObserver.observe(container);
+
+    const handleVisibilityChange = () => {
+      isPageVisible = document.visibilityState === 'visible';
+
+      if (!isPageVisible) {
+        stopLoop();
+        return;
+      }
+
+      if (prefersReducedMotion) {
+        renderFrame(performance.now());
+      } else {
+        startLoop();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    if (prefersReducedMotion) {
+      renderFrame(performance.now());
+    } else {
+      startLoop();
+    }
 
     return () => {
-      cancelAnimationFrame(raf);
+      disposed = true;
+      stopLoop();
       ro.disconnect();
+      visibilityObserver.disconnect();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       try {
         container.removeChild(canvas);
       } catch {
@@ -260,7 +339,8 @@ const Grainient: React.FC<GrainientProps> = ({
     color1,
     color2,
     color3,
-    maxDpr
+    maxDpr,
+    prefersReducedMotion
   ]);
 
   return <div ref={containerRef} className={`relative h-full w-full overflow-hidden ${className}`.trim()} />;

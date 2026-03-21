@@ -8,7 +8,8 @@ import React, { useRef } from "react"
 import { fadeInUp, SubNavItem } from "./Navigation"
 
 type TabProps = {
-    setPosition: React.Dispatch<React.SetStateAction<{ left: number; width: number; opacity: number }>>
+    setPosition: (position: { left: number; width: number; opacity: number }) => void
+    containerRef: React.RefObject<HTMLDivElement | null>
     href: string | null
     subMenu?: SubNavItem[]
     activeSubMenu?: SubNavItem[] | null
@@ -16,7 +17,7 @@ type TabProps = {
     title: string
 }
 
-const NavTab: React.FC<TabProps> = ({ setPosition, href, title, subMenu, activeSubMenu, onMouseEnter }) => {
+const NavTab: React.FC<TabProps> = ({ setPosition, containerRef, href, title, subMenu, activeSubMenu, onMouseEnter }) => {
     const ref = useRef<HTMLDivElement>(null)
     const hasSubMenu = Boolean(subMenu?.length)
     const active = activeSubMenu && activeSubMenu === subMenu
@@ -33,13 +34,14 @@ const NavTab: React.FC<TabProps> = ({ setPosition, href, title, subMenu, activeS
             animate={fadeInUp.animate}
             transition={fadeInUp.transition}
             onMouseEnter={() => {
-                if (!ref?.current) return
+                if (!ref.current || !containerRef.current) return
 
-                const { width } = ref.current.getBoundingClientRect()
+                const tabRect = ref.current.getBoundingClientRect()
+                const containerRect = containerRef.current.getBoundingClientRect()
 
                 setPosition({
-                    left: ref.current.offsetLeft,
-                    width,
+                    left: tabRect.left - containerRect.left,
+                    width: tabRect.width,
                     opacity: 1
                 })
                 onMouseEnter()

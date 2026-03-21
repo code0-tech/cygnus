@@ -8,7 +8,7 @@ import { IconChevronUp, IconMenu2, IconX } from "@tabler/icons-react"
 import { AnimatePresence, m as motion } from "motion/react"
 import Image from "next/image"
 import Link from "next/link"
-import React from "react"
+import React, { useLayoutEffect, useRef, useState } from "react"
 import { useWebHaptics } from "web-haptics/react"
 import { fadeInUp, NavItem } from "./Navigation"
 
@@ -34,30 +34,79 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
     homeHref,
 }) => {
     const { trigger } = useWebHaptics()
+    const menuContentRef = useRef<HTMLDivElement>(null)
+    const [menuHeight, setMenuHeight] = useState(0)
+
+    useLayoutEffect(() => {
+        const element = menuContentRef.current
+        if (!element) {
+            setMenuHeight(0)
+            return
+        }
+
+        const measure = () => {
+            setMenuHeight(element.scrollHeight)
+        }
+
+        measure()
+
+        const resizeObserver = new ResizeObserver(measure)
+        resizeObserver.observe(element)
+
+        return () => resizeObserver.disconnect()
+    }, [isOpen, mobileOpenKey, navbarItems])
 
     return (
         <header
-            className="fixed z-50 w-full overflow-hidden pt-4"
+            className="fixed z-50 w-full overflow-hidden pt-3"
             ref={menuRef}
         >
             <Container>
-                <motion.div
-                    className={cn(
-                        "my-6 flex flex-col overflow-hidden rounded-2xl border p-1.5 top-0 left-0 transition-colors",
-                        isScrolled && !isOpen && "mx-[10%]",
-                        (isScrolled || isOpen) ? "border border-white/5 shadow-sm bg-primary/20 backdrop-blur-xl" : "border-transparent",
-                    )}
-                    initial={false}
-                    animate={{
-                        marginLeft: isScrolled && !isOpen ? "10%" : "0%",
-                        marginRight: isScrolled && !isOpen ? "10%" : "0%",
-                    }}
-                    transition={{
-                        type: "spring",
-                        stiffness: 40,
-                        damping: 10,
-                    }}
-                >
+                <div className="relative my-6">
+                    <motion.div
+                        className={cn(
+                            "pointer-events-none absolute inset-0 rounded-2xl shadow-sm",
+                            (isScrolled || isOpen) ? "bg-primary/20 backdrop-blur-xl" : "bg-transparent shadow-none",
+                        )}
+                        initial={false}
+                        animate={{
+                            clipPath: isScrolled && !isOpen
+                                ? "inset(0% 10% 0% 10% round 1rem)"
+                                : "inset(0% 0% 0% 0% round 1rem)",
+                        }}
+                        transition={{
+                            type: "spring",
+                            stiffness: 40,
+                            damping: 10,
+                        }}
+                    />
+                    <motion.div
+                        className="pointer-events-none absolute inset-0 z-10 rounded-2xl border border-white/5"
+                        initial={false}
+                        animate={{
+                            left: isScrolled && !isOpen ? "10%" : "0%",
+                            right: isScrolled && !isOpen ? "10%" : "0%",
+                            opacity: isScrolled || isOpen ? 1 : 0,
+                        }}
+                        transition={{
+                            type: "spring",
+                            stiffness: 40,
+                            damping: 10,
+                        }}
+                    />
+                    <motion.div
+                        className="relative z-10 flex flex-col overflow-hidden rounded-2xl p-1.5"
+                        initial={false}
+                        animate={{
+                            paddingLeft: isOpen ? "0.5rem" : isScrolled ? "10%" : "0%",
+                            paddingRight: isOpen ? "0.5rem" : isScrolled ? "calc(10% + 0.5rem)" : "0%",
+                        }}
+                        transition={{
+                            type: "spring",
+                            stiffness: 40,
+                            damping: 10,
+                        }}
+                    >
                     <div className={"w-full flex items-center justify-between gap-2"}>
                             <Link
                                 href={homeHref}
@@ -66,7 +115,7 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
                                     setIsOpen(false)
                                 }}
                             >
-                            <motion.div className={cn("flex transition-all", (!isScrolled && !isOpen) && "-ml-4")}
+                            <motion.div className="flex transition-all"
                                 initial={false}
                                 animate={fadeInUp.animate}
                                 transition={fadeInUp.transition}
@@ -75,7 +124,7 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
                             </motion.div>
                         </Link>
                         <motion.button
-                                className={cn("bg-transparent border-0 transition-all mr-1.5", (!isScrolled && !isOpen) && "-mr-2")}
+                                className="mr-1.5 border-0 bg-transparent transition-all"
                                 initial={false}
                                 animate={fadeInUp.animate}
                                 transition={fadeInUp.transition}
@@ -91,163 +140,165 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
                         {isOpen && (
                             <motion.div
                                 key="mobile-menu"
-                                initial={{ opacity: isScrolled ? 1 : 0, y: -8, height: 0, marginTop: 0 }}
-                                animate={{ opacity: 1, y: 0, height: "auto", marginTop: 8 }}
-                                exit={{ opacity: isScrolled ? 1 : 0, y: -8, height: 0, marginTop: 0 }}
+                                initial={{ opacity: isScrolled ? 1 : 0, y: -8, height: 0 }}
+                                animate={{ opacity: 1, y: 0, height: menuHeight }}
+                                exit={{ opacity: isScrolled ? 1 : 0, y: -8, height: 0 }}
                                 transition={{ duration: 0.2, ease: "easeOut" }}
                                 style={{ overflow: "hidden" }}
                                 className="flex flex-col gap-2"
                             >
-                                {navbarItems.map((item, i) => {
-                                    const isAccordion = !!item.subMenu?.length
-                                    const isOpenAcc = mobileOpenKey === item.title
+                                <div ref={menuContentRef}>
+                                    {navbarItems.map((item, i) => {
+                                        const isAccordion = !!item.subMenu?.length
+                                        const isOpenAcc = mobileOpenKey === item.title
 
-                                    const hasRoute = Boolean(item.href)
-                                    return (
-                                        <div key={item.title} className="flex flex-col">
-                                            <motion.div
-                                                initial={{ y: -8, opacity: isScrolled ? 1 : 0 }}
-                                                animate={{ y: 0, opacity: 1 }}
-                                                exit={{ y: -8, opacity: isScrolled ? 1 : 0 }}
-                                                transition={{ duration: 0.25, delay: 0.06 * i }}
-                                            >
-                                                {isAccordion ? (
-                                                    <button
-                                                        type="button"
-                                                        className={cn(
-                                                            "w-full text-left text-white/75 px-2 py-2 font-medium text-md rounded-xl transition-colors flex items-center justify-between",
-                                                            "hover:text-white hover:bg-white/10",
-                                                            isOpenAcc && "bg-white/10 text-white",
-                                                        )}
-                                                        onClick={() => {
-                                                            trigger("soft")
-                                                            setMobileOpenKey(isOpenAcc ? null : item.title)
-                                                        }}
-                                                    >
-                                                        <span>{item.title}</span>
-                                                        <IconChevronUp
-                                                            size={20}
-                                                            className={cn("transition-transform text-white/75", !isOpenAcc && "rotate-180")}
-                                                        />
-                                                    </button>
-                                                ) : (
-                                                    <Link
-                                                        href={item.href ?? "#"}
-                                                        className={cn(
-                                                            "w-full text-left text-white/75 px-2 py-2 font-medium text-md rounded-xl transition-colors flex items-center justify-between",
-                                                            "hover:text-white hover:bg-white/10",
-                                                            isOpenAcc && "bg-white/10 text-white",
-                                                            !hasRoute && "pointer-events-none opacity-60",
-                                                        )}
-                                                        onClick={() => {
-                                                            trigger("medium")
-                                                            setIsOpen(false)
-                                                        }}
-                                                    >
-                                                        <span>{item.title}</span>
-                                                    </Link>
-                                                )}
-                                            </motion.div>
-
-                                            {isAccordion && (
-                                                <AnimatePresence initial={false}>
-                                                    {isOpenAcc && (
-                                                        <motion.div
-                                                            key={`${item.title}-submenu`}
-                                                            layout
-                                                            initial={{ opacity: 0, y: -6 }}
-                                                            animate={{ opacity: 1, y: 0 }}
-                                                            exit={{ opacity: 0, y: -6 }}
-                                                            transition={{ duration: 0.18, ease: "easeOut" }}
-                                                            className="overflow-hidden"
+                                        const hasRoute = Boolean(item.href)
+                                        return (
+                                            <div key={item.title} className="flex flex-col">
+                                                <motion.div
+                                                    initial={{ y: -8, opacity: isScrolled ? 1 : 0 }}
+                                                    animate={{ y: 0, opacity: 1 }}
+                                                    exit={{ y: -8, opacity: isScrolled ? 1 : 0 }}
+                                                    transition={{ duration: 0.25, delay: 0.06 * i }}
+                                                >
+                                                    {isAccordion ? (
+                                                        <button
+                                                            type="button"
+                                                            className={cn(
+                                                                "w-full text-left text-white/75 px-2 py-2 font-medium text-md rounded-xl transition-colors flex items-center justify-between",
+                                                                "hover:text-white hover:bg-white/10",
+                                                                isOpenAcc && "bg-white/10 text-white",
+                                                            )}
+                                                            onClick={() => {
+                                                                trigger("soft")
+                                                                setMobileOpenKey(isOpenAcc ? null : item.title)
+                                                            }}
                                                         >
-                                                            <div className="mt-1 flex flex-col gap-1 rounded-lg">
-                                                                {item.subMenu!.map((sub) => (
-                                                                    <Link
-                                                                        key={sub.title}
-                                                                        href={sub.href}
-                                                                        className="group flex items-center gap-2 p-2 rounded-xl text-left hover:bg-white/10"
-                                                                        onClick={() => {
-                                                                            trigger("medium")
-                                                                            setIsOpen(false)
-                                                                            setMobileOpenKey(null)
-                                                                        }}
-                                                                    >
-                                                                        <div
-                                                                            className="p-1 rounded-lg border border-dashed border-white/20 text-gray-400 group-hover:text-white group-hover:border-white/60">
-                                                                            {sub.icon}
-                                                                        </div>
-                                                                        <div className="flex flex-col">
-                                                                            <span className="text-white font-medium">{sub.title}</span>
-                                                                            <span className="text-white/75 text-sm">{sub.description}</span>
-                                                                        </div>
-                                                                    </Link>
-                                                                ))}
-                                                            </div>
-                                                        </motion.div>
+                                                            <span>{item.title}</span>
+                                                            <IconChevronUp
+                                                                size={20}
+                                                                className={cn("transition-transform text-white/75", !isOpenAcc && "rotate-180")}
+                                                            />
+                                                        </button>
+                                                    ) : (
+                                                        <Link
+                                                            href={item.href ?? "#"}
+                                                            className={cn(
+                                                                "w-full text-left text-white/75 px-2 py-2 font-medium text-md rounded-xl transition-colors flex items-center justify-between",
+                                                                "hover:text-white hover:bg-white/10",
+                                                                isOpenAcc && "bg-white/10 text-white",
+                                                                !hasRoute && "pointer-events-none opacity-60",
+                                                            )}
+                                                            onClick={() => {
+                                                                trigger("medium")
+                                                                setIsOpen(false)
+                                                            }}
+                                                        >
+                                                            <span>{item.title}</span>
+                                                        </Link>
                                                     )}
-                                                </AnimatePresence>
-                                            )}
-                                        </div>
-                                    )
-                                })}
-                                <div className="mt-4 w-full flex flex-col items-center gap-2">
-                                    <motion.div
-                                        key={"Github"}
-                                        initial={{ y: -8, opacity: isScrolled ? 1 : 0 }}
-                                        animate={{ y: 0, opacity: 1 }}
-                                        exit={{ y: -8, opacity: isScrolled ? 1 : 0 }}
-                                        transition={{ duration: 0.25, delay: 0.06 * navbarItems.length }}
-                                        className="flex-1 w-full"
-                                    >
-                                        <Link
-                                            href={DEFAULT_GITHUB_URL}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            onClick={() => {
-                                                trigger("medium")
-                                                setIsOpen(false)
-                                            }}
+                                                </motion.div>
+
+                                                {isAccordion && (
+                                                    <AnimatePresence initial={false}>
+                                                        {isOpenAcc && (
+                                                            <motion.div
+                                                                key={`${item.title}-submenu`}
+                                                                initial={{ opacity: 0, y: -6 }}
+                                                                animate={{ opacity: 1, y: 0 }}
+                                                                exit={{ opacity: 0, y: -6 }}
+                                                                transition={{ duration: 0.18, ease: "easeOut" }}
+                                                                className="overflow-hidden"
+                                                            >
+                                                                <div className="mt-1 flex flex-col gap-1 rounded-lg">
+                                                                    {item.subMenu!.map((sub) => (
+                                                                        <Link
+                                                                            key={sub.title}
+                                                                            href={sub.href}
+                                                                            className="group flex items-center gap-2 p-2 rounded-xl text-left hover:bg-white/10"
+                                                                            onClick={() => {
+                                                                                trigger("medium")
+                                                                                setIsOpen(false)
+                                                                                setMobileOpenKey(null)
+                                                                            }}
+                                                                        >
+                                                                            <div
+                                                                                className="p-1 rounded-lg border border-dashed border-white/20 text-gray-400 group-hover:text-white group-hover:border-white/60">
+                                                                                {sub.icon}
+                                                                            </div>
+                                                                            <div className="flex flex-col">
+                                                                                <span className="text-white font-medium">{sub.title}</span>
+                                                                                <span className="text-white/75 text-sm">{sub.description}</span>
+                                                                            </div>
+                                                                        </Link>
+                                                                    ))}
+                                                                </div>
+                                                            </motion.div>
+                                                        )}
+                                                    </AnimatePresence>
+                                                )}
+                                            </div>
+                                        )
+                                    })}
+                                    <div className="mt-4 w-full flex flex-col items-center gap-2">
+                                        <motion.div
+                                            key={"Github"}
+                                            initial={{ y: -8, opacity: isScrolled ? 1 : 0 }}
+                                            animate={{ y: 0, opacity: 1 }}
+                                            exit={{ y: -8, opacity: isScrolled ? 1 : 0 }}
+                                            transition={{ duration: 0.25, delay: 0.06 * navbarItems.length }}
+                                            className="flex-1 w-full"
                                         >
-                                            <Button
-                                                variant="outlined"
-                                                className="h-9! w-full! text-base! justify-center"
+                                            <Link
+                                                href={DEFAULT_GITHUB_URL}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                onClick={() => {
+                                                    trigger("medium")
+                                                    setIsOpen(false)
+                                                }}
                                             >
-                                                <SiGithub size={20}/>
-                                                Github
-                                            </Button>
-                                        </Link>
-                                    </motion.div>
-                                    <motion.div
-                                        key={"Discord"}
-                                        initial={{ y: -8, opacity: isScrolled ? 1 : 0 }}
-                                        animate={{ y: 0, opacity: 1 }}
-                                        exit={{ y: -8, opacity: isScrolled ? 1 : 0 }}
-                                        transition={{ duration: 0.25, delay: 0.06 * (navbarItems.length + 1) }}
-                                        className="flex-1 w-full"
-                                    >
-                                        <Link
-                                            href={DEFAULT_DISCORD_URL}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            onClick={() => {
-                                                trigger("medium")
-                                                setIsOpen(false)
-                                            }}
+                                                <Button
+                                                    variant="outlined"
+                                                    className="h-9! w-full! text-base! justify-center"
+                                                >
+                                                    <SiGithub size={20}/>
+                                                    Github
+                                                </Button>
+                                            </Link>
+                                        </motion.div>
+                                        <motion.div
+                                            key={"Discord"}
+                                            initial={{ y: -8, opacity: isScrolled ? 1 : 0 }}
+                                            animate={{ y: 0, opacity: 1 }}
+                                            exit={{ y: -8, opacity: isScrolled ? 1 : 0 }}
+                                            transition={{ duration: 0.25, delay: 0.06 * (navbarItems.length + 1) }}
+                                            className="flex-1 w-full"
                                         >
-                                            <Button
-                                                variant="outlined"
-                                                className="h-9! w-full! text-base! justify-center bg-white/80! hover:bg-white! text-primary!"
+                                            <Link
+                                                href={DEFAULT_DISCORD_URL}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                onClick={() => {
+                                                    trigger("medium")
+                                                    setIsOpen(false)
+                                                }}
                                             >
-                                                Discord
-                                            </Button>
-                                        </Link>
-                                    </motion.div>
+                                                <Button
+                                                    variant="outlined"
+                                                    className="h-9! w-full! text-base! justify-center bg-white/80! hover:bg-white! text-primary!"
+                                                >
+                                                    Discord
+                                                </Button>
+                                            </Link>
+                                        </motion.div>
+                                    </div>
                                 </div>
                             </motion.div>
                         )}
                     </AnimatePresence>
-                </motion.div>
+                    </motion.div>
+                </div>
             </Container>
         </header>
     )

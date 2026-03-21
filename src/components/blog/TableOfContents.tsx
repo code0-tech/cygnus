@@ -53,29 +53,53 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
 
         if (!elements.length) return
 
-        const updateActiveHeading = () => {
-            const activationOffset = isMobile ? headingScrollOffset + 16 : desktopTopOffset + 24
-            let currentId = elements[0].id
+        const activationOffset = isMobile ? headingScrollOffset + 16 : desktopTopOffset + 24
+        const visibleHeadings = new Map<string, number>()
 
-            for (const element of elements) {
-                if (element.getBoundingClientRect().top <= activationOffset) {
-                    currentId = element.id
-                } else {
-                    break
+        const observer = new IntersectionObserver(
+            (entries) => {
+                for (const entry of entries) {
+                    const id = (entry.target as HTMLElement).id
+
+                    if (entry.isIntersecting) {
+                        visibleHeadings.set(id, entry.boundingClientRect.top)
+                    } else {
+                        visibleHeadings.delete(id)
+                    }
                 }
-            }
 
-            setActiveIds([currentId])
+                let nextId = elements[0].id
+
+                if (visibleHeadings.size > 0) {
+                    const sortedVisibleIds = Array.from(visibleHeadings.entries())
+                        .sort((a, b) => b[1] - a[1])
+                        .map(([id]) => id)
+
+                    nextId = sortedVisibleIds[0]
+                } else {
+                    for (const element of elements) {
+                        if (element.offsetTop <= window.scrollY + activationOffset) {
+                            nextId = element.id
+                        } else {
+                            break
+                        }
+                    }
+                }
+
+                setActiveIds((prev) => (prev[0] === nextId ? prev : [nextId]))
+            },
+            {
+                root: null,
+                rootMargin: `-${activationOffset}px 0px -55% 0px`,
+                threshold: [0, 1],
+            },
+        )
+
+        for (const element of elements) {
+            observer.observe(element)
         }
 
-        updateActiveHeading()
-        window.addEventListener("scroll", updateActiveHeading, { passive: true })
-        window.addEventListener("resize", updateActiveHeading)
-
-        return () => {
-            window.removeEventListener("scroll", updateActiveHeading)
-            window.removeEventListener("resize", updateActiveHeading)
-        }
+        return () => observer.disconnect()
     }, [headings, isMobile])
 
     useEffect(() => {
@@ -113,14 +137,28 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
             return
         }
 
+        let frame = 0
+
         const handleScrollVisibility = () => {
-            setShowMobileToc(window.scrollY > 32)
-            setIsOpen(false)
+            if (frame) return
+
+            frame = window.requestAnimationFrame(() => {
+                frame = 0
+
+                const shouldShow = window.scrollY > 32
+                setShowMobileToc((prev) => (prev === shouldShow ? prev : shouldShow))
+                setIsOpen((prev) => (prev ? false : prev))
+            })
         }
 
         handleScrollVisibility()
         window.addEventListener("scroll", handleScrollVisibility, { passive: true })
-        return () => window.removeEventListener("scroll", handleScrollVisibility)
+        return () => {
+            if (frame) {
+                window.cancelAnimationFrame(frame)
+            }
+            window.removeEventListener("scroll", handleScrollVisibility)
+        }
     }, [isMobile])
 
     useEffect(() => {
@@ -129,18 +167,33 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
             return
         }
 
-        const updateDesktopPosition = () => {
-            const wrapper = desktopWrapperRef.current
-            if (!wrapper) return
+        const wrapper = desktopWrapperRef.current
+        if (!wrapper) return
 
+        const measure = () => {
+            const rect = wrapper.getBoundingClientRect()
+            setDesktopStyle((prev) => (
+                prev?.left === rect.left && prev?.width === rect.width
+                    ? prev
+                    : { left: rect.left, width: rect.width }
+            ))
+        }
+
+        measure()
+
+        const resizeObserver = new ResizeObserver(measure)
+        resizeObserver.observe(wrapper)
+
+        const updateDesktopPosition = () => {
             const rect = wrapper.getBoundingClientRect()
             const nextFixed = rect.top <= desktopTopOffset
 
-            setIsDesktopFixed(nextFixed)
-            setDesktopStyle({
-                left: rect.left,
-                width: rect.width,
-            })
+            setIsDesktopFixed((prev) => (prev === nextFixed ? prev : nextFixed))
+            setDesktopStyle((prev) => (
+                prev?.left === rect.left && prev?.width === rect.width
+                    ? prev
+                    : { left: rect.left, width: rect.width }
+            ))
         }
 
         updateDesktopPosition()
@@ -148,10 +201,11 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
         window.addEventListener("resize", updateDesktopPosition)
 
         return () => {
+            resizeObserver.disconnect()
             window.removeEventListener("scroll", updateDesktopPosition)
             window.removeEventListener("resize", updateDesktopPosition)
         }
-    }, [isMobile, desktopTopOffset])
+    }, [desktopTopOffset, isMobile])
 
     const scrollToHeading = (id: string) => {
         const element = document.getElementById(id)
@@ -254,12 +308,9 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
                 )}
             </AnimatePresence>
 
-            <div ref={desktopWrapperRef} className="hidden lg:block w-52">
+            <div ref={desktopWrapperRef} className="hidden lg:block w-52 self-start">
                 <div
-                    className={cn(
-                        "max-h-[calc(100vh-8rem)] overflow-y-auto",
-                        isDesktopFixed && "fixed z-30",
-                    )}
+                    className={cn("max-h-[calc(100vh-8rem)] overflow-y-auto", isDesktopFixed && "fixed z-30")}
                     style={isDesktopFixed && desktopStyle ? {
                         top: `${desktopTopOffset}px`,
                         left: `${desktopStyle.left}px`,

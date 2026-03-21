@@ -74,16 +74,16 @@ export function FeatureCard({
         <div
             ref={cardRef}
             className={cn(
-                "group relative h-full overflow-hidden rounded-[1.6rem] border border-white/8 bg-[linear-gradient(160deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02)_28%,rgba(8,10,20,0.92)_100%)] shadow-[0_18px_60px_rgba(0,0,0,0.35)] transition-[transform,opacity] duration-700 ease-out before:pointer-events-none before:absolute before:inset-1px before:rounded-[calc(1.6rem-1px)] before:border before:border-white/6 before:content-[''] after:pointer-events-none after:absolute after:inset-x-0 after:top-0 after:h-px after:bg-linear-to-r after:from-transparent after:via-white/30 after:to-transparent after:content-['']",
+                "group relative h-full overflow-hidden rounded-[1.6rem] border border-white/8 bg-[linear-gradient(160deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02)_28%,rgba(8,10,20,0.92)_100%)] shadow-[0_14px_42px_rgba(0,0,0,0.3)] transition-[transform,opacity] duration-700 ease-out before:pointer-events-none before:absolute before:inset-1px before:rounded-[calc(1.6rem-1px)] before:border before:border-white/6 before:content-[''] after:pointer-events-none after:absolute after:inset-x-0 after:top-0 after:h-px after:bg-linear-to-r after:from-transparent after:via-white/30 after:to-transparent after:content-['']",
                 isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0",
                 className,
             )}
             style={{ transitionDelay: `${animationDelay}ms` }}
         >
             <div className="pointer-events-none absolute inset-0 opacity-[0.14] bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),transparent_32%),linear-gradient(180deg,rgba(255,255,255,0.04),transparent_40%),linear-gradient(rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-position-[center,center,center,center] bg-size-[auto,auto,32px_32px,32px_32px] mask-[linear-gradient(180deg,rgba(0,0,0,0.75),transparent_92%)]" />
-            <div className={cn("pointer-events-none absolute -left-14 -top-14 h-36 w-36 rounded-full blur-2xl opacity-95 transition-transform duration-700", toneStyle.orb)} />
-            <div className={cn("pointer-events-none absolute inset-0 bg-linear-to-br opacity-90", toneStyle.glow)} />
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,rgba(8,10,20,0),rgba(8,10,20,0.58)_58%,rgba(8,10,20,0.9))]" />
+            <div className={cn("pointer-events-none absolute -left-10 -top-10 h-28 w-28 rounded-full blur-2xl opacity-95 transition-transform duration-700", toneStyle.orb)} />
+            <div className={cn("pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.02),transparent_24%)] bg-linear-to-br opacity-90", toneStyle.glow)} />
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,rgba(8,10,20,0),rgba(8,10,20,0.52)_54%,rgba(8,10,20,0.88))]" />
 
             <div className={cn("absolute inset-0 z-10 flex flex-col justify-start items-center gap-4 p-5 md:p-6", contentClassName)}>
                 {children}
