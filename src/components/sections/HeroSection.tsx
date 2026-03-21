@@ -93,7 +93,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ content }) => {
                     />
                 </div>
 
-                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.08),transparent_36%)]" />
+                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.08),transparent_36%),linear-gradient(180deg,rgba(255,255,255,0.02),transparent_32%)]" />
 
                 <motion.div
                     className={"relative z-10 flex h-full flex-col items-center justify-between gap-12 rounded-[calc(1.9rem-1px)] px-8 py-12 lg:flex-row lg:px-16 lg:py-24"}
@@ -150,9 +150,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ content }) => {
                                 height={620}
                                 width={900}
                                 loading="eager"
-                                className="rounded-2xl border border-white/10 shadow-[0_18px_50px_rgba(0,0,0,0.28)] lg:rounded-l-2xl lg:rounded-r-none lg:border-0 lg:border-l lg:border-y lg:ring-4 lg:ring-white/5"
+                                className="rounded-2xl border border-white/10 shadow-[0_14px_38px_rgba(0,0,0,0.24)] lg:rounded-l-2xl lg:rounded-r-none lg:border-0 lg:border-l lg:border-y lg:ring-4 lg:ring-white/5"
                             />
-                            <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(15,12,31,0.18),transparent_30%,transparent_62%,rgba(15,12,31,0.5)_100%),radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),transparent_34%),linear-gradient(to_top,rgba(15,12,31,0.42),transparent_30%)]" />
+                            <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(145deg,rgba(15,12,31,0.2),transparent_30%,transparent_64%,rgba(15,12,31,0.44)_100%),radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),transparent_30%)]" />
                         </div>
                     </motion.div>
                 </motion.div>

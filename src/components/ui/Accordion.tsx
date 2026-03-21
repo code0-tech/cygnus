@@ -1,6 +1,6 @@
 import {IconChevronDown} from "@tabler/icons-react"
 import { m as motion } from "motion/react"
-import React from "react"
+import React, { useLayoutEffect, useRef, useState } from "react"
 import { cn } from "@/lib/utils"
 
 const accordionCardBaseClassName =
@@ -18,10 +18,29 @@ interface FAQItemProps {
 }
 
 const AccordionItemComponent = ({ index, question, answer, isOpen, onToggle }: FAQItemProps) => {
+    const contentRef = useRef<HTMLDivElement>(null)
+    const [contentHeight, setContentHeight] = useState(0)
+
     const handleClick = (e: React.MouseEvent) => {
         e.preventDefault()
         onToggle(index)
     }
+
+    useLayoutEffect(() => {
+        const element = contentRef.current
+        if (!element) return
+
+        const measure = () => {
+            setContentHeight(element.scrollHeight)
+        }
+
+        measure()
+
+        const resizeObserver = new ResizeObserver(measure)
+        resizeObserver.observe(element)
+
+        return () => resizeObserver.disconnect()
+    }, [answer, question])
 
     return (
         <div
@@ -46,7 +65,7 @@ const AccordionItemComponent = ({ index, question, answer, isOpen, onToggle }: F
             <motion.div
                 initial={false}
                 animate={{
-                    height: isOpen ? "auto" : 0,
+                    height: isOpen ? contentHeight : 0,
                     opacity: isOpen ? 1 : 0,
                 }}
                 transition={{
@@ -64,6 +83,7 @@ const AccordionItemComponent = ({ index, question, answer, isOpen, onToggle }: F
                 className="overflow-hidden"
             >
                 <motion.div
+                    ref={contentRef}
                     initial={false}
                     animate={{ y: isOpen ? 0 : -2 }}
                     transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}

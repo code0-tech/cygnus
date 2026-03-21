@@ -2,7 +2,7 @@
 
 import { Card, Flex, Text } from "@code0-tech/pictor"
 import { IconNote } from "@tabler/icons-react"
-import { animate, m as motion, useInView, useMotionValue, useReducedMotion } from "motion/react"
+import { useInView, useReducedMotion } from "motion/react"
 import { useEffect, useRef, useState } from "react"
 import { LiteralBadge } from "../badges/LiteralBadge"
 import { ReferenceBadge } from "../badges/ReferenceBadge"
@@ -33,8 +33,8 @@ function NodeRow({
 }) {
     const listRef = useRef<HTMLDivElement>(null)
     const [loopDistance, setLoopDistance] = useState(0)
-    const x = useMotionValue(direction === "left" ? 0 : -loopDistance)
     const groupGap = 16
+    const velocity = 28
     const iconColorMap: Record<NodeAccent, string> = {
         brand: "var(--text-brand)",
         yellow: "var(--text-yellow)",
@@ -64,53 +64,30 @@ function NodeRow({
         const listElement = listRef.current
         if (!listElement) return
 
-        let frame = 0
-        let previousDistance = 0
+        const resizeObserver = new ResizeObserver((entries) => {
+            const entry = entries[0]
+            if (!entry) return
 
-        const updateLoopDistance = () => {
-            const nextDistance = Math.round(listElement.getBoundingClientRect().width + groupGap)
-            if (nextDistance !== previousDistance) {
-                previousDistance = nextDistance
-                setLoopDistance(nextDistance)
-            }
-        }
-
-        updateLoopDistance()
-
-        const resizeObserver = new ResizeObserver(() => {
-            cancelAnimationFrame(frame)
-            frame = requestAnimationFrame(updateLoopDistance)
+            setLoopDistance(Math.round(entry.contentRect.width + groupGap))
         })
         resizeObserver.observe(listElement)
 
-        return () => {
-            cancelAnimationFrame(frame)
-            resizeObserver.disconnect()
-        }
+        return () => resizeObserver.disconnect()
     }, [nodes.length])
 
-    useEffect(() => {
-        if (!loopDistance || !active) {
-            x.set(direction === "left" ? 0 : -loopDistance)
-            return
-        }
-
-        const controls = animate(
-            x,
-            direction === "left" ? [0, -loopDistance] : [-loopDistance, 0],
-            {
-                duration: 45,
-                ease: "linear",
-                repeat: Infinity,
-                repeatType: "loop",
-            },
-        )
-
-        return () => controls.stop()
-    }, [active, direction, loopDistance, x])
+    const duration = loopDistance > 0 ? loopDistance / velocity : 0
 
     return (
-        <motion.div className="flex w-max items-start gap-4 will-change-transform" style={{ x }}>
+        <div
+            className="flex w-max items-start gap-4 will-change-transform"
+            style={loopDistance > 0 ? {
+                animationName: direction === "left" ? "node-marquee-left" : "node-marquee-right",
+                animationDuration: `${duration}s`,
+                animationTimingFunction: "linear",
+                animationIterationCount: "infinite",
+                animationPlayState: active ? "running" : "paused",
+            } : undefined}
+        >
             <div ref={listRef} className="flex items-start gap-4">
                 {nodes.map((node, index) => (
                     <Card
@@ -149,7 +126,7 @@ function NodeRow({
                     </Card>
                 ))}
             </div>
-        </motion.div>
+        </div>
     )
 }
 

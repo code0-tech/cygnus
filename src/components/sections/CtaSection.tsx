@@ -66,11 +66,10 @@ export const CtaSection: React.FC<CtaSectionProps> = ({ content }) => {
                         height={48}
                         squares={[50, 10]}
                     />
-                    <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.1),transparent_38%)]" />
-                    <div className="pointer-events-none absolute -inset-16 opacity-14 blur-2xl [background:radial-gradient(circle,rgba(248,114,226,0.35),transparent_95%)]" />
-                    <div className="pointer-events-none absolute inset-x-0 -top-24 h-56 bg-[radial-gradient(circle,rgba(122,203,255,0.18),transparent_70%)] blur-3xl" />
+                    <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.1),transparent_36%),radial-gradient(circle_at_center,rgba(248,114,226,0.16),transparent_62%)]" />
+                    <div className="pointer-events-none absolute inset-x-8 -top-16 h-40 bg-[radial-gradient(circle,rgba(122,203,255,0.18),transparent_68%)] blur-2xl" />
 
-                    <motion.div variants={staggerItem} className={"relative z-20 flex size-32 items-center justify-center rounded-2xl bg-white/5 shadow-[0_18px_50px_rgba(0,0,0,0.25)] backdrop-blur-xl"}>
+                    <motion.div variants={staggerItem} className={"relative z-20 flex size-32 items-center justify-center rounded-2xl bg-white/5 shadow-[0_14px_36px_rgba(0,0,0,0.22)] backdrop-blur-md"}>
                         <div className="pointer-events-none absolute inset-0 rounded-2xl bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),transparent_35%)]" />
                         <div className={"relative flex items-center justify-center rounded-2xl ring ring-white/10 bg-linear-to-br from-primary via-primary to-pink/8 px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"}>
                             <Image src={"/code0_logo_white.png"} width={"112"} height={"112"} alt={"Code0 Logo"} className={"z-20"}/>
