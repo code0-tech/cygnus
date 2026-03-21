@@ -1,7 +1,7 @@
 "use client"
 
 import { Badge, Card, Text } from "@code0-tech/pictor"
-import { animate, m as motion, useInView, useReducedMotion } from "motion/react"
+import { animate, m as motion, useInView, useMotionValue, useReducedMotion } from "motion/react"
 import { useEffect, useRef, useState } from "react"
 
 interface RoleItem {
@@ -17,36 +17,51 @@ interface RoleSystemAnimationProps {
 
 export function RoleSystemAnimation({ roles }: RoleSystemAnimationProps) {
     const containerRef = useRef<HTMLDivElement>(null)
-    const marqueeRef = useRef<HTMLDivElement>(null)
     const listRef = useRef<HTMLDivElement>(null)
     const isInView = useInView(containerRef, { amount: 0.2 })
     const prefersReducedMotion = useReducedMotion()
     const [loopDistance, setLoopDistance] = useState(0)
+    const y = useMotionValue(0)
     const groupGap = 16
 
     useEffect(() => {
         const listElement = listRef.current
         if (!listElement) return
 
+        let frame = 0
+        let previousDistance = 0
+
         const updateLoopDistance = () => {
-            setLoopDistance(listElement.getBoundingClientRect().height + groupGap)
+            const nextDistance = Math.round(listElement.getBoundingClientRect().height + groupGap)
+            if (nextDistance !== previousDistance) {
+                previousDistance = nextDistance
+                setLoopDistance(nextDistance)
+            }
         }
 
         updateLoopDistance()
 
-        const resizeObserver = new ResizeObserver(updateLoopDistance)
+        const resizeObserver = new ResizeObserver(() => {
+            cancelAnimationFrame(frame)
+            frame = requestAnimationFrame(updateLoopDistance)
+        })
         resizeObserver.observe(listElement)
 
-        return () => resizeObserver.disconnect()
+        return () => {
+            cancelAnimationFrame(frame)
+            resizeObserver.disconnect()
+        }
     }, [roles.length])
 
     useEffect(() => {
-        const marqueeElement = marqueeRef.current
-        if (!marqueeElement || !loopDistance || !isInView || prefersReducedMotion) return
+        if (!loopDistance || !isInView || prefersReducedMotion) {
+            y.set(0)
+            return
+        }
 
         const controls = animate(
-            marqueeElement,
-            { y: [0, -loopDistance] },
+            y,
+            [0, -loopDistance],
             {
                 duration: 20,
                 ease: "linear",
@@ -56,7 +71,7 @@ export function RoleSystemAnimation({ roles }: RoleSystemAnimationProps) {
         )
 
         return () => controls.stop()
-    }, [isInView, loopDistance, prefersReducedMotion])
+    }, [isInView, loopDistance, prefersReducedMotion, y])
 
     if (!roles.length) return null
 
@@ -85,9 +100,8 @@ export function RoleSystemAnimation({ roles }: RoleSystemAnimationProps) {
     return (
         <div ref={containerRef} className="relative flex h-full w-full cursor-default items-start justify-center overflow-hidden">
             <motion.div
-                ref={marqueeRef}
                 className="flex flex-col items-center gap-4 will-change-transform"
-                style={{ y: 0 }}
+                style={{ y }}
             >
                 <div ref={listRef} className="flex flex-col items-center gap-4">
                     {roles.map(renderRoleCard)}

@@ -1,6 +1,6 @@
 import { getFeatureBySlug } from "@/lib/cms"
 import { type AppLocale } from "@/lib/i18n"
-import { SiDiscord, SiGithub, SiNotion, SiSap, SiTelegram } from "@icons-pack/react-simple-icons"
+import { SiCaldotcom, SiCalendly, SiDhl, SiDiscord, SiGithub, SiGitlab, SiGoogleanalytics, SiNotion, SiPaypal, SiSap, SiTelegram, SiX } from "@icons-pack/react-simple-icons"
 import { OrbitingCircles } from "../animations/OrbitingCircles"
 import { FeatureCardText } from "../FeatureCardText"
 import { FeatureCard } from "./FeatureCard"
@@ -29,12 +29,12 @@ export async function ActionListCard({ locale, animationDelay = 0 }: ActionListC
                         <SiGithub />
                         <SiTelegram />
                     </OrbitingCircles>
-                    <OrbitingCircles iconSize={30} radius={110} reverse speed={2}>
-                        <SiDiscord />
-                        <SiSap />
-                        <SiNotion />
-                        <SiGithub />
-                        <SiTelegram />
+                    <OrbitingCircles iconSize={30} radius={110} reverse>
+                        <SiPaypal />
+                        <SiX />
+                        <SiGoogleanalytics />
+                        <SiGitlab />
+                        <SiDhl />
                     </OrbitingCircles>
                 </div>
             </div>

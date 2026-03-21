@@ -24,16 +24,7 @@ const AccordionItemComponent = ({ index, question, answer, isOpen, onToggle }: F
     }
 
     return (
-        <motion.div
-            layout
-            transition={{
-                layout: {
-                    type: "spring",
-                    stiffness: 220,
-                    damping: 28,
-                    mass: 0.95,
-                },
-            }}
+        <div
             className={cn(
                 accordionCardBaseClassName,
                 isOpen && accordionCardOpenClassName
@@ -55,11 +46,11 @@ const AccordionItemComponent = ({ index, question, answer, isOpen, onToggle }: F
             <motion.div
                 initial={false}
                 animate={{
-                    gridTemplateRows: isOpen ? "1fr" : "0fr",
+                    height: isOpen ? "auto" : 0,
                     opacity: isOpen ? 1 : 0,
                 }}
                 transition={{
-                    gridTemplateRows: {
+                    height: {
                         duration: 0.32,
                         ease: [0.22, 1, 0.36, 1],
                     },
@@ -70,7 +61,7 @@ const AccordionItemComponent = ({ index, question, answer, isOpen, onToggle }: F
                     },
                 }}
                 aria-hidden={!isOpen}
-                className="grid overflow-hidden"
+                className="overflow-hidden"
             >
                 <motion.div
                     initial={false}
@@ -83,7 +74,7 @@ const AccordionItemComponent = ({ index, question, answer, isOpen, onToggle }: F
                     </div>
                 </motion.div>
             </motion.div>
-        </motion.div>
+        </div>
     )
 }
 
