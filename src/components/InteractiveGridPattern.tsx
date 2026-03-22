@@ -1,5 +1,6 @@
 "use client"
 
+import { useMediaQuery } from "@/hooks/useMediaQuery"
 import { cn } from "@/lib/utils"
 import React, { useState } from "react"
 
@@ -14,6 +15,7 @@ interface InteractiveGridPatternProps extends React.SVGProps<SVGSVGElement> {
 export function InteractiveGridPattern({width = 40, height = 40, squares = [24, 24], className, squaresClassName, ...props}: InteractiveGridPatternProps) {
     const [horizontal, vertical] = squares
     const [hoveredSquare, setHoveredSquare] = useState<number | null>(null)
+    const supportsHover = useMediaQuery("(hover: hover) and (pointer: fine)")
 
     return (
         <svg
@@ -21,6 +23,7 @@ export function InteractiveGridPattern({width = 40, height = 40, squares = [24, 
             height={height * vertical}
             className={cn(
                 "absolute inset-0 h-full w-full border border-gray-400/30 opacity-40",
+                !supportsHover && "pointer-events-none",
                 className,
             )}
             {...props}
@@ -40,8 +43,8 @@ export function InteractiveGridPattern({width = 40, height = 40, squares = [24, 
                             hoveredSquare === index ? "fill-gray-300/30" : "fill-transparent",
                             squaresClassName,
                         )}
-                        onMouseEnter={() => setHoveredSquare(index)}
-                        onMouseLeave={() => setHoveredSquare(null)}
+                        onMouseEnter={supportsHover ? () => setHoveredSquare(index) : undefined}
+                        onMouseLeave={supportsHover ? () => setHoveredSquare(null) : undefined}
                     />
                 )
             })}
