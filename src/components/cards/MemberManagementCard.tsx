@@ -22,7 +22,7 @@ export async function MemberManagementCard({ locale, animationDelay = 0 }: Membe
                 <ClientMemberCard />
             </div>
             <FeatureCardText content={content} className="relative z-20 mt-auto w-full shrink-0 pt-4" />
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-52 bg-linear-to-t from-primary via-primary/70 to-transparent" />
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-linear-to-t from-primary via-primary/70 to-transparent" />
         </FeatureCard>
     )
 }

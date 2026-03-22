@@ -55,7 +55,7 @@ export async function RoleSystemCard({ locale, animationDelay = 0 }: RoleSystemC
             >
                 <RoleSystemAnimation roles={roles} />
             </div>
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-80 xl:h-32 bg-linear-to-t from-primary to-transparent" />
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-56 bg-linear-to-t from-primary via-primary/70 xl:via-none to-transparent" />
             <FeatureCardText content={content} className="relative z-20 w-full shrink-0 xl:ml-auto xl:w-1/3" />
         </FeatureCard>
     )

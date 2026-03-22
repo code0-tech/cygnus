@@ -7,6 +7,7 @@ export function ProjectDataTable() {
         { name: "OpsCanvas" },
         { name: "FlowForge" },
         { name: "SignalStack" },
+        { name: "WhiteCloud" },
     ]
 
     return (

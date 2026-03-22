@@ -42,6 +42,10 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
         duration: 0.34,
         ease: [0.22, 1, 0.36, 1] as const,
     }
+    const menuTransition = {
+        duration: 0.24,
+        ease: [0.22, 1, 0.36, 1] as const,
+    }
     const isShellExpanded = isOpen || isMenuClosing
 
     useLayoutEffect(() => {
@@ -70,7 +74,7 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
             setIsMenuClosing(false)
         } else if (wasOpenRef.current) {
             setIsMenuClosing(true)
-            timeoutId = setTimeout(() => setIsMenuClosing(false), 260)
+            timeoutId = setTimeout(() => setIsMenuClosing(false), 320)
         }
 
         wasOpenRef.current = isOpen
@@ -165,13 +169,12 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
                         {isOpen && (
                             <motion.div
                                 key="mobile-menu"
-                                initial={{ opacity: isScrolled ? 1 : 0, y: -8, height: 0 }}
+                                initial={{ opacity: 0, y: -6, height: 0 }}
                                 animate={{ opacity: 1, y: 0, height: menuHeight }}
-                                exit={{ opacity: isScrolled ? 1 : 0, y: -8, height: 0 }}
+                                exit={{ opacity: 0, y: -6, height: 0 }}
                                 transition={{
-                                    duration: 0.26,
-                                    ease: [0.22, 1, 0.36, 1],
-                                    delay: isScrolled ? 0.12 : 0,
+                                    ...menuTransition,
+                                    delay: isScrolled ? 0.08 : 0,
                                 }}
                                 style={{ overflow: "hidden" }}
                                 className="flex flex-col gap-2 px-2"
@@ -185,10 +188,10 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
                                         return (
                                             <div key={item.title} className="flex flex-col">
                                                 <motion.div
-                                                    initial={{ y: -8, opacity: isScrolled ? 1 : 0 }}
+                                                    initial={{ y: -6, opacity: 0 }}
                                                     animate={{ y: 0, opacity: 1 }}
-                                                    exit={{ y: -8, opacity: isScrolled ? 1 : 0 }}
-                                                    transition={{ duration: 0.25, delay: 0.06 * i }}
+                                                    exit={{ y: -6, opacity: 0 }}
+                                                    transition={{ duration: 0.22, delay: 0.05 * i }}
                                                 >
                                                     {isAccordion ? (
                                                         <button
@@ -233,35 +236,74 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
                                                         {isOpenAcc && (
                                                             <motion.div
                                                                 key={`${item.title}-submenu`}
-                                                                initial={{ opacity: 0, y: -6 }}
-                                                                animate={{ opacity: 1, y: 0 }}
-                                                                exit={{ opacity: 0, y: -6 }}
-                                                                transition={{ duration: 0.18, ease: "easeOut" }}
+                                                                initial={{ height: 0, opacity: 0 }}
+                                                                animate={{ height: "auto", opacity: 1 }}
+                                                                exit={{ height: 0, opacity: 0 }}
+                                                                transition={{
+                                                                    height: {
+                                                                        duration: 0.24,
+                                                                        ease: [0.22, 1, 0.36, 1],
+                                                                    },
+                                                                    opacity: {
+                                                                        duration: 0.16,
+                                                                        ease: "easeOut",
+                                                                    },
+                                                                }}
                                                                 className="overflow-hidden"
                                                             >
-                                                                <div className="mt-1 flex flex-col gap-1 rounded-lg">
+                                                                <motion.div
+                                                                    className="mt-1 flex flex-col gap-1 rounded-lg"
+                                                                    initial="closed"
+                                                                    animate="open"
+                                                                    exit="closed"
+                                                                    variants={{
+                                                                        open: {
+                                                                            transition: {
+                                                                                staggerChildren: 0.035,
+                                                                                delayChildren: 0.03,
+                                                                            },
+                                                                        },
+                                                                        closed: {
+                                                                            transition: {
+                                                                                staggerChildren: 0.025,
+                                                                                staggerDirection: -1,
+                                                                            },
+                                                                        },
+                                                                    }}
+                                                                >
                                                                     {item.subMenu!.map((sub) => (
-                                                                        <Link
+                                                                        <motion.div
                                                                             key={sub.title}
-                                                                            href={sub.href}
-                                                                            className="group flex items-center gap-2 p-2 rounded-xl text-left hover:bg-white/10"
-                                                                            onClick={() => {
-                                                                                trigger("medium")
-                                                                                setIsOpen(false)
-                                                                                setMobileOpenKey(null)
+                                                                            variants={{
+                                                                                open: { opacity: 1, y: 0 },
+                                                                                closed: { opacity: 0, y: -4 },
+                                                                            }}
+                                                                            transition={{
+                                                                                duration: 0.18,
+                                                                                ease: [0.22, 1, 0.36, 1],
                                                                             }}
                                                                         >
-                                                                            <div
-                                                                                className="p-1 rounded-lg border border-dashed border-white/20 text-gray-400 group-hover:text-white group-hover:border-white/60">
-                                                                                {sub.icon}
-                                                                            </div>
-                                                                            <div className="flex flex-col">
-                                                                                <span className="text-white font-medium">{sub.title}</span>
-                                                                                <span className="text-white/75 text-sm">{sub.description}</span>
-                                                                            </div>
-                                                                        </Link>
+                                                                            <Link
+                                                                                href={sub.href}
+                                                                                className="group flex items-center gap-2 p-2 rounded-xl text-left hover:bg-white/10"
+                                                                                onClick={() => {
+                                                                                    trigger("medium")
+                                                                                    setIsOpen(false)
+                                                                                    setMobileOpenKey(null)
+                                                                                }}
+                                                                            >
+                                                                                <div
+                                                                                    className="p-1 rounded-lg border border-dashed border-white/20 text-gray-400 group-hover:text-white group-hover:border-white/60">
+                                                                                    {sub.icon}
+                                                                                </div>
+                                                                                <div className="flex flex-col">
+                                                                                    <span className="text-white font-medium">{sub.title}</span>
+                                                                                    <span className="text-white/75 text-sm">{sub.description}</span>
+                                                                                </div>
+                                                                            </Link>
+                                                                        </motion.div>
                                                                     ))}
-                                                                </div>
+                                                                </motion.div>
                                                             </motion.div>
                                                         )}
                                                     </AnimatePresence>
@@ -272,10 +314,10 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
                                     <div className="mt-4 w-full flex flex-col items-center gap-2">
                                         <motion.div
                                             key={"Github"}
-                                            initial={{ y: -8, opacity: isScrolled ? 1 : 0 }}
+                                            initial={{ y: -6, opacity: 0 }}
                                             animate={{ y: 0, opacity: 1 }}
-                                            exit={{ y: -8, opacity: isScrolled ? 1 : 0 }}
-                                            transition={{ duration: 0.25, delay: 0.06 * navbarItems.length }}
+                                            exit={{ y: -6, opacity: 0 }}
+                                            transition={{ duration: 0.22, delay: 0.05 * navbarItems.length }}
                                             className="flex-1 w-full"
                                         >
                                             <Link
@@ -298,10 +340,10 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
                                         </motion.div>
                                         <motion.div
                                             key={"Discord"}
-                                            initial={{ y: -8, opacity: isScrolled ? 1 : 0 }}
+                                            initial={{ y: -6, opacity: 0 }}
                                             animate={{ y: 0, opacity: 1 }}
-                                            exit={{ y: -8, opacity: isScrolled ? 1 : 0 }}
-                                            transition={{ duration: 0.25, delay: 0.06 * (navbarItems.length + 1) }}
+                                            exit={{ y: -6, opacity: 0 }}
+                                            transition={{ duration: 0.22, delay: 0.05 * (navbarItems.length + 1) }}
                                             className="flex-1 w-full"
                                         >
                                             <Link

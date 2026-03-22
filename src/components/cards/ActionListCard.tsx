@@ -1,6 +1,6 @@
 import { getFeatureBySlug } from "@/lib/cms"
 import { type AppLocale } from "@/lib/i18n"
-import { SiCaldotcom, SiCalendly, SiDhl, SiDiscord, SiGithub, SiGitlab, SiGoogleanalytics, SiNotion, SiPaypal, SiSap, SiTelegram, SiX } from "@icons-pack/react-simple-icons"
+import { SiDhl, SiDiscord, SiGithub, SiGitlab, SiGoogleanalytics, SiNotion, SiPaypal, SiSap, SiTelegram, SiX } from "@icons-pack/react-simple-icons"
 import { OrbitingCircles } from "../animations/OrbitingCircles"
 import { FeatureCardText } from "../FeatureCardText"
 import { FeatureCard } from "./FeatureCard"
@@ -39,8 +39,7 @@ export async function ActionListCard({ locale, animationDelay = 0 }: ActionListC
                 </div>
             </div>
             <FeatureCardText content={content} className="relative z-20" />
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-72 bg-primary/18 backdrop-blur-2xl mask-[linear-gradient(to_top,black_0%,black_50%,transparent_100%)]" />
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-56 bg-linear-to-t from-primary via-primary/70 to-transparent" />
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-60 bg-primary/18 backdrop-blur-2xl mask-[linear-gradient(to_top,black_0%,black_50%,transparent_100%)]" />
         </FeatureCard>
     )
 }

@@ -24,7 +24,7 @@ export async function OrganizationCard({ locale, animationDelay = 0 }: Organizat
             </div>
 
             <FeatureCardText content={content} className="relative z-20 mt-auto w-full shrink-0 pt-4" />
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-72 bg-linear-to-t from-primary via-primary/70 to-transparent" />
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-56 bg-linear-to-t from-primary via-primary/70 to-transparent" />
         </FeatureCard>
     )
 }

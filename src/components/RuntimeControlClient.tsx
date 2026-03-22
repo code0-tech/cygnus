@@ -29,7 +29,7 @@ export function RuntimeControlClient() {
             <div className={cn("pointer-events-none absolute h-40 w-[58%] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[105px] transition-[top,left,background-color] duration-500", runtimeStyles[runtimeType])}/>
             <div className={cn("pointer-events-none absolute h-40 w-[58%] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[105px] transition-[top,left,background-color] duration-500", executionStyles[executionType])}/>
             <div className="relative z-10 px-2 py-3">
-                <div className="h-full flex flex-col items-center justify-center gap-4">
+                <div className="h-full flex flex-col items-center justify-center gap-2 sm:gap-4">
                     <SegmentedControl
                         type="single"
                         value={runtimeType}
