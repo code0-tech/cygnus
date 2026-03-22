@@ -63,9 +63,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ content }) => {
     return (
         <Section showBlur={false} showFunnel={false}>
 
-            <div className="relative h-[min(85dvh,918px)] overflow-hidden rounded-4xl border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] shadow-[0_24px_80px_rgba(0,0,0,0.34)] before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-linear-to-r before:from-transparent before:via-white/30 before:to-transparent before:content-['']">
+            <div className="relative isolate h-[min(85dvh,918px)] overflow-hidden rounded-4xl border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] shadow-[0_24px_80px_rgba(0,0,0,0.34)] before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-linear-to-r before:from-transparent before:via-white/30 before:to-transparent before:content-['']">
 
-                <div className="pointer-events-none absolute inset-0 -z-10 bg-[#0f0c1f]">
+                <div className="pointer-events-none absolute inset-0 z-0 bg-[#0f0c1f]">
                     <Grainient
                         color1="#13102d"
                         color2="#72f896"
@@ -93,10 +93,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ content }) => {
                     />
                 </div>
 
-                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.08),transparent_36%),linear-gradient(180deg,rgba(255,255,255,0.02),transparent_32%)]" />
+                <div className="pointer-events-none absolute inset-0 z-10 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.08),transparent_36%),linear-gradient(180deg,rgba(255,255,255,0.02),transparent_32%)]" />
 
                 <motion.div
-                    className={"relative z-10 flex h-full flex-col items-center justify-between gap-12 rounded-[calc(1.9rem-1px)] px-8 py-12 lg:flex-row lg:px-16 lg:py-24"}
+                    className={"relative z-20 flex h-full flex-col items-center justify-between gap-12 rounded-[calc(1.9rem-1px)] px-8 py-12 lg:flex-row lg:px-16 lg:py-24"}
                     variants={staggerContainer}
                     initial="hidden"
                     whileInView="show"

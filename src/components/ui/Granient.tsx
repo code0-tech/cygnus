@@ -343,7 +343,18 @@ const Grainient: React.FC<GrainientProps> = ({
     prefersReducedMotion
   ]);
 
-  return <div ref={containerRef} className={`relative h-full w-full overflow-hidden ${className}`.trim()} />;
+  return (
+    <div
+      ref={containerRef}
+      className={`relative h-full w-full overflow-hidden ${className}`.trim()}
+      style={{
+        transform: 'translateZ(0)',
+        WebkitTransform: 'translateZ(0)',
+        backfaceVisibility: 'hidden',
+        WebkitBackfaceVisibility: 'hidden',
+      }}
+    />
+  );
 };
 
 export default Grainient;

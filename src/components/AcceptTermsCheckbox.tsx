@@ -5,6 +5,7 @@ import { CheckboxInput } from "@code0-tech/pictor"
 import type { CheckboxInputProps } from "@code0-tech/pictor/dist/components/form/CheckboxInput"
 import Link from "next/link"
 import type { ReactNode } from "react"
+import { useWebHaptics } from "web-haptics/react"
 
 interface AcceptTermsCheckboxProps extends Omit<CheckboxInputProps, "label"> {
     locale?: AppLocale
@@ -26,6 +27,7 @@ const copy: Record<AppLocale, { labelStart: string, termsLabel: string, privacyL
 }
 
 export function AcceptTermsCheckbox({ locale = DEFAULT_LOCALE, className, ...checkboxProps }: AcceptTermsCheckboxProps) {
+    const { trigger } = useWebHaptics()
     const labels = copy[locale]
     const termsHref = localizeHref("/terms", locale)
     const privacyHref = localizeHref("/privacy", locale)
@@ -39,6 +41,7 @@ export function AcceptTermsCheckbox({ locale = DEFAULT_LOCALE, className, ...che
                 href={termsHref}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => trigger("medium")}
                 className="font-medium text-white border-b-0 border-dashed border-brand hover:text-brand hover:border-b transition-all"
             >
                 {labels.termsLabel}
@@ -48,6 +51,7 @@ export function AcceptTermsCheckbox({ locale = DEFAULT_LOCALE, className, ...che
                 href={privacyHref}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => trigger("medium")}
                 className="font-medium text-white border-b-0 border-dashed border-brand hover:text-brand hover:border-b transition-all"
             >
                 {labels.privacyLabel}

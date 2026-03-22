@@ -50,13 +50,13 @@ export const BrandSection: React.FC<BrandSectionProps> = ({ content }) => {
     return (
         <Section showBlur={false} showFunnel={false} animationPreset="slide-right">
             <motion.div
-                className="w-full flex gap-8 px-8 md:px-16 pb-16 items-center justify-center"
+                className="w-full flex flex-col gap-8 px-8 pb-16 items-center justify-center md:px-16 lg:flex-row"
                 variants={staggerContainer}
                 initial="hidden"
                 whileInView="show"
                 viewport={{ once: true, amount: 0.3 }}
             >
-                <motion.p variants={staggerItem} className={"hidden lg:flex text-md text-white/75"}>
+                <motion.p variants={staggerItem} className={"text-center text-md text-white/75 lg:flex lg:text-left"}>
                     {content.description}
                 </motion.p>
                 <motion.div variants={staggerContainer} className={"w-full grid grid-cols-2 md:grid-cols-4 gap-16 text-white/75 text-center"}>

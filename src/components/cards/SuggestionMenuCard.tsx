@@ -25,7 +25,7 @@ export async function SuggestionMenuCard({ locale, animationDelay = 0 }: Suggest
                 </div>
             </div>
             <FeatureCardText content={content} className="relative z-40 mt-auto w-full shrink-0 pt-4" />
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 h-160 bg-linear-to-t from-primary via-primary/75 to-transparent" />
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 h-88 sm:h-112 lg:h-140 xl:h-160 bg-linear-to-t from-primary via-primary/75 to-transparent" />
         </FeatureCard>
     )
 }

@@ -8,7 +8,7 @@ import { IconChevronUp, IconMenu2, IconX } from "@tabler/icons-react"
 import { AnimatePresence, m as motion } from "motion/react"
 import Image from "next/image"
 import Link from "next/link"
-import React, { useLayoutEffect, useRef, useState } from "react"
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react"
 import { useWebHaptics } from "web-haptics/react"
 import { fadeInUp, NavItem } from "./Navigation"
 
@@ -35,7 +35,14 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
 }) => {
     const { trigger } = useWebHaptics()
     const menuContentRef = useRef<HTMLDivElement>(null)
+    const wasOpenRef = useRef(false)
     const [menuHeight, setMenuHeight] = useState(0)
+    const [isMenuClosing, setIsMenuClosing] = useState(false)
+    const shellTransition = {
+        duration: 0.34,
+        ease: [0.22, 1, 0.36, 1] as const,
+    }
+    const isShellExpanded = isOpen || isMenuClosing
 
     useLayoutEffect(() => {
         const element = menuContentRef.current
@@ -56,6 +63,25 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
         return () => resizeObserver.disconnect()
     }, [isOpen, mobileOpenKey, navbarItems])
 
+    useEffect(() => {
+        let timeoutId: ReturnType<typeof setTimeout> | undefined
+
+        if (isOpen) {
+            setIsMenuClosing(false)
+        } else if (wasOpenRef.current) {
+            setIsMenuClosing(true)
+            timeoutId = setTimeout(() => setIsMenuClosing(false), 260)
+        }
+
+        wasOpenRef.current = isOpen
+
+        return () => {
+            if (timeoutId) {
+                clearTimeout(timeoutId)
+            }
+        }
+    }, [isOpen])
+
     return (
         <header
             className="fixed z-50 w-full overflow-hidden pt-3"
@@ -66,48 +92,47 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
                     <motion.div
                         className={cn(
                             "pointer-events-none absolute inset-0 rounded-2xl shadow-sm",
-                            (isScrolled || isOpen) ? "bg-primary/20 backdrop-blur-xl" : "bg-transparent shadow-none",
+                            (isScrolled || isShellExpanded) ? "bg-primary/20 backdrop-blur-xl" : "bg-transparent shadow-none",
                         )}
                         initial={false}
                         animate={{
-                            clipPath: isScrolled && !isOpen
+                            clipPath: isScrolled && !isShellExpanded
                                 ? "inset(0% 10% 0% 10% round 1rem)"
                                 : "inset(0% 0% 0% 0% round 1rem)",
                         }}
-                        transition={{
-                            type: "spring",
-                            stiffness: 40,
-                            damping: 10,
-                        }}
+                        transition={shellTransition}
                     />
                     <motion.div
                         className="pointer-events-none absolute inset-0 z-10 rounded-2xl border border-white/5"
                         initial={false}
                         animate={{
-                            left: isScrolled && !isOpen ? "10%" : "0%",
-                            right: isScrolled && !isOpen ? "10%" : "0%",
-                            opacity: isScrolled || isOpen ? 1 : 0,
+                            left: isScrolled && !isShellExpanded ? "10%" : "0%",
+                            right: isScrolled && !isShellExpanded ? "10%" : "0%",
+                            opacity: isScrolled || isShellExpanded ? 1 : 0,
                         }}
-                        transition={{
-                            type: "spring",
-                            stiffness: 40,
-                            damping: 10,
-                        }}
+                        transition={shellTransition}
                     />
                     <motion.div
                         className="relative z-10 flex flex-col overflow-hidden rounded-2xl p-1.5"
                         initial={false}
-                        animate={{
-                            paddingLeft: isOpen ? "0.5rem" : isScrolled ? "10%" : "0%",
-                            paddingRight: isOpen ? "0.5rem" : isScrolled ? "calc(10% + 0.5rem)" : "0%",
-                        }}
-                        transition={{
-                            type: "spring",
-                            stiffness: 40,
-                            damping: 10,
-                        }}
                     >
-                    <div className={"w-full flex items-center justify-between gap-2"}>
+                    <motion.div
+                        className={"w-full flex items-center justify-between gap-2"}
+                        initial={false}
+                        animate={{
+                            paddingLeft: isOpen
+                                ? "calc(0% + 0.5rem)"
+                                : isScrolled
+                                  ? "calc(10% + 0rem)"
+                                  : "calc(0% + 0rem)",
+                            paddingRight: isOpen
+                                ? "calc(0% + 0.5rem)"
+                                : isScrolled
+                                  ? "calc(10% + 0.5rem)"
+                                  : "calc(0% + 0rem)",
+                        }}
+                        transition={shellTransition}
+                    >
                             <Link
                                 href={homeHref}
                                 onClick={() => {
@@ -135,7 +160,7 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
                         >
                             {isOpen ? <IconX className="text-white/75"/> : <IconMenu2 className="text-white/75"/>}
                         </motion.button>
-                    </div>
+                    </motion.div>
                     <AnimatePresence initial={false}>
                         {isOpen && (
                             <motion.div
@@ -143,9 +168,13 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
                                 initial={{ opacity: isScrolled ? 1 : 0, y: -8, height: 0 }}
                                 animate={{ opacity: 1, y: 0, height: menuHeight }}
                                 exit={{ opacity: isScrolled ? 1 : 0, y: -8, height: 0 }}
-                                transition={{ duration: 0.2, ease: "easeOut" }}
+                                transition={{
+                                    duration: 0.26,
+                                    ease: [0.22, 1, 0.36, 1],
+                                    delay: isScrolled ? 0.12 : 0,
+                                }}
                                 style={{ overflow: "hidden" }}
-                                className="flex flex-col gap-2"
+                                className="flex flex-col gap-2 px-2"
                             >
                                 <div ref={menuContentRef}>
                                     {navbarItems.map((item, i) => {

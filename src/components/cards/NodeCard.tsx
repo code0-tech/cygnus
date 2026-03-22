@@ -19,9 +19,9 @@ export async function NodeCard({ locale, animationDelay = 0 }: NodeTabsCardProps
             tone="pink"
             animationDelay={animationDelay}
         >
-            <div className="relative z-0 flex min-h-0 w-full flex-1 items-start justify-center">
+            <div className="pointer-events-none absolute inset-x-0 top-5 z-0 flex items-start justify-center overflow-hidden md:top-6">
                 <div
-                    className="-mx-5 -mt-1 w-[calc(100%+2.5rem)] md:-mx-6 md:mt-0 md:w-[calc(100%+3rem)]"
+                    className="-mx-5 w-[calc(100%+2.5rem)] md:-mx-6 md:w-[calc(100%+3rem)]"
                     style={{
                         maskImage: "linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)",
                         WebkitMaskImage: "linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)",
@@ -30,7 +30,8 @@ export async function NodeCard({ locale, animationDelay = 0 }: NodeTabsCardProps
                     <NodesAnimation />
                 </div>
             </div>
-            <FeatureCardText content={content} className="relative z-20 mt-auto w-full shrink-0 pt-4" />
+            <div className="relative z-10 flex min-h-0 w-full flex-1" />
+            <FeatureCardText content={content} className="relative z-20 mt-auto w-full shrink-0 pt-5" />
             <div className="pointer-events-none absolute inset-x-0 bottom-0 h-60 bg-linear-to-t from-primary via-primary/70 to-transparent" />
         </FeatureCard>
     )

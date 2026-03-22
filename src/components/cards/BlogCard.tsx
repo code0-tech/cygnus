@@ -34,7 +34,7 @@ export function BlogCard({ locale, post }: { locale: string, post: BlogPostItem 
 
                 <div className="relative z-10 flex items-start gap-4">
                     {heroImage?.url ? (
-                        <div className="relative h-32 aspect-video shrink-0 overflow-hidden rounded-2xl border border-white/8 bg-primary/40">
+                        <div className="relative h-32 aspect-square lg:aspect-video shrink-0 overflow-hidden rounded-2xl border border-white/8 bg-primary/40">
                             <Image
                                 src={heroImage.url}
                                 alt={heroImage.alt ?? post.title}
@@ -43,7 +43,7 @@ export function BlogCard({ locale, post }: { locale: string, post: BlogPostItem 
                             />
                         </div>
                     ) : (
-                        <div className="h-32 aspect-video shrink-0 rounded-2xl border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] flex items-center justify-center text-xs text-white/50 text-center px-2">
+                        <div className="h-32 aspect-square lg:aspect-video shrink-0 rounded-2xl border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] flex items-center justify-center text-xs text-white/50 text-center px-2">
                             {locale === "de" ? "Kein Bild" : "No image"}
                         </div>
                     )}

@@ -20,8 +20,8 @@ type ExecutionType = keyof typeof executionStyles
 export function RuntimeControlClient() {
     const [runtimeType, setRuntimeType] = useState<RuntimeType>("static")
     const [executionType, setExecutionType] = useState<ExecutionType>("compiled")
-    const controlClassName = "w-max! h-12! md:h-10! xl:h-12! ring-2! ring-white/2! shadow-md!"
-    const textClassName = "text-inherit! text-xl! md:text-base! xl:text-xl!"
+    const controlClassName = "w-max! h-10! sm:h-12! md:h-10! xl:h-12! ring-2! ring-white/2! shadow-md!"
+    const textClassName = "text-inherit! text-base! sm:text-xl! md:text-base! xl:text-xl!"
 
     return (
         <>

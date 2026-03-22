@@ -62,9 +62,9 @@ export const CtaSection: React.FC<CtaSectionProps> = ({ content }) => {
 
                     <InteractiveGridPattern
                         className={cn("opacity-45 mask-[radial-gradient(600px_circle_at_center,white,transparent)]")}
-                        width={42}
-                        height={48}
-                        squares={[50, 10]}
+                        width={40}
+                        height={40}
+                        squares={[30, 15]}
                     />
                     <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.1),transparent_36%),radial-gradient(circle_at_center,rgba(248,114,226,0.16),transparent_62%)]" />
                     <div className="pointer-events-none absolute inset-x-8 -top-16 h-40 bg-[radial-gradient(circle,rgba(122,203,255,0.18),transparent_68%)] blur-2xl" />
