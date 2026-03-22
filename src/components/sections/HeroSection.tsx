@@ -96,13 +96,12 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ content }) => {
                 <div className="pointer-events-none absolute inset-0 z-10 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.08),transparent_36%),linear-gradient(180deg,rgba(255,255,255,0.02),transparent_32%)]" />
 
                 <motion.div
-                    className={"relative z-20 flex h-full flex-col items-center justify-between gap-12 rounded-[calc(1.9rem-1px)] px-8 py-12 lg:flex-row lg:px-16 lg:py-24"}
+                    className={"relative z-20 flex h-full flex-col items-center justify-between gap-8 rounded-[calc(1.9rem-1px)] p-8 lg:flex-row lg:p-16"}
                     variants={staggerContainer}
                     initial="hidden"
                     whileInView="show"
                     viewport={{ once: true, amount: 0.25 }}
                 >
-
                     <div className="w-full lg:w-2/5 flex flex-col gap-4 text-start">
                         <motion.div variants={staggerItem}>
                             <Link href={content.badge_link ?? ""}>
@@ -117,7 +116,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ content }) => {
                             {content.heading}
                         </motion.h1>
 
-                        <motion.p variants={staggerItem} className="relative z-10 font-medium text-white/75 text-lg lg:text-xl text-balance">
+                        <motion.p variants={staggerItem} className="relative z-10 font-medium text-white/75 text-base lg:text-xl text-pretty">
                             {content.texts.length > 0
                                 ? content.texts.map((item, index) => (
                                     <React.Fragment key={`${item.id ?? item.text}-${index}`}>
@@ -128,7 +127,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ content }) => {
                                 : <>Beschreibung1 <br /> Beschreibung2</>}
                         </motion.p>
 
-                        <motion.div variants={staggerItem} className={"flex flex-col gap-4 mt-4"}>
+                        <motion.div variants={staggerItem} className={"flex flex-col gap-2 sm:gap-4 mt-4"}>
                             {content.buttons.map((button, index) => (
                                 <Link href={button.url} key={`${button.label}-${button.id ?? index}`} className="w-full sm:w-auto">
                                     <Button

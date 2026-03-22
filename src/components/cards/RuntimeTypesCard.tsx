@@ -15,7 +15,7 @@ export async function RuntimeTypesCard({ locale, animationDelay = 0 }: RuntimeTy
     return (
         <FeatureCard
             className="col-span-1 row-span-4"
-            contentClassName="h-full items-stretch justify-between"
+            contentClassName="h-full items-stretch justify-between gap-2"
             tone="brand"
             animationDelay={animationDelay}
         >

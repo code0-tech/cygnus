@@ -43,9 +43,13 @@ export function SuggesstionMenuClient() {
                     suppressHydrationWarning
                 >
                     <IconVariable size={12}/>
-                    <Badge color="secondary" border className="border-pink! bg-[#1c0b29]!">
+                    <Badge color="secondary" border className="min-w-0! max-w-full! border-pink! bg-[#1c0b29]!">
                         <IconNote size={12} color="#f872e2" />
-                        <Text size="sm" style={{ color: "#f872e2" }}>
+                        <Text
+                            size="sm"
+                            className="min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap"
+                            style={{ color: "#f872e2" }}
+                        >
                             {label}
                         </Text>
                     </Badge>

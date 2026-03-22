@@ -14,7 +14,7 @@ export async function NodeCard({ locale, animationDelay = 0 }: NodeTabsCardProps
 
     return (
         <FeatureCard
-            className="col-span-1 md:col-span-2 row-span-3"
+            className="col-span-1 md:col-span-2 row-span-4 md:row-span-3"
             contentClassName="h-full items-stretch"
             tone="pink"
             animationDelay={animationDelay}
