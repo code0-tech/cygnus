@@ -54,7 +54,7 @@ export const CtaSection: React.FC<CtaSectionProps> = ({ content }) => {
     return (
         <Section showBlur={false} showFunnel={false} animationPreset="fade-in">
             <motion.div
-                className={"relative w-full overflow-hidden rounded-[1.8rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] shadow-[0_20px_70px_rgba(0,0,0,0.3)] before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-linear-to-r before:from-transparent before:via-white/30 before:to-transparent before:content-['']"}
+                className={"relative w-full overflow-hidden rounded-[1.8rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] shadow-lg before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-linear-to-r before:from-transparent before:via-white/30 before:to-transparent before:content-['']"}
                 variants={staggerContainer}
                 initial="hidden"
                 whileInView="show"
@@ -63,21 +63,19 @@ export const CtaSection: React.FC<CtaSectionProps> = ({ content }) => {
                 <div className={"relative flex w-full flex-col items-center justify-center gap-4 overflow-hidden rounded-4xl px-6 py-12 sm:px-10"}>
 
                     <InteractiveGridPattern
-                        className={cn(
-                            "opacity-45 mask-[radial-gradient(600px_circle_at_center,white,transparent)]",
-                            isTouchDevice && "opacity-30",
-                        )}
+                        className="mask-[radial-gradient(600px_circle_at_center,white,transparent)]"
                         width={40}
                         height={40}
-                        squares={[30, 15]}
+                        squares={[35, 15]}
                     />
-                    <div className={cn(
-                        "pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.1),transparent_36%),radial-gradient(circle_at_center,rgba(248,114,226,0.16),transparent_62%)]",
-                        isTouchDevice && "opacity-70",
-                    )} />
+                    <div
+                        className={cn(
+                            "pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.1),transparent_36%),radial-gradient(circle_at_center,rgba(248,114,226,0.16),transparent_62%)]",
+                            isTouchDevice && "opacity-70",
+                        )}
+                    />
 
                     <motion.div variants={staggerItem} className={"relative z-20 flex size-32 items-center justify-center rounded-2xl bg-white/5 shadow-[0_14px_36px_rgba(0,0,0,0.22)]"}>
-                        <div className="pointer-events-none absolute inset-0 rounded-2xl bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),transparent_35%)]" />
                         <div className={"relative isolate flex items-center justify-center rounded-2xl ring ring-white/10 px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"}>
                             <div className="pointer-events-none absolute inset-0 rounded-2xl bg-linear-to-br from-primary via-primary to-[#2a1638]" />
                             <Image src={"/code0_logo_white.png"} width={"120"} height={"120"} alt={"Code0 Logo"} className={"z-20"}/>

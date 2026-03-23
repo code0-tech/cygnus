@@ -8,7 +8,7 @@ import { IconChevronUp, IconMenu2, IconX } from "@tabler/icons-react"
 import { AnimatePresence, m as motion } from "motion/react"
 import Image from "next/image"
 import Link from "next/link"
-import React, { useEffect, useLayoutEffect, useRef, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { useWebHaptics } from "web-haptics/react"
 import { fadeInUp, NavItem } from "./Navigation"
 
@@ -34,9 +34,7 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
     homeHref,
 }) => {
     const { trigger } = useWebHaptics()
-    const menuContentRef = useRef<HTMLDivElement>(null)
     const wasOpenRef = useRef(false)
-    const [menuHeight, setMenuHeight] = useState(0)
     const [isMenuClosing, setIsMenuClosing] = useState(false)
     const shellTransition = {
         duration: 0.34,
@@ -47,25 +45,6 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
         ease: [0.22, 1, 0.36, 1] as const,
     }
     const isShellExpanded = isOpen || isMenuClosing
-
-    useLayoutEffect(() => {
-        const element = menuContentRef.current
-        if (!element) {
-            setMenuHeight(0)
-            return
-        }
-
-        const measure = () => {
-            setMenuHeight(element.scrollHeight)
-        }
-
-        measure()
-
-        const resizeObserver = new ResizeObserver(measure)
-        resizeObserver.observe(element)
-
-        return () => resizeObserver.disconnect()
-    }, [isOpen, mobileOpenKey, navbarItems])
 
     useEffect(() => {
         let timeoutId: ReturnType<typeof setTimeout> | undefined
@@ -169,8 +148,9 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
                         {isOpen && (
                             <motion.div
                                 key="mobile-menu"
+                                layout
                                 initial={{ opacity: 0, y: -6, height: 0 }}
-                                animate={{ opacity: 1, y: 0, height: menuHeight }}
+                                animate={{ opacity: 1, y: 0, height: "auto" }}
                                 exit={{ opacity: 0, y: -6, height: 0 }}
                                 transition={{
                                     ...menuTransition,
@@ -179,7 +159,7 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
                                 style={{ overflow: "hidden" }}
                                 className="flex flex-col gap-2 px-2"
                             >
-                                <div ref={menuContentRef}>
+                                <div>
                                     {navbarItems.map((item, i) => {
                                         const isAccordion = !!item.subMenu?.length
                                         const isOpenAcc = mobileOpenKey === item.title
@@ -236,6 +216,7 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
                                                         {isOpenAcc && (
                                                             <motion.div
                                                                 key={`${item.title}-submenu`}
+                                                                layout
                                                                 initial={{ height: 0, opacity: 0 }}
                                                                 animate={{ height: "auto", opacity: 1 }}
                                                                 exit={{ height: 0, opacity: 0 }}
@@ -311,7 +292,7 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
                                             </div>
                                         )
                                     })}
-                                    <div className="mt-4 w-full flex flex-col items-center gap-2">
+                                    <div className="mt-4 w-full flex flex-col items-center gap-2 pb-2">
                                         <motion.div
                                             key={"Github"}
                                             initial={{ y: -6, opacity: 0 }}
