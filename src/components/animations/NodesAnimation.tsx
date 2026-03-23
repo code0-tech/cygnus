@@ -1,12 +1,10 @@
 "use client"
 
 import { Card, Flex, Text } from "@code0-tech/pictor"
-import { IconNote } from "@tabler/icons-react"
+import { IconNote, IconVariable } from "@tabler/icons-react"
 import { useInView, useReducedMotion } from "motion/react"
 import { useEffect, useRef, useState } from "react"
-import { LiteralBadge } from "../badges/LiteralBadge"
-import { ReferenceBadge } from "../badges/ReferenceBadge"
-import { NodeBadge } from "../badges/NodeBadge"
+import { StableBadge } from "../ui/StableBadge"
 
 type NodeSegmentType = "text" | "literal" | "reference" | "node"
 type NodeAccent = "brand" | "yellow" | "aqua" | "blue" | "pink"
@@ -47,11 +45,42 @@ function NodeRow({
         return segments.map((segment, index) => {
             switch (segment.type) {
                 case "literal":
-                    return <LiteralBadge key={`${segment.type}-${index}`} value={segment.value} />
+                    return (
+                        <StableBadge
+                            style={{ verticalAlign: "middle" }}
+                            color={"secondary"}
+                        >
+                            <Text size={"sm"}>
+                                {segment.value}
+                            </Text>
+                        </StableBadge>
+                    )
                 case "reference":
-                    return <ReferenceBadge key={`${segment.type}-${index}`} value={segment.value} />
+                    return (
+                        <StableBadge
+                            style={{ verticalAlign: "middle" }}
+                            color={"warning"}
+                            border
+                            className="py-0"
+                        >
+                            <IconVariable size={12}/>
+                            <Text size={"sm"} style={{color: "inherit"}}>
+                                {segment.value}
+                            </Text>
+                        </StableBadge>
+                    )
                 case "node":
-                    return <NodeBadge key={`${segment.type}-${index}`} value={segment.value} />
+                    return (
+                        <StableBadge
+                            style={{ verticalAlign: "middle", textWrap: "nowrap" }}
+                            border
+                        >
+                            <IconNote size={12}/>
+                            <Text size={"sm"} style={{color: "inherit"}}>
+                                {segment.value}
+                            </Text>
+                        </StableBadge>
+                    )
                 case "text":
                     return <Text key={`${segment.type}-${index}`} size="sm" style={{ color: "inherit" }}>
                         {segment.value}

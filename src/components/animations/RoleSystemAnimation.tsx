@@ -1,6 +1,7 @@
 "use client"
 
-import { Badge, Card, Text } from "@code0-tech/pictor"
+import { Card, Text } from "@code0-tech/pictor"
+import { StableBadge } from "../ui/StableBadge"
 import { useInView, useReducedMotion } from "motion/react"
 import { useEffect, useRef, useState } from "react"
 
@@ -52,14 +53,13 @@ export function RoleSystemAnimation({ roles }: RoleSystemAnimationProps) {
             <div className="mt-1 flex flex-wrap items-center gap-1 text-[10px] leading-4.5 text-white/60 sm:gap-1.5 sm:text-[11px] sm:leading-5">
                 <span>{role.description}</span>
                 {role.badges.map((badge) => (
-                    <Badge
+                    <StableBadge
                         key={`${role.name}-${badge}`}
                         color="info"
                         className="align-middle"
-                        suppressHydrationWarning
                     >
                         <Text size="xs" className="text-inherit!">{badge}</Text>
-                    </Badge>
+                    </StableBadge>
                 ))}
             </div>
         </Card>

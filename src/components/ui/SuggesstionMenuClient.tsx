@@ -1,9 +1,10 @@
 "use client"
 
 import type { InputSuggestion } from "@code0-tech/pictor"
-import { Badge, Card, Text } from "@code0-tech/pictor"
+import { Card, Text } from "@code0-tech/pictor"
 import { IconBulb, IconChevronUp, IconCircleDot, IconNote, IconVariable } from "@tabler/icons-react"
 import type { ReactNode } from "react"
+import { StableBadge } from "./StableBadge"
 
 const FunctionSuggestionType = {
     FUNCTION: "FUNCTION",
@@ -35,15 +36,14 @@ export function SuggesstionMenuClient() {
 
         if (isVariableReference) {
             return (
-                <Badge
+                <StableBadge
                     style={{ verticalAlign: "middle" }}
                     color={"warning"}
-                    py={"0"}
                     border
-                    suppressHydrationWarning
+                    className="py-0!"
                 >
                     <IconVariable size={12}/>
-                    <Badge color="secondary" border className="min-w-0! max-w-full! border-pink! bg-[#1c0b29]!">
+                    <StableBadge color="secondary" border className="min-w-0 max-w-full border-pink bg-[#1c0b29]!">
                         <IconNote size={12} color="#f872e2" />
                         <Text
                             size="sm"
@@ -52,8 +52,8 @@ export function SuggesstionMenuClient() {
                         >
                             {label}
                         </Text>
-                    </Badge>
-                </Badge>
+                    </StableBadge>
+                </StableBadge>
             )
         }
 

@@ -3,7 +3,7 @@
 import { Section } from "@/components/ui/Section"
 import { useMediaQuery } from "@/hooks/useMediaQuery"
 import { cn } from "@/lib/utils"
-import { Badge, Button } from "@code0-tech/pictor"
+import { Button } from "@code0-tech/pictor"
 import { IconArrowRight } from "@tabler/icons-react"
 import { m as motion, type Variants } from "motion/react"
 import Image from "next/image"
@@ -11,6 +11,7 @@ import Link from "next/link"
 import React from "react"
 import { useWebHaptics } from "web-haptics/react"
 import Grainient from "../ui/Granient"
+import { StableBadge } from "../ui/StableBadge"
 
 interface HeroSectionButton {
     label: string
@@ -105,10 +106,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ content }) => {
                     <div className="w-full lg:w-2/5 flex flex-col gap-4 text-start">
                         <motion.div variants={staggerItem}>
                             <Link href={content.badge_link ?? ""}>
-                                <Badge className="group relative z-10 text-xs! px-3! cursor-pointer!" color="info" suppressHydrationWarning>
+                                <StableBadge className="group relative z-10 text-xs px-3 cursor-pointer" color="info">
                                     {content.badge}
                                     <IconArrowRight size={14} className="group-hover:translate-x-1 transition-transform"/>
-                                </Badge>
+                                </StableBadge>
                             </Link>
                         </motion.div>
 
