@@ -84,7 +84,7 @@ export function Section({
                 : undefined}
         >
             {showBlur && (funnelType === "center" ? (
-                <div className="pointer-events-none absolute inset-0 opacity-30 blur-md [background:radial-gradient(circle,rgba(255,255,255,0.45),transparent_60%)]" />
+                <div className="pointer-events-none absolute inset-x-0 -bottom-40 top-0 [background:radial-gradient(circle,rgba(255,255,255,0.1),transparent_70%)]" />
             ) : (
                 <div />
             ))}

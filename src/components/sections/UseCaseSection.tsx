@@ -87,7 +87,7 @@ export const UseCaseSection: React.FC<UseCaseSectionProps> = ({ content }) => {
                                 whileInView="show"
                                 viewport={{ once: true, amount: 0.35 }}
                             >
-                                <motion.p variants={staggerItem} className="text-xl font-semibold tracking-tight text-white md:text-3xl">{item.title}</motion.p>
+                                <motion.p variants={staggerItem} className="text-xl font-semibold text-white md:text-3xl">{item.title}</motion.p>
                                 <motion.p variants={staggerItem} className="mt-3 max-w-xl text-sm leading-7 text-white/75 md:text-base">{item.description}</motion.p>
                                 {item.bulletPoints?.length ? (
                                     <motion.ul variants={staggerItem} className="mt-5 space-y-2.5 text-sm text-white/80 md:text-base">
@@ -110,7 +110,7 @@ export const UseCaseSection: React.FC<UseCaseSectionProps> = ({ content }) => {
                             <div className="relative w-full md:w-2/3">
                                 <div
                                     aria-hidden="true"
-                                    className="pointer-events-none absolute -inset-10 -z-10 rounded-4xl bg-aqua/2 blur-2xl"
+                                    className="pointer-events-none absolute -inset-x-12 -inset-y-10 -z-10 rounded-4xl [background:radial-gradient(ellipse_at_center,rgba(122,203,255,0.16)_0%,rgba(122,203,255,0.08)_28%,rgba(122,203,255,0.03)_48%,transparent_76%)]"
                                 />
                                 <div className="relative z-10 h-112 overflow-hidden rounded-3xl border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] shadow-[0_12px_40px_rgba(0,0,0,0.18)] before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-linear-to-r before:from-transparent before:via-white/18 before:to-transparent before:content-['']">
                                     {image?.url ? (

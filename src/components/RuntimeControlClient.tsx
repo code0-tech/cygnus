@@ -5,13 +5,13 @@ import { SegmentedControl, SegmentedControlItem, Text } from "@code0-tech/pictor
 import { cn } from "@/lib/utils"
 
 const runtimeStyles = {
-    dynamic: "left-[29%] top-[26%] bg-brand/32",
-    static: "left-[71%] top-[26%] bg-yellow/32",
+    dynamic: "left-[29%] top-[26%] bg-brand/20",
+    static: "left-[71%] top-[26%] bg-yellow/20",
 } as const
 
 const executionStyles = {
-    compiled: "left-[29%] top-[74%] bg-pink/32",
-    interpreted: "left-[71%] top-[74%] bg-aqua/32",
+    compiled: "left-[29%] top-[74%] bg-pink/20",
+    interpreted: "left-[71%] top-[74%] bg-aqua/20",
 } as const
 
 type RuntimeType = keyof typeof runtimeStyles
@@ -25,9 +25,8 @@ export function RuntimeControlClient() {
 
     return (
         <>
-            <div className="pointer-events-none absolute left-1/2 top-1/2 h-44 w-[85%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/8 blur-3xl" />
-            <div className={cn("pointer-events-none absolute h-40 w-[58%] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[105px] transition-[top,left,background-color] duration-500", runtimeStyles[runtimeType])}/>
-            <div className={cn("pointer-events-none absolute h-40 w-[58%] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[105px] transition-[top,left,background-color] duration-500", executionStyles[executionType])}/>
+            <div className={cn("pointer-events-none absolute h-40 w-[80%] -translate-x-1/2 -translate-y-1/2 rounded-full blur-2xl transition-[top,left,background-color] duration-500", runtimeStyles[runtimeType])}/>
+            <div className={cn("pointer-events-none absolute h-40 w-[80%] -translate-x-1/2 -translate-y-1/2 rounded-full blur-2xl transition-[top,left,background-color] duration-500", executionStyles[executionType])}/>
             <div className="relative z-10 px-2 py-3">
                 <div className="h-full flex flex-col items-center justify-center gap-2 sm:gap-4">
                     <SegmentedControl

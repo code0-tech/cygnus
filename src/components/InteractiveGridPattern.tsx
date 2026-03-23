@@ -63,7 +63,7 @@ export function InteractiveGridPattern({width = 40, height = 40, squares = [24, 
                             <path
                                 d={`M ${width} 0 L 0 0 0 ${height}`}
                                 fill="none"
-                                className={cn("stroke-gray-400/30", squaresClassName)}
+                                className={cn("stroke-gray-400/50", squaresClassName)}
                             />
                         </pattern>
                     </defs>

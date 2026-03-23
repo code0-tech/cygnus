@@ -107,7 +107,7 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({
                         <motion.div
                             className={cn(
                                 "pointer-events-none absolute inset-0 rounded-2xl shadow-sm",
-                                isScrolled ? "bg-primary/20 backdrop-blur-xl" : "bg-transparent shadow-none",
+                                isScrolled ? "bg-primary/50 backdrop-blur-lg" : "bg-transparent shadow-none",
                             )}
                             initial={{
                                 clipPath: "inset(0% 0% 0% 0% round 1rem)",

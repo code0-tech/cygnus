@@ -233,7 +233,7 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
                         transition={{ duration: 0.2, ease: "easeOut" }}
                     >
                         <div className="mx-auto w-[calc(100%-1rem)] max-w-7xl">
-                            <div className="rounded-2xl border border-white/5 bg-primary/20 p-1.5 shadow-sm backdrop-blur-xl">
+                            <div className="rounded-2xl border border-white/5 bg-primary/50 p-1.5 shadow-sm backdrop-blur-lg">
                                 <button
                                     type="button"
                                     className="flex w-full items-center justify-between rounded-xl px-2 py-2 text-white/75 transition-colors hover:bg-white/10 hover:text-white"

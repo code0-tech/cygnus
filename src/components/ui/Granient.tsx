@@ -170,6 +170,8 @@ const Grainient: React.FC<GrainientProps> = ({
     canvas.style.width = '100%';
     canvas.style.height = '100%';
     canvas.style.display = 'block';
+    canvas.style.position = 'absolute';
+    canvas.style.inset = '0';
 
     const container = containerRef.current;
     container.appendChild(canvas);
@@ -207,20 +209,9 @@ const Grainient: React.FC<GrainientProps> = ({
 
     const mesh = new Mesh(gl, { geometry, program });
 
-    const setSize = () => {
-      const rect = container.getBoundingClientRect();
-      const width = Math.max(1, Math.floor(rect.width));
-      const height = Math.max(1, Math.floor(rect.height));
-      renderer.setSize(width, height);
-      const res = (program.uniforms.iResolution as { value: Float32Array }).value;
-      res[0] = gl.drawingBufferWidth;
-      res[1] = gl.drawingBufferHeight;
-    };
-
-    const ro = new ResizeObserver(setSize);
-    ro.observe(container);
-    setSize();
-
+    let resizeFrame = 0;
+    let lastWidth = 0;
+    let lastHeight = 0;
     let raf = 0;
     const t0 = performance.now();
     let disposed = false;
@@ -234,6 +225,38 @@ const Grainient: React.FC<GrainientProps> = ({
       (program.uniforms.iTime as { value: number }).value = (t - t0) * 0.001;
       renderer.render({ scene: mesh });
     };
+
+    const setSize = () => {
+      const rect = container.getBoundingClientRect();
+      const width = Math.max(1, Math.floor(rect.width));
+      const height = Math.max(1, Math.floor(rect.height));
+
+      if (width === lastWidth && height === lastHeight) {
+        return;
+      }
+
+      lastWidth = width;
+      lastHeight = height;
+      renderer.setSize(width, height);
+      const res = (program.uniforms.iResolution as { value: Float32Array }).value;
+      res[0] = gl.drawingBufferWidth;
+      res[1] = gl.drawingBufferHeight;
+
+      renderFrame(performance.now());
+    };
+
+    const queueResize = () => {
+      if (resizeFrame) return;
+
+      resizeFrame = requestAnimationFrame(() => {
+        resizeFrame = 0;
+        setSize();
+      });
+    };
+
+    const ro = new ResizeObserver(queueResize);
+    ro.observe(container);
+    setSize();
 
     const stopLoop = () => {
       running = false;
@@ -307,6 +330,9 @@ const Grainient: React.FC<GrainientProps> = ({
     return () => {
       disposed = true;
       stopLoop();
+      if (resizeFrame) {
+        cancelAnimationFrame(resizeFrame);
+      }
       ro.disconnect();
       visibilityObserver.disconnect();
       document.removeEventListener('visibilitychange', handleVisibilityChange);

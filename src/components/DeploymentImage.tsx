@@ -14,17 +14,17 @@ interface DeploymentImageProps {
 const palette: Record<DeploymentImageColor, { stroke: string, glow: string, chip: string }> = {
     aqua: {
         stroke: "var(--text-aqua)",
-        glow: "rgba(114, 201, 248, 0.22)",
+        glow: "bg-[radial-gradient(ellipse_at_center,rgba(122,203,255,0.2)_0%,rgba(122,203,255,0.1)_25%,transparent_70%)]",
         chip: "text-aqua",
     },
     pink: {
         stroke: "var(--text-pink)",
-        glow: "rgba(243, 126, 181, 0.22)",
+        glow: "bg-[radial-gradient(ellipse_at_center,rgba(248,114,226,0.2)_0%,rgba(248,114,226,0.1)_25%,transparent_70%)]",
         chip: "text-pink",
     },
     brand: {
         stroke: "var(--text-brand)",
-        glow: "rgba(145, 232, 120, 0.22)",
+        glow: "bg-[radial-gradient(ellipse_at_center,rgba(145,232,120,0.2)_0%,rgba(145,232,120,0.1)_25%,transparent_70%)]",
         chip: "text-brand",
     },
 }
@@ -43,8 +43,7 @@ export function DeploymentImage({ color, icon, text }: DeploymentImageProps) {
     return (
         <div className="relative overflow-hidden rounded-[1.2rem] border border-white/8 bg-primary/40">
             <div
-                className="absolute inset-x-[14%] top-[-22%] h-32 rounded-full blur-3xl"
-                style={{ backgroundColor: accent.glow }}
+                className={cn("absolute inset-x-[6%] -top-1/2 h-full rounded-full", accent.glow)}
                 aria-hidden="true"
             />
 
@@ -101,7 +100,7 @@ export function DeploymentImage({ color, icon, text }: DeploymentImageProps) {
                     />
                 </svg>
                 <div className="relative flex h-full items-center justify-center">
-                    <div className="relative size-24 overflow-hidden flex items-center justify-center rounded-3xl border border-white/10 bg-linear-to-br from-[#0f0b27] to-[#252342] shadow-[0_14px_40px_rgba(0,0,0,0.28)] backdrop-blur-sm">
+                    <div className="relative size-24 overflow-hidden flex items-center justify-center rounded-2xl border border-white/10 bg-linear-to-br from-[#0f0b27] to-[#252342] shadow-[0_14px_40px_rgba(0,0,0,0.28)]">
                         <Icon
                             aria-hidden="true"
                             stroke={2}

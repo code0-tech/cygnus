@@ -39,7 +39,7 @@ export async function ActionListCard({ locale, animationDelay = 0 }: ActionListC
                 </div>
             </div>
             <FeatureCardText content={content} className="relative z-20" />
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-60 bg-primary/18 backdrop-blur-2xl mask-[linear-gradient(to_top,black_0%,black_50%,transparent_100%)]" />
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-60 bg-linear-to-t from-primary via-primary to-transparent" />
         </FeatureCard>
     )
 }

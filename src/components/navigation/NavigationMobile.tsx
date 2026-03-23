@@ -96,7 +96,7 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
                     <motion.div
                         className={cn(
                             "pointer-events-none absolute inset-0 rounded-2xl shadow-sm",
-                            (isScrolled || isShellExpanded) ? "bg-primary/20 backdrop-blur-xl" : "bg-transparent shadow-none",
+                            (isScrolled || isShellExpanded) ? "bg-primary/50 backdrop-blur-lg" : "bg-transparent shadow-none",
                         )}
                         initial={false}
                         animate={{
