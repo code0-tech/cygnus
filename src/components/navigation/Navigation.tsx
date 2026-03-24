@@ -1,153 +1,22 @@
-"use client"
-
 import type { NavbarItem } from "@/payload-types"
-import { useMediaQuery } from "@/hooks/useMediaQuery"
-import { useOutsideClick } from "@/hooks/useOutsideClick"
-import { localizeHref, type AppLocale } from "@/lib/i18n"
-import { IconCube, IconGitBranch, IconLock } from "@tabler/icons-react"
-import { ReactNode, useEffect, useMemo, useState } from "react"
+import { type AppLocale } from "@/lib/i18n"
 import { NavigationDesktop } from "./NavigationDesktop"
 import { NavigationMobile } from "./NavigationMobile"
-
-type SubMenuIcon = "cube" | "gitBranch" | "lock"
-
-export type NavItem = {
-    title: string
-    href: string | null
-    subMenu?: SubNavItem[]
-}
-
-export type SubNavItem = {
-    key: string
-    title: string
-    href: string
-    description: string
-    icon: ReactNode
-    color: string
-}
 
 interface NavigationProps {
     locale: AppLocale
     items: NavbarItem[]
 }
 
-export const fadeInUp = {
-    initial: { opacity: 0, y: -16 },
-    animate: { opacity: 1, y: 0 },
-    transition: {duration: 0.65}
-}
-
-function Navigation({ locale, items }: NavigationProps) {
-    const scrollOpenThreshold = 8
-    const scrollCloseThreshold = 3
-    const isDesktop = useMediaQuery("(min-width: 1024px)")
-    const menuRef = useOutsideClick<HTMLElement>(() => setIsOpen(false))
-    const subMenuRef = useOutsideClick<HTMLDivElement>(() => setActiveSubMenu(null))
-
-    const [isScrolled, setIsScrolled] = useState(false)
-    const [isOpen, setIsOpen] = useState(false)
-    const [activeSubMenu, setActiveSubMenu] = useState<SubNavItem[] | null>(null)
-    const [hoveredSubMenu, setHoveredSubMenu] = useState<SubNavItem[] | null>(null)
-    const [mobileOpenKey, setMobileOpenKey] = useState<string | null>(null)
-    const homeHref = `/${locale}`
-
-    const navbarItems = useMemo(() => {
-        const getSubMenuIcon = (icon: string | null | undefined) => {
-            if (icon === "cube") return <IconCube size={30} />
-            if (icon === "gitBranch") return <IconGitBranch size={30} />
-            if (icon === "lock") return <IconLock size={30} />
-            return null
-        }
-
-        return items.map((item) => {
-            const mappedSubMenu = (item.subMenu ?? [])
-                .filter((sub) => Boolean(sub?.title && sub?.href && sub?.description))
-                .map((sub) => ({
-                    ...sub,
-                    icon: getSubMenuIcon((sub.icon as SubMenuIcon | null | undefined) ?? null),
-                    color: sub.color ?? "brand",
-                }))
-
-            return {
-                title: item.title,
-                href: item.href ? localizeHref(item.href, locale) : null,
-                subMenu: mappedSubMenu.length > 0
-                    ? mappedSubMenu.map((sub) => ({ ...sub, href: localizeHref(sub.href, locale) }))
-                    : undefined,
-            }
-        })
-    }, [items, locale])
-
-    useEffect(() => {
-        let frame = 0
-
-        const handleScroll = () => {
-            if (frame) return
-
-            frame = window.requestAnimationFrame(() => {
-                frame = 0
-
-                setIsScrolled((prevIsScrolled) => {
-                    const nextIsScrolled = prevIsScrolled
-                        ? window.scrollY > scrollCloseThreshold
-                        : window.scrollY > scrollOpenThreshold
-
-                    if (prevIsScrolled !== nextIsScrolled && nextIsScrolled) {
-                        setActiveSubMenu(null)
-                    }
-
-                    return prevIsScrolled === nextIsScrolled ? prevIsScrolled : nextIsScrolled
-                })
-
-                setIsOpen((prevIsOpen) => (prevIsOpen ? false : prevIsOpen))
-            })
-        }
-
-        if (window.scrollY > scrollOpenThreshold) {
-            setIsScrolled(true)
-        }
-        window.addEventListener("scroll", handleScroll)
-
-        return () => {
-            if (frame) {
-                window.cancelAnimationFrame(frame)
-            }
-            window.removeEventListener("scroll", handleScroll)
-        }
-    }, [scrollCloseThreshold, scrollOpenThreshold])
-
-    useEffect(() => {
-        if (hoveredSubMenu) {
-            setActiveSubMenu(hoveredSubMenu)
-        }
-    }, [hoveredSubMenu, isScrolled])
-
-    if (!isDesktop) {
-        return (
-            <NavigationMobile
-                menuRef={menuRef}
-                isScrolled={isScrolled}
-                isOpen={isOpen}
-                setIsOpen={setIsOpen}
-                navbarItems={navbarItems}
-                mobileOpenKey={mobileOpenKey}
-                setMobileOpenKey={setMobileOpenKey}
-                homeHref={homeHref}
-            />
-        )
-    }
-
+export function Navigation({ locale, items }: NavigationProps) {
     return (
-        <NavigationDesktop
-            isScrolled={isScrolled}
-            navbarItems={navbarItems}
-            activeSubMenu={activeSubMenu}
-            setActiveSubMenu={setActiveSubMenu}
-            setHoveredSubMenu={setHoveredSubMenu}
-            subMenuRef={subMenuRef}
-            homeHref={homeHref}
-        />
+        <>
+            <div className="hidden lg:block">
+                <NavigationDesktop locale={locale} items={items} />
+            </div>
+            <div className="lg:hidden">
+                <NavigationMobile locale={locale} items={items} />
+            </div>
+        </>
     )
 }
-
-export { Navigation }

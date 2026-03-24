@@ -1,4 +1,4 @@
-import { baseUrl, createMetadata } from "@/lib/siteConfig"
+import { createMetadata } from "@/lib/siteConfig"
 import { MotionProvider } from "@/components/providers/MotionProvider"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
@@ -7,14 +7,7 @@ import './globals.css'
 
 const inter = Inter({style: "normal", weight: "400", subsets: ["latin"]})
 
-export const metadata: Metadata = createMetadata({
-    title: {
-        template: '%s | CodeZero',
-        default: 'CodeZero',
-    },
-    description: "Revolutionize the backend development",
-    metadataBase: baseUrl,
-})
+export const metadata: Metadata = createMetadata()
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
     return (

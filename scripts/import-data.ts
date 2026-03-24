@@ -95,51 +95,36 @@ const recreateTemporaryImportUser = async (
 }
 
 const resolveImportUser = async (payload: PayloadInstance) => {
-    const requestedEmail = process.env.PAYLOAD_IMPORT_USER_EMAIL?.trim() || process.env.PAYLOAD_EXPORT_USER_EMAIL?.trim()
-
     const users = await payload.find({
         collection: "users",
         limit: 1,
         overrideAccess: true,
         pagination: false,
-        where: requestedEmail
-            ? {
-                email: {
-                    equals: requestedEmail,
-                },
-            }
-            : undefined,
+        where: {
+            email: {
+                equals: TEMP_IMPORT_USER_EMAIL,
+            },
+        },
     })
 
     const user = users.docs[0]
 
     if (!user) {
-        if (requestedEmail) {
-            throw new Error(`Could not find a user with email "${requestedEmail}" for import authentication.`)
-        }
-
         return {
             isTemporary: true,
             user: await createTemporaryImportUser(payload),
         }
     }
 
-    if (!requestedEmail && user.email === TEMP_IMPORT_USER_EMAIL) {
-        if (String(user.id) !== String(TEMP_IMPORT_USER_ID)) {
-            return {
-                isTemporary: true,
-                user: await recreateTemporaryImportUser(payload, user.id),
-            }
-        }
-
+    if (String(user.id) !== String(TEMP_IMPORT_USER_ID)) {
         return {
             isTemporary: true,
-            user,
+            user: await recreateTemporaryImportUser(payload, user.id),
         }
     }
 
     return {
-        isTemporary: false,
+        isTemporary: true,
         user,
     }
 }

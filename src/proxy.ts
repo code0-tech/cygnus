@@ -1,23 +1,15 @@
 import { NextRequest, NextResponse } from "next/server"
-
-
 import { DEFAULT_LOCALE, SUPPORTED_LOCALES } from "@/lib/i18n"
 
-function hasLocalePrefix(pathname: string): boolean {
-    return SUPPORTED_LOCALES.some(
-        (locale) => pathname === `/${locale}` || pathname.startsWith(`/${locale}/`)
-    )
-}
-
 export function proxy(request: NextRequest) {
-    const { pathname } = request.nextUrl
+    const { pathname: path } = request.nextUrl
 
-    if (hasLocalePrefix(pathname)) {
+    if (SUPPORTED_LOCALES.some((locale) => path === `/${locale}` || path.startsWith(`/${locale}/`))) {
         return NextResponse.next()
     }
 
     const url = request.nextUrl.clone()
-    url.pathname = pathname === "/" ? `/${DEFAULT_LOCALE}` : `/${DEFAULT_LOCALE}${pathname}`
+    url.pathname = path === "/" ? `/${DEFAULT_LOCALE}` : `/${DEFAULT_LOCALE}${path}`
 
     return NextResponse.redirect(url)
 }

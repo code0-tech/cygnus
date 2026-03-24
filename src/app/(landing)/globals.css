@@ -84,6 +84,16 @@
   body {
     @apply bg-primary text-white;
   }
+
+  ::selection {
+    background: var(--color-brand);
+    color: var(--color-primary);
+  }
+
+  ::-moz-selection {
+    background: var(--color-brand);
+    color: var(--color-primary);
+  }
 }
 
 @layer components {

@@ -74,17 +74,11 @@ Imports all `*.json` files from [`export/`](/C:/Users/Marius/OneDrive/Desktop/Pr
 npm run import-data
 ```
 
-Optional: import with a specific Payload user
-
-```powershell
-$env:PAYLOAD_IMPORT_USER_EMAIL="you@example.com"
-npm run import-data
-```
-
 Notes:
 
 - The database schema / tables must already exist before running the import.
 - Run `npm run migrate` first if the target database is still empty.
+- The script always creates or reuses a temporary Payload user for the import process.
 - The script uses `upsert` with `matchField: "id"`.
 - If a document with the same `id` already exists, it is updated.
 - If no document with that `id` exists, it is created.

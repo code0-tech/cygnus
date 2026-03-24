@@ -1,18 +1,17 @@
 "use client"
 
+import type { SubNavItem } from "@/lib/navigation"
 import { cn } from "@/lib/utils"
 import { m as motion } from "motion/react"
 import Link from "next/link"
 import React from "react"
-import { SubNavItem } from "./Navigation"
 
 type NavSubMenuProps = {
     items: SubNavItem[]
     onSelect?: (item: SubNavItem) => void
-    variant?: "overlay" | "inline"
 }
 
-const NavSubMenu: React.FC<NavSubMenuProps> = ({ items, onSelect, variant = "overlay" }) => {
+const NavSubMenu: React.FC<NavSubMenuProps> = ({ items, onSelect }) => {
     return (
         <div className="grid grid-cols-1 md:grid-cols-2">
             {items.map((subItem, index) => (

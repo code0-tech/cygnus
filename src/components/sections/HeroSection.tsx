@@ -59,36 +59,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ content }) => {
 
     return (
         <Section showBlur={false} showFunnel={false}>
-
             <div className="glass-card-shell relative isolate h-[min(85svh,918px)] md:h-[min(85dvh,918px)] rounded-4xl bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))]! shadow-[0_24px_80px_rgba(0,0,0,0.34)]!">
-                <div aria-hidden="true" className="glass-card-topline" />
-
-                <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 bg-[#0f0c1f]">
-                    <Grainient
-                        color1="#13102d"
-                        color2="#72f896"
-                        color3="#7472f8"
-                        timeSpeed={0.25}
-                        colorBalance={0}
-                        warpStrength={1}
-                        warpFrequency={5}
-                        warpSpeed={2}
-                        warpAmplitude={50}
-                        blendAngle={0}
-                        blendSoftness={0.05}
-                        rotationAmount={500}
-                        noiseScale={2}
-                        grainAmount={0.1}
-                        grainScale={2}
-                        grainAnimated={false}
-                        contrast={1.5}
-                        gamma={1}
-                        saturation={1}
-                        centerX={0}
-                        centerY={0}
-                        zoom={0.9}
-                    />
-                </div>
+                <Grainient />
 
                 <motion.div
                     className={"relative z-20 flex h-full flex-col items-center justify-between gap-8 rounded-[calc(1.9rem-1px)] p-8 lg:flex-row lg:p-16"}
@@ -147,7 +119,6 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ content }) => {
                                 sizes="(min-width: 1024px) 60vw, 100vw"
                                 className="rounded-2xl border border-white/10 shadow-[0_14px_38px_rgba(0,0,0,0.24)] lg:rounded-l-2xl lg:rounded-r-none lg:border-0 lg:border-l lg:border-y lg:ring-4 lg:ring-white/5"
                             />
-                            <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[linear-gradient(145deg,rgba(15,12,31,0.2),transparent_30%,transparent_64%,rgba(15,12,31,0.44)_100%),radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),transparent_30%)]" />
                         </div>
                     </motion.div>
                 </motion.div>

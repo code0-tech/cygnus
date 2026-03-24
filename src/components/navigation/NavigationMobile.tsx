@@ -1,6 +1,9 @@
 "use client"
 
 import { cn } from "@/lib/utils"
+import { useOutsideClick } from "@/hooks/useOutsideClick"
+import { type AppLocale } from "@/lib/i18n"
+import type { NavbarItem } from "@/payload-types"
 import { DEFAULT_DISCORD_URL, DEFAULT_GITHUB_URL } from "@/lib/siteConfig"
 import { Button, Container } from "@code0-tech/pictor"
 import { SiGithub } from '@icons-pack/react-simple-icons'
@@ -8,34 +11,25 @@ import { IconChevronUp, IconMenu2, IconX } from "@tabler/icons-react"
 import { AnimatePresence, m as motion } from "motion/react"
 import Image from "next/image"
 import Link from "next/link"
-import React, { useEffect, useRef, useState } from "react"
+import React, { useEffect, useMemo, useRef, useState } from "react"
 import { useWebHaptics } from "web-haptics/react"
-import { fadeInUp, NavItem } from "./Navigation"
+import { fadeInUp, mapNavbarItems } from "@/lib/navigation"
 
 type NavigationMobileProps = {
-    menuRef: React.RefObject<HTMLElement | null>
-    isScrolled: boolean
-    isOpen: boolean
-    setIsOpen: React.Dispatch<React.SetStateAction<boolean>>
-    navbarItems: NavItem[]
-    mobileOpenKey: string | null
-    setMobileOpenKey: React.Dispatch<React.SetStateAction<string | null>>
-    homeHref: string
+    locale: AppLocale
+    items: NavbarItem[]
 }
 
-const NavigationMobile: React.FC<NavigationMobileProps> = ({
-    menuRef,
-    isScrolled,
-    isOpen,
-    setIsOpen,
-    navbarItems,
-    mobileOpenKey,
-    setMobileOpenKey,
-    homeHref,
-}) => {
+const NavigationMobile: React.FC<NavigationMobileProps> = ({ locale, items }) => {
     const { trigger } = useWebHaptics()
+    const menuRef = useOutsideClick<HTMLElement>(() => setIsOpen(false))
     const wasOpenRef = useRef(false)
+    const [isScrolled, setIsScrolled] = useState(false)
+    const [isOpen, setIsOpen] = useState(false)
+    const [mobileOpenKey, setMobileOpenKey] = useState<string | null>(null)
     const [isMenuClosing, setIsMenuClosing] = useState(false)
+    const homeHref = `/${locale}`
+    const navbarItems = useMemo(() => mapNavbarItems(items, locale), [items, locale])
     const shellTransition = {
         duration: 0.34,
         ease: [0.22, 1, 0.36, 1] as const,
@@ -45,6 +39,42 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({
         ease: [0.22, 1, 0.36, 1] as const,
     }
     const isShellExpanded = isOpen || isMenuClosing
+
+    useEffect(() => {
+        let frame = 0
+        const scrollOpenThreshold = 8
+        const scrollCloseThreshold = 3
+
+        const handleScroll = () => {
+            if (frame) return
+
+            frame = window.requestAnimationFrame(() => {
+                frame = 0
+
+                setIsScrolled((prevIsScrolled) => {
+                    const nextIsScrolled = prevIsScrolled
+                        ? window.scrollY > scrollCloseThreshold
+                        : window.scrollY > scrollOpenThreshold
+
+                    return prevIsScrolled === nextIsScrolled ? prevIsScrolled : nextIsScrolled
+                })
+
+                setIsOpen((prevIsOpen) => (prevIsOpen ? false : prevIsOpen))
+            })
+        }
+
+        if (window.scrollY > scrollOpenThreshold) {
+            setIsScrolled(true)
+        }
+        window.addEventListener("scroll", handleScroll)
+
+        return () => {
+            if (frame) {
+                window.cancelAnimationFrame(frame)
+            }
+            window.removeEventListener("scroll", handleScroll)
+        }
+    }, [])
 
     useEffect(() => {
         let timeoutId: ReturnType<typeof setTimeout> | undefined

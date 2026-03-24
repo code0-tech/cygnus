@@ -1,45 +1,41 @@
 "use client"
 
 import { cn } from "@/lib/utils"
+import { useOutsideClick } from "@/hooks/useOutsideClick"
+import { type AppLocale } from "@/lib/i18n"
+import type { NavbarItem } from "@/payload-types"
 import { DEFAULT_DISCORD_URL, DEFAULT_GITHUB_URL } from "@/lib/siteConfig"
 import { Button, Container } from "@code0-tech/pictor"
 import { SiDiscord, SiGithub } from "@icons-pack/react-simple-icons"
 import { AnimatePresence, m as motion, useMotionValue, useSpring } from "motion/react"
 import Image from "next/image"
 import Link from "next/link"
-import React, { useLayoutEffect, useRef, useState } from "react"
+import React, { useLayoutEffect, useMemo, useRef, useState } from "react"
 import { NavSubMenu } from "./NavSubMenu"
 import { NavTab } from "./NavTab"
-import { fadeInUp, NavItem, SubNavItem } from "./Navigation"
+import { fadeInUp, mapNavbarItems, type SubNavItem } from "@/lib/navigation"
 
 type NavigationDesktopProps = {
-    isScrolled: boolean
-    navbarItems: NavItem[]
-    activeSubMenu: SubNavItem[] | null
-    setActiveSubMenu: React.Dispatch<React.SetStateAction<SubNavItem[] | null>>
-    setHoveredSubMenu: React.Dispatch<React.SetStateAction<SubNavItem[] | null>>
-    subMenuRef: React.RefObject<HTMLDivElement | null>
-    homeHref: string
+    locale: AppLocale
+    items: NavbarItem[]
 }
 
-const NavigationDesktop: React.FC<NavigationDesktopProps> = ({
-    isScrolled,
-    navbarItems,
-    activeSubMenu,
-    setActiveSubMenu,
-    setHoveredSubMenu,
-    subMenuRef,
-    homeHref,
-}) => {
+const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ locale, items }) => {
     const rootRef = useRef<HTMLDivElement>(null)
     const submenuContentRef = useRef<HTMLDivElement>(null)
     const navTabsRef = useRef<HTMLDivElement>(null)
+    const subMenuRef = useOutsideClick<HTMLDivElement>(() => setActiveSubMenu(null))
+    const [isScrolled, setIsScrolled] = useState(false)
+    const [activeSubMenu, setActiveSubMenu] = useState<SubNavItem[] | null>(null)
+    const [hoveredSubMenu, setHoveredSubMenu] = useState<SubNavItem[] | null>(null)
     const [submenuHeight, setSubmenuHeight] = useState(0)
     const [overlayOffsetLeft, setOverlayOffsetLeft] = useState(0)
     const [overlayPosition, setOverlayPosition] = useState({ left: 0, width: 0, opacity: 0 })
     const cursorX = useSpring(useMotionValue(0), { stiffness: 260, damping: 30, mass: 0.9 })
     const cursorOpacity = useSpring(useMotionValue(0), { stiffness: 260, damping: 30, mass: 0.9 })
     const cursorWidth = useSpring(useMotionValue(0), { stiffness: 260, damping: 30, mass: 0.9 })
+    const homeHref = `/${locale}`
+    const navbarItems = useMemo(() => mapNavbarItems(items, locale), [items, locale])
 
     const updateIndicatorPosition = (nextPosition: { left: number; width: number; opacity: number }) => {
         cursorX.set(nextPosition.left)
@@ -47,6 +43,50 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({
         cursorOpacity.set(nextPosition.opacity)
         setOverlayPosition(nextPosition)
     }
+
+    useLayoutEffect(() => {
+        let frame = 0
+        const scrollOpenThreshold = 8
+        const scrollCloseThreshold = 3
+
+        const handleScroll = () => {
+            if (frame) return
+
+            frame = window.requestAnimationFrame(() => {
+                frame = 0
+
+                setIsScrolled((prevIsScrolled) => {
+                    const nextIsScrolled = prevIsScrolled
+                        ? window.scrollY > scrollCloseThreshold
+                        : window.scrollY > scrollOpenThreshold
+
+                    if (prevIsScrolled !== nextIsScrolled && nextIsScrolled) {
+                        setActiveSubMenu(null)
+                    }
+
+                    return prevIsScrolled === nextIsScrolled ? prevIsScrolled : nextIsScrolled
+                })
+            })
+        }
+
+        if (window.scrollY > scrollOpenThreshold) {
+            setIsScrolled(true)
+        }
+        window.addEventListener("scroll", handleScroll)
+
+        return () => {
+            if (frame) {
+                window.cancelAnimationFrame(frame)
+            }
+            window.removeEventListener("scroll", handleScroll)
+        }
+    }, [])
+
+    useLayoutEffect(() => {
+        if (hoveredSubMenu) {
+            setActiveSubMenu(hoveredSubMenu)
+        }
+    }, [hoveredSubMenu, isScrolled])
 
     useLayoutEffect(() => {
         const element = submenuContentRef.current
@@ -214,7 +254,6 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({
                                             setActiveSubMenu(null)
                                             setHoveredSubMenu(null)
                                         }}
-                                        variant="inline"
                                     />
                                 </div>
                             </motion.div>
@@ -235,7 +274,6 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({
                                         setActiveSubMenu(null)
                                         setHoveredSubMenu(null)
                                     }}
-                                    variant="overlay"
                                 />
                             </div>
                         </div>

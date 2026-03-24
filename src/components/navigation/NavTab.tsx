@@ -1,11 +1,11 @@
 "use client"
 
+import { fadeInUp, type SubNavItem } from "@/lib/navigation"
 import { cn } from "@/lib/utils"
 import { IconChevronUp } from "@tabler/icons-react"
 import { m as motion } from "motion/react"
 import Link from "next/link"
 import React, { useRef } from "react"
-import { fadeInUp, SubNavItem } from "./Navigation"
 
 type TabProps = {
     setPosition: (position: { left: number; width: number; opacity: number }) => void
