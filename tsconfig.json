@@ -1,10 +1,11 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
     "lib": [
       "dom",
-      "dom.iterable",
       "esnext"
+    ],
+    "types": [
+      "node"
     ],
     "allowJs": true,
     "skipLibCheck": true,
@@ -22,7 +23,6 @@
         "name": "next"
       }
     ],
-    "ignoreDeprecations": "6.0",
     "paths": {
       "@/*": [
         "./src/*"

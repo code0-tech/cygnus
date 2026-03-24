@@ -113,8 +113,8 @@ export async function BlogPost({ slug, locale }: BlogPostProps) {
             </header>
 
             {heroImage?.url ? (
-                <div className="relative rounded-3xl border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.07),rgba(255,255,255,0.02))] p-2 shadow-[0_24px_70px_rgba(0,0,0,0.34)] backdrop-blur-md">
-                    <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-linear-to-r from-transparent via-white/35 to-transparent" />
+                <div className="glass-card-shell p-2">
+                    <div aria-hidden="true" className="glass-card-topline" />
                     <div className="relative aspect-video md:aspect-16/7 lg:aspect-16/5 w-full overflow-hidden rounded-2xl ring ring-white/10">
                         <Image
                             src={heroImage.url}
@@ -126,8 +126,8 @@ export async function BlogPost({ slug, locale }: BlogPostProps) {
                     </div>
                 </div>
             ) : (
-                <div className="relative rounded-3xl border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.07),rgba(255,255,255,0.02))] p-3 shadow-[0_24px_70px_rgba(0,0,0,0.34)] backdrop-blur-md">
-                    <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-linear-to-r from-transparent via-white/35 to-transparent" />
+                <div className="glass-card-shell p-3">
+                    <div aria-hidden="true" className="glass-card-topline" />
                     <div className="aspect-video md:aspect-16/7 lg:aspect-16/5 w-full rounded-2xl ring ring-white/10 bg-white/5 flex items-center justify-center text-white/50 text-sm">
                         {locale === "de" ? "Kein Hero-Bild vorhanden" : "No hero image available"}
                     </div>

@@ -1,5 +1,5 @@
 import { MarkdownContent } from "@/components/MarkdownContent"
-import { JobApplicationCard } from "@/components/cards/JobApplicationCard"
+import { JobApplicationForm } from "@/components/forms/JobApplicationForm"
 import { Aurora } from "@/components/ui/Aurora"
 import { LandingContainer } from "@/components/ui/LandingContainer"
 import { SUPPORTED_LOCALES, isSupportedLocale } from "@/lib/i18n"
@@ -30,7 +30,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ loca
                 <div className={"w-full md:w-[50vw] mx-auto"}>
                     <MarkdownContent content={contentHtml} />
                     <div className="mt-10">
-                        <JobApplicationCard jobSlug={job.slug} content={jobsBlock} locale={locale} />
+                        <JobApplicationForm jobSlug={job.slug} content={jobsBlock} locale={locale} />
                     </div>
                 </div>
             </LandingContainer>

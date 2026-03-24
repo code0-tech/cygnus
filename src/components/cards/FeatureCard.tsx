@@ -74,14 +74,15 @@ export function FeatureCard({
         <div
             ref={cardRef}
             className={cn(
-                "group relative h-full overflow-hidden rounded-[1.6rem] border border-white/8 bg-[linear-gradient(160deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02)_28%,rgba(8,10,20,0.92)_100%)] shadow-[0_14px_42px_rgba(0,0,0,0.3)] transition-[transform,opacity] duration-700 ease-out before:pointer-events-none before:absolute before:inset-1px before:rounded-[calc(1.6rem-1px)] before:border before:border-white/6 before:content-[''] after:pointer-events-none after:absolute after:inset-x-0 after:top-0 after:h-px after:bg-linear-to-r after:from-transparent after:via-white/30 after:to-transparent after:content-['']",
+                "glass-card-shell group h-full rounded-[1.6rem] shadow-[0_14px_42px_rgba(0,0,0,0.3)]! transition-[transform,opacity] duration-700 ease-out before:pointer-events-none before:absolute before:inset-1px before:rounded-[calc(1.6rem-1px)] before:border before:border-white/6 before:content-['']",
                 isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0",
                 className,
             )}
             style={{ transitionDelay: `${animationDelay}ms` }}
         >
+            <div aria-hidden="true" className="glass-card-topline" />
             <div className={cn("pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.02),transparent_20%)] bg-linear-to-br opacity-30", toneStyle.glow)} />
-            <div className={cn("absolute inset-0 z-10 flex flex-col justify-start items-center gap-4 p-5 md:p-6", contentClassName)}>
+            <div className={cn("absolute inset-0 z-10 flex h-full flex-col items-stretch justify-start gap-4 p-5 md:p-6", contentClassName)}>
                 {children}
             </div>
         </div>

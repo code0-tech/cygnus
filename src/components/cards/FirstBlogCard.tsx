@@ -23,14 +23,10 @@ export function FirstBlogCard({ locale, post }: { locale: string, post: BlogPost
         >
             <Card
                 variant="filled"
-                className="relative overflow-hidden rounded-3xl! border! border-white/8! bg-[linear-gradient(160deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02)_28%,rgba(8,10,20,0.92)_100%)]! p-3! shadow-[0_18px_60px_rgba(0,0,0,0.35)]!"
+                className="glass-card-shell p-3!"
             >
-                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),transparent_32%),linear-gradient(180deg,rgba(255,255,255,0.04),transparent_40%)]" />
-                <div className="pointer-events-none absolute -left-12 -top-12 h-36 w-36 rounded-full bg-aqua/14 blur-3xl transition-transform duration-700 group-hover:scale-115" />
-                <div className="pointer-events-none absolute inset-0 bg-linear-to-br from-aqua/14 via-blue/6 to-transparent opacity-90" />
-                <div className="pointer-events-none absolute inset-0 opacity-[0.12] bg-[linear-gradient(rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-position-[center_center] bg-size-[32px_32px] mask-[linear-gradient(180deg,rgba(0,0,0,0.75),transparent_92%)]" />
-                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,rgba(8,10,20,0),rgba(8,10,20,0.58)_58%,rgba(8,10,20,0.9))]" />
-                <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-white/30 to-transparent" />
+                <div aria-hidden="true" className="glass-card-tint" />
+                <div aria-hidden="true" className="glass-card-topline" />
 
                 <div className="relative z-10 flex flex-col gap-4 md:gap-6">
                     {heroImage?.url ? (
@@ -44,7 +40,7 @@ export function FirstBlogCard({ locale, post }: { locale: string, post: BlogPost
                             />
                         </div>
                     ) : (
-                        <div className="aspect-5/2 w-full rounded-2xl border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] flex items-center justify-center text-sm text-white/50 text-center px-4">
+                        <div className="image-placeholder aspect-5/2 w-full px-4 text-sm">
                             {locale === "de" ? "Kein Bild" : "No image"}
                         </div>
                     )}

@@ -53,13 +53,12 @@ export function TeamMemberCard({ member, locale }: TeamMemberCardProps) {
             >
                 <Card
                     variant="filled"
-                    className="group relative h-full cursor-pointer overflow-hidden rounded-3xl! border! border-white/8! bg-[linear-gradient(160deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02)_28%,rgba(8,10,20,0.92)_100%)]! p-5! shadow-[0_14px_40px_rgba(0,0,0,0.28)]!"
+                    className="glass-card-shell group h-full cursor-pointer p-5!"
                 >
-                    <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.04),transparent_34%),linear-gradient(135deg,rgba(114,201,248,0.1),transparent_42%)]" />
-                    <div className="pointer-events-none absolute -left-8 -top-8 h-24 w-24 rounded-full bg-aqua/14 blur-2xl transition-transform duration-700 group-hover:scale-115" />
-                    <div className="pointer-events-none absolute inset-0 opacity-[0.12] bg-[linear-gradient(rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-position-[center_center] bg-size-[32px_32px] mask-[linear-gradient(180deg,rgba(0,0,0,0.75),transparent_92%)]" />
-                    <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,rgba(8,10,20,0),rgba(8,10,20,0.52)_54%,rgba(8,10,20,0.88))]" />
-                    <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-white/30 to-transparent" />
+                    <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.04),transparent_34%),linear-gradient(135deg,rgba(114,201,248,0.1),transparent_42%)]" />
+                    <div aria-hidden="true" className="pointer-events-none absolute -left-8 -top-8 h-24 w-24 rounded-full bg-aqua/14 blur-2xl transition-transform duration-700 group-hover:scale-115" />
+                    <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,rgba(8,10,20,0),rgba(8,10,20,0.52)_54%,rgba(8,10,20,0.88))]" />
+                    <div aria-hidden="true" className="glass-card-topline" />
 
                     <div className="relative z-10">
                         <div className="flex items-center gap-4 mb-4">
@@ -104,13 +103,12 @@ export function TeamMemberCard({ member, locale }: TeamMemberCardProps) {
                         >
                             <Card
                                 variant="filled"
-                                className="group relative overflow-hidden rounded-3xl! border! border-white/8! bg-[linear-gradient(160deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02)_28%,rgba(8,10,20,0.92)_100%)]! shadow-[0_14px_42px_rgba(0,0,0,0.3)]! h-full max-h-[80vh] overflow-y-auto p-6!"
+                                className="glass-card-shell group h-full max-h-[80vh] overflow-y-auto p-6!"
                             >
-                                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.04),transparent_34%),linear-gradient(135deg,rgba(114,201,248,0.1),transparent_42%)]" />
-                                <div className="pointer-events-none absolute -left-10 -top-10 h-28 w-28 rounded-full bg-aqua/14 blur-2xl" />
-                                <div className="pointer-events-none absolute inset-0 opacity-[0.12] bg-[linear-gradient(rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-position-[center_center] bg-size-[32px_32px] mask-[linear-gradient(180deg,rgba(0,0,0,0.75),transparent_92%)]" />
-                                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,rgba(8,10,20,0),rgba(8,10,20,0.52)_54%,rgba(8,10,20,0.88))]" />
-                                <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-white/30 to-transparent" />
+                                <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.04),transparent_34%),linear-gradient(135deg,rgba(114,201,248,0.1),transparent_42%)]" />
+                                <div aria-hidden="true" className="pointer-events-none absolute -left-10 -top-10 h-28 w-28 rounded-full bg-aqua/14 blur-2xl" />
+                                <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,rgba(8,10,20,0),rgba(8,10,20,0.52)_54%,rgba(8,10,20,0.88))]" />
+                                <div aria-hidden="true" className="glass-card-topline" />
 
                                 <div className="relative z-10">
                                     <div className="flex items-start justify-between gap-4 mb-4">

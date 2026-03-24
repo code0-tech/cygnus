@@ -15,14 +15,14 @@ export async function MemberManagementCard({ locale, animationDelay = 0 }: Membe
     return (
         <FeatureCard
             className="col-span-1 md:col-span-2 row-span-2"
-            contentClassName="h-full items-stretch justify-between"
+            contentClassName="justify-between"
             animationDelay={animationDelay}
         >
             <div className="flex w-full flex-1 items-start justify-center min-h-0">
                 <ClientMemberCard />
             </div>
             <FeatureCardText content={content} className="relative z-20 mt-auto w-full shrink-0 pt-4" />
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-linear-to-t from-primary via-primary/70 to-transparent" />
+            <div aria-hidden="true" className="card-bottom-fade h-40" />
         </FeatureCard>
     )
 }

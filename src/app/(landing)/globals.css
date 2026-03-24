@@ -86,6 +86,32 @@
   }
 }
 
+@layer components {
+  .glass-card-shell {
+    @apply relative overflow-hidden rounded-3xl! border! border-white/8! bg-[linear-gradient(160deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02)_28%,rgba(8,10,20,0.92)_100%)]! shadow-[0_18px_60px_rgba(0,0,0,0.35)]!;
+  }
+
+  .glass-card-tint {
+    @apply pointer-events-none absolute inset-0 bg-linear-to-br from-aqua/4 via-aqua/4 to-transparent opacity-90;
+  }
+
+  .card-bottom-fade {
+    pointer-events: none;
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    background: linear-gradient(to top, var(--color-primary), color-mix(in oklab, var(--color-primary) 70%, transparent), transparent);
+  }
+
+  .glass-card-topline {
+    @apply pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-white/30 to-transparent;
+  }
+
+  .image-placeholder {
+    @apply rounded-2xl border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] flex items-center justify-center text-white/50 text-center;
+  }
+}
+
 @theme {
   --animate-cell-ripple: cell-ripple var(--cell-ripple-duration, 200ms)
   ease-out none 1 var(--cell-ripple-delay, 0ms);

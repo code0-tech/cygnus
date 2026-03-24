@@ -15,11 +15,10 @@ export async function NodeCard({ locale, animationDelay = 0 }: NodeTabsCardProps
     return (
         <FeatureCard
             className="col-span-1 md:col-span-2 row-span-4 md:row-span-3"
-            contentClassName="h-full items-stretch"
             tone="pink"
             animationDelay={animationDelay}
         >
-            <div className="pointer-events-none absolute inset-x-0 top-5 z-0 flex items-start justify-center overflow-hidden md:top-6">
+            <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-5 z-0 flex items-start justify-center overflow-hidden md:top-6">
                 <div
                     className="-mx-5 w-[calc(100%+2.5rem)] md:-mx-6 md:w-[calc(100%+3rem)]"
                     style={{
@@ -32,7 +31,7 @@ export async function NodeCard({ locale, animationDelay = 0 }: NodeTabsCardProps
             </div>
             <div className="relative z-10 flex min-h-0 w-full flex-1" />
             <FeatureCardText content={content} className="relative z-20 mt-auto w-full shrink-0 pt-5" />
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-linear-to-t from-primary via-primary/70 to-transparent" />
+            <div aria-hidden="true" className="card-bottom-fade h-40" />
         </FeatureCard>
     )
 }

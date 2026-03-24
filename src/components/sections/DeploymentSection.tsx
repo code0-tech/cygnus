@@ -88,7 +88,7 @@ export const DeploymentSection: React.FC<DeploymentSectionProps> = ({ content })
 
     return (
         <Section sectionType="DeploymentSection" funnelType="left" animationPreset="zoom-in" fullHeight className="h-auto md:h-auto lg:h-[min(100dvh,1080px)]">
-            <div className="pointer-events-none absolute -bottom-40 top-0 inset-x-0 [background:radial-gradient(circle,rgba(114,201,248,0.1),transparent_60%)]" />
+            <div aria-hidden="true" className="pointer-events-none absolute -bottom-40 top-0 inset-x-0 [background:radial-gradient(circle,rgba(114,201,248,0.1),transparent_60%)]" />
 
             <motion.div
                 className="grid grid-cols-1 gap-16 lg:grid-cols-3 lg:gap-8 z-10"
@@ -101,9 +101,9 @@ export const DeploymentSection: React.FC<DeploymentSectionProps> = ({ content })
                     <motion.article
                         key={card.badge}
                         variants={staggerItem}
-                        className="group relative flex h-full flex-col overflow-hidden rounded-[1.75rem] border border-white/8 bg-[linear-gradient(160deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02)_28%,rgba(8,10,20,0.92)_100%)] p-3 shadow-[0_18px_60px_rgba(0,0,0,0.28)] transition-transform before:pointer-events-none before:absolute before:inset-1px before:rounded-[calc(1.75rem-1px)] before:border before:border-white/6 before:content-[''] after:pointer-events-none after:absolute after:inset-x-0 after:top-0 after:h-px after:bg-linear-to-r after:from-transparent after:via-white/30 after:to-transparent after:content-['']"
+                        className="glass-card-shell group flex h-full flex-col rounded-[1.75rem] p-3 shadow-[0_18px_60px_rgba(0,0,0,0.28)] transition-transform before:pointer-events-none before:absolute before:inset-1px before:rounded-[calc(1.75rem-1px)] before:border before:border-white/6 before:content-['']"
                     >
-                        <div className="pointer-events-none absolute inset-0 bg-linear-to-br from-aqua/5 via-blue/5 to-transparent opacity-60" />
+                        <div aria-hidden="true" className="glass-card-topline" />
 
                         <DeploymentImage color={card.imageColor} icon={card.imageIcon} text={card.imageText} />
                         <div className="relative z-10 flex h-full flex-1 flex-col px-2 pb-2 pt-4">

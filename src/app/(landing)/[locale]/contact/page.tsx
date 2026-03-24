@@ -1,4 +1,4 @@
-import { ContactCard } from "@/components/cards/ContactCard"
+import { ContactForm } from "@/components/forms/ContactForm"
 import { MarkdownContent } from "@/components/MarkdownContent"
 import { Aurora } from "@/components/ui/Aurora"
 import { LandingContainer } from "@/components/ui/LandingContainer"
@@ -27,7 +27,7 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
                 <div className="w-full md:w-[50vw] mx-auto py-[20vh]">
                     <MarkdownContent content={contentHtml} />
                     <div className="mt-10">
-                        <ContactCard content={contactBlock} locale={locale} />
+                        <ContactForm content={contactBlock} locale={locale} />
                     </div>
                 </div>
             </LandingContainer>

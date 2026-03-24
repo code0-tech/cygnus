@@ -16,11 +16,11 @@ export async function ActionListCard({ locale, animationDelay = 0 }: ActionListC
     return (
         <FeatureCard
             className="col-span-1 row-span-4"
-            contentClassName="h-full items-start justify-end"
+            contentClassName="items-start justify-end"
             tone="aqua"
             animationDelay={animationDelay}
         >
-            <div className="pointer-events-none absolute inset-x-0 top-[52%] z-0 flex -translate-y-1/2 justify-center opacity-95">
+            <div className="pointer-events-none absolute inset-x-0 top-[52%] z-0 flex -translate-y-1/2 justify-center">
                 <div className="relative size-80 scale-[0.68] sm:size-88 sm:scale-[0.8] md:size-96 md:scale-[0.88] lg:size-104 lg:scale-100">
                     <OrbitingCircles iconSize={40}>
                         <SiDiscord />
@@ -39,7 +39,10 @@ export async function ActionListCard({ locale, animationDelay = 0 }: ActionListC
                 </div>
             </div>
             <FeatureCardText content={content} className="relative z-20" />
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-60 bg-linear-to-t from-primary via-primary to-transparent" />
+            <div
+                aria-hidden="true"
+                className="card-bottom-fade h-60 [background:linear-gradient(to_top,var(--color-primary)_0%,color-mix(in_oklab,var(--color-primary)_98%,transparent)_24%,color-mix(in_oklab,var(--color-primary)_92%,transparent)_46%,color-mix(in_oklab,var(--color-primary)_74%,transparent)_66%,color-mix(in_oklab,var(--color-primary)_38%,transparent)_84%,transparent_100%)]"
+            />
         </FeatureCard>
     )
 }

@@ -6,34 +6,35 @@ import { Button, EmailInput, emailValidation, TextAreaInput, TextInput, useForm 
 import { useMemo, useState } from "react"
 import { useWebHaptics } from "web-haptics/react"
 
-interface ContactCardContent {
-    heading: string
-    nameLabel: string
-    namePlaceholder: string
-    emailLabel: string
-    emailPlaceholder: string
-    messageLabel: string
-    messagePlaceholder: string
-    submitLabel: string
+interface JobApplicationFormContent {
+    applicationHeading: string
+    applicationNameLabel: string
+    applicationNamePlaceholder: string
+    applicationEmailLabel: string
+    applicationEmailPlaceholder: string
+    applicationMessageLabel: string
+    applicationMessagePlaceholder: string
+    applicationSubmitLabel: string
 }
 
-interface ContactCardProps {
-    content?: Partial<ContactCardContent> | null
+interface JobApplicationFormProps {
+    jobSlug: string
+    content?: Partial<JobApplicationFormContent> | null
     locale: AppLocale
 }
 
-const defaultContent: ContactCardContent = {
-    heading: "Contact us",
-    nameLabel: "Name",
-    namePlaceholder: "Your name",
-    emailLabel: "Email",
-    emailPlaceholder: "you@example.com",
-    messageLabel: "Message",
-    messagePlaceholder: "How can we help you?",
-    submitLabel: "Send message",
+const defaultContent: JobApplicationFormContent = {
+    applicationHeading: "Apply now",
+    applicationNameLabel: "Name",
+    applicationNamePlaceholder: "Your name",
+    applicationEmailLabel: "Email",
+    applicationEmailPlaceholder: "you@example.com",
+    applicationMessageLabel: "Message",
+    applicationMessagePlaceholder: "Tell us a bit about yourself...",
+    applicationSubmitLabel: "Send application",
 }
 
-export function ContactCard({ content, locale }: ContactCardProps) {
+export function JobApplicationForm({ jobSlug, content, locale }: JobApplicationFormProps) {
     const { trigger } = useWebHaptics()
     const labels = { ...defaultContent, ...content }
     const [isSubmitting, setIsSubmitting] = useState(false)
@@ -41,7 +42,7 @@ export function ContactCard({ content, locale }: ContactCardProps) {
     const initialValues = useMemo(() => ({
         name: "",
         email: "",
-        message: "",
+        text: "",
         acceptTerms: false,
     }), [])
 
@@ -55,7 +56,7 @@ export function ContactCard({ content, locale }: ContactCardProps) {
             if (!emailValidation(value)) return "Please provide a valid email"
             return null
         },
-        message: (value: string) => {
+        text: (value: string) => {
             if (!value) return "Message is required"
             return null
         },
@@ -77,7 +78,7 @@ export function ContactCard({ content, locale }: ContactCardProps) {
 
             void (async () => {
                 try {
-                    const response = await fetch("/api/contact", {
+                    const response = await fetch(`/api/jobs/${encodeURIComponent(jobSlug)}`, {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
@@ -87,16 +88,16 @@ export function ContactCard({ content, locale }: ContactCardProps) {
 
                     if (!response.ok) {
                         const errorText = await response.text().catch(() => "")
-                        throw new Error(errorText || "Failed to send message.")
+                        throw new Error(errorText || "Failed to send application.")
                     }
 
                     inputs.getInputProps("name").formValidation?.setValue("")
                     inputs.getInputProps("email").formValidation?.setValue("")
-                    inputs.getInputProps("message").formValidation?.setValue("")
+                    inputs.getInputProps("text").formValidation?.setValue("")
                     inputs.getInputProps("acceptTerms").formValidation?.setValue(false)
-                    setSubmitStatus({ type: "success", message: "Message sent successfully." })
+                    setSubmitStatus({ type: "success", message: "Application sent successfully." })
                 } catch (error) {
-                    console.error("Contact form submit error:", error)
+                    console.error("Job application submit error:", error)
                     setSubmitStatus({
                         type: "error",
                         message: "Sending failed. Please try again.",
@@ -110,27 +111,27 @@ export function ContactCard({ content, locale }: ContactCardProps) {
 
     return (
         <div className="flex flex-col gap-4">
-            <h1 className="text-4xl font-semibold text-white">{labels.heading}</h1>
+            <h1 className="text-4xl font-semibold text-white">{labels.applicationHeading}</h1>
             <div className="flex flex-col gap-2 mt-6">
                 <TextInput
-                    placeholder={labels.namePlaceholder}
-                    label={labels.nameLabel}
+                    placeholder={labels.applicationNamePlaceholder}
+                    label={labels.applicationNameLabel}
                     {...inputs.getInputProps("name")}
                 />
             </div>
             <div className="flex flex-col gap-2">
                 <EmailInput
-                    placeholder={labels.emailPlaceholder}
-                    label={labels.emailLabel}
+                    placeholder={labels.applicationEmailPlaceholder}
+                    label={labels.applicationEmailLabel}
                     {...inputs.getInputProps("email")}
                 />
             </div>
 
             <div className="flex flex-col gap-2">
                 <TextAreaInput
-                    placeholder={labels.messagePlaceholder}
-                    label={labels.messageLabel}
-                    {...inputs.getInputProps("message")}
+                    placeholder={labels.applicationMessagePlaceholder}
+                    label={labels.applicationMessageLabel}
+                    {...inputs.getInputProps("text")}
                 />
             </div>
 
@@ -149,7 +150,7 @@ export function ContactCard({ content, locale }: ContactCardProps) {
                 }}
                 disabled={isSubmitting || !inputs.isValid()}
             >
-                {labels.submitLabel}
+                {labels.applicationSubmitLabel}
             </Button>
             {submitStatus && (
                 <p className={submitStatus.type === "success" ? "mt-2 text-sm text-green-300" : "mt-2 text-sm text-red-300"}>

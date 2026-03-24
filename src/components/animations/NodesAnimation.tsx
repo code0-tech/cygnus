@@ -47,6 +47,7 @@ function NodeRow({
                 case "literal":
                     return (
                         <StableBadge
+                            key={`${segment.type}-${segment.value}-${index}`}
                             style={{ verticalAlign: "middle" }}
                             color={"secondary"}
                         >
@@ -58,6 +59,7 @@ function NodeRow({
                 case "reference":
                     return (
                         <StableBadge
+                            key={`${segment.type}-${segment.value}-${index}`}
                             style={{ verticalAlign: "middle" }}
                             color={"warning"}
                             border
@@ -72,6 +74,7 @@ function NodeRow({
                 case "node":
                     return (
                         <StableBadge
+                            key={`${segment.type}-${segment.value}-${index}`}
                             style={{ verticalAlign: "middle", textWrap: "nowrap" }}
                             border
                         >

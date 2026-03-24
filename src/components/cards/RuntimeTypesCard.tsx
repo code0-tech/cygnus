@@ -15,7 +15,7 @@ export async function RuntimeTypesCard({ locale, animationDelay = 0 }: RuntimeTy
     return (
         <FeatureCard
             className="col-span-1 row-span-4"
-            contentClassName="h-full items-stretch justify-between gap-2"
+            contentClassName="justify-between gap-2"
             tone="brand"
             animationDelay={animationDelay}
         >
@@ -23,7 +23,7 @@ export async function RuntimeTypesCard({ locale, animationDelay = 0 }: RuntimeTy
                 <RuntimeControlClient />
             </div>
             <FeatureCardText content={content} className="relative z-20 mt-auto w-full shrink-0 pt-4" />
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-56 bg-linear-to-t from-primary via-primary/70 to-transparent" />
+            <div aria-hidden="true" className="card-bottom-fade h-56" />
         </FeatureCard>
     )
 }

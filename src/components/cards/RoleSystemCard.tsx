@@ -42,7 +42,7 @@ export async function RoleSystemCard({ locale, animationDelay = 0 }: RoleSystemC
     return (
         <FeatureCard
             className="col-span-1 md:col-span-3 row-span-2"
-            contentClassName="w-full h-full items-stretch justify-end pt-0.5! xl:flex-row xl:items-center xl:justify-between"
+            contentClassName="w-full justify-end pt-0.5! xl:flex-row xl:items-center xl:justify-between"
             tone="pink"
             animationDelay={animationDelay}
         >
@@ -55,7 +55,7 @@ export async function RoleSystemCard({ locale, animationDelay = 0 }: RoleSystemC
             >
                 <RoleSystemAnimation roles={roles} />
             </div>
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-56 bg-linear-to-t from-primary via-primary/70 xl:via-none to-transparent" />
+            <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-56 bg-linear-to-t from-primary via-primary/70 xl:via-none to-transparent" />
             <FeatureCardText content={content} className="relative z-20 w-full shrink-0 xl:ml-auto xl:w-1/3" />
         </FeatureCard>
     )

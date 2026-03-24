@@ -54,12 +54,13 @@ export const CtaSection: React.FC<CtaSectionProps> = ({ content }) => {
     return (
         <Section showBlur={false} showFunnel={false} animationPreset="fade-in">
             <motion.div
-                className={"relative w-full overflow-hidden rounded-[1.8rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] shadow-lg before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-linear-to-r before:from-transparent before:via-white/30 before:to-transparent before:content-['']"}
+                className={"glass-card-shell w-full rounded-[1.8rem] bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))]! shadow-lg!"}
                 variants={staggerContainer}
                 initial="hidden"
                 whileInView="show"
                 viewport={{ once: true, amount: 0.25 }}
             >
+                <div aria-hidden="true" className="glass-card-topline" />
                 <div className={"relative flex w-full flex-col items-center justify-center gap-4 overflow-hidden rounded-4xl px-6 py-12 sm:px-10"}>
 
                     <InteractiveGridPattern
@@ -77,7 +78,7 @@ export const CtaSection: React.FC<CtaSectionProps> = ({ content }) => {
 
                     <motion.div variants={staggerItem} className={"relative z-20 flex size-32 items-center justify-center rounded-2xl bg-white/5 shadow-[0_14px_36px_rgba(0,0,0,0.22)]"}>
                         <div className={"relative isolate flex items-center justify-center rounded-2xl ring ring-white/10 px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"}>
-                            <div className="pointer-events-none absolute inset-0 rounded-2xl bg-linear-to-br from-primary via-primary to-[#2a1638]" />
+                <div aria-hidden="true" className="pointer-events-none absolute inset-0 rounded-2xl bg-linear-to-br from-primary via-primary to-[#2a1638]" />
                             <Image src={"/code0_logo_white.png"} width={"120"} height={"120"} alt={"Code0 Logo"} className={"z-20"}/>
                         </div>
                     </motion.div>
