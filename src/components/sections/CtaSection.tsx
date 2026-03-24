@@ -2,14 +2,12 @@
 
 import { InteractiveGridPattern } from "@/components/InteractiveGridPattern"
 import { useMediaQuery } from "@/hooks/useMediaQuery"
+import { HapticButtonLink } from "@/components/ui/HapticButtonLink"
 import { Section } from "@/components/ui/Section"
 import { cn } from "@/lib/utils"
+import { m as motion, type Variants } from "motion/react"
 import Image from "next/image"
 import React from "react"
-import Link from "next/link"
-import { Button } from "@code0-tech/pictor"
-import { m as motion, type Variants } from "motion/react"
-import { useWebHaptics } from "web-haptics/react"
 
 interface CtaSectionContent {
     heading: string
@@ -25,7 +23,6 @@ interface CtaSectionProps {
 }
 
 export const CtaSection: React.FC<CtaSectionProps> = ({ content }) => {
-    const { trigger } = useWebHaptics()
     const isTouchDevice = useMediaQuery("(hover: none), (pointer: coarse)")
     if (!content) return
 
@@ -91,15 +88,13 @@ export const CtaSection: React.FC<CtaSectionProps> = ({ content }) => {
                     </motion.p>
 
                     <motion.div variants={staggerItem} className={"z-20 flex items-center gap-4 mt-4"}>
-                        <Link href={content.ctaLink.url}>
-                            <Button
-                                variant="normal"
-                                onClick={() => trigger("heavy")}
-                                className={"h-10 flex items-center gap-2 px-8! text-base! bg-white/80! hover:bg-white! text-primary!"}
-                            >
+                        <HapticButtonLink
+                            href={content.ctaLink.url}
+                            variant="normal"
+                            className={"h-10 px-8! bg-white/80! hover:bg-white! text-primary!"}
+                        >
                                 {content.ctaLink.label}
-                            </Button>
-                        </Link>
+                        </HapticButtonLink>
                     </motion.div>
                 </div>
             </motion.div>

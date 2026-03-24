@@ -126,6 +126,42 @@ void main(){
 }
 `;
 
+type GrainientUniforms = {
+  iTime: { value: number };
+  iResolution: { value: Float32Array };
+  uTimeSpeed: { value: number };
+  uColorBalance: { value: number };
+  uWarpStrength: { value: number };
+  uWarpFrequency: { value: number };
+  uWarpSpeed: { value: number };
+  uWarpAmplitude: { value: number };
+  uBlendAngle: { value: number };
+  uBlendSoftness: { value: number };
+  uRotationAmount: { value: number };
+  uNoiseScale: { value: number };
+  uGrainAmount: { value: number };
+  uGrainScale: { value: number };
+  uGrainAnimated: { value: number };
+  uContrast: { value: number };
+  uGamma: { value: number };
+  uSaturation: { value: number };
+  uCenterOffset: { value: Float32Array };
+  uZoom: { value: number };
+  uColor1: { value: Float32Array };
+  uColor2: { value: Float32Array };
+  uColor3: { value: Float32Array };
+};
+
+type GrainientRuntime = {
+  renderer: Renderer;
+  program: Program;
+  uniforms: GrainientUniforms;
+  mesh: Mesh;
+  renderFrame: (time?: number) => void;
+  startLoop: () => void;
+  stopLoop: () => void;
+};
+
 const Grainient: React.FC<GrainientProps> = ({
   timeSpeed = 0.25,
   colorBalance = 0.0,
@@ -150,9 +186,10 @@ const Grainient: React.FC<GrainientProps> = ({
   color2 = '#5227FF',
   color3 = '#B19EEF',
   className = '',
-  maxDpr = 2
+  maxDpr = 1
 }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const runtimeRef = useRef<GrainientRuntime | null>(null);
   const prefersReducedMotion = useReducedMotion();
 
   useEffect(() => {
@@ -177,34 +214,36 @@ const Grainient: React.FC<GrainientProps> = ({
     container.appendChild(canvas);
 
     const geometry = new Triangle(gl);
+    const uniforms: GrainientUniforms = {
+      iTime: { value: 0 },
+      iResolution: { value: new Float32Array([1, 1]) },
+      uTimeSpeed: { value: timeSpeed },
+      uColorBalance: { value: colorBalance },
+      uWarpStrength: { value: warpStrength },
+      uWarpFrequency: { value: warpFrequency },
+      uWarpSpeed: { value: warpSpeed },
+      uWarpAmplitude: { value: warpAmplitude },
+      uBlendAngle: { value: blendAngle },
+      uBlendSoftness: { value: blendSoftness },
+      uRotationAmount: { value: rotationAmount },
+      uNoiseScale: { value: noiseScale },
+      uGrainAmount: { value: grainAmount },
+      uGrainScale: { value: grainScale },
+      uGrainAnimated: { value: grainAnimated ? 1.0 : 0.0 },
+      uContrast: { value: contrast },
+      uGamma: { value: gamma },
+      uSaturation: { value: saturation },
+      uCenterOffset: { value: new Float32Array([centerX, centerY]) },
+      uZoom: { value: zoom },
+      uColor1: { value: new Float32Array(hexToRgb(color1)) },
+      uColor2: { value: new Float32Array(hexToRgb(color2)) },
+      uColor3: { value: new Float32Array(hexToRgb(color3)) }
+    };
+
     const program = new Program(gl, {
       vertex,
       fragment,
-      uniforms: {
-        iTime: { value: 0 },
-        iResolution: { value: new Float32Array([1, 1]) },
-        uTimeSpeed: { value: timeSpeed },
-        uColorBalance: { value: colorBalance },
-        uWarpStrength: { value: warpStrength },
-        uWarpFrequency: { value: warpFrequency },
-        uWarpSpeed: { value: warpSpeed },
-        uWarpAmplitude: { value: warpAmplitude },
-        uBlendAngle: { value: blendAngle },
-        uBlendSoftness: { value: blendSoftness },
-        uRotationAmount: { value: rotationAmount },
-        uNoiseScale: { value: noiseScale },
-        uGrainAmount: { value: grainAmount },
-        uGrainScale: { value: grainScale },
-        uGrainAnimated: { value: grainAnimated ? 1.0 : 0.0 },
-        uContrast: { value: contrast },
-        uGamma: { value: gamma },
-        uSaturation: { value: saturation },
-        uCenterOffset: { value: new Float32Array([centerX, centerY]) },
-        uZoom: { value: zoom },
-        uColor1: { value: new Float32Array(hexToRgb(color1)) },
-        uColor2: { value: new Float32Array(hexToRgb(color2)) },
-        uColor3: { value: new Float32Array(hexToRgb(color3)) }
-      }
+      uniforms
     });
 
     const mesh = new Mesh(gl, { geometry, program });
@@ -221,8 +260,8 @@ const Grainient: React.FC<GrainientProps> = ({
     let lastFrameTime = 0;
     const frameInterval = 1000 / 30;
 
-    const renderFrame = (t: number) => {
-      (program.uniforms.iTime as { value: number }).value = (t - t0) * 0.001;
+    const renderFrame = (t = performance.now()) => {
+      uniforms.iTime.value = (t - t0) * 0.001;
       renderer.render({ scene: mesh });
     };
 
@@ -238,11 +277,11 @@ const Grainient: React.FC<GrainientProps> = ({
       lastWidth = width;
       lastHeight = height;
       renderer.setSize(width, height);
-      const res = (program.uniforms.iResolution as { value: Float32Array }).value;
+      const res = uniforms.iResolution.value;
       res[0] = gl.drawingBufferWidth;
       res[1] = gl.drawingBufferHeight;
 
-      renderFrame(performance.now());
+      renderFrame();
     };
 
     const queueResize = () => {
@@ -283,6 +322,16 @@ const Grainient: React.FC<GrainientProps> = ({
       running = true;
       lastFrameTime = 0;
       raf = requestAnimationFrame(loop);
+    };
+
+    runtimeRef.current = {
+      renderer,
+      program,
+      uniforms,
+      mesh,
+      renderFrame,
+      startLoop,
+      stopLoop
     };
 
     const visibilityObserver = new IntersectionObserver(
@@ -329,6 +378,7 @@ const Grainient: React.FC<GrainientProps> = ({
 
     return () => {
       disposed = true;
+      runtimeRef.current = null;
       stopLoop();
       if (resizeFrame) {
         cancelAnimationFrame(resizeFrame);
@@ -342,6 +392,37 @@ const Grainient: React.FC<GrainientProps> = ({
         // Ignore
       }
     };
+  }, [maxDpr]);
+
+  useEffect(() => {
+    const runtime = runtimeRef.current;
+    if (!runtime) return;
+
+    const { uniforms, renderFrame } = runtime;
+    uniforms.uTimeSpeed.value = timeSpeed;
+    uniforms.uColorBalance.value = colorBalance;
+    uniforms.uWarpStrength.value = warpStrength;
+    uniforms.uWarpFrequency.value = warpFrequency;
+    uniforms.uWarpSpeed.value = warpSpeed;
+    uniforms.uWarpAmplitude.value = warpAmplitude;
+    uniforms.uBlendAngle.value = blendAngle;
+    uniforms.uBlendSoftness.value = blendSoftness;
+    uniforms.uRotationAmount.value = rotationAmount;
+    uniforms.uNoiseScale.value = noiseScale;
+    uniforms.uGrainAmount.value = grainAmount;
+    uniforms.uGrainScale.value = grainScale;
+    uniforms.uGrainAnimated.value = grainAnimated ? 1.0 : 0.0;
+    uniforms.uContrast.value = contrast;
+    uniforms.uGamma.value = gamma;
+    uniforms.uSaturation.value = saturation;
+    uniforms.uCenterOffset.value[0] = centerX;
+    uniforms.uCenterOffset.value[1] = centerY;
+    uniforms.uZoom.value = zoom;
+    uniforms.uColor1.value.set(hexToRgb(color1));
+    uniforms.uColor2.value.set(hexToRgb(color2));
+    uniforms.uColor3.value.set(hexToRgb(color3));
+
+    renderFrame();
   }, [
     timeSpeed,
     colorBalance,
@@ -364,8 +445,25 @@ const Grainient: React.FC<GrainientProps> = ({
     zoom,
     color1,
     color2,
-    color3,
-    maxDpr,
+    color3
+  ]);
+
+  useEffect(() => {
+    const runtime = runtimeRef.current;
+    if (!runtime) return;
+
+    if (prefersReducedMotion) {
+      runtime.stopLoop();
+      runtime.renderFrame();
+      return;
+    }
+
+    runtime.startLoop();
+
+    return () => {
+      runtime.stopLoop();
+    };
+  }, [
     prefersReducedMotion
   ]);
 

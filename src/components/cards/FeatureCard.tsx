@@ -1,7 +1,5 @@
-"use client"
-
 import { cn } from "@/lib/utils"
-import { ReactNode, useEffect, useRef, useState } from "react"
+import { ReactNode } from "react"
 
 type FeatureCardTone = "brand" | "aqua" | "blue" | "pink" | "yellow"
 type FeatureCardStyle = {
@@ -47,35 +45,15 @@ export function FeatureCard({
     style?: FeatureCardStyle,
     animationDelay?: number
 }) {
-    const [isVisible, setIsVisible] = useState(false)
-    const cardRef = useRef<HTMLDivElement>(null)
     const toneStyle = {
         ...toneStyles[tone],
         ...style,
     }
 
-    useEffect(() => {
-        const currentRef = cardRef.current
-        if (!currentRef) return
-
-        const observer = new IntersectionObserver(([entry]) => {
-            if (entry.isIntersecting) {
-                setIsVisible(true)
-                observer.unobserve(currentRef)
-            }
-        }, { rootMargin: "100px" })
-
-        observer.observe(currentRef)
-
-        return () => observer.disconnect()
-    }, [])
-
     return (
         <div
-            ref={cardRef}
             className={cn(
-                "glass-card-shell group h-full rounded-[1.6rem] shadow-[0_14px_42px_rgba(0,0,0,0.3)]! transition-[transform,opacity] duration-700 ease-out before:pointer-events-none before:absolute before:inset-1px before:rounded-[calc(1.6rem-1px)] before:border before:border-white/6 before:content-['']",
-                isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0",
+                "glass-card-shell group h-full rounded-[1.6rem] shadow-[0_14px_42px_rgba(0,0,0,0.3)]! translate-y-8 opacity-0 transition-[transform,opacity] duration-700 ease-out group-data-[in-view=true]/section:translate-y-0 group-data-[in-view=true]/section:opacity-100 before:pointer-events-none before:absolute before:inset-1px before:rounded-[calc(1.6rem-1px)] before:border before:border-white/6 before:content-['']",
                 className,
             )}
             style={{ transitionDelay: `${animationDelay}ms` }}

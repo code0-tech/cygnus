@@ -7,7 +7,7 @@ import { ANIMATION_PRESETS, cn, type AnimationPreset } from "@/lib/utils"
 import { Section as SectionDocument } from "@/payload-types"
 import { m as motion, type Variants } from "motion/react"
 import { usePathname } from "next/navigation"
-import { createElement, ReactNode } from "react"
+import { createElement, ReactNode, useEffect, useRef, useState } from "react"
 
 interface SectionProps {
     children: ReactNode
@@ -41,8 +41,10 @@ export function Section({
     headingLevel = 2,
 }: SectionProps) {
     const sectionData = usePreloadedSection(sectionType) as SectionDocument | null
+    const sectionRef = useRef<HTMLElement | null>(null)
     const pathname = usePathname()
     const locale = getLocaleFromPath(pathname)
+    const [isInView, setIsInView] = useState(false)
     const rawLinkUrl = sectionData?.link_button?.url?.trim()
     const linkUrl = rawLinkUrl ? localizeHref(rawLinkUrl, locale) : undefined
     const animationConfig = animationPreset === "none" ? null : ANIMATION_PRESETS[animationPreset]
@@ -68,10 +70,31 @@ export function Section({
     }
     const headingTag = `h${headingLevel}` as const
 
+    useEffect(() => {
+        const currentRef = sectionRef.current
+        if (!currentRef) return
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry?.isIntersecting) {
+                    setIsInView(true)
+                    observer.unobserve(currentRef)
+                }
+            },
+            { rootMargin: "100px" },
+        )
+
+        observer.observe(currentRef)
+
+        return () => observer.disconnect()
+    }, [])
+
     return (
         <motion.section
+            ref={sectionRef}
+            data-in-view={isInView}
             className={cn(
-                "relative overflow-visible flex flex-col gap-8 pt-16",
+                "group/section relative overflow-visible flex flex-col gap-8 pt-16",
                 fullHeight && "h-[200dvh] md:h-[min(100dvh,1080px)]",
                 className,
             )}

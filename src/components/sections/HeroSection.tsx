@@ -1,16 +1,14 @@
 "use client"
 
 import { Section } from "@/components/ui/Section"
-import { useMediaQuery } from "@/hooks/useMediaQuery"
 import { cn } from "@/lib/utils"
-import { Button } from "@code0-tech/pictor"
 import { IconArrowRight } from "@tabler/icons-react"
 import { m as motion, type Variants } from "motion/react"
 import Image from "next/image"
 import Link from "next/link"
 import React from "react"
-import { useWebHaptics } from "web-haptics/react"
 import Grainient from "../ui/Granient"
+import { HapticButtonLink } from "../ui/HapticButtonLink"
 import { StableBadge } from "../ui/StableBadge"
 
 interface HeroSectionButton {
@@ -38,8 +36,6 @@ interface HeroSectionProps {
 }
 
 export const HeroSection: React.FC<HeroSectionProps> = ({ content }) => {
-    const { trigger } = useWebHaptics()
-    const isMobile = useMediaQuery("(max-width: 1023px)")
     if (!content || !content.texts || !content.buttons) return
 
     const staggerContainer: Variants = {
@@ -91,7 +87,6 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ content }) => {
                         centerX={0}
                         centerY={0}
                         zoom={0.9}
-                        maxDpr={isMobile ? 1 : 1.5}
                     />
                 </div>
 
@@ -129,15 +124,14 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ content }) => {
 
                         <motion.div variants={staggerItem} className={"flex flex-col gap-2 sm:gap-4 mt-4"}>
                             {content.buttons.map((button, index) => (
-                                <Link href={button.url} key={`${button.label}-${button.id ?? index}`} className="w-full sm:w-auto">
-                                    <Button
-                                        variant={button.variant ?? "normal"}
-                                        onClick={() => trigger("heavy")}
-                                        className={cn("w-full! text-base! z-10", button.variant === "filled" && "bg-white/80! hover:bg-white! text-primary!")}
-                                    >
-                                        {button.label}
-                                    </Button>
-                                </Link>
+                                <HapticButtonLink
+                                    href={button.url}
+                                    key={`${button.label}-${button.id ?? index}`}
+                                    variant={button.variant ?? "normal"}
+                                    className={cn(button.variant === "filled" && "bg-white/80! hover:bg-white! text-primary!")}
+                                >
+                                    {button.label}
+                                </HapticButtonLink>
                             ))}
                         </motion.div>
                     </div>
