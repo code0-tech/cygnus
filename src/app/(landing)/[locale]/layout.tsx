@@ -35,7 +35,9 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
         <div className="bg-primary overflow-x-hidden">
             <Navigation locale={locale} items={items} />
             <SectionsProvider sections={sections}>
-                <div className="bg-primary">{children}</div>
+                <main id="main-content" className="bg-primary">
+                    {children}
+                </main>
             </SectionsProvider>
             <FooterSection locale={locale} footer={footer} />
         </div>

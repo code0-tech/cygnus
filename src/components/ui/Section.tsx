@@ -7,7 +7,7 @@ import { ANIMATION_PRESETS, cn, type AnimationPreset } from "@/lib/utils"
 import { Section as SectionDocument } from "@/payload-types"
 import { m as motion, type Variants } from "motion/react"
 import { usePathname } from "next/navigation"
-import { ReactNode } from "react"
+import { createElement, ReactNode } from "react"
 
 interface SectionProps {
     children: ReactNode
@@ -22,6 +22,7 @@ interface SectionProps {
     animationDelay?: number
     animationDuration?: number
     animationOnce?: boolean
+    headingLevel?: 1 | 2 | 3 | 4 | 5 | 6
 }
 
 export function Section({
@@ -37,6 +38,7 @@ export function Section({
     animationDelay = 0,
     animationDuration,
     animationOnce = true,
+    headingLevel = 2,
 }: SectionProps) {
     const sectionData = usePreloadedSection(sectionType) as SectionDocument | null
     const pathname = usePathname()
@@ -64,6 +66,7 @@ export function Section({
             },
         },
     }
+    const headingTag = `h${headingLevel}` as const
 
     return (
         <motion.section
@@ -97,9 +100,11 @@ export function Section({
                         whileInView="show"
                         viewport={{ once: animationOnce, amount: 0.3 }}
                     >
-                        <motion.h1 variants={staggerItem} className={"text-4xl text-white font-semibold"}>
-                            {sectionData?.heading}
-                        </motion.h1>
+                        {createElement(
+                            motion[headingTag],
+                            { variants: staggerItem, className: "text-4xl text-white font-semibold" },
+                            sectionData?.heading,
+                        )}
                         <motion.p variants={staggerItem} className="relative z-10 max-w-[90vw] lg:w-1/2 text-center font-medium text-white/75 text-xl">
                             {sectionData?.subheading}
                         </motion.p>
@@ -119,9 +124,11 @@ export function Section({
                         whileInView="show"
                         viewport={{ once: animationOnce, amount: 0.3 }}
                     >
-                        <motion.h1 variants={staggerItem} className={"text-4xl text-white font-semibold"}>
-                            {sectionData?.heading}
-                        </motion.h1>
+                        {createElement(
+                            motion[headingTag],
+                            { variants: staggerItem, className: "text-4xl text-white font-semibold" },
+                            sectionData?.heading,
+                        )}
                         <motion.p variants={staggerItem} className="relative z-10 max-w-[90vw] lg:w-1/2 font-medium text-white/75 text-xl">
                             {sectionData?.subheading}
                         </motion.p>

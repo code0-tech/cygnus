@@ -148,7 +148,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ content }) => {
                                 alt={"Code= Example"}
                                 height={620}
                                 width={900}
-                                loading="eager"
+                                priority
+                                fetchPriority="high"
+                                sizes="(min-width: 1024px) 60vw, 100vw"
                                 className="rounded-2xl border border-white/10 shadow-[0_14px_38px_rgba(0,0,0,0.24)] lg:rounded-l-2xl lg:rounded-r-none lg:border-0 lg:border-l lg:border-y lg:ring-4 lg:ring-white/5"
                             />
                             <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[linear-gradient(145deg,rgba(15,12,31,0.2),transparent_30%,transparent_64%,rgba(15,12,31,0.44)_100%),radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),transparent_30%)]" />
