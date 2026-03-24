@@ -162,7 +162,11 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({ locale, items }) =>
                             </motion.div>
                         </Link>
                         <motion.button
+                                type="button"
                                 className="mr-1.5 border-0 bg-transparent transition-all"
+                                aria-label={isOpen ? "Close navigation menu" : "Open navigation menu"}
+                                aria-expanded={isOpen}
+                                aria-controls="mobile-navigation-menu"
                                 initial={false}
                                 animate={fadeInUp.animate}
                                 transition={fadeInUp.transition}
@@ -177,6 +181,7 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({ locale, items }) =>
                     <AnimatePresence initial={false}>
                         {isOpen && (
                             <motion.div
+                                id="mobile-navigation-menu"
                                 key="mobile-menu"
                                 layout
                                 initial={{ opacity: 0, y: -6, height: 0 }}
