@@ -40,3 +40,5 @@ next-env.d.ts
 .idea/modules.xml
 .idea/vcs.xml
 .env
+.env.example
+docker-compose.yml
