@@ -1,4 +1,5 @@
 import { lexicalEditor } from "@payloadcms/richtext-lexical"
+import { sanitizeLexicalUploadValues } from "@/lib/sanitizeLexicalUploadValues"
 import type { CollectionConfig } from "payload"
 
 export const Blog: CollectionConfig = {
@@ -38,6 +39,14 @@ export const Blog: CollectionConfig = {
       type: "richText",
       required: true,
       localized: true,
+      hooks: {
+        afterRead: [
+          ({ value }) => sanitizeLexicalUploadValues(value),
+        ],
+        beforeChange: [
+          ({ value }) => sanitizeLexicalUploadValues(value),
+        ],
+      },
     },
     {
       name: "shortDescription",
