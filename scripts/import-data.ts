@@ -374,15 +374,17 @@ const normalizeNumericID = (value: number | string | undefined) => {
     return undefined
 }
 
-const resolveMediaFilePath = async (filename: string) => {
+const resolveMediaFilePath = async (filename?: string) => {
+    const filterParts = (...parts) => parts.filter(Boolean);
+
     const candidatePaths = [
-        mediaImportSourceDir ? path.resolve(mediaImportSourceDir, filename) : undefined,
-        path.resolve(projectRoot, "media", filename),
-        path.resolve(projectRoot, ".next", "standalone", "media", filename),
-        path.resolve(projectRoot, "public", filename),
-        path.resolve(process.cwd(), "media", filename),
-        path.resolve(process.cwd(), ".next", "standalone", "media", filename),
-        path.resolve(process.cwd(), "public", filename),
+        mediaImportSourceDir ? path.resolve(...filterParts(mediaImportSourceDir, filename)) : undefined,
+        path.resolve(...filterParts(projectRoot, "media", filename)),
+        path.resolve(...filterParts(projectRoot, ".next", "standalone", "media", filename)),
+        path.resolve(...filterParts(projectRoot, "public", filename)),
+        path.resolve(...filterParts(process.cwd(), "media", filename)),
+        path.resolve(...filterParts(process.cwd(), ".next", "standalone", "media", filename)),
+        path.resolve(...filterParts(process.cwd(), "public", filename)),
     ]
 
     for (const candidatePath of [...new Set(candidatePaths.filter((value): value is string => Boolean(value)))]) {
@@ -398,7 +400,11 @@ const resolveMediaFilePath = async (filename: string) => {
 }
 
 const prepareMediaImportSource = async () => {
-    const sourceDir = path.resolve(projectRoot, "media")
+    const sourceDir = await resolveMediaFilePath(undefined);
+    if (sourceDir === undefined) {
+        throw new Error('Media Source dir not found');
+    }
+
     const tempDir = await mkdtemp(path.join(os.tmpdir(), "cygnus-media-import-"))
 
     try {
