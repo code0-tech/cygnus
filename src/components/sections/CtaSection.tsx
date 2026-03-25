@@ -51,17 +51,17 @@ export const CtaSection: React.FC<CtaSectionProps> = ({ content }) => {
     return (
         <Section showBlur={false} showFunnel={false} animationPreset="fade-in">
             <motion.div
-                className={"glass-card-shell w-full rounded-[1.8rem] bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))]! shadow-lg!"}
+                className={"glass-card-shell w-full rounded-3xl bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))]! shadow-lg!"}
                 variants={staggerContainer}
                 initial="hidden"
                 whileInView="show"
                 viewport={{ once: true, amount: 0.25 }}
             >
                 <div aria-hidden="true" className="glass-card-topline" />
-                <div className={"relative flex w-full flex-col items-center justify-center gap-4 overflow-hidden rounded-4xl px-6 py-12 sm:px-10"}>
+                <div className={"relative flex w-full flex-col items-center justify-center gap-4 overflow-hidden rounded-3xl px-6 py-12 sm:px-10"}>
 
                     <InteractiveGridPattern
-                        className="mask-[radial-gradient(600px_circle_at_center,white,transparent)]"
+                        className="mask-[radial-gradient(600px_circle_at_center,white,transparent)] rounded-3xl"
                         width={40}
                         height={40}
                         squares={[35, 15]}

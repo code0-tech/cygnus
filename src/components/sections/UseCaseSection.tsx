@@ -66,12 +66,12 @@ export const UseCaseSection: React.FC<UseCaseSectionProps> = ({ content }) => {
                 {content.useCases.map((item, index) => {
                     const animationPreset = USE_CASE_ANIMATION_SEQUENCE[index % USE_CASE_ANIMATION_SEQUENCE.length]
                     const animationConfig = ANIMATION_PRESETS[animationPreset]
-                    const image = typeof item.image === "object" ? item.image : null
+                    const image = item.image as Media
 
                     return (
                         <motion.div
                             key={item.id ?? item.label}
-                            className={`w-full flex flex-col items-center gap-8 ${index % 2 === 0 ? "md:flex-row" : "md:flex-row-reverse"}`}
+                            className={`w-full flex flex-col items-center gap-8 ${index % 2 === 0 ? "lg:flex-row" : "lg:flex-row-reverse"}`}
                             initial={animationConfig.initial}
                             whileInView={animationConfig.whileInView}
                             viewport={{ once: true, amount: 0.2 }}
@@ -81,16 +81,16 @@ export const UseCaseSection: React.FC<UseCaseSectionProps> = ({ content }) => {
                             }}
                         >
                             <motion.div
-                                className="mt-4 hidden w-1/2 px-2 pb-2 text-center md:block md:text-left"
+                                className="mt-4 hidden w-1/2 px-2 pb-2 text-center lg:block lg:text-left"
                                 variants={staggerContainer}
                                 initial="hidden"
                                 whileInView="show"
                                 viewport={{ once: true, amount: 0.35 }}
                             >
-                                <motion.p variants={staggerItem} className="text-xl font-semibold text-white md:text-3xl">{item.title}</motion.p>
-                                <motion.p variants={staggerItem} className="mt-3 max-w-xl text-sm leading-7 text-white/75 md:text-base">{item.description}</motion.p>
+                                <motion.p variants={staggerItem} className="text-xl font-semibold text-white lg:text-3xl">{item.title}</motion.p>
+                                <motion.p variants={staggerItem} className="mt-3 max-w-xl text-sm leading-7 text-white/75 lg:text-base">{item.description}</motion.p>
                                 {item.bulletPoints?.length ? (
-                                    <motion.ul variants={staggerItem} className="mt-5 space-y-2.5 text-sm text-white/80 md:text-base">
+                                    <motion.ul variants={staggerItem} className="mt-5 space-y-2.5 text-sm text-white/80 lg:text-base">
                                         {item.bulletPoints.map((point, pointIndex) => (
                                             <li key={`${item.id ?? item.label}-point-${pointIndex}`} className="flex items-center gap-2">
                                                 <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-brand" />
@@ -107,26 +107,20 @@ export const UseCaseSection: React.FC<UseCaseSectionProps> = ({ content }) => {
                                     </motion.div>
                                 ) : null}
                             </motion.div>
-                            <div className="relative w-full md:w-2/3">
-                                <div
-                                    aria-hidden="true"
-                                    className="pointer-events-none absolute -inset-x-12 -inset-y-10 -z-10 rounded-4xl [background:radial-gradient(ellipse_at_center,rgba(122,203,255,0.16)_0%,rgba(122,203,255,0.08)_28%,rgba(122,203,255,0.03)_48%,transparent_76%)]"
-                                />
-                                <div className="glass-card-shell relative z-10 h-112 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))]! shadow-[0_12px_40px_rgba(0,0,0,0.18)]!">
-                                    <div aria-hidden="true" className="glass-card-topline opacity-60" />
-                                    {image?.url ? (
-                                        <Image
-                                            src={image.url}
-                                            alt={image.alt ?? item.title}
-                                            fill
-                                            sizes="(min-width: 768px) 66vw, 100vw"
-                                            className="object-cover"
-                                        />
-                                    ) : null}
-                                </div>
+                            <div className="glass-card-shell w-full lg:w-2/3 aspect-video">
+                                <div aria-hidden="true" className="glass-card-topline" />
+                                {image?.url ? (
+                                    <Image
+                                        src={image.url}
+                                        alt={image.alt ?? item.title}
+                                        fill
+                                        sizes="(min-width: 768px) 66vw, 100vw"
+                                        className="object-contain"
+                                    />
+                                ) : null}
                             </div>
                             <motion.div
-                                className="w-full px-2 pb-2 text-left md:hidden md:text-center"
+                                className="w-full px-2 pb-2 text-left lg:hidden lg:text-center"
                                 variants={staggerContainer}
                                 initial="hidden"
                                 whileInView="show"

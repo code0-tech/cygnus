@@ -18,7 +18,7 @@ export default async function BlogPage({ params }: { params: Promise<{ locale: s
     return (
         <>
             <Aurora />
-            <LandingContainer className="py-[20vh]">
+            <LandingContainer className="py-[16vh]">
                 <div className="w-full md:w-[50vw] mx-auto flex flex-col gap-8">
                     <h1 className="hidden">Blog</h1>
                     {posts.length === 0 && <p className="text-white/60">No blog posts available.</p>}

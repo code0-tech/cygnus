@@ -97,7 +97,7 @@ export async function BlogPost({ slug, locale }: BlogPostProps) {
                 <LinkButton
                     href={`/${locale}/blog`}
                     showArrow={false}
-                    className="border-0 hover:bg-white/10 pl-2.5 pr-4 py-1 rounded-lg hover:text-white"
+                    className="border-0 hover:bg-white/10 pl-2.5 pr-4 py-1 rounded-xl hover:text-white"
                 >
                     <IconArrowLeft size={16} />
                     {locale === "de" ? "Zurück" : "Back"}
@@ -135,7 +135,7 @@ export async function BlogPost({ slug, locale }: BlogPostProps) {
                 </div>
             )}
 
-            <div className="grid grid-cols-1 gap-12 lg:grid-cols-4 lg:items-start">
+            <div className="grid grid-cols-1 gap-12 lg:grid-cols-4">
                 <TableOfContents headings={headings} />
                 <article className="lg:col-span-3">
                     <MarkdownContent content={contentHtmlWithIds} />

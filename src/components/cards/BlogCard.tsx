@@ -19,7 +19,7 @@ export function BlogCard({ locale, post }: { locale: string, post: BlogPostItem 
         <Link
             href={`/${locale}/blog/${post.slug}`}
             onClick={() => trigger("medium")}
-            className="group block"
+            className="block"
         >
             <Card
                 variant="filled"
@@ -36,7 +36,7 @@ export function BlogCard({ locale, post }: { locale: string, post: BlogPostItem 
                                 alt={heroImage.alt ?? post.title}
                                 fill
                                 sizes="(min-width: 1024px) 33vw, 128px"
-                                className="object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+                                className="object-cover"
                             />
                         </div>
                     ) : (

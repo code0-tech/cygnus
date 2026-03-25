@@ -30,7 +30,7 @@ export function FirstBlogCard({ locale, post }: { locale: string, post: BlogPost
 
                 <div className="relative z-10 flex flex-col gap-4 md:gap-6">
                     {heroImage?.url ? (
-                        <div className="relative aspect-5/2 w-full overflow-hidden rounded-2xl border border-white/8 bg-primary/40">
+                        <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-white/8 bg-primary/40">
                             <Image
                                 src={heroImage.url}
                                 alt={heroImage.alt ?? post.title}
@@ -41,7 +41,7 @@ export function FirstBlogCard({ locale, post }: { locale: string, post: BlogPost
                             />
                         </div>
                     ) : (
-                        <div className="image-placeholder aspect-5/2 w-full px-4 text-sm">
+                        <div className="image-placeholder aspect-video w-full px-4 text-sm">
                             {locale === "de" ? "Kein Bild" : "No image"}
                         </div>
                     )}

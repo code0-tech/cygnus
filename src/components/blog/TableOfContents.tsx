@@ -26,12 +26,13 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
     const [isMobile, setIsMobile] = useState(false)
     const [showMobileToc, setShowMobileToc] = useState(false)
     const [barStyle, setBarStyle] = useState({ y: 0, scaleY: 0, opacity: 0 })
-    const [isDesktopFixed, setIsDesktopFixed] = useState(false)
-    const [desktopStyle, setDesktopStyle] = useState<{ left: number, width: number } | null>(null)
+    const [desktopMode, setDesktopMode] = useState<"static" | "fixed" | "bottom">("static")
+    const [desktopStyle, setDesktopStyle] = useState<{ left: number, width: number, top: number } | null>(null)
 
     const mobileTocRef = useRef<HTMLDivElement>(null)
     const desktopTocRef = useRef<HTMLDivElement>(null)
     const desktopWrapperRef = useRef<HTMLDivElement>(null)
+    const desktopContainerRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
         const mediaQuery = window.matchMedia("(max-width: 1023px)")
@@ -163,40 +164,43 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
 
     useEffect(() => {
         if (isMobile) {
-            setIsDesktopFixed(false)
+            setDesktopMode("static")
             return
         }
 
         const wrapper = desktopWrapperRef.current
-        if (!wrapper) return
-
-        const measure = () => {
-            const rect = wrapper.getBoundingClientRect()
-            setDesktopStyle((prev) => (
-                prev?.left === rect.left && prev?.width === rect.width
-                    ? prev
-                    : { left: rect.left, width: rect.width }
-            ))
-        }
-
-        measure()
-
-        const resizeObserver = new ResizeObserver(measure)
-        resizeObserver.observe(wrapper)
+        const container = desktopContainerRef.current
+        if (!wrapper || !container) return
 
         const updateDesktopPosition = () => {
-            const rect = wrapper.getBoundingClientRect()
-            const nextFixed = rect.top <= desktopTopOffset
+            const wrapperRect = wrapper.getBoundingClientRect()
+            const containerHeight = container.offsetHeight
+            const wrapperHeight = wrapper.offsetHeight
+            const maxTop = Math.max(wrapperHeight - containerHeight, 0)
+            const wrapperTop = window.scrollY + wrapperRect.top
+            const fixedTop = window.scrollY + desktopTopOffset
 
-            setIsDesktopFixed((prev) => (prev === nextFixed ? prev : nextFixed))
+            const nextMode =
+                fixedTop <= wrapperTop
+                    ? "static"
+                    : fixedTop >= wrapperTop + maxTop
+                        ? "bottom"
+                        : "fixed"
+
+            setDesktopMode((prev) => (prev === nextMode ? prev : nextMode))
             setDesktopStyle((prev) => (
-                prev?.left === rect.left && prev?.width === rect.width
+                prev?.left === wrapperRect.left && prev?.width === wrapperRect.width && prev?.top === maxTop
                     ? prev
-                    : { left: rect.left, width: rect.width }
+                    : { left: wrapperRect.left, width: wrapperRect.width, top: maxTop }
             ))
         }
 
         updateDesktopPosition()
+
+        const resizeObserver = new ResizeObserver(updateDesktopPosition)
+        resizeObserver.observe(wrapper)
+        resizeObserver.observe(container)
+
         window.addEventListener("scroll", updateDesktopPosition, { passive: true })
         window.addEventListener("resize", updateDesktopPosition)
 
@@ -308,14 +312,25 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
                 )}
             </AnimatePresence>
 
-            <div ref={desktopWrapperRef} className="hidden lg:block w-52 self-start">
+            <div ref={desktopWrapperRef} className="relative hidden h-full lg:block lg:w-52">
                 <div
-                    className={cn("max-h-[calc(100vh-8rem)] overflow-y-auto", isDesktopFixed && "fixed z-30")}
-                    style={isDesktopFixed && desktopStyle ? {
-                        top: `${desktopTopOffset}px`,
-                        left: `${desktopStyle.left}px`,
-                        width: `${desktopStyle.width}px`,
-                    } : undefined}
+                    ref={desktopContainerRef}
+                    className={cn(
+                        "max-h-[calc(100vh-8rem)] overflow-y-auto",
+                        desktopMode === "fixed" && "fixed z-30",
+                        desktopMode === "bottom" && "absolute left-0 right-0",
+                    )}
+                    style={
+                        desktopMode === "fixed" && desktopStyle
+                            ? {
+                                top: `${desktopTopOffset}px`,
+                                left: `${desktopStyle.left}px`,
+                                width: `${desktopStyle.width}px`,
+                            }
+                            : desktopMode === "bottom" && desktopStyle
+                                ? { top: `${desktopStyle.top}px` }
+                                : undefined
+                    }
                 >
                     <div className="flex items-start gap-2">
                         <IconAlignLeft size={20}/>

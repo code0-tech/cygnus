@@ -110,7 +110,7 @@ export function Section({
                 : undefined}
         >
             {showBlur && (funnelType === "center" ? (
-            <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 -bottom-40 top-0 [background:radial-gradient(circle,rgba(255,255,255,0.1),transparent_70%)]" />
+                <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 -bottom-60 top-0 [background:radial-gradient(circle,rgba(255,255,255,0.1),transparent_70%)]" />
             ) : (
                 <div />
             ))}
