@@ -1,6 +1,6 @@
 import { getBlogPostBySlug } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
-import type { Blog, Media, User } from "@/payload-types"
+import type { Blog, Media, TeamMember } from "@/payload-types"
 import { IconArrowLeft } from "@tabler/icons-react"
 import { convertLexicalToHTML } from "@payloadcms/richtext-lexical/html"
 import Image from "next/image"
@@ -108,19 +108,20 @@ export async function BlogPost({ slug, locale }: BlogPostProps) {
                 <h1 className="text-4xl font-semibold mb-3">{post.title}</h1>
                 {post.shortDescription ? <p className="text-balance text-lg text-white/70 mb-4">{post.shortDescription}</p> : null}
                 <p className="text-sm text-white/60">
-                    {(post.author as User).name} - {publishedDate}
+                    {(post.author as TeamMember).name} - {publishedDate}
                 </p>
             </header>
 
             {heroImage?.url ? (
                 <div className="glass-card-shell p-2">
                     <div aria-hidden="true" className="glass-card-topline" />
-                    <div className="relative aspect-video md:aspect-16/7 lg:aspect-16/5 w-full overflow-hidden rounded-2xl ring ring-white/10">
+                    <div className="relative aspect-video w-full overflow-hidden rounded-2xl ring ring-white/10">
                         <Image
                             src={heroImage.url}
                             alt={heroImage.alt ?? post.title}
                             fill
                             priority
+                            sizes="(min-width: 1024px) 75vw, 100vw"
                             className="object-cover"
                         />
                     </div>
@@ -128,7 +129,7 @@ export async function BlogPost({ slug, locale }: BlogPostProps) {
             ) : (
                 <div className="glass-card-shell p-3">
                     <div aria-hidden="true" className="glass-card-topline" />
-                    <div className="aspect-video md:aspect-16/7 lg:aspect-16/5 w-full rounded-2xl ring ring-white/10 bg-white/5 flex items-center justify-center text-white/50 text-sm">
+                    <div className="aspect-video w-full rounded-2xl ring ring-white/10 bg-white/5 flex items-center justify-center text-white/50 text-sm">
                         {locale === "de" ? "Kein Hero-Bild vorhanden" : "No hero image available"}
                     </div>
                 </div>

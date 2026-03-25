@@ -54,7 +54,7 @@ npm run standalone
 
 ## Data Export
 
-Exports all import/export-enabled Payload collections as JSON files into [`Export/`](/C:/Users/Marius/OneDrive/Desktop/Projects/code0/cygnus/Export).
+Exports all import/export-enabled Payload collections as JSON files into [`export/`](./export).
 
 ```powershell
 npm run export-data
@@ -68,7 +68,7 @@ Notes:
 
 ## Data Import
 
-Imports all `*.json` files from [`export/`](/C:/Users/Marius/OneDrive/Desktop/Projects/code0/cygnus/export) into the matching Payload collections.
+Imports all `*.json` files from [`export/`](./export) into the matching Payload collections.
 
 ```powershell
 npm run import-data

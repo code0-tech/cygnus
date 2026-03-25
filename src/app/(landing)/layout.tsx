@@ -1,5 +1,5 @@
-import { createMetadata } from "@/lib/siteConfig"
 import { MotionProvider } from "@/components/providers/MotionProvider"
+import { createMetadata } from "@/lib/siteConfig"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import { ReactNode } from "react"

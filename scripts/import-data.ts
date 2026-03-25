@@ -1,5 +1,7 @@
-import { access, mkdir, readdir, readFile } from "node:fs/promises"
+import { access, copyFile, mkdir, mkdtemp, readdir, readFile, rm } from "node:fs/promises"
 import path from "node:path"
+import os from "node:os"
+import { fileURLToPath } from "node:url"
 import nextEnv from "@next/env"
 import { createLocalReq, getPayload } from "payload"
 import { createImport } from "../node_modules/@payloadcms/plugin-import-export/dist/import/createImport.js"
@@ -19,28 +21,32 @@ const MATCH_FIELD = "id"
 const DELETE_BATCH_SIZE = 100
 const DEFAULT_DATA_DIR = "export"
 const AUTH_COLLECTION_SLUG = "users"
-const TEMP_IMPORT_USER_ID = 2147483647
-const TEMP_IMPORT_USER_EMAIL = "payload-import-temp@local.invalid"
-const TEMP_IMPORT_USER_NAME = "Payload Import"
+const CENTRAL_LOGIN_EMAIL = "admin@code0.tech"
+const CENTRAL_LOGIN_NAME = "Code0 Admin"
 const MEDIA_COLLECTION_SLUG = "media"
 const NAVBAR_COLLECTION_SLUG = "navbarItems"
 const FOOTER_COLLECTION_SLUG = "footer"
 const FEATURES_COLLECTION_SLUG = "features"
 const SECTIONS_COLLECTION_SLUG = "sections"
+const TEAM_MEMBERS_COLLECTION_SLUG = "team-members"
+const BLOG_COLLECTION_SLUG = "blog"
 const IMPORT_ORDER = [
     "media",
-    "users",
     "navbarItems",
     "sections",
     "footer",
+    "cookie-banner",
     "pages",
     "features",
     "jobs",
+    "team-members",
     "blog",
     "roadmapItems",
 ] as const
 
 const { loadEnvConfig } = nextEnv
+const scriptDir = path.dirname(fileURLToPath(import.meta.url))
+const projectRoot = path.resolve(scriptDir, "..")
 
 loadEnvConfig(process.cwd())
 process.env.PAYLOAD_SKIP_EMAIL_VERIFY = "true"
@@ -49,6 +55,8 @@ type PayloadInstance = Awaited<ReturnType<typeof getPayload>>
 type ImportUser = Awaited<ReturnType<typeof resolveImportUser>>["user"] & { collection: "users" }
 type ImportLocale = "all" | "en" | "de"
 type ImportErrorEntry<TDocument> = { error: string; index: number; doc: TDocument }
+
+let mediaImportSourceDir: string | undefined
 
 const getImportCollectionSlugs = (collections: Array<{ slug: string } & ImportableCollectionConfig>) => {
     const importCollection = collections.find((collection) => collection.slug === "imports") as
@@ -61,37 +69,7 @@ const getImportCollectionSlugs = (collections: Array<{ slug: string } & Importab
         throw new Error("Could not determine importable collections from the import-export plugin configuration.")
     }
 
-    return slugs
-}
-
-const createTemporaryImportUser = async (payload: PayloadInstance) => {
-    const user = await payload.create({
-        collection: AUTH_COLLECTION_SLUG,
-        data: {
-            id: TEMP_IMPORT_USER_ID,
-            email: TEMP_IMPORT_USER_EMAIL,
-            name: TEMP_IMPORT_USER_NAME,
-            password: process.env.PAYLOAD_USER_PASS ?? "TempImportPass123!",
-        },
-        overrideAccess: true,
-    })
-
-    console.log(`Created temporary import user ${user.id} (${TEMP_IMPORT_USER_EMAIL}).`)
-
-    return user
-}
-
-const recreateTemporaryImportUser = async (
-    payload: PayloadInstance,
-    existingUserID: number | string
-) => {
-    await payload.delete({
-        collection: AUTH_COLLECTION_SLUG,
-        id: existingUserID,
-        overrideAccess: true,
-    })
-
-    return createTemporaryImportUser(payload)
+    return slugs.filter((slug) => slug !== AUTH_COLLECTION_SLUG)
 }
 
 const resolveImportUser = async (payload: PayloadInstance) => {
@@ -102,7 +80,7 @@ const resolveImportUser = async (payload: PayloadInstance) => {
         pagination: false,
         where: {
             email: {
-                equals: TEMP_IMPORT_USER_EMAIL,
+                equals: CENTRAL_LOGIN_EMAIL,
             },
         },
     })
@@ -110,22 +88,42 @@ const resolveImportUser = async (payload: PayloadInstance) => {
     const user = users.docs[0]
 
     if (!user) {
+        const createdUser = await payload.create({
+            collection: AUTH_COLLECTION_SLUG,
+            data: {
+                email: CENTRAL_LOGIN_EMAIL,
+                name: CENTRAL_LOGIN_NAME,
+                password: process.env.PAYLOAD_USER_PASS ?? "TempImportPass123!",
+            },
+            overrideAccess: true,
+        })
+
+        console.log(`Created central login user ${createdUser.id} (${CENTRAL_LOGIN_EMAIL}).`)
+
         return {
-            isTemporary: true,
-            user: await createTemporaryImportUser(payload),
+            user: createdUser,
         }
     }
 
-    if (String(user.id) !== String(TEMP_IMPORT_USER_ID)) {
-        return {
-            isTemporary: true,
-            user: await recreateTemporaryImportUser(payload, user.id),
-        }
-    }
+    await payload.update({
+        collection: AUTH_COLLECTION_SLUG,
+        id: user.id,
+        data: {
+            email: CENTRAL_LOGIN_EMAIL,
+            name: CENTRAL_LOGIN_NAME,
+            password: process.env.PAYLOAD_USER_PASS ?? "TempImportPass123!",
+        },
+        overrideAccess: true,
+    })
+
+    console.log(`Updated central login user ${user.id} (${CENTRAL_LOGIN_EMAIL}).`)
 
     return {
-        isTemporary: true,
-        user,
+        user: {
+            ...user,
+            email: CENTRAL_LOGIN_EMAIL,
+            name: CENTRAL_LOGIN_NAME,
+        },
     }
 }
 
@@ -238,23 +236,6 @@ type ImportedMediaDocument = {
     updatedAt?: string
 }
 
-type ImportedUserDocument = {
-    about?: Record<string, string> | null
-    collection?: string
-    createdAt?: string
-    email: string
-    id?: number | string
-    image?: {
-        id?: number | string
-    } | number | string | null
-    joinedAt?: string | null
-    name?: string
-    role?: Record<string, string> | null
-    sessions?: unknown[]
-    shortDescription?: Record<string, string> | null
-    updatedAt?: string
-}
-
 type ImportedNavbarItemDocument = {
     createdAt?: string
     href?: string | null
@@ -272,6 +253,46 @@ type ImportedNavbarItemDocument = {
         }>
         | null
     title?: Record<string, string> | null
+    updatedAt?: string
+}
+
+type ImportedTeamMemberDocument = {
+    about?: Record<string, string> | null
+    createdAt?: string
+    id?: number | string
+    image?: {
+        id?: number | string
+    } | number | string | null
+    joinedAt?: string | null
+    name?: string
+    role?: Record<string, string> | null
+    shortDescription?: Record<string, string> | null
+    updatedAt?: string
+}
+
+type ImportedBlogDocument = {
+    author?: {
+        id?: number | string
+    } | number | string | null
+    content?: Record<string, unknown> | null
+    createdAt?: string
+    heroImage?: {
+        id?: number | string
+    } | number | string | null
+    id?: number | string
+    meta?: {
+        description?: Record<string, string | null> | null
+        keywords?: Record<string, string | null> | null
+    } | null
+    ogImage?: {
+        id?: number | string
+    } | number | string | null
+    shortDescription?: Record<string, string> | null
+    slug?: string
+    title?: Record<string, string> | null
+    twitterImage?: {
+        id?: number | string
+    } | number | string | null
     updatedAt?: string
 }
 
@@ -355,11 +376,16 @@ const normalizeNumericID = (value: number | string | undefined) => {
 
 const resolveMediaFilePath = async (filename: string) => {
     const candidatePaths = [
+        mediaImportSourceDir ? path.resolve(mediaImportSourceDir, filename) : undefined,
+        path.resolve(projectRoot, "media", filename),
+        path.resolve(projectRoot, ".next", "standalone", "media", filename),
+        path.resolve(projectRoot, "public", filename),
         path.resolve(process.cwd(), "media", filename),
         path.resolve(process.cwd(), ".next", "standalone", "media", filename),
+        path.resolve(process.cwd(), "public", filename),
     ]
 
-    for (const candidatePath of candidatePaths) {
+    for (const candidatePath of [...new Set(candidatePaths.filter((value): value is string => Boolean(value)))]) {
         try {
             await access(candidatePath)
             return candidatePath
@@ -369,6 +395,27 @@ const resolveMediaFilePath = async (filename: string) => {
     }
 
     return undefined
+}
+
+const prepareMediaImportSource = async () => {
+    const sourceDir = path.resolve(projectRoot, "media")
+    const tempDir = await mkdtemp(path.join(os.tmpdir(), "cygnus-media-import-"))
+
+    try {
+        const entries = await readdir(sourceDir, { withFileTypes: true })
+
+        await Promise.all(
+            entries
+                .filter((entry) => entry.isFile())
+                .map((entry) => copyFile(path.join(sourceDir, entry.name), path.join(tempDir, entry.name)))
+        )
+
+        mediaImportSourceDir = tempDir
+        console.log(`Prepared media import source: ${tempDir}`)
+    } catch (error) {
+        await rm(tempDir, { force: true, recursive: true }).catch(() => undefined)
+        throw error
+    }
 }
 
 const importMediaCollection = async (
@@ -440,14 +487,17 @@ const importMediaCollection = async (
     console.log(`Imported media: total=${mediaDocuments.length}, imported=${imported}, updated=0, errors=${errors.length}`)
 
     if (errors.length > 0) {
-        throw new Error(`Import errors in ${file.name}: ${JSON.stringify(errors)}`)
+        console.warn(`Skipped ${errors.length} media entries in ${file.name}.`)
+        console.warn(JSON.stringify(errors))
     }
 
     return mediaIDMap
 }
 
 const normalizeRelationshipID = (
-    value: ImportedUserDocument["image"]
+    value: {
+        id?: number | string
+    } | number | string | null | undefined
 ) => {
     if (typeof value === "number" || typeof value === "string") {
         return normalizeNumericID(value)
@@ -468,7 +518,7 @@ const remapKnownRelationshipID = (
         return undefined
     }
 
-    return idMap.get(String(originalID)) ?? normalizeNumericID(originalID) ?? originalID
+    return idMap.get(String(originalID))
 }
 
 const createImportReq = async (payload: PayloadInstance, importUser: ImportUser, locale: ImportLocale) => {
@@ -559,175 +609,6 @@ const importLocalizedCollection = async <TDocument extends { id?: number | strin
     if (errors.length > 0) {
         throw new Error(`Import errors in ${file.name}: ${JSON.stringify(errors)}`)
     }
-}
-
-const findExistingUserByEmail = async (
-    payload: PayloadInstance,
-    importUser: ImportUser,
-    email: string
-) => {
-    const req = await createImportReq(payload, importUser, "en")
-    const result = await payload.find({
-        collection: AUTH_COLLECTION_SLUG,
-        limit: 1,
-        overrideAccess: true,
-        pagination: false,
-        req,
-        where: {
-            email: {
-                equals: email,
-            },
-        },
-    })
-
-    return result.docs[0]
-}
-
-const importUsersCollection = async (
-    payload: PayloadInstance,
-    importUser: ImportUser,
-    file: { name: string },
-    buffer: Buffer,
-    mediaIDMap: Map<string, number | string>,
-    temporaryImportUserID?: number | string
-) => {
-    const userDocuments = parseImportDocuments<ImportedUserDocument>(buffer)
-    let imported = 0
-    let updated = 0
-    const errors: ImportErrorEntry<ImportedUserDocument>[] = []
-    const userIDMap = new Map<string, number | string>()
-    let temporaryUserConsumed = false
-
-    for (const [index, doc] of userDocuments.entries()) {
-        const normalizedID = normalizeNumericID(doc.id)
-        const userDataBase: Record<string, unknown> = {
-            createdAt: doc.createdAt,
-            email: doc.email,
-            image: remapKnownRelationshipID(normalizeRelationshipID(doc.image), mediaIDMap),
-            joinedAt: doc.joinedAt ?? undefined,
-            name: doc.name ?? doc.email,
-            updatedAt: doc.updatedAt,
-        }
-        const englishLocalizedData: Record<string, unknown> = {
-            about: doc.about?.en ?? undefined,
-            role: doc.role?.en ?? undefined,
-            shortDescription: doc.shortDescription?.en ?? undefined,
-        }
-        const germanLocalizedData: Record<string, unknown> = {
-            about: doc.about?.de ?? undefined,
-            role: doc.role?.de ?? undefined,
-            shortDescription: doc.shortDescription?.de ?? undefined,
-        }
-
-        try {
-            if (!temporaryUserConsumed && temporaryImportUserID !== undefined) {
-                await syncLocalizedDocument(
-                    payload,
-                    importUser,
-                    AUTH_COLLECTION_SLUG,
-                    temporaryImportUserID,
-                    { ...userDataBase, ...englishLocalizedData },
-                    germanLocalizedData,
-                )
-
-                if (normalizedID !== undefined) {
-                    userIDMap.set(String(normalizedID), temporaryImportUserID)
-                }
-
-                updated += 1
-                temporaryUserConsumed = true
-                continue
-            }
-
-            if (normalizedID !== undefined) {
-                const findReq = await createImportReq(payload, importUser, "en")
-                const existingUser = await payload.findByID({
-                    collection: AUTH_COLLECTION_SLUG,
-                    id: normalizedID,
-                    overrideAccess: true,
-                    req: findReq,
-                }).catch(() => undefined)
-
-                if (existingUser) {
-                    await syncLocalizedDocument(
-                        payload,
-                        importUser,
-                        AUTH_COLLECTION_SLUG,
-                        normalizedID,
-                        { ...userDataBase, ...englishLocalizedData },
-                        germanLocalizedData,
-                    )
-
-                    userIDMap.set(String(normalizedID), normalizedID)
-                    updated += 1
-                    continue
-                }
-            }
-
-            const existingUserByEmail = await findExistingUserByEmail(payload, importUser, doc.email)
-
-            if (existingUserByEmail) {
-                await syncLocalizedDocument(
-                    payload,
-                    importUser,
-                    AUTH_COLLECTION_SLUG,
-                    existingUserByEmail.id,
-                    { ...userDataBase, ...englishLocalizedData },
-                    germanLocalizedData,
-                )
-
-                if (normalizedID !== undefined) {
-                    userIDMap.set(String(normalizedID), existingUserByEmail.id)
-                }
-
-                updated += 1
-                continue
-            }
-
-            const createReq = await createImportReq(payload, importUser, "en")
-            const createdUser = await payload.create({
-                collection: AUTH_COLLECTION_SLUG,
-                data: {
-                    ...userDataBase,
-                    ...englishLocalizedData,
-                    password: process.env.PAYLOAD_USER_PASS ?? "TempImportPass123!",
-                } as never,
-                locale: "en",
-                overrideAccess: true,
-                req: createReq,
-            })
-
-            await syncLocalizedDocument(
-                payload,
-                importUser,
-                AUTH_COLLECTION_SLUG,
-                createdUser.id,
-                { ...userDataBase, ...englishLocalizedData },
-                germanLocalizedData,
-            )
-
-            if (normalizedID !== undefined) {
-                userIDMap.set(String(normalizedID), createdUser.id)
-            }
-
-            imported += 1
-        } catch (error) {
-            errors.push({
-                doc,
-                error: formatImportError(error),
-                index,
-            })
-        }
-    }
-
-    console.log(`Imported users: total=${userDocuments.length}, imported=${imported}, updated=${updated}, errors=${errors.length}`)
-    console.log(`Imported users receive the password from PAYLOAD_USER_PASS unless already present in the database.`)
-
-    if (errors.length > 0) {
-        throw new Error(`Import errors in ${file.name}: ${JSON.stringify(errors)}`)
-    }
-
-    return userIDMap
 }
 
 const mapNavbarSubMenuForLocale = (
@@ -859,6 +740,136 @@ const importFeaturesCollection = async (
                     url: doc.link.url ?? undefined,
                 }
                 : undefined,
+            title: doc.title?.de ?? "",
+        }),
+    })
+}
+
+const importTeamMembersCollection = async (
+    payload: PayloadInstance,
+    importUser: ImportUser,
+    file: { name: string },
+    buffer: Buffer,
+    mediaIDMap: Map<string, number | string>
+) => {
+    const teamMemberDocuments = parseImportDocuments<ImportedTeamMemberDocument>(buffer)
+    let imported = 0
+    let updated = 0
+    const errors: ImportErrorEntry<ImportedTeamMemberDocument>[] = []
+    const teamMemberIDMap = new Map<string, number | string>()
+
+    for (const [index, doc] of teamMemberDocuments.entries()) {
+        const normalizedID = normalizeNumericID(doc.id)
+
+        try {
+            const createReq = await createImportReq(payload, importUser, "en")
+            const createdDocument = await payload.create({
+                collection: TEAM_MEMBERS_COLLECTION_SLUG as "users",
+                data: {
+                    createdAt: doc.createdAt,
+                    id: normalizedID,
+                    image: remapKnownRelationshipID(normalizeRelationshipID(doc.image), mediaIDMap),
+                    joinedAt: doc.joinedAt ?? undefined,
+                    name: doc.name ?? "",
+                    updatedAt: doc.updatedAt,
+                    about: doc.about?.en ?? undefined,
+                    role: doc.role?.en ?? undefined,
+                    shortDescription: doc.shortDescription?.en ?? undefined,
+                } as never,
+                locale: "en",
+                overrideAccess: true,
+                req: createReq,
+            })
+
+            await syncLocalizedDocument(
+                payload,
+                importUser,
+                TEAM_MEMBERS_COLLECTION_SLUG,
+                createdDocument.id,
+                {
+                    createdAt: doc.createdAt,
+                    image: remapKnownRelationshipID(normalizeRelationshipID(doc.image), mediaIDMap),
+                    joinedAt: doc.joinedAt ?? undefined,
+                    name: doc.name ?? "",
+                    updatedAt: doc.updatedAt,
+                    about: doc.about?.en ?? undefined,
+                    role: doc.role?.en ?? undefined,
+                    shortDescription: doc.shortDescription?.en ?? undefined,
+                },
+                {
+                    about: doc.about?.de ?? undefined,
+                    role: doc.role?.de ?? undefined,
+                    shortDescription: doc.shortDescription?.de ?? undefined,
+                },
+            )
+
+            if (normalizedID !== undefined) {
+                teamMemberIDMap.set(String(normalizedID), createdDocument.id)
+            }
+
+            imported += 1
+            updated += 1
+        } catch (error) {
+            errors.push({
+                doc,
+                error: formatImportError(error),
+                index,
+            })
+        }
+    }
+
+    console.log(`Imported ${TEAM_MEMBERS_COLLECTION_SLUG}: total=${teamMemberDocuments.length}, imported=${imported}, updated=${updated}, errors=${errors.length}`)
+
+    if (errors.length > 0) {
+        throw new Error(`Import errors in ${file.name}: ${JSON.stringify(errors)}`)
+    }
+
+    return teamMemberIDMap
+}
+
+const importBlogCollection = async (
+    payload: PayloadInstance,
+    importUser: ImportUser,
+    file: { name: string },
+    buffer: Buffer,
+    mediaIDMap: Map<string, number | string>,
+    teamMemberIDMap: Map<string, number | string>
+) => {
+    await importLocalizedCollection<ImportedBlogDocument>({
+        payload,
+        importUser,
+        file,
+        buffer,
+        collection: BLOG_COLLECTION_SLUG,
+        label: BLOG_COLLECTION_SLUG,
+        buildEnglishData: (doc) => ({
+            author: remapKnownRelationshipID(normalizeRelationshipID(doc.author), teamMemberIDMap),
+            content: doc.content?.en ?? undefined,
+            createdAt: doc.createdAt,
+            heroImage: remapKnownRelationshipID(normalizeRelationshipID(doc.heroImage), mediaIDMap),
+            id: normalizeNumericID(doc.id),
+            meta: doc.meta
+                ? {
+                    description: doc.meta.description?.en ?? undefined,
+                    keywords: doc.meta.keywords?.en ?? undefined,
+                }
+                : undefined,
+            ogImage: remapKnownRelationshipID(normalizeRelationshipID(doc.ogImage), mediaIDMap),
+            shortDescription: doc.shortDescription?.en ?? undefined,
+            slug: doc.slug ?? "",
+            title: doc.title?.en ?? "",
+            twitterImage: remapKnownRelationshipID(normalizeRelationshipID(doc.twitterImage), mediaIDMap),
+            updatedAt: doc.updatedAt,
+        }),
+        buildGermanData: (doc) => ({
+            content: doc.content?.de ?? undefined,
+            meta: doc.meta
+                ? {
+                    description: doc.meta.description?.de ?? undefined,
+                    keywords: doc.meta.keywords?.de ?? undefined,
+                }
+                : undefined,
+            shortDescription: doc.shortDescription?.de ?? undefined,
             title: doc.title?.de ?? "",
         }),
     })
@@ -1008,22 +1019,19 @@ const mapContainsValue = (
 
 const main = async () => {
     let payload: Awaited<ReturnType<typeof getPayload>> | undefined
-    let temporaryImportUserID: number | string | undefined
     let mediaIDMap = new Map<string, number | string>()
-    let userIDMap = new Map<string, number | string>()
+    const userIDMap = new Map<string, number | string>()
+    let teamMemberIDMap = new Map<string, number | string>()
 
     try {
         const { default: config } = await import("../src/payload.config")
         const resolvedConfig = await config
         payload = await getPayload({ config: resolvedConfig })
         console.log("Payload initialized.")
-        const { user, isTemporary } = await resolveImportUser(payload)
+        const { user } = await resolveImportUser(payload)
         console.log(`Import user resolved: id=${user.id}, email=${user.email}`)
         const importUser = { ...user, collection: "users" as const }
-
-        if (isTemporary) {
-            temporaryImportUserID = importUser.id
-        }
+        await prepareMediaImportSource()
 
         const importableCollections = getImportCollectionSlugs(resolvedConfig.collections)
         const inputDir = await resolveInputDir()
@@ -1079,28 +1087,6 @@ const main = async () => {
                 continue
             }
 
-            if (collectionSlug === AUTH_COLLECTION_SLUG) {
-                userIDMap = await importUsersCollection(payload, importUser, file, buffer, mediaIDMap, temporaryImportUserID)
-
-                if (temporaryImportUserID) {
-                    if (mapContainsValue(userIDMap, temporaryImportUserID)) {
-                        console.log(`Reused temporary auth user ${temporaryImportUserID} as imported user.`)
-                        temporaryImportUserID = undefined
-                    } else {
-                        await payload.delete({
-                            collection: importUser.collection,
-                            id: temporaryImportUserID,
-                            overrideAccess: true,
-                        })
-
-                        console.log(`Removed temporary auth user ${temporaryImportUserID} after users import.`)
-                        temporaryImportUserID = undefined
-                    }
-                }
-
-                continue
-            }
-
             if (collectionSlug === NAVBAR_COLLECTION_SLUG) {
                 await importNavbarItemsCollection(payload, importUser, file, buffer)
                 continue
@@ -1118,6 +1104,16 @@ const main = async () => {
 
             if (collectionSlug === SECTIONS_COLLECTION_SLUG) {
                 await importSectionsCollection(payload, importUser, file, buffer)
+                continue
+            }
+
+            if (collectionSlug === TEAM_MEMBERS_COLLECTION_SLUG) {
+                teamMemberIDMap = await importTeamMembersCollection(payload, importUser, file, buffer, mediaIDMap)
+                continue
+            }
+
+            if (collectionSlug === BLOG_COLLECTION_SLUG) {
+                await importBlogCollection(payload, importUser, file, buffer, mediaIDMap, teamMemberIDMap)
                 continue
             }
 
@@ -1149,19 +1145,9 @@ const main = async () => {
             }
         }
     } finally {
-        if (payload && temporaryImportUserID) {
-            try {
-                await payload.delete({
-                    collection: AUTH_COLLECTION_SLUG,
-                    id: temporaryImportUserID,
-                    overrideAccess: true,
-                })
-
-                console.log(`Removed temporary import user ${temporaryImportUserID}.`)
-            } catch (cleanupError) {
-                console.error("Temporary import user cleanup failed.")
-                console.error(cleanupError)
-            }
+        if (mediaImportSourceDir) {
+            await rm(mediaImportSourceDir, { force: true, recursive: true }).catch(() => undefined)
+            mediaImportSourceDir = undefined
         }
 
         if (payload) {

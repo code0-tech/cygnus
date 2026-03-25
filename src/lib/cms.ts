@@ -1,6 +1,6 @@
 "use server"
 
-import type { Blog, Feature, Footer, Job, Media, NavbarItem, Page, RoadmapItem as PayloadRoadmapItem, Section, User } from "@/payload-types"
+import type { Blog, CookieBanner, Feature, Footer, Job, Media, NavbarItem, Page, RoadmapItem as PayloadRoadmapItem, Section, TeamMember, User } from "@/payload-types"
 import { DEFAULT_LOCALE, type AppLocale } from "@/lib/i18n"
 import { getPayloadClient } from "@/lib/payloadClient"
 import { cache } from "react"
@@ -34,12 +34,12 @@ interface FeatureItem {
 
 export type JobItem = Pick<Job, "id" | "title" | "slug" | "category" | "type" | "location" | "description" | "order">
 type JobDetailItem = Pick<Job, "id" | "title" | "slug" | "category" | "type" | "location" | "description" | "order" | "content">
-export type TeamMemberItem = Pick<User, "id" | "name" | "image" | "shortDescription" | "about" | "role" | "joinedAt">
+export type TeamMemberItem = Pick<TeamMember, "id" | "name" | "image" | "shortDescription" | "about" | "role" | "joinedAt">
 type RoadmapItem = Pick<PayloadRoadmapItem, "id" | "time" | "title" | "description">
 
 export type BlogPostItem = Pick<Blog, "id" | "title" | "slug" | "content" | "createdAt" | "shortDescription"> & {
     heroImage?: (number | null) | Media
-    author: number | Pick<User, "email" | "name">
+    author: number | Pick<TeamMember, "name" | "image" | "role">
 }
 
 function isMissingPayloadTablesError(error: unknown): boolean {
@@ -128,6 +128,22 @@ const getFooterCached = cache(async (locale: AppLocale): Promise<Footer | null> 
     })
 })
 
+const getCookieBannerCached = cache(async (locale: AppLocale): Promise<CookieBanner | null> => {
+    return withCmsFallback(`getCookieBanner(${locale})`, null, async () => {
+        const payload = await getPayloadClient()
+        const result = await payload.find({
+            collection: "cookie-banner",
+            locale,
+            fallbackLocale: DEFAULT_LOCALE,
+            pagination: false,
+            limit: 1,
+            depth: 0,
+        })
+
+        return (result.docs[0] as CookieBanner | undefined) ?? null
+    })
+})
+
 const getFeaturesCached = cache(async (locale: AppLocale): Promise<FeatureItem[]> => {
     return withCmsFallback(`getFeatures(${locale})`, [], async () => {
         const payload = await getPayloadClient()
@@ -195,11 +211,13 @@ const getJobBySlugCached = cache(async (slug: string, locale: AppLocale): Promis
     })
 })
 
-const getTeamMembersCached = cache(async (): Promise<TeamMemberItem[]> => {
-    return withCmsFallback("getTeamMembers()", [], async () => {
+const getTeamMembersCached = cache(async (locale: AppLocale): Promise<TeamMemberItem[]> => {
+    return withCmsFallback(`getTeamMembers(${locale})`, [], async () => {
         const payload = await getPayloadClient()
         const result = await payload.find({
-            collection: "users",
+            collection: "team-members",
+            locale,
+            fallbackLocale: DEFAULT_LOCALE,
             pagination: false,
             sort: "name",
             depth: 1,
@@ -340,6 +358,10 @@ export async function getFooter(locale: AppLocale = DEFAULT_LOCALE) {
     return getFooterCached(locale)
 }
 
+export async function getCookieBanner(locale: AppLocale = DEFAULT_LOCALE) {
+    return getCookieBannerCached(locale)
+}
+
 export async function getFeatureBySlug(slug: FeatureSlug, locale: AppLocale = DEFAULT_LOCALE) {
     const features = await getFeaturesCached(locale)
     return features.find((feature) => feature.slug === slug) ?? null
@@ -353,8 +375,8 @@ export async function getJobBySlug(slug: string, locale: AppLocale = DEFAULT_LOC
     return getJobBySlugCached(slug, locale)
 }
 
-export async function getTeamMembers(): Promise<TeamMemberItem[]> {
-    return getTeamMembersCached()
+export async function getTeamMembers(locale: AppLocale = DEFAULT_LOCALE): Promise<TeamMemberItem[]> {
+    return getTeamMembersCached(locale)
 }
 
 export async function getJobSlugs(locale: AppLocale = DEFAULT_LOCALE): Promise<string[]> {

@@ -1,3 +1,4 @@
+import ConsentManager from "@/components/providers/ConsentManager"
 import { Navigation } from "@/components/navigation/Navigation"
 import { SectionsProvider } from "@/components/providers/SectionsProvider"
 import { FooterSection } from "@/components/sections/FooterSection"
@@ -32,14 +33,16 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
     ])
 
     return (
-        <div className="bg-primary overflow-x-hidden">
-            <Navigation locale={locale} items={items} />
-            <SectionsProvider sections={sections}>
-                <main id="main-content" className="bg-primary">
-                    {children}
-                </main>
-            </SectionsProvider>
-            <FooterSection locale={locale} footer={footer} />
-        </div>
+        <ConsentManager locale={locale}>
+            <div className="bg-primary overflow-x-hidden">
+                <Navigation locale={locale} items={items} />
+                <SectionsProvider sections={sections}>
+                    <main id="main-content" className="bg-primary">
+                        {children}
+                    </main>
+                </SectionsProvider>
+                <FooterSection locale={locale} footer={footer} />
+            </div>
+        </ConsentManager>
     )
 }

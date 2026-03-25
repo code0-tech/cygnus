@@ -18,33 +18,5 @@ export const Users: CollectionConfig = {
       relationTo: 'media',
       required: false,
     },
-    {
-      name: 'shortDescription',
-      type: 'textarea',
-      localized: true,
-      required: false,
-    },
-    {
-      name: 'about',
-      type: 'textarea',
-      localized: true,
-      required: false,
-    },
-    {
-      name: 'role',
-      type: 'text',
-      localized: true,
-      required: false,
-    },
-    {
-      name: 'joinedAt',
-      type: 'date',
-      required: false,
-      admin: {
-        date: {
-          pickerAppearance: 'dayOnly',
-        },
-      },
-    },
   ],
 }

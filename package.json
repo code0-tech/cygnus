@@ -20,9 +20,11 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "@next/env": "^16.2.1",
+    "@c15t/nextjs": "^1.8.5",
+    "@c15t/scripts": "^1.0.1",
     "@code0-tech/pictor": "^0.4.0",
     "@icons-pack/react-simple-icons": "^13.13.0",
+    "@next/env": "^16.2.1",
     "@payloadcms/db-postgres": "3.80.0",
     "@payloadcms/email-nodemailer": "3.80.0",
     "@payloadcms/next": "3.80.0",

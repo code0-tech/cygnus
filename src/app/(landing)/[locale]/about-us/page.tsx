@@ -12,7 +12,7 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
     if (!isSupportedLocale(locale)) notFound()
 
     const aboutUsPage = await getLandingPage("about-us", locale)
-    const teamMembers = await getTeamMembers()
+    const teamMembers = await getTeamMembers(locale)
     const markdownBlock = aboutUsPage?.layout?.find((block): block is MarkdownLayoutBlock => block.blockType === "markdown") ?? null
     const contentHtml = markdownBlock
         ? convertLexicalToHTML({ data: markdownBlock.content, disableContainer: true })

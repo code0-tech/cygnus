@@ -17,6 +17,29 @@ export const Footer: CollectionConfig = {
       localized: true,
     },
     {
+      name: "socialLinks",
+      label: "Social Links",
+      type: "array",
+      fields: [
+        {
+          name: "platform",
+          type: "select",
+          required: true,
+          options: [
+            { label: "Instagram", value: "instagram" },
+            { label: "Discord", value: "discord" },
+            { label: "X", value: "x" },
+            { label: "GitHub", value: "github" },
+          ],
+        },
+        {
+          name: "url",
+          type: "text",
+          required: true,
+        },
+      ],
+    },
+    {
       name: "groups",
       label: "Groups",
       type: "array",

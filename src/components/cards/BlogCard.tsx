@@ -1,7 +1,7 @@
 "use client"
 
 import { BlogPostItem } from "@/lib/cms"
-import { Media, User } from "@/payload-types"
+import { Media, TeamMember } from "@/payload-types"
 import { Card } from "@code0-tech/pictor"
 import Image from "next/image"
 import Link from "next/link"
@@ -35,6 +35,7 @@ export function BlogCard({ locale, post }: { locale: string, post: BlogPostItem 
                                 src={heroImage.url}
                                 alt={heroImage.alt ?? post.title}
                                 fill
+                                sizes="(min-width: 1024px) 33vw, 128px"
                                 className="object-cover transition-transform duration-700 group-hover:scale-[1.03]"
                             />
                         </div>
@@ -46,7 +47,7 @@ export function BlogCard({ locale, post }: { locale: string, post: BlogPostItem 
 
                     <div className="min-w-0 flex-1 h-32 py-2 flex flex-col justify-center overflow-hidden">
                         <p className="text-xs text-white/50 mb-1">
-                            {(post.author as User).name} - {publishedDate}
+                            {(post.author as TeamMember).name} - {publishedDate}
                         </p>
                         <h2 className="text-xl font-semibold tracking-tight text-white/92 line-clamp-2">{post.title}</h2>
                         {post.shortDescription ? <p className="text-sm leading-6 text-white/70 mt-2 line-clamp-2">{post.shortDescription}</p> : null}

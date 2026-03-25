@@ -72,11 +72,13 @@ export interface Config {
     navbarItems: NavbarItem;
     sections: Section;
     footer: Footer;
+    'cookie-banner': CookieBanner;
     pages: Page;
     features: Feature;
     jobs: Job;
     blog: Blog;
     roadmapItems: RoadmapItem;
+    'team-members': TeamMember;
     exports: Export;
     imports: Import;
     'payload-kv': PayloadKv;
@@ -92,11 +94,13 @@ export interface Config {
     navbarItems: NavbarItemsSelect<false> | NavbarItemsSelect<true>;
     sections: SectionsSelect<false> | SectionsSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
+    'cookie-banner': CookieBannerSelect<false> | CookieBannerSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
     features: FeaturesSelect<false> | FeaturesSelect<true>;
     jobs: JobsSelect<false> | JobsSelect<true>;
     blog: BlogSelect<false> | BlogSelect<true>;
     roadmapItems: RoadmapItemsSelect<false> | RoadmapItemsSelect<true>;
+    'team-members': TeamMembersSelect<false> | TeamMembersSelect<true>;
     exports: ExportsSelect<false> | ExportsSelect<true>;
     imports: ImportsSelect<false> | ImportsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
@@ -154,10 +158,6 @@ export interface User {
   id: number;
   name: string;
   image?: (number | null) | Media;
-  shortDescription?: string | null;
-  about?: string | null;
-  role?: string | null;
-  joinedAt?: string | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -252,6 +252,13 @@ export interface Section {
 export interface Footer {
   id: number;
   company_name: string;
+  socialLinks?:
+    | {
+        platform: 'instagram' | 'discord' | 'x' | 'github';
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
   groups: {
     heading: string;
     items: {
@@ -261,6 +268,53 @@ export interface Footer {
     }[];
     id?: string | null;
   }[];
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "cookie-banner".
+ */
+export interface CookieBanner {
+  id: number;
+  common: {
+    acceptAll: string;
+    rejectAll: string;
+    customize: string;
+    save: string;
+  };
+  cookieBanner: {
+    title: string;
+    description: string;
+  };
+  consentManagerDialog: {
+    title: string;
+    description: string;
+  };
+  consentTypes: {
+    necessary: {
+      title: string;
+      description: string;
+    };
+    measurement: {
+      title: string;
+      description: string;
+    };
+    marketing: {
+      title: string;
+      description: string;
+    };
+  };
+  legalLinks: {
+    privacyPolicy: {
+      label: string;
+      href: string;
+    };
+    termsOfService: {
+      label: string;
+      href: string;
+    };
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -492,7 +546,7 @@ export interface Blog {
   id: number;
   title: string;
   slug: string;
-  author: number | User;
+  author: number | TeamMember;
   content: {
     root: {
       type: string;
@@ -519,6 +573,21 @@ export interface Blog {
      */
     keywords?: string | null;
   };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "team-members".
+ */
+export interface TeamMember {
+  id: number;
+  name: string;
+  image?: (number | null) | Media;
+  shortDescription?: string | null;
+  about?: string | null;
+  role?: string | null;
+  joinedAt?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -746,6 +815,10 @@ export interface PayloadLockedDocument {
         value: number | Footer;
       } | null)
     | ({
+        relationTo: 'cookie-banner';
+        value: number | CookieBanner;
+      } | null)
+    | ({
         relationTo: 'pages';
         value: number | Page;
       } | null)
@@ -764,6 +837,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'roadmapItems';
         value: number | RoadmapItem;
+      } | null)
+    | ({
+        relationTo: 'team-members';
+        value: number | TeamMember;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -814,10 +891,6 @@ export interface PayloadMigration {
 export interface UsersSelect<T extends boolean = true> {
   name?: T;
   image?: T;
-  shortDescription?: T;
-  about?: T;
-  role?: T;
-  joinedAt?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -899,6 +972,13 @@ export interface SectionsSelect<T extends boolean = true> {
  */
 export interface FooterSelect<T extends boolean = true> {
   company_name?: T;
+  socialLinks?:
+    | T
+    | {
+        platform?: T;
+        url?: T;
+        id?: T;
+      };
   groups?:
     | T
     | {
@@ -911,6 +991,72 @@ export interface FooterSelect<T extends boolean = true> {
               id?: T;
             };
         id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "cookie-banner_select".
+ */
+export interface CookieBannerSelect<T extends boolean = true> {
+  common?:
+    | T
+    | {
+        acceptAll?: T;
+        rejectAll?: T;
+        customize?: T;
+        save?: T;
+      };
+  cookieBanner?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  consentManagerDialog?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  consentTypes?:
+    | T
+    | {
+        necessary?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+            };
+        measurement?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+            };
+        marketing?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+            };
+      };
+  legalLinks?:
+    | T
+    | {
+        privacyPolicy?:
+          | T
+          | {
+              label?: T;
+              href?: T;
+            };
+        termsOfService?:
+          | T
+          | {
+              label?: T;
+              href?: T;
+            };
       };
   updatedAt?: T;
   createdAt?: T;
@@ -1153,6 +1299,20 @@ export interface RoadmapItemsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "team-members_select".
+ */
+export interface TeamMembersSelect<T extends boolean = true> {
+  name?: T;
+  image?: T;
+  shortDescription?: T;
+  about?: T;
+  role?: T;
+  joinedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "exports_select".
  */
 export interface ExportsSelect<T extends boolean = true> {
@@ -1306,11 +1466,13 @@ export interface TaskCreateCollectionExport {
       | 'navbarItems'
       | 'sections'
       | 'footer'
+      | 'cookie-banner'
       | 'pages'
       | 'features'
       | 'jobs'
       | 'blog'
       | 'roadmapItems'
+      | 'team-members'
       | 'exports'
       | 'imports';
     drafts?: ('yes' | 'no') | null;

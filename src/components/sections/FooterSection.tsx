@@ -2,7 +2,6 @@
 
 import { LandingContainer } from "@/components/ui/LandingContainer"
 import { localizeHref, type AppLocale } from "@/lib/i18n"
-import { DEFAULT_DISCORD_URL, DEFAULT_GITHUB_URL, DEFAULT_INSTAGRAM_URL, DEFAULT_X_URL } from "@/lib/siteConfig"
 import type { Footer } from "@/payload-types"
 import { SiDiscord, SiGithub, SiInstagram, SiX } from "@icons-pack/react-simple-icons"
 import Image from "next/image"
@@ -19,6 +18,13 @@ export const FooterSection: React.FC<FooterSectionProps> = ({ locale, footer }) 
     const { trigger } = useWebHaptics()
     if (!footer?.groups) return null
 
+    const socialIcons = {
+        instagram: SiInstagram,
+        discord: SiDiscord,
+        x: SiX,
+        github: SiGithub,
+    } as const
+
     return (
         <LandingContainer className="min-h-full pt-48 pb-24 overflow-visible">
             <div className={"relative flex flex-col gap-16 overflow-hidden"}>
@@ -32,18 +38,24 @@ export const FooterSection: React.FC<FooterSectionProps> = ({ locale, footer }) 
                             </p>
                         </div>
                         <div className={"flex items-center gap-4"}>
-                            <Link href={DEFAULT_INSTAGRAM_URL} onClick={() => trigger("medium")} className="group">
-                                <SiInstagram size={20} className={"text-white/75 group-hover:text-white"}/>
-                            </Link>
-                            <Link href={DEFAULT_DISCORD_URL} onClick={() => trigger("medium")} className="group">
-                                <SiDiscord size={20} className={"text-white/75 group-hover:text-white"}/>
-                            </Link>
-                            <Link href={DEFAULT_X_URL} onClick={() => trigger("medium")} className="group">
-                                <SiX size={20} className={"text-white/75 group-hover:text-white"}/>
-                            </Link>
-                            <Link href={DEFAULT_GITHUB_URL} onClick={() => trigger("medium")} className="group">
-                                <SiGithub size={20} className={"text-white/75 group-hover:text-white"}/>
-                            </Link>
+                            {(footer.socialLinks ?? []).map((socialLink) => {
+                                const Icon = socialLink.platform ? socialIcons[socialLink.platform] : null
+
+                                if (!Icon || !socialLink.url) return null
+
+                                return (
+                                    <Link
+                                        href={socialLink.url}
+                                        key={`${socialLink.platform}-${socialLink.id ?? socialLink.url}`}
+                                        onClick={() => trigger("medium")}
+                                        className="group"
+                                        target="_blank"
+                                        rel="noreferrer"
+                                    >
+                                        <Icon size={20} className={"text-white/75 group-hover:text-white"} />
+                                    </Link>
+                                )
+                            })}
                         </div>
                     </div>
 

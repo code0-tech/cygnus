@@ -119,6 +119,7 @@ export const UseCaseSection: React.FC<UseCaseSectionProps> = ({ content }) => {
                                             src={image.url}
                                             alt={image.alt ?? item.title}
                                             fill
+                                            sizes="(min-width: 768px) 66vw, 100vw"
                                             className="object-cover"
                                         />
                                     ) : null}

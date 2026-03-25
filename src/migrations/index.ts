@@ -1,6 +1,7 @@
 import * as migration_20260317_192332_initial_schema from './20260317_192332_initial_schema';
 import * as migration_20260320_051848_001_badgelink_usecaseimage from './20260320_051848_001_badgelink_usecaseimage';
 import * as migration_20260320_182515_002_usecases_link from './20260320_182515_002_usecases_link';
+import * as migration_20260325_072831_002_cookiebanner_and_teammembers from './20260325_072831_002_cookiebanner_and_teammembers';
 
 export const migrations = [
   {
@@ -16,6 +17,11 @@ export const migrations = [
   {
     up: migration_20260320_182515_002_usecases_link.up,
     down: migration_20260320_182515_002_usecases_link.down,
-    name: '20260320_182515_002_usecases_link'
+    name: '20260320_182515_002_usecases_link',
+  },
+  {
+    up: migration_20260325_072831_002_cookiebanner_and_teammembers.up,
+    down: migration_20260325_072831_002_cookiebanner_and_teammembers.down,
+    name: '20260325_072831_002_cookiebanner_and_teammembers'
   },
 ];

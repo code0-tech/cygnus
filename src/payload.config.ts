@@ -7,6 +7,7 @@ import { buildConfig } from 'payload'
 import sharp from 'sharp'
 import { fileURLToPath } from 'url'
 import { Blog } from './collections/blog'
+import { CookieBanner } from './collections/cookieBanner'
 import { Features } from './collections/features'
 import { Footer } from './collections/footer'
 import { Jobs } from './collections/jobs'
@@ -15,6 +16,7 @@ import { NavbarItems } from './collections/navbarItems'
 import { Pages } from './collections/pages'
 import { RoadmapItems } from './collections/roadmapItems'
 import { Sections } from './collections/sections'
+import { TeamMembers } from './collections/teamMembers'
 import { Users } from './collections/users'
 
 const filename = fileURLToPath(import.meta.url)
@@ -37,7 +39,7 @@ export default buildConfig({
         locales: ['en', 'de'],
         defaultLocale: 'en',
     },
-    collections: [Users, Media, NavbarItems, Sections, Footer, Pages, Features, Jobs, Blog, RoadmapItems],
+    collections: [Users, Media, NavbarItems, Sections, Footer, CookieBanner, Pages, Features, Jobs, Blog, RoadmapItems, TeamMembers],
     jobs: {
         autoRun: [{
             cron: '*/5 * * * *', // Check every 5 minutes
@@ -77,11 +79,13 @@ export default buildConfig({
                 { slug: 'navbarItems' },
                 { slug: 'sections' },
                 { slug: 'footer' },
+                { slug: 'cookie-banner' },
                 { slug: 'pages' },
                 { slug: 'features' },
                 { slug: 'jobs' },
                 { slug: 'blog' },
-                { slug: 'roadmapItems' }
+                { slug: 'roadmapItems' },
+                { slug: 'team-members' }
             ]
         })
     ],

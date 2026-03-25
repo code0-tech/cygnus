@@ -30,7 +30,7 @@ export const Blog: CollectionConfig = {
     {
       name: "author",
       type: "relationship",
-      relationTo: "users",
+      relationTo: "team-members",
       required: true,
     },
     {

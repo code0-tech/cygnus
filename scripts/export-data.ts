@@ -15,6 +15,7 @@ type ExportableCollectionConfig = {
 }
 
 const EXPORT_FORMAT = "json"
+const AUTH_COLLECTION_SLUG = "users"
 
 const { loadEnvConfig } = nextEnv
 
@@ -32,7 +33,7 @@ const getExportCollectionSlugs = (collections: Array<{ slug: string } & Exportab
         throw new Error("Could not determine exportable collections from the import-export plugin configuration.")
     }
 
-    return slugs
+    return slugs.filter((slug) => slug !== AUTH_COLLECTION_SLUG)
 }
 
 const resolveExportUser = async (payload: Awaited<ReturnType<typeof getPayload>>) => {
