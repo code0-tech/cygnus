@@ -529,6 +529,45 @@ const remapKnownRelationshipID = (
     return idMap.get(String(originalID))
 }
 
+const remapLexicalUploadNode = (node: Record<string, unknown>, mediaIDMap: Map<string, number | string>): Record<string, unknown> | undefined => {
+    const originalUploadID =
+        normalizeRelationshipID(node.value as number | string | { id?: number | string } | null | undefined) ??
+        normalizeRelationshipID(node.id as number | string | { id?: number | string } | null | undefined)
+
+    const mappedUploadID = remapKnownRelationshipID(originalUploadID, mediaIDMap)
+    if (mappedUploadID === undefined) return undefined
+
+    return { ...node, value: mappedUploadID }
+}
+
+const remapLexicalContentMediaUploads = (value: unknown, mediaIDMap: Map<string, number | string>): unknown => {
+    if (Array.isArray(value)) {
+        return value
+            .map((item) => remapLexicalContentMediaUploads(item, mediaIDMap))
+            .filter((item) => item !== undefined)
+    }
+
+    if (!value || typeof value !== "object") return value
+
+    const objectValue = value as Record<string, unknown>
+
+    if (objectValue.type === "upload" && objectValue.relationTo === MEDIA_COLLECTION_SLUG) {
+        return remapLexicalUploadNode(objectValue, mediaIDMap)
+    }
+
+    return Object.fromEntries(
+        Object.entries(objectValue).flatMap(([key, nestedValue]) => {
+            const remappedValue = remapLexicalContentMediaUploads(nestedValue, mediaIDMap)
+            if (remappedValue === undefined) return []
+
+            return [[key, remappedValue]]
+        })
+    )
+}
+
+const mapBlogContentForImport = (content: unknown, mediaIDMap: Map<string, number | string>) =>
+    sanitizeLexicalUploadValues(remapLexicalContentMediaUploads(content, mediaIDMap))
+
 const createImportReq = async (payload: PayloadInstance, importUser: ImportUser, locale: ImportLocale) => {
     return createLocalReq({ locale, user: importUser }, payload)
 }
@@ -852,7 +891,7 @@ const importBlogCollection = async (
         label: BLOG_COLLECTION_SLUG,
         buildEnglishData: (doc) => ({
             author: remapKnownRelationshipID(normalizeRelationshipID(doc.author), teamMemberIDMap),
-            content: doc.content?.en ? sanitizeLexicalUploadValues(doc.content.en) : undefined,
+            content: doc.content?.en ? mapBlogContentForImport(doc.content.en, mediaIDMap) : undefined,
             createdAt: doc.createdAt,
             heroImage: remapKnownRelationshipID(normalizeRelationshipID(doc.heroImage), mediaIDMap),
             id: normalizeNumericID(doc.id),
@@ -870,7 +909,7 @@ const importBlogCollection = async (
             updatedAt: doc.updatedAt,
         }),
         buildGermanData: (doc) => ({
-            content: doc.content?.de ? sanitizeLexicalUploadValues(doc.content.de) : undefined,
+            content: doc.content?.de ? mapBlogContentForImport(doc.content.de, mediaIDMap) : undefined,
             meta: doc.meta
                 ? {
                     description: doc.meta.description?.de ?? undefined,
