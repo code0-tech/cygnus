@@ -375,7 +375,8 @@ const normalizeNumericID = (value: number | string | undefined) => {
 }
 
 const resolveMediaFilePath = async (filename?: string) => {
-    const filterParts = (...parts) => parts.filter(Boolean);
+    const filterParts = (...parts: Array<string | undefined>) =>
+        parts.filter((part): part is string => Boolean(part))
 
     const candidatePaths = [
         mediaImportSourceDir ? path.resolve(...filterParts(mediaImportSourceDir, filename)) : undefined,

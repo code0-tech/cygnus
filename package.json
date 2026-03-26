@@ -60,6 +60,26 @@
     "file-type": "21.3.4",
     "undici": "7.24.6",
     "dompurify": "3.3.3",
+    "smol-toml": "1.6.1",
+    "yaml": "2.8.3",
+    "anymatch": {
+      "picomatch": "2.3.2"
+    },
+    "readdirp": {
+      "picomatch": "2.3.2"
+    },
+    "micromatch": {
+      "picomatch": "2.3.2"
+    },
+    "knip": {
+      "picomatch": "4.0.4"
+    },
+    "tinyglobby": {
+      "picomatch": "4.0.4"
+    },
+    "@parcel/watcher": {
+      "picomatch": "4.0.4"
+    },
     "@esbuild-kit/core-utils": {
       "esbuild": "0.27.4"
     },
