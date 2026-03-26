@@ -30,7 +30,7 @@ export function BlogCard({ locale, post }: { locale: string, post: BlogPostItem 
 
                 <div className="relative z-10 flex items-start gap-4">
                     {heroImage?.url ? (
-                        <div className="relative h-32 aspect-square lg:aspect-video shrink-0 overflow-hidden rounded-2xl border border-white/8 bg-primary/40">
+                        <div className="relative h-36 aspect-square lg:aspect-video shrink-0 overflow-hidden rounded-2xl border border-white/8 bg-primary/40">
                             <Image
                                 src={heroImage.url}
                                 alt={heroImage.alt ?? post.title}
@@ -40,17 +40,17 @@ export function BlogCard({ locale, post }: { locale: string, post: BlogPostItem 
                             />
                         </div>
                     ) : (
-                        <div className="image-placeholder h-32 aspect-square lg:aspect-video shrink-0 px-2 text-xs">
+                        <div className="image-placeholder h-36 aspect-square lg:aspect-video shrink-0 px-2 text-xs">
                             {locale === "de" ? "Kein Bild" : "No image"}
                         </div>
                     )}
 
-                    <div className="min-w-0 flex-1 h-32 py-2 flex flex-col justify-center overflow-hidden">
-                        <p className="text-xs text-white/50 mb-1">
+                    <div className="min-w-0 flex-1 py-2 flex flex-col justify-center overflow-hidden">
+                        <p className="mb-1 truncate text-xs text-white/50">
                             {(post.author as TeamMember).name} - {publishedDate}
                         </p>
-                        <h2 className="text-xl font-semibold tracking-tight text-white/92 line-clamp-2">{post.title}</h2>
-                        {post.shortDescription ? <p className="text-sm leading-6 text-white/70 mt-2 line-clamp-2">{post.shortDescription}</p> : null}
+                        <h2 className="line-clamp-2 text-base font-semibold leading-tight tracking-tight text-white/92 sm:text-lg lg:text-xl">{post.title}</h2>
+                        {post.shortDescription ? <p className="mt-2 line-clamp-2 text-sm leading-5 text-white/70">{post.shortDescription}</p> : null}
                     </div>
                 </div>
             </Card>
