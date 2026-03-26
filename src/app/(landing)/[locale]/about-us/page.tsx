@@ -1,5 +1,5 @@
 import { TeamMemberCard } from "@/components/cards/TeamMemberCard"
-import { MarkdownContent } from "@/components/MarkdownContent"
+import { MarkdownContent } from "@/components/blog/MarkdownContent"
 import { Aurora } from "@/components/ui/Aurora"
 import { LandingContainer } from "@/components/ui/LandingContainer"
 import { MarkdownLayoutBlock, getLandingPage, getTeamMembers } from "@/lib/cms"

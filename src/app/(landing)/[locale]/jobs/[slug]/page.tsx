@@ -1,4 +1,4 @@
-import { MarkdownContent } from "@/components/MarkdownContent"
+import { MarkdownContent } from "@/components/blog/MarkdownContent"
 import { JobApplicationForm } from "@/components/forms/JobApplicationForm"
 import { Aurora } from "@/components/ui/Aurora"
 import { LandingContainer } from "@/components/ui/LandingContainer"

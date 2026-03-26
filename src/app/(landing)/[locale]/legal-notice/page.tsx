@@ -1,4 +1,4 @@
-import { MarkdownContent } from "@/components/MarkdownContent"
+import { MarkdownContent } from "@/components/blog/MarkdownContent"
 import { Aurora } from "@/components/ui/Aurora"
 import { LandingContainer } from "@/components/ui/LandingContainer"
 import { getLandingPage, type MarkdownLayoutBlock } from "@/lib/cms"

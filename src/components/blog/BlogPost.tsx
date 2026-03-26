@@ -1,12 +1,13 @@
 import { getBlogPostBySlug } from "@/lib/cms"
+import { customLexicalHTMLConverters } from "@/lib/richText/customHTMLConverters"
 import type { AppLocale } from "@/lib/i18n"
 import type { Blog, Media, TeamMember } from "@/payload-types"
 import { IconArrowLeft } from "@tabler/icons-react"
-import { convertLexicalToHTML } from "@payloadcms/richtext-lexical/html"
+import { convertLexicalToHTMLAsync } from "@payloadcms/richtext-lexical/html-async"
 import Image from "next/image"
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { MarkdownContent } from "../MarkdownContent"
+import { MarkdownContent } from "./MarkdownContent"
 import { TableOfContents, type TocHeading } from "./TableOfContents"
 import { LinkButton } from "../ui/LinkButton"
 
@@ -85,7 +86,8 @@ export async function BlogPost({ slug, locale }: BlogPostProps) {
     }).format(new Date(post.createdAt))
 
     const headings = getTocHeadings(post.content)
-    const contentHtml = convertLexicalToHTML({
+    const contentHtml = await convertLexicalToHTMLAsync({
+        converters: customLexicalHTMLConverters,
         data: post.content,
         disableContainer: true,
     })

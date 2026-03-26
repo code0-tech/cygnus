@@ -1,7 +1,7 @@
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
 import { importExportPlugin } from '@payloadcms/plugin-import-export'
-import { lexicalEditor } from '@payloadcms/richtext-lexical'
+import { BlocksFeature, CodeBlock, FixedToolbarFeature, lexicalEditor } from '@payloadcms/richtext-lexical'
 import path from 'path'
 import { buildConfig } from 'payload'
 import sharp from 'sharp'
@@ -18,6 +18,7 @@ import { RoadmapItems } from './collections/roadmapItems'
 import { Sections } from './collections/sections'
 import { TeamMembers } from './collections/teamMembers'
 import { Users } from './collections/users'
+import { GraphLexicalBlock, TriggerLexicalBlock } from './lib/richText/customLexicalBlocks'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -46,7 +47,15 @@ export default buildConfig({
             queue: 'default',
         }]
     },
-    editor: lexicalEditor({}),
+    editor: lexicalEditor({
+        features: ({ defaultFeatures }) => [
+            ...defaultFeatures,
+            FixedToolbarFeature(),
+            BlocksFeature({
+                blocks: [CodeBlock(), TriggerLexicalBlock, GraphLexicalBlock],
+            }),
+        ],
+    }),
     email: nodemailerAdapter({
         defaultFromAddress: process.env.CONTACT_FROM_EMAIL!,
         defaultFromName: 'Payload Mail',

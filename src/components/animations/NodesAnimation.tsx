@@ -9,12 +9,12 @@ import { StableBadge } from "../ui/StableBadge"
 type NodeSegmentType = "text" | "literal" | "reference" | "node"
 type NodeAccent = "brand" | "yellow" | "aqua" | "blue" | "pink"
 
-interface NodeSegment {
+export interface NodeSegment {
     type: NodeSegmentType
     value: string
 }
 
-interface NodeItem {
+export interface NodeItem {
     color: NodeAccent
     segments: NodeSegment[]
     outline: boolean
@@ -162,90 +162,95 @@ function NodeRow({
     )
 }
 
-export function NodesAnimation() {
+const defaultNodes: NodeItem[] = [
+    {
+        color: "pink",
+        outline: true,
+        segments: [
+            { type: "text", value: "Convert" },
+            { type: "reference", value: "value" },
+            { type: "text", value: "to boolean" },
+        ],
+    },
+    {
+        color: "brand",
+        outline: true,
+        segments: [
+            { type: "text", value: "Use fallback" },
+            { type: "literal", value: "false" },
+            { type: "text", value: "when empty" },
+        ],
+    },
+    {
+        color: "yellow",
+        outline: true,
+        segments: [
+            { type: "text", value: "Run node" },
+            { type: "node", value: "formatDate" },
+            { type: "text", value: "with current input" },
+        ],
+    },
+    {
+        color: "blue",
+        outline: true,
+        segments: [
+            { type: "text", value: "Only continue if status equals approved" },
+        ],
+    },
+    {
+        color: "aqua",
+        outline: true,
+        segments: [
+            { type: "text", value: "Map" },
+            { type: "reference", value: "user.email" },
+            { type: "text", value: "to contact field" },
+        ],
+    },
+    {
+        color: "blue",
+        outline: true,
+        segments: [
+            { type: "text", value: "Set timeout to" },
+            { type: "literal", value: "30" },
+            { type: "text", value: "seconds" },
+        ],
+    },
+    {
+        color: "brand",
+        outline: true,
+        segments: [
+            { type: "text", value: "Trigger" },
+            { type: "node", value: "sendMail" },
+            { type: "text", value: "after validation" },
+        ],
+    },
+    {
+        color: "pink",
+        outline: true,
+        segments: [
+            { type: "text", value: "This node only contains plain text" },
+        ],
+    },
+    {
+        color: "yellow",
+        outline: true,
+        segments: [
+            { type: "text", value: "Compare" },
+            { type: "reference", value: "invoice.total" },
+            { type: "text", value: "with" },
+            { type: "literal", value: "1000" },
+        ],
+    },
+]
+
+interface NodesAnimationProps {
+    nodes?: NodeItem[]
+}
+
+export function NodesAnimation({ nodes = defaultNodes }: NodesAnimationProps) {
     const containerRef = useRef<HTMLDivElement>(null)
     const isInView = useInView(containerRef, { amount: 0.2 })
     const prefersReducedMotion = useReducedMotion()
-    const nodes: NodeItem[] = [
-        {
-            color: "pink",
-            outline: true,
-            segments: [
-                { type: "text", value: "Convert" },
-                { type: "reference", value: "value" },
-                { type: "text", value: "to boolean" },
-            ],
-        },
-        {
-            color: "brand",
-            outline: true,
-            segments: [
-                { type: "text", value: "Use fallback" },
-                { type: "literal", value: "false" },
-                { type: "text", value: "when empty" },
-            ],
-        },
-        {
-            color: "yellow",
-            outline: true,
-            segments: [
-                { type: "text", value: "Run node" },
-                { type: "node", value: "formatDate" },
-                { type: "text", value: "with current input" },
-            ],
-        },
-        {
-            color: "blue",
-            outline: true,
-            segments: [
-                { type: "text", value: "Only continue if status equals approved" },
-            ],
-        },
-        {
-            color: "aqua",
-            outline: true,
-            segments: [
-                { type: "text", value: "Map" },
-                { type: "reference", value: "user.email" },
-                { type: "text", value: "to contact field" },
-            ],
-        },
-        {
-            color: "blue",
-            outline: true,
-            segments: [
-                { type: "text", value: "Set timeout to" },
-                { type: "literal", value: "30" },
-                { type: "text", value: "seconds" },
-            ],
-        },
-        {
-            color: "brand",
-            outline: true,
-            segments: [
-                { type: "text", value: "Trigger" },
-                { type: "node", value: "sendMail" },
-                { type: "text", value: "after validation" },
-            ],
-        },
-        {
-            color: "pink",
-            outline: true,
-            segments: [
-                { type: "text", value: "This node only contains plain text" },
-            ],
-        },
-        {
-            color: "yellow",
-            outline: true,
-            segments: [
-                { type: "text", value: "Compare" },
-                { type: "reference", value: "invoice.total" },
-                { type: "text", value: "with" },
-                { type: "literal", value: "1000" },
-            ],
-        },
-    ]
 
     const splitIndex = Math.ceil(nodes.length / 2)
     const topRowNodes = nodes.slice(0, splitIndex)
