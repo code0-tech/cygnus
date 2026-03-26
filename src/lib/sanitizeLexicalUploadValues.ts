@@ -7,6 +7,10 @@ function isRecord(value: unknown): value is RecordLike {
 }
 
 function normalizeUploadNodeValue(value: unknown): unknown {
+    if (value === null || value === undefined) {
+        return undefined
+    }
+
     if (!isRecord(value)) return value
 
     const id = value.id
@@ -31,7 +35,14 @@ function sanitizeNode(node: unknown): unknown {
     for (const [key, value] of Object.entries(node)) {
         if (key === "value") {
             const nodeType = typeof node.type === "string" ? node.type : ""
-            nextNode[key] = nodeType === "upload" ? normalizeUploadNodeValue(value) : sanitizeNode(value)
+            if (nodeType === "upload") {
+                const normalizedValue = normalizeUploadNodeValue(value)
+                if (normalizedValue !== undefined) {
+                    nextNode[key] = normalizedValue
+                }
+            } else {
+                nextNode[key] = sanitizeNode(value)
+            }
             continue
         }
 

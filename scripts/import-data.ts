@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url"
 import nextEnv from "@next/env"
 import { createLocalReq, getPayload } from "payload"
 import { createImport } from "../node_modules/@payloadcms/plugin-import-export/dist/import/createImport.js"
+import { sanitizeLexicalUploadValues } from "../src/lib/sanitizeLexicalUploadValues"
 
 type ImportableCollectionConfig = {
     admin?: {
@@ -851,7 +852,7 @@ const importBlogCollection = async (
         label: BLOG_COLLECTION_SLUG,
         buildEnglishData: (doc) => ({
             author: remapKnownRelationshipID(normalizeRelationshipID(doc.author), teamMemberIDMap),
-            content: doc.content?.en ?? undefined,
+            content: doc.content?.en ? sanitizeLexicalUploadValues(doc.content.en) : undefined,
             createdAt: doc.createdAt,
             heroImage: remapKnownRelationshipID(normalizeRelationshipID(doc.heroImage), mediaIDMap),
             id: normalizeNumericID(doc.id),
@@ -869,7 +870,7 @@ const importBlogCollection = async (
             updatedAt: doc.updatedAt,
         }),
         buildGermanData: (doc) => ({
-            content: doc.content?.de ?? undefined,
+            content: doc.content?.de ? sanitizeLexicalUploadValues(doc.content.de) : undefined,
             meta: doc.meta
                 ? {
                     description: doc.meta.description?.de ?? undefined,
