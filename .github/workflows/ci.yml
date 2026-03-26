@@ -18,6 +18,7 @@ jobs:
       PAYLOAD_SECRET: build-secret
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/payload
       NEXT_PUBLIC_APP_URL: https://code0.tech
+      NEXT_PUBLIC_GA_MEASUREMENT_ID: G-55EJVGDCLZ
 
     steps:
       - uses: actions/checkout@v6
