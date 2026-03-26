@@ -63,13 +63,13 @@
     "smol-toml": "1.6.1",
     "yaml": "2.8.3",
     "anymatch": {
-      "picomatch": "4.0.4"
+      "picomatch": "2.3.2"
     },
     "readdirp": {
-      "picomatch": "4.0.4"
+      "picomatch": "2.3.2"
     },
     "micromatch": {
-      "picomatch": "4.0.4"
+      "picomatch": "2.3.2"
     },
     "knip": {
       "picomatch": "4.0.4"

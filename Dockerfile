@@ -1,4 +1,4 @@
-FROM node:24.14.1-alpine
+FROM node:24-alpine
 
 WORKDIR /cygnus
 COPY package.json package-lock.json ./
