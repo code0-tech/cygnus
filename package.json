@@ -57,7 +57,7 @@
     "typescript": "^6.0.2"
   },
   "overrides": {
-    "file-type": "21.3.4",
+    "file-type": "22.0.0",
     "undici": "7.24.6",
     "dompurify": "3.3.3",
     "smol-toml": "1.6.1",
