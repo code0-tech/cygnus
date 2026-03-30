@@ -58,34 +58,5 @@ export const Blog: CollectionConfig = {
       type: "upload",
       relationTo: "media",
     },
-    {
-      name: "ogImage",
-      type: "upload",
-      relationTo: "media",
-    },
-    {
-      name: "twitterImage",
-      type: "upload",
-      relationTo: "media",
-    },
-    {
-      name: "meta",
-      type: "group",
-      fields: [
-        {
-          name: "description",
-          type: "textarea",
-          localized: true,
-        },
-        {
-          name: "keywords",
-          type: "text",
-          localized: true,
-          admin: {
-            description: "Comma-separated keywords for SEO metadata.",
-          },
-        },
-      ],
-    },
   ],
 }

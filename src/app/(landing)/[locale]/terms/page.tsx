@@ -3,8 +3,15 @@ import { Aurora } from "@/components/ui/Aurora"
 import { LandingContainer } from "@/components/ui/LandingContainer"
 import { getLandingPage, type MarkdownLayoutBlock } from "@/lib/cms"
 import { isSupportedLocale } from "@/lib/i18n"
+import { getLandingPageMetadata } from "@/lib/pageMetadata"
 import { convertLexicalToHTML } from "@payloadcms/richtext-lexical/html"
+import type { Metadata } from "next"
 import { notFound } from "next/navigation"
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+    const { locale } = await params
+    return getLandingPageMetadata("terms", locale)
+}
 
 export default async function TermsPage({ params }: { params: Promise<{ locale: string }> }) {
     const { locale } = await params

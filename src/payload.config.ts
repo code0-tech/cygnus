@@ -1,6 +1,7 @@
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
 import { importExportPlugin } from '@payloadcms/plugin-import-export'
+import { seoPlugin } from '@payloadcms/plugin-seo'
 import { BlocksFeature, CodeBlock, FixedToolbarFeature, lexicalEditor } from '@payloadcms/richtext-lexical'
 import path from 'path'
 import { buildConfig } from 'payload'
@@ -96,6 +97,33 @@ export default buildConfig({
                 { slug: 'roadmapItems' },
                 { slug: 'team-members' }
             ]
+        }),
+        seoPlugin({
+            collections: [
+                'pages',
+                'blog'
+            ],
+            uploadsCollection: 'media',
+            generateTitle: ({ doc }) => doc?.title,
+            generateDescription: ({ doc }) => doc?.shortDescription,
+            generateImage: ({ doc }) => doc?.heroImage,
+            generateURL: ({ collectionConfig, doc, locale }) => {
+                if (!doc?.slug || !locale) return ''
+
+                const baseUrl = process.env.NEXT_PUBLIC_APP_URL?.trim() || 'https://code0.tech'
+                const normalizedBaseUrl = baseUrl.replace(/\/$/, '')
+
+                if (collectionConfig?.slug === 'blog') {
+                    return `${normalizedBaseUrl}/${locale}/blog/${doc.slug}`
+                }
+
+                if (collectionConfig?.slug === 'pages') {
+                    const pagePath = doc.slug === 'main' ? `/${locale}` : `/${locale}/${doc.slug}`
+                    return `${normalizedBaseUrl}${pagePath}`
+                }
+
+                return ''
+            },
         })
     ],
 })
