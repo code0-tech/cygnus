@@ -60,7 +60,7 @@
   },
   "overrides": {
     "@tabler/icons-react": "3.40.0",
-    "brace-expansion": "2.0.3",
+    "brace-expansion": "5.0.5",
     "happy-dom": "20.8.9",
     "file-type": "22.0.0",
     "undici": "8.0.0",
