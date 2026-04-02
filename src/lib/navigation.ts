@@ -1,9 +1,7 @@
 import type { NavbarItem } from "@/payload-types"
 import { localizeHref, type AppLocale } from "@/lib/i18n"
-import { IconCube, IconGitBranch, IconLock } from "@tabler/icons-react"
-import { createElement, type ReactNode } from "react"
-
-type SubMenuIcon = "cube" | "gitBranch" | "lock"
+import * as TablerIcons from "@tabler/icons-react"
+import { createElement, type ComponentType, type ReactNode } from "react"
 
 export type NavItem = {
     title: string
@@ -17,7 +15,6 @@ export type SubNavItem = {
     href: string
     description: string
     icon: ReactNode
-    color: string
 }
 
 export const fadeInUp = {
@@ -27,10 +24,20 @@ export const fadeInUp = {
 }
 
 function getSubMenuIcon(icon: string | null | undefined) {
-    if (icon === "cube") return createElement(IconCube, { size: 30 })
-    if (icon === "gitBranch") return createElement(IconGitBranch, { size: 30 })
-    if (icon === "lock") return createElement(IconLock, { size: 30 })
-    return null
+    const fallbackIcon = TablerIcons.IconCube as ComponentType<{ size?: number }>
+    const normalizedIconName = `Icon${(icon ?? "cube")
+        .trim()
+        .replace(/^icon/i, "")
+        .split(/[\s_-]+/)
+        .filter(Boolean)
+        .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
+        .join("")}`
+
+    const resolvedIcon = normalizedIconName in TablerIcons
+        ? TablerIcons[normalizedIconName as keyof typeof TablerIcons] as unknown as ComponentType<{ size?: number }>
+        : fallbackIcon
+
+    return createElement(resolvedIcon, { size: 30 })
 }
 
 export function mapNavbarItems(items: NavbarItem[], locale: AppLocale): NavItem[] {
@@ -39,8 +46,7 @@ export function mapNavbarItems(items: NavbarItem[], locale: AppLocale): NavItem[
             .filter((sub) => Boolean(sub?.title && sub?.href && sub?.description))
             .map((sub) => ({
                 ...sub,
-                icon: getSubMenuIcon((sub.icon as SubMenuIcon | null | undefined) ?? null),
-                color: sub.color ?? "brand",
+                icon: getSubMenuIcon(sub.icon),
             }))
 
         return {

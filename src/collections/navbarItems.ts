@@ -61,50 +61,12 @@ export const NavbarItems: CollectionConfig = {
         },
         {
           name: "icon",
-          type: "select",
+          type: "text",
           required: true,
-          options: [
-            {
-              label: "Cube",
-              value: "cube",
-            },
-            {
-              label: "Git Branch",
-              value: "gitBranch",
-            },
-            {
-              label: "Lock",
-              value: "lock",
-            },
-          ],
-        },
-        {
-          name: "color",
-          type: "select",
-          required: true,
-          options: [
-            {
-              label: "Brand",
-              value: "brand",
-            },
-            {
-              label: "Pink",
-              value: "pink",
-            },
-            {
-              label: "Yellow",
-              value: "yellow",
-            },
-            {
-              label: "Aqua",
-              value: "aqua",
-              },
-            {
-              label: "Blue",
-              value: "blue",
-            },
-          ],
-          defaultValue: "brand",
+          admin: {
+            description:
+              'Tabler Icon Name. Unbekannte Werte fallen auf "cube" zurück.',
+          },
         },
       ],
     },

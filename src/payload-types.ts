@@ -215,8 +215,10 @@ export interface NavbarItem {
         title: string;
         href: string;
         description: string;
-        icon: 'cube' | 'gitBranch' | 'lock';
-        color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue';
+        /**
+         * Tabler Icon Name. Unbekannte Werte fallen auf "cube" zurück.
+         */
+        icon: string;
         id?: string | null;
       }[]
     | null;
@@ -950,7 +952,6 @@ export interface NavbarItemsSelect<T extends boolean = true> {
         href?: T;
         description?: T;
         icon?: T;
-        color?: T;
         id?: T;
       };
   updatedAt?: T;
