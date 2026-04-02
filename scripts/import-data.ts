@@ -282,7 +282,11 @@ type ImportedBlogDocument = {
     } | number | string | null
     id?: number | string
     meta?: {
+        title?: Record<string, string | null> | null
         description?: Record<string, string | null> | null
+        image?: {
+            id?: number | string
+        } | number | string | null
         keywords?: Record<string, string | null> | null
     } | null
     ogImage?: {
@@ -570,6 +574,27 @@ const mapBlogContentForImport = (content: unknown, mediaIDMap: Map<string, numbe
 
 const createImportReq = async (payload: PayloadInstance, importUser: ImportUser, locale: ImportLocale) => {
     return createLocalReq({ locale, user: importUser }, payload)
+}
+
+const mapImportedBlogMetaForLocale = (
+    doc: ImportedBlogDocument,
+    locale: "en" | "de",
+    mediaIDMap: Map<string, number | string>
+) => {
+    const title = doc.meta?.title?.[locale] ?? doc.title?.[locale] ?? undefined
+    const description = doc.meta?.description?.[locale] ?? undefined
+    const imageSource = doc.meta?.image ?? doc.ogImage ?? doc.twitterImage ?? doc.heroImage
+    const image = remapKnownRelationshipID(normalizeRelationshipID(imageSource), mediaIDMap)
+
+    if (!title && !description && image === undefined) {
+        return undefined
+    }
+
+    return {
+        description,
+        image,
+        title,
+    }
 }
 
 const syncLocalizedDocument = async (
@@ -895,27 +920,15 @@ const importBlogCollection = async (
             createdAt: doc.createdAt,
             heroImage: remapKnownRelationshipID(normalizeRelationshipID(doc.heroImage), mediaIDMap),
             id: normalizeNumericID(doc.id),
-            meta: doc.meta
-                ? {
-                    description: doc.meta.description?.en ?? undefined,
-                    keywords: doc.meta.keywords?.en ?? undefined,
-                }
-                : undefined,
-            ogImage: remapKnownRelationshipID(normalizeRelationshipID(doc.ogImage), mediaIDMap),
+            meta: mapImportedBlogMetaForLocale(doc, "en", mediaIDMap),
             shortDescription: doc.shortDescription?.en ?? undefined,
             slug: doc.slug ?? "",
             title: doc.title?.en ?? "",
-            twitterImage: remapKnownRelationshipID(normalizeRelationshipID(doc.twitterImage), mediaIDMap),
             updatedAt: doc.updatedAt,
         }),
         buildGermanData: (doc) => ({
             content: doc.content?.de ? mapBlogContentForImport(doc.content.de, mediaIDMap) : undefined,
-            meta: doc.meta
-                ? {
-                    description: doc.meta.description?.de ?? undefined,
-                    keywords: doc.meta.keywords?.de ?? undefined,
-                }
-                : undefined,
+            meta: mapImportedBlogMetaForLocale(doc, "de", mediaIDMap),
             shortDescription: doc.shortDescription?.de ?? undefined,
             title: doc.title?.de ?? "",
         }),
@@ -1021,7 +1034,7 @@ const formatImportError = (error: unknown) => {
         return String(error)
     }
 
-    const cause = error.cause as
+    const cause = (error as Error & { cause?: unknown }).cause as
         | {
             code?: string
             column?: string

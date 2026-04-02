@@ -12,6 +12,7 @@
     "migrate": "payload migrate",
     "migrate:create": "payload migrate:create",
     "migrate:status": "payload migrate:status",
+    "generate:importmap": "payload generate:importmap",
     "lint": "next lint",
     "knip": "knip",
     "generate": "payload generate:types",

@@ -2,13 +2,24 @@ import { BlogPost } from "@/components/blog/BlogPost"
 import { BlogSkeleton } from "@/components/blog/BlogSkeleton"
 import { Aurora } from "@/components/ui/Aurora"
 import { LandingContainer } from "@/components/ui/LandingContainer"
+import { type Media } from "@/payload-types"
 import { SUPPORTED_LOCALES, isSupportedLocale } from "@/lib/i18n"
-import { getBlogSlugs, getLandingPage, type CtaLayoutBlock } from "@/lib/cms"
+import { getBlogPostBySlug, getBlogSlugs, getLandingPage, type CtaLayoutBlock } from "@/lib/cms"
+import { createMetadata, resolveSiteUrl } from "@/lib/siteConfig"
+import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import Image from "next/image"
 import { Suspense } from "react"
 import { InteractiveGridPattern } from "@/components/InteractiveGridPattern"
 import { HapticButtonLink } from "@/components/ui/HapticButtonLink"
+
+function getMediaUrl(value?: number | Media | null) {
+    if (!value || typeof value === "number" || !value.url) {
+        return undefined
+    }
+
+    return new URL(value.url, resolveSiteUrl()).toString()
+}
 
 export default async function Page({ params }: { params: Promise<{ locale: string, slug: string[] }> }) {
     const { locale, slug } = await params
@@ -73,6 +84,50 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
             </LandingContainer>
         </>
     )
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string, slug: string[] }> }): Promise<Metadata> {
+    const { locale, slug } = await params
+    if (!isSupportedLocale(locale)) {
+        return createMetadata()
+    }
+
+    const normalizedSlug = slug?.join("/")?.trim()
+    if (!normalizedSlug) {
+        return createMetadata()
+    }
+
+    const post = await getBlogPostBySlug(normalizedSlug, locale)
+    if (!post) {
+        return createMetadata()
+    }
+
+    const title = post.meta?.title ?? post.title
+    const description = post.meta?.description ?? post.shortDescription ?? undefined
+    const canonicalPath = `/${locale}/blog/${post.slug}`
+    const canonicalUrl = new URL(canonicalPath, resolveSiteUrl()).toString()
+    const openGraphImage = getMediaUrl(post.meta?.image ?? post.heroImage)
+    const twitterImage = openGraphImage
+
+    return createMetadata({
+        title,
+        description,
+        alternates: {
+            canonical: canonicalPath,
+        },
+        openGraph: {
+            title,
+            description,
+            url: canonicalUrl,
+            type: "article",
+            images: openGraphImage ? [openGraphImage] : undefined,
+        },
+        twitter: {
+            title,
+            description,
+            images: twitterImage ? [twitterImage] : undefined,
+        },
+    })
 }
 
 export async function generateStaticParams() {

@@ -15,10 +15,17 @@ import type { CtaLayoutBlock } from "@/lib/cms"
 import type { FaqLayoutBlock } from "@/lib/cms"
 import type { UseCaseLayoutBlock } from "@/lib/cms"
 import { isSupportedLocale, SUPPORTED_LOCALES } from "@/lib/i18n"
+import { getLandingPageMetadata } from "@/lib/pageMetadata"
+import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 
 export function generateStaticParams() {
     return SUPPORTED_LOCALES.map((locale) => ({ locale }))
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+    const { locale } = await params
+    return getLandingPageMetadata("main", locale)
 }
 
 export default async function Page({ params }: { params: Promise<{ locale: string }> }) {

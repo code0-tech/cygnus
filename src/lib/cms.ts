@@ -39,6 +39,7 @@ type RoadmapItem = Pick<PayloadRoadmapItem, "id" | "time" | "title" | "descripti
 
 export type BlogPostItem = Pick<Blog, "id" | "title" | "slug" | "content" | "createdAt" | "shortDescription"> & {
     heroImage?: (number | null) | Media
+    meta?: Blog["meta"]
     author: number | Pick<TeamMember, "name" | "image" | "role">
 }
 

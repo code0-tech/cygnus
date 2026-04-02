@@ -4,7 +4,14 @@ import { LandingContainer } from "@/components/ui/LandingContainer"
 import { isSupportedLocale } from "@/lib/i18n"
 import { getLandingPage, type JobsLayoutBlock } from "@/lib/cms"
 import { getJobs } from "@/lib/cms"
+import { getLandingPageMetadata } from "@/lib/pageMetadata"
+import type { Metadata } from "next"
 import { notFound } from "next/navigation"
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+    const { locale } = await params
+    return getLandingPageMetadata("jobs", locale)
+}
 
 export default async function JobPage({ params }: { params: Promise<{ locale: string }> }) {
     const { locale } = await params

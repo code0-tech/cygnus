@@ -477,6 +477,14 @@ export interface Page {
           }
       )[]
     | null;
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -564,14 +572,13 @@ export interface Blog {
   };
   shortDescription?: string | null;
   heroImage?: (number | null) | Media;
-  ogImage?: (number | null) | Media;
-  twitterImage?: (number | null) | Media;
   meta?: {
+    title?: string | null;
     description?: string | null;
     /**
-     * Comma-separated keywords for SEO metadata.
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
      */
-    keywords?: string | null;
+    image?: (number | null) | Media;
   };
   updatedAt: string;
   createdAt: string;
@@ -1228,6 +1235,13 @@ export interface PagesSelect<T extends boolean = true> {
               blockName?: T;
             };
       };
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1275,13 +1289,12 @@ export interface BlogSelect<T extends boolean = true> {
   content?: T;
   shortDescription?: T;
   heroImage?: T;
-  ogImage?: T;
-  twitterImage?: T;
   meta?:
     | T
     | {
+        title?: T;
         description?: T;
-        keywords?: T;
+        image?: T;
       };
   updatedAt?: T;
   createdAt?: T;
