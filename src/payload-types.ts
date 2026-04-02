@@ -327,7 +327,17 @@ export interface CookieBanner {
 export interface Page {
   id: number;
   title: string;
-  slug: 'main' | 'jobs' | 'features' | 'about-us' | 'legal-notice' | 'privacy' | 'terms' | 'contact';
+  slug:
+    | 'main'
+    | 'jobs'
+    | 'features'
+    | 'about-us'
+    | 'legal-notice'
+    | 'privacy'
+    | 'terms'
+    | 'contact'
+    | 'community-edition'
+    | 'enterprise-edition';
   layout?:
     | (
         | {
@@ -351,6 +361,53 @@ export interface Page {
             id?: string | null;
             blockName?: string | null;
             blockType: 'hero';
+          }
+        | {
+            heading: string;
+            texts?:
+              | {
+                  text: string;
+                  id?: string | null;
+                }[]
+              | null;
+            buttons?:
+              | {
+                  label: string;
+                  url: string;
+                  variant?: ('none' | 'normal' | 'outlined' | 'filled') | null;
+                  id?: string | null;
+                }[]
+              | null;
+            imageAlt: string;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'editionHero';
+          }
+        | {
+            features: {
+              label: string;
+              title: string;
+              description: string;
+              image?: (number | null) | Media;
+              bulletPoints: string[];
+              link?: {
+                label?: string | null;
+                url?: string | null;
+              };
+              id?: string | null;
+            }[];
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'editionFeatures';
+          }
+        | {
+            heading: string;
+            subheading: string;
+            label?: string | null;
+            code: string;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'editionInstall';
           }
         | {
             description: string;
@@ -1099,6 +1156,60 @@ export interface PagesSelect<T extends boolean = true> {
                     variant?: T;
                     id?: T;
                   };
+              id?: T;
+              blockName?: T;
+            };
+        editionHero?:
+          | T
+          | {
+              heading?: T;
+              texts?:
+                | T
+                | {
+                    text?: T;
+                    id?: T;
+                  };
+              buttons?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                    variant?: T;
+                    id?: T;
+                  };
+              imageAlt?: T;
+              id?: T;
+              blockName?: T;
+            };
+        editionFeatures?:
+          | T
+          | {
+              features?:
+                | T
+                | {
+                    label?: T;
+                    title?: T;
+                    description?: T;
+                    image?: T;
+                    bulletPoints?: T;
+                    link?:
+                      | T
+                      | {
+                          label?: T;
+                          url?: T;
+                        };
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        editionInstall?:
+          | T
+          | {
+              heading?: T;
+              subheading?: T;
+              label?: T;
+              code?: T;
               id?: T;
               blockName?: T;
             };

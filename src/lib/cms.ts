@@ -1,8 +1,8 @@
 "use server"
 
-import type { Blog, CookieBanner, Feature, Footer, Job, Media, NavbarItem, Page, RoadmapItem as PayloadRoadmapItem, Section, TeamMember, User } from "@/payload-types"
 import { DEFAULT_LOCALE, type AppLocale } from "@/lib/i18n"
 import { getPayloadClient } from "@/lib/payloadClient"
+import type { Blog, CookieBanner, Feature, Footer, Job, Media, NavbarItem, Page, RoadmapItem as PayloadRoadmapItem, Section, TeamMember } from "@/payload-types"
 import { cache } from "react"
 
 const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build" || process.env.npm_lifecycle_event === "build"
@@ -11,6 +11,10 @@ const hasDatabaseUrl = Boolean(process.env.DATABASE_URL?.trim())
 type PageLayoutBlock = NonNullable<Page["layout"]>[number]
 
 export type HeroLayoutBlock = Extract<PageLayoutBlock, { blockType: "hero" }>
+export type EditionHeroLayoutBlock = Extract<PageLayoutBlock, { blockType: "editionHero" }>
+export type EditionFeaturesLayoutBlock = Extract<PageLayoutBlock, { blockType: "editionFeatures" }>
+export type EditionInstallLayoutBlock = Extract<PageLayoutBlock, { blockType: "editionInstall" }>
+export type EditionUseCaseLayoutBlock = Extract<PageLayoutBlock, { blockType: "editionUseCase" }>
 export type BrandLayoutBlock = Extract<PageLayoutBlock, { blockType: "brand" }>
 export type CtaLayoutBlock = Extract<PageLayoutBlock, { blockType: "cta" }>
 export type FaqLayoutBlock = Extract<PageLayoutBlock, { blockType: "faq" }>

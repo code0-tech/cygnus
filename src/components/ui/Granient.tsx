@@ -2,6 +2,13 @@ import React, { useEffect, useRef } from 'react';
 import { useReducedMotion } from 'motion/react';
 import { Renderer, Program, Mesh, Triangle } from 'ogl';
 
+type GrainientPalette = {
+  color1: string;
+  color2: string;
+  color3: string;
+  backgroundColor?: string;
+};
+
 const hexToRgb = (hex: string): [number, number, number] => {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   if (!result) return [1, 1, 1];
@@ -161,7 +168,12 @@ const GRAINIENT_CONFIG = {
   color3: '#7472f8'
 } as const;
 
-const Grainient: React.FC = () => {
+const Grainient: React.FC<Partial<GrainientPalette>> = ({
+  color1 = GRAINIENT_CONFIG.color1,
+  color2 = GRAINIENT_CONFIG.color2,
+  color3 = GRAINIENT_CONFIG.color3,
+  backgroundColor = '#0f0c1f',
+}) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const runtimeRef = useRef<GrainientRuntime | null>(null);
   const prefersReducedMotion = useReducedMotion();
@@ -209,9 +221,9 @@ const Grainient: React.FC = () => {
       uSaturation: { value: GRAINIENT_CONFIG.saturation },
       uCenterOffset: { value: new Float32Array([GRAINIENT_CONFIG.centerX, GRAINIENT_CONFIG.centerY]) },
       uZoom: { value: GRAINIENT_CONFIG.zoom },
-      uColor1: { value: new Float32Array(hexToRgb(GRAINIENT_CONFIG.color1)) },
-      uColor2: { value: new Float32Array(hexToRgb(GRAINIENT_CONFIG.color2)) },
-      uColor3: { value: new Float32Array(hexToRgb(GRAINIENT_CONFIG.color3)) }
+      uColor1: { value: new Float32Array(hexToRgb(color1)) },
+      uColor2: { value: new Float32Array(hexToRgb(color2)) },
+      uColor3: { value: new Float32Array(hexToRgb(color3)) }
     };
 
     const program = new Program(gl, {
@@ -366,7 +378,7 @@ const Grainient: React.FC = () => {
         // Ignore
       }
     };
-  }, []);
+  }, [backgroundColor, color1, color2, color3]);
 
   useEffect(() => {
     const runtime = runtimeRef.current;
@@ -390,9 +402,10 @@ const Grainient: React.FC = () => {
   return (
     <div
       ref={containerRef}
-      className="pointer-events-none absolute inset-0 z-0 h-full w-full overflow-hidden bg-[#0f0c1f]"
+      className="pointer-events-none absolute inset-0 z-0 h-full w-full overflow-hidden"
       aria-hidden="true"
       style={{
+        backgroundColor,
         transform: 'translateZ(0)',
         WebkitTransform: 'translateZ(0)',
         backfaceVisibility: 'hidden',

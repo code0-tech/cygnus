@@ -2,6 +2,9 @@ import { BrandBlock } from "../blocks/BrandBlock"
 import { ContactBlock } from "../blocks/ContactBlock"
 import { CtaBlock } from "../blocks/CtaBlock"
 import { DeploymentBlock } from "../blocks/DeploymentBlock"
+import { EditionFeaturesBlock } from "../blocks/EditionFeaturesBlock"
+import { EditionHeroBlock } from "../blocks/EditionHeroBlock"
+import { EditionInstallBlock } from "../blocks/EditionInstallBlock"
 import { FaqBlock } from "../blocks/FaqBlock"
 import { HeroBlock } from "../blocks/HeroBlock"
 import { JobsBlock } from "../blocks/JobsBlock"
@@ -43,13 +46,15 @@ export const Pages: CollectionConfig = {
         { label: "privacy", value: "privacy" },
         { label: "terms", value: "terms" },
         { label: "contact", value: "contact" },
+        { label: "community-edition", value: "community-edition" },
+        { label: "enterprise-edition", value: "enterprise-edition" },
       ],
     },
     {
       name: "layout",
       label: "Layout",
       type: "blocks",
-      blocks: [HeroBlock, BrandBlock, UseCaseBlock, FaqBlock, CtaBlock, JobsBlock, MarkdownBlock, ContactBlock, DeploymentBlock],
+      blocks: [HeroBlock, EditionHeroBlock, EditionFeaturesBlock, EditionInstallBlock, BrandBlock, UseCaseBlock, FaqBlock, CtaBlock, JobsBlock, MarkdownBlock, ContactBlock, DeploymentBlock],
       required: false,
       localized: true,
     },
