@@ -29,6 +29,7 @@ const NAVBAR_COLLECTION_SLUG = "navbarItems"
 const FOOTER_COLLECTION_SLUG = "footer"
 const FEATURES_COLLECTION_SLUG = "features"
 const SECTIONS_COLLECTION_SLUG = "sections"
+const PAGES_COLLECTION_SLUG = "pages"
 const TEAM_MEMBERS_COLLECTION_SLUG = "team-members"
 const BLOG_COLLECTION_SLUG = "blog"
 const IMPORT_ORDER = [
@@ -334,6 +335,20 @@ type ImportedFeatureDocument = {
     updatedAt?: string
 }
 
+type ImportedPageDocument = {
+    createdAt?: string
+    id?: number | string
+    layout?: Record<string, unknown[] | null> | null
+    meta?: {
+        title?: Record<string, string | null> | null
+        description?: Record<string, string | null> | null
+        image?: Record<string, { id?: number | string } | number | string | null> | { id?: number | string } | number | string | null
+    } | null
+    slug?: string
+    title?: Record<string, string | null> | null
+    updatedAt?: string
+}
+
 type ImportedSectionDocument = {
     createdAt?: string
     heading?: Record<string, string> | null
@@ -597,6 +612,65 @@ const mapImportedBlogMetaForLocale = (
     }
 }
 
+const resolveLocalizedRelationshipValue = (
+    value:
+        | Record<string, { id?: number | string } | number | string | null>
+        | { id?: number | string }
+        | number
+        | string
+        | null
+        | undefined,
+    locale: "en" | "de"
+) => {
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+        return value
+    }
+
+    if ("en" in value || "de" in value) {
+        return value[locale]
+    }
+
+    return value
+}
+
+const mapImportedPageMetaForLocale = (
+    doc: ImportedPageDocument,
+    locale: "en" | "de",
+    mediaIDMap: Map<string, number | string>
+) => {
+    const title = doc.meta?.title?.[locale] ?? doc.title?.[locale] ?? undefined
+    const description = doc.meta?.description?.[locale] ?? undefined
+    const imageSource = resolveLocalizedRelationshipValue(doc.meta?.image, locale)
+    const image = remapKnownRelationshipID(normalizeRelationshipID(imageSource), mediaIDMap)
+
+    if (!title && !description && image === undefined) {
+        return undefined
+    }
+
+    return {
+        description,
+        image,
+        title,
+    }
+}
+
+const mapPageLayoutForLocale = (
+    layout: ImportedPageDocument["layout"],
+    locale: "en" | "de",
+    mediaIDMap: Map<string, number | string>
+) => {
+    const localizedLayout = layout?.[locale]
+
+    if (!localizedLayout) {
+        return undefined
+    }
+
+    return remapRelationshipsDeep(localizedLayout, {
+        mediaIDMap,
+        userIDMap: new Map<string, number | string>(),
+    })
+}
+
 const syncLocalizedDocument = async (
     payload: PayloadInstance,
     importUser: ImportUser,
@@ -812,6 +886,37 @@ const importFeaturesCollection = async (
                     url: doc.link.url ?? undefined,
                 }
                 : undefined,
+            title: doc.title?.de ?? "",
+        }),
+    })
+}
+
+const importPagesCollection = async (
+    payload: PayloadInstance,
+    importUser: ImportUser,
+    file: { name: string },
+    buffer: Buffer,
+    mediaIDMap: Map<string, number | string>
+) => {
+    await importLocalizedCollection<ImportedPageDocument>({
+        payload,
+        importUser,
+        file,
+        buffer,
+        collection: PAGES_COLLECTION_SLUG,
+        label: PAGES_COLLECTION_SLUG,
+        buildEnglishData: (doc) => ({
+            createdAt: doc.createdAt,
+            id: normalizeNumericID(doc.id),
+            layout: mapPageLayoutForLocale(doc.layout, "en", mediaIDMap),
+            meta: mapImportedPageMetaForLocale(doc, "en", mediaIDMap),
+            slug: doc.slug ?? "",
+            title: doc.title?.en ?? "",
+            updatedAt: doc.updatedAt,
+        }),
+        buildGermanData: (doc) => ({
+            layout: mapPageLayoutForLocale(doc.layout, "de", mediaIDMap),
+            meta: mapImportedPageMetaForLocale(doc, "de", mediaIDMap),
             title: doc.title?.de ?? "",
         }),
     })
@@ -1164,6 +1269,11 @@ const main = async () => {
 
             if (collectionSlug === SECTIONS_COLLECTION_SLUG) {
                 await importSectionsCollection(payload, importUser, file, buffer)
+                continue
+            }
+
+            if (collectionSlug === PAGES_COLLECTION_SLUG) {
+                await importPagesCollection(payload, importUser, file, buffer, mediaIDMap)
                 continue
             }
 
