@@ -337,7 +337,8 @@ export interface Page {
     | 'terms'
     | 'contact'
     | 'community-edition'
-    | 'enterprise-edition';
+    | 'enterprise-edition'
+    | 'subscription';
   layout?:
     | (
         | {

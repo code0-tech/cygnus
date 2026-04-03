@@ -48,6 +48,7 @@ export const Pages: CollectionConfig = {
         { label: "contact", value: "contact" },
         { label: "community-edition", value: "community-edition" },
         { label: "enterprise-edition", value: "enterprise-edition" },
+        { label: "subscription", value: "subscription" }
       ],
     },
     {
