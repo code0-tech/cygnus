@@ -47,6 +47,98 @@ export type BlogPostItem = Pick<Blog, "id" | "title" | "slug" | "content" | "cre
     author: number | Pick<TeamMember, "name" | "image" | "role">
 }
 
+export interface SubscriptionConfigData {
+    id: number
+    title: string
+    pageIntro: {
+        heading: string
+        description: string
+    }
+    featureOverview: {
+        title: string
+        description: string
+        icon: string
+        id?: string | null
+    }[]
+    optionsPanelHeading: string
+    deployment: {
+        label: string
+        selfHosted: {
+            title: string
+            description: string
+            icon: string
+            color: "brand" | "pink" | "yellow" | "aqua" | "blue"
+        }
+        cloud: {
+            title: string
+            description: string
+            icon: string
+            color: "brand" | "pink" | "yellow" | "aqua" | "blue"
+        }
+    }
+    customerType: {
+        label: string
+        b2b: {
+            title: string
+            description: string
+            icon: string
+            color: "brand" | "pink" | "yellow" | "aqua" | "blue"
+        }
+        b2c: {
+            title: string
+            description: string
+            icon: string
+            color: "brand" | "pink" | "yellow" | "aqua" | "blue"
+        }
+    }
+    subscriptionTier: {
+        label: string
+        pro: {
+            title: string
+            description: string
+            icon: string
+            color: "brand" | "pink" | "yellow" | "aqua" | "blue"
+        }
+        team: {
+            title: string
+            description: string
+            icon: string
+            color: "brand" | "pink" | "yellow" | "aqua" | "blue"
+        }
+    }
+    teamSeats: {
+        title: string
+        description: string
+        min: number
+        max: number
+        step: number
+        minLabel: string
+        maxLabel: string
+        centerSuffix: string
+    }
+    runtime: {
+        title: string
+        description: string
+        monthlyLabel: string
+        paygLabel: string
+        paygDescription: string
+        min: number
+        max: number
+        step: number
+        minLabel: string
+        maxLabel: string
+        centerSuffix: string
+    }
+    subscribe: {
+        label: string
+        baseUrl: string
+    }
+    price: {
+        heading: string
+        caption: string
+    }
+}
+
 function isMissingPayloadTablesError(error: unknown): boolean {
     if (!error || typeof error !== "object") {
         return false
@@ -351,6 +443,22 @@ const getSectionsCached = cache(async (locale: AppLocale): Promise<Section[]> =>
     })
 })
 
+const getSubscriptionConfigCached = cache(async (locale: AppLocale): Promise<SubscriptionConfigData | null> => {
+    return withCmsFallback(`getSubscriptionConfig(${locale})`, null, async () => {
+        const payload = await getPayloadClient()
+        const result = await payload.find({
+            collection: "subscriptionConfig" as never,
+            locale,
+            fallbackLocale: DEFAULT_LOCALE,
+            pagination: false,
+            limit: 1,
+            depth: 0,
+        })
+
+        return (result.docs[0] as SubscriptionConfigData | undefined) ?? null
+    })
+})
+
 export async function getLandingPage(slug = "main", locale: AppLocale = DEFAULT_LOCALE): Promise<Page | null> {
     return getLandingPageCached(slug, locale)
 }
@@ -406,4 +514,8 @@ export async function getRoadmapItems(locale: AppLocale = DEFAULT_LOCALE): Promi
 
 export async function getSections(locale: AppLocale = DEFAULT_LOCALE): Promise<Section[]> {
     return getSectionsCached(locale)
+}
+
+export async function getSubscriptionConfig(locale: AppLocale = DEFAULT_LOCALE): Promise<SubscriptionConfigData | null> {
+    return getSubscriptionConfigCached(locale)
 }

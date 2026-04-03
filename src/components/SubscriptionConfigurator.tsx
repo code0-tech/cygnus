@@ -1,67 +1,172 @@
 "use client"
 
+import type { SubscriptionConfigData } from "@/lib/cms"
+import type { AppLocale } from "@/lib/i18n"
+import { getTablerIcon } from "@/lib/tablerIcons"
 import { cn } from "@/lib/utils"
-import {
-    IconBriefcase2,
-    IconBuildingStore,
-    IconCloud,
-    IconDatabase,
-    IconGauge,
-    IconRocket,
-    IconServer,
-    IconSparkles,
-    IconUsersGroup,
-    IconUserShield,
-} from "@tabler/icons-react"
-import { useState } from "react"
+import { HapticButtonLink } from "@/components/ui/HapticButtonLink"
+import { Slider } from "@/components/ui/Slider"
+import { SegmentedControl, SegmentedControlItem } from "@code0-tech/pictor"
+import type { ReactNode } from "react"
+import { useEffect, useRef, useState } from "react"
 
 type DeploymentMode = "self-hosted" | "cloud"
 type CustomerType = "b2b" | "b2c"
 type SubscriptionTier = "pro" | "team"
 type RuntimeMode = "monthly" | "payg"
 type OptionAccent = "aqua" | "yellow" | "pink" | "blue" | "brand"
+type SubscriptionSelection = {
+    deployment: DeploymentMode
+    customerType: CustomerType
+    subscriptionTier: SubscriptionTier
+    teamSeats: number
+    runtimeMode: RuntimeMode
+    runtimeMinutes: number
+}
+
+const defaultContent: Omit<SubscriptionConfigData, "id" | "title"> = {
+    pageIntro: {
+        heading: "Configure your setup before you talk pricing.",
+        description:
+            "Pick your operating model, customer shape, and usage pattern. The right-hand side updates into a purchase-ready configuration flow instead of a generic pricing table.",
+    },
+    featureOverview: [
+        {
+            title: "Fast onboarding",
+            description: "Move from evaluation to a concrete subscription path without guessing which packaging model fits your rollout.",
+            icon: "rocket",
+        },
+        {
+            title: "Commercial clarity",
+            description: "Separate customer type, hosting model, and runtime expectations before a plan is proposed.",
+            icon: "user-shield",
+        },
+        {
+            title: "Usage visibility",
+            description: "Cloud deployments can be framed around monthly runtime needs or a pay-as-you-go usage model.",
+            icon: "gauge",
+        },
+    ],
+    optionsPanelHeading: "Build the subscription shape",
+    deployment: {
+        label: "Deployment",
+        selfHosted: {
+            title: "Self-hosted",
+            description: "Deploy on your own infrastructure with full operational control.",
+            icon: "server",
+            color: "yellow",
+        },
+        cloud: {
+            title: "Cloud",
+            description: "Use managed infrastructure with selectable runtime consumption.",
+            icon: "cloud",
+            color: "aqua",
+        },
+    },
+    customerType: {
+        label: "Customer Type",
+        b2b: {
+            title: "B2B",
+            description: "Organization purchase flow with tailored commercial handling.",
+            icon: "briefcase-2",
+            color: "blue",
+        },
+        b2c: {
+            title: "B2C",
+            description: "Standardized subscription flow with directly selectable plans.",
+            icon: "building-store",
+            color: "pink",
+        },
+    },
+    subscriptionTier: {
+        label: "Subscription tier",
+        pro: {
+            title: "PRO",
+            description: "Single-owner setup for advanced personal or expert workflows.",
+            icon: "sparkles",
+            color: "brand",
+        },
+        team: {
+            title: "TEAM",
+            description: "Shared workspace model with seat-based team access.",
+            icon: "users-group",
+            color: "aqua",
+        },
+    },
+    teamSeats: {
+        title: "Seats",
+        description: "How many user seats do you need?",
+        min: 2,
+        max: 250,
+        step: 1,
+        minLabel: "2 seats",
+        maxLabel: "250 seats",
+        centerSuffix: "seats",
+    },
+    runtime: {
+        title: "Runtime",
+        description: "Select monthly runtime minutes or switch to pay-as-you-go consumption.",
+        monthlyLabel: "Monthly",
+        paygLabel: "Pay as you go",
+        paygDescription: "Usage is billed based on actual cloud runtime consumption instead of a fixed monthly minute pack.",
+        min: 200,
+        max: 10000,
+        step: 100,
+        minLabel: "200 min",
+        maxLabel: "10,000 min",
+        centerSuffix: "min",
+    },
+    subscribe: {
+        label: "Subscribe",
+        baseUrl: "",
+    },
+    price: {
+        heading: "Price",
+        caption: "per month",
+    },
+}
 
 const optionAccentStyles: Record<OptionAccent, {
     activeBorder: string
     activeBackground: string
     activeRing: string
     activeGlow: string
-    activeDot: string
+    activeIcon: string
 }> = {
     aqua: {
         activeBorder: "border-aqua/60",
         activeBackground: "from-aqua/14 via-white/[0.04] to-transparent",
         activeRing: "ring-aqua/25",
         activeGlow: "bg-[radial-gradient(circle_at_top_right,rgba(114,201,248,0.16),transparent_38%)]",
-        activeDot: "border-aqua bg-aqua shadow-[0_0_0_4px_rgba(114,201,248,0.14)]",
+        activeIcon: "text-aqua",
     },
     yellow: {
         activeBorder: "border-yellow/60",
         activeBackground: "from-yellow/14 via-white/[0.04] to-transparent",
         activeRing: "ring-yellow/25",
         activeGlow: "bg-[radial-gradient(circle_at_top_right,rgba(248,241,114,0.16),transparent_38%)]",
-        activeDot: "border-yellow bg-yellow shadow-[0_0_0_4px_rgba(248,241,114,0.14)]",
+        activeIcon: "text-yellow",
     },
     pink: {
         activeBorder: "border-pink/60",
         activeBackground: "from-pink/14 via-white/[0.04] to-transparent",
         activeRing: "ring-pink/25",
         activeGlow: "bg-[radial-gradient(circle_at_top_right,rgba(248,114,226,0.16),transparent_38%)]",
-        activeDot: "border-pink bg-pink shadow-[0_0_0_4px_rgba(248,114,226,0.14)]",
+        activeIcon: "text-pink",
     },
     blue: {
         activeBorder: "border-blue/60",
         activeBackground: "from-blue/14 via-white/[0.04] to-transparent",
         activeRing: "ring-blue/25",
         activeGlow: "bg-[radial-gradient(circle_at_top_right,rgba(114,169,248,0.16),transparent_38%)]",
-        activeDot: "border-blue bg-blue shadow-[0_0_0_4px_rgba(114,169,248,0.14)]",
+        activeIcon: "text-blue",
     },
     brand: {
         activeBorder: "border-brand/60",
         activeBackground: "from-brand/14 via-white/[0.04] to-transparent",
         activeRing: "ring-brand/25",
         activeGlow: "bg-[radial-gradient(circle_at_top_right,rgba(114,248,150,0.16),transparent_38%)]",
-        activeDot: "border-brand bg-brand shadow-[0_0_0_4px_rgba(114,248,150,0.14)]",
+        activeIcon: "text-brand",
     },
 }
 
@@ -78,7 +183,7 @@ function OptionCard({
     description: string
     active: boolean
     onClick?: () => void
-    icon: React.ReactNode
+    icon: ReactNode
     disabled?: boolean
     accent?: OptionAccent
 }) {
@@ -90,7 +195,7 @@ function OptionCard({
             onClick={onClick}
             disabled={disabled}
             className={cn(
-                "relative overflow-hidden rounded-3xl border p-4 text-left transition-all duration-300",
+                "relative overflow-hidden rounded-2xl border p-4 text-left transition-all duration-300",
                 "shadow-[0_18px_48px_rgba(0,0,0,0.22)]",
                 disabled
                     ? "cursor-not-allowed border-white/8 opacity-45"
@@ -98,307 +203,373 @@ function OptionCard({
                 active && cn("bg-linear-to-br ring-1", accentStyles.activeBorder, accentStyles.activeBackground, accentStyles.activeRing),
             )}
         >
-            <div
-                aria-hidden="true"
-                className={cn(
-                    "pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300",
-                    active && "opacity-100",
-                    accentStyles.activeGlow,
-                )}
-            />
             <div className="relative z-10 flex flex-col gap-2">
-                <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05] text-white/80">
-                    {icon}
-                </div>
-                <div>
+                <div className="flex items-center gap-2">
+                    <div className="relative inline-flex shrink-0 items-center justify-center">
+                        {active ? (
+                            <div
+                                aria-hidden="true"
+                                className={cn(
+                                    "pointer-events-none absolute left-1/2 top-1/2 h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-full blur-xl",
+                                    accentStyles.activeGlow,
+                                )}
+                            />
+                        ) : null}
+                        <div
+                            className={cn(
+                                "relative inline-flex items-center justify-center text-white/80 [&>svg]:h-[1.05em] [&>svg]:w-[1.05em]",
+                                active && accentStyles.activeIcon,
+                            )}
+                        >
+                            {icon}
+                        </div>
+                    </div>
                     <p className="text-base font-semibold text-white">{title}</p>
-                    <p className="mt-1 text-sm leading-6 text-white/75">{description}</p>
                 </div>
+                <p className="text-sm leading-6 text-white/75">{description}</p>
             </div>
-            <div
-                className={cn(
-                    "absolute right-4 top-4 h-4 w-4 rounded-full border transition-colors duration-300",
-                    active ? accentStyles.activeDot : "border-white/20",
-                )}
-            />
         </button>
     )
 }
 
-function FeatureRow({
-    icon,
-    title,
-    description,
-}: {
-    icon: React.ReactNode
-    title: string
-    description: string
-}) {
+function FeatureRow({ icon, title, description }: { icon: ReactNode, title: string, description: string }) {
     return (
-        <div className="flex items-start gap-4 rounded-[1.75rem] border border-white/8 bg-white/[0.03] p-5">
-            <div className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05] text-white/85">
-                {icon}
+        <div className="rounded-3xl border border-white/8 bg-white/5 p-4">
+            <div className="flex items-center gap-2">
+                <div className="inline-flex shrink-0 items-center justify-center text-yellow [&>svg]:h-[1.05em] [&>svg]:w-[1.05em]">
+                    {icon}
+                </div>
+                <p className="text-base font-semibold tracking-wider text-white">{title}</p>
             </div>
-            <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white/45">{title}</p>
-                <p className="mt-2 text-sm leading-6 text-white/68">{description}</p>
-            </div>
+            <p className="mt-2 text-sm text-white/68">{description}</p>
         </div>
     )
 }
 
-export function SubscriptionConfigurator() {
-    const [deployment, setDeployment] = useState<DeploymentMode>("cloud")
-    const [customerType, setCustomerType] = useState<CustomerType>("b2c")
-    const [subscriptionTier, setSubscriptionTier] = useState<SubscriptionTier>("pro")
-    const [teamSeats, setTeamSeats] = useState(12)
-    const [runtimeMode, setRuntimeMode] = useState<RuntimeMode>("monthly")
-    const [runtimeMinutes, setRuntimeMinutes] = useState(2400)
+export function SubscriptionConfigurator({ locale, content }: { locale: AppLocale, content?: SubscriptionConfigData | null }) {
+    const resolved = content ?? ({ id: 0, title: "Subscription Config", ...defaultContent } satisfies SubscriptionConfigData)
+    const [selection, setSelection] = useState<SubscriptionSelection>({
+        deployment: "self-hosted",
+        customerType: "b2b",
+        subscriptionTier: "pro",
+        teamSeats: 12,
+        runtimeMode: "monthly",
+        runtimeMinutes: 2400,
+    })
+    const desktopTopOffset = 96
+    const [desktopMode, setDesktopMode] = useState<"static" | "fixed" | "bottom">("static")
+    const [desktopStyle, setDesktopStyle] = useState<{ left: number, width: number, top: number } | null>(null)
+    const desktopWrapperRef = useRef<HTMLDivElement>(null)
+    const desktopContainerRef = useRef<HTMLDivElement>(null)
+    const seatCount = selection.customerType === "b2b"
+        ? selection.teamSeats
+        : selection.subscriptionTier === "team"
+            ? selection.teamSeats
+            : 1
+    const seatPrice = selection.customerType === "b2b"
+        ? seatCount * (25 + (150 / (seatCount ** 1.2)))
+        : seatCount * (3.99 + (5 / (seatCount ** 1.2)))
+    const runtimePrice = selection.deployment === "cloud" && selection.runtimeMode === "monthly"
+        ? 0.001 * selection.runtimeMinutes
+        : 0
+    const totalPrice = seatPrice + runtimePrice
+    const formattedSeatPrice = new Intl.NumberFormat(locale === "de" ? "de-DE" : "en-US", {
+        style: "currency",
+        currency: "EUR",
+        maximumFractionDigits: 2,
+    }).format(totalPrice)
+
+    const subscribeHref = (() => {
+        const searchParams = new URLSearchParams({
+            deployment: selection.deployment,
+            customerType: selection.customerType,
+        })
+
+        if (selection.customerType === "b2c") {
+            searchParams.set("subscriptionTier", selection.subscriptionTier)
+        }
+
+        if (selection.customerType === "b2c" && selection.subscriptionTier === "team") {
+            searchParams.set("teamSeats", String(selection.teamSeats))
+        }
+
+        if (selection.deployment === "cloud") {
+            searchParams.set("runtimeMode", selection.runtimeMode)
+            if (selection.runtimeMode === "monthly") {
+                searchParams.set("runtimeMinutes", String(selection.runtimeMinutes))
+            }
+        }
+
+        return `${resolved.subscribe.baseUrl}?${searchParams.toString()}`
+    })()
+
+    useEffect(() => {
+        const mediaQuery = window.matchMedia("(max-width: 1023px)")
+
+        const updateDesktopPosition = () => {
+            if (mediaQuery.matches) {
+                setDesktopMode("static")
+                setDesktopStyle(null)
+                return
+            }
+
+            const wrapper = desktopWrapperRef.current
+            const container = desktopContainerRef.current
+            if (!wrapper || !container) return
+
+            const wrapperRect = wrapper.getBoundingClientRect()
+            const containerHeight = container.offsetHeight
+            const wrapperHeight = wrapper.offsetHeight
+            const maxTop = Math.max(wrapperHeight - containerHeight, 0)
+            const wrapperTop = window.scrollY + wrapperRect.top
+            const fixedTop = window.scrollY + desktopTopOffset
+
+            const nextMode =
+                fixedTop <= wrapperTop
+                    ? "static"
+                    : fixedTop >= wrapperTop + maxTop
+                        ? "bottom"
+                        : "fixed"
+
+            setDesktopMode((prev) => (prev === nextMode ? prev : nextMode))
+            setDesktopStyle((prev) => (
+                prev?.left === wrapperRect.left && prev?.width === wrapperRect.width && prev?.top === maxTop
+                    ? prev
+                    : { left: wrapperRect.left, width: wrapperRect.width, top: maxTop }
+            ))
+        }
+
+        updateDesktopPosition()
+
+        const resizeObserver = new ResizeObserver(updateDesktopPosition)
+        const wrapper = desktopWrapperRef.current
+        const container = desktopContainerRef.current
+        if (wrapper) resizeObserver.observe(wrapper)
+        if (container) resizeObserver.observe(container)
+
+        window.addEventListener("scroll", updateDesktopPosition, { passive: true })
+        window.addEventListener("resize", updateDesktopPosition)
+        mediaQuery.addEventListener("change", updateDesktopPosition)
+
+        return () => {
+            resizeObserver.disconnect()
+            window.removeEventListener("scroll", updateDesktopPosition)
+            window.removeEventListener("resize", updateDesktopPosition)
+            mediaQuery.removeEventListener("change", updateDesktopPosition)
+        }
+    }, [])
 
     return (
-        <div className="grid gap-8 xl:grid-cols-[minmax(0,0.95fr)_minmax(420px,0.85fr)]">
-            <section className="relative overflow-hidden">
-
-                <div className="relative z-10 flex flex-col gap-8">
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,0.95fr)_minmax(420px,0.85fr)]">
+            <section ref={desktopWrapperRef} className="relative min-w-0">
+                <div
+                    ref={desktopContainerRef}
+                    className={cn(
+                        "relative z-10 flex min-w-0 flex-col gap-8",
+                        desktopMode === "fixed" && "fixed z-30",
+                        desktopMode === "bottom" && "absolute left-0 right-0",
+                    )}
+                    style={
+                        desktopMode === "fixed" && desktopStyle
+                            ? {
+                                top: `${desktopTopOffset}px`,
+                                left: `${desktopStyle.left}px`,
+                                width: `${desktopStyle.width}px`,
+                            }
+                            : desktopMode === "bottom" && desktopStyle
+                                ? { top: `${desktopStyle.top}px` }
+                                : undefined
+                    }
+                >
                     <div className="max-w-2xl">
                         <h1 className="mt-4 max-w-xl text-balance text-3xl font-semibold text-white lg:text-4xl">
-                            Configure your setup before you talk pricing.
+                            {resolved.pageIntro.heading}
                         </h1>
                         <p className="mt-4 max-w-xl text-base leading-7 text-white/75 lg:text-lg">
-                            Pick your operating model, customer shape, and usage pattern. The right-hand side updates
-                            into a purchase-ready configuration flow instead of a generic pricing table.
+                            {resolved.pageIntro.description}
                         </p>
                     </div>
 
                     <div className="grid gap-4">
-                        <FeatureRow
-                            icon={<IconRocket size={22} />}
-                            title="Fast onboarding"
-                            description="Move from evaluation to a concrete subscription path without guessing which packaging model fits your rollout."
-                        />
-                        <FeatureRow
-                            icon={<IconUserShield size={22} />}
-                            title="Commercial clarity"
-                            description="Separate customer type, hosting model, and runtime expectations before a plan is proposed."
-                        />
-                        <FeatureRow
-                            icon={<IconGauge size={22} />}
-                            title="Usage visibility"
-                            description="Cloud deployments can be framed around monthly runtime needs or a pay-as-you-go usage model."
-                        />
-                        <FeatureRow
-                            icon={<IconGauge size={22} />}
-                            title="Usage visibility"
-                            description="Cloud deployments can be framed around monthly runtime needs or a pay-as-you-go usage model."
-                        />
-                        <FeatureRow
-                            icon={<IconGauge size={22} />}
-                            title="Usage visibility"
-                            description="Cloud deployments can be framed around monthly runtime needs or a pay-as-you-go usage model."
-                        />
+                        {resolved.featureOverview.map((item, index) => (
+                            <FeatureRow
+                                key={item.id ?? `${item.title}-${index}`}
+                                icon={getTablerIcon(item.icon, 20)}
+                                title={item.title}
+                                description={item.description}
+                            />
+                        ))}
                     </div>
                 </div>
             </section>
 
-            <section className="relative overflow-hidden rounded-4xl ring ring-white/5 shadow-md bg-linear-to-br from-[#0e1921]/70 to-primary/50 p-6">
-                <div
-                    aria-hidden="true"
-                    className="pointer-events-none absolute inset-0"
-                />
+            <section className="glass-card-shell relative min-w-0 overflow-hidden rounded-3xl p-6">
+                <div aria-hidden="true" className="glass-card-topline" />
                 <div className="relative z-10 flex flex-col gap-8">
-                    <h2 className="text-2xl font-semibold text-white lg:text-3xl">Build the subscription shape</h2>
+                    <h2 className="text-2xl font-semibold text-white lg:text-3xl">{resolved.optionsPanelHeading}</h2>
 
                     <div className="space-y-4">
-                        <p className="text-lg font-semibold tracking-wider text-white/50">Deployment</p>
+                        <p className="text-lg font-semibold tracking-wider text-white/50">{resolved.deployment.label}</p>
                         <div className="grid gap-3 md:grid-cols-2">
                             <OptionCard
-                                title="Self-hosted"
-                                description="Deploy on your own infrastructure with full operational control."
-                                icon={<IconServer size={20} />}
-                                accent="yellow"
-                                active={deployment === "self-hosted"}
-                                onClick={() => setDeployment("self-hosted")}
+                                title={resolved.deployment.selfHosted.title}
+                                description={resolved.deployment.selfHosted.description}
+                                icon={getTablerIcon(resolved.deployment.selfHosted.icon, 20)}
+                                accent={resolved.deployment.selfHosted.color}
+                                active={selection.deployment === "self-hosted"}
+                                onClick={() => setSelection((current) => ({ ...current, deployment: "self-hosted" }))}
                             />
                             <OptionCard
-                                title="Cloud"
-                                description="Use managed infrastructure with selectable runtime consumption."
-                                icon={<IconCloud size={20} />}
-                                accent="aqua"
-                                active={deployment === "cloud"}
-                                onClick={() => setDeployment("cloud")}
+                                title={resolved.deployment.cloud.title}
+                                description={resolved.deployment.cloud.description}
+                                icon={getTablerIcon(resolved.deployment.cloud.icon, 20)}
+                                accent={resolved.deployment.cloud.color}
+                                active={selection.deployment === "cloud"}
+                                onClick={() => setSelection((current) => ({ ...current, deployment: "cloud" }))}
                             />
                         </div>
                     </div>
 
                     <div className="space-y-4">
-                        <p className="text-lg font-semibold tracking-wider text-white/50">Customer Type</p>
+                        <p className="text-lg font-semibold tracking-wider text-white/50">{resolved.customerType.label}</p>
                         <div className="grid gap-3 md:grid-cols-2">
                             <OptionCard
-                                title="B2B"
-                                description="Organization purchase flow with tailored commercial handling."
-                                icon={<IconBriefcase2 size={20} />}
-                                accent="blue"
-                                active={customerType === "b2b"}
-                                onClick={() => setCustomerType("b2b")}
+                                title={resolved.customerType.b2b.title}
+                                description={resolved.customerType.b2b.description}
+                                icon={getTablerIcon(resolved.customerType.b2b.icon, 20)}
+                                accent={resolved.customerType.b2b.color}
+                                active={selection.customerType === "b2b"}
+                                onClick={() => setSelection((current) => ({ ...current, customerType: "b2b" }))}
                             />
                             <OptionCard
-                                title="B2C"
-                                description="Standardized subscription flow with directly selectable plans."
-                                icon={<IconBuildingStore size={20} />}
-                                accent="pink"
-                                active={customerType === "b2c"}
-                                onClick={() => setCustomerType("b2c")}
+                                title={resolved.customerType.b2c.title}
+                                description={resolved.customerType.b2c.description}
+                                icon={getTablerIcon(resolved.customerType.b2c.icon, 20)}
+                                accent={resolved.customerType.b2c.color}
+                                active={selection.customerType === "b2c"}
+                                onClick={() => setSelection((current) => ({ ...current, customerType: "b2c" }))}
                             />
                         </div>
                     </div>
 
-                    {customerType === "b2c" ? (
+                    {selection.customerType === "b2c" &&
                         <div className="space-y-4">
-                            <p className="text-lg font-semibold tracking-wider text-white/50">Subscription tier</p>
+                            <p className="text-lg font-semibold tracking-wider text-white/50">{resolved.subscriptionTier.label}</p>
                             <div className="grid gap-3 md:grid-cols-2">
                                 <OptionCard
-                                    title="PRO"
-                                    description="Single-owner setup for advanced personal or expert workflows."
-                                    icon={<IconSparkles size={20} />}
-                                    accent="brand"
-                                    active={subscriptionTier === "pro"}
-                                    onClick={() => setSubscriptionTier("pro")}
+                                    title={resolved.subscriptionTier.pro.title}
+                                    description={resolved.subscriptionTier.pro.description}
+                                    icon={getTablerIcon(resolved.subscriptionTier.pro.icon, 20)}
+                                    accent={resolved.subscriptionTier.pro.color}
+                                    active={selection.subscriptionTier === "pro"}
+                                    onClick={() => setSelection((current) => ({ ...current, subscriptionTier: "pro" }))}
                                 />
                                 <OptionCard
-                                    title="TEAM"
-                                    description="Shared workspace model with seat-based team access."
-                                    icon={<IconUsersGroup size={20} />}
-                                    accent="aqua"
-                                    active={subscriptionTier === "team"}
-                                    onClick={() => setSubscriptionTier("team")}
+                                    title={resolved.subscriptionTier.team.title}
+                                    description={resolved.subscriptionTier.team.description}
+                                    icon={getTablerIcon(resolved.subscriptionTier.team.icon, 20)}
+                                    accent={resolved.subscriptionTier.team.color}
+                                    active={selection.subscriptionTier === "team"}
+                                    onClick={() => setSelection((current) => ({ ...current, subscriptionTier: "team" }))}
                                 />
                             </div>
                         </div>
-                    ) : (
-                        <div className="rounded-[1.75rem] border border-white/8 bg-white/[0.03] p-5">
-                            <p className="text-sm font-semibold text-white">B2B path</p>
-                            <p className="mt-2 text-sm leading-6 text-white/65">
-                                For B2B, `PRO` and `TEAM` subscriptions are not available. This path moves into a custom
-                                enterprise-style offer instead.
-                            </p>
-                        </div>
-                    )}
+                    }
 
-                    {customerType === "b2c" && subscriptionTier === "team" ? (
-                        <div className="rounded-3xl border border-white/8 bg-white/[0.03] p-5">
+                    {(selection.customerType === "b2b" || (selection.customerType === "b2c" && selection.subscriptionTier === "team")) &&
+                        <div className="rounded-2xl border border-white/10 p-5">
                             <div className="flex items-center justify-between gap-4">
                                 <div>
-                                    <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/45">Seats</p>
-                                    <p className="mt-2 text-sm text-white/65">How many user seats do you need?</p>
-                                </div>
-                                <div className="rounded-2xl border border-aqua/25 bg-aqua/10 px-4 py-2 text-xl font-semibold text-aqua">
-                                    {teamSeats}
+                                    <p className="text-lg font-semibold tracking-wider text-white">{resolved.teamSeats.title}</p>
+                                    <p className="text-sm text-white/75">{resolved.teamSeats.description}</p>
                                 </div>
                             </div>
-                            <input
-                                type="range"
-                                min={2}
-                                max={250}
-                                step={1}
-                                value={teamSeats}
-                                onChange={(event) => setTeamSeats(Number(event.target.value))}
-                                className="mt-5 h-2 w-full cursor-pointer appearance-none rounded-full bg-white/10 accent-aqua"
+                            <Slider
+                                min={resolved.teamSeats.min}
+                                max={resolved.teamSeats.max}
+                                step={resolved.teamSeats.step}
+                                value={selection.teamSeats}
+                                onChange={(teamSeats) => setSelection((current) => ({ ...current, teamSeats }))}
+                                className="mt-4"
+                                minLabel={resolved.teamSeats.minLabel}
+                                centerLabel={`${selection.teamSeats} ${resolved.teamSeats.centerSuffix}`}
+                                maxLabel={resolved.teamSeats.maxLabel}
                             />
-                            <div className="mt-2 flex justify-between text-xs text-white/38">
-                                <span>2 seats</span>
-                                <span>250 seats</span>
-                            </div>
                         </div>
-                    ) : null}
+                    }
 
-                    {deployment === "cloud" ? (
-                        <div className="rounded-3xl border border-white/8 bg-white/[0.03] p-5">
+                    {selection.deployment === "cloud" &&
+                        <div className="rounded-2xl border border-white/10 p-5">
                             <div className="flex items-start justify-between gap-4">
                                 <div>
-                                    <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/45">Runtime</p>
-                                    <p className="mt-2 text-sm text-white/65">
-                                        Select monthly runtime minutes or switch to pay-as-you-go consumption.
+                                    <p className="text-lg font-semibold tracking-wider text-white">{resolved.runtime.title}</p>
+                                    <p className="mt-2 text-sm text-white/75">
+                                        {resolved.runtime.description}
                                     </p>
                                 </div>
-                                <div className="inline-flex rounded-2xl border border-white/10 bg-black/20 p-1">
-                                    <button
-                                        type="button"
-                                        onClick={() => setRuntimeMode("monthly")}
-                                        className={cn(
-                                            "rounded-[1rem] px-3 py-2 text-xs font-medium transition-colors",
-                                            runtimeMode === "monthly" ? "bg-white text-primary" : "text-white/60",
-                                        )}
+                                <SegmentedControl
+                                    type="single"
+                                    value={selection.runtimeMode}
+                                    onValueChange={(value) => {
+                                        if (value) {
+                                            setSelection((current) => ({ ...current, runtimeMode: value as RuntimeMode }))
+                                        }
+                                    }}
+                                    className="h-11! rounded-2xl! border-white/10! bg-black/20! p-1!"
+                                >
+                                    <SegmentedControlItem
+                                        value="monthly"
+                                        className="px-3! py-2! text-xs! font-medium! text-white/60! transition-colors! data-[state=on]:bg-white! data-[state=on]:text-primary!"
                                     >
-                                        Monthly
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setRuntimeMode("payg")}
-                                        className={cn(
-                                            "rounded-[1rem] px-3 py-2 text-xs font-medium transition-colors",
-                                            runtimeMode === "payg" ? "bg-white text-primary" : "text-white/60",
-                                        )}
+                                        {resolved.runtime.monthlyLabel}
+                                    </SegmentedControlItem>
+                                    <SegmentedControlItem
+                                        value="payg"
+                                        className="w-max! px-3! py-2! text-xs! font-medium! text-white/60! transition-colors! data-[state=on]:bg-white! data-[state=on]:text-primary!"
                                     >
-                                        Pay as you go
-                                    </button>
-                                </div>
+                                        {resolved.runtime.paygLabel}
+                                    </SegmentedControlItem>
+                                </SegmentedControl>
                             </div>
 
-                            {runtimeMode === "monthly" ? (
+                            {selection.runtimeMode === "monthly" ? (
                                 <>
-                                    <div className="mt-5 flex items-center justify-between gap-4">
-                                        <span className="text-sm text-white/55">Monthly runtime minutes</span>
-                                        <span className="rounded-2xl border border-blue/25 bg-blue/12 px-4 py-2 text-xl font-semibold text-blue">
-                                            {runtimeMinutes.toLocaleString("en-US")}
-                                        </span>
-                                    </div>
-                                    <input
-                                        type="range"
-                                        min={200}
-                                        max={10000}
-                                        step={100}
-                                        value={runtimeMinutes}
-                                        onChange={(event) => setRuntimeMinutes(Number(event.target.value))}
-                                        className="mt-5 h-2 w-full cursor-pointer appearance-none rounded-full bg-white/10 accent-blue"
-                                    />
-                                    <div className="mt-2 flex justify-between text-xs text-white/38">
-                                        <span>200 min</span>
-                                        <span>10,000 min</span>
-                                    </div>
+                                <Slider
+                                    min={resolved.runtime.min}
+                                    max={resolved.runtime.max}
+                                    step={resolved.runtime.step}
+                                    value={selection.runtimeMinutes}
+                                    onChange={(runtimeMinutes) => setSelection((current) => ({ ...current, runtimeMinutes }))}
+                                    className="mt-2"
+                                    minLabel={resolved.runtime.minLabel}
+                                    maxLabel={resolved.runtime.maxLabel}
+                                    centerLabel={`${selection.runtimeMinutes} ${resolved.runtime.centerSuffix}`}
+                                />
                                 </>
                             ) : (
-                                <div className="mt-5 rounded-3xl border border-white/8 bg-black/20 p-4 text-sm leading-6 text-white/68">
-                                    Usage is billed based on actual cloud runtime consumption instead of a fixed monthly
-                                    minute pack.
+                                <div className="mt-4 rounded-xl border border-white/10 bg-white/5 p-4 text-sm leading-6 text-white/75">
+                                    {resolved.runtime.paygDescription}
                                 </div>
                             )}
                         </div>
-                    ) : (
-                        <div className="rounded-3xl border border-white/8 bg-white/[0.03] p-5">
-                            <div className="flex items-start gap-4">
-                                <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05] text-white/80">
-                                    <IconDatabase size={20} />
-                                </div>
-                                <div>
-                                    <p className="text-sm font-semibold text-white">Runtime is handled on your infrastructure</p>
-                                    <p className="mt-2 text-sm leading-6 text-white/65">
-                                        Runtime minutes are only configurable for cloud deployments. Self-hosted usage stays under your own operational control.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    )}
+                    }
 
-                    <div className="space-y-4">
-                        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/45">Additional features</p>
-                        <OptionCard
-                            title="No add-ons available yet"
-                            description="Additional purchasable features are not available at the moment."
-                            icon={<IconSparkles size={20} />}
-                            accent="blue"
-                            active={false}
-                            disabled
-                        />
+                    <div className="rounded-2xl border border-white/10 bg-white/5">
+                        <div className="flex items-end gap-2 p-4">
+                            <div>
+                                <p className="text-sm font-semibold tracking-wider text-white/75">{resolved.price.heading}</p>
+                                <p className="mt-3 text-3xl font-semibold text-brand tabular-nums">{formattedSeatPrice}</p>
+                            </div>
+                            <p className="text-sm text-white/55">{resolved.price.caption}</p>
+                        </div>
+                        <HapticButtonLink
+                            href={subscribeHref}
+                            locale={locale}
+                            variant="filled"
+                            className="mt-2 bg-white/80! px-8! text-primary! hover:bg-white! rounded-t-none!"
+                        >
+                            {resolved.subscribe.label}
+                        </HapticButtonLink>
                     </div>
                 </div>
             </section>
