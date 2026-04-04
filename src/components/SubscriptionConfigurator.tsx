@@ -9,6 +9,7 @@ import { Slider } from "@/components/ui/Slider"
 import { SegmentedControl, SegmentedControlItem } from "@code0-tech/pictor"
 import type { ReactNode } from "react"
 import { useEffect, useRef, useState } from "react"
+import { LinkButton } from "./ui/LinkButton"
 
 type DeploymentMode = "self-hosted" | "cloud"
 type CustomerType = "b2b" | "b2c"
@@ -116,6 +117,11 @@ const defaultContent: Omit<SubscriptionConfigData, "id" | "title"> = {
         maxLabel: "10,000 min",
         centerSuffix: "min",
     },
+    contactSales: {
+        prompt: "Need more?",
+        label: "Contact sales",
+        href: "/contact",
+    },
     subscribe: {
         label: "Subscribe",
         baseUrl: "",
@@ -196,10 +202,9 @@ function OptionCard({
             disabled={disabled}
             className={cn(
                 "relative overflow-hidden rounded-2xl border p-4 text-left transition-all duration-300",
-                "shadow-[0_18px_48px_rgba(0,0,0,0.22)]",
                 disabled
                     ? "cursor-not-allowed border-white/8 opacity-45"
-                    : "border-white/10 hover:border-white/20 hover:bg-white/5",
+                    : "border-white/10 hover:bg-white/5",
                 active && cn("bg-linear-to-br ring-1", accentStyles.activeBorder, accentStyles.activeBackground, accentStyles.activeRing),
             )}
         >
@@ -234,9 +239,9 @@ function OptionCard({
 
 function FeatureRow({ icon, title, description }: { icon: ReactNode, title: string, description: string }) {
     return (
-        <div className="rounded-3xl border border-white/8 bg-white/5 p-4">
+        <div className="rounded-3xl border border-white/8 bg-white/2 p-4">
             <div className="flex items-center gap-2">
-                <div className="inline-flex shrink-0 items-center justify-center text-yellow [&>svg]:h-[1.05em] [&>svg]:w-[1.05em]">
+                <div className="inline-flex shrink-0 items-center justify-center text-brand [&>svg]:h-[1.05em] [&>svg]:w-[1.05em]">
                     {icon}
                 </div>
                 <p className="text-base font-semibold tracking-wider text-white">{title}</p>
@@ -360,8 +365,8 @@ export function SubscriptionConfigurator({ locale, content }: { locale: AppLocal
     }, [])
 
     return (
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,0.95fr)_minmax(420px,0.85fr)]">
-            <section ref={desktopWrapperRef} className="relative min-w-0">
+        <div className="grid gap-8 lg:grid-cols-5">
+            <section ref={desktopWrapperRef} className="relative min-w-0 lg:col-span-2">
                 <div
                     ref={desktopContainerRef}
                     className={cn(
@@ -403,7 +408,7 @@ export function SubscriptionConfigurator({ locale, content }: { locale: AppLocal
                 </div>
             </section>
 
-            <section className="glass-card-shell relative min-w-0 overflow-hidden rounded-3xl p-6">
+            <section className="lg:col-span-3 glass-card-shell relative min-w-0 overflow-hidden rounded-3xl p-6">
                 <div aria-hidden="true" className="glass-card-topline" />
                 <div className="relative z-10 flex flex-col gap-8">
                     <h2 className="text-2xl font-semibold text-white lg:text-3xl">{resolved.optionsPanelHeading}</h2>
@@ -495,6 +500,17 @@ export function SubscriptionConfigurator({ locale, content }: { locale: AppLocal
                                 centerLabel={`${selection.teamSeats} ${resolved.teamSeats.centerSuffix}`}
                                 maxLabel={resolved.teamSeats.maxLabel}
                             />
+                            <div className="mt-2 flex flex-wrap items-center justify-end gap-2">
+                                <p className="text-sm font-medium text-white/50">{resolved.contactSales.prompt}</p>
+                                <LinkButton
+                                    href={resolved.contactSales.href}
+                                    locale={locale}
+                                    className="border-b-0 text-white/75"
+                                    showArrow={false}
+                                >
+                                    {resolved.contactSales.label}
+                                </LinkButton>
+                            </div>
                         </div>
                     }
 
@@ -534,17 +550,28 @@ export function SubscriptionConfigurator({ locale, content }: { locale: AppLocal
 
                             {selection.runtimeMode === "monthly" ? (
                                 <>
-                                <Slider
-                                    min={resolved.runtime.min}
-                                    max={resolved.runtime.max}
-                                    step={resolved.runtime.step}
-                                    value={selection.runtimeMinutes}
-                                    onChange={(runtimeMinutes) => setSelection((current) => ({ ...current, runtimeMinutes }))}
-                                    className="mt-2"
-                                    minLabel={resolved.runtime.minLabel}
-                                    maxLabel={resolved.runtime.maxLabel}
-                                    centerLabel={`${selection.runtimeMinutes} ${resolved.runtime.centerSuffix}`}
-                                />
+                                    <Slider
+                                        min={resolved.runtime.min}
+                                        max={resolved.runtime.max}
+                                        step={resolved.runtime.step}
+                                        value={selection.runtimeMinutes}
+                                        onChange={(runtimeMinutes) => setSelection((current) => ({ ...current, runtimeMinutes }))}
+                                        className="mt-2"
+                                        minLabel={resolved.runtime.minLabel}
+                                        maxLabel={resolved.runtime.maxLabel}
+                                        centerLabel={`${selection.runtimeMinutes} ${resolved.runtime.centerSuffix}`}
+                                    />
+                                    <div className="mt-2 flex flex-wrap items-center justify-end gap-2">
+                                        <p className="text-sm font-medium text-white/50">{resolved.contactSales.prompt}</p>
+                                        <LinkButton
+                                            href={resolved.contactSales.href}
+                                            locale={locale}
+                                            className="border-b-0 text-white/75"
+                                            showArrow={false}
+                                        >
+                                            {resolved.contactSales.label}
+                                        </LinkButton>
+                                    </div>
                                 </>
                             ) : (
                                 <div className="mt-4 rounded-xl border border-white/10 bg-white/5 p-4 text-sm leading-6 text-white/75">

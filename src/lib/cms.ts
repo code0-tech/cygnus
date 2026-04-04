@@ -129,6 +129,11 @@ export interface SubscriptionConfigData {
         maxLabel: string
         centerSuffix: string
     }
+    contactSales: {
+        prompt: string
+        label: string
+        href: string
+    }
     subscribe: {
         label: string
         baseUrl: string

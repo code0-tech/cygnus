@@ -219,6 +219,15 @@ export const SubscriptionCollection: CollectionConfig = {
       ],
     },
     {
+      name: "contactSales",
+      type: "group",
+      fields: [
+        { name: "prompt", type: "text", required: true, localized: true },
+        { name: "label", type: "text", required: true, localized: true },
+        { name: "href", type: "text", required: true },
+      ],
+    },
+    {
       name: "subscribe",
       type: "group",
       fields: [

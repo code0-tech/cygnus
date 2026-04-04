@@ -779,6 +779,11 @@ export interface SubscriptionConfig {
     maxLabel: string;
     centerSuffix: string;
   };
+  contactSales: {
+    prompt: string;
+    label: string;
+    href: string;
+  };
   subscribe: {
     label: string;
     baseUrl: string;
@@ -1671,6 +1676,13 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
         minLabel?: T;
         maxLabel?: T;
         centerSuffix?: T;
+      };
+  contactSales?:
+    | T
+    | {
+        prompt?: T;
+        label?: T;
+        href?: T;
       };
   subscribe?:
     | T
