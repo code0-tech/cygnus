@@ -91,21 +91,6 @@ export interface SubscriptionConfigData {
             color: "brand" | "pink" | "yellow" | "aqua" | "blue"
         }
     }
-    subscriptionTier: {
-        label: string
-        pro: {
-            title: string
-            description: string
-            icon: string
-            color: "brand" | "pink" | "yellow" | "aqua" | "blue"
-        }
-        team: {
-            title: string
-            description: string
-            icon: string
-            color: "brand" | "pink" | "yellow" | "aqua" | "blue"
-        }
-    }
     teamSeats: {
         title: string
         description: string
@@ -142,6 +127,14 @@ export interface SubscriptionConfigData {
         heading: string
         caption: string
     }
+    additionalFeaturesLabel?: string | null
+    additionalFeatures?: {
+        icon: string
+        title: string
+        description: string
+        price: number
+        id?: string | null
+    }[] | null
 }
 
 function isMissingPayloadTablesError(error: unknown): boolean {

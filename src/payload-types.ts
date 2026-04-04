@@ -792,6 +792,28 @@ export interface SubscriptionConfig {
     heading: string;
     caption: string;
   };
+  /**
+   * Optional section heading shown above the additional features list.
+   */
+  additionalFeaturesLabel?: string | null;
+  /**
+   * Leave empty to hide the section entirely.
+   */
+  additionalFeatures?:
+    | {
+        title: string;
+        description: string;
+        /**
+         * Tabler Icon Name ohne "Icon"-Praefix, z. B. "server", "cloud" oder "users-group". Unbekannte Werte fallen auf "cube" zurueck.
+         */
+        icon: string;
+        /**
+         * Monthly price in EUR.
+         */
+        price: number;
+        id?: string | null;
+      }[]
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1695,6 +1717,16 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
     | {
         heading?: T;
         caption?: T;
+      };
+  additionalFeaturesLabel?: T;
+  additionalFeatures?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        icon?: T;
+        price?: T;
+        id?: T;
       };
   updatedAt?: T;
   createdAt?: T;

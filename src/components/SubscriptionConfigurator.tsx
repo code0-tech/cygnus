@@ -4,22 +4,21 @@ import type { SubscriptionConfigData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { getTablerIcon } from "@/lib/tablerIcons"
 import { cn } from "@/lib/utils"
-import { HapticButtonLink } from "@/components/ui/HapticButtonLink"
+import { BuyMenu } from "@/components/BuyMenu"
 import { Slider } from "@/components/ui/Slider"
 import { SegmentedControl, SegmentedControlItem } from "@code0-tech/pictor"
+import { IconCheck } from "@tabler/icons-react"
 import type { ReactNode } from "react"
 import { useEffect, useRef, useState } from "react"
 import { LinkButton } from "./ui/LinkButton"
 
 type DeploymentMode = "self-hosted" | "cloud"
 type CustomerType = "b2b" | "b2c"
-type SubscriptionTier = "pro" | "team"
 type RuntimeMode = "monthly" | "payg"
 type OptionAccent = "aqua" | "yellow" | "pink" | "blue" | "brand"
 type SubscriptionSelection = {
     deployment: DeploymentMode
     customerType: CustomerType
-    subscriptionTier: SubscriptionTier
     teamSeats: number
     runtimeMode: RuntimeMode
     runtimeMinutes: number
@@ -79,28 +78,13 @@ const defaultContent: Omit<SubscriptionConfigData, "id" | "title"> = {
             color: "pink",
         },
     },
-    subscriptionTier: {
-        label: "Subscription tier",
-        pro: {
-            title: "PRO",
-            description: "Single-owner setup for advanced personal or expert workflows.",
-            icon: "sparkles",
-            color: "brand",
-        },
-        team: {
-            title: "TEAM",
-            description: "Shared workspace model with seat-based team access.",
-            icon: "users-group",
-            color: "aqua",
-        },
-    },
     teamSeats: {
         title: "Seats",
         description: "How many user seats do you need?",
-        min: 2,
+        min: 1,
         max: 250,
         step: 1,
-        minLabel: "2 seats",
+        minLabel: "1 seat",
         maxLabel: "250 seats",
         centerSuffix: "seats",
     },
@@ -123,7 +107,7 @@ const defaultContent: Omit<SubscriptionConfigData, "id" | "title"> = {
         href: "/contact",
     },
     subscribe: {
-        label: "Subscribe",
+        label: "Buy now",
         baseUrl: "",
     },
     price: {
@@ -203,7 +187,7 @@ function OptionCard({
             className={cn(
                 "relative overflow-hidden rounded-2xl border p-4 text-left transition-all duration-300",
                 disabled
-                    ? "cursor-not-allowed border-white/8 opacity-45"
+                    ? "cursor-not-allowed border-white/10 opacity-45"
                     : "border-white/10 hover:bg-white/5",
                 active && cn("bg-linear-to-br ring-1", accentStyles.activeBorder, accentStyles.activeBackground, accentStyles.activeRing),
             )}
@@ -239,15 +223,82 @@ function OptionCard({
 
 function FeatureRow({ icon, title, description }: { icon: ReactNode, title: string, description: string }) {
     return (
-        <div className="rounded-3xl border border-white/8 bg-white/2 p-4">
+        <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
                 <div className="inline-flex shrink-0 items-center justify-center text-brand [&>svg]:h-[1.05em] [&>svg]:w-[1.05em]">
                     {icon}
                 </div>
                 <p className="text-base font-semibold tracking-wider text-white">{title}</p>
             </div>
-            <p className="mt-2 text-sm text-white/68">{description}</p>
+            <p className="text-sm text-white/68">{description}</p>
         </div>
+    )
+}
+
+function AdditionalFeatureCard({
+    title,
+    description,
+    active,
+    onClick,
+    icon,
+    formattedPrice,
+}: {
+    title: string
+    description: string
+    active: boolean
+    onClick?: () => void
+    icon: ReactNode
+    formattedPrice: string
+}) {
+    const accentStyles = optionAccentStyles["brand"]
+
+    return (
+        <button
+            type="button"
+            onClick={onClick}
+            className={cn(
+                "relative overflow-hidden rounded-2xl border p-4 text-left transition-all duration-300",
+                "border-white/10 hover:bg-white/5",
+                active && cn("bg-linear-to-br ring-1", accentStyles.activeBorder, accentStyles.activeBackground, accentStyles.activeRing),
+            )}
+        >
+            <div className="relative z-10 flex flex-col gap-2">
+                <div className="flex items-center gap-2">
+                    <div className="relative inline-flex shrink-0 items-center justify-center">
+                        {active ? (
+                            <div
+                                aria-hidden="true"
+                                className={cn(
+                                    "pointer-events-none absolute left-1/2 top-1/2 h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-full blur-xl",
+                                    accentStyles.activeGlow,
+                                )}
+                            />
+                        ) : null}
+                        <div
+                            className={cn(
+                                "relative inline-flex items-center justify-center text-white/80 [&>svg]:h-[1.05em] [&>svg]:w-[1.05em]",
+                                active && accentStyles.activeIcon,
+                            )}
+                        >
+                            {icon}
+                        </div>
+                    </div>
+                    <p className="text-base font-semibold text-white">{title}</p>
+                </div>
+                <p className="text-sm leading-6 text-white/75">{description}</p>
+                <div className="flex items-center justify-between gap-2">
+                    <p className="text-sm font-semibold tabular-nums text-white/60">{formattedPrice}</p>
+                    <div
+                        className={cn(
+                            "flex h-5 w-5 items-center justify-center rounded-full border transition-all duration-200",
+                            active ? "border-brand bg-brand" : "border-white/20 bg-transparent",
+                        )}
+                    >
+                        {active && <IconCheck size={12} stroke={3} className="text-primary" />}
+                    </div>
+                </div>
+            </div>
+        </button>
     )
 }
 
@@ -256,28 +307,28 @@ export function SubscriptionConfigurator({ locale, content }: { locale: AppLocal
     const [selection, setSelection] = useState<SubscriptionSelection>({
         deployment: "self-hosted",
         customerType: "b2b",
-        subscriptionTier: "pro",
-        teamSeats: 12,
+        teamSeats: 1,
         runtimeMode: "monthly",
-        runtimeMinutes: 2400,
+        runtimeMinutes: 1000,
     })
+    const [selectedFeatures, setSelectedFeatures] = useState<Set<number>>(new Set())
     const desktopTopOffset = 96
     const [desktopMode, setDesktopMode] = useState<"static" | "fixed" | "bottom">("static")
     const [desktopStyle, setDesktopStyle] = useState<{ left: number, width: number, top: number } | null>(null)
     const desktopWrapperRef = useRef<HTMLDivElement>(null)
     const desktopContainerRef = useRef<HTMLDivElement>(null)
-    const seatCount = selection.customerType === "b2b"
-        ? selection.teamSeats
-        : selection.subscriptionTier === "team"
-            ? selection.teamSeats
-            : 1
+    const seatCount = selection.customerType === "b2b" ? selection.teamSeats : 1
     const seatPrice = selection.customerType === "b2b"
         ? seatCount * (25 + (150 / (seatCount ** 1.2)))
         : seatCount * (3.99 + (5 / (seatCount ** 1.2)))
     const runtimePrice = selection.deployment === "cloud" && selection.runtimeMode === "monthly"
         ? 0.001 * selection.runtimeMinutes
         : 0
-    const totalPrice = seatPrice + runtimePrice
+    const additionalFeaturesPrice = Array.from(selectedFeatures).reduce(
+        (acc, idx) => acc + (resolved.additionalFeatures?.[idx]?.price ?? 0),
+        0,
+    )
+    const totalPrice = seatPrice + runtimePrice + additionalFeaturesPrice
     const formattedSeatPrice = new Intl.NumberFormat(locale === "de" ? "de-DE" : "en-US", {
         style: "currency",
         currency: "EUR",
@@ -290,19 +341,18 @@ export function SubscriptionConfigurator({ locale, content }: { locale: AppLocal
             customerType: selection.customerType,
         })
 
-        if (selection.customerType === "b2c") {
-            searchParams.set("subscriptionTier", selection.subscriptionTier)
-        }
-
-        if (selection.customerType === "b2c" && selection.subscriptionTier === "team") {
-            searchParams.set("teamSeats", String(selection.teamSeats))
-        }
-
         if (selection.deployment === "cloud") {
             searchParams.set("runtimeMode", selection.runtimeMode)
             if (selection.runtimeMode === "monthly") {
                 searchParams.set("runtimeMinutes", String(selection.runtimeMinutes))
             }
+        }
+
+        if (selectedFeatures.size > 0 && resolved.additionalFeatures) {
+            const featureIds = Array.from(selectedFeatures)
+                .map((idx) => resolved.additionalFeatures![idx]?.id ?? String(idx))
+                .join(",")
+            searchParams.set("additionalFeatures", featureIds)
         }
 
         return `${resolved.subscribe.baseUrl}?${searchParams.toString()}`
@@ -365,123 +415,99 @@ export function SubscriptionConfigurator({ locale, content }: { locale: AppLocal
     }, [])
 
     return (
-        <div className="grid gap-8 lg:grid-cols-5">
-            <section ref={desktopWrapperRef} className="relative min-w-0 lg:col-span-2">
-                <div
-                    ref={desktopContainerRef}
-                    className={cn(
-                        "relative z-10 flex min-w-0 flex-col gap-8",
-                        desktopMode === "fixed" && "fixed z-30",
-                        desktopMode === "bottom" && "absolute left-0 right-0",
-                    )}
-                    style={
-                        desktopMode === "fixed" && desktopStyle
-                            ? {
-                                top: `${desktopTopOffset}px`,
-                                left: `${desktopStyle.left}px`,
-                                width: `${desktopStyle.width}px`,
-                            }
-                            : desktopMode === "bottom" && desktopStyle
-                                ? { top: `${desktopStyle.top}px` }
-                                : undefined
-                    }
-                >
-                    <div className="max-w-2xl">
-                        <h1 className="mt-4 max-w-xl text-balance text-3xl font-semibold text-white lg:text-4xl">
-                            {resolved.pageIntro.heading}
-                        </h1>
-                        <p className="mt-4 max-w-xl text-base leading-7 text-white/75 lg:text-lg">
-                            {resolved.pageIntro.description}
-                        </p>
-                    </div>
+        <>
+            <div className="grid gap-8 lg:grid-cols-5">
+                <section ref={desktopWrapperRef} className="relative min-w-0 lg:col-span-2">
+                    <div
+                        ref={desktopContainerRef}
+                        className={cn(
+                            "relative z-10 flex min-w-0 flex-col gap-12",
+                            desktopMode === "fixed" && "fixed z-30",
+                            desktopMode === "bottom" && "absolute left-0 right-0",
+                        )}
+                        style={
+                            desktopMode === "fixed" && desktopStyle
+                                ? {
+                                    top: `${desktopTopOffset}px`,
+                                    left: `${desktopStyle.left}px`,
+                                    width: `${desktopStyle.width}px`,
+                                }
+                                : desktopMode === "bottom" && desktopStyle
+                                    ? { top: `${desktopStyle.top}px` }
+                                    : undefined
+                        }
+                    >
+                        <div className="max-w-2xl">
+                            <h1 className="mt-4 max-w-xl text-balance text-3xl font-semibold text-white lg:text-4xl">
+                                {resolved.pageIntro.heading}
+                            </h1>
+                            <p className="mt-4 max-w-xl text-base leading-7 text-white/75 lg:text-lg">
+                                {resolved.pageIntro.description}
+                            </p>
+                        </div>
 
-                    <div className="grid gap-4">
-                        {resolved.featureOverview.map((item, index) => (
-                            <FeatureRow
-                                key={item.id ?? `${item.title}-${index}`}
-                                icon={getTablerIcon(item.icon, 20)}
-                                title={item.title}
-                                description={item.description}
-                            />
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            <section className="lg:col-span-3 glass-card-shell relative min-w-0 overflow-hidden rounded-3xl p-6">
-                <div aria-hidden="true" className="glass-card-topline" />
-                <div className="relative z-10 flex flex-col gap-8">
-                    <h2 className="text-2xl font-semibold text-white lg:text-3xl">{resolved.optionsPanelHeading}</h2>
-
-                    <div className="space-y-4">
-                        <p className="text-lg font-semibold tracking-wider text-white/50">{resolved.deployment.label}</p>
-                        <div className="grid gap-3 md:grid-cols-2">
-                            <OptionCard
-                                title={resolved.deployment.selfHosted.title}
-                                description={resolved.deployment.selfHosted.description}
-                                icon={getTablerIcon(resolved.deployment.selfHosted.icon, 20)}
-                                accent={resolved.deployment.selfHosted.color}
-                                active={selection.deployment === "self-hosted"}
-                                onClick={() => setSelection((current) => ({ ...current, deployment: "self-hosted" }))}
-                            />
-                            <OptionCard
-                                title={resolved.deployment.cloud.title}
-                                description={resolved.deployment.cloud.description}
-                                icon={getTablerIcon(resolved.deployment.cloud.icon, 20)}
-                                accent={resolved.deployment.cloud.color}
-                                active={selection.deployment === "cloud"}
-                                onClick={() => setSelection((current) => ({ ...current, deployment: "cloud" }))}
-                            />
+                        <div className="grid gap-6">
+                            {resolved.featureOverview.map((item, index) => (
+                                <FeatureRow
+                                    key={item.id ?? `${item.title}-${index}`}
+                                    icon={getTablerIcon(item.icon, 20)}
+                                    title={item.title}
+                                    description={item.description}
+                                />
+                            ))}
                         </div>
                     </div>
+                </section>
 
-                    <div className="space-y-4">
-                        <p className="text-lg font-semibold tracking-wider text-white/50">{resolved.customerType.label}</p>
-                        <div className="grid gap-3 md:grid-cols-2">
-                            <OptionCard
-                                title={resolved.customerType.b2b.title}
-                                description={resolved.customerType.b2b.description}
-                                icon={getTablerIcon(resolved.customerType.b2b.icon, 20)}
-                                accent={resolved.customerType.b2b.color}
-                                active={selection.customerType === "b2b"}
-                                onClick={() => setSelection((current) => ({ ...current, customerType: "b2b" }))}
-                            />
-                            <OptionCard
-                                title={resolved.customerType.b2c.title}
-                                description={resolved.customerType.b2c.description}
-                                icon={getTablerIcon(resolved.customerType.b2c.icon, 20)}
-                                accent={resolved.customerType.b2c.color}
-                                active={selection.customerType === "b2c"}
-                                onClick={() => setSelection((current) => ({ ...current, customerType: "b2c" }))}
-                            />
-                        </div>
-                    </div>
+                <section className="lg:col-span-3 glass-card-shell relative min-w-0 overflow-hidden rounded-3xl p-6 bg-primary/50">
+                    <div aria-hidden="true" className="glass-card-topline" />
+                    <div className="relative z-10 flex flex-col gap-8">
+                        <h2 className="text-2xl font-semibold text-white lg:text-3xl">{resolved.optionsPanelHeading}</h2>
 
-                    {selection.customerType === "b2c" &&
-                        <div className="space-y-4">
-                            <p className="text-lg font-semibold tracking-wider text-white/50">{resolved.subscriptionTier.label}</p>
+                        <div className="space-y-2">
+                            <p className="text-base text-white/75">{resolved.deployment.label}</p>
                             <div className="grid gap-3 md:grid-cols-2">
                                 <OptionCard
-                                    title={resolved.subscriptionTier.pro.title}
-                                    description={resolved.subscriptionTier.pro.description}
-                                    icon={getTablerIcon(resolved.subscriptionTier.pro.icon, 20)}
-                                    accent={resolved.subscriptionTier.pro.color}
-                                    active={selection.subscriptionTier === "pro"}
-                                    onClick={() => setSelection((current) => ({ ...current, subscriptionTier: "pro" }))}
+                                    title={resolved.deployment.selfHosted.title}
+                                    description={resolved.deployment.selfHosted.description}
+                                    icon={getTablerIcon(resolved.deployment.selfHosted.icon, 20)}
+                                    accent={resolved.deployment.selfHosted.color}
+                                    active={selection.deployment === "self-hosted"}
+                                    onClick={() => setSelection((current) => ({ ...current, deployment: "self-hosted" }))}
                                 />
                                 <OptionCard
-                                    title={resolved.subscriptionTier.team.title}
-                                    description={resolved.subscriptionTier.team.description}
-                                    icon={getTablerIcon(resolved.subscriptionTier.team.icon, 20)}
-                                    accent={resolved.subscriptionTier.team.color}
-                                    active={selection.subscriptionTier === "team"}
-                                    onClick={() => setSelection((current) => ({ ...current, subscriptionTier: "team" }))}
+                                    title={resolved.deployment.cloud.title}
+                                    description={resolved.deployment.cloud.description}
+                                    icon={getTablerIcon(resolved.deployment.cloud.icon, 20)}
+                                    accent={resolved.deployment.cloud.color}
+                                    active={selection.deployment === "cloud"}
+                                    onClick={() => setSelection((current) => ({ ...current, deployment: "cloud" }))}
                                 />
                             </div>
                         </div>
-                    }
 
-                    {(selection.customerType === "b2b" || (selection.customerType === "b2c" && selection.subscriptionTier === "team")) &&
+                        <div className="space-y-2">
+                            <p className="text-base text-white/75">{resolved.customerType.label}</p>
+                            <div className="grid gap-3 md:grid-cols-2">
+                                <OptionCard
+                                    title={resolved.customerType.b2b.title}
+                                    description={resolved.customerType.b2b.description}
+                                    icon={getTablerIcon(resolved.customerType.b2b.icon, 20)}
+                                    accent={resolved.customerType.b2b.color}
+                                    active={selection.customerType === "b2b"}
+                                    onClick={() => setSelection((current) => ({ ...current, customerType: "b2b" }))}
+                                />
+                                <OptionCard
+                                    title={resolved.customerType.b2c.title}
+                                    description={resolved.customerType.b2c.description}
+                                    icon={getTablerIcon(resolved.customerType.b2c.icon, 20)}
+                                    accent={resolved.customerType.b2c.color}
+                                    active={selection.customerType === "b2c"}
+                                    onClick={() => setSelection((current) => ({ ...current, customerType: "b2c" }))}
+                                />
+                            </div>
+                        </div>
+
                         <div className="rounded-2xl border border-white/10 p-5">
                             <div className="flex items-center justify-between gap-4">
                                 <div>
@@ -512,94 +538,123 @@ export function SubscriptionConfigurator({ locale, content }: { locale: AppLocal
                                 </LinkButton>
                             </div>
                         </div>
-                    }
 
-                    {selection.deployment === "cloud" &&
-                        <div className="rounded-2xl border border-white/10 p-5">
-                            <div className="flex items-start justify-between gap-4">
-                                <div>
-                                    <p className="text-lg font-semibold tracking-wider text-white">{resolved.runtime.title}</p>
-                                    <p className="mt-2 text-sm text-white/75">
-                                        {resolved.runtime.description}
-                                    </p>
-                                </div>
-                                <SegmentedControl
-                                    type="single"
-                                    value={selection.runtimeMode}
-                                    onValueChange={(value) => {
-                                        if (value) {
-                                            setSelection((current) => ({ ...current, runtimeMode: value as RuntimeMode }))
-                                        }
-                                    }}
-                                    className="h-11! rounded-2xl! border-white/10! bg-black/20! p-1!"
-                                >
-                                    <SegmentedControlItem
-                                        value="monthly"
-                                        className="px-3! py-2! text-xs! font-medium! text-white/60! transition-colors! data-[state=on]:bg-white! data-[state=on]:text-primary!"
-                                    >
-                                        {resolved.runtime.monthlyLabel}
-                                    </SegmentedControlItem>
-                                    <SegmentedControlItem
-                                        value="payg"
-                                        className="w-max! px-3! py-2! text-xs! font-medium! text-white/60! transition-colors! data-[state=on]:bg-white! data-[state=on]:text-primary!"
-                                    >
-                                        {resolved.runtime.paygLabel}
-                                    </SegmentedControlItem>
-                                </SegmentedControl>
-                            </div>
-
-                            {selection.runtimeMode === "monthly" ? (
-                                <>
-                                    <Slider
-                                        min={resolved.runtime.min}
-                                        max={resolved.runtime.max}
-                                        step={resolved.runtime.step}
-                                        value={selection.runtimeMinutes}
-                                        onChange={(runtimeMinutes) => setSelection((current) => ({ ...current, runtimeMinutes }))}
-                                        className="mt-2"
-                                        minLabel={resolved.runtime.minLabel}
-                                        maxLabel={resolved.runtime.maxLabel}
-                                        centerLabel={`${selection.runtimeMinutes} ${resolved.runtime.centerSuffix}`}
-                                    />
-                                    <div className="mt-2 flex flex-wrap items-center justify-end gap-2">
-                                        <p className="text-sm font-medium text-white/50">{resolved.contactSales.prompt}</p>
-                                        <LinkButton
-                                            href={resolved.contactSales.href}
-                                            locale={locale}
-                                            className="border-b-0 text-white/75"
-                                            showArrow={false}
-                                        >
-                                            {resolved.contactSales.label}
-                                        </LinkButton>
+                        {selection.deployment === "cloud" &&
+                            <div className="rounded-2xl border border-white/10 p-5">
+                                <div className="flex items-start justify-between gap-4">
+                                    <div>
+                                        <p className="text-lg font-semibold tracking-wider text-white">{resolved.runtime.title}</p>
+                                        <p className="mt-2 text-sm text-white/75">
+                                            {resolved.runtime.description}
+                                        </p>
                                     </div>
-                                </>
-                            ) : (
-                                <div className="mt-4 rounded-xl border border-white/10 bg-white/5 p-4 text-sm leading-6 text-white/75">
-                                    {resolved.runtime.paygDescription}
+                                    <SegmentedControl
+                                        type="single"
+                                        value={selection.runtimeMode}
+                                        onValueChange={(value) => {
+                                            if (value) {
+                                                setSelection((current) => ({ ...current, runtimeMode: value as RuntimeMode }))
+                                            }
+                                        }}
+                                        className="h-11! rounded-2xl! border-white/10! bg-black/20! p-1!"
+                                    >
+                                        <SegmentedControlItem
+                                            value="monthly"
+                                            className="px-3! py-2! text-xs! font-medium! text-white/60! transition-colors! data-[state=on]:bg-white! data-[state=on]:text-primary!"
+                                        >
+                                            {resolved.runtime.monthlyLabel}
+                                        </SegmentedControlItem>
+                                        <SegmentedControlItem
+                                            value="payg"
+                                            className="w-max! px-3! py-2! text-xs! font-medium! text-white/60! transition-colors! data-[state=on]:bg-white! data-[state=on]:text-primary!"
+                                        >
+                                            {resolved.runtime.paygLabel}
+                                        </SegmentedControlItem>
+                                    </SegmentedControl>
                                 </div>
-                            )}
-                        </div>
-                    }
 
-                    <div className="rounded-2xl border border-white/10 bg-white/5">
-                        <div className="flex items-end gap-2 p-4">
-                            <div>
-                                <p className="text-sm font-semibold tracking-wider text-white/75">{resolved.price.heading}</p>
-                                <p className="mt-3 text-3xl font-semibold text-brand tabular-nums">{formattedSeatPrice}</p>
+                                {selection.runtimeMode === "monthly" ? (
+                                    <>
+                                        <Slider
+                                            min={resolved.runtime.min}
+                                            max={resolved.runtime.max}
+                                            step={resolved.runtime.step}
+                                            value={selection.runtimeMinutes}
+                                            onChange={(runtimeMinutes) => setSelection((current) => ({ ...current, runtimeMinutes }))}
+                                            className="mt-2"
+                                            minLabel={resolved.runtime.minLabel}
+                                            maxLabel={resolved.runtime.maxLabel}
+                                            centerLabel={`${selection.runtimeMinutes} ${resolved.runtime.centerSuffix}`}
+                                        />
+                                        <div className="mt-2 flex flex-wrap items-center justify-end gap-2">
+                                            <p className="text-sm font-medium text-white/50">{resolved.contactSales.prompt}</p>
+                                            <LinkButton
+                                                href={resolved.contactSales.href}
+                                                locale={locale}
+                                                className="border-b-0 text-white/75"
+                                                showArrow={false}
+                                            >
+                                                {resolved.contactSales.label}
+                                            </LinkButton>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div className="mt-4 rounded-xl border border-white/10 bg-white/5 p-4 text-sm leading-6 text-white/75">
+                                        {resolved.runtime.paygDescription}
+                                    </div>
+                                )}
                             </div>
-                            <p className="text-sm text-white/55">{resolved.price.caption}</p>
-                        </div>
-                        <HapticButtonLink
-                            href={subscribeHref}
-                            locale={locale}
-                            variant="filled"
-                            className="mt-2 bg-white/80! px-8! text-primary! hover:bg-white! rounded-t-none!"
-                        >
-                            {resolved.subscribe.label}
-                        </HapticButtonLink>
+                        }
+
+                        {resolved.additionalFeatures && resolved.additionalFeatures.length > 0 && (
+                            <div className="space-y-3">
+                                <p className="text-base text-white/75">
+                                    {resolved.additionalFeaturesLabel ?? "Additional Features"}
+                                </p>
+                                <div className="grid gap-3">
+                                    {resolved.additionalFeatures.map((feature, index) => {
+                                        const formattedFeaturePrice = new Intl.NumberFormat(locale === "de" ? "de-DE" : "en-US", {
+                                            style: "currency",
+                                            currency: "EUR",
+                                            maximumFractionDigits: 2,
+                                        }).format(feature.price)
+                                        return (
+                                            <AdditionalFeatureCard
+                                                key={feature.id ?? `feature-${index}`}
+                                                title={feature.title}
+                                                description={feature.description}
+                                                icon={getTablerIcon(feature.icon, 20)}
+                                                formattedPrice={`+${formattedFeaturePrice}/mo`}
+                                                active={selectedFeatures.has(index)}
+                                                onClick={() => {
+                                                    setSelectedFeatures((prev) => {
+                                                        const next = new Set(prev)
+                                                        if (next.has(index)) {
+                                                            next.delete(index)
+                                                        } else {
+                                                            next.add(index)
+                                                        }
+                                                        return next
+                                                    })
+                                                }}
+                                            />
+                                        )
+                                    })}
+                                </div>
+                            </div>
+                        )}
+
                     </div>
-                </div>
-            </section>
-        </div>
+                </section>
+            </div>
+            <BuyMenu
+                price={formattedSeatPrice}
+                priceHeading={resolved.price.heading}
+                priceCaption={resolved.price.caption}
+                subscribeHref={subscribeHref}
+                subscribeLabel={resolved.subscribe.label}
+                locale={locale}
+            />
+        </>
     )
 }

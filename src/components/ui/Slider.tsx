@@ -38,16 +38,13 @@ export function Slider({
     const progress = ((clampedValue - min) / (max - min)) * 100
 
     const ticks = useMemo(() => Array.from({ length: lines }, (_, index) => index), [lines])
-    const majorTickIndexes = useMemo(
-        () => new Set([
-            0,
-            Math.round((lines - 1) * 0.25),
-            Math.round((lines - 1) * 0.5),
-            Math.round((lines - 1) * 0.75),
-            lines - 1,
-        ]),
-        [lines],
-    )
+    const majorTickIndexes = useMemo(() => new Set([
+        0,
+        Math.round((lines - 1) * 0.25),
+        Math.round((lines - 1) * 0.5),
+        Math.round((lines - 1) * 0.75),
+        lines - 1
+    ]), [lines])
 
     function snapValue(nextValue: number) {
         const stepped = Math.round((nextValue - min) / step) * step + min
@@ -146,7 +143,13 @@ export function Slider({
 
             <div className="mt-2 grid grid-cols-3 text-xs text-white/38">
                 <span>{minLabel ?? min}</span>
-                <span className={"text-center text-base text-white"}>{centerLabel}</span>
+                <span className="relative tabular-nums text-center text-base text-white">
+                    <span
+                        aria-hidden="true"
+                        className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-4 w-20 rounded-full bg-white/25 blur-xl"
+                    />
+                    {centerLabel}
+                </span>
                 <span className="text-right">{maxLabel ?? max}</span>
             </div>
         </div>

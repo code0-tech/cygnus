@@ -243,5 +243,33 @@ export const SubscriptionCollection: CollectionConfig = {
         { name: "caption", type: "text", required: true, localized: true },
       ],
     },
+    {
+      name: "additionalFeaturesLabel",
+      type: "text",
+      localized: true,
+      admin: {
+        description: "Optional section heading shown above the additional features list.",
+      },
+    },
+    {
+      name: "additionalFeatures",
+      type: "array",
+      admin: {
+        description: "Leave empty to hide the section entirely.",
+      },
+      fields: [
+        { name: "title", type: "text", required: true, localized: true },
+        { name: "description", type: "textarea", required: true, localized: true },
+        {
+          name: "icon",
+          type: "text",
+          required: true,
+          admin: {
+            description: 'Tabler Icon Name ohne "Icon"-Praefix, z. B. "server", "cloud" oder "users-group". Unbekannte Werte fallen auf "cube" zurueck.',
+          },
+        },
+        { name: "price", type: "number", required: true, defaultValue: 0, admin: { description: "Monthly price in EUR." } },
+      ],
+    },
   ],
 }
