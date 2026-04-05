@@ -413,6 +413,23 @@ export interface Page {
             blockType: 'editionInstall';
           }
         | {
+            heading: string;
+            subheading: string;
+            useCases: {
+              title: string;
+              description: string;
+              image?: (number | null) | Media;
+              link?: {
+                label?: string | null;
+                url?: string | null;
+              };
+              id?: string | null;
+            }[];
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'editionUseCases';
+          }
+        | {
             description: string;
             logos?:
               | {
@@ -1362,6 +1379,28 @@ export interface PagesSelect<T extends boolean = true> {
               subheading?: T;
               label?: T;
               code?: T;
+              id?: T;
+              blockName?: T;
+            };
+        editionUseCases?:
+          | T
+          | {
+              heading?: T;
+              subheading?: T;
+              useCases?:
+                | T
+                | {
+                    title?: T;
+                    description?: T;
+                    image?: T;
+                    link?:
+                      | T
+                      | {
+                          label?: T;
+                          url?: T;
+                        };
+                    id?: T;
+                  };
               id?: T;
               blockName?: T;
             };

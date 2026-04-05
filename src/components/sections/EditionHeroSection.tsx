@@ -76,7 +76,7 @@ export function EditionHeroSection({
                     whileInView="show"
                     viewport={{ once: true, amount: 0.25 }}
                 >
-                    <div className="flex w-full max-w-6xl flex-col gap-4">
+                    <div className="flex w-full max-w-6xl flex-col items-center gap-4">
                         <motion.h1 variants={staggerItem} className="relative z-10 text-balance text-3xl font-bold text-white lg:text-5xl">
                             {content.heading}
                         </motion.h1>

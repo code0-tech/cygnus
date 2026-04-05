@@ -23,6 +23,7 @@ export default async function CommunityEditionPage({ params }: { params: Promise
     const heroBlock = page?.layout?.find((item) => item.blockType === "editionHero") ?? null
     const featuresBlock = page?.layout?.find((item) => item.blockType === "editionFeatures") ?? null
     const installBlock = page?.layout?.find((item) => item.blockType === "editionInstall") ?? null
+    const useCaseBlock = page?.layout?.find((item) => item.blockType === "editionUseCases") ?? null
     const ctaBlock = page?.layout?.find((item) => item.blockType === "cta") ?? null
 
     return (
@@ -42,7 +43,7 @@ export default async function CommunityEditionPage({ params }: { params: Promise
             <div className="h-32" aria-hidden="true" />
             <EditionInstallSection content={installBlock} />
             <div className="h-32" aria-hidden="true" />
-            <EditionUseCaseSection />
+            <EditionUseCaseSection content={useCaseBlock} />
             <div className="h-32" aria-hidden="true" />
             <CtaSection content={ctaBlock} />
         </LandingContainer>

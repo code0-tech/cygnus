@@ -1,13 +1,15 @@
 "use client"
 
 import { InteractiveGridPattern } from "@/components/InteractiveGridPattern"
-import { useMediaQuery } from "@/hooks/useMediaQuery"
 import { HapticButtonLink } from "@/components/ui/HapticButtonLink"
 import { Section } from "@/components/ui/Section"
+import { useMediaQuery } from "@/hooks/useMediaQuery"
+import type { AppLocale } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
 import { m as motion, type Variants } from "motion/react"
 import Image from "next/image"
-import React from "react"
+import React, { useEffect, useRef, useState } from "react"
+import { createPortal } from "react-dom"
 
 interface CtaSectionContent {
     heading: string
@@ -20,11 +22,57 @@ interface CtaSectionContent {
 
 interface CtaSectionProps {
     content?: CtaSectionContent | null
+    floatingCta?: boolean
+    locale?: AppLocale
 }
 
-export const CtaSection: React.FC<CtaSectionProps> = ({ content }) => {
+export const CtaSection: React.FC<CtaSectionProps> = ({ content, floatingCta = false, locale }) => {
     const isTouchDevice = useMediaQuery("(hover: none), (pointer: coarse)")
-    if (!content) return
+    const [mounted, setMounted] = useState(false)
+    const [docked, setDocked] = useState(false)
+
+    const floatingRef = useRef<HTMLDivElement>(null)
+    const buttonRef = useRef<HTMLDivElement>(null)
+
+    useEffect(() => {
+        setMounted(true)
+    }, [])
+
+    useEffect(() => {
+        if (!floatingCta || !mounted) return
+
+        const target = buttonRef.current
+        if (!target) return
+
+        let observer: IntersectionObserver | null = null
+
+        const frame = requestAnimationFrame(() => {
+            const floatingEl = floatingRef.current
+            if (!floatingEl) return
+
+            const floatingRect = floatingEl.getBoundingClientRect()
+            const marginBottom = Math.round(window.innerHeight - floatingRect.top + 24)
+
+            observer = new IntersectionObserver(
+                ([entry]) => {
+                    setDocked(entry.isIntersecting)
+                },
+                {
+                    rootMargin: `0px 0px -${marginBottom}px 0px`,
+                    threshold: 0,
+                },
+            )
+
+            observer.observe(target)
+        })
+
+        return () => {
+            cancelAnimationFrame(frame)
+            observer?.disconnect()
+        }
+    }, [floatingCta, mounted])
+
+    if (!content) return null
 
     const staggerContainer: Variants = {
         hidden: {},
@@ -48,24 +96,34 @@ export const CtaSection: React.FC<CtaSectionProps> = ({ content }) => {
         },
     }
 
+    const baseCtaClassName =
+        "h-10 px-8! whitespace-nowrap text-primary! transition-all duration-300"
+
+    const inlineCtaClassName =
+        "bg-white/80! hover:bg-white! ring-1! ring-white/20!"
+
+    const floatingCtaClassName =
+        "bg-white! hover:bg-white! hover:scale-102 ring-1! ring-white/20! shadow-[0_0_60px_20px_rgba(0,0,0,0.75)]"
+
     return (
         <Section showBlur={false} showFunnel={false} animationPreset="fade-in">
             <motion.div
-                className={"glass-card-shell w-full rounded-3xl bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))]! shadow-lg!"}
+                className="glass-card-shell w-full rounded-3xl bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))]! shadow-lg!"
                 variants={staggerContainer}
                 initial="hidden"
                 whileInView="show"
                 viewport={{ once: true, amount: 0.25 }}
             >
                 <div aria-hidden="true" className="glass-card-topline" />
-                <div className={"relative flex w-full flex-col items-center justify-center gap-4 overflow-hidden rounded-3xl px-6 py-12 sm:px-10"}>
 
+                <div className="relative flex w-full flex-col items-center justify-center gap-4 overflow-hidden rounded-3xl px-6 py-12 sm:px-10">
                     <InteractiveGridPattern
                         className="mask-[radial-gradient(600px_circle_at_center,white,transparent)] rounded-3xl"
                         width={40}
                         height={40}
                         squares={[35, 15]}
                     />
+
                     <div
                         className={cn(
                             "pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.1),transparent_36%),radial-gradient(circle_at_center,rgba(248,114,226,0.16),transparent_62%)]",
@@ -73,31 +131,113 @@ export const CtaSection: React.FC<CtaSectionProps> = ({ content }) => {
                         )}
                     />
 
-                    <motion.div variants={staggerItem} className={"relative z-20 flex size-32 items-center justify-center rounded-2xl bg-white/5 shadow-[0_14px_36px_rgba(0,0,0,0.22)]"}>
-                        <div className={"relative isolate flex items-center justify-center rounded-2xl ring ring-white/10 px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"}>
-                <div aria-hidden="true" className="pointer-events-none absolute inset-0 rounded-2xl bg-linear-to-br from-primary via-primary to-[#2a1638]" />
-                            <Image src={"/code0_logo_white.png"} width={"120"} height={"120"} alt={"Code0 Logo"} className={"z-20"}/>
+                    <motion.div
+                        variants={staggerItem}
+                        className="relative z-20 flex size-32 items-center justify-center rounded-2xl bg-white/5 shadow-[0_14px_36px_rgba(0,0,0,0.22)]"
+                    >
+                        <div className="relative isolate flex items-center justify-center rounded-2xl px-4 py-4 ring ring-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+                            <div
+                                aria-hidden="true"
+                                className="pointer-events-none absolute inset-0 rounded-2xl bg-linear-to-br from-primary via-primary to-[#2a1638]"
+                            />
+                            <Image
+                                src={"/code0_logo_white.png"}
+                                width={120}
+                                height={120}
+                                alt="Code0 Logo"
+                                className="z-20"
+                            />
                         </div>
                     </motion.div>
 
-                    <motion.p variants={staggerItem} className={"z-20 text-2xl sm:text-4xl text-white text-center font-semibold"}>
+                    <motion.p
+                        variants={staggerItem}
+                        className="z-20 text-center text-2xl font-semibold text-white sm:text-4xl"
+                    >
                         {content.heading}
                     </motion.p>
-                    <motion.p variants={staggerItem} className={"w-4/5 sm:w-2/3 lg:w-1/2 z-20 text-md sm:text-lg text-white/75 text-center"}>
-                        {content?.subheading}
+
+                    <motion.p
+                        variants={staggerItem}
+                        className="z-20 w-4/5 text-center text-md text-white/75 sm:w-2/3 sm:text-lg lg:w-1/2"
+                    >
+                        {content.subheading}
                     </motion.p>
 
-                    <motion.div variants={staggerItem} className={"z-20 flex items-center gap-4 mt-4"}>
+                    <motion.div
+                        ref={buttonRef}
+                        {...(floatingCta
+                            ? {
+                                  initial: { opacity: 0 },
+                                  animate: {
+                                      opacity: docked ? 1 : 0,
+                                      transition: {
+                                          duration: 0.18,
+                                          ease: "linear",
+                                      },
+                                  },
+                              }
+                            : {
+                                  variants: staggerItem,
+                              })}
+                        className="z-20 mt-4 flex items-center gap-4"
+                    >
                         <HapticButtonLink
                             href={content.ctaLink.url}
+                            locale={locale}
                             variant="normal"
-                            className={"h-10 px-8! bg-white/80! hover:bg-white! text-primary!"}
+                            className={cn(baseCtaClassName, inlineCtaClassName)}
                         >
-                                {content.ctaLink.label}
+                            {content.ctaLink.label}
                         </HapticButtonLink>
                     </motion.div>
                 </div>
             </motion.div>
+
+            {floatingCta && mounted && createPortal(
+                <motion.div
+                    ref={floatingRef}
+                    variants={{
+                        hidden: {
+                            opacity: 0,
+                            transition: {
+                                duration: 0.18,
+                                ease: "linear",
+                            },
+                        },
+                        visible: {
+                            opacity: 1,
+                            transition: {
+                                duration: 0.18,
+                                ease: "linear",
+                            },
+                        },
+                        docked: {
+                            opacity: 0,
+                            transition: {
+                                duration: 0.18,
+                                ease: "linear",
+                            },
+                        },
+                    }}
+                    initial="hidden"
+                    animate={docked ? "docked" : "visible"}
+                    style={{ pointerEvents: docked ? "none" : "auto" }}
+                    className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2"
+                >
+                    <div>
+                        <HapticButtonLink
+                            href={content.ctaLink.url}
+                            locale={locale}
+                            variant="normal"
+                            className={cn(baseCtaClassName, floatingCtaClassName)}
+                        >
+                            {content.ctaLink.label}
+                        </HapticButtonLink>
+                    </div>
+                </motion.div>,
+                document.body
+            )}
         </Section>
     )
 }
