@@ -49,18 +49,18 @@ export function EditionHeroSection({
         hidden: {},
         show: {
             transition: {
-                staggerChildren: 0.12,
-                delayChildren: 0.08,
+                staggerChildren: 0.08,
+                delayChildren: 0,
             },
         },
     }
 
     const staggerItem: Variants = {
-        hidden: { opacity: 0, y: 18 },
+        hidden: { opacity: 0, y: 12 },
         show: {
             opacity: 1,
             y: 0,
-            transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] },
+            transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] },
         },
     }
 
@@ -105,7 +105,7 @@ export function EditionHeroSection({
                         </motion.div>
                     </div>
 
-                    <motion.div variants={staggerItem} className="w-full max-w-6xl">
+                    <div className="w-full max-w-6xl">
                         <div className="relative overflow-hidden rounded-2xl">
                             <Image
                                 src={imageSrc}
@@ -118,7 +118,7 @@ export function EditionHeroSection({
                                 className="rounded-2xl border border-white/10 shadow-[0_14px_38px_rgba(0,0,0,0.24)] ring-4 ring-white/5"
                             />
                         </div>
-                    </motion.div>
+                    </div>
                 </motion.div>
             </div>
         </Section>
