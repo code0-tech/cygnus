@@ -23,7 +23,7 @@
   "dependencies": {
     "@c15t/nextjs": "^1.8.6",
     "@c15t/scripts": "^1.0.1",
-    "@code0-tech/pictor": "^0.5.0",
+    "@code0-tech/pictor": "^0.5.1",
     "@icons-pack/react-simple-icons": "^13.13.0",
     "@next/env": "^16.2.2",
     "@payloadcms/db-postgres": "3.81.0",
