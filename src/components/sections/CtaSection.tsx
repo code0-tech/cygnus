@@ -9,7 +9,6 @@ import { cn } from "@/lib/utils"
 import { m as motion, type Variants } from "motion/react"
 import Image from "next/image"
 import React, { useEffect, useRef, useState } from "react"
-import { createPortal } from "react-dom"
 
 interface CtaSectionContent {
     heading: string
@@ -31,7 +30,7 @@ export const CtaSection: React.FC<CtaSectionProps> = ({ content, floatingCta = f
     const [mounted, setMounted] = useState(false)
     const [docked, setDocked] = useState(false)
 
-    const floatingRef = useRef<HTMLDivElement>(null)
+    const buttonAnchorRef = useRef<HTMLDivElement>(null)
     const buttonRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
@@ -39,36 +38,52 @@ export const CtaSection: React.FC<CtaSectionProps> = ({ content, floatingCta = f
     }, [])
 
     useEffect(() => {
-        if (!floatingCta || !mounted) return
+        if (!floatingCta) {
+            setDocked(false)
+            return
+        }
 
-        const target = buttonRef.current
-        if (!target) return
+        if (!mounted) return
 
-        let observer: IntersectionObserver | null = null
+        const anchor = buttonAnchorRef.current
+        const button = buttonRef.current
+        if (!anchor || !button) return
 
-        const frame = requestAnimationFrame(() => {
-            const floatingEl = floatingRef.current
-            if (!floatingEl) return
+        const floatingBottomOffset = 24
+        const hysteresis = 8
+        let frame = 0
 
-            const floatingRect = floatingEl.getBoundingClientRect()
-            const marginBottom = Math.round(window.innerHeight - floatingRect.top + 24)
+        const updateDocked = () => {
+            const anchorTop = anchor.getBoundingClientRect().top
+            const buttonHeight = button.getBoundingClientRect().height
+            const switchLine = window.innerHeight - floatingBottomOffset - buttonHeight
 
-            observer = new IntersectionObserver(
-                ([entry]) => {
-                    setDocked(entry.isIntersecting)
-                },
-                {
-                    rootMargin: `0px 0px -${marginBottom}px 0px`,
-                    threshold: 0,
-                },
-            )
+            setDocked((previous) => {
+                if (previous) {
+                    return anchorTop <= switchLine + hysteresis
+                }
+                return anchorTop <= switchLine - hysteresis
+            })
+        }
 
-            observer.observe(target)
-        })
+        const handleViewportChange = () => {
+            if (frame) return
+            frame = requestAnimationFrame(() => {
+                frame = 0
+                updateDocked()
+            })
+        }
+
+        updateDocked()
+        window.addEventListener("scroll", handleViewportChange, { passive: true })
+        window.addEventListener("resize", handleViewportChange)
 
         return () => {
-            cancelAnimationFrame(frame)
-            observer?.disconnect()
+            if (frame) {
+                cancelAnimationFrame(frame)
+            }
+            window.removeEventListener("scroll", handleViewportChange)
+            window.removeEventListener("resize", handleViewportChange)
         }
     }, [floatingCta, mounted])
 
@@ -165,79 +180,32 @@ export const CtaSection: React.FC<CtaSectionProps> = ({ content, floatingCta = f
                     </motion.p>
 
                     <motion.div
-                        ref={buttonRef}
-                        {...(floatingCta
-                            ? {
-                                  initial: { opacity: 0 },
-                                  animate: {
-                                      opacity: docked ? 1 : 0,
-                                      transition: {
-                                          duration: 0.18,
-                                          ease: "linear",
-                                      },
-                                  },
-                              }
-                            : {
-                                  variants: staggerItem,
-                              })}
-                        className="z-20 mt-4 flex items-center gap-4"
+                        ref={buttonAnchorRef}
+                        variants={staggerItem}
+                        className="z-20 mt-4 flex h-10 items-center justify-center"
                     >
-                        <HapticButtonLink
-                            href={content.ctaLink.url}
-                            locale={locale}
-                            variant="normal"
-                            className={cn(baseCtaClassName, inlineCtaClassName)}
+                        <div
+                            ref={buttonRef}
+                            className={cn(
+                                "flex items-center gap-4",
+                                floatingCta && mounted && !docked && "fixed bottom-6 left-1/2 z-50 -translate-x-1/2",
+                            )}
                         >
-                            {content.ctaLink.label}
-                        </HapticButtonLink>
+                            <HapticButtonLink
+                                href={content.ctaLink.url}
+                                locale={locale}
+                                variant="normal"
+                                className={cn(
+                                    baseCtaClassName,
+                                    floatingCta ? floatingCtaClassName : inlineCtaClassName,
+                                )}
+                            >
+                                {content.ctaLink.label}
+                            </HapticButtonLink>
+                        </div>
                     </motion.div>
                 </div>
             </motion.div>
-
-            {floatingCta && mounted && createPortal(
-                <motion.div
-                    ref={floatingRef}
-                    variants={{
-                        hidden: {
-                            opacity: 0,
-                            transition: {
-                                duration: 0.18,
-                                ease: "linear",
-                            },
-                        },
-                        visible: {
-                            opacity: 1,
-                            transition: {
-                                duration: 0.18,
-                                ease: "linear",
-                            },
-                        },
-                        docked: {
-                            opacity: 0,
-                            transition: {
-                                duration: 0.18,
-                                ease: "linear",
-                            },
-                        },
-                    }}
-                    initial="hidden"
-                    animate={docked ? "docked" : "visible"}
-                    style={{ pointerEvents: docked ? "none" : "auto" }}
-                    className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2"
-                >
-                    <div>
-                        <HapticButtonLink
-                            href={content.ctaLink.url}
-                            locale={locale}
-                            variant="normal"
-                            className={cn(baseCtaClassName, floatingCtaClassName)}
-                        >
-                            {content.ctaLink.label}
-                        </HapticButtonLink>
-                    </div>
-                </motion.div>,
-                document.body
-            )}
         </Section>
     )
 }
