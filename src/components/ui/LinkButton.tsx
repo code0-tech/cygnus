@@ -2,15 +2,17 @@
 
 import * as React from "react"
 import { IconArrowUpRight } from "@tabler/icons-react"
+import type { AppLocale } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
 import Link, { LinkProps } from "next/link"
 import { useWebHaptics } from "web-haptics/react"
 
-interface LinkButtonProps extends LinkProps {
+interface LinkButtonProps extends Omit<LinkProps, "href" | "locale">{
     href: string
     children: React.ReactNode
     showArrow?: boolean
     className?: string
+    locale?: AppLocale
 }
 
 const baseClassName =
@@ -19,12 +21,13 @@ const baseClassName =
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 disabled:pointer-events-none"
 
 
-export function LinkButton({ className, children, href, showArrow = true, ...props }: LinkButtonProps) {
+export function LinkButton({ className, children, href, showArrow = true, locale, ...props }: LinkButtonProps) {
     const { trigger } = useWebHaptics()
+    const localizedHref = href.startsWith("/") ? `/${locale ?? ""}${href}`.replace("//", "/") : href
 
     return (
         <Link
-            href={href}
+            href={localizedHref}
             onClick={() => trigger("medium")}
             className={cn(baseClassName, className)}
             {...props}

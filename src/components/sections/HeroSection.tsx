@@ -42,18 +42,18 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ content }) => {
         hidden: {},
         show: {
             transition: {
-                staggerChildren: 0.12,
-                delayChildren: 0.08,
+                staggerChildren: 0.08,
+                delayChildren: 0,
             },
         },
     }
 
     const staggerItem: Variants = {
-        hidden: { opacity: 0, y: 18 },
+        hidden: { opacity: 0, y: 12 },
         show: {
             opacity: 1,
             y: 0,
-            transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] },
+            transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] },
         },
     }
 
@@ -107,7 +107,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ content }) => {
                             ))}
                         </motion.div>
                     </div>
-                    <motion.div variants={staggerItem} className="h-auto w-full lg:w-4/5 lg:-mr-56">
+                    <div className="h-auto w-full lg:w-4/5 lg:-mr-56">
                         <div className="relative overflow-hidden rounded-2xl lg:rounded-l-2xl lg:rounded-r-none">
                             <Image
                                 src={"/code0_software.png"}
@@ -120,7 +120,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ content }) => {
                                 className="rounded-2xl border border-white/10 shadow-[0_14px_38px_rgba(0,0,0,0.24)] lg:rounded-l-2xl lg:rounded-r-none lg:border-0 lg:border-l lg:border-y lg:ring-4 lg:ring-white/5"
                             />
                         </div>
-                    </motion.div>
+                    </div>
                 </motion.div>
             </div>
         </Section>

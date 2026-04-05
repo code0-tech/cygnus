@@ -79,6 +79,7 @@ export interface Config {
     blog: Blog;
     roadmapItems: RoadmapItem;
     'team-members': TeamMember;
+    subscriptionConfig: SubscriptionConfig;
     exports: Export;
     imports: Import;
     'payload-kv': PayloadKv;
@@ -101,6 +102,7 @@ export interface Config {
     blog: BlogSelect<false> | BlogSelect<true>;
     roadmapItems: RoadmapItemsSelect<false> | RoadmapItemsSelect<true>;
     'team-members': TeamMembersSelect<false> | TeamMembersSelect<true>;
+    subscriptionConfig: SubscriptionConfigSelect<false> | SubscriptionConfigSelect<true>;
     exports: ExportsSelect<false> | ExportsSelect<true>;
     imports: ImportsSelect<false> | ImportsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
@@ -215,8 +217,10 @@ export interface NavbarItem {
         title: string;
         href: string;
         description: string;
-        icon: 'cube' | 'gitBranch' | 'lock';
-        color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue';
+        /**
+         * Tabler Icon Name. Unbekannte Werte fallen auf "cube" zurück.
+         */
+        icon: string;
         id?: string | null;
       }[]
     | null;
@@ -325,7 +329,18 @@ export interface CookieBanner {
 export interface Page {
   id: number;
   title: string;
-  slug: 'main' | 'jobs' | 'features' | 'about-us' | 'legal-notice' | 'privacy' | 'terms' | 'contact';
+  slug:
+    | 'main'
+    | 'jobs'
+    | 'features'
+    | 'about-us'
+    | 'legal-notice'
+    | 'privacy'
+    | 'terms'
+    | 'contact'
+    | 'community-edition'
+    | 'enterprise-edition'
+    | 'subscription';
   layout?:
     | (
         | {
@@ -349,6 +364,70 @@ export interface Page {
             id?: string | null;
             blockName?: string | null;
             blockType: 'hero';
+          }
+        | {
+            heading: string;
+            texts?:
+              | {
+                  text: string;
+                  id?: string | null;
+                }[]
+              | null;
+            buttons?:
+              | {
+                  label: string;
+                  url: string;
+                  variant?: ('none' | 'normal' | 'outlined' | 'filled') | null;
+                  id?: string | null;
+                }[]
+              | null;
+            imageAlt: string;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'editionHero';
+          }
+        | {
+            features: {
+              label: string;
+              title: string;
+              description: string;
+              image?: (number | null) | Media;
+              bulletPoints: string[];
+              link?: {
+                label?: string | null;
+                url?: string | null;
+              };
+              id?: string | null;
+            }[];
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'editionFeatures';
+          }
+        | {
+            heading: string;
+            subheading: string;
+            label?: string | null;
+            code: string;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'editionInstall';
+          }
+        | {
+            heading: string;
+            subheading: string;
+            useCases: {
+              title: string;
+              description: string;
+              image?: (number | null) | Media;
+              link?: {
+                label?: string | null;
+                url?: string | null;
+              };
+              id?: string | null;
+            }[];
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'editionUseCases';
           }
         | {
             description: string;
@@ -612,6 +691,151 @@ export interface RoadmapItem {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "subscriptionConfig".
+ */
+export interface SubscriptionConfig {
+  id: number;
+  title: string;
+  pageIntro: {
+    heading: string;
+    description: string;
+  };
+  featureOverview: {
+    title: string;
+    description: string;
+    /**
+     * Tabler Icon Name ohne "Icon"-Praefix, z. B. "server", "cloud" oder "users-group". Unbekannte Werte fallen auf "cube" zurueck.
+     */
+    icon: string;
+    id?: string | null;
+  }[];
+  optionsPanelHeading: string;
+  deployment: {
+    label: string;
+    selfHosted: {
+      title: string;
+      description: string;
+      /**
+       * Tabler Icon Name ohne "Icon"-Praefix, z. B. "server", "cloud" oder "users-group". Unbekannte Werte fallen auf "cube" zurueck.
+       */
+      icon: string;
+      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue';
+    };
+    cloud: {
+      title: string;
+      description: string;
+      /**
+       * Tabler Icon Name ohne "Icon"-Praefix, z. B. "server", "cloud" oder "users-group". Unbekannte Werte fallen auf "cube" zurueck.
+       */
+      icon: string;
+      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue';
+    };
+  };
+  customerType: {
+    label: string;
+    b2b: {
+      title: string;
+      description: string;
+      /**
+       * Tabler Icon Name ohne "Icon"-Praefix, z. B. "server", "cloud" oder "users-group". Unbekannte Werte fallen auf "cube" zurueck.
+       */
+      icon: string;
+      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue';
+    };
+    b2c: {
+      title: string;
+      description: string;
+      /**
+       * Tabler Icon Name ohne "Icon"-Praefix, z. B. "server", "cloud" oder "users-group". Unbekannte Werte fallen auf "cube" zurueck.
+       */
+      icon: string;
+      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue';
+    };
+  };
+  subscriptionTier: {
+    label: string;
+    pro: {
+      title: string;
+      description: string;
+      /**
+       * Tabler Icon Name ohne "Icon"-Praefix, z. B. "server", "cloud" oder "users-group". Unbekannte Werte fallen auf "cube" zurueck.
+       */
+      icon: string;
+      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue';
+    };
+    team: {
+      title: string;
+      description: string;
+      /**
+       * Tabler Icon Name ohne "Icon"-Praefix, z. B. "server", "cloud" oder "users-group". Unbekannte Werte fallen auf "cube" zurueck.
+       */
+      icon: string;
+      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue';
+    };
+  };
+  teamSeats: {
+    title: string;
+    description: string;
+    min: number;
+    max: number;
+    step: number;
+    minLabel: string;
+    maxLabel: string;
+    centerSuffix: string;
+  };
+  runtime: {
+    title: string;
+    description: string;
+    monthlyLabel: string;
+    paygLabel: string;
+    paygDescription: string;
+    min: number;
+    max: number;
+    step: number;
+    minLabel: string;
+    maxLabel: string;
+    centerSuffix: string;
+  };
+  contactSales: {
+    prompt: string;
+    label: string;
+    href: string;
+  };
+  subscribe: {
+    label: string;
+    baseUrl: string;
+  };
+  price: {
+    heading: string;
+    caption: string;
+  };
+  /**
+   * Optional section heading shown above the additional features list.
+   */
+  additionalFeaturesLabel?: string | null;
+  /**
+   * Leave empty to hide the section entirely.
+   */
+  additionalFeatures?:
+    | {
+        title: string;
+        description: string;
+        /**
+         * Tabler Icon Name ohne "Icon"-Praefix, z. B. "server", "cloud" oder "users-group". Unbekannte Werte fallen auf "cube" zurueck.
+         */
+        icon: string;
+        /**
+         * Monthly price in EUR.
+         */
+        price: number;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "exports".
  */
 export interface Export {
@@ -848,6 +1072,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'team-members';
         value: number | TeamMember;
+      } | null)
+    | ({
+        relationTo: 'subscriptionConfig';
+        value: number | SubscriptionConfig;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -950,7 +1178,6 @@ export interface NavbarItemsSelect<T extends boolean = true> {
         href?: T;
         description?: T;
         icon?: T;
-        color?: T;
         id?: T;
       };
   updatedAt?: T;
@@ -1096,6 +1323,82 @@ export interface PagesSelect<T extends boolean = true> {
                     label?: T;
                     url?: T;
                     variant?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        editionHero?:
+          | T
+          | {
+              heading?: T;
+              texts?:
+                | T
+                | {
+                    text?: T;
+                    id?: T;
+                  };
+              buttons?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                    variant?: T;
+                    id?: T;
+                  };
+              imageAlt?: T;
+              id?: T;
+              blockName?: T;
+            };
+        editionFeatures?:
+          | T
+          | {
+              features?:
+                | T
+                | {
+                    label?: T;
+                    title?: T;
+                    description?: T;
+                    image?: T;
+                    bulletPoints?: T;
+                    link?:
+                      | T
+                      | {
+                          label?: T;
+                          url?: T;
+                        };
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        editionInstall?:
+          | T
+          | {
+              heading?: T;
+              subheading?: T;
+              label?: T;
+              code?: T;
+              id?: T;
+              blockName?: T;
+            };
+        editionUseCases?:
+          | T
+          | {
+              heading?: T;
+              subheading?: T;
+              useCases?:
+                | T
+                | {
+                    title?: T;
+                    description?: T;
+                    image?: T;
+                    link?:
+                      | T
+                      | {
+                          label?: T;
+                          url?: T;
+                        };
                     id?: T;
                   };
               id?: T;
@@ -1326,6 +1629,149 @@ export interface TeamMembersSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "subscriptionConfig_select".
+ */
+export interface SubscriptionConfigSelect<T extends boolean = true> {
+  title?: T;
+  pageIntro?:
+    | T
+    | {
+        heading?: T;
+        description?: T;
+      };
+  featureOverview?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        icon?: T;
+        id?: T;
+      };
+  optionsPanelHeading?: T;
+  deployment?:
+    | T
+    | {
+        label?: T;
+        selfHosted?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              icon?: T;
+              color?: T;
+            };
+        cloud?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              icon?: T;
+              color?: T;
+            };
+      };
+  customerType?:
+    | T
+    | {
+        label?: T;
+        b2b?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              icon?: T;
+              color?: T;
+            };
+        b2c?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              icon?: T;
+              color?: T;
+            };
+      };
+  subscriptionTier?:
+    | T
+    | {
+        label?: T;
+        pro?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              icon?: T;
+              color?: T;
+            };
+        team?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              icon?: T;
+              color?: T;
+            };
+      };
+  teamSeats?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        min?: T;
+        max?: T;
+        step?: T;
+        minLabel?: T;
+        maxLabel?: T;
+        centerSuffix?: T;
+      };
+  runtime?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        monthlyLabel?: T;
+        paygLabel?: T;
+        paygDescription?: T;
+        min?: T;
+        max?: T;
+        step?: T;
+        minLabel?: T;
+        maxLabel?: T;
+        centerSuffix?: T;
+      };
+  contactSales?:
+    | T
+    | {
+        prompt?: T;
+        label?: T;
+        href?: T;
+      };
+  subscribe?:
+    | T
+    | {
+        label?: T;
+        baseUrl?: T;
+      };
+  price?:
+    | T
+    | {
+        heading?: T;
+        caption?: T;
+      };
+  additionalFeaturesLabel?: T;
+  additionalFeatures?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        icon?: T;
+        price?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "exports_select".
  */
 export interface ExportsSelect<T extends boolean = true> {
@@ -1486,6 +1932,7 @@ export interface TaskCreateCollectionExport {
       | 'blog'
       | 'roadmapItems'
       | 'team-members'
+      | 'subscriptionConfig'
       | 'exports'
       | 'imports';
     drafts?: ('yes' | 'no') | null;

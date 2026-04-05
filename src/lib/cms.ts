@@ -1,8 +1,8 @@
 "use server"
 
-import type { Blog, CookieBanner, Feature, Footer, Job, Media, NavbarItem, Page, RoadmapItem as PayloadRoadmapItem, Section, TeamMember, User } from "@/payload-types"
 import { DEFAULT_LOCALE, type AppLocale } from "@/lib/i18n"
 import { getPayloadClient } from "@/lib/payloadClient"
+import type { Blog, CookieBanner, Feature, Footer, Job, Media, NavbarItem, Page, RoadmapItem as PayloadRoadmapItem, Section, TeamMember } from "@/payload-types"
 import { cache } from "react"
 
 const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build" || process.env.npm_lifecycle_event === "build"
@@ -11,6 +11,10 @@ const hasDatabaseUrl = Boolean(process.env.DATABASE_URL?.trim())
 type PageLayoutBlock = NonNullable<Page["layout"]>[number]
 
 export type HeroLayoutBlock = Extract<PageLayoutBlock, { blockType: "hero" }>
+export type EditionHeroLayoutBlock = Extract<PageLayoutBlock, { blockType: "editionHero" }>
+export type EditionFeaturesLayoutBlock = Extract<PageLayoutBlock, { blockType: "editionFeatures" }>
+export type EditionInstallLayoutBlock = Extract<PageLayoutBlock, { blockType: "editionInstall" }>
+export type EditionUseCaseLayoutBlock = Extract<PageLayoutBlock, { blockType: "editionUseCases" }>
 export type BrandLayoutBlock = Extract<PageLayoutBlock, { blockType: "brand" }>
 export type CtaLayoutBlock = Extract<PageLayoutBlock, { blockType: "cta" }>
 export type FaqLayoutBlock = Extract<PageLayoutBlock, { blockType: "faq" }>
@@ -41,6 +45,96 @@ export type BlogPostItem = Pick<Blog, "id" | "title" | "slug" | "content" | "cre
     heroImage?: (number | null) | Media
     meta?: Blog["meta"]
     author: number | Pick<TeamMember, "name" | "image" | "role">
+}
+
+export interface SubscriptionConfigData {
+    id: number
+    title: string
+    pageIntro: {
+        heading: string
+        description: string
+    }
+    featureOverview: {
+        title: string
+        description: string
+        icon: string
+        id?: string | null
+    }[]
+    optionsPanelHeading: string
+    deployment: {
+        label: string
+        selfHosted: {
+            title: string
+            description: string
+            icon: string
+            color: "brand" | "pink" | "yellow" | "aqua" | "blue"
+        }
+        cloud: {
+            title: string
+            description: string
+            icon: string
+            color: "brand" | "pink" | "yellow" | "aqua" | "blue"
+        }
+    }
+    customerType: {
+        label: string
+        b2b: {
+            title: string
+            description: string
+            icon: string
+            color: "brand" | "pink" | "yellow" | "aqua" | "blue"
+        }
+        b2c: {
+            title: string
+            description: string
+            icon: string
+            color: "brand" | "pink" | "yellow" | "aqua" | "blue"
+        }
+    }
+    teamSeats: {
+        title: string
+        description: string
+        min: number
+        max: number
+        step: number
+        minLabel: string
+        maxLabel: string
+        centerSuffix: string
+    }
+    runtime: {
+        title: string
+        description: string
+        monthlyLabel: string
+        paygLabel: string
+        paygDescription: string
+        min: number
+        max: number
+        step: number
+        minLabel: string
+        maxLabel: string
+        centerSuffix: string
+    }
+    contactSales: {
+        prompt: string
+        label: string
+        href: string
+    }
+    subscribe: {
+        label: string
+        baseUrl: string
+    }
+    price: {
+        heading: string
+        caption: string
+    }
+    additionalFeaturesLabel?: string | null
+    additionalFeatures?: {
+        icon: string
+        title: string
+        description: string
+        price: number
+        id?: string | null
+    }[] | null
 }
 
 function isMissingPayloadTablesError(error: unknown): boolean {
@@ -347,6 +441,22 @@ const getSectionsCached = cache(async (locale: AppLocale): Promise<Section[]> =>
     })
 })
 
+const getSubscriptionConfigCached = cache(async (locale: AppLocale): Promise<SubscriptionConfigData | null> => {
+    return withCmsFallback(`getSubscriptionConfig(${locale})`, null, async () => {
+        const payload = await getPayloadClient()
+        const result = await payload.find({
+            collection: "subscriptionConfig" as never,
+            locale,
+            fallbackLocale: DEFAULT_LOCALE,
+            pagination: false,
+            limit: 1,
+            depth: 0,
+        })
+
+        return (result.docs[0] as SubscriptionConfigData | undefined) ?? null
+    })
+})
+
 export async function getLandingPage(slug = "main", locale: AppLocale = DEFAULT_LOCALE): Promise<Page | null> {
     return getLandingPageCached(slug, locale)
 }
@@ -402,4 +512,8 @@ export async function getRoadmapItems(locale: AppLocale = DEFAULT_LOCALE): Promi
 
 export async function getSections(locale: AppLocale = DEFAULT_LOCALE): Promise<Section[]> {
     return getSectionsCached(locale)
+}
+
+export async function getSubscriptionConfig(locale: AppLocale = DEFAULT_LOCALE): Promise<SubscriptionConfigData | null> {
+    return getSubscriptionConfigCached(locale)
 }

@@ -69,7 +69,6 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
                                         </p>
                                         <HapticButtonLink
                                             href={"/contact"}
-                                            locale={locale}
                                             variant="normal"
                                             className={"h-11 rounded-xl px-8! bg-white/88! text-primary! shadow-[0_12px_28px_rgba(255,255,255,0.12)] hover:bg-white!"}
                                         >

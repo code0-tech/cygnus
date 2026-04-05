@@ -17,6 +17,7 @@ import { NavbarItems } from './collections/navbarItems'
 import { Pages } from './collections/pages'
 import { RoadmapItems } from './collections/roadmapItems'
 import { Sections } from './collections/sections'
+import { SubscriptionCollection } from './collections/subscriptionConfig'
 import { TeamMembers } from './collections/teamMembers'
 import { Users } from './collections/users'
 import { GraphLexicalBlock, TriggerLexicalBlock } from './lib/richText/customLexicalBlocks'
@@ -41,7 +42,7 @@ export default buildConfig({
         locales: ['en', 'de'],
         defaultLocale: 'en',
     },
-    collections: [Users, Media, NavbarItems, Sections, Footer, CookieBanner, Pages, Features, Jobs, Blog, RoadmapItems, TeamMembers],
+    collections: [Users, Media, NavbarItems, Sections, Footer, CookieBanner, Pages, Features, Jobs, Blog, RoadmapItems, TeamMembers, SubscriptionCollection],
     jobs: {
         autoRun: [{
             cron: '*/5 * * * *', // Check every 5 minutes
@@ -95,7 +96,8 @@ export default buildConfig({
                 { slug: 'jobs' },
                 { slug: 'blog' },
                 { slug: 'roadmapItems' },
-                { slug: 'team-members' }
+                { slug: 'team-members' },
+                { slug: 'subscriptionConfig' }
             ]
         }),
         seoPlugin({
