@@ -193,7 +193,6 @@ export const CtaSection: React.FC<CtaSectionProps> = ({ content, floatingCta = f
                         >
                             <HapticButtonLink
                                 href={content.ctaLink.url}
-                                locale={locale}
                                 variant="normal"
                                 className={cn(
                                     baseCtaClassName,

@@ -95,7 +95,6 @@ export function EditionHeroSection({
                                 <HapticButtonLink
                                     href={button.url}
                                     key={`${button.label}-${index}`}
-                                    locale={locale}
                                     variant={button.variant ?? "normal"}
                                     className={cn(button.variant === "filled" && "bg-white/80! text-primary! hover:bg-white!")}
                                 >

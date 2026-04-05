@@ -530,7 +530,6 @@ export function SubscriptionConfigurator({ locale, content }: { locale: AppLocal
                                 <p className="text-sm font-medium text-white/50">{resolved.contactSales.prompt}</p>
                                 <LinkButton
                                     href={resolved.contactSales.href}
-                                    locale={locale}
                                     className="border-b-0 text-white/75"
                                     showArrow={false}
                                 >
@@ -590,7 +589,6 @@ export function SubscriptionConfigurator({ locale, content }: { locale: AppLocal
                                             <p className="text-sm font-medium text-white/50">{resolved.contactSales.prompt}</p>
                                             <LinkButton
                                                 href={resolved.contactSales.href}
-                                                locale={locale}
                                                 className="border-b-0 text-white/75"
                                                 showArrow={false}
                                             >
@@ -653,7 +651,6 @@ export function SubscriptionConfigurator({ locale, content }: { locale: AppLocal
                 priceCaption={resolved.price.caption}
                 subscribeHref={subscribeHref}
                 subscribeLabel={resolved.subscribe.label}
-                locale={locale}
             />
         </>
     )

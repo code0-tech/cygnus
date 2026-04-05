@@ -1,6 +1,5 @@
 "use client"
 
-import type { AppLocale } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
 import { Button } from "@code0-tech/pictor"
 import Link from "next/link"
@@ -12,7 +11,6 @@ interface HapticButtonLinkProps {
     children: ReactNode
     variant?: "none" | "normal" | "outlined" | "filled" | null
     className?: string
-    locale?: AppLocale
 }
 
 export function HapticButtonLink({
@@ -20,13 +18,11 @@ export function HapticButtonLink({
     children,
     variant = "normal",
     className,
-    locale,
 }: HapticButtonLinkProps) {
     const { trigger } = useWebHaptics()
-    const localizedHref = href.startsWith("/") ? `/${locale ?? ""}${href}`.replace("//", "/") : href
 
     return (
-        <Link href={localizedHref} className="w-full sm:w-auto">
+        <Link href={href} className="w-full sm:w-auto">
             <Button
                 variant={variant ?? undefined}
                 onClick={() => trigger("heavy")}

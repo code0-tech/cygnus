@@ -1,7 +1,6 @@
 "use client"
 
 import { HapticButtonLink } from "@/components/ui/HapticButtonLink"
-import type { AppLocale } from "@/lib/i18n"
 import { IconShoppingCart } from "@tabler/icons-react"
 import { useEffect, useState } from "react"
 import { createPortal } from "react-dom"
@@ -12,7 +11,6 @@ interface BuyMenuProps {
     priceCaption: string
     subscribeHref: string
     subscribeLabel: string
-    locale?: AppLocale
 }
 
 export function BuyMenu({
@@ -20,8 +18,7 @@ export function BuyMenu({
     priceHeading,
     priceCaption,
     subscribeHref,
-    subscribeLabel,
-    locale,
+    subscribeLabel
 }: BuyMenuProps) {
     const [mounted, setMounted] = useState(false)
 
@@ -51,7 +48,6 @@ export function BuyMenu({
                 href={subscribeHref}
                 variant="filled"
                 className="bg-white/80! text-primary! hover:bg-white! font-semibold! tracking-wide! gap-3!"
-                locale={locale}
             >
                 <IconShoppingCart size={20} stroke={2.2} className="text-black/75" />
                 {subscribeLabel}
