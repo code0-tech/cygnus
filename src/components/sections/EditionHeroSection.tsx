@@ -77,11 +77,11 @@ export function EditionHeroSection({
                     viewport={{ once: true, amount: 0.25 }}
                 >
                     <div className="flex w-full max-w-6xl flex-col items-center gap-4">
-                        <motion.h1 variants={staggerItem} className="relative z-10 text-balance text-3xl font-bold text-white lg:text-5xl">
+                        <motion.h1 variants={staggerItem} className="relative z-10 text-balance text-3xl font-bold text-white lg:text-5xl text-center">
                             {content.heading}
                         </motion.h1>
 
-                        <motion.p variants={staggerItem} className="relative z-10 max-w-2xl text-base font-medium text-pretty text-white/75 lg:text-xl">
+                        <motion.p variants={staggerItem} className="relative z-10 max-w-2xl text-base font-medium text-pretty text-white/75 lg:text-xl text-center">
                             {texts.map((text, index) => (
                                 <React.Fragment key={`${text}-${index}`}>
                                     {text}

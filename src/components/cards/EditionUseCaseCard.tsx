@@ -1,9 +1,9 @@
 "use client"
 
-import { cn } from "@/lib/utils"
-import { Media } from "@/payload-types"
+import {cn} from "@/lib/utils"
+import {Media} from "@/payload-types"
 import Image from "next/image"
-import { LinkButton } from "../ui/LinkButton"
+import {LinkButton} from "../ui/LinkButton"
 
 interface EditionUseCaseCardProps {
     title: string
@@ -17,7 +17,14 @@ interface EditionUseCaseCardProps {
     className?: string
 }
 
-export function EditionUseCaseCard({ title, description, image, link, isFocused = false, className}: EditionUseCaseCardProps) {
+export function EditionUseCaseCard({
+                                       title,
+                                       description,
+                                       image,
+                                       link,
+                                       isFocused = false,
+                                       className
+                                   }: EditionUseCaseCardProps) {
     const imageUrl = typeof image === 'object' && image?.url ? image.url : null
 
     return (
@@ -30,16 +37,20 @@ export function EditionUseCaseCard({ title, description, image, link, isFocused 
                 className,
             )}
         >
-            <div aria-hidden="true" className="glass-card-topline" />
-            <div className="relative z-10 flex h-full flex-col items-stretch justify-start overflow-hidden rounded-[1.6rem]">
+            <div aria-hidden="true" className="glass-card-topline"/>
+            <div
+                className="relative z-10 flex h-full flex-col items-stretch justify-start overflow-hidden rounded-[1.6rem]">
                 {imageUrl ? (
-                    <div className="relative h-48 w-full overflow-hidden">
-                        <Image
-                            src={imageUrl}
-                            alt={title}
-                            fill
-                            className="object-cover"
-                        />
+                    <div className={"p-2"}>
+                        <div
+                            className="relative overflow-hidden aspect-[243.476/160] w-full rounded-[1.2rem] border border-white/8 bg-primary/40">
+                            <Image
+                                src={imageUrl}
+                                alt={title}
+                                fill
+                                className="object-cover"
+                            />
+                        </div>
                     </div>
                 ) : (
                     <div className="relative h-48 w-full bg-white/5"/>

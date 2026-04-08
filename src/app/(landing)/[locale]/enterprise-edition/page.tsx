@@ -24,6 +24,7 @@ export default async function EnterpriseEditionPage({ params }: { params: Promis
     const featuresBlock = page?.layout?.find((item) => item.blockType === "editionFeatures") ?? null
     const useCaseBlock = page?.layout?.find((item) => item.blockType === "editionUseCases") ?? null
     const ctaBlock = (page?.layout?.find((item) => item.blockType === "cta") ?? null) as CtaLayoutBlock | null
+    const blocks = page?.layout?.filter((item) => item.blockType === "editionUseCases" || item.blockType === "editionFeatures") ?? []
 
     return (
         <LandingContainer>
@@ -37,10 +38,16 @@ export default async function EnterpriseEditionPage({ params }: { params: Promis
                     backgroundColor: "#140c22",
                 }}
             />
-            <div className="h-32" aria-hidden="true" />
-            <EditionFeatureSection content={featuresBlock} />
-            <div className="h-32" aria-hidden="true" />
-            <EditionUseCaseSection content={useCaseBlock} />
+            {blocks.map((block, index) => (
+                <>
+                    <div className="h-32" aria-hidden="true" />
+                    {block.blockType === "editionFeatures" ? (
+                        <EditionFeatureSection key={index} content={block} />
+                    ) : block.blockType === "editionUseCases" ? (
+                        <EditionUseCaseSection key={index} content={block} />
+                    ) : null}
+                </>
+            ))}
             <div className="h-32" aria-hidden="true" />
             <CtaSection content={ctaBlock} floatingCta locale={locale} />
         </LandingContainer>
