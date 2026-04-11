@@ -25,7 +25,7 @@
     "@c15t/scripts": "^1.0.1",
     "@code0-tech/pictor": "^0.5.1",
     "@icons-pack/react-simple-icons": "^13.13.0",
-    "@next/env": "^16.2.2",
+    "@next/env": "^16.2.3",
     "@payloadcms/db-postgres": "3.82.1",
     "@payloadcms/email-nodemailer": "3.82.1",
     "@payloadcms/next": "3.82.1",
