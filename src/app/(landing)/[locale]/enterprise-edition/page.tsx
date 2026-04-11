@@ -9,6 +9,7 @@ import { isSupportedLocale } from "@/lib/i18n"
 import { getLandingPageMetadata } from "@/lib/pageMetadata"
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
+import React from "react"
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
     const { locale } = await params
@@ -21,8 +22,6 @@ export default async function EnterpriseEditionPage({ params }: { params: Promis
 
     const page = await getLandingPage("enterprise-edition", locale)
     const heroBlock = page?.layout?.find((item) => item.blockType === "editionHero") ?? null
-    const featuresBlock = page?.layout?.find((item) => item.blockType === "editionFeatures") ?? null
-    const useCaseBlock = page?.layout?.find((item) => item.blockType === "editionUseCases") ?? null
     const ctaBlock = (page?.layout?.find((item) => item.blockType === "cta") ?? null) as CtaLayoutBlock | null
     const blocks = page?.layout?.filter((item) => item.blockType === "editionUseCases" || item.blockType === "editionFeatures") ?? []
 
@@ -39,14 +38,14 @@ export default async function EnterpriseEditionPage({ params }: { params: Promis
                 }}
             />
             {blocks.map((block, index) => (
-                <>
+                <React.Fragment key={index}>
                     <div className="h-32" aria-hidden="true" />
                     {block.blockType === "editionFeatures" ? (
-                        <EditionFeatureSection key={index} content={block} />
+                        <EditionFeatureSection content={block} />
                     ) : block.blockType === "editionUseCases" ? (
-                        <EditionUseCaseSection key={index} content={block} />
+                        <EditionUseCaseSection content={block} />
                     ) : null}
-                </>
+                </React.Fragment>
             ))}
             <div className="h-32" aria-hidden="true" />
             <CtaSection content={ctaBlock} floatingCta locale={locale} />

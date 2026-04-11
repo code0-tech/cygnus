@@ -3,8 +3,7 @@
 import { cn } from "@/lib/utils"
 import { useOutsideClick } from "@/hooks/useOutsideClick"
 import { type AppLocale } from "@/lib/i18n"
-import type { NavbarItem } from "@/payload-types"
-import { DEFAULT_DISCORD_URL, DEFAULT_GITHUB_URL } from "@/lib/siteConfig"
+import type { Footer, NavbarItem } from "@/payload-types"
 import { Button, Container } from "@code0-tech/pictor"
 import { SiGithub } from '@icons-pack/react-simple-icons'
 import { IconChevronUp, IconMenu2, IconX } from "@tabler/icons-react"
@@ -18,9 +17,10 @@ import { fadeInUp, mapNavbarItems } from "@/lib/navigation"
 type NavigationMobileProps = {
     locale: AppLocale
     items: NavbarItem[]
+    footer: Footer | null
 }
 
-const NavigationMobile: React.FC<NavigationMobileProps> = ({ locale, items }) => {
+const NavigationMobile: React.FC<NavigationMobileProps> = ({ locale, items, footer }) => {
     const { trigger } = useWebHaptics()
     const menuRef = useOutsideClick<HTMLElement>(() => setIsOpen(false))
     const wasOpenRef = useRef(false)
@@ -30,6 +30,8 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({ locale, items }) =>
     const [isMenuClosing, setIsMenuClosing] = useState(false)
     const homeHref = `/${locale}`
     const navbarItems = useMemo(() => mapNavbarItems(items, locale), [items, locale])
+    const githubHref = footer?.socialLinks?.find((socialLink) => socialLink.platform === "github")?.url || "/"
+    const discordHref = footer?.socialLinks?.find((socialLink) => socialLink.platform === "discord")?.url || "/"
     const shellTransition = {
         duration: 0.34,
         ease: [0.22, 1, 0.36, 1] as const,
@@ -337,7 +339,7 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({ locale, items }) =>
                                             className="flex-1 w-full"
                                         >
                                             <Link
-                                                href={DEFAULT_GITHUB_URL}
+                                                href={githubHref}
                                                 target="_blank"
                                                 rel="noreferrer"
                                                 onClick={() => {
@@ -363,7 +365,7 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({ locale, items }) =>
                                             className="flex-1 w-full"
                                         >
                                             <Link
-                                                href={DEFAULT_DISCORD_URL}
+                                                href={discordHref}
                                                 target="_blank"
                                                 rel="noreferrer"
                                                 onClick={() => {

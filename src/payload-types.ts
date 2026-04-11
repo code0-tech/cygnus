@@ -392,7 +392,7 @@ export interface Page {
               title: string;
               description: string;
               image?: (number | null) | Media;
-              bulletPoints: string[];
+              bulletPoints?: string[] | null;
               link?: {
                 label?: string | null;
                 url?: string | null;
@@ -447,7 +447,7 @@ export interface Page {
               title: string;
               description: string;
               image?: (number | null) | Media;
-              bulletPoints: string[];
+              bulletPoints?: string[] | null;
               link?: {
                 label?: string | null;
                 url?: string | null;

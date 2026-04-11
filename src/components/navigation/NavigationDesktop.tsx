@@ -3,8 +3,7 @@
 import { cn } from "@/lib/utils"
 import { useOutsideClick } from "@/hooks/useOutsideClick"
 import { type AppLocale } from "@/lib/i18n"
-import type { NavbarItem } from "@/payload-types"
-import { DEFAULT_DISCORD_URL, DEFAULT_GITHUB_URL } from "@/lib/siteConfig"
+import type { Footer, NavbarItem } from "@/payload-types"
 import { Button, Container } from "@code0-tech/pictor"
 import { SiDiscord, SiGithub } from "@icons-pack/react-simple-icons"
 import { AnimatePresence, m as motion, useMotionValue, useSpring } from "motion/react"
@@ -18,9 +17,10 @@ import { fadeInUp, mapNavbarItems, type SubNavItem } from "@/lib/navigation"
 type NavigationDesktopProps = {
     locale: AppLocale
     items: NavbarItem[]
+    footer: Footer | null
 }
 
-const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ locale, items }) => {
+const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ locale, items, footer }) => {
     const rootRef = useRef<HTMLDivElement>(null)
     const submenuContentRef = useRef<HTMLDivElement>(null)
     const navTabsRef = useRef<HTMLDivElement>(null)
@@ -36,6 +36,8 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ locale, items }) 
     const cursorWidth = useSpring(useMotionValue(0), { stiffness: 260, damping: 30, mass: 0.9 })
     const homeHref = `/${locale}`
     const navbarItems = useMemo(() => mapNavbarItems(items, locale), [items, locale])
+    const githubHref = footer?.socialLinks?.find((socialLink) => socialLink.platform === "github")?.url || "/"
+    const discordHref = footer?.socialLinks?.find((socialLink) => socialLink.platform === "discord")?.url || "/"
 
     const updateIndicatorPosition = (nextPosition: { left: number; width: number; opacity: number }) => {
         cursorX.set(nextPosition.left)
@@ -222,13 +224,13 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ locale, items }) 
                             <Cursor x={cursorX} width={cursorWidth} opacity={cursorOpacity} />
                         </div>
                         <div className={"flex items-center gap-2"}>
-                            <Link href={DEFAULT_GITHUB_URL} target="_blank" rel="noreferrer">
+                            <Link href={githubHref} target="_blank" rel="noreferrer">
                                 <Button variant="normal" className="h-9! px-2!">
                                     <SiGithub size={18} />
                                     <span className="hidden xl:inline">Github</span>
                                 </Button>
                             </Link>
-                            <Link href={DEFAULT_DISCORD_URL} target="_blank" rel="noreferrer">
+                            <Link href={discordHref} target="_blank" rel="noreferrer">
                                 <Button variant="filled" className="h-9! px-2! bg-white/80! hover:bg-white! text-primary!">
                                     <span className="hidden xl:inline">Discord</span>
                                     <SiDiscord size={18} className="xl:hidden"/>

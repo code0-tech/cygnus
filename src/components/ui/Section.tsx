@@ -22,6 +22,8 @@ interface SectionProps {
     animationDelay?: number
     animationDuration?: number
     animationOnce?: boolean
+    animationViewportAmount?: number
+    animationViewportMargin?: string
     headingLevel?: 1 | 2 | 3 | 4 | 5 | 6
 }
 
@@ -38,6 +40,8 @@ export function Section({
     animationDelay = 0,
     animationDuration,
     animationOnce = true,
+    animationViewportAmount = 0.2,
+    animationViewportMargin,
     headingLevel = 2,
 }: SectionProps) {
     const sectionData = usePreloadedSection(sectionType) as SectionDocument | null
@@ -100,7 +104,7 @@ export function Section({
             )}
             initial={animationConfig?.initial}
             whileInView={animationConfig?.whileInView}
-            viewport={animationConfig ? { once: animationOnce, amount: 0.2 } : undefined}
+            viewport={animationConfig ? { once: animationOnce, amount: animationViewportAmount, margin: animationViewportMargin } : undefined}
             transition={animationConfig
                 ? {
                     ...animationConfig.transition,

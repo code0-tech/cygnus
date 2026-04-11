@@ -42,7 +42,7 @@ export const EditionFeaturesBlock: Block = {
           name: "bulletPoints",
           label: "Bullet Points",
           type: "text",
-          required: true,
+          required: false,
           hasMany: true,
           localized: true,
         },

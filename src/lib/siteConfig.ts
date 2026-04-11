@@ -5,10 +5,6 @@ const TITLE_DEFAULT = "CodeZero"
 const DESCRIPTION = "Revolutionize the backend development"
 const DEFAULT_OG_IMAGE = "/og/home/image.webp"
 const DEFAULT_BASE_URL = "https://code0.tech"
-export const DEFAULT_DISCORD_URL = "https://discord.com/invite/AyMB7DtA7P"
-export const DEFAULT_GITHUB_URL = "https://github.com/code0-tech"
-export const DEFAULT_X_URL = "https://x.com"
-export const DEFAULT_INSTAGRAM_URL = "https://instagram.com/code0.tech"
 const DEFAULT_KEYWORDS = ["Code0", "NoCode", "Backend", "CodeZero", "SEO"]
 
 export function resolveSiteUrl() {

@@ -121,13 +121,18 @@ export const CtaSection: React.FC<CtaSectionProps> = ({ content, floatingCta = f
         "bg-white! hover:bg-white! hover:scale-102 ring-1! ring-white/20! shadow-[0_0_60px_20px_rgba(0,0,0,0.75)]"
 
     return (
-        <Section showBlur={false} showFunnel={false} animationPreset="fade-in">
+        <Section
+            showBlur={false}
+            showFunnel={false}
+            animationPreset={floatingCta ? "none" : "fade-in"}
+        >
             <motion.div
                 className="glass-card-shell w-full rounded-3xl bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))]! shadow-lg!"
                 variants={staggerContainer}
-                initial="hidden"
-                whileInView="show"
-                viewport={{ once: true, amount: 0.25 }}
+                initial={floatingCta ? false : "hidden"}
+                whileInView={floatingCta ? undefined : "show"}
+                animate={floatingCta ? "show" : undefined}
+                viewport={floatingCta ? undefined : { once: true, amount: 0.25 }}
             >
                 <div aria-hidden="true" className="glass-card-topline" />
 

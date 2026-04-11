@@ -13,7 +13,7 @@ interface EditionFeatureItem {
     title: string
     description: string
     image?: Media | number | null
-    bulletPoints: string[]
+    bulletPoints?: string[] | null
     link?: {
         label?: string | null
         url?: string | null

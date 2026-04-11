@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "@code0-tech/pictor"
 import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react"
 import { useWebHaptics } from "web-haptics/react"
-import { m as motion, type Variants } from "motion/react"
+import { m as motion, type PanInfo, type Variants } from "motion/react"
 
 interface EditionUseCaseItem {
     title: string
@@ -47,6 +47,19 @@ export function EditionUseCaseSection({ content }: EditionUseCaseSectionProps) {
     const handleNext = () => {
         trigger("light")
         setFocusedIndex((prev) => (prev === useCases.length - 1 ? 0 : prev + 1))
+    }
+
+    const handleDragEnd = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+        const swipeThreshold = 48
+
+        if (Math.abs(info.offset.x) < swipeThreshold) return
+
+        if (info.offset.x > 0) {
+            handlePrevious()
+            return
+        }
+
+        handleNext()
     }
 
     const staggerContainer: Variants = {
@@ -110,10 +123,16 @@ export function EditionUseCaseSection({ content }: EditionUseCaseSectionProps) {
                             className="absolute left-0 z-20 shrink-0 size-12! rounded-full! p-0!"
                             aria-label="Previous use case"
                         >
-                            <IconChevronLeft className="size-6 mr-1" />
+                            <IconChevronLeft className="size-6 mr-0.5" />
                         </Button>
 
-                        <div className="relative flex w-full items-center justify-center px-0 md:px-2">
+                        <motion.div
+                            className="relative flex w-full items-center justify-center px-0 md:px-2 touch-pan-y"
+                            drag="x"
+                            dragConstraints={{ left: 0, right: 0 }}
+                            dragElastic={0.08}
+                            onDragEnd={handleDragEnd}
+                        >
                             <div
                                 className="relative flex w-full items-stretch justify-center"
                                 style={{ minHeight: "400px" }}
@@ -147,15 +166,15 @@ export function EditionUseCaseSection({ content }: EditionUseCaseSectionProps) {
                                     )
                                 })}
                             </div>
-                        </div>
+                        </motion.div>
 
                         <Button
                             onClick={handleNext}
                             variant="filled"
-                            className="absolute left-0 z-20 shrink-0 size-12! rounded-full! p-0!"
+                            className="absolute right-0 z-20 shrink-0 size-12! rounded-full! p-0!"
                             aria-label="Next use case"
                         >
-                            <IconChevronRight className="size-6 ml-1" />
+                            <IconChevronRight className="size-6 ml-0.5" />
                         </Button>
                     </div>
                 </motion.div>
