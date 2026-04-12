@@ -118,7 +118,7 @@ export const CtaSection: React.FC<CtaSectionProps> = ({ content, floatingCta = f
         "bg-white/80! hover:bg-white! ring-1! ring-white/20!"
 
     const floatingCtaClassName =
-        "bg-white! hover:bg-white! hover:scale-102 ring-1! ring-white/20! shadow-[0_0_60px_20px_rgba(0,0,0,0.75)]"
+        "bg-white! hover:bg-white! hover:scale-102 ring-1! ring-white/20!"
 
     return (
         <Section
@@ -202,6 +202,7 @@ export const CtaSection: React.FC<CtaSectionProps> = ({ content, floatingCta = f
                                 className={cn(
                                     baseCtaClassName,
                                     floatingCta ? floatingCtaClassName : inlineCtaClassName,
+                                    floatingCta && (docked ? "shadow-md" : "shadow-[0_0_60px_20px_rgba(0,0,0,0.75)]"),
                                 )}
                             >
                                 {content.ctaLink.label}

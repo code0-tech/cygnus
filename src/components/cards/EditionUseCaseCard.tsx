@@ -43,7 +43,7 @@ export function EditionUseCaseCard({
                 {imageUrl ? (
                     <div className={"p-2"}>
                         <div
-                            className="relative overflow-hidden aspect-[243.476/160] w-full rounded-[1.2rem] border border-white/8 bg-primary/40">
+                            className="relative overflow-hidden aspect-video w-full rounded-[1.2rem] border border-white/8 bg-primary/40">
                             <Image
                                 src={imageUrl}
                                 alt={title}

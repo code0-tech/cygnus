@@ -99,6 +99,7 @@ export function EditionUseCaseSection({ content }: EditionUseCaseSectionProps) {
 
     return (
         <Section showBlur={false} animationPreset="none">
+            <div aria-hidden="true" className="pointer-events-none absolute inset-0 [background:radial-gradient(circle,rgba(255,255,255,0.05),transparent_50%)]" />
             <motion.div
                 className="relative flex w-full flex-col items-stretch gap-8"
                 variants={staggerContainer}

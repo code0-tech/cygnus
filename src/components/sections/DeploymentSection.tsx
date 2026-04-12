@@ -101,7 +101,7 @@ export const DeploymentSection: React.FC<DeploymentSectionProps> = ({ content })
                     <motion.article
                         key={card.badge}
                         variants={staggerItem}
-                        className="glass-card-shell group flex h-full flex-col rounded-[1.75rem] p-3 shadow-[0_18px_60px_rgba(0,0,0,0.28)] transition-transform before:pointer-events-none before:absolute before:inset-1px before:rounded-[calc(1.75rem-1px)] before:border before:border-white/6 before:content-['']"
+                        className="glass-card-shell group flex h-full flex-col rounded-[1.75rem] p-2 shadow-[0_18px_60px_rgba(0,0,0,0.28)] transition-transform before:pointer-events-none before:absolute before:inset-1px before:rounded-[calc(1.75rem-1px)] before:border before:border-white/6 before:content-['']"
                     >
                         <div aria-hidden="true" className="glass-card-topline" />
 

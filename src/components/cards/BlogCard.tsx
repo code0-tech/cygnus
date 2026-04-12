@@ -23,7 +23,7 @@ export function BlogCard({ locale, post }: { locale: string, post: BlogPostItem 
         >
             <Card
                 variant="filled"
-                className="glass-card-shell p-3!"
+                className="glass-card-shell p-2!"
             >
                 <div aria-hidden="true" className="glass-card-tint" />
                 <div aria-hidden="true" className="glass-card-topline" />
