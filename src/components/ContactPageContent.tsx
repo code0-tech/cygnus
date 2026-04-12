@@ -13,8 +13,12 @@ interface ContactPageContentProps {
 
 export function ContactPageContent({ locale, contactBlock }: ContactPageContentProps) {
     const desktopTopOffset = 96
+    const pageHeading = contactBlock?.heading ?? "Contact us"
+    const pageDescription = contactBlock?.description ?? "Contact us if you want to know more about CodeZero."
+
     const [desktopMode, setDesktopMode] = useState<"static" | "fixed" | "bottom">("static")
     const [desktopStyle, setDesktopStyle] = useState<{ left: number, width: number, top: number } | null>(null)
+
     const desktopWrapperRef = useRef<HTMLElement>(null)
     const desktopContainerRef = useRef<HTMLDivElement>(null)
 
@@ -77,13 +81,8 @@ export function ContactPageContent({ locale, contactBlock }: ContactPageContentP
     return (
         <div className="grid gap-8 lg:grid-cols-5">
             <section className="min-w-0 lg:col-span-3">
-                <h1 className="text-4xl font-semibold text-white">Get in touch</h1>
-                <p className="mt-4 text-white/75">
-                    Placeholder text for the contact page intro. Replace this with the final markdown content.
-                </p>
-                <p className="mt-4 text-white/75">
-                    Add details about support, response times, or how the team can help to give visitors more context.
-                </p>
+                <h1 className="text-4xl font-semibold text-white">{pageHeading}</h1>
+                <p className="mt-4 text-white/75">{pageDescription}</p>
             </section>
 
             <section ref={desktopWrapperRef} className="relative min-w-0 lg:col-span-2">

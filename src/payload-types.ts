@@ -520,6 +520,7 @@ export interface Page {
           }
         | {
             heading: string;
+            description: string;
             nameLabel: string;
             namePlaceholder: string;
             emailLabel: string;
@@ -1497,6 +1498,7 @@ export interface PagesSelect<T extends boolean = true> {
           | T
           | {
               heading?: T;
+              description?: T;
               nameLabel?: T;
               namePlaceholder?: T;
               emailLabel?: T;

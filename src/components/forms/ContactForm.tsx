@@ -3,11 +3,11 @@
 import { AcceptTermsCheckbox } from "@/components/AcceptTermsCheckbox"
 import type { AppLocale } from "@/lib/i18n"
 import { Button, EmailInput, emailValidation, TextAreaInput, TextInput, useForm } from "@code0-tech/pictor"
+import type { FocusEvent } from "react"
 import { useMemo, useState } from "react"
 import { useWebHaptics } from "web-haptics/react"
 
 interface ContactFormContent {
-    heading: string
     nameLabel: string
     namePlaceholder: string
     emailLabel: string
@@ -22,8 +22,14 @@ interface ContactFormProps {
     locale: AppLocale
 }
 
+interface ContactFormValues {
+    name: string
+    email: string
+    message: string
+    acceptTerms: boolean
+}
+
 const defaultContent: ContactFormContent = {
-    heading: "Contact us",
     nameLabel: "Name",
     namePlaceholder: "Your name",
     emailLabel: "Email",
@@ -39,7 +45,7 @@ export function ContactForm({ content, locale }: ContactFormProps) {
 
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [submitStatus, setSubmitStatus] = useState<{ type: "success" | "error", message: string } | null>(null)
-    const initialValues = useMemo(() => ({
+    const initialValues = useMemo<ContactFormValues>(() => ({
         name: "",
         email: "",
         message: "",
@@ -70,7 +76,7 @@ export function ContactForm({ content, locale }: ContactFormProps) {
         useInitialValidation: false,
         initialValues,
         validate: validation,
-        onSubmit: (values) => {
+        onSubmit: (values: ContactFormValues) => {
             if (isSubmitting) return
 
             setIsSubmitting(true)
@@ -115,7 +121,6 @@ export function ContactForm({ content, locale }: ContactFormProps) {
 
     return (
         <div className="flex flex-col gap-4">
-            <h1 className="text-4xl font-semibold text-white">{labels.heading}</h1>
             <div className="flex flex-col gap-2 mt-6">
                 <TextInput
                     placeholder={labels.namePlaceholder}
@@ -137,7 +142,7 @@ export function ContactForm({ content, locale }: ContactFormProps) {
                             validate("email")
                         }
                     }}
-                    onBlur={(event) => {
+                    onBlur={(event: FocusEvent<HTMLInputElement>) => {
                         const value = event.currentTarget.value?.trim()
                         if (value && !emailValidation(value)) {
                             validate("email")

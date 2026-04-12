@@ -3,6 +3,7 @@
 import { AcceptTermsCheckbox } from "@/components/AcceptTermsCheckbox"
 import type { AppLocale } from "@/lib/i18n"
 import { Button, EmailInput, emailValidation, TextAreaInput, TextInput, useForm } from "@code0-tech/pictor"
+import type { FocusEvent } from "react"
 import { useMemo, useState } from "react"
 import { useWebHaptics } from "web-haptics/react"
 
@@ -23,6 +24,13 @@ interface JobApplicationFormProps {
     locale: AppLocale
 }
 
+interface JobApplicationFormValues {
+    name: string
+    email: string
+    text: string
+    acceptTerms: boolean
+}
+
 const defaultContent: JobApplicationFormContent = {
     applicationHeading: "Apply now",
     applicationNameLabel: "Name",
@@ -39,7 +47,7 @@ export function JobApplicationForm({ jobSlug, content, locale }: JobApplicationF
     const labels = { ...defaultContent, ...content }
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [submitStatus, setSubmitStatus] = useState<{ type: "success" | "error", message: string } | null>(null)
-    const initialValues = useMemo(() => ({
+    const initialValues = useMemo<JobApplicationFormValues>(() => ({
         name: "",
         email: "",
         text: "",
@@ -70,7 +78,7 @@ export function JobApplicationForm({ jobSlug, content, locale }: JobApplicationF
         useInitialValidation: false,
         initialValues,
         validate: validation,
-        onSubmit: (values) => {
+        onSubmit: (values: JobApplicationFormValues) => {
             if (isSubmitting) return
 
             setIsSubmitting(true)
@@ -137,7 +145,7 @@ export function JobApplicationForm({ jobSlug, content, locale }: JobApplicationF
                             validate("email")
                         }
                     }}
-                    onBlur={(event) => {
+                    onBlur={(event: FocusEvent<HTMLInputElement>) => {
                         const value = event.currentTarget.value?.trim()
                         if (value && !emailValidation(value)) {
                             validate("email")

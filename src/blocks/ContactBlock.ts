@@ -15,6 +15,12 @@ export const ContactBlock: Block = {
       defaultValue: "Contact us",
     },
     {
+      name: "description",
+      type: "textarea",
+      required: true,
+      localized: true,
+    },
+    {
       name: "nameLabel",
       type: "text",
       required: true,

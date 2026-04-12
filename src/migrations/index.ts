@@ -5,6 +5,7 @@ import * as migration_20260325_072831_002_cookiebanner_and_teammembers from './2
 import * as migration_20260402_104807_003_seo_and_ogimage from './20260402_104807_003_seo_and_ogimage';
 import * as migration_20260402_135659_004_navbar_submenu_icons_and_color from './20260402_135659_004_navbar_submenu_icons_and_color';
 import * as migration_20260405_141941_005_product_pages from './20260405_141941_005_product_pages';
+import * as migration_20260412_174023_006_contact_page_description from './20260412_174023_006_contact_page_description';
 
 export const migrations = [
   {
@@ -40,6 +41,11 @@ export const migrations = [
   {
     up: migration_20260405_141941_005_product_pages.up,
     down: migration_20260405_141941_005_product_pages.down,
-    name: '20260405_141941_005_product_pages'
+    name: '20260405_141941_005_product_pages',
+  },
+  {
+    up: migration_20260412_174023_006_contact_page_description.up,
+    down: migration_20260412_174023_006_contact_page_description.down,
+    name: '20260412_174023_006_contact_page_description'
   },
 ];
