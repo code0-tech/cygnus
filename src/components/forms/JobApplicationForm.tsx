@@ -78,7 +78,7 @@ export function JobApplicationForm({ jobSlug, content, locale }: JobApplicationF
 
             void (async () => {
                 try {
-                    const response = await fetch(`/api/jobs/${encodeURIComponent(jobSlug)}`, {
+                    const response = await fetch(`/api/job-applications/${encodeURIComponent(jobSlug)}`, {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",

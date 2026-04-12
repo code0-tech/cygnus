@@ -110,7 +110,13 @@ export function MarkdownContent({ content }: MarkdownContentProps) {
         <div className={htmlClassName}>
             {segments.map((segment, index) => {
                 if (segment.type === "html") {
-                    return <div key={`html-${index}`} dangerouslySetInnerHTML={{ __html: segment.html }} />
+                    return (
+                        <div
+                            key={`html-${index}`}
+                            className={index === segments.length - 1 ? "[&>*:last-child]:mb-0" : undefined}
+                            dangerouslySetInnerHTML={{ __html: segment.html }}
+                        />
+                    )
                 }
 
                 if (segment.type === "custom-block") {

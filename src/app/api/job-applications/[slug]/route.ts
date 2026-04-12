@@ -86,7 +86,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
 
         return NextResponse.json({ ok: true }, { status: 200 })
     } catch (error) {
-        console.error("Jobs route error:", error)
+        console.error("Job applications route error:", error)
         return new Response("An error occurred while sending. Please try again later.", { status: 500 })
     }
 }

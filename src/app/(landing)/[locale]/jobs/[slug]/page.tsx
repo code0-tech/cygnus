@@ -1,5 +1,4 @@
-import { MarkdownContent } from "@/components/blog/MarkdownContent"
-import { JobApplicationForm } from "@/components/forms/JobApplicationForm"
+import { JobDetailContent } from "@/components/JobDetailContent"
 import { Aurora } from "@/components/ui/Aurora"
 import { LandingContainer } from "@/components/ui/LandingContainer"
 import { SUPPORTED_LOCALES, isSupportedLocale } from "@/lib/i18n"
@@ -26,12 +25,9 @@ export default async function JobDetailPage({ params }: { params: Promise<{ loca
     return (
         <>
             <Aurora />
-            <LandingContainer className="py-[20vh]">
-                <div className={"w-full md:w-[50vw] mx-auto"}>
-                    <MarkdownContent content={contentHtml} />
-                    <div className="mt-10">
-                        <JobApplicationForm jobSlug={job.slug} content={jobsBlock} locale={locale} />
-                    </div>
+            <LandingContainer className="py-[10vh]">
+                <div className="mx-auto w-full max-w-5xl">
+                    <JobDetailContent contentHtml={contentHtml} jobSlug={job.slug} jobsBlock={jobsBlock} locale={locale} />
                 </div>
             </LandingContainer>
         </>
