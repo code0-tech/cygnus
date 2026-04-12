@@ -36,6 +36,7 @@ const defaultContent: ContactFormContent = {
 export function ContactForm({ content, locale }: ContactFormProps) {
     const { trigger } = useWebHaptics()
     const labels = { ...defaultContent, ...content }
+
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [submitStatus, setSubmitStatus] = useState<{ type: "success" | "error", message: string } | null>(null)
     const initialValues = useMemo(() => ({
@@ -107,6 +108,10 @@ export function ContactForm({ content, locale }: ContactFormProps) {
             })()
         },
     })
+    const nameInputProps = inputs.getInputProps("name")
+    const emailInputProps = inputs.getInputProps("email")
+    const messageInputProps = inputs.getInputProps("message")
+    const acceptTermsInputProps = inputs.getInputProps("acceptTerms")
 
     return (
         <div className="flex flex-col gap-4">
@@ -115,14 +120,30 @@ export function ContactForm({ content, locale }: ContactFormProps) {
                 <TextInput
                     placeholder={labels.namePlaceholder}
                     label={labels.nameLabel}
-                    {...inputs.getInputProps("name")}
+                    onChange={() => {
+                        if (!nameInputProps.formValidation?.valid) {
+                            validate("name")
+                        }
+                    }}
+                    {...nameInputProps}
                 />
             </div>
             <div className="flex flex-col gap-2">
                 <EmailInput
                     placeholder={labels.emailPlaceholder}
                     label={labels.emailLabel}
-                    {...inputs.getInputProps("email")}
+                    onChange={() => {
+                        if (!emailInputProps.formValidation?.valid) {
+                            validate("email")
+                        }
+                    }}
+                    onBlur={(event) => {
+                        const value = event.currentTarget.value?.trim()
+                        if (value && !emailValidation(value)) {
+                            validate("email")
+                        }
+                    }}
+                    {...emailInputProps}
                 />
             </div>
 
@@ -130,13 +151,19 @@ export function ContactForm({ content, locale }: ContactFormProps) {
                 <TextAreaInput
                     placeholder={labels.messagePlaceholder}
                     label={labels.messageLabel}
-                    {...inputs.getInputProps("message")}
+                    onChange={() => {
+                        if (!messageInputProps.formValidation?.valid) {
+                            validate("message")
+                        }
+                    }}
+                    {...messageInputProps}
                 />
             </div>
 
             <AcceptTermsCheckbox
                 locale={locale}
-                {...inputs.getInputProps("acceptTerms")}
+                revalidateOnToggle={() => validate("acceptTerms")}
+                {...acceptTermsInputProps}
             />
 
             <Button
@@ -147,7 +174,7 @@ export function ContactForm({ content, locale }: ContactFormProps) {
                     trigger("heavy")
                     validate()
                 }}
-                disabled={isSubmitting || !inputs.isValid()}
+                disabled={isSubmitting}
             >
                 {labels.submitLabel}
             </Button>

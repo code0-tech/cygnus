@@ -108,6 +108,10 @@ export function JobApplicationForm({ jobSlug, content, locale }: JobApplicationF
             })()
         },
     })
+    const nameInputProps = inputs.getInputProps("name")
+    const emailInputProps = inputs.getInputProps("email")
+    const textInputProps = inputs.getInputProps("text")
+    const acceptTermsInputProps = inputs.getInputProps("acceptTerms")
 
     return (
         <div className="flex flex-col gap-4">
@@ -116,14 +120,30 @@ export function JobApplicationForm({ jobSlug, content, locale }: JobApplicationF
                 <TextInput
                     placeholder={labels.applicationNamePlaceholder}
                     label={labels.applicationNameLabel}
-                    {...inputs.getInputProps("name")}
+                    onChange={() => {
+                        if (!nameInputProps.formValidation?.valid) {
+                            validate("name")
+                        }
+                    }}
+                    {...nameInputProps}
                 />
             </div>
             <div className="flex flex-col gap-2">
                 <EmailInput
                     placeholder={labels.applicationEmailPlaceholder}
                     label={labels.applicationEmailLabel}
-                    {...inputs.getInputProps("email")}
+                    onChange={() => {
+                        if (!emailInputProps.formValidation?.valid) {
+                            validate("email")
+                        }
+                    }}
+                    onBlur={(event) => {
+                        const value = event.currentTarget.value?.trim()
+                        if (value && !emailValidation(value)) {
+                            validate("email")
+                        }
+                    }}
+                    {...emailInputProps}
                 />
             </div>
 
@@ -131,13 +151,19 @@ export function JobApplicationForm({ jobSlug, content, locale }: JobApplicationF
                 <TextAreaInput
                     placeholder={labels.applicationMessagePlaceholder}
                     label={labels.applicationMessageLabel}
-                    {...inputs.getInputProps("text")}
+                    onChange={() => {
+                        if (!textInputProps.formValidation?.valid) {
+                            validate("text")
+                        }
+                    }}
+                    {...textInputProps}
                 />
             </div>
 
             <AcceptTermsCheckbox
                 locale={locale}
-                {...inputs.getInputProps("acceptTerms")}
+                revalidateOnToggle={() => validate("acceptTerms")}
+                {...acceptTermsInputProps}
             />
 
             <Button
@@ -148,7 +174,7 @@ export function JobApplicationForm({ jobSlug, content, locale }: JobApplicationF
                     trigger("heavy")
                     validate()
                 }}
-                disabled={isSubmitting || !inputs.isValid()}
+                disabled={isSubmitting}
             >
                 {labels.applicationSubmitLabel}
             </Button>
