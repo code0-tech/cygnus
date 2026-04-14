@@ -60,7 +60,6 @@ export function createMetadata(override: Metadata = {}): Metadata {
         ...override,
         title,
         description,
-        icons: override.icons ?? { icon: "/icon.svg" },
         applicationName: override.applicationName ?? title.toString(),
         creator: override.creator ?? "",
         openGraph,
