@@ -28,8 +28,8 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
     return (
         <>
             <Aurora />
-            <LandingContainer>
-                <div className="md:w-[50vw] mx-auto py-[20vh]">
+            <LandingContainer className="pt-32">
+                <div className="md:w-[50vw] mx-auto">
                     <div className={"w-full md:w-[50vw] mx-auto flex flex-col gap-8"}>
                         <MarkdownContent content={contentHtml} />
                         <p className="text-3xl -mb-4">Team</p>

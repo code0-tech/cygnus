@@ -18,13 +18,15 @@ export default async function BlogPage({ params }: { params: Promise<{ locale: s
     return (
         <>
             <Aurora />
-            <LandingContainer className="py-[16vh]">
+            <LandingContainer>
+                <div className="h-32" aria-hidden="true" />
                 <div className="w-full md:w-[50vw] mx-auto flex flex-col gap-8">
                     <h1 className="hidden">Blog</h1>
                     {posts.length === 0 && <p className="text-white/60">No blog posts available.</p>}
                     {firstPost ? <FirstBlogCard post={firstPost} locale={locale} /> : null}
                     {remainingPosts.map((post) => <BlogCard key={post.id} post={post} locale={locale} />)}
                 </div>
+                <div className="h-32" aria-hidden="true" />
             </LandingContainer>
         </>
     )

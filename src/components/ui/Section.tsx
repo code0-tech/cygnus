@@ -98,7 +98,7 @@ export function Section({
             ref={sectionRef}
             data-in-view={isInView}
             className={cn(
-                "group/section relative overflow-visible flex flex-col gap-8 pt-16",
+                "group/section relative overflow-visible flex flex-col gap-8",
                 fullHeight && "h-[200dvh] md:h-[min(100dvh,1080px)]",
                 className,
             )}
@@ -113,11 +113,9 @@ export function Section({
                 }
                 : undefined}
         >
-            {showBlur && (funnelType === "center" ? (
-                <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 -bottom-60 top-0 [background:radial-gradient(circle,rgba(255,255,255,0.1),transparent_70%)]" />
-            ) : (
-                <div />
-            ))}
+            {showBlur && funnelType === "center" && (
+                <div aria-hidden="true" className="pointer-events-none absolute -bottom-60 top-0 left-1/2 w-[120vw] max-w-none -translate-x-1/2 [background:radial-gradient(circle,rgba(255,255,255,0.1),transparent_70%)] md:inset-x-0 md:w-auto md:translate-x-0" />
+            )}
             {showFunnel && (
                 funnelType === "center" ? (
                     <motion.div

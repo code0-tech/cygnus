@@ -61,7 +61,7 @@ export const EditionFeatureSection: React.FC<EditionFeatureSectionProps> = ({ co
     }
 
     return (
-        <Section showBlur={false} animationPreset="none">
+        <Section showBlur={false} showFunnel={false} animationPreset="none">
             <div className="relative flex w-full flex-col items-stretch gap-32">
                 {content.features.map((item, index) => {
                     const animationPreset = EDITION_FEATURE_ANIMATION_SEQUENCE[index % EDITION_FEATURE_ANIMATION_SEQUENCE.length]

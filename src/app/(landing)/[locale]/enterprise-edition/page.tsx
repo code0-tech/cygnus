@@ -27,6 +27,7 @@ export default async function EnterpriseEditionPage({ params }: { params: Promis
 
     return (
         <LandingContainer>
+            <div className="h-12 lg:h-16" aria-hidden="true" />
             <EditionHeroSection
                 content={heroBlock}
                 locale={locale}

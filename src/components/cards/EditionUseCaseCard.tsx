@@ -48,6 +48,7 @@ export function EditionUseCaseCard({
                                 src={imageUrl}
                                 alt={title}
                                 fill
+                                sizes="(min-width: 768px) 66vw, 100vw"
                                 className="object-cover"
                             />
                         </div>

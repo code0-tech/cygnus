@@ -24,7 +24,7 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
     return (
         <>
             <Aurora />
-            <LandingContainer className="py-[10vh]">
+            <LandingContainer className="pt-32">
                 <div className="mx-auto w-full max-w-5xl">
                     <ContactPageContent locale={locale} contactBlock={contactBlock} />
                 </div>

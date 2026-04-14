@@ -87,7 +87,7 @@ export const DeploymentSection: React.FC<DeploymentSectionProps> = ({ content })
     ] as const
 
     return (
-        <Section sectionType="DeploymentSection" funnelType="left" animationPreset="zoom-in" fullHeight className="h-auto md:h-auto lg:h-[min(100dvh,1080px)]">
+        <Section sectionType="DeploymentSection" funnelType="left" animationPreset="zoom-in">
             <div aria-hidden="true" className="pointer-events-none absolute -bottom-40 top-0 inset-x-0 [background:radial-gradient(circle,rgba(114,201,248,0.1),transparent_60%)]" />
 
             <motion.div

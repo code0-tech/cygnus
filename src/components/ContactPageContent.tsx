@@ -12,7 +12,7 @@ interface ContactPageContentProps {
 }
 
 export function ContactPageContent({ locale, contactBlock }: ContactPageContentProps) {
-    const desktopTopOffset = 96
+    const desktopTopOffset = 128
     const pageHeading = contactBlock?.heading ?? "Contact us"
     const pageDescription = contactBlock?.description ?? "Contact us if you want to know more about CodeZero."
 

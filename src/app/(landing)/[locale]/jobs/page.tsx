@@ -26,7 +26,7 @@ export default async function JobPage({ params }: { params: Promise<{ locale: st
     return (
         <>
             <Aurora />
-            <LandingContainer className="py-[20vh]">
+            <LandingContainer className="pt-32">
                 <JobsPageClient jobs={jobs} locale={locale} content={jobsBlock} />
             </LandingContainer>
         </>

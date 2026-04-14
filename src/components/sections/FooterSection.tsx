@@ -26,7 +26,7 @@ export const FooterSection: React.FC<FooterSectionProps> = ({ locale, footer }) 
     } as const
 
     return (
-        <LandingContainer className="min-h-full pt-48 pb-24 overflow-visible">
+        <LandingContainer className="min-h-full py-32 overflow-visible">
             <div className={"relative flex flex-col gap-16 overflow-hidden"}>
 
                 <div className={"grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-4"}>

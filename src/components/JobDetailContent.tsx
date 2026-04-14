@@ -15,7 +15,7 @@ interface JobDetailContentProps {
 }
 
 export function JobDetailContent({ contentHtml, jobSlug, locale, jobsBlock }: JobDetailContentProps) {
-    const desktopTopOffset = 96
+    const desktopTopOffset = 128
     const [desktopMode, setDesktopMode] = useState<"static" | "fixed" | "bottom">("static")
     const [desktopStyle, setDesktopStyle] = useState<{ left: number, width: number, top: number } | null>(null)
     const desktopWrapperRef = useRef<HTMLElement>(null)

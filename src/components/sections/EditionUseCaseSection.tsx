@@ -98,7 +98,7 @@ export function EditionUseCaseSection({ content }: EditionUseCaseSectionProps) {
     }
 
     return (
-        <Section showBlur={false} animationPreset="none">
+        <Section showBlur={false} showFunnel={false} animationPreset="none">
             <div aria-hidden="true" className="pointer-events-none absolute inset-0 [background:radial-gradient(circle,rgba(255,255,255,0.05),transparent_50%)]" />
             <motion.div
                 className="relative flex w-full flex-col items-stretch gap-8"
@@ -136,8 +136,16 @@ export function EditionUseCaseSection({ content }: EditionUseCaseSectionProps) {
                         >
                             <div
                                 className="relative flex w-full items-stretch justify-center"
-                                style={{ minHeight: "400px" }}
                             >
+                                <div className="w-full max-w-full md:max-w-md opacity-0 pointer-events-none">
+                                    <EditionUseCaseCard
+                                        title={useCases[focusedIndex]?.title ?? ""}
+                                        description={useCases[focusedIndex]?.description ?? ""}
+                                        image={useCases[focusedIndex]?.image}
+                                        link={useCases[focusedIndex]?.link}
+                                        isFocused
+                                    />
+                                </div>
                                 {useCases.map((useCase, index) => {
                                     const offset = index - focusedIndex
                                     const isVisibleMobile = offset === 0

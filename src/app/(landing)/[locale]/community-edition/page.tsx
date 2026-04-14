@@ -28,6 +28,7 @@ export default async function CommunityEditionPage({ params }: { params: Promise
 
     return (
         <LandingContainer>
+            <div className="h-12 lg:h-16" aria-hidden="true" />
             <EditionHeroSection
                 content={heroBlock}
                 locale={locale}
@@ -42,8 +43,6 @@ export default async function CommunityEditionPage({ params }: { params: Promise
             <EditionFeatureSection content={featuresBlock} />
             <div className="h-32" aria-hidden="true" />
             <EditionInstallSection content={installBlock} />
-            <div className="h-32" aria-hidden="true" />
-            <EditionUseCaseSection content={useCaseBlock} />
             <div className="h-32" aria-hidden="true" />
             <CtaSection content={ctaBlock} />
         </LandingContainer>

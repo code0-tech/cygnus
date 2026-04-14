@@ -20,7 +20,7 @@ export default async function SubscriptionPage({ params }: { params: Promise<{ l
     return (
         <>
             <Aurora/>
-            <LandingContainer className="py-[10vh]">
+            <LandingContainer className="pt-32">
                 <SubscriptionConfigurator locale={locale} content={subscriptionConfig} />
             </LandingContainer>
         </>

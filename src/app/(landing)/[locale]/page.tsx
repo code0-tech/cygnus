@@ -45,6 +45,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
 
     return (
         <LandingContainer>
+            <div className="h-12 lg:h-16" aria-hidden="true" />
             <HeroSection content={heroBlock} />
             <BrandSection content={brandBlock} />
             <div className="h-32" aria-hidden="true" />
@@ -59,6 +60,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
             <RoadmapSection locale={locale} />
             <div className="h-32" aria-hidden="true" />
             <FaqSection content={faqBlock} />
+            <div className="h-32" aria-hidden="true" />
             <CtaSection content={ctaBlock} />
         </LandingContainer>
     )

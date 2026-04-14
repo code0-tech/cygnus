@@ -26,8 +26,8 @@ export default async function FeaturesPage({ params }: { params: Promise<{ local
     return (
         <>
             <Aurora />
-            <LandingContainer>
-                <div className="md:w-[50vw] mx-auto py-[20vh]">
+            <LandingContainer className="pt-32">
+                <div className="md:w-[50vw] mx-auto">
                     <MarkdownContent content={contentHtml} />
                 </div>
             </LandingContainer>

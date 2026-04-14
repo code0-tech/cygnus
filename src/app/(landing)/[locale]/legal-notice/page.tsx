@@ -26,8 +26,8 @@ export default async function LegalNoticePage({ params }: { params: Promise<{ lo
     return (
         <>
             <Aurora />
-            <LandingContainer>
-                <div className="md:w-[50vw] mx-auto py-[20vh]">
+            <LandingContainer className="pt-32">
+                <div className="md:w-[50vw] mx-auto">
                     <MarkdownContent content={contentHtml} />
                 </div>
             </LandingContainer>
