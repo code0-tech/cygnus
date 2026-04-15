@@ -6,7 +6,6 @@ import { getTablerIcon } from "@/lib/tablerIcons"
 import { cn } from "@/lib/utils"
 import { BuyMenu } from "@/components/BuyMenu"
 import { Slider } from "@/components/ui/Slider"
-import { SegmentedControl, SegmentedControlItem } from "@code0-tech/pictor"
 import { IconCheck } from "@tabler/icons-react"
 import type { ReactNode } from "react"
 import { useEffect, useRef, useState } from "react"
@@ -14,14 +13,11 @@ import { LinkButton } from "./ui/LinkButton"
 
 type DeploymentMode = "self-hosted" | "cloud"
 type CustomerType = "b2b" | "b2c"
-type RuntimeMode = "monthly" | "payg"
 type OptionAccent = "aqua" | "yellow" | "pink" | "blue" | "brand"
 type SubscriptionSelection = {
     deployment: DeploymentMode
     customerType: CustomerType
-    teamSeats: number
-    runtimeMode: RuntimeMode
-    runtimeMinutes: number
+    workflowExecutions: number
 }
 
 const defaultContent: Omit<SubscriptionConfigData, "id" | "title"> = {
@@ -43,7 +39,7 @@ const defaultContent: Omit<SubscriptionConfigData, "id" | "title"> = {
         },
         {
             title: "Usage visibility",
-            description: "Cloud deployments can be framed around monthly runtime needs or a pay-as-you-go usage model.",
+            description: "Shape your quote around expected workflow execution volume instead of a generic flat plan.",
             icon: "gauge",
         },
     ],
@@ -78,28 +74,15 @@ const defaultContent: Omit<SubscriptionConfigData, "id" | "title"> = {
             color: "pink",
         },
     },
-    teamSeats: {
-        title: "Seats",
-        description: "How many user seats do you need?",
-        min: 1,
-        max: 250,
-        step: 1,
-        minLabel: "1 seat",
-        maxLabel: "250 seats",
-        centerSuffix: "seats",
-    },
-    runtime: {
-        title: "Runtime",
-        description: "Select monthly runtime minutes or switch to pay-as-you-go consumption.",
-        monthlyLabel: "Monthly",
-        paygLabel: "Pay as you go",
-        paygDescription: "Usage is billed based on actual cloud runtime consumption instead of a fixed monthly minute pack.",
+    workflowExecutions: {
+        title: "Workflow Executions",
+        description: "How many workflow executions do you expect per month?",
         min: 200,
         max: 10000,
         step: 100,
-        minLabel: "200 min",
-        maxLabel: "10,000 min",
-        centerSuffix: "min",
+        minLabel: "200 exec",
+        maxLabel: "10,000 exec",
+        centerSuffix: "exec",
     },
     contactSales: {
         prompt: "Need more?",
@@ -304,12 +287,11 @@ function AdditionalFeatureCard({
 
 export function SubscriptionConfigurator({ locale, content }: { locale: AppLocale, content?: SubscriptionConfigData | null }) {
     const resolved = content ?? ({ id: 0, title: "Subscription Config", ...defaultContent } satisfies SubscriptionConfigData)
+    const workflowExecutions = resolved.workflowExecutions
     const [selection, setSelection] = useState<SubscriptionSelection>({
         deployment: "self-hosted",
         customerType: "b2b",
-        teamSeats: 1,
-        runtimeMode: "monthly",
-        runtimeMinutes: 1000,
+        workflowExecutions: 1000,
     })
     const [selectedFeatures, setSelectedFeatures] = useState<Set<number>>(new Set())
     const desktopTopOffset = 96
@@ -317,36 +299,24 @@ export function SubscriptionConfigurator({ locale, content }: { locale: AppLocal
     const [desktopStyle, setDesktopStyle] = useState<{ left: number, width: number, top: number } | null>(null)
     const desktopWrapperRef = useRef<HTMLDivElement>(null)
     const desktopContainerRef = useRef<HTMLDivElement>(null)
-    const seatCount = selection.customerType === "b2b" ? selection.teamSeats : 1
-    const seatPrice = selection.customerType === "b2b"
-        ? seatCount * (25 + (150 / (seatCount ** 1.2)))
-        : seatCount * (3.99 + (5 / (seatCount ** 1.2)))
-    const runtimePrice = selection.deployment === "cloud" && selection.runtimeMode === "monthly"
-        ? 0.001 * selection.runtimeMinutes
-        : 0
+
+    const workflowExecutionPrice = 0.001 * selection.workflowExecutions
     const additionalFeaturesPrice = Array.from(selectedFeatures).reduce(
         (acc, idx) => acc + (resolved.additionalFeatures?.[idx]?.price ?? 0),
         0,
     )
-    const totalPrice = seatPrice + runtimePrice + additionalFeaturesPrice
-    const formattedSeatPrice = new Intl.NumberFormat(locale === "de" ? "de-DE" : "en-US", {
+    const totalPrice = new Intl.NumberFormat(locale === "de" ? "de-DE" : "en-US", {
         style: "currency",
         currency: "EUR",
         maximumFractionDigits: 2,
-    }).format(totalPrice)
+    }).format(workflowExecutionPrice + additionalFeaturesPrice)
 
     const subscribeHref = (() => {
         const searchParams = new URLSearchParams({
             deployment: selection.deployment,
             customerType: selection.customerType,
+            workflowExecutions: String(selection.workflowExecutions),
         })
-
-        if (selection.deployment === "cloud") {
-            searchParams.set("runtimeMode", selection.runtimeMode)
-            if (selection.runtimeMode === "monthly") {
-                searchParams.set("runtimeMinutes", String(selection.runtimeMinutes))
-            }
-        }
 
         if (selectedFeatures.size > 0 && resolved.additionalFeatures) {
             const featureIds = Array.from(selectedFeatures)
@@ -511,20 +481,20 @@ export function SubscriptionConfigurator({ locale, content }: { locale: AppLocal
                         <div className="rounded-2xl border border-white/10 p-5">
                             <div className="flex items-center justify-between gap-4">
                                 <div>
-                                    <p className="text-lg font-semibold tracking-wider text-white">{resolved.teamSeats.title}</p>
-                                    <p className="text-sm text-white/75">{resolved.teamSeats.description}</p>
+                                    <p className="text-lg font-semibold tracking-wider text-white">{workflowExecutions.title}</p>
+                                    <p className="text-sm text-white/75">{workflowExecutions.description}</p>
                                 </div>
                             </div>
                             <Slider
-                                min={resolved.teamSeats.min}
-                                max={resolved.teamSeats.max}
-                                step={resolved.teamSeats.step}
-                                value={selection.teamSeats}
-                                onChange={(teamSeats) => setSelection((current) => ({ ...current, teamSeats }))}
+                                min={workflowExecutions.min}
+                                max={workflowExecutions.max}
+                                step={workflowExecutions.step}
+                                value={selection.workflowExecutions}
+                                onChange={(workflowExecutionsValue) => setSelection((current) => ({ ...current, workflowExecutions: workflowExecutionsValue }))}
                                 className="mt-4"
-                                minLabel={resolved.teamSeats.minLabel}
-                                centerLabel={`${selection.teamSeats} ${resolved.teamSeats.centerSuffix}`}
-                                maxLabel={resolved.teamSeats.maxLabel}
+                                minLabel={workflowExecutions.minLabel}
+                                centerLabel={`${selection.workflowExecutions} ${workflowExecutions.centerSuffix}`}
+                                maxLabel={workflowExecutions.maxLabel}
                             />
                             <div className="mt-2 flex flex-wrap items-center justify-end gap-2">
                                 <p className="text-sm font-medium text-white/50">{resolved.contactSales.prompt}</p>
@@ -537,72 +507,6 @@ export function SubscriptionConfigurator({ locale, content }: { locale: AppLocal
                                 </LinkButton>
                             </div>
                         </div>
-
-                        {selection.deployment === "cloud" &&
-                            <div className="rounded-2xl border border-white/10 p-5">
-                                <div className="flex items-start justify-between gap-4">
-                                    <div>
-                                        <p className="text-lg font-semibold tracking-wider text-white">{resolved.runtime.title}</p>
-                                        <p className="mt-2 text-sm text-white/75">
-                                            {resolved.runtime.description}
-                                        </p>
-                                    </div>
-                                    <SegmentedControl
-                                        type="single"
-                                        value={selection.runtimeMode}
-                                        onValueChange={(value) => {
-                                            if (value) {
-                                                setSelection((current) => ({ ...current, runtimeMode: value as RuntimeMode }))
-                                            }
-                                        }}
-                                        className="h-11! rounded-2xl! border-white/10! bg-black/20! p-1!"
-                                    >
-                                        <SegmentedControlItem
-                                            value="monthly"
-                                            className="px-3! py-2! text-xs! font-medium! text-white/60! transition-colors! data-[state=on]:bg-white! data-[state=on]:text-primary!"
-                                        >
-                                            {resolved.runtime.monthlyLabel}
-                                        </SegmentedControlItem>
-                                        <SegmentedControlItem
-                                            value="payg"
-                                            className="w-max! px-3! py-2! text-xs! font-medium! text-white/60! transition-colors! data-[state=on]:bg-white! data-[state=on]:text-primary!"
-                                        >
-                                            {resolved.runtime.paygLabel}
-                                        </SegmentedControlItem>
-                                    </SegmentedControl>
-                                </div>
-
-                                {selection.runtimeMode === "monthly" ? (
-                                    <>
-                                        <Slider
-                                            min={resolved.runtime.min}
-                                            max={resolved.runtime.max}
-                                            step={resolved.runtime.step}
-                                            value={selection.runtimeMinutes}
-                                            onChange={(runtimeMinutes) => setSelection((current) => ({ ...current, runtimeMinutes }))}
-                                            className="mt-2"
-                                            minLabel={resolved.runtime.minLabel}
-                                            maxLabel={resolved.runtime.maxLabel}
-                                            centerLabel={`${selection.runtimeMinutes} ${resolved.runtime.centerSuffix}`}
-                                        />
-                                        <div className="mt-2 flex flex-wrap items-center justify-end gap-2">
-                                            <p className="text-sm font-medium text-white/50">{resolved.contactSales.prompt}</p>
-                                            <LinkButton
-                                                href={resolved.contactSales.href}
-                                                className="border-b-0 text-white/75"
-                                                showArrow={false}
-                                            >
-                                                {resolved.contactSales.label}
-                                            </LinkButton>
-                                        </div>
-                                    </>
-                                ) : (
-                                    <div className="mt-4 rounded-xl border border-white/10 bg-white/5 p-4 text-sm leading-6 text-white/75">
-                                        {resolved.runtime.paygDescription}
-                                    </div>
-                                )}
-                            </div>
-                        }
 
                         {resolved.additionalFeatures && resolved.additionalFeatures.length > 0 && (
                             <div className="space-y-3">
@@ -646,7 +550,7 @@ export function SubscriptionConfigurator({ locale, content }: { locale: AppLocal
                 </section>
             </div>
             <BuyMenu
-                price={formattedSeatPrice}
+                price={totalPrice}
                 priceHeading={resolved.price.heading}
                 priceCaption={resolved.price.caption}
                 subscribeHref={subscribeHref}

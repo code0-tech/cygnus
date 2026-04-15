@@ -29,7 +29,7 @@ export async function getLandingPageMetadata(slug: string, locale: string): Prom
     return mapLandingPageToMetadata(page, locale)
 }
 
-export function mapLandingPageToMetadata(page: Page, locale: AppLocale): Metadata {
+function mapLandingPageToMetadata(page: Page, locale: AppLocale): Metadata {
     const title = page.meta?.title ?? page.title
     const description = page.meta?.description ?? undefined
     const canonicalPath = getPagePath(locale, page.slug)

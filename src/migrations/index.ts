@@ -6,6 +6,7 @@ import * as migration_20260402_104807_003_seo_and_ogimage from './20260402_10480
 import * as migration_20260402_135659_004_navbar_submenu_icons_and_color from './20260402_135659_004_navbar_submenu_icons_and_color';
 import * as migration_20260405_141941_005_product_pages from './20260405_141941_005_product_pages';
 import * as migration_20260412_174023_006_contact_page_description from './20260412_174023_006_contact_page_description';
+import * as migration_20260415_025537_007_subscription_workflow_executions from './20260415_025537_007_subscription_workflow_executions';
 
 export const migrations = [
   {
@@ -46,6 +47,11 @@ export const migrations = [
   {
     up: migration_20260412_174023_006_contact_page_description.up,
     down: migration_20260412_174023_006_contact_page_description.down,
-    name: '20260412_174023_006_contact_page_description'
+    name: '20260412_174023_006_contact_page_description',
+  },
+  {
+    up: migration_20260415_025537_007_subscription_workflow_executions.up,
+    down: migration_20260415_025537_007_subscription_workflow_executions.down,
+    name: '20260415_025537_007_subscription_workflow_executions'
   },
 ];

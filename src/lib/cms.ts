@@ -91,22 +91,9 @@ export interface SubscriptionConfigData {
             color: "brand" | "pink" | "yellow" | "aqua" | "blue"
         }
     }
-    teamSeats: {
+    workflowExecutions: {
         title: string
         description: string
-        min: number
-        max: number
-        step: number
-        minLabel: string
-        maxLabel: string
-        centerSuffix: string
-    }
-    runtime: {
-        title: string
-        description: string
-        monthlyLabel: string
-        paygLabel: string
-        paygDescription: string
         min: number
         max: number
         step: number

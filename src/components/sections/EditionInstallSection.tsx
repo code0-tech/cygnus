@@ -2,19 +2,13 @@
 
 import { DotBackground } from "@/components/ui/DotBackground"
 import { Section } from "@/components/ui/Section"
+import type { EditionInstallLayoutBlock } from "@/lib/cms"
 import { IconCheck, IconCopy } from "@tabler/icons-react"
 import { AnimatePresence, m as motion, type Variants } from "motion/react"
 import { useEffect, useState } from "react"
 
-type EditionInstallSectionContent = {
-    heading: string
-    subheading: string
-    label?: string | null
-    code: string
-}
-
 type EditionInstallSectionProps = {
-    content?: EditionInstallSectionContent | null
+    content?: EditionInstallLayoutBlock | null
 }
 
 export function EditionInstallSection({ content }: EditionInstallSectionProps) {

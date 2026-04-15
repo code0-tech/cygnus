@@ -3,7 +3,7 @@ import { localizeHref, type AppLocale } from "@/lib/i18n"
 import { getTablerIcon } from "@/lib/tablerIcons"
 import { type ReactNode } from "react"
 
-export type NavItem = {
+type NavItem = {
     title: string
     href: string | null
     subMenu?: SubNavItem[]

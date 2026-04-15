@@ -774,22 +774,9 @@ export interface SubscriptionConfig {
       color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue';
     };
   };
-  teamSeats: {
+  workflowExecutions: {
     title: string;
     description: string;
-    min: number;
-    max: number;
-    step: number;
-    minLabel: string;
-    maxLabel: string;
-    centerSuffix: string;
-  };
-  runtime: {
-    title: string;
-    description: string;
-    monthlyLabel: string;
-    paygLabel: string;
-    paygDescription: string;
     min: number;
     max: number;
     step: number;
@@ -1713,26 +1700,11 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
               color?: T;
             };
       };
-  teamSeats?:
+  workflowExecutions?:
     | T
     | {
         title?: T;
         description?: T;
-        min?: T;
-        max?: T;
-        step?: T;
-        minLabel?: T;
-        maxLabel?: T;
-        centerSuffix?: T;
-      };
-  runtime?:
-    | T
-    | {
-        title?: T;
-        description?: T;
-        monthlyLabel?: T;
-        paygLabel?: T;
-        paygDescription?: T;
         min?: T;
         max?: T;
         step?: T;

@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { Section } from "@/components/ui/Section"
+import type { EditionUseCaseLayoutBlock } from "@/lib/cms"
 import { Media } from "@/payload-types"
 import { EditionUseCaseCard } from "@/components/cards/EditionUseCaseCard"
 import { cn } from "@/lib/utils"
@@ -10,25 +11,8 @@ import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react"
 import { useWebHaptics } from "web-haptics/react"
 import { m as motion, type PanInfo, type Variants } from "motion/react"
 
-interface EditionUseCaseItem {
-    title: string
-    description: string
-    image?: Media | number | null
-    link?: {
-        label?: string | null
-        url?: string | null
-    } | null
-    id?: string | null
-}
-
-interface EditionUseCaseSectionContent {
-    heading: string
-    subheading: string
-    useCases: EditionUseCaseItem[] | null
-}
-
 interface EditionUseCaseSectionProps {
-    content?: EditionUseCaseSectionContent | null
+    content?: EditionUseCaseLayoutBlock | null
 }
 
 export function EditionUseCaseSection({ content }: EditionUseCaseSectionProps) {

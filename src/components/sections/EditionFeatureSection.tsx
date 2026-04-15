@@ -2,31 +2,15 @@
 
 import { LinkButton } from "@/components/ui/LinkButton"
 import { Section } from "@/components/ui/Section"
+import type { EditionFeaturesLayoutBlock } from "@/lib/cms"
 import { ANIMATION_PRESETS, type AnimationPreset } from "@/lib/utils"
 import type { Media } from "@/payload-types"
 import { m as motion, type Variants } from "motion/react"
 import Image from "next/image"
 import React from "react"
 
-interface EditionFeatureItem {
-    label: string
-    title: string
-    description: string
-    image?: Media | number | null
-    bulletPoints?: string[] | null
-    link?: {
-        label?: string | null
-        url?: string | null
-    } | null
-    id?: string | null
-}
-
-interface EditionFeatureSectionContent {
-    features: EditionFeatureItem[] | null
-}
-
 interface EditionFeatureSectionProps {
-    content?: EditionFeatureSectionContent | null
+    content?: EditionFeaturesLayoutBlock | null
 }
 
 const EDITION_FEATURE_ANIMATION_SEQUENCE: Exclude<AnimationPreset, "none">[] = [

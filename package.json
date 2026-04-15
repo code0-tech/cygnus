@@ -14,7 +14,7 @@
     "migrate:status": "payload migrate:status",
     "generate:importmap": "payload generate:importmap",
     "lint": "next lint",
-    "knip": "knip",
+    "knip": "node --import tsx ./node_modules/knip/bin/knip.js",
     "generate": "payload generate:types",
     "export-data": "node --import tsx scripts/export-data.ts",
     "import-data": "node --import tsx scripts/import-data.ts",

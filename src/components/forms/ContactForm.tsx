@@ -120,57 +120,49 @@ export function ContactForm({ content, locale }: ContactFormProps) {
     const acceptTermsInputProps = inputs.getInputProps("acceptTerms")
 
     return (
-        <div className="flex flex-col gap-4">
-            <div className="flex flex-col gap-2 mt-6">
-                <TextInput
-                    placeholder={labels.namePlaceholder}
-                    label={labels.nameLabel}
-                    onChange={() => {
-                        if (!nameInputProps.formValidation?.valid) {
-                            validate("name")
-                        }
-                    }}
-                    {...nameInputProps}
-                />
-            </div>
-            <div className="flex flex-col gap-2">
-                <EmailInput
-                    placeholder={labels.emailPlaceholder}
-                    label={labels.emailLabel}
-                    onChange={() => {
-                        if (!emailInputProps.formValidation?.valid) {
-                            validate("email")
-                        }
-                    }}
-                    onBlur={(event: FocusEvent<HTMLInputElement>) => {
-                        const value = event.currentTarget.value?.trim()
-                        if (value && !emailValidation(value)) {
-                            validate("email")
-                        }
-                    }}
-                    {...emailInputProps}
-                />
-            </div>
-
-            <div className="flex flex-col gap-2">
-                <TextAreaInput
-                    placeholder={labels.messagePlaceholder}
-                    label={labels.messageLabel}
-                    onChange={() => {
-                        if (!messageInputProps.formValidation?.valid) {
-                            validate("message")
-                        }
-                    }}
-                    {...messageInputProps}
-                />
-            </div>
-
+        <div className="flex flex-col gap-4 glass-card-shell relative min-w-0 overflow-hidden rounded-3xl p-4 bg-primary/50">
+            <div aria-hidden="true" className="glass-card-topline" />
+            <TextInput
+                placeholder={labels.namePlaceholder}
+                label={labels.nameLabel}
+                onChange={() => {
+                    if (!nameInputProps.formValidation?.valid) {
+                        validate("name")
+                    }
+                }}
+                {...nameInputProps}
+            />
+            <EmailInput
+                placeholder={labels.emailPlaceholder}
+                label={labels.emailLabel}
+                onChange={() => {
+                    if (!emailInputProps.formValidation?.valid) {
+                        validate("email")
+                    }
+                }}
+                onBlur={(event: FocusEvent<HTMLInputElement>) => {
+                    const value = event.currentTarget.value?.trim()
+                    if (value && !emailValidation(value)) {
+                        validate("email")
+                    }
+                }}
+                {...emailInputProps}
+            />
+            <TextAreaInput
+                placeholder={labels.messagePlaceholder}
+                label={labels.messageLabel}
+                onChange={() => {
+                    if (!messageInputProps.formValidation?.valid) {
+                        validate("message")
+                    }
+                }}
+                {...messageInputProps}
+            />
             <AcceptTermsCheckbox
                 locale={locale}
                 revalidateOnToggle={() => validate("acceptTerms")}
                 {...acceptTermsInputProps}
             />
-
             <Button
                 type="submit"
                 variant="normal"

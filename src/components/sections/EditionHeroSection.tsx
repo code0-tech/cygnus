@@ -1,29 +1,16 @@
 "use client"
 
 import { Section } from "@/components/ui/Section"
+import type { EditionHeroLayoutBlock } from "@/lib/cms"
 import { cn } from "@/lib/utils"
-import { IconArrowRight } from "@tabler/icons-react"
 import { m as motion, type Variants } from "motion/react"
 import Image from "next/image"
-import Link from "next/link"
 import React from "react"
 import Grainient from "../ui/Granient"
 import { HapticButtonLink } from "../ui/HapticButtonLink"
-import { StableBadge } from "../ui/StableBadge"
-
-type EditionHeroButton = {
-    label: string
-    url: string
-    variant?: "none" | "normal" | "outlined" | "filled" | null
-}
 
 type EditionHeroSectionProps = {
-    content?: {
-        heading?: string | null
-        texts?: { text: string }[] | null
-        buttons?: EditionHeroButton[] | null
-        imageAlt?: string | null
-    } | null
+    content?: EditionHeroLayoutBlock | null
     imageSrc?: string
     locale: "en" | "de"
     grainientColors?: {
