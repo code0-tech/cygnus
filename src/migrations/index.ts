@@ -52,6 +52,6 @@ export const migrations = [
   {
     up: migration_20260415_025537_007_subscription_workflow_executions.up,
     down: migration_20260415_025537_007_subscription_workflow_executions.down,
-    name: '20260415_025537_007_subscription_workflow_executions'
-  },
+    name: '20260415_025537_007_subscription_workflow_executions',
+  }
 ];

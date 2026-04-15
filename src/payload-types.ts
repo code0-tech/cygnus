@@ -75,6 +75,7 @@ export interface Config {
     'cookie-banner': CookieBanner;
     pages: Page;
     features: Feature;
+    actions: Action;
     jobs: Job;
     blog: Blog;
     roadmapItems: RoadmapItem;
@@ -98,6 +99,7 @@ export interface Config {
     'cookie-banner': CookieBannerSelect<false> | CookieBannerSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
     features: FeaturesSelect<false> | FeaturesSelect<true>;
+    actions: ActionsSelect<false> | ActionsSelect<true>;
     jobs: JobsSelect<false> | JobsSelect<true>;
     blog: BlogSelect<false> | BlogSelect<true>;
     roadmapItems: RoadmapItemsSelect<false> | RoadmapItemsSelect<true>;
@@ -594,6 +596,25 @@ export interface Feature {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "actions".
+ */
+export interface Action {
+  id: number;
+  title: string;
+  shortDescription?: string | null;
+  description?: string | null;
+  icon?: (number | null) | Media;
+  tags?: string[] | null;
+  documentation?: {
+    label?: string | null;
+    url?: string | null;
+  };
+  references?: (number | Action)[] | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "jobs".
  */
 export interface Job {
@@ -1044,6 +1065,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'features';
         value: number | Feature;
+      } | null)
+    | ({
+        relationTo: 'actions';
+        value: number | Action;
       } | null)
     | ({
         relationTo: 'jobs';
@@ -1556,6 +1581,26 @@ export interface FeaturesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "actions_select".
+ */
+export interface ActionsSelect<T extends boolean = true> {
+  title?: T;
+  shortDescription?: T;
+  description?: T;
+  icon?: T;
+  tags?: T;
+  documentation?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+      };
+  references?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "jobs_select".
  */
 export interface JobsSelect<T extends boolean = true> {
@@ -1902,6 +1947,7 @@ export interface TaskCreateCollectionExport {
       | 'cookie-banner'
       | 'pages'
       | 'features'
+      | 'actions'
       | 'jobs'
       | 'blog'
       | 'roadmapItems'

@@ -2,7 +2,7 @@
 
 import { DEFAULT_LOCALE, type AppLocale } from "@/lib/i18n"
 import { getPayloadClient } from "@/lib/payloadClient"
-import type { Blog, CookieBanner, Feature, Footer, Job, Media, NavbarItem, Page, RoadmapItem as PayloadRoadmapItem, Section, TeamMember } from "@/payload-types"
+import type { Action, Blog, CookieBanner, Feature, Footer, Job, Media, NavbarItem, Page, RoadmapItem as PayloadRoadmapItem, Section, TeamMember } from "@/payload-types"
 import { cache } from "react"
 
 const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build" || process.env.npm_lifecycle_event === "build"
@@ -34,6 +34,16 @@ interface FeatureItem {
         label: NonNullable<NonNullable<Feature["link"]>["label"]>
         url: NonNullable<NonNullable<Feature["link"]>["url"]>
     }
+}
+
+type ActionReferenceItem = Pick<Action, "id" | "title" | "shortDescription" | "description" | "tags"> & {
+    icon?: (number | null) | Media
+}
+
+export type ActionItem = Pick<Action, "id" | "title" | "shortDescription" | "description" | "tags"> & {
+    icon?: (number | null) | Media
+    documentation?: Action["documentation"]
+    references?: Array<number | ActionReferenceItem> | null
 }
 
 export type JobItem = Pick<Job, "id" | "title" | "slug" | "category" | "type" | "location" | "description" | "order">
@@ -276,6 +286,31 @@ const getJobsCached = cache(async (locale: AppLocale): Promise<JobItem[]> => {
     })
 })
 
+const getActionsCached = cache(async (locale: AppLocale): Promise<ActionItem[]> => {
+    return withCmsFallback(`getActions(${locale})`, [], async () => {
+        const payload = await getPayloadClient()
+        const result = await payload.find({
+            collection: "actions",
+            locale,
+            fallbackLocale: DEFAULT_LOCALE,
+            sort: "title",
+            pagination: false,
+            depth: 1,
+            select: {
+                title: true,
+                shortDescription: true,
+                description: true,
+                icon: true,
+                tags: true,
+                documentation: true,
+                references: true,
+            },
+        })
+
+        return (result.docs as ActionItem[]) ?? []
+    })
+})
+
 const getJobBySlugCached = cache(async (slug: string, locale: AppLocale): Promise<JobDetailItem | null> => {
     return withCmsFallback(`getJobBySlug(${slug}, ${locale})`, null, async () => {
         const payload = await getPayloadClient()
@@ -467,6 +502,10 @@ export async function getFeatureBySlug(slug: FeatureSlug, locale: AppLocale = DE
 
 export async function getJobs(locale: AppLocale = DEFAULT_LOCALE): Promise<JobItem[]> {
     return getJobsCached(locale)
+}
+
+export async function getActions(locale: AppLocale = DEFAULT_LOCALE): Promise<ActionItem[]> {
+    return getActionsCached(locale)
 }
 
 export async function getJobBySlug(slug: string, locale: AppLocale = DEFAULT_LOCALE): Promise<JobDetailItem | null> {
