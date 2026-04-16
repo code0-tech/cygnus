@@ -21,6 +21,7 @@ export type FaqLayoutBlock = Extract<PageLayoutBlock, { blockType: "faq" }>
 export type UseCaseLayoutBlock = Extract<PageLayoutBlock, { blockType: "usecase" }>
 export type DeploymentLayoutBlock = Extract<PageLayoutBlock, { blockType: "deployment" }>
 export type JobsLayoutBlock = Extract<PageLayoutBlock, { blockType: "jobs" }>
+export type ActionsLayoutBlock = Extract<PageLayoutBlock, { blockType: "actions" }>
 export type MarkdownLayoutBlock = Extract<PageLayoutBlock, { blockType: "markdown" }>
 export type ContactLayoutBlock = Extract<PageLayoutBlock, { blockType: "contact" }>
 
@@ -36,14 +37,17 @@ interface FeatureItem {
     }
 }
 
-type ActionReferenceItem = Pick<Action, "id" | "title" | "shortDescription" | "description" | "tags"> & {
+type ActionReferenceItem = Pick<Action, "id" | "slug" | "title" | "shortDescription" | "description" | "tags"> & {
     icon?: (number | null) | Media
 }
 
-export type ActionItem = Pick<Action, "id" | "title" | "shortDescription" | "description" | "tags"> & {
+export type ActionItem = Pick<Action, "id" | "slug" | "title" | "shortDescription" | "description" | "tags"> & {
     icon?: (number | null) | Media
     documentation?: Action["documentation"]
     references?: Array<number | ActionReferenceItem> | null
+}
+export type ActionDetailItem = Pick<Action, "id" | "slug" | "title" | "shortDescription" | "description" | "tags" | "documentation" | "references"> & {
+    icon?: (number | null) | Media
 }
 
 export type JobItem = Pick<Job, "id" | "title" | "slug" | "category" | "type" | "location" | "description" | "order">
@@ -297,6 +301,7 @@ const getActionsCached = cache(async (locale: AppLocale): Promise<ActionItem[]> 
             pagination: false,
             depth: 1,
             select: {
+                slug: true,
                 title: true,
                 shortDescription: true,
                 description: true,
@@ -325,6 +330,33 @@ const getJobBySlugCached = cache(async (slug: string, locale: AppLocale): Promis
         })
 
         return (result.docs[0] as JobDetailItem | undefined) ?? null
+    })
+})
+
+const getActionBySlugCached = cache(async (slug: string, locale: AppLocale): Promise<ActionDetailItem | null> => {
+    return withCmsFallback(`getActionBySlug(${slug}, ${locale})`, null, async () => {
+        const payload = await getPayloadClient()
+        const result = await payload.find({
+            collection: "actions",
+            locale,
+            fallbackLocale: DEFAULT_LOCALE,
+            where: { slug: { equals: slug } },
+            limit: 1,
+            pagination: false,
+            depth: 2,
+            select: {
+                slug: true,
+                title: true,
+                shortDescription: true,
+                description: true,
+                icon: true,
+                tags: true,
+                documentation: true,
+                references: true,
+            },
+        })
+
+        return (result.docs[0] as ActionDetailItem | undefined) ?? null
     })
 })
 
@@ -367,6 +399,25 @@ const getJobSlugsCached = cache(async (locale: AppLocale): Promise<string[]> => 
 
         return result.docs
             .map((job) => job.slug)
+            .filter((slug) => slug.length > 0)
+    })
+})
+
+const getActionSlugsCached = cache(async (locale: AppLocale): Promise<string[]> => {
+    return withCmsFallback(`getActionSlugs(${locale})`, [], async () => {
+        const payload = await getPayloadClient()
+        const result = await payload.find({
+            collection: "actions",
+            locale,
+            fallbackLocale: DEFAULT_LOCALE,
+            pagination: false,
+            limit: 1000,
+            depth: 0,
+            select: { slug: true },
+        })
+
+        return result.docs
+            .map((action) => action.slug)
             .filter((slug) => slug.length > 0)
     })
 })
@@ -508,6 +559,10 @@ export async function getActions(locale: AppLocale = DEFAULT_LOCALE): Promise<Ac
     return getActionsCached(locale)
 }
 
+export async function getActionBySlug(slug: string, locale: AppLocale = DEFAULT_LOCALE): Promise<ActionDetailItem | null> {
+    return getActionBySlugCached(slug, locale)
+}
+
 export async function getJobBySlug(slug: string, locale: AppLocale = DEFAULT_LOCALE): Promise<JobDetailItem | null> {
     return getJobBySlugCached(slug, locale)
 }
@@ -518,6 +573,10 @@ export async function getTeamMembers(locale: AppLocale = DEFAULT_LOCALE): Promis
 
 export async function getJobSlugs(locale: AppLocale = DEFAULT_LOCALE): Promise<string[]> {
     return getJobSlugsCached(locale)
+}
+
+export async function getActionSlugs(locale: AppLocale = DEFAULT_LOCALE): Promise<string[]> {
+    return getActionSlugsCached(locale)
 }
 
 export async function getBlogPostBySlug(slug: string, locale: AppLocale = DEFAULT_LOCALE): Promise<BlogPostItem | null> {

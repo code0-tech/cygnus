@@ -20,6 +20,16 @@ export const Actions: CollectionConfig = {
       localized: true,
     },
     {
+      name: "slug",
+      type: "text",
+      required: true,
+      unique: true,
+      index: true,
+      admin: {
+        description: "URL slug for the action subpage, e.g. 'slack-sync'.",
+      },
+    },
+    {
       name: "shortDescription",
       type: "textarea",
       localized: true,

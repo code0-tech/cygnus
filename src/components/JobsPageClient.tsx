@@ -11,6 +11,7 @@ import {
     TextInput
 } from "@code0-tech/pictor"
 import { IconChevronDown, IconSearch } from "@tabler/icons-react"
+import type { ChangeEvent } from "react"
 import { useMemo, useState } from "react"
 
 interface JobsPageContent {
@@ -81,9 +82,9 @@ export function JobsPageClient({ jobs, locale, content }: JobsPageClientProps) {
             <div className="w-full flex flex-col gap-2 mb-2">
                 <TextInput
                     value={search}
-                    onChange={(event) => setSearch(event.target.value)}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setSearch(e.currentTarget.value)}
                     placeholder={labels.searchPlaceholder}
-                    left={[<IconSearch key="jobs-search-icon" size={13} />]}
+                    left={<IconSearch size={13} />}
                     clearable
                     className="w-full rounded-xl bg-white/10 border border-white/15 text-white/85"
                 />

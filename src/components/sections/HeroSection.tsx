@@ -60,8 +60,19 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ content }) => {
     return (
         <Section showBlur={false} showFunnel={false}>
             <div className="glass-card-shell relative isolate h-[min(85svh,918px)] md:h-[min(85dvh,918px)] rounded-4xl bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))]! shadow-[0_24px_80px_rgba(0,0,0,0.34)]!">
-                <Grainient />
 
+                <a href="https://www.producthunt.com/products/codezero?embed=true&amp;utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-codezero-2" target="_blank" rel="noopener noreferrer">
+                    <img
+                        alt="CodeZero - An open source no-code automation builder | Product Hunt"
+                        width="200"
+                        height="54"
+                        className="absolute left-1/2 lg:left-auto md:right-4 -translate-x-1/2 lg:translate-0 bottom-4 z-100"
+                        src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1125393&amp;theme=dark&amp;t=1776350762444"
+                    />
+                </a>
+
+
+                <Grainient />
                 <motion.div
                     className={"relative z-20 flex h-full flex-col items-center justify-between gap-8 rounded-[calc(1.9rem-1px)] p-8 lg:flex-row lg:p-16"}
                     variants={staggerContainer}

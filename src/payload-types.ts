@@ -340,6 +340,7 @@ export interface Page {
     | 'privacy'
     | 'terms'
     | 'contact'
+    | 'actions'
     | 'community-edition'
     | 'enterprise-edition'
     | 'subscription';
@@ -501,6 +502,15 @@ export interface Page {
             blockType: 'jobs';
           }
         | {
+            heading: string;
+            description: string;
+            searchPlaceholder: string;
+            noActionsFoundLabel: string;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'actions';
+          }
+        | {
             content: {
               root: {
                 type: string;
@@ -601,6 +611,10 @@ export interface Feature {
 export interface Action {
   id: number;
   title: string;
+  /**
+   * URL slug for the action subpage, e.g. 'slack-sync'.
+   */
+  slug: string;
   shortDescription?: string | null;
   description?: string | null;
   icon?: (number | null) | Media;
@@ -1499,6 +1513,16 @@ export interface PagesSelect<T extends boolean = true> {
               id?: T;
               blockName?: T;
             };
+        actions?:
+          | T
+          | {
+              heading?: T;
+              description?: T;
+              searchPlaceholder?: T;
+              noActionsFoundLabel?: T;
+              id?: T;
+              blockName?: T;
+            };
         markdown?:
           | T
           | {
@@ -1585,6 +1609,7 @@ export interface FeaturesSelect<T extends boolean = true> {
  */
 export interface ActionsSelect<T extends boolean = true> {
   title?: T;
+  slug?: T;
   shortDescription?: T;
   description?: T;
   icon?: T;
