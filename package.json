@@ -17,8 +17,7 @@
     "knip": "node --import tsx ./node_modules/knip/bin/knip.js",
     "generate": "payload generate:types",
     "export-data": "node --import tsx scripts/export-data.ts",
-    "import-data": "node --import tsx scripts/import-data.ts",
-    "prepare": "husky"
+    "import-data": "node --import tsx scripts/import-data.ts"
   },
   "dependencies": {
     "@c15t/nextjs": "^1.8.6",
