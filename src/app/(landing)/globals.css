@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import '@c15t/nextjs/styles.css';
 
 @theme inline {
   --color-primary: var(--bg-primary);

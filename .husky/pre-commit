@@ -1,6 +1,0 @@
-#!/usr/bin/env sh
-
-rm -rf .next
-npm run build
-npm run export-data
-git add export/*.json
