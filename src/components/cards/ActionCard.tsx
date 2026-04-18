@@ -20,23 +20,23 @@ export function ActionCard({ action, locale }: { action: ActionItem, locale: App
 
                 <div className="relative z-10 flex flex-col gap-4">
                     <div className="flex items-start gap-4">
-                        {icon?.url ? (
+                        {icon?.url && (
                             <div className="relative size-14 shrink-0 overflow-hidden rounded-2xl border border-white/10 bg-white/5">
                                 <Image
                                     src={icon.url}
                                     alt={icon.alt ?? action.title}
                                     fill
                                     sizes="56px"
-                                    className="object-cover"
+                                    className="object-contain p-2"
                                 />
                             </div>
-                        ) : null}
+                        )}
 
                         <div className="min-w-0 flex-1 mt-1">
                             <h2 className="text-lg font-semibold leading-tight tracking-tight text-white/92">{action.title}</h2>
-                            {action.shortDescription ? (
+                            {action.shortDescription && (
                                 <p className="mt-2 line-clamp-2 text-sm leading-6 text-white/70">{action.shortDescription}</p>
-                            ) : null}
+                            )}
                         </div>
                     </div>
                 </div>

@@ -12,6 +12,7 @@ interface ActionsPageContent {
     description: string
     searchPlaceholder: string
     noActionsFoundLabel: string
+    referencesLabel: string
 }
 
 interface ActionsPageClientProps {
@@ -25,6 +26,7 @@ const defaultContent: ActionsPageContent = {
     description: "Browse available actions and integrations.",
     searchPlaceholder: "Search actions",
     noActionsFoundLabel: "No actions found for your search.",
+    referencesLabel: "References",
 }
 
 export function ActionsPageClient({ actions, locale, content }: ActionsPageClientProps) {
@@ -62,9 +64,9 @@ export function ActionsPageClient({ actions, locale, content }: ActionsPageClien
                 value={search}
                 onChange={(e: ChangeEvent<HTMLInputElement>) => setSearch(e.currentTarget.value)}
                 placeholder={labels.searchPlaceholder}
-                left={<IconSearch size={13} />}
+                left={<IconSearch size={12} />}
                 clearable
-                className="w-full rounded-xl bg-white/10 border border-white/15 text-white/85"
+                className="text-white!"
             />
             <div className="grid gap-4 md:grid-cols-2">
                 {filteredActions.map((action) => <ActionCard key={action.id} action={action} locale={locale} />)}

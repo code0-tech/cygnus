@@ -506,6 +506,7 @@ export interface Page {
             description: string;
             searchPlaceholder: string;
             noActionsFoundLabel: string;
+            referencesLabel: string;
             id?: string | null;
             blockName?: string | null;
             blockType: 'actions';
@@ -1520,6 +1521,7 @@ export interface PagesSelect<T extends boolean = true> {
               description?: T;
               searchPlaceholder?: T;
               noActionsFoundLabel?: T;
+              referencesLabel?: T;
               id?: T;
               blockName?: T;
             };

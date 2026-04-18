@@ -3,7 +3,7 @@ import { Aurora } from "@/components/ui/Aurora"
 import { HapticButtonLink } from "@/components/ui/HapticButtonLink"
 import { LandingContainer } from "@/components/ui/LandingContainer"
 import { LinkButton } from "@/components/ui/LinkButton"
-import { getActionBySlug, getActionSlugs } from "@/lib/cms"
+import { getActionBySlug, getActionSlugs, getLandingPage, type ActionsLayoutBlock } from "@/lib/cms"
 import { SUPPORTED_LOCALES, isSupportedLocale } from "@/lib/i18n"
 import { createMetadata } from "@/lib/siteConfig"
 import type { Media } from "@/payload-types"
@@ -19,10 +19,13 @@ export default async function ActionDetailPage({ params }: { params: Promise<{ l
 
     const action = await getActionBySlug(slug, locale)
     if (!action) notFound()
+    const actionsPage = await getLandingPage("actions", locale)
 
     const icon = action.icon as Media | undefined
     const references = (action.references ?? []).filter((reference): reference is Exclude<typeof reference, number> => typeof reference !== "number")
     const tags = (action.tags ?? []).filter((tag): tag is string => Boolean(tag))
+    const actionsBlock = actionsPage?.layout?.find((block): block is ActionsLayoutBlock => block.blockType === "actions") ?? null
+    const referencesLabel = actionsBlock?.referencesLabel ?? (locale === "de" ? "Referenzen" : "References")
 
     return (
         <>
@@ -51,7 +54,7 @@ export default async function ActionDetailPage({ params }: { params: Promise<{ l
                                                 alt={icon.alt ?? action.title}
                                                 fill
                                                 sizes="80px"
-                                                className="object-cover"
+                                                className="object-contain p-2"
                                             />
                                         </div>
                                     )}
@@ -86,15 +89,15 @@ export default async function ActionDetailPage({ params }: { params: Promise<{ l
 
                             </div>
                             {action.description && (
-                                <div className="max-w-3xl whitespace-pre-line text-sm leading-7 text-white/75">
+                                <div className="max-w-3xl whitespace-pre-line text-sm leading-6 text-white/75">
                                     {action.description}
                                 </div>
                             )}
 
                             {references.length && (
                                 <div className="space-y-3">
-                                    <p className="text-xs uppercase tracking-[0.2em] text-white/45">
-                                        {locale === "de" ? "Referenzen" : "References"}
+                                    <p className="text-sm tracking-wider text-white/50">
+                                        {referencesLabel}
                                     </p>
                                     <div className="grid gap-4 md:grid-cols-2">
                                         {references.map((reference) => (

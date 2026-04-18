@@ -86,7 +86,7 @@ export function JobsPageClient({ jobs, locale, content }: JobsPageClientProps) {
                     placeholder={labels.searchPlaceholder}
                     left={<IconSearch size={13} />}
                     clearable
-                    className="w-full rounded-xl bg-white/10 border border-white/15 text-white/85"
+                    className="text-white!"
                 />
 
                 <div className="w-full flex flex-col md:flex-row md:justify-between gap-2">

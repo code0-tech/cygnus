@@ -35,5 +35,12 @@ export const ActionBlock: Block = {
       localized: true,
       defaultValue: "No actions found for your search.",
     },
+    {
+      name: "referencesLabel",
+      type: "text",
+      required: true,
+      localized: true,
+      defaultValue: "References",
+    },
   ],
 }

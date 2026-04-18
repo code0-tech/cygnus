@@ -36,6 +36,8 @@ interface HeroSectionProps {
 }
 
 export const HeroSection: React.FC<HeroSectionProps> = ({ content }) => {
+    const [isProductHuntBadgeVisible, setIsProductHuntBadgeVisible] = React.useState(false)
+
     if (!content || !content.texts || !content.buttons) return
 
     const staggerContainer: Variants = {
@@ -61,13 +63,21 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ content }) => {
         <Section showBlur={false} showFunnel={false}>
             <div className="glass-card-shell relative isolate h-[min(85svh,918px)] md:h-[min(85dvh,918px)] rounded-4xl bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))]! shadow-[0_24px_80px_rgba(0,0,0,0.34)]!">
 
-                <a href="https://www.producthunt.com/products/codezero?embed=true&amp;utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-codezero-2" target="_blank" rel="noopener noreferrer">
+                <a
+                    href="https://www.producthunt.com/products/codezero?embed=true&amp;utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-codezero-2"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-hidden={!isProductHuntBadgeVisible}
+                    className={cn(!isProductHuntBadgeVisible && "pointer-events-none opacity-0")}
+                >
                     <img
                         alt="CodeZero - An open source no-code automation builder | Product Hunt"
                         width="200"
                         height="54"
                         className="absolute left-1/2 lg:left-auto md:right-4 -translate-x-1/2 lg:translate-0 bottom-4 z-100"
                         src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1125393&amp;theme=dark&amp;t=1776350762444"
+                        onLoad={() => setIsProductHuntBadgeVisible(true)}
+                        onError={() => setIsProductHuntBadgeVisible(false)}
                     />
                 </a>
 
