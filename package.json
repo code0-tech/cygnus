@@ -17,12 +17,11 @@
     "knip": "node --import tsx ./node_modules/knip/bin/knip.js",
     "generate": "payload generate:types",
     "export-data": "node --import tsx scripts/export-data.ts",
-    "import-data": "node --import tsx scripts/import-data.ts",
-    "prepare": "husky"
+    "import-data": "node --import tsx scripts/import-data.ts"
   },
   "dependencies": {
-    "@c15t/nextjs": "^1.8.6",
-    "@c15t/scripts": "^1.0.1",
+    "@c15t/nextjs": "^2.0.0",
+    "@c15t/scripts": "^2.0.0",
     "@code0-tech/pictor": "^0.6.1",
     "@icons-pack/react-simple-icons": "^13.13.0",
     "@next/env": "^16.2.4",
@@ -30,8 +29,8 @@
     "@payloadcms/email-nodemailer": "3.83.0",
     "@payloadcms/next": "3.83.0",
     "@payloadcms/plugin-import-export": "3.83.0",
-    "@payloadcms/richtext-lexical": "3.83.0",
     "@payloadcms/plugin-seo": "3.83.0",
+    "@payloadcms/richtext-lexical": "3.83.0",
     "@tabler/icons-react": "3.40.0",
     "clsx": "^2.1.1",
     "graphql": "^16.13.2",
@@ -52,7 +51,6 @@
     "@types/node": "^25.6.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "husky": "^9.1.7",
     "postcss": "^8.5.10",
     "tailwindcss": "^4.2.2",
     "tsx": "^4.21.0",

@@ -1,8 +1,3 @@
-import {
-    ConsentManagerDialog,
-    ConsentManagerProvider,
-    CookieBanner
-} from '@c15t/nextjs'
 import { getCookieBanner } from '@/lib/cms'
 import type { AppLocale } from '@/lib/i18n'
 import type { CookieBanner as CookieBannerContent } from '@/payload-types'
@@ -58,64 +53,32 @@ export default async function ConsentManager({ children, locale }: ConsentManage
         getCookieBanner("de"),
         getCookieBanner(locale),
     ])
+    const gaMeasurementId = getOptionalValue(process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID)
+    const legalLinks = {
+        privacyPolicy: {
+            href: activeContent?.legalLinks.privacyPolicy.href ?? "",
+            label: getOptionalValue(activeContent?.legalLinks.privacyPolicy.label),
+        },
+        termsOfService: {
+            href: activeContent?.legalLinks.termsOfService.href ?? "",
+            label: getOptionalValue(activeContent?.legalLinks.termsOfService.label),
+        }
+    }
+    const i18n = {
+        locale,
+        messages: {
+            en: mapCookieBannerTranslations(englishContent),
+            de: mapCookieBannerTranslations(germanContent),
+        }
+    }
 
     return (
-        <ConsentManagerProvider
-            options={{
-                mode: 'offline',
-                consentCategories: ['necessary', 'measurement', 'marketing'],
-                ignoreGeoLocation: true,
-                react: {
-                    colorScheme: "dark"
-                },
-                legalLinks: {
-                    privacyPolicy: {
-                        href: activeContent?.legalLinks.privacyPolicy.href ?? "",
-                        label: getOptionalValue(activeContent?.legalLinks.privacyPolicy.label),
-                    },
-                    termsOfService: {
-                        href: activeContent?.legalLinks.termsOfService.href ?? "",
-                        label: getOptionalValue(activeContent?.legalLinks.termsOfService.label),
-                    }
-                },
-                translations: {
-                    defaultLanguage: locale,
-                    translations: {
-                        en: mapCookieBannerTranslations(englishContent),
-                        de: mapCookieBannerTranslations(germanContent),
-                    }
-                }
-            }}
+        <ConsentManagerClient
+            gaMeasurementId={gaMeasurementId}
+            legalLinks={legalLinks}
+            i18n={i18n}
         >
-            <CookieBanner
-                legalLinks={["privacyPolicy", "termsOfService"]}
-                theme={{
-                    "banner.card": "bg-[#201e2c]! border-white/10! shadow-xl!",
-                    "banner.footer": "bg-[#201e2c]! border-white/10!",
-                    "banner.footer.accept-button": "bg-white/90! hover:bg-white! text-primary! rounded-xl! ring-0! px-4!",
-                    "banner.footer.reject-button": "bg-white/90! hover:bg-white! text-primary! rounded-xl! ring-0! px-4!",
-                    "banner.footer.customize-button": "text-brand! ring-0! bg-brand/10! hover:bg-brand/20! rounded-xl! px-4!",
-                    "banner.header.legal-links.link": "text-brand!"
-                }}
-            />
-            <ConsentManagerDialog
-                legalLinks={["privacyPolicy", "termsOfService"]}
-                theme={{
-                    "dialog.card": "bg-[#201e2c]! border-white/10! shadow-xl!",
-                    "widget.footer.accept-button": "bg-white/90! hover:bg-white! text-primary! rounded-xl! ring-0! px-4!",
-                    "widget.footer.reject-button": "bg-white/90! hover:bg-white! text-primary! rounded-xl! ring-0! px-4!",
-                    "widget.footer.save-button": "text-brand! ring-0! bg-brand/10! hover:bg-brand/20! rounded-xl! px-4!",
-                    "dialog.legal-links.link": "text-brand!",
-                    "widget.accordion.item": "bg-primary/50! border-white/10! ring-0!",
-                    "widget.accordion.trigger": "hover:bg-transparent!",
-                    "widget.switch": "group",
-                    "widget.switch.track": " group-data-[state=checked]:bg-brand!",
-                    "widget.switch.thumb": "bg-white! rounded-full!",
-                }}
-            />
-            <ConsentManagerClient>
-                {children}
-            </ConsentManagerClient>
-        </ConsentManagerProvider>
+            {children}
+        </ConsentManagerClient>
     )
 }
