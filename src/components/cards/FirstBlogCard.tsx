@@ -51,11 +51,11 @@ export function FirstBlogCard({ locale, post }: { locale: string, post: BlogPost
                             {(post.author as TeamMember).name} - {publishedDate}
                         </p>
                         <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-white/95 leading-tight">{post.title}</h2>
-                        {post.shortDescription ? (
-                            <p className="text-base md:text-lg leading-7 text-white/75 mt-4 line-clamp-3">
+                        {post.shortDescription && (
+                            <p className="text-base md:text-lg leading-7 text-white/75 mt-4 mb-2 line-clamp-3">
                                 {post.shortDescription}
                             </p>
-                        ) : null}
+                        )}
                     </div>
                 </div>
             </Card>

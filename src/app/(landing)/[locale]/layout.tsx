@@ -34,7 +34,7 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
 
     return (
         <ConsentManager locale={locale}>
-            <div className="bg-primary overflow-x-hidden">
+            <div className="relative bg-primary overflow-x-hidden">
                 <Navigation locale={locale} items={items} footer={footer} />
                 <SectionsProvider sections={sections}>
                     <main id="main-content" className="bg-primary">
@@ -42,6 +42,9 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
                     </main>
                 </SectionsProvider>
                 <FooterSection locale={locale} footer={footer} />
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 z-50 flex justify-center" aria-hidden="true">
+                    <div className="h-16 w-full bg-blue/20 blur-3xl" />
+                </div>
             </div>
         </ConsentManager>
     )
