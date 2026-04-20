@@ -45,6 +45,16 @@ export const Actions: CollectionConfig = {
       relationTo: "media",
     },
     {
+      name: "trigger",
+      type: "upload",
+      relationTo: "media",
+    },
+    {
+      name: "functiondefinitions",
+      type: "upload",
+      relationTo: "media",
+    },
+    {
       name: "tags",
       type: "text",
       hasMany: true,

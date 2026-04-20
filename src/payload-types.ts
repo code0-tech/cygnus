@@ -619,6 +619,8 @@ export interface Action {
   shortDescription?: string | null;
   description?: string | null;
   icon?: (number | null) | Media;
+  trigger?: (number | null) | Media;
+  functiondefinitions?: (number | null) | Media;
   tags?: string[] | null;
   documentation?: {
     label?: string | null;
@@ -1615,6 +1617,8 @@ export interface ActionsSelect<T extends boolean = true> {
   shortDescription?: T;
   description?: T;
   icon?: T;
+  trigger?: T;
+  functiondefinitions?: T;
   tags?: T;
   documentation?:
     | T

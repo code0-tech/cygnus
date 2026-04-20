@@ -1,3 +1,4 @@
+import { ActionTriggerView } from "@/components/ActionTriggerView"
 import { ActionCard } from "@/components/cards/ActionCard"
 import { Aurora } from "@/components/ui/Aurora"
 import { HapticButtonLink } from "@/components/ui/HapticButtonLink"
@@ -22,6 +23,8 @@ export default async function ActionDetailPage({ params }: { params: Promise<{ l
     const actionsPage = await getLandingPage("actions", locale)
 
     const icon = action.icon as Media | undefined
+    const triggers = action.trigger as Media | undefined
+    const functionDefs = action.functiondefinitions as Media | undefined
     const references = (action.references ?? []).filter((reference): reference is Exclude<typeof reference, number> => typeof reference !== "number")
     const tags = (action.tags ?? []).filter((tag): tag is string => Boolean(tag))
     const actionsBlock = actionsPage?.layout?.find((block): block is ActionsLayoutBlock => block.blockType === "actions") ?? null
@@ -93,6 +96,8 @@ export default async function ActionDetailPage({ params }: { params: Promise<{ l
                                     {action.description}
                                 </div>
                             )}
+
+                            <ActionTriggerView triggers={triggers} functionDefs={functionDefs} />
 
                             {references.length && (
                                 <div className="space-y-3">

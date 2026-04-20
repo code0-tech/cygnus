@@ -43,11 +43,15 @@ type ActionReferenceItem = Pick<Action, "id" | "slug" | "title" | "shortDescript
 
 export type ActionItem = Pick<Action, "id" | "slug" | "title" | "shortDescription" | "description" | "tags"> & {
     icon?: (number | null) | Media
+    trigger?: (number | null) | Media
+    functiondefinitions?: (number | null) | Media
     documentation?: Action["documentation"]
     references?: Array<number | ActionReferenceItem> | null
 }
 export type ActionDetailItem = Pick<Action, "id" | "slug" | "title" | "shortDescription" | "description" | "tags" | "documentation" | "references"> & {
     icon?: (number | null) | Media
+    trigger?: (number | null) | Media
+    functiondefinitions?: (number | null) | Media
 }
 
 export type JobItem = Pick<Job, "id" | "title" | "slug" | "category" | "type" | "location" | "description" | "order">
@@ -306,6 +310,8 @@ const getActionsCached = cache(async (locale: AppLocale): Promise<ActionItem[]> 
                 shortDescription: true,
                 description: true,
                 icon: true,
+                trigger: true,
+                functiondefinitions: true,
                 tags: true,
                 documentation: true,
                 references: true,
@@ -350,6 +356,8 @@ const getActionBySlugCached = cache(async (slug: string, locale: AppLocale): Pro
                 shortDescription: true,
                 description: true,
                 icon: true,
+                trigger: true,
+                functiondefinitions: true,
                 tags: true,
                 documentation: true,
                 references: true,
