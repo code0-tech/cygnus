@@ -150,14 +150,12 @@ async function withCmsFallback<T>(operation: string, fallback: T, run: () => Pro
     try {
         return await run()
     } catch (error) {
-        if (!isBuildPhase && !isMissingPayloadTablesError(error)) {
-            throw error
+        if (isBuildPhase && isMissingPayloadTablesError(error)) {
+            console.warn(`[cms] ${operation} skipped during build because the Payload schema is unavailable.`)
+            return fallback
         }
 
-        if (!isBuildPhase) {
-            console.warn(`[cms] ${operation} skipped because the Payload data is unavailable.`)
-        }
-        return fallback
+        throw error
     }
 }
 

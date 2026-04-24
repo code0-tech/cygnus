@@ -29,7 +29,6 @@ jobs:
       - run: npm ci
       - run: docker compose up -d --wait
       - run: npm run migrate
-      - run: npm run import-data
       - run: npm run build
       - run: >-
           docker build

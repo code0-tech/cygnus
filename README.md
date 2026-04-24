@@ -52,35 +52,6 @@ npm run build
 npm run standalone
 ```
 
-## Data Export
+## Data source
 
-Exports all import/export-enabled Payload collections as JSON files into [`export/`](./export).
-
-```powershell
-npm run export-data
-```
-
-Notes:
-
-- The script requires a valid Payload user.
-- The script loads environment variables from your Next.js `.env` files.
-- Existing JSON files in `export/` are overwritten.
-
-## Data Import
-
-Imports all `*.json` files from [`export/`](./export) into the matching Payload collections.
-
-```powershell
-npm run import-data
-```
-
-Notes:
-
-- The database schema / tables must already exist before running the import.
-- Run `npm run migrate` first if the target database is still empty.
-- The script always creates or reuses a temporary Payload user for the import process.
-- The script uses `upsert` with `matchField: "id"`.
-- If a document with the same `id` already exists, it is updated.
-- If no document with that `id` exists, it is created.
-- Existing documents with different IDs remain untouched.
-- JSON files without a matching import-enabled collection are skipped.
+Content is loaded directly from the configured Postgres database via Payload queries.
