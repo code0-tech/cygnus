@@ -23,6 +23,8 @@ export type DeploymentLayoutBlock = Extract<PageLayoutBlock, { blockType: "deplo
 export type JobsLayoutBlock = Extract<PageLayoutBlock, { blockType: "jobs" }>
 export type MarkdownLayoutBlock = Extract<PageLayoutBlock, { blockType: "markdown" }>
 export type ContactLayoutBlock = Extract<PageLayoutBlock, { blockType: "contact" }>
+export type BlogLayoutBlock = Extract<PageLayoutBlock, { blockType: "blog" }>
+
 
 type FeatureSlug = Feature["slug"]
 interface FeatureItem {
@@ -41,10 +43,25 @@ type JobDetailItem = Pick<Job, "id" | "title" | "slug" | "category" | "type" | "
 export type TeamMemberItem = Pick<TeamMember, "id" | "name" | "image" | "shortDescription" | "about" | "role" | "joinedAt">
 type RoadmapItem = Pick<PayloadRoadmapItem, "id" | "time" | "title" | "description">
 
-export type BlogPostItem = Pick<Blog, "id" | "title" | "slug" | "content" | "createdAt" | "shortDescription"> & {
+export type BlogPostItem = Pick<Blog, "id" | "title" | "slug" | "content" | "createdAt" | "shortDescription" | "isPinned"> & {
     heroImage?: (number | null) | Media
     meta?: Blog["meta"]
     author: number | Pick<TeamMember, "name" | "image" | "role">
+}
+
+export interface PaginatedBlogPostsResult {
+    posts: BlogPostItem[]
+    hasNextPage: boolean
+    nextPage: number | null
+    totalDocs: number
+}
+
+function sortBlogPosts(posts: BlogPostItem[]): BlogPostItem[] {
+    return [...posts].sort((left, right) => {
+        const pinOrder = Number(Boolean(right.isPinned)) - Number(Boolean(left.isPinned))
+        if (pinOrder !== 0) return pinOrder
+        return new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
+    })
 }
 
 export interface SubscriptionConfigData {
@@ -353,19 +370,27 @@ const getBlogPostBySlugCached = cache(async (slug: string, locale: AppLocale): P
     })
 })
 
-const getBlogPostsCached = cache(async (locale: AppLocale): Promise<BlogPostItem[]> => {
-    return withCmsFallback(`getBlogPosts(${locale})`, [], async () => {
+const getBlogPostsCached = cache(async (locale: AppLocale, page: number, limit: number): Promise<PaginatedBlogPostsResult> => {
+    return withCmsFallback(`getBlogPosts(${locale}, ${page}, ${limit})`, {
+        posts: [],
+        hasNextPage: false,
+        nextPage: null,
+        totalDocs: 0,
+    }, async () => {
         const payload = await getPayloadClient()
         const result = await payload.find({
             collection: "blog",
             locale,
             fallbackLocale: DEFAULT_LOCALE,
             depth: 1,
-            sort: "-createdAt",
-            pagination: false,
+            sort: "-isPinned,-createdAt",
+            page,
+            limit,
+            pagination: true,
             select: {
                 title: true,
                 slug: true,
+                isPinned: true,
                 content: true,
                 shortDescription: true,
                 createdAt: true,
@@ -374,7 +399,12 @@ const getBlogPostsCached = cache(async (locale: AppLocale): Promise<BlogPostItem
             },
         })
 
-        return (result.docs as BlogPostItem[]) ?? []
+        return {
+            posts: sortBlogPosts((result.docs as BlogPostItem[]) ?? []),
+            hasNextPage: result.hasNextPage,
+            nextPage: result.nextPage ?? null,
+            totalDocs: result.totalDocs,
+        }
     })
 })
 
@@ -485,8 +515,11 @@ export async function getBlogPostBySlug(slug: string, locale: AppLocale = DEFAUL
     return getBlogPostBySlugCached(slug, locale)
 }
 
-export async function getBlogPosts(locale: AppLocale = DEFAULT_LOCALE): Promise<BlogPostItem[]> {
-    return getBlogPostsCached(locale)
+export async function getBlogPosts(
+    locale: AppLocale = DEFAULT_LOCALE,
+    options?: { page?: number, limit?: number },
+): Promise<PaginatedBlogPostsResult> {
+    return getBlogPostsCached(locale, options?.page ?? 1, options?.limit ?? 12)
 }
 
 export async function getBlogSlugs(locale: AppLocale = DEFAULT_LOCALE): Promise<string[]> {

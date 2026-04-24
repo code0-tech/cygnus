@@ -256,9 +256,21 @@ export interface Section {
 export interface Footer {
   id: number;
   company_name: string;
+  description?: string | null;
+  contactEmail?: string | null;
+  legalLinks: {
+    privacy: {
+      label: string;
+      url: string;
+    };
+    legalNotice: {
+      label: string;
+      url: string;
+    };
+  };
   socialLinks?:
     | {
-        platform: 'instagram' | 'discord' | 'x' | 'github';
+        platform: 'instagram' | 'discord' | 'x' | 'linkedin' | 'github';
         url: string;
         id?: string | null;
       }[]
@@ -332,6 +344,7 @@ export interface Page {
   slug:
     | 'main'
     | 'jobs'
+    | 'blog'
     | 'features'
     | 'about-us'
     | 'legal-notice'
@@ -499,6 +512,15 @@ export interface Page {
             blockType: 'jobs';
           }
         | {
+            viewOtherBlogsLabel: string;
+            noPostsLabel: string;
+            loadMoreLabel: string;
+            loadingLabel: string;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'blog';
+          }
+        | {
             content: {
               root: {
                 type: string;
@@ -634,6 +656,7 @@ export interface Blog {
   id: number;
   title: string;
   slug: string;
+  isPinned?: boolean | null;
   author: number | TeamMember;
   content: {
     root: {
@@ -1194,6 +1217,24 @@ export interface SectionsSelect<T extends boolean = true> {
  */
 export interface FooterSelect<T extends boolean = true> {
   company_name?: T;
+  description?: T;
+  contactEmail?: T;
+  legalLinks?:
+    | T
+    | {
+        privacy?:
+          | T
+          | {
+              label?: T;
+              url?: T;
+            };
+        legalNotice?:
+          | T
+          | {
+              label?: T;
+              url?: T;
+            };
+      };
   socialLinks?:
     | T
     | {
@@ -1474,6 +1515,16 @@ export interface PagesSelect<T extends boolean = true> {
               id?: T;
               blockName?: T;
             };
+        blog?:
+          | T
+          | {
+              viewOtherBlogsLabel?: T;
+              noPostsLabel?: T;
+              loadMoreLabel?: T;
+              loadingLabel?: T;
+              id?: T;
+              blockName?: T;
+            };
         markdown?:
           | T
           | {
@@ -1577,6 +1628,7 @@ export interface JobsSelect<T extends boolean = true> {
 export interface BlogSelect<T extends boolean = true> {
   title?: T;
   slug?: T;
+  isPinned?: T;
   author?: T;
   content?: T;
   shortDescription?: T;

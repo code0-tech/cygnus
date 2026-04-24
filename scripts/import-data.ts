@@ -917,7 +917,7 @@ const importPagesCollection = async (
         buildGermanData: (doc) => ({
             layout: mapPageLayoutForLocale(doc.layout, "de", mediaIDMap),
             meta: mapImportedPageMetaForLocale(doc, "de", mediaIDMap),
-            title: doc.title?.de ?? "",
+            title: doc.title?.de ?? doc.title?.en ?? "",
         }),
     })
 }
