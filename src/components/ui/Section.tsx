@@ -114,7 +114,7 @@ export function Section({
                 : undefined}
         >
             {showBlur && funnelType === "center" && (
-                <div aria-hidden="true" className="pointer-events-none absolute -bottom-60 top-0 left-1/2 w-[120vw] max-w-none -translate-x-1/2 [background:radial-gradient(circle,rgba(255,255,255,0.1),transparent_70%)] md:inset-x-0 md:w-auto md:translate-x-0" />
+                <div aria-hidden="true" className="pointer-events-none absolute -bottom-60 -top-24 left-1/2 w-[120vw] max-w-none -translate-x-1/2 [background:radial-gradient(circle,rgba(255,255,255,0.1),transparent_70%)] md:inset-x-0 md:w-auto md:translate-x-0" />
             )}
             {showFunnel && (
                 funnelType === "center" ? (
