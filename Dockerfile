@@ -6,7 +6,6 @@ RUN npm ci
 COPY .next .next
 COPY scripts/ scripts/
 COPY src/ src/
-COPY export/ export/
 COPY tsconfig.json tsconfig.json
 
 EXPOSE 3000
