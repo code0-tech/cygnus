@@ -17,6 +17,63 @@ export const Footer: CollectionConfig = {
       localized: true,
     },
     {
+      name: "description",
+      type: "textarea",
+      localized: true,
+    },
+    {
+      name: "contactEmail",
+      label: "Contact Mail",
+      type: "email",
+    },
+    {
+      name: "legalLinks",
+      label: "Legal Links",
+      type: "group",
+      fields: [
+        {
+          name: "privacy",
+          label: "Privacy",
+          type: "group",
+          fields: [
+            {
+              name: "label",
+              type: "text",
+              required: true,
+              localized: true,
+              defaultValue: "Privacy Policy",
+            },
+            {
+              name: "url",
+              type: "text",
+              required: true,
+              defaultValue: "/privacy",
+            },
+          ],
+        },
+        {
+          name: "legalNotice",
+          label: "Legal Notice",
+          type: "group",
+          fields: [
+            {
+              name: "label",
+              type: "text",
+              required: true,
+              localized: true,
+              defaultValue: "Legal Notice",
+            },
+            {
+              name: "url",
+              type: "text",
+              required: true,
+              defaultValue: "/legal-notice",
+            },
+          ],
+        },
+      ],
+    },
+    {
       name: "socialLinks",
       label: "Social Links",
       type: "array",
@@ -29,6 +86,7 @@ export const Footer: CollectionConfig = {
             { label: "Instagram", value: "instagram" },
             { label: "Discord", value: "discord" },
             { label: "X", value: "x" },
+            { label: "LinkedIn", value: "linkedin" },
             { label: "GitHub", value: "github" },
           ],
         },
