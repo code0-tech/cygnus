@@ -75,6 +75,7 @@ export interface Config {
     'cookie-banner': CookieBanner;
     pages: Page;
     features: Feature;
+    actions: Action;
     jobs: Job;
     blog: Blog;
     roadmapItems: RoadmapItem;
@@ -98,6 +99,7 @@ export interface Config {
     'cookie-banner': CookieBannerSelect<false> | CookieBannerSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
     features: FeaturesSelect<false> | FeaturesSelect<true>;
+    actions: ActionsSelect<false> | ActionsSelect<true>;
     jobs: JobsSelect<false> | JobsSelect<true>;
     blog: BlogSelect<false> | BlogSelect<true>;
     roadmapItems: RoadmapItemsSelect<false> | RoadmapItemsSelect<true>;
@@ -351,6 +353,7 @@ export interface Page {
     | 'privacy'
     | 'terms'
     | 'contact'
+    | 'actions'
     | 'community-edition'
     | 'enterprise-edition'
     | 'subscription';
@@ -512,6 +515,16 @@ export interface Page {
             blockType: 'jobs';
           }
         | {
+            heading: string;
+            description: string;
+            searchPlaceholder: string;
+            noActionsFoundLabel: string;
+            referencesLabel: string;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'actions';
+          } 
+        | {
             viewOtherBlogsLabel: string;
             noPostsLabel: string;
             loadMoreLabel: string;
@@ -611,6 +624,31 @@ export interface Feature {
     label?: string | null;
     url?: string | null;
   };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "actions".
+ */
+export interface Action {
+  id: number;
+  title: string;
+  /**
+   * URL slug for the action subpage, e.g. 'slack-sync'.
+   */
+  slug: string;
+  shortDescription?: string | null;
+  description?: string | null;
+  icon?: (number | null) | Media;
+  trigger?: (number | null) | Media;
+  functiondefinitions?: (number | null) | Media;
+  tags?: string[] | null;
+  documentation?: {
+    label?: string | null;
+    url?: string | null;
+  };
+  references?: (number | Action)[] | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1069,6 +1107,10 @@ export interface PayloadLockedDocument {
         value: number | Feature;
       } | null)
     | ({
+        relationTo: 'actions';
+        value: number | Action;
+      } | null)
+    | ({
         relationTo: 'jobs';
         value: number | Job;
       } | null)
@@ -1515,6 +1557,16 @@ export interface PagesSelect<T extends boolean = true> {
               id?: T;
               blockName?: T;
             };
+        actions?:
+          | T
+          | {
+              heading?: T;
+              description?: T;
+              searchPlaceholder?: T;
+              noActionsFoundLabel?: T;
+              referencesLabel?: T;
+              id?: T;
+              blockName?: T;
         blog?:
           | T
           | {
@@ -1602,6 +1654,29 @@ export interface FeaturesSelect<T extends boolean = true> {
         label?: T;
         url?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "actions_select".
+ */
+export interface ActionsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  shortDescription?: T;
+  description?: T;
+  icon?: T;
+  trigger?: T;
+  functiondefinitions?: T;
+  tags?: T;
+  documentation?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+      };
+  references?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1954,6 +2029,7 @@ export interface TaskCreateCollectionExport {
       | 'cookie-banner'
       | 'pages'
       | 'features'
+      | 'actions'
       | 'jobs'
       | 'blog'
       | 'roadmapItems'
