@@ -31,7 +31,7 @@
     "@payloadcms/plugin-import-export": "3.84.1",
     "@payloadcms/plugin-seo": "3.84.1",
     "@payloadcms/richtext-lexical": "3.84.1",
-    "@tabler/icons-react": "3.40.0",
+    "@tabler/icons-react": "3.41.1",
     "clsx": "^2.1.1",
     "graphql": "^16.13.2",
     "knip": "^6.6.3",
