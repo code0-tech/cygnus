@@ -285,17 +285,16 @@ type ImportedBlogDocument = {
     meta?: {
         title?: Record<string, string | null> | null
         description?: Record<string, string | null> | null
-        image?: {
-            id?: number | string
-        } | number | string | null
+        image?: Record<string, { id?: number | string } | number | string | null> | { id?: number | string } | number | string | null
         keywords?: Record<string, string | null> | null
     } | null
+    isPinned?: boolean | null
     ogImage?: {
         id?: number | string
     } | number | string | null
-    shortDescription?: Record<string, string> | null
+    shortDescription?: Record<string, string | null> | null
     slug?: string
-    title?: Record<string, string> | null
+    title?: Record<string, string | null> | null
     twitterImage?: {
         id?: number | string
     } | number | string | null
@@ -304,7 +303,9 @@ type ImportedBlogDocument = {
 
 type ImportedFooterDocument = {
     company_name?: Record<string, string> | null
+    contactEmail?: string | null
     createdAt?: string
+    description?: Record<string, string | null> | null
     groups?:
         | Array<{
             heading?: Record<string, string> | null
@@ -319,6 +320,23 @@ type ImportedFooterDocument = {
         }>
         | null
     id?: number | string
+    legalLinks?: {
+        privacy?: {
+            label?: Record<string, string | null> | null
+            url?: string | null
+        } | null
+        legalNotice?: {
+            label?: Record<string, string | null> | null
+            url?: string | null
+        } | null
+    } | null
+    socialLinks?:
+        | Array<{
+            id?: string | null
+            platform?: "instagram" | "discord" | "x" | "linkedin" | "github" | null
+            url?: string | null
+        }>
+        | null
     updatedAt?: string
 }
 
@@ -598,7 +616,7 @@ const mapImportedBlogMetaForLocale = (
 ) => {
     const title = doc.meta?.title?.[locale] ?? doc.title?.[locale] ?? undefined
     const description = doc.meta?.description?.[locale] ?? undefined
-    const imageSource = doc.meta?.image ?? doc.ogImage ?? doc.twitterImage ?? doc.heroImage
+    const imageSource = resolveLocalizedRelationshipValue(doc.meta?.image, locale) ?? doc.ogImage ?? doc.twitterImage ?? doc.heroImage
     const image = remapKnownRelationshipID(normalizeRelationshipID(imageSource), mediaIDMap)
 
     if (!title && !description && image === undefined) {
@@ -821,7 +839,41 @@ const mapFooterGroupsForLocale = (
             label: item.label?.[locale] ?? "",
             url: item.url ?? "",
         })),
-    }))
+      }))
+}
+
+const mapFooterLegalLinksForLocale = (
+    legalLinks: ImportedFooterDocument["legalLinks"],
+    locale: "en" | "de"
+) => {
+    if (!legalLinks) {
+        return undefined
+    }
+
+    return {
+        privacy: {
+            label: legalLinks.privacy?.label?.[locale] ?? legalLinks.privacy?.label?.en ?? "Privacy Policy",
+            url: legalLinks.privacy?.url ?? "/privacy",
+        },
+        legalNotice: {
+            label: legalLinks.legalNotice?.label?.[locale] ?? legalLinks.legalNotice?.label?.en ?? "Legal Notice",
+            url: legalLinks.legalNotice?.url ?? "/legal-notice",
+        },
+    }
+}
+
+const mapFooterSocialLinks = (socialLinks: ImportedFooterDocument["socialLinks"]) => {
+    if (!socialLinks) {
+        return []
+    }
+
+    return socialLinks
+        .filter((link) => Boolean(link.platform && link.url))
+        .map((link) => ({
+            id: link.id ?? undefined,
+            platform: link.platform,
+            url: link.url,
+        }))
 }
 
 const importFooterCollection = async (
@@ -839,14 +891,20 @@ const importFooterCollection = async (
         label: FOOTER_COLLECTION_SLUG,
         buildEnglishData: (doc) => ({
             company_name: doc.company_name?.en ?? "",
+            contactEmail: doc.contactEmail ?? undefined,
             createdAt: doc.createdAt,
+            description: doc.description?.en ?? undefined,
             groups: mapFooterGroupsForLocale(doc.groups, "en"),
             id: normalizeNumericID(doc.id),
+            legalLinks: mapFooterLegalLinksForLocale(doc.legalLinks, "en"),
+            socialLinks: mapFooterSocialLinks(doc.socialLinks),
             updatedAt: doc.updatedAt,
         }),
         buildGermanData: (doc) => ({
-            company_name: doc.company_name?.de ?? "",
+            company_name: doc.company_name?.de ?? doc.company_name?.en ?? "",
+            description: doc.description?.de ?? doc.description?.en ?? undefined,
             groups: mapFooterGroupsForLocale(doc.groups, "de"),
+            legalLinks: mapFooterLegalLinksForLocale(doc.legalLinks, "de"),
         }),
     })
 }
@@ -1025,6 +1083,7 @@ const importBlogCollection = async (
             createdAt: doc.createdAt,
             heroImage: remapKnownRelationshipID(normalizeRelationshipID(doc.heroImage), mediaIDMap),
             id: normalizeNumericID(doc.id),
+            isPinned: doc.isPinned ?? false,
             meta: mapImportedBlogMetaForLocale(doc, "en", mediaIDMap),
             shortDescription: doc.shortDescription?.en ?? undefined,
             slug: doc.slug ?? "",
@@ -1032,10 +1091,14 @@ const importBlogCollection = async (
             updatedAt: doc.updatedAt,
         }),
         buildGermanData: (doc) => ({
-            content: doc.content?.de ? mapBlogContentForImport(doc.content.de, mediaIDMap) : undefined,
+            content: doc.content?.de
+                ? mapBlogContentForImport(doc.content.de, mediaIDMap)
+                : doc.content?.en
+                    ? mapBlogContentForImport(doc.content.en, mediaIDMap)
+                    : undefined,
             meta: mapImportedBlogMetaForLocale(doc, "de", mediaIDMap),
-            shortDescription: doc.shortDescription?.de ?? undefined,
-            title: doc.title?.de ?? "",
+            shortDescription: doc.shortDescription?.de ?? doc.shortDescription?.en ?? undefined,
+            title: doc.title?.de ?? doc.title?.en ?? "",
         }),
     })
 }
