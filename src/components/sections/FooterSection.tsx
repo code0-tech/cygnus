@@ -64,10 +64,7 @@ export const FooterSection: React.FC<FooterSectionProps> = ({ locale, footer }) 
                 <div className="py-4 flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
                     <div className="flex max-w-xl flex-col gap-2">
                         <div className="flex items-start gap-2">
-                            <Image src={"/favicons/favicon-32x32.png"} width={"32"} height={"32"} alt={"Code0 Logo"} className="-mt-1.25" />
-                            <p className={"text-white text-2xl font-medium leading-none"}>
-                                {footer.company_name}
-                            </p>
+                            <Image src={"/code0_text_logo_white.png"} height={"150"} width={"150"} alt={"Code0 Logo"} className="-mt-1.25" />
                         </div>
                         {footer.description && (
                             <p className={"text-white/50 text-sm"}>

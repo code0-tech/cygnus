@@ -51,7 +51,7 @@ export function BlogPageClient({
         startTransition(async () => {
             setError(null)
 
-            const response = await fetch(`/api/blog?locale=${encodeURIComponent(locale)}&page=${nextPage}&limit=12`)
+            const response = await fetch(`/api/payload_blog?locale=${encodeURIComponent(locale)}&page=${nextPage}&limit=12`)
 
             if (!response.ok) {
                 setError(locale === "de" ? "Weitere Blogbeiträge konnten nicht geladen werden." : "Failed to load more blog posts.")

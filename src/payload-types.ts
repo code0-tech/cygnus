@@ -515,6 +515,15 @@ export interface Page {
             blockType: 'jobs';
           }
         | {
+            viewOtherBlogsLabel: string;
+            noPostsLabel: string;
+            loadMoreLabel: string;
+            loadingLabel: string;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'blog';
+          }
+        | {
             heading: string;
             description: string;
             searchPlaceholder: string;
@@ -523,15 +532,6 @@ export interface Page {
             id?: string | null;
             blockName?: string | null;
             blockType: 'actions';
-          } 
-        | {
-            viewOtherBlogsLabel: string;
-            noPostsLabel: string;
-            loadMoreLabel: string;
-            loadingLabel: string;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'blog';
           }
         | {
             content: {
@@ -1557,6 +1557,16 @@ export interface PagesSelect<T extends boolean = true> {
               id?: T;
               blockName?: T;
             };
+        blog?:
+          | T
+          | {
+              viewOtherBlogsLabel?: T;
+              noPostsLabel?: T;
+              loadMoreLabel?: T;
+              loadingLabel?: T;
+              id?: T;
+              blockName?: T;
+            };
         actions?:
           | T
           | {
@@ -1565,15 +1575,6 @@ export interface PagesSelect<T extends boolean = true> {
               searchPlaceholder?: T;
               noActionsFoundLabel?: T;
               referencesLabel?: T;
-              id?: T;
-              blockName?: T;
-        blog?:
-          | T
-          | {
-              viewOtherBlogsLabel?: T;
-              noPostsLabel?: T;
-              loadMoreLabel?: T;
-              loadingLabel?: T;
               id?: T;
               blockName?: T;
             };
