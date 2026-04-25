@@ -9,15 +9,23 @@ const accordionCardBaseClassName =
 const accordionCardOpenClassName =
     "border-white/16 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.03))] shadow-[0_24px_70px_rgba(0,0,0,0.3)]"
 
+const baseAccordionCardBaseClassName =
+    "group relative z-10 w-full cursor-pointer overflow-hidden rounded-2xl border border-white/10"
+
+const baseAccordionCardOpenClassName =
+    "border-white/16"
+
 interface FAQItemProps {
     index: number
     question: string
-    answer: string
+    answer: React.ReactNode
     isOpen: boolean
     onToggle: (index: number) => void
+    className?: string
+    questionClassname?: string
 }
 
-const AccordionItemComponent = ({ index, question, answer, isOpen, onToggle }: FAQItemProps) => {
+const AccordionItemComponent = ({ index, question, answer, isOpen, onToggle, className, questionClassname }: FAQItemProps) => {
     const contentRef = useRef<HTMLDivElement>(null)
     const [contentHeight, setContentHeight] = useState(0)
 
@@ -46,13 +54,14 @@ const AccordionItemComponent = ({ index, question, answer, isOpen, onToggle }: F
         <div
             className={cn(
                 accordionCardBaseClassName,
-                isOpen && accordionCardOpenClassName
+                isOpen && accordionCardOpenClassName,
+                className
             )}
             onClick={handleClick}
         >
 
-            <div className="relative z-10 flex w-full items-center justify-between gap-5 px-5 py-4.5 pr-4 text-left">
-                <div className={cn("flex-1 text-sm font-medium text-white/80 sm:text-base lg:text-lg wrap-break-word transition-colors", isOpen && "text-white")}>{question}</div>
+            <div className={cn("relative z-10 flex w-full items-center justify-between gap-5 px-5 py-4.5 pr-4 text-left", questionClassname)}>
+                <div className={cn("flex-1 text-sm font-medium text-white/75 sm:text-base lg:text-lg wrap-break-word transition-colors", isOpen && "text-white")}>{question}</div>
                 <div
                     className={cn(
                         "flex h-10 w-10 shrink-0 items-center justify-center text-white/55 transition-transform",
@@ -99,3 +108,45 @@ const AccordionItemComponent = ({ index, question, answer, isOpen, onToggle }: F
 }
 
 export const AccordionItem = React.memo(AccordionItemComponent)
+
+const BaseAccordionItemComponent = ({ index, question, answer, isOpen, onToggle, className, questionClassname }: FAQItemProps) => {
+    const handleClick = (e: React.MouseEvent) => {
+        e.preventDefault()
+        onToggle(index)
+    }
+
+    return (
+        <div
+            className={cn(
+                baseAccordionCardBaseClassName,
+                isOpen && baseAccordionCardOpenClassName,
+                className
+            )}
+            onClick={handleClick}
+        >
+
+            <div className={cn("relative z-10 flex w-full items-center justify-between gap-5 px-5 py-4.5 pr-4 text-left sm:text-base font-medium text-sm lg:text-lg wrap-break-word", questionClassname)}>
+                <p className={cn("flex-1 text-white/75", isOpen && "text-white")}>{question}</p>
+                <div
+                    className={cn(
+                        "flex h-10 w-10 shrink-0 items-center justify-center text-white/50 transition-transform",
+                        isOpen && "rotate-180"
+                    )}
+                >
+                    <IconChevronDown className="h-5 w-5"/>
+                </div>
+            </div>
+            {isOpen && (
+                <div className="overflow-hidden" aria-hidden={!isOpen}>
+                    <div className="min-h-0">
+                        <div className="relative z-10 px-5 pb-5 pt-1">
+                            <div className="text-sm leading-7 text-white/50 sm:text-base wrap-break-word">{answer}</div>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    )
+}
+
+export const BaseAccordionItem = React.memo(BaseAccordionItemComponent)

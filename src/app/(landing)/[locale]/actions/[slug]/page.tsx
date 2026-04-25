@@ -64,7 +64,7 @@ export default async function ActionDetailPage({ params }: { params: Promise<{ l
 
                                     <div className="flex flex-col min-w-0 flex-1 gap-2">
                                         <h1 className="mt-1 text-3xl font-semibold tracking-tight text-white sm:text-4xl">{action.title}</h1>
-                                        {tags.length && (
+                                        {tags.length > 0 && (
                                             <div className="flex flex-wrap gap-2">
                                                 {tags.map((tag) => (
                                                     <span
@@ -97,9 +97,9 @@ export default async function ActionDetailPage({ params }: { params: Promise<{ l
                                 </div>
                             )}
 
-                            <ActionTriggerView triggers={triggers} functionDefs={functionDefs} />
+                            <ActionTriggerView locale={locale} triggers={triggers} functionDefs={functionDefs} />
 
-                            {references.length && (
+                            {references.length > 0 && (
                                 <div className="space-y-3">
                                     <p className="text-sm tracking-wider text-white/50">
                                         {referencesLabel}
