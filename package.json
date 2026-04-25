@@ -22,7 +22,7 @@
   "dependencies": {
     "@c15t/nextjs": "^2.0.0",
     "@c15t/scripts": "^2.0.1",
-    "@code0-tech/pictor": "^0.6.1",
+    "@code0-tech/pictor": "^0.6.4",
     "@icons-pack/react-simple-icons": "^13.13.0",
     "@next/env": "^16.2.4",
     "@payloadcms/db-postgres": "3.84.1",
@@ -31,7 +31,7 @@
     "@payloadcms/plugin-import-export": "3.84.1",
     "@payloadcms/plugin-seo": "3.84.1",
     "@payloadcms/richtext-lexical": "3.84.1",
-    "@tabler/icons-react": "3.40.0",
+    "@tabler/icons-react": "3.41.1",
     "clsx": "^2.1.1",
     "graphql": "^16.13.2",
     "knip": "^6.6.3",
