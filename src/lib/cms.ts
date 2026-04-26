@@ -50,7 +50,7 @@ export type ActionItem = Pick<Action, "id" | "slug" | "title" | "shortDescriptio
     documentation?: Action["documentation"]
     references?: Array<number | ActionReferenceItem> | null
 }
-export type ActionDetailItem = Pick<Action, "id" | "slug" | "title" | "shortDescription" | "description" | "tags" | "documentation" | "references"> & {
+type ActionDetailItem = Pick<Action, "id" | "slug" | "title" | "shortDescription" | "description" | "tags" | "documentation" | "references"> & {
     icon?: (number | null) | Media
     trigger?: (number | null) | Media
     functiondefinitions?: (number | null) | Media
@@ -67,7 +67,7 @@ export type BlogPostItem = Pick<Blog, "id" | "title" | "slug" | "content" | "cre
     author: number | Pick<TeamMember, "name" | "image" | "role">
 }
 
-export interface PaginatedBlogPostsResult {
+interface PaginatedBlogPostsResult {
     posts: BlogPostItem[]
     hasNextPage: boolean
     nextPage: number | null

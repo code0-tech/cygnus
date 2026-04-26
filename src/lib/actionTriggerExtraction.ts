@@ -1,23 +1,23 @@
 import type { Media } from "@/payload-types"
 
-export interface ActionTriggerTranslation {
+interface ActionTriggerTranslation {
     code: string
     content: string
 }
 
-export interface ActionTriggerDataType {
+interface ActionTriggerDataType {
     id: string
     identifier: string
 }
 
-export interface ActionTriggerParameter {
+interface ActionTriggerParameter {
     id: string
     identifier: string
     name: string
     description: string
 }
 
-export interface ExtractedTriggerSetting {
+interface ExtractedTriggerSetting {
     id: string
     identifier: string
     unique: boolean
