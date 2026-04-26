@@ -21,12 +21,10 @@ function getMediaUrl(value?: number | Media | null) {
     return new URL(value.url, resolveSiteUrl()).toString()
 }
 
-export default async function Page({ params }: { params: Promise<{ locale: string, slug: string[] }> }) {
+export default async function Page({ params }: { params: Promise<{ locale: string, slug: string }> }) {
     const { locale, slug } = await params
     if (!isSupportedLocale(locale)) notFound()
-
-    const normalizedSlug = slug?.join("/")?.trim()
-    if (!normalizedSlug) notFound()
+    if (!slug?.trim()) notFound()
 
     const page = await getLandingPage("main", locale)
     const layout = page?.layout ?? []
@@ -38,7 +36,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
             <LandingContainer>
                 <div className={"pt-32 w-full max-w-4xl mx-auto"}>
                     <Suspense fallback={<BlogSkeleton />}>
-                        <BlogPost slug={normalizedSlug} locale={locale} />
+                        <BlogPost slug={slug} locale={locale} />
 
                         <div className={"glass-card-shell mt-32 w-full overflow-hidden rounded-3xl bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] shadow-[0_24px_80px_rgba(0,0,0,0.28)]"}>
                             <div aria-hidden="true" className="glass-card-topline" />
@@ -85,21 +83,13 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
     )
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ locale: string, slug: string[] }> }): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ locale: string, slug: string }> }): Promise<Metadata> {
     const { locale, slug } = await params
-    if (!isSupportedLocale(locale)) {
-        return createMetadata()
-    }
+    if (!isSupportedLocale(locale)) return createMetadata()
+    if (!slug?.trim()) return createMetadata()
 
-    const normalizedSlug = slug?.join("/")?.trim()
-    if (!normalizedSlug) {
-        return createMetadata()
-    }
-
-    const post = await getBlogPostBySlug(normalizedSlug, locale)
-    if (!post) {
-        return createMetadata()
-    }
+    const post = await getBlogPostBySlug(slug, locale)
+    if (!post) return createMetadata()
 
     const title = post.meta?.title ?? post.title
     const description = post.meta?.description ?? post.shortDescription ?? undefined
@@ -133,7 +123,7 @@ export async function generateStaticParams() {
     const all = await Promise.all(
         SUPPORTED_LOCALES.map(async (locale) => {
             const slugs = await getBlogSlugs(locale)
-            return slugs.map((slug) => ({ locale, slug: slug.split("/").filter(Boolean) }))
+            return slugs.map((slug) => ({ locale, slug }))
         })
     )
     return all.flat()

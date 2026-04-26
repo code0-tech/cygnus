@@ -75,6 +75,7 @@ export interface Config {
     'cookie-banner': CookieBanner;
     pages: Page;
     features: Feature;
+    actions: Action;
     jobs: Job;
     blog: Blog;
     roadmapItems: RoadmapItem;
@@ -98,6 +99,7 @@ export interface Config {
     'cookie-banner': CookieBannerSelect<false> | CookieBannerSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
     features: FeaturesSelect<false> | FeaturesSelect<true>;
+    actions: ActionsSelect<false> | ActionsSelect<true>;
     jobs: JobsSelect<false> | JobsSelect<true>;
     blog: BlogSelect<false> | BlogSelect<true>;
     roadmapItems: RoadmapItemsSelect<false> | RoadmapItemsSelect<true>;
@@ -256,9 +258,21 @@ export interface Section {
 export interface Footer {
   id: number;
   company_name: string;
+  description?: string | null;
+  contactEmail?: string | null;
+  legalLinks: {
+    privacy: {
+      label: string;
+      url: string;
+    };
+    legalNotice: {
+      label: string;
+      url: string;
+    };
+  };
   socialLinks?:
     | {
-        platform: 'instagram' | 'discord' | 'x' | 'github';
+        platform: 'instagram' | 'discord' | 'x' | 'linkedin' | 'github';
         url: string;
         id?: string | null;
       }[]
@@ -332,12 +346,14 @@ export interface Page {
   slug:
     | 'main'
     | 'jobs'
+    | 'blog'
     | 'features'
     | 'about-us'
     | 'legal-notice'
     | 'privacy'
     | 'terms'
     | 'contact'
+    | 'actions'
     | 'community-edition'
     | 'enterprise-edition'
     | 'subscription';
@@ -499,6 +515,25 @@ export interface Page {
             blockType: 'jobs';
           }
         | {
+            viewOtherBlogsLabel: string;
+            noPostsLabel: string;
+            loadMoreLabel: string;
+            loadingLabel: string;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'blog';
+          }
+        | {
+            heading: string;
+            description: string;
+            searchPlaceholder: string;
+            noActionsFoundLabel: string;
+            referencesLabel: string;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'actions';
+          }
+        | {
             content: {
               root: {
                 type: string;
@@ -594,6 +629,31 @@ export interface Feature {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "actions".
+ */
+export interface Action {
+  id: number;
+  title: string;
+  /**
+   * URL slug for the action subpage, e.g. 'slack-sync'.
+   */
+  slug: string;
+  shortDescription?: string | null;
+  description?: string | null;
+  icon?: (number | null) | Media;
+  trigger?: (number | null) | Media;
+  functiondefinitions?: (number | null) | Media;
+  tags?: string[] | null;
+  documentation?: {
+    label?: string | null;
+    url?: string | null;
+  };
+  references?: (number | Action)[] | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "jobs".
  */
 export interface Job {
@@ -634,6 +694,7 @@ export interface Blog {
   id: number;
   title: string;
   slug: string;
+  isPinned?: boolean | null;
   author: number | TeamMember;
   content: {
     root: {
@@ -1046,6 +1107,10 @@ export interface PayloadLockedDocument {
         value: number | Feature;
       } | null)
     | ({
+        relationTo: 'actions';
+        value: number | Action;
+      } | null)
+    | ({
         relationTo: 'jobs';
         value: number | Job;
       } | null)
@@ -1194,6 +1259,24 @@ export interface SectionsSelect<T extends boolean = true> {
  */
 export interface FooterSelect<T extends boolean = true> {
   company_name?: T;
+  description?: T;
+  contactEmail?: T;
+  legalLinks?:
+    | T
+    | {
+        privacy?:
+          | T
+          | {
+              label?: T;
+              url?: T;
+            };
+        legalNotice?:
+          | T
+          | {
+              label?: T;
+              url?: T;
+            };
+      };
   socialLinks?:
     | T
     | {
@@ -1474,6 +1557,27 @@ export interface PagesSelect<T extends boolean = true> {
               id?: T;
               blockName?: T;
             };
+        blog?:
+          | T
+          | {
+              viewOtherBlogsLabel?: T;
+              noPostsLabel?: T;
+              loadMoreLabel?: T;
+              loadingLabel?: T;
+              id?: T;
+              blockName?: T;
+            };
+        actions?:
+          | T
+          | {
+              heading?: T;
+              description?: T;
+              searchPlaceholder?: T;
+              noActionsFoundLabel?: T;
+              referencesLabel?: T;
+              id?: T;
+              blockName?: T;
+            };
         markdown?:
           | T
           | {
@@ -1556,6 +1660,29 @@ export interface FeaturesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "actions_select".
+ */
+export interface ActionsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  shortDescription?: T;
+  description?: T;
+  icon?: T;
+  trigger?: T;
+  functiondefinitions?: T;
+  tags?: T;
+  documentation?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+      };
+  references?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "jobs_select".
  */
 export interface JobsSelect<T extends boolean = true> {
@@ -1577,6 +1704,7 @@ export interface JobsSelect<T extends boolean = true> {
 export interface BlogSelect<T extends boolean = true> {
   title?: T;
   slug?: T;
+  isPinned?: T;
   author?: T;
   content?: T;
   shortDescription?: T;
@@ -1902,6 +2030,7 @@ export interface TaskCreateCollectionExport {
       | 'cookie-banner'
       | 'pages'
       | 'features'
+      | 'actions'
       | 'jobs'
       | 'blog'
       | 'roadmapItems'

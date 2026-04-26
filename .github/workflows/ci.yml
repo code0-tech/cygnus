@@ -28,6 +28,8 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
       - run: npm ci
       - run: docker compose up -d --wait
+      - run: docker compose logs
+        if: always()
       - run: npm run migrate
       - run: npm run build
       - run: >-

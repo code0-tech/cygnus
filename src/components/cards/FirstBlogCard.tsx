@@ -2,7 +2,6 @@
 
 import { BlogPostItem } from "@/lib/cms"
 import { Media, TeamMember } from "@/payload-types"
-import { Card } from "@code0-tech/pictor"
 import Image from "next/image"
 import Link from "next/link"
 import { useWebHaptics } from "web-haptics/react"
@@ -14,51 +13,45 @@ export function FirstBlogCard({ locale, post }: { locale: string, post: BlogPost
     const publishedDate = new Intl.DateTimeFormat(locale === "de" ? "de-DE" : "en-US", {
         dateStyle: "long",
     }).format(new Date(post.createdAt))
+    const postHref = `/${locale}/blog/${post.slug}`
 
     return (
-        <Link
-            href={`/${locale}/blog/${post.slug}`}
-            onClick={() => trigger("medium")}
-            className="group block"
-        >
-            <Card
-                variant="filled"
-                className="glass-card-shell p-2!"
-            >
-                <div aria-hidden="true" className="glass-card-tint" />
-                <div aria-hidden="true" className="glass-card-topline" />
+        <div className="group block">
+            <div className="relative z-10 flex flex-col gap-4 xl:flex-row xl:items-stretch xl:gap-8">
+                <div className="px-1 pb-1 xl:flex xl:w-2/5 xl:flex-col xl:justify-start">
+                    <p className="text-xs text-white/50 mb-3">
+                        {(post.author as TeamMember).name} - {publishedDate}
+                    </p>
+                    <Link href={postHref} onClick={() => trigger("medium")}>
+                        <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-white text-balance leading-tight">{post.title}</h2>
+                    </Link>
+                    {post.shortDescription && (
+                        <p className="text-base text-balance md:text-lg leading-7 text-white/75 mt-4 mb-2">
+                            {post.shortDescription}
+                        </p>
+                    )}
+                </div>
 
-                <div className="relative z-10 flex flex-col gap-4 md:gap-6">
+                <div className="glass-card-shell w-full shrink-0 aspect-video p-2 xl:w-3/5">
+                    <div aria-hidden className="glass-card-topline"/>
                     {heroImage?.url ? (
-                        <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-white/8 bg-primary/40">
+                        <Link href={postHref} onClick={() => trigger("medium")} className="relative block h-full w-full overflow-hidden rounded-2xl bg-primary/50">
                             <Image
                                 src={heroImage.url}
                                 alt={heroImage.alt ?? post.title}
                                 fill
-                                sizes="(min-width: 768px) 50vw, 100vw"
+                                sizes="(min-width: 768px) 45vw, 100vw"
                                 className="object-cover transition-transform duration-700"
                                 priority
                             />
-                        </div>
+                        </Link>
                     ) : (
                         <div className="image-placeholder aspect-video w-full px-4 text-sm">
                             {locale === "de" ? "Kein Bild" : "No image"}
                         </div>
                     )}
-
-                    <div className="px-1 pb-1">
-                        <p className="text-xs text-white/50 mb-3">
-                            {(post.author as TeamMember).name} - {publishedDate}
-                        </p>
-                        <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-white/95 leading-tight">{post.title}</h2>
-                        {post.shortDescription && (
-                            <p className="text-base md:text-lg leading-7 text-white/75 mt-4 mb-2 line-clamp-3">
-                                {post.shortDescription}
-                            </p>
-                        )}
-                    </div>
                 </div>
-            </Card>
-        </Link>
+            </div>
+        </div>
     )
 }

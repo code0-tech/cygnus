@@ -1,4 +1,6 @@
+import { ActionBlock } from "@/blocks/ActionBlock"
 import { EditionUseCaseBlock } from "@/blocks/EditionUseCaseBlock"
+import { BlogBlock } from "../blocks/BlogBlock"
 import { BrandBlock } from "../blocks/BrandBlock"
 import { ContactBlock } from "../blocks/ContactBlock"
 import { CtaBlock } from "../blocks/CtaBlock"
@@ -41,12 +43,14 @@ export const Pages: CollectionConfig = {
       options: [
         { label: "main", value: "main" },
         { label: "jobs", value: "jobs" },
+        { label: "blog", value: "blog" },
         { label: "features", value: "features" },
         { label: "about-us", value: "about-us" },
         { label: "legal-notice", value: "legal-notice" },
         { label: "privacy", value: "privacy" },
         { label: "terms", value: "terms" },
         { label: "contact", value: "contact" },
+        { label: "actions", value: "actions" },
         { label: "community-edition", value: "community-edition" },
         { label: "enterprise-edition", value: "enterprise-edition" },
         { label: "subscription", value: "subscription" }
@@ -56,7 +60,7 @@ export const Pages: CollectionConfig = {
       name: "layout",
       label: "Layout",
       type: "blocks",
-      blocks: [HeroBlock, EditionHeroBlock, EditionFeaturesBlock, EditionInstallBlock, EditionUseCaseBlock, BrandBlock, UseCaseBlock, FaqBlock, CtaBlock, JobsBlock, MarkdownBlock, ContactBlock, DeploymentBlock],
+      blocks: [HeroBlock, EditionHeroBlock, EditionFeaturesBlock, EditionInstallBlock, EditionUseCaseBlock, BrandBlock, UseCaseBlock, FaqBlock, CtaBlock, JobsBlock, BlogBlock, ActionBlock, MarkdownBlock, ContactBlock, DeploymentBlock],
       required: false,
       localized: true,
     },

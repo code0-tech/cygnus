@@ -7,6 +7,7 @@ import path from 'path'
 import { buildConfig } from 'payload'
 import sharp from 'sharp'
 import { fileURLToPath } from 'url'
+import { Actions } from './collections/actions'
 import { Blog } from './collections/blog'
 import { CookieBanner } from './collections/cookieBanner'
 import { Features } from './collections/features'
@@ -42,7 +43,7 @@ export default buildConfig({
         locales: ['en', 'de'],
         defaultLocale: 'en',
     },
-    collections: [Users, Media, NavbarItems, Sections, Footer, CookieBanner, Pages, Features, Jobs, Blog, RoadmapItems, TeamMembers, SubscriptionCollection],
+    collections: [Users, Media, NavbarItems, Sections, Footer, CookieBanner, Pages, Features, Actions, Jobs, Blog, RoadmapItems, TeamMembers, SubscriptionCollection],
     jobs: {
         autoRun: [{
             cron: '*/5 * * * *', // Check every 5 minutes
@@ -93,6 +94,7 @@ export default buildConfig({
                 { slug: 'cookie-banner' },
                 { slug: 'pages' },
                 { slug: 'features' },
+                { slug: 'actions' },
                 { slug: 'jobs' },
                 { slug: 'blog' },
                 { slug: 'roadmapItems' },
