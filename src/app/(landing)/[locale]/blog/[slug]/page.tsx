@@ -34,7 +34,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
         <>
             <Aurora />
             <LandingContainer>
-                <div className={"pt-32 w-full max-w-4xl mx-auto"}>
+                <div className={"pt-32 w-full max-w-5xl mx-auto"}>
                     <Suspense fallback={<BlogSkeleton />}>
                         <BlogPost slug={slug} locale={locale} />
 

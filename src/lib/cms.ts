@@ -452,7 +452,7 @@ const getBlogPostBySlugCached = cache(async (slug: string, locale: AppLocale): P
             collection: "blog",
             locale,
             fallbackLocale: DEFAULT_LOCALE,
-            depth: 1,
+            depth: 2,
             where: { slug: { equals: slug } },
             limit: 1,
             pagination: false,

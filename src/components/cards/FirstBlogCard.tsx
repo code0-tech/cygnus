@@ -33,23 +33,24 @@ export function FirstBlogCard({ locale, post }: { locale: string, post: BlogPost
                 </div>
 
                 <div className="glass-card-shell w-full shrink-0 aspect-video p-2 xl:w-3/5">
-                    <div aria-hidden className="glass-card-topline"/>
-                    {heroImage?.url ? (
-                        <Link href={postHref} onClick={() => trigger("medium")} className="relative block h-full w-full overflow-hidden rounded-2xl bg-primary/50">
-                            <Image
-                                src={heroImage.url}
-                                alt={heroImage.alt ?? post.title}
-                                fill
-                                sizes="(min-width: 768px) 45vw, 100vw"
-                                className="object-cover transition-transform duration-700"
-                                priority
-                            />
-                        </Link>
-                    ) : (
-                        <div className="image-placeholder aspect-video w-full px-4 text-sm">
-                            {locale === "de" ? "Kein Bild" : "No image"}
-                        </div>
-                    )}
+                    <div aria-hidden className="glass-card-topline" />
+                    <Link href={postHref} onClick={() => trigger("medium")} className="relative block h-full w-full overflow-hidden rounded-2xl bg-primary/50">
+                        {heroImage?.url ? (
+                                <Image
+                                    src={heroImage.url}
+                                    alt={heroImage.alt ?? post.title}
+                                    fill
+                                    sizes="(min-width: 768px) 45vw, 100vw"
+                                    className="object-cover transition-transform duration-700"
+                                    priority
+                                />
+                        ) : (
+                            <div className="image-placeholder aspect-video w-full px-4 text-sm">
+                                {locale === "de" ? "Kein Bild" : "No image"}
+                            </div>
+                        )}
+                    </Link>
+
                 </div>
             </div>
         </div>

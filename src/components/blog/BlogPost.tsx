@@ -38,6 +38,15 @@ const extractText = (node?: LexicalNode): string => {
     return node.children.map((child) => extractText(child)).join("")
 }
 
+const getInitials = (name: string) =>
+    name
+        .split(" ")
+        .filter(Boolean)
+        .map((part) => part.charAt(0))
+        .slice(0, 2)
+        .join("")
+        .toUpperCase()
+
 const getTocHeadings = (content: Blog["content"]): TocHeading[] => {
     const rootChildren = (content as { root?: { children?: LexicalNode[] } })?.root?.children ?? []
     const counts = new Map<string, number>()
@@ -81,6 +90,8 @@ export async function BlogPost({ slug, locale }: BlogPostProps) {
     if (!post) notFound()
 
     const heroImage = post.heroImage as Media
+    const author = typeof post.author === "number" ? null : post.author as TeamMember
+    const authorImage = author?.image && typeof author.image !== "number" ? author.image : undefined
     const publishedDate = new Intl.DateTimeFormat(locale === "de" ? "de-DE" : "en-US", {
         dateStyle: "long",
     }).format(new Date(post.createdAt))
@@ -109,9 +120,6 @@ export async function BlogPost({ slug, locale }: BlogPostProps) {
             <header className="text-center">
                 <h1 className="text-4xl font-semibold mb-3">{post.title}</h1>
                 {post.shortDescription ? <p className="text-balance text-lg text-white/70 mb-4">{post.shortDescription}</p> : null}
-                <p className="text-sm text-white/60">
-                    {(post.author as TeamMember).name} - {publishedDate}
-                </p>
             </header>
 
             {heroImage?.url ? (
@@ -135,6 +143,32 @@ export async function BlogPost({ slug, locale }: BlogPostProps) {
                         {locale === "de" ? "Kein Hero-Bild vorhanden" : "No hero image available"}
                     </div>
                 </div>
+            )}
+
+            {author ? (
+                <div className="flex items-center gap-3 text-sm text-white/50">
+                    {authorImage?.url ? (
+                        <Image
+                            src={authorImage.url}
+                            alt={authorImage.alt ?? author.name}
+                            width={40}
+                            height={40}
+                            className="size-10 shrink-0 rounded-full object-cover"
+                        />
+                    ) : (
+                        <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-white/10 text-xs font-semibold text-white/75">
+                            {getInitials(author.name)}
+                        </div>
+                    )}
+                    <div className="min-w-0 text-left">
+                        <p className="font-medium text-white/75">{author.name}</p>
+                        <p className="text-xs text-white/50">
+                            {[author.role, publishedDate].filter(Boolean).join(" - ")}
+                        </p>
+                    </div>
+                </div>
+            ) : (
+                <p className="text-sm text-white/60">{publishedDate}</p>
             )}
 
             <div className="grid grid-cols-1 gap-12 lg:grid-cols-4">

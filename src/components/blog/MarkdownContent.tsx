@@ -31,17 +31,19 @@ const CUSTOM_TAG_COMPONENTS = {
 } as const
 
 const htmlClassName = [
-    "[&_h1]:text-4xl [&_h1]:font-semibold [&_h1]:mb-8",
-    "[&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:my-4",
-    "[&_h3]:text-xl [&_h3]:my-2",
-    "[&_p]:text-white/75 [&_p]:mb-4",
-    "[&_ul]:mb-4 [&_ul]:list-disc [&_ul]:pl-6",
-    "[&_ol]:mb-4 [&_ol]:list-decimal [&_ol]:pl-6",
+    "[&_h1]:mb-5 [&_h1]:mt-12 [&_h1]:text-4xl [&_h1]:font-semibold [&_h1]:leading-tight [&_h1:first-child]:mt-0",
+    "[&_h2]:mb-4 [&_h2]:mt-10 [&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:leading-tight [&_h2:first-child]:mt-0",
+    "[&_h3]:mb-3 [&_h3]:mt-8 [&_h3]:text-xl [&_h3]:font-semibold [&_h3]:leading-snug [&_h3:first-child]:mt-0",
+    "[&_h4]:mb-3 [&_h4]:mt-7 [&_h4]:text-lg [&_h4]:font-semibold [&_h4]:leading-snug [&_h4:first-child]:mt-0",
+    "[&_p]:mb-5 [&_p]:text-white/75 [&_p]:leading-7",
+    "[&_ul]:mb-6 [&_ul]:mt-2 [&_ul]:list-disc [&_ul]:pl-6",
+    "[&_ol]:mb-6 [&_ol]:mt-2 [&_ol]:list-decimal [&_ol]:pl-6",
     "[&_li]:text-white/75 [&_li]:mb-2",
     "[&_li::marker]:text-white/50",
-    "[&_a]:text-indigo-400 [&_a]:hover:underline",
-    "[&_pre]:mb-6 [&_pre]:overflow-x-auto [&_pre]:rounded-2xl [&_pre]:border [&_pre]:border-white/10 [&_pre]:bg-black/30 [&_pre]:p-4",
+    "[&_pre]:my-8 [&_pre]:overflow-x-auto [&_pre]:rounded-2xl [&_pre]:border [&_pre]:border-white/10 [&_pre]:bg-black/30 [&_pre]:p-4",
     "[&_code]:font-mono [&_code]:text-sm [&_code]:text-white/90",
+    "[&_img]:my-8 [&_img]:rounded-2xl [&_img]:border [&_img]:border-white/5 [&_img]:shadow-md",
+    "[&_a]:text-brand! [&_a]:hover:underline [&_a]:underline-offset-4 [&_a]:decoration-brand/45 hover:[&_a]:decoration-brand",
 ].join(" ")
 
 const decodeHtmlEntities = (value: string) =>
