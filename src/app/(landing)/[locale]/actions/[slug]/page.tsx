@@ -4,8 +4,8 @@ import { Aurora } from "@/components/ui/Aurora"
 import { HapticButtonLink } from "@/components/ui/HapticButtonLink"
 import { LandingContainer } from "@/components/ui/LandingContainer"
 import { LinkButton } from "@/components/ui/LinkButton"
-import { getActionBySlug, getActionSlugs, getLandingPage, type ActionsLayoutBlock } from "@/lib/cms"
-import { SUPPORTED_LOCALES, isSupportedLocale } from "@/lib/i18n"
+import { getActionBySlug, getLandingPage, type ActionsLayoutBlock } from "@/lib/cms"
+import { isSupportedLocale } from "@/lib/i18n"
 import { createMetadata } from "@/lib/siteConfig"
 import type { Media } from "@/payload-types"
 import { IconArrowLeft, IconExternalLink } from "@tabler/icons-react"
@@ -137,15 +137,4 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     })
 }
 
-export async function generateStaticParams() {
-    const all = await Promise.all(
-        SUPPORTED_LOCALES.map(async (locale) => {
-            const slugs = await getActionSlugs(locale)
-            return slugs.map((slug) => ({ locale, slug }))
-        })
-    )
-
-    return all.flat()
-}
-
-export const dynamicParams = false
+export const dynamicParams = true
