@@ -5,7 +5,7 @@ import { FooterSection } from "@/components/sections/FooterSection"
 import { getFooter } from "@/lib/cms"
 import { getNavbarItems } from "@/lib/cms"
 import { getSections } from "@/lib/cms"
-import { SUPPORTED_LOCALES, isSupportedLocale } from "@/lib/i18n"
+import { isSupportedLocale } from "@/lib/i18n"
 import type { ReactNode } from "react"
 import { notFound } from "next/navigation"
 
@@ -14,11 +14,8 @@ interface LocaleLayoutProps {
     params: Promise<{ locale: string }>
 }
 
-export function generateStaticParams() {
-    return SUPPORTED_LOCALES.map((locale) => ({ locale }))
-}
-
 export const revalidate = 300
+export const dynamic = "force-dynamic"
 
 export default async function LocaleLayout({ children, params }: LocaleLayoutProps) {
     const { locale } = await params
