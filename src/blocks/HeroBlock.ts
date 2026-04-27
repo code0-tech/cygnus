@@ -25,6 +25,39 @@ export const HeroBlock: Block = {
       localized: true,
     },
     {
+      name: "centered",
+      label: "Centered layout",
+      type: "checkbox",
+      defaultValue: false,
+    },
+    {
+      name: "grainientColors",
+      label: "Grainient Colors",
+      type: "group",
+      fields: [
+        {
+          name: "color1",
+          type: "text",
+          required: false,
+        },
+        {
+          name: "color2",
+          type: "text",
+          required: false,
+        },
+        {
+          name: "color3",
+          type: "text",
+          required: false,
+        },
+        {
+          name: "backgroundColor",
+          type: "text",
+          required: false,
+        },
+      ],
+    },
+    {
       name: "texts",
       label: "Texts",
       type: "array",

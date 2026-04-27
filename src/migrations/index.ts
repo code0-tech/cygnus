@@ -9,6 +9,7 @@ import * as migration_20260412_174023_006_contact_page_description from './20260
 import * as migration_20260415_025537_007_subscription_workflow_executions from './20260415_025537_007_subscription_workflow_executions';
 import * as migration_20260425_134031_009_actions from './20260425_134031_009_actions';
 import * as migration_20260424_151900_008_footer_contact_legal_fields from './20260424_151900_008_footer_contact_legal_fields';
+import * as migration_20260427_010_remove_edition_hero_block from './20260427_010_remove_edition_hero_block';
 
 export const migrations = [
   {
@@ -65,5 +66,10 @@ export const migrations = [
     up: migration_20260424_151900_008_footer_contact_legal_fields.up,
     down: migration_20260424_151900_008_footer_contact_legal_fields.down,
     name: '20260424_151900_008_footer_contact_legal_fields'
+  },
+  {
+    up: migration_20260427_010_remove_edition_hero_block.up,
+    down: migration_20260427_010_remove_edition_hero_block.down,
+    name: '20260427_010_remove_edition_hero_block'
   },
 ];

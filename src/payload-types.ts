@@ -363,6 +363,13 @@ export interface Page {
             badge?: string | null;
             badge_link?: string | null;
             heading: string;
+            centered?: boolean | null;
+            grainientColors?: {
+              color1?: string | null;
+              color2?: string | null;
+              color3?: string | null;
+              backgroundColor?: string | null;
+            };
             texts?:
               | {
                   text: string;
@@ -380,27 +387,6 @@ export interface Page {
             id?: string | null;
             blockName?: string | null;
             blockType: 'hero';
-          }
-        | {
-            heading: string;
-            texts?:
-              | {
-                  text: string;
-                  id?: string | null;
-                }[]
-              | null;
-            buttons?:
-              | {
-                  label: string;
-                  url: string;
-                  variant?: ('none' | 'normal' | 'outlined' | 'filled') | null;
-                  id?: string | null;
-                }[]
-              | null;
-            imageAlt: string;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'editionHero';
           }
         | {
             features: {
@@ -1382,6 +1368,15 @@ export interface PagesSelect<T extends boolean = true> {
               badge?: T;
               badge_link?: T;
               heading?: T;
+              centered?: T;
+              grainientColors?:
+                | T
+                | {
+                    color1?: T;
+                    color2?: T;
+                    color3?: T;
+                    backgroundColor?: T;
+                  };
               texts?:
                 | T
                 | {
@@ -1396,28 +1391,6 @@ export interface PagesSelect<T extends boolean = true> {
                     variant?: T;
                     id?: T;
                   };
-              id?: T;
-              blockName?: T;
-            };
-        editionHero?:
-          | T
-          | {
-              heading?: T;
-              texts?:
-                | T
-                | {
-                    text?: T;
-                    id?: T;
-                  };
-              buttons?:
-                | T
-                | {
-                    label?: T;
-                    url?: T;
-                    variant?: T;
-                    id?: T;
-                  };
-              imageAlt?: T;
               id?: T;
               blockName?: T;
             };

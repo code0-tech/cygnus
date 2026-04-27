@@ -6,7 +6,6 @@ import { ContactBlock } from "../blocks/ContactBlock"
 import { CtaBlock } from "../blocks/CtaBlock"
 import { DeploymentBlock } from "../blocks/DeploymentBlock"
 import { EditionFeaturesBlock } from "../blocks/EditionFeaturesBlock"
-import { EditionHeroBlock } from "../blocks/EditionHeroBlock"
 import { EditionInstallBlock } from "../blocks/EditionInstallBlock"
 import { FaqBlock } from "../blocks/FaqBlock"
 import { HeroBlock } from "../blocks/HeroBlock"
@@ -60,7 +59,7 @@ export const Pages: CollectionConfig = {
       name: "layout",
       label: "Layout",
       type: "blocks",
-      blocks: [HeroBlock, EditionHeroBlock, EditionFeaturesBlock, EditionInstallBlock, EditionUseCaseBlock, BrandBlock, UseCaseBlock, FaqBlock, CtaBlock, JobsBlock, BlogBlock, ActionBlock, MarkdownBlock, ContactBlock, DeploymentBlock],
+      blocks: [HeroBlock, EditionFeaturesBlock, EditionInstallBlock, EditionUseCaseBlock, BrandBlock, UseCaseBlock, FaqBlock, CtaBlock, JobsBlock, BlogBlock, ActionBlock, MarkdownBlock, ContactBlock, DeploymentBlock],
       required: false,
       localized: true,
     },
