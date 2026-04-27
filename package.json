@@ -54,7 +54,7 @@
     "typescript": "^6.0.3"
   },
   "overrides": {
-    "nodemailer": "8.0.6",
+    "nodemailer": "8.0.7",
     "lodash": "4.18.1",
     "file-type": "22.0.0",
     "undici": "8.1.0",
