@@ -1,29 +1,17 @@
 import type { Block } from "payload"
 
-export const EditionUseCaseBlock: Block = {
-  slug: "editionUseCases",
+export const CardRowBlock: Block = {
+  slug: "cardRow",
   labels: {
-    singular: "Edition UseCases",
-    plural: "Edition UseCase Blocks",
+    singular: "Card Row",
+    plural: "Card Rows",
   },
-    fields: [
-        {
-          name: "heading",
-          type: "text",
-          required: true,
-          localized: true,
-        },
-        {
-          name: "subheading",
-          type: "textarea",
-          required: true,
-          localized: true,
-        },
+  fields: [
     {
-      name: "useCases",
-      label: "UseCases",
+      name: "cards",
+      label: "Cards",
       type: "array",
-      required: true,
+      required: false,
       fields: [
         {
           name: "title",
@@ -34,19 +22,11 @@ export const EditionUseCaseBlock: Block = {
         {
           name: "description",
           type: "textarea",
-          required: true,
+          required: false,
           localized: true,
         },
         {
-          name: "image",
-          label: "Image",
-          type: "upload",
-          relationTo: "media",
-          required: false,
-        },
-        {
           name: "link",
-          label: "Link",
           type: "group",
           fields: [
             {
@@ -61,6 +41,12 @@ export const EditionUseCaseBlock: Block = {
               required: false,
             },
           ],
+        },
+        {
+          name: "image",
+          type: "upload",
+          relationTo: "media",
+          required: false,
         },
       ],
     },

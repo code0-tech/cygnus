@@ -1,15 +1,21 @@
 import type { Block } from "payload"
 
-export const EditionFeaturesBlock: Block = {
-  slug: "editionFeatures",
+export const OffsetCardsBlock: Block = {
+  slug: "offsetCards",
   labels: {
-    singular: "Edition Feature",
-    plural: "Edition Feature Blocks",
+    singular: "Offset Cards",
+    plural: "Offset Cards Blocks",
   },
   fields: [
     {
-      name: "features",
-      label: "Features",
+      name: "showSectionHeader",
+      label: "Show Section Header",
+      type: "checkbox",
+      defaultValue: false,
+    },
+    {
+      name: "cards",
+      label: "Cards",
       type: "array",
       required: true,
       fields: [

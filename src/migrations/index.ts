@@ -10,6 +10,9 @@ import * as migration_20260415_025537_007_subscription_workflow_executions from 
 import * as migration_20260425_134031_009_actions from './20260425_134031_009_actions';
 import * as migration_20260424_151900_008_footer_contact_legal_fields from './20260424_151900_008_footer_contact_legal_fields';
 import * as migration_20260427_010_remove_edition_hero_block from './20260427_010_remove_edition_hero_block';
+import * as migration_20260428_011_card_row_block from './20260428_011_card_row_block';
+import * as migration_20260428_012_offset_cards_block from './20260428_012_offset_cards_block';
+import * as migration_20260428_013_install_and_swipe_cards_blocks from './20260428_013_install_and_swipe_cards_blocks';
 
 export const migrations = [
   {
@@ -71,5 +74,20 @@ export const migrations = [
     up: migration_20260427_010_remove_edition_hero_block.up,
     down: migration_20260427_010_remove_edition_hero_block.down,
     name: '20260427_010_remove_edition_hero_block'
+  },
+  {
+    up: migration_20260428_011_card_row_block.up,
+    down: migration_20260428_011_card_row_block.down,
+    name: '20260428_011_card_row_block'
+  },
+  {
+    up: migration_20260428_012_offset_cards_block.up,
+    down: migration_20260428_012_offset_cards_block.down,
+    name: '20260428_012_offset_cards_block'
+  },
+  {
+    up: migration_20260428_013_install_and_swipe_cards_blocks.up,
+    down: migration_20260428_013_install_and_swipe_cards_blocks.down,
+    name: '20260428_013_install_and_swipe_cards_blocks'
   },
 ];

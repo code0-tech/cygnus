@@ -1,36 +1,35 @@
 "use client"
 
-import { useState } from "react"
-import { Section } from "@/components/ui/Section"
-import type { EditionUseCaseLayoutBlock } from "@/lib/cms"
-import { Media } from "@/payload-types"
 import { EditionUseCaseCard } from "@/components/cards/EditionUseCaseCard"
+import { Section } from "@/components/ui/Section"
 import { cn } from "@/lib/utils"
+import type { SwipeCardsLayoutBlock } from "@/lib/cms"
 import { Button } from "@code0-tech/pictor"
 import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react"
-import { useWebHaptics } from "web-haptics/react"
 import { m as motion, type PanInfo, type Variants } from "motion/react"
+import { useState } from "react"
+import { useWebHaptics } from "web-haptics/react"
 
-interface EditionUseCaseSectionProps {
-    content?: EditionUseCaseLayoutBlock | null
+interface SwipeCardSectionProps {
+    content?: SwipeCardsLayoutBlock | null
 }
 
-export function EditionUseCaseSection({ content }: EditionUseCaseSectionProps) {
+export function SwipeCardSection({ content }: SwipeCardSectionProps) {
     const [focusedIndex, setFocusedIndex] = useState(0)
     const { trigger } = useWebHaptics()
 
-    if (!content?.heading || !content?.subheading || !content?.useCases?.length) return null
+    if (!content?.heading || !content?.subheading || !content?.cards?.length) return null
 
-    const useCases = content.useCases
+    const cards = content.cards
 
     const handlePrevious = () => {
         trigger("light")
-        setFocusedIndex((prev) => (prev === 0 ? useCases.length - 1 : prev - 1))
+        setFocusedIndex((prev) => (prev === 0 ? cards.length - 1 : prev - 1))
     }
 
     const handleNext = () => {
         trigger("light")
-        setFocusedIndex((prev) => (prev === useCases.length - 1 ? 0 : prev + 1))
+        setFocusedIndex((prev) => (prev === cards.length - 1 ? 0 : prev + 1))
     }
 
     const handleDragEnd = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
@@ -106,7 +105,7 @@ export function EditionUseCaseSection({ content }: EditionUseCaseSectionProps) {
                             onClick={handlePrevious}
                             variant="filled"
                             className="absolute left-0 z-20 shrink-0 size-12! rounded-full! p-0!"
-                            aria-label="Previous use case"
+                            aria-label="Previous card"
                         >
                             <IconChevronLeft className="size-6 mr-0.5" />
                         </Button>
@@ -118,41 +117,39 @@ export function EditionUseCaseSection({ content }: EditionUseCaseSectionProps) {
                             dragElastic={0.08}
                             onDragEnd={handleDragEnd}
                         >
-                            <div
-                                className="relative flex w-full items-stretch justify-center"
-                            >
+                            <div className="relative flex w-full items-stretch justify-center">
                                 <div className="w-full max-w-full md:max-w-md opacity-0 pointer-events-none">
                                     <EditionUseCaseCard
-                                        title={useCases[focusedIndex]?.title ?? ""}
-                                        description={useCases[focusedIndex]?.description ?? ""}
-                                        image={useCases[focusedIndex]?.image}
-                                        link={useCases[focusedIndex]?.link}
+                                        title={cards[focusedIndex]?.title ?? ""}
+                                        description={cards[focusedIndex]?.description ?? ""}
+                                        image={cards[focusedIndex]?.image}
+                                        link={cards[focusedIndex]?.link}
                                         isFocused
                                     />
                                 </div>
-                                {useCases.map((useCase, index) => {
+                                {cards.map((card, index) => {
                                     const offset = index - focusedIndex
                                     const isVisibleMobile = offset === 0
                                     const isVisibleDesktop = Math.abs(offset) <= 1
 
                                     return (
                                         <div
-                                            key={useCase.id || index}
+                                            key={card.id || index}
                                             className={cn(
                                                 "absolute top-0 w-full transition-all duration-500 ease-out",
                                                 "max-w-full md:max-w-md",
                                                 !isVisibleMobile && "lg:opacity-100 lg:pointer-events-auto opacity-0 pointer-events-none",
-                                                !isVisibleDesktop && "lg:opacity-0 lg:pointer-events-none"
+                                                !isVisibleDesktop && "lg:opacity-0 lg:pointer-events-none",
                                             )}
                                             style={{
                                                 transform: `translateX(${offset * 110}%)`,
                                             }}
                                         >
                                             <EditionUseCaseCard
-                                                title={useCase.title}
-                                                description={useCase.description}
-                                                image={useCase.image}
-                                                link={useCase.link}
+                                                title={card.title}
+                                                description={card.description}
+                                                image={card.image}
+                                                link={card.link}
                                                 isFocused={index === focusedIndex}
                                             />
                                         </div>
@@ -165,7 +162,7 @@ export function EditionUseCaseSection({ content }: EditionUseCaseSectionProps) {
                             onClick={handleNext}
                             variant="filled"
                             className="absolute right-0 z-20 shrink-0 size-12! rounded-full! p-0!"
-                            aria-label="Next use case"
+                            aria-label="Next card"
                         >
                             <IconChevronRight className="size-6 ml-0.5" />
                         </Button>

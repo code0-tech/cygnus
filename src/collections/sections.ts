@@ -48,6 +48,10 @@ export const Sections: CollectionConfig = {
                     label: 'DeploymentSection',
                     value: 'DeploymentSection',
                 },
+                {
+                    label: 'CardRowSection',
+                    value: 'CardRowSection',
+                },
             ],
         },
         {

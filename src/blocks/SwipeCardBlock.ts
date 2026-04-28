@@ -1,24 +1,30 @@
 import type { Block } from "payload"
 
-export const UseCaseBlock: Block = {
-  slug: "usecase",
+export const SwipeCardBlock: Block = {
+  slug: "swipeCards",
   labels: {
-    singular: "Use Case",
-    plural: "Use Case Blocks",
+    singular: "Swipe Cards",
+    plural: "Swipe Cards Blocks",
   },
   fields: [
     {
-      name: "useCases",
-      label: "Use Cases",
+      name: "heading",
+      type: "text",
+      required: true,
+      localized: true,
+    },
+    {
+      name: "subheading",
+      type: "textarea",
+      required: true,
+      localized: true,
+    },
+    {
+      name: "cards",
+      label: "Cards",
       type: "array",
       required: true,
       fields: [
-        {
-          name: "label",
-          type: "text",
-          required: true,
-          localized: true,
-        },
         {
           name: "title",
           type: "text",
@@ -37,14 +43,6 @@ export const UseCaseBlock: Block = {
           type: "upload",
           relationTo: "media",
           required: false,
-        },
-        {
-          name: "bulletPoints",
-          label: "Bullet Points",
-          type: "text",
-          required: false,
-          hasMany: true,
-          localized: true,
         },
         {
           name: "link",

@@ -1,10 +1,10 @@
 import type { Block } from "payload"
 
-export const EditionInstallBlock: Block = {
-  slug: "editionInstall",
+export const InstallBlock: Block = {
+  slug: "install",
   labels: {
-    singular: "Edition Install",
-    plural: "Edition Install Blocks",
+    singular: "Install",
+    plural: "Install Blocks",
   },
   fields: [
     {

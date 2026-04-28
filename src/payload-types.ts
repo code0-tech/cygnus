@@ -243,7 +243,8 @@ export interface Section {
     | 'RoadmapSection'
     | 'RuntimeFeatureSection'
     | 'UseCaseSection'
-    | 'DeploymentSection';
+    | 'DeploymentSection'
+    | 'CardRowSection';
   link_button?: {
     label?: string | null;
     url?: string | null;
@@ -389,7 +390,8 @@ export interface Page {
             blockType: 'hero';
           }
         | {
-            features: {
+            showSectionHeader?: boolean | null;
+            cards: {
               label: string;
               title: string;
               description: string;
@@ -403,7 +405,7 @@ export interface Page {
             }[];
             id?: string | null;
             blockName?: string | null;
-            blockType: 'editionFeatures';
+            blockType: 'offsetCards';
           }
         | {
             heading: string;
@@ -412,12 +414,12 @@ export interface Page {
             code: string;
             id?: string | null;
             blockName?: string | null;
-            blockType: 'editionInstall';
+            blockType: 'install';
           }
         | {
             heading: string;
             subheading: string;
-            useCases: {
+            cards: {
               title: string;
               description: string;
               image?: (number | null) | Media;
@@ -429,7 +431,7 @@ export interface Page {
             }[];
             id?: string | null;
             blockName?: string | null;
-            blockType: 'editionUseCases';
+            blockType: 'swipeCards';
           }
         | {
             description: string;
@@ -442,23 +444,6 @@ export interface Page {
             id?: string | null;
             blockName?: string | null;
             blockType: 'brand';
-          }
-        | {
-            useCases: {
-              label: string;
-              title: string;
-              description: string;
-              image?: (number | null) | Media;
-              bulletPoints?: string[] | null;
-              link?: {
-                label?: string | null;
-                url?: string | null;
-              };
-              id?: string | null;
-            }[];
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'usecase';
           }
         | {
             items: {
@@ -554,27 +539,21 @@ export interface Page {
             blockType: 'contact';
           }
         | {
-            cloudTitle?: string | null;
-            cloudDescription?: string | null;
-            cloudLink?: {
-              label?: string | null;
-              url?: string | null;
-            };
-            selfhostTitle?: string | null;
-            selfhostDescription?: string | null;
-            selfhostLink?: {
-              label?: string | null;
-              url?: string | null;
-            };
-            dynamicTitle?: string | null;
-            dynamicDescription?: string | null;
-            dynamicLink?: {
-              label?: string | null;
-              url?: string | null;
-            };
+            cards?:
+              | {
+                  title: string;
+                  description?: string | null;
+                  link?: {
+                    label?: string | null;
+                    url?: string | null;
+                  };
+                  image?: (number | null) | Media;
+                  id?: string | null;
+                }[]
+              | null;
             id?: string | null;
             blockName?: string | null;
-            blockType: 'deployment';
+            blockType: 'cardRow';
           }
       )[]
     | null;
@@ -1394,10 +1373,11 @@ export interface PagesSelect<T extends boolean = true> {
               id?: T;
               blockName?: T;
             };
-        editionFeatures?:
+        offsetCards?:
           | T
           | {
-              features?:
+              showSectionHeader?: T;
+              cards?:
                 | T
                 | {
                     label?: T;
@@ -1416,7 +1396,7 @@ export interface PagesSelect<T extends boolean = true> {
               id?: T;
               blockName?: T;
             };
-        editionInstall?:
+        install?:
           | T
           | {
               heading?: T;
@@ -1426,12 +1406,12 @@ export interface PagesSelect<T extends boolean = true> {
               id?: T;
               blockName?: T;
             };
-        editionUseCases?:
+        swipeCards?:
           | T
           | {
               heading?: T;
               subheading?: T;
-              useCases?:
+              cards?:
                 | T
                 | {
                     title?: T;
@@ -1456,28 +1436,6 @@ export interface PagesSelect<T extends boolean = true> {
                 | T
                 | {
                     logo?: T;
-                    id?: T;
-                  };
-              id?: T;
-              blockName?: T;
-            };
-        usecase?:
-          | T
-          | {
-              useCases?:
-                | T
-                | {
-                    label?: T;
-                    title?: T;
-                    description?: T;
-                    image?: T;
-                    bulletPoints?: T;
-                    link?:
-                      | T
-                      | {
-                          label?: T;
-                          url?: T;
-                        };
                     id?: T;
                   };
               id?: T;
@@ -1573,32 +1531,22 @@ export interface PagesSelect<T extends boolean = true> {
               id?: T;
               blockName?: T;
             };
-        deployment?:
+        cardRow?:
           | T
           | {
-              cloudTitle?: T;
-              cloudDescription?: T;
-              cloudLink?:
+              cards?:
                 | T
                 | {
-                    label?: T;
-                    url?: T;
-                  };
-              selfhostTitle?: T;
-              selfhostDescription?: T;
-              selfhostLink?:
-                | T
-                | {
-                    label?: T;
-                    url?: T;
-                  };
-              dynamicTitle?: T;
-              dynamicDescription?: T;
-              dynamicLink?:
-                | T
-                | {
-                    label?: T;
-                    url?: T;
+                    title?: T;
+                    description?: T;
+                    link?:
+                      | T
+                      | {
+                          label?: T;
+                          url?: T;
+                        };
+                    image?: T;
+                    id?: T;
                   };
               id?: T;
               blockName?: T;
