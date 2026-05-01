@@ -70,7 +70,6 @@ export interface Config {
     users: User;
     media: Media;
     navbarItems: NavbarItem;
-    sections: Section;
     footer: Footer;
     'cookie-banner': CookieBanner;
     pages: Page;
@@ -93,7 +92,6 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     navbarItems: NavbarItemsSelect<false> | NavbarItemsSelect<true>;
-    sections: SectionsSelect<false> | SectionsSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
     'cookie-banner': CookieBannerSelect<false> | CookieBannerSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
@@ -224,29 +222,6 @@ export interface NavbarItem {
         id?: string | null;
       }[]
     | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "sections".
- */
-export interface Section {
-  id: number;
-  heading: string;
-  subheading?: string | null;
-  sectionType:
-    | 'AppFeatureSection'
-    | 'FaqSection'
-    | 'RoadmapSection'
-    | 'RuntimeFeatureSection'
-    | 'UseCaseSection'
-    | 'DeploymentSection'
-    | 'CardRowSection';
-  link_button?: {
-    label?: string | null;
-    url?: string | null;
-  };
   updatedAt: string;
   createdAt: string;
 }
@@ -388,13 +363,24 @@ export interface Page {
             blockType: 'hero';
           }
         | {
+            sectionHeading?: string | null;
+            sectionDescription?: string | null;
+            sectionLinkButton?: {
+              label?: string | null;
+              url?: string | null;
+            };
             variant: 'feature' | 'runtime';
             id?: string | null;
             blockName?: string | null;
             blockType: 'bento';
           }
         | {
-            showSectionHeader?: boolean | null;
+            sectionHeading?: string | null;
+            sectionDescription?: string | null;
+            sectionLinkButton?: {
+              label?: string | null;
+              url?: string | null;
+            };
             cards: {
               label: string;
               title: string;
@@ -450,6 +436,12 @@ export interface Page {
             blockType: 'brand';
           }
         | {
+            sectionHeading?: string | null;
+            sectionDescription?: string | null;
+            sectionLinkButton?: {
+              label?: string | null;
+              url?: string | null;
+            };
             items: {
               question: string;
               answer: string;
@@ -543,6 +535,12 @@ export interface Page {
             blockType: 'contact';
           }
         | {
+            sectionHeading?: string | null;
+            sectionDescription?: string | null;
+            sectionLinkButton?: {
+              label?: string | null;
+              url?: string | null;
+            };
             cards?:
               | {
                   title: string;
@@ -560,6 +558,12 @@ export interface Page {
             blockType: 'cardRow';
           }
         | {
+            sectionHeading?: string | null;
+            sectionDescription?: string | null;
+            sectionLinkButton?: {
+              label?: string | null;
+              url?: string | null;
+            };
             items: {
               time: string;
               title: string;
@@ -1055,10 +1059,6 @@ export interface PayloadLockedDocument {
         value: number | NavbarItem;
       } | null)
     | ({
-        relationTo: 'sections';
-        value: number | Section;
-      } | null)
-    | ({
         relationTo: 'footer';
         value: number | Footer;
       } | null)
@@ -1196,23 +1196,6 @@ export interface NavbarItemsSelect<T extends boolean = true> {
         description?: T;
         icon?: T;
         id?: T;
-      };
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "sections_select".
- */
-export interface SectionsSelect<T extends boolean = true> {
-  heading?: T;
-  subheading?: T;
-  sectionType?: T;
-  link_button?:
-    | T
-    | {
-        label?: T;
-        url?: T;
       };
   updatedAt?: T;
   createdAt?: T;
@@ -1375,6 +1358,14 @@ export interface PagesSelect<T extends boolean = true> {
         bento?:
           | T
           | {
+              sectionHeading?: T;
+              sectionDescription?: T;
+              sectionLinkButton?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                  };
               variant?: T;
               id?: T;
               blockName?: T;
@@ -1382,7 +1373,14 @@ export interface PagesSelect<T extends boolean = true> {
         offsetCards?:
           | T
           | {
-              showSectionHeader?: T;
+              sectionHeading?: T;
+              sectionDescription?: T;
+              sectionLinkButton?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                  };
               cards?:
                 | T
                 | {
@@ -1450,6 +1448,14 @@ export interface PagesSelect<T extends boolean = true> {
         faq?:
           | T
           | {
+              sectionHeading?: T;
+              sectionDescription?: T;
+              sectionLinkButton?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                  };
               items?:
                 | T
                 | {
@@ -1540,6 +1546,14 @@ export interface PagesSelect<T extends boolean = true> {
         cardRow?:
           | T
           | {
+              sectionHeading?: T;
+              sectionDescription?: T;
+              sectionLinkButton?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                  };
               cards?:
                 | T
                 | {
@@ -1560,6 +1574,14 @@ export interface PagesSelect<T extends boolean = true> {
         roadmap?:
           | T
           | {
+              sectionHeading?: T;
+              sectionDescription?: T;
+              sectionLinkButton?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                  };
               items?:
                 | T
                 | {
@@ -1955,7 +1977,6 @@ export interface TaskCreateCollectionExport {
       | 'users'
       | 'media'
       | 'navbarItems'
-      | 'sections'
       | 'footer'
       | 'cookie-banner'
       | 'pages'

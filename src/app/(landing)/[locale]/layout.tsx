@@ -1,10 +1,8 @@
 import ConsentManager from "@/components/providers/ConsentManager"
 import { Navigation } from "@/components/navigation/Navigation"
-import { SectionsProvider } from "@/components/providers/SectionsProvider"
 import { FooterSection } from "@/components/sections/FooterSection"
 import { getFooter } from "@/lib/cms"
 import { getNavbarItems } from "@/lib/cms"
-import { getSections } from "@/lib/cms"
 import { SUPPORTED_LOCALES, isSupportedLocale } from "@/lib/i18n"
 import type { ReactNode } from "react"
 import { notFound } from "next/navigation"
@@ -26,21 +24,18 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
         notFound()
     }
 
-    const [items, footer, sections] = await Promise.all([
+    const [items, footer] = await Promise.all([
         getNavbarItems(locale),
         getFooter(locale),
-        getSections(locale),
     ])
 
     return (
         <ConsentManager locale={locale}>
             <div className="relative bg-primary overflow-x-hidden">
                 <Navigation locale={locale} items={items} footer={footer} />
-                <SectionsProvider sections={sections}>
-                    <main id="main-content" className="bg-primary">
-                        {children}
-                    </main>
-                </SectionsProvider>
+                <main id="main-content" className="bg-primary">
+                    {children}
+                </main>
                 <FooterSection locale={locale} footer={footer} />
                 <div className="pointer-events-none absolute inset-x-0 bottom-0 z-50 flex justify-center" aria-hidden="true">
                     <div className="h-16 w-full bg-blue/20 blur-3xl" />

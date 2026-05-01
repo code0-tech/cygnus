@@ -16,7 +16,6 @@ import { Jobs } from './collections/jobs'
 import { Media } from './collections/media'
 import { NavbarItems } from './collections/navbarItems'
 import { Pages } from './collections/pages'
-import { Sections } from './collections/sections'
 import { SubscriptionCollection } from './collections/subscriptionConfig'
 import { TeamMembers } from './collections/teamMembers'
 import { Users } from './collections/users'
@@ -26,7 +25,9 @@ const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 const smtpHost = process.env.SMTP_HOST
 const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build" || process.env.npm_lifecycle_event === "build"
+const isDevelopment = process.env.NODE_ENV === "development"
 const shouldSkipEmailVerify =
+    isDevelopment ||
     isBuildPhase ||
     process.env.PAYLOAD_SKIP_EMAIL_VERIFY === "true" ||
     !smtpHost
@@ -42,7 +43,7 @@ export default buildConfig({
         locales: ['en', 'de'],
         defaultLocale: 'en',
     },
-    collections: [Users, Media, NavbarItems, Sections, Footer, CookieBanner, Pages, Features, Actions, Jobs, Blog, TeamMembers, SubscriptionCollection],
+    collections: [Users, Media, NavbarItems, Footer, CookieBanner, Pages, Features, Actions, Jobs, Blog, TeamMembers, SubscriptionCollection],
     jobs: {
         autoRun: [{
             cron: '*/5 * * * *', // Check every 5 minutes
@@ -88,7 +89,6 @@ export default buildConfig({
                 { slug: 'users', },
                 { slug: 'media', },
                 { slug: 'navbarItems' },
-                { slug: 'sections' },
                 { slug: 'footer' },
                 { slug: 'cookie-banner' },
                 { slug: 'pages' },

@@ -133,9 +133,6 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
 
     DROP TABLE IF EXISTS "pages_blocks_deployment" CASCADE;
 
-    UPDATE "sections"
-    SET "section_type" = 'CardRowSection'
-    WHERE "section_type" = 'DeploymentSection';
   `)
 }
 
@@ -223,8 +220,5 @@ export async function down({ db }: MigrateDownArgs): Promise<void> {
     DROP TABLE IF EXISTS "pages_blocks_card_row_cards" CASCADE;
     DROP TABLE IF EXISTS "pages_blocks_card_row" CASCADE;
 
-    UPDATE "sections"
-    SET "section_type" = 'DeploymentSection'
-    WHERE "section_type" = 'CardRowSection';
   `)
 }

@@ -1,19 +1,24 @@
 "use client"
 
-import { usePreloadedSection } from "@/components/providers/SectionsProvider"
 import { LinkButton } from "@/components/ui/LinkButton"
 import { getLocaleFromPath, localizeHref } from "@/lib/i18n"
 import { ANIMATION_PRESETS, cn, type AnimationPreset } from "@/lib/utils"
-import { Section as SectionDocument } from "@/payload-types"
 import { m as motion, type Variants } from "motion/react"
 import { usePathname } from "next/navigation"
 import { createElement, ReactNode, useEffect, useRef, useState } from "react"
+
+interface SectionLinkButton {
+    label?: string | null
+    url?: string | null
+}
 
 interface SectionProps {
     children: ReactNode
     funnelType?: "center" | "left"
     className?: string
-    sectionType?: NonNullable<SectionDocument["sectionType"]>
+    heading?: string | null
+    description?: string | null
+    linkButton?: SectionLinkButton | null
     showBlur?: boolean
     showFunnel?: boolean
     showLinkButton?: boolean
@@ -28,7 +33,9 @@ interface SectionProps {
 }
 
 export function Section({
-    sectionType,
+    heading,
+    description,
+    linkButton,
     children,
     className,
     funnelType = "center",
@@ -44,13 +51,13 @@ export function Section({
     animationViewportMargin,
     headingLevel = 2,
 }: SectionProps) {
-    const sectionData = usePreloadedSection(sectionType) as SectionDocument | null
     const sectionRef = useRef<HTMLElement | null>(null)
     const pathname = usePathname()
     const locale = getLocaleFromPath(pathname)
     const [isInView, setIsInView] = useState(false)
-    const rawLinkUrl = sectionData?.link_button?.url?.trim()
+    const rawLinkUrl = linkButton?.url?.trim()
     const linkUrl = rawLinkUrl ? localizeHref(rawLinkUrl, locale) : undefined
+    const shouldShowFunnel = showFunnel && Boolean(heading || description || (showLinkButton && linkUrl && linkButton?.label))
     const animationConfig = animationPreset === "none" ? null : ANIMATION_PRESETS[animationPreset]
     const staggerContainer: Variants = {
         hidden: {},
@@ -116,7 +123,7 @@ export function Section({
             {showBlur && funnelType === "center" && (
                 <div aria-hidden="true" className="pointer-events-none absolute -bottom-60 -top-24 left-1/2 w-[120vw] max-w-none -translate-x-1/2 [background:radial-gradient(circle,rgba(255,255,255,0.1),transparent_70%)] md:inset-x-0 md:w-auto md:translate-x-0" />
             )}
-            {showFunnel && (
+            {shouldShowFunnel && (
                 funnelType === "center" ? (
                     <motion.div
                         className={"flex flex-col gap-4 items-center justify-center text-center"}
@@ -128,15 +135,17 @@ export function Section({
                         {createElement(
                             motion[headingTag],
                             { variants: staggerItem, className: "text-4xl text-white font-semibold" },
-                            sectionData?.heading,
+                            heading,
                         )}
-                        <motion.p variants={staggerItem} className="relative z-10 max-w-[90vw] lg:w-1/2 text-center font-medium text-white/75 text-xl">
-                            {sectionData?.subheading}
-                        </motion.p>
+                        {description && (
+                            <motion.p variants={staggerItem} className="relative z-10 max-w-[90vw] lg:w-1/2 text-center font-medium text-white/75 text-xl">
+                                {description}
+                            </motion.p>
+                        )}
                         {showLinkButton && linkUrl &&
                             <motion.div variants={staggerItem}>
                                 <LinkButton href={linkUrl}>
-                                    {sectionData?.link_button?.label}
+                                    {linkButton?.label}
                                 </LinkButton>
                             </motion.div>
                         }
@@ -152,15 +161,17 @@ export function Section({
                         {createElement(
                             motion[headingTag],
                             { variants: staggerItem, className: "text-4xl text-white font-semibold" },
-                            sectionData?.heading,
+                            heading,
                         )}
-                        <motion.p variants={staggerItem} className="relative z-10 max-w-[90vw] lg:w-1/2 font-medium text-white/75 text-xl">
-                            {sectionData?.subheading}
-                        </motion.p>
+                        {description && (
+                            <motion.p variants={staggerItem} className="relative z-10 max-w-[90vw] lg:w-1/2 font-medium text-white/75 text-xl">
+                                {description}
+                            </motion.p>
+                        )}
                         {showLinkButton && linkUrl &&
                             <motion.div variants={staggerItem}>
                                 <LinkButton href={linkUrl}>
-                                    {sectionData?.link_button?.label}
+                                    {linkButton?.label}
                                 </LinkButton>
                             </motion.div>
                         }

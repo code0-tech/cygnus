@@ -46,9 +46,10 @@ export function OffsetCardsSection({ content }: OffsetCardsSectionProps) {
 
     return (
         <Section
-            sectionType={content.showSectionHeader ? "UseCaseSection" : undefined}
+            heading={content.sectionHeading}
+            description={content.sectionDescription}
+            linkButton={content.sectionLinkButton}
             showBlur={false}
-            showFunnel={Boolean(content.showSectionHeader)}
             animationPreset="none"
         >
             <div className="relative flex w-full flex-col items-stretch gap-32">

@@ -14,7 +14,9 @@ export function BentoSection({ content, locale = "en" }: BentoSectionProps) {
 
     return (
         <Section
-            sectionType={variant === "runtime" ? "RuntimeFeatureSection" : "AppFeatureSection"}
+            heading={content?.sectionHeading}
+            description={content?.sectionDescription}
+            linkButton={content?.sectionLinkButton}
             fullHeight
         >
             {variant === "runtime" ? (

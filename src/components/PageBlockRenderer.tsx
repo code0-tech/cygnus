@@ -36,7 +36,7 @@ function renderPageBlock(block: PageBlock, options: Pick<PageBlocksRendererProps
         case "faq":
             return <FaqSection content={block} />
         case "cta":
-            return <CtaSection content={block} floatingCta={options.ctaFloating} locale={options.locale} />
+            return <CtaSection content={block} floatingCta={options.ctaFloating} />
         case "install":
             return <InstallSection content={block} />
         case "roadmap":

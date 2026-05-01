@@ -2,7 +2,7 @@
 
 import { DEFAULT_LOCALE, type AppLocale } from "@/lib/i18n"
 import { getPayloadClient } from "@/lib/payloadClient"
-import type { Action, Blog, CookieBanner, Feature, Footer, Job, Media, NavbarItem, Page, Section, TeamMember } from "@/payload-types"
+import type { Action, Blog, CookieBanner, Feature, Footer, Job, Media, NavbarItem, Page, TeamMember } from "@/payload-types"
 import { cache } from "react"
 
 const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build" || process.env.npm_lifecycle_event === "build"
@@ -517,21 +517,6 @@ const getBlogSlugsCached = cache(async (locale: AppLocale): Promise<string[]> =>
     })
 })
 
-const getSectionsCached = cache(async (locale: AppLocale): Promise<Section[]> => {
-    return withCmsFallback(`getSections(${locale})`, [], async () => {
-        const payload = await getPayloadClient()
-        const result = await payload.find({
-            collection: "sections",
-            locale,
-            fallbackLocale: DEFAULT_LOCALE,
-            pagination: false,
-            depth: 0,
-        })
-
-        return result.docs as Section[]
-    })
-})
-
 const getSubscriptionConfigCached = cache(async (locale: AppLocale): Promise<SubscriptionConfigData | null> => {
     return withCmsFallback(`getSubscriptionConfig(${locale})`, null, async () => {
         const payload = await getPayloadClient()
@@ -610,10 +595,6 @@ export async function getBlogPosts(
 
 export async function getBlogSlugs(locale: AppLocale = DEFAULT_LOCALE): Promise<string[]> {
     return getBlogSlugsCached(locale)
-}
-
-export async function getSections(locale: AppLocale = DEFAULT_LOCALE): Promise<Section[]> {
-    return getSectionsCached(locale)
 }
 
 export async function getSubscriptionConfig(locale: AppLocale = DEFAULT_LOCALE): Promise<SubscriptionConfigData | null> {

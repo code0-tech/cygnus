@@ -13,7 +13,13 @@ export function RoadmapSection({ content }: RoadmapSectionProps) {
     if (!items?.length) return null
 
     return (
-        <Section sectionType="RoadmapSection" funnelType="left" animationPreset="zoom-in">
+        <Section
+            heading={content?.sectionHeading}
+            description={content?.sectionDescription}
+            linkButton={content?.sectionLinkButton}
+            funnelType="left"
+            animationPreset="zoom-in"
+        >
             <div className="relative w-full py-8 md:py-16">
             <div aria-hidden="true" className="pointer-events-none absolute left-3 top-0 h-full w-0.5 rounded-full bg-linear-to-b from-brand/10 via-white/20 to-blue/10 md:left-1/2 md:-translate-x-1/2" />
                 <div className="flex flex-col gap-10 md:gap-14">

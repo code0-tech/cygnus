@@ -23,7 +23,13 @@ export function FaqSection({ content }: FaqSectionProps) {
     if (!content || !content.items) return
 
     return (
-        <Section sectionType="FaqSection" showLinkButton={false} showBlur={false}>
+        <Section
+            heading={content.sectionHeading}
+            description={content.sectionDescription}
+            linkButton={content.sectionLinkButton}
+            showLinkButton={false}
+            showBlur={false}
+        >
             <div aria-hidden="true" className="pointer-events-none absolute inset-0 [background:radial-gradient(circle,rgba(255,255,255,0.05),transparent_50%)]" />
             <div className={"md:w-[50vw] flex flex-col gap-4 mx-auto"}>
                 {content.items.map((faq, index) => (
