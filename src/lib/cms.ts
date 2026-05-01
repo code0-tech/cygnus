@@ -2,7 +2,7 @@
 
 import { DEFAULT_LOCALE, type AppLocale } from "@/lib/i18n"
 import { getPayloadClient } from "@/lib/payloadClient"
-import type { Action, Blog, CookieBanner, Feature, Footer, Job, Media, NavbarItem, Page, RoadmapItem as PayloadRoadmapItem, Section, TeamMember } from "@/payload-types"
+import type { Action, Blog, CookieBanner, Feature, Footer, Job, Media, NavbarItem, Page, Section, TeamMember } from "@/payload-types"
 import { cache } from "react"
 
 const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build" || process.env.npm_lifecycle_event === "build"
@@ -24,6 +24,7 @@ export type ActionsLayoutBlock = Extract<PageLayoutBlock, { blockType: "actions"
 export type MarkdownLayoutBlock = Extract<PageLayoutBlock, { blockType: "markdown" }>
 export type ContactLayoutBlock = Extract<PageLayoutBlock, { blockType: "contact" }>
 export type BlogLayoutBlock = Extract<PageLayoutBlock, { blockType: "blog" }>
+export type RoadmapLayoutBlock = Extract<PageLayoutBlock, { blockType: "roadmap" }>
 
 
 type FeatureSlug = Feature["slug"]
@@ -58,8 +59,6 @@ type ActionDetailItem = Pick<Action, "id" | "slug" | "title" | "shortDescription
 export type JobItem = Pick<Job, "id" | "title" | "slug" | "category" | "type" | "location" | "description" | "order">
 type JobDetailItem = Pick<Job, "id" | "title" | "slug" | "category" | "type" | "location" | "description" | "order" | "content">
 export type TeamMemberItem = Pick<TeamMember, "id" | "name" | "image" | "shortDescription" | "about" | "role" | "joinedAt">
-type RoadmapItem = Pick<PayloadRoadmapItem, "id" | "time" | "title" | "description">
-
 export type BlogPostItem = Pick<Blog, "id" | "title" | "slug" | "content" | "createdAt" | "shortDescription" | "isPinned"> & {
     heroImage?: (number | null) | Media
     meta?: Blog["meta"]
@@ -518,22 +517,6 @@ const getBlogSlugsCached = cache(async (locale: AppLocale): Promise<string[]> =>
     })
 })
 
-const getRoadmapItemsCached = cache(async (locale: AppLocale): Promise<RoadmapItem[]> => {
-    return withCmsFallback(`getRoadmapItems(${locale})`, [], async () => {
-        const payload = await getPayloadClient()
-        const result = await payload.find({
-            collection: "roadmapItems",
-            locale,
-            fallbackLocale: DEFAULT_LOCALE,
-            pagination: false,
-            sort: "-createdAt",
-            depth: 0,
-        })
-
-        return (result.docs as RoadmapItem[]) ?? []
-    })
-})
-
 const getSectionsCached = cache(async (locale: AppLocale): Promise<Section[]> => {
     return withCmsFallback(`getSections(${locale})`, [], async () => {
         const payload = await getPayloadClient()
@@ -627,10 +610,6 @@ export async function getBlogPosts(
 
 export async function getBlogSlugs(locale: AppLocale = DEFAULT_LOCALE): Promise<string[]> {
     return getBlogSlugsCached(locale)
-}
-
-export async function getRoadmapItems(locale: AppLocale = DEFAULT_LOCALE): Promise<RoadmapItem[]> {
-    return getRoadmapItemsCached(locale)
 }
 
 export async function getSections(locale: AppLocale = DEFAULT_LOCALE): Promise<Section[]> {

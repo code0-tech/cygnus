@@ -16,7 +16,6 @@ import { Jobs } from './collections/jobs'
 import { Media } from './collections/media'
 import { NavbarItems } from './collections/navbarItems'
 import { Pages } from './collections/pages'
-import { RoadmapItems } from './collections/roadmapItems'
 import { Sections } from './collections/sections'
 import { SubscriptionCollection } from './collections/subscriptionConfig'
 import { TeamMembers } from './collections/teamMembers'
@@ -43,7 +42,7 @@ export default buildConfig({
         locales: ['en', 'de'],
         defaultLocale: 'en',
     },
-    collections: [Users, Media, NavbarItems, Sections, Footer, CookieBanner, Pages, Features, Actions, Jobs, Blog, RoadmapItems, TeamMembers, SubscriptionCollection],
+    collections: [Users, Media, NavbarItems, Sections, Footer, CookieBanner, Pages, Features, Actions, Jobs, Blog, TeamMembers, SubscriptionCollection],
     jobs: {
         autoRun: [{
             cron: '*/5 * * * *', // Check every 5 minutes
@@ -97,7 +96,6 @@ export default buildConfig({
                 { slug: 'actions' },
                 { slug: 'jobs' },
                 { slug: 'blog' },
-                { slug: 'roadmapItems' },
                 { slug: 'team-members' },
                 { slug: 'subscriptionConfig' }
             ]

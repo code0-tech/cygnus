@@ -78,7 +78,6 @@ export interface Config {
     actions: Action;
     jobs: Job;
     blog: Blog;
-    roadmapItems: RoadmapItem;
     'team-members': TeamMember;
     subscriptionConfig: SubscriptionConfig;
     exports: Export;
@@ -102,7 +101,6 @@ export interface Config {
     actions: ActionsSelect<false> | ActionsSelect<true>;
     jobs: JobsSelect<false> | JobsSelect<true>;
     blog: BlogSelect<false> | BlogSelect<true>;
-    roadmapItems: RoadmapItemsSelect<false> | RoadmapItemsSelect<true>;
     'team-members': TeamMembersSelect<false> | TeamMembersSelect<true>;
     subscriptionConfig: SubscriptionConfigSelect<false> | SubscriptionConfigSelect<true>;
     exports: ExportsSelect<false> | ExportsSelect<true>;
@@ -561,6 +559,17 @@ export interface Page {
             blockName?: string | null;
             blockType: 'cardRow';
           }
+        | {
+            items: {
+              time: string;
+              title: string;
+              description: string;
+              id?: string | null;
+            }[];
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'roadmap';
+          }
       )[]
     | null;
   meta?: {
@@ -707,18 +716,6 @@ export interface TeamMember {
   about?: string | null;
   role?: string | null;
   joinedAt?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "roadmapItems".
- */
-export interface RoadmapItem {
-  id: number;
-  time: string;
-  title: string;
-  description: string;
   updatedAt: string;
   createdAt: string;
 }
@@ -1088,10 +1085,6 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'blog';
         value: number | Blog;
-      } | null)
-    | ({
-        relationTo: 'roadmapItems';
-        value: number | RoadmapItem;
       } | null)
     | ({
         relationTo: 'team-members';
@@ -1564,6 +1557,20 @@ export interface PagesSelect<T extends boolean = true> {
               id?: T;
               blockName?: T;
             };
+        roadmap?:
+          | T
+          | {
+              items?:
+                | T
+                | {
+                    time?: T;
+                    title?: T;
+                    description?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
       };
   meta?:
     | T
@@ -1650,17 +1657,6 @@ export interface BlogSelect<T extends boolean = true> {
         description?: T;
         image?: T;
       };
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "roadmapItems_select".
- */
-export interface RoadmapItemsSelect<T extends boolean = true> {
-  time?: T;
-  title?: T;
-  description?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1967,7 +1963,6 @@ export interface TaskCreateCollectionExport {
       | 'actions'
       | 'jobs'
       | 'blog'
-      | 'roadmapItems'
       | 'team-members'
       | 'subscriptionConfig'
       | 'exports'

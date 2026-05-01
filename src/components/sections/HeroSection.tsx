@@ -10,40 +10,14 @@ import React, { useState } from "react"
 import Grainient from "../ui/Granient"
 import { HapticButtonLink } from "../ui/HapticButtonLink"
 import { StableBadge } from "../ui/StableBadge"
-
-interface HeroSectionButton {
-    label: string
-    url: string
-    variant?: "none" | "normal" | "outlined" | "filled" | null
-    id?: string | null
-}
-
-interface HeroSectionText {
-    text: string
-    id?: string | null
-}
-
-interface HeroSectionContent {
-    badge?: string | null
-    badge_link?: string | null
-    heading?: string | null
-    centered?: boolean | null
-    grainientColors?: {
-        color1?: string | null
-        color2?: string | null
-        color3?: string | null
-        backgroundColor?: string | null
-    } | null
-    texts?: HeroSectionText[] | null
-    buttons?: HeroSectionButton[] | null
-}
+import { HeroLayoutBlock } from "@/lib/cms"
 
 interface HeroSectionProps {
-    content?: HeroSectionContent | null
+    content?: HeroLayoutBlock | null
     imageSrc?: string
 }
 
-export const HeroSection: React.FC<HeroSectionProps> = ({ content, imageSrc = "/code0_software.png" }) => {
+export function HeroSection({ content, imageSrc = "/code0_software.png" }: HeroSectionProps) {
     const [isProductHuntBadgeVisible, setIsProductHuntBadgeVisible] = useState(false)
 
     if (!content?.heading) return

@@ -1,14 +1,11 @@
 import { FeatureBento } from "@/components/bentos/FeatureBento"
 import { RuntimeBento } from "@/components/bentos/RuntimeBento"
 import { Section } from "@/components/ui/Section"
+import { BentoLayoutBlock } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 
-interface BentoSectionContent {
-    variant?: "feature" | "runtime" | null
-}
-
 interface BentoSectionProps {
-    content?: BentoSectionContent | null
+    content?: BentoLayoutBlock | null
     locale?: AppLocale
 }
 

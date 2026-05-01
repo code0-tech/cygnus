@@ -2,36 +2,22 @@
 
 import { LinkButton } from "@/components/ui/LinkButton"
 import { Section } from "@/components/ui/Section"
+import { CardRowLayoutBlock } from "@/lib/cms"
 import type { Media } from "@/payload-types"
 import { m as motion, type Variants } from "motion/react"
 import Image from "next/image"
 import React, { Children, type ReactNode } from "react"
 
-interface CardRowCard {
-    title?: string | null
-    description?: string | null
-    link?: {
-        label?: string | null
-        url?: string | null
-    } | null
-    image?: number | Media | null
-    id?: string | null
-}
-
-interface CardRowSectionContent {
-    cards?: CardRowCard[] | null
-}
-
 interface CardRowSectionProps {
-    content?: CardRowSectionContent | null
+    content?: CardRowLayoutBlock | null
     children?: ReactNode
 }
 
-function getImageUrl(image: CardRowCard["image"]) {
+function getImageUrl(image: number | Media | null | undefined) {
     return typeof image === "object" && image?.url ? image.url : null
 }
 
-export const CardRowSection: React.FC<CardRowSectionProps> = ({ content, children }) => {
+export function CardRowSection({ content, children }: CardRowSectionProps) {
     const cards = content?.cards?.filter((card) => Boolean(card.title)) ?? []
     const fallbackImages = Children.toArray(children)
     if (cards.length === 0) return null

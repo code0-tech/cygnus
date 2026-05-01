@@ -5,22 +5,13 @@ import { Section } from "@/components/ui/Section"
 import Image from "next/image"
 import type { Media } from "@/payload-types"
 import { m as motion, type Variants } from "motion/react"
-
-interface BrandSectionLogo {
-    logo: number | Media
-    id?: string | null
-}
-
-interface BrandSectionContent {
-    description?: string | null
-    logos?: BrandSectionLogo[] | null
-}
+import { BrandLayoutBlock } from "@/lib/cms"
 
 interface BrandSectionProps {
-    content?: BrandSectionContent | null
+    content?: BrandLayoutBlock | null
 }
 
-export const BrandSection: React.FC<BrandSectionProps> = ({ content }) => {
+export function BrandSection({ content }: BrandSectionProps) {
     if (!content) return
 
     const logos = (content.logos ?? [])

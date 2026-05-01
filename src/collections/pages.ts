@@ -12,6 +12,7 @@ import { InstallBlock } from "../blocks/InstallBlock"
 import { JobsBlock } from "../blocks/JobsBlock"
 import { MarkdownBlock } from "../blocks/MarkdownBlock"
 import { OffsetCardsBlock } from "../blocks/OffsetCardsBlock"
+import { RoadmapBlock } from "../blocks/RoadmapBlock"
 import type { CollectionConfig } from "payload"
 
 export const Pages: CollectionConfig = {
@@ -59,7 +60,7 @@ export const Pages: CollectionConfig = {
       name: "layout",
       label: "Layout",
       type: "blocks",
-      blocks: [HeroBlock, BentoBlock, OffsetCardsBlock, InstallBlock, SwipeCardBlock, BrandBlock, FaqBlock, CtaBlock, JobsBlock, BlogBlock, ActionBlock, MarkdownBlock, ContactBlock, CardRowBlock],
+      blocks: [HeroBlock, BentoBlock, OffsetCardsBlock, InstallBlock, SwipeCardBlock, BrandBlock, FaqBlock, CtaBlock, JobsBlock, BlogBlock, ActionBlock, MarkdownBlock, ContactBlock, CardRowBlock, RoadmapBlock],
       required: false,
       localized: true,
     },

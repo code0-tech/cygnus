@@ -2,25 +2,16 @@
 
 import { AccordionItem } from "@/components/ui/Accordion"
 import { Section } from "@/components/ui/Section"
+import { FaqLayoutBlock } from "@/lib/cms"
 import { m as motion } from "motion/react"
 import React, { useCallback, useState } from "react"
 import { useWebHaptics } from "web-haptics/react"
 
-interface FaqItem {
-    question: string
-    answer: string
-    id?: string | null
-}
-
-interface FaqSectionContent {
-    items: FaqItem[] | null
-}
-
 interface FaqSectionProps {
-    content?: FaqSectionContent | null
+    content?: FaqLayoutBlock | null
 }
 
-export const FaqSection: React.FC<FaqSectionProps> = ({ content }) => {
+export function FaqSection({ content }: FaqSectionProps) {
     const [openItem, setOpenItem] = useState<number | null>(null)
     const { trigger } =useWebHaptics()
 
@@ -34,7 +25,7 @@ export const FaqSection: React.FC<FaqSectionProps> = ({ content }) => {
     return (
         <Section sectionType="FaqSection" showLinkButton={false} showBlur={false}>
             <div aria-hidden="true" className="pointer-events-none absolute inset-0 [background:radial-gradient(circle,rgba(255,255,255,0.05),transparent_50%)]" />
-            <div className={" md:w-[50vw] flex flex-col gap-4 mx-auto"}>
+            <div className={"md:w-[50vw] flex flex-col gap-4 mx-auto"}>
                 {content.items.map((faq, index) => (
                     <motion.div
                         key={`${faq.question}-${index}`}

@@ -2,32 +2,15 @@
 
 import { LinkButton } from "@/components/ui/LinkButton"
 import { Section } from "@/components/ui/Section"
+import { OffsetCardsLayoutBlock } from "@/lib/cms"
 import { ANIMATION_PRESETS, type AnimationPreset } from "@/lib/utils"
 import type { Media } from "@/payload-types"
 import { m as motion, type Variants } from "motion/react"
 import Image from "next/image"
 import React from "react"
 
-interface OffsetCardItem {
-    label: string
-    title: string
-    description: string
-    image?: Media | number | null
-    bulletPoints?: string[] | null
-    link?: {
-        label?: string | null
-        url?: string | null
-    } | null
-    id?: string | null
-}
-
-interface OffsetCardsSectionContent {
-    showSectionHeader?: boolean | null
-    cards: OffsetCardItem[] | null
-}
-
 interface OffsetCardsSectionProps {
-    content?: OffsetCardsSectionContent | null
+    content?: OffsetCardsLayoutBlock | null
 }
 
 const OFFSET_CARD_ANIMATION_SEQUENCE: Exclude<AnimationPreset, "none">[] = [
@@ -36,7 +19,7 @@ const OFFSET_CARD_ANIMATION_SEQUENCE: Exclude<AnimationPreset, "none">[] = [
     "slide-left",
 ]
 
-export const OffsetCardsSection: React.FC<OffsetCardsSectionProps> = ({ content }) => {
+export function OffsetCardsSection({ content }: OffsetCardsSectionProps) {
     if (!content?.cards?.length) return null
 
     const staggerContainer: Variants = {
