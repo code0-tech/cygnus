@@ -390,6 +390,12 @@ export interface Page {
             blockType: 'hero';
           }
         | {
+            variant: 'feature' | 'runtime';
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'bento';
+          }
+        | {
             showSectionHeader?: boolean | null;
             cards: {
               label: string;
@@ -1370,6 +1376,13 @@ export interface PagesSelect<T extends boolean = true> {
                     variant?: T;
                     id?: T;
                   };
+              id?: T;
+              blockName?: T;
+            };
+        bento?:
+          | T
+          | {
+              variant?: T;
               id?: T;
               blockName?: T;
             };

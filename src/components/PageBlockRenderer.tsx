@@ -2,6 +2,7 @@ import { BrandSection } from "@/components/sections/BrandSection"
 import { CardRowSection } from "@/components/sections/CardRowSection"
 import { CtaSection } from "@/components/sections/CtaSection"
 import { FaqSection } from "@/components/sections/FaqSection"
+import { BentoSection } from "@/components/sections/BentoSection"
 import { HeroSection } from "@/components/sections/HeroSection"
 import { InstallSection } from "@/components/sections/InstallSection"
 import { OffsetCardsSection } from "@/components/sections/OffsetCardsSection"
@@ -23,6 +24,8 @@ function renderPageBlock(block: PageBlock, options: Pick<PageBlocksRendererProps
     switch (block.blockType) {
         case "hero":
             return <HeroSection content={block} />
+        case "bento":
+            return <BentoSection content={block} locale={options.locale} />
         case "brand":
             return <BrandSection content={block} />
         case "offsetCards":

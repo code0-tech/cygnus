@@ -11,6 +11,7 @@ const hasDatabaseUrl = Boolean(process.env.DATABASE_URL?.trim())
 type PageLayoutBlock = NonNullable<Page["layout"]>[number]
 
 export type HeroLayoutBlock = Extract<PageLayoutBlock, { blockType: "hero" }>
+export type BentoLayoutBlock = Extract<PageLayoutBlock, { blockType: "bento" }>
 export type OffsetCardsLayoutBlock = Extract<PageLayoutBlock, { blockType: "offsetCards" }>
 export type InstallLayoutBlock = Extract<PageLayoutBlock, { blockType: "install" }>
 export type SwipeCardsLayoutBlock = Extract<PageLayoutBlock, { blockType: "swipeCards" }>

@@ -13,6 +13,7 @@ import * as migration_20260427_010_remove_edition_hero_block from './20260427_01
 import * as migration_20260428_011_card_row_block from './20260428_011_card_row_block';
 import * as migration_20260428_012_offset_cards_block from './20260428_012_offset_cards_block';
 import * as migration_20260428_013_install_and_swipe_cards_blocks from './20260428_013_install_and_swipe_cards_blocks';
+import * as migration_20260501_014_bento_block from './20260501_014_bento_block';
 
 export const migrations = [
   {
@@ -89,5 +90,10 @@ export const migrations = [
     up: migration_20260428_013_install_and_swipe_cards_blocks.up,
     down: migration_20260428_013_install_and_swipe_cards_blocks.down,
     name: '20260428_013_install_and_swipe_cards_blocks'
+  },
+  {
+    up: migration_20260501_014_bento_block.up,
+    down: migration_20260501_014_bento_block.down,
+    name: '20260501_014_bento_block'
   },
 ];

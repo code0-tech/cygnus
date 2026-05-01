@@ -6,6 +6,7 @@ import { CardRowBlock } from "../blocks/CardRowBlock"
 import { ContactBlock } from "../blocks/ContactBlock"
 import { CtaBlock } from "../blocks/CtaBlock"
 import { FaqBlock } from "../blocks/FaqBlock"
+import { BentoBlock } from "../blocks/BentoBlock"
 import { HeroBlock } from "../blocks/HeroBlock"
 import { InstallBlock } from "../blocks/InstallBlock"
 import { JobsBlock } from "../blocks/JobsBlock"
@@ -58,7 +59,7 @@ export const Pages: CollectionConfig = {
       name: "layout",
       label: "Layout",
       type: "blocks",
-      blocks: [HeroBlock, OffsetCardsBlock, InstallBlock, SwipeCardBlock, BrandBlock, FaqBlock, CtaBlock, JobsBlock, BlogBlock, ActionBlock, MarkdownBlock, ContactBlock, CardRowBlock],
+      blocks: [HeroBlock, BentoBlock, OffsetCardsBlock, InstallBlock, SwipeCardBlock, BrandBlock, FaqBlock, CtaBlock, JobsBlock, BlogBlock, ActionBlock, MarkdownBlock, ContactBlock, CardRowBlock],
       required: false,
       localized: true,
     },
