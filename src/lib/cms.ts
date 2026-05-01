@@ -25,6 +25,7 @@ export type MarkdownLayoutBlock = Extract<PageLayoutBlock, { blockType: "markdow
 export type ContactLayoutBlock = Extract<PageLayoutBlock, { blockType: "contact" }>
 export type BlogLayoutBlock = Extract<PageLayoutBlock, { blockType: "blog" }>
 export type RoadmapLayoutBlock = Extract<PageLayoutBlock, { blockType: "roadmap" }>
+export type ScrollCardsLayoutBlock = Extract<PageLayoutBlock, { blockType: "scrollCards" }>
 
 
 type FeatureSlug = Feature["slug"]

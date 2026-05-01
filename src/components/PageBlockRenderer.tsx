@@ -7,6 +7,7 @@ import { HeroSection } from "@/components/sections/HeroSection"
 import { InstallSection } from "@/components/sections/InstallSection"
 import { OffsetCardsSection } from "@/components/sections/OffsetCardsSection"
 import { RoadmapSection } from "@/components/sections/RoadmapSection"
+import { ScrollCardSection } from "@/components/sections/ScrollCardSection"
 import { SwipeCardSection } from "@/components/sections/SwipeCardSection"
 import type { AppLocale } from "@/lib/i18n"
 import type { Page } from "@/payload-types"
@@ -41,6 +42,8 @@ function renderPageBlock(block: PageBlock, options: Pick<PageBlocksRendererProps
             return <InstallSection content={block} />
         case "roadmap":
             return <RoadmapSection content={block} />
+        case "scrollCards":
+            return <ScrollCardSection content={block} />
         case "swipeCards":
             return <SwipeCardSection content={block} />
         default:

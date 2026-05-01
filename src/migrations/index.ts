@@ -16,6 +16,7 @@ import * as migration_20260428_013_install_and_swipe_cards_blocks from './202604
 import * as migration_20260501_014_bento_block from './20260501_014_bento_block';
 import * as migration_20260501_015_roadmap_block from './20260501_015_roadmap_block';
 import * as migration_20260501_016_inline_section_fields from './20260501_016_inline_section_fields';
+import * as migration_20260501_017_scroll_card_block from './20260501_017_scroll_card_block';
 
 export const migrations = [
   {
@@ -107,5 +108,10 @@ export const migrations = [
     up: migration_20260501_016_inline_section_fields.up,
     down: migration_20260501_016_inline_section_fields.down,
     name: '20260501_016_inline_section_fields'
+  },
+  {
+    up: migration_20260501_017_scroll_card_block.up,
+    down: migration_20260501_017_scroll_card_block.down,
+    name: '20260501_017_scroll_card_block'
   },
 ];

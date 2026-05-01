@@ -574,6 +574,26 @@ export interface Page {
             blockName?: string | null;
             blockType: 'roadmap';
           }
+        | {
+            items: {
+              title: string;
+              description: string;
+              showImageBorder?: boolean | null;
+              sectionLayout: 'imageRight' | 'imageLeft';
+              gradient?: ('blue' | 'yellow' | 'pink' | 'aqua' | 'brand' | 'neutral') | null;
+              gradientDirection?: ('topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight') | null;
+              bulletPoints?: string[] | null;
+              image?: (number | null) | Media;
+              link?: {
+                label?: string | null;
+                url?: string | null;
+              };
+              id?: string | null;
+            }[];
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'scrollCards';
+          }
       )[]
     | null;
   meta?: {
@@ -1588,6 +1608,31 @@ export interface PagesSelect<T extends boolean = true> {
                     time?: T;
                     title?: T;
                     description?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        scrollCards?:
+          | T
+          | {
+              items?:
+                | T
+                | {
+                    title?: T;
+                    description?: T;
+                    showImageBorder?: T;
+                    sectionLayout?: T;
+                    gradient?: T;
+                    gradientDirection?: T;
+                    bulletPoints?: T;
+                    image?: T;
+                    link?:
+                      | T
+                      | {
+                          label?: T;
+                          url?: T;
+                        };
                     id?: T;
                   };
               id?: T;
