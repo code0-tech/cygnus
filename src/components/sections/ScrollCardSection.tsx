@@ -197,7 +197,7 @@ export function ScrollCardSection({ content }: ScrollCardSectionProps) {
                                 </div>
 
                                 <div className={cn(
-                                    "relative z-10 min-h-72 overflow-hidden rounded-2xl md:min-h-full",
+                                    "relative z-10 aspect-video w-full self-center overflow-hidden rounded-2xl",
                                     showImageBorder && "border border-white/10",
                                     isImageLeft && "md:order-1",
                                 )}>
@@ -207,7 +207,7 @@ export function ScrollCardSection({ content }: ScrollCardSectionProps) {
                                             alt={image.alt ?? item.title}
                                             fill
                                             sizes="(min-width: 768px) 50vw, 100vw"
-                                            className="object-cover"
+                                            className="object-contain object-center"
                                         />
                                     )}
                                 </div>
