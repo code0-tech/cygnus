@@ -64,9 +64,11 @@ export function EditionUseCaseCard({
                     </p>
 
                     {link?.url && link?.label && (
-                        <LinkButton href={link.url} className="mt-auto pt-2">
-                            {link.label}
-                        </LinkButton>
+                        <div className="mt-auto pt-2">
+                            <LinkButton href={link.url} className="my-2">
+                                {link.label}
+                            </LinkButton>
+                        </div>
                     )}
                 </div>
             </div>

@@ -113,14 +113,19 @@ export function SwipeCardSection({ content }: SwipeCardSectionProps) {
                             onDragEnd={handleDragEnd}
                         >
                             <div className="relative flex w-full items-stretch justify-center">
-                                <div className="h-full w-[64vw] max-w-4xl opacity-0 pointer-events-none">
-                                    <EditionUseCaseCard
-                                        title={cards[focusedIndex]?.title ?? ""}
-                                        description={cards[focusedIndex]?.description ?? ""}
-                                        image={cards[focusedIndex]?.image}
-                                        link={cards[focusedIndex]?.link}
-                                        isFocused
-                                    />
+                                <div className="invisible pointer-events-none grid w-[60%]">
+                                    {cards.map((card, index) => (
+                                        <div key={card.id || index} className="col-start-1 row-start-1">
+                                            <EditionUseCaseCard
+                                                title={card.title}
+                                                description={card.description}
+                                                image={card.image}
+                                                link={card.link}
+                                                isFocused
+                                                className="h-auto"
+                                            />
+                                        </div>
+                                    ))}
                                 </div>
                                 {cards.map((card, index) => {
                                     const offset = index - focusedIndex
@@ -132,7 +137,7 @@ export function SwipeCardSection({ content }: SwipeCardSectionProps) {
                                             key={card.id || index}
                                             className={cn(
                                                 "absolute inset-y-0 h-full w-full transition-all duration-500 ease-out",
-                                                "left-1/2 w-[64vw] max-w-4xl",
+                                                "left-1/2 w-[60%]",
                                                 !isVisibleMobile && "lg:opacity-100 lg:pointer-events-auto opacity-0 pointer-events-none",
                                                 !isVisibleDesktop && "lg:opacity-0 lg:pointer-events-none",
                                             )}
