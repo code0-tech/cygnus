@@ -99,26 +99,21 @@ export function SwipeCardSection({ content }: SwipeCardSectionProps) {
                     </p>
                 </motion.div>
 
-                <motion.div className="relative w-full" variants={carouselVariants}>
-                    <div className="relative flex items-center justify-center gap-4 px-2 md:gap-8 md:px-16">
-                        <Button
-                            onClick={handlePrevious}
-                            variant="filled"
-                            className="absolute left-0 z-20 shrink-0 size-12! rounded-full! p-0!"
-                            aria-label="Previous card"
-                        >
-                            <IconChevronLeft className="size-6 mr-0.5" />
-                        </Button>
+                <motion.div className="relative w-full overflow-hidden" variants={carouselVariants}>
+                    <div aria-hidden="true" className="pointer-events-none absolute -inset-y-6 left-0 z-30 w-0 bg-linear-to-r from-primary via-primary/80 to-transparent lg:w-40" />
+                    <div aria-hidden="true" className="pointer-events-none absolute -inset-y-6 right-0 z-30 w-0 bg-linear-to-l from-primary via-primary/80 to-transparent lg:w-40" />
+
+                    <div className="relative flex items-center justify-center gap-4 px-2 md:gap-8">
 
                         <motion.div
-                            className="relative flex w-full items-center justify-center px-0 md:px-2 touch-pan-y"
+                            className="relative flex w-full items-center justify-center px-0 touch-pan-y"
                             drag="x"
                             dragConstraints={{ left: 0, right: 0 }}
                             dragElastic={0.08}
                             onDragEnd={handleDragEnd}
                         >
                             <div className="relative flex w-full items-stretch justify-center">
-                                <div className="w-full max-w-full md:max-w-md opacity-0 pointer-events-none">
+                                <div className="h-full w-[64vw] max-w-4xl opacity-0 pointer-events-none">
                                     <EditionUseCaseCard
                                         title={cards[focusedIndex]?.title ?? ""}
                                         description={cards[focusedIndex]?.description ?? ""}
@@ -136,13 +131,13 @@ export function SwipeCardSection({ content }: SwipeCardSectionProps) {
                                         <div
                                             key={card.id || index}
                                             className={cn(
-                                                "absolute top-0 w-full transition-all duration-500 ease-out",
-                                                "max-w-full md:max-w-md",
+                                                "absolute inset-y-0 h-full w-full transition-all duration-500 ease-out",
+                                                "left-1/2 w-[64vw] max-w-4xl",
                                                 !isVisibleMobile && "lg:opacity-100 lg:pointer-events-auto opacity-0 pointer-events-none",
                                                 !isVisibleDesktop && "lg:opacity-0 lg:pointer-events-none",
                                             )}
                                             style={{
-                                                transform: `translateX(${offset * 110}%)`,
+                                                transform: `translateX(calc(-50% + ${offset * 104}%))`,
                                             }}
                                         >
                                             <EditionUseCaseCard
@@ -157,16 +152,27 @@ export function SwipeCardSection({ content }: SwipeCardSectionProps) {
                                 })}
                             </div>
                         </motion.div>
-
-                        <Button
-                            onClick={handleNext}
-                            variant="filled"
-                            className="absolute right-0 z-20 shrink-0 size-12! rounded-full! p-0!"
-                            aria-label="Next card"
-                        >
-                            <IconChevronRight className="size-6 ml-0.5" />
-                        </Button>
                     </div>
+                </motion.div>
+
+                <motion.div className="z-30 flex items-center justify-center gap-4" variants={staggerItem}>
+                    <Button
+                        onClick={handlePrevious}
+                        variant="filled"
+                        className="shrink-0 size-12! rounded-full! p-0!"
+                        aria-label="Previous card"
+                    >
+                        <IconChevronLeft className="size-6 mr-0.5" />
+                    </Button>
+
+                    <Button
+                        onClick={handleNext}
+                        variant="filled"
+                        className="shrink-0 size-12! rounded-full! p-0!"
+                        aria-label="Next card"
+                    >
+                        <IconChevronRight className="size-6 ml-0.5" />
+                    </Button>
                 </motion.div>
             </motion.div>
         </Section>
