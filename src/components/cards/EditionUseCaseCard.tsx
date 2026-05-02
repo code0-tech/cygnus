@@ -36,11 +36,11 @@ export function EditionUseCaseCard({
         >
             <div aria-hidden="true" className="glass-card-topline"/>
             <div
-                className="relative flex h-full flex-col items-stretch justify-start overflow-hidden rounded-[1.6rem]">
+                className="relative flex h-full flex-col items-stretch justify-start overflow-hidden rounded-2xl">
                 <div className={"p-2"}>
                     {imageUrl ? (
                         <div
-                            className="relative overflow-hidden aspect-video w-full rounded-2xl border border-white/8 bg-primary/40">
+                            className="relative overflow-hidden aspect-video w-full rounded-2xl border border-white/10 bg-primary/50">
                             <Image
                                 src={imageUrl}
                                 alt={title}
@@ -59,7 +59,7 @@ export function EditionUseCaseCard({
                     <h3 className="line-clamp-2 text-xl font-semibold text-white">
                         {title}
                     </h3>
-                    <p className="mb-2 text-sm text-white/70 leading-relaxed">
+                    <p className="mb-2 text-sm text-white/75 leading-relaxed">
                         {description}
                     </p>
 
