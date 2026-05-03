@@ -231,7 +231,7 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ locale, items, fo
                                 </Button>
                             </Link>
                             <Link href={discordHref} target="_blank" rel="noreferrer">
-                                <Button variant="filled" className="h-9! px-2! bg-white/80! hover:bg-white! text-primary!">
+                                <Button variant="normal" className="h-9! px-2! bg-white/80! hover:bg-white! text-primary!">
                                     <span className="hidden xl:inline">Discord</span>
                                     <SiDiscord size={18} className="xl:hidden"/>
                                 </Button>

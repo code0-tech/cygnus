@@ -145,34 +145,39 @@ export async function BlogPost({ slug, locale }: BlogPostProps) {
                 </div>
             )}
 
-            {author ? (
-                <div className="flex items-center gap-3 text-sm text-white/50">
-                    {authorImage?.url ? (
-                        <Image
-                            src={authorImage.url}
-                            alt={authorImage.alt ?? author.name}
-                            width={40}
-                            height={40}
-                            className="size-10 shrink-0 rounded-full object-cover"
-                        />
-                    ) : (
-                        <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-white/10 text-xs font-semibold text-white/75">
-                            {getInitials(author.name)}
-                        </div>
-                    )}
-                    <div className="min-w-0 text-left">
-                        <p className="font-medium text-white/75">{author.name}</p>
-                        <p className="text-xs text-white/50">
-                            {[author.role, publishedDate].filter(Boolean).join(" - ")}
-                        </p>
-                    </div>
-                </div>
-            ) : (
-                <p className="text-sm text-white/60">{publishedDate}</p>
-            )}
-
             <div className="grid grid-cols-1 gap-12 lg:grid-cols-4">
-                <TableOfContents headings={headings} />
+                <aside className="space-y-6">
+                    {author ? (
+                        <div className="flex gap-3 text-sm text-white/50">
+                            {authorImage?.url ? (
+                                <Image
+                                    src={authorImage.url}
+                                    alt={authorImage.alt ?? author.name}
+                                    width={40}
+                                    height={40}
+                                    className="size-10 shrink-0 rounded-full object-cover"
+                                />
+                            ) : (
+                                <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-white/10 text-xs font-semibold text-white/75">
+                                    {getInitials(author.name)}
+                                </div>
+                            )}
+                            <div className="min-w-0 text-left">
+                                <p className="font-medium text-white/75">{author.name}</p>
+                                <p className="text-xs text-white/50">
+                                    {author.role}
+                                </p>
+                                <p className="text-xs text-white/50">
+                                    {publishedDate}
+                                </p>
+                            </div>
+                        </div>
+                    ) : (
+                        <p className="text-sm text-white/60">{publishedDate}</p>
+                    )}
+
+                    <TableOfContents headings={headings} />
+                </aside>
                 <article className="lg:col-span-3">
                     <MarkdownContent content={contentHtmlWithIds} />
                 </article>
