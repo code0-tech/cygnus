@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "postbuild": "node scripts/prepare-standalone.mjs",
+    "postbuild": "next-sitemap --config next-sitemap.config.cjs && node scripts/prepare-standalone.mjs",
     "start": "next start",
     "standalone": "node .next/standalone/server.js",
     "migrate": "payload migrate",
@@ -34,6 +34,7 @@
     "knip": "^6.11.0",
     "motion": "^12.38.0",
     "next": "^16.2.4",
+    "next-sitemap": "^4.2.3",
     "ogl": "^1.0.11",
     "payload": "3.84.1",
     "react": "^19.2.5",
