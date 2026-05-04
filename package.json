@@ -20,7 +20,7 @@
   "dependencies": {
     "@c15t/nextjs": "^2.0.4",
     "@c15t/scripts": "^2.0.1",
-    "@code0-tech/pictor": "^0.6.4",
+    "@code0-tech/pictor": "^0.7.0",
     "@icons-pack/react-simple-icons": "^13.13.0",
     "@payloadcms/db-postgres": "3.84.1",
     "@payloadcms/email-nodemailer": "3.84.1",
