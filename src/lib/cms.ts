@@ -2,7 +2,7 @@
 
 import { DEFAULT_LOCALE, type AppLocale } from "@/lib/i18n"
 import { getPayloadClient } from "@/lib/payloadClient"
-import type { Action, Blog, CookieBanner, Feature, Footer, Job, Media, NavbarItem, Page, RoadmapItem as PayloadRoadmapItem, Section, TeamMember } from "@/payload-types"
+import type { Action, Blog, CookieBanner, Feature, Footer, Job, Media, NavbarItem, Page, TeamMember } from "@/payload-types"
 import { cache } from "react"
 
 const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build" || process.env.npm_lifecycle_event === "build"
@@ -11,20 +11,21 @@ const hasDatabaseUrl = Boolean(process.env.DATABASE_URL?.trim())
 type PageLayoutBlock = NonNullable<Page["layout"]>[number]
 
 export type HeroLayoutBlock = Extract<PageLayoutBlock, { blockType: "hero" }>
-export type EditionHeroLayoutBlock = Extract<PageLayoutBlock, { blockType: "editionHero" }>
-export type EditionFeaturesLayoutBlock = Extract<PageLayoutBlock, { blockType: "editionFeatures" }>
-export type EditionInstallLayoutBlock = Extract<PageLayoutBlock, { blockType: "editionInstall" }>
-export type EditionUseCaseLayoutBlock = Extract<PageLayoutBlock, { blockType: "editionUseCases" }>
+export type BentoLayoutBlock = Extract<PageLayoutBlock, { blockType: "bento" }>
+export type OffsetCardsLayoutBlock = Extract<PageLayoutBlock, { blockType: "offsetCards" }>
+export type InstallLayoutBlock = Extract<PageLayoutBlock, { blockType: "install" }>
+export type SwipeCardsLayoutBlock = Extract<PageLayoutBlock, { blockType: "swipeCards" }>
 export type BrandLayoutBlock = Extract<PageLayoutBlock, { blockType: "brand" }>
 export type CtaLayoutBlock = Extract<PageLayoutBlock, { blockType: "cta" }>
 export type FaqLayoutBlock = Extract<PageLayoutBlock, { blockType: "faq" }>
-export type UseCaseLayoutBlock = Extract<PageLayoutBlock, { blockType: "usecase" }>
-export type DeploymentLayoutBlock = Extract<PageLayoutBlock, { blockType: "deployment" }>
+export type CardRowLayoutBlock = Extract<PageLayoutBlock, { blockType: "cardRow" }>
 export type JobsLayoutBlock = Extract<PageLayoutBlock, { blockType: "jobs" }>
 export type ActionsLayoutBlock = Extract<PageLayoutBlock, { blockType: "actions" }>
 export type MarkdownLayoutBlock = Extract<PageLayoutBlock, { blockType: "markdown" }>
 export type ContactLayoutBlock = Extract<PageLayoutBlock, { blockType: "contact" }>
 export type BlogLayoutBlock = Extract<PageLayoutBlock, { blockType: "blog" }>
+export type RoadmapLayoutBlock = Extract<PageLayoutBlock, { blockType: "roadmap" }>
+export type ScrollCardsLayoutBlock = Extract<PageLayoutBlock, { blockType: "scrollCards" }>
 
 
 type FeatureSlug = Feature["slug"]
@@ -59,8 +60,6 @@ type ActionDetailItem = Pick<Action, "id" | "slug" | "title" | "shortDescription
 export type JobItem = Pick<Job, "id" | "title" | "slug" | "category" | "type" | "location" | "description" | "order">
 type JobDetailItem = Pick<Job, "id" | "title" | "slug" | "category" | "type" | "location" | "description" | "order" | "content">
 export type TeamMemberItem = Pick<TeamMember, "id" | "name" | "image" | "shortDescription" | "about" | "role" | "joinedAt">
-type RoadmapItem = Pick<PayloadRoadmapItem, "id" | "time" | "title" | "description">
-
 export type BlogPostItem = Pick<Blog, "id" | "title" | "slug" | "content" | "createdAt" | "shortDescription" | "isPinned"> & {
     heroImage?: (number | null) | Media
     meta?: Blog["meta"]
@@ -519,37 +518,6 @@ const getBlogSlugsCached = cache(async (locale: AppLocale): Promise<string[]> =>
     })
 })
 
-const getRoadmapItemsCached = cache(async (locale: AppLocale): Promise<RoadmapItem[]> => {
-    return withCmsFallback(`getRoadmapItems(${locale})`, [], async () => {
-        const payload = await getPayloadClient()
-        const result = await payload.find({
-            collection: "roadmapItems",
-            locale,
-            fallbackLocale: DEFAULT_LOCALE,
-            pagination: false,
-            sort: "-createdAt",
-            depth: 0,
-        })
-
-        return (result.docs as RoadmapItem[]) ?? []
-    })
-})
-
-const getSectionsCached = cache(async (locale: AppLocale): Promise<Section[]> => {
-    return withCmsFallback(`getSections(${locale})`, [], async () => {
-        const payload = await getPayloadClient()
-        const result = await payload.find({
-            collection: "sections",
-            locale,
-            fallbackLocale: DEFAULT_LOCALE,
-            pagination: false,
-            depth: 0,
-        })
-
-        return result.docs as Section[]
-    })
-})
-
 const getSubscriptionConfigCached = cache(async (locale: AppLocale): Promise<SubscriptionConfigData | null> => {
     return withCmsFallback(`getSubscriptionConfig(${locale})`, null, async () => {
         const payload = await getPayloadClient()
@@ -628,14 +596,6 @@ export async function getBlogPosts(
 
 export async function getBlogSlugs(locale: AppLocale = DEFAULT_LOCALE): Promise<string[]> {
     return getBlogSlugsCached(locale)
-}
-
-export async function getRoadmapItems(locale: AppLocale = DEFAULT_LOCALE): Promise<RoadmapItem[]> {
-    return getRoadmapItemsCached(locale)
-}
-
-export async function getSections(locale: AppLocale = DEFAULT_LOCALE): Promise<Section[]> {
-    return getSectionsCached(locale)
 }
 
 export async function getSubscriptionConfig(locale: AppLocale = DEFAULT_LOCALE): Promise<SubscriptionConfigData | null> {

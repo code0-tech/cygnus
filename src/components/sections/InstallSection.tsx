@@ -2,16 +2,16 @@
 
 import { DotBackground } from "@/components/ui/DotBackground"
 import { Section } from "@/components/ui/Section"
-import type { EditionInstallLayoutBlock } from "@/lib/cms"
+import type { InstallLayoutBlock } from "@/lib/cms"
 import { IconCheck, IconCopy } from "@tabler/icons-react"
 import { AnimatePresence, m as motion, type Variants } from "motion/react"
 import { useEffect, useState } from "react"
 
-type EditionInstallSectionProps = {
-    content?: EditionInstallLayoutBlock | null
+type InstallSectionProps = {
+    content?: InstallLayoutBlock | null
 }
 
-export function EditionInstallSection({ content }: EditionInstallSectionProps) {
+export function InstallSection({ content }: InstallSectionProps) {
     const [copied, setCopied] = useState(false)
 
     if (!content?.heading || !content.subheading || !content.code) return null

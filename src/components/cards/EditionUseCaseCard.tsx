@@ -30,20 +30,17 @@ export function EditionUseCaseCard({
     return (
         <div
             className={cn(
-                "glass-card-shell group relative h-full rounded-[1.6rem] shadow-[0_14px_42px_rgba(0,0,0,0.3)] transition-all duration-500 ease-out before:pointer-events-none before:absolute before:inset-1px before:rounded-[calc(1.6rem-1px)] before:border before:border-white/6 before:content-['']",
-                isFocused
-                    ? "scale-100 opacity-100 z-10"
-                    : "scale-90 opacity-40 blur-[2px]",
-                className,
+                "glass-card-shell group relative flex h-full min-h-0 flex-col rounded-3xl transition-all duration-500 ease-out before:pointer-events-none before:absolute before:inset-1px before:rounded-[calc(1.6rem-1px)] before:border before:border-white/6 before:content-['']",
+                className
             )}
         >
             <div aria-hidden="true" className="glass-card-topline"/>
             <div
-                className="relative z-10 flex h-full flex-col items-stretch justify-start overflow-hidden rounded-[1.6rem]">
-                {imageUrl ? (
-                    <div className={"p-2"}>
+                className="relative flex h-full flex-col items-stretch justify-start overflow-hidden rounded-2xl">
+                <div className={"p-2"}>
+                    {imageUrl ? (
                         <div
-                            className="relative overflow-hidden aspect-video w-full rounded-[1.2rem] border border-white/8 bg-primary/40">
+                            className="relative overflow-hidden aspect-video w-full rounded-2xl border border-white/10 bg-primary/50">
                             <Image
                                 src={imageUrl}
                                 alt={title}
@@ -52,23 +49,26 @@ export function EditionUseCaseCard({
                                 className="object-cover"
                             />
                         </div>
-                    </div>
-                ) : (
-                    <div className="relative h-48 w-full bg-white/5"/>
-                )}
+                    ) : (
+                        <div className="relative w-full aspect-video bg-white/5 rounded-2xl"/>
+                    )}
+                </div>
 
-                <div className="flex flex-1 flex-col gap-2 p-4">
-                    <h3 className="text-xl font-semibold text-white">
+
+                <div className="flex min-h-0 flex-1 flex-col gap-2 p-4">
+                    <h3 className="line-clamp-2 text-xl font-semibold text-white">
                         {title}
                     </h3>
-                    <p className="mb-2 text-sm text-white/70 leading-relaxed">
+                    <p className="mb-2 text-sm text-white/75 leading-relaxed">
                         {description}
                     </p>
 
                     {link?.url && link?.label && (
-                        <LinkButton href={link.url}>
-                            {link.label}
-                        </LinkButton>
+                        <div className="mt-auto pt-2">
+                            <LinkButton href={link.url} className="my-2">
+                                {link.label}
+                            </LinkButton>
+                        </div>
                     )}
                 </div>
             </div>

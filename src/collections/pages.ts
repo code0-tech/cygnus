@@ -1,18 +1,19 @@
 import { ActionBlock } from "@/blocks/ActionBlock"
-import { EditionUseCaseBlock } from "@/blocks/EditionUseCaseBlock"
+import { SwipeCardBlock } from "@/blocks/SwipeCardBlock"
 import { BlogBlock } from "../blocks/BlogBlock"
 import { BrandBlock } from "../blocks/BrandBlock"
+import { CardRowBlock } from "../blocks/CardRowBlock"
 import { ContactBlock } from "../blocks/ContactBlock"
 import { CtaBlock } from "../blocks/CtaBlock"
-import { DeploymentBlock } from "../blocks/DeploymentBlock"
-import { EditionFeaturesBlock } from "../blocks/EditionFeaturesBlock"
-import { EditionHeroBlock } from "../blocks/EditionHeroBlock"
-import { EditionInstallBlock } from "../blocks/EditionInstallBlock"
 import { FaqBlock } from "../blocks/FaqBlock"
+import { BentoBlock } from "../blocks/BentoBlock"
 import { HeroBlock } from "../blocks/HeroBlock"
+import { InstallBlock } from "../blocks/InstallBlock"
 import { JobsBlock } from "../blocks/JobsBlock"
 import { MarkdownBlock } from "../blocks/MarkdownBlock"
-import { UseCaseBlock } from "../blocks/UseCaseBlock"
+import { OffsetCardsBlock } from "../blocks/OffsetCardsBlock"
+import { RoadmapBlock } from "../blocks/RoadmapBlock"
+import { ScrollCardBlock } from "../blocks/ScrollCardBlock"
 import type { CollectionConfig } from "payload"
 
 export const Pages: CollectionConfig = {
@@ -60,7 +61,7 @@ export const Pages: CollectionConfig = {
       name: "layout",
       label: "Layout",
       type: "blocks",
-      blocks: [HeroBlock, EditionHeroBlock, EditionFeaturesBlock, EditionInstallBlock, EditionUseCaseBlock, BrandBlock, UseCaseBlock, FaqBlock, CtaBlock, JobsBlock, BlogBlock, ActionBlock, MarkdownBlock, ContactBlock, DeploymentBlock],
+      blocks: [HeroBlock, BentoBlock, OffsetCardsBlock, InstallBlock, SwipeCardBlock, BrandBlock, FaqBlock, CtaBlock, JobsBlock, BlogBlock, ActionBlock, MarkdownBlock, ContactBlock, CardRowBlock, RoadmapBlock, ScrollCardBlock],
       required: false,
       localized: true,
     },

@@ -1,13 +1,6 @@
+import { DeploymentImage } from "@/components/DeploymentImage"
+import { PageBlocks } from "@/components/PageBlockRenderer"
 import { LandingContainer } from "@/components/ui/LandingContainer"
-import { HeroSection } from "@/components/sections/HeroSection"
-import { BrandSection } from "@/components/sections/BrandSection"
-import { UseCaseSection } from "@/components/sections/UseCaseSection"
-import { AppFeatureSection } from "@/components/sections/AppFeatureSection"
-import { DeploymentSection } from "@/components/sections/DeploymentSection"
-import { RuntimeFeatureSection } from "@/components/sections/RuntimeFeatureSection"
-import { RoadmapSection } from "@/components/sections/RoadmapSection"
-import { FaqSection } from "@/components/sections/FaqSection"
-import { CtaSection } from "@/components/sections/CtaSection"
 import { getLandingPage } from "@/lib/cms"
 import type { DeploymentLayoutBlock, HeroLayoutBlock } from "@/lib/cms"
 import type { BrandLayoutBlock } from "@/lib/cms"
@@ -26,38 +19,22 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
     const { locale } = await params
-    if (!isSupportedLocale(locale)) {
-        notFound()
-    }
+    if (!isSupportedLocale(locale)) notFound()
 
     const page = await getLandingPage("main", locale)
-    const layout = page?.layout ?? []
-    const heroBlock = layout.find((block): block is HeroLayoutBlock => block.blockType === "hero") ?? null
-    const brandBlock = layout.find((block): block is BrandLayoutBlock => block.blockType === "brand") ?? null
-    const useCaseBlock = layout.find((block): block is UseCaseLayoutBlock => block.blockType === "usecase") ?? null
-    const faqBlock = layout.find((block): block is FaqLayoutBlock => block.blockType === "faq") ?? null
-    const ctaBlock = layout.find((block): block is CtaLayoutBlock => block.blockType === "cta") ?? null
-    const deploymentBlock = layout.find((block): block is DeploymentLayoutBlock => block.blockType === "deployment") ?? null
 
     return (
         <LandingContainer>
             <div className="h-12 lg:h-16" aria-hidden="true" />
-            <HeroSection content={heroBlock} />
-            <BrandSection content={brandBlock} />
-            <div className="h-32" aria-hidden="true" />
-            <UseCaseSection content={useCaseBlock} />
-            <div className="h-32" aria-hidden="true" />
-            <AppFeatureSection locale={locale} />
-            <div className="h-32" aria-hidden="true" />
-            <DeploymentSection content={deploymentBlock} />
-            <div className="h-32" aria-hidden="true" />
-            <RuntimeFeatureSection locale={locale} />
-            <div className="h-32" aria-hidden="true" />
-            <RoadmapSection locale={locale} />
-            <div className="h-32" aria-hidden="true" />
-            <FaqSection content={faqBlock} />
-            <div className="h-32" aria-hidden="true" />
-            <CtaSection content={ctaBlock} />
+            <PageBlocks
+                blocks={page?.layout}
+                locale={locale}
+                cardRowChildren={[
+                    <DeploymentImage key="cloud" color="aqua" icon="cloud" text="Cloud" />,
+                    <DeploymentImage key="selfhost" color="pink" icon="server" text="Selfhost" />,
+                    <DeploymentImage key="dynamic" color="brand" icon="cloud-computing" text="Dynamic" />,
+                ]}
+            />
         </LandingContainer>
     )
 }

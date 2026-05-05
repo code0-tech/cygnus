@@ -1,15 +1,10 @@
-import { CtaSection } from "@/components/sections/CtaSection"
-import { EditionFeatureSection } from "@/components/sections/EditionFeatureSection"
-import { EditionHeroSection } from "@/components/sections/EditionHeroSection"
-import { EditionUseCaseSection } from "@/components/sections/EditionUseCaseSection"
+import { PageBlocks } from "@/components/PageBlockRenderer"
 import { LandingContainer } from "@/components/ui/LandingContainer"
 import { getLandingPage } from "@/lib/cms"
-import type { CtaLayoutBlock } from "@/lib/cms"
 import { isSupportedLocale } from "@/lib/i18n"
 import { getLandingPageMetadata } from "@/lib/pageMetadata"
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
-import React from "react"
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
     const { locale } = await params
@@ -21,35 +16,11 @@ export default async function EnterpriseEditionPage({ params }: { params: Promis
     if (!isSupportedLocale(locale)) notFound()
 
     const page = await getLandingPage("enterprise-edition", locale)
-    const heroBlock = page?.layout?.find((item) => item.blockType === "editionHero") ?? null
-    const ctaBlock = (page?.layout?.find((item) => item.blockType === "cta") ?? null) as CtaLayoutBlock | null
-    const blocks = page?.layout?.filter((item) => item.blockType === "editionUseCases" || item.blockType === "editionFeatures") ?? []
 
     return (
         <LandingContainer>
             <div className="h-12 lg:h-16" aria-hidden="true" />
-            <EditionHeroSection
-                content={heroBlock}
-                locale={locale}
-                grainientColors={{
-                    color1: "#13102d",
-                    color2: "#7472f8",
-                    color3: "#72c9f8",
-                    backgroundColor: "#140c22",
-                }}
-            />
-            {blocks.map((block, index) => (
-                <React.Fragment key={index}>
-                    <div className="h-32" aria-hidden="true" />
-                    {block.blockType === "editionFeatures" ? (
-                        <EditionFeatureSection content={block} />
-                    ) : block.blockType === "editionUseCases" ? (
-                        <EditionUseCaseSection content={block} />
-                    ) : null}
-                </React.Fragment>
-            ))}
-            <div className="h-32" aria-hidden="true" />
-            <CtaSection content={ctaBlock} floatingCta locale={locale} />
+            <PageBlocks blocks={page?.layout} ctaFloating locale={locale} />
         </LandingContainer>
     )
 }

@@ -1,10 +1,10 @@
 import type { Block } from "payload"
 
-export const FaqBlock: Block = {
-  slug: "faq",
+export const BentoBlock: Block = {
+  slug: "bento",
   labels: {
-    singular: "FAQ",
-    plural: "FAQ Blocks",
+    singular: "Bento",
+    plural: "Bento Blocks",
   },
   fields: [
     {
@@ -46,22 +46,19 @@ export const FaqBlock: Block = {
       ],
     },
     {
-      name: "items",
-      label: "FAQ Items",
-      type: "array",
+      name: "variant",
+      label: "Variant",
+      type: "select",
       required: true,
-      fields: [
+      defaultValue: "feature",
+      options: [
         {
-          name: "question",
-          type: "text",
-          required: true,
-          localized: true,
+          label: "Feature",
+          value: "feature",
         },
         {
-          name: "answer",
-          type: "textarea",
-          required: true,
-          localized: true,
+          label: "Runtime",
+          value: "runtime",
         },
       ],
     },

@@ -1,24 +1,30 @@
 import type { Block } from "payload"
 
-export const EditionFeaturesBlock: Block = {
-  slug: "editionFeatures",
+export const SwipeCardBlock: Block = {
+  slug: "swipeCards",
   labels: {
-    singular: "Edition Feature",
-    plural: "Edition Feature Blocks",
+    singular: "Swipe Cards",
+    plural: "Swipe Cards Blocks",
   },
   fields: [
     {
-      name: "features",
-      label: "Features",
+      name: "heading",
+      type: "text",
+      required: false,
+      localized: true,
+    },
+    {
+      name: "subheading",
+      type: "textarea",
+      required: false,
+      localized: true,
+    },
+    {
+      name: "cards",
+      label: "Cards",
       type: "array",
       required: true,
       fields: [
-        {
-          name: "label",
-          type: "text",
-          required: true,
-          localized: true,
-        },
         {
           name: "title",
           type: "text",
@@ -37,14 +43,6 @@ export const EditionFeaturesBlock: Block = {
           type: "upload",
           relationTo: "media",
           required: false,
-        },
-        {
-          name: "bulletPoints",
-          label: "Bullet Points",
-          type: "text",
-          required: false,
-          hasMany: true,
-          localized: true,
         },
         {
           name: "link",

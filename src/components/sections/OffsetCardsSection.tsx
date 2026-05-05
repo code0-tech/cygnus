@@ -2,25 +2,25 @@
 
 import { LinkButton } from "@/components/ui/LinkButton"
 import { Section } from "@/components/ui/Section"
-import type { EditionFeaturesLayoutBlock } from "@/lib/cms"
+import { OffsetCardsLayoutBlock } from "@/lib/cms"
 import { ANIMATION_PRESETS, type AnimationPreset } from "@/lib/utils"
 import type { Media } from "@/payload-types"
 import { m as motion, type Variants } from "motion/react"
 import Image from "next/image"
 import React from "react"
 
-interface EditionFeatureSectionProps {
-    content?: EditionFeaturesLayoutBlock | null
+interface OffsetCardsSectionProps {
+    content?: OffsetCardsLayoutBlock | null
 }
 
-const EDITION_FEATURE_ANIMATION_SEQUENCE: Exclude<AnimationPreset, "none">[] = [
+const OFFSET_CARD_ANIMATION_SEQUENCE: Exclude<AnimationPreset, "none">[] = [
     "slide-left",
     "slide-right",
     "slide-left",
 ]
 
-export const EditionFeatureSection: React.FC<EditionFeatureSectionProps> = ({ content }) => {
-    if (!content?.features?.length) return null
+export function OffsetCardsSection({ content }: OffsetCardsSectionProps) {
+    if (!content?.cards?.length) return null
 
     const staggerContainer: Variants = {
         hidden: {},
@@ -45,10 +45,16 @@ export const EditionFeatureSection: React.FC<EditionFeatureSectionProps> = ({ co
     }
 
     return (
-        <Section showBlur={false} showFunnel={false} animationPreset="none">
+        <Section
+            heading={content.sectionHeading}
+            description={content.sectionDescription}
+            linkButton={content.sectionLinkButton}
+            showBlur={false}
+            animationPreset="none"
+        >
             <div className="relative flex w-full flex-col items-stretch gap-32">
-                {content.features.map((item, index) => {
-                    const animationPreset = EDITION_FEATURE_ANIMATION_SEQUENCE[index % EDITION_FEATURE_ANIMATION_SEQUENCE.length]
+                {content.cards.map((item, index) => {
+                    const animationPreset = OFFSET_CARD_ANIMATION_SEQUENCE[index % OFFSET_CARD_ANIMATION_SEQUENCE.length]
                     const animationConfig = ANIMATION_PRESETS[animationPreset]
                     const image = item.image as Media
 

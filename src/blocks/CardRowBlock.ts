@@ -1,10 +1,10 @@
 import type { Block } from "payload"
 
-export const FaqBlock: Block = {
-  slug: "faq",
+export const CardRowBlock: Block = {
+  slug: "cardRow",
   labels: {
-    singular: "FAQ",
-    plural: "FAQ Blocks",
+    singular: "Card Row",
+    plural: "Card Rows",
   },
   fields: [
     {
@@ -46,22 +46,45 @@ export const FaqBlock: Block = {
       ],
     },
     {
-      name: "items",
-      label: "FAQ Items",
+      name: "cards",
+      label: "Cards",
       type: "array",
-      required: true,
+      required: false,
       fields: [
         {
-          name: "question",
+          name: "title",
           type: "text",
           required: true,
           localized: true,
         },
         {
-          name: "answer",
+          name: "description",
           type: "textarea",
-          required: true,
+          required: false,
           localized: true,
+        },
+        {
+          name: "link",
+          type: "group",
+          fields: [
+            {
+              name: "label",
+              type: "text",
+              required: false,
+              localized: true,
+            },
+            {
+              name: "url",
+              type: "text",
+              required: false,
+            },
+          ],
+        },
+        {
+          name: "image",
+          type: "upload",
+          relationTo: "media",
+          required: false,
         },
       ],
     },

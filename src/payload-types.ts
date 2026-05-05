@@ -70,7 +70,6 @@ export interface Config {
     users: User;
     media: Media;
     navbarItems: NavbarItem;
-    sections: Section;
     footer: Footer;
     'cookie-banner': CookieBanner;
     pages: Page;
@@ -78,7 +77,6 @@ export interface Config {
     actions: Action;
     jobs: Job;
     blog: Blog;
-    roadmapItems: RoadmapItem;
     'team-members': TeamMember;
     subscriptionConfig: SubscriptionConfig;
     exports: Export;
@@ -94,7 +92,6 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     navbarItems: NavbarItemsSelect<false> | NavbarItemsSelect<true>;
-    sections: SectionsSelect<false> | SectionsSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
     'cookie-banner': CookieBannerSelect<false> | CookieBannerSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
@@ -102,7 +99,6 @@ export interface Config {
     actions: ActionsSelect<false> | ActionsSelect<true>;
     jobs: JobsSelect<false> | JobsSelect<true>;
     blog: BlogSelect<false> | BlogSelect<true>;
-    roadmapItems: RoadmapItemsSelect<false> | RoadmapItemsSelect<true>;
     'team-members': TeamMembersSelect<false> | TeamMembersSelect<true>;
     subscriptionConfig: SubscriptionConfigSelect<false> | SubscriptionConfigSelect<true>;
     exports: ExportsSelect<false> | ExportsSelect<true>;
@@ -231,28 +227,6 @@ export interface NavbarItem {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "sections".
- */
-export interface Section {
-  id: number;
-  heading: string;
-  subheading?: string | null;
-  sectionType:
-    | 'AppFeatureSection'
-    | 'FaqSection'
-    | 'RoadmapSection'
-    | 'RuntimeFeatureSection'
-    | 'UseCaseSection'
-    | 'DeploymentSection';
-  link_button?: {
-    label?: string | null;
-    url?: string | null;
-  };
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "footer".
  */
 export interface Footer {
@@ -363,6 +337,13 @@ export interface Page {
             badge?: string | null;
             badge_link?: string | null;
             heading: string;
+            centered?: boolean | null;
+            grainientColors?: {
+              color1?: string | null;
+              color2?: string | null;
+              color3?: string | null;
+              backgroundColor?: string | null;
+            };
             texts?:
               | {
                   text: string;
@@ -382,28 +363,25 @@ export interface Page {
             blockType: 'hero';
           }
         | {
-            heading: string;
-            texts?:
-              | {
-                  text: string;
-                  id?: string | null;
-                }[]
-              | null;
-            buttons?:
-              | {
-                  label: string;
-                  url: string;
-                  variant?: ('none' | 'normal' | 'outlined' | 'filled') | null;
-                  id?: string | null;
-                }[]
-              | null;
-            imageAlt: string;
+            sectionHeading?: string | null;
+            sectionDescription?: string | null;
+            sectionLinkButton?: {
+              label?: string | null;
+              url?: string | null;
+            };
+            variant: 'feature' | 'runtime';
             id?: string | null;
             blockName?: string | null;
-            blockType: 'editionHero';
+            blockType: 'bento';
           }
         | {
-            features: {
+            sectionHeading?: string | null;
+            sectionDescription?: string | null;
+            sectionLinkButton?: {
+              label?: string | null;
+              url?: string | null;
+            };
+            cards: {
               label: string;
               title: string;
               description: string;
@@ -417,7 +395,7 @@ export interface Page {
             }[];
             id?: string | null;
             blockName?: string | null;
-            blockType: 'editionFeatures';
+            blockType: 'offsetCards';
           }
         | {
             heading: string;
@@ -426,12 +404,12 @@ export interface Page {
             code: string;
             id?: string | null;
             blockName?: string | null;
-            blockType: 'editionInstall';
+            blockType: 'install';
           }
         | {
-            heading: string;
-            subheading: string;
-            useCases: {
+            heading?: string | null;
+            subheading?: string | null;
+            cards: {
               title: string;
               description: string;
               image?: (number | null) | Media;
@@ -443,7 +421,7 @@ export interface Page {
             }[];
             id?: string | null;
             blockName?: string | null;
-            blockType: 'editionUseCases';
+            blockType: 'swipeCards';
           }
         | {
             description: string;
@@ -458,23 +436,12 @@ export interface Page {
             blockType: 'brand';
           }
         | {
-            useCases: {
-              label: string;
-              title: string;
-              description: string;
-              image?: (number | null) | Media;
-              bulletPoints?: string[] | null;
-              link?: {
-                label?: string | null;
-                url?: string | null;
-              };
-              id?: string | null;
-            }[];
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'usecase';
-          }
-        | {
+            sectionHeading?: string | null;
+            sectionDescription?: string | null;
+            sectionLinkButton?: {
+              label?: string | null;
+              url?: string | null;
+            };
             items: {
               question: string;
               answer: string;
@@ -568,27 +535,64 @@ export interface Page {
             blockType: 'contact';
           }
         | {
-            cloudTitle?: string | null;
-            cloudDescription?: string | null;
-            cloudLink?: {
+            sectionHeading?: string | null;
+            sectionDescription?: string | null;
+            sectionLinkButton?: {
               label?: string | null;
               url?: string | null;
             };
-            selfhostTitle?: string | null;
-            selfhostDescription?: string | null;
-            selfhostLink?: {
-              label?: string | null;
-              url?: string | null;
-            };
-            dynamicTitle?: string | null;
-            dynamicDescription?: string | null;
-            dynamicLink?: {
-              label?: string | null;
-              url?: string | null;
-            };
+            cards?:
+              | {
+                  title: string;
+                  description?: string | null;
+                  link?: {
+                    label?: string | null;
+                    url?: string | null;
+                  };
+                  image?: (number | null) | Media;
+                  id?: string | null;
+                }[]
+              | null;
             id?: string | null;
             blockName?: string | null;
-            blockType: 'deployment';
+            blockType: 'cardRow';
+          }
+        | {
+            sectionHeading?: string | null;
+            sectionDescription?: string | null;
+            sectionLinkButton?: {
+              label?: string | null;
+              url?: string | null;
+            };
+            items: {
+              time: string;
+              title: string;
+              description: string;
+              id?: string | null;
+            }[];
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'roadmap';
+          }
+        | {
+            items: {
+              title: string;
+              description: string;
+              showImageBorder?: boolean | null;
+              sectionLayout: 'imageRight' | 'imageLeft';
+              gradient?: ('blue' | 'yellow' | 'pink' | 'aqua' | 'brand' | 'neutral') | null;
+              gradientDirection?: ('topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight') | null;
+              bulletPoints?: string[] | null;
+              image?: (number | null) | Media;
+              link?: {
+                label?: string | null;
+                url?: string | null;
+              };
+              id?: string | null;
+            }[];
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'scrollCards';
           }
       )[]
     | null;
@@ -736,18 +740,6 @@ export interface TeamMember {
   about?: string | null;
   role?: string | null;
   joinedAt?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "roadmapItems".
- */
-export interface RoadmapItem {
-  id: number;
-  time: string;
-  title: string;
-  description: string;
   updatedAt: string;
   createdAt: string;
 }
@@ -1087,10 +1079,6 @@ export interface PayloadLockedDocument {
         value: number | NavbarItem;
       } | null)
     | ({
-        relationTo: 'sections';
-        value: number | Section;
-      } | null)
-    | ({
         relationTo: 'footer';
         value: number | Footer;
       } | null)
@@ -1117,10 +1105,6 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'blog';
         value: number | Blog;
-      } | null)
-    | ({
-        relationTo: 'roadmapItems';
-        value: number | RoadmapItem;
       } | null)
     | ({
         relationTo: 'team-members';
@@ -1232,23 +1216,6 @@ export interface NavbarItemsSelect<T extends boolean = true> {
         description?: T;
         icon?: T;
         id?: T;
-      };
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "sections_select".
- */
-export interface SectionsSelect<T extends boolean = true> {
-  heading?: T;
-  subheading?: T;
-  sectionType?: T;
-  link_button?:
-    | T
-    | {
-        label?: T;
-        url?: T;
       };
   updatedAt?: T;
   createdAt?: T;
@@ -1382,6 +1349,15 @@ export interface PagesSelect<T extends boolean = true> {
               badge?: T;
               badge_link?: T;
               heading?: T;
+              centered?: T;
+              grainientColors?:
+                | T
+                | {
+                    color1?: T;
+                    color2?: T;
+                    color3?: T;
+                    backgroundColor?: T;
+                  };
               texts?:
                 | T
                 | {
@@ -1399,32 +1375,33 @@ export interface PagesSelect<T extends boolean = true> {
               id?: T;
               blockName?: T;
             };
-        editionHero?:
+        bento?:
           | T
           | {
-              heading?: T;
-              texts?:
-                | T
-                | {
-                    text?: T;
-                    id?: T;
-                  };
-              buttons?:
+              sectionHeading?: T;
+              sectionDescription?: T;
+              sectionLinkButton?:
                 | T
                 | {
                     label?: T;
                     url?: T;
-                    variant?: T;
-                    id?: T;
                   };
-              imageAlt?: T;
+              variant?: T;
               id?: T;
               blockName?: T;
             };
-        editionFeatures?:
+        offsetCards?:
           | T
           | {
-              features?:
+              sectionHeading?: T;
+              sectionDescription?: T;
+              sectionLinkButton?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                  };
+              cards?:
                 | T
                 | {
                     label?: T;
@@ -1443,7 +1420,7 @@ export interface PagesSelect<T extends boolean = true> {
               id?: T;
               blockName?: T;
             };
-        editionInstall?:
+        install?:
           | T
           | {
               heading?: T;
@@ -1453,12 +1430,12 @@ export interface PagesSelect<T extends boolean = true> {
               id?: T;
               blockName?: T;
             };
-        editionUseCases?:
+        swipeCards?:
           | T
           | {
               heading?: T;
               subheading?: T;
-              useCases?:
+              cards?:
                 | T
                 | {
                     title?: T;
@@ -1488,31 +1465,17 @@ export interface PagesSelect<T extends boolean = true> {
               id?: T;
               blockName?: T;
             };
-        usecase?:
-          | T
-          | {
-              useCases?:
-                | T
-                | {
-                    label?: T;
-                    title?: T;
-                    description?: T;
-                    image?: T;
-                    bulletPoints?: T;
-                    link?:
-                      | T
-                      | {
-                          label?: T;
-                          url?: T;
-                        };
-                    id?: T;
-                  };
-              id?: T;
-              blockName?: T;
-            };
         faq?:
           | T
           | {
+              sectionHeading?: T;
+              sectionDescription?: T;
+              sectionLinkButton?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                  };
               items?:
                 | T
                 | {
@@ -1600,32 +1563,77 @@ export interface PagesSelect<T extends boolean = true> {
               id?: T;
               blockName?: T;
             };
-        deployment?:
+        cardRow?:
           | T
           | {
-              cloudTitle?: T;
-              cloudDescription?: T;
-              cloudLink?:
+              sectionHeading?: T;
+              sectionDescription?: T;
+              sectionLinkButton?:
                 | T
                 | {
                     label?: T;
                     url?: T;
                   };
-              selfhostTitle?: T;
-              selfhostDescription?: T;
-              selfhostLink?:
+              cards?:
+                | T
+                | {
+                    title?: T;
+                    description?: T;
+                    link?:
+                      | T
+                      | {
+                          label?: T;
+                          url?: T;
+                        };
+                    image?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        roadmap?:
+          | T
+          | {
+              sectionHeading?: T;
+              sectionDescription?: T;
+              sectionLinkButton?:
                 | T
                 | {
                     label?: T;
                     url?: T;
                   };
-              dynamicTitle?: T;
-              dynamicDescription?: T;
-              dynamicLink?:
+              items?:
                 | T
                 | {
-                    label?: T;
-                    url?: T;
+                    time?: T;
+                    title?: T;
+                    description?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        scrollCards?:
+          | T
+          | {
+              items?:
+                | T
+                | {
+                    title?: T;
+                    description?: T;
+                    showImageBorder?: T;
+                    sectionLayout?: T;
+                    gradient?: T;
+                    gradientDirection?: T;
+                    bulletPoints?: T;
+                    image?: T;
+                    link?:
+                      | T
+                      | {
+                          label?: T;
+                          url?: T;
+                        };
+                    id?: T;
                   };
               id?: T;
               blockName?: T;
@@ -1716,17 +1724,6 @@ export interface BlogSelect<T extends boolean = true> {
         description?: T;
         image?: T;
       };
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "roadmapItems_select".
- */
-export interface RoadmapItemsSelect<T extends boolean = true> {
-  time?: T;
-  title?: T;
-  description?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2025,7 +2022,6 @@ export interface TaskCreateCollectionExport {
       | 'users'
       | 'media'
       | 'navbarItems'
-      | 'sections'
       | 'footer'
       | 'cookie-banner'
       | 'pages'
@@ -2033,7 +2029,6 @@ export interface TaskCreateCollectionExport {
       | 'actions'
       | 'jobs'
       | 'blog'
-      | 'roadmapItems'
       | 'team-members'
       | 'subscriptionConfig'
       | 'exports'

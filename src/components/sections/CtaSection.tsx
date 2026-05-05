@@ -4,28 +4,19 @@ import { InteractiveGridPattern } from "@/components/InteractiveGridPattern"
 import { HapticButtonLink } from "@/components/ui/HapticButtonLink"
 import { Section } from "@/components/ui/Section"
 import { useMediaQuery } from "@/hooks/useMediaQuery"
+import { CtaLayoutBlock } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
 import { m as motion, type Variants } from "motion/react"
 import Image from "next/image"
 import React, { useEffect, useRef, useState } from "react"
 
-interface CtaSectionContent {
-    heading: string
-    subheading: string
-    ctaLink: {
-        label: string
-        url: string
-    }
-}
-
 interface CtaSectionProps {
-    content?: CtaSectionContent | null
+    content?: CtaLayoutBlock | null
     floatingCta?: boolean
-    locale?: AppLocale
 }
 
-export const CtaSection: React.FC<CtaSectionProps> = ({ content, floatingCta = false, locale }) => {
+export function CtaSection({ content, floatingCta = false }: CtaSectionProps) {
     const isTouchDevice = useMediaQuery("(hover: none), (pointer: coarse)")
     const [mounted, setMounted] = useState(false)
     const [docked, setDocked] = useState(false)
