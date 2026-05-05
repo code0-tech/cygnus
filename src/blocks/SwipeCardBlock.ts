@@ -10,13 +10,13 @@ export const SwipeCardBlock: Block = {
     {
       name: "heading",
       type: "text",
-      required: true,
+      required: false,
       localized: true,
     },
     {
       name: "subheading",
       type: "textarea",
-      required: true,
+      required: false,
       localized: true,
     },
     {

@@ -407,8 +407,8 @@ export interface Page {
             blockType: 'install';
           }
         | {
-            heading: string;
-            subheading: string;
+            heading?: string | null;
+            subheading?: string | null;
             cards: {
               title: string;
               description: string;

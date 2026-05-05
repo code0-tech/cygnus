@@ -18,9 +18,10 @@ export function SwipeCardSection({ content }: SwipeCardSectionProps) {
     const [focusedIndex, setFocusedIndex] = useState(0)
     const { trigger } = useWebHaptics()
 
-    if (!content?.heading || !content?.subheading || !content?.cards?.length) return null
+    if (!content?.cards?.length) return null
 
     const cards = content.cards
+    const hasHeader = Boolean(content.heading || content.subheading)
 
     const handlePrevious = () => {
         trigger("light")
@@ -90,14 +91,20 @@ export function SwipeCardSection({ content }: SwipeCardSectionProps) {
                 whileInView="show"
                 viewport={{ once: true, amount: 0.2 }}
             >
-                <motion.div className="flex flex-col items-center gap-4 text-center" variants={staggerItem}>
-                    <h2 className="text-4xl font-semibold text-white">
-                        {content.heading}
-                    </h2>
-                    <p className="relative z-10 max-w-[90vw] lg:w-1/2 text-center font-medium text-white/75 text-xl">
-                        {content.subheading}
-                    </p>
-                </motion.div>
+                {hasHeader && (
+                    <motion.div className="flex flex-col items-center gap-4 text-center" variants={staggerItem}>
+                        {content.heading && (
+                            <h2 className="text-4xl font-semibold text-white">
+                                {content.heading}
+                            </h2>
+                        )}
+                        {content.subheading && (
+                            <p className="relative z-10 max-w-[90vw] lg:w-1/2 text-center font-medium text-white/75 text-xl">
+                                {content.subheading}
+                            </p>
+                        )}
+                    </motion.div>
+                )}
 
                 <motion.div className="relative w-full overflow-hidden" variants={carouselVariants}>
                     <div aria-hidden="true" className="pointer-events-none absolute -inset-y-6 left-0 z-30 w-0 bg-linear-to-r from-primary via-primary/80 to-transparent lg:w-40" />
