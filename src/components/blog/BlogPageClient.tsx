@@ -26,6 +26,27 @@ function sortBlogPosts(posts: BlogPostItem[]): BlogPostItem[] {
     })
 }
 
+function BlogCardSkeleton() {
+    return (
+        <div className="glass-card-shell h-full p-2">
+            <div aria-hidden="true" className="glass-card-topline" />
+            <div className="relative z-10 flex h-full flex-row items-stretch gap-4 md:flex-col">
+                <div className="relative w-40 aspect-video shrink-0 overflow-hidden rounded-2xl bg-white/10 md:w-full md:aspect-video" />
+                <div className="min-w-0 flex-1 px-1 pb-1 md:flex md:flex-col md:justify-between">
+                    <div>
+                        <div className="h-6 w-full rounded-full bg-white/10" />
+                        <div className="mt-2 h-6 w-4/5 rounded-full bg-white/10" />
+                        <div className="mt-4 h-4 w-full rounded-full bg-white/10" />
+                        <div className="mt-2 h-4 w-5/6 rounded-full bg-white/10" />
+                        <div className="mt-2 h-4 w-2/3 rounded-full bg-white/10" />
+                    </div>
+                    <div className="mb-2 mt-4 h-4 w-3/4 rounded-full bg-white/10" />
+                </div>
+            </div>
+        </div>
+    )
+}
+
 export function BlogPageClient({
     heading,
     initialPosts,
@@ -88,6 +109,9 @@ export function BlogPageClient({
                     </div>
                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
                         {remainingPosts.map((post) => <BlogCard key={post.id} post={post} locale={locale} />)}
+                        {isPending && Array.from({ length: 3 }).map((_, index) => (
+                            <BlogCardSkeleton key={`loading-blog-${index}`} />
+                        ))}
                     </div>
                 </>
             )}

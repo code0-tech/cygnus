@@ -2,14 +2,15 @@ import { DeploymentImage } from "@/components/DeploymentImage"
 import { PageBlocks } from "@/components/PageBlockRenderer"
 import { LandingContainer } from "@/components/ui/LandingContainer"
 import { getLandingPage } from "@/lib/cms"
-import { isSupportedLocale, SUPPORTED_LOCALES } from "@/lib/i18n"
+import type { DeploymentLayoutBlock, HeroLayoutBlock } from "@/lib/cms"
+import type { BrandLayoutBlock } from "@/lib/cms"
+import type { CtaLayoutBlock } from "@/lib/cms"
+import type { FaqLayoutBlock } from "@/lib/cms"
+import type { UseCaseLayoutBlock } from "@/lib/cms"
+import { isSupportedLocale } from "@/lib/i18n"
 import { getLandingPageMetadata } from "@/lib/pageMetadata"
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
-
-export function generateStaticParams() {
-    return SUPPORTED_LOCALES.map((locale) => ({ locale }))
-}
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
     const { locale } = await params

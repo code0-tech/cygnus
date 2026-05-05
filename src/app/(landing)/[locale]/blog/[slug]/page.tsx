@@ -1,17 +1,17 @@
 import { BlogPost } from "@/components/blog/BlogPost"
 import { BlogSkeleton } from "@/components/blog/BlogSkeleton"
-import { Aurora } from "@/components/ui/Aurora"
-import { LandingContainer } from "@/components/ui/LandingContainer"
-import { type Media } from "@/payload-types"
-import { SUPPORTED_LOCALES, isSupportedLocale } from "@/lib/i18n"
-import { getBlogPostBySlug, getBlogSlugs, getLandingPage, type CtaLayoutBlock } from "@/lib/cms"
-import { createMetadata, resolveSiteUrl } from "@/lib/siteConfig"
-import type { Metadata } from "next"
-import { notFound } from "next/navigation"
-import Image from "next/image"
-import { Suspense } from "react"
 import { InteractiveGridPattern } from "@/components/InteractiveGridPattern"
+import { Aurora } from "@/components/ui/Aurora"
 import { HapticButtonLink } from "@/components/ui/HapticButtonLink"
+import { LandingContainer } from "@/components/ui/LandingContainer"
+import { getBlogPostBySlug, getLandingPage, type CtaLayoutBlock } from "@/lib/cms"
+import { isSupportedLocale } from "@/lib/i18n"
+import { createMetadata, resolveSiteUrl } from "@/lib/siteConfig"
+import { type Media } from "@/payload-types"
+import type { Metadata } from "next"
+import Image from "next/image"
+import { notFound } from "next/navigation"
+import { Suspense } from "react"
 
 function getMediaUrl(value?: number | Media | null) {
     if (!value || typeof value === "number" || !value.url) {
@@ -119,14 +119,3 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     })
 }
 
-export async function generateStaticParams() {
-    const all = await Promise.all(
-        SUPPORTED_LOCALES.map(async (locale) => {
-            const slugs = await getBlogSlugs(locale)
-            return slugs.map((slug) => ({ locale, slug }))
-        })
-    )
-    return all.flat()
-}
-
-export const dynamicParams = false
