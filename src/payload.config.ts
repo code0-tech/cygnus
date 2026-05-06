@@ -1,7 +1,7 @@
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
-import { importExportPlugin } from '@payloadcms/plugin-import-export'
 import { seoPlugin } from '@payloadcms/plugin-seo'
+import { importExportPlugin } from '@payloadcms/plugin-import-export'
 import { BlocksFeature, CodeBlock, FixedToolbarFeature, lexicalEditor } from '@payloadcms/richtext-lexical'
 import path from 'path'
 import { buildConfig } from 'payload'
@@ -33,6 +33,7 @@ const shouldSkipEmailVerify =
     !smtpHost
 
 export default buildConfig({
+    serverURL: process.env.NEXT_PUBLIC_APP_URL,
     admin: {
         user: Users.slug,
         importMap: {

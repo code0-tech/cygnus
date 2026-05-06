@@ -1,6 +1,7 @@
 "use client"
 
 import {cn} from "@/lib/utils"
+import { getMediaUrl } from "@/lib/media"
 import {Media} from "@/payload-types"
 import Image from "next/image"
 import {LinkButton} from "../ui/LinkButton"
@@ -25,7 +26,7 @@ export function EditionUseCaseCard({
                                        isFocused = false,
                                        className
                                    }: EditionUseCaseCardProps) {
-    const imageUrl = typeof image === 'object' && image?.url ? image.url : null
+    const imageUrl = typeof image === 'object' ? getMediaUrl(image?.url) : ""
 
     return (
         <div

@@ -3,6 +3,7 @@
 import { LinkButton } from "@/components/ui/LinkButton"
 import { Section } from "@/components/ui/Section"
 import { CardRowLayoutBlock } from "@/lib/cms"
+import { getMediaUrl } from "@/lib/media"
 import type { Media } from "@/payload-types"
 import { m as motion, type Variants } from "motion/react"
 import Image from "next/image"
@@ -14,7 +15,7 @@ interface CardRowSectionProps {
 }
 
 function getImageUrl(image: number | Media | null | undefined) {
-    return typeof image === "object" && image?.url ? image.url : null
+    return typeof image === "object" ? getMediaUrl(image?.url) : ""
 }
 
 export function CardRowSection({ content, children }: CardRowSectionProps) {

@@ -3,6 +3,7 @@
 import { LinkButton } from "@/components/ui/LinkButton"
 import { Section } from "@/components/ui/Section"
 import { OffsetCardsLayoutBlock } from "@/lib/cms"
+import { getMediaUrl } from "@/lib/media"
 import { ANIMATION_PRESETS, type AnimationPreset } from "@/lib/utils"
 import type { Media } from "@/payload-types"
 import { m as motion, type Variants } from "motion/react"
@@ -57,6 +58,7 @@ export function OffsetCardsSection({ content }: OffsetCardsSectionProps) {
                     const animationPreset = OFFSET_CARD_ANIMATION_SEQUENCE[index % OFFSET_CARD_ANIMATION_SEQUENCE.length]
                     const animationConfig = ANIMATION_PRESETS[animationPreset]
                     const image = item.image as Media
+                    const imageUrl = getMediaUrl(image?.url)
 
                     return (
                         <motion.div
@@ -99,9 +101,9 @@ export function OffsetCardsSection({ content }: OffsetCardsSectionProps) {
                             </motion.div>
                             <div className="glass-card-shell aspect-video w-full lg:w-2/3">
                                 <div aria-hidden="true" className="glass-card-topline" />
-                                {image?.url ? (
+                                {imageUrl ? (
                                     <Image
-                                        src={image.url}
+                                        src={imageUrl}
                                         alt={image.alt ?? item.title}
                                         fill
                                         sizes="(min-width: 768px) 66vw, 100vw"

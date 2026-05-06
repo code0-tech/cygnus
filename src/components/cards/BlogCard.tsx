@@ -1,6 +1,7 @@
 "use client"
 
 import { BlogPostItem } from "@/lib/cms"
+import { getMediaUrl } from "@/lib/media"
 import { Media, TeamMember } from "@/payload-types"
 import { Card } from "@code0-tech/pictor"
 import Image from "next/image"
@@ -10,6 +11,7 @@ import { useWebHaptics } from "web-haptics/react"
 export function BlogCard({ locale, post }: { locale: string, post: BlogPostItem }) {
     const { trigger } = useWebHaptics()
     const heroImage = post.heroImage as Media
+    const heroImageUrl = getMediaUrl(heroImage?.url)
 
     const publishedDate = new Intl.DateTimeFormat(locale === "de" ? "de-DE" : "en-US", {
         dateStyle: "long",
@@ -27,10 +29,10 @@ export function BlogCard({ locale, post }: { locale: string, post: BlogPostItem 
                 <div aria-hidden="true" className="glass-card-topline" />
 
                 <div className="relative z-10 flex h-full flex-row items-stretch gap-4 md:flex-col">
-                    {heroImage?.url ? (
+                    {heroImageUrl ? (
                         <div className="relative w-40 aspect-video shrink-0 overflow-hidden rounded-2xl border border-white/8 bg-primary/40 md:w-full md:aspect-video">
                             <Image
-                                src={heroImage.url}
+                                src={heroImageUrl}
                                 alt={heroImage.alt ?? post.title}
                                 fill
                                 sizes="(min-width: 768px) 50vw, 160px"

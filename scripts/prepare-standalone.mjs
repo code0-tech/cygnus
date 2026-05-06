@@ -12,6 +12,9 @@ const publicDest = join(standaloneDir, "public")
 const mediaSrc = "media"
 const mediaDest = join(standaloneDir, "media")
 
+const standaloneScriptsSrc = join("scripts", "import-pages-standalone.mjs")
+const standaloneScriptsDest = join(standaloneDir, "scripts", "import-pages.mjs")
+
 if (!existsSync(standaloneDir)) {
     throw new Error("Missing .next/standalone. Run `next build` with `output: 'standalone'` first.")
 }
@@ -29,6 +32,11 @@ if (existsSync(publicSrc)) {
 if (existsSync(mediaSrc)) {
     mkdirSync(standaloneDir, { recursive: true })
     cpSync(mediaSrc, mediaDest, { recursive: true, force: true })
+}
+
+if (existsSync(standaloneScriptsSrc)) {
+    mkdirSync(join(standaloneDir, "scripts"), { recursive: true })
+    cpSync(standaloneScriptsSrc, standaloneScriptsDest, { force: true })
 }
 
 console.log("Standalone assets prepared.")

@@ -1,6 +1,7 @@
 "use client"
 
 import type { TeamMemberItem } from "@/lib/cms"
+import { getMediaUrl } from "@/lib/media"
 import type { Media } from "@/payload-types"
 import { Card } from "@code0-tech/pictor"
 import { IconX } from "@tabler/icons-react"
@@ -24,6 +25,7 @@ export function TeamMemberCard({ member, locale }: TeamMemberCardProps) {
     const { trigger } = useWebHaptics()
 
     const image = member.image as Media
+    const imageUrl = getMediaUrl(image?.url)
     const cardLayoutId = `team-member-card-${member.id ?? member.name}`
     const joinedAtLabel = member.joinedAt
         ? new Intl.DateTimeFormat(locale === "de" ? "de-DE" : "en-US", { dateStyle: "medium" }).format(new Date(member.joinedAt))
@@ -62,9 +64,9 @@ export function TeamMemberCard({ member, locale }: TeamMemberCardProps) {
 
                     <div className="relative z-10">
                         <div className="flex items-center gap-4 mb-4">
-                            {image?.url ? (
+                            {imageUrl ? (
                                 <Image
-                                    src={image.url}
+                                    src={imageUrl}
                                     alt={image.alt ?? member.name}
                                     width={56}
                                     height={56}
@@ -113,9 +115,9 @@ export function TeamMemberCard({ member, locale }: TeamMemberCardProps) {
                                 <div className="relative z-10">
                                     <div className="flex items-start justify-between gap-4 mb-4">
                                         <div className="flex items-center gap-4">
-                                            {image?.url ? (
+                                            {imageUrl ? (
                                                 <Image
-                                                    src={image.url}
+                                                    src={imageUrl}
                                                     alt={image.alt ?? member.name}
                                                     width={64}
                                                     height={64}

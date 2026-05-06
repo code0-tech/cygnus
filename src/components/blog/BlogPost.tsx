@@ -1,4 +1,5 @@
 import { getBlogPostBySlug } from "@/lib/cms"
+import { getMediaUrl } from "@/lib/media"
 import { customLexicalHTMLConverters } from "@/lib/richText/customHTMLConverters"
 import type { AppLocale } from "@/lib/i18n"
 import type { Blog, Media, TeamMember } from "@/payload-types"
@@ -92,6 +93,8 @@ export async function BlogPost({ slug, locale }: BlogPostProps) {
     const heroImage = post.heroImage as Media
     const author = typeof post.author === "number" ? null : post.author as TeamMember
     const authorImage = author?.image && typeof author.image !== "number" ? author.image : undefined
+    const heroImageUrl = getMediaUrl(heroImage?.url)
+    const authorImageUrl = getMediaUrl(authorImage?.url)
     const publishedDate = new Intl.DateTimeFormat(locale === "de" ? "de-DE" : "en-US", {
         dateStyle: "long",
     }).format(new Date(post.createdAt))
@@ -122,12 +125,12 @@ export async function BlogPost({ slug, locale }: BlogPostProps) {
                 {post.shortDescription ? <p className="text-balance text-lg text-white/70 mb-4">{post.shortDescription}</p> : null}
             </header>
 
-            {heroImage?.url ? (
+            {heroImageUrl ? (
                 <div className="glass-card-shell p-2">
                     <div aria-hidden="true" className="glass-card-topline" />
                     <div className="relative aspect-video w-full overflow-hidden rounded-2xl ring ring-white/10">
                         <Image
-                            src={heroImage.url}
+                            src={heroImageUrl}
                             alt={heroImage.alt ?? post.title}
                             fill
                             priority
@@ -149,10 +152,10 @@ export async function BlogPost({ slug, locale }: BlogPostProps) {
                 <aside className="space-y-6">
                     {author ? (
                         <div className="flex gap-3 text-sm text-white/50">
-                            {authorImage?.url ? (
+                            {authorImageUrl ? (
                                 <Image
-                                    src={authorImage.url}
-                                    alt={authorImage.alt ?? author.name}
+                                    src={authorImageUrl}
+                                    alt={authorImage?.alt ?? author.name}
                                     width={40}
                                     height={40}
                                     className="size-10 shrink-0 rounded-full object-cover"

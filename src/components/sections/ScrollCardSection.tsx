@@ -3,6 +3,7 @@
 import { LinkButton } from "@/components/ui/LinkButton"
 import { Section } from "@/components/ui/Section"
 import type { ScrollCardsLayoutBlock } from "@/lib/cms"
+import { getMediaUrl } from "@/lib/media"
 import { cn } from "@/lib/utils"
 import type { Media } from "@/payload-types"
 import { m as motion } from "motion/react"
@@ -123,6 +124,7 @@ export function ScrollCardSection({ content }: ScrollCardSectionProps) {
                 >
                 {items.map((item, index) => {
                     const image = getImage(item.image)
+                    const imageUrl = getMediaUrl(image?.url)
                     const itemSettings = item as {
                         gradient?: keyof typeof cardGradients | null
                         gradientDirection?: keyof typeof gradientDirections | null
@@ -201,10 +203,10 @@ export function ScrollCardSection({ content }: ScrollCardSectionProps) {
                                     showImageBorder && "border border-white/10",
                                     isImageLeft && "md:order-1",
                                 )}>
-                                    {image?.url && (
+                                    {imageUrl && (
                                         <Image
-                                            src={image.url}
-                                            alt={image.alt ?? item.title}
+                                            src={imageUrl}
+                                            alt={image?.alt ?? item.title}
                                             fill
                                             sizes="(min-width: 768px) 50vw, 100vw"
                                             className="object-contain object-center"

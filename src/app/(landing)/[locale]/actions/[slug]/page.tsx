@@ -6,6 +6,7 @@ import { LandingContainer } from "@/components/ui/LandingContainer"
 import { LinkButton } from "@/components/ui/LinkButton"
 import { getActionBySlug, getLandingPage, type ActionsLayoutBlock } from "@/lib/cms"
 import { isSupportedLocale } from "@/lib/i18n"
+import { getMediaUrl } from "@/lib/media"
 import { createMetadata } from "@/lib/siteConfig"
 import type { Media } from "@/payload-types"
 import { IconArrowLeft, IconExternalLink } from "@tabler/icons-react"
@@ -23,6 +24,7 @@ export default async function ActionDetailPage({ params }: { params: Promise<{ l
     const actionsPage = await getLandingPage("actions", locale)
 
     const icon = action.icon as Media | undefined
+    const iconUrl = getMediaUrl(icon?.url)
     const triggers = action.trigger as Media | undefined
     const functionDefs = action.functiondefinitions as Media | undefined
     const references = (action.references ?? []).filter((reference): reference is Exclude<typeof reference, number> => typeof reference !== "number")
@@ -50,11 +52,11 @@ export default async function ActionDetailPage({ params }: { params: Promise<{ l
                             <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">
 
                                 <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
-                                    {icon?.url && (
+                                    {iconUrl && (
                                         <div className="relative size-20 shrink-0 overflow-hidden rounded-3xl border border-white/10 bg-white/5">
                                             <Image
-                                                src={icon.url}
-                                                alt={icon.alt ?? action.title}
+                                                src={iconUrl}
+                                                alt={icon?.alt ?? action.title}
                                                 fill
                                                 sizes="80px"
                                                 className="object-contain p-2"

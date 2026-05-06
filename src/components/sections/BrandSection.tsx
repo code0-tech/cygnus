@@ -6,6 +6,7 @@ import Image from "next/image"
 import type { Media } from "@/payload-types"
 import { m as motion, type Variants } from "motion/react"
 import { BrandLayoutBlock } from "@/lib/cms"
+import { getMediaUrl } from "@/lib/media"
 
 interface BrandSectionProps {
     content?: BrandLayoutBlock | null
@@ -55,13 +56,14 @@ export function BrandSection({ content }: BrandSectionProps) {
                         logos.map((item, index) => {
                             const href = (item as Media & { href?: string | null }).href
                             const logo = item as Media
+                            const logoUrl = getMediaUrl(logo.url)
 
                             return (
                                 <motion.div variants={staggerItem} className="relative w-full h-14" key={`${logo.id ?? logo.url ?? index}`}>
                                     {href ? (
                                         <a href={href} className="relative block h-full w-full">
                                             <Image
-                                                src={logo.url ?? ""}
+                                                src={logoUrl}
                                                 alt={logo.alt}
                                                 fill
                                                 unoptimized
@@ -71,7 +73,7 @@ export function BrandSection({ content }: BrandSectionProps) {
                                         </a>
                                     ) : (
                                         <Image
-                                            src={logo.url ?? ""}
+                                            src={logoUrl}
                                             alt={logo.alt}
                                             fill
                                             unoptimized

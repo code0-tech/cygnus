@@ -1,4 +1,5 @@
 import type { Media } from "@/payload-types"
+import { getMediaUrl } from "./media"
 
 interface ActionTriggerTranslation {
     code: string
@@ -167,7 +168,7 @@ export function extractFunctionDefsFromJson(json: unknown): ExtractedFunctionDef
 }
 
 export async function fetchMediaJson(media: Media | undefined): Promise<unknown> {
-    const url = media?.url?.trim()
+    const url = getMediaUrl(media?.url).trim()
     if (!url) return []
 
     const response = await fetch(url)
