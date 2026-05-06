@@ -9,6 +9,7 @@ type ImportPage = {
 }
 
 export type ImportLocale = "en" | "de"
+type MediaCache = Map<string, number | null>
 
 const systemFields = new Set(["id", "createdAt", "updatedAt"])
 const supportedLocales = new Set(["en", "de"])
@@ -72,19 +73,83 @@ const isPayloadRelationshipObject = (value: Record<string, unknown>) => {
   )
 }
 
+const isPayloadMediaObject = (value: Record<string, unknown>) => {
+  return (
+    "id" in value &&
+    (
+      value.relationTo === "media" ||
+      "filename" in value ||
+      "mimeType" in value ||
+      "filesize" in value
+    )
+  )
+}
+
 const isLocalizedValue = (value: Record<string, unknown>) => {
   const keys = Object.keys(value)
 
   return keys.length > 0 && keys.every((key) => supportedLocales.has(key))
 }
 
-const normalizeRelationships = (value: unknown, locale: ImportLocale): unknown => {
+const resolveMediaIDByFilename = async ({
+  media,
+  mediaCache,
+  payload,
+}: {
+  media: Record<string, unknown>
+  mediaCache: MediaCache
+  payload: Payload
+}) => {
+  const filename = typeof media.filename === "string" ? media.filename : null
+
+  if (!filename) {
+    return media.id
+  }
+
+  if (mediaCache.has(filename)) {
+    return mediaCache.get(filename)
+  }
+
+  const existing = await payload.find({
+    collection: "media",
+    depth: 0,
+    limit: 1,
+    overrideAccess: true,
+    where: {
+      filename: {
+        equals: filename,
+      },
+    },
+  })
+
+  const id = existing.docs[0]?.id ?? null
+  mediaCache.set(filename, id)
+  return id
+}
+
+const normalizeRelationships = async ({
+  locale,
+  mediaCache,
+  payload,
+  value,
+}: {
+  locale: ImportLocale
+  mediaCache: MediaCache
+  payload: Payload
+  value: unknown
+}): Promise<unknown> => {
   if (Array.isArray(value)) {
-    return value.map((item) => normalizeRelationships(item, locale))
+    return Promise.all(
+      value.map((item) => normalizeRelationships({ locale, mediaCache, payload, value: item })),
+    )
   }
 
   if (!isRecord(value)) {
     return value
+  }
+
+  if (isPayloadMediaObject(value)) {
+    return resolveMediaIDByFilename({ media: value, mediaCache, payload })
   }
 
   if (isPayloadRelationshipObject(value)) {
@@ -92,12 +157,22 @@ const normalizeRelationships = (value: unknown, locale: ImportLocale): unknown =
   }
 
   if (isLocalizedValue(value)) {
-    return normalizeRelationships(value[locale] ?? value.en ?? value.de, locale)
+    return normalizeRelationships({
+      locale,
+      mediaCache,
+      payload,
+      value: value[locale] ?? value.en ?? value.de,
+    })
   }
 
-  return Object.fromEntries(
-    Object.entries(value).map(([key, nestedValue]) => [key, normalizeRelationships(nestedValue, locale)]),
+  const entries = await Promise.all(
+    Object.entries(value).map(async ([key, nestedValue]) => [
+      key,
+      await normalizeRelationships({ locale, mediaCache, payload, value: nestedValue }),
+    ]),
   )
+
+  return Object.fromEntries(entries)
 }
 
 export async function importPages({
@@ -112,6 +187,7 @@ export async function importPages({
   payload: Payload
 }) {
   const results: Array<{ id?: number | string; slug?: string; status: string; error?: unknown }> = []
+  const mediaCache: MediaCache = new Map()
 
   for (const doc of docs) {
     if (!doc.slug || typeof doc.slug !== "string") {
@@ -123,7 +199,12 @@ export async function importPages({
       continue
     }
 
-    const data = normalizeRelationships(removeSystemFields(doc), locale) as any
+    const data = await normalizeRelationships({
+      locale,
+      mediaCache,
+      payload,
+      value: removeSystemFields(doc),
+    }) as any
 
     try {
       const existing = await payload.find({
