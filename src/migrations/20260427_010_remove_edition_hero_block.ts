@@ -504,7 +504,7 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
 
     WITH section_source AS (
       SELECT
-        sections."section_type",
+        sections."section_type"::text AS "section_type",
         sections."link_button_url",
         sections_locales."_locale",
         sections_locales."heading",
@@ -528,7 +528,7 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
 
     WITH section_source AS (
       SELECT
-        sections."section_type",
+        sections."section_type"::text AS "section_type",
         sections."link_button_url",
         sections_locales."_locale",
         sections_locales."heading",
@@ -549,7 +549,7 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
 
     WITH section_source AS (
       SELECT
-        sections."section_type",
+        sections."section_type"::text AS "section_type",
         sections."link_button_url",
         sections_locales."_locale",
         sections_locales."heading",
@@ -570,7 +570,7 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
 
     WITH section_source AS (
       SELECT
-        sections."section_type",
+        sections."section_type"::text AS "section_type",
         sections."link_button_url",
         sections_locales."_locale",
         sections_locales."heading",
@@ -592,7 +592,7 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
 
     WITH section_source AS (
       SELECT
-        sections."section_type",
+        sections."section_type"::text AS "section_type",
         sections."link_button_url",
         sections_locales."_locale",
         sections_locales."heading",
