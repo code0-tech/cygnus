@@ -181,14 +181,22 @@ const Grainient: React.FC<Partial<GrainientPalette>> = ({
   useEffect(() => {
     if (!containerRef.current) return;
 
-    const renderer = new Renderer({
-      webgl: 2,
-      alpha: true,
-      antialias: false,
-      dpr: Math.min(window.devicePixelRatio || 1, GRAINIENT_CONFIG.maxDpr)
-    });
+    let renderer: Renderer;
+
+    try {
+      renderer = new Renderer({
+        webgl: 2,
+        alpha: true,
+        antialias: false,
+        dpr: Math.min(window.devicePixelRatio || 1, GRAINIENT_CONFIG.maxDpr)
+      });
+    } catch {
+      return;
+    }
 
     const gl = renderer.gl;
+    if (!gl) return;
+
     const canvas = gl.canvas as HTMLCanvasElement;
     canvas.style.width = '100%';
     canvas.style.height = '100%';

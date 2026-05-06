@@ -13,8 +13,6 @@
     "migrate:create": "payload migrate:create",
     "migrate:status": "payload migrate:status",
     "generate:importmap": "payload generate:importmap",
-    "import:pages": "node --import tsx scripts/import-pages.ts",
-    "import:pages:standalone": "node .next/standalone/scripts/import-pages.mjs",
     "lint": "next lint",
     "knip": "node --import tsx ./node_modules/knip/bin/knip.js",
     "generate": "payload generate:types"
