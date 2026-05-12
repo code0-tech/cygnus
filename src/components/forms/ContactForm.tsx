@@ -97,10 +97,10 @@ export function ContactForm({ content, locale }: ContactFormProps) {
                         throw new Error(errorText || "Failed to send message.")
                     }
 
-                    inputs.getInputProps("name").formValidation?.setValue("")
-                    inputs.getInputProps("email").formValidation?.setValue("")
-                    inputs.getInputProps("message").formValidation?.setValue("")
-                    inputs.getInputProps("acceptTerms").formValidation?.setValue(false)
+                    inputs.getInputProps("name").formValidation?.setValue?.("")
+                    inputs.getInputProps("email").formValidation?.setValue?.("")
+                    inputs.getInputProps("message").formValidation?.setValue?.("")
+                    inputs.getInputProps("acceptTerms").formValidation?.setValue?.(false)
                     setSubmitStatus({ type: "success", message: "Message sent successfully." })
                 } catch (error) {
                     console.error("Contact form submit error:", error)

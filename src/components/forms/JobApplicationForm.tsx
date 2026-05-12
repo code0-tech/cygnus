@@ -99,10 +99,10 @@ export function JobApplicationForm({ jobSlug, content, locale }: JobApplicationF
                         throw new Error(errorText || "Failed to send application.")
                     }
 
-                    inputs.getInputProps("name").formValidation?.setValue("")
-                    inputs.getInputProps("email").formValidation?.setValue("")
-                    inputs.getInputProps("text").formValidation?.setValue("")
-                    inputs.getInputProps("acceptTerms").formValidation?.setValue(false)
+                    inputs.getInputProps("name").formValidation?.setValue?.("")
+                    inputs.getInputProps("email").formValidation?.setValue?.("")
+                    inputs.getInputProps("text").formValidation?.setValue?.("")
+                    inputs.getInputProps("acceptTerms").formValidation?.setValue?.(false)
                     setSubmitStatus({ type: "success", message: "Application sent successfully." })
                 } catch (error) {
                     console.error("Job application submit error:", error)

@@ -45,7 +45,7 @@ export function AcceptTermsCheckbox({
             ...formValidation,
             notValidMessage: null,
             setValue: (value: boolean) => {
-                formValidation.setValue(value)
+                formValidation.setValue?.(value)
                 if (!formValidation.valid) {
                     revalidateOnToggle?.()
                 }
