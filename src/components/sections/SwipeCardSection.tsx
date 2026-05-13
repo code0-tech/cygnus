@@ -1,13 +1,13 @@
 "use client"
 
-import { EditionUseCaseCard } from "@/components/cards/EditionUseCaseCard"
+import { SwipeCard } from "@/components/cards/SwipeCard"
 import { Section } from "@/components/ui/Section"
 import { cn } from "@/lib/utils"
 import type { SwipeCardsLayoutBlock } from "@/lib/cms"
 import { Button } from "@code0-tech/pictor"
 import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react"
 import { m as motion, type PanInfo, type Variants } from "motion/react"
-import { useState } from "react"
+import { type TouchEvent as ReactTouchEvent, useRef, useState } from "react"
 import { useWebHaptics } from "web-haptics/react"
 
 interface SwipeCardSectionProps {
@@ -16,6 +16,8 @@ interface SwipeCardSectionProps {
 
 export function SwipeCardSection({ content }: SwipeCardSectionProps) {
     const [focusedIndex, setFocusedIndex] = useState(0)
+    const touchStartX = useRef<number | null>(null)
+    const handledTouchSwipe = useRef(false)
     const { trigger } = useWebHaptics()
 
     if (!content?.cards?.length) return null
@@ -34,11 +36,44 @@ export function SwipeCardSection({ content }: SwipeCardSectionProps) {
     }
 
     const handleDragEnd = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+        if (handledTouchSwipe.current) {
+            handledTouchSwipe.current = false
+            return
+        }
+
         const swipeThreshold = 48
 
         if (Math.abs(info.offset.x) < swipeThreshold) return
 
         if (info.offset.x > 0) {
+            handlePrevious()
+            return
+        }
+
+        handleNext()
+    }
+
+    const handleTouchStart = (event: ReactTouchEvent<HTMLDivElement>) => {
+        handledTouchSwipe.current = true
+        touchStartX.current = event.touches[0]?.clientX ?? null
+    }
+
+    const handleTouchEnd = (event: ReactTouchEvent<HTMLDivElement>) => {
+        window.setTimeout(() => {
+            handledTouchSwipe.current = false
+        }, 250)
+
+        if (touchStartX.current === null) return
+
+        const touchEndX = event.changedTouches[0]?.clientX
+        if (touchEndX === undefined) return
+
+        const offsetX = touchEndX - touchStartX.current
+        touchStartX.current = null
+
+        if (Math.abs(offsetX) < 48) return
+
+        if (offsetX > 0) {
             handlePrevious()
             return
         }
@@ -118,12 +153,14 @@ export function SwipeCardSection({ content }: SwipeCardSectionProps) {
                             dragConstraints={{ left: 0, right: 0 }}
                             dragElastic={0.08}
                             onDragEnd={handleDragEnd}
+                            onTouchStart={handleTouchStart}
+                            onTouchEnd={handleTouchEnd}
                         >
                             <div className="relative flex w-full items-stretch justify-center">
-                                <div className="invisible pointer-events-none grid w-[60%]">
+                                <div className="invisible pointer-events-none grid w-full sm:w-[80%] lg:w-[60%]">
                                     {cards.map((card, index) => (
                                         <div key={card.id || index} className="col-start-1 row-start-1">
-                                            <EditionUseCaseCard
+                                            <SwipeCard
                                                 title={card.title}
                                                 description={card.description}
                                                 image={card.image}
@@ -143,8 +180,8 @@ export function SwipeCardSection({ content }: SwipeCardSectionProps) {
                                         <div
                                             key={card.id || index}
                                             className={cn(
-                                                "absolute inset-y-0 h-full w-full transition-all duration-500 ease-out",
-                                                "left-1/2 w-[60%]",
+                                                "absolute top-0 w-full transition-all duration-500 ease-out",
+                                                "left-1/2 w-full sm:w-[80%] lg:w-[60%]",
                                                 !isVisibleMobile && "lg:opacity-100 lg:pointer-events-auto opacity-0 pointer-events-none",
                                                 !isVisibleDesktop && "lg:opacity-0 lg:pointer-events-none",
                                             )}
@@ -152,7 +189,7 @@ export function SwipeCardSection({ content }: SwipeCardSectionProps) {
                                                 transform: `translateX(calc(-50% + ${offset * 104}%))`,
                                             }}
                                         >
-                                            <EditionUseCaseCard
+                                            <SwipeCard
                                                 title={card.title}
                                                 description={card.description}
                                                 image={card.image}
