@@ -26,6 +26,15 @@ const dirname = path.dirname(filename)
 const smtpHost = process.env.SMTP_HOST
 const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build" || process.env.npm_lifecycle_event === "build"
 const isDevelopment = process.env.NODE_ENV === "development"
+const appURL = (process.env.NEXT_PUBLIC_APP_URL?.trim() || (isDevelopment ? 'http://localhost:3000' : 'https://codezero.build')).replace(/\/$/, '')
+const allowedOrigins = Array.from(
+    new Set([
+        appURL,
+        'http://localhost:3000',
+        'https://localhost:3000',
+        'https://codezero.build',
+    ]),
+)
 const shouldSkipEmailVerify =
     isDevelopment ||
     isBuildPhase ||
@@ -33,7 +42,9 @@ const shouldSkipEmailVerify =
     !smtpHost
 
 export default buildConfig({
-    serverURL: process.env.NEXT_PUBLIC_APP_URL,
+    serverURL: appURL,
+    cors: allowedOrigins,
+    csrf: allowedOrigins,
     admin: {
         user: Users.slug,
         importMap: {
