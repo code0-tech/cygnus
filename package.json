@@ -18,7 +18,7 @@
     "generate": "payload generate:types"
   },
   "dependencies": {
-    "@c15t/nextjs": "^2.0.4",
+    "@c15t/nextjs": "^2.1.0",
     "@c15t/scripts": "^2.1.0",
     "@code0-tech/pictor": "^0.7.2",
     "@icons-pack/react-simple-icons": "^13.13.0",
