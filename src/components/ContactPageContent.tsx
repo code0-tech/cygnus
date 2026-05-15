@@ -79,13 +79,13 @@ export function ContactPageContent({ locale, contactBlock }: ContactPageContentP
     }, [])
 
     return (
-        <div className="grid gap-8 lg:grid-cols-5">
-            <section className="min-w-0 lg:col-span-3">
+        <div className="grid gap-8 lg:grid-cols-2">
+            <section className="min-w-0">
                 <h1 className="text-4xl font-semibold text-white">{pageHeading}</h1>
                 <p className="mt-4 text-white/75">{pageDescription}</p>
             </section>
 
-            <section ref={desktopWrapperRef} className="relative min-w-0 lg:col-span-2">
+            <section ref={desktopWrapperRef} className="relative min-w-0">
                 <div
                     ref={desktopContainerRef}
                     className={cn(

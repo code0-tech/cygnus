@@ -53,13 +53,7 @@ export function TeamMemberCard({ member, locale }: TeamMemberCardProps) {
                 aria-label={`${member.name} details`}
                 whileTap={{ scale: 0.98 }}
             >
-                <Card
-                    variant="filled"
-                    className="glass-card-shell group h-full cursor-pointer p-5!"
-                >
-                    <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.04),transparent_34%),linear-gradient(135deg,rgba(114,201,248,0.1),transparent_42%)]" />
-                    <div aria-hidden="true" className="pointer-events-none absolute -left-8 -top-8 h-24 w-24 rounded-full bg-aqua/14 blur-2xl transition-transform duration-700 group-hover:scale-115" />
-                    <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,rgba(8,10,20,0),rgba(8,10,20,0.52)_54%,rgba(8,10,20,0.88))]" />
+                <Card className="glass-card-shell bg-primary/50! group h-full cursor-pointer p-4!">
                     <div aria-hidden="true" className="glass-card-topline" />
 
                     <div className="relative z-10">
@@ -73,17 +67,17 @@ export function TeamMemberCard({ member, locale }: TeamMemberCardProps) {
                                     className="h-14 w-14 rounded-full object-cover"
                                 />
                             ) : (
-                                <div className="h-14 w-14 rounded-full bg-white/15 flex items-center justify-center text-sm font-semibold text-white/80">
+                                <div className="h-14 w-14 rounded-full bg-white/10 flex items-center justify-center text-sm font-semibold text-white/80">
                                     {getInitials(member.name)}
                                 </div>
                             )}
                             <div>
-                                <h3 className="text-xl font-semibold tracking-tight text-white/92">{member.name}</h3>
-                                {member.role ? <p className="text-sm text-white/50">{member.role}</p> : null}
+                                <h3 className="text-xl font-semibold text-white">{member.name}</h3>
+                                {member.role ? <p className="text-sm text-white/75">{member.role}</p> : null}
                             </div>
                         </div>
 
-                        {member.shortDescription ? <p className="text-white/80 leading-6 mb-3">{member.shortDescription}</p> : null}
+                        {member.shortDescription ? <p className="text-white/75 leading-6 mb-3">{member.shortDescription}</p> : null}
                         {joinedAtLabel ? <p className="text-xs text-white/50 mt-4">{joinedLabel}: {joinedAtLabel}</p> : null}
                     </div>
                 </Card>
@@ -92,7 +86,7 @@ export function TeamMemberCard({ member, locale }: TeamMemberCardProps) {
             <AnimatePresence>
                 {isOpen ? (
                     <motion.div
-                        className="fixed inset-0 z-50 bg-black/65 backdrop-blur-sm p-4 md:p-8 flex items-center justify-center"
+                        className="fixed inset-0 z-50 bg-primary/50 backdrop-blur-sm p-4 md:p-8 flex items-center justify-center"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -105,11 +99,8 @@ export function TeamMemberCard({ member, locale }: TeamMemberCardProps) {
                         >
                             <Card
                                 variant="filled"
-                                className="glass-card-shell group h-full max-h-[80vh] overflow-y-auto p-6!"
+                                className="glass-card-shell bg-primary! group h-full max-h-[80vh] overflow-y-auto p-4!"
                             >
-                                <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.04),transparent_34%),linear-gradient(135deg,rgba(114,201,248,0.1),transparent_42%)]" />
-                                <div aria-hidden="true" className="pointer-events-none absolute -left-10 -top-10 h-28 w-28 rounded-full bg-aqua/14 blur-2xl" />
-                                <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,rgba(8,10,20,0),rgba(8,10,20,0.52)_54%,rgba(8,10,20,0.88))]" />
                                 <div aria-hidden="true" className="glass-card-topline" />
 
                                 <div className="relative z-10">
@@ -124,26 +115,26 @@ export function TeamMemberCard({ member, locale }: TeamMemberCardProps) {
                                                     className="h-16 w-16 rounded-full object-cover"
                                                 />
                                             ) : (
-                                                <div className="h-16 w-16 rounded-full bg-white/15 flex items-center justify-center text-base font-semibold text-white/80">
+                                                <div className="h-16 w-16 rounded-full bg-white/10 flex items-center justify-center text-base font-semibold text-white">
                                                     {getInitials(member.name)}
                                                 </div>
                                             )}
                                             <div>
-                                                <h3 className="text-2xl font-semibold tracking-tight text-white/92">{member.name}</h3>
-                                                {member.role ? <p className="text-sm text-white/60">{member.role}</p> : null}
+                                                <h3 className="text-2xl font-semibold text-white">{member.name}</h3>
+                                                {member.role ? <p className="text-sm text-white/75">{member.role}</p> : null}
                                             </div>
                                         </div>
                                         <button
                                             type="button"
                                             onClick={() => setIsOpen(false)}
-                                            className="rounded-lg p-1 text-sm text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+                                            className="rounded-lg p-1 text-sm text-white/75 hover:text-white hover:bg-white/10 transition-colors"
                                             aria-label={locale === "de" ? "Dialog schliessen" : "Close dialog"}
                                         >
                                             <IconX size={20}/>
                                         </button>
                                     </div>
 
-                                    {member.about ? <p className="text-white/80 leading-relaxed text-base">{member.about}</p> : null}
+                                    {member.about ? <p className="text-white/75 text-base">{member.about}</p> : null}
                                     {joinedAtLabel ? <p className="text-xs text-white/50 mt-6">{joinedLabel}: {joinedAtLabel}</p> : null}
                                 </div>
                             </Card>
