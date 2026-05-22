@@ -94,7 +94,7 @@ export function HeroSection({ content, imageSrc = "/code0_software.png" }: HeroS
 
                         <div className="w-full max-w-6xl">
                             <div className="rounded-[1.3rem] border border-white/20 bg-white/10 p-1">
-                                <div className="relative overflow-hidden rounded-[1rem]">
+                                <div className="relative overflow-hidden rounded-2xl">
                                     <Image
                                         src={imageSrc}
                                         alt={content.heading}
@@ -103,7 +103,7 @@ export function HeroSection({ content, imageSrc = "/code0_software.png" }: HeroS
                                         priority
                                         fetchPriority="high"
                                         sizes="(min-width: 1024px) 72rem, 100vw"
-                                        className="block rounded-[1rem] shadow-[0_14px_38px_rgba(0,0,0,0.24)]"
+                                        className="block rounded-2xl shadow-[0_14px_38px_rgba(0,0,0,0.24)]"
                                     />
                                 </div>
                             </div>
@@ -185,7 +185,7 @@ export function HeroSection({ content, imageSrc = "/code0_software.png" }: HeroS
                     </div>
                     <div className="h-auto w-full lg:w-4/5 lg:-mr-56">
                         <div className="rounded-[1.3rem] border border-white/20 bg-white/10 p-1 lg:rounded-l-[1.3rem] lg:rounded-r-none">
-                            <div className="relative overflow-hidden rounded-[1rem] lg:rounded-l-[1rem] lg:rounded-r-none">
+                            <div className="relative overflow-hidden rounded-2xl lg:rounded-l-2xl lg:rounded-r-none">
                                 <Image
                                     src={imageSrc}
                                     alt={"Code0 Example"}
@@ -194,7 +194,7 @@ export function HeroSection({ content, imageSrc = "/code0_software.png" }: HeroS
                                     priority
                                     fetchPriority="high"
                                     sizes="(min-width: 1024px) 60vw, 100vw"
-                                    className="block rounded-[1rem] shadow-[0_14px_38px_rgba(0,0,0,0.24)] lg:rounded-l-[1rem] lg:rounded-r-none"
+                                    className="block rounded-2xl shadow-[0_14px_38px_rgba(0,0,0,0.24)] lg:rounded-l-2xl lg:rounded-r-none"
                                 />
                             </div>
                         </div>

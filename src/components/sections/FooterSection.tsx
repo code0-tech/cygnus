@@ -37,31 +37,8 @@ export const FooterSection: React.FC<FooterSectionProps> = ({ locale, footer }) 
 
     return (
         <LandingContainer className="min-h-full pt-32 pb-4 overflow-visible">
-            <div className={"relative flex flex-col gap-4 overflow-hidden"}>
-                <div className={"grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12 pb-4"}>
-                    {(footer.groups ?? []).map((group) => (
-                        <div className={"flex flex-col gap-1"} key={`${group.heading}-${group.id ?? "group"}`}>
-                            <p className={"text-white font-medium"}>
-                                {group.heading}
-                            </p>
-                            {(group.items ?? []).map((item) => (
-                                <Link
-                                    href={localizeHref(item.url, locale)}
-                                    key={`${item.label}-${item.id ?? item.url}`}
-                                    onClick={() => trigger("medium")}
-                                >
-                                    <p className={"text-white/50 hover:text-white/80 hover:underline underline-offset-2"}>
-                                        {item.label}
-                                    </p>
-                                </Link>
-                            ))}
-                        </div>
-                    ))}
-                </div>
-
-                <div className="h-px w-full bg-white/10" />
-
-                <div className="py-4 flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+            <div className={"relative flex flex-col gap-4 overflow-visible"}>
+                <div className="pb-8 flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
                     <div className="flex max-w-xl flex-col gap-2">
                         <div className="flex items-start gap-2">
                             <Image src={"/code0_text_logo_white.png"} height={"150"} width={"150"} alt={"Code0 Logo"} className="-mt-1.25 w-auto" />
@@ -106,21 +83,44 @@ export const FooterSection: React.FC<FooterSectionProps> = ({ locale, footer }) 
                     </div>
                 </div>
 
-                <div className="h-px w-full bg-white/10" />
+                <div className={"grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12 pb-12"}>
+                    {(footer.groups ?? []).map((group) => (
+                        <div className={"flex flex-col gap-1"} key={`${group.heading}-${group.id ?? "group"}`}>
+                            <p className={"text-white font-medium"}>
+                                {group.heading}
+                            </p>
+                            {(group.items ?? []).map((item) => (
+                                <Link
+                                    href={localizeHref(item.url, locale)}
+                                    key={`${item.label}-${item.id ?? item.url}`}
+                                    onClick={() => trigger("medium")}
+                                >
+                                    <p className={"text-white/50 hover:text-white/80 hover:underline underline-offset-2"}>
+                                        {item.label}
+                                    </p>
+                                </Link>
+                            ))}
+                        </div>
+                    ))}
+                </div>
 
-                <div className="flex flex-col gap-4 text-sm text-white/55 md:flex-row md:items-center md:justify-between">
-                    <div className="flex flex-wrap items-center gap-8 text-xs">
-                        {legalLinks.map((link) => (
-                            <Link key={link.url} href={localizeHref(link.url, locale)} onClick={() => trigger("medium")}>
-                                <span className={"hover:text-white hover:underline underline-offset-2"}>
-                                    {link.label}
-                                </span>
-                            </Link>
-                        ))}
+                <div className="relative pt-4">
+                    <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 left-1/2 w-screen -translate-x-1/2 bg-black/25" />
+                    <div aria-hidden="true" className="pointer-events-none absolute top-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10" />
+                    <div className="relative z-10 flex flex-col gap-4 text-sm text-white/55 md:flex-row md:items-center md:justify-between">
+                        <div className="flex flex-wrap items-center gap-8 text-xs">
+                            {legalLinks.map((link) => (
+                                <Link key={link.url} href={localizeHref(link.url, locale)} onClick={() => trigger("medium")}>
+                                    <span className={"hover:text-white hover:underline underline-offset-2"}>
+                                        {link.label}
+                                    </span>
+                                </Link>
+                            ))}
+                        </div>
+                        <p className="text-white/50 text-xs">
+                            © {new Date().getFullYear()} {footer.company_name}
+                        </p>
                     </div>
-                    <p className="text-white/50 text-xs">
-                        © {new Date().getFullYear()} {footer.company_name}
-                    </p>
                 </div>
             </div>
         </LandingContainer>
