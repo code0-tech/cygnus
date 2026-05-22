@@ -138,7 +138,7 @@ export function Section({
                             heading,
                         )}
                         {description && (
-                            <motion.p variants={staggerItem} className="relative z-10 max-w-[90vw] lg:w-1/2 text-center font-medium text-white/75 text-xl">
+                            <motion.p variants={staggerItem} className="relative z-10 max-w-[90vw] text-center text-xl font-medium text-white/75 lg:w-1/2">
                                 {description}
                             </motion.p>
                         )}
@@ -164,7 +164,7 @@ export function Section({
                             heading,
                         )}
                         {description && (
-                            <motion.p variants={staggerItem} className="relative z-10 max-w-[90vw] lg:w-1/2 font-medium text-white/75 text-xl">
+                            <motion.p variants={staggerItem} className="relative z-10 max-w-[90vw] text-xl font-medium text-white/75 lg:w-1/2">
                                 {description}
                             </motion.p>
                         )}

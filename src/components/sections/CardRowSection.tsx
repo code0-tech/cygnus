@@ -71,12 +71,12 @@ export function CardRowSection({ content, children }: CardRowSectionProps) {
                         <motion.article
                             key={card.id ?? `${card.title}-${index}`}
                             variants={staggerItem}
-                            className="glass-card-shell group flex h-full flex-col rounded-[1.75rem] p-2 shadow-[0_18px_60px_rgba(0,0,0,0.28)] transition-transform before:pointer-events-none before:absolute before:inset-1px before:rounded-[calc(1.75rem-1px)] before:border before:border-white/6 before:content-['']"
+                            className="glass-card-shell group flex h-full flex-col rounded-3xl p-2 shadow-[0_18px_60px_rgba(0,0,0,0.28)] transition-transform before:pointer-events-none before:absolute before:inset-1px before:rounded-[calc(1.5rem-1px)] before:border before:border-white/6 before:content-['']"
                         >
                             <div aria-hidden="true" className="glass-card-topline" />
 
                             {imageUrl ? (
-                                <div className="relative aspect-[243.476/160] overflow-hidden rounded-[1.2rem] border border-white/8 bg-primary/40">
+                                <div className="relative aspect-[243.476/160] overflow-hidden rounded-2xl border border-white/8 bg-primary/40">
                                     <Image
                                         src={imageUrl}
                                         alt={mediaImage?.alt ?? card.title ?? ""}

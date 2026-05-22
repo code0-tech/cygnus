@@ -51,9 +51,9 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
                                 <div className={"pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(255,255,255,0.14),transparent_24%),radial-gradient(circle_at_50%_22%,rgba(191,90,242,0.18),transparent_34%),radial-gradient(circle_at_50%_18%,rgba(255,255,255,0.08),transparent_20%)] md:bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.14),transparent_32%),radial-gradient(circle_at_20%_50%,rgba(191,90,242,0.14),transparent_38%),radial-gradient(circle_at_78%_48%,rgba(255,255,255,0.08),transparent_28%)]"} />
 
                                 <div className={"relative z-20 flex w-full max-w-4xl flex-col items-center gap-8 text-center md:flex-row md:items-center md:text-left"}>
-                                    <div className={"relative flex size-32 md:size-40 shrink-0 items-center justify-center rounded-[1.75rem] border border-white/10 bg-white/5 shadow-[0_18px_46px_rgba(0,0,0,0.24)] backdrop-blur-md"}>
+                                    <div className={"relative flex size-32 shrink-0 items-center justify-center rounded-3xl border border-white/10 bg-white/5 shadow-[0_18px_46px_rgba(0,0,0,0.24)] backdrop-blur-md md:size-40"}>
                                         <div className={"relative isolate flex items-center justify-center rounded-3xl ring ring-white/10 px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"}>
-                                            <div aria-hidden="true" className="pointer-events-none absolute inset-0 rounded-3xl bg-linear-to-br from-primary via-primary to-[#2a1638]" />
+                                            <div aria-hidden="true" className="pointer-events-none absolute inset-0 rounded-[1.25rem] bg-linear-to-br from-primary via-primary to-secondary" />
                                             <Image src={"/code0_logo_white.png"} width={"120"} height={"120"} alt={"Code0 Logo"} className={"z-20"} />
                                         </div>
                                     </div>
@@ -68,7 +68,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
                                         <HapticButtonLink
                                             href={"/contact"}
                                             variant="normal"
-                                            className={"h-11 rounded-xl px-8! bg-white/88! text-primary! shadow-[0_12px_28px_rgba(255,255,255,0.12)] hover:bg-white!"}
+                                            className={"h-11 rounded-xl px-8! bg-white/90! text-primary! shadow-[0_12px_28px_rgba(255,255,255,0.12)] hover:bg-white!"}
                                         >
                                             Contact us
                                         </HapticButtonLink>
@@ -118,4 +118,3 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
         },
     })
 }
-

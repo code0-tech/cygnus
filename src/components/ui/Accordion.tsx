@@ -60,7 +60,7 @@ const AccordionItemComponent = ({ index, question, answer, isOpen, onToggle, cla
             onClick={handleClick}
         >
 
-            <div className={cn("relative z-10 flex w-full items-center justify-between gap-5 px-5 py-4.5 pr-4 text-left", questionClassname)}>
+            <div className={cn("relative z-10 flex w-full items-center justify-between gap-5 px-5 py-4 pr-4 text-left", questionClassname)}>
                 <div className={cn("flex-1 text-sm font-medium text-white/75 sm:text-base lg:text-lg wrap-break-word transition-colors", isOpen && "text-white")}>{question}</div>
                 <div
                     className={cn(
@@ -99,7 +99,7 @@ const AccordionItemComponent = ({ index, question, answer, isOpen, onToggle, cla
                     className="min-h-0"
                 >
                     <div className="relative z-10 px-5 pb-5 pt-1">
-                        <div className="text-sm leading-7 text-white/62 sm:text-base wrap-break-word">{answer}</div>
+                        <div className="text-sm leading-7 text-white/75 sm:text-base wrap-break-word">{answer}</div>
                     </div>
                 </motion.div>
             </motion.div>
@@ -125,7 +125,7 @@ const BaseAccordionItemComponent = ({ index, question, answer, isOpen, onToggle,
             onClick={handleClick}
         >
 
-            <div className={cn("relative z-10 flex w-full items-center justify-between gap-5 px-5 py-4.5 pr-4 text-left sm:text-base font-medium text-sm lg:text-lg wrap-break-word", questionClassname)}>
+            <div className={cn("relative z-10 flex w-full items-center justify-between gap-5 px-5 py-4 pr-4 text-left text-sm font-medium sm:text-base lg:text-lg wrap-break-word", questionClassname)}>
                 <p className={cn("flex-1 text-white/75", isOpen && "text-white")}>{question}</p>
                 <div
                     className={cn(

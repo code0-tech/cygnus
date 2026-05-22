@@ -22,7 +22,7 @@ const NavTab: React.FC<TabProps> = ({ setPosition, containerRef, href, title, su
     const hasSubMenu = Boolean(subMenu?.length)
     const active = activeSubMenu && activeSubMenu === subMenu
     const interactiveClassName = cn(
-        "relative z-50 flex items-center gap-2 px-4 py-1 font-medium text-md rounded-xl cursor-pointer",
+        "relative z-50 flex cursor-pointer items-center gap-2 rounded-xl px-4 py-1 font-medium",
         hasSubMenu && "pr-1"
     )
 

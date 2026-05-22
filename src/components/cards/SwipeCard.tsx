@@ -24,7 +24,7 @@ export function SwipeCard({ title, description, image, link, className }: SwipeC
     return (
         <div
             className={cn(
-                "glass-card-shell group relative flex flex-col rounded-3xl transition-all duration-500 ease-out before:pointer-events-none before:absolute before:inset-1px before:rounded-[calc(1.6rem-1px)] before:border before:border-white/6 before:content-['']",
+                "glass-card-shell group relative flex flex-col rounded-3xl transition-all duration-500 ease-out before:pointer-events-none before:absolute before:inset-1px before:rounded-[calc(1.5rem-1px)] before:border before:border-white/6 before:content-['']",
                 className
             )}
         >

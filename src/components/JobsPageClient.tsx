@@ -143,7 +143,7 @@ export function JobsPageClient({ jobs, locale, content }: JobsPageClientProps) {
             {Object.entries(groupedJobs).map(([category, items]) => (
                 <div key={category} className="flex flex-col gap-4">
                     <div className="flex items-center gap-2 w-full">
-                        <h2 className="text-md text-white/30">{category}</h2>
+                        <h2 className="text-white/50">{category}</h2>
                         <div className="h-0.5 flex-1 bg-white/10 rounded-full" />
                     </div>
                     {items.map((job) => (

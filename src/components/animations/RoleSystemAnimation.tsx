@@ -50,7 +50,7 @@ export function RoleSystemAnimation({ roles }: RoleSystemAnimationProps) {
             className="w-full p-3.5! shadow-md sm:p-4 md:p-5"
         >
             <p className="text-sm text-white/75 sm:text-sm">{role.name}</p>
-            <div className="mt-1 flex flex-wrap items-center gap-1 text-[10px] leading-4.5 text-white/60 sm:gap-1.5 sm:text-[11px] sm:leading-5">
+            <div className="mt-1 flex flex-wrap items-center gap-1 text-[10px] leading-5 text-white/60 sm:gap-1.5 sm:text-[11px] sm:leading-5">
                 <span>{role.description}</span>
                 {role.badges.map((badge) => (
                     <StableBadge

@@ -22,11 +22,11 @@ type SuggestionWithType = InputSuggestion & {
 
 export function SuggesstionMenuClient() {
     const iconMap: Record<FunctionSuggestionType, ReactNode> = {
-        [FunctionSuggestionType.FUNCTION]: <IconNote color="#70ffb2" size={16}/>,
-        [FunctionSuggestionType.FUNCTION_COMBINATION]: <IconNote color="#70ffb2" size={16}/>,
-        [FunctionSuggestionType.REF_OBJECT]: <IconVariable color="#FFBE0B" size={16}/>,
-        [FunctionSuggestionType.VALUE]: <IconCircleDot color="#D90429" size={16}/>,
-        [FunctionSuggestionType.DATA_TYPE]: <IconCircleDot color="#D90429" size={16}/>,
+        [FunctionSuggestionType.FUNCTION]: <IconNote className="text-brand" size={16}/>,
+        [FunctionSuggestionType.FUNCTION_COMBINATION]: <IconNote className="text-brand" size={16}/>,
+        [FunctionSuggestionType.REF_OBJECT]: <IconVariable className="text-warning" size={16}/>,
+        [FunctionSuggestionType.VALUE]: <IconCircleDot className="text-error" size={16}/>,
+        [FunctionSuggestionType.DATA_TYPE]: <IconCircleDot className="text-error" size={16}/>,
     }
 
     const renderSuggestionContent = (suggestion: SuggestionWithType) => {
@@ -43,12 +43,12 @@ export function SuggesstionMenuClient() {
                     className="py-0!"
                 >
                     <IconVariable size={12}/>
-                    <StableBadge color="secondary" border className="min-w-0 max-w-full border-pink bg-[#1c0b29]!">
-                        <IconNote size={12} color="#f872e2" />
+                    <StableBadge color="secondary" border className="min-w-0 max-w-full border-pink/40 bg-secondary/90! text-pink">
+                        <IconNote size={12} className="text-pink" />
                         <Text
                             size="sm"
                             className="min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap"
-                            style={{ color: "#f872e2" }}
+                            style={{ color: "inherit" }}
                         >
                             {label}
                         </Text>
@@ -202,22 +202,22 @@ export function SuggesstionMenuClient() {
     return (
         <Card
             paddingSize="xxs"
-            className="w-full! rounded-[1.35rem]! border! border-white/10! bg-secondary! shadow-[0_20px_50px_rgba(0,0,0,0.34)]! cursor-default!"
+            className="w-full! rounded-3xl! border! border-white/10! bg-secondary! shadow-[0_20px_50px_rgba(0,0,0,0.34)]! cursor-default!"
         >
-            <div className="relative z-20 flex flex-col gap-2 rounded-[1.2rem] bg-primary p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+            <div className="relative z-20 flex flex-col gap-2 rounded-[1.25rem] bg-primary p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
                 {groupedEntries
                     .filter(([group]) => group === "Variables")
                     .map(([group, items]) => (
                         <div key={group} className="flex flex-col gap-1">
-                            <div className="flex items-center justify-between px-2 py-1 text-[11px] uppercase text-[#8a88a8]">
+                            <div className="flex items-center justify-between px-2 py-1 text-[11px] uppercase text-white/50">
                                 <span>{group}</span>
-                                <IconChevronUp size={14} className="text-[#8a88a8]" />
+                                <IconChevronUp size={14} className="text-white/50" />
                             </div>
                             <div className="flex flex-col gap-0.5">
                                 {items.map((suggestion) => (
                                     <div
                                         key={`${group}-${suggestion.value}`}
-                                        className="flex w-full items-center gap-3 px-3 py-1.5 text-left text-white/92 transition-colors bg-secondary rounded-xl"
+                                        className="flex w-full items-center gap-3 rounded-xl bg-secondary px-3 py-1.5 text-left text-white/90 transition-colors"
                                     >
                                         <span className="flex h-4 w-4 shrink-0 items-center justify-center">
                                             {iconMap[suggestion.suggestionType]}
@@ -234,15 +234,15 @@ export function SuggesstionMenuClient() {
                         .filter(([group]) => group !== "Variables")
                         .map(([group, items]) => (
                             <div key={group} className="flex flex-col">
-                                <div className="flex items-center justify-between px-3 py-1 text-[11px] uppercase text-[#8a88a8]">
+                                <div className="flex items-center justify-between px-3 py-1 text-[11px] uppercase text-white/50">
                                     <span>{group}</span>
-                                    <IconChevronUp size={14} className="text-[#8a88a8]" />
+                                    <IconChevronUp size={14} className="text-white/50" />
                                 </div>
                                 <div className="flex flex-col gap-0.5">
                                     {items.map((suggestion) => (
                                         <div
                                             key={`${group}-${suggestion.value}`}
-                                            className="flex w-full items-center gap-3 px-3 py-1.5 text-left text-white/92 transition-colors"
+                                            className="flex w-full items-center gap-3 px-3 py-1.5 text-left text-white/90 transition-colors"
                                         >
                                             <span className="flex h-4 w-4 shrink-0 items-center justify-center">
                                                 {iconMap[suggestion.suggestionType]}
@@ -255,9 +255,9 @@ export function SuggesstionMenuClient() {
                         ))}
                 </div>
             </div>
-            <div className="flex items-center gap-2 px-3 py-1 text-[11px] uppercase text-[#8a88a8]">
+            <div className="flex items-center gap-2 px-3 py-1 text-[11px] uppercase text-white/50">
                 <span>Press</span>
-                <span className="text-white/70">↵</span>
+                <span className="text-white/70">Enter</span>
                 <span>to insert</span>
                 <IconBulb size={12} className="ml-auto"/>
             </div>

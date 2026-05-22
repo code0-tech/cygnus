@@ -26,8 +26,8 @@ const NavSubMenu: React.FC<NavSubMenuProps> = ({ items, onSelect }) => {
                     <Link
                         href={subItem.href}
                         onClick={() => onSelect?.(subItem)}
-                        className="group h-14 flex items-center p-2 hover:bg-white/10 cursor-pointer gap-2 rounded-lg">
-                        <div className="p-1 border border-dashed border-white/20 text-gray-400 rounded-lg group-hover:text-white group-hover:border-white/60">
+                        className="group flex h-14 items-center gap-2 rounded-lg p-2 hover:bg-white/10 cursor-pointer">
+                        <div className="rounded-lg border border-dashed border-white/20 p-1 text-white/50 group-hover:text-white group-hover:border-white/60">
                             {subItem.icon}
                         </div>
                         <div className="flex flex-col">

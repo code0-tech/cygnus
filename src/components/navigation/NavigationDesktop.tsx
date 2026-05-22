@@ -133,7 +133,7 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ locale, items, fo
     }, [isScrolled])
 
     return (
-        <div className={"fixed z-100 h-max w-full pt-3"}>
+        <div className={"fixed z-50 h-max w-full pt-3"}>
             <Container>
                 <div
                     ref={rootRef}

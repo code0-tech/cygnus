@@ -109,7 +109,7 @@ export function CtaSection({ content, floatingCta = false }: CtaSectionProps) {
         "bg-white/80! hover:bg-white! ring-1! ring-white/20!"
 
     const floatingCtaClassName =
-        "bg-white! hover:bg-white! hover:scale-102 ring-1! ring-white/20!"
+        "bg-white! hover:bg-white! hover:scale-105 ring-1! ring-white/20!"
 
     return (
         <Section
@@ -149,7 +149,7 @@ export function CtaSection({ content, floatingCta = false }: CtaSectionProps) {
                         <div className="relative isolate flex items-center justify-center rounded-2xl px-4 py-4 ring ring-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
                             <div
                                 aria-hidden="true"
-                                className="pointer-events-none absolute inset-0 rounded-2xl bg-linear-to-br from-primary via-primary to-[#2a1638]"
+                                className="pointer-events-none absolute inset-0 rounded-2xl bg-linear-to-br from-primary via-primary to-secondary"
                             />
                             <Image
                                 src={"/code0_logo_white.png"}
@@ -170,7 +170,7 @@ export function CtaSection({ content, floatingCta = false }: CtaSectionProps) {
 
                     <motion.p
                         variants={staggerItem}
-                        className="z-20 w-4/5 text-center text-md text-white/75 sm:w-2/3 sm:text-lg lg:w-1/2"
+                        className="z-20 w-4/5 text-center text-white/75 sm:w-2/3 sm:text-lg lg:w-1/2"
                     >
                         {content.subheading}
                     </motion.p>

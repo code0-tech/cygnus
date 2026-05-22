@@ -127,7 +127,7 @@ export function HeroSection({ content, imageSrc = "/code0_software.png" }: HeroS
                         alt="CodeZero - An open source no-code automation builder | Product Hunt"
                         width="200"
                         height="54"
-                        className="absolute left-1/2 lg:left-auto md:right-4 -translate-x-1/2 lg:translate-0 bottom-4 z-100"
+                        className="absolute bottom-4 left-1/2 z-50 -translate-x-1/2 md:right-4 lg:left-auto lg:translate-0"
                         src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1125393&amp;theme=dark&amp;t=1776350762444"
                         onLoad={() => setIsProductHuntBadgeVisible(true)}
                         onError={() => setIsProductHuntBadgeVisible(false)}
@@ -137,7 +137,7 @@ export function HeroSection({ content, imageSrc = "/code0_software.png" }: HeroS
 
                 <Grainient />
                 <motion.div
-                    className={"relative z-20 flex h-full flex-col items-center justify-between gap-8 rounded-[calc(1.9rem-1px)] p-8 lg:flex-row lg:p-16"}
+                    className={"relative z-20 flex h-full flex-col items-center justify-between gap-8 rounded-3xl p-8 lg:flex-row lg:p-16"}
                     variants={staggerContainer}
                     initial="hidden"
                     whileInView="show"

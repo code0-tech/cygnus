@@ -213,7 +213,7 @@ function FeatureRow({ icon, title, description }: { icon: ReactNode, title: stri
                 </div>
                 <p className="text-base font-semibold tracking-wider text-white">{title}</p>
             </div>
-            <p className="text-sm text-white/68">{description}</p>
+            <p className="text-sm text-white/70">{description}</p>
         </div>
     )
 }

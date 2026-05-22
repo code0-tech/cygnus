@@ -141,7 +141,7 @@ export function Slider({
 
             </div>
 
-            <div className="mt-2 grid grid-cols-3 text-xs text-white/38">
+            <div className="mt-2 grid grid-cols-3 text-xs text-white/50">
                 <span>{minLabel ?? min}</span>
                 <span className="relative tabular-nums text-center text-base text-white">
                     <span

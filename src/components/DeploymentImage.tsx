@@ -41,7 +41,7 @@ export function DeploymentImage({ color, icon, text }: DeploymentImageProps) {
     const Icon = icons[icon]
 
     return (
-        <div className="relative overflow-hidden rounded-[1.2rem] border border-white/8 bg-primary/40">
+        <div className="relative overflow-hidden rounded-2xl border border-white/8 bg-primary/40">
             <div
                 className={cn("absolute inset-x-[6%] -top-1/2 h-full rounded-full", accent.glow)}
                 aria-hidden="true"
@@ -100,7 +100,7 @@ export function DeploymentImage({ color, icon, text }: DeploymentImageProps) {
                     />
                 </svg>
                 <div className="relative flex h-full items-center justify-center">
-                    <div className="relative size-24 overflow-hidden flex items-center justify-center rounded-2xl border border-white/10 bg-linear-to-br from-[#0f0b27] to-[#252342] shadow-[0_14px_40px_rgba(0,0,0,0.28)]">
+                    <div className="relative flex size-24 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-linear-to-br from-secondary to-primary shadow-[0_14px_40px_rgba(0,0,0,0.28)]">
                         <Icon
                             aria-hidden="true"
                             stroke={2}

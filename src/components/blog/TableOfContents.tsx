@@ -230,7 +230,7 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
             <AnimatePresence initial={false}>
                 {showMobileToc && (
                     <motion.div
-                        className="lg:hidden fixed left-0 right-0 top-18 z-60 px-[20%]"
+                        className="fixed left-0 right-0 top-18 z-50 px-4 lg:hidden md:px-[20%]"
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}

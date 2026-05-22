@@ -70,10 +70,10 @@ export function InstallSection({ content }: InstallSectionProps) {
 
                     <motion.div
                         variants={staggerItem}
-                        className="relative z-10 w-full max-w-2xl overflow-hidden rounded-2xl border border-white/10 bg-[#0f0c1f] shadow-[0_8px_32px_rgba(0,0,0,0.28)]"
+                        className="relative z-10 w-full max-w-2xl overflow-hidden rounded-2xl border border-white/10 bg-secondary shadow-[0_8px_32px_rgba(0,0,0,0.28)]"
                     >
                         <div className="flex items-center justify-between border-b border-white/10 px-4 py-2 pr-2">
-                            <span className="text-xs font-medium text-white/45">
+                            <span className="text-xs font-medium text-white/50">
                                 {content.label || "Install"}
                             </span>
                             <button
@@ -95,7 +95,7 @@ export function InstallSection({ content }: InstallSectionProps) {
                                 </AnimatePresence>
                             </button>
                         </div>
-                        <pre className="overflow-x-auto px-4 py-3 text-sm text-white/88 lg:text-[15px]">
+                        <pre className="overflow-x-auto px-4 py-3 text-sm text-white/90 lg:text-[15px]">
                             <code>{content.code}</code>
                         </pre>
                     </motion.div>

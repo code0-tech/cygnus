@@ -53,7 +53,7 @@ export function FeatureCard({
     return (
         <div
             className={cn(
-                "glass-card-shell group h-full rounded-[1.6rem] shadow-[0_14px_42px_rgba(0,0,0,0.3)]! translate-y-8 opacity-0 transition-[transform,opacity] duration-700 ease-out group-data-[in-view=true]/section:translate-y-0 group-data-[in-view=true]/section:opacity-100 before:pointer-events-none before:absolute before:inset-1px before:rounded-[calc(1.6rem-1px)] before:border before:border-white/6 before:content-['']",
+                "glass-card-shell group h-full rounded-3xl shadow-[0_14px_42px_rgba(0,0,0,0.3)]! translate-y-8 opacity-0 transition-[transform,opacity] duration-700 ease-out group-data-[in-view=true]/section:translate-y-0 group-data-[in-view=true]/section:opacity-100 before:pointer-events-none before:absolute before:inset-1px before:rounded-[calc(1.5rem-1px)] before:border before:border-white/6 before:content-['']",
                 className,
             )}
             style={{ transitionDelay: `${animationDelay}ms` }}

@@ -214,7 +214,7 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({ locale, items, foot
                                                         <button
                                                             type="button"
                                                             className={cn(
-                                                                "w-full text-left text-white/75 px-2 py-2 font-medium text-md rounded-xl transition-colors flex items-center justify-between",
+                                                                "flex w-full items-center justify-between rounded-xl px-2 py-2 text-left font-medium text-white/75 transition-colors",
                                                                 "hover:text-white hover:bg-white/10",
                                                                 isOpenAcc && "bg-white/10 text-white",
                                                             )}
@@ -233,7 +233,7 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({ locale, items, foot
                                                         <Link
                                                             href={item.href ?? "#"}
                                                             className={cn(
-                                                                "w-full text-left text-white/75 px-2 py-2 font-medium text-md rounded-xl transition-colors flex items-center justify-between",
+                                                                "flex w-full items-center justify-between rounded-xl px-2 py-2 text-left font-medium text-white/75 transition-colors",
                                                                 "hover:text-white hover:bg-white/10",
                                                                 isOpenAcc && "bg-white/10 text-white",
                                                                 !hasRoute && "pointer-events-none opacity-60",
@@ -311,7 +311,7 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({ locale, items, foot
                                                                                 }}
                                                                             >
                                                                                 <div
-                                                                                    className="p-1 rounded-lg border border-dashed border-white/20 text-gray-400 group-hover:text-white group-hover:border-white/60">
+                                                                                    className="rounded-lg border border-dashed border-white/20 p-1 text-white/50 group-hover:text-white group-hover:border-white/60">
                                                                                     {sub.icon}
                                                                                 </div>
                                                                                 <div className="flex flex-col">
