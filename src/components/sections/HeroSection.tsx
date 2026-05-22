@@ -93,17 +93,19 @@ export function HeroSection({ content, imageSrc = "/code0_software.png" }: HeroS
                         </div>
 
                         <div className="w-full max-w-6xl">
-                            <div className="relative overflow-hidden rounded-2xl">
-                                <Image
-                                    src={imageSrc}
-                                    alt={content.heading}
-                                    height={620}
-                                    width={1200}
-                                    priority
-                                    fetchPriority="high"
-                                    sizes="(min-width: 1024px) 72rem, 100vw"
-                                    className="rounded-2xl border border-white/10 shadow-[0_14px_38px_rgba(0,0,0,0.24)] ring-4 ring-white/5"
-                                />
+                            <div className="rounded-[1.3rem] border border-white/20 bg-white/10 p-1">
+                                <div className="relative overflow-hidden rounded-[1rem]">
+                                    <Image
+                                        src={imageSrc}
+                                        alt={content.heading}
+                                        height={620}
+                                        width={1200}
+                                        priority
+                                        fetchPriority="high"
+                                        sizes="(min-width: 1024px) 72rem, 100vw"
+                                        className="block rounded-[1rem] shadow-[0_14px_38px_rgba(0,0,0,0.24)]"
+                                    />
+                                </div>
                             </div>
                         </div>
                     </motion.div>
@@ -182,17 +184,19 @@ export function HeroSection({ content, imageSrc = "/code0_software.png" }: HeroS
                         </motion.div>
                     </div>
                     <div className="h-auto w-full lg:w-4/5 lg:-mr-56">
-                        <div className="relative overflow-hidden rounded-2xl lg:rounded-l-2xl lg:rounded-r-none">
-                            <Image
-                                src={imageSrc}
-                                alt={"Code= Example"}
-                                height={620}
-                                width={900}
-                                priority
-                                fetchPriority="high"
-                                sizes="(min-width: 1024px) 60vw, 100vw"
-                                className="rounded-2xl border border-white/10 shadow-[0_14px_38px_rgba(0,0,0,0.24)] lg:rounded-l-2xl lg:rounded-r-none lg:border-0 lg:border-l lg:border-y lg:ring-4 lg:ring-white/5"
-                            />
+                        <div className="rounded-[1.3rem] border border-white/20 bg-white/10 p-1 lg:rounded-l-[1.3rem] lg:rounded-r-none">
+                            <div className="relative overflow-hidden rounded-[1rem] lg:rounded-l-[1rem] lg:rounded-r-none">
+                                <Image
+                                    src={imageSrc}
+                                    alt={"Code0 Example"}
+                                    height={620}
+                                    width={900}
+                                    priority
+                                    fetchPriority="high"
+                                    sizes="(min-width: 1024px) 60vw, 100vw"
+                                    className="block rounded-[1rem] shadow-[0_14px_38px_rgba(0,0,0,0.24)] lg:rounded-l-[1rem] lg:rounded-r-none"
+                                />
+                            </div>
                         </div>
                     </div>
                 </motion.div>
