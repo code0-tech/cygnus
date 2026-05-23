@@ -193,75 +193,91 @@ async function withCmsFallback<T>(operation: string, fallback: T, run: () => Pro
     }
 }
 
-const getLandingPageCached = cache(async (cachedSlug: string, cachedLocale: AppLocale): Promise<Page | null> => {
-    return withCmsFallback(`getLandingPage(${cachedSlug}, ${cachedLocale})`, null, async () => {
-        const payload = await getPayloadClient()
-        const result = await payload.find({
-            collection: "pages",
-            locale: cachedLocale,
-            fallbackLocale: DEFAULT_LOCALE,
-            where: { slug: { equals: cachedSlug } },
-            limit: 1,
-            depth: 1,
-            pagination: false,
-        })
+type CmsFindArgs = {
+    collection: string
+    locale: AppLocale
+    fallbackLocale?: AppLocale
+} & Record<string, unknown>
 
-        return (result.docs[0] as Page | undefined) ?? null
+async function cmsFind<T>(args: CmsFindArgs): Promise<T[]> {
+    const payload = await getPayloadClient()
+    const result = await payload.find(args as never)
+    return (result.docs as T[]) ?? []
+}
+
+async function cmsFindOne<T>(operation: string, fallback: T | null, args: CmsFindArgs): Promise<T | null> {
+    return withCmsFallback(operation, fallback, async () => {
+        const docs = await cmsFind<T>(args)
+        return docs[0] ?? fallback
+    })
+}
+
+async function cmsFindMany<T>(operation: string, fallback: T[], args: CmsFindArgs): Promise<T[]> {
+    return withCmsFallback(operation, fallback, async () => {
+        return cmsFind<T>(args)
+    })
+}
+
+async function cmsFindSlugs(operation: string, locale: AppLocale, collection: string): Promise<string[]> {
+    return cmsFindMany<{ slug: string }>(operation, [], {
+        collection,
+        locale,
+        fallbackLocale: DEFAULT_LOCALE,
+        pagination: false,
+        limit: 1000,
+        depth: 0,
+        select: { slug: true },
+    }).then((docs) => docs.map((doc) => doc.slug).filter((slug) => slug.length > 0))
+}
+
+const getLandingPageCached = cache(async (cachedSlug: string, cachedLocale: AppLocale): Promise<Page | null> => {
+    return cmsFindOne(`getLandingPage(${cachedSlug}, ${cachedLocale})`, null, {
+        collection: "pages",
+        locale: cachedLocale,
+        fallbackLocale: DEFAULT_LOCALE,
+        where: { slug: { equals: cachedSlug } },
+        limit: 1,
+        depth: 1,
+        pagination: false,
     })
 })
 
 const getNavbarItemsCached = cache(async (locale: AppLocale): Promise<NavbarItem[]> => {
-    return withCmsFallback(`getNavbarItems(${locale})`, [], async () => {
-        const payload = await getPayloadClient()
-        const result = await payload.find({
-            collection: "navbarItems",
-            locale,
-            fallbackLocale: DEFAULT_LOCALE,
-            pagination: false,
-            sort: "order",
-            depth: 0,
-        })
-
-        return result.docs as NavbarItem[]
+    return cmsFindMany(`getNavbarItems(${locale})`, [], {
+        collection: "navbarItems",
+        locale,
+        fallbackLocale: DEFAULT_LOCALE,
+        pagination: false,
+        sort: "order",
+        depth: 0,
     })
 })
 
 const getFooterCached = cache(async (locale: AppLocale): Promise<Footer | null> => {
-    return withCmsFallback(`getFooter(${locale})`, null, async () => {
-        const payload = await getPayloadClient()
-        const result = await payload.find({
-            collection: "footer",
-            locale,
-            fallbackLocale: DEFAULT_LOCALE,
-            pagination: false,
-            limit: 1,
-            depth: 0,
-        })
-
-        return (result.docs[0] as Footer | undefined) ?? null
+    return cmsFindOne(`getFooter(${locale})`, null, {
+        collection: "footer",
+        locale,
+        fallbackLocale: DEFAULT_LOCALE,
+        pagination: false,
+        limit: 1,
+        depth: 0,
     })
 })
 
 const getCookieBannerCached = cache(async (locale: AppLocale): Promise<CookieBanner | null> => {
-    return withCmsFallback(`getCookieBanner(${locale})`, null, async () => {
-        const payload = await getPayloadClient()
-        const result = await payload.find({
-            collection: "cookie-banner",
-            locale,
-            fallbackLocale: DEFAULT_LOCALE,
-            pagination: false,
-            limit: 1,
-            depth: 0,
-        })
-
-        return (result.docs[0] as CookieBanner | undefined) ?? null
+    return cmsFindOne(`getCookieBanner(${locale})`, null, {
+        collection: "cookie-banner",
+        locale,
+        fallbackLocale: DEFAULT_LOCALE,
+        pagination: false,
+        limit: 1,
+        depth: 0,
     })
 })
 
 const getFeaturesCached = cache(async (locale: AppLocale): Promise<FeatureItem[]> => {
     return withCmsFallback(`getFeatures(${locale})`, [], async () => {
-        const payload = await getPayloadClient()
-        const result = await payload.find({
+        const docs = await cmsFind<Feature>({
             collection: "features",
             locale,
             fallbackLocale: DEFAULT_LOCALE,
@@ -269,7 +285,7 @@ const getFeaturesCached = cache(async (locale: AppLocale): Promise<FeatureItem[]
             depth: 0,
         })
 
-        return (result.docs as Feature[])
+        return docs
             .filter((feature): feature is Feature & { title: string; description: string; link: { label: string; url: string } } =>
                 Boolean(feature.title && feature.description && feature.link?.label && feature.link?.url),
             )
@@ -284,180 +300,120 @@ const getFeaturesCached = cache(async (locale: AppLocale): Promise<FeatureItem[]
 })
 
 const getJobsCached = cache(async (locale: AppLocale): Promise<JobItem[]> => {
-    return withCmsFallback(`getJobs(${locale})`, [], async () => {
-        const payload = await getPayloadClient()
-        const result = await payload.find({
-            collection: "jobs",
-            locale,
-            fallbackLocale: DEFAULT_LOCALE,
-            sort: "order",
-            pagination: false,
-            depth: 0,
-            select: {
-                title: true,
-                slug: true,
-                category: true,
-                type: true,
-                location: true,
-                description: true,
-                order: true,
-            },
-        })
-
-        return (result.docs as JobItem[]) ?? []
+    return cmsFindMany(`getJobs(${locale})`, [], {
+        collection: "jobs",
+        locale,
+        fallbackLocale: DEFAULT_LOCALE,
+        sort: "order",
+        pagination: false,
+        depth: 0,
+        select: {
+            title: true,
+            slug: true,
+            category: true,
+            type: true,
+            location: true,
+            description: true,
+            order: true,
+        },
     })
 })
 
 const getActionsCached = cache(async (locale: AppLocale): Promise<ActionItem[]> => {
-    return withCmsFallback(`getActions(${locale})`, [], async () => {
-        const payload = await getPayloadClient()
-        const result = await payload.find({
-            collection: "actions",
-            locale,
-            fallbackLocale: DEFAULT_LOCALE,
-            sort: "title",
-            pagination: false,
-            depth: 1,
-            select: {
-                slug: true,
-                title: true,
-                shortDescription: true,
-                description: true,
-                icon: true,
-                trigger: true,
-                functiondefinitions: true,
-                tags: true,
-                documentation: true,
-                references: true,
-            },
-        })
-
-        return (result.docs as ActionItem[]) ?? []
+    return cmsFindMany(`getActions(${locale})`, [], {
+        collection: "actions",
+        locale,
+        fallbackLocale: DEFAULT_LOCALE,
+        sort: "title",
+        pagination: false,
+        depth: 1,
+        select: {
+            slug: true,
+            title: true,
+            shortDescription: true,
+            description: true,
+            icon: true,
+            trigger: true,
+            functiondefinitions: true,
+            tags: true,
+            documentation: true,
+            references: true,
+        },
     })
 })
 
 const getJobBySlugCached = cache(async (slug: string, locale: AppLocale): Promise<JobDetailItem | null> => {
-    return withCmsFallback(`getJobBySlug(${slug}, ${locale})`, null, async () => {
-        const payload = await getPayloadClient()
-        const result = await payload.find({
-            collection: "jobs",
-            locale,
-            fallbackLocale: DEFAULT_LOCALE,
-            where: { slug: { equals: slug } },
-            limit: 1,
-            pagination: false,
-            depth: 0,
-        })
-
-        return (result.docs[0] as JobDetailItem | undefined) ?? null
+    return cmsFindOne(`getJobBySlug(${slug}, ${locale})`, null, {
+        collection: "jobs",
+        locale,
+        fallbackLocale: DEFAULT_LOCALE,
+        where: { slug: { equals: slug } },
+        limit: 1,
+        pagination: false,
+        depth: 0,
     })
 })
 
 const getActionBySlugCached = cache(async (slug: string, locale: AppLocale): Promise<ActionDetailItem | null> => {
-    return withCmsFallback(`getActionBySlug(${slug}, ${locale})`, null, async () => {
-        const payload = await getPayloadClient()
-        const result = await payload.find({
-            collection: "actions",
-            locale,
-            fallbackLocale: DEFAULT_LOCALE,
-            where: { slug: { equals: slug } },
-            limit: 1,
-            pagination: false,
-            depth: 2,
-            select: {
-                slug: true,
-                title: true,
-                shortDescription: true,
-                description: true,
-                icon: true,
-                trigger: true,
-                functiondefinitions: true,
-                tags: true,
-                documentation: true,
-                references: true,
-            },
-        })
-
-        return (result.docs[0] as ActionDetailItem | undefined) ?? null
+    return cmsFindOne(`getActionBySlug(${slug}, ${locale})`, null, {
+        collection: "actions",
+        locale,
+        fallbackLocale: DEFAULT_LOCALE,
+        where: { slug: { equals: slug } },
+        limit: 1,
+        pagination: false,
+        depth: 2,
+        select: {
+            slug: true,
+            title: true,
+            shortDescription: true,
+            description: true,
+            icon: true,
+            trigger: true,
+            functiondefinitions: true,
+            tags: true,
+            documentation: true,
+            references: true,
+        },
     })
 })
 
 const getTeamMembersCached = cache(async (locale: AppLocale): Promise<TeamMemberItem[]> => {
-    return withCmsFallback(`getTeamMembers(${locale})`, [], async () => {
-        const payload = await getPayloadClient()
-        const result = await payload.find({
-            collection: "team-members",
-            locale,
-            fallbackLocale: DEFAULT_LOCALE,
-            pagination: false,
-            sort: "name",
-            depth: 1,
-            select: {
-                name: true,
-                image: true,
-                shortDescription: true,
-                about: true,
-                role: true,
-                joinedAt: true,
-            },
-        })
-
-        return (result.docs as TeamMemberItem[]) ?? []
+    return cmsFindMany(`getTeamMembers(${locale})`, [], {
+        collection: "team-members",
+        locale,
+        fallbackLocale: DEFAULT_LOCALE,
+        pagination: false,
+        sort: "name",
+        depth: 1,
+        select: {
+            name: true,
+            image: true,
+            shortDescription: true,
+            about: true,
+            role: true,
+            joinedAt: true,
+        },
     })
 })
 
 const getJobSlugsCached = cache(async (locale: AppLocale): Promise<string[]> => {
-    return withCmsFallback(`getJobSlugs(${locale})`, [], async () => {
-        const payload = await getPayloadClient()
-        const result = await payload.find({
-            collection: "jobs",
-            locale,
-            fallbackLocale: DEFAULT_LOCALE,
-            pagination: false,
-            limit: 1000,
-            depth: 0,
-            select: { slug: true },
-        })
-
-        return result.docs
-            .map((job) => job.slug)
-            .filter((slug) => slug.length > 0)
-    })
+    return cmsFindSlugs(`getJobSlugs(${locale})`, locale, "jobs")
 })
 
 const getActionSlugsCached = cache(async (locale: AppLocale): Promise<string[]> => {
-    return withCmsFallback(`getActionSlugs(${locale})`, [], async () => {
-        const payload = await getPayloadClient()
-        const result = await payload.find({
-            collection: "actions",
-            locale,
-            fallbackLocale: DEFAULT_LOCALE,
-            pagination: false,
-            limit: 1000,
-            depth: 0,
-            select: { slug: true },
-        })
-
-        return result.docs
-            .map((action) => action.slug)
-            .filter((slug) => slug.length > 0)
-    })
+    return cmsFindSlugs(`getActionSlugs(${locale})`, locale, "actions")
 })
 
 const getBlogPostBySlugCached = cache(async (slug: string, locale: AppLocale): Promise<BlogPostItem | null> => {
-    return withCmsFallback(`getBlogPostBySlug(${slug}, ${locale})`, null, async () => {
-        const payload = await getPayloadClient()
-        const result = await payload.find({
-            collection: "blog",
-            locale,
-            fallbackLocale: DEFAULT_LOCALE,
-            depth: 2,
-            where: { slug: { equals: slug } },
-            limit: 1,
-            pagination: false,
-        })
-
-        return (result.docs[0] as BlogPostItem | undefined) ?? null
+    return cmsFindOne(`getBlogPostBySlug(${slug}, ${locale})`, null, {
+        collection: "blog",
+        locale,
+        fallbackLocale: DEFAULT_LOCALE,
+        depth: 2,
+        where: { slug: { equals: slug } },
+        limit: 1,
+        pagination: false,
     })
 })
 
@@ -500,37 +456,17 @@ const getBlogPostsCached = cache(async (locale: AppLocale, page: number, limit: 
 })
 
 const getBlogSlugsCached = cache(async (locale: AppLocale): Promise<string[]> => {
-    return withCmsFallback(`getBlogSlugs(${locale})`, [], async () => {
-        const payload = await getPayloadClient()
-        const result = await payload.find({
-            collection: "blog",
-            locale,
-            fallbackLocale: DEFAULT_LOCALE,
-            pagination: false,
-            limit: 1000,
-            depth: 0,
-            select: { slug: true },
-        })
-
-        return result.docs
-            .map((post) => post.slug)
-            .filter((slug) => slug.length > 0)
-    })
+    return cmsFindSlugs(`getBlogSlugs(${locale})`, locale, "blog")
 })
 
 const getSubscriptionConfigCached = cache(async (locale: AppLocale): Promise<SubscriptionConfigData | null> => {
-    return withCmsFallback(`getSubscriptionConfig(${locale})`, null, async () => {
-        const payload = await getPayloadClient()
-        const result = await payload.find({
-            collection: "subscriptionConfig" as never,
-            locale,
-            fallbackLocale: DEFAULT_LOCALE,
-            pagination: false,
-            limit: 1,
-            depth: 0,
-        })
-
-        return (result.docs[0] as SubscriptionConfigData | undefined) ?? null
+    return cmsFindOne(`getSubscriptionConfig(${locale})`, null, {
+        collection: "subscriptionConfig",
+        locale,
+        fallbackLocale: DEFAULT_LOCALE,
+        pagination: false,
+        limit: 1,
+        depth: 0,
     })
 })
 
