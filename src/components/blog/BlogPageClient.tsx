@@ -18,14 +18,6 @@ interface BlogPageClientProps {
     loadingLabel: string
 }
 
-function sortBlogPosts(posts: BlogPostItem[]): BlogPostItem[] {
-    return [...posts].sort((left, right) => {
-        const pinOrder = Number(Boolean(right.isPinned)) - Number(Boolean(left.isPinned))
-        if (pinOrder !== 0) return pinOrder
-        return new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
-    })
-}
-
 function BlogCardSkeleton() {
     return (
         <div className="glass-card-shell h-full p-2">
@@ -85,7 +77,7 @@ export function BlogPageClient({
                 nextPage?: number | null
             }
 
-            setPosts((current) => sortBlogPosts([...current, ...(data.posts ?? [])]))
+            setPosts((current) => [...current, ...(data.posts ?? [])])
             setHasNextPage(Boolean(data.hasNextPage))
             setNextPage(data.nextPage ?? null)
         })
