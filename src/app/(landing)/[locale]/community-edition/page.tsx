@@ -1,20 +1,12 @@
 import { PageBlocks } from "@/components/PageBlockRenderer"
 import { LandingContainer } from "@/components/ui/LandingContainer"
+import { createLandingMetadata, getPageLocale, type LocalePageParams } from "@/lib/appRoute"
 import { getLandingPage } from "@/lib/cms"
-import { isSupportedLocale } from "@/lib/i18n"
-import { getLandingPageMetadata } from "@/lib/pageMetadata"
-import type { Metadata } from "next"
-import { notFound } from "next/navigation"
 
-export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
-    const { locale } = await params
-    return getLandingPageMetadata("community-edition", locale)
-}
+export const generateMetadata = createLandingMetadata("community-edition")
 
-export default async function CommunityEditionPage({ params }: { params: Promise<{ locale: string }> }) {
-    const { locale } = await params
-    if (!isSupportedLocale(locale)) notFound()
-
+export default async function CommunityEditionPage({ params }: { params: LocalePageParams }) {
+    const locale = await getPageLocale(params)
     const page = await getLandingPage("community-edition", locale)
 
     return (

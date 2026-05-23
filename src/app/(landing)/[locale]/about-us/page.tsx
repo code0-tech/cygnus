@@ -2,22 +2,14 @@ import { TeamMemberCard } from "@/components/cards/TeamMemberCard"
 import { MarkdownContent } from "@/components/blog/MarkdownContent"
 import { Aurora } from "@/components/ui/Aurora"
 import { LandingContainer } from "@/components/ui/LandingContainer"
+import { createLandingMetadata, getPageLocale, type LocalePageParams } from "@/lib/appRoute"
 import { MarkdownLayoutBlock, getLandingPage, getTeamMembers } from "@/lib/cms"
-import { isSupportedLocale } from "@/lib/i18n"
-import { getLandingPageMetadata } from "@/lib/pageMetadata"
 import { convertLexicalToHTML } from "@payloadcms/richtext-lexical/html"
-import type { Metadata } from "next"
-import { notFound } from "next/navigation"
 
-export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
-    const { locale } = await params
-    return getLandingPageMetadata("about-us", locale)
-}
+export const generateMetadata = createLandingMetadata("about-us")
 
-export default async function AboutPage({ params }: { params: Promise<{ locale: string }> }) {
-    const { locale } = await params
-    if (!isSupportedLocale(locale)) notFound()
-
+export default async function AboutPage({ params }: { params: LocalePageParams }) {
+    const locale = await getPageLocale(params)
     const aboutUsPage = await getLandingPage("about-us", locale)
     const teamMembers = await getTeamMembers(locale)
     const markdownBlock = aboutUsPage?.layout?.find((block): block is MarkdownLayoutBlock => block.blockType === "markdown") ?? null
