@@ -2,7 +2,8 @@ import { MarkdownContent } from "@/components/blog/MarkdownContent"
 import { Aurora } from "@/components/ui/Aurora"
 import { LandingContainer } from "@/components/ui/LandingContainer"
 import { createLandingMetadata, getPageLocale, type LocalePageParams } from "@/lib/appRoute"
-import { getLandingPage, type MarkdownLayoutBlock } from "@/lib/cms"
+import { getLandingPage } from "@/lib/cms"
+import { findPageBlock } from "@/lib/pageBlocks"
 import { convertLexicalToHTML } from "@payloadcms/richtext-lexical/html"
 import { notFound } from "next/navigation"
 
@@ -12,7 +13,7 @@ export default async function FeaturesPage({ params }: { params: LocalePageParam
     const locale = await getPageLocale(params)
     const page = await getLandingPage("features", locale)
     if (!page) notFound()
-    const markdownBlock = page.layout?.find((block): block is MarkdownLayoutBlock => block.blockType === "markdown") ?? null
+    const markdownBlock = findPageBlock(page, "markdown")
     const contentHtml = markdownBlock
         ? convertLexicalToHTML({ data: markdownBlock.content, disableContainer: true })
         : ""

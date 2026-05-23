@@ -3,7 +3,8 @@ import { MarkdownContent } from "@/components/blog/MarkdownContent"
 import { Aurora } from "@/components/ui/Aurora"
 import { LandingContainer } from "@/components/ui/LandingContainer"
 import { createLandingMetadata, getPageLocale, type LocalePageParams } from "@/lib/appRoute"
-import { MarkdownLayoutBlock, getLandingPage, getTeamMembers } from "@/lib/cms"
+import { getLandingPage, getTeamMembers } from "@/lib/cms"
+import { findPageBlock } from "@/lib/pageBlocks"
 import { convertLexicalToHTML } from "@payloadcms/richtext-lexical/html"
 
 export const generateMetadata = createLandingMetadata("about-us")
@@ -12,7 +13,7 @@ export default async function AboutPage({ params }: { params: LocalePageParams }
     const locale = await getPageLocale(params)
     const aboutUsPage = await getLandingPage("about-us", locale)
     const teamMembers = await getTeamMembers(locale)
-    const markdownBlock = aboutUsPage?.layout?.find((block): block is MarkdownLayoutBlock => block.blockType === "markdown") ?? null
+    const markdownBlock = findPageBlock(aboutUsPage, "markdown")
     const contentHtml = markdownBlock
         ? convertLexicalToHTML({ data: markdownBlock.content, disableContainer: true })
         : ""

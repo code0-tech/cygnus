@@ -2,7 +2,8 @@ import { ActionsPageClient } from "@/components/ActionsPageClient"
 import { Aurora } from "@/components/ui/Aurora"
 import { LandingContainer } from "@/components/ui/LandingContainer"
 import { createLandingMetadata, getPageLocale, type LocalePageParams } from "@/lib/appRoute"
-import { getActions, getLandingPage, type ActionsLayoutBlock } from "@/lib/cms"
+import { getActions, getLandingPage } from "@/lib/cms"
+import { findPageBlock } from "@/lib/pageBlocks"
 
 export const generateMetadata = createLandingMetadata("actions")
 
@@ -12,7 +13,7 @@ export default async function ActionsPage({ params }: { params: LocalePageParams
         getActions(locale),
         getLandingPage("actions", locale),
     ])
-    const actionsBlock = actionsPage?.layout?.find((block): block is ActionsLayoutBlock => block.blockType === "actions") ?? null
+    const actionsBlock = findPageBlock(actionsPage, "actions")
 
     return (
         <>

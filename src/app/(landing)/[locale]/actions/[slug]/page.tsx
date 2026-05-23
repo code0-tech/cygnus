@@ -5,8 +5,9 @@ import { HapticButtonLink } from "@/components/ui/HapticButtonLink"
 import { LandingContainer } from "@/components/ui/LandingContainer"
 import { LinkButton } from "@/components/ui/LinkButton"
 import { getPageLocaleAndSlug, type LocaleSlugPageParams } from "@/lib/appRoute"
-import { getActionBySlug, getLandingPage, type ActionsLayoutBlock } from "@/lib/cms"
+import { getActionBySlug, getLandingPage } from "@/lib/cms"
 import { getMediaUrl } from "@/lib/media"
+import { findPageBlock } from "@/lib/pageBlocks"
 import { createMetadata } from "@/lib/siteConfig"
 import type { Media } from "@/payload-types"
 import { IconArrowLeft, IconExternalLink } from "@tabler/icons-react"
@@ -26,7 +27,7 @@ export default async function ActionDetailPage({ params }: { params: LocaleSlugP
     const functionDefs = action.functiondefinitions as Media | undefined
     const references = (action.references ?? []).filter((reference): reference is Exclude<typeof reference, number> => typeof reference !== "number")
     const tags = (action.tags ?? []).filter((tag): tag is string => Boolean(tag))
-    const actionsBlock = actionsPage?.layout?.find((block): block is ActionsLayoutBlock => block.blockType === "actions") ?? null
+    const actionsBlock = findPageBlock(actionsPage, "actions")
     const referencesLabel = actionsBlock?.referencesLabel ?? (locale === "de" ? "Referenzen" : "References")
 
     return (

@@ -5,7 +5,8 @@ import { Aurora } from "@/components/ui/Aurora"
 import { HapticButtonLink } from "@/components/ui/HapticButtonLink"
 import { LandingContainer } from "@/components/ui/LandingContainer"
 import { getPageLocaleAndSlug, type LocaleSlugPageParams } from "@/lib/appRoute"
-import { getBlogPostBySlug, getLandingPage, type CtaLayoutBlock } from "@/lib/cms"
+import { getBlogPostBySlug, getLandingPage } from "@/lib/cms"
+import { findPageBlock } from "@/lib/pageBlocks"
 import { createMetadata, resolveSiteUrl } from "@/lib/siteConfig"
 import { type Media } from "@/payload-types"
 import type { Metadata } from "next"
@@ -24,8 +25,7 @@ function getMediaUrl(value?: number | Media | null) {
 export default async function Page({ params }: { params: LocaleSlugPageParams }) {
     const { locale, slug } = await getPageLocaleAndSlug(params)
     const page = await getLandingPage("main", locale)
-    const layout = page?.layout ?? []
-    const ctaBlock = layout.find((block): block is CtaLayoutBlock => block.blockType === "cta") ?? null
+    const ctaBlock = findPageBlock(page, "cta")
 
     return (
         <>

@@ -3,8 +3,9 @@ import { Aurora } from "@/components/ui/Aurora"
 import { LandingContainer } from "@/components/ui/LandingContainer"
 import { getPageLocaleAndSlug, type LocaleSlugPageParams } from "@/lib/appRoute"
 import { createMetadata } from "@/lib/siteConfig"
-import { getLandingPage, type JobsLayoutBlock } from "@/lib/cms"
+import { getLandingPage } from "@/lib/cms"
 import { getJobBySlug } from "@/lib/cms"
+import { findPageBlock } from "@/lib/pageBlocks"
 import { convertLexicalToHTML } from "@payloadcms/richtext-lexical/html"
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
@@ -15,7 +16,7 @@ export default async function JobDetailPage({ params }: { params: LocaleSlugPage
     if (!job) notFound()
 
     const jobsPage = await getLandingPage("jobs", locale)
-    const jobsBlock = jobsPage?.layout?.find((block): block is JobsLayoutBlock => block.blockType === "jobs") ?? null
+    const jobsBlock = findPageBlock(jobsPage, "jobs")
 
     const contentHtml = convertLexicalToHTML({
         data: job.content,
