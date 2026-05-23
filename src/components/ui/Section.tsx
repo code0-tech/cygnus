@@ -76,9 +76,11 @@ export function Section({
     headingLevel = 2,
 }: SectionProps) {
     const sectionRef = useRef<HTMLElement | null>(null)
+    const funnelRef = useRef<HTMLDivElement | null>(null)
     const pathname = usePathname()
     const locale = getLocaleFromPath(pathname)
     const [isInView, setIsInView] = useState(false)
+    const [funnelExitProgress, setFunnelExitProgress] = useState(0)
     const rawLinkUrl = linkButton?.url?.trim()
     const linkUrl = rawLinkUrl ? localizeHref(rawLinkUrl, locale) : undefined
     const shouldShowFunnel = showFunnel && Boolean(heading || description || (showLinkButton && linkUrl && linkButton?.label))
@@ -105,6 +107,9 @@ export function Section({
     }
     const headingTag = `h${headingLevel}` as const
     const headingClassName = cn("text-4xl font-semibold", hasHighlightedHeading(heading) ? "text-white/50" : "text-white")
+    const funnelExitOpacity = 1 - (funnelExitProgress * 0.7)
+    const funnelExitBlur = `blur(${(funnelExitProgress * 14).toFixed(2)}px)`
+    const funnelExitScale = 1 - (funnelExitProgress * 0.06)
 
     useEffect(() => {
         const currentRef = sectionRef.current
@@ -123,6 +128,43 @@ export function Section({
         observer.observe(currentRef)
 
         return () => observer.disconnect()
+    }, [])
+
+    useEffect(() => {
+        const currentRef = funnelRef.current
+        if (!currentRef) return
+
+        let frame = 0
+
+        const updateFunnelExitProgress = () => {
+            const rect = currentRef.getBoundingClientRect()
+            const elementHeight = Math.max(rect.height, 1)
+            const viewportHeight = window.innerHeight
+            const topExitProgress = Math.max(0, Math.min(1, -rect.top / elementHeight))
+            const bottomExitProgress = Math.max(0, Math.min(1, (rect.bottom - viewportHeight) / elementHeight))
+
+            setFunnelExitProgress(Math.max(topExitProgress, bottomExitProgress))
+        }
+
+        const handleViewportChange = () => {
+            if (frame) return
+            frame = requestAnimationFrame(() => {
+                frame = 0
+                updateFunnelExitProgress()
+            })
+        }
+
+        updateFunnelExitProgress()
+        window.addEventListener("scroll", handleViewportChange, { passive: true })
+        window.addEventListener("resize", handleViewportChange)
+
+        return () => {
+            if (frame) {
+                cancelAnimationFrame(frame)
+            }
+            window.removeEventListener("scroll", handleViewportChange)
+            window.removeEventListener("resize", handleViewportChange)
+        }
     }, [])
 
     return (
@@ -151,7 +193,9 @@ export function Section({
             {shouldShowFunnel && (
                 funnelType === "center" ? (
                     <motion.div
+                        ref={funnelRef}
                         className={"flex flex-col gap-4 items-center justify-center text-center"}
+                        style={{ opacity: funnelExitOpacity, filter: funnelExitBlur, scale: funnelExitScale }}
                         variants={staggerContainer}
                         initial="hidden"
                         whileInView="show"
@@ -177,7 +221,9 @@ export function Section({
                     </motion.div>
                 ) : (
                     <motion.div
+                        ref={funnelRef}
                         className={"flex flex-col gap-4 text-left"}
+                        style={{ opacity: funnelExitOpacity, filter: funnelExitBlur, scale: funnelExitScale }}
                         variants={staggerContainer}
                         initial="hidden"
                         whileInView="show"
