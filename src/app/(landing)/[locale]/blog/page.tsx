@@ -1,4 +1,3 @@
-import { BlogBlock } from "@/blocks/BlogBlock"
 import { BlogPageClient } from "@/components/blog/BlogPageClient"
 import { Aurora } from "@/components/ui/Aurora"
 import { LandingContainer } from "@/components/ui/LandingContainer"
@@ -11,7 +10,7 @@ const BLOG_PAGE_LABEL_FALLBACKS = {
         viewOtherBlogsLabel: "Weitere Blogbeiträge",
         noPostsLabel: "Keine Blogbeiträge verfügbar.",
         loadMoreLabel: "Mehr laden",
-        loadingLabel: "Laedt...",
+        loadingLabel: "Lädt...",
     },
     en: {
         viewOtherBlogsLabel: "View other blog posts",
