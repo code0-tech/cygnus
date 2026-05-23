@@ -52,14 +52,17 @@ function renderPageBlock(block: PageBlock, options: Pick<PageBlocksRendererProps
 }
 
 export function PageBlocks({ blocks, cardRowChildren, ctaFloating = false, locale }: PageBlocksRendererProps) {
-    const renderableBlocks = blocks?.filter((block) => renderPageBlock(block, { cardRowChildren, ctaFloating, locale }) !== null) ?? []
+    const renderableBlocks = blocks?.flatMap((block) => {
+        const element = renderPageBlock(block, { cardRowChildren, ctaFloating, locale })
+        return element ? [{ block, element }] : []
+    }) ?? []
 
     return (
         <>
-            {renderableBlocks.map((block, index) => (
+            {renderableBlocks.map(({ block, element }, index) => (
                 <React.Fragment key={block.id ?? index}>
                     {index > 0 && <div className="h-32" aria-hidden="true" />}
-                    {renderPageBlock(block, { cardRowChildren, ctaFloating, locale })}
+                    {element}
                 </React.Fragment>
             ))}
         </>
