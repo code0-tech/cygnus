@@ -1,9 +1,8 @@
 import { BlogPageClient } from "@/components/blog/BlogPageClient"
 import { Aurora } from "@/components/ui/Aurora"
 import { LandingContainer } from "@/components/ui/LandingContainer"
+import { createLandingMetadata, getPageLocale, type LocalePageParams } from "@/lib/appRoute"
 import { BlogLayoutBlock, getBlogPosts, getLandingPage } from "@/lib/cms"
-import { isSupportedLocale } from "@/lib/i18n"
-import { notFound } from "next/navigation"
 
 const BLOG_PAGE_LABEL_FALLBACKS = {
     de: {
@@ -20,9 +19,10 @@ const BLOG_PAGE_LABEL_FALLBACKS = {
     },
 } as const
 
-export default async function BlogPage({ params }: { params: Promise<{ locale: string }> }) {
-    const { locale } = await params
-    if (!isSupportedLocale(locale)) notFound()
+export const generateMetadata = createLandingMetadata("blog")
+
+export default async function BlogPage({ params }: { params: LocalePageParams }) {
+    const locale = await getPageLocale(params)
 
     const [posts, blogPage] = await Promise.all([
         getBlogPosts(locale, { page: 1, limit: 10 }),
