@@ -13,7 +13,8 @@
     "migrate:create": "payload migrate:create",
     "migrate:status": "payload migrate:status",
     "generate:importmap": "payload generate:importmap",
-    "lint": "next lint",
+    "lint": "npm run typecheck",
+    "typecheck": "tsc --noEmit",
     "knip": "node --import tsx ./node_modules/knip/bin/knip.js",
     "generate": "payload generate:types"
   },
