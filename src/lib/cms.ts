@@ -3,6 +3,7 @@
 import { DEFAULT_LOCALE, type AppLocale } from "@/lib/i18n"
 import { getPayloadClient } from "@/lib/payloadClient"
 import type { Action, Blog, CookieBanner, Feature, Footer, Job, Media, NavbarItem, Page, TeamMember } from "@/payload-types"
+import type { NavbarButtonData } from "@/lib/navigation"
 import { cache } from "react"
 
 const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build" || process.env.npm_lifecycle_event === "build"
@@ -253,6 +254,17 @@ const getNavbarItemsCached = cache(async (locale: AppLocale): Promise<NavbarItem
     })
 })
 
+const getNavbarButtonsCached = cache(async (locale: AppLocale): Promise<NavbarButtonData[]> => {
+    return cmsFindMany<NavbarButtonData>(`getNavbarButtons(${locale})`, [], {
+        collection: "navbarButtons",
+        locale,
+        fallbackLocale: DEFAULT_LOCALE,
+        pagination: false,
+        sort: "order",
+        depth: 0,
+    })
+})
+
 const getFooterCached = cache(async (locale: AppLocale): Promise<Footer | null> => {
     return cmsFindOne(`getFooter(${locale})`, null, {
         collection: "footer",
@@ -476,6 +488,10 @@ export async function getLandingPage(slug = "main", locale: AppLocale = DEFAULT_
 
 export async function getNavbarItems(locale: AppLocale = DEFAULT_LOCALE) {
     return getNavbarItemsCached(locale)
+}
+
+export async function getNavbarButtons(locale: AppLocale = DEFAULT_LOCALE) {
+    return getNavbarButtonsCached(locale)
 }
 
 export async function getFooter(locale: AppLocale = DEFAULT_LOCALE) {

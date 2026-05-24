@@ -1,7 +1,9 @@
-import type { NavbarItem } from "@/payload-types"
+import type { NavbarButton, NavbarItem } from "@/payload-types"
 import { localizeHref, type AppLocale } from "@/lib/i18n"
 import { getTablerIcon } from "@/lib/tablerIcons"
-import { type ReactNode } from "react"
+import * as SimpleIcons from "@icons-pack/react-simple-icons"
+import * as TablerIcons from "@tabler/icons-react"
+import { createElement, type ComponentType, type ReactNode } from "react"
 
 export type NavItem = {
     title: string
@@ -17,10 +19,63 @@ export type SubNavItem = {
     icon: ReactNode
 }
 
+export type NavigationLinkVariant = "none" | "normal" | "outlined" | "filled"
+
+export type NavbarButtonData = NavbarButton
+
+export interface NavButton {
+    title: string
+    href: string
+    icon: ReactNode
+    newTab: boolean
+    variant: NavigationLinkVariant
+}
+
 export const fadeInUp = {
     initial: { opacity: 0, y: -16 },
     animate: { opacity: 1, y: 0 },
     transition: { duration: 0.65 },
+}
+
+type IconComponent = ComponentType<{ size?: number }>
+
+const fallbackButtonIcon = TablerIcons.IconCube as IconComponent
+
+function toPascalCase(value: string) {
+    return value
+        .trim()
+        .split(/[\s_-]+/)
+        .filter(Boolean)
+        .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
+        .join("")
+}
+
+function getTablerButtonIcon(icon: string) {
+    const normalizedIconName = `Icon${toPascalCase(icon.replace(/^icon/i, ""))}`
+
+    if (!(normalizedIconName in TablerIcons)) return null
+
+    return TablerIcons[normalizedIconName as keyof typeof TablerIcons] as unknown as IconComponent
+}
+
+function getSimpleButtonIcon(icon: string) {
+    const normalizedIconName = `Si${toPascalCase(icon.replace(/^si/i, ""))}`
+
+    if (!(normalizedIconName in SimpleIcons)) return null
+
+    return SimpleIcons[normalizedIconName as keyof typeof SimpleIcons] as unknown as IconComponent
+}
+
+function getNavbarButtonIcon(icon: string | null | undefined, size = 20) {
+    const trimmedIcon = icon?.trim()
+
+    if (!trimmedIcon) return null
+
+    const resolvedIcon = /^si/i.test(trimmedIcon)
+        ? getSimpleButtonIcon(trimmedIcon)
+        : getTablerButtonIcon(trimmedIcon)
+
+    return createElement(resolvedIcon ?? fallbackButtonIcon, { size })
 }
 
 function getSubMenuIcon(icon: string | null | undefined) {
@@ -44,4 +99,16 @@ export function mapNavbarItems(items: NavbarItem[], locale: AppLocale): NavItem[
                 : undefined,
         }
     })
+}
+
+export function mapNavbarButtons(buttons: NavbarButtonData[], locale: AppLocale): NavButton[] {
+    return buttons
+        .filter((button) => Boolean(button.title && button.href))
+        .map((button) => ({
+            title: button.title,
+            href: localizeHref(button.href, locale),
+            icon: getNavbarButtonIcon(button.icon, 20),
+            newTab: Boolean(button.newTab),
+            variant: button.variant,
+        }))
 }

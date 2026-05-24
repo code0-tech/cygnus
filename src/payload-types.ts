@@ -70,6 +70,7 @@ export interface Config {
     users: User;
     media: Media;
     navbarItems: NavbarItem;
+    navbarButtons: NavbarButton;
     footer: Footer;
     'cookie-banner': CookieBanner;
     pages: Page;
@@ -92,6 +93,7 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     navbarItems: NavbarItemsSelect<false> | NavbarItemsSelect<true>;
+    navbarButtons: NavbarButtonsSelect<false> | NavbarButtonsSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
     'cookie-banner': CookieBannerSelect<false> | CookieBannerSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
@@ -222,6 +224,24 @@ export interface NavbarItem {
         id?: string | null;
       }[]
     | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "navbarButtons".
+ */
+export interface NavbarButton {
+  id: number;
+  title: string;
+  href: string;
+  order: number;
+  /**
+   * Tabler Icon Name, z.B. "brand-github", oder Simple Icon mit "si", z.B. "siGithub". Leer lassen für kein Icon.
+   */
+  icon?: string | null;
+  newTab?: boolean | null;
+  variant: 'none' | 'normal' | 'outlined' | 'filled';
   updatedAt: string;
   createdAt: string;
 }
@@ -1079,6 +1099,10 @@ export interface PayloadLockedDocument {
         value: number | NavbarItem;
       } | null)
     | ({
+        relationTo: 'navbarButtons';
+        value: number | NavbarButton;
+      } | null)
+    | ({
         relationTo: 'footer';
         value: number | Footer;
       } | null)
@@ -1217,6 +1241,20 @@ export interface NavbarItemsSelect<T extends boolean = true> {
         icon?: T;
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "navbarButtons_select".
+ */
+export interface NavbarButtonsSelect<T extends boolean = true> {
+  title?: T;
+  href?: T;
+  order?: T;
+  icon?: T;
+  newTab?: T;
+  variant?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2022,6 +2060,7 @@ export interface TaskCreateCollectionExport {
       | 'users'
       | 'media'
       | 'navbarItems'
+      | 'navbarButtons'
       | 'footer'
       | 'cookie-banner'
       | 'pages'

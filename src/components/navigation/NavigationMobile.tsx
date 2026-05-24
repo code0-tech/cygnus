@@ -5,9 +5,9 @@ import { useNavigationScrollState } from "@/hooks/useNavigationScrollState"
 import { useNavigationViewModel } from "@/hooks/useNavigationViewModel"
 import { useOutsideClick } from "@/hooks/useOutsideClick"
 import { type AppLocale } from "@/lib/i18n"
-import type { Footer, NavbarItem } from "@/payload-types"
+import type { NavbarButtonData } from "@/lib/navigation"
+import type { NavbarItem } from "@/payload-types"
 import { Container } from "@code0-tech/pictor"
-import { SiDiscord, SiGithub } from '@icons-pack/react-simple-icons'
 import { IconMenu2, IconX } from "@tabler/icons-react"
 import { AnimatePresence, m as motion } from "motion/react"
 import Image from "next/image"
@@ -20,17 +20,17 @@ import { NavigationMobileItem } from "./NavigationMobileItem"
 type NavigationMobileProps = {
     locale: AppLocale
     items: NavbarItem[]
-    footer: Footer | null
+    buttons: NavbarButtonData[]
 }
 
-const NavigationMobile: React.FC<NavigationMobileProps> = ({ locale, items, footer }) => {
+const NavigationMobile: React.FC<NavigationMobileProps> = ({ locale, items, buttons }) => {
     const { trigger } = useWebHaptics()
     const menuRef = useOutsideClick<HTMLElement>(() => setIsOpen(false))
     const wasOpenRef = useRef(false)
     const [isOpen, setIsOpen] = useState(false)
     const [mobileOpenKey, setMobileOpenKey] = useState<string | null>(null)
     const [isMenuClosing, setIsMenuClosing] = useState(false)
-    const { homeHref, navbarItems, githubHref, discordHref } = useNavigationViewModel(locale, items, footer)
+    const { homeHref, navbarItems, navbarButtons } = useNavigationViewModel(locale, items, buttons)
     const menuTransition = {
         duration: 0.24,
         ease: [0.22, 1, 0.36, 1] as const,
@@ -138,24 +138,14 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({ locale, items, foot
                                             )
                                         })}
                                         <div className="mt-4 w-full flex flex-col items-center gap-2 pb-2">
-                                            <NavigationLink
-                                                href={githubHref}
-                                                title="Github"
-                                                icon={<SiGithub size={20}/>}
-                                                newTab
-                                                variant="outlined"
-                                                className="text-base!"
-                                                onClick={closeMenu}
-                                            />
-                                            <NavigationLink
-                                                href={discordHref}
-                                                title="Discord"
-                                                icon={<SiDiscord size={20}/>}
-                                                newTab
-                                                variant="outlined"
-                                                className="bg-white/80! text-base! text-primary! hover:bg-white!"
-                                                onClick={closeMenu}
-                                            />
+                                            {navbarButtons.map((button) => (
+                                                <NavigationLink
+                                                    key={`${button.title}-${button.href}`}
+                                                    button={button}
+                                                    className="text-base!"
+                                                    onClick={closeMenu}
+                                                />
+                                            ))}
                                         </div>
                                     </div>
                                 </motion.div>

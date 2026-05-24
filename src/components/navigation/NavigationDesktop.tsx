@@ -4,7 +4,8 @@ import { cn } from "@/lib/utils"
 import { useNavigationScrollState } from "@/hooks/useNavigationScrollState"
 import { useNavigationViewModel } from "@/hooks/useNavigationViewModel"
 import { type AppLocale } from "@/lib/i18n"
-import type { Footer, NavbarItem } from "@/payload-types"
+import type { NavbarButtonData } from "@/lib/navigation"
+import type { NavbarItem } from "@/payload-types"
 import {
     NavigationMenu,
     NavigationMenuContent,
@@ -14,7 +15,6 @@ import {
     NavigationMenuTrigger,
 } from "@/components/ui/NavigationMenu"
 import { Container } from "@code0-tech/pictor"
-import { SiDiscord, SiGithub } from "@icons-pack/react-simple-icons"
 import Image from "next/image"
 import Link from "next/link"
 import React, { useEffect, useRef, useState } from "react"
@@ -25,15 +25,15 @@ import { NavigationSubMenu } from "./NavigationSubMenu"
 type NavigationDesktopProps = {
     locale: AppLocale
     items: NavbarItem[]
-    footer: Footer | null
+    buttons: NavbarButtonData[]
 }
 
-const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ locale, items, footer }) => {
+const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ locale, items, buttons }) => {
     const navTabsRef = useRef<HTMLDivElement>(null)
     const cursorRef = useRef<NavigationCursorHandle>(null)
     const suppressMenuOpenRef = useRef(false)
     const [activeMenuValue, setActiveMenuValue] = useState<string | null>(null)
-    const { homeHref, navbarItems, githubHref, discordHref } = useNavigationViewModel(locale, items, footer)
+    const { homeHref, navbarItems, navbarButtons } = useNavigationViewModel(locale, items, buttons)
     const isScrolled = useNavigationScrollState({
         onScroll: () => {
             suppressMenuOpenRef.current = true
@@ -161,21 +161,12 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ locale, items, fo
                             <NavigationCursor ref={cursorRef} />
                         </div>
                         <div className={"flex items-center gap-2"}>
-                            <NavigationLink
-                                href={githubHref}
-                                title="Github"
-                                icon={<SiGithub size={18} />}
-                                newTab
-                                variant="normal"
-                            />
-                            <NavigationLink
-                                href={discordHref}
-                                title="Discord"
-                                icon={<SiDiscord size={18} className="xl:hidden" />}
-                                newTab
-                                variant="normal"
-                                className="bg-white/80! text-primary! hover:bg-white!"
-                            />
+                            {navbarButtons.map((button) => (
+                                <NavigationLink
+                                    key={`${button.title}-${button.href}`}
+                                    button={button}
+                                />
+                            ))}
                         </div>
                     </div>
                 </div>

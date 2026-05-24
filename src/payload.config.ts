@@ -14,6 +14,7 @@ import { Features } from './collections/features'
 import { Footer } from './collections/footer'
 import { Jobs } from './collections/jobs'
 import { Media } from './collections/media'
+import { NavbarButtons } from './collections/navbarButtons'
 import { NavbarItems } from './collections/navbarItems'
 import { Pages } from './collections/pages'
 import { SubscriptionCollection } from './collections/subscriptionConfig'
@@ -55,7 +56,7 @@ export default buildConfig({
         locales: ['en', 'de'],
         defaultLocale: 'en',
     },
-    collections: [Users, Media, NavbarItems, Footer, CookieBanner, Pages, Features, Actions, Jobs, Blog, TeamMembers, SubscriptionCollection],
+    collections: [Users, Media, NavbarItems, NavbarButtons, Footer, CookieBanner, Pages, Features, Actions, Jobs, Blog, TeamMembers, SubscriptionCollection],
     jobs: {
         autoRun: [{
             cron: '*/5 * * * *', // Check every 5 minutes
@@ -101,6 +102,7 @@ export default buildConfig({
                 { slug: 'users', },
                 { slug: 'media', },
                 { slug: 'navbarItems' },
+                { slug: 'navbarButtons' },
                 { slug: 'footer' },
                 { slug: 'cookie-banner' },
                 { slug: 'pages' },

@@ -2,6 +2,7 @@ import ConsentManager from "@/components/providers/ConsentManager"
 import { Navigation } from "@/components/navigation/Navigation"
 import { FooterSection } from "@/components/sections/FooterSection"
 import { getFooter } from "@/lib/cms"
+import { getNavbarButtons } from "@/lib/cms"
 import { getNavbarItems } from "@/lib/cms"
 import { isSupportedLocale } from "@/lib/i18n"
 import type { ReactNode } from "react"
@@ -20,15 +21,16 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
         notFound()
     }
 
-    const [items, footer] = await Promise.all([
+    const [items, buttons, footer] = await Promise.all([
         getNavbarItems(locale),
+        getNavbarButtons(locale),
         getFooter(locale),
     ])
 
     return (
         <ConsentManager locale={locale}>
             <div className="relative bg-primary overflow-x-hidden">
-                <Navigation locale={locale} items={items} footer={footer} />
+                <Navigation locale={locale} items={items} buttons={buttons} />
                 <main id="main-content" className="bg-primary">
                     {children}
                 </main>
