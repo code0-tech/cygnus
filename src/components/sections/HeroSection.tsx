@@ -56,7 +56,10 @@ export function HeroSection({ content, imageSrc = "/code0_software.png" }: HeroS
             <Section showBlur={false} showFunnel={false}>
                 <div className="glass-card-shell relative isolate h-[min(85svh,918px)] md:h-[min(85dvh,918px)] rounded-4xl bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))]! shadow-[0_24px_80px_rgba(0,0,0,0.34)]!">
                     <Grainient {...grainientColors} />
-
+                    <div
+                        aria-hidden="true"
+                        className="pointer-events-none absolute inset-x-0 top-0 z-10 h-[38%] bg-[radial-gradient(circle_at_50%_18%,rgba(5,8,18,0.64),transparent_62%),linear-gradient(180deg,rgba(5,8,18,0.34),transparent_100%)]"
+                    />
                     <motion.div
                         className="relative z-20 flex flex-col items-center justify-center gap-10 p-8 lg:p-16"
                         variants={staggerContainer}
@@ -65,11 +68,11 @@ export function HeroSection({ content, imageSrc = "/code0_software.png" }: HeroS
                         viewport={{ once: true, amount: 0.25 }}
                     >
                         <div className="flex w-full max-w-6xl flex-col items-center gap-4">
-                            <motion.h1 variants={staggerItem} className="relative z-10 text-balance text-3xl font-bold text-white lg:text-5xl text-center">
+                            <motion.h1 variants={staggerItem} className="relative z-10 text-balance text-3xl font-bold text-white drop-shadow-[0_8px_28px_rgba(0,0,0,0.55)] lg:text-5xl text-center">
                                 {content.heading}
                             </motion.h1>
 
-                            <motion.p variants={staggerItem} className="relative z-10 max-w-2xl text-base font-medium text-pretty text-white/75 lg:text-xl text-center">
+                            <motion.p variants={staggerItem} className="relative z-10 max-w-2xl text-base font-medium text-pretty text-white/80 drop-shadow-[0_4px_20px_rgba(0,0,0,0.45)] lg:text-xl text-center">
                                 {texts.map((text, index) => (
                                     <React.Fragment key={`${text}-${index}`}>
                                         {text}
@@ -138,6 +141,11 @@ export function HeroSection({ content, imageSrc = "/code0_software.png" }: HeroS
 
 
                 <Grainient />
+                <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-y-0 left-0 z-10 w-full bg-[radial-gradient(circle_at_18%_24%,rgba(5,8,18,0.68),transparent_40%),linear-gradient(90deg,rgba(5,8,18,0.56)_0%,rgba(5,8,18,0.28)_34%,transparent_62%)] lg:w-[56%]"
+                />
+
                 <motion.div
                     className={"relative z-20 flex h-full flex-col items-center justify-between gap-8 rounded-3xl p-8 lg:flex-row lg:p-16"}
                     variants={staggerContainer}
@@ -155,11 +163,11 @@ export function HeroSection({ content, imageSrc = "/code0_software.png" }: HeroS
                             </Link>
                         </motion.div>
 
-                        <motion.h1 variants={staggerItem} className="relative z-10 font-bold text-3xl lg:text-4xl text-white text-balance">
+                        <motion.h1 variants={staggerItem} className="relative z-10 font-bold text-3xl lg:text-4xl text-white text-balance drop-shadow-[0_8px_28px_rgba(0,0,0,0.55)]">
                             {content.heading}
                         </motion.h1>
 
-                        <motion.p variants={staggerItem} className="relative z-10 font-medium text-white/75 text-base lg:text-xl text-pretty">
+                        <motion.p variants={staggerItem} className="relative z-10 font-medium text-white/75 text-base lg:text-xl text-pretty drop-shadow-[0_4px_20px_rgba(0,0,0,0.45)]">
                             {texts.length > 0
                                 ? texts.map((text, index) => (
                                     <React.Fragment key={`${text}-${index}`}>
