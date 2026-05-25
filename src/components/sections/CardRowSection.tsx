@@ -27,19 +27,20 @@ export function CardRowSection({ content, children }: CardRowSectionProps) {
         hidden: {},
         show: {
             transition: {
-                staggerChildren: 0.12,
-                delayChildren: 0.08,
+                staggerChildren: 0.08,
+                delayChildren: 0.04,
             },
         },
     }
 
     const staggerItem: Variants = {
-        hidden: { opacity: 0, y: 20 },
+        hidden: { opacity: 0, y: 14, scale: 0.985 },
         show: {
             opacity: 1,
             y: 0,
+            scale: 1,
             transition: {
-                duration: 0.42,
+                duration: 0.48,
                 ease: [0.22, 1, 0.36, 1],
             },
         },
@@ -51,7 +52,7 @@ export function CardRowSection({ content, children }: CardRowSectionProps) {
             description={content?.sectionDescription}
             linkButton={content?.sectionLinkButton}
             funnelType="left"
-            animationPreset="zoom-in"
+            animationPreset="none"
         >
             <div aria-hidden="true" className="pointer-events-none absolute -bottom-40 -top-16 inset-x-0 [background:radial-gradient(circle,rgba(114,201,248,0.1),transparent_50%)]" />
 
@@ -60,7 +61,7 @@ export function CardRowSection({ content, children }: CardRowSectionProps) {
                 variants={staggerContainer}
                 initial="hidden"
                 whileInView="show"
-                viewport={{ once: true, amount: 0.2 }}
+                viewport={{ once: true, amount: 0.15 }}
             >
                 {cards.map((card, index) => {
                     const mediaImage = typeof card.image === "object" ? card.image : null
@@ -71,7 +72,7 @@ export function CardRowSection({ content, children }: CardRowSectionProps) {
                         <motion.article
                             key={card.id ?? `${card.title}-${index}`}
                             variants={staggerItem}
-                            className="glass-card-shell group flex h-full flex-col rounded-3xl p-2 shadow-[0_18px_60px_rgba(0,0,0,0.28)] transition-transform before:pointer-events-none before:absolute before:inset-1px before:rounded-[calc(1.5rem-1px)] before:border before:border-white/6 before:content-['']"
+                            className="glass-card-shell group flex h-full transform-gpu flex-col rounded-3xl p-2 shadow-[0_18px_60px_rgba(0,0,0,0.28)] will-change-transform before:pointer-events-none before:absolute before:inset-1px before:rounded-[calc(1.5rem-1px)] before:border before:border-white/6 before:content-['']"
                         >
                             <div aria-hidden="true" className="glass-card-topline" />
 

@@ -40,7 +40,7 @@ export function BrandSection({ content }: BrandSectionProps) {
     }
 
     return (
-        <Section showBlur={false} showFunnel={false} animationPreset="slide-right">
+        <Section showBlur={false} showFunnel={false} animationPreset="slide-right" className="-mt-32">
             <motion.div
                 className="flex w-full flex-col items-center justify-center gap-8 px-8 pt-16 md:px-16 lg:flex-row"
                 variants={staggerContainer}
