@@ -214,7 +214,7 @@
 
 @layer components {
   .glass-card-shell {
-    @apply relative overflow-hidden rounded-3xl! border! border-white/8! bg-[linear-gradient(160deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02)_28%,rgba(8,10,20,0.92)_100%)]! shadow-[0_18px_60px_rgba(0,0,0,0.35)]!;
+    @apply relative overflow-hidden rounded-3xl! border! border-white/10! bg-[linear-gradient(160deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02)_28%,rgba(8,10,20,0.92)_100%)]! shadow-[0_18px_60px_rgba(0,0,0,0.35)]!;
   }
 
   .glass-card-tint {

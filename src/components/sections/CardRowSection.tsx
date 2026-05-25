@@ -72,12 +72,12 @@ export function CardRowSection({ content, children }: CardRowSectionProps) {
                         <motion.article
                             key={card.id ?? `${card.title}-${index}`}
                             variants={staggerItem}
-                            className="glass-card-shell group flex h-full transform-gpu flex-col rounded-3xl p-2 shadow-[0_18px_60px_rgba(0,0,0,0.28)] will-change-transform before:pointer-events-none before:absolute before:inset-1px before:rounded-[calc(1.5rem-1px)] before:border before:border-white/6 before:content-['']"
+                            className="glass-card-shell group flex h-full transform-gpu flex-col rounded-3xl p-2 shadow-[0_18px_60px_rgba(0,0,0,0.28)] will-change-transform before:pointer-events-none before:absolute before:inset-1px before:rounded-[calc(1.5rem-1px)] before:border before:border-white/5 before:content-['']"
                         >
                             <div aria-hidden="true" className="glass-card-topline" />
 
                             {imageUrl ? (
-                                <div className="relative aspect-[243.476/160] overflow-hidden rounded-2xl border border-white/8 bg-primary/40">
+                                <div className="relative aspect-[243.476/160] overflow-hidden rounded-2xl bg-primary/40">
                                     <Image
                                         src={imageUrl}
                                         alt={mediaImage?.alt ?? card.title ?? ""}
@@ -89,8 +89,8 @@ export function CardRowSection({ content, children }: CardRowSectionProps) {
                             ) : fallbackImage}
 
                             <div className="relative z-10 flex h-full flex-1 flex-col px-2 pb-2 pt-4">
-                                <h3 className="text-xl font-semibold text-white">{card.title}</h3>
-                                {card.description && <p className="mt-2 text-sm text-white/75">{card.description}</p>}
+                                <h3 className="text-xl font-semibold text-white tracking-normal">{card.title}</h3>
+                                {card.description && <p className="mt-1 text-sm text-white/75">{card.description}</p>}
                                 {card.link?.url && (
                                     <LinkButton href={card.link.url} className="mt-auto pt-4">
                                         {card.link.label}

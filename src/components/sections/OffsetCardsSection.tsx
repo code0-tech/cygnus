@@ -8,7 +8,6 @@ import { ANIMATION_PRESETS, type AnimationPreset } from "@/lib/utils"
 import type { Media } from "@/payload-types"
 import { m as motion, type Variants } from "motion/react"
 import Image from "next/image"
-import React from "react"
 
 interface OffsetCardsSectionProps {
     content?: OffsetCardsLayoutBlock | null
@@ -19,18 +18,6 @@ const OFFSET_CARD_ANIMATION_SEQUENCE: Exclude<AnimationPreset, "none">[] = [
     "slide-right",
     "slide-left",
 ]
-
-const OFFSET_CARD_TONE_STYLES = [
-    {
-        surface: "bg-[radial-gradient(circle_at_top_left,rgba(122,203,255,0.05),transparent_26%),linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.008)_24%,rgba(10,12,24,0.58)_100%)]",
-    },
-    {
-        surface: "bg-[radial-gradient(circle_at_top_right,rgba(145,232,120,0.05),transparent_26%),linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.008)_24%,rgba(10,12,24,0.58)_100%)]",
-    },
-    {
-        surface: "bg-[radial-gradient(circle_at_bottom_left,rgba(132,188,255,0.05),transparent_30%),linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.008)_24%,rgba(10,12,24,0.58)_100%)]",
-    },
-] as const
 
 export function OffsetCardsSection({ content }: OffsetCardsSectionProps) {
     if (!content?.cards?.length) return null
@@ -71,7 +58,6 @@ export function OffsetCardsSection({ content }: OffsetCardsSectionProps) {
                     const animationConfig = ANIMATION_PRESETS[animationPreset]
                     const image = item.image as Media
                     const imageUrl = getMediaUrl(image?.url)
-                    const toneStyle = OFFSET_CARD_TONE_STYLES[index % OFFSET_CARD_TONE_STYLES.length]
 
                     return (
                         <motion.div
@@ -94,7 +80,7 @@ export function OffsetCardsSection({ content }: OffsetCardsSectionProps) {
                             >
                                 <motion.p variants={staggerItem} className="text-xl font-semibold text-white lg:text-3xl">{item.title}</motion.p>
                                 <motion.p variants={staggerItem} className="mt-3 max-w-xl text-sm leading-7 text-white/75 lg:text-base">{item.description}</motion.p>
-                                {item.bulletPoints?.length ? (
+                                {item.bulletPoints?.length && (
                                     <motion.ul variants={staggerItem} className="mt-5 space-y-2.5 text-sm text-white/80 lg:text-base">
                                         {item.bulletPoints.map((point, pointIndex) => (
                                             <li key={`${item.id ?? item.label}-point-${pointIndex}`} className="flex items-center gap-2">
@@ -103,19 +89,17 @@ export function OffsetCardsSection({ content }: OffsetCardsSectionProps) {
                                             </li>
                                         ))}
                                     </motion.ul>
-                                ) : null}
-                                {item.link?.label && item.link?.url ? (
+                                )}
+                                {item.link?.label && item.link?.url && (
                                     <motion.div variants={staggerItem} className="mt-5">
                                         <LinkButton href={item.link.url}>
                                             {item.link.label}
                                         </LinkButton>
                                     </motion.div>
-                                ) : null}
+                                )}
                             </motion.div>
-                            <div className={`relative aspect-video w-full overflow-hidden rounded-[2.1rem] border border-white/6 shadow-[0_24px_64px_rgba(0,0,0,0.16)] lg:w-2/3 ${toneStyle.surface}`}>
-                                <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-white/18 to-transparent" />
-                                <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_34%,transparent_40%,rgba(7,10,20,0.12)_100%)]" />
-                                {imageUrl ? (
+                            <div className={"relative aspect-video w-full overflow-hidden rounded-[2.1rem] border border-white/5 shadow-[0_16px_48px_rgba(0,0,0,0.05)] lg:w-2/3 bg-white/2"}>
+                                {imageUrl && (
                                     <Image
                                         src={imageUrl}
                                         alt={image.alt ?? item.title}
@@ -123,7 +107,7 @@ export function OffsetCardsSection({ content }: OffsetCardsSectionProps) {
                                         sizes="(min-width: 768px) 66vw, 100vw"
                                         className="object-contain drop-shadow-[0_16px_36px_rgba(0,0,0,0.16)]"
                                     />
-                                ) : null}
+                                )}
                             </div>
                             <motion.div
                                 className="w-full px-2 pb-2 text-left lg:hidden lg:text-center"
@@ -134,7 +118,7 @@ export function OffsetCardsSection({ content }: OffsetCardsSectionProps) {
                             >
                                 <motion.p variants={staggerItem} className="text-xl font-semibold tracking-tight text-white">{item.title}</motion.p>
                                 <motion.p variants={staggerItem} className="mt-3 text-sm leading-7 text-white/75">{item.description}</motion.p>
-                                {item.bulletPoints?.length ? (
+                                {item.bulletPoints?.length && (
                                     <motion.ul variants={staggerItem} className="mt-5 space-y-2.5 text-left text-sm text-white/80">
                                         {item.bulletPoints.map((point, pointIndex) => (
                                             <li key={`${item.id ?? item.label}-mobile-point-${pointIndex}`} className="flex items-start gap-3">
@@ -143,14 +127,14 @@ export function OffsetCardsSection({ content }: OffsetCardsSectionProps) {
                                             </li>
                                         ))}
                                     </motion.ul>
-                                ) : null}
-                                {item.link?.label && item.link?.url ? (
+                                )}
+                                {item.link?.label && item.link?.url && (
                                     <motion.div variants={staggerItem} className="mt-5">
                                         <LinkButton href={item.link.url}>
                                             {item.link.label}
                                         </LinkButton>
                                     </motion.div>
-                                ) : null}
+                                )}
                             </motion.div>
                         </motion.div>
                     )
