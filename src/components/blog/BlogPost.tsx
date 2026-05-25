@@ -113,7 +113,7 @@ export async function BlogPost({ slug, locale }: BlogPostProps) {
                 <LinkButton
                     href={`/${locale}/blog`}
                     showArrow={false}
-                    className="border-0 hover:bg-white/10 pl-2.5 pr-4 py-1 rounded-xl hover:text-white"
+                    className="border-0 hover:bg-white/10 pl-2.5 pr-4 py-1 rounded-[10px] hover:text-white after:hidden"
                 >
                     <IconArrowLeft size={16} />
                     {locale === "de" ? "Zurück" : "Back"}
