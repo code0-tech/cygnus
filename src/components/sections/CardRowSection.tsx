@@ -51,7 +51,7 @@ export function CardRowSection({ content, children }: CardRowSectionProps) {
             heading={content?.sectionHeading}
             description={content?.sectionDescription}
             linkButton={content?.sectionLinkButton}
-            funnelType="left"
+            funnelType={content?.sectionLayout ?? "left"}
             animationPreset="none"
         >
             <div aria-hidden="true" className="pointer-events-none absolute -bottom-40 -top-16 inset-x-0 [background:radial-gradient(circle,rgba(114,201,248,0.1),transparent_50%)]" />

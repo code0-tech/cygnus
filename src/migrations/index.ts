@@ -10,6 +10,7 @@ import * as migration_20260415_025537_007_subscription_workflow_executions from 
 import * as migration_20260425_134031_009_actions from './20260425_134031_009_actions';
 import * as migration_20260424_151900_008_footer_contact_legal_fields from './20260424_151900_008_footer_contact_legal_fields';
 import * as migration_20260427_010_remove_edition_hero_block from './20260427_010_remove_edition_hero_block';
+import * as migration_20260526_011_section_layout from './20260526_011_section_layout';
 
 export const migrations = [
   {
@@ -71,5 +72,10 @@ export const migrations = [
     up: migration_20260427_010_remove_edition_hero_block.up,
     down: migration_20260427_010_remove_edition_hero_block.down,
     name: '20260427_010_remove_edition_hero_block'
+  },
+  {
+    up: migration_20260526_011_section_layout.up,
+    down: migration_20260526_011_section_layout.down,
+    name: '20260526_011_section_layout'
   },
 ];

@@ -19,6 +19,23 @@ export const RoadmapBlock: Block = {
           localized: true,
         },
         {
+          name: "sectionLayout",
+          label: "Section Layout",
+          type: "select",
+          required: true,
+          defaultValue: "center",
+          options: [
+            {
+              label: "Center",
+              value: "center",
+            },
+            {
+              label: "Left",
+              value: "left",
+            },
+          ],
+        },
+        {
           name: "sectionDescription",
           label: "Section Description",
           type: "textarea",

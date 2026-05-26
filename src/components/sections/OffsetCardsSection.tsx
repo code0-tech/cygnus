@@ -49,6 +49,7 @@ export function OffsetCardsSection({ content }: OffsetCardsSectionProps) {
             heading={content.sectionHeading}
             description={content.sectionDescription}
             linkButton={content.sectionLinkButton}
+            funnelType={content.sectionLayout ?? "center"}
             showBlur={false}
             animationPreset="none"
         >

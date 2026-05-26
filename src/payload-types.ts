@@ -384,6 +384,7 @@ export interface Page {
           }
         | {
             sectionHeading?: string | null;
+            sectionLayout?: ('center' | 'left') | null;
             sectionDescription?: string | null;
             sectionLinkButton?: {
               label?: string | null;
@@ -396,6 +397,7 @@ export interface Page {
           }
         | {
             sectionHeading?: string | null;
+            sectionLayout?: ('center' | 'left') | null;
             sectionDescription?: string | null;
             sectionLinkButton?: {
               label?: string | null;
@@ -457,6 +459,7 @@ export interface Page {
           }
         | {
             sectionHeading?: string | null;
+            sectionLayout?: ('center' | 'left') | null;
             sectionDescription?: string | null;
             sectionLinkButton?: {
               label?: string | null;
@@ -556,6 +559,7 @@ export interface Page {
           }
         | {
             sectionHeading?: string | null;
+            sectionLayout?: ('center' | 'left') | null;
             sectionDescription?: string | null;
             sectionLinkButton?: {
               label?: string | null;
@@ -579,6 +583,7 @@ export interface Page {
           }
         | {
             sectionHeading?: string | null;
+            sectionLayout?: ('center' | 'left') | null;
             sectionDescription?: string | null;
             sectionLinkButton?: {
               label?: string | null;
@@ -1417,6 +1422,7 @@ export interface PagesSelect<T extends boolean = true> {
           | T
           | {
               sectionHeading?: T;
+              sectionLayout?: T;
               sectionDescription?: T;
               sectionLinkButton?:
                 | T
@@ -1432,6 +1438,7 @@ export interface PagesSelect<T extends boolean = true> {
           | T
           | {
               sectionHeading?: T;
+              sectionLayout?: T;
               sectionDescription?: T;
               sectionLinkButton?:
                 | T
@@ -1507,6 +1514,7 @@ export interface PagesSelect<T extends boolean = true> {
           | T
           | {
               sectionHeading?: T;
+              sectionLayout?: T;
               sectionDescription?: T;
               sectionLinkButton?:
                 | T
@@ -1605,6 +1613,7 @@ export interface PagesSelect<T extends boolean = true> {
           | T
           | {
               sectionHeading?: T;
+              sectionLayout?: T;
               sectionDescription?: T;
               sectionLinkButton?:
                 | T
@@ -1633,6 +1642,7 @@ export interface PagesSelect<T extends boolean = true> {
           | T
           | {
               sectionHeading?: T;
+              sectionLayout?: T;
               sectionDescription?: T;
               sectionLinkButton?:
                 | T
