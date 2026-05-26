@@ -1,11 +1,12 @@
 "use client"
 
 import { LinkButton } from "@/components/ui/LinkButton"
+import { TextReveal } from "@/components/ui/TextReveal"
 import { getLocaleFromPath, localizeHref } from "@/lib/i18n"
 import { ANIMATION_PRESETS, cn, type AnimationPreset } from "@/lib/utils"
 import { m as motion, type Variants } from "motion/react"
 import { usePathname } from "next/navigation"
-import { createElement, Fragment, ReactNode, useEffect, useRef, useState } from "react"
+import { createElement, ReactNode, useEffect, useRef, useState } from "react"
 
 interface SectionLinkButton {
     label?: string | null
@@ -14,26 +15,6 @@ interface SectionLinkButton {
 
 function hasHighlightedHeading(heading?: string | null) {
     return Boolean(heading && /\*\*.*?\*\*/.test(heading))
-}
-
-function renderHighlightedHeading(heading?: string | null) {
-    if (!heading) return heading
-
-    const parts = heading.split(/(\*\*.*?\*\*)/g)
-
-    return parts.map((part, index) => {
-        const isHighlighted = part.startsWith("**") && part.endsWith("**") && part.length > 4
-
-        if (!isHighlighted) {
-            return <Fragment key={`${part}-${index}`}>{part}</Fragment>
-        }
-
-        return (
-            <span key={`${part}-${index}`} className="text-white">
-                {part.slice(2, -2)}
-            </span>
-        )
-    })
 }
 
 interface SectionProps {
@@ -76,11 +57,9 @@ export function Section({
     headingLevel = 2,
 }: SectionProps) {
     const sectionRef = useRef<HTMLElement | null>(null)
-    const funnelRef = useRef<HTMLDivElement | null>(null)
     const pathname = usePathname()
     const locale = getLocaleFromPath(pathname)
     const [isInView, setIsInView] = useState(false)
-    const [funnelExitProgress, setFunnelExitProgress] = useState(0)
     const rawLinkUrl = linkButton?.url?.trim()
     const linkUrl = rawLinkUrl ? localizeHref(rawLinkUrl, locale) : undefined
     const shouldShowFunnel = showFunnel && Boolean(heading || description || (showLinkButton && linkUrl && linkButton?.label))
@@ -107,9 +86,6 @@ export function Section({
     }
     const headingTag = `h${headingLevel}` as const
     const headingClassName = cn("text-4xl font-semibold", hasHighlightedHeading(heading) ? "text-white/50" : "text-white")
-    const funnelExitOpacity = 1 - (funnelExitProgress * 0.7)
-    const funnelExitBlur = `blur(${(funnelExitProgress * 14).toFixed(2)}px)`
-    const funnelExitScale = 1 - (funnelExitProgress * 0.06)
 
     useEffect(() => {
         const currentRef = sectionRef.current
@@ -130,42 +106,6 @@ export function Section({
         return () => observer.disconnect()
     }, [])
 
-    useEffect(() => {
-        const currentRef = funnelRef.current
-        if (!currentRef) return
-
-        let frame = 0
-
-        const updateFunnelExitProgress = () => {
-            const rect = currentRef.getBoundingClientRect()
-            const elementHeight = Math.max(rect.height, 1)
-            const viewportHeight = window.innerHeight
-            const topExitProgress = Math.max(0, Math.min(1, -rect.top / elementHeight))
-            const bottomExitProgress = Math.max(0, Math.min(1, (rect.bottom - viewportHeight) / elementHeight))
-
-            setFunnelExitProgress(Math.max(topExitProgress, bottomExitProgress))
-        }
-
-        const handleViewportChange = () => {
-            if (frame) return
-            frame = requestAnimationFrame(() => {
-                frame = 0
-                updateFunnelExitProgress()
-            })
-        }
-
-        updateFunnelExitProgress()
-        window.addEventListener("scroll", handleViewportChange, { passive: true })
-        window.addEventListener("resize", handleViewportChange)
-
-        return () => {
-            if (frame) {
-                cancelAnimationFrame(frame)
-            }
-            window.removeEventListener("scroll", handleViewportChange)
-            window.removeEventListener("resize", handleViewportChange)
-        }
-    }, [])
 
     return (
         <motion.section
@@ -193,9 +133,7 @@ export function Section({
             {shouldShowFunnel && (
                 funnelType === "center" ? (
                     <motion.div
-                        ref={funnelRef}
                         className={"flex flex-col gap-4 items-center justify-center text-center"}
-                        style={{ opacity: funnelExitOpacity, filter: funnelExitBlur, scale: funnelExitScale }}
                         variants={staggerContainer}
                         initial="hidden"
                         whileInView="show"
@@ -204,11 +142,11 @@ export function Section({
                         {createElement(
                             motion[headingTag],
                             { variants: staggerItem, className: headingClassName },
-                            renderHighlightedHeading(heading),
+                            heading ? <TextReveal>{heading}</TextReveal> : null,
                         )}
                         {description && (
                             <motion.p variants={staggerItem} className="relative z-10 max-w-[90vw] text-center text-xl font-medium text-white/75 lg:w-1/2">
-                                {description}
+                                <TextReveal>{description}</TextReveal>
                             </motion.p>
                         )}
                         {showLinkButton && linkUrl &&
@@ -221,9 +159,7 @@ export function Section({
                     </motion.div>
                 ) : (
                     <motion.div
-                        ref={funnelRef}
                         className={"flex flex-col gap-4 text-left"}
-                        style={{ opacity: funnelExitOpacity, filter: funnelExitBlur, scale: funnelExitScale }}
                         variants={staggerContainer}
                         initial="hidden"
                         whileInView="show"
@@ -232,11 +168,11 @@ export function Section({
                         {createElement(
                             motion[headingTag],
                             { variants: staggerItem, className: headingClassName },
-                            renderHighlightedHeading(heading),
+                            heading ? <TextReveal>{heading}</TextReveal> : null,
                         )}
                         {description && (
                             <motion.p variants={staggerItem} className="relative z-10 max-w-[90vw] text-xl font-medium text-white/75 lg:w-1/2">
-                                {description}
+                                <TextReveal>{description}</TextReveal>
                             </motion.p>
                         )}
                         {showLinkButton && linkUrl &&

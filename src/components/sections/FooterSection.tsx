@@ -71,8 +71,6 @@ export const FooterSection: React.FC<FooterSectionProps> = ({ locale, footer }) 
                 </div>
 
                 <div className="relative pt-8">
-                    <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 left-1/2 w-screen -translate-x-1/2 bg-black/25" />
-                    <div aria-hidden="true" className="pointer-events-none absolute top-0 left-1/2 h-px w-screen -translate-x-1/2 bg-white/10" />
                     <div className="relative z-10 flex flex-col gap-4 text-sm text-white/55 md:flex-row md:items-center md:justify-between">
                         <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-5">
                             {footer.contactEmail && (
