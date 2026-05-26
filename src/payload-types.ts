@@ -384,7 +384,7 @@ export interface Page {
           }
         | {
             sectionHeading?: string | null;
-            sectionLayout?: ('center' | 'left') | null;
+            sectionLayout: 'center' | 'left';
             sectionDescription?: string | null;
             sectionLinkButton?: {
               label?: string | null;
@@ -397,7 +397,7 @@ export interface Page {
           }
         | {
             sectionHeading?: string | null;
-            sectionLayout?: ('center' | 'left') | null;
+            sectionLayout: 'center' | 'left';
             sectionDescription?: string | null;
             sectionLinkButton?: {
               label?: string | null;
@@ -459,7 +459,7 @@ export interface Page {
           }
         | {
             sectionHeading?: string | null;
-            sectionLayout?: ('center' | 'left') | null;
+            sectionLayout: 'center' | 'left';
             sectionDescription?: string | null;
             sectionLinkButton?: {
               label?: string | null;
@@ -559,7 +559,7 @@ export interface Page {
           }
         | {
             sectionHeading?: string | null;
-            sectionLayout?: ('center' | 'left') | null;
+            sectionLayout: 'center' | 'left';
             sectionDescription?: string | null;
             sectionLinkButton?: {
               label?: string | null;
@@ -583,7 +583,7 @@ export interface Page {
           }
         | {
             sectionHeading?: string | null;
-            sectionLayout?: ('center' | 'left') | null;
+            sectionLayout: 'center' | 'left';
             sectionDescription?: string | null;
             sectionLinkButton?: {
               label?: string | null;
