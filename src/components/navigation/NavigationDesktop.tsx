@@ -15,9 +15,10 @@ import {
     NavigationMenuTrigger,
 } from "@/components/ui/NavigationMenu"
 import { Container } from "@code0-tech/pictor"
+import { AnimatePresence, m as motion } from "motion/react"
 import Image from "next/image"
 import Link from "next/link"
-import React, { useEffect, useRef, useState } from "react"
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react"
 import { NavigationCursor, type NavigationCursorHandle } from "./NavigationCursor"
 import { NavigationLink } from "./NavigationLink"
 import { NavigationSubMenu } from "./NavigationSubMenu"
@@ -30,9 +31,11 @@ type NavigationDesktopProps = {
 
 const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ locale, items, buttons }) => {
     const navTabsRef = useRef<HTMLDivElement>(null)
+    const submenuContentRef = useRef<HTMLDivElement>(null)
     const cursorRef = useRef<NavigationCursorHandle>(null)
     const suppressMenuOpenRef = useRef(false)
     const [activeMenuValue, setActiveMenuValue] = useState<string | null>(null)
+    const [submenuHeight, setSubmenuHeight] = useState(0)
     const { homeHref, navbarItems, navbarButtons } = useNavigationViewModel(locale, items, buttons)
     const isScrolled = useNavigationScrollState({
         onScroll: () => {
@@ -44,6 +47,13 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ locale, items, bu
 
     const navItemClassName = "relative z-50 flex cursor-pointer items-center gap-2 rounded-xl px-4 py-1 font-medium"
     const navTriggerClassName = cn(navItemClassName, "h-auto pr-1 bg-transparent text-base text-white hover:bg-transparent focus:bg-transparent data-popup-open:bg-transparent data-open:bg-transparent")
+    const activeMenuItem = navbarItems.find((item) => item.title === activeMenuValue)
+    const activeSubMenu = activeMenuItem?.subMenu?.length ? activeMenuItem.subMenu : null
+    const shellTransition = {
+        type: "spring",
+        stiffness: 40,
+        damping: 10,
+    } as const
 
     useEffect(() => {
         if (!isScrolled) return
@@ -52,23 +62,36 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ locale, items, bu
         cursorRef.current?.hide()
     }, [isScrolled])
 
+    useLayoutEffect(() => {
+        const element = submenuContentRef.current
+
+        if (!element || !activeSubMenu || !isScrolled) {
+            setSubmenuHeight(0)
+            return
+        }
+
+        const measure = () => {
+            setSubmenuHeight(element.scrollHeight)
+        }
+
+        measure()
+
+        const resizeObserver = new ResizeObserver(measure)
+        resizeObserver.observe(element)
+
+        return () => resizeObserver.disconnect()
+    }, [activeSubMenu, isScrolled])
+
     const updateIndicatorFromElement = (element: HTMLElement) => {
         if (!navTabsRef.current) return
         cursorRef.current?.moveTo(element, navTabsRef.current)
     }
 
     return (
-        <div
-            className={cn(
-                "fixed z-50 h-max w-full border-b transition-[padding,background-color,border-color,backdrop-filter] duration-200 ease-out",
-                isScrolled
-                    ? "border-white/10 bg-primary/50 pt-1 backdrop-blur-lg"
-                    : "border-transparent bg-transparent pt-3"
-            )}
-        >
+        <div className="fixed z-50 h-max w-full pt-3">
             <Container>
                 <div
-                    className={cn("relative transition-[padding] duration-200 ease-out", isScrolled ? "py-2" : "py-4")}
+                    className="relative my-4"
                     onPointerMove={() => {
                         suppressMenuOpenRef.current = false
                     }}
@@ -77,6 +100,40 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ locale, items, bu
                         setActiveMenuValue(null)
                     }}
                 >
+                    <motion.div
+                        className={cn(
+                            "pointer-events-none absolute inset-0 rounded-2xl shadow-sm",
+                            isScrolled ? "bg-primary/50 backdrop-blur-lg" : "bg-transparent shadow-none",
+                        )}
+                        initial={{
+                            clipPath: "inset(0% 0% 0% 0% round 1rem)",
+                        }}
+                        animate={{
+                            clipPath: isScrolled
+                                ? "inset(0% 10% 0% 10% round 1rem)"
+                                : "inset(0% 0% 0% 0% round 1rem)",
+                        }}
+                        transition={shellTransition}
+                    />
+                    <motion.div
+                        className="pointer-events-none absolute inset-0 z-10 rounded-2xl border border-white/5"
+                        initial={false}
+                        animate={{
+                            left: isScrolled ? "10%" : "0%",
+                            right: isScrolled ? "10%" : "0%",
+                            opacity: isScrolled ? 1 : 0,
+                        }}
+                        transition={shellTransition}
+                    />
+                    <motion.div
+                        className="relative z-10 flex flex-col overflow-visible rounded-2xl p-1.5"
+                        initial={false}
+                        animate={{
+                            paddingLeft: isScrolled ? "10%" : "0%",
+                            paddingRight: isScrolled ? "calc(10% + 0.5rem)" : "0%",
+                        }}
+                        transition={shellTransition}
+                    >
                     <div className={"w-full h-full flex items-center justify-between gap-2"}>
 
                         <Link href={homeHref}>
@@ -100,6 +157,7 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ locale, items, bu
                                 value={activeMenuValue}
                                 onValueChange={(value) => {
                                     if (value && suppressMenuOpenRef.current) return
+                                    if (isScrolled && !value) return
 
                                     setActiveMenuValue(value)
                                 }}
@@ -119,19 +177,33 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ locale, items, bu
                                                     <>
                                                         <div
                                                             className="relative z-50"
-                                                            onMouseEnter={(event) => updateIndicatorFromElement(event.currentTarget)}
-                                                            onFocusCapture={(event) => updateIndicatorFromElement(event.currentTarget)}
+                                                            onMouseEnter={(event) => {
+                                                                updateIndicatorFromElement(event.currentTarget)
+
+                                                                if (isScrolled && !suppressMenuOpenRef.current) {
+                                                                    setActiveMenuValue(itemValue)
+                                                                }
+                                                            }}
+                                                            onFocusCapture={(event) => {
+                                                                updateIndicatorFromElement(event.currentTarget)
+
+                                                                if (isScrolled) {
+                                                                    setActiveMenuValue(itemValue)
+                                                                }
+                                                            }}
                                                         >
                                                             <NavigationMenuTrigger className={navTriggerClassName}>
                                                                 {item.title}
                                                             </NavigationMenuTrigger>
                                                         </div>
-                                                        <NavigationMenuContent className="p-2">
-                                                            <NavigationSubMenu
-                                                                items={item.subMenu!}
-                                                                onSelect={() => setActiveMenuValue(null)}
-                                                            />
-                                                        </NavigationMenuContent>
+                                                        {!isScrolled && (
+                                                            <NavigationMenuContent className="p-2">
+                                                                <NavigationSubMenu
+                                                                    items={item.subMenu!}
+                                                                    onSelect={() => setActiveMenuValue(null)}
+                                                                />
+                                                            </NavigationMenuContent>
+                                                        )}
                                                     </>
                                                 ) : item.href ? (
                                                     <div
@@ -169,6 +241,29 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ locale, items, bu
                             ))}
                         </div>
                     </div>
+                    <AnimatePresence initial={false}>
+                        {isScrolled && activeSubMenu && (
+                            <motion.div
+                                initial={{ opacity: 0, y: -6, height: 0 }}
+                                animate={{ opacity: 1, y: 0, height: submenuHeight }}
+                                exit={{ opacity: 0, y: -6, height: 0 }}
+                                transition={{
+                                    height: { duration: 0.24, ease: [0.22, 1, 0.36, 1] },
+                                    opacity: { duration: 0.16, ease: "easeOut" },
+                                    y: { duration: 0.2, ease: [0.22, 1, 0.36, 1] },
+                                }}
+                                className="overflow-hidden px-2"
+                            >
+                                <div ref={submenuContentRef} className="pt-1">
+                                    <NavigationSubMenu
+                                        items={activeSubMenu}
+                                        onSelect={() => setActiveMenuValue(null)}
+                                    />
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                    </motion.div>
                 </div>
             </Container>
         </div>

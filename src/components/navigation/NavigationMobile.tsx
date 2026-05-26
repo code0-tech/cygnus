@@ -32,8 +32,12 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({ locale, items, butt
     const [isMenuClosing, setIsMenuClosing] = useState(false)
     const { homeHref, navbarItems, navbarButtons } = useNavigationViewModel(locale, items, buttons)
     const menuTransition = {
-        duration: 0.24,
-        ease: [0.22, 1, 0.36, 1] as const,
+        duration: 0.34,
+        ease: [0.16, 1, 0.3, 1] as const,
+    }
+    const shellTransition = {
+        duration: 0.46,
+        ease: [0.16, 1, 0.3, 1] as const,
     }
     const isShellExpanded = isOpen || isMenuClosing
     const isScrolled = useNavigationScrollState({
@@ -47,7 +51,7 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({ locale, items, butt
             setIsMenuClosing(false)
         } else if (wasOpenRef.current) {
             setIsMenuClosing(true)
-            timeoutId = setTimeout(() => setIsMenuClosing(false), 320)
+            timeoutId = setTimeout(() => setIsMenuClosing(false), 460)
         }
 
         wasOpenRef.current = isOpen
@@ -67,18 +71,47 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({ locale, items, butt
 
     return (
         <header
-            className={cn(
-                "fixed z-50 w-full overflow-hidden border-b transition-[padding,background-color,border-color,backdrop-filter] duration-200 ease-out",
-                (isScrolled || isShellExpanded)
-                    ? "border-white/10 bg-primary/50 pt-1 backdrop-blur-lg"
-                    : "border-transparent bg-transparent pt-3"
-            )}
+            className="fixed z-50 w-full overflow-hidden pt-3"
             ref={menuRef}
         >
             <Container>
-                <div className={cn("relative transition-[padding] duration-200 ease-out", (isScrolled || isShellExpanded) ? "py-2" : "py-4")}>
-                    <div className="relative z-10 flex flex-col overflow-hidden">
-                        <div className={"w-full flex items-center justify-between gap-2"}>
+                <div className="relative my-6">
+                    <motion.div
+                        className={cn(
+                            "pointer-events-none absolute inset-0 rounded-2xl shadow-sm",
+                            (isScrolled || isShellExpanded) ? "bg-primary/50 backdrop-blur-lg" : "bg-transparent shadow-none",
+                        )}
+                        initial={false}
+                        animate={{
+                            clipPath: isScrolled && !isShellExpanded
+                                ? "inset(0% 10% 0% 10% round 1rem)"
+                                : "inset(0% 0% 0% 0% round 1rem)",
+                        }}
+                        transition={shellTransition}
+                    />
+                    <motion.div
+                        className="pointer-events-none absolute inset-0 z-10 rounded-2xl border border-white/5"
+                        initial={false}
+                        animate={{
+                            left: isScrolled && !isShellExpanded ? "10%" : "0%",
+                            right: isScrolled && !isShellExpanded ? "10%" : "0%",
+                            opacity: isScrolled || isShellExpanded ? 1 : 0,
+                        }}
+                        transition={shellTransition}
+                    />
+                    <motion.div
+                        className="relative z-10 flex flex-col overflow-hidden rounded-2xl p-1.5"
+                        initial={false}
+                    >
+                        <motion.div
+                            className={"w-full flex items-center justify-between gap-2"}
+                            initial={false}
+                            animate={{
+                                paddingLeft: isScrolled ? "calc(10% + 0rem)" : "calc(0% + 0rem)",
+                                paddingRight: isScrolled ? "calc(10% + 0.5rem)" : "calc(0% + 0rem)",
+                            }}
+                            transition={shellTransition}
+                        >
                             <Link
                                 href={homeHref}
                                 onClick={() => {
@@ -103,22 +136,22 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({ locale, items, butt
                             >
                                 {isOpen ? <IconX className="text-white/75"/> : <IconMenu2 className="text-white/75"/>}
                             </button>
-                        </div>
+                        </motion.div>
                         <AnimatePresence initial={false}>
                             {isOpen && (
                                 <motion.div
                                     id="mobile-navigation-menu"
                                     key="mobile-menu"
                                     layout
-                                    initial={{ opacity: 0, y: -6, height: 0 }}
+                                    initial={{ opacity: 0, y: -4, height: 0 }}
                                     animate={{ opacity: 1, y: 0, height: "auto" }}
-                                    exit={{ opacity: 0, y: -6, height: 0 }}
+                                    exit={{ opacity: 0, y: -4, height: 0 }}
                                     transition={{
                                         ...menuTransition,
                                         delay: isScrolled ? 0.08 : 0,
                                     }}
                                     style={{ overflow: "hidden" }}
-                                    className="flex flex-col gap-2 pt-3"
+                                    className="flex flex-col gap-2 px-2"
                                 >
                                     <div className="flex flex-col gap-1">
                                         {navbarItems.map((item) => {
@@ -151,7 +184,7 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({ locale, items, butt
                                 </motion.div>
                             )}
                         </AnimatePresence>
-                    </div>
+                    </motion.div>
                 </div>
             </Container>
         </header>
