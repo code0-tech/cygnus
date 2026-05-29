@@ -30,11 +30,13 @@ type NavigationDesktopProps = {
 }
 
 const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ locale, items, buttons }) => {
+    const rootRef = useRef<HTMLDivElement>(null)
     const navTabsRef = useRef<HTMLDivElement>(null)
     const submenuContentRef = useRef<HTMLDivElement>(null)
     const cursorRef = useRef<NavigationCursorHandle>(null)
     const suppressMenuOpenRef = useRef(false)
     const [activeMenuValue, setActiveMenuValue] = useState<string | null>(null)
+    const [shellInsetWidth, setShellInsetWidth] = useState(0)
     const [submenuHeight, setSubmenuHeight] = useState(0)
     const { homeHref, navbarItems, navbarButtons } = useNavigationViewModel(locale, items, buttons)
     const isScrolled = useNavigationScrollState({
@@ -49,11 +51,13 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ locale, items, bu
     const navTriggerClassName = cn(navItemClassName, "h-auto pr-1 bg-transparent text-base text-white hover:bg-transparent focus:bg-transparent data-popup-open:bg-transparent data-open:bg-transparent")
     const activeMenuItem = navbarItems.find((item) => item.title === activeMenuValue)
     const activeSubMenu = activeMenuItem?.subMenu?.length ? activeMenuItem.subMenu : null
+    const scrolledRightInsetOffset = 6
     const shellTransition = {
-        type: "spring",
-        stiffness: 40,
-        damping: 10,
+        duration: 0.5,
+        ease: [0.16, 1, 0.3, 1],
     } as const
+    const shellInset = isScrolled ? shellInsetWidth : 0
+    const shellRightInset = isScrolled ? shellInsetWidth + scrolledRightInsetOffset : 0
 
     useEffect(() => {
         if (!isScrolled) return
@@ -82,6 +86,26 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ locale, items, bu
         return () => resizeObserver.disconnect()
     }, [activeSubMenu, isScrolled])
 
+    useLayoutEffect(() => {
+        const element = rootRef.current
+
+        if (!element) {
+            setShellInsetWidth(0)
+            return
+        }
+
+        const measure = () => {
+            setShellInsetWidth(element.clientWidth * 0.1)
+        }
+
+        measure()
+
+        const resizeObserver = new ResizeObserver(measure)
+        resizeObserver.observe(element)
+
+        return () => resizeObserver.disconnect()
+    }, [])
+
     const updateIndicatorFromElement = (element: HTMLElement) => {
         if (!navTabsRef.current) return
         cursorRef.current?.moveTo(element, navTabsRef.current)
@@ -91,6 +115,7 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ locale, items, bu
         <div className="fixed z-50 h-max w-full pt-3">
             <Container>
                 <div
+                    ref={rootRef}
                     className="relative my-4"
                     onPointerMove={() => {
                         suppressMenuOpenRef.current = false
@@ -105,13 +130,10 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ locale, items, bu
                             "pointer-events-none absolute inset-0 rounded-2xl shadow-sm",
                             isScrolled ? "bg-primary/50 backdrop-blur-lg" : "bg-transparent shadow-none",
                         )}
-                        initial={{
-                            clipPath: "inset(0% 0% 0% 0% round 1rem)",
-                        }}
+                        initial={false}
                         animate={{
-                            clipPath: isScrolled
-                                ? "inset(0% 10% 0% 10% round 1rem)"
-                                : "inset(0% 0% 0% 0% round 1rem)",
+                            left: shellInset,
+                            right: shellInset,
                         }}
                         transition={shellTransition}
                     />
@@ -119,8 +141,8 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ locale, items, bu
                         className="pointer-events-none absolute inset-0 z-10 rounded-2xl border border-white/5"
                         initial={false}
                         animate={{
-                            left: isScrolled ? "10%" : "0%",
-                            right: isScrolled ? "10%" : "0%",
+                            left: shellInset,
+                            right: shellInset,
                             opacity: isScrolled ? 1 : 0,
                         }}
                         transition={shellTransition}
@@ -129,8 +151,8 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ locale, items, bu
                         className="relative z-10 flex flex-col overflow-visible rounded-2xl p-1.5"
                         initial={false}
                         animate={{
-                            paddingLeft: isScrolled ? "10%" : "0%",
-                            paddingRight: isScrolled ? "calc(10% + 0.5rem)" : "0%",
+                            paddingLeft: shellInset,
+                            paddingRight: shellRightInset,
                         }}
                         transition={shellTransition}
                     >

@@ -12,7 +12,7 @@ import { IconMenu2, IconX } from "@tabler/icons-react"
 import { AnimatePresence, m as motion } from "motion/react"
 import Image from "next/image"
 import Link from "next/link"
-import React, { useEffect, useRef, useState } from "react"
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react"
 import { useWebHaptics } from "web-haptics/react"
 import { NavigationLink } from "./NavigationLink"
 import { NavigationMobileItem } from "./NavigationMobileItem"
@@ -26,10 +26,12 @@ type NavigationMobileProps = {
 const NavigationMobile: React.FC<NavigationMobileProps> = ({ locale, items, buttons }) => {
     const { trigger } = useWebHaptics()
     const menuRef = useOutsideClick<HTMLElement>(() => setIsOpen(false))
+    const rootRef = useRef<HTMLDivElement>(null)
     const wasOpenRef = useRef(false)
     const [isOpen, setIsOpen] = useState(false)
     const [mobileOpenKey, setMobileOpenKey] = useState<string | null>(null)
     const [isMenuClosing, setIsMenuClosing] = useState(false)
+    const [shellInsetWidth, setShellInsetWidth] = useState(0)
     const { homeHref, navbarItems, navbarButtons } = useNavigationViewModel(locale, items, buttons)
     const menuTransition = {
         duration: 0.34,
@@ -43,6 +45,18 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({ locale, items, butt
     const isScrolled = useNavigationScrollState({
         onScroll: () => setIsOpen((prevIsOpen) => (prevIsOpen ? false : prevIsOpen)),
     })
+    const expandedHeaderPadding = 8
+    const shellInset = isScrolled && !isShellExpanded ? shellInsetWidth : 0
+    const headerInlinePadding = isShellExpanded
+        ? expandedHeaderPadding
+        : isScrolled
+          ? shellInsetWidth
+          : 0
+    const headerRightPadding = isShellExpanded
+        ? expandedHeaderPadding
+        : isScrolled
+          ? shellInsetWidth + expandedHeaderPadding
+          : 0
 
     useEffect(() => {
         let timeoutId: ReturnType<typeof setTimeout> | undefined
@@ -63,6 +77,26 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({ locale, items, butt
         }
     }, [isOpen])
 
+    useLayoutEffect(() => {
+        const element = rootRef.current
+
+        if (!element) {
+            setShellInsetWidth(0)
+            return
+        }
+
+        const measure = () => {
+            setShellInsetWidth(element.clientWidth * 0.1)
+        }
+
+        measure()
+
+        const resizeObserver = new ResizeObserver(measure)
+        resizeObserver.observe(element)
+
+        return () => resizeObserver.disconnect()
+    }, [])
+
     const closeMenu = () => {
         trigger("medium")
         setIsOpen(false)
@@ -75,7 +109,7 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({ locale, items, butt
             ref={menuRef}
         >
             <Container>
-                <div className="relative my-6">
+                <div ref={rootRef} className="relative my-6">
                     <motion.div
                         className={cn(
                             "pointer-events-none absolute inset-0 rounded-2xl shadow-sm",
@@ -83,9 +117,8 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({ locale, items, butt
                         )}
                         initial={false}
                         animate={{
-                            clipPath: isScrolled && !isShellExpanded
-                                ? "inset(0% 10% 0% 10% round 1rem)"
-                                : "inset(0% 0% 0% 0% round 1rem)",
+                            left: shellInset,
+                            right: shellInset,
                         }}
                         transition={shellTransition}
                     />
@@ -93,8 +126,8 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({ locale, items, butt
                         className="pointer-events-none absolute inset-0 z-10 rounded-2xl border border-white/5"
                         initial={false}
                         animate={{
-                            left: isScrolled && !isShellExpanded ? "10%" : "0%",
-                            right: isScrolled && !isShellExpanded ? "10%" : "0%",
+                            left: shellInset,
+                            right: shellInset,
                             opacity: isScrolled || isShellExpanded ? 1 : 0,
                         }}
                         transition={shellTransition}
@@ -107,8 +140,8 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({ locale, items, butt
                             className={"w-full flex items-center justify-between gap-2"}
                             initial={false}
                             animate={{
-                                paddingLeft: isScrolled ? "calc(10% + 0rem)" : "calc(0% + 0rem)",
-                                paddingRight: isScrolled ? "calc(10% + 0.5rem)" : "calc(0% + 0rem)",
+                                paddingLeft: headerInlinePadding,
+                                paddingRight: headerRightPadding,
                             }}
                             transition={shellTransition}
                         >
@@ -146,10 +179,7 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({ locale, items, butt
                                     initial={{ opacity: 0, y: -4, height: 0 }}
                                     animate={{ opacity: 1, y: 0, height: "auto" }}
                                     exit={{ opacity: 0, y: -4, height: 0 }}
-                                    transition={{
-                                        ...menuTransition,
-                                        delay: isScrolled ? 0.08 : 0,
-                                    }}
+                                    transition={menuTransition}
                                     style={{ overflow: "hidden" }}
                                     className="flex flex-col gap-2 px-2"
                                 >
