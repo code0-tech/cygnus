@@ -54,7 +54,6 @@ export function CardRowSection({ content, children }: CardRowSectionProps) {
             funnelType={content?.sectionLayout ?? "left"}
             animationPreset="none"
         >
-            <div aria-hidden="true" className="pointer-events-none absolute -bottom-40 -top-16 inset-x-0 [background:radial-gradient(circle,rgba(114,201,248,0.1),transparent_50%)]" />
 
             <motion.div
                 className="grid grid-cols-1 gap-16 lg:grid-cols-3 lg:gap-8 z-10"

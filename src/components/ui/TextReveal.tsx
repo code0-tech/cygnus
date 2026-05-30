@@ -10,10 +10,15 @@ export interface TextRevealProps extends ComponentPropsWithoutRef<"span"> {
     highlightClassName?: string
 }
 
-interface WordToken {
-    value: string
-    highlighted: boolean
-}
+type TextToken =
+    | {
+        type: "word"
+        value: string
+        highlighted: boolean
+    }
+    | {
+        type: "break"
+    }
 
 interface WordProps {
     children: ReactNode
@@ -22,17 +27,22 @@ interface WordProps {
     className?: string
 }
 
-function getWordTokens(text: string): WordToken[] {
+function getTextTokens(text: string): TextToken[] {
     const parts = text.split(/(\*\*.*?\*\*)/g)
 
     return parts.flatMap((part) => {
         const highlighted = part.startsWith("**") && part.endsWith("**") && part.length > 4
         const value = highlighted ? part.slice(2, -2) : part
 
-        return value
-            .split(/\s+/)
-            .filter(Boolean)
-            .map((word) => ({ value: word, highlighted }))
+        return value.split(/(\\n|\r\n|\n|\r)/g).flatMap((linePart): TextToken[] => {
+            if (!linePart) return []
+            if (/^(\\n|\r\n|\n|\r)$/.test(linePart)) return [{ type: "break" }]
+
+            return linePart
+                .split(/[^\S\r\n]+/)
+                .filter(Boolean)
+                .map((word) => ({ type: "word", value: word, highlighted }))
+        })
     })
 }
 
@@ -42,22 +52,29 @@ export const TextReveal: React.FC<TextRevealProps> = ({ children, className, hig
         target: textRef,
         offset: ["start 85%", "end 55%"],
     })
-    const words = getWordTokens(children)
+    const tokens = getTextTokens(children)
+    const wordCount = tokens.filter((token) => token.type === "word").length
+    let wordIndex = 0
 
     return (
         <span ref={textRef} className={cn("inline", className)} {...props}>
-            {words.map((word, index) => {
-                const start = index / words.length
-                const end = start + 1 / words.length
+            {tokens.map((token, index) => {
+                if (token.type === "break") {
+                    return <br key={`break-${index}`} />
+                }
+
+                const start = wordIndex / wordCount
+                const end = start + 1 / wordCount
+                wordIndex += 1
 
                 return (
                     <Word
-                        key={`${word.value}-${index}`}
+                        key={`${token.value}-${index}`}
                         progress={scrollYProgress}
                         range={[start, end]}
-                        className={word.highlighted ? highlightClassName : undefined}
+                        className={token.highlighted ? highlightClassName : undefined}
                     >
-                        {word.value}
+                        {token.value}
                     </Word>
                 )
             })}
