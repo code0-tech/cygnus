@@ -53,7 +53,7 @@ export default buildConfig({
         },
         livePreview: {
             url: 'http://localhost:3000',
-            collections: ['pages', 'jobs', 'actions', 'teamMembers', 'features', 'blog'],
+            collections: ['pages', 'jobs', 'actions', 'team-members', 'features', 'blog'],
         },
     },
     localization: {
