@@ -106,15 +106,13 @@ export interface Config {
   };
   fallbackLocale: ('false' | 'none' | 'null') | false | null | ('en' | 'de') | ('en' | 'de')[];
   globals: {
-    navbarItems: NavbarItem;
-    navbarButtons: NavbarButton;
+    navigation: Navigation;
     footer: Footer;
     'cookie-banner': CookieBanner;
     subscriptionConfig: SubscriptionConfig;
   };
   globalsSelect: {
-    navbarItems: NavbarItemsSelect<false> | NavbarItemsSelect<true>;
-    navbarButtons: NavbarButtonsSelect<false> | NavbarButtonsSelect<true>;
+    navigation: NavigationSelect<false> | NavigationSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
     'cookie-banner': CookieBannerSelect<false> | CookieBannerSelect<true>;
     subscriptionConfig: SubscriptionConfigSelect<false> | SubscriptionConfigSelect<true>;
@@ -1492,53 +1490,52 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "navbarItems".
+ * via the `definition` "navigation".
  */
-export interface NavbarItem {
+export interface Navigation {
   id: number;
+  /**
+   * Optionales Navigationslogo. Wenn leer, wird das hardcoded Code0 Logo verwendet.
+   */
+  logo?: (number | null) | Media;
   items: {
-    title: string;
-    /**
-     * Leer lassen, wenn ein Submenu angezeigt werden soll.
-     */
-    href?: string | null;
-    order: number;
-    subMenu?:
-      | {
-          key: string;
-          title: string;
-          href: string;
-          description: string;
-          /**
-           * Tabler Icon Name. Unbekannte Werte fallen auf "cube" zurück.
-           */
-          icon: string;
-          id?: string | null;
-        }[]
-      | null;
-    id?: string | null;
-  }[];
-  updatedAt?: string | null;
-  createdAt?: string | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "navbarButtons".
- */
-export interface NavbarButton {
-  id: number;
+    items: {
+      title: string;
+      /**
+       * Leer lassen, wenn ein Submenu angezeigt werden soll.
+       */
+      href?: string | null;
+      order: number;
+      subMenu?:
+        | {
+            key: string;
+            title: string;
+            href: string;
+            description: string;
+            /**
+             * Tabler Icon Name. Unbekannte Werte fallen auf "cube" zurück.
+             */
+            icon: string;
+            id?: string | null;
+          }[]
+        | null;
+      id?: string | null;
+    }[];
+  };
   buttons: {
-    title: string;
-    href: string;
-    order: number;
-    /**
-     * Tabler Icon Name, z.B. "brand-github", oder Simple Icon mit "si", z.B. "siGithub". Leer lassen für kein Icon.
-     */
-    icon?: string | null;
-    newTab?: boolean | null;
-    variant: 'none' | 'normal' | 'outlined' | 'filled';
-    id?: string | null;
-  }[];
+    buttons: {
+      title: string;
+      href: string;
+      order: number;
+      /**
+       * Tabler Icon Name, z.B. "brand-github", oder Simple Icon mit "si", z.B. "siGithub". Leer lassen für kein Icon.
+       */
+      icon?: string | null;
+      newTab?: boolean | null;
+      variant: 'none' | 'normal' | 'outlined' | 'filled';
+      id?: string | null;
+    }[];
+  };
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -1761,46 +1758,46 @@ export interface SubscriptionConfig {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "navbarItems_select".
+ * via the `definition` "navigation_select".
  */
-export interface NavbarItemsSelect<T extends boolean = true> {
+export interface NavigationSelect<T extends boolean = true> {
+  logo?: T;
   items?:
     | T
     | {
-        title?: T;
-        href?: T;
-        order?: T;
-        subMenu?:
+        items?:
           | T
           | {
-              key?: T;
               title?: T;
               href?: T;
-              description?: T;
-              icon?: T;
+              order?: T;
+              subMenu?:
+                | T
+                | {
+                    key?: T;
+                    title?: T;
+                    href?: T;
+                    description?: T;
+                    icon?: T;
+                    id?: T;
+                  };
               id?: T;
             };
-        id?: T;
       };
-  updatedAt?: T;
-  createdAt?: T;
-  globalType?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "navbarButtons_select".
- */
-export interface NavbarButtonsSelect<T extends boolean = true> {
   buttons?:
     | T
     | {
-        title?: T;
-        href?: T;
-        order?: T;
-        icon?: T;
-        newTab?: T;
-        variant?: T;
-        id?: T;
+        buttons?:
+          | T
+          | {
+              title?: T;
+              href?: T;
+              order?: T;
+              icon?: T;
+              newTab?: T;
+              variant?: T;
+              id?: T;
+            };
       };
   updatedAt?: T;
   createdAt?: T;

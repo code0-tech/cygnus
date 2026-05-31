@@ -1,4 +1,4 @@
-import type { NavbarButton, NavbarItem } from "@/payload-types"
+import type { Navigation } from "@/payload-types"
 import { localizeHref, type AppLocale } from "@/lib/i18n"
 import { getTablerIcon } from "@/lib/tablerIcons"
 import * as SimpleIcons from "@icons-pack/react-simple-icons"
@@ -21,8 +21,10 @@ export type SubNavItem = {
 
 export type NavigationLinkVariant = "none" | "normal" | "outlined" | "filled"
 
-export type NavbarItemData = NavbarItem["items"][number]
-export type NavbarButtonData = NavbarButton["buttons"][number]
+export type NavigationData = Navigation
+export type NavigationLogoData = Navigation["logo"]
+export type NavbarItemData = Navigation["items"]["items"][number]
+export type NavbarButtonData = Navigation["buttons"]["buttons"][number]
 
 export interface NavButton {
     title: string

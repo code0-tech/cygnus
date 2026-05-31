@@ -14,8 +14,7 @@ import { Features } from './collections/features'
 import { Footer } from './globals/footer'
 import { Jobs } from './collections/jobs'
 import { Media } from './collections/media'
-import { NavbarButtons } from './globals/navbarButtons'
-import { NavbarItems } from './globals/navbarItems'
+import { Navigation } from './globals/navigation'
 import { Pages } from './collections/pages'
 import { SubscriptionCollection } from './globals/subscriptionConfig'
 import { TeamMembers } from './collections/teamMembers'
@@ -61,7 +60,7 @@ export default buildConfig({
         defaultLocale: 'en',
     },
     collections: [Users, Media, Pages, Features, Actions, Jobs, Blog, TeamMembers],
-    globals: [NavbarItems, NavbarButtons, Footer, CookieBanner, SubscriptionCollection],
+    globals: [Navigation, Footer, CookieBanner, SubscriptionCollection],
     jobs: {
         autoRun: [{
             cron: '*/5 * * * *', // Check every 5 minutes
