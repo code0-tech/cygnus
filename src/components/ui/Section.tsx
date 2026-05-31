@@ -1,7 +1,6 @@
 "use client"
 
 import { LinkButton } from "@/components/ui/LinkButton"
-import { TextReveal } from "@/components/ui/TextReveal"
 import { getLocaleFromPath, localizeHref } from "@/lib/i18n"
 import { ANIMATION_PRESETS, cn, type AnimationPreset } from "@/lib/utils"
 import { m as motion, type Variants } from "motion/react"
@@ -15,6 +14,29 @@ interface SectionLinkButton {
 
 function hasHighlightedHeading(heading?: string | null) {
     return Boolean(heading && /\*\*.*?\*\*/.test(heading))
+}
+
+function renderFormattedText(text: string) {
+    return text.split(/(\*\*.*?\*\*)/g).flatMap((part, partIndex) => {
+        const highlighted = part.startsWith("**") && part.endsWith("**") && part.length > 4
+        const value = highlighted ? part.slice(2, -2) : part
+
+        return value.split(/(\\n|\r\n|\n|\r)/g).map((linePart, lineIndex) => {
+            const key = `${partIndex}-${lineIndex}`
+
+            if (/^(\\n|\r\n|\n|\r)$/.test(linePart)) {
+                return <br key={key} />
+            }
+
+            if (!highlighted) return linePart
+
+            return (
+                <span className="text-white" key={key}>
+                    {linePart}
+                </span>
+            )
+        })
+    })
 }
 
 interface SectionProps {
@@ -142,11 +164,11 @@ export function Section({
                         {createElement(
                             motion[headingTag],
                             { variants: staggerItem, className: headingClassName },
-                            heading ? <TextReveal>{heading}</TextReveal> : null,
+                            heading ? renderFormattedText(heading) : null,
                         )}
                         {description && (
                             <motion.p variants={staggerItem} className="relative z-10 max-w-[90vw] text-center text-xl font-medium text-white/75 lg:w-1/2">
-                                <TextReveal>{description}</TextReveal>
+                                {renderFormattedText(description)}
                             </motion.p>
                         )}
                         {showLinkButton && linkUrl &&
@@ -168,11 +190,11 @@ export function Section({
                         {createElement(
                             motion[headingTag],
                             { variants: staggerItem, className: headingClassName },
-                            heading ? <TextReveal>{heading}</TextReveal> : null,
+                            heading ? renderFormattedText(heading) : null,
                         )}
                         {description && (
                             <motion.p variants={staggerItem} className="relative z-10 max-w-[90vw] text-xl font-medium text-white/75 lg:w-1/2">
-                                <TextReveal>{description}</TextReveal>
+                                {renderFormattedText(description)}
                             </motion.p>
                         )}
                         {showLinkButton && linkUrl &&
