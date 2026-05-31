@@ -22,44 +22,40 @@ interface PageBlocksRendererProps {
     locale?: AppLocale
 }
 
-function renderPageBlock(block: PageBlock, options: Pick<PageBlocksRendererProps, "cardRowChildren" | "ctaFloating" | "locale">) {
-    switch (block.blockType) {
-        case "hero":
-            return <HeroSection content={block} />
-        case "bento":
-            return <BentoSection content={block} locale={options.locale} />
-        case "brand":
-            return <BrandSection content={block} />
-        case "offsetCards":
-            return <OffsetCardsSection content={block} />
-        case "cardRow":
-            return <CardRowSection content={block}>{options.cardRowChildren}</CardRowSection>
-        case "faq":
-            return <FaqSection content={block} />
-        case "cta":
-            return <CtaSection content={block} floatingCta={options.ctaFloating} />
-        case "install":
-            return <InstallSection content={block} />
-        case "roadmap":
-            return <RoadmapSection content={block} />
-        case "scrollCards":
-            return <ScrollCardSection content={block} />
-        case "swipeCards":
-            return <SwipeCardSection content={block} />
-        default:
-            return null
-    }
+type PageBlockRenderOptions = Pick<PageBlocksRendererProps, "cardRowChildren" | "ctaFloating" | "locale">
+type BlockRenderer = (block: PageBlock, options: PageBlockRenderOptions) => ReactNode
+
+const pageBlockRenderers: Partial<Record<PageBlock["blockType"], BlockRenderer>> = {
+    hero: (block) => <HeroSection content={block as Extract<PageBlock, { blockType: "hero" }>} />,
+    bento: (block, options) => <BentoSection content={block as Extract<PageBlock, { blockType: "bento" }>} locale={options.locale} />,
+    brand: (block) => <BrandSection content={block as Extract<PageBlock, { blockType: "brand" }>} />,
+    offsetCards: (block) => <OffsetCardsSection content={block as Extract<PageBlock, { blockType: "offsetCards" }>} />,
+    cardRow: (block, options) => <CardRowSection content={block as Extract<PageBlock, { blockType: "cardRow" }>}>{options.cardRowChildren}</CardRowSection>,
+    faq: (block) => <FaqSection content={block as Extract<PageBlock, { blockType: "faq" }>} />,
+    cta: (block, options) => <CtaSection content={block as Extract<PageBlock, { blockType: "cta" }>} floatingCta={options.ctaFloating} />,
+    install: (block) => <InstallSection content={block as Extract<PageBlock, { blockType: "install" }>} />,
+    roadmap: (block) => <RoadmapSection content={block as Extract<PageBlock, { blockType: "roadmap" }>} />,
+    scrollCards: (block) => <ScrollCardSection content={block as Extract<PageBlock, { blockType: "scrollCards" }>} />,
+    swipeCards: (block) => <SwipeCardSection content={block as Extract<PageBlock, { blockType: "swipeCards" }>} />,
+}
+
+function renderPageBlock(block: PageBlock, options: PageBlockRenderOptions) {
+    const renderer = pageBlockRenderers[block.blockType]
+    return renderer ? renderer(block, options) : null
 }
 
 export function PageBlocks({ blocks, cardRowChildren, ctaFloating = false, locale }: PageBlocksRendererProps) {
-    const renderableBlocks = blocks?.filter((block) => renderPageBlock(block, { cardRowChildren, ctaFloating, locale }) !== null) ?? []
+    const renderableBlocks = blocks?.flatMap((block) => {
+        const element = renderPageBlock(block, { cardRowChildren, ctaFloating, locale })
+        return element ? [{ block, element }] : []
+    }) ?? []
 
     return (
         <>
-            {renderableBlocks.map((block, index) => (
+            {renderableBlocks.map(({ block, element }, index) => (
                 <React.Fragment key={block.id ?? index}>
                     {index > 0 && <div className="h-32" aria-hidden="true" />}
-                    {renderPageBlock(block, { cardRowChildren, ctaFloating, locale })}
+                    {element}
                 </React.Fragment>
             ))}
         </>

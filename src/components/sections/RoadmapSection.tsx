@@ -17,7 +17,7 @@ export function RoadmapSection({ content }: RoadmapSectionProps) {
             heading={content?.sectionHeading}
             description={content?.sectionDescription}
             linkButton={content?.sectionLinkButton}
-            funnelType="left"
+            funnelType={content?.sectionLayout ?? "center"}
             animationPreset="zoom-in"
         >
             <div className="relative w-full py-8 md:py-16">

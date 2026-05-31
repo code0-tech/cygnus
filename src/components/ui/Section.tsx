@@ -12,6 +12,33 @@ interface SectionLinkButton {
     url?: string | null
 }
 
+function hasHighlightedHeading(heading?: string | null) {
+    return Boolean(heading && /\*\*.*?\*\*/.test(heading))
+}
+
+function renderFormattedText(text: string) {
+    return text.split(/(\*\*.*?\*\*)/g).flatMap((part, partIndex) => {
+        const highlighted = part.startsWith("**") && part.endsWith("**") && part.length > 4
+        const value = highlighted ? part.slice(2, -2) : part
+
+        return value.split(/(\\n|\r\n|\n|\r)/g).map((linePart, lineIndex) => {
+            const key = `${partIndex}-${lineIndex}`
+
+            if (/^(\\n|\r\n|\n|\r)$/.test(linePart)) {
+                return <br key={key} />
+            }
+
+            if (!highlighted) return linePart
+
+            return (
+                <span className="text-white" key={key}>
+                    {linePart}
+                </span>
+            )
+        })
+    })
+}
+
 interface SectionProps {
     children: ReactNode
     funnelType?: "center" | "left"
@@ -80,6 +107,7 @@ export function Section({
         },
     }
     const headingTag = `h${headingLevel}` as const
+    const headingClassName = cn("text-4xl font-semibold", hasHighlightedHeading(heading) ? "text-white/50" : "text-white")
 
     useEffect(() => {
         const currentRef = sectionRef.current
@@ -99,6 +127,7 @@ export function Section({
 
         return () => observer.disconnect()
     }, [])
+
 
     return (
         <motion.section
@@ -134,12 +163,12 @@ export function Section({
                     >
                         {createElement(
                             motion[headingTag],
-                            { variants: staggerItem, className: "text-4xl text-white font-semibold" },
-                            heading,
+                            { variants: staggerItem, className: headingClassName },
+                            heading ? renderFormattedText(heading) : null,
                         )}
                         {description && (
                             <motion.p variants={staggerItem} className="relative z-10 max-w-[90vw] text-center text-xl font-medium text-white/75 lg:w-1/2">
-                                {description}
+                                {renderFormattedText(description)}
                             </motion.p>
                         )}
                         {showLinkButton && linkUrl &&
@@ -160,12 +189,12 @@ export function Section({
                     >
                         {createElement(
                             motion[headingTag],
-                            { variants: staggerItem, className: "text-4xl text-white font-semibold" },
-                            heading,
+                            { variants: staggerItem, className: headingClassName },
+                            heading ? renderFormattedText(heading) : null,
                         )}
                         {description && (
                             <motion.p variants={staggerItem} className="relative z-10 max-w-[90vw] text-xl font-medium text-white/75 lg:w-1/2">
-                                {description}
+                                {renderFormattedText(description)}
                             </motion.p>
                         )}
                         {showLinkButton && linkUrl &&

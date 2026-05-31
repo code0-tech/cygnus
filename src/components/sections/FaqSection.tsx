@@ -27,6 +27,7 @@ export function FaqSection({ content }: FaqSectionProps) {
             heading={content.sectionHeading}
             description={content.sectionDescription}
             linkButton={content.sectionLinkButton}
+            funnelType={content.sectionLayout ?? "center"}
             showLinkButton={false}
             showBlur={false}
         >

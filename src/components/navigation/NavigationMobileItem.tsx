@@ -1,0 +1,86 @@
+"use client"
+
+import { navigationMenuTriggerStyle } from "@/components/ui/NavigationMenu"
+import { NavItem } from "@/lib/navigation"
+import { cn } from "@/lib/utils"
+import { IconChevronUp } from "@tabler/icons-react"
+import { AnimatePresence, m as motion } from "motion/react"
+import Link from "next/link"
+import { NavigationSubMenu } from "./NavigationSubMenu"
+
+interface NavigationMobileItemProps {
+    item: NavItem
+    isOpen: boolean
+    onToggle: () => void
+    onNavigate: () => void
+}
+
+const mobileNavItemClassName = navigationMenuTriggerStyle({
+    className: "h-auto w-full justify-between px-4 py-2 text-left text-base text-white/75 hover:text-white focus:text-white",
+})
+
+export function NavigationMobileItem({ item, isOpen, onToggle, onNavigate }: NavigationMobileItemProps) {
+    const isAccordion = Boolean(item.subMenu?.length)
+    const hasRoute = Boolean(item.href)
+
+    return (
+        <div className="flex flex-col">
+            {isAccordion ? (
+                <button
+                    type="button"
+                    className={cn(mobileNavItemClassName, isOpen && "bg-white/10 text-white")}
+                    onClick={onToggle}
+                >
+                    <span>{item.title}</span>
+                    <IconChevronUp
+                        size={20}
+                        className={cn("transition-transform text-white/75", !isOpen && "rotate-180")}
+                    />
+                </button>
+            ) : (
+                <Link
+                    href={item.href ?? "#"}
+                    className={cn(
+                        mobileNavItemClassName,
+                        !hasRoute && "pointer-events-none opacity-60",
+                    )}
+                    onClick={onNavigate}
+                >
+                    <span>{item.title}</span>
+                </Link>
+            )}
+
+            {isAccordion && (
+                <AnimatePresence initial={false}>
+                    {isOpen && (
+                        <motion.div
+                            key={`${item.title}-submenu`}
+                            layout
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{
+                                height: {
+                                    duration: 0.24,
+                                    ease: [0.22, 1, 0.36, 1],
+                                },
+                                opacity: {
+                                    duration: 0.16,
+                                    ease: "easeOut",
+                                },
+                            }}
+                            className="overflow-hidden"
+                        >
+                            <div className="mt-1 rounded-lg">
+                                <NavigationSubMenu
+                                    items={item.subMenu!}
+                                    onSelect={onNavigate}
+                                />
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            )}
+        </div>
+    )
+}

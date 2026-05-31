@@ -4,9 +4,10 @@ import { Aurora } from "@/components/ui/Aurora"
 import { HapticButtonLink } from "@/components/ui/HapticButtonLink"
 import { LandingContainer } from "@/components/ui/LandingContainer"
 import { LinkButton } from "@/components/ui/LinkButton"
-import { getActionBySlug, getLandingPage, type ActionsLayoutBlock } from "@/lib/cms"
-import { isSupportedLocale } from "@/lib/i18n"
+import { getPageLocaleAndSlug, type LocaleSlugPageParams } from "@/lib/appRoute"
+import { getActionBySlug, getLandingPage } from "@/lib/cms"
 import { getMediaUrl } from "@/lib/media"
+import { findPageBlock } from "@/lib/pageBlocks"
 import { createMetadata } from "@/lib/siteConfig"
 import type { Media } from "@/payload-types"
 import { IconArrowLeft, IconExternalLink } from "@tabler/icons-react"
@@ -14,11 +15,8 @@ import type { Metadata } from "next"
 import Image from "next/image"
 import { notFound } from "next/navigation"
 
-export default async function ActionDetailPage({ params }: { params: Promise<{ locale: string, slug: string }> }) {
-    const { locale, slug } = await params
-    if (!isSupportedLocale(locale)) notFound()
-    if (!slug?.trim()) notFound()
-
+export default async function ActionDetailPage({ params }: { params: LocaleSlugPageParams }) {
+    const { locale, slug } = await getPageLocaleAndSlug(params)
     const action = await getActionBySlug(slug, locale)
     if (!action) notFound()
     const actionsPage = await getLandingPage("actions", locale)
@@ -29,7 +27,7 @@ export default async function ActionDetailPage({ params }: { params: Promise<{ l
     const functionDefs = action.functiondefinitions as Media | undefined
     const references = (action.references ?? []).filter((reference): reference is Exclude<typeof reference, number> => typeof reference !== "number")
     const tags = (action.tags ?? []).filter((tag): tag is string => Boolean(tag))
-    const actionsBlock = actionsPage?.layout?.find((block): block is ActionsLayoutBlock => block.blockType === "actions") ?? null
+    const actionsBlock = findPageBlock(actionsPage, "actions")
     const referencesLabel = actionsBlock?.referencesLabel ?? (locale === "de" ? "Referenzen" : "References")
 
     return (
@@ -125,10 +123,10 @@ export default async function ActionDetailPage({ params }: { params: Promise<{ l
     )
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ locale: string, slug: string }> }): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: LocaleSlugPageParams }): Promise<Metadata> {
     const { locale, slug } = await params
-    if (!isSupportedLocale(locale)) return createMetadata()
     if (!slug?.trim()) return createMetadata()
+    if (locale !== "de" && locale !== "en") return createMetadata()
 
     const action = await getActionBySlug(slug, locale)
     if (!action) return createMetadata()

@@ -4,8 +4,9 @@ import { InteractiveGridPattern } from "@/components/InteractiveGridPattern"
 import { Aurora } from "@/components/ui/Aurora"
 import { HapticButtonLink } from "@/components/ui/HapticButtonLink"
 import { LandingContainer } from "@/components/ui/LandingContainer"
-import { getBlogPostBySlug, getLandingPage, type CtaLayoutBlock } from "@/lib/cms"
-import { isSupportedLocale } from "@/lib/i18n"
+import { getPageLocaleAndSlug, type LocaleSlugPageParams } from "@/lib/appRoute"
+import { getBlogPostBySlug, getLandingPage } from "@/lib/cms"
+import { findPageBlock } from "@/lib/pageBlocks"
 import { createMetadata, resolveSiteUrl } from "@/lib/siteConfig"
 import { type Media } from "@/payload-types"
 import type { Metadata } from "next"
@@ -21,14 +22,10 @@ function getMediaUrl(value?: number | Media | null) {
     return new URL(value.url, resolveSiteUrl()).toString()
 }
 
-export default async function Page({ params }: { params: Promise<{ locale: string, slug: string }> }) {
-    const { locale, slug } = await params
-    if (!isSupportedLocale(locale)) notFound()
-    if (!slug?.trim()) notFound()
-
+export default async function Page({ params }: { params: LocaleSlugPageParams }) {
+    const { locale, slug } = await getPageLocaleAndSlug(params)
     const page = await getLandingPage("main", locale)
-    const layout = page?.layout ?? []
-    const ctaBlock = layout.find((block): block is CtaLayoutBlock => block.blockType === "cta") ?? null
+    const ctaBlock = findPageBlock(page, "cta")
 
     return (
         <>
@@ -83,10 +80,10 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
     )
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ locale: string, slug: string }> }): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: LocaleSlugPageParams }): Promise<Metadata> {
     const { locale, slug } = await params
-    if (!isSupportedLocale(locale)) return createMetadata()
     if (!slug?.trim()) return createMetadata()
+    if (locale !== "de" && locale !== "en") return createMetadata()
 
     const post = await getBlogPostBySlug(slug, locale)
     if (!post) return createMetadata()

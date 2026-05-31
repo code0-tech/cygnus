@@ -1,98 +1,75 @@
 "use client"
 
 import { cn } from "@/lib/utils"
-import { useOutsideClick } from "@/hooks/useOutsideClick"
+import { useNavigationScrollState } from "@/hooks/useNavigationScrollState"
+import { useNavigationViewModel } from "@/hooks/useNavigationViewModel"
 import { type AppLocale } from "@/lib/i18n"
-import type { Footer, NavbarItem } from "@/payload-types"
-import { Button, Container } from "@code0-tech/pictor"
-import { SiDiscord, SiGithub } from "@icons-pack/react-simple-icons"
-import { AnimatePresence, m as motion, useMotionValue, useSpring } from "motion/react"
+import type { NavbarButtonData } from "@/lib/navigation"
+import type { NavbarItem } from "@/payload-types"
+import {
+    NavigationMenu,
+    NavigationMenuContent,
+    NavigationMenuItem,
+    NavigationMenuLink,
+    NavigationMenuList,
+    NavigationMenuTrigger,
+} from "@/components/ui/NavigationMenu"
+import { Container } from "@code0-tech/pictor"
+import { AnimatePresence, m as motion } from "motion/react"
 import Image from "next/image"
 import Link from "next/link"
-import React, { useLayoutEffect, useMemo, useRef, useState } from "react"
-import { NavSubMenu } from "./NavSubMenu"
-import { NavTab } from "./NavTab"
-import { fadeInUp, mapNavbarItems, type SubNavItem } from "@/lib/navigation"
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react"
+import { NavigationCursor, type NavigationCursorHandle } from "./NavigationCursor"
+import { NavigationLink } from "./NavigationLink"
+import { NavigationSubMenu } from "./NavigationSubMenu"
 
 type NavigationDesktopProps = {
     locale: AppLocale
     items: NavbarItem[]
-    footer: Footer | null
+    buttons: NavbarButtonData[]
 }
 
-const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ locale, items, footer }) => {
+const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ locale, items, buttons }) => {
     const rootRef = useRef<HTMLDivElement>(null)
-    const submenuContentRef = useRef<HTMLDivElement>(null)
     const navTabsRef = useRef<HTMLDivElement>(null)
-    const subMenuRef = useOutsideClick<HTMLDivElement>(() => setActiveSubMenu(null))
-    const [isScrolled, setIsScrolled] = useState(false)
-    const [activeSubMenu, setActiveSubMenu] = useState<SubNavItem[] | null>(null)
-    const [hoveredSubMenu, setHoveredSubMenu] = useState<SubNavItem[] | null>(null)
+    const submenuContentRef = useRef<HTMLDivElement>(null)
+    const cursorRef = useRef<NavigationCursorHandle>(null)
+    const suppressMenuOpenRef = useRef(false)
+    const [activeMenuValue, setActiveMenuValue] = useState<string | null>(null)
+    const [shellInsetWidth, setShellInsetWidth] = useState(0)
     const [submenuHeight, setSubmenuHeight] = useState(0)
-    const [overlayOffsetLeft, setOverlayOffsetLeft] = useState(0)
-    const [overlayPosition, setOverlayPosition] = useState({ left: 0, width: 0, opacity: 0 })
-    const cursorX = useSpring(useMotionValue(0), { stiffness: 260, damping: 30, mass: 0.9 })
-    const cursorOpacity = useSpring(useMotionValue(0), { stiffness: 260, damping: 30, mass: 0.9 })
-    const cursorWidth = useSpring(useMotionValue(0), { stiffness: 260, damping: 30, mass: 0.9 })
-    const homeHref = `/${locale}`
-    const navbarItems = useMemo(() => mapNavbarItems(items, locale), [items, locale])
-    const githubHref = footer?.socialLinks?.find((socialLink) => socialLink.platform === "github")?.url || "/"
-    const discordHref = footer?.socialLinks?.find((socialLink) => socialLink.platform === "discord")?.url || "/"
+    const { homeHref, navbarItems, navbarButtons } = useNavigationViewModel(locale, items, buttons)
+    const isScrolled = useNavigationScrollState({
+        onScroll: () => {
+            suppressMenuOpenRef.current = true
+            setActiveMenuValue(null)
+            cursorRef.current?.hide()
+        },
+    })
 
-    const updateIndicatorPosition = (nextPosition: { left: number; width: number; opacity: number }) => {
-        cursorX.set(nextPosition.left)
-        cursorWidth.set(nextPosition.width)
-        cursorOpacity.set(nextPosition.opacity)
-        setOverlayPosition(nextPosition)
-    }
+    const navItemClassName = "relative z-50 flex cursor-pointer items-center gap-2 rounded-xl px-4 py-1 font-medium"
+    const navTriggerClassName = cn(navItemClassName, "h-auto pr-1 bg-transparent text-base text-white hover:bg-transparent focus:bg-transparent data-popup-open:bg-transparent data-open:bg-transparent")
+    const activeMenuItem = navbarItems.find((item) => item.title === activeMenuValue)
+    const activeSubMenu = activeMenuItem?.subMenu?.length ? activeMenuItem.subMenu : null
+    const scrolledRightInsetOffset = 6
+    const shellTransition = {
+        duration: 0.5,
+        ease: [0.16, 1, 0.3, 1],
+    } as const
+    const shellInset = isScrolled ? shellInsetWidth : 0
+    const shellRightInset = isScrolled ? shellInsetWidth + scrolledRightInsetOffset : 0
 
-    useLayoutEffect(() => {
-        let frame = 0
-        const scrollOpenThreshold = 8
-        const scrollCloseThreshold = 3
+    useEffect(() => {
+        if (!isScrolled) return
 
-        const handleScroll = () => {
-            if (frame) return
-
-            frame = window.requestAnimationFrame(() => {
-                frame = 0
-
-                setIsScrolled((prevIsScrolled) => {
-                    const nextIsScrolled = prevIsScrolled
-                        ? window.scrollY > scrollCloseThreshold
-                        : window.scrollY > scrollOpenThreshold
-
-                    if (prevIsScrolled !== nextIsScrolled && nextIsScrolled) {
-                        setActiveSubMenu(null)
-                    }
-
-                    return prevIsScrolled === nextIsScrolled ? prevIsScrolled : nextIsScrolled
-                })
-            })
-        }
-
-        if (window.scrollY > scrollOpenThreshold) {
-            setIsScrolled(true)
-        }
-        window.addEventListener("scroll", handleScroll)
-
-        return () => {
-            if (frame) {
-                window.cancelAnimationFrame(frame)
-            }
-            window.removeEventListener("scroll", handleScroll)
-        }
-    }, [])
-
-    useLayoutEffect(() => {
-        if (hoveredSubMenu) {
-            setActiveSubMenu(hoveredSubMenu)
-        }
-    }, [hoveredSubMenu, isScrolled])
+        setActiveMenuValue(null)
+        cursorRef.current?.hide()
+    }, [isScrolled])
 
     useLayoutEffect(() => {
         const element = submenuContentRef.current
-        if (!element) {
+
+        if (!element || !activeSubMenu || !isScrolled) {
             setSubmenuHeight(0)
             return
         }
@@ -107,195 +84,211 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ locale, items, fo
         resizeObserver.observe(element)
 
         return () => resizeObserver.disconnect()
-    }, [activeSubMenu])
+    }, [activeSubMenu, isScrolled])
 
     useLayoutEffect(() => {
-        const rootElement = rootRef.current
-        const navTabsElement = navTabsRef.current
-        if (!rootElement || !navTabsElement) {
-            setOverlayOffsetLeft(0)
+        const element = rootRef.current
+
+        if (!element) {
+            setShellInsetWidth(0)
             return
         }
 
         const measure = () => {
-            const rootRect = rootElement.getBoundingClientRect()
-            const navTabsRect = navTabsElement.getBoundingClientRect()
-            setOverlayOffsetLeft(navTabsRect.left - rootRect.left)
+            setShellInsetWidth(element.clientWidth * 0.1)
         }
 
         measure()
 
         const resizeObserver = new ResizeObserver(measure)
-        resizeObserver.observe(rootElement)
-        resizeObserver.observe(navTabsElement)
+        resizeObserver.observe(element)
 
         return () => resizeObserver.disconnect()
-    }, [isScrolled])
+    }, [])
+
+    const updateIndicatorFromElement = (element: HTMLElement) => {
+        if (!navTabsRef.current) return
+        cursorRef.current?.moveTo(element, navTabsRef.current)
+    }
 
     return (
-        <div className={"fixed z-50 h-max w-full pt-3"}>
+        <div className="fixed z-50 h-max w-full pt-3">
             <Container>
                 <div
                     ref={rootRef}
-                    className="relative"
+                    className="relative my-4"
+                    onPointerMove={() => {
+                        suppressMenuOpenRef.current = false
+                    }}
                     onMouseLeave={() => {
-                        cursorOpacity.set(0)
-                        setOverlayPosition((prev) => ({ ...prev, opacity: 0 }))
-                        setActiveSubMenu(null)
-                        setHoveredSubMenu(null)
+                        cursorRef.current?.hide()
+                        setActiveMenuValue(null)
                     }}
                 >
-                    <div className="relative my-4">
-                        <motion.div
-                            className={cn(
-                                "pointer-events-none absolute inset-0 rounded-2xl shadow-sm",
-                                isScrolled ? "bg-primary/50 backdrop-blur-lg" : "bg-transparent shadow-none",
-                            )}
-                            initial={{
-                                clipPath: "inset(0% 0% 0% 0% round 1rem)",
-                            }}
-                            animate={{
-                                clipPath: isScrolled
-                                    ? "inset(0% 10% 0% 10% round 1rem)"
-                                    : "inset(0% 0% 0% 0% round 1rem)",
-                            }}
-                            transition={{
-                                type: "spring",
-                                stiffness: 40,
-                                damping: 10,
-                            }}
-                        />
-                        <motion.div
-                            className="pointer-events-none absolute inset-0 z-10 rounded-2xl border border-white/5"
-                            initial={false}
-                            animate={{
-                                left: isScrolled ? "10%" : "0%",
-                                right: isScrolled ? "10%" : "0%",
-                                opacity: isScrolled ? 1 : 0,
-                            }}
-                            transition={{
-                                type: "spring",
-                                stiffness: 40,
-                                damping: 10,
-                            }}
-                        />
-                        <motion.div
-                            className="relative z-10 flex flex-col gap-2 overflow-visible rounded-2xl p-1.5 lg:gap-4"
-                            initial={false}
-                            animate={{
-                                paddingLeft: isScrolled ? "10%" : "0%",
-                                paddingRight: isScrolled ? "calc(10% + 0.5rem)" : "0%",
-                            }}
-                            transition={{
-                                type: "spring",
-                                stiffness: 40,
-                                damping: 10,
-                            }}
-                        >
-                        <div className={"w-full h-full flex items-center justify-between gap-2"}>
+                    <motion.div
+                        className={cn(
+                            "pointer-events-none absolute inset-0 rounded-2xl shadow-sm",
+                            isScrolled ? "bg-primary/50 backdrop-blur-lg" : "bg-transparent shadow-none",
+                        )}
+                        initial={false}
+                        animate={{
+                            left: shellInset,
+                            right: shellInset,
+                        }}
+                        transition={shellTransition}
+                    />
+                    <motion.div
+                        className="pointer-events-none absolute inset-0 z-10 rounded-2xl border border-white/5"
+                        initial={false}
+                        animate={{
+                            left: shellInset,
+                            right: shellInset,
+                            opacity: isScrolled ? 1 : 0,
+                        }}
+                        transition={shellTransition}
+                    />
+                    <motion.div
+                        className="relative z-10 flex flex-col overflow-visible rounded-2xl p-1.5"
+                        initial={false}
+                        animate={{
+                            paddingLeft: shellInset,
+                            paddingRight: shellRightInset,
+                        }}
+                        transition={shellTransition}
+                    >
+                    <div className={"w-full h-full flex items-center justify-between gap-2"}>
 
                         <Link href={homeHref}>
-                            <motion.div className="flex transition-all"
-                                initial={false}
-                                animate={fadeInUp.animate}
-                                transition={fadeInUp.transition}
-                            >
+                            <div className="flex">
                                 <Image src={"/code0_logo_white.png"} width={"32"} height={"32"} alt={"Code0 Logo"} loading="eager"/>
-                            </motion.div>
+                            </div>
                         </Link>
 
-                        <div ref={navTabsRef} className={"relative h-full flex items-center"}>
-                            <div className={"hidden md:flex gap-2"}>
-                                {navbarItems.map((item) => (
-                                    <NavTab key={item.title}
-                                        title={item.title}
-                                        href={item.href}
-                                        setPosition={updateIndicatorPosition}
-                                        containerRef={navTabsRef}
-                                        subMenu={item.subMenu}
-                                        activeSubMenu={activeSubMenu}
-                                        onMouseEnter={() => {
-                                            setActiveSubMenu(item.subMenu || null)
-                                            setHoveredSubMenu(item.subMenu || null)
-                                        }}
-                                    />
-                                ))}
-                            </div>
-                            <Cursor x={cursorX} width={cursorWidth} opacity={cursorOpacity} />
+                        <div
+                            ref={navTabsRef}
+                            className={"relative h-full flex items-center"}
+                            onBlurCapture={(event) => {
+                                const nextFocusedElement = event.relatedTarget
+
+                                if (!(nextFocusedElement instanceof Node) || !event.currentTarget.contains(nextFocusedElement)) {
+                                    cursorRef.current?.hide()
+                                }
+                            }}
+                        >
+                            <NavigationMenu
+                                value={activeMenuValue}
+                                onValueChange={(value) => {
+                                    if (value && suppressMenuOpenRef.current) return
+                                    if (isScrolled && !value) return
+
+                                    setActiveMenuValue(value)
+                                }}
+                                delay={40}
+                                closeDelay={80}
+                                align="start"
+                                className="hidden md:flex max-w-none flex-none"
+                            >
+                                <NavigationMenuList className="gap-2">
+                                    {navbarItems.map((item) => {
+                                        const itemValue = item.title
+                                        const hasSubMenu = Boolean(item.subMenu?.length)
+
+                                        return (
+                                            <NavigationMenuItem key={item.title} value={itemValue}>
+                                                {hasSubMenu ? (
+                                                    <>
+                                                        <div
+                                                            className="relative z-50"
+                                                            onMouseEnter={(event) => {
+                                                                updateIndicatorFromElement(event.currentTarget)
+
+                                                                if (isScrolled && !suppressMenuOpenRef.current) {
+                                                                    setActiveMenuValue(itemValue)
+                                                                }
+                                                            }}
+                                                            onFocusCapture={(event) => {
+                                                                updateIndicatorFromElement(event.currentTarget)
+
+                                                                if (isScrolled) {
+                                                                    setActiveMenuValue(itemValue)
+                                                                }
+                                                            }}
+                                                        >
+                                                            <NavigationMenuTrigger className={navTriggerClassName}>
+                                                                {item.title}
+                                                            </NavigationMenuTrigger>
+                                                        </div>
+                                                        {!isScrolled && (
+                                                            <NavigationMenuContent className="p-2">
+                                                                <NavigationSubMenu
+                                                                    items={item.subMenu!}
+                                                                    onSelect={() => setActiveMenuValue(null)}
+                                                                />
+                                                            </NavigationMenuContent>
+                                                        )}
+                                                    </>
+                                                ) : item.href ? (
+                                                    <div
+                                                        className="relative z-50"
+                                                        onMouseEnter={(event) => {
+                                                            updateIndicatorFromElement(event.currentTarget)
+                                                            setActiveMenuValue(null)
+                                                        }}
+                                                        onFocusCapture={(event) => {
+                                                            updateIndicatorFromElement(event.currentTarget)
+                                                            setActiveMenuValue(null)
+                                                        }}
+                                                    >
+                                                        <NavigationMenuLink
+                                                            render={<Link href={item.href} />}
+                                                            className={cn(navItemClassName, "text-base text-white hover:bg-transparent focus:bg-transparent")}
+                                                        >
+                                                            {item.title}
+                                                        </NavigationMenuLink>
+                                                    </div>
+                                                ) : null}
+                                            </NavigationMenuItem>
+                                        )
+                                    })}
+                                </NavigationMenuList>
+                            </NavigationMenu>
+                            <NavigationCursor ref={cursorRef} />
                         </div>
                         <div className={"flex items-center gap-2"}>
-                            <Link href={githubHref} target="_blank" rel="noreferrer">
-                                <Button variant="normal" className="h-9! px-2!">
-                                    <SiGithub size={18} />
-                                    <span className="hidden xl:inline">Github</span>
-                                </Button>
-                            </Link>
-                            <Link href={discordHref} target="_blank" rel="noreferrer">
-                                <Button variant="normal" className="h-9! px-2! bg-white/80! hover:bg-white! text-primary!">
-                                    <span className="hidden xl:inline">Discord</span>
-                                    <SiDiscord size={18} className="xl:hidden"/>
-                                </Button>
-                            </Link>
+                            {navbarButtons.map((button) => (
+                                <NavigationLink
+                                    key={`${button.title}-${button.href}`}
+                                    button={button}
+                                />
+                            ))}
                         </div>
                     </div>
-                    <AnimatePresence initial={false} mode="wait">
-                        {activeSubMenu && isScrolled && (
+                    <AnimatePresence initial={false}>
+                        {isScrolled && activeSubMenu && (
                             <motion.div
-                                key="submenu"
-                                ref={subMenuRef}
-                                initial={{ opacity: 0, y: -10, height: 0 }}
-                                animate={{ opacity: 1, y: 0, height: submenuHeight + 4 }}
-                                exit={{ opacity: 0, y: -10, height: 0 }}
-                                transition={{ duration: 0.2, ease: "easeOut" }}
-                                className="flex flex-col overflow-hidden pl-2"
+                                initial={{ opacity: 0, y: -6, height: 0 }}
+                                animate={{ opacity: 1, y: 0, height: submenuHeight }}
+                                exit={{ opacity: 0, y: -6, height: 0 }}
+                                transition={{
+                                    height: { duration: 0.24, ease: [0.22, 1, 0.36, 1] },
+                                    opacity: { duration: 0.16, ease: "easeOut" },
+                                    y: { duration: 0.2, ease: [0.22, 1, 0.36, 1] },
+                                }}
+                                className="overflow-hidden px-2"
                             >
-                                <div ref={submenuContentRef}>
-                                    <NavSubMenu
+                                <div ref={submenuContentRef} className="pt-1">
+                                    <NavigationSubMenu
                                         items={activeSubMenu}
-                                        onSelect={() => {
-                                            setActiveSubMenu(null)
-                                            setHoveredSubMenu(null)
-                                        }}
+                                        onSelect={() => setActiveMenuValue(null)}
                                     />
                                 </div>
                             </motion.div>
                         )}
                     </AnimatePresence>
-                        </motion.div>
-                    </div>
-                    {activeSubMenu && !isScrolled && (
-                        <div
-                            ref={subMenuRef}
-                            className="absolute z-50 shadow-lg"
-                            style={{ left: overlayOffsetLeft + overlayPosition.left, top: "100%" }}
-                        >
-                            <div className="mt-2 rounded-xl border border-white/5 bg-primary/90 backdrop-blur-xl shadow-xl p-2 w-max">
-                                <NavSubMenu
-                                    items={activeSubMenu}
-                                    onSelect={() => {
-                                        setActiveSubMenu(null)
-                                        setHoveredSubMenu(null)
-                                    }}
-                                />
-                            </div>
-                        </div>
-                    )}
+                    </motion.div>
                 </div>
             </Container>
         </div>
-    )
-}
-
-const Cursor: React.FC<{
-    x: ReturnType<typeof useSpring>
-    width: ReturnType<typeof useSpring>
-    opacity: ReturnType<typeof useSpring>
-}> = ({ x, width, opacity }) => {
-    return (
-        <motion.div
-            className="absolute z-40 h-8 rounded-xl bg-white/10 will-change-transform"
-            style={{ x, width, opacity }}
-        />
     )
 }
 

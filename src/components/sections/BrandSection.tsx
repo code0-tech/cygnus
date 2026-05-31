@@ -1,24 +1,23 @@
 "use client"
 
-import React from "react"
+import { LogoItem } from "@/components/ui/LogoItem"
+import { LogoMarquee } from "@/components/ui/LogoMarquee"
 import { Section } from "@/components/ui/Section"
-import Image from "next/image"
+import { BrandLayoutBlock } from "@/lib/cms"
 import type { Media } from "@/payload-types"
 import { m as motion, type Variants } from "motion/react"
-import { BrandLayoutBlock } from "@/lib/cms"
-import { getMediaUrl } from "@/lib/media"
 
 interface BrandSectionProps {
     content?: BrandLayoutBlock | null
 }
 
 export function BrandSection({ content }: BrandSectionProps) {
-    if (!content) return
+    if (!content || !content.logos) return
 
-    const logos = (content.logos ?? [])
+    const logos = content.logos
         .map((item) => item.logo)
         .filter((logo) => Boolean((logo as Media)?.url))
-        .slice(0, 4)
+    const shouldLoopDesktop = logos.length > 4
 
     const staggerContainer: Variants = {
         hidden: {},
@@ -26,8 +25,8 @@ export function BrandSection({ content }: BrandSectionProps) {
             transition: {
                 staggerChildren: 0.08,
                 delayChildren: 0.06,
-            },
-        },
+            }
+        }
     }
 
     const staggerItem: Variants = {
@@ -36,62 +35,39 @@ export function BrandSection({ content }: BrandSectionProps) {
             opacity: 1,
             y: 0,
             transition: { duration: 0.38, ease: [0.22, 1, 0.36, 1] },
-        },
+        }
     }
 
     return (
-        <Section showBlur={false} showFunnel={false} animationPreset="slide-right">
+        <Section showBlur={false} showFunnel={false} animationPreset="slide-right" className="-mt-32">
             <motion.div
-                className="flex w-full flex-col items-center justify-center gap-8 px-8 pt-16 md:px-16 lg:flex-row"
+                className="flex w-full flex-col items-center justify-center gap-8 pt-16 lg:flex-row"
                 variants={staggerContainer}
                 initial="hidden"
                 whileInView="show"
                 viewport={{ once: true, amount: 0.3 }}
             >
-                <motion.p variants={staggerItem} className={"text-center text-white/75 lg:flex lg:text-left"}>
+                <motion.p variants={staggerItem} className={"w-full text-center text-white/75 lg:w-1/3 lg:shrink-0 lg:text-left"}>
                     {content.description}
                 </motion.p>
-                <motion.div variants={staggerContainer} className={"w-full grid grid-cols-2 md:grid-cols-4 gap-16 text-white/75 text-center"}>
-                    {logos.length > 0 ? (
-                        logos.map((item, index) => {
-                            const href = (item as Media & { href?: string | null }).href
-                            const logo = item as Media
-                            const logoUrl = getMediaUrl(logo.url)
-
-                            return (
-                                <motion.div variants={staggerItem} className="relative w-full h-14" key={`${logo.id ?? logo.url ?? index}`}>
-                                    {href ? (
-                                        <a href={href} className="relative block h-full w-full">
-                                            <Image
-                                                src={logoUrl}
-                                                alt={logo.alt}
-                                                fill
-                                                unoptimized
-                                                className="object-contain brightness-0 invert"
-                                                sizes="(min-width: 768px) 20vw, 40vw"
-                                            />
-                                        </a>
-                                    ) : (
-                                        <Image
-                                            src={logoUrl}
-                                            alt={logo.alt}
-                                            fill
-                                            unoptimized
-                                            className="object-contain brightness-0 invert"
-                                            sizes="(min-width: 768px) 20vw, 40vw"
-                                        />
-                                    )}
-                                </motion.div>
-                            )
-                        })
-                    ) : (
-                        <>
-                            <motion.p variants={staggerItem} className={"text-4xl font-bold"}>Logo1</motion.p>
-                            <motion.p variants={staggerItem} className={"text-4xl font-bold"}>Logo2</motion.p>
-                            <motion.p variants={staggerItem} className={"text-4xl font-bold"}>Logo3</motion.p>
-                            <motion.p variants={staggerItem} className={"text-4xl font-bold"}>Logo4</motion.p>
-                        </>
-                    )}
+                <motion.div
+                    variants={staggerContainer}
+                    className={shouldLoopDesktop
+                        ? "hidden"
+                        : "hidden w-full min-w-0 grid-cols-4 gap-16 text-center text-white/75 md:grid lg:flex-1"
+                    }
+                >
+                    {logos.map((item, index) => (
+                        <motion.div variants={staggerItem} key={`${(item as Media).id ?? (item as Media).url ?? index}-${index}`}>
+                            <LogoItem logo={item} className="w-full" />
+                        </motion.div>
+                    ))}
+                </motion.div>
+                <motion.div
+                    variants={staggerItem}
+                    className={shouldLoopDesktop ? "w-full min-w-0 lg:flex-1" : "w-full md:hidden"}
+                >
+                    <LogoMarquee logos={logos} />
                 </motion.div>
             </motion.div>
         </Section>

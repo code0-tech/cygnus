@@ -1,21 +1,13 @@
 import { DeploymentImage } from "@/components/DeploymentImage"
 import { PageBlocks } from "@/components/PageBlockRenderer"
 import { LandingContainer } from "@/components/ui/LandingContainer"
+import { createLandingMetadata, getPageLocale, type LocalePageParams } from "@/lib/appRoute"
 import { getLandingPage } from "@/lib/cms"
-import { isSupportedLocale } from "@/lib/i18n"
-import { getLandingPageMetadata } from "@/lib/pageMetadata"
-import type { Metadata } from "next"
-import { notFound } from "next/navigation"
 
-export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
-    const { locale } = await params
-    return getLandingPageMetadata("main", locale)
-}
+export const generateMetadata = createLandingMetadata("main")
 
-export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
-    const { locale } = await params
-    if (!isSupportedLocale(locale)) notFound()
-
+export default async function Page({ params }: { params: LocalePageParams }) {
+    const locale = await getPageLocale(params)
     const page = await getLandingPage("main", locale)
 
     return (

@@ -17,6 +17,7 @@ export function BentoSection({ content, locale = "en" }: BentoSectionProps) {
             heading={content?.sectionHeading}
             description={content?.sectionDescription}
             linkButton={content?.sectionLinkButton}
+            funnelType={content?.sectionLayout ?? "center"}
             fullHeight
         >
             {variant === "runtime" ? (

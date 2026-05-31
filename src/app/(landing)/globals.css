@@ -119,7 +119,7 @@
   }
 
   .image-placeholder {
-    @apply rounded-2xl border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] flex items-center justify-center text-white/50 text-center;
+    @apply rounded-2xl border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] flex items-center justify-center text-white/50 text-center;
   }
 }
 

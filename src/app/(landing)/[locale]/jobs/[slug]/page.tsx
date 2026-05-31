@@ -1,24 +1,22 @@
 import { JobDetailContent } from "@/components/JobDetailContent"
 import { Aurora } from "@/components/ui/Aurora"
 import { LandingContainer } from "@/components/ui/LandingContainer"
+import { getPageLocaleAndSlug, type LocaleSlugPageParams } from "@/lib/appRoute"
 import { createMetadata } from "@/lib/siteConfig"
-import { isSupportedLocale } from "@/lib/i18n"
-import { getLandingPage, type JobsLayoutBlock } from "@/lib/cms"
+import { getLandingPage } from "@/lib/cms"
 import { getJobBySlug } from "@/lib/cms"
+import { findPageBlock } from "@/lib/pageBlocks"
 import { convertLexicalToHTML } from "@payloadcms/richtext-lexical/html"
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 
-export default async function JobDetailPage({ params }: { params: Promise<{ locale: string, slug: string }> }) {
-    const { locale, slug } = await params
-    if (!isSupportedLocale(locale)) notFound()
-    if (!slug?.trim()) notFound()
-
+export default async function JobDetailPage({ params }: { params: LocaleSlugPageParams }) {
+    const { locale, slug } = await getPageLocaleAndSlug(params)
     const job = await getJobBySlug(slug, locale)
     if (!job) notFound()
 
     const jobsPage = await getLandingPage("jobs", locale)
-    const jobsBlock = jobsPage?.layout?.find((block): block is JobsLayoutBlock => block.blockType === "jobs") ?? null
+    const jobsBlock = findPageBlock(jobsPage, "jobs")
 
     const contentHtml = convertLexicalToHTML({
         data: job.content,
@@ -37,10 +35,10 @@ export default async function JobDetailPage({ params }: { params: Promise<{ loca
     )
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ locale: string, slug: string }> }): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: LocaleSlugPageParams }): Promise<Metadata> {
     const { locale, slug } = await params
-    if (!isSupportedLocale(locale)) return createMetadata()
     if (!slug?.trim()) return createMetadata()
+    if (locale !== "de" && locale !== "en") return createMetadata()
 
     const job = await getJobBySlug(slug, locale)
     if (!job) return createMetadata()
