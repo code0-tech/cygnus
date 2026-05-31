@@ -1,4 +1,4 @@
-import type { CollectionConfig } from "payload"
+import type { GlobalConfig } from "payload"
 
 const localizedText = (name: string, label: string) => ({
   name,
@@ -8,13 +8,11 @@ const localizedText = (name: string, label: string) => ({
   localized: true,
 })
 
-export const CookieBanner: CollectionConfig = {
+export const CookieBanner: GlobalConfig = {
   slug: "cookie-banner",
   access: {
     read: () => true,
-    create: ({ req }) => Boolean(req.user),
     update: ({ req }) => Boolean(req.user),
-    delete: ({ req }) => Boolean(req.user),
   },
   fields: [
     {

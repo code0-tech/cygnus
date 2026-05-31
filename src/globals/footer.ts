@@ -1,12 +1,10 @@
-import type { CollectionConfig } from "payload"
+import type { GlobalConfig } from "payload"
 
-export const Footer: CollectionConfig = {
+export const Footer: GlobalConfig = {
   slug: "footer",
   access: {
     read: () => true,
-    create: ({ req }) => Boolean(req.user),
     update: ({ req }) => Boolean(req.user),
-    delete: ({ req }) => Boolean(req.user),
   },
   fields: [
     {

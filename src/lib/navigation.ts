@@ -21,7 +21,8 @@ export type SubNavItem = {
 
 export type NavigationLinkVariant = "none" | "normal" | "outlined" | "filled"
 
-export type NavbarButtonData = NavbarButton
+export type NavbarItemData = NavbarItem["items"][number]
+export type NavbarButtonData = NavbarButton["buttons"][number]
 
 export interface NavButton {
     title: string
@@ -82,8 +83,8 @@ function getSubMenuIcon(icon: string | null | undefined) {
     return getTablerIcon(icon, 30)
 }
 
-export function mapNavbarItems(items: NavbarItem[], locale: AppLocale): NavItem[] {
-    return items.map((item) => {
+export function mapNavbarItems(items: NavbarItemData[], locale: AppLocale): NavItem[] {
+    return [...items].sort((left, right) => left.order - right.order).map((item) => {
         const mappedSubMenu = (item.subMenu ?? [])
             .filter((sub) => Boolean(sub?.title && sub?.href && sub?.description))
             .map((sub) => ({
@@ -102,7 +103,8 @@ export function mapNavbarItems(items: NavbarItem[], locale: AppLocale): NavItem[
 }
 
 export function mapNavbarButtons(buttons: NavbarButtonData[], locale: AppLocale): NavButton[] {
-    return buttons
+    return [...buttons]
+        .sort((left, right) => left.order - right.order)
         .filter((button) => Boolean(button.title && button.href))
         .map((button) => ({
             title: button.title,

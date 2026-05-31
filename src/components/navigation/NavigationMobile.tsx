@@ -5,8 +5,7 @@ import { useNavigationScrollState } from "@/hooks/useNavigationScrollState"
 import { useNavigationViewModel } from "@/hooks/useNavigationViewModel"
 import { useOutsideClick } from "@/hooks/useOutsideClick"
 import { type AppLocale } from "@/lib/i18n"
-import type { NavbarButtonData } from "@/lib/navigation"
-import type { NavbarItem } from "@/payload-types"
+import type { NavbarButtonData, NavbarItemData } from "@/lib/navigation"
 import { Container } from "@code0-tech/pictor"
 import { IconMenu2, IconX } from "@tabler/icons-react"
 import { AnimatePresence, m as motion } from "motion/react"
@@ -19,7 +18,7 @@ import { NavigationMobileItem } from "./NavigationMobileItem"
 
 type NavigationMobileProps = {
     locale: AppLocale
-    items: NavbarItem[]
+    items: NavbarItemData[]
     buttons: NavbarButtonData[]
 }
 

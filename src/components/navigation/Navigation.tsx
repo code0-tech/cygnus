@@ -1,12 +1,11 @@
-import type { NavbarItem } from "@/payload-types"
 import { type AppLocale } from "@/lib/i18n"
-import type { NavbarButtonData } from "@/lib/navigation"
+import type { NavbarButtonData, NavbarItemData } from "@/lib/navigation"
 import { NavigationDesktop } from "./NavigationDesktop"
 import { NavigationMobile } from "./NavigationMobile"
 
 interface NavigationProps {
     locale: AppLocale
-    items: NavbarItem[]
+    items: NavbarItemData[]
     buttons: NavbarButtonData[]
 }
 

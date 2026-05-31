@@ -4,8 +4,7 @@ import { cn } from "@/lib/utils"
 import { useNavigationScrollState } from "@/hooks/useNavigationScrollState"
 import { useNavigationViewModel } from "@/hooks/useNavigationViewModel"
 import { type AppLocale } from "@/lib/i18n"
-import type { NavbarButtonData } from "@/lib/navigation"
-import type { NavbarItem } from "@/payload-types"
+import type { NavbarButtonData, NavbarItemData } from "@/lib/navigation"
 import {
     NavigationMenu,
     NavigationMenuContent,
@@ -25,7 +24,7 @@ import { NavigationSubMenu } from "./NavigationSubMenu"
 
 type NavigationDesktopProps = {
     locale: AppLocale
-    items: NavbarItem[]
+    items: NavbarItemData[]
     buttons: NavbarButtonData[]
 }
 
