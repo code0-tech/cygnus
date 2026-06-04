@@ -9,9 +9,6 @@ export const Navigation: GlobalConfig = {
     read: () => true,
     update: ({ req }) => Boolean(req.user),
   },
-  admin: {
-    group: "Navigation",
-  },
   fields: [
     {
       name: "logo",
@@ -80,7 +77,7 @@ export const Navigation: GlobalConfig = {
                 {
                   name: "icon",
                   type: "text",
-                  required: true,
+                  required: false,
                   admin: {
                     description: 'Tabler Icon Name. Unbekannte Werte fallen auf "cube" zurück.',
                   },

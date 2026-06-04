@@ -37,7 +37,7 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
       "id" varchar PRIMARY KEY NOT NULL,
       "key" varchar NOT NULL,
       "href" varchar NOT NULL,
-      "icon" varchar NOT NULL
+      "icon" varchar
     );
 
     CREATE TABLE IF NOT EXISTS "navigation_items_items_sub_menu_locales" (
@@ -47,6 +47,9 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
       "_locale" "_locales" NOT NULL,
       "_parent_id" varchar NOT NULL
     );
+
+    ALTER TABLE "navigation_items_items_sub_menu"
+      ALTER COLUMN "icon" DROP NOT NULL;
 
     CREATE TABLE IF NOT EXISTS "navigation_buttons_buttons" (
       "_order" integer NOT NULL,

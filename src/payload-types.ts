@@ -1515,7 +1515,7 @@ export interface Navigation {
             /**
              * Tabler Icon Name. Unbekannte Werte fallen auf "cube" zurück.
              */
-            icon: string;
+            icon?: string | null;
             id?: string | null;
           }[]
         | null;

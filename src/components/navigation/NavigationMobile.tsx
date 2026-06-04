@@ -27,11 +27,13 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({ locale, items, butt
     const { trigger } = useWebHaptics()
     const menuRef = useOutsideClick<HTMLElement>(() => setIsOpen(false))
     const rootRef = useRef<HTMLDivElement>(null)
+    const menuContentRef = useRef<HTMLDivElement>(null)
     const wasOpenRef = useRef(false)
     const [isOpen, setIsOpen] = useState(false)
     const [mobileOpenKey, setMobileOpenKey] = useState<string | null>(null)
     const [isMenuClosing, setIsMenuClosing] = useState(false)
     const [shellInsetWidth, setShellInsetWidth] = useState(0)
+    const [menuHeight, setMenuHeight] = useState(0)
     const { homeHref, navbarItems, navbarButtons, logo: navigationLogo } = useNavigationViewModel(locale, items, buttons, logo)
     const menuTransition = {
         duration: 0.34,
@@ -43,7 +45,7 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({ locale, items, butt
     }
     const isShellExpanded = isOpen || isMenuClosing
     const isScrolled = useNavigationScrollState({
-        onScroll: () => setIsOpen((prevIsOpen) => (prevIsOpen ? false : prevIsOpen)),
+        onScroll: isOpen ? () => setIsOpen(false) : undefined,
     })
     const expandedHeaderPadding = 8
     const shellInset = isScrolled && !isShellExpanded ? shellInsetWidth : 0
@@ -97,6 +99,26 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({ locale, items, butt
         return () => resizeObserver.disconnect()
     }, [])
 
+    useLayoutEffect(() => {
+        const element = menuContentRef.current
+
+        if (!element || !isOpen) {
+            setMenuHeight(0)
+            return
+        }
+
+        const measure = () => {
+            setMenuHeight(element.scrollHeight)
+        }
+
+        measure()
+
+        const resizeObserver = new ResizeObserver(measure)
+        resizeObserver.observe(element)
+
+        return () => resizeObserver.disconnect()
+    }, [isOpen, navbarItems, navbarButtons])
+
     const closeMenu = () => {
         trigger("medium")
         setIsOpen(false)
@@ -113,7 +135,7 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({ locale, items, butt
                     <motion.div
                         className={cn(
                             "pointer-events-none absolute inset-0 rounded-2xl shadow-sm",
-                            (isScrolled || isShellExpanded) ? "bg-primary/50 backdrop-blur-lg" : "bg-transparent shadow-none",
+                            (isScrolled || isShellExpanded) ? "bg-primary/70 backdrop-blur-md" : "bg-transparent shadow-none",
                         )}
                         initial={false}
                         animate={{
@@ -175,15 +197,18 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({ locale, items, butt
                                 <motion.div
                                     id="mobile-navigation-menu"
                                     key="mobile-menu"
-                                    layout
                                     initial={{ opacity: 0, y: -4, height: 0 }}
-                                    animate={{ opacity: 1, y: 0, height: "auto" }}
+                                    animate={{ opacity: 1, y: 0, height: menuHeight }}
                                     exit={{ opacity: 0, y: -4, height: 0 }}
-                                    transition={menuTransition}
+                                    transition={{
+                                        height: menuTransition,
+                                        opacity: { duration: 0.18, ease: "easeOut" },
+                                        y: menuTransition,
+                                    }}
                                     style={{ overflow: "hidden" }}
                                     className="flex flex-col gap-2 px-2"
                                 >
-                                    <div className="flex flex-col gap-1">
+                                    <div ref={menuContentRef} className="flex flex-col gap-1">
                                         {navbarItems.map((item) => {
                                             const isOpenAcc = mobileOpenKey === item.title
 

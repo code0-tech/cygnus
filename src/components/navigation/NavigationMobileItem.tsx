@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils"
 import { IconChevronUp } from "@tabler/icons-react"
 import { AnimatePresence, m as motion } from "motion/react"
 import Link from "next/link"
+import { useLayoutEffect, useRef, useState } from "react"
 import { NavigationSubMenu } from "./NavigationSubMenu"
 
 interface NavigationMobileItemProps {
@@ -20,8 +21,30 @@ const mobileNavItemClassName = navigationMenuTriggerStyle({
 })
 
 export function NavigationMobileItem({ item, isOpen, onToggle, onNavigate }: NavigationMobileItemProps) {
+    const submenuContentRef = useRef<HTMLDivElement>(null)
+    const [submenuHeight, setSubmenuHeight] = useState(0)
     const isAccordion = Boolean(item.subMenu?.length)
     const hasRoute = Boolean(item.href)
+
+    useLayoutEffect(() => {
+        const element = submenuContentRef.current
+
+        if (!element || !isOpen) {
+            setSubmenuHeight(0)
+            return
+        }
+
+        const measure = () => {
+            setSubmenuHeight(element.scrollHeight)
+        }
+
+        measure()
+
+        const resizeObserver = new ResizeObserver(measure)
+        resizeObserver.observe(element)
+
+        return () => resizeObserver.disconnect()
+    }, [isOpen, item.subMenu])
 
     return (
         <div className="flex flex-col">
@@ -55,9 +78,8 @@ export function NavigationMobileItem({ item, isOpen, onToggle, onNavigate }: Nav
                     {isOpen && (
                         <motion.div
                             key={`${item.title}-submenu`}
-                            layout
                             initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
+                            animate={{ height: submenuHeight, opacity: 1 }}
                             exit={{ height: 0, opacity: 0 }}
                             transition={{
                                 height: {
@@ -71,7 +93,7 @@ export function NavigationMobileItem({ item, isOpen, onToggle, onNavigate }: Nav
                             }}
                             className="overflow-hidden"
                         >
-                            <div className="mt-1 rounded-lg">
+                            <div ref={submenuContentRef} className="mt-1 rounded-lg">
                                 <NavigationSubMenu
                                     items={item.subMenu!}
                                     onSelect={onNavigate}
