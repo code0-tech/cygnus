@@ -69,17 +69,12 @@ export interface Config {
   collections: {
     users: User;
     media: Media;
-    navbarItems: NavbarItem;
-    navbarButtons: NavbarButton;
-    footer: Footer;
-    'cookie-banner': CookieBanner;
     pages: Page;
     features: Feature;
     actions: Action;
     jobs: Job;
     blog: Blog;
     'team-members': TeamMember;
-    subscriptionConfig: SubscriptionConfig;
     exports: Export;
     imports: Import;
     'payload-kv': PayloadKv;
@@ -92,17 +87,12 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
-    navbarItems: NavbarItemsSelect<false> | NavbarItemsSelect<true>;
-    navbarButtons: NavbarButtonsSelect<false> | NavbarButtonsSelect<true>;
-    footer: FooterSelect<false> | FooterSelect<true>;
-    'cookie-banner': CookieBannerSelect<false> | CookieBannerSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
     features: FeaturesSelect<false> | FeaturesSelect<true>;
     actions: ActionsSelect<false> | ActionsSelect<true>;
     jobs: JobsSelect<false> | JobsSelect<true>;
     blog: BlogSelect<false> | BlogSelect<true>;
     'team-members': TeamMembersSelect<false> | TeamMembersSelect<true>;
-    subscriptionConfig: SubscriptionConfigSelect<false> | SubscriptionConfigSelect<true>;
     exports: ExportsSelect<false> | ExportsSelect<true>;
     imports: ImportsSelect<false> | ImportsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
@@ -115,8 +105,18 @@ export interface Config {
     defaultIDType: number;
   };
   fallbackLocale: ('false' | 'none' | 'null') | false | null | ('en' | 'de') | ('en' | 'de')[];
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    navigation: Navigation;
+    footer: Footer;
+    'cookie-banner': CookieBanner;
+    subscriptionConfig: SubscriptionConfig;
+  };
+  globalsSelect: {
+    navigation: NavigationSelect<false> | NavigationSelect<true>;
+    footer: FooterSelect<false> | FooterSelect<true>;
+    'cookie-banner': CookieBannerSelect<false> | CookieBannerSelect<true>;
+    subscriptionConfig: SubscriptionConfigSelect<false> | SubscriptionConfigSelect<true>;
+  };
   locale: 'en' | 'de';
   widgets: {
     collections: CollectionsWidget;
@@ -198,137 +198,6 @@ export interface Media {
   height?: number | null;
   focalX?: number | null;
   focalY?: number | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "navbarItems".
- */
-export interface NavbarItem {
-  id: number;
-  title: string;
-  /**
-   * Leer lassen, wenn ein Submenu angezeigt werden soll.
-   */
-  href?: string | null;
-  order: number;
-  subMenu?:
-    | {
-        key: string;
-        title: string;
-        href: string;
-        description: string;
-        /**
-         * Tabler Icon Name. Unbekannte Werte fallen auf "cube" zurück.
-         */
-        icon: string;
-        id?: string | null;
-      }[]
-    | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "navbarButtons".
- */
-export interface NavbarButton {
-  id: number;
-  title: string;
-  href: string;
-  order: number;
-  /**
-   * Tabler Icon Name, z.B. "brand-github", oder Simple Icon mit "si", z.B. "siGithub". Leer lassen für kein Icon.
-   */
-  icon?: string | null;
-  newTab?: boolean | null;
-  variant: 'none' | 'normal' | 'outlined' | 'filled';
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "footer".
- */
-export interface Footer {
-  id: number;
-  company_name: string;
-  description?: string | null;
-  contactEmail?: string | null;
-  legalLinks: {
-    privacy: {
-      label: string;
-      url: string;
-    };
-    legalNotice: {
-      label: string;
-      url: string;
-    };
-  };
-  socialLinks?:
-    | {
-        platform: 'instagram' | 'discord' | 'x' | 'linkedin' | 'github';
-        url: string;
-        id?: string | null;
-      }[]
-    | null;
-  groups: {
-    heading: string;
-    items: {
-      label: string;
-      url: string;
-      id?: string | null;
-    }[];
-    id?: string | null;
-  }[];
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "cookie-banner".
- */
-export interface CookieBanner {
-  id: number;
-  common: {
-    acceptAll: string;
-    rejectAll: string;
-    customize: string;
-    save: string;
-  };
-  cookieBanner: {
-    title: string;
-    description: string;
-  };
-  consentManagerDialog: {
-    title: string;
-    description: string;
-  };
-  consentTypes: {
-    necessary: {
-      title: string;
-      description: string;
-    };
-    measurement: {
-      title: string;
-      description: string;
-    };
-    marketing: {
-      title: string;
-      description: string;
-    };
-  };
-  legalLinks: {
-    privacyPolicy: {
-      label: string;
-      href: string;
-    };
-    termsOfService: {
-      label: string;
-      href: string;
-    };
-  };
-  updatedAt: string;
-  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -770,138 +639,6 @@ export interface TeamMember {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "subscriptionConfig".
- */
-export interface SubscriptionConfig {
-  id: number;
-  title: string;
-  pageIntro: {
-    heading: string;
-    description: string;
-  };
-  featureOverview: {
-    title: string;
-    description: string;
-    /**
-     * Tabler Icon Name ohne "Icon"-Praefix, z. B. "server", "cloud" oder "users-group". Unbekannte Werte fallen auf "cube" zurueck.
-     */
-    icon: string;
-    id?: string | null;
-  }[];
-  optionsPanelHeading: string;
-  deployment: {
-    label: string;
-    selfHosted: {
-      title: string;
-      description: string;
-      /**
-       * Tabler Icon Name ohne "Icon"-Praefix, z. B. "server", "cloud" oder "users-group". Unbekannte Werte fallen auf "cube" zurueck.
-       */
-      icon: string;
-      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue';
-    };
-    cloud: {
-      title: string;
-      description: string;
-      /**
-       * Tabler Icon Name ohne "Icon"-Praefix, z. B. "server", "cloud" oder "users-group". Unbekannte Werte fallen auf "cube" zurueck.
-       */
-      icon: string;
-      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue';
-    };
-  };
-  customerType: {
-    label: string;
-    b2b: {
-      title: string;
-      description: string;
-      /**
-       * Tabler Icon Name ohne "Icon"-Praefix, z. B. "server", "cloud" oder "users-group". Unbekannte Werte fallen auf "cube" zurueck.
-       */
-      icon: string;
-      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue';
-    };
-    b2c: {
-      title: string;
-      description: string;
-      /**
-       * Tabler Icon Name ohne "Icon"-Praefix, z. B. "server", "cloud" oder "users-group". Unbekannte Werte fallen auf "cube" zurueck.
-       */
-      icon: string;
-      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue';
-    };
-  };
-  subscriptionTier: {
-    label: string;
-    pro: {
-      title: string;
-      description: string;
-      /**
-       * Tabler Icon Name ohne "Icon"-Praefix, z. B. "server", "cloud" oder "users-group". Unbekannte Werte fallen auf "cube" zurueck.
-       */
-      icon: string;
-      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue';
-    };
-    team: {
-      title: string;
-      description: string;
-      /**
-       * Tabler Icon Name ohne "Icon"-Praefix, z. B. "server", "cloud" oder "users-group". Unbekannte Werte fallen auf "cube" zurueck.
-       */
-      icon: string;
-      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue';
-    };
-  };
-  workflowExecutions: {
-    title: string;
-    description: string;
-    min: number;
-    max: number;
-    step: number;
-    minLabel: string;
-    maxLabel: string;
-    centerSuffix: string;
-  };
-  contactSales: {
-    prompt: string;
-    label: string;
-    href: string;
-  };
-  subscribe: {
-    label: string;
-    baseUrl: string;
-  };
-  price: {
-    heading: string;
-    caption: string;
-  };
-  /**
-   * Optional section heading shown above the additional features list.
-   */
-  additionalFeaturesLabel?: string | null;
-  /**
-   * Leave empty to hide the section entirely.
-   */
-  additionalFeatures?:
-    | {
-        title: string;
-        description: string;
-        /**
-         * Tabler Icon Name ohne "Icon"-Praefix, z. B. "server", "cloud" oder "users-group". Unbekannte Werte fallen auf "cube" zurueck.
-         */
-        icon: string;
-        /**
-         * Monthly price in EUR.
-         */
-        price: number;
-        id?: string | null;
-      }[]
-    | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "exports".
  */
 export interface Export {
@@ -1100,22 +837,6 @@ export interface PayloadLockedDocument {
         value: number | Media;
       } | null)
     | ({
-        relationTo: 'navbarItems';
-        value: number | NavbarItem;
-      } | null)
-    | ({
-        relationTo: 'navbarButtons';
-        value: number | NavbarButton;
-      } | null)
-    | ({
-        relationTo: 'footer';
-        value: number | Footer;
-      } | null)
-    | ({
-        relationTo: 'cookie-banner';
-        value: number | CookieBanner;
-      } | null)
-    | ({
         relationTo: 'pages';
         value: number | Page;
       } | null)
@@ -1138,10 +859,6 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'team-members';
         value: number | TeamMember;
-      } | null)
-    | ({
-        relationTo: 'subscriptionConfig';
-        value: number | SubscriptionConfig;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1227,154 +944,6 @@ export interface MediaSelect<T extends boolean = true> {
   height?: T;
   focalX?: T;
   focalY?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "navbarItems_select".
- */
-export interface NavbarItemsSelect<T extends boolean = true> {
-  title?: T;
-  href?: T;
-  order?: T;
-  subMenu?:
-    | T
-    | {
-        key?: T;
-        title?: T;
-        href?: T;
-        description?: T;
-        icon?: T;
-        id?: T;
-      };
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "navbarButtons_select".
- */
-export interface NavbarButtonsSelect<T extends boolean = true> {
-  title?: T;
-  href?: T;
-  order?: T;
-  icon?: T;
-  newTab?: T;
-  variant?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "footer_select".
- */
-export interface FooterSelect<T extends boolean = true> {
-  company_name?: T;
-  description?: T;
-  contactEmail?: T;
-  legalLinks?:
-    | T
-    | {
-        privacy?:
-          | T
-          | {
-              label?: T;
-              url?: T;
-            };
-        legalNotice?:
-          | T
-          | {
-              label?: T;
-              url?: T;
-            };
-      };
-  socialLinks?:
-    | T
-    | {
-        platform?: T;
-        url?: T;
-        id?: T;
-      };
-  groups?:
-    | T
-    | {
-        heading?: T;
-        items?:
-          | T
-          | {
-              label?: T;
-              url?: T;
-              id?: T;
-            };
-        id?: T;
-      };
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "cookie-banner_select".
- */
-export interface CookieBannerSelect<T extends boolean = true> {
-  common?:
-    | T
-    | {
-        acceptAll?: T;
-        rejectAll?: T;
-        customize?: T;
-        save?: T;
-      };
-  cookieBanner?:
-    | T
-    | {
-        title?: T;
-        description?: T;
-      };
-  consentManagerDialog?:
-    | T
-    | {
-        title?: T;
-        description?: T;
-      };
-  consentTypes?:
-    | T
-    | {
-        necessary?:
-          | T
-          | {
-              title?: T;
-              description?: T;
-            };
-        measurement?:
-          | T
-          | {
-              title?: T;
-              description?: T;
-            };
-        marketing?:
-          | T
-          | {
-              title?: T;
-              description?: T;
-            };
-      };
-  legalLinks?:
-    | T
-    | {
-        privacyPolicy?:
-          | T
-          | {
-              label?: T;
-              href?: T;
-            };
-        termsOfService?:
-          | T
-          | {
-              label?: T;
-              href?: T;
-            };
-      };
-  updatedAt?: T;
-  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1791,134 +1360,6 @@ export interface TeamMembersSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "subscriptionConfig_select".
- */
-export interface SubscriptionConfigSelect<T extends boolean = true> {
-  title?: T;
-  pageIntro?:
-    | T
-    | {
-        heading?: T;
-        description?: T;
-      };
-  featureOverview?:
-    | T
-    | {
-        title?: T;
-        description?: T;
-        icon?: T;
-        id?: T;
-      };
-  optionsPanelHeading?: T;
-  deployment?:
-    | T
-    | {
-        label?: T;
-        selfHosted?:
-          | T
-          | {
-              title?: T;
-              description?: T;
-              icon?: T;
-              color?: T;
-            };
-        cloud?:
-          | T
-          | {
-              title?: T;
-              description?: T;
-              icon?: T;
-              color?: T;
-            };
-      };
-  customerType?:
-    | T
-    | {
-        label?: T;
-        b2b?:
-          | T
-          | {
-              title?: T;
-              description?: T;
-              icon?: T;
-              color?: T;
-            };
-        b2c?:
-          | T
-          | {
-              title?: T;
-              description?: T;
-              icon?: T;
-              color?: T;
-            };
-      };
-  subscriptionTier?:
-    | T
-    | {
-        label?: T;
-        pro?:
-          | T
-          | {
-              title?: T;
-              description?: T;
-              icon?: T;
-              color?: T;
-            };
-        team?:
-          | T
-          | {
-              title?: T;
-              description?: T;
-              icon?: T;
-              color?: T;
-            };
-      };
-  workflowExecutions?:
-    | T
-    | {
-        title?: T;
-        description?: T;
-        min?: T;
-        max?: T;
-        step?: T;
-        minLabel?: T;
-        maxLabel?: T;
-        centerSuffix?: T;
-      };
-  contactSales?:
-    | T
-    | {
-        prompt?: T;
-        label?: T;
-        href?: T;
-      };
-  subscribe?:
-    | T
-    | {
-        label?: T;
-        baseUrl?: T;
-      };
-  price?:
-    | T
-    | {
-        heading?: T;
-        caption?: T;
-      };
-  additionalFeaturesLabel?: T;
-  additionalFeatures?:
-    | T
-    | {
-        title?: T;
-        description?: T;
-        icon?: T;
-        price?: T;
-        id?: T;
-      };
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "exports_select".
  */
 export interface ExportsSelect<T extends boolean = true> {
@@ -2049,6 +1490,565 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "navigation".
+ */
+export interface Navigation {
+  id: number;
+  /**
+   * Optionales Navigationslogo. Wenn leer, wird das hardcoded Code0 Logo verwendet.
+   */
+  logo?: (number | null) | Media;
+  items: {
+    items: {
+      title: string;
+      /**
+       * Leer lassen, wenn ein Submenu angezeigt werden soll.
+       */
+      href?: string | null;
+      order: number;
+      subMenu?:
+        | {
+            key: string;
+            title: string;
+            href: string;
+            description: string;
+            /**
+             * Tabler Icon Name. Unbekannte Werte fallen auf "cube" zurück.
+             */
+            icon: string;
+            id?: string | null;
+          }[]
+        | null;
+      id?: string | null;
+    }[];
+  };
+  buttons: {
+    buttons: {
+      title: string;
+      href: string;
+      order: number;
+      /**
+       * Tabler Icon Name, z.B. "brand-github", oder Simple Icon mit "si", z.B. "siGithub". Leer lassen für kein Icon.
+       */
+      icon?: string | null;
+      newTab?: boolean | null;
+      variant: 'none' | 'normal' | 'outlined' | 'filled';
+      id?: string | null;
+    }[];
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "footer".
+ */
+export interface Footer {
+  id: number;
+  company_name: string;
+  description?: string | null;
+  contactEmail?: string | null;
+  legalLinks: {
+    privacy: {
+      label: string;
+      url: string;
+    };
+    legalNotice: {
+      label: string;
+      url: string;
+    };
+  };
+  socialLinks?:
+    | {
+        platform: 'instagram' | 'discord' | 'x' | 'linkedin' | 'github';
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
+  groups: {
+    heading: string;
+    items: {
+      label: string;
+      url: string;
+      id?: string | null;
+    }[];
+    id?: string | null;
+  }[];
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "cookie-banner".
+ */
+export interface CookieBanner {
+  id: number;
+  common: {
+    acceptAll: string;
+    rejectAll: string;
+    customize: string;
+    save: string;
+  };
+  cookieBanner: {
+    title: string;
+    description: string;
+  };
+  consentManagerDialog: {
+    title: string;
+    description: string;
+  };
+  consentTypes: {
+    necessary: {
+      title: string;
+      description: string;
+    };
+    measurement: {
+      title: string;
+      description: string;
+    };
+    marketing: {
+      title: string;
+      description: string;
+    };
+  };
+  legalLinks: {
+    privacyPolicy: {
+      label: string;
+      href: string;
+    };
+    termsOfService: {
+      label: string;
+      href: string;
+    };
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "subscriptionConfig".
+ */
+export interface SubscriptionConfig {
+  id: number;
+  title: string;
+  pageIntro: {
+    heading: string;
+    description: string;
+  };
+  featureOverview: {
+    title: string;
+    description: string;
+    /**
+     * Tabler Icon Name ohne "Icon"-Praefix, z. B. "server", "cloud" oder "users-group". Unbekannte Werte fallen auf "cube" zurueck.
+     */
+    icon: string;
+    id?: string | null;
+  }[];
+  optionsPanelHeading: string;
+  deployment: {
+    label: string;
+    selfHosted: {
+      title: string;
+      description: string;
+      /**
+       * Tabler Icon Name ohne "Icon"-Praefix, z. B. "server", "cloud" oder "users-group". Unbekannte Werte fallen auf "cube" zurueck.
+       */
+      icon: string;
+      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue';
+    };
+    cloud: {
+      title: string;
+      description: string;
+      /**
+       * Tabler Icon Name ohne "Icon"-Praefix, z. B. "server", "cloud" oder "users-group". Unbekannte Werte fallen auf "cube" zurueck.
+       */
+      icon: string;
+      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue';
+    };
+  };
+  customerType: {
+    label: string;
+    b2b: {
+      title: string;
+      description: string;
+      /**
+       * Tabler Icon Name ohne "Icon"-Praefix, z. B. "server", "cloud" oder "users-group". Unbekannte Werte fallen auf "cube" zurueck.
+       */
+      icon: string;
+      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue';
+    };
+    b2c: {
+      title: string;
+      description: string;
+      /**
+       * Tabler Icon Name ohne "Icon"-Praefix, z. B. "server", "cloud" oder "users-group". Unbekannte Werte fallen auf "cube" zurueck.
+       */
+      icon: string;
+      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue';
+    };
+  };
+  subscriptionTier: {
+    label: string;
+    pro: {
+      title: string;
+      description: string;
+      /**
+       * Tabler Icon Name ohne "Icon"-Praefix, z. B. "server", "cloud" oder "users-group". Unbekannte Werte fallen auf "cube" zurueck.
+       */
+      icon: string;
+      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue';
+    };
+    team: {
+      title: string;
+      description: string;
+      /**
+       * Tabler Icon Name ohne "Icon"-Praefix, z. B. "server", "cloud" oder "users-group". Unbekannte Werte fallen auf "cube" zurueck.
+       */
+      icon: string;
+      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue';
+    };
+  };
+  workflowExecutions: {
+    title: string;
+    description: string;
+    min: number;
+    max: number;
+    step: number;
+    minLabel: string;
+    maxLabel: string;
+    centerSuffix: string;
+  };
+  contactSales: {
+    prompt: string;
+    label: string;
+    href: string;
+  };
+  subscribe: {
+    label: string;
+    baseUrl: string;
+  };
+  price: {
+    heading: string;
+    caption: string;
+  };
+  /**
+   * Optional section heading shown above the additional features list.
+   */
+  additionalFeaturesLabel?: string | null;
+  /**
+   * Leave empty to hide the section entirely.
+   */
+  additionalFeatures?:
+    | {
+        title: string;
+        description: string;
+        /**
+         * Tabler Icon Name ohne "Icon"-Praefix, z. B. "server", "cloud" oder "users-group". Unbekannte Werte fallen auf "cube" zurueck.
+         */
+        icon: string;
+        /**
+         * Monthly price in EUR.
+         */
+        price: number;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "navigation_select".
+ */
+export interface NavigationSelect<T extends boolean = true> {
+  logo?: T;
+  items?:
+    | T
+    | {
+        items?:
+          | T
+          | {
+              title?: T;
+              href?: T;
+              order?: T;
+              subMenu?:
+                | T
+                | {
+                    key?: T;
+                    title?: T;
+                    href?: T;
+                    description?: T;
+                    icon?: T;
+                    id?: T;
+                  };
+              id?: T;
+            };
+      };
+  buttons?:
+    | T
+    | {
+        buttons?:
+          | T
+          | {
+              title?: T;
+              href?: T;
+              order?: T;
+              icon?: T;
+              newTab?: T;
+              variant?: T;
+              id?: T;
+            };
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "footer_select".
+ */
+export interface FooterSelect<T extends boolean = true> {
+  company_name?: T;
+  description?: T;
+  contactEmail?: T;
+  legalLinks?:
+    | T
+    | {
+        privacy?:
+          | T
+          | {
+              label?: T;
+              url?: T;
+            };
+        legalNotice?:
+          | T
+          | {
+              label?: T;
+              url?: T;
+            };
+      };
+  socialLinks?:
+    | T
+    | {
+        platform?: T;
+        url?: T;
+        id?: T;
+      };
+  groups?:
+    | T
+    | {
+        heading?: T;
+        items?:
+          | T
+          | {
+              label?: T;
+              url?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "cookie-banner_select".
+ */
+export interface CookieBannerSelect<T extends boolean = true> {
+  common?:
+    | T
+    | {
+        acceptAll?: T;
+        rejectAll?: T;
+        customize?: T;
+        save?: T;
+      };
+  cookieBanner?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  consentManagerDialog?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  consentTypes?:
+    | T
+    | {
+        necessary?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+            };
+        measurement?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+            };
+        marketing?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+            };
+      };
+  legalLinks?:
+    | T
+    | {
+        privacyPolicy?:
+          | T
+          | {
+              label?: T;
+              href?: T;
+            };
+        termsOfService?:
+          | T
+          | {
+              label?: T;
+              href?: T;
+            };
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "subscriptionConfig_select".
+ */
+export interface SubscriptionConfigSelect<T extends boolean = true> {
+  title?: T;
+  pageIntro?:
+    | T
+    | {
+        heading?: T;
+        description?: T;
+      };
+  featureOverview?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        icon?: T;
+        id?: T;
+      };
+  optionsPanelHeading?: T;
+  deployment?:
+    | T
+    | {
+        label?: T;
+        selfHosted?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              icon?: T;
+              color?: T;
+            };
+        cloud?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              icon?: T;
+              color?: T;
+            };
+      };
+  customerType?:
+    | T
+    | {
+        label?: T;
+        b2b?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              icon?: T;
+              color?: T;
+            };
+        b2c?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              icon?: T;
+              color?: T;
+            };
+      };
+  subscriptionTier?:
+    | T
+    | {
+        label?: T;
+        pro?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              icon?: T;
+              color?: T;
+            };
+        team?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              icon?: T;
+              color?: T;
+            };
+      };
+  workflowExecutions?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        min?: T;
+        max?: T;
+        step?: T;
+        minLabel?: T;
+        maxLabel?: T;
+        centerSuffix?: T;
+      };
+  contactSales?:
+    | T
+    | {
+        prompt?: T;
+        label?: T;
+        href?: T;
+      };
+  subscribe?:
+    | T
+    | {
+        label?: T;
+        baseUrl?: T;
+      };
+  price?:
+    | T
+    | {
+        heading?: T;
+        caption?: T;
+      };
+  additionalFeaturesLabel?: T;
+  additionalFeatures?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        icon?: T;
+        price?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "collections_widget".
  */
 export interface CollectionsWidget {
@@ -2069,17 +2069,12 @@ export interface TaskCreateCollectionExport {
     collectionSlug:
       | 'users'
       | 'media'
-      | 'navbarItems'
-      | 'navbarButtons'
-      | 'footer'
-      | 'cookie-banner'
       | 'pages'
       | 'features'
       | 'actions'
       | 'jobs'
       | 'blog'
       | 'team-members'
-      | 'subscriptionConfig'
       | 'exports'
       | 'imports';
     drafts?: ('yes' | 'no') | null;

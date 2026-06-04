@@ -9,15 +9,14 @@ import sharp from 'sharp'
 import { fileURLToPath } from 'url'
 import { Actions } from './collections/actions'
 import { Blog } from './collections/blog'
-import { CookieBanner } from './collections/cookieBanner'
+import { CookieBanner } from './globals/cookieBanner'
 import { Features } from './collections/features'
-import { Footer } from './collections/footer'
+import { Footer } from './globals/footer'
 import { Jobs } from './collections/jobs'
 import { Media } from './collections/media'
-import { NavbarButtons } from './collections/navbarButtons'
-import { NavbarItems } from './collections/navbarItems'
+import { Navigation } from './globals/navigation'
 import { Pages } from './collections/pages'
-import { SubscriptionCollection } from './collections/subscriptionConfig'
+import { SubscriptionCollection } from './globals/subscriptionConfig'
 import { TeamMembers } from './collections/teamMembers'
 import { Users } from './collections/users'
 import { GraphLexicalBlock, TriggerLexicalBlock } from './lib/richText/customLexicalBlocks'
@@ -60,7 +59,8 @@ export default buildConfig({
         locales: ['en', 'de'],
         defaultLocale: 'en',
     },
-    collections: [Users, Media, NavbarItems, NavbarButtons, Footer, CookieBanner, Pages, Features, Actions, Jobs, Blog, TeamMembers, SubscriptionCollection],
+    collections: [Users, Media, Pages, Features, Actions, Jobs, Blog, TeamMembers],
+    globals: [Navigation, Footer, CookieBanner, SubscriptionCollection],
     jobs: {
         autoRun: [{
             cron: '*/5 * * * *', // Check every 5 minutes
@@ -105,17 +105,12 @@ export default buildConfig({
             collections: [
                 { slug: 'users', },
                 { slug: 'media', },
-                { slug: 'navbarItems' },
-                { slug: 'navbarButtons' },
-                { slug: 'footer' },
-                { slug: 'cookie-banner' },
                 { slug: 'pages' },
                 { slug: 'features' },
                 { slug: 'actions' },
                 { slug: 'jobs' },
                 { slug: 'blog' },
-                { slug: 'team-members' },
-                { slug: 'subscriptionConfig' }
+                { slug: 'team-members' }
             ]
         }),
         seoPlugin({

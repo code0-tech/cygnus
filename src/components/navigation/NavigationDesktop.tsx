@@ -4,8 +4,7 @@ import { cn } from "@/lib/utils"
 import { useNavigationScrollState } from "@/hooks/useNavigationScrollState"
 import { useNavigationViewModel } from "@/hooks/useNavigationViewModel"
 import { type AppLocale } from "@/lib/i18n"
-import type { NavbarButtonData } from "@/lib/navigation"
-import type { NavbarItem } from "@/payload-types"
+import type { NavigationLogoData, NavbarButtonData, NavbarItemData } from "@/lib/navigation"
 import {
     NavigationMenu,
     NavigationMenuContent,
@@ -25,11 +24,12 @@ import { NavigationSubMenu } from "./NavigationSubMenu"
 
 type NavigationDesktopProps = {
     locale: AppLocale
-    items: NavbarItem[]
+    items: NavbarItemData[]
     buttons: NavbarButtonData[]
+    logo?: NavigationLogoData
 }
 
-const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ locale, items, buttons }) => {
+const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ locale, items, buttons, logo }) => {
     const rootRef = useRef<HTMLDivElement>(null)
     const navTabsRef = useRef<HTMLDivElement>(null)
     const submenuContentRef = useRef<HTMLDivElement>(null)
@@ -38,7 +38,7 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ locale, items, bu
     const [activeMenuValue, setActiveMenuValue] = useState<string | null>(null)
     const [shellInsetWidth, setShellInsetWidth] = useState(0)
     const [submenuHeight, setSubmenuHeight] = useState(0)
-    const { homeHref, navbarItems, navbarButtons } = useNavigationViewModel(locale, items, buttons)
+    const { homeHref, navbarItems, navbarButtons, logo: navigationLogo } = useNavigationViewModel(locale, items, buttons, logo)
     const isScrolled = useNavigationScrollState({
         onScroll: () => {
             suppressMenuOpenRef.current = true
@@ -160,7 +160,7 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ locale, items, bu
 
                         <Link href={homeHref}>
                             <div className="flex">
-                                <Image src={"/code0_logo_white.png"} width={"32"} height={"32"} alt={"Code0 Logo"} loading="eager"/>
+                                <NavigationLogo logo={navigationLogo} />
                             </div>
                         </Link>
 
@@ -293,3 +293,20 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ locale, items, bu
 }
 
 export { NavigationDesktop }
+
+function NavigationLogo({ logo }: { logo?: NavigationLogoData }) {
+    if (logo && typeof logo !== "number" && logo.url) {
+        return (
+            <Image
+                src={logo.url}
+                width={32}
+                height={32}
+                alt={logo.alt ?? "Code0 Logo"}
+                loading="eager"
+                className="size-8 object-contain"
+            />
+        )
+    }
+
+    return <Image src="/code0_logo_white.png" width={32} height={32} alt="Code0 Logo" loading="eager"/>
+}

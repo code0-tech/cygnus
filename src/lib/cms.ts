@@ -2,8 +2,8 @@
 
 import { DEFAULT_LOCALE, type AppLocale } from "@/lib/i18n"
 import { getPayloadClient } from "@/lib/payloadClient"
-import type { Action, Blog, CookieBanner, Feature, Footer, Job, Media, NavbarItem, Page, TeamMember } from "@/payload-types"
-import type { NavbarButtonData } from "@/lib/navigation"
+import type { Action, Blog, CookieBanner, Feature, Footer, Job, Media, Navigation, Page, TeamMember } from "@/payload-types"
+import type { NavigationData, NavbarButtonData, NavbarItemData } from "@/lib/navigation"
 import { cache } from "react"
 
 const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build" || process.env.npm_lifecycle_event === "build"
@@ -200,10 +200,23 @@ type CmsFindArgs = {
     fallbackLocale?: AppLocale
 } & Record<string, unknown>
 
+type CmsGlobalArgs = {
+    slug: string
+    locale: AppLocale
+    fallbackLocale?: AppLocale
+} & Record<string, unknown>
+
 async function cmsFind<T>(args: CmsFindArgs): Promise<T[]> {
     const payload = await getPayloadClient()
     const result = await payload.find(args as never)
     return (result.docs as T[]) ?? []
+}
+
+async function cmsFindGlobal<T>(operation: string, fallback: T | null, args: CmsGlobalArgs): Promise<T | null> {
+    return withCmsFallback(operation, fallback, async () => {
+        const payload = await getPayloadClient()
+        return await payload.findGlobal(args as never) as T
+    })
 }
 
 async function cmsFindOne<T>(operation: string, fallback: T | null, args: CmsFindArgs): Promise<T | null> {
@@ -243,46 +256,41 @@ const getLandingPageCached = cache(async (cachedSlug: string, cachedLocale: AppL
     })
 })
 
-const getNavbarItemsCached = cache(async (locale: AppLocale): Promise<NavbarItem[]> => {
-    return cmsFindMany(`getNavbarItems(${locale})`, [], {
-        collection: "navbarItems",
+const getNavigationCached = cache(async (locale: AppLocale): Promise<NavigationData | null> => {
+    return cmsFindGlobal<Navigation>(`getNavigation(${locale})`, null, {
+        slug: "navigation",
         locale,
         fallbackLocale: DEFAULT_LOCALE,
-        pagination: false,
-        sort: "order",
-        depth: 0,
+        depth: 1,
     })
+})
+
+const getNavbarItemsCached = cache(async (locale: AppLocale): Promise<NavbarItemData[]> => {
+    const navigation = await getNavigationCached(locale)
+
+    return navigation?.items?.items ?? []
 })
 
 const getNavbarButtonsCached = cache(async (locale: AppLocale): Promise<NavbarButtonData[]> => {
-    return cmsFindMany<NavbarButtonData>(`getNavbarButtons(${locale})`, [], {
-        collection: "navbarButtons",
-        locale,
-        fallbackLocale: DEFAULT_LOCALE,
-        pagination: false,
-        sort: "order",
-        depth: 0,
-    })
+    const navigation = await getNavigationCached(locale)
+
+    return navigation?.buttons?.buttons ?? []
 })
 
 const getFooterCached = cache(async (locale: AppLocale): Promise<Footer | null> => {
-    return cmsFindOne(`getFooter(${locale})`, null, {
-        collection: "footer",
+    return cmsFindGlobal(`getFooter(${locale})`, null, {
+        slug: "footer",
         locale,
         fallbackLocale: DEFAULT_LOCALE,
-        pagination: false,
-        limit: 1,
         depth: 0,
     })
 })
 
 const getCookieBannerCached = cache(async (locale: AppLocale): Promise<CookieBanner | null> => {
-    return cmsFindOne(`getCookieBanner(${locale})`, null, {
-        collection: "cookie-banner",
+    return cmsFindGlobal(`getCookieBanner(${locale})`, null, {
+        slug: "cookie-banner",
         locale,
         fallbackLocale: DEFAULT_LOCALE,
-        pagination: false,
-        limit: 1,
         depth: 0,
     })
 })
@@ -472,18 +480,20 @@ const getBlogSlugsCached = cache(async (locale: AppLocale): Promise<string[]> =>
 })
 
 const getSubscriptionConfigCached = cache(async (locale: AppLocale): Promise<SubscriptionConfigData | null> => {
-    return cmsFindOne(`getSubscriptionConfig(${locale})`, null, {
-        collection: "subscriptionConfig",
+    return cmsFindGlobal(`getSubscriptionConfig(${locale})`, null, {
+        slug: "subscriptionConfig",
         locale,
         fallbackLocale: DEFAULT_LOCALE,
-        pagination: false,
-        limit: 1,
         depth: 0,
     })
 })
 
 export async function getLandingPage(slug = "main", locale: AppLocale = DEFAULT_LOCALE): Promise<Page | null> {
     return getLandingPageCached(slug, locale)
+}
+
+export async function getNavigation(locale: AppLocale = DEFAULT_LOCALE) {
+    return getNavigationCached(locale)
 }
 
 export async function getNavbarItems(locale: AppLocale = DEFAULT_LOCALE) {

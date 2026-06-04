@@ -7,10 +7,11 @@ import * as migration_20260402_135659_004_navbar_submenu_icons_and_color from '.
 import * as migration_20260405_141941_005_product_pages from './20260405_141941_005_product_pages';
 import * as migration_20260412_174023_006_contact_page_description from './20260412_174023_006_contact_page_description';
 import * as migration_20260415_025537_007_subscription_workflow_executions from './20260415_025537_007_subscription_workflow_executions';
-import * as migration_20260425_134031_009_actions from './20260425_134031_009_actions';
 import * as migration_20260424_151900_008_footer_contact_legal_fields from './20260424_151900_008_footer_contact_legal_fields';
+import * as migration_20260425_134031_009_actions from './20260425_134031_009_actions';
 import * as migration_20260427_010_remove_edition_hero_block from './20260427_010_remove_edition_hero_block';
 import * as migration_20260526_011_section_layout from './20260526_011_section_layout';
+import * as migration_20260531_084500_navigation_globals from './20260531_084500_navigation_globals';
 
 export const migrations = [
   {
@@ -59,23 +60,28 @@ export const migrations = [
     name: '20260415_025537_007_subscription_workflow_executions',
   },
   {
-    up: migration_20260425_134031_009_actions.up,
-    down: migration_20260425_134031_009_actions.down,
-    name: '20260425_134031_009_actions'
-  },
-  {
     up: migration_20260424_151900_008_footer_contact_legal_fields.up,
     down: migration_20260424_151900_008_footer_contact_legal_fields.down,
-    name: '20260424_151900_008_footer_contact_legal_fields'
+    name: '20260424_151900_008_footer_contact_legal_fields',
+  },
+  {
+    up: migration_20260425_134031_009_actions.up,
+    down: migration_20260425_134031_009_actions.down,
+    name: '20260425_134031_009_actions',
   },
   {
     up: migration_20260427_010_remove_edition_hero_block.up,
     down: migration_20260427_010_remove_edition_hero_block.down,
-    name: '20260427_010_remove_edition_hero_block'
+    name: '20260427_010_remove_edition_hero_block',
   },
   {
     up: migration_20260526_011_section_layout.up,
     down: migration_20260526_011_section_layout.down,
-    name: '20260526_011_section_layout'
+    name: '20260526_011_section_layout',
+  },
+  {
+    up: migration_20260531_084500_navigation_globals.up,
+    down: migration_20260531_084500_navigation_globals.down,
+    name: '20260531_084500_navigation_globals'
   },
 ];

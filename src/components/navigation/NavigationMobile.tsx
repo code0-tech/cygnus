@@ -5,8 +5,7 @@ import { useNavigationScrollState } from "@/hooks/useNavigationScrollState"
 import { useNavigationViewModel } from "@/hooks/useNavigationViewModel"
 import { useOutsideClick } from "@/hooks/useOutsideClick"
 import { type AppLocale } from "@/lib/i18n"
-import type { NavbarButtonData } from "@/lib/navigation"
-import type { NavbarItem } from "@/payload-types"
+import type { NavigationLogoData, NavbarButtonData, NavbarItemData } from "@/lib/navigation"
 import { Container } from "@code0-tech/pictor"
 import { IconMenu2, IconX } from "@tabler/icons-react"
 import { AnimatePresence, m as motion } from "motion/react"
@@ -19,11 +18,12 @@ import { NavigationMobileItem } from "./NavigationMobileItem"
 
 type NavigationMobileProps = {
     locale: AppLocale
-    items: NavbarItem[]
+    items: NavbarItemData[]
     buttons: NavbarButtonData[]
+    logo?: NavigationLogoData
 }
 
-const NavigationMobile: React.FC<NavigationMobileProps> = ({ locale, items, buttons }) => {
+const NavigationMobile: React.FC<NavigationMobileProps> = ({ locale, items, buttons, logo }) => {
     const { trigger } = useWebHaptics()
     const menuRef = useOutsideClick<HTMLElement>(() => setIsOpen(false))
     const rootRef = useRef<HTMLDivElement>(null)
@@ -32,7 +32,7 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({ locale, items, butt
     const [mobileOpenKey, setMobileOpenKey] = useState<string | null>(null)
     const [isMenuClosing, setIsMenuClosing] = useState(false)
     const [shellInsetWidth, setShellInsetWidth] = useState(0)
-    const { homeHref, navbarItems, navbarButtons } = useNavigationViewModel(locale, items, buttons)
+    const { homeHref, navbarItems, navbarButtons, logo: navigationLogo } = useNavigationViewModel(locale, items, buttons, logo)
     const menuTransition = {
         duration: 0.34,
         ease: [0.16, 1, 0.3, 1] as const,
@@ -153,7 +153,7 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({ locale, items, butt
                                 }}
                             >
                                 <div className="flex">
-                                    <Image src={"/code0_logo_white.png"} width={"32"} height={"32"} alt={"Code0 Logo"} loading="eager"/>
+                                    <NavigationLogo logo={navigationLogo} />
                                 </div>
                             </Link>
                             <button
@@ -222,3 +222,20 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({ locale, items, butt
 }
 
 export { NavigationMobile }
+
+function NavigationLogo({ logo }: { logo?: NavigationLogoData }) {
+    if (logo && typeof logo !== "number" && logo.url) {
+        return (
+            <Image
+                src={logo.url}
+                width={32}
+                height={32}
+                alt={logo.alt ?? "Code0 Logo"}
+                loading="eager"
+                className="size-8 object-contain"
+            />
+        )
+    }
+
+    return <Image src="/code0_logo_white.png" width={32} height={32} alt="Code0 Logo" loading="eager"/>
+}

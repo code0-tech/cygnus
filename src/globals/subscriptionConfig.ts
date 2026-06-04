@@ -1,4 +1,4 @@
-import type { CollectionConfig } from "payload"
+import type { GlobalConfig } from "payload"
 
 const accentColorOptions = [
   { label: "Brand", value: "brand" },
@@ -27,17 +27,11 @@ const colorField = {
   defaultValue: "aqua",
 } as const
 
-export const SubscriptionCollection: CollectionConfig = {
+export const SubscriptionCollection: GlobalConfig = {
   slug: "subscriptionConfig",
-  admin: {
-    useAsTitle: "title",
-    defaultColumns: ["title", "updatedAt"],
-  },
   access: {
     read: () => true,
-    create: ({ req }) => Boolean(req.user),
     update: ({ req }) => Boolean(req.user),
-    delete: ({ req }) => Boolean(req.user),
   },
   fields: [
     {
