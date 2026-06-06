@@ -34,7 +34,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "graphql": "^16.14.1",
-    "knip": "^6.15.0",
+    "knip": "^6.16.1",
     "motion": "^12.40.0",
     "next": "^16.2.7",
     "next-sitemap": "^4.2.3",
