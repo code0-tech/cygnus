@@ -11,7 +11,7 @@ interface DeploymentImageProps {
     text: string
 }
 
-const palette: Record<DeploymentImageColor, { stroke: string, glow: string, chip: string }> = {
+const palette: Record<DeploymentImageColor, { stroke: string; glow: string; chip: string }> = {
     aqua: {
         stroke: "var(--text-aqua)",
         glow: "bg-[radial-gradient(ellipse_at_center,rgba(122,203,255,0.2)_0%,rgba(122,203,255,0.1)_25%,transparent_70%)]",
@@ -41,19 +41,11 @@ export function DeploymentImage({ color, icon, text }: DeploymentImageProps) {
     const Icon = icons[icon]
 
     return (
-        <div className="relative overflow-hidden rounded-2xl border border-white/8 bg-primary/40">
-            <div
-                className={cn("absolute inset-x-[6%] -top-1/2 h-full rounded-full", accent.glow)}
-                aria-hidden="true"
-            />
+        <div className="relative overflow-hidden rounded-2xl border border-white/5 bg-primary/40">
+            <div className={cn("absolute inset-x-[6%] -top-1/2 h-full rounded-full", accent.glow)} aria-hidden="true" />
 
             <div className="relative aspect-[243.476/160] w-full px-5 py-4">
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 243.476 160"
-                    className="absolute inset-0 h-full w-full p-4"
-                    aria-hidden="true"
-                >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 243.476 160" className="absolute inset-0 h-full w-full p-4" aria-hidden="true">
                     <defs>
                         <linearGradient id={`${gradientId}-left`} x1="5.036" y1="80" x2="121.738" y2="80" gradientUnits="userSpaceOnUse">
                             <stop offset="0" stopColor={accent.stroke} stopOpacity="0" />
@@ -100,23 +92,9 @@ export function DeploymentImage({ color, icon, text }: DeploymentImageProps) {
                     />
                 </svg>
                 <div className="relative flex h-full items-center justify-center">
-                    <div className="relative flex size-24 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-linear-to-br from-secondary to-primary shadow-[0_14px_40px_rgba(0,0,0,0.28)]">
-                        <Icon
-                            aria-hidden="true"
-                            stroke={2}
-                            className={cn(
-                                "pointer-events-none absolute left-4 top-4 size-16 opacity-5",
-                                accent.chip,
-                            )}
-                        />
-                        <span
-                            className={cn(
-                                "relative z-10 inline-flex font-semibold tracking-wider text-sm",
-                                accent.chip,
-                            )}
-                        >
-                            {text}
-                        </span>
+                    <div className="relative flex size-24 items-center justify-center overflow-hidden rounded-2xl ring-2 ring-white/5 bg-linear-to-br from-slate-900 to-primary">
+                        <Icon aria-hidden="true" stroke={2} className={cn("pointer-events-none absolute left-4 top-4 size-16 opacity-5", accent.chip)} />
+                        <span className={cn("relative z-10 inline-flex font-semibold tracking-wider text-sm", accent.chip)}>{text}</span>
                     </div>
                 </div>
             </div>

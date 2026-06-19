@@ -54,14 +54,7 @@ export function CardRowSection({ content, children }: CardRowSectionProps) {
             funnelType={content?.sectionLayout ?? "left"}
             animationPreset="none"
         >
-
-            <motion.div
-                className="grid grid-cols-1 gap-16 lg:grid-cols-3 lg:gap-8 z-10"
-                variants={staggerContainer}
-                initial="hidden"
-                whileInView="show"
-                viewport={{ once: true, amount: 0.15 }}
-            >
+            <motion.div className="grid grid-cols-1 gap-16 lg:grid-cols-3 lg:gap-8 z-10" variants={staggerContainer} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.15 }}>
                 {cards.map((card, index) => {
                     const mediaImage = typeof card.image === "object" ? card.image : null
                     const imageUrl = getImageUrl(card.image)
@@ -71,21 +64,17 @@ export function CardRowSection({ content, children }: CardRowSectionProps) {
                         <motion.article
                             key={card.id ?? `${card.title}-${index}`}
                             variants={staggerItem}
-                            className="glass-card-shell group flex h-full transform-gpu flex-col rounded-3xl p-2 shadow-[0_18px_60px_rgba(0,0,0,0.28)] will-change-transform before:pointer-events-none before:absolute before:inset-1px before:rounded-[calc(1.5rem-1px)] before:border before:border-white/5 before:content-['']"
+                            className="border border-white/5 bg-white/1 group flex h-full transform-gpu flex-col rounded-3xl p-2 will-change-transform before:pointer-events-none before:absolute before:inset-1px before:rounded-[calc(1.5rem-1px)] before:border before:border-white/5 before:content-['']"
                         >
                             <div aria-hidden="true" className="glass-card-topline" />
 
                             {imageUrl ? (
                                 <div className="relative aspect-[243.476/160] overflow-hidden rounded-2xl bg-primary/40">
-                                    <Image
-                                        src={imageUrl}
-                                        alt={mediaImage?.alt ?? card.title ?? ""}
-                                        fill
-                                        sizes="(min-width: 1024px) 33vw, 100vw"
-                                        className="object-cover"
-                                    />
+                                    <Image src={imageUrl} alt={mediaImage?.alt ?? card.title ?? ""} fill sizes="(min-width: 1024px) 33vw, 100vw" className="object-cover" />
                                 </div>
-                            ) : fallbackImage}
+                            ) : (
+                                fallbackImage
+                            )}
 
                             <div className="relative z-10 flex h-full flex-1 flex-col px-2 pb-2 pt-4">
                                 <h3 className="text-xl font-semibold text-white tracking-normal">{card.title}</h3>

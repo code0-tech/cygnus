@@ -14,7 +14,7 @@ const FunctionSuggestionType = {
     DATA_TYPE: "DATA_TYPE",
 } as const
 
-type FunctionSuggestionType = typeof FunctionSuggestionType[keyof typeof FunctionSuggestionType]
+type FunctionSuggestionType = (typeof FunctionSuggestionType)[keyof typeof FunctionSuggestionType]
 
 type SuggestionWithType = InputSuggestion & {
     suggestionType: FunctionSuggestionType
@@ -22,34 +22,24 @@ type SuggestionWithType = InputSuggestion & {
 
 export function SuggesstionMenuClient() {
     const iconMap: Record<FunctionSuggestionType, ReactNode> = {
-        [FunctionSuggestionType.FUNCTION]: <IconNote className="text-brand" size={16}/>,
-        [FunctionSuggestionType.FUNCTION_COMBINATION]: <IconNote className="text-brand" size={16}/>,
-        [FunctionSuggestionType.REF_OBJECT]: <IconVariable className="text-warning" size={16}/>,
-        [FunctionSuggestionType.VALUE]: <IconCircleDot className="text-error" size={16}/>,
-        [FunctionSuggestionType.DATA_TYPE]: <IconCircleDot className="text-error" size={16}/>,
+        [FunctionSuggestionType.FUNCTION]: <IconNote className="text-brand" size={16} />,
+        [FunctionSuggestionType.FUNCTION_COMBINATION]: <IconNote className="text-brand" size={16} />,
+        [FunctionSuggestionType.REF_OBJECT]: <IconVariable className="text-warning" size={16} />,
+        [FunctionSuggestionType.VALUE]: <IconCircleDot className="text-error" size={16} />,
+        [FunctionSuggestionType.DATA_TYPE]: <IconCircleDot className="text-error" size={16} />,
     }
 
     const renderSuggestionContent = (suggestion: SuggestionWithType) => {
         const label = String(suggestion.children ?? suggestion.value)
-        const isVariableReference = suggestion.suggestionType === FunctionSuggestionType.REF_OBJECT
-            && suggestion.valueData?.type === "variable"
+        const isVariableReference = suggestion.suggestionType === FunctionSuggestionType.REF_OBJECT && suggestion.valueData?.type === "variable"
 
         if (isVariableReference) {
             return (
-                <StableBadge
-                    style={{ verticalAlign: "middle" }}
-                    color={"warning"}
-                    border
-                    className="py-0!"
-                >
-                    <IconVariable size={12}/>
-                    <StableBadge color="secondary" border className="min-w-0 max-w-full border-pink/40 bg-secondary/90! text-pink">
+                <StableBadge style={{ verticalAlign: "middle" }} color={"warning"} border className="py-0!">
+                    <IconVariable size={12} />
+                    <StableBadge color="secondary" border className="min-w-0 max-w-full border-pink/40 bg-slate-900/90! text-pink">
                         <IconNote size={12} className="text-pink" />
-                        <Text
-                            size="sm"
-                            className="min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap"
-                            style={{ color: "inherit" }}
-                        >
+                        <Text size="sm" className="min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap" style={{ color: "inherit" }}>
                             {label}
                         </Text>
                     </StableBadge>
@@ -200,10 +190,7 @@ export function SuggesstionMenuClient() {
     const groupedEntries = Object.entries(groupedSuggestions)
 
     return (
-        <Card
-            paddingSize="xxs"
-            className="w-full! rounded-3xl! border! border-white/10! bg-secondary! shadow-[0_20px_50px_rgba(0,0,0,0.34)]! cursor-default!"
-        >
+        <Card paddingSize="xxs" className="w-full! rounded-3xl! border! border-white/10! bg-primary/50! shadow-[0_20px_50px_rgba(0,0,0,0.34)]! cursor-default!">
             <div className="relative z-20 flex flex-col gap-2 rounded-[1.25rem] bg-primary p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
                 {groupedEntries
                     .filter(([group]) => group === "Variables")
@@ -215,13 +202,8 @@ export function SuggesstionMenuClient() {
                             </div>
                             <div className="flex flex-col gap-0.5">
                                 {items.map((suggestion) => (
-                                    <div
-                                        key={`${group}-${suggestion.value}`}
-                                        className="flex w-full items-center gap-3 rounded-xl bg-secondary px-3 py-1.5 text-left text-white/90 transition-colors"
-                                    >
-                                        <span className="flex h-4 w-4 shrink-0 items-center justify-center">
-                                            {iconMap[suggestion.suggestionType]}
-                                        </span>
+                                    <div key={`${group}-${suggestion.value}`} className="flex w-full items-center gap-3 rounded-xl bg-white/5 px-3 py-1.5 text-left text-white/90 transition-colors">
+                                        <span className="flex h-4 w-4 shrink-0 items-center justify-center">{iconMap[suggestion.suggestionType]}</span>
                                         {renderSuggestionContent(suggestion)}
                                     </div>
                                 ))}
@@ -240,13 +222,8 @@ export function SuggesstionMenuClient() {
                                 </div>
                                 <div className="flex flex-col gap-0.5">
                                     {items.map((suggestion) => (
-                                        <div
-                                            key={`${group}-${suggestion.value}`}
-                                            className="flex w-full items-center gap-3 px-3 py-1.5 text-left text-white/90 transition-colors"
-                                        >
-                                            <span className="flex h-4 w-4 shrink-0 items-center justify-center">
-                                                {iconMap[suggestion.suggestionType]}
-                                            </span>
+                                        <div key={`${group}-${suggestion.value}`} className="flex w-full items-center gap-3 px-3 py-1.5 text-left text-white/90 transition-colors">
+                                            <span className="flex h-4 w-4 shrink-0 items-center justify-center">{iconMap[suggestion.suggestionType]}</span>
                                             {renderSuggestionContent(suggestion)}
                                         </div>
                                     ))}
@@ -259,7 +236,7 @@ export function SuggesstionMenuClient() {
                 <span>Press</span>
                 <span className="text-white/70">Enter</span>
                 <span>to insert</span>
-                <IconBulb size={12} className="ml-auto"/>
+                <IconBulb size={12} className="ml-auto" />
             </div>
         </Card>
     )

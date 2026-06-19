@@ -27,7 +27,7 @@ const toneStyles: Record<FeatureCardTone, Required<FeatureCardStyle>> = {
     yellow: {
         glow: "from-yellow/22 via-yellow/8 to-transparent",
         orb: "bg-yellow/18",
-    }
+    },
 }
 
 export function FeatureCard({
@@ -36,13 +36,13 @@ export function FeatureCard({
     contentClassName,
     tone = "brand",
     style,
-    animationDelay = 0
+    animationDelay = 0,
 }: {
-    children: ReactNode,
-    className?: string,
-    contentClassName?: string,
-    tone?: FeatureCardTone,
-    style?: FeatureCardStyle,
+    children: ReactNode
+    className?: string
+    contentClassName?: string
+    tone?: FeatureCardTone
+    style?: FeatureCardStyle
     animationDelay?: number
 }) {
     const toneStyle = {
@@ -53,16 +53,14 @@ export function FeatureCard({
     return (
         <div
             className={cn(
-                "glass-card-shell group h-full rounded-3xl shadow-[0_14px_42px_rgba(0,0,0,0.3)]! translate-y-8 opacity-0 transition-[transform,opacity] duration-700 ease-out group-data-[in-view=true]/section:translate-y-0 group-data-[in-view=true]/section:opacity-100 before:pointer-events-none before:absolute before:inset-1px before:rounded-[calc(1.5rem-1px)] before:border before:border-white/6 before:content-['']",
-                className,
+                "glass-card-shell group h-full rounded-3xl translate-y-8 opacity-0 transition-[transform,opacity] duration-700 ease-out group-data-[in-view=true]/section:translate-y-0 group-data-[in-view=true]/section:opacity-100",
+                className
             )}
             style={{ transitionDelay: `${animationDelay}ms` }}
         >
             <div aria-hidden="true" className="glass-card-topline" />
             <div className={cn("pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.02),transparent_20%)] bg-linear-to-br opacity-30", toneStyle.glow)} />
-            <div className={cn("absolute inset-0 z-10 flex h-full flex-col items-stretch justify-start gap-4 p-5 md:p-6", contentClassName)}>
-                {children}
-            </div>
+            <div className={cn("absolute inset-0 z-10 flex h-full flex-col items-stretch justify-start gap-4 p-5 md:p-6", contentClassName)}>{children}</div>
         </div>
     )
 }
