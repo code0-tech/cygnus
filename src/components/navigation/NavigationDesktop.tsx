@@ -5,14 +5,7 @@ import { useNavigationScrollState } from "@/hooks/useNavigationScrollState"
 import { useNavigationViewModel } from "@/hooks/useNavigationViewModel"
 import { type AppLocale } from "@/lib/i18n"
 import type { NavigationLogoData, NavbarButtonData, NavbarItemData } from "@/lib/navigation"
-import {
-    NavigationMenu,
-    NavigationMenuContent,
-    NavigationMenuItem,
-    NavigationMenuLink,
-    NavigationMenuList,
-    NavigationMenuTrigger,
-} from "@/components/ui/NavigationMenu"
+import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger } from "@/components/ui/NavigationMenu"
 import { Container } from "@code0-tech/pictor"
 import { AnimatePresence, m as motion } from "motion/react"
 import Image from "next/image"
@@ -48,16 +41,18 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ locale, items, bu
     })
 
     const navItemClassName = "relative z-50 flex cursor-pointer items-center gap-2 rounded-xl px-4 py-1 font-medium"
-    const navTriggerClassName = cn(navItemClassName, "h-auto pr-1 bg-transparent text-base text-white hover:bg-transparent focus:bg-transparent data-popup-open:bg-transparent data-open:bg-transparent")
+    const navTriggerClassName = cn(
+        navItemClassName,
+        "h-auto pr-1 bg-transparent text-base text-white hover:bg-transparent focus:bg-transparent data-popup-open:bg-transparent data-open:bg-transparent"
+    )
     const activeMenuItem = navbarItems.find((item) => item.title === activeMenuValue)
     const activeSubMenu = activeMenuItem?.subMenu?.length ? activeMenuItem.subMenu : null
-    const scrolledRightInsetOffset = 6
     const shellTransition = {
         duration: 0.5,
         ease: [0.16, 1, 0.3, 1],
     } as const
-    const shellInset = isScrolled ? shellInsetWidth : 0
-    const shellRightInset = isScrolled ? shellInsetWidth + scrolledRightInsetOffset : 0
+    const shellInset = isScrolled ? shellInsetWidth + 14 : 0
+    const contentInset = isScrolled ? shellInsetWidth + 20 : 12
 
     useEffect(() => {
         if (!isScrolled) return
@@ -126,10 +121,7 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ locale, items, bu
                     }}
                 >
                     <motion.div
-                        className={cn(
-                            "pointer-events-none absolute inset-0 rounded-2xl shadow-sm",
-                            isScrolled ? "bg-primary/50 backdrop-blur-lg" : "bg-transparent shadow-none",
-                        )}
+                        className={cn("pointer-events-none absolute inset-0 rounded-2xl shadow-sm", isScrolled ? "bg-primary/50 backdrop-blur-lg" : "bg-transparent shadow-none")}
                         initial={false}
                         animate={{
                             left: shellInset,
@@ -151,140 +143,128 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ locale, items, bu
                         className="relative z-10 flex flex-col overflow-visible rounded-2xl p-1.5"
                         initial={false}
                         animate={{
-                            paddingLeft: shellInset,
-                            paddingRight: shellRightInset,
+                            paddingLeft: isScrolled ? contentInset : 0,
+                            paddingRight: isScrolled ? contentInset : 0,
                         }}
                         transition={shellTransition}
                     >
-                    <div className={"w-full h-full flex items-center justify-between gap-2"}>
+                        <div className={"w-full h-full flex items-center justify-between gap-2"}>
+                            <Link href={homeHref}>
+                                <div className="flex">
+                                    <NavigationLogo logo={navigationLogo} />
+                                </div>
+                            </Link>
 
-                        <Link href={homeHref}>
-                            <div className="flex">
-                                <NavigationLogo logo={navigationLogo} />
-                            </div>
-                        </Link>
+                            <div
+                                ref={navTabsRef}
+                                className={"relative h-full flex items-center"}
+                                onBlurCapture={(event) => {
+                                    const nextFocusedElement = event.relatedTarget
 
-                        <div
-                            ref={navTabsRef}
-                            className={"relative h-full flex items-center"}
-                            onBlurCapture={(event) => {
-                                const nextFocusedElement = event.relatedTarget
-
-                                if (!(nextFocusedElement instanceof Node) || !event.currentTarget.contains(nextFocusedElement)) {
-                                    cursorRef.current?.hide()
-                                }
-                            }}
-                        >
-                            <NavigationMenu
-                                value={activeMenuValue}
-                                onValueChange={(value) => {
-                                    if (value && suppressMenuOpenRef.current) return
-                                    if (isScrolled && !value) return
-
-                                    setActiveMenuValue(value)
+                                    if (!(nextFocusedElement instanceof Node) || !event.currentTarget.contains(nextFocusedElement)) {
+                                        cursorRef.current?.hide()
+                                    }
                                 }}
-                                delay={40}
-                                closeDelay={80}
-                                align="start"
-                                className="hidden md:flex max-w-none flex-none"
                             >
-                                <NavigationMenuList className="gap-2">
-                                    {navbarItems.map((item) => {
-                                        const itemValue = item.title
-                                        const hasSubMenu = Boolean(item.subMenu?.length)
+                                <NavigationMenu
+                                    value={activeMenuValue}
+                                    onValueChange={(value) => {
+                                        if (value && suppressMenuOpenRef.current) return
+                                        if (isScrolled && !value) return
 
-                                        return (
-                                            <NavigationMenuItem key={item.title} value={itemValue}>
-                                                {hasSubMenu ? (
-                                                    <>
+                                        setActiveMenuValue(value)
+                                    }}
+                                    delay={40}
+                                    closeDelay={80}
+                                    align="start"
+                                    className="hidden md:flex max-w-none flex-none"
+                                >
+                                    <NavigationMenuList className="gap-2">
+                                        {navbarItems.map((item) => {
+                                            const itemValue = item.title
+                                            const hasSubMenu = Boolean(item.subMenu?.length)
+
+                                            return (
+                                                <NavigationMenuItem key={item.title} value={itemValue}>
+                                                    {hasSubMenu ? (
+                                                        <>
+                                                            <div
+                                                                className="relative z-50"
+                                                                onMouseEnter={(event) => {
+                                                                    updateIndicatorFromElement(event.currentTarget)
+
+                                                                    if (isScrolled && !suppressMenuOpenRef.current) {
+                                                                        setActiveMenuValue(itemValue)
+                                                                    }
+                                                                }}
+                                                                onFocusCapture={(event) => {
+                                                                    updateIndicatorFromElement(event.currentTarget)
+
+                                                                    if (isScrolled) {
+                                                                        setActiveMenuValue(itemValue)
+                                                                    }
+                                                                }}
+                                                            >
+                                                                <NavigationMenuTrigger className={navTriggerClassName}>{item.title}</NavigationMenuTrigger>
+                                                            </div>
+                                                            {!isScrolled && (
+                                                                <NavigationMenuContent className="p-2">
+                                                                    <NavigationSubMenu items={item.subMenu!} onSelect={() => setActiveMenuValue(null)} />
+                                                                </NavigationMenuContent>
+                                                            )}
+                                                        </>
+                                                    ) : item.href ? (
                                                         <div
                                                             className="relative z-50"
                                                             onMouseEnter={(event) => {
                                                                 updateIndicatorFromElement(event.currentTarget)
-
-                                                                if (isScrolled && !suppressMenuOpenRef.current) {
-                                                                    setActiveMenuValue(itemValue)
-                                                                }
+                                                                setActiveMenuValue(null)
                                                             }}
                                                             onFocusCapture={(event) => {
                                                                 updateIndicatorFromElement(event.currentTarget)
-
-                                                                if (isScrolled) {
-                                                                    setActiveMenuValue(itemValue)
-                                                                }
+                                                                setActiveMenuValue(null)
                                                             }}
                                                         >
-                                                            <NavigationMenuTrigger className={navTriggerClassName}>
+                                                            <NavigationMenuLink
+                                                                render={<Link href={item.href} />}
+                                                                className={cn(navItemClassName, "text-base text-white hover:bg-transparent focus:bg-transparent")}
+                                                            >
                                                                 {item.title}
-                                                            </NavigationMenuTrigger>
+                                                            </NavigationMenuLink>
                                                         </div>
-                                                        {!isScrolled && (
-                                                            <NavigationMenuContent className="p-2">
-                                                                <NavigationSubMenu
-                                                                    items={item.subMenu!}
-                                                                    onSelect={() => setActiveMenuValue(null)}
-                                                                />
-                                                            </NavigationMenuContent>
-                                                        )}
-                                                    </>
-                                                ) : item.href ? (
-                                                    <div
-                                                        className="relative z-50"
-                                                        onMouseEnter={(event) => {
-                                                            updateIndicatorFromElement(event.currentTarget)
-                                                            setActiveMenuValue(null)
-                                                        }}
-                                                        onFocusCapture={(event) => {
-                                                            updateIndicatorFromElement(event.currentTarget)
-                                                            setActiveMenuValue(null)
-                                                        }}
-                                                    >
-                                                        <NavigationMenuLink
-                                                            render={<Link href={item.href} />}
-                                                            className={cn(navItemClassName, "text-base text-white hover:bg-transparent focus:bg-transparent")}
-                                                        >
-                                                            {item.title}
-                                                        </NavigationMenuLink>
-                                                    </div>
-                                                ) : null}
-                                            </NavigationMenuItem>
-                                        )
-                                    })}
-                                </NavigationMenuList>
-                            </NavigationMenu>
-                            <NavigationCursor ref={cursorRef} />
+                                                    ) : null}
+                                                </NavigationMenuItem>
+                                            )
+                                        })}
+                                    </NavigationMenuList>
+                                </NavigationMenu>
+                                <NavigationCursor ref={cursorRef} />
+                            </div>
+                            <div className={"flex items-center gap-2"}>
+                                {navbarButtons.map((button) => (
+                                    <NavigationLink key={`${button.title}-${button.href}`} button={button} />
+                                ))}
+                            </div>
                         </div>
-                        <div className={"flex items-center gap-2"}>
-                            {navbarButtons.map((button) => (
-                                <NavigationLink
-                                    key={`${button.title}-${button.href}`}
-                                    button={button}
-                                />
-                            ))}
-                        </div>
-                    </div>
-                    <AnimatePresence initial={false}>
-                        {isScrolled && activeSubMenu && (
-                            <motion.div
-                                initial={{ opacity: 0, y: -6, height: 0 }}
-                                animate={{ opacity: 1, y: 0, height: submenuHeight }}
-                                exit={{ opacity: 0, y: -6, height: 0 }}
-                                transition={{
-                                    height: { duration: 0.24, ease: [0.22, 1, 0.36, 1] },
-                                    opacity: { duration: 0.16, ease: "easeOut" },
-                                    y: { duration: 0.2, ease: [0.22, 1, 0.36, 1] },
-                                }}
-                                className="overflow-hidden px-2"
-                            >
-                                <div ref={submenuContentRef} className="pt-1">
-                                    <NavigationSubMenu
-                                        items={activeSubMenu}
-                                        onSelect={() => setActiveMenuValue(null)}
-                                    />
-                                </div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
+                        <AnimatePresence initial={false}>
+                            {isScrolled && activeSubMenu && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -6, height: 0 }}
+                                    animate={{ opacity: 1, y: 0, height: submenuHeight }}
+                                    exit={{ opacity: 0, y: -6, height: 0 }}
+                                    transition={{
+                                        height: { duration: 0.24, ease: [0.22, 1, 0.36, 1] },
+                                        opacity: { duration: 0.16, ease: "easeOut" },
+                                        y: { duration: 0.2, ease: [0.22, 1, 0.36, 1] },
+                                    }}
+                                    className="overflow-hidden px-2"
+                                >
+                                    <div ref={submenuContentRef} className="pt-1">
+                                        <NavigationSubMenu items={activeSubMenu} onSelect={() => setActiveMenuValue(null)} />
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </motion.div>
                 </div>
             </Container>
@@ -296,17 +276,8 @@ export { NavigationDesktop }
 
 function NavigationLogo({ logo }: { logo?: NavigationLogoData }) {
     if (logo && typeof logo !== "number" && logo.url) {
-        return (
-            <Image
-                src={logo.url}
-                width={32}
-                height={32}
-                alt={logo.alt ?? "Code0 Logo"}
-                loading="eager"
-                className="size-8 object-contain"
-            />
-        )
+        return <Image src={logo.url} width={32} height={32} alt={logo.alt ?? "Code0 Logo"} loading="eager" className="size-8 object-contain" />
     }
 
-    return <Image src="/code0_logo_white.png" width={32} height={32} alt="Code0 Logo" loading="eager"/>
+    return <Image src="/code0_logo_white.png" width={32} height={32} alt="Code0 Logo" loading="eager" />
 }
