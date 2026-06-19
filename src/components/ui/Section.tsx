@@ -107,7 +107,7 @@ export function Section({
         },
     }
     const headingTag = `h${headingLevel}` as const
-    const headingClassName = cn("text-4xl font-semibold", hasHighlightedHeading(heading) ? "text-white/50" : "text-white")
+    const headingClassName = cn("text-4xl font-semibold", hasHighlightedHeading(heading) ? "text-secondary" : "text-white")
 
     useEffect(() => {
         const currentRef = sectionRef.current
@@ -120,7 +120,7 @@ export function Section({
                     observer.unobserve(currentRef)
                 }
             },
-            { rootMargin: "100px" },
+            { rootMargin: "100px" }
         )
 
         observer.observe(currentRef)
@@ -128,32 +128,32 @@ export function Section({
         return () => observer.disconnect()
     }, [])
 
-
     return (
         <motion.section
             ref={sectionRef}
             data-in-view={isInView}
-            className={cn(
-                "group/section relative overflow-visible flex flex-col gap-8",
-                fullHeight && "h-[200dvh] md:h-[min(100dvh,1080px)]",
-                className,
-            )}
+            className={cn("group/section relative overflow-visible flex flex-col gap-8", fullHeight && "h-[200dvh] md:h-[min(100dvh,1080px)]", className)}
             initial={animationConfig?.initial}
             whileInView={animationConfig?.whileInView}
             viewport={animationConfig ? { once: animationOnce, amount: animationViewportAmount, margin: animationViewportMargin } : undefined}
-            transition={animationConfig
-                ? {
-                    ...animationConfig.transition,
-                    delay: animationDelay,
-                    duration: animationDuration ?? animationConfig.transition.duration,
-                }
-                : undefined}
+            transition={
+                animationConfig
+                    ? {
+                          ...animationConfig.transition,
+                          delay: animationDelay,
+                          duration: animationDuration ?? animationConfig.transition.duration,
+                      }
+                    : undefined
+            }
         >
             {showBlur && funnelType === "center" && (
-                <div aria-hidden="true" className="pointer-events-none absolute -bottom-60 -top-24 left-1/2 w-[120vw] max-w-none -translate-x-1/2 [background:radial-gradient(circle,rgba(255,255,255,0.1),transparent_70%)] md:inset-x-0 md:w-auto md:translate-x-0" />
+                <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute -bottom-60 -top-24 left-1/2 w-[120vw] max-w-none -translate-x-1/2 [background:radial-gradient(circle,rgba(255,255,255,0.1),transparent_70%)] md:inset-x-0 md:w-auto md:translate-x-0"
+                />
             )}
-            {shouldShowFunnel && (
-                funnelType === "center" ? (
+            {shouldShowFunnel &&
+                (funnelType === "center" ? (
                     <motion.div
                         className={"flex flex-col gap-4 items-center justify-center text-center"}
                         variants={staggerContainer}
@@ -161,52 +161,33 @@ export function Section({
                         whileInView="show"
                         viewport={{ once: animationOnce, amount: 0.3 }}
                     >
-                        {createElement(
-                            motion[headingTag],
-                            { variants: staggerItem, className: headingClassName },
-                            heading ? renderFormattedText(heading) : null,
-                        )}
+                        {createElement(motion[headingTag], { variants: staggerItem, className: headingClassName }, heading ? renderFormattedText(heading) : null)}
                         {description && (
                             <motion.p variants={staggerItem} className="relative z-10 max-w-[90vw] text-center text-xl font-medium text-white/75 lg:w-1/2">
                                 {renderFormattedText(description)}
                             </motion.p>
                         )}
-                        {showLinkButton && linkUrl &&
+                        {showLinkButton && linkUrl && (
                             <motion.div variants={staggerItem}>
-                                <LinkButton href={linkUrl}>
-                                    {linkButton?.label}
-                                </LinkButton>
+                                <LinkButton href={linkUrl}>{linkButton?.label}</LinkButton>
                             </motion.div>
-                        }
+                        )}
                     </motion.div>
                 ) : (
-                    <motion.div
-                        className={"flex flex-col gap-4 text-left"}
-                        variants={staggerContainer}
-                        initial="hidden"
-                        whileInView="show"
-                        viewport={{ once: animationOnce, amount: 0.3 }}
-                    >
-                        {createElement(
-                            motion[headingTag],
-                            { variants: staggerItem, className: headingClassName },
-                            heading ? renderFormattedText(heading) : null,
-                        )}
+                    <motion.div className={"flex flex-col gap-4 text-left"} variants={staggerContainer} initial="hidden" whileInView="show" viewport={{ once: animationOnce, amount: 0.3 }}>
+                        {createElement(motion[headingTag], { variants: staggerItem, className: headingClassName }, heading ? renderFormattedText(heading) : null)}
                         {description && (
                             <motion.p variants={staggerItem} className="relative z-10 max-w-[90vw] text-xl font-medium text-white/75 lg:w-1/2">
                                 {renderFormattedText(description)}
                             </motion.p>
                         )}
-                        {showLinkButton && linkUrl &&
+                        {showLinkButton && linkUrl && (
                             <motion.div variants={staggerItem}>
-                                <LinkButton href={linkUrl}>
-                                    {linkButton?.label}
-                                </LinkButton>
+                                <LinkButton href={linkUrl}>{linkButton?.label}</LinkButton>
                             </motion.div>
-                        }
+                        )}
                     </motion.div>
-                )
-            )}
+                ))}
             {children}
         </motion.section>
     )
