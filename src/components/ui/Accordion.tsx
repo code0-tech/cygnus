@@ -1,19 +1,16 @@
-import {IconChevronDown} from "@tabler/icons-react"
+import { IconChevronDown } from "@tabler/icons-react"
 import { m as motion } from "motion/react"
 import React, { useLayoutEffect, useRef, useState } from "react"
 import { cn } from "@/lib/utils"
 
 const accordionCardBaseClassName =
-    "group relative z-10 w-full cursor-pointer overflow-hidden rounded-2xl hover:bg-white/5 transition-colors border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] shadow-[0_18px_50px_rgba(0,0,0,0.22)] before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-linear-to-r before:from-transparent before:via-white/30 before:to-transparent before:content-['']"
+    "group relative z-10 w-full cursor-pointer overflow-hidden rounded-2xl bg-white/2 hover:bg-white/5 transition-colors border border-white/5 before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-linear-to-r before:from-transparent before:via-white/30 before:to-transparent before:content-['']"
 
-const accordionCardOpenClassName =
-    "border-white/16 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.03))] shadow-[0_24px_70px_rgba(0,0,0,0.3)]"
+const accordionCardOpenClassName = "border-white/10 bg-white/5"
 
-const baseAccordionCardBaseClassName =
-    "group relative z-10 w-full cursor-pointer overflow-hidden rounded-2xl border border-white/10"
+const baseAccordionCardBaseClassName = "group relative z-10 w-full cursor-pointer overflow-hidden rounded-2xl border border-white/5"
 
-const baseAccordionCardOpenClassName =
-    "border-white/16"
+const baseAccordionCardOpenClassName = "border-white/16"
 
 interface FAQItemProps {
     index: number
@@ -28,11 +25,6 @@ interface FAQItemProps {
 const AccordionItemComponent = ({ index, question, answer, isOpen, onToggle, className, questionClassname }: FAQItemProps) => {
     const contentRef = useRef<HTMLDivElement>(null)
     const [contentHeight, setContentHeight] = useState(0)
-
-    const handleClick = (e: React.MouseEvent) => {
-        e.preventDefault()
-        onToggle(index)
-    }
 
     useLayoutEffect(() => {
         const element = contentRef.current
@@ -51,26 +43,18 @@ const AccordionItemComponent = ({ index, question, answer, isOpen, onToggle, cla
     }, [answer, question])
 
     return (
-        <div
-            className={cn(
-                accordionCardBaseClassName,
-                isOpen && accordionCardOpenClassName,
-                className
-            )}
-            onClick={handleClick}
-        >
-
-            <div className={cn("relative z-10 flex w-full items-center justify-between gap-5 px-5 py-4 pr-4 text-left", questionClassname)}>
+        <div className={cn(accordionCardBaseClassName, isOpen && accordionCardOpenClassName, className)}>
+            <button
+                type="button"
+                onClick={() => onToggle(index)}
+                aria-expanded={isOpen}
+                className={cn("relative z-10 flex w-full items-center justify-between gap-5 px-5 py-4 pr-4 text-left", questionClassname)}
+            >
                 <div className={cn("flex-1 text-sm font-medium text-white/75 sm:text-base lg:text-lg wrap-break-word transition-colors", isOpen && "text-white")}>{question}</div>
-                <div
-                    className={cn(
-                        "flex h-10 w-10 shrink-0 items-center justify-center text-white/55 transition-transform",
-                        isOpen && "rotate-180"
-                    )}
-                >
-                    <IconChevronDown className="h-5 w-5"/>
+                <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center text-white/55 transition-transform", isOpen && "rotate-180")}>
+                    <IconChevronDown className="h-5 w-5" />
                 </div>
-            </div>
+            </button>
             <motion.div
                 initial={false}
                 animate={{
@@ -91,13 +75,7 @@ const AccordionItemComponent = ({ index, question, answer, isOpen, onToggle, cla
                 aria-hidden={!isOpen}
                 className="overflow-hidden"
             >
-                <motion.div
-                    ref={contentRef}
-                    initial={false}
-                    animate={{ y: isOpen ? 0 : -2 }}
-                    transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-                    className="min-h-0"
-                >
+                <motion.div ref={contentRef} initial={false} animate={{ y: isOpen ? 0 : -2 }} transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }} className="min-h-0">
                     <div className="relative z-10 px-5 pb-5 pt-1">
                         <div className="text-sm leading-7 text-white/75 sm:text-base wrap-break-word">{answer}</div>
                     </div>
@@ -110,32 +88,19 @@ const AccordionItemComponent = ({ index, question, answer, isOpen, onToggle, cla
 export const AccordionItem = React.memo(AccordionItemComponent)
 
 const BaseAccordionItemComponent = ({ index, question, answer, isOpen, onToggle, className, questionClassname }: FAQItemProps) => {
-    const handleClick = (e: React.MouseEvent) => {
-        e.preventDefault()
-        onToggle(index)
-    }
-
     return (
-        <div
-            className={cn(
-                baseAccordionCardBaseClassName,
-                isOpen && baseAccordionCardOpenClassName,
-                className
-            )}
-            onClick={handleClick}
-        >
-
-            <div className={cn("relative z-10 flex w-full items-center justify-between gap-5 px-5 py-4 pr-4 text-left text-sm font-medium sm:text-base lg:text-lg wrap-break-word", questionClassname)}>
+        <div className={cn(baseAccordionCardBaseClassName, isOpen && baseAccordionCardOpenClassName, className)}>
+            <button
+                type="button"
+                onClick={() => onToggle(index)}
+                aria-expanded={isOpen}
+                className={cn("relative z-10 flex w-full items-center justify-between gap-5 px-5 py-4 pr-4 text-left text-sm font-medium sm:text-base lg:text-lg wrap-break-word", questionClassname)}
+            >
                 <p className={cn("flex-1 text-white/75", isOpen && "text-white")}>{question}</p>
-                <div
-                    className={cn(
-                        "flex h-10 w-10 shrink-0 items-center justify-center text-white/50 transition-transform",
-                        isOpen && "rotate-180"
-                    )}
-                >
-                    <IconChevronDown className="h-5 w-5"/>
+                <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center text-white/50 transition-transform", isOpen && "rotate-180")}>
+                    <IconChevronDown className="h-5 w-5" />
                 </div>
-            </div>
+            </button>
             {isOpen && (
                 <div className="overflow-hidden" aria-hidden={!isOpen}>
                     <div className="min-h-0">

@@ -66,7 +66,7 @@ export function Section({
     children,
     className,
     funnelType = "center",
-    showBlur = true,
+    showBlur = false,
     showFunnel = true,
     showLinkButton = true,
     fullHeight = false,

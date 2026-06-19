@@ -13,11 +13,7 @@ interface OffsetCardsSectionProps {
     content?: OffsetCardsLayoutBlock | null
 }
 
-const OFFSET_CARD_ANIMATION_SEQUENCE: Exclude<AnimationPreset, "none">[] = [
-    "slide-left",
-    "slide-right",
-    "slide-left",
-]
+const OFFSET_CARD_ANIMATION_SEQUENCE: Exclude<AnimationPreset, "none">[] = ["slide-left", "slide-right", "slide-left"]
 
 export function OffsetCardsSection({ content }: OffsetCardsSectionProps) {
     if (!content?.cards?.length) return null
@@ -79,27 +75,28 @@ export function OffsetCardsSection({ content }: OffsetCardsSectionProps) {
                                 whileInView="show"
                                 viewport={{ once: true, amount: 0.35 }}
                             >
-                                <motion.p variants={staggerItem} className="text-xl font-semibold text-white lg:text-3xl">{item.title}</motion.p>
-                                <motion.p variants={staggerItem} className="mt-3 max-w-xl text-sm leading-7 text-white/75 lg:text-base">{item.description}</motion.p>
-                                {item.bulletPoints?.length && (
-                                    <motion.ul variants={staggerItem} className="mt-5 space-y-2.5 text-sm text-white/80 lg:text-base">
-                                        {item.bulletPoints.map((point, pointIndex) => (
-                                            <li key={`${item.id ?? item.label}-point-${pointIndex}`} className="flex items-center gap-2">
-                                                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-brand" />
-                                                <span>{point}</span>
-                                            </li>
-                                        ))}
-                                    </motion.ul>
-                                )}
+                                <motion.p variants={staggerItem} className="text-xl font-semibold text-white lg:text-3xl">
+                                    {item.title}
+                                </motion.p>
+                                <motion.p variants={staggerItem} className="mt-3 max-w-xl text-sm leading-7 text-white/75 lg:text-base">
+                                    {item.description}
+                                </motion.p>
+                                <motion.ul variants={staggerItem} className="mt-5 space-y-2.5 text-sm text-white/80 lg:text-base">
+                                    {item.bulletPoints?.map((point, pointIndex) => (
+                                        <li key={`${item.id ?? item.label}-point-${pointIndex}`} className="flex items-center gap-2">
+                                            <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-brand" />
+                                            <span>{point}</span>
+                                        </li>
+                                    ))}
+                                </motion.ul>
                                 {item.link?.label && item.link?.url && (
                                     <motion.div variants={staggerItem} className="mt-5">
-                                        <LinkButton href={item.link.url}>
-                                            {item.link.label}
-                                        </LinkButton>
+                                        <LinkButton href={item.link.url}>{item.link.label}</LinkButton>
                                     </motion.div>
                                 )}
                             </motion.div>
-                            <div className={"relative aspect-video w-full overflow-hidden rounded-[2.1rem] border border-white/5 shadow-[0_16px_48px_rgba(0,0,0,0.05)] lg:w-2/3 bg-white/2"}>
+                            <div className={"relative aspect-video w-full overflow-hidden rounded-[2.1rem] border border-white/5 lg:w-2/3 "}>
+                                <div className="glass-card-topline" />
                                 {imageUrl && (
                                     <Image
                                         src={imageUrl}
@@ -117,23 +114,23 @@ export function OffsetCardsSection({ content }: OffsetCardsSectionProps) {
                                 whileInView="show"
                                 viewport={{ once: true, amount: 0.35 }}
                             >
-                                <motion.p variants={staggerItem} className="text-xl font-semibold tracking-tight text-white">{item.title}</motion.p>
-                                <motion.p variants={staggerItem} className="mt-3 text-sm leading-7 text-white/75">{item.description}</motion.p>
-                                {item.bulletPoints?.length && (
-                                    <motion.ul variants={staggerItem} className="mt-5 space-y-2.5 text-left text-sm text-white/80">
-                                        {item.bulletPoints.map((point, pointIndex) => (
-                                            <li key={`${item.id ?? item.label}-mobile-point-${pointIndex}`} className="flex items-start gap-3">
-                                                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brand" />
-                                                <span>{point}</span>
-                                            </li>
-                                        ))}
-                                    </motion.ul>
-                                )}
+                                <motion.p variants={staggerItem} className="text-xl font-semibold tracking-tight text-white">
+                                    {item.title}
+                                </motion.p>
+                                <motion.p variants={staggerItem} className="mt-3 text-sm leading-7 text-white/75">
+                                    {item.description}
+                                </motion.p>
+                                <motion.ul variants={staggerItem} className="mt-5 space-y-2.5 text-left text-sm text-white/80">
+                                    {item.bulletPoints?.map((point, pointIndex) => (
+                                        <li key={`${item.id ?? item.label}-mobile-point-${pointIndex}`} className="flex items-start gap-3">
+                                            <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brand" />
+                                            <span>{point}</span>
+                                        </li>
+                                    ))}
+                                </motion.ul>
                                 {item.link?.label && item.link?.url && (
                                     <motion.div variants={staggerItem} className="mt-5">
-                                        <LinkButton href={item.link.url}>
-                                            {item.link.label}
-                                        </LinkButton>
+                                        <LinkButton href={item.link.url}>{item.link.label}</LinkButton>
                                     </motion.div>
                                 )}
                             </motion.div>

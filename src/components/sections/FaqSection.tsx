@@ -13,12 +13,15 @@ interface FaqSectionProps {
 
 export function FaqSection({ content }: FaqSectionProps) {
     const [openItem, setOpenItem] = useState<number | null>(null)
-    const { trigger } =useWebHaptics()
+    const { trigger } = useWebHaptics()
 
-    const toggleItem = useCallback((index: number) => {
-        trigger("soft")
-        setOpenItem((prevOpenItem) => prevOpenItem === index ? null : index)
-    }, [trigger])
+    const toggleItem = useCallback(
+        (index: number) => {
+            trigger("soft")
+            setOpenItem((prevOpenItem) => (prevOpenItem === index ? null : index))
+        },
+        [trigger]
+    )
 
     if (!content || !content.items) return
 
@@ -31,7 +34,7 @@ export function FaqSection({ content }: FaqSectionProps) {
             showLinkButton={false}
             showBlur={false}
         >
-            <div aria-hidden="true" className="pointer-events-none absolute inset-0 [background:radial-gradient(circle,rgba(255,255,255,0.05),transparent_50%)]" />
+            <div aria-hidden="true" className="pointer-events-none absolute inset-0" />
             <div className={"md:w-[50vw] flex flex-col gap-4 mx-auto"}>
                 {content.items.map((faq, index) => (
                     <motion.div
@@ -45,12 +48,7 @@ export function FaqSection({ content }: FaqSectionProps) {
                             ease: [0.22, 1, 0.36, 1],
                         }}
                     >
-                        <AccordionItem
-                            index={index}
-                            isOpen={openItem === index}
-                            onToggle={toggleItem}
-                            {...faq}
-                        />
+                        <AccordionItem index={index} isOpen={openItem === index} onToggle={toggleItem} {...faq} />
                     </motion.div>
                 ))}
             </div>
