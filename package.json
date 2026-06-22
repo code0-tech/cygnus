@@ -71,7 +71,7 @@
         "dompurify": "3.4.8",
         "yaml": "2.9.0",
         "@esbuild-kit/core-utils": {
-            "esbuild": "0.28.0"
+            "esbuild": "0.28.1"
         }
     }
 }
