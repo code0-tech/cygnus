@@ -18,9 +18,7 @@ export function resolveSiteUrl() {
         }
     }
 
-    return process.env.NODE_ENV === "development"
-        ? new URL("http://localhost:3000")
-        : new URL(DEFAULT_BASE_URL)
+    return process.env.NODE_ENV === "development" ? new URL("http://localhost:3000") : new URL(DEFAULT_BASE_URL)
 }
 
 export function createMetadata(override: Metadata = {}): Metadata {

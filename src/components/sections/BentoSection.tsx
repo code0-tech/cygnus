@@ -13,18 +13,8 @@ export function BentoSection({ content, locale = "en" }: BentoSectionProps) {
     const variant = content?.variant ?? "feature"
 
     return (
-        <Section
-            heading={content?.sectionHeading}
-            description={content?.sectionDescription}
-            linkButton={content?.sectionLinkButton}
-            funnelType={content?.sectionLayout ?? "center"}
-            fullHeight
-        >
-            {variant === "runtime" ? (
-                <RuntimeBento locale={locale} />
-            ) : (
-                <FeatureBento locale={locale} />
-            )}
+        <Section heading={content?.sectionHeading} description={content?.sectionDescription} linkButton={content?.sectionLinkButton} funnelType={content?.sectionLayout ?? "center"} fullHeight>
+            {variant === "runtime" ? <RuntimeBento locale={locale} /> : <FeatureBento locale={locale} />}
         </Section>
     )
 }

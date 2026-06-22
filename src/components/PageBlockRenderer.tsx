@@ -45,10 +45,11 @@ function renderPageBlock(block: PageBlock, options: PageBlockRenderOptions) {
 }
 
 export function PageBlocks({ blocks, cardRowChildren, ctaFloating = false, locale }: PageBlocksRendererProps) {
-    const renderableBlocks = blocks?.flatMap((block) => {
-        const element = renderPageBlock(block, { cardRowChildren, ctaFloating, locale })
-        return element ? [{ block, element }] : []
-    }) ?? []
+    const renderableBlocks =
+        blocks?.flatMap((block) => {
+            const element = renderPageBlock(block, { cardRowChildren, ctaFloating, locale })
+            return element ? [{ block, element }] : []
+        }) ?? []
 
     return (
         <>

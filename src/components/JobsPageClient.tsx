@@ -2,14 +2,7 @@
 
 import { JobsCard } from "@/components/cards/JobsCard"
 import type { JobItem } from "@/lib/cms"
-import {
-    Button,
-    Menu,
-    MenuContent,
-    MenuItem,
-    MenuTrigger,
-    TextInput
-} from "@code0-tech/pictor"
+import { Button, Menu, MenuContent, MenuItem, MenuTrigger, TextInput } from "@code0-tech/pictor"
 import { IconChevronDown, IconSearch } from "@tabler/icons-react"
 import type { ChangeEvent } from "react"
 import { useMemo, useState } from "react"
@@ -53,11 +46,7 @@ export function JobsPageClient({ jobs, locale, content }: JobsPageClientProps) {
         const searchTerm = search.trim().toLowerCase()
 
         return jobs.filter((job) => {
-            const matchesSearch =
-                searchTerm.length === 0 ||
-                `${job.title} ${job.location} ${job.description}`
-                .toLowerCase()
-                .includes(searchTerm)
+            const matchesSearch = searchTerm.length === 0 || `${job.title} ${job.location} ${job.description}`.toLowerCase().includes(searchTerm)
 
             const matchesLocation = selectedLocation === labels.allLocationsLabel || job.location === selectedLocation
             const matchesType = selectedType === labels.allJobTypesLabel || job.type === selectedType
@@ -98,11 +87,11 @@ export function JobsPageClient({ jobs, locale, content }: JobsPageClientProps) {
                             </Button>
                         </MenuTrigger>
                         <MenuContent className="w-(--radix-dropdown-menu-trigger-width)">
-                        {locations.map((location) => (
-                            <MenuItem key={location} onClick={() => setSelectedLocation(location)}>
-                                {location}
-                            </MenuItem>
-                        ))}
+                            {locations.map((location) => (
+                                <MenuItem key={location} onClick={() => setSelectedLocation(location)}>
+                                    {location}
+                                </MenuItem>
+                            ))}
                         </MenuContent>
                     </Menu>
 
@@ -114,11 +103,11 @@ export function JobsPageClient({ jobs, locale, content }: JobsPageClientProps) {
                             </Button>
                         </MenuTrigger>
                         <MenuContent className="w-(--radix-dropdown-menu-trigger-width)">
-                        {jobTypes.map((type) => (
-                            <MenuItem key={type} onClick={() => setSelectedType(type)}>
-                                {type}
-                            </MenuItem>
-                        ))}
+                            {jobTypes.map((type) => (
+                                <MenuItem key={type} onClick={() => setSelectedType(type)}>
+                                    {type}
+                                </MenuItem>
+                            ))}
                         </MenuContent>
                     </Menu>
 
@@ -130,11 +119,11 @@ export function JobsPageClient({ jobs, locale, content }: JobsPageClientProps) {
                             </Button>
                         </MenuTrigger>
                         <MenuContent className="w-(--radix-dropdown-menu-trigger-width)">
-                        {categories.map((category) => (
-                            <MenuItem key={category} onClick={() => setSelectedCategory(category)}>
-                                {category}
-                            </MenuItem>
-                        ))}
+                            {categories.map((category) => (
+                                <MenuItem key={category} onClick={() => setSelectedCategory(category)}>
+                                    {category}
+                                </MenuItem>
+                            ))}
                         </MenuContent>
                     </Menu>
                 </div>
@@ -152,9 +141,7 @@ export function JobsPageClient({ jobs, locale, content }: JobsPageClientProps) {
                 </div>
             ))}
 
-            {filteredJobs.length === 0 && (
-                <p className="text-white/60 text-center">{labels.noJobsFoundLabel}</p>
-            )}
+            {filteredJobs.length === 0 && <p className="text-white/60 text-center">{labels.noJobsFoundLabel}</p>}
         </div>
     )
 }

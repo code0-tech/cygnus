@@ -13,11 +13,7 @@ export async function ProjectsCard({ locale, animationDelay = 0 }: ProjectsCardP
     const content = await getFeatureBySlug("projects", locale)
 
     return (
-        <FeatureCard
-            className="col-span-1 md:col-span-2 row-span-3"
-            tone="aqua"
-            animationDelay={animationDelay}
-        >
+        <FeatureCard className="col-span-1 md:col-span-2 row-span-3" tone="aqua" animationDelay={animationDelay}>
             <div className="flex w-full flex-1 items-start justify-center min-h-0">
                 <ClientProjectCard />
             </div>

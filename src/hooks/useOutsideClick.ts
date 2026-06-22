@@ -1,4 +1,4 @@
-import {RefObject, useEffect, useRef} from "react"
+import { RefObject, useEffect, useRef } from "react"
 
 type EventHandler = (e: MouseEvent | TouchEvent) => void
 
@@ -24,4 +24,4 @@ function useOutsideClick<T extends HTMLElement = HTMLElement>(callback: EventHan
     return ref
 }
 
-export {useOutsideClick}
+export { useOutsideClick }

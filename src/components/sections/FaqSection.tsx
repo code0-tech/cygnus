@@ -4,7 +4,7 @@ import { AccordionItem } from "@/components/ui/Accordion"
 import { Section } from "@/components/ui/Section"
 import { FaqLayoutBlock } from "@/lib/cms"
 import { m as motion } from "motion/react"
-import React, { useCallback, useState } from "react"
+import { useCallback, useState } from "react"
 import { useWebHaptics } from "web-haptics/react"
 
 interface FaqSectionProps {

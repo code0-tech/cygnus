@@ -50,7 +50,7 @@ export function FeatureCard({ children, className, contentClassName, tone = "bra
         <Card
             size="lg"
             className={cn(
-                "group h-full translate-y-8 opacity-0 overflow-hidden transition-[transform,opacity] duration-700 ease-out group-data-[in-view=true]/section:translate-y-0 group-data-[in-view=true]/section:opacity-100",
+                "group h-full translate-y-8 opacity-0 transition-[transform,opacity] duration-700 ease-out group-data-[in-view=true]/section:translate-y-0 group-data-[in-view=true]/section:opacity-100",
                 className
             )}
             style={{ transitionDelay: `${animationDelay}ms` }}

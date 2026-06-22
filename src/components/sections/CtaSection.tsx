@@ -5,11 +5,10 @@ import { HapticButtonLink } from "@/components/ui/HapticButtonLink"
 import { Section } from "@/components/ui/Section"
 import { useMediaQuery } from "@/hooks/useMediaQuery"
 import { CtaLayoutBlock } from "@/lib/cms"
-import type { AppLocale } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
 import { m as motion, type Variants } from "motion/react"
 import Image from "next/image"
-import React, { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Card } from "../ui/Card"
 
 interface CtaSectionProps {
@@ -130,8 +129,8 @@ export function CtaSection({ content, floatingCta = false }: CtaSectionProps) {
                         )}
                     />
 
-                    <motion.div variants={staggerItem} className="relative z-20 flex size-32 items-center justify-center rounded-2xl bg-white/5 shadow-[0_14px_36px_rgba(0,0,0,0.22)]">
-                        <div className="relative isolate flex items-center justify-center rounded-2xl px-4 py-4 ring ring-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+                    <motion.div variants={staggerItem} className="relative z-20 flex size-32 items-center justify-center rounded-2xl bg-white/5">
+                        <div className="relative isolate flex items-center justify-center rounded-2xl px-4 py-4 ring ring-white/5">
                             <div aria-hidden="true" className="pointer-events-none absolute inset-0 rounded-2xl bg-linear-to-br from-primary via-primary to-slate-800" />
                             <Image src={"/code0_logo_white.png"} width={120} height={120} alt="Code0 Logo" className="z-20" />
                         </div>
@@ -153,7 +152,7 @@ export function CtaSection({ content, floatingCta = false }: CtaSectionProps) {
                                 className={cn(
                                     baseCtaClassName,
                                     floatingCta ? floatingCtaClassName : inlineCtaClassName,
-                                    floatingCta && (docked ? "shadow-md" : "shadow-[0_0_60px_20px_rgba(0,0,0,0.75)]")
+                                    floatingCta && (docked ? "shadow-none" : "shadow-[0_0_60px_20px_rgba(0,0,0,0.75)]")
                                 )}
                             >
                                 {content.ctaLink.label}

@@ -1,10 +1,11 @@
 "use client"
 
 import type { InputSuggestion } from "@code0-tech/pictor"
-import { Card, Text } from "@code0-tech/pictor"
+import { Text } from "@code0-tech/pictor"
 import { IconBulb, IconChevronUp, IconCircleDot, IconNote, IconVariable } from "@tabler/icons-react"
 import type { ReactNode } from "react"
 import { StableBadge } from "./StableBadge"
+import { Card } from "./Card"
 
 const FunctionSuggestionType = {
     FUNCTION: "FUNCTION",
@@ -190,8 +191,8 @@ export function SuggesstionMenuClient() {
     const groupedEntries = Object.entries(groupedSuggestions)
 
     return (
-        <Card paddingSize="xxs" className="w-full! rounded-3xl! border! border-white/10! bg-primary/50! shadow-[0_20px_50px_rgba(0,0,0,0.34)]! cursor-default!">
-            <div className="relative z-20 flex flex-col gap-2 rounded-[1.25rem] bg-primary p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+        <Card size="lg" className="w-full bg-primary/50 p-2">
+            <div className="relative z-20 flex flex-col gap-2 rounded-[1.25rem] bg-primary p-2">
                 {groupedEntries
                     .filter(([group]) => group === "Variables")
                     .map(([group, items]) => (

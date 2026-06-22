@@ -43,7 +43,7 @@ const htmlClassName = [
     "[&_li::marker]:text-white/50",
     "[&_pre]:my-8 [&_pre]:overflow-x-auto [&_pre]:rounded-2xl [&_pre]:border [&_pre]:border-white/10 [&_pre]:bg-black/30 [&_pre]:p-4",
     "[&_code]:font-mono [&_code]:text-sm [&_code]:text-white/90",
-    "[&_img]:my-8 [&_img]:rounded-2xl [&_img]:border [&_img]:border-white/5 [&_img]:shadow-md",
+    "[&_img]:my-8 [&_img]:rounded-2xl [&_img]:border [&_img]:border-white/5",
     "[&_a]:relative [&_a]:inline-block [&_a]:text-brand! [&_a]:no-underline [&_a]:transition-colors [&_a]:after:pointer-events-none [&_a]:after:absolute [&_a]:after:bottom-0 [&_a]:after:left-0 [&_a]:after:h-px [&_a]:after:w-full [&_a]:after:origin-left [&_a]:after:scale-x-0 [&_a]:after:bg-current [&_a]:after:transition-transform [&_a]:after:duration-300 [&_a]:after:ease-out [&_a:hover]:after:scale-x-100",
 ].join(" ")
 
@@ -113,13 +113,7 @@ export function MarkdownContent({ content }: MarkdownContentProps) {
         <div className={htmlClassName}>
             {segments.map((segment, index) => {
                 if (segment.type === "html") {
-                    return (
-                        <div
-                            key={`html-${index}`}
-                            className={index === segments.length - 1 ? "[&>*:last-child]:mb-0" : undefined}
-                            dangerouslySetInnerHTML={{ __html: segment.html }}
-                        />
-                    )
+                    return <div key={`html-${index}`} className={index === segments.length - 1 ? "[&>*:last-child]:mb-0" : undefined} dangerouslySetInnerHTML={{ __html: segment.html }} />
                 }
 
                 if (segment.type === "custom-block") {

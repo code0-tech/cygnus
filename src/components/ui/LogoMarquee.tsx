@@ -27,11 +27,7 @@ export function LogoMarquee({ logos, duration = 18 }: LogoMarqueeProps) {
                 }}
             >
                 {marqueeLogos.map((item, index) => (
-                    <LogoItem
-                        key={`${(item as Media).id ?? (item as Media).url ?? index}-${index}`}
-                        logo={item}
-                        className="w-32 shrink-0 sm:w-40 md:w-40 lg:w-48"
-                    />
+                    <LogoItem key={`${(item as Media).id ?? (item as Media).url ?? index}-${index}`} logo={item} className="w-32 shrink-0 sm:w-40 md:w-40 lg:w-48" />
                 ))}
             </motion.div>
         </div>

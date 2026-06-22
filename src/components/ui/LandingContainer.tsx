@@ -1,9 +1,9 @@
 "use client"
 
-import { Container } from "@code0-tech/pictor"
-import React, { useEffect, useLayoutEffect, useRef } from "react"
 import { cn } from "@/lib/utils"
+import { Container } from "@code0-tech/pictor"
 import { usePathname } from "next/navigation"
+import React, { useLayoutEffect } from "react"
 
 export function LandingContainer({ children, className }: { children: React.ReactNode; className?: string }) {
     const pathname = usePathname()

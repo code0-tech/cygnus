@@ -9,12 +9,7 @@ interface DotBackgroundProps {
     spacing?: number
 }
 
-export function DotBackground({
-    className,
-    dotColor = "rgba(255,255,255,0.22)",
-    dotSize = 1,
-    spacing = 12,
-}: DotBackgroundProps) {
+export function DotBackground({ className, dotColor = "rgba(255,255,255,0.22)", dotSize = 1, spacing = 12 }: DotBackgroundProps) {
     return (
         <div
             aria-hidden="true"

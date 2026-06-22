@@ -4,14 +4,7 @@ import { useEffect, useState } from "react"
 import { SegmentedControl, SegmentedControlItem, Text } from "@code0-tech/pictor"
 import type { Media } from "@/payload-types"
 import { ActionTriggerCard } from "@/components/ActionTriggerCard"
-import {
-    extractFunctionDefsFromJson,
-    extractTriggersFromJson,
-    fetchMediaJson,
-    type ExtractedActionTriggerItem,
-    type ExtractedFunctionDef,
-    type ExtractedTrigger,
-} from "@/lib/actionTriggerExtraction"
+import { extractFunctionDefsFromJson, extractTriggersFromJson, fetchMediaJson, type ExtractedActionTriggerItem, type ExtractedFunctionDef, type ExtractedTrigger } from "@/lib/actionTriggerExtraction"
 
 interface ActionTriggerViewProps {
     locale: string
@@ -19,7 +12,6 @@ interface ActionTriggerViewProps {
     functionDefs: Media | undefined
 }
 
-const controlClassName = "h-10! w-max! ring-2! ring-white/6! shadow-md!"
 const itemClassName = "text-white/70! transition-colors! data-[state=on]:bg-brand/20! data-[state=on]:text-brand!"
 
 interface DisplayItem {
@@ -36,10 +28,7 @@ export function ActionTriggerView({ locale, triggers, functionDefs }: ActionTrig
         let cancelled = false
 
         async function loadMediaJson() {
-            const [triggerJson, functionDefJson] = await Promise.all([
-                fetchMediaJson(triggers),
-                fetchMediaJson(functionDefs),
-            ])
+            const [triggerJson, functionDefJson] = await Promise.all([fetchMediaJson(triggers), fetchMediaJson(functionDefs)])
 
             if (cancelled) {
                 return
@@ -62,12 +51,8 @@ export function ActionTriggerView({ locale, triggers, functionDefs }: ActionTrig
     }, [triggers, functionDefs])
 
     const visibleItems: DisplayItem[] = [
-        ...(viewMode === "both" || viewMode === "triggers"
-            ? extractedTriggers.map((trigger) => ({ type: "trigger" as const, item: trigger }))
-            : []),
-        ...(viewMode === "both" || viewMode === "functionDefs"
-            ? extractedFunctionDefs.map((functionDef) => ({ type: "functionDef" as const, item: functionDef }))
-            : []),
+        ...(viewMode === "both" || viewMode === "triggers" ? extractedTriggers.map((trigger) => ({ type: "trigger" as const, item: trigger })) : []),
+        ...(viewMode === "both" || viewMode === "functionDefs" ? extractedFunctionDefs.map((functionDef) => ({ type: "functionDef" as const, item: functionDef })) : []),
     ]
 
     return (
@@ -80,7 +65,7 @@ export function ActionTriggerView({ locale, triggers, functionDefs }: ActionTrig
                         setViewMode(value)
                     }
                 }}
-                className={controlClassName}
+                className={"h-10! w-max!"}
             >
                 <SegmentedControlItem value="both" className={itemClassName}>
                     <Text>{locale === "en" ? "Both" : "Beide"}</Text>

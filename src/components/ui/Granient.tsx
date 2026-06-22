@@ -1,26 +1,26 @@
-import React, { useEffect, useRef } from 'react';
-import { useReducedMotion } from 'motion/react';
-import { Renderer, Program, Mesh, Triangle } from 'ogl';
+import React, { useEffect, useRef } from "react"
+import { useReducedMotion } from "motion/react"
+import { Renderer, Program, Mesh, Triangle } from "ogl"
 
 type GrainientPalette = {
-  color1: string;
-  color2: string;
-  color3: string;
-  backgroundColor?: string;
-};
+    color1: string
+    color2: string
+    color3: string
+    backgroundColor?: string
+}
 
 const hexToRgb = (hex: string): [number, number, number] => {
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  if (!result) return [1, 1, 1];
-  return [parseInt(result[1], 16) / 255, parseInt(result[2], 16) / 255, parseInt(result[3], 16) / 255];
-};
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
+    if (!result) return [1, 1, 1]
+    return [parseInt(result[1], 16) / 255, parseInt(result[2], 16) / 255, parseInt(result[3], 16) / 255]
+}
 
 const vertex = `#version 300 es
 in vec2 position;
 void main() {
   gl_Position = vec4(position, 0.0, 1.0);
 }
-`;
+`
 
 const fragment = `#version 300 es
 precision highp float;
@@ -104,323 +104,316 @@ void main(){
   mainImage(o,gl_FragCoord.xy);
   fragColor=o;
 }
-`;
+`
 
 type GrainientUniforms = {
-  iTime: { value: number };
-  iResolution: { value: Float32Array };
-  uTimeSpeed: { value: number };
-  uColorBalance: { value: number };
-  uWarpStrength: { value: number };
-  uWarpFrequency: { value: number };
-  uWarpSpeed: { value: number };
-  uWarpAmplitude: { value: number };
-  uBlendAngle: { value: number };
-  uBlendSoftness: { value: number };
-  uRotationAmount: { value: number };
-  uNoiseScale: { value: number };
-  uGrainAmount: { value: number };
-  uGrainScale: { value: number };
-  uGrainAnimated: { value: number };
-  uContrast: { value: number };
-  uGamma: { value: number };
-  uSaturation: { value: number };
-  uCenterOffset: { value: Float32Array };
-  uZoom: { value: number };
-  uColor1: { value: Float32Array };
-  uColor2: { value: Float32Array };
-  uColor3: { value: Float32Array };
-};
+    iTime: { value: number }
+    iResolution: { value: Float32Array }
+    uTimeSpeed: { value: number }
+    uColorBalance: { value: number }
+    uWarpStrength: { value: number }
+    uWarpFrequency: { value: number }
+    uWarpSpeed: { value: number }
+    uWarpAmplitude: { value: number }
+    uBlendAngle: { value: number }
+    uBlendSoftness: { value: number }
+    uRotationAmount: { value: number }
+    uNoiseScale: { value: number }
+    uGrainAmount: { value: number }
+    uGrainScale: { value: number }
+    uGrainAnimated: { value: number }
+    uContrast: { value: number }
+    uGamma: { value: number }
+    uSaturation: { value: number }
+    uCenterOffset: { value: Float32Array }
+    uZoom: { value: number }
+    uColor1: { value: Float32Array }
+    uColor2: { value: Float32Array }
+    uColor3: { value: Float32Array }
+}
 
 type GrainientRuntime = {
-  renderer: Renderer;
-  program: Program;
-  uniforms: GrainientUniforms;
-  mesh: Mesh;
-  renderFrame: (time?: number) => void;
-  startLoop: () => void;
-  stopLoop: () => void;
-};
+    renderer: Renderer
+    program: Program
+    uniforms: GrainientUniforms
+    mesh: Mesh
+    renderFrame: (time?: number) => void
+    startLoop: () => void
+    stopLoop: () => void
+}
 
 const GRAINIENT_CONFIG = {
-  maxDpr: 1,
-  timeSpeed: 0.25,
-  colorBalance: 0,
-  warpStrength: 1,
-  warpFrequency: 5,
-  warpSpeed: 2,
-  warpAmplitude: 50,
-  blendAngle: 0,
-  blendSoftness: 0.05,
-  rotationAmount: 500,
-  noiseScale: 2,
-  grainAmount: 0.1,
-  grainScale: 2,
-  grainAnimated: false,
-  contrast: 1.5,
-  gamma: 1,
-  saturation: 1,
-  centerX: 0,
-  centerY: 0,
-  zoom: 0.9,
-  color1: '#13102d',
-  color2: '#72f896',
-  color3: '#7472f8'
-} as const;
+    maxDpr: 1,
+    timeSpeed: 0.25,
+    colorBalance: 0,
+    warpStrength: 1,
+    warpFrequency: 5,
+    warpSpeed: 2,
+    warpAmplitude: 50,
+    blendAngle: 0,
+    blendSoftness: 0.05,
+    rotationAmount: 500,
+    noiseScale: 2,
+    grainAmount: 0.1,
+    grainScale: 2,
+    grainAnimated: false,
+    contrast: 1.5,
+    gamma: 1,
+    saturation: 1,
+    centerX: 0,
+    centerY: 0,
+    zoom: 0.9,
+    color1: "#13102d",
+    color2: "#72f896",
+    color3: "#7472f8",
+} as const
 
-const Grainient: React.FC<Partial<GrainientPalette>> = ({
-  color1 = GRAINIENT_CONFIG.color1,
-  color2 = GRAINIENT_CONFIG.color2,
-  color3 = GRAINIENT_CONFIG.color3,
-  backgroundColor = '#13102d',
-}) => {
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const runtimeRef = useRef<GrainientRuntime | null>(null);
-  const prefersReducedMotion = useReducedMotion();
+const Grainient: React.FC<Partial<GrainientPalette>> = ({ color1 = GRAINIENT_CONFIG.color1, color2 = GRAINIENT_CONFIG.color2, color3 = GRAINIENT_CONFIG.color3, backgroundColor = "#13102d" }) => {
+    const containerRef = useRef<HTMLDivElement | null>(null)
+    const runtimeRef = useRef<GrainientRuntime | null>(null)
+    const prefersReducedMotion = useReducedMotion()
 
-  useEffect(() => {
-    if (!containerRef.current) return;
+    useEffect(() => {
+        if (!containerRef.current) return
 
-    let renderer: Renderer;
+        let renderer: Renderer
 
-    try {
-      renderer = new Renderer({
-        webgl: 2,
-        alpha: true,
-        antialias: false,
-        dpr: Math.min(window.devicePixelRatio || 1, GRAINIENT_CONFIG.maxDpr)
-      });
-    } catch {
-      return;
-    }
-
-    const gl = renderer.gl;
-    if (!gl) return;
-
-    const canvas = gl.canvas as HTMLCanvasElement;
-    canvas.style.width = '100%';
-    canvas.style.height = '100%';
-    canvas.style.display = 'block';
-    canvas.style.position = 'absolute';
-    canvas.style.inset = '0';
-
-    const container = containerRef.current;
-    container.appendChild(canvas);
-
-    const geometry = new Triangle(gl);
-    const uniforms: GrainientUniforms = {
-      iTime: { value: 0 },
-      iResolution: { value: new Float32Array([1, 1]) },
-      uTimeSpeed: { value: GRAINIENT_CONFIG.timeSpeed },
-      uColorBalance: { value: GRAINIENT_CONFIG.colorBalance },
-      uWarpStrength: { value: GRAINIENT_CONFIG.warpStrength },
-      uWarpFrequency: { value: GRAINIENT_CONFIG.warpFrequency },
-      uWarpSpeed: { value: GRAINIENT_CONFIG.warpSpeed },
-      uWarpAmplitude: { value: GRAINIENT_CONFIG.warpAmplitude },
-      uBlendAngle: { value: GRAINIENT_CONFIG.blendAngle },
-      uBlendSoftness: { value: GRAINIENT_CONFIG.blendSoftness },
-      uRotationAmount: { value: GRAINIENT_CONFIG.rotationAmount },
-      uNoiseScale: { value: GRAINIENT_CONFIG.noiseScale },
-      uGrainAmount: { value: GRAINIENT_CONFIG.grainAmount },
-      uGrainScale: { value: GRAINIENT_CONFIG.grainScale },
-      uGrainAnimated: { value: GRAINIENT_CONFIG.grainAnimated ? 1.0 : 0.0 },
-      uContrast: { value: GRAINIENT_CONFIG.contrast },
-      uGamma: { value: GRAINIENT_CONFIG.gamma },
-      uSaturation: { value: GRAINIENT_CONFIG.saturation },
-      uCenterOffset: { value: new Float32Array([GRAINIENT_CONFIG.centerX, GRAINIENT_CONFIG.centerY]) },
-      uZoom: { value: GRAINIENT_CONFIG.zoom },
-      uColor1: { value: new Float32Array(hexToRgb(color1)) },
-      uColor2: { value: new Float32Array(hexToRgb(color2)) },
-      uColor3: { value: new Float32Array(hexToRgb(color3)) }
-    };
-
-    const program = new Program(gl, {
-      vertex,
-      fragment,
-      uniforms
-    });
-
-    const mesh = new Mesh(gl, { geometry, program });
-
-    let resizeFrame = 0;
-    let lastWidth = 0;
-    let lastHeight = 0;
-    let raf = 0;
-    const t0 = performance.now();
-    let disposed = false;
-    let running = false;
-    let isInViewport = true;
-    let isPageVisible = document.visibilityState === 'visible';
-    let lastFrameTime = 0;
-    const frameInterval = 1000 / 30;
-
-    const renderFrame = (t = performance.now()) => {
-      uniforms.iTime.value = (t - t0) * 0.001;
-      renderer.render({ scene: mesh });
-    };
-
-    const setSize = () => {
-      const rect = container.getBoundingClientRect();
-      const width = Math.max(1, Math.floor(rect.width));
-      const height = Math.max(1, Math.floor(rect.height));
-
-      if (width === lastWidth && height === lastHeight) {
-        return;
-      }
-
-      lastWidth = width;
-      lastHeight = height;
-      renderer.setSize(width, height);
-      const res = uniforms.iResolution.value;
-      res[0] = gl.drawingBufferWidth;
-      res[1] = gl.drawingBufferHeight;
-
-      renderFrame();
-    };
-
-    const queueResize = () => {
-      if (resizeFrame) return;
-
-      resizeFrame = requestAnimationFrame(() => {
-        resizeFrame = 0;
-        setSize();
-      });
-    };
-
-    const ro = new ResizeObserver(queueResize);
-    ro.observe(container);
-    setSize();
-
-    const stopLoop = () => {
-      running = false;
-      if (raf) {
-        cancelAnimationFrame(raf);
-        raf = 0;
-      }
-    };
-
-    const loop = (t: number) => {
-      if (disposed || !running) return;
-
-      if (t - lastFrameTime >= frameInterval) {
-        lastFrameTime = t;
-        renderFrame(t);
-      }
-
-      raf = requestAnimationFrame(loop);
-    };
-
-    const startLoop = () => {
-      if (disposed || prefersReducedMotion || running || !isInViewport || !isPageVisible) return;
-
-      running = true;
-      lastFrameTime = 0;
-      raf = requestAnimationFrame(loop);
-    };
-
-    runtimeRef.current = {
-      renderer,
-      program,
-      uniforms,
-      mesh,
-      renderFrame,
-      startLoop,
-      stopLoop
-    };
-
-    const visibilityObserver = new IntersectionObserver(
-      ([entry]) => {
-        isInViewport = Boolean(entry?.isIntersecting);
-
-        if (isInViewport) {
-          if (prefersReducedMotion) {
-            renderFrame(performance.now());
-          } else {
-            startLoop();
-          }
-        } else {
-          stopLoop();
+        try {
+            renderer = new Renderer({
+                webgl: 2,
+                alpha: true,
+                antialias: false,
+                dpr: Math.min(window.devicePixelRatio || 1, GRAINIENT_CONFIG.maxDpr),
+            })
+        } catch {
+            return
         }
-      },
-      { threshold: 0.05 },
-    );
 
-    visibilityObserver.observe(container);
+        const gl = renderer.gl
+        if (!gl) return
 
-    const handleVisibilityChange = () => {
-      isPageVisible = document.visibilityState === 'visible';
+        const canvas = gl.canvas as HTMLCanvasElement
+        canvas.style.width = "100%"
+        canvas.style.height = "100%"
+        canvas.style.display = "block"
+        canvas.style.position = "absolute"
+        canvas.style.inset = "0"
 
-      if (!isPageVisible) {
-        stopLoop();
-        return;
-      }
+        const container = containerRef.current
+        container.appendChild(canvas)
 
-      if (prefersReducedMotion) {
-        renderFrame(performance.now());
-      } else {
-        startLoop();
-      }
-    };
+        const geometry = new Triangle(gl)
+        const uniforms: GrainientUniforms = {
+            iTime: { value: 0 },
+            iResolution: { value: new Float32Array([1, 1]) },
+            uTimeSpeed: { value: GRAINIENT_CONFIG.timeSpeed },
+            uColorBalance: { value: GRAINIENT_CONFIG.colorBalance },
+            uWarpStrength: { value: GRAINIENT_CONFIG.warpStrength },
+            uWarpFrequency: { value: GRAINIENT_CONFIG.warpFrequency },
+            uWarpSpeed: { value: GRAINIENT_CONFIG.warpSpeed },
+            uWarpAmplitude: { value: GRAINIENT_CONFIG.warpAmplitude },
+            uBlendAngle: { value: GRAINIENT_CONFIG.blendAngle },
+            uBlendSoftness: { value: GRAINIENT_CONFIG.blendSoftness },
+            uRotationAmount: { value: GRAINIENT_CONFIG.rotationAmount },
+            uNoiseScale: { value: GRAINIENT_CONFIG.noiseScale },
+            uGrainAmount: { value: GRAINIENT_CONFIG.grainAmount },
+            uGrainScale: { value: GRAINIENT_CONFIG.grainScale },
+            uGrainAnimated: { value: GRAINIENT_CONFIG.grainAnimated ? 1.0 : 0.0 },
+            uContrast: { value: GRAINIENT_CONFIG.contrast },
+            uGamma: { value: GRAINIENT_CONFIG.gamma },
+            uSaturation: { value: GRAINIENT_CONFIG.saturation },
+            uCenterOffset: { value: new Float32Array([GRAINIENT_CONFIG.centerX, GRAINIENT_CONFIG.centerY]) },
+            uZoom: { value: GRAINIENT_CONFIG.zoom },
+            uColor1: { value: new Float32Array(hexToRgb(color1)) },
+            uColor2: { value: new Float32Array(hexToRgb(color2)) },
+            uColor3: { value: new Float32Array(hexToRgb(color3)) },
+        }
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+        const program = new Program(gl, {
+            vertex,
+            fragment,
+            uniforms,
+        })
 
-    if (prefersReducedMotion) {
-      renderFrame(performance.now());
-    } else {
-      startLoop();
-    }
+        const mesh = new Mesh(gl, { geometry, program })
 
-    return () => {
-      disposed = true;
-      runtimeRef.current = null;
-      stopLoop();
-      if (resizeFrame) {
-        cancelAnimationFrame(resizeFrame);
-      }
-      ro.disconnect();
-      visibilityObserver.disconnect();
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      try {
-        container.removeChild(canvas);
-      } catch {
-        // Ignore
-      }
-    };
-  }, [backgroundColor, color1, color2, color3]);
+        let resizeFrame = 0
+        let lastWidth = 0
+        let lastHeight = 0
+        let raf = 0
+        const t0 = performance.now()
+        let disposed = false
+        let running = false
+        let isInViewport = true
+        let isPageVisible = document.visibilityState === "visible"
+        let lastFrameTime = 0
+        const frameInterval = 1000 / 30
 
-  useEffect(() => {
-    const runtime = runtimeRef.current;
-    if (!runtime) return;
+        const renderFrame = (t = performance.now()) => {
+            uniforms.iTime.value = (t - t0) * 0.001
+            renderer.render({ scene: mesh })
+        }
 
-    if (prefersReducedMotion) {
-      runtime.stopLoop();
-      runtime.renderFrame();
-      return;
-    }
+        const setSize = () => {
+            const rect = container.getBoundingClientRect()
+            const width = Math.max(1, Math.floor(rect.width))
+            const height = Math.max(1, Math.floor(rect.height))
 
-    runtime.startLoop();
+            if (width === lastWidth && height === lastHeight) {
+                return
+            }
 
-    return () => {
-      runtime.stopLoop();
-    };
-  }, [
-    prefersReducedMotion
-  ]);
+            lastWidth = width
+            lastHeight = height
+            renderer.setSize(width, height)
+            const res = uniforms.iResolution.value
+            res[0] = gl.drawingBufferWidth
+            res[1] = gl.drawingBufferHeight
 
-  return (
-    <div
-      ref={containerRef}
-      className="pointer-events-none absolute inset-0 z-0 h-full w-full overflow-hidden"
-      aria-hidden="true"
-      style={{
-        backgroundColor,
-        transform: 'translateZ(0)',
-        WebkitTransform: 'translateZ(0)',
-        backfaceVisibility: 'hidden',
-        WebkitBackfaceVisibility: 'hidden',
-      }}
-    />
-  );
-};
+            renderFrame()
+        }
 
-export default Grainient;
+        const queueResize = () => {
+            if (resizeFrame) return
+
+            resizeFrame = requestAnimationFrame(() => {
+                resizeFrame = 0
+                setSize()
+            })
+        }
+
+        const ro = new ResizeObserver(queueResize)
+        ro.observe(container)
+        setSize()
+
+        const stopLoop = () => {
+            running = false
+            if (raf) {
+                cancelAnimationFrame(raf)
+                raf = 0
+            }
+        }
+
+        const loop = (t: number) => {
+            if (disposed || !running) return
+
+            if (t - lastFrameTime >= frameInterval) {
+                lastFrameTime = t
+                renderFrame(t)
+            }
+
+            raf = requestAnimationFrame(loop)
+        }
+
+        const startLoop = () => {
+            if (disposed || prefersReducedMotion || running || !isInViewport || !isPageVisible) return
+
+            running = true
+            lastFrameTime = 0
+            raf = requestAnimationFrame(loop)
+        }
+
+        runtimeRef.current = {
+            renderer,
+            program,
+            uniforms,
+            mesh,
+            renderFrame,
+            startLoop,
+            stopLoop,
+        }
+
+        const visibilityObserver = new IntersectionObserver(
+            ([entry]) => {
+                isInViewport = Boolean(entry?.isIntersecting)
+
+                if (isInViewport) {
+                    if (prefersReducedMotion) {
+                        renderFrame(performance.now())
+                    } else {
+                        startLoop()
+                    }
+                } else {
+                    stopLoop()
+                }
+            },
+            { threshold: 0.05 }
+        )
+
+        visibilityObserver.observe(container)
+
+        const handleVisibilityChange = () => {
+            isPageVisible = document.visibilityState === "visible"
+
+            if (!isPageVisible) {
+                stopLoop()
+                return
+            }
+
+            if (prefersReducedMotion) {
+                renderFrame(performance.now())
+            } else {
+                startLoop()
+            }
+        }
+
+        document.addEventListener("visibilitychange", handleVisibilityChange)
+
+        if (prefersReducedMotion) {
+            renderFrame(performance.now())
+        } else {
+            startLoop()
+        }
+
+        return () => {
+            disposed = true
+            runtimeRef.current = null
+            stopLoop()
+            if (resizeFrame) {
+                cancelAnimationFrame(resizeFrame)
+            }
+            ro.disconnect()
+            visibilityObserver.disconnect()
+            document.removeEventListener("visibilitychange", handleVisibilityChange)
+            try {
+                container.removeChild(canvas)
+            } catch {
+                // Ignore
+            }
+        }
+    }, [backgroundColor, color1, color2, color3])
+
+    useEffect(() => {
+        const runtime = runtimeRef.current
+        if (!runtime) return
+
+        if (prefersReducedMotion) {
+            runtime.stopLoop()
+            runtime.renderFrame()
+            return
+        }
+
+        runtime.startLoop()
+
+        return () => {
+            runtime.stopLoop()
+        }
+    }, [prefersReducedMotion])
+
+    return (
+        <div
+            ref={containerRef}
+            className="pointer-events-none absolute inset-0 z-0 h-full w-full overflow-hidden"
+            aria-hidden="true"
+            style={{
+                backgroundColor,
+                transform: "translateZ(0)",
+                WebkitTransform: "translateZ(0)",
+                backfaceVisibility: "hidden",
+                WebkitBackfaceVisibility: "hidden",
+            }}
+        />
+    )
+}
+
+export default Grainient

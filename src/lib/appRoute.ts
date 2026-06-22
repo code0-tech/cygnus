@@ -4,7 +4,7 @@ import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 
 export type LocalePageParams = Promise<{ locale: string }>
-export type LocaleSlugPageParams = Promise<{ locale: string, slug: string }>
+export type LocaleSlugPageParams = Promise<{ locale: string; slug: string }>
 
 export function requireSupportedLocale(locale: string): AppLocale {
     if (!isSupportedLocale(locale)) {
@@ -19,7 +19,7 @@ export async function getPageLocale(params: LocalePageParams): Promise<AppLocale
     return requireSupportedLocale(locale)
 }
 
-export async function getPageLocaleAndSlug(params: LocaleSlugPageParams): Promise<{ locale: AppLocale, slug: string }> {
+export async function getPageLocaleAndSlug(params: LocaleSlugPageParams): Promise<{ locale: AppLocale; slug: string }> {
     const { locale, slug } = await params
     const resolvedLocale = requireSupportedLocale(locale)
 

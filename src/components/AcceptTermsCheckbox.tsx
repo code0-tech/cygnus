@@ -12,7 +12,7 @@ interface AcceptTermsCheckboxProps extends Omit<CheckboxInputProps, "label"> {
     revalidateOnToggle?: () => void
 }
 
-const copy: Record<AppLocale, { labelStart: string, termsLabel: string, privacyLabel: string, labelJoin: string }> = {
+const copy: Record<AppLocale, { labelStart: string; termsLabel: string; privacyLabel: string; labelJoin: string }> = {
     en: {
         labelStart: "I accept the",
         termsLabel: "Terms and Conditions",
@@ -27,12 +27,7 @@ const copy: Record<AppLocale, { labelStart: string, termsLabel: string, privacyL
     },
 }
 
-export function AcceptTermsCheckbox({
-    locale = DEFAULT_LOCALE,
-    className,
-    revalidateOnToggle,
-    ...checkboxProps
-}: AcceptTermsCheckboxProps) {
+export function AcceptTermsCheckbox({ locale = DEFAULT_LOCALE, className, revalidateOnToggle, ...checkboxProps }: AcceptTermsCheckboxProps) {
     const { trigger } = useWebHaptics()
     const { formValidation, ...rest } = checkboxProps
 
@@ -42,15 +37,15 @@ export function AcceptTermsCheckbox({
 
     const checkboxFormValidation = formValidation
         ? {
-            ...formValidation,
-            notValidMessage: null,
-            setValue: (value: boolean) => {
-                formValidation.setValue?.(value)
-                if (!formValidation.valid) {
-                    revalidateOnToggle?.()
-                }
-            },
-        }
+              ...formValidation,
+              notValidMessage: null,
+              setValue: (value: boolean) => {
+                  formValidation.setValue?.(value)
+                  if (!formValidation.valid) {
+                      revalidateOnToggle?.()
+                  }
+              },
+          }
         : undefined
 
     const label: ReactNode = (
@@ -82,16 +77,10 @@ export function AcceptTermsCheckbox({
     return (
         <div className={className}>
             <div className="flex items-start">
-                <CheckboxInput
-                    className="-mr-3"
-                    formValidation={checkboxFormValidation}
-                    {...rest}
-                />
+                <CheckboxInput className="-mr-3" formValidation={checkboxFormValidation} {...rest} />
                 {label}
             </div>
-            {!formValidation?.valid && formValidation?.notValidMessage && (
-                <InputMessage>{formValidation.notValidMessage}</InputMessage>
-            )}
+            {!formValidation?.valid && formValidation?.notValidMessage && <InputMessage>{formValidation.notValidMessage}</InputMessage>}
         </div>
     )
 }

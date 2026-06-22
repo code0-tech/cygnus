@@ -68,14 +68,11 @@ export function HeroSection({ content, imageSrc = "/code0_software.png" }: HeroS
                         viewport={{ once: true, amount: 0.25 }}
                     >
                         <div className="flex w-full max-w-6xl flex-col items-center gap-4">
-                            <motion.h1 variants={staggerItem} className="relative z-10 text-balance text-3xl font-bold text-white drop-shadow-[0_8px_28px_rgba(0,0,0,0.55)] lg:text-5xl text-center">
+                            <motion.h1 variants={staggerItem} className="relative z-10 text-balance text-3xl font-bold text-white lg:text-5xl text-center">
                                 {content.heading}
                             </motion.h1>
 
-                            <motion.p
-                                variants={staggerItem}
-                                className="relative z-10 max-w-2xl text-base font-medium text-pretty text-white/80 drop-shadow-[0_4px_20px_rgba(0,0,0,0.45)] lg:text-xl text-center"
-                            >
+                            <motion.p variants={staggerItem} className="relative z-10 max-w-2xl text-base font-medium text-pretty text-white/80 lg:text-xl text-center">
                                 {texts.map((text, index) => (
                                     <React.Fragment key={`${text}-${index}`}>
                                         {text}
@@ -109,7 +106,7 @@ export function HeroSection({ content, imageSrc = "/code0_software.png" }: HeroS
                                         priority
                                         fetchPriority="high"
                                         sizes="(min-width: 1024px) 72rem, 100vw"
-                                        className="block rounded-2xl shadow-[0_14px_38px_rgba(0,0,0,0.24)]"
+                                        className="block rounded-2xl"
                                     />
                                 </div>
                             </div>
@@ -164,11 +161,11 @@ export function HeroSection({ content, imageSrc = "/code0_software.png" }: HeroS
                             </Link>
                         </motion.div>
 
-                        <motion.h1 variants={staggerItem} className="relative z-10 font-bold text-3xl lg:text-4xl text-white text-balance drop-shadow-[0_8px_28px_rgba(0,0,0,0.55)]">
+                        <motion.h1 variants={staggerItem} className="relative z-10 font-bold text-3xl lg:text-4xl text-white text-balance">
                             {content.heading}
                         </motion.h1>
 
-                        <motion.p variants={staggerItem} className="relative z-10 font-medium text-white/75 text-base lg:text-xl text-pretty drop-shadow-[0_4px_20px_rgba(0,0,0,0.45)]">
+                        <motion.p variants={staggerItem} className="relative z-10 font-medium text-white/75 text-base lg:text-xl text-pretty">
                             {texts.length > 0 ? (
                                 texts.map((text, index) => (
                                     <React.Fragment key={`${text}-${index}`}>
@@ -207,7 +204,7 @@ export function HeroSection({ content, imageSrc = "/code0_software.png" }: HeroS
                                     priority
                                     fetchPriority="high"
                                     sizes="(min-width: 1024px) 60vw, 100vw"
-                                    className="block rounded-2xl shadow-[0_14px_38px_rgba(0,0,0,0.24)] lg:rounded-l-2xl lg:rounded-r-none"
+                                    className="block rounded-2xl lg:rounded-l-2xl lg:rounded-r-none"
                                 />
                             </div>
                         </div>

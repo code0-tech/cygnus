@@ -21,7 +21,7 @@ const gradientDirections = {
     bottomRight: "bottom right",
 } as const
 
-const cardVariants = cva("relative border border-white/5", {
+const cardVariants = cva("relative overflow-hidden border border-white/5", {
     variants: {
         variant: {
             default: "",

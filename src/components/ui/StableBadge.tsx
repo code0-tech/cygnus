@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils"
 import type { CSSProperties, ReactNode } from "react"
 
 type StableBadgeColor = "primary" | "secondary" | "tertiary" | "success" | "warning" | "error" | "info"
-type Rgba = { r: number, g: number, b: number, a: number }
+type Rgba = { r: number; g: number; b: number; a: number }
 
 interface StableBadgeProps {
     children: ReactNode
@@ -23,13 +23,13 @@ const namedColors: Record<string, string> = {
 }
 
 const badgeClassMap: Record<StableBadgeColor, string> = {
-    primary: "bg-[#070514] text-[#bfbfbfbf] shadow-[inset_0_1px_1px_#bfbfbf1a]",
-    secondary: "bg-[#191825] text-[#bfbfbfbf] shadow-[inset_0_1px_1px_#bfbfbf1a]",
-    tertiary: "bg-[#201e2c] text-[#ffffffbf] shadow-[inset_0_1px_1px_#ffffff1a]",
-    success: "bg-[#0a1814] text-[#29bf12bf] shadow-[inset_0_1px_1px_#29bf121a]",
-    warning: "bg-[#201813] text-[#ffbe0bbf] shadow-[inset_0_1px_1px_#ffbe0b1a]",
-    error: "bg-[#1c0516] text-[#d90429bf] shadow-[inset_0_1px_1px_#d904291a]",
-    info: "bg-[#121e24] text-[#70ffb2bf] shadow-[inset_0_1px_1px_#70ffb21a]",
+    primary: "bg-[#070514] text-[#bfbfbfbf]",
+    secondary: "bg-[#191825] text-[#bfbfbfbf]",
+    tertiary: "bg-[#201e2c] text-[#ffffffbf]",
+    success: "bg-[#0a1814] text-[#29bf12bf]",
+    warning: "bg-[#201813] text-[#ffbe0bbf]",
+    error: "bg-[#1c0516] text-[#d90429bf]",
+    info: "bg-[#121e24] text-[#70ffb2bf]",
 }
 
 const clamp01 = (value: number) => Math.min(Math.max(value, 0), 1)
@@ -109,23 +109,16 @@ const withAlpha = (color: string, alpha: number) => {
 
 const isStableBadgeColor = (color: string): color is StableBadgeColor => color in badgeClassMap
 
-export function StableBadge({
-    children,
-    color = "primary",
-    border = false,
-    className,
-    style,
-}: StableBadgeProps) {
-
+export function StableBadge({ children, color = "primary", border = false, className, style }: StableBadgeProps) {
     return (
         <span
             className={cn(
                 "inline-flex h-fit w-fit items-center gap-[0.35rem] rounded-2xl px-[0.35rem] py-[0.1166666667rem] align-middle font-[Inter,sans-serif] text-[0.7rem] font-normal tracking-[-0.5px]",
-                "bg-(--badge-color-background) text-(--badge-color) shadow-[inset_0_1px_1px_0_var(--badge-color-border)]",
+                "bg-(--badge-color-background) text-(--badge-color)",
                 "box-border",
                 isStableBadgeColor(color) && badgeClassMap[color],
                 !border && "border-none!",
-                className,
+                className
             )}
             style={{
                 ...style,

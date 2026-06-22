@@ -74,9 +74,7 @@ function getNavbarButtonIcon(icon: string | null | undefined, size = 20) {
 
     if (!trimmedIcon) return null
 
-    const resolvedIcon = /^si/i.test(trimmedIcon)
-        ? getSimpleButtonIcon(trimmedIcon)
-        : getTablerButtonIcon(trimmedIcon)
+    const resolvedIcon = /^si/i.test(trimmedIcon) ? getSimpleButtonIcon(trimmedIcon) : getTablerButtonIcon(trimmedIcon)
 
     return createElement(resolvedIcon ?? fallbackButtonIcon, { size })
 }
@@ -86,22 +84,22 @@ function getSubMenuIcon(icon: string | null | undefined) {
 }
 
 export function mapNavbarItems(items: NavbarItemData[], locale: AppLocale): NavItem[] {
-    return [...items].sort((left, right) => left.order - right.order).map((item) => {
-        const mappedSubMenu = (item.subMenu ?? [])
-            .filter((sub) => Boolean(sub?.title && sub?.href && sub?.description))
-            .map((sub) => ({
-                ...sub,
-                icon: getSubMenuIcon(sub.icon),
-            }))
+    return [...items]
+        .sort((left, right) => left.order - right.order)
+        .map((item) => {
+            const mappedSubMenu = (item.subMenu ?? [])
+                .filter((sub) => Boolean(sub?.title && sub?.href && sub?.description))
+                .map((sub) => ({
+                    ...sub,
+                    icon: getSubMenuIcon(sub.icon),
+                }))
 
-        return {
-            title: item.title,
-            href: item.href ? localizeHref(item.href, locale) : null,
-            subMenu: mappedSubMenu.length > 0
-                ? mappedSubMenu.map((sub) => ({ ...sub, href: localizeHref(sub.href, locale) }))
-                : undefined,
-        }
-    })
+            return {
+                title: item.title,
+                href: item.href ? localizeHref(item.href, locale) : null,
+                subMenu: mappedSubMenu.length > 0 ? mappedSubMenu.map((sub) => ({ ...sub, href: localizeHref(sub.href, locale) })) : undefined,
+            }
+        })
 }
 
 export function mapNavbarButtons(buttons: NavbarButtonData[], locale: AppLocale): NavButton[] {

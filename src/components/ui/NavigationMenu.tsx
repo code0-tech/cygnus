@@ -66,7 +66,7 @@ function NavigationMenuPositioner({ className, side = "bottom", sideOffset = 8, 
                 )}
                 {...props}
             >
-                <NavigationMenuPrimitive.Popup className="xs:w-(--popup-width) relative h-(--popup-height) w-(--popup-width) origin-(--transform-origin) rounded-2xl border border-white/10 bg-primary/80 text-white shadow-xl backdrop-blur-lg transition-[opacity,transform,width,height,scale,translate] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] outline-none data-ending-style:scale-[0.98] data-ending-style:opacity-0 data-ending-style:duration-150 data-starting-style:scale-[0.98] data-starting-style:opacity-0">
+                <NavigationMenuPrimitive.Popup className="xs:w-(--popup-width) relative h-(--popup-height) w-(--popup-width) origin-(--transform-origin) rounded-2xl border border-white/10 bg-primary/80 text-white backdrop-blur-lg transition-[opacity,transform,width,height,scale,translate] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] outline-none data-ending-style:scale-[0.98] data-ending-style:opacity-0 data-ending-style:duration-150 data-starting-style:scale-[0.98] data-starting-style:opacity-0">
                     <NavigationMenuPrimitive.Viewport className="relative size-full overflow-hidden" />
                 </NavigationMenuPrimitive.Popup>
             </NavigationMenuPrimitive.Positioner>

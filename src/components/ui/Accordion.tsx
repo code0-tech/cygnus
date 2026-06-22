@@ -1,16 +1,7 @@
+import { cn } from "@/lib/utils"
 import { IconChevronDown } from "@tabler/icons-react"
 import { m as motion } from "motion/react"
 import React, { useLayoutEffect, useRef, useState } from "react"
-import { cn } from "@/lib/utils"
-
-const accordionCardBaseClassName =
-    "group relative z-10 w-full cursor-pointer overflow-hidden rounded-2xl bg-white/2 hover:bg-white/5 transition-colors border border-white/5 before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-linear-to-r before:from-transparent before:via-white/30 before:to-transparent before:content-['']"
-
-const accordionCardOpenClassName = "border-white/10 bg-white/5"
-
-const baseAccordionCardBaseClassName = "group relative z-10 w-full cursor-pointer overflow-hidden rounded-2xl border border-white/5"
-
-const baseAccordionCardOpenClassName = "border-white/16"
 
 interface FAQItemProps {
     index: number
@@ -43,7 +34,15 @@ const AccordionItemComponent = ({ index, question, answer, isOpen, onToggle, cla
     }, [answer, question])
 
     return (
-        <div className={cn(accordionCardBaseClassName, isOpen && accordionCardOpenClassName, className)}>
+        <div
+            className={cn(
+                "group relative z-10 w-full cursor-pointer overflow-hidden rounded-2xl bg-white/2 hover:bg-white/5 transition-colors",
+                "border border-white/5 before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-linear-to-r",
+                "before:from-transparent before:via-white/30 before:to-transparent before:content-['']",
+                isOpen && "border-white/10 bg-white/5",
+                className
+            )}
+        >
             <button
                 type="button"
                 onClick={() => onToggle(index)}
@@ -89,7 +88,7 @@ export const AccordionItem = React.memo(AccordionItemComponent)
 
 const BaseAccordionItemComponent = ({ index, question, answer, isOpen, onToggle, className, questionClassname }: FAQItemProps) => {
     return (
-        <div className={cn(baseAccordionCardBaseClassName, isOpen && baseAccordionCardOpenClassName, className)}>
+        <div className={cn("group relative z-10 w-full cursor-pointer overflow-hidden rounded-2xl border border-white/5", isOpen && "border-white/10", className)}>
             <button
                 type="button"
                 onClick={() => onToggle(index)}

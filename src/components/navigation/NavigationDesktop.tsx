@@ -121,7 +121,7 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ locale, items, bu
                     }}
                 >
                     <motion.div
-                        className={cn("pointer-events-none absolute inset-0 rounded-2xl shadow-sm", isScrolled ? "bg-primary/50 backdrop-blur-lg" : "bg-transparent shadow-none")}
+                        className={cn("pointer-events-none absolute inset-0 rounded-2xl", isScrolled ? "bg-primary/50 backdrop-blur-lg" : "bg-transparent")}
                         initial={false}
                         animate={{
                             left: shellInset,

@@ -7,7 +7,7 @@ import { getMediaUrl } from "@/lib/media"
 import type { Media } from "@/payload-types"
 import { m as motion, type Variants } from "motion/react"
 import Image from "next/image"
-import React, { Children, type ReactNode } from "react"
+import { Children, type ReactNode } from "react"
 import { Card } from "../ui/Card"
 
 interface CardRowSectionProps {

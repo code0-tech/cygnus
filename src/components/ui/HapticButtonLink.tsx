@@ -13,21 +13,12 @@ interface HapticButtonLinkProps {
     className?: string
 }
 
-export function HapticButtonLink({
-    href,
-    children,
-    variant = "normal",
-    className,
-}: HapticButtonLinkProps) {
+export function HapticButtonLink({ href, children, variant = "normal", className }: HapticButtonLinkProps) {
     const { trigger } = useWebHaptics()
 
     return (
         <Link href={href} className="w-full sm:w-auto">
-            <Button
-                variant={variant ?? undefined}
-                onClick={() => trigger("heavy")}
-                className={cn("w-full! text-base! z-10", className)}
-            >
+            <Button variant={variant ?? undefined} onClick={() => trigger("heavy")} className={cn("w-full! text-base! z-10", className)}>
                 {children}
             </Button>
         </Link>

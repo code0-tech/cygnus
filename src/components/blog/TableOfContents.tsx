@@ -27,7 +27,7 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
     const [showMobileToc, setShowMobileToc] = useState(false)
     const [barStyle, setBarStyle] = useState({ y: 0, scaleY: 0, opacity: 0 })
     const [desktopMode, setDesktopMode] = useState<"static" | "fixed" | "bottom">("static")
-    const [desktopStyle, setDesktopStyle] = useState<{ left: number, width: number, top: number } | null>(null)
+    const [desktopStyle, setDesktopStyle] = useState<{ left: number; width: number; top: number } | null>(null)
 
     const mobileTocRef = useRef<HTMLDivElement>(null)
     const desktopTocRef = useRef<HTMLDivElement>(null)
@@ -48,9 +48,7 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
     }, [])
 
     useEffect(() => {
-        const elements = headings
-            .map((heading) => document.getElementById(heading.id))
-            .filter((el): el is HTMLElement => el !== null)
+        const elements = headings.map((heading) => document.getElementById(heading.id)).filter((el): el is HTMLElement => el !== null)
 
         if (!elements.length) return
 
@@ -93,7 +91,7 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
                 root: null,
                 rootMargin: `-${activationOffset}px 0px -55% 0px`,
                 threshold: [0, 1],
-            },
+            }
         )
 
         for (const element of elements) {
@@ -113,9 +111,7 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
         }
 
         const listItems = Array.from(currentRef.current.querySelectorAll("[data-toc-item='true']"))
-        const activeElements = activeIds
-            .map((id) => listItems.find((item) => item.id === `toc-${id}`))
-            .filter((el): el is HTMLElement => el !== null && el !== undefined)
+        const activeElements = activeIds.map((id) => listItems.find((item) => item.id === `toc-${id}`)).filter((el): el is HTMLElement => el !== null && el !== undefined)
 
         if (!activeElements.length) {
             setBarStyle((prev) => ({ ...prev, opacity: 0 }))
@@ -180,19 +176,12 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
             const wrapperTop = window.scrollY + wrapperRect.top
             const fixedTop = window.scrollY + desktopTopOffset
 
-            const nextMode =
-                fixedTop <= wrapperTop
-                    ? "static"
-                    : fixedTop >= wrapperTop + maxTop
-                        ? "bottom"
-                        : "fixed"
+            const nextMode = fixedTop <= wrapperTop ? "static" : fixedTop >= wrapperTop + maxTop ? "bottom" : "fixed"
 
             setDesktopMode((prev) => (prev === nextMode ? prev : nextMode))
-            setDesktopStyle((prev) => (
-                prev?.left === wrapperRect.left && prev?.width === wrapperRect.width && prev?.top === maxTop
-                    ? prev
-                    : { left: wrapperRect.left, width: wrapperRect.width, top: maxTop }
-            ))
+            setDesktopStyle((prev) =>
+                prev?.left === wrapperRect.left && prev?.width === wrapperRect.width && prev?.top === maxTop ? prev : { left: wrapperRect.left, width: wrapperRect.width, top: maxTop }
+            )
         }
 
         updateDesktopPosition()
@@ -237,7 +226,7 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
                         transition={{ duration: 0.2, ease: "easeOut" }}
                     >
                         <div className="mx-auto w-[calc(100%-1rem)] max-w-7xl">
-                            <div className="rounded-2xl border border-white/5 bg-primary/50 p-1.5 shadow-sm backdrop-blur-lg">
+                            <div className="rounded-2xl border border-white/5 bg-primary/50 p-1.5 backdrop-blur-lg">
                                 <button
                                     type="button"
                                     className="flex w-full items-center justify-between rounded-xl px-2 py-2 text-white/75 transition-colors hover:bg-white/10 hover:text-white"
@@ -252,10 +241,7 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
                                         <IconAlignLeft size={16} />
                                         Content
                                     </span>
-                                    <IconChevronDown
-                                        size={16}
-                                        className={cn("text-white/75 transition-transform", isOpen && "rotate-180")}
-                                    />
+                                    <IconChevronDown size={16} className={cn("text-white/75 transition-transform", isOpen && "rotate-180")} />
                                 </button>
 
                                 <AnimatePresence initial={false}>
@@ -270,10 +256,7 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
                                             exit={{ opacity: 0, y: -8 }}
                                             transition={{ duration: 0.2, ease: "easeOut" }}
                                         >
-                                            <div
-                                                className="absolute bottom-2 top-2 w-px bg-white/20"
-                                                style={{ left: "11px" }}
-                                            />
+                                            <div className="absolute bottom-2 top-2 w-px bg-white/20" style={{ left: "11px" }} />
                                             <motion.div
                                                 className="absolute top-0 w-px origin-top bg-white will-change-transform"
                                                 animate={barStyle}
@@ -281,11 +264,7 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
                                                 style={{ left: "11px", height: 1 }}
                                             />
                                             {headings.map((heading) => (
-                                                <div
-                                                    key={heading.id} id={`toc-${heading.id}`}
-                                                    onClick={() => trigger("light")}
-                                                    data-toc-item="true"
-                                                >
+                                                <div key={heading.id} id={`toc-${heading.id}`} onClick={() => trigger("light")} data-toc-item="true">
                                                     <a
                                                         href={`#${heading.id}`}
                                                         onClick={(event) => {
@@ -296,7 +275,7 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
                                                         className={cn(
                                                             "ml-5 block rounded-xl py-1.5 pl-4 pr-3 text-sm text-white/60 transition-colors hover:bg-white/10 hover:text-white",
                                                             heading.level >= 3 && "pl-8",
-                                                            activeIds.includes(heading.id) && "text-white",
+                                                            activeIds.includes(heading.id) && "text-white"
                                                         )}
                                                     >
                                                         {heading.text}
@@ -315,25 +294,21 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
             <div ref={desktopWrapperRef} className="relative hidden h-full lg:block lg:w-52">
                 <div
                     ref={desktopContainerRef}
-                    className={cn(
-                        "max-h-[calc(100vh-8rem)] overflow-y-auto",
-                        desktopMode === "fixed" && "fixed z-30",
-                        desktopMode === "bottom" && "absolute left-0 right-0",
-                    )}
+                    className={cn("max-h-[calc(100vh-8rem)] overflow-y-auto", desktopMode === "fixed" && "fixed z-30", desktopMode === "bottom" && "absolute left-0 right-0")}
                     style={
                         desktopMode === "fixed" && desktopStyle
                             ? {
-                                top: `${desktopTopOffset}px`,
-                                left: `${desktopStyle.left}px`,
-                                width: `${desktopStyle.width}px`,
-                            }
+                                  top: `${desktopTopOffset}px`,
+                                  left: `${desktopStyle.left}px`,
+                                  width: `${desktopStyle.width}px`,
+                              }
                             : desktopMode === "bottom" && desktopStyle
-                                ? { top: `${desktopStyle.top}px` }
-                                : undefined
+                              ? { top: `${desktopStyle.top}px` }
+                              : undefined
                     }
                 >
                     <div className="flex items-start gap-2">
-                        <IconAlignLeft size={20}/>
+                        <IconAlignLeft size={20} />
                         <h3 className="mb-2 text-sm font-semibold">Content</h3>
                     </div>
                     <div ref={desktopTocRef} className="relative border-l border-white/20 ml-1">
@@ -354,7 +329,7 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
                                     className={cn(
                                         "block py-1 pl-4 text-sm text-white/60 transition-colors hover:text-white",
                                         heading.level >= 3 && "pl-7",
-                                        activeIds.includes(heading.id) && "text-white",
+                                        activeIds.includes(heading.id) && "text-white"
                                     )}
                                 >
                                     {heading.text}

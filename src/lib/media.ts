@@ -10,7 +10,7 @@ export function getMediaUrl(url?: string | null) {
         const isAppPayloadUrl = appOrigin ? parsedUrl.origin === appOrigin : false
 
         if ((isLocalPayloadUrl || isAppPayloadUrl) && parsedUrl.pathname.startsWith("/api/media/file/")) {
-        return `${parsedUrl.pathname}${parsedUrl.search}`
+            return `${parsedUrl.pathname}${parsedUrl.search}`
         }
     } catch {
         return url

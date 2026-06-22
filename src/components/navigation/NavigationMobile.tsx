@@ -123,10 +123,7 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({ locale, items, butt
             <Container>
                 <div ref={rootRef} className="relative my-6">
                     <motion.div
-                        className={cn(
-                            "pointer-events-none absolute inset-0 rounded-2xl shadow-sm will-change-transform",
-                            isScrolled || isShellExpanded ? "bg-primary/70 backdrop-blur-md" : "bg-transparent shadow-none"
-                        )}
+                        className={cn("pointer-events-none absolute inset-0 rounded-2xl will-change-transform", isScrolled || isShellExpanded ? "bg-primary/70 backdrop-blur-md" : "bg-transparent")}
                         initial={false}
                         animate={{
                             scaleX: shellScale,

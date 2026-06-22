@@ -28,9 +28,7 @@ export function useNavigationScrollState(options: UseNavigationScrollStateOption
                 frame = 0
 
                 setIsScrolled((previousIsScrolled) => {
-                    const nextIsScrolled = previousIsScrolled
-                        ? window.scrollY > scrollCloseThreshold
-                        : window.scrollY > scrollOpenThreshold
+                    const nextIsScrolled = previousIsScrolled ? window.scrollY > scrollCloseThreshold : window.scrollY > scrollOpenThreshold
 
                     if (previousIsScrolled !== nextIsScrolled) {
                         onScrollStateChangeRef.current?.(nextIsScrolled)

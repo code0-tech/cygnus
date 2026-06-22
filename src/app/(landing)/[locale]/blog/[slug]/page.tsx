@@ -45,13 +45,9 @@ export default async function Page({ params }: { params: LocaleSlugPageParams })
                                 />
 
                                 <div className={"relative z-20 flex w-full max-w-4xl flex-col items-center gap-8 text-center md:flex-row md:items-center md:text-left"}>
-                                    <div
-                                        className={
-                                            "relative flex size-32 shrink-0 items-center justify-center rounded-3xl border border-white/10 bg-white/5 shadow-[0_18px_46px_rgba(0,0,0,0.24)] backdrop-blur-md md:size-40"
-                                        }
-                                    >
-                                        <div className={"relative isolate flex items-center justify-center rounded-3xl ring ring-white/10 px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"}>
-                                            <div aria-hidden="true" className="pointer-events-none absolute inset-0 rounded-[1.25rem] bg-linear-to-br from-primary via-primary to-secondary" />
+                                    <div className={"relative flex size-32 shrink-0 items-center justify-center rounded-3xl border border-white/10 bg-white/5 md:size-40"}>
+                                        <div className={"relative isolate flex items-center justify-center rounded-3xl ring ring-white/10 px-4 py-4"}>
+                                            <div aria-hidden="true" className="pointer-events-none absolute inset-0 rounded-[1.25rem] bg-linear-to-br from-primary via-primary to-slate-900" />
                                             <Image src={"/code0_logo_white.png"} width={"120"} height={"120"} alt={"Code0 Logo"} className={"z-20"} />
                                         </div>
                                     </div>
@@ -59,11 +55,7 @@ export default async function Page({ params }: { params: LocaleSlugPageParams })
                                     <div className={"z-20 flex max-w-2xl flex-col items-center text-center md:items-start md:text-left"}>
                                         <p className={"max-w-xl text-3xl font-semibold leading-tight text-white"}>{ctaBlock?.heading ?? "Contact us"}</p>
                                         <p className={"mb-4 max-w-xl text-base leading-7 text-white/70"}>{ctaBlock?.subheading ?? ""}</p>
-                                        <HapticButtonLink
-                                            href={"/contact"}
-                                            variant="normal"
-                                            className={"h-11 rounded-xl px-8! bg-white/90! text-primary! shadow-[0_12px_28px_rgba(255,255,255,0.12)] hover:bg-white!"}
-                                        >
+                                        <HapticButtonLink href={"/contact"} variant="normal" className={"h-11 rounded-xl px-8! bg-white/90! text-primary! hover:bg-white!"}>
                                             Contact us
                                         </HapticButtonLink>
                                     </div>

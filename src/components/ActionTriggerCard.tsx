@@ -45,7 +45,7 @@ export function ActionTriggerCard({ type, item }: ActionTriggerCardProps) {
                             question={`${parameterLabel} (${parameters.length})`}
                             isOpen={openItem === 0}
                             onToggle={toggleItem}
-                            className="rounded-lg shadow-none! before:bg-none"
+                            className="rounded-lg before:bg-none"
                             questionClassname="pl-5 pr-2 py-1 text-sm lg:text-sm"
                             answer={
                                 <div className="flex flex-col gap-2">

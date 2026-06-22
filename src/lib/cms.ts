@@ -28,7 +28,6 @@ export type BlogLayoutBlock = Extract<PageLayoutBlock, { blockType: "blog" }>
 export type RoadmapLayoutBlock = Extract<PageLayoutBlock, { blockType: "roadmap" }>
 export type ScrollCardsLayoutBlock = Extract<PageLayoutBlock, { blockType: "scrollCards" }>
 
-
 type FeatureSlug = Feature["slug"]
 interface FeatureItem {
     id: Feature["id"]
@@ -150,13 +149,15 @@ export interface SubscriptionConfigData {
         caption: string
     }
     additionalFeaturesLabel?: string | null
-    additionalFeatures?: {
-        icon: string
-        title: string
-        description: string
-        price: number
-        id?: string | null
-    }[] | null
+    additionalFeatures?:
+        | {
+              icon: string
+              title: string
+              description: string
+              price: number
+              id?: string | null
+          }[]
+        | null
 }
 
 function isMissingPayloadTablesError(error: unknown): boolean {
@@ -165,16 +166,16 @@ function isMissingPayloadTablesError(error: unknown): boolean {
     }
 
     const pgCode = "code" in error ? error.code : undefined
-    const message = "message" in error && typeof error.message === "string"
-        ? error.message.toLowerCase()
-        : ""
+    const message = "message" in error && typeof error.message === "string" ? error.message.toLowerCase() : ""
     const cause = "cause" in error ? error.cause : undefined
 
-    return pgCode === "42P01"
-        || pgCode === "3F000"
-        || (message.includes("relation") && message.includes("does not exist"))
-        || (message.includes("schema") && message.includes("does not exist"))
-        || isMissingPayloadTablesError(cause)
+    return (
+        pgCode === "42P01" ||
+        pgCode === "3F000" ||
+        (message.includes("relation") && message.includes("does not exist")) ||
+        (message.includes("schema") && message.includes("does not exist")) ||
+        isMissingPayloadTablesError(cause)
+    )
 }
 
 async function withCmsFallback<T>(operation: string, fallback: T, run: () => Promise<T>): Promise<T> {
@@ -215,7 +216,7 @@ async function cmsFind<T>(args: CmsFindArgs): Promise<T[]> {
 async function cmsFindGlobal<T>(operation: string, fallback: T | null, args: CmsGlobalArgs): Promise<T | null> {
     return withCmsFallback(operation, fallback, async () => {
         const payload = await getPayloadClient()
-        return await payload.findGlobal(args as never) as T
+        return (await payload.findGlobal(args as never)) as T
     })
 }
 
@@ -307,7 +308,7 @@ const getFeaturesCached = cache(async (locale: AppLocale): Promise<FeatureItem[]
 
         return docs
             .filter((feature): feature is Feature & { title: string; description: string; link: { label: string; url: string } } =>
-                Boolean(feature.title && feature.description && feature.link?.label && feature.link?.url),
+                Boolean(feature.title && feature.description && feature.link?.label && feature.link?.url)
             )
             .map((feature) => ({
                 id: feature.id,
@@ -438,41 +439,45 @@ const getBlogPostBySlugCached = cache(async (slug: string, locale: AppLocale): P
 })
 
 const getBlogPostsCached = cache(async (locale: AppLocale, page: number, limit: number): Promise<PaginatedBlogPostsResult> => {
-    return withCmsFallback(`getBlogPosts(${locale}, ${page}, ${limit})`, {
-        posts: [],
-        hasNextPage: false,
-        nextPage: null,
-        totalDocs: 0,
-    }, async () => {
-        const payload = await getPayloadClient()
-        const result = await payload.find({
-            collection: "blog",
-            locale,
-            fallbackLocale: DEFAULT_LOCALE,
-            depth: 1,
-            sort: "-isPinned,-createdAt",
-            page,
-            limit,
-            pagination: true,
-            select: {
-                title: true,
-                slug: true,
-                isPinned: true,
-                content: true,
-                shortDescription: true,
-                createdAt: true,
-                heroImage: true,
-                author: true,
-            },
-        })
+    return withCmsFallback(
+        `getBlogPosts(${locale}, ${page}, ${limit})`,
+        {
+            posts: [],
+            hasNextPage: false,
+            nextPage: null,
+            totalDocs: 0,
+        },
+        async () => {
+            const payload = await getPayloadClient()
+            const result = await payload.find({
+                collection: "blog",
+                locale,
+                fallbackLocale: DEFAULT_LOCALE,
+                depth: 1,
+                sort: "-isPinned,-createdAt",
+                page,
+                limit,
+                pagination: true,
+                select: {
+                    title: true,
+                    slug: true,
+                    isPinned: true,
+                    content: true,
+                    shortDescription: true,
+                    createdAt: true,
+                    heroImage: true,
+                    author: true,
+                },
+            })
 
-        return {
-            posts: sortBlogPosts((result.docs as BlogPostItem[]) ?? []),
-            hasNextPage: result.hasNextPage,
-            nextPage: result.nextPage ?? null,
-            totalDocs: result.totalDocs,
+            return {
+                posts: sortBlogPosts((result.docs as BlogPostItem[]) ?? []),
+                hasNextPage: result.hasNextPage,
+                nextPage: result.nextPage ?? null,
+                totalDocs: result.totalDocs,
+            }
         }
-    })
+    )
 })
 
 const getBlogSlugsCached = cache(async (locale: AppLocale): Promise<string[]> => {
@@ -549,10 +554,7 @@ export async function getBlogPostBySlug(slug: string, locale: AppLocale = DEFAUL
     return getBlogPostBySlugCached(slug, locale)
 }
 
-export async function getBlogPosts(
-    locale: AppLocale = DEFAULT_LOCALE,
-    options?: { page?: number, limit?: number },
-): Promise<PaginatedBlogPostsResult> {
+export async function getBlogPosts(locale: AppLocale = DEFAULT_LOCALE, options?: { page?: number; limit?: number }): Promise<PaginatedBlogPostsResult> {
     return getBlogPostsCached(locale, options?.page ?? 1, options?.limit ?? 12)
 }
 

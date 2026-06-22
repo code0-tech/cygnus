@@ -64,27 +64,17 @@ interface TranslationLike {
     content?: unknown
 }
 
-const isRecord = (value: unknown): value is JsonRecord => (
-    typeof value === "object" && value !== null && !Array.isArray(value)
-)
+const isRecord = (value: unknown): value is JsonRecord => typeof value === "object" && value !== null && !Array.isArray(value)
 
-const getString = (value: unknown): string => (
-    typeof value === "string" ? value : ""
-)
+const getString = (value: unknown): string => (typeof value === "string" ? value : "")
 
-const getBoolean = (value: unknown): boolean | undefined => (
-    typeof value === "boolean" ? value : undefined
-)
+const getBoolean = (value: unknown): boolean | undefined => (typeof value === "boolean" ? value : undefined)
 
-const getArray = (value: unknown): unknown[] => (
-    Array.isArray(value) ? value : []
-)
+const getArray = (value: unknown): unknown[] => (Array.isArray(value) ? value : [])
 
-const getNodes = (value: unknown): unknown[] => (
-    isRecord(value) ? getArray(value.nodes) : []
-)
+const getNodes = (value: unknown): unknown[] => (isRecord(value) ? getArray(value.nodes) : [])
 
-const getTranslations = (value: unknown): ActionTriggerTranslation[] => (
+const getTranslations = (value: unknown): ActionTriggerTranslation[] =>
     getArray(value)
         .filter(isRecord)
         .map((translation: TranslationLike) => ({
@@ -92,18 +82,14 @@ const getTranslations = (value: unknown): ActionTriggerTranslation[] => (
             content: getString(translation.content),
         }))
         .filter((translation) => translation.content.length > 0)
-)
 
-const getPrimaryTranslation = (value: unknown): string => (
-    getTranslations(value)[0]?.content ?? ""
-)
+const getPrimaryTranslation = (value: unknown): string => getTranslations(value)[0]?.content ?? ""
 
-const getAliases = (value: unknown): string[] => (
+const getAliases = (value: unknown): string[] =>
     getTranslations(value)
         .reduce<string[]>((aliases, translation) => aliases.concat(translation.content.split(";")), [])
         .map((alias) => alias.trim())
         .filter(Boolean)
-)
 
 export function extractTriggersFromJson(json: unknown): ExtractedTrigger[] {
     return getArray(json)
@@ -160,9 +146,7 @@ export function extractFunctionDefsFromJson(json: unknown): ExtractedFunctionDef
                     identifier: getString(dataType.identifier),
                 }))
                 .filter((dataType) => dataType.id && dataType.identifier),
-            runtimeIdentifier: isRecord(functionDef.runtimeFunctionDefinition)
-                ? getString(functionDef.runtimeFunctionDefinition.identifier) || undefined
-                : undefined,
+            runtimeIdentifier: isRecord(functionDef.runtimeFunctionDefinition) ? getString(functionDef.runtimeFunctionDefinition.identifier) || undefined : undefined,
         }))
         .filter((functionDef) => functionDef.id && functionDef.identifier)
 }

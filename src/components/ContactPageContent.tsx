@@ -17,7 +17,7 @@ export function ContactPageContent({ locale, contactBlock }: ContactPageContentP
     const pageDescription = contactBlock?.description ?? "Contact us if you want to know more about CodeZero."
 
     const [desktopMode, setDesktopMode] = useState<"static" | "fixed" | "bottom">("static")
-    const [desktopStyle, setDesktopStyle] = useState<{ left: number, width: number, top: number } | null>(null)
+    const [desktopStyle, setDesktopStyle] = useState<{ left: number; width: number; top: number } | null>(null)
 
     const desktopWrapperRef = useRef<HTMLElement>(null)
     const desktopContainerRef = useRef<HTMLDivElement>(null)
@@ -43,19 +43,12 @@ export function ContactPageContent({ locale, contactBlock }: ContactPageContentP
             const wrapperTop = window.scrollY + wrapperRect.top
             const fixedTop = window.scrollY + desktopTopOffset
 
-            const nextMode =
-                fixedTop <= wrapperTop
-                    ? "static"
-                    : fixedTop >= wrapperTop + maxTop
-                        ? "bottom"
-                        : "fixed"
+            const nextMode = fixedTop <= wrapperTop ? "static" : fixedTop >= wrapperTop + maxTop ? "bottom" : "fixed"
 
             setDesktopMode((prev) => (prev === nextMode ? prev : nextMode))
-            setDesktopStyle((prev) => (
-                prev?.left === wrapperRect.left && prev?.width === wrapperRect.width && prev?.top === maxTop
-                    ? prev
-                    : { left: wrapperRect.left, width: wrapperRect.width, top: maxTop }
-            ))
+            setDesktopStyle((prev) =>
+                prev?.left === wrapperRect.left && prev?.width === wrapperRect.width && prev?.top === maxTop ? prev : { left: wrapperRect.left, width: wrapperRect.width, top: maxTop }
+            )
         }
 
         updateDesktopPosition()
@@ -88,21 +81,17 @@ export function ContactPageContent({ locale, contactBlock }: ContactPageContentP
             <section ref={desktopWrapperRef} className="relative min-w-0">
                 <div
                     ref={desktopContainerRef}
-                    className={cn(
-                        "relative z-10",
-                        desktopMode === "fixed" && "fixed z-30",
-                        desktopMode === "bottom" && "absolute left-0 right-0",
-                    )}
+                    className={cn("relative z-10", desktopMode === "fixed" && "fixed z-30", desktopMode === "bottom" && "absolute left-0 right-0")}
                     style={
                         desktopMode === "fixed" && desktopStyle
                             ? {
-                                top: `${desktopTopOffset}px`,
-                                left: `${desktopStyle.left}px`,
-                                width: `${desktopStyle.width}px`,
-                            }
+                                  top: `${desktopTopOffset}px`,
+                                  left: `${desktopStyle.left}px`,
+                                  width: `${desktopStyle.width}px`,
+                              }
                             : desktopMode === "bottom" && desktopStyle
-                                ? { top: `${desktopStyle.top}px` }
-                                : undefined
+                              ? { top: `${desktopStyle.top}px` }
+                              : undefined
                     }
                 >
                     <ContactForm content={contactBlock} locale={locale} />

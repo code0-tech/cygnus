@@ -12,20 +12,9 @@ export function getClientIdentifier(request: Request) {
     return ip || request.headers.get("x-real-ip") || "unknown"
 }
 
-export const escapeHtml = (value: string): string =>
-    value
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;")
+export const escapeHtml = (value: string): string => value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;")
 
-export const getRateLimitConfig = (
-    maxEnvKey: string,
-    windowEnvKey: string,
-    defaultMax = DEFAULT_RATE_LIMIT_MAX,
-    defaultWindowSeconds = DEFAULT_RATE_LIMIT_WINDOW_SECONDS
-) => {
+export const getRateLimitConfig = (maxEnvKey: string, windowEnvKey: string, defaultMax = DEFAULT_RATE_LIMIT_MAX, defaultWindowSeconds = DEFAULT_RATE_LIMIT_WINDOW_SECONDS) => {
     const maxRaw = process.env[maxEnvKey]
     const windowRaw = process.env[windowEnvKey]
 

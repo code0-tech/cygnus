@@ -14,16 +14,7 @@ export function LogoItem({ logo: logoValue, className, sizes = "(min-width: 768p
     const logo = logoValue as Media
     const logoUrl = getMediaUrl(logo.url)
 
-    const image = (
-        <Image
-            src={logoUrl}
-            alt={logo.alt}
-            fill
-            unoptimized
-            className="object-contain brightness-0 invert"
-            sizes={sizes}
-        />
-    )
+    const image = <Image src={logoUrl} alt={logo.alt} fill unoptimized className="object-contain brightness-0 invert" sizes={sizes} />
 
     return (
         <div className={cn("relative h-14", className)}>
@@ -31,7 +22,9 @@ export function LogoItem({ logo: logoValue, className, sizes = "(min-width: 768p
                 <a href={href} className="relative block h-full w-full">
                     {image}
                 </a>
-            ) : image}
+            ) : (
+                image
+            )}
         </div>
     )
 }

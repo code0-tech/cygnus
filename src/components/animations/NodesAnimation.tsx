@@ -20,15 +20,7 @@ export interface NodeItem {
     outline: boolean
 }
 
-function NodeRow({
-    nodes,
-    direction,
-    active,
-}: {
-    nodes: NodeItem[]
-    direction: "left" | "right"
-    active: boolean
-}) {
+function NodeRow({ nodes, direction, active }: { nodes: NodeItem[]; direction: "left" | "right"; active: boolean }) {
     const listRef = useRef<HTMLDivElement>(null)
     const [loopDistance, setLoopDistance] = useState(0)
     const groupGap = 16
@@ -46,48 +38,34 @@ function NodeRow({
             switch (segment.type) {
                 case "literal":
                     return (
-                        <StableBadge
-                            key={`${segment.type}-${segment.value}-${index}`}
-                            style={{ verticalAlign: "middle" }}
-                            color={"secondary"}
-                        >
-                            <Text size={"sm"}>
-                                {segment.value}
-                            </Text>
+                        <StableBadge key={`${segment.type}-${segment.value}-${index}`} style={{ verticalAlign: "middle" }} color={"secondary"}>
+                            <Text size={"sm"}>{segment.value}</Text>
                         </StableBadge>
                     )
                 case "reference":
                     return (
-                        <StableBadge
-                            key={`${segment.type}-${segment.value}-${index}`}
-                            style={{ verticalAlign: "middle" }}
-                            color={"warning"}
-                            border
-                            className="py-0"
-                        >
-                            <IconVariable size={12}/>
-                            <Text size={"sm"} style={{color: "inherit"}}>
+                        <StableBadge key={`${segment.type}-${segment.value}-${index}`} style={{ verticalAlign: "middle" }} color={"warning"} border className="py-0">
+                            <IconVariable size={12} />
+                            <Text size={"sm"} style={{ color: "inherit" }}>
                                 {segment.value}
                             </Text>
                         </StableBadge>
                     )
                 case "node":
                     return (
-                        <StableBadge
-                            key={`${segment.type}-${segment.value}-${index}`}
-                            style={{ verticalAlign: "middle", textWrap: "nowrap" }}
-                            border
-                        >
-                            <IconNote size={12}/>
-                            <Text size={"sm"} style={{color: "inherit"}}>
+                        <StableBadge key={`${segment.type}-${segment.value}-${index}`} style={{ verticalAlign: "middle", textWrap: "nowrap" }} border>
+                            <IconNote size={12} />
+                            <Text size={"sm"} style={{ color: "inherit" }}>
                                 {segment.value}
                             </Text>
                         </StableBadge>
                     )
                 case "text":
-                    return <Text key={`${segment.type}-${index}`} size="sm" style={{ color: "inherit" }}>
-                        {segment.value}
-                    </Text>
+                    return (
+                        <Text key={`${segment.type}-${index}`} size="sm" style={{ color: "inherit" }}>
+                            {segment.value}
+                        </Text>
+                    )
             }
         })
     }
@@ -112,24 +90,21 @@ function NodeRow({
     return (
         <div
             className="flex w-max items-start gap-4 will-change-transform"
-            style={loopDistance > 0 ? {
-                animationName: direction === "left" ? "node-marquee-left" : "node-marquee-right",
-                animationDuration: `${duration}s`,
-                animationTimingFunction: "linear",
-                animationIterationCount: "infinite",
-                animationPlayState: active ? "running" : "paused",
-            } : undefined}
+            style={
+                loopDistance > 0
+                    ? {
+                          animationName: direction === "left" ? "node-marquee-left" : "node-marquee-right",
+                          animationDuration: `${duration}s`,
+                          animationTimingFunction: "linear",
+                          animationIterationCount: "infinite",
+                          animationPlayState: active ? "running" : "paused",
+                      }
+                    : undefined
+            }
         >
             <div ref={listRef} className="flex items-start gap-4">
                 {nodes.map((node, index) => (
-                    <Card
-                        key={`${direction}-${node.color}-${index}`}
-                        paddingSize="xs"
-                        py="0.35"
-                        borderColor="info"
-                        color="primary"
-                        outline={node.outline}
-                    >
+                    <Card key={`${direction}-${node.color}-${index}`} paddingSize="xs" py="0.35" borderColor="info" color="primary" outline={node.outline}>
                         <Flex align="center" style={{ gap: "0.7rem" }}>
                             <IconNote color={iconColorMap[node.color]} size={16} />
                             <Flex align="center" wrap="wrap" style={{ gap: "0.35rem", color: "var(--color-text-primary)" }}>
@@ -141,14 +116,7 @@ function NodeRow({
             </div>
             <div className="flex items-start gap-4" aria-hidden="true">
                 {nodes.map((node, index) => (
-                    <Card
-                        key={`${direction}-clone-${node.color}-${index}`}
-                        paddingSize="xs"
-                        py="0.35"
-                        borderColor="info"
-                        color="primary"
-                        outline={node.outline}
-                    >
+                    <Card key={`${direction}-clone-${node.color}-${index}`} paddingSize="xs" py="0.35" borderColor="info" color="primary" outline={node.outline}>
                         <Flex align="center" style={{ gap: "0.7rem" }}>
                             <IconNote color={iconColorMap[node.color]} size={16} />
                             <Flex align="center" wrap="wrap" style={{ gap: "0.35rem", color: "var(--color-text-primary)" }}>
@@ -193,9 +161,7 @@ const defaultNodes: NodeItem[] = [
     {
         color: "blue",
         outline: true,
-        segments: [
-            { type: "text", value: "Only continue if status equals approved" },
-        ],
+        segments: [{ type: "text", value: "Only continue if status equals approved" }],
     },
     {
         color: "aqua",
@@ -227,9 +193,7 @@ const defaultNodes: NodeItem[] = [
     {
         color: "pink",
         outline: true,
-        segments: [
-            { type: "text", value: "This node only contains plain text" },
-        ],
+        segments: [{ type: "text", value: "This node only contains plain text" }],
     },
     {
         color: "yellow",
