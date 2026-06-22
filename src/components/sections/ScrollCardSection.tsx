@@ -8,7 +8,8 @@ import { cn } from "@/lib/utils"
 import type { Media } from "@/payload-types"
 import { m as motion } from "motion/react"
 import Image from "next/image"
-import React, { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
+import { Card } from "../ui/Card"
 
 interface ScrollCardSectionProps {
     content?: ScrollCardsLayoutBlock | null
@@ -27,22 +28,6 @@ function getImage(image: number | Media | null | undefined) {
 function clamp(value: number, min: number, max: number) {
     return Math.min(Math.max(value, min), max)
 }
-
-const cardGradients = {
-    blue: "rgba(114,201,248,0.2)",
-    yellow: "rgba(248,241,114,0.2)",
-    pink: "rgba(248,114,226,0.2)",
-    aqua: "rgba(122,203,255,0.2)",
-    brand: "rgba(145,232,120,0.2)",
-    neutral: "rgba(255,255,255,0.1)",
-} as const
-
-const gradientDirections = {
-    topLeft: "top left",
-    topRight: "top right",
-    bottomLeft: "bottom left",
-    bottomRight: "bottom right",
-} as const
 
 export function ScrollCardSection({ content }: ScrollCardSectionProps) {
     const containerRef = useRef<HTMLDivElement | null>(null)
@@ -98,7 +83,6 @@ export function ScrollCardSection({ content }: ScrollCardSectionProps) {
     }, [])
 
     if (items.length === 0) return null
-    const activeShadowIndex = Math.min(items.length - 1, Math.floor(scrollProgress / viewportHeight) + 1)
 
     return (
         <Section showFunnel={false} animation={{ preset: "none" }}>
@@ -119,38 +103,30 @@ export function ScrollCardSection({ content }: ScrollCardSectionProps) {
                         const image = getImage(item.image)
                         const imageUrl = getMediaUrl(image?.url)
                         const itemSettings = item as {
-                            gradient?: keyof typeof cardGradients | null
-                            gradientDirection?: keyof typeof gradientDirections | null
                             sectionLayout?: "imageRight" | "imageLeft" | null
                             showImageBorder?: boolean | null
                         }
                         const isImageLeft = itemSettings.sectionLayout === "imageLeft"
                         const showImageBorder = itemSettings.showImageBorder ?? true
-                        const gradient = cardGradients[itemSettings.gradient ?? "blue"] ?? cardGradients.blue
-                        const gradientDirection = gradientDirections[itemSettings.gradientDirection ?? "topLeft"] ?? gradientDirections.topLeft
                         const segmentProgress = index === 0 ? 1 : clamp((scrollProgress - (index - 1) * viewportHeight) / viewportHeight, 0, 1)
                         const translateY = (1 - segmentProgress) * 100
 
                         return (
                             <motion.article
                                 key={item.id ?? `${item.title}-${index}`}
-                                className={cn("absolute inset-0 will-change-transform [&>div]:shadow-none!", index === activeShadowIndex && "[&>div]:shadow-[0_16px_44px_rgba(0,0,0,0.3)]!")}
+                                className="absolute inset-0 will-change-transform"
                                 style={{
                                     opacity: 1,
                                     transform: `translateY(${translateY}%)`,
                                     zIndex: index + 1,
                                 }}
                             >
-                                <div className="relative grid h-[80%] overflow-hidden rounded-3xl border border-white/10 bg-primary! p-4 md:grid-cols-[0.95fr_1.05fr] shadow-xl">
-                                    <div aria-hidden="true" className="glass-card-topline" />
-                                    <div
-                                        aria-hidden="true"
-                                        className="pointer-events-none absolute inset-0"
-                                        style={{
-                                            backgroundImage: `radial-gradient(circle at ${gradientDirection}, ${gradient}, transparent 36%)`,
-                                        }}
-                                    />
-
+                                <Card
+                                    size="lg"
+                                    gradientDirection={item.gradientDirection}
+                                    radialGradient={item.gradient}
+                                    className="relative grid h-[80%] overflow-hidden bg-primary! p-4 md:grid-cols-[0.95fr_1.05fr]"
+                                >
                                     <div className={cn("relative z-10 flex h-full flex-col justify-between gap-10 rounded-3xl p-4 md:p-8", isImageLeft && "md:order-2")}>
                                         <div className="flex flex-col gap-4">
                                             <h2 className="max-w-xl text-3xl font-semibold text-white md:text-5xl">{item.title}</h2>
@@ -158,18 +134,16 @@ export function ScrollCardSection({ content }: ScrollCardSectionProps) {
                                         </div>
 
                                         <div className="space-y-6">
-                                            {item.bulletPoints?.length ? (
-                                                <ul className="grid gap-2 text-sm text-white/75 md:text-base">
-                                                    {item.bulletPoints.map((point, pointIndex) => (
-                                                        <li key={`${item.id ?? item.title}-point-${pointIndex}`} className="flex items-start gap-3">
-                                                            <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brand" />
-                                                            <span>{point}</span>
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            ) : null}
+                                            <ul className="grid gap-2 text-sm text-white/75 md:text-base">
+                                                {item.bulletPoints?.map((point, pointIndex) => (
+                                                    <li key={`${item.id ?? item.title}-point-${pointIndex}`} className="flex items-start gap-3">
+                                                        <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brand" />
+                                                        <span>{point}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
 
-                                            {item.link?.label && item.link?.url ? <LinkButton href={item.link.url}>{item.link.label}</LinkButton> : null}
+                                            {item.link?.label && item.link?.url && <LinkButton href={item.link.url}>{item.link.label}</LinkButton>}
                                         </div>
                                     </div>
 
@@ -182,7 +156,7 @@ export function ScrollCardSection({ content }: ScrollCardSectionProps) {
                                     >
                                         {imageUrl && <Image src={imageUrl} alt={image?.alt ?? item.title} fill sizes="(min-width: 768px) 50vw, 100vw" className="object-contain object-center" />}
                                     </div>
-                                </div>
+                                </Card>
                             </motion.article>
                         )
                     })}

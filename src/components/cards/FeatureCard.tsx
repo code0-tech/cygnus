@@ -31,21 +31,16 @@ const toneStyles: Record<FeatureCardTone, Required<FeatureCardStyle>> = {
     },
 }
 
-export function FeatureCard({
-    children,
-    className,
-    contentClassName,
-    tone = "brand",
-    style,
-    animationDelay = 0,
-}: {
+interface FeatureCardProps {
     children: ReactNode
     className?: string
     contentClassName?: string
     tone?: FeatureCardTone
     style?: FeatureCardStyle
     animationDelay?: number
-}) {
+}
+
+export function FeatureCard({ children, className, contentClassName, tone = "brand", style, animationDelay = 0 }: FeatureCardProps) {
     const toneStyle = {
         ...toneStyles[tone],
         ...style,
@@ -55,7 +50,7 @@ export function FeatureCard({
         <Card
             size="lg"
             className={cn(
-                "glass-card-shell group h-full rounded-3xl translate-y-8 opacity-0 transition-[transform,opacity] duration-700 ease-out group-data-[in-view=true]/section:translate-y-0 group-data-[in-view=true]/section:opacity-100",
+                "group h-full translate-y-8 opacity-0 overflow-hidden transition-[transform,opacity] duration-700 ease-out group-data-[in-view=true]/section:translate-y-0 group-data-[in-view=true]/section:opacity-100",
                 className
             )}
             style={{ transitionDelay: `${animationDelay}ms` }}
