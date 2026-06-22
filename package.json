@@ -68,7 +68,7 @@
         "lodash": "4.18.1",
         "file-type": "22.0.0",
         "undici": "8.4.1",
-        "dompurify": "3.4.8",
+        "dompurify": "3.4.11",
         "yaml": "2.9.0",
         "@esbuild-kit/core-utils": {
             "esbuild": "0.28.0"
