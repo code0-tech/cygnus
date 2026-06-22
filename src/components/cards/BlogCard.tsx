@@ -3,12 +3,12 @@
 import { BlogPostItem } from "@/lib/cms"
 import { getMediaUrl } from "@/lib/media"
 import { Media, TeamMember } from "@/payload-types"
-import { Card } from "@code0-tech/pictor"
 import Image from "next/image"
 import Link from "next/link"
 import { useWebHaptics } from "web-haptics/react"
+import { Card } from "../ui/Card"
 
-export function BlogCard({ locale, post }: { locale: string, post: BlogPostItem }) {
+export function BlogCard({ locale, post }: { locale: string; post: BlogPostItem }) {
     const { trigger } = useWebHaptics()
     const heroImage = post.heroImage as Media
     const heroImageUrl = getMediaUrl(heroImage?.url)
@@ -18,31 +18,15 @@ export function BlogCard({ locale, post }: { locale: string, post: BlogPostItem 
     }).format(new Date(post.createdAt))
 
     return (
-        <Link
-            href={`/${locale}/blog/${post.slug}`}
-            onClick={() => trigger("medium")}
-            className="block h-full"
-        >
-            <Card
-                className="glass-card-shell h-full p-2!"
-            >
-                <div aria-hidden="true" className="glass-card-topline" />
-
+        <Link href={`/${locale}/blog/${post.slug}`} onClick={() => trigger("medium")} className="block h-full">
+            <Card size="lg" variant={"light"} className="h-full p-2!">
                 <div className="relative z-10 flex h-full flex-row items-stretch gap-4 md:flex-col">
                     {heroImageUrl ? (
-                        <div className="relative w-40 aspect-video shrink-0 overflow-hidden rounded-2xl border border-white/8 bg-primary/40 md:w-full md:aspect-video">
-                            <Image
-                                src={heroImageUrl}
-                                alt={heroImage.alt ?? post.title}
-                                fill
-                                sizes="(min-width: 768px) 50vw, 160px"
-                                className="object-cover"
-                            />
+                        <div className="relative w-40 aspect-video shrink-0 overflow-hidden rounded-2xl bg-primary/40 md:w-full md:aspect-video">
+                            <Image src={heroImageUrl} alt={heroImage.alt ?? post.title} fill sizes="(min-width: 768px) 50vw, 160px" className="object-cover" />
                         </div>
                     ) : (
-                        <div className="image-placeholder w-40 aspect-video shrink-0 px-2 text-xs md:w-full md:aspect-video">
-                            {locale === "de" ? "Kein Bild" : "No image"}
-                        </div>
+                        <div className="image-placeholder w-40 aspect-video shrink-0 px-2 text-xs md:w-full md:aspect-video">{locale === "de" ? "Kein Bild" : "No image"}</div>
                     )}
 
                     <div className="min-w-0 flex-1 px-1 pb-1 md:flex md:flex-col md:justify-between">

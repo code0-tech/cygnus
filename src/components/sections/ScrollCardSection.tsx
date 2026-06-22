@@ -98,18 +98,11 @@ export function ScrollCardSection({ content }: ScrollCardSectionProps) {
     }, [])
 
     if (items.length === 0) return null
-    const activeShadowIndex = Math.min(
-        items.length - 1,
-        Math.floor(scrollProgress / viewportHeight) + 1,
-    )
+    const activeShadowIndex = Math.min(items.length - 1, Math.floor(scrollProgress / viewportHeight) + 1)
 
     return (
-        <Section showBlur={false} showFunnel={false} animationPreset="none">
-            <div
-                ref={containerRef}
-                className="relative"
-                style={{ height: `${Math.max(items.length, 1) * 100}vh` }}
-            >
+        <Section showFunnel={false} animation={{ preset: "none" }}>
+            <div ref={containerRef} className="relative" style={{ height: `${Math.max(items.length, 1) * 100}vh` }}>
                 <div
                     className="h-[calc(100vh-6rem)]"
                     style={{
@@ -122,101 +115,77 @@ export function ScrollCardSection({ content }: ScrollCardSectionProps) {
                         zIndex: 10,
                     }}
                 >
-                {items.map((item, index) => {
-                    const image = getImage(item.image)
-                    const imageUrl = getMediaUrl(image?.url)
-                    const itemSettings = item as {
-                        gradient?: keyof typeof cardGradients | null
-                        gradientDirection?: keyof typeof gradientDirections | null
-                        sectionLayout?: "imageRight" | "imageLeft" | null
-                        showImageBorder?: boolean | null
-                    }
-                    const isImageLeft = itemSettings.sectionLayout === "imageLeft"
-                    const showImageBorder = itemSettings.showImageBorder ?? true
-                    const gradient = cardGradients[itemSettings.gradient ?? "blue"] ?? cardGradients.blue
-                    const gradientDirection = gradientDirections[itemSettings.gradientDirection ?? "topLeft"] ?? gradientDirections.topLeft
-                    const segmentProgress = index === 0
-                        ? 1
-                        : clamp((scrollProgress - (index - 1) * viewportHeight) / viewportHeight, 0, 1)
-                    const translateY = (1 - segmentProgress) * 100
+                    {items.map((item, index) => {
+                        const image = getImage(item.image)
+                        const imageUrl = getMediaUrl(image?.url)
+                        const itemSettings = item as {
+                            gradient?: keyof typeof cardGradients | null
+                            gradientDirection?: keyof typeof gradientDirections | null
+                            sectionLayout?: "imageRight" | "imageLeft" | null
+                            showImageBorder?: boolean | null
+                        }
+                        const isImageLeft = itemSettings.sectionLayout === "imageLeft"
+                        const showImageBorder = itemSettings.showImageBorder ?? true
+                        const gradient = cardGradients[itemSettings.gradient ?? "blue"] ?? cardGradients.blue
+                        const gradientDirection = gradientDirections[itemSettings.gradientDirection ?? "topLeft"] ?? gradientDirections.topLeft
+                        const segmentProgress = index === 0 ? 1 : clamp((scrollProgress - (index - 1) * viewportHeight) / viewportHeight, 0, 1)
+                        const translateY = (1 - segmentProgress) * 100
 
-                    return (
-                        <motion.article
-                            key={item.id ?? `${item.title}-${index}`}
-                            className={cn(
-                                "absolute inset-0 will-change-transform [&>div]:shadow-none!",
-                                index === activeShadowIndex && "[&>div]:shadow-[0_16px_44px_rgba(0,0,0,0.3)]!",
-                            )}
-                            style={{
-                                opacity: 1,
-                                transform: `translateY(${translateY}%)`,
-                                zIndex: index + 1,
-                            }}
-                        >
-                            <div
-                                className="relative grid h-[80%] overflow-hidden rounded-3xl border border-white/10 bg-primary! p-4 md:grid-cols-[0.95fr_1.05fr] shadow-xl"
+                        return (
+                            <motion.article
+                                key={item.id ?? `${item.title}-${index}`}
+                                className={cn("absolute inset-0 will-change-transform [&>div]:shadow-none!", index === activeShadowIndex && "[&>div]:shadow-[0_16px_44px_rgba(0,0,0,0.3)]!")}
+                                style={{
+                                    opacity: 1,
+                                    transform: `translateY(${translateY}%)`,
+                                    zIndex: index + 1,
+                                }}
                             >
-                                <div aria-hidden="true" className="glass-card-topline" />
-                                <div
-                                    aria-hidden="true"
-                                    className="pointer-events-none absolute inset-0"
-                                    style={{
-                                        backgroundImage: `radial-gradient(circle at ${gradientDirection}, ${gradient}, transparent 36%)`,
-                                    }}
-                                />
+                                <div className="relative grid h-[80%] overflow-hidden rounded-3xl border border-white/10 bg-primary! p-4 md:grid-cols-[0.95fr_1.05fr] shadow-xl">
+                                    <div aria-hidden="true" className="glass-card-topline" />
+                                    <div
+                                        aria-hidden="true"
+                                        className="pointer-events-none absolute inset-0"
+                                        style={{
+                                            backgroundImage: `radial-gradient(circle at ${gradientDirection}, ${gradient}, transparent 36%)`,
+                                        }}
+                                    />
 
-                                <div className={cn(
-                                    "relative z-10 flex h-full flex-col justify-between gap-10 rounded-3xl p-4 md:p-8",
-                                    isImageLeft && "md:order-2",
-                                )}>
-                                    <div className="flex flex-col gap-4">
-                                        <h2 className="max-w-xl text-3xl font-semibold text-white md:text-5xl">
-                                            {item.title}
-                                        </h2>
-                                        <p className="max-w-xl text-base leading-7 text-white/75 md:text-lg">
-                                            {item.description}
-                                        </p>
+                                    <div className={cn("relative z-10 flex h-full flex-col justify-between gap-10 rounded-3xl p-4 md:p-8", isImageLeft && "md:order-2")}>
+                                        <div className="flex flex-col gap-4">
+                                            <h2 className="max-w-xl text-3xl font-semibold text-white md:text-5xl">{item.title}</h2>
+                                            <p className="max-w-xl text-base leading-7 text-white/75 md:text-lg">{item.description}</p>
+                                        </div>
+
+                                        <div className="space-y-6">
+                                            {item.bulletPoints?.length ? (
+                                                <ul className="grid gap-2 text-sm text-white/75 md:text-base">
+                                                    {item.bulletPoints.map((point, pointIndex) => (
+                                                        <li key={`${item.id ?? item.title}-point-${pointIndex}`} className="flex items-start gap-3">
+                                                            <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brand" />
+                                                            <span>{point}</span>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            ) : null}
+
+                                            {item.link?.label && item.link?.url ? <LinkButton href={item.link.url}>{item.link.label}</LinkButton> : null}
+                                        </div>
                                     </div>
 
-                                    <div className="space-y-6">
-                                        {item.bulletPoints?.length ? (
-                                            <ul className="grid gap-2 text-sm text-white/75 md:text-base">
-                                                {item.bulletPoints.map((point, pointIndex) => (
-                                                    <li key={`${item.id ?? item.title}-point-${pointIndex}`} className="flex items-start gap-3">
-                                                        <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brand" />
-                                                        <span>{point}</span>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        ) : null}
-
-                                        {item.link?.label && item.link?.url ? (
-                                            <LinkButton href={item.link.url}>
-                                                {item.link.label}
-                                            </LinkButton>
-                                        ) : null}
+                                    <div
+                                        className={cn(
+                                            "relative z-10 aspect-video w-full self-center overflow-hidden rounded-2xl",
+                                            showImageBorder && "border border-white/10",
+                                            isImageLeft && "md:order-1"
+                                        )}
+                                    >
+                                        {imageUrl && <Image src={imageUrl} alt={image?.alt ?? item.title} fill sizes="(min-width: 768px) 50vw, 100vw" className="object-contain object-center" />}
                                     </div>
                                 </div>
-
-                                <div className={cn(
-                                    "relative z-10 aspect-video w-full self-center overflow-hidden rounded-2xl",
-                                    showImageBorder && "border border-white/10",
-                                    isImageLeft && "md:order-1",
-                                )}>
-                                    {imageUrl && (
-                                        <Image
-                                            src={imageUrl}
-                                            alt={image?.alt ?? item.title}
-                                            fill
-                                            sizes="(min-width: 768px) 50vw, 100vw"
-                                            className="object-contain object-center"
-                                        />
-                                    )}
-                                </div>
-                            </div>
-                        </motion.article>
-                    )
-                })}
+                            </motion.article>
+                        )
+                    })}
                 </div>
             </div>
         </Section>

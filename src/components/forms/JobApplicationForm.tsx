@@ -6,6 +6,7 @@ import { Button, EmailInput, emailValidation, TextAreaInput, TextInput, useForm 
 import type { FocusEvent } from "react"
 import { useMemo, useState } from "react"
 import { useWebHaptics } from "web-haptics/react"
+import { Card } from "../ui/Card"
 
 interface JobApplicationFormContent {
     applicationHeading: string
@@ -46,33 +47,39 @@ export function JobApplicationForm({ jobSlug, content, locale }: JobApplicationF
     const { trigger } = useWebHaptics()
     const labels = { ...defaultContent, ...content }
     const [isSubmitting, setIsSubmitting] = useState(false)
-    const [submitStatus, setSubmitStatus] = useState<{ type: "success" | "error", message: string } | null>(null)
-    const initialValues = useMemo<JobApplicationFormValues>(() => ({
-        name: "",
-        email: "",
-        text: "",
-        acceptTerms: false,
-    }), [])
+    const [submitStatus, setSubmitStatus] = useState<{ type: "success" | "error"; message: string } | null>(null)
+    const initialValues = useMemo<JobApplicationFormValues>(
+        () => ({
+            name: "",
+            email: "",
+            text: "",
+            acceptTerms: false,
+        }),
+        []
+    )
 
-    const validation = useMemo(() => ({
-        name: (value: string) => {
-            if (!value) return "Name is required"
-            return null
-        },
-        email: (value: string) => {
-            if (!value) return "Email is required"
-            if (!emailValidation(value)) return "Please provide a valid email"
-            return null
-        },
-        text: (value: string) => {
-            if (!value) return "Message is required"
-            return null
-        },
-        acceptTerms: (value: boolean) => {
-            if (!value) return locale === "de" ? "Bitte akzeptiere die Bedingungen." : "Please accept the terms."
-            return null
-        },
-    }), [locale])
+    const validation = useMemo(
+        () => ({
+            name: (value: string) => {
+                if (!value) return "Name is required"
+                return null
+            },
+            email: (value: string) => {
+                if (!value) return "Email is required"
+                if (!emailValidation(value)) return "Please provide a valid email"
+                return null
+            },
+            text: (value: string) => {
+                if (!value) return "Message is required"
+                return null
+            },
+            acceptTerms: (value: boolean) => {
+                if (!value) return locale === "de" ? "Bitte akzeptiere die Bedingungen." : "Please accept the terms."
+                return null
+            },
+        }),
+        [locale]
+    )
 
     const [inputs, validate] = useForm({
         useInitialValidation: false,
@@ -122,8 +129,7 @@ export function JobApplicationForm({ jobSlug, content, locale }: JobApplicationF
     const acceptTermsInputProps = inputs.getInputProps("acceptTerms")
 
     return (
-        <div className="flex flex-col gap-4 glass-card-shell relative min-w-0 overflow-hidden rounded-3xl p-4 bg-primary/50">
-            <div aria-hidden="true" className="glass-card-topline" />
+        <Card variant={"light"} className="flex flex-col gap-4 relative min-w-0 overflow-hidden">
             <h1 className="text-4xl font-semibold text-white mb-4">{labels.applicationHeading}</h1>
             <TextInput
                 placeholder={labels.applicationNamePlaceholder}
@@ -161,11 +167,7 @@ export function JobApplicationForm({ jobSlug, content, locale }: JobApplicationF
                 }}
                 {...textInputProps}
             />
-            <AcceptTermsCheckbox
-                locale={locale}
-                revalidateOnToggle={() => validate("acceptTerms")}
-                {...acceptTermsInputProps}
-            />
+            <AcceptTermsCheckbox locale={locale} revalidateOnToggle={() => validate("acceptTerms")} {...acceptTermsInputProps} />
             <Button
                 type="submit"
                 variant="normal"
@@ -178,11 +180,7 @@ export function JobApplicationForm({ jobSlug, content, locale }: JobApplicationF
             >
                 {labels.applicationSubmitLabel}
             </Button>
-            {submitStatus && (
-                <p className={submitStatus.type === "success" ? "mt-2 text-sm text-green-300" : "mt-2 text-sm text-red-300"}>
-                    {submitStatus.message}
-                </p>
-            )}
-        </div>
+            {submitStatus && <p className={submitStatus.type === "success" ? "mt-2 text-sm text-green-300" : "mt-2 text-sm text-red-300"}>{submitStatus.message}</p>}
+        </Card>
     )
 }

@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils"
 import { ReactNode } from "react"
+import { Card } from "../ui/Card"
 
 type FeatureCardTone = "brand" | "aqua" | "blue" | "pink" | "yellow"
 type FeatureCardStyle = {
@@ -51,16 +52,16 @@ export function FeatureCard({
     }
 
     return (
-        <div
+        <Card
+            size="lg"
             className={cn(
                 "glass-card-shell group h-full rounded-3xl translate-y-8 opacity-0 transition-[transform,opacity] duration-700 ease-out group-data-[in-view=true]/section:translate-y-0 group-data-[in-view=true]/section:opacity-100",
                 className
             )}
             style={{ transitionDelay: `${animationDelay}ms` }}
         >
-            <div aria-hidden="true" className="glass-card-topline" />
             <div className={cn("pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.02),transparent_20%)] bg-linear-to-br opacity-30", toneStyle.glow)} />
             <div className={cn("absolute inset-0 z-10 flex h-full flex-col items-stretch justify-start gap-4 p-5 md:p-6", contentClassName)}>{children}</div>
-        </div>
+        </Card>
     )
 }

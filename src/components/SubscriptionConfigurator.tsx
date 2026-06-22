@@ -10,6 +10,7 @@ import { IconCheck } from "@tabler/icons-react"
 import type { ReactNode } from "react"
 import { useEffect, useRef, useState } from "react"
 import { LinkButton } from "./ui/LinkButton"
+import { Card } from "./ui/Card"
 
 type DeploymentMode = "self-hosted" | "cloud"
 type CustomerType = "b2b" | "b2c"
@@ -23,8 +24,7 @@ type SubscriptionSelection = {
 const defaultContent: Omit<SubscriptionConfigData, "id" | "title"> = {
     pageIntro: {
         heading: "Configure your setup before you talk pricing.",
-        description:
-            "Pick your operating model, customer shape, and usage pattern. The right-hand side updates into a purchase-ready configuration flow instead of a generic pricing table.",
+        description: "Pick your operating model, customer shape, and usage pattern. The right-hand side updates into a purchase-ready configuration flow instead of a generic pricing table.",
     },
     featureOverview: [
         {
@@ -99,13 +99,16 @@ const defaultContent: Omit<SubscriptionConfigData, "id" | "title"> = {
     },
 }
 
-const optionAccentStyles: Record<OptionAccent, {
-    activeBorder: string
-    activeBackground: string
-    activeRing: string
-    activeGlow: string
-    activeIcon: string
-}> = {
+const optionAccentStyles: Record<
+    OptionAccent,
+    {
+        activeBorder: string
+        activeBackground: string
+        activeRing: string
+        activeGlow: string
+        activeIcon: string
+    }
+> = {
     aqua: {
         activeBorder: "border-aqua/60",
         activeBackground: "from-aqua/14 via-white/[0.04] to-transparent",
@@ -169,10 +172,8 @@ function OptionCard({
             disabled={disabled}
             className={cn(
                 "relative overflow-hidden rounded-2xl border p-4 text-left transition-all duration-300",
-                disabled
-                    ? "cursor-not-allowed border-white/10 opacity-45"
-                    : "border-white/10 hover:bg-white/5",
-                active && cn("bg-linear-to-br ring-1", accentStyles.activeBorder, accentStyles.activeBackground, accentStyles.activeRing),
+                disabled ? "cursor-not-allowed border-white/10 opacity-45" : "border-white/10 hover:bg-white/5",
+                active && cn("bg-linear-to-br ring-1", accentStyles.activeBorder, accentStyles.activeBackground, accentStyles.activeRing)
             )}
         >
             <div className="relative z-10 flex flex-col gap-2">
@@ -181,20 +182,10 @@ function OptionCard({
                         {active ? (
                             <div
                                 aria-hidden="true"
-                                className={cn(
-                                    "pointer-events-none absolute left-1/2 top-1/2 h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-full blur-xl",
-                                    accentStyles.activeGlow,
-                                )}
+                                className={cn("pointer-events-none absolute left-1/2 top-1/2 h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-full blur-xl", accentStyles.activeGlow)}
                             />
                         ) : null}
-                        <div
-                            className={cn(
-                                "relative inline-flex items-center justify-center text-white/80 [&>svg]:h-[1.05em] [&>svg]:w-[1.05em]",
-                                active && accentStyles.activeIcon,
-                            )}
-                        >
-                            {icon}
-                        </div>
+                        <div className={cn("relative inline-flex items-center justify-center text-white/80 [&>svg]:h-[1.05em] [&>svg]:w-[1.05em]", active && accentStyles.activeIcon)}>{icon}</div>
                     </div>
                     <p className="text-base font-semibold text-white">{title}</p>
                 </div>
@@ -204,13 +195,11 @@ function OptionCard({
     )
 }
 
-function FeatureRow({ icon, title, description }: { icon: ReactNode, title: string, description: string }) {
+function FeatureRow({ icon, title, description }: { icon: ReactNode; title: string; description: string }) {
     return (
         <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
-                <div className="inline-flex shrink-0 items-center justify-center text-brand [&>svg]:h-[1.05em] [&>svg]:w-[1.05em]">
-                    {icon}
-                </div>
+                <div className="inline-flex shrink-0 items-center justify-center text-brand [&>svg]:h-[1.05em] [&>svg]:w-[1.05em]">{icon}</div>
                 <p className="text-base font-semibold tracking-wider text-white">{title}</p>
             </div>
             <p className="text-sm text-white/70">{description}</p>
@@ -242,7 +231,7 @@ function AdditionalFeatureCard({
             className={cn(
                 "relative overflow-hidden rounded-2xl border p-4 text-left transition-all duration-300",
                 "border-white/10 hover:bg-white/5",
-                active && cn("bg-linear-to-br ring-1", accentStyles.activeBorder, accentStyles.activeBackground, accentStyles.activeRing),
+                active && cn("bg-linear-to-br ring-1", accentStyles.activeBorder, accentStyles.activeBackground, accentStyles.activeRing)
             )}
         >
             <div className="relative z-10 flex flex-col gap-2">
@@ -251,20 +240,10 @@ function AdditionalFeatureCard({
                         {active ? (
                             <div
                                 aria-hidden="true"
-                                className={cn(
-                                    "pointer-events-none absolute left-1/2 top-1/2 h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-full blur-xl",
-                                    accentStyles.activeGlow,
-                                )}
+                                className={cn("pointer-events-none absolute left-1/2 top-1/2 h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-full blur-xl", accentStyles.activeGlow)}
                             />
                         ) : null}
-                        <div
-                            className={cn(
-                                "relative inline-flex items-center justify-center text-white/80 [&>svg]:h-[1.05em] [&>svg]:w-[1.05em]",
-                                active && accentStyles.activeIcon,
-                            )}
-                        >
-                            {icon}
-                        </div>
+                        <div className={cn("relative inline-flex items-center justify-center text-white/80 [&>svg]:h-[1.05em] [&>svg]:w-[1.05em]", active && accentStyles.activeIcon)}>{icon}</div>
                     </div>
                     <p className="text-base font-semibold text-white">{title}</p>
                 </div>
@@ -272,10 +251,7 @@ function AdditionalFeatureCard({
                 <div className="flex items-center justify-between gap-2">
                     <p className="text-sm font-semibold tabular-nums text-white/60">{formattedPrice}</p>
                     <div
-                        className={cn(
-                            "flex h-5 w-5 items-center justify-center rounded-full border transition-all duration-200",
-                            active ? "border-brand bg-brand" : "border-white/20 bg-transparent",
-                        )}
+                        className={cn("flex h-5 w-5 items-center justify-center rounded-full border transition-all duration-200", active ? "border-brand bg-brand" : "border-white/20 bg-transparent")}
                     >
                         {active && <IconCheck size={12} stroke={3} className="text-primary" />}
                     </div>
@@ -285,7 +261,7 @@ function AdditionalFeatureCard({
     )
 }
 
-export function SubscriptionConfigurator({ locale, content }: { locale: AppLocale, content?: SubscriptionConfigData | null }) {
+export function SubscriptionConfigurator({ locale, content }: { locale: AppLocale; content?: SubscriptionConfigData | null }) {
     const resolved = content ?? ({ id: 0, title: "Subscription Config", ...defaultContent } satisfies SubscriptionConfigData)
     const workflowExecutions = resolved.workflowExecutions
     const [selection, setSelection] = useState<SubscriptionSelection>({
@@ -296,15 +272,12 @@ export function SubscriptionConfigurator({ locale, content }: { locale: AppLocal
     const [selectedFeatures, setSelectedFeatures] = useState<Set<number>>(new Set())
     const desktopTopOffset = 96
     const [desktopMode, setDesktopMode] = useState<"static" | "fixed" | "bottom">("static")
-    const [desktopStyle, setDesktopStyle] = useState<{ left: number, width: number, top: number } | null>(null)
+    const [desktopStyle, setDesktopStyle] = useState<{ left: number; width: number; top: number } | null>(null)
     const desktopWrapperRef = useRef<HTMLDivElement>(null)
     const desktopContainerRef = useRef<HTMLDivElement>(null)
 
     const workflowExecutionPrice = 0.001 * selection.workflowExecutions
-    const additionalFeaturesPrice = Array.from(selectedFeatures).reduce(
-        (acc, idx) => acc + (resolved.additionalFeatures?.[idx]?.price ?? 0),
-        0,
-    )
+    const additionalFeaturesPrice = Array.from(selectedFeatures).reduce((acc, idx) => acc + (resolved.additionalFeatures?.[idx]?.price ?? 0), 0)
     const totalPrice = new Intl.NumberFormat(locale === "de" ? "de-DE" : "en-US", {
         style: "currency",
         currency: "EUR",
@@ -349,19 +322,12 @@ export function SubscriptionConfigurator({ locale, content }: { locale: AppLocal
             const wrapperTop = window.scrollY + wrapperRect.top
             const fixedTop = window.scrollY + desktopTopOffset
 
-            const nextMode =
-                fixedTop <= wrapperTop
-                    ? "static"
-                    : fixedTop >= wrapperTop + maxTop
-                        ? "bottom"
-                        : "fixed"
+            const nextMode = fixedTop <= wrapperTop ? "static" : fixedTop >= wrapperTop + maxTop ? "bottom" : "fixed"
 
             setDesktopMode((prev) => (prev === nextMode ? prev : nextMode))
-            setDesktopStyle((prev) => (
-                prev?.left === wrapperRect.left && prev?.width === wrapperRect.width && prev?.top === maxTop
-                    ? prev
-                    : { left: wrapperRect.left, width: wrapperRect.width, top: maxTop }
-            ))
+            setDesktopStyle((prev) =>
+                prev?.left === wrapperRect.left && prev?.width === wrapperRect.width && prev?.top === maxTop ? prev : { left: wrapperRect.left, width: wrapperRect.width, top: maxTop }
+            )
         }
 
         updateDesktopPosition()
@@ -390,47 +356,33 @@ export function SubscriptionConfigurator({ locale, content }: { locale: AppLocal
                 <section ref={desktopWrapperRef} className="relative min-w-0 lg:col-span-2">
                     <div
                         ref={desktopContainerRef}
-                        className={cn(
-                            "relative z-10 flex min-w-0 flex-col gap-12",
-                            desktopMode === "fixed" && "fixed z-30",
-                            desktopMode === "bottom" && "absolute left-0 right-0",
-                        )}
+                        className={cn("relative z-10 flex min-w-0 flex-col gap-12", desktopMode === "fixed" && "fixed z-30", desktopMode === "bottom" && "absolute left-0 right-0")}
                         style={
                             desktopMode === "fixed" && desktopStyle
                                 ? {
-                                    top: `${desktopTopOffset}px`,
-                                    left: `${desktopStyle.left}px`,
-                                    width: `${desktopStyle.width}px`,
-                                }
+                                      top: `${desktopTopOffset}px`,
+                                      left: `${desktopStyle.left}px`,
+                                      width: `${desktopStyle.width}px`,
+                                  }
                                 : desktopMode === "bottom" && desktopStyle
-                                    ? { top: `${desktopStyle.top}px` }
-                                    : undefined
+                                  ? { top: `${desktopStyle.top}px` }
+                                  : undefined
                         }
                     >
                         <div className="max-w-2xl">
-                            <h1 className="mt-4 max-w-xl text-balance text-3xl font-semibold text-white lg:text-4xl">
-                                {resolved.pageIntro.heading}
-                            </h1>
-                            <p className="mt-4 max-w-xl text-base leading-7 text-white/75 lg:text-lg">
-                                {resolved.pageIntro.description}
-                            </p>
+                            <h1 className="mt-4 max-w-xl text-balance text-3xl font-semibold text-white lg:text-4xl">{resolved.pageIntro.heading}</h1>
+                            <p className="mt-4 max-w-xl text-base leading-7 text-white/75 lg:text-lg">{resolved.pageIntro.description}</p>
                         </div>
 
                         <div className="grid gap-6">
                             {resolved.featureOverview.map((item, index) => (
-                                <FeatureRow
-                                    key={item.id ?? `${item.title}-${index}`}
-                                    icon={getTablerIcon(item.icon, 20)}
-                                    title={item.title}
-                                    description={item.description}
-                                />
+                                <FeatureRow key={item.id ?? `${item.title}-${index}`} icon={getTablerIcon(item.icon, 20)} title={item.title} description={item.description} />
                             ))}
                         </div>
                     </div>
                 </section>
 
-                <section className="lg:col-span-3 glass-card-shell relative min-w-0 overflow-hidden rounded-3xl p-6 bg-primary/50">
-                    <div aria-hidden="true" className="glass-card-topline" />
+                <Card size="lg" className="lg:col-span-3 relative min-w-0 overflow-hidden p-6 bg-primary/50">
                     <div className="relative z-10 flex flex-col gap-8">
                         <h2 className="text-2xl font-semibold text-white lg:text-3xl">{resolved.optionsPanelHeading}</h2>
 
@@ -498,11 +450,7 @@ export function SubscriptionConfigurator({ locale, content }: { locale: AppLocal
                             />
                             <div className="mt-2 flex flex-wrap items-center justify-end gap-2">
                                 <p className="text-sm font-medium text-white/50">{resolved.contactSales.prompt}</p>
-                                <LinkButton
-                                    href={resolved.contactSales.href}
-                                    className="border-b-0 text-white/75"
-                                    showArrow={false}
-                                >
+                                <LinkButton href={resolved.contactSales.href} className="border-b-0 text-white/75" showArrow={false}>
                                     {resolved.contactSales.label}
                                 </LinkButton>
                             </div>
@@ -510,9 +458,7 @@ export function SubscriptionConfigurator({ locale, content }: { locale: AppLocal
 
                         {resolved.additionalFeatures && resolved.additionalFeatures.length > 0 && (
                             <div className="space-y-3">
-                                <p className="text-base text-white/75">
-                                    {resolved.additionalFeaturesLabel ?? "Additional Features"}
-                                </p>
+                                <p className="text-base text-white/75">{resolved.additionalFeaturesLabel ?? "Additional Features"}</p>
                                 <div className="grid gap-3">
                                     {resolved.additionalFeatures.map((feature, index) => {
                                         const formattedFeaturePrice = new Intl.NumberFormat(locale === "de" ? "de-DE" : "en-US", {
@@ -545,17 +491,10 @@ export function SubscriptionConfigurator({ locale, content }: { locale: AppLocal
                                 </div>
                             </div>
                         )}
-
                     </div>
-                </section>
+                </Card>
             </div>
-            <BuyMenu
-                price={totalPrice}
-                priceHeading={resolved.price.heading}
-                priceCaption={resolved.price.caption}
-                subscribeHref={subscribeHref}
-                subscribeLabel={resolved.subscribe.label}
-            />
+            <BuyMenu price={totalPrice} priceHeading={resolved.price.heading} priceCaption={resolved.price.caption} subscribeHref={subscribeHref} subscribeLabel={resolved.subscribe.label} />
         </>
     )
 }

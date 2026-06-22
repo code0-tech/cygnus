@@ -4,10 +4,11 @@ import { LinkButton } from "@/components/ui/LinkButton"
 import { Section } from "@/components/ui/Section"
 import { OffsetCardsLayoutBlock } from "@/lib/cms"
 import { getMediaUrl } from "@/lib/media"
-import { ANIMATION_PRESETS, type AnimationPreset } from "@/lib/utils"
+import { ANIMATION_PRESETS, cn, type AnimationPreset } from "@/lib/utils"
 import type { Media } from "@/payload-types"
 import { m as motion, type Variants } from "motion/react"
 import Image from "next/image"
+import { Card } from "../ui/Card"
 
 interface OffsetCardsSectionProps {
     content?: OffsetCardsLayoutBlock | null
@@ -46,8 +47,7 @@ export function OffsetCardsSection({ content }: OffsetCardsSectionProps) {
             description={content.sectionDescription}
             linkButton={content.sectionLinkButton}
             funnelType={content.sectionLayout ?? "center"}
-            showBlur={false}
-            animationPreset="none"
+            animation={{ preset: "none" }}
         >
             <div className="relative flex w-full flex-col items-stretch gap-32">
                 {content.cards.map((item, index) => {
@@ -95,18 +95,9 @@ export function OffsetCardsSection({ content }: OffsetCardsSectionProps) {
                                     </motion.div>
                                 )}
                             </motion.div>
-                            <div className={"relative aspect-video w-full overflow-hidden rounded-[2.1rem] border border-white/5 lg:w-2/3 "}>
-                                <div className="glass-card-topline" />
-                                {imageUrl && (
-                                    <Image
-                                        src={imageUrl}
-                                        alt={image.alt ?? item.title}
-                                        fill
-                                        sizes="(min-width: 768px) 66vw, 100vw"
-                                        className="object-contain drop-shadow-[0_16px_36px_rgba(0,0,0,0.16)]"
-                                    />
-                                )}
-                            </div>
+                            <Card size="lg" className={cn("relative aspect-video w-full overflow-hidden lg:w-2/3")}>
+                                {imageUrl && <Image src={imageUrl} alt={image.alt ?? item.title} fill sizes="(min-width: 768px) 66vw, 100vw" className="object-fill" />}
+                            </Card>
                             <motion.div
                                 className="w-full px-2 pb-2 text-left lg:hidden lg:text-center"
                                 variants={staggerContainer}

@@ -77,6 +77,7 @@ export interface Config {
     'team-members': TeamMember;
     exports: Export;
     imports: Import;
+    'payload-ai-auditlog': PayloadAiAuditlog;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
     'payload-locked-documents': PayloadLockedDocument;
@@ -95,6 +96,7 @@ export interface Config {
     'team-members': TeamMembersSelect<false> | TeamMembersSelect<true>;
     exports: ExportsSelect<false> | ExportsSelect<true>;
     imports: ImportsSelect<false> | ImportsSelect<true>;
+    'payload-ai-auditlog': PayloadAiAuditlogSelect<false> | PayloadAiAuditlogSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -160,6 +162,11 @@ export interface User {
   id: number;
   name: string;
   image?: (number | null) | Media;
+  aiProvider?: ('claude' | 'google' | 'mistral' | 'openai' | 'openrouter') | null;
+  /**
+   * Optional. If empty, the plugin uses the provider API key from environment variables.
+   */
+  aiApiKey?: string | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -215,6 +222,7 @@ export interface Page {
     | 'legal-notice'
     | 'privacy'
     | 'terms'
+    | 'open-source-no-code-automation'
     | 'contact'
     | 'actions'
     | 'community-edition'
@@ -714,6 +722,58 @@ export interface Import {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-ai-auditlog".
+ */
+export interface PayloadAiAuditlog {
+  id: number;
+  title: string;
+  action: 'create' | 'update' | 'delete' | 'updateGlobal';
+  targetType: 'collection' | 'global';
+  collection?: string | null;
+  slug?: string | null;
+  documentID?: string | null;
+  targetURL?: string | null;
+  additions?: number | null;
+  removals?: number | null;
+  before?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  after?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  proposal?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  prompt?: string | null;
+  inputTokens?: number | null;
+  outputTokens?: number | null;
+  totalTokens?: number | null;
+  aiResponse?: string | null;
+  userID?: string | null;
+  userLabel?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -859,6 +919,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'team-members';
         value: number | TeamMember;
+      } | null)
+    | ({
+        relationTo: 'payload-ai-auditlog';
+        value: number | PayloadAiAuditlog;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -909,6 +973,8 @@ export interface PayloadMigration {
 export interface UsersSelect<T extends boolean = true> {
   name?: T;
   image?: T;
+  aiProvider?: T;
+  aiApiKey?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -1416,6 +1482,33 @@ export interface ImportsSelect<T extends boolean = true> {
   height?: T;
   focalX?: T;
   focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-ai-auditlog_select".
+ */
+export interface PayloadAiAuditlogSelect<T extends boolean = true> {
+  title?: T;
+  action?: T;
+  targetType?: T;
+  collection?: T;
+  slug?: T;
+  documentID?: T;
+  targetURL?: T;
+  additions?: T;
+  removals?: T;
+  before?: T;
+  after?: T;
+  proposal?: T;
+  prompt?: T;
+  inputTokens?: T;
+  outputTokens?: T;
+  totalTokens?: T;
+  aiResponse?: T;
+  userID?: T;
+  userLabel?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

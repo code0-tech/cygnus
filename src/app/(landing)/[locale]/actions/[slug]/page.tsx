@@ -35,30 +35,18 @@ export default async function ActionDetailPage({ params }: { params: LocaleSlugP
             <Aurora />
             <LandingContainer className="pt-32">
                 <div className="mx-auto flex w-full max-w-4xl flex-col gap-8">
-                    <LinkButton
-                        href={`/${locale}/actions`}
-                        showArrow={false}
-                        className="border-0 hover:bg-white/10 pl-2.5 pr-4 py-1 rounded-xl hover:text-white"
-                    >
+                    <LinkButton href={`/${locale}/actions`} showArrow={false} className="border-0 hover:bg-white/10 pl-2.5 pr-4 py-1 rounded-xl hover:text-white after:hidden">
                         <IconArrowLeft size={16} />
                         {locale === "de" ? "Zurück" : "Back"}
                     </LinkButton>
 
                     <div className="flex flex-col gap-8">
-
                         <div className="relative z-10 flex flex-col gap-8">
                             <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">
-
                                 <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
                                     {iconUrl && (
                                         <div className="relative size-20 shrink-0 overflow-hidden rounded-3xl border border-white/10 bg-white/5">
-                                            <Image
-                                                src={iconUrl}
-                                                alt={icon?.alt ?? action.title}
-                                                fill
-                                                sizes="80px"
-                                                className="object-contain p-2"
-                                            />
+                                            <Image src={iconUrl} alt={icon?.alt ?? action.title} fill sizes="80px" className="object-contain p-2" />
                                         </div>
                                     )}
 
@@ -67,10 +55,7 @@ export default async function ActionDetailPage({ params }: { params: LocaleSlugP
                                         {tags.length > 0 && (
                                             <div className="flex flex-wrap gap-2">
                                                 {tags.map((tag) => (
-                                                    <span
-                                                        key={tag}
-                                                        className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/70"
-                                                    >
+                                                    <span key={tag} className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/70">
                                                         {tag}
                                                     </span>
                                                 ))}
@@ -80,37 +65,22 @@ export default async function ActionDetailPage({ params }: { params: LocaleSlugP
                                 </div>
 
                                 {action.documentation?.label && action.documentation?.url && (
-                                    <HapticButtonLink
-                                        href={ action.documentation.url}
-                                        variant="normal"
-                                        className="text-sm!"
-                                    >
-                                        <IconExternalLink size={16}/>
+                                    <HapticButtonLink href={action.documentation.url} variant="normal" className="text-sm!">
+                                        <IconExternalLink size={16} />
                                         {action.documentation.label}
                                     </HapticButtonLink>
                                 )}
-
                             </div>
-                            {action.description && (
-                                <div className="max-w-3xl whitespace-pre-line text-sm leading-6 text-white/75">
-                                    {action.description}
-                                </div>
-                            )}
+                            {action.description && <div className="max-w-3xl whitespace-pre-line text-sm leading-6 text-white/75">{action.description}</div>}
 
                             <ActionTriggerView locale={locale} triggers={triggers} functionDefs={functionDefs} />
 
                             {references.length > 0 && (
                                 <div className="space-y-3">
-                                    <p className="text-sm tracking-wider text-white/50">
-                                        {referencesLabel}
-                                    </p>
+                                    <p className="text-sm tracking-wider text-white/50">{referencesLabel}</p>
                                     <div className="grid gap-4 md:grid-cols-2">
                                         {references.map((reference) => (
-                                            <ActionCard
-                                                key={reference.id}
-                                                action={reference}
-                                                locale={locale}
-                                            />
+                                            <ActionCard key={reference.id} action={reference} locale={locale} />
                                         ))}
                                     </div>
                                 </div>
@@ -136,4 +106,3 @@ export async function generateMetadata({ params }: { params: LocaleSlugPageParam
         description: action.shortDescription ?? action.description ?? undefined,
     })
 }
-

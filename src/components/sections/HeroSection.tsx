@@ -53,8 +53,8 @@ export function HeroSection({ content, imageSrc = "/code0_software.png" }: HeroS
 
     if (centered) {
         return (
-            <Section showBlur={false} showFunnel={false}>
-                <div className="glass-card-shell relative isolate h-[min(85svh,918px)] md:h-[min(85dvh,918px)] rounded-4xl">
+            <Section showFunnel={false}>
+                <div className="relative overflow-hidden border border-white/5 bg-[linear-gradient(160deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02)_28%,rgba(8,10,20,0.92)_100%)] isolate h-[min(85svh,918px)] md:h-[min(85dvh,918px)] rounded-4xl">
                     <Grainient {...grainientColors} />
                     <div
                         aria-hidden="true"
@@ -121,8 +121,8 @@ export function HeroSection({ content, imageSrc = "/code0_software.png" }: HeroS
     }
 
     return (
-        <Section showBlur={false} showFunnel={false}>
-            <div className="glass-card-shell relative isolate h-[min(85svh,918px)] md:h-[min(85dvh,918px)] rounded-4xl">
+        <Section showFunnel={false}>
+            <div className="relative overflow-hidden border border-white/5 bg-[linear-gradient(160deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02)_28%,rgba(8,10,20,0.92)_100%)] isolate h-[min(85svh,918px)] md:h-[min(85dvh,918px)] rounded-4xl">
                 <a
                     href="https://www.producthunt.com/products/codezero?embed=true&amp;utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-codezero-2"
                     target="_blank"

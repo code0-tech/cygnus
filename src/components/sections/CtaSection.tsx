@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils"
 import { m as motion, type Variants } from "motion/react"
 import Image from "next/image"
 import React, { useEffect, useRef, useState } from "react"
+import { Card } from "../ui/Card"
 
 interface CtaSectionProps {
     content?: CtaLayoutBlock | null
@@ -109,17 +110,16 @@ export function CtaSection({ content, floatingCta = false }: CtaSectionProps) {
     const floatingCtaClassName = "bg-white! hover:bg-white! hover:scale-105 ring-1! ring-white/20!"
 
     return (
-        <Section showBlur={false} showFunnel={false} animationPreset={floatingCta ? "none" : "fade-in"}>
-            <motion.div
-                className="glass-card-shell w-full rounded-3xl bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))]! shadow-lg!"
+        <Section showFunnel={false} animation={{ preset: floatingCta ? "none" : "fade-in" }}>
+            <Card
+                size={"lg"}
+                className="p-0 w-full rounded-3xl"
                 variants={staggerContainer}
                 initial={floatingCta ? false : "hidden"}
                 whileInView={floatingCta ? undefined : "show"}
                 animate={floatingCta ? "show" : undefined}
                 viewport={floatingCta ? undefined : { once: true, amount: 0.25 }}
             >
-                <div aria-hidden="true" className="glass-card-topline" />
-
                 <div className="relative flex w-full flex-col items-center justify-center gap-4 overflow-hidden rounded-3xl px-6 py-12 sm:px-10">
                     <InteractiveGridPattern className="mask-[radial-gradient(600px_circle_at_center,white,transparent)] rounded-3xl" width={40} height={40} squares={[35, 15]} />
 
@@ -161,7 +161,7 @@ export function CtaSection({ content, floatingCta = false }: CtaSectionProps) {
                         </div>
                     </motion.div>
                 </div>
-            </motion.div>
+            </Card>
         </Section>
     )
 }

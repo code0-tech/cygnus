@@ -38,12 +38,7 @@ export function ActionsPageClient({ actions, locale, content }: ActionsPageClien
         if (!searchTerm) return actions
 
         return actions.filter((action) => {
-            const item = [
-                action.title,
-                action.shortDescription,
-                action.description,
-                ...(action.tags ?? []),
-            ]
+            const item = [action.title, action.shortDescription, action.description, ...(action.tags ?? [])]
                 .filter((value) => Boolean(value))
                 .join(" ")
                 .toLowerCase()
@@ -55,9 +50,7 @@ export function ActionsPageClient({ actions, locale, content }: ActionsPageClien
     return (
         <div className="mx-auto flex w-full max-w-4xl flex-col gap-8">
             <div className="space-y-4">
-                <h1 className="text-3xl font-semibold tracking-tight text-white">
-                    {labels.heading}
-                </h1>
+                <h1 className="text-3xl font-semibold tracking-tight text-white">{labels.heading}</h1>
                 <p className="max-w-2xl text-sm leading-6 text-white/70">{labels.description}</p>
             </div>
             <TextInput
@@ -69,11 +62,11 @@ export function ActionsPageClient({ actions, locale, content }: ActionsPageClien
                 className="text-white!"
             />
             <div className="grid gap-4 md:grid-cols-2">
-                {filteredActions.map((action) => <ActionCard key={action.id} action={action} locale={locale} />)}
+                {filteredActions.map((action) => (
+                    <ActionCard key={action.id} action={action} locale={locale} />
+                ))}
             </div>
-            {filteredActions.length === 0 ? (
-                <p className="text-center text-sm text-white/60">{labels.noActionsFoundLabel}</p>
-            ) : null}
+            {filteredActions.length === 0 && <p className="text-center text-sm text-white/60">{labels.noActionsFoundLabel}</p>}
         </div>
     )
 }

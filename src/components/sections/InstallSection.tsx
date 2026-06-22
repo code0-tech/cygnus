@@ -6,6 +6,7 @@ import type { InstallLayoutBlock } from "@/lib/cms"
 import { IconCheck, IconCopy } from "@tabler/icons-react"
 import { AnimatePresence, m as motion, type Variants } from "motion/react"
 import { useEffect, useState } from "react"
+import { Card } from "../ui/Card"
 
 type InstallSectionProps = {
     content?: InstallLayoutBlock | null
@@ -47,39 +48,23 @@ export function InstallSection({ content }: InstallSectionProps) {
     }
 
     return (
-        <Section showBlur={false} showFunnel={false}>
-            <motion.div
-                className="glass-card-shell w-full rounded-3xl bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))]! shadow-lg!"
-                variants={staggerContainer}
-                initial="hidden"
-                whileInView="show"
-                viewport={{ once: true, amount: 0.2 }}
-            >
-                <div aria-hidden="true" className="glass-card-topline" />
+        <Section showFunnel={false}>
+            <Card size="lg" variant="light" className="w-full p-0 " variants={staggerContainer} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }}>
                 <div className="relative flex w-full flex-col items-center justify-center gap-8 overflow-hidden rounded-3xl px-6 py-16 sm:px-10">
-
                     <DotBackground spacing={20} dotColor="rgba(255,255,255,0.05)" />
 
-                    <motion.div
-                        variants={staggerItem}
-                        className="relative z-10 flex max-w-3xl flex-col items-center gap-4 text-center"
-                    >
+                    <motion.div variants={staggerItem} className="relative z-10 flex max-w-3xl flex-col items-center gap-4 text-center">
                         <h2 className="text-3xl font-semibold text-white lg:text-4xl">{content.heading}</h2>
                         <p className="text-base font-medium text-white/75 lg:text-xl">{content.subheading}</p>
                     </motion.div>
 
-                    <motion.div
-                        variants={staggerItem}
-                        className="relative z-10 w-full max-w-2xl overflow-hidden rounded-2xl border border-white/10 bg-secondary shadow-[0_8px_32px_rgba(0,0,0,0.28)]"
-                    >
-                        <div className="flex items-center justify-between border-b border-white/10 px-4 py-2 pr-2">
-                            <span className="text-xs font-medium text-white/50">
-                                {content.label || "Install"}
-                            </span>
+                    <motion.div variants={staggerItem} className="relative z-10 w-full max-w-2xl overflow-hidden rounded-2xl border border-white/5 bg-primary">
+                        <div className="flex items-center justify-between border-b border-white/5 px-4 py-2 pr-2">
+                            <span className="text-xs font-medium text-white/50">{content.label || "Install"}</span>
                             <button
                                 type="button"
                                 onClick={() => void handleCopy()}
-                                className="inline-flex size-7 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-xs font-medium text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+                                className="inline-flex size-7 items-center justify-center rounded-lg border border-white/5 bg-white/5 text-xs font-medium text-white/70 transition-colors hover:bg-white/10 hover:text-white"
                             >
                                 <AnimatePresence mode="wait" initial={false}>
                                     <motion.span
@@ -99,9 +84,8 @@ export function InstallSection({ content }: InstallSectionProps) {
                             <code>{content.code}</code>
                         </pre>
                     </motion.div>
-
                 </div>
-            </motion.div>
+            </Card>
         </Section>
     )
 }

@@ -14,12 +14,7 @@ export async function ActionListCard({ locale, animationDelay = 0 }: ActionListC
     const content = await getFeatureBySlug("action-list", locale)
 
     return (
-        <FeatureCard
-            className="col-span-1 row-span-4"
-            contentClassName="items-start justify-end"
-            tone="aqua"
-            animationDelay={animationDelay}
-        >
+        <FeatureCard className="col-span-1 row-span-4" contentClassName="items-start justify-end" tone="aqua" animationDelay={animationDelay}>
             <div className="pointer-events-none absolute inset-x-0 top-[52%] z-0 flex -translate-y-1/2 justify-center">
                 <div className="relative size-80 scale-[0.68] sm:size-88 sm:scale-[0.8] md:size-96 md:scale-[0.88] lg:size-104 lg:scale-100">
                     <OrbitingCircles iconSize={40}>

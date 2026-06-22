@@ -26,14 +26,7 @@ export function FaqSection({ content }: FaqSectionProps) {
     if (!content || !content.items) return
 
     return (
-        <Section
-            heading={content.sectionHeading}
-            description={content.sectionDescription}
-            linkButton={content.sectionLinkButton}
-            funnelType={content.sectionLayout ?? "center"}
-            showLinkButton={false}
-            showBlur={false}
-        >
+        <Section heading={content.sectionHeading} description={content.sectionDescription} linkButton={content.sectionLinkButton} funnelType={content.sectionLayout ?? "center"} showLinkButton={false}>
             <div aria-hidden="true" className="pointer-events-none absolute inset-0" />
             <div className={"md:w-[50vw] flex flex-col gap-4 mx-auto"}>
                 {content.items.map((faq, index) => (

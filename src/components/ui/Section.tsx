@@ -46,17 +46,18 @@ interface SectionProps {
     heading?: string | null
     description?: string | null
     linkButton?: SectionLinkButton | null
-    showBlur?: boolean
     showFunnel?: boolean
     showLinkButton?: boolean
     fullHeight?: boolean
-    animationPreset?: AnimationPreset
-    animationDelay?: number
-    animationDuration?: number
-    animationOnce?: boolean
-    animationViewportAmount?: number
-    animationViewportMargin?: string
     headingLevel?: 1 | 2 | 3 | 4 | 5 | 6
+    animation?: {
+        preset?: AnimationPreset
+        delay?: number
+        duration?: number
+        once?: boolean
+        viewportAmount?: number
+        viewportMargin?: string
+    }
 }
 
 export function Section({
@@ -66,18 +67,13 @@ export function Section({
     children,
     className,
     funnelType = "center",
-    showBlur = false,
     showFunnel = true,
     showLinkButton = true,
     fullHeight = false,
-    animationPreset = "fade-up",
-    animationDelay = 0,
-    animationDuration,
-    animationOnce = true,
-    animationViewportAmount = 0.2,
-    animationViewportMargin,
+    animation = {},
     headingLevel = 2,
 }: SectionProps) {
+    const { preset = "fade-up", delay = 0, duration, once = true, viewportAmount = 0.2, viewportMargin } = animation
     const sectionRef = useRef<HTMLElement | null>(null)
     const pathname = usePathname()
     const locale = getLocaleFromPath(pathname)
@@ -85,7 +81,7 @@ export function Section({
     const rawLinkUrl = linkButton?.url?.trim()
     const linkUrl = rawLinkUrl ? localizeHref(rawLinkUrl, locale) : undefined
     const shouldShowFunnel = showFunnel && Boolean(heading || description || (showLinkButton && linkUrl && linkButton?.label))
-    const animationConfig = animationPreset === "none" ? null : ANIMATION_PRESETS[animationPreset]
+    const animationConfig = preset === "none" ? null : ANIMATION_PRESETS[preset]
     const staggerContainer: Variants = {
         hidden: {},
         show: {
@@ -135,23 +131,17 @@ export function Section({
             className={cn("group/section relative overflow-visible flex flex-col gap-8", fullHeight && "h-[200dvh] md:h-[min(100dvh,1080px)]", className)}
             initial={animationConfig?.initial}
             whileInView={animationConfig?.whileInView}
-            viewport={animationConfig ? { once: animationOnce, amount: animationViewportAmount, margin: animationViewportMargin } : undefined}
+            viewport={animationConfig ? { once, amount: viewportAmount, margin: viewportMargin } : undefined}
             transition={
                 animationConfig
                     ? {
                           ...animationConfig.transition,
-                          delay: animationDelay,
-                          duration: animationDuration ?? animationConfig.transition.duration,
+                          delay: delay,
+                          duration: duration ?? animationConfig.transition.duration,
                       }
                     : undefined
             }
         >
-            {showBlur && funnelType === "center" && (
-                <div
-                    aria-hidden="true"
-                    className="pointer-events-none absolute -bottom-60 -top-24 left-1/2 w-[120vw] max-w-none -translate-x-1/2 [background:radial-gradient(circle,rgba(255,255,255,0.1),transparent_70%)] md:inset-x-0 md:w-auto md:translate-x-0"
-                />
-            )}
             {shouldShowFunnel &&
                 (funnelType === "center" ? (
                     <motion.div
@@ -159,7 +149,7 @@ export function Section({
                         variants={staggerContainer}
                         initial="hidden"
                         whileInView="show"
-                        viewport={{ once: animationOnce, amount: 0.3 }}
+                        viewport={{ once, amount: 0.3 }}
                     >
                         {createElement(motion[headingTag], { variants: staggerItem, className: headingClassName }, heading ? renderFormattedText(heading) : null)}
                         {description && (
@@ -174,7 +164,7 @@ export function Section({
                         )}
                     </motion.div>
                 ) : (
-                    <motion.div className={"flex flex-col gap-4 text-left"} variants={staggerContainer} initial="hidden" whileInView="show" viewport={{ once: animationOnce, amount: 0.3 }}>
+                    <motion.div className={"flex flex-col gap-4 text-left"} variants={staggerContainer} initial="hidden" whileInView="show" viewport={{ once, amount: 0.3 }}>
                         {createElement(motion[headingTag], { variants: staggerItem, className: headingClassName }, heading ? renderFormattedText(heading) : null)}
                         {description && (
                             <motion.p variants={staggerItem} className="relative z-10 max-w-[90vw] text-xl font-medium text-white/75 lg:w-1/2">

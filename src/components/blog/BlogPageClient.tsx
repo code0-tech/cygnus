@@ -5,6 +5,7 @@ import { FirstBlogCard } from "@/components/cards/FirstBlogCard"
 import type { BlogPostItem } from "@/lib/cms"
 import { Button } from "@code0-tech/pictor"
 import { useState, useTransition } from "react"
+import { Card } from "../ui/Card"
 
 interface BlogPageClientProps {
     heading: string
@@ -20,8 +21,7 @@ interface BlogPageClientProps {
 
 function BlogCardSkeleton() {
     return (
-        <div className="glass-card-shell h-full p-2">
-            <div aria-hidden="true" className="glass-card-topline" />
+        <Card className="h-full p-2">
             <div className="relative z-10 flex h-full flex-row items-stretch gap-4 md:flex-col">
                 <div className="relative w-40 aspect-video shrink-0 overflow-hidden rounded-2xl bg-white/10 md:w-full md:aspect-video" />
                 <div className="min-w-0 flex-1 px-1 pb-1 md:flex md:flex-col md:justify-between">
@@ -35,21 +35,11 @@ function BlogCardSkeleton() {
                     <div className="mb-2 mt-4 h-4 w-3/4 rounded-full bg-white/10" />
                 </div>
             </div>
-        </div>
+        </Card>
     )
 }
 
-export function BlogPageClient({
-    heading,
-    initialPosts,
-    initialHasNextPage,
-    initialNextPage,
-    locale,
-    viewOtherBlogsLabel,
-    noPostsLabel,
-    loadMoreLabel,
-    loadingLabel,
-}: BlogPageClientProps) {
+export function BlogPageClient({ heading, initialPosts, initialHasNextPage, initialNextPage, locale, viewOtherBlogsLabel, noPostsLabel, loadMoreLabel, loadingLabel }: BlogPageClientProps) {
     const [posts, setPosts] = useState(initialPosts)
     const [hasNextPage, setHasNextPage] = useState(initialHasNextPage)
     const [nextPage, setNextPage] = useState(initialNextPage)
@@ -71,7 +61,7 @@ export function BlogPageClient({
                 return
             }
 
-            const data = await response.json() as {
+            const data = (await response.json()) as {
                 posts?: BlogPostItem[]
                 hasNextPage?: boolean
                 nextPage?: number | null
@@ -85,7 +75,9 @@ export function BlogPageClient({
 
     return (
         <div className="flex flex-col gap-8">
-            <h1 aria-hidden className="hidden">{heading}</h1>
+            <h1 aria-hidden className="hidden">
+                {heading}
+            </h1>
             {posts.length === 0 && <p className="text-white/50">{noPostsLabel}</p>}
             {firstPost && (
                 <>
@@ -100,22 +92,16 @@ export function BlogPageClient({
                         <div className="flex-1 h-px bg-white/10" />
                     </div>
                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-                        {remainingPosts.map((post) => <BlogCard key={post.id} post={post} locale={locale} />)}
-                        {isPending && Array.from({ length: 3 }).map((_, index) => (
-                            <BlogCardSkeleton key={`loading-blog-${index}`} />
+                        {remainingPosts.map((post) => (
+                            <BlogCard key={post.id} post={post} locale={locale} />
                         ))}
+                        {isPending && Array.from({ length: 3 }).map((_, index) => <BlogCardSkeleton key={`loading-blog-${index}`} />)}
                     </div>
                 </>
             )}
             {hasNextPage && (
                 <div className="flex justify-center">
-                    <Button
-                        type="button"
-                        variant="normal"
-                        onClick={handleLoadMore}
-                        disabled={isPending}
-                        className="min-w-40"
-                    >
+                    <Button type="button" variant="normal" onClick={handleLoadMore} disabled={isPending} className="min-w-40">
                         {isPending ? loadingLabel : loadMoreLabel}
                     </Button>
                 </div>

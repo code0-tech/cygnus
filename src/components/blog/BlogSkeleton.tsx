@@ -11,8 +11,7 @@ export function BlogSkeleton() {
                 <div className="mt-3 h-6 w-1/2 max-w-xl rounded-full bg-white/10" />
             </header>
 
-            <div className="glass-card-shell p-2">
-                <div aria-hidden="true" className="glass-card-topline" />
+            <div className="rounded-3xl p-2">
                 <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-white/10 ring ring-white/10" />
             </div>
 

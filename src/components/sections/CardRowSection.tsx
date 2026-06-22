@@ -8,6 +8,7 @@ import type { Media } from "@/payload-types"
 import { m as motion, type Variants } from "motion/react"
 import Image from "next/image"
 import React, { Children, type ReactNode } from "react"
+import { Card } from "../ui/Card"
 
 interface CardRowSectionProps {
     content?: CardRowLayoutBlock | null
@@ -52,7 +53,7 @@ export function CardRowSection({ content, children }: CardRowSectionProps) {
             description={content?.sectionDescription}
             linkButton={content?.sectionLinkButton}
             funnelType={content?.sectionLayout ?? "left"}
-            animationPreset="none"
+            animation={{ preset: "none" }}
         >
             <motion.div className="grid grid-cols-1 gap-16 lg:grid-cols-3 lg:gap-8 z-10" variants={staggerContainer} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.15 }}>
                 {cards.map((card, index) => {
@@ -61,13 +62,12 @@ export function CardRowSection({ content, children }: CardRowSectionProps) {
                     const fallbackImage = fallbackImages[index]
 
                     return (
-                        <motion.article
+                        <Card
                             key={card.id ?? `${card.title}-${index}`}
                             variants={staggerItem}
-                            className="border border-white/5 bg-white/1 group flex h-full transform-gpu flex-col rounded-3xl p-2 will-change-transform before:pointer-events-none before:absolute before:inset-1px before:rounded-[calc(1.5rem-1px)] before:border before:border-white/5 before:content-['']"
+                            size={"lg"}
+                            className="group flex h-full p-2! transform-gpu flex-col will-change-transform before:pointer-events-none before:absolute before:inset-1px before:rounded-[calc(1.5rem-1px)] before:border before:border-white/5 before:content-['']"
                         >
-                            <div aria-hidden="true" className="glass-card-topline" />
-
                             {imageUrl ? (
                                 <div className="relative aspect-[243.476/160] overflow-hidden rounded-2xl bg-primary/40">
                                     <Image src={imageUrl} alt={mediaImage?.alt ?? card.title ?? ""} fill sizes="(min-width: 1024px) 33vw, 100vw" className="object-cover" />
@@ -85,7 +85,7 @@ export function CardRowSection({ content, children }: CardRowSectionProps) {
                                     </LinkButton>
                                 )}
                             </div>
-                        </motion.article>
+                        </Card>
                     )
                 })}
             </motion.div>

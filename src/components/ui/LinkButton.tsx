@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils"
 import Link, { LinkProps } from "next/link"
 import { useWebHaptics } from "web-haptics/react"
 
-interface LinkButtonProps extends Omit<LinkProps, "href" | "locale">{
+interface LinkButtonProps extends Omit<LinkProps, "href" | "locale"> {
     href: string
     children: React.ReactNode
     showArrow?: boolean
@@ -21,18 +21,14 @@ const baseClassName =
     " after:pointer-events-none after:absolute after:bottom-0 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-current after:transition-transform after:duration-300 after:ease-out hover:after:scale-x-100" +
     " focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 disabled:pointer-events-none"
 
-
 export function LinkButton({ className, children, href, showArrow = true, locale, ...props }: LinkButtonProps) {
     const { trigger } = useWebHaptics()
-    const localizedHref = href.startsWith("/") ? `/${locale ?? ""}${href}`.replace("//", "/") : href
+
+    const isString = typeof href === "string"
+    const localizedHref = isString && href.startsWith("/") ? `/${locale ?? ""}${href}`.replace("//", "/") : (href ?? "")
 
     return (
-        <Link
-            href={localizedHref}
-            onClick={() => trigger("medium")}
-            className={cn(baseClassName, className)}
-            {...props}
-        >
+        <Link href={localizedHref} onClick={() => trigger("medium")} className={cn(baseClassName, className)} {...props}>
             <span className="flex items-center gap-1 min-w-0 truncate">{children}</span>
             {showArrow && <IconArrowUpRight size={16} className="shrink-0 text-gray-500 group-hover/link:text-brand" />}
         </Link>

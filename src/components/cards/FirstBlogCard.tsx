@@ -6,8 +6,9 @@ import { Media, TeamMember } from "@/payload-types"
 import Image from "next/image"
 import Link from "next/link"
 import { useWebHaptics } from "web-haptics/react"
+import { Card } from "../ui/Card"
 
-export function FirstBlogCard({ locale, post }: { locale: string, post: BlogPostItem }) {
+export function FirstBlogCard({ locale, post }: { locale: string; post: BlogPostItem }) {
     const { trigger } = useWebHaptics()
     const heroImage = post.heroImage as Media
     const heroImageUrl = getMediaUrl(heroImage?.url)
@@ -27,33 +28,25 @@ export function FirstBlogCard({ locale, post }: { locale: string, post: BlogPost
                     <Link href={postHref} onClick={() => trigger("medium")}>
                         <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-white text-balance leading-tight">{post.title}</h2>
                     </Link>
-                    {post.shortDescription && (
-                        <p className="text-base text-balance md:text-lg leading-7 text-white/75 mt-4 mb-2">
-                            {post.shortDescription}
-                        </p>
-                    )}
+                    {post.shortDescription && <p className="text-base text-balance md:text-lg leading-7 text-white/75 mt-4 mb-2">{post.shortDescription}</p>}
                 </div>
 
-                <div className="glass-card-shell w-full shrink-0 aspect-video p-2 xl:w-3/5">
-                    <div aria-hidden className="glass-card-topline" />
+                <Card size="lg" className="w-full shrink-0 aspect-video p-2 xl:w-3/5">
                     <Link href={postHref} onClick={() => trigger("medium")} className="relative block h-full w-full overflow-hidden rounded-2xl bg-primary/50">
                         {heroImageUrl ? (
-                                <Image
-                                    src={heroImageUrl}
-                                    alt={heroImage.alt ?? post.title}
-                                    fill
-                                    sizes="(min-width: 768px) 45vw, 100vw"
-                                    className="object-cover transition-transform duration-700"
-                                    priority
-                                />
+                            <Image
+                                src={heroImageUrl}
+                                alt={heroImage.alt ?? post.title}
+                                fill
+                                sizes="(min-width: 768px) 45vw, 100vw"
+                                className="object-cover transition-transform duration-700"
+                                priority
+                            />
                         ) : (
-                            <div className="image-placeholder aspect-video w-full px-4 text-sm">
-                                {locale === "de" ? "Kein Bild" : "No image"}
-                            </div>
+                            <div className="image-placeholder aspect-video w-full px-4 text-sm">{locale === "de" ? "Kein Bild" : "No image"}</div>
                         )}
                     </Link>
-
-                </div>
+                </Card>
             </div>
         </div>
     )

@@ -11,6 +11,7 @@ import { notFound } from "next/navigation"
 import { MarkdownContent } from "./MarkdownContent"
 import { TableOfContents, type TocHeading } from "./TableOfContents"
 import { LinkButton } from "../ui/LinkButton"
+import { Card } from "../ui/Card"
 
 interface BlogPostProps {
     slug: string
@@ -91,7 +92,7 @@ export async function BlogPost({ slug, locale }: BlogPostProps) {
     if (!post) notFound()
 
     const heroImage = post.heroImage as Media
-    const author = typeof post.author === "number" ? null : post.author as TeamMember
+    const author = typeof post.author === "number" ? null : (post.author as TeamMember)
     const authorImage = author?.image && typeof author.image !== "number" ? author.image : undefined
     const heroImageUrl = getMediaUrl(heroImage?.url)
     const authorImageUrl = getMediaUrl(authorImage?.url)
@@ -110,11 +111,7 @@ export async function BlogPost({ slug, locale }: BlogPostProps) {
     return (
         <div className="space-y-8">
             <div className="flex justify-start">
-                <LinkButton
-                    href={`/${locale}/blog`}
-                    showArrow={false}
-                    className="border-0 hover:bg-white/10 pl-2.5 pr-4 py-1 rounded-[10px] hover:text-white after:hidden"
-                >
+                <LinkButton href={`/${locale}/blog`} showArrow={false} className="border-0 hover:bg-white/10 pl-2.5 pr-4 py-1 rounded-[10px] hover:text-white after:hidden">
                     <IconArrowLeft size={16} />
                     {locale === "de" ? "Zurück" : "Back"}
                 </LinkButton>
@@ -126,26 +123,17 @@ export async function BlogPost({ slug, locale }: BlogPostProps) {
             </header>
 
             {heroImageUrl ? (
-                <div className="glass-card-shell p-2">
-                    <div aria-hidden="true" className="glass-card-topline" />
-                    <div className="relative aspect-video w-full overflow-hidden rounded-2xl ring ring-white/10">
-                        <Image
-                            src={heroImageUrl}
-                            alt={heroImage.alt ?? post.title}
-                            fill
-                            priority
-                            sizes="(min-width: 1024px) 75vw, 100vw"
-                            className="object-cover"
-                        />
+                <Card size="lg" className="p-2">
+                    <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-white/5">
+                        <Image src={heroImageUrl} alt={heroImage.alt ?? post.title} fill priority sizes="(min-width: 1024px) 75vw, 100vw" className="object-cover" />
                     </div>
-                </div>
+                </Card>
             ) : (
-                <div className="glass-card-shell p-3">
-                    <div aria-hidden="true" className="glass-card-topline" />
-                    <div className="aspect-video w-full rounded-2xl ring ring-white/10 bg-white/5 flex items-center justify-center text-white/50 text-sm">
+                <Card size="lg" className="p-2">
+                    <div className="aspect-video w-full rounded-2xl border border-white/5 bg-white/10 flex items-center justify-center text-white/50 text-sm">
                         {locale === "de" ? "Kein Hero-Bild vorhanden" : "No hero image available"}
                     </div>
-                </div>
+                </Card>
             )}
 
             <div className="grid grid-cols-1 gap-12 lg:grid-cols-4">
@@ -153,26 +141,14 @@ export async function BlogPost({ slug, locale }: BlogPostProps) {
                     {author ? (
                         <div className="flex gap-3 text-sm text-white/50">
                             {authorImageUrl ? (
-                                <Image
-                                    src={authorImageUrl}
-                                    alt={authorImage?.alt ?? author.name}
-                                    width={40}
-                                    height={40}
-                                    className="size-10 shrink-0 rounded-full object-cover"
-                                />
+                                <Image src={authorImageUrl} alt={authorImage?.alt ?? author.name} width={40} height={40} className="size-10 shrink-0 rounded-full object-cover" />
                             ) : (
-                                <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-white/10 text-xs font-semibold text-white/75">
-                                    {getInitials(author.name)}
-                                </div>
+                                <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-white/10 text-xs font-semibold text-white/75">{getInitials(author.name)}</div>
                             )}
                             <div className="min-w-0 text-left">
                                 <p className="font-medium text-white/75">{author.name}</p>
-                                <p className="text-xs text-white/50">
-                                    {author.role}
-                                </p>
-                                <p className="text-xs text-white/50">
-                                    {publishedDate}
-                                </p>
+                                <p className="text-xs text-white/50">{author.role}</p>
+                                <p className="text-xs text-white/50">{publishedDate}</p>
                             </div>
                         </div>
                     ) : (

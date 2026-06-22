@@ -117,27 +117,12 @@ export function SwipeCardSection({ content }: SwipeCardSectionProps) {
     }
 
     return (
-        <Section showBlur={false} showFunnel={false} animationPreset="none">
-            <div aria-hidden="true" className="pointer-events-none absolute inset-0 [background:radial-gradient(circle,rgba(255,255,255,0.05),transparent_50%)]" />
-            <motion.div
-                className="relative flex w-full flex-col items-stretch gap-8"
-                variants={staggerContainer}
-                initial="hidden"
-                whileInView="show"
-                viewport={{ once: true, amount: 0.2 }}
-            >
+        <Section showFunnel={false} animation={{ preset: "none" }}>
+            <motion.div className="relative flex w-full flex-col items-stretch gap-8" variants={staggerContainer} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }}>
                 {hasHeader && (
                     <motion.div className="flex flex-col items-center gap-4 text-center" variants={staggerItem}>
-                        {content.heading && (
-                            <h2 className="text-4xl font-semibold text-white">
-                                {content.heading}
-                            </h2>
-                        )}
-                        {content.subheading && (
-                            <p className="relative z-10 max-w-[90vw] lg:w-1/2 text-center font-medium text-white/75 text-xl">
-                                {content.subheading}
-                            </p>
-                        )}
+                        {content.heading && <h2 className="text-4xl font-semibold text-white">{content.heading}</h2>}
+                        {content.subheading && <p className="relative z-10 max-w-[90vw] lg:w-1/2 text-center font-medium text-white/75 text-xl">{content.subheading}</p>}
                     </motion.div>
                 )}
 
@@ -146,7 +131,6 @@ export function SwipeCardSection({ content }: SwipeCardSectionProps) {
                     <div aria-hidden="true" className="pointer-events-none absolute -inset-y-6 right-0 z-30 w-0 bg-linear-to-l from-primary via-primary/80 to-transparent lg:w-40" />
 
                     <div className="relative flex items-center justify-center gap-4 px-2 md:gap-8">
-
                         <motion.div
                             className="relative flex w-full items-center justify-center px-0 touch-pan-y"
                             drag="x"
@@ -160,14 +144,7 @@ export function SwipeCardSection({ content }: SwipeCardSectionProps) {
                                 <div className="invisible pointer-events-none grid w-full sm:w-[80%] lg:w-[60%]">
                                     {cards.map((card, index) => (
                                         <div key={card.id || index} className="col-start-1 row-start-1">
-                                            <SwipeCard
-                                                title={card.title}
-                                                description={card.description}
-                                                image={card.image}
-                                                link={card.link}
-                                                isFocused
-                                                className="h-auto"
-                                            />
+                                            <SwipeCard title={card.title} description={card.description} image={card.image} link={card.link} isFocused className="h-auto" />
                                         </div>
                                     ))}
                                 </div>
@@ -183,19 +160,13 @@ export function SwipeCardSection({ content }: SwipeCardSectionProps) {
                                                 "absolute top-0 w-full transition-all duration-500 ease-out",
                                                 "left-1/2 w-full sm:w-[80%] lg:w-[60%]",
                                                 !isVisibleMobile && "lg:opacity-100 lg:pointer-events-auto opacity-0 pointer-events-none",
-                                                !isVisibleDesktop && "lg:opacity-0 lg:pointer-events-none",
+                                                !isVisibleDesktop && "lg:opacity-0 lg:pointer-events-none"
                                             )}
                                             style={{
                                                 transform: `translateX(calc(-50% + ${offset * 104}%))`,
                                             }}
                                         >
-                                            <SwipeCard
-                                                title={card.title}
-                                                description={card.description}
-                                                image={card.image}
-                                                link={card.link}
-                                                isFocused={index === focusedIndex}
-                                            />
+                                            <SwipeCard title={card.title} description={card.description} image={card.image} link={card.link} isFocused={index === focusedIndex} />
                                         </div>
                                     )
                                 })}
@@ -205,21 +176,11 @@ export function SwipeCardSection({ content }: SwipeCardSectionProps) {
                 </motion.div>
 
                 <motion.div className="z-30 flex items-center justify-center gap-4" variants={staggerItem}>
-                    <Button
-                        onClick={handlePrevious}
-                        variant="filled"
-                        className="shrink-0 size-12! rounded-full! p-0!"
-                        aria-label="Previous card"
-                    >
+                    <Button onClick={handlePrevious} variant="filled" className="shrink-0 size-12! rounded-full! p-0!" aria-label="Previous card">
                         <IconChevronLeft className="size-6 mr-0.5" />
                     </Button>
 
-                    <Button
-                        onClick={handleNext}
-                        variant="filled"
-                        className="shrink-0 size-12! rounded-full! p-0!"
-                        aria-label="Next card"
-                    >
+                    <Button onClick={handleNext} variant="filled" className="shrink-0 size-12! rounded-full! p-0!" aria-label="Next card">
                         <IconChevronRight className="size-6 ml-0.5" />
                     </Button>
                 </motion.div>
