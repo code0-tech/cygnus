@@ -51,13 +51,13 @@
         "web-haptics": "^0.0.6"
     },
     "devDependencies": {
-        "@tailwindcss/postcss": "^4.3.0",
+        "@tailwindcss/postcss": "^4.3.1",
         "@types/node": "^25.9.2",
         "@types/react": "^19.2.17",
         "@types/react-dom": "^19.2.3",
         "postcss": "^8.5.15",
         "prettier": "^3.8.4",
-        "tailwindcss": "^4.3.0",
+        "tailwindcss": "^4.3.1",
         "tsx": "^4.22.4",
         "typescript": "^6.0.3"
     },
