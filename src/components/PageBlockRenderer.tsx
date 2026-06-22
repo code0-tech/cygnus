@@ -12,6 +12,7 @@ import { SwipeCardSection } from "@/components/sections/SwipeCardSection"
 import type { AppLocale } from "@/lib/i18n"
 import type { Page } from "@/payload-types"
 import React, { type ReactNode } from "react"
+import { StandaloneCardSection } from "./sections/StandaloneCardSection"
 
 type PageBlock = NonNullable<Page["layout"]>[number]
 
@@ -37,6 +38,7 @@ const pageBlockRenderers: Partial<Record<PageBlock["blockType"], BlockRenderer>>
     roadmap: (block) => <RoadmapSection content={block as Extract<PageBlock, { blockType: "roadmap" }>} />,
     scrollCards: (block) => <ScrollCardSection content={block as Extract<PageBlock, { blockType: "scrollCards" }>} />,
     swipeCards: (block) => <SwipeCardSection content={block as Extract<PageBlock, { blockType: "swipeCards" }>} />,
+    standaloneCard: (block) => <StandaloneCardSection content={block as Extract<PageBlock, { blockType: "standaloneCard" }>} />,
 }
 
 function renderPageBlock(block: PageBlock, options: PageBlockRenderOptions) {

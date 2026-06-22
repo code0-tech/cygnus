@@ -15,6 +15,7 @@ import { OffsetCardsBlock } from "../blocks/OffsetCardsBlock"
 import { RoadmapBlock } from "../blocks/RoadmapBlock"
 import { ScrollCardBlock } from "../blocks/ScrollCardBlock"
 import type { CollectionConfig } from "payload"
+import { StandaloneBlock } from "@/blocks/StandaloneBlock"
 
 export const Pages: CollectionConfig = {
     slug: "pages",
@@ -79,6 +80,7 @@ export const Pages: CollectionConfig = {
                 CardRowBlock,
                 RoadmapBlock,
                 ScrollCardBlock,
+                StandaloneBlock,
             ],
             required: false,
             localized: true,

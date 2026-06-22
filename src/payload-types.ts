@@ -496,6 +496,23 @@ export interface Page {
             blockName?: string | null;
             blockType: 'scrollCards';
           }
+        | {
+            title: string;
+            description?: string | null;
+            showImageBorder?: boolean | null;
+            sectionLayout: 'imageRight' | 'imageLeft' | 'imageFullscreen';
+            gradient?: ('blue' | 'yellow' | 'pink' | 'aqua' | 'brand' | 'neutral') | null;
+            gradientDirection?: ('topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight') | null;
+            bulletPoints?: string[] | null;
+            image?: (number | null) | Media;
+            link?: {
+              label?: string | null;
+              url?: string | null;
+            };
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'standaloneCard';
+          }
       )[]
     | null;
   meta?: {
@@ -1317,6 +1334,26 @@ export interface PagesSelect<T extends boolean = true> {
                           url?: T;
                         };
                     id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        standaloneCard?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              showImageBorder?: T;
+              sectionLayout?: T;
+              gradient?: T;
+              gradientDirection?: T;
+              bulletPoints?: T;
+              image?: T;
+              link?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
                   };
               id?: T;
               blockName?: T;
