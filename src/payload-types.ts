@@ -479,9 +479,9 @@ export interface Page {
         | {
             items: {
               title: string;
-              description: string;
+              description?: string | null;
               showImageBorder?: boolean | null;
-              sectionLayout: 'imageRight' | 'imageLeft';
+              sectionLayout: 'imageRight' | 'imageLeft' | 'imageFullscreen';
               gradient?: ('blue' | 'yellow' | 'pink' | 'aqua' | 'brand' | 'neutral') | null;
               gradientDirection?: ('topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight') | null;
               bulletPoints?: string[] | null;
