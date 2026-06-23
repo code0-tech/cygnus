@@ -1,890 +1,508 @@
 import { MigrateUpArgs, MigrateDownArgs, sql } from "@payloadcms/db-postgres"
 
-export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
-    await db.execute(sql`
-   CREATE TYPE "public"."enum_users_ai_provider" AS ENUM('claude', 'google', 'mistral', 'openai', 'openrouter');
-  CREATE TYPE "public"."enum_pages_blocks_bento_section_layout" AS ENUM('center', 'left');
-  CREATE TYPE "public"."enum_pages_blocks_bento_variant" AS ENUM('feature', 'runtime');
-  CREATE TYPE "public"."enum_pages_blocks_offset_cards_section_layout" AS ENUM('center', 'left');
-  CREATE TYPE "public"."enum_pages_blocks_faq_section_layout" AS ENUM('center', 'left');
-  CREATE TYPE "public"."enum_pages_blocks_card_row_section_layout" AS ENUM('center', 'left');
-  CREATE TYPE "public"."enum_pages_blocks_roadmap_section_layout" AS ENUM('center', 'left');
-  CREATE TYPE "public"."enum_pages_blocks_scroll_cards_items_section_layout" AS ENUM('imageRight', 'imageLeft', 'imageFullscreen');
-  CREATE TYPE "public"."enum_pages_blocks_scroll_cards_items_gradient" AS ENUM('blue', 'yellow', 'pink', 'aqua', 'brand', 'neutral');
-  CREATE TYPE "public"."enum_pages_blocks_scroll_cards_items_gradient_direction" AS ENUM('topLeft', 'topRight', 'bottomLeft', 'bottomRight');
-  CREATE TYPE "public"."enum_pages_blocks_standalone_card_section_layout" AS ENUM('imageRight', 'imageLeft', 'imageFullscreen');
-  CREATE TYPE "public"."enum_pages_blocks_standalone_card_gradient" AS ENUM('blue', 'yellow', 'pink', 'aqua', 'brand', 'neutral');
-  CREATE TYPE "public"."enum_pages_blocks_standalone_card_gradient_direction" AS ENUM('topLeft', 'topRight', 'bottomLeft', 'bottomRight');
-  CREATE TYPE "public"."enum_payload_ai_auditlog_action" AS ENUM('create', 'update', 'delete', 'updateGlobal');
-  CREATE TYPE "public"."enum_payload_ai_auditlog_target_type" AS ENUM('collection', 'global');
-  CREATE TYPE "public"."enum_navigation_buttons_buttons_variant" AS ENUM('none', 'normal', 'outlined', 'filled');
-  ALTER TYPE "public"."enum_footer_social_links_platform" ADD VALUE 'linkedin' BEFORE 'github';
-  ALTER TYPE "public"."enum_pages_slug" ADD VALUE 'blog' BEFORE 'features';
-  ALTER TYPE "public"."enum_pages_slug" ADD VALUE 'open-source-no-code-automation' BEFORE 'contact';
-  CREATE TABLE "pages_blocks_bento" (
-  	"_order" integer NOT NULL,
-  	"_parent_id" integer NOT NULL,
-  	"_path" text NOT NULL,
-  	"_locale" "_locales" NOT NULL,
-  	"id" varchar PRIMARY KEY NOT NULL,
-  	"section_heading" varchar,
-  	"section_layout" "enum_pages_blocks_bento_section_layout" DEFAULT 'center' NOT NULL,
-  	"section_description" varchar,
-  	"section_link_button_label" varchar,
-  	"section_link_button_url" varchar,
-  	"variant" "enum_pages_blocks_bento_variant" DEFAULT 'feature' NOT NULL,
-  	"block_name" varchar
-  );
+const IGNORED_POSTGRES_CODES = new Set([
+    "42710", // duplicate_object, e.g. enum value/constraint already exists
+    "42P07", // duplicate_table / duplicate_relation, e.g. table or index already exists
+    "42701", // duplicate_column
+    "42704", // undefined_object, e.g. constraint/type/index already dropped
+    "42P01", // undefined_table
+    "42703", // undefined_column
+])
 
-  CREATE TABLE "pages_blocks_offset_cards_cards" (
-  	"_order" integer NOT NULL,
-  	"_parent_id" varchar NOT NULL,
-  	"_locale" "_locales" NOT NULL,
-  	"id" varchar PRIMARY KEY NOT NULL,
-  	"label" varchar NOT NULL,
-  	"title" varchar NOT NULL,
-  	"description" varchar NOT NULL,
-  	"image_id" integer,
-  	"link_label" varchar,
-  	"link_url" varchar
-  );
-
-  CREATE TABLE "pages_blocks_offset_cards" (
-  	"_order" integer NOT NULL,
-  	"_parent_id" integer NOT NULL,
-  	"_path" text NOT NULL,
-  	"_locale" "_locales" NOT NULL,
-  	"id" varchar PRIMARY KEY NOT NULL,
-  	"section_heading" varchar,
-  	"section_layout" "enum_pages_blocks_offset_cards_section_layout" DEFAULT 'center' NOT NULL,
-  	"section_description" varchar,
-  	"section_link_button_label" varchar,
-  	"section_link_button_url" varchar,
-  	"block_name" varchar
-  );
-
-  CREATE TABLE "pages_blocks_install" (
-  	"_order" integer NOT NULL,
-  	"_parent_id" integer NOT NULL,
-  	"_path" text NOT NULL,
-  	"_locale" "_locales" NOT NULL,
-  	"id" varchar PRIMARY KEY NOT NULL,
-  	"heading" varchar NOT NULL,
-  	"subheading" varchar NOT NULL,
-  	"label" varchar,
-  	"code" varchar NOT NULL,
-  	"block_name" varchar
-  );
-
-  CREATE TABLE "pages_blocks_swipe_cards_cards" (
-  	"_order" integer NOT NULL,
-  	"_parent_id" varchar NOT NULL,
-  	"_locale" "_locales" NOT NULL,
-  	"id" varchar PRIMARY KEY NOT NULL,
-  	"title" varchar NOT NULL,
-  	"description" varchar NOT NULL,
-  	"image_id" integer,
-  	"link_label" varchar,
-  	"link_url" varchar
-  );
-
-  CREATE TABLE "pages_blocks_swipe_cards" (
-  	"_order" integer NOT NULL,
-  	"_parent_id" integer NOT NULL,
-  	"_path" text NOT NULL,
-  	"_locale" "_locales" NOT NULL,
-  	"id" varchar PRIMARY KEY NOT NULL,
-  	"heading" varchar,
-  	"subheading" varchar,
-  	"block_name" varchar
-  );
-
-  CREATE TABLE "pages_blocks_blog" (
-  	"_order" integer NOT NULL,
-  	"_parent_id" integer NOT NULL,
-  	"_path" text NOT NULL,
-  	"_locale" "_locales" NOT NULL,
-  	"id" varchar PRIMARY KEY NOT NULL,
-  	"view_other_blogs_label" varchar DEFAULT 'View other blog posts' NOT NULL,
-  	"no_posts_label" varchar DEFAULT 'No blog posts available.' NOT NULL,
-  	"load_more_label" varchar DEFAULT 'Load more' NOT NULL,
-  	"loading_label" varchar DEFAULT 'Loading...' NOT NULL,
-  	"block_name" varchar
-  );
-
-  CREATE TABLE "pages_blocks_card_row_cards" (
-  	"_order" integer NOT NULL,
-  	"_parent_id" varchar NOT NULL,
-  	"_locale" "_locales" NOT NULL,
-  	"id" varchar PRIMARY KEY NOT NULL,
-  	"title" varchar NOT NULL,
-  	"description" varchar,
-  	"link_label" varchar,
-  	"link_url" varchar,
-  	"image_id" integer
-  );
-
-  CREATE TABLE "pages_blocks_card_row" (
-  	"_order" integer NOT NULL,
-  	"_parent_id" integer NOT NULL,
-  	"_path" text NOT NULL,
-  	"_locale" "_locales" NOT NULL,
-  	"id" varchar PRIMARY KEY NOT NULL,
-  	"section_heading" varchar,
-  	"section_layout" "enum_pages_blocks_card_row_section_layout" DEFAULT 'center' NOT NULL,
-  	"section_description" varchar,
-  	"section_link_button_label" varchar,
-  	"section_link_button_url" varchar,
-  	"block_name" varchar
-  );
-
-  CREATE TABLE "pages_blocks_roadmap_items" (
-  	"_order" integer NOT NULL,
-  	"_parent_id" varchar NOT NULL,
-  	"_locale" "_locales" NOT NULL,
-  	"id" varchar PRIMARY KEY NOT NULL,
-  	"time" varchar NOT NULL,
-  	"title" varchar NOT NULL,
-  	"description" varchar NOT NULL
-  );
-
-  CREATE TABLE "pages_blocks_roadmap" (
-  	"_order" integer NOT NULL,
-  	"_parent_id" integer NOT NULL,
-  	"_path" text NOT NULL,
-  	"_locale" "_locales" NOT NULL,
-  	"id" varchar PRIMARY KEY NOT NULL,
-  	"section_heading" varchar,
-  	"section_layout" "enum_pages_blocks_roadmap_section_layout" DEFAULT 'center' NOT NULL,
-  	"section_description" varchar,
-  	"section_link_button_label" varchar,
-  	"section_link_button_url" varchar,
-  	"block_name" varchar
-  );
-
-  CREATE TABLE "pages_blocks_scroll_cards_items" (
-  	"_order" integer NOT NULL,
-  	"_parent_id" varchar NOT NULL,
-  	"_locale" "_locales" NOT NULL,
-  	"id" varchar PRIMARY KEY NOT NULL,
-  	"title" varchar NOT NULL,
-  	"description" varchar,
-  	"show_image_border" boolean DEFAULT true,
-  	"section_layout" "enum_pages_blocks_scroll_cards_items_section_layout" DEFAULT 'imageRight' NOT NULL,
-  	"gradient" "enum_pages_blocks_scroll_cards_items_gradient" DEFAULT 'blue',
-  	"gradient_direction" "enum_pages_blocks_scroll_cards_items_gradient_direction" DEFAULT 'topLeft',
-  	"image_id" integer,
-  	"link_label" varchar,
-  	"link_url" varchar
-  );
-
-  CREATE TABLE "pages_blocks_scroll_cards" (
-  	"_order" integer NOT NULL,
-  	"_parent_id" integer NOT NULL,
-  	"_path" text NOT NULL,
-  	"_locale" "_locales" NOT NULL,
-  	"id" varchar PRIMARY KEY NOT NULL,
-  	"block_name" varchar
-  );
-
-  CREATE TABLE "pages_blocks_standalone_card" (
-  	"_order" integer NOT NULL,
-  	"_parent_id" integer NOT NULL,
-  	"_path" text NOT NULL,
-  	"_locale" "_locales" NOT NULL,
-  	"id" varchar PRIMARY KEY NOT NULL,
-  	"title" varchar NOT NULL,
-  	"description" varchar,
-  	"show_image_border" boolean DEFAULT true,
-  	"section_layout" "enum_pages_blocks_standalone_card_section_layout" DEFAULT 'imageRight' NOT NULL,
-  	"gradient" "enum_pages_blocks_standalone_card_gradient" DEFAULT 'blue',
-  	"gradient_direction" "enum_pages_blocks_standalone_card_gradient_direction" DEFAULT 'topLeft',
-  	"image_id" integer,
-  	"link_label" varchar,
-  	"link_url" varchar,
-  	"block_name" varchar
-  );
-
-  CREATE TABLE "payload_ai_auditlog" (
-  	"id" serial PRIMARY KEY NOT NULL,
-  	"title" varchar NOT NULL,
-  	"action" "enum_payload_ai_auditlog_action" NOT NULL,
-  	"target_type" "enum_payload_ai_auditlog_target_type" NOT NULL,
-  	"collection" varchar,
-  	"slug" varchar,
-  	"document_i_d" varchar,
-  	"target_u_r_l" varchar,
-  	"additions" numeric DEFAULT 0,
-  	"removals" numeric DEFAULT 0,
-  	"before" jsonb,
-  	"after" jsonb,
-  	"proposal" jsonb,
-  	"prompt" varchar,
-  	"input_tokens" numeric,
-  	"output_tokens" numeric,
-  	"total_tokens" numeric,
-  	"ai_response" varchar,
-  	"user_i_d" varchar,
-  	"user_label" varchar,
-  	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
-  	"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
-  );
-
-  CREATE TABLE "navigation_items_items_sub_menu" (
-  	"_order" integer NOT NULL,
-  	"_parent_id" varchar NOT NULL,
-  	"id" varchar PRIMARY KEY NOT NULL,
-  	"key" varchar NOT NULL,
-  	"href" varchar NOT NULL,
-  	"icon" varchar
-  );
-
-  CREATE TABLE "navigation_items_items_sub_menu_locales" (
-  	"title" varchar NOT NULL,
-  	"description" varchar NOT NULL,
-  	"id" serial PRIMARY KEY NOT NULL,
-  	"_locale" "_locales" NOT NULL,
-  	"_parent_id" varchar NOT NULL
-  );
-
-  CREATE TABLE "navigation_items_items" (
-  	"_order" integer NOT NULL,
-  	"_parent_id" integer NOT NULL,
-  	"id" varchar PRIMARY KEY NOT NULL,
-  	"href" varchar,
-  	"order" numeric DEFAULT 0 NOT NULL
-  );
-
-  CREATE TABLE "navigation_items_items_locales" (
-  	"title" varchar NOT NULL,
-  	"id" serial PRIMARY KEY NOT NULL,
-  	"_locale" "_locales" NOT NULL,
-  	"_parent_id" varchar NOT NULL
-  );
-
-  CREATE TABLE "navigation_buttons_buttons" (
-  	"_order" integer NOT NULL,
-  	"_parent_id" integer NOT NULL,
-  	"id" varchar PRIMARY KEY NOT NULL,
-  	"href" varchar NOT NULL,
-  	"order" numeric DEFAULT 0 NOT NULL,
-  	"icon" varchar,
-  	"new_tab" boolean DEFAULT false,
-  	"variant" "enum_navigation_buttons_buttons_variant" DEFAULT 'normal' NOT NULL
-  );
-
-  CREATE TABLE "navigation_buttons_buttons_locales" (
-  	"title" varchar NOT NULL,
-  	"id" serial PRIMARY KEY NOT NULL,
-  	"_locale" "_locales" NOT NULL,
-  	"_parent_id" varchar NOT NULL
-  );
-
-  CREATE TABLE "navigation" (
-  	"id" serial PRIMARY KEY NOT NULL,
-  	"logo_id" integer,
-  	"updated_at" timestamp(3) with time zone,
-  	"created_at" timestamp(3) with time zone
-  );
-
-  ALTER TABLE "navbar_items_sub_menu" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "navbar_items_sub_menu_locales" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "navbar_items" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "navbar_items_locales" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "sections" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "sections_locales" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "pages_blocks_edition_hero_texts" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "pages_blocks_edition_hero_buttons" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "pages_blocks_edition_hero" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "pages_blocks_edition_features_features" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "pages_blocks_edition_features" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "pages_blocks_edition_install" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "pages_blocks_edition_use_cases_use_cases" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "pages_blocks_edition_use_cases" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "pages_blocks_usecase_use_cases" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "pages_blocks_usecase" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "pages_blocks_deployment" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "roadmap_items" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "roadmap_items_locales" DISABLE ROW LEVEL SECURITY;
-  DROP TABLE "navbar_items_sub_menu" CASCADE;
-  DROP TABLE "navbar_items_sub_menu_locales" CASCADE;
-  DROP TABLE "navbar_items" CASCADE;
-  DROP TABLE "navbar_items_locales" CASCADE;
-  DROP TABLE "sections" CASCADE;
-  DROP TABLE "sections_locales" CASCADE;
-  DROP TABLE "pages_blocks_edition_hero_texts" CASCADE;
-  DROP TABLE "pages_blocks_edition_hero_buttons" CASCADE;
-  DROP TABLE "pages_blocks_edition_hero" CASCADE;
-  DROP TABLE "pages_blocks_edition_features_features" CASCADE;
-  DROP TABLE "pages_blocks_edition_features" CASCADE;
-  DROP TABLE "pages_blocks_edition_install" CASCADE;
-  DROP TABLE "pages_blocks_edition_use_cases_use_cases" CASCADE;
-  DROP TABLE "pages_blocks_edition_use_cases" CASCADE;
-  DROP TABLE "pages_blocks_usecase_use_cases" CASCADE;
-  DROP TABLE "pages_blocks_usecase" CASCADE;
-  DROP TABLE "pages_blocks_deployment" CASCADE;
-  DROP TABLE "roadmap_items" CASCADE;
-  DROP TABLE "roadmap_items_locales" CASCADE;
-  ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_navbar_items_fk";
-
-  ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_sections_fk";
-
-  ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_footer_fk";
-
-  ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_cookie_banner_fk";
-
-  ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_roadmap_items_fk";
-
-  ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_subscription_config_fk";
-
-  DROP INDEX "footer_updated_at_idx";
-  DROP INDEX "footer_created_at_idx";
-  DROP INDEX "cookie_banner_updated_at_idx";
-  DROP INDEX "cookie_banner_created_at_idx";
-  DROP INDEX "subscription_config_updated_at_idx";
-  DROP INDEX "subscription_config_created_at_idx";
-  DROP INDEX "payload_locked_documents_rels_navbar_items_id_idx";
-  DROP INDEX "payload_locked_documents_rels_sections_id_idx";
-  DROP INDEX "payload_locked_documents_rels_footer_id_idx";
-  DROP INDEX "payload_locked_documents_rels_cookie_banner_id_idx";
-  DROP INDEX "payload_locked_documents_rels_roadmap_items_id_idx";
-  DROP INDEX "payload_locked_documents_rels_subscription_config_id_idx";
-  ALTER TABLE "footer" ALTER COLUMN "updated_at" DROP DEFAULT;
-  ALTER TABLE "footer" ALTER COLUMN "updated_at" DROP NOT NULL;
-  ALTER TABLE "footer" ALTER COLUMN "created_at" DROP DEFAULT;
-  ALTER TABLE "footer" ALTER COLUMN "created_at" DROP NOT NULL;
-  ALTER TABLE "cookie_banner" ALTER COLUMN "updated_at" DROP DEFAULT;
-  ALTER TABLE "cookie_banner" ALTER COLUMN "updated_at" DROP NOT NULL;
-  ALTER TABLE "cookie_banner" ALTER COLUMN "created_at" DROP DEFAULT;
-  ALTER TABLE "cookie_banner" ALTER COLUMN "created_at" DROP NOT NULL;
-  ALTER TABLE "subscription_config" ALTER COLUMN "updated_at" DROP DEFAULT;
-  ALTER TABLE "subscription_config" ALTER COLUMN "updated_at" DROP NOT NULL;
-  ALTER TABLE "subscription_config" ALTER COLUMN "created_at" DROP DEFAULT;
-  ALTER TABLE "subscription_config" ALTER COLUMN "created_at" DROP NOT NULL;
-  ALTER TABLE "users" ADD COLUMN "ai_provider" "enum_users_ai_provider" DEFAULT 'openai';
-  ALTER TABLE "users" ADD COLUMN "ai_api_key" varchar;
-  ALTER TABLE "footer" ADD COLUMN "contact_email" varchar;
-  ALTER TABLE "footer" ADD COLUMN "legal_links_privacy_url" varchar DEFAULT '/privacy' NOT NULL;
-  ALTER TABLE "footer" ADD COLUMN "legal_links_legal_notice_url" varchar DEFAULT '/legal-notice' NOT NULL;
-  ALTER TABLE "footer_locales" ADD COLUMN "description" varchar;
-  ALTER TABLE "footer_locales" ADD COLUMN "legal_links_privacy_label" varchar DEFAULT 'Privacy Policy' NOT NULL;
-  ALTER TABLE "footer_locales" ADD COLUMN "legal_links_legal_notice_label" varchar DEFAULT 'Legal Notice' NOT NULL;
-  ALTER TABLE "pages_blocks_hero" ADD COLUMN "centered" boolean DEFAULT false;
-  ALTER TABLE "pages_blocks_hero" ADD COLUMN "grainient_colors_color1" varchar;
-  ALTER TABLE "pages_blocks_hero" ADD COLUMN "grainient_colors_color2" varchar;
-  ALTER TABLE "pages_blocks_hero" ADD COLUMN "grainient_colors_color3" varchar;
-  ALTER TABLE "pages_blocks_hero" ADD COLUMN "grainient_colors_background_color" varchar;
-  ALTER TABLE "pages_blocks_faq" ADD COLUMN "section_heading" varchar;
-  ALTER TABLE "pages_blocks_faq" ADD COLUMN "section_layout" "enum_pages_blocks_faq_section_layout" DEFAULT 'center' NOT NULL;
-  ALTER TABLE "pages_blocks_faq" ADD COLUMN "section_description" varchar;
-  ALTER TABLE "pages_blocks_faq" ADD COLUMN "section_link_button_label" varchar;
-  ALTER TABLE "pages_blocks_faq" ADD COLUMN "section_link_button_url" varchar;
-  ALTER TABLE "blog" ADD COLUMN "is_pinned" boolean DEFAULT false;
-  ALTER TABLE "payload_locked_documents_rels" ADD COLUMN "payload_ai_auditlog_id" integer;
-  ALTER TABLE "pages_blocks_bento" ADD CONSTRAINT "pages_blocks_bento_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "pages_blocks_offset_cards_cards" ADD CONSTRAINT "pages_blocks_offset_cards_cards_image_id_media_id_fk" FOREIGN KEY ("image_id") REFERENCES "public"."media"("id") ON DELETE set null ON UPDATE no action;
-  ALTER TABLE "pages_blocks_offset_cards_cards" ADD CONSTRAINT "pages_blocks_offset_cards_cards_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages_blocks_offset_cards"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "pages_blocks_offset_cards" ADD CONSTRAINT "pages_blocks_offset_cards_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "pages_blocks_install" ADD CONSTRAINT "pages_blocks_install_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "pages_blocks_swipe_cards_cards" ADD CONSTRAINT "pages_blocks_swipe_cards_cards_image_id_media_id_fk" FOREIGN KEY ("image_id") REFERENCES "public"."media"("id") ON DELETE set null ON UPDATE no action;
-  ALTER TABLE "pages_blocks_swipe_cards_cards" ADD CONSTRAINT "pages_blocks_swipe_cards_cards_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages_blocks_swipe_cards"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "pages_blocks_swipe_cards" ADD CONSTRAINT "pages_blocks_swipe_cards_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "pages_blocks_blog" ADD CONSTRAINT "pages_blocks_blog_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "pages_blocks_card_row_cards" ADD CONSTRAINT "pages_blocks_card_row_cards_image_id_media_id_fk" FOREIGN KEY ("image_id") REFERENCES "public"."media"("id") ON DELETE set null ON UPDATE no action;
-  ALTER TABLE "pages_blocks_card_row_cards" ADD CONSTRAINT "pages_blocks_card_row_cards_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages_blocks_card_row"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "pages_blocks_card_row" ADD CONSTRAINT "pages_blocks_card_row_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "pages_blocks_roadmap_items" ADD CONSTRAINT "pages_blocks_roadmap_items_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages_blocks_roadmap"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "pages_blocks_roadmap" ADD CONSTRAINT "pages_blocks_roadmap_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "pages_blocks_scroll_cards_items" ADD CONSTRAINT "pages_blocks_scroll_cards_items_image_id_media_id_fk" FOREIGN KEY ("image_id") REFERENCES "public"."media"("id") ON DELETE set null ON UPDATE no action;
-  ALTER TABLE "pages_blocks_scroll_cards_items" ADD CONSTRAINT "pages_blocks_scroll_cards_items_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages_blocks_scroll_cards"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "pages_blocks_scroll_cards" ADD CONSTRAINT "pages_blocks_scroll_cards_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "pages_blocks_standalone_card" ADD CONSTRAINT "pages_blocks_standalone_card_image_id_media_id_fk" FOREIGN KEY ("image_id") REFERENCES "public"."media"("id") ON DELETE set null ON UPDATE no action;
-  ALTER TABLE "pages_blocks_standalone_card" ADD CONSTRAINT "pages_blocks_standalone_card_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "navigation_items_items_sub_menu" ADD CONSTRAINT "navigation_items_items_sub_menu_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."navigation_items_items"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "navigation_items_items_sub_menu_locales" ADD CONSTRAINT "navigation_items_items_sub_menu_locales_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."navigation_items_items_sub_menu"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "navigation_items_items" ADD CONSTRAINT "navigation_items_items_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."navigation"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "navigation_items_items_locales" ADD CONSTRAINT "navigation_items_items_locales_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."navigation_items_items"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "navigation_buttons_buttons" ADD CONSTRAINT "navigation_buttons_buttons_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."navigation"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "navigation_buttons_buttons_locales" ADD CONSTRAINT "navigation_buttons_buttons_locales_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."navigation_buttons_buttons"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "navigation" ADD CONSTRAINT "navigation_logo_id_media_id_fk" FOREIGN KEY ("logo_id") REFERENCES "public"."media"("id") ON DELETE set null ON UPDATE no action;
-  CREATE INDEX "pages_blocks_bento_order_idx" ON "pages_blocks_bento" USING btree ("_order");
-  CREATE INDEX "pages_blocks_bento_parent_id_idx" ON "pages_blocks_bento" USING btree ("_parent_id");
-  CREATE INDEX "pages_blocks_bento_path_idx" ON "pages_blocks_bento" USING btree ("_path");
-  CREATE INDEX "pages_blocks_bento_locale_idx" ON "pages_blocks_bento" USING btree ("_locale");
-  CREATE INDEX "pages_blocks_offset_cards_cards_order_idx" ON "pages_blocks_offset_cards_cards" USING btree ("_order");
-  CREATE INDEX "pages_blocks_offset_cards_cards_parent_id_idx" ON "pages_blocks_offset_cards_cards" USING btree ("_parent_id");
-  CREATE INDEX "pages_blocks_offset_cards_cards_locale_idx" ON "pages_blocks_offset_cards_cards" USING btree ("_locale");
-  CREATE INDEX "pages_blocks_offset_cards_cards_image_idx" ON "pages_blocks_offset_cards_cards" USING btree ("image_id");
-  CREATE INDEX "pages_blocks_offset_cards_order_idx" ON "pages_blocks_offset_cards" USING btree ("_order");
-  CREATE INDEX "pages_blocks_offset_cards_parent_id_idx" ON "pages_blocks_offset_cards" USING btree ("_parent_id");
-  CREATE INDEX "pages_blocks_offset_cards_path_idx" ON "pages_blocks_offset_cards" USING btree ("_path");
-  CREATE INDEX "pages_blocks_offset_cards_locale_idx" ON "pages_blocks_offset_cards" USING btree ("_locale");
-  CREATE INDEX "pages_blocks_install_order_idx" ON "pages_blocks_install" USING btree ("_order");
-  CREATE INDEX "pages_blocks_install_parent_id_idx" ON "pages_blocks_install" USING btree ("_parent_id");
-  CREATE INDEX "pages_blocks_install_path_idx" ON "pages_blocks_install" USING btree ("_path");
-  CREATE INDEX "pages_blocks_install_locale_idx" ON "pages_blocks_install" USING btree ("_locale");
-  CREATE INDEX "pages_blocks_swipe_cards_cards_order_idx" ON "pages_blocks_swipe_cards_cards" USING btree ("_order");
-  CREATE INDEX "pages_blocks_swipe_cards_cards_parent_id_idx" ON "pages_blocks_swipe_cards_cards" USING btree ("_parent_id");
-  CREATE INDEX "pages_blocks_swipe_cards_cards_locale_idx" ON "pages_blocks_swipe_cards_cards" USING btree ("_locale");
-  CREATE INDEX "pages_blocks_swipe_cards_cards_image_idx" ON "pages_blocks_swipe_cards_cards" USING btree ("image_id");
-  CREATE INDEX "pages_blocks_swipe_cards_order_idx" ON "pages_blocks_swipe_cards" USING btree ("_order");
-  CREATE INDEX "pages_blocks_swipe_cards_parent_id_idx" ON "pages_blocks_swipe_cards" USING btree ("_parent_id");
-  CREATE INDEX "pages_blocks_swipe_cards_path_idx" ON "pages_blocks_swipe_cards" USING btree ("_path");
-  CREATE INDEX "pages_blocks_swipe_cards_locale_idx" ON "pages_blocks_swipe_cards" USING btree ("_locale");
-  CREATE INDEX "pages_blocks_blog_order_idx" ON "pages_blocks_blog" USING btree ("_order");
-  CREATE INDEX "pages_blocks_blog_parent_id_idx" ON "pages_blocks_blog" USING btree ("_parent_id");
-  CREATE INDEX "pages_blocks_blog_path_idx" ON "pages_blocks_blog" USING btree ("_path");
-  CREATE INDEX "pages_blocks_blog_locale_idx" ON "pages_blocks_blog" USING btree ("_locale");
-  CREATE INDEX "pages_blocks_card_row_cards_order_idx" ON "pages_blocks_card_row_cards" USING btree ("_order");
-  CREATE INDEX "pages_blocks_card_row_cards_parent_id_idx" ON "pages_blocks_card_row_cards" USING btree ("_parent_id");
-  CREATE INDEX "pages_blocks_card_row_cards_locale_idx" ON "pages_blocks_card_row_cards" USING btree ("_locale");
-  CREATE INDEX "pages_blocks_card_row_cards_image_idx" ON "pages_blocks_card_row_cards" USING btree ("image_id");
-  CREATE INDEX "pages_blocks_card_row_order_idx" ON "pages_blocks_card_row" USING btree ("_order");
-  CREATE INDEX "pages_blocks_card_row_parent_id_idx" ON "pages_blocks_card_row" USING btree ("_parent_id");
-  CREATE INDEX "pages_blocks_card_row_path_idx" ON "pages_blocks_card_row" USING btree ("_path");
-  CREATE INDEX "pages_blocks_card_row_locale_idx" ON "pages_blocks_card_row" USING btree ("_locale");
-  CREATE INDEX "pages_blocks_roadmap_items_order_idx" ON "pages_blocks_roadmap_items" USING btree ("_order");
-  CREATE INDEX "pages_blocks_roadmap_items_parent_id_idx" ON "pages_blocks_roadmap_items" USING btree ("_parent_id");
-  CREATE INDEX "pages_blocks_roadmap_items_locale_idx" ON "pages_blocks_roadmap_items" USING btree ("_locale");
-  CREATE INDEX "pages_blocks_roadmap_order_idx" ON "pages_blocks_roadmap" USING btree ("_order");
-  CREATE INDEX "pages_blocks_roadmap_parent_id_idx" ON "pages_blocks_roadmap" USING btree ("_parent_id");
-  CREATE INDEX "pages_blocks_roadmap_path_idx" ON "pages_blocks_roadmap" USING btree ("_path");
-  CREATE INDEX "pages_blocks_roadmap_locale_idx" ON "pages_blocks_roadmap" USING btree ("_locale");
-  CREATE INDEX "pages_blocks_scroll_cards_items_order_idx" ON "pages_blocks_scroll_cards_items" USING btree ("_order");
-  CREATE INDEX "pages_blocks_scroll_cards_items_parent_id_idx" ON "pages_blocks_scroll_cards_items" USING btree ("_parent_id");
-  CREATE INDEX "pages_blocks_scroll_cards_items_locale_idx" ON "pages_blocks_scroll_cards_items" USING btree ("_locale");
-  CREATE INDEX "pages_blocks_scroll_cards_items_image_idx" ON "pages_blocks_scroll_cards_items" USING btree ("image_id");
-  CREATE INDEX "pages_blocks_scroll_cards_order_idx" ON "pages_blocks_scroll_cards" USING btree ("_order");
-  CREATE INDEX "pages_blocks_scroll_cards_parent_id_idx" ON "pages_blocks_scroll_cards" USING btree ("_parent_id");
-  CREATE INDEX "pages_blocks_scroll_cards_path_idx" ON "pages_blocks_scroll_cards" USING btree ("_path");
-  CREATE INDEX "pages_blocks_scroll_cards_locale_idx" ON "pages_blocks_scroll_cards" USING btree ("_locale");
-  CREATE INDEX "pages_blocks_standalone_card_order_idx" ON "pages_blocks_standalone_card" USING btree ("_order");
-  CREATE INDEX "pages_blocks_standalone_card_parent_id_idx" ON "pages_blocks_standalone_card" USING btree ("_parent_id");
-  CREATE INDEX "pages_blocks_standalone_card_path_idx" ON "pages_blocks_standalone_card" USING btree ("_path");
-  CREATE INDEX "pages_blocks_standalone_card_locale_idx" ON "pages_blocks_standalone_card" USING btree ("_locale");
-  CREATE INDEX "pages_blocks_standalone_card_image_idx" ON "pages_blocks_standalone_card" USING btree ("image_id");
-  CREATE INDEX "payload_ai_auditlog_updated_at_idx" ON "payload_ai_auditlog" USING btree ("updated_at");
-  CREATE INDEX "payload_ai_auditlog_created_at_idx" ON "payload_ai_auditlog" USING btree ("created_at");
-  CREATE INDEX "navigation_items_items_sub_menu_order_idx" ON "navigation_items_items_sub_menu" USING btree ("_order");
-  CREATE INDEX "navigation_items_items_sub_menu_parent_id_idx" ON "navigation_items_items_sub_menu" USING btree ("_parent_id");
-  CREATE UNIQUE INDEX "navigation_items_items_sub_menu_locales_locale_parent_id_uni" ON "navigation_items_items_sub_menu_locales" USING btree ("_locale","_parent_id");
-  CREATE INDEX "navigation_items_items_order_idx" ON "navigation_items_items" USING btree ("_order");
-  CREATE INDEX "navigation_items_items_parent_id_idx" ON "navigation_items_items" USING btree ("_parent_id");
-  CREATE UNIQUE INDEX "navigation_items_items_locales_locale_parent_id_unique" ON "navigation_items_items_locales" USING btree ("_locale","_parent_id");
-  CREATE INDEX "navigation_buttons_buttons_order_idx" ON "navigation_buttons_buttons" USING btree ("_order");
-  CREATE INDEX "navigation_buttons_buttons_parent_id_idx" ON "navigation_buttons_buttons" USING btree ("_parent_id");
-  CREATE UNIQUE INDEX "navigation_buttons_buttons_locales_locale_parent_id_unique" ON "navigation_buttons_buttons_locales" USING btree ("_locale","_parent_id");
-  CREATE INDEX "navigation_logo_idx" ON "navigation" USING btree ("logo_id");
-  ALTER TABLE "payload_locked_documents_rels" ADD CONSTRAINT "payload_locked_documents_rels_payload_ai_auditlog_fk" FOREIGN KEY ("payload_ai_auditlog_id") REFERENCES "public"."payload_ai_auditlog"("id") ON DELETE cascade ON UPDATE no action;
-  CREATE INDEX "blog_is_pinned_idx" ON "blog" USING btree ("is_pinned");
-  CREATE INDEX "payload_locked_documents_rels_payload_ai_auditlog_id_idx" ON "payload_locked_documents_rels" USING btree ("payload_ai_auditlog_id");
-  ALTER TABLE "payload_locked_documents_rels" DROP COLUMN "navbar_items_id";
-  ALTER TABLE "payload_locked_documents_rels" DROP COLUMN "sections_id";
-  ALTER TABLE "payload_locked_documents_rels" DROP COLUMN "footer_id";
-  ALTER TABLE "payload_locked_documents_rels" DROP COLUMN "cookie_banner_id";
-  ALTER TABLE "payload_locked_documents_rels" DROP COLUMN "roadmap_items_id";
-  ALTER TABLE "payload_locked_documents_rels" DROP COLUMN "subscription_config_id";
-  DROP TYPE "public"."enum_sections_section_type";
-  DROP TYPE "public"."enum_pages_blocks_edition_hero_buttons_variant";`)
+function getPostgresCode(error: unknown): string | undefined {
+    const err = error as { code?: string; cause?: { code?: string } }
+    return err?.code ?? err?.cause?.code
 }
 
-export async function down({ db, payload, req }: MigrateDownArgs): Promise<void> {
-    await db.execute(sql`
-   CREATE TYPE "public"."enum_sections_section_type" AS ENUM('AppFeatureSection', 'FaqSection', 'RoadmapSection', 'RuntimeFeatureSection', 'UseCaseSection', 'DeploymentSection');
-  CREATE TYPE "public"."enum_pages_blocks_edition_hero_buttons_variant" AS ENUM('none', 'normal', 'outlined', 'filled');
-  CREATE TABLE "navbar_items_sub_menu" (
-  	"_order" integer NOT NULL,
-  	"_parent_id" integer NOT NULL,
-  	"id" varchar PRIMARY KEY NOT NULL,
-  	"key" varchar NOT NULL,
-  	"href" varchar NOT NULL,
-  	"icon" varchar NOT NULL
-  );
+function getErrorMessage(error: unknown): string {
+    const err = error as { message?: string; cause?: { message?: string } }
+    return err?.cause?.message ?? err?.message ?? String(error)
+}
 
-  CREATE TABLE "navbar_items_sub_menu_locales" (
-  	"title" varchar NOT NULL,
-  	"description" varchar NOT NULL,
-  	"id" serial PRIMARY KEY NOT NULL,
-  	"_locale" "_locales" NOT NULL,
-  	"_parent_id" varchar NOT NULL
-  );
+async function executeMigrationStatements(db: MigrateUpArgs["db"] | MigrateDownArgs["db"], statements: string[]): Promise<void> {
+    for (const statement of statements) {
+        try {
+            await db.execute(sql.raw(statement))
+        } catch (error) {
+            const code = getPostgresCode(error)
 
-  CREATE TABLE "navbar_items" (
-  	"id" serial PRIMARY KEY NOT NULL,
-  	"href" varchar,
-  	"order" numeric DEFAULT 0 NOT NULL,
-  	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
-  	"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
-  );
+            if (code && IGNORED_POSTGRES_CODES.has(code)) {
+                console.warn(`Skipping already-applied migration statement (${code}): ${getErrorMessage(error)}`)
+                continue
+            }
 
-  CREATE TABLE "navbar_items_locales" (
-  	"title" varchar NOT NULL,
-  	"id" serial PRIMARY KEY NOT NULL,
-  	"_locale" "_locales" NOT NULL,
-  	"_parent_id" integer NOT NULL
-  );
+            console.error("Migration statement failed:", statement)
+            console.error("Cause:", (error as { cause?: unknown })?.cause ?? error)
+            throw error
+        }
+    }
+}
 
-  CREATE TABLE "sections" (
-  	"id" serial PRIMARY KEY NOT NULL,
-  	"section_type" "enum_sections_section_type" NOT NULL,
-  	"link_button_url" varchar,
-  	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
-  	"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
-  );
+const upStatements = [
+    "CREATE TYPE \"public\".\"enum_users_ai_provider\" AS ENUM('claude', 'google', 'mistral', 'openai', 'openrouter')",
+    "CREATE TYPE \"public\".\"enum_pages_blocks_bento_section_layout\" AS ENUM('center', 'left')",
+    "CREATE TYPE \"public\".\"enum_pages_blocks_bento_variant\" AS ENUM('feature', 'runtime')",
+    "CREATE TYPE \"public\".\"enum_pages_blocks_offset_cards_section_layout\" AS ENUM('center', 'left')",
+    "CREATE TYPE \"public\".\"enum_pages_blocks_faq_section_layout\" AS ENUM('center', 'left')",
+    "CREATE TYPE \"public\".\"enum_pages_blocks_card_row_section_layout\" AS ENUM('center', 'left')",
+    "CREATE TYPE \"public\".\"enum_pages_blocks_roadmap_section_layout\" AS ENUM('center', 'left')",
+    "CREATE TYPE \"public\".\"enum_pages_blocks_scroll_cards_items_section_layout\" AS ENUM('imageRight', 'imageLeft', 'imageFullscreen')",
+    "CREATE TYPE \"public\".\"enum_pages_blocks_scroll_cards_items_gradient\" AS ENUM('blue', 'yellow', 'pink', 'aqua', 'brand', 'neutral')",
+    "CREATE TYPE \"public\".\"enum_pages_blocks_scroll_cards_items_gradient_direction\" AS ENUM('topLeft', 'topRight', 'bottomLeft', 'bottomRight')",
+    "CREATE TYPE \"public\".\"enum_pages_blocks_standalone_card_section_layout\" AS ENUM('imageRight', 'imageLeft', 'imageFullscreen')",
+    "CREATE TYPE \"public\".\"enum_pages_blocks_standalone_card_gradient\" AS ENUM('blue', 'yellow', 'pink', 'aqua', 'brand', 'neutral')",
+    "CREATE TYPE \"public\".\"enum_pages_blocks_standalone_card_gradient_direction\" AS ENUM('topLeft', 'topRight', 'bottomLeft', 'bottomRight')",
+    "CREATE TYPE \"public\".\"enum_payload_ai_auditlog_action\" AS ENUM('create', 'update', 'delete', 'updateGlobal')",
+    "CREATE TYPE \"public\".\"enum_payload_ai_auditlog_target_type\" AS ENUM('collection', 'global')",
+    "CREATE TYPE \"public\".\"enum_navigation_buttons_buttons_variant\" AS ENUM('none', 'normal', 'outlined', 'filled')",
+    "ALTER TYPE \"public\".\"enum_footer_social_links_platform\" ADD VALUE 'linkedin' BEFORE 'github'",
+    "ALTER TYPE \"public\".\"enum_pages_slug\" ADD VALUE 'blog' BEFORE 'features'",
+    "ALTER TYPE \"public\".\"enum_pages_slug\" ADD VALUE 'open-source-no-code-automation' BEFORE 'contact'",
+    'CREATE TABLE "pages_blocks_bento" (\n  \t"_order" integer NOT NULL,\n  \t"_parent_id" integer NOT NULL,\n  \t"_path" text NOT NULL,\n  \t"_locale" "_locales" NOT NULL,\n  \t"id" varchar PRIMARY KEY NOT NULL,\n  \t"section_heading" varchar,\n  \t"section_layout" "enum_pages_blocks_bento_section_layout" DEFAULT \'center\' NOT NULL,\n  \t"section_description" varchar,\n  \t"section_link_button_label" varchar,\n  \t"section_link_button_url" varchar,\n  \t"variant" "enum_pages_blocks_bento_variant" DEFAULT \'feature\' NOT NULL,\n  \t"block_name" varchar\n  )',
+    'CREATE TABLE "pages_blocks_offset_cards_cards" (\n  \t"_order" integer NOT NULL,\n  \t"_parent_id" varchar NOT NULL,\n  \t"_locale" "_locales" NOT NULL,\n  \t"id" varchar PRIMARY KEY NOT NULL,\n  \t"label" varchar NOT NULL,\n  \t"title" varchar NOT NULL,\n  \t"description" varchar NOT NULL,\n  \t"image_id" integer,\n  \t"link_label" varchar,\n  \t"link_url" varchar\n  )',
+    'CREATE TABLE "pages_blocks_offset_cards" (\n  \t"_order" integer NOT NULL,\n  \t"_parent_id" integer NOT NULL,\n  \t"_path" text NOT NULL,\n  \t"_locale" "_locales" NOT NULL,\n  \t"id" varchar PRIMARY KEY NOT NULL,\n  \t"section_heading" varchar,\n  \t"section_layout" "enum_pages_blocks_offset_cards_section_layout" DEFAULT \'center\' NOT NULL,\n  \t"section_description" varchar,\n  \t"section_link_button_label" varchar,\n  \t"section_link_button_url" varchar,\n  \t"block_name" varchar\n  )',
+    'CREATE TABLE "pages_blocks_install" (\n  \t"_order" integer NOT NULL,\n  \t"_parent_id" integer NOT NULL,\n  \t"_path" text NOT NULL,\n  \t"_locale" "_locales" NOT NULL,\n  \t"id" varchar PRIMARY KEY NOT NULL,\n  \t"heading" varchar NOT NULL,\n  \t"subheading" varchar NOT NULL,\n  \t"label" varchar,\n  \t"code" varchar NOT NULL,\n  \t"block_name" varchar\n  )',
+    'CREATE TABLE "pages_blocks_swipe_cards_cards" (\n  \t"_order" integer NOT NULL,\n  \t"_parent_id" varchar NOT NULL,\n  \t"_locale" "_locales" NOT NULL,\n  \t"id" varchar PRIMARY KEY NOT NULL,\n  \t"title" varchar NOT NULL,\n  \t"description" varchar NOT NULL,\n  \t"image_id" integer,\n  \t"link_label" varchar,\n  \t"link_url" varchar\n  )',
+    'CREATE TABLE "pages_blocks_swipe_cards" (\n  \t"_order" integer NOT NULL,\n  \t"_parent_id" integer NOT NULL,\n  \t"_path" text NOT NULL,\n  \t"_locale" "_locales" NOT NULL,\n  \t"id" varchar PRIMARY KEY NOT NULL,\n  \t"heading" varchar,\n  \t"subheading" varchar,\n  \t"block_name" varchar\n  )',
+    'CREATE TABLE "pages_blocks_blog" (\n  \t"_order" integer NOT NULL,\n  \t"_parent_id" integer NOT NULL,\n  \t"_path" text NOT NULL,\n  \t"_locale" "_locales" NOT NULL,\n  \t"id" varchar PRIMARY KEY NOT NULL,\n  \t"view_other_blogs_label" varchar DEFAULT \'View other blog posts\' NOT NULL,\n  \t"no_posts_label" varchar DEFAULT \'No blog posts available.\' NOT NULL,\n  \t"load_more_label" varchar DEFAULT \'Load more\' NOT NULL,\n  \t"loading_label" varchar DEFAULT \'Loading...\' NOT NULL,\n  \t"block_name" varchar\n  )',
+    'CREATE TABLE "pages_blocks_card_row_cards" (\n  \t"_order" integer NOT NULL,\n  \t"_parent_id" varchar NOT NULL,\n  \t"_locale" "_locales" NOT NULL,\n  \t"id" varchar PRIMARY KEY NOT NULL,\n  \t"title" varchar NOT NULL,\n  \t"description" varchar,\n  \t"link_label" varchar,\n  \t"link_url" varchar,\n  \t"image_id" integer\n  )',
+    'CREATE TABLE "pages_blocks_card_row" (\n  \t"_order" integer NOT NULL,\n  \t"_parent_id" integer NOT NULL,\n  \t"_path" text NOT NULL,\n  \t"_locale" "_locales" NOT NULL,\n  \t"id" varchar PRIMARY KEY NOT NULL,\n  \t"section_heading" varchar,\n  \t"section_layout" "enum_pages_blocks_card_row_section_layout" DEFAULT \'center\' NOT NULL,\n  \t"section_description" varchar,\n  \t"section_link_button_label" varchar,\n  \t"section_link_button_url" varchar,\n  \t"block_name" varchar\n  )',
+    'CREATE TABLE "pages_blocks_roadmap_items" (\n  \t"_order" integer NOT NULL,\n  \t"_parent_id" varchar NOT NULL,\n  \t"_locale" "_locales" NOT NULL,\n  \t"id" varchar PRIMARY KEY NOT NULL,\n  \t"time" varchar NOT NULL,\n  \t"title" varchar NOT NULL,\n  \t"description" varchar NOT NULL\n  )',
+    'CREATE TABLE "pages_blocks_roadmap" (\n  \t"_order" integer NOT NULL,\n  \t"_parent_id" integer NOT NULL,\n  \t"_path" text NOT NULL,\n  \t"_locale" "_locales" NOT NULL,\n  \t"id" varchar PRIMARY KEY NOT NULL,\n  \t"section_heading" varchar,\n  \t"section_layout" "enum_pages_blocks_roadmap_section_layout" DEFAULT \'center\' NOT NULL,\n  \t"section_description" varchar,\n  \t"section_link_button_label" varchar,\n  \t"section_link_button_url" varchar,\n  \t"block_name" varchar\n  )',
+    'CREATE TABLE "pages_blocks_scroll_cards_items" (\n  \t"_order" integer NOT NULL,\n  \t"_parent_id" varchar NOT NULL,\n  \t"_locale" "_locales" NOT NULL,\n  \t"id" varchar PRIMARY KEY NOT NULL,\n  \t"title" varchar NOT NULL,\n  \t"description" varchar,\n  \t"show_image_border" boolean DEFAULT true,\n  \t"section_layout" "enum_pages_blocks_scroll_cards_items_section_layout" DEFAULT \'imageRight\' NOT NULL,\n  \t"gradient" "enum_pages_blocks_scroll_cards_items_gradient" DEFAULT \'blue\',\n  \t"gradient_direction" "enum_pages_blocks_scroll_cards_items_gradient_direction" DEFAULT \'topLeft\',\n  \t"image_id" integer,\n  \t"link_label" varchar,\n  \t"link_url" varchar\n  )',
+    'CREATE TABLE "pages_blocks_scroll_cards" (\n  \t"_order" integer NOT NULL,\n  \t"_parent_id" integer NOT NULL,\n  \t"_path" text NOT NULL,\n  \t"_locale" "_locales" NOT NULL,\n  \t"id" varchar PRIMARY KEY NOT NULL,\n  \t"block_name" varchar\n  )',
+    'CREATE TABLE "pages_blocks_standalone_card" (\n  \t"_order" integer NOT NULL,\n  \t"_parent_id" integer NOT NULL,\n  \t"_path" text NOT NULL,\n  \t"_locale" "_locales" NOT NULL,\n  \t"id" varchar PRIMARY KEY NOT NULL,\n  \t"title" varchar NOT NULL,\n  \t"description" varchar,\n  \t"show_image_border" boolean DEFAULT true,\n  \t"section_layout" "enum_pages_blocks_standalone_card_section_layout" DEFAULT \'imageRight\' NOT NULL,\n  \t"gradient" "enum_pages_blocks_standalone_card_gradient" DEFAULT \'blue\',\n  \t"gradient_direction" "enum_pages_blocks_standalone_card_gradient_direction" DEFAULT \'topLeft\',\n  \t"image_id" integer,\n  \t"link_label" varchar,\n  \t"link_url" varchar,\n  \t"block_name" varchar\n  )',
+    'CREATE TABLE "payload_ai_auditlog" (\n  \t"id" serial PRIMARY KEY NOT NULL,\n  \t"title" varchar NOT NULL,\n  \t"action" "enum_payload_ai_auditlog_action" NOT NULL,\n  \t"target_type" "enum_payload_ai_auditlog_target_type" NOT NULL,\n  \t"collection" varchar,\n  \t"slug" varchar,\n  \t"document_i_d" varchar,\n  \t"target_u_r_l" varchar,\n  \t"additions" numeric DEFAULT 0,\n  \t"removals" numeric DEFAULT 0,\n  \t"before" jsonb,\n  \t"after" jsonb,\n  \t"proposal" jsonb,\n  \t"prompt" varchar,\n  \t"input_tokens" numeric,\n  \t"output_tokens" numeric,\n  \t"total_tokens" numeric,\n  \t"ai_response" varchar,\n  \t"user_i_d" varchar,\n  \t"user_label" varchar,\n  \t"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,\n  \t"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL\n  )',
+    'CREATE TABLE "navigation_items_items_sub_menu" (\n  \t"_order" integer NOT NULL,\n  \t"_parent_id" varchar NOT NULL,\n  \t"id" varchar PRIMARY KEY NOT NULL,\n  \t"key" varchar NOT NULL,\n  \t"href" varchar NOT NULL,\n  \t"icon" varchar\n  )',
+    'CREATE TABLE "navigation_items_items_sub_menu_locales" (\n  \t"title" varchar NOT NULL,\n  \t"description" varchar NOT NULL,\n  \t"id" serial PRIMARY KEY NOT NULL,\n  \t"_locale" "_locales" NOT NULL,\n  \t"_parent_id" varchar NOT NULL\n  )',
+    'CREATE TABLE "navigation_items_items" (\n  \t"_order" integer NOT NULL,\n  \t"_parent_id" integer NOT NULL,\n  \t"id" varchar PRIMARY KEY NOT NULL,\n  \t"href" varchar,\n  \t"order" numeric DEFAULT 0 NOT NULL\n  )',
+    'CREATE TABLE "navigation_items_items_locales" (\n  \t"title" varchar NOT NULL,\n  \t"id" serial PRIMARY KEY NOT NULL,\n  \t"_locale" "_locales" NOT NULL,\n  \t"_parent_id" varchar NOT NULL\n  )',
+    'CREATE TABLE "navigation_buttons_buttons" (\n  \t"_order" integer NOT NULL,\n  \t"_parent_id" integer NOT NULL,\n  \t"id" varchar PRIMARY KEY NOT NULL,\n  \t"href" varchar NOT NULL,\n  \t"order" numeric DEFAULT 0 NOT NULL,\n  \t"icon" varchar,\n  \t"new_tab" boolean DEFAULT false,\n  \t"variant" "enum_navigation_buttons_buttons_variant" DEFAULT \'normal\' NOT NULL\n  )',
+    'CREATE TABLE "navigation_buttons_buttons_locales" (\n  \t"title" varchar NOT NULL,\n  \t"id" serial PRIMARY KEY NOT NULL,\n  \t"_locale" "_locales" NOT NULL,\n  \t"_parent_id" varchar NOT NULL\n  )',
+    'CREATE TABLE "navigation" (\n  \t"id" serial PRIMARY KEY NOT NULL,\n  \t"logo_id" integer,\n  \t"updated_at" timestamp(3) with time zone,\n  \t"created_at" timestamp(3) with time zone\n  )',
+    'ALTER TABLE "navbar_items_sub_menu" DISABLE ROW LEVEL SECURITY',
+    'ALTER TABLE "navbar_items_sub_menu_locales" DISABLE ROW LEVEL SECURITY',
+    'ALTER TABLE "navbar_items" DISABLE ROW LEVEL SECURITY',
+    'ALTER TABLE "navbar_items_locales" DISABLE ROW LEVEL SECURITY',
+    'ALTER TABLE "sections" DISABLE ROW LEVEL SECURITY',
+    'ALTER TABLE "sections_locales" DISABLE ROW LEVEL SECURITY',
+    'ALTER TABLE "pages_blocks_edition_hero_texts" DISABLE ROW LEVEL SECURITY',
+    'ALTER TABLE "pages_blocks_edition_hero_buttons" DISABLE ROW LEVEL SECURITY',
+    'ALTER TABLE "pages_blocks_edition_hero" DISABLE ROW LEVEL SECURITY',
+    'ALTER TABLE "pages_blocks_edition_features_features" DISABLE ROW LEVEL SECURITY',
+    'ALTER TABLE "pages_blocks_edition_features" DISABLE ROW LEVEL SECURITY',
+    'ALTER TABLE "pages_blocks_edition_install" DISABLE ROW LEVEL SECURITY',
+    'ALTER TABLE "pages_blocks_edition_use_cases_use_cases" DISABLE ROW LEVEL SECURITY',
+    'ALTER TABLE "pages_blocks_edition_use_cases" DISABLE ROW LEVEL SECURITY',
+    'ALTER TABLE "pages_blocks_usecase_use_cases" DISABLE ROW LEVEL SECURITY',
+    'ALTER TABLE "pages_blocks_usecase" DISABLE ROW LEVEL SECURITY',
+    'ALTER TABLE "pages_blocks_deployment" DISABLE ROW LEVEL SECURITY',
+    'ALTER TABLE "roadmap_items" DISABLE ROW LEVEL SECURITY',
+    'ALTER TABLE "roadmap_items_locales" DISABLE ROW LEVEL SECURITY',
+    'DROP TABLE "navbar_items_sub_menu" CASCADE',
+    'DROP TABLE "navbar_items_sub_menu_locales" CASCADE',
+    'DROP TABLE "navbar_items" CASCADE',
+    'DROP TABLE "navbar_items_locales" CASCADE',
+    'DROP TABLE "sections" CASCADE',
+    'DROP TABLE "sections_locales" CASCADE',
+    'DROP TABLE "pages_blocks_edition_hero_texts" CASCADE',
+    'DROP TABLE "pages_blocks_edition_hero_buttons" CASCADE',
+    'DROP TABLE "pages_blocks_edition_hero" CASCADE',
+    'DROP TABLE "pages_blocks_edition_features_features" CASCADE',
+    'DROP TABLE "pages_blocks_edition_features" CASCADE',
+    'DROP TABLE "pages_blocks_edition_install" CASCADE',
+    'DROP TABLE "pages_blocks_edition_use_cases_use_cases" CASCADE',
+    'DROP TABLE "pages_blocks_edition_use_cases" CASCADE',
+    'DROP TABLE "pages_blocks_usecase_use_cases" CASCADE',
+    'DROP TABLE "pages_blocks_usecase" CASCADE',
+    'DROP TABLE "pages_blocks_deployment" CASCADE',
+    'DROP TABLE "roadmap_items" CASCADE',
+    'DROP TABLE "roadmap_items_locales" CASCADE',
+    'ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_navbar_items_fk"',
+    'ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_sections_fk"',
+    'ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_footer_fk"',
+    'ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_cookie_banner_fk"',
+    'ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_roadmap_items_fk"',
+    'ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_subscription_config_fk"',
+    'DROP INDEX "footer_updated_at_idx"',
+    'DROP INDEX "footer_created_at_idx"',
+    'DROP INDEX "cookie_banner_updated_at_idx"',
+    'DROP INDEX "cookie_banner_created_at_idx"',
+    'DROP INDEX "subscription_config_updated_at_idx"',
+    'DROP INDEX "subscription_config_created_at_idx"',
+    'DROP INDEX "payload_locked_documents_rels_navbar_items_id_idx"',
+    'DROP INDEX "payload_locked_documents_rels_sections_id_idx"',
+    'DROP INDEX "payload_locked_documents_rels_footer_id_idx"',
+    'DROP INDEX "payload_locked_documents_rels_cookie_banner_id_idx"',
+    'DROP INDEX "payload_locked_documents_rels_roadmap_items_id_idx"',
+    'DROP INDEX "payload_locked_documents_rels_subscription_config_id_idx"',
+    'ALTER TABLE "footer" ALTER COLUMN "updated_at" DROP DEFAULT',
+    'ALTER TABLE "footer" ALTER COLUMN "updated_at" DROP NOT NULL',
+    'ALTER TABLE "footer" ALTER COLUMN "created_at" DROP DEFAULT',
+    'ALTER TABLE "footer" ALTER COLUMN "created_at" DROP NOT NULL',
+    'ALTER TABLE "cookie_banner" ALTER COLUMN "updated_at" DROP DEFAULT',
+    'ALTER TABLE "cookie_banner" ALTER COLUMN "updated_at" DROP NOT NULL',
+    'ALTER TABLE "cookie_banner" ALTER COLUMN "created_at" DROP DEFAULT',
+    'ALTER TABLE "cookie_banner" ALTER COLUMN "created_at" DROP NOT NULL',
+    'ALTER TABLE "subscription_config" ALTER COLUMN "updated_at" DROP DEFAULT',
+    'ALTER TABLE "subscription_config" ALTER COLUMN "updated_at" DROP NOT NULL',
+    'ALTER TABLE "subscription_config" ALTER COLUMN "created_at" DROP DEFAULT',
+    'ALTER TABLE "subscription_config" ALTER COLUMN "created_at" DROP NOT NULL',
+    'ALTER TABLE "users" ADD COLUMN "ai_provider" "enum_users_ai_provider" DEFAULT \'openai\'',
+    'ALTER TABLE "users" ADD COLUMN "ai_api_key" varchar',
+    'ALTER TABLE "footer" ADD COLUMN "contact_email" varchar',
+    'ALTER TABLE "footer" ADD COLUMN "legal_links_privacy_url" varchar DEFAULT \'/privacy\' NOT NULL',
+    'ALTER TABLE "footer" ADD COLUMN "legal_links_legal_notice_url" varchar DEFAULT \'/legal-notice\' NOT NULL',
+    'ALTER TABLE "footer_locales" ADD COLUMN "description" varchar',
+    'ALTER TABLE "footer_locales" ADD COLUMN "legal_links_privacy_label" varchar DEFAULT \'Privacy Policy\' NOT NULL',
+    'ALTER TABLE "footer_locales" ADD COLUMN "legal_links_legal_notice_label" varchar DEFAULT \'Legal Notice\' NOT NULL',
+    'ALTER TABLE "pages_blocks_hero" ADD COLUMN "centered" boolean DEFAULT false',
+    'ALTER TABLE "pages_blocks_hero" ADD COLUMN "grainient_colors_color1" varchar',
+    'ALTER TABLE "pages_blocks_hero" ADD COLUMN "grainient_colors_color2" varchar',
+    'ALTER TABLE "pages_blocks_hero" ADD COLUMN "grainient_colors_color3" varchar',
+    'ALTER TABLE "pages_blocks_hero" ADD COLUMN "grainient_colors_background_color" varchar',
+    'ALTER TABLE "pages_blocks_faq" ADD COLUMN "section_heading" varchar',
+    'ALTER TABLE "pages_blocks_faq" ADD COLUMN "section_layout" "enum_pages_blocks_faq_section_layout" DEFAULT \'center\' NOT NULL',
+    'ALTER TABLE "pages_blocks_faq" ADD COLUMN "section_description" varchar',
+    'ALTER TABLE "pages_blocks_faq" ADD COLUMN "section_link_button_label" varchar',
+    'ALTER TABLE "pages_blocks_faq" ADD COLUMN "section_link_button_url" varchar',
+    'ALTER TABLE "blog" ADD COLUMN "is_pinned" boolean DEFAULT false',
+    'ALTER TABLE "payload_locked_documents_rels" ADD COLUMN "payload_ai_auditlog_id" integer',
+    'ALTER TABLE "pages_blocks_bento" ADD CONSTRAINT "pages_blocks_bento_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages"("id") ON DELETE cascade ON UPDATE no action',
+    'ALTER TABLE "pages_blocks_offset_cards_cards" ADD CONSTRAINT "pages_blocks_offset_cards_cards_image_id_media_id_fk" FOREIGN KEY ("image_id") REFERENCES "public"."media"("id") ON DELETE set null ON UPDATE no action',
+    'ALTER TABLE "pages_blocks_offset_cards_cards" ADD CONSTRAINT "pages_blocks_offset_cards_cards_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages_blocks_offset_cards"("id") ON DELETE cascade ON UPDATE no action',
+    'ALTER TABLE "pages_blocks_offset_cards" ADD CONSTRAINT "pages_blocks_offset_cards_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages"("id") ON DELETE cascade ON UPDATE no action',
+    'ALTER TABLE "pages_blocks_install" ADD CONSTRAINT "pages_blocks_install_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages"("id") ON DELETE cascade ON UPDATE no action',
+    'ALTER TABLE "pages_blocks_swipe_cards_cards" ADD CONSTRAINT "pages_blocks_swipe_cards_cards_image_id_media_id_fk" FOREIGN KEY ("image_id") REFERENCES "public"."media"("id") ON DELETE set null ON UPDATE no action',
+    'ALTER TABLE "pages_blocks_swipe_cards_cards" ADD CONSTRAINT "pages_blocks_swipe_cards_cards_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages_blocks_swipe_cards"("id") ON DELETE cascade ON UPDATE no action',
+    'ALTER TABLE "pages_blocks_swipe_cards" ADD CONSTRAINT "pages_blocks_swipe_cards_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages"("id") ON DELETE cascade ON UPDATE no action',
+    'ALTER TABLE "pages_blocks_blog" ADD CONSTRAINT "pages_blocks_blog_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages"("id") ON DELETE cascade ON UPDATE no action',
+    'ALTER TABLE "pages_blocks_card_row_cards" ADD CONSTRAINT "pages_blocks_card_row_cards_image_id_media_id_fk" FOREIGN KEY ("image_id") REFERENCES "public"."media"("id") ON DELETE set null ON UPDATE no action',
+    'ALTER TABLE "pages_blocks_card_row_cards" ADD CONSTRAINT "pages_blocks_card_row_cards_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages_blocks_card_row"("id") ON DELETE cascade ON UPDATE no action',
+    'ALTER TABLE "pages_blocks_card_row" ADD CONSTRAINT "pages_blocks_card_row_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages"("id") ON DELETE cascade ON UPDATE no action',
+    'ALTER TABLE "pages_blocks_roadmap_items" ADD CONSTRAINT "pages_blocks_roadmap_items_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages_blocks_roadmap"("id") ON DELETE cascade ON UPDATE no action',
+    'ALTER TABLE "pages_blocks_roadmap" ADD CONSTRAINT "pages_blocks_roadmap_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages"("id") ON DELETE cascade ON UPDATE no action',
+    'ALTER TABLE "pages_blocks_scroll_cards_items" ADD CONSTRAINT "pages_blocks_scroll_cards_items_image_id_media_id_fk" FOREIGN KEY ("image_id") REFERENCES "public"."media"("id") ON DELETE set null ON UPDATE no action',
+    'ALTER TABLE "pages_blocks_scroll_cards_items" ADD CONSTRAINT "pages_blocks_scroll_cards_items_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages_blocks_scroll_cards"("id") ON DELETE cascade ON UPDATE no action',
+    'ALTER TABLE "pages_blocks_scroll_cards" ADD CONSTRAINT "pages_blocks_scroll_cards_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages"("id") ON DELETE cascade ON UPDATE no action',
+    'ALTER TABLE "pages_blocks_standalone_card" ADD CONSTRAINT "pages_blocks_standalone_card_image_id_media_id_fk" FOREIGN KEY ("image_id") REFERENCES "public"."media"("id") ON DELETE set null ON UPDATE no action',
+    'ALTER TABLE "pages_blocks_standalone_card" ADD CONSTRAINT "pages_blocks_standalone_card_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages"("id") ON DELETE cascade ON UPDATE no action',
+    'ALTER TABLE "navigation_items_items_sub_menu" ADD CONSTRAINT "navigation_items_items_sub_menu_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."navigation_items_items"("id") ON DELETE cascade ON UPDATE no action',
+    'ALTER TABLE "navigation_items_items_sub_menu_locales" ADD CONSTRAINT "navigation_items_items_sub_menu_locales_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."navigation_items_items_sub_menu"("id") ON DELETE cascade ON UPDATE no action',
+    'ALTER TABLE "navigation_items_items" ADD CONSTRAINT "navigation_items_items_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."navigation"("id") ON DELETE cascade ON UPDATE no action',
+    'ALTER TABLE "navigation_items_items_locales" ADD CONSTRAINT "navigation_items_items_locales_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."navigation_items_items"("id") ON DELETE cascade ON UPDATE no action',
+    'ALTER TABLE "navigation_buttons_buttons" ADD CONSTRAINT "navigation_buttons_buttons_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."navigation"("id") ON DELETE cascade ON UPDATE no action',
+    'ALTER TABLE "navigation_buttons_buttons_locales" ADD CONSTRAINT "navigation_buttons_buttons_locales_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."navigation_buttons_buttons"("id") ON DELETE cascade ON UPDATE no action',
+    'ALTER TABLE "navigation" ADD CONSTRAINT "navigation_logo_id_media_id_fk" FOREIGN KEY ("logo_id") REFERENCES "public"."media"("id") ON DELETE set null ON UPDATE no action',
+    'CREATE INDEX "pages_blocks_bento_order_idx" ON "pages_blocks_bento" USING btree ("_order")',
+    'CREATE INDEX "pages_blocks_bento_parent_id_idx" ON "pages_blocks_bento" USING btree ("_parent_id")',
+    'CREATE INDEX "pages_blocks_bento_path_idx" ON "pages_blocks_bento" USING btree ("_path")',
+    'CREATE INDEX "pages_blocks_bento_locale_idx" ON "pages_blocks_bento" USING btree ("_locale")',
+    'CREATE INDEX "pages_blocks_offset_cards_cards_order_idx" ON "pages_blocks_offset_cards_cards" USING btree ("_order")',
+    'CREATE INDEX "pages_blocks_offset_cards_cards_parent_id_idx" ON "pages_blocks_offset_cards_cards" USING btree ("_parent_id")',
+    'CREATE INDEX "pages_blocks_offset_cards_cards_locale_idx" ON "pages_blocks_offset_cards_cards" USING btree ("_locale")',
+    'CREATE INDEX "pages_blocks_offset_cards_cards_image_idx" ON "pages_blocks_offset_cards_cards" USING btree ("image_id")',
+    'CREATE INDEX "pages_blocks_offset_cards_order_idx" ON "pages_blocks_offset_cards" USING btree ("_order")',
+    'CREATE INDEX "pages_blocks_offset_cards_parent_id_idx" ON "pages_blocks_offset_cards" USING btree ("_parent_id")',
+    'CREATE INDEX "pages_blocks_offset_cards_path_idx" ON "pages_blocks_offset_cards" USING btree ("_path")',
+    'CREATE INDEX "pages_blocks_offset_cards_locale_idx" ON "pages_blocks_offset_cards" USING btree ("_locale")',
+    'CREATE INDEX "pages_blocks_install_order_idx" ON "pages_blocks_install" USING btree ("_order")',
+    'CREATE INDEX "pages_blocks_install_parent_id_idx" ON "pages_blocks_install" USING btree ("_parent_id")',
+    'CREATE INDEX "pages_blocks_install_path_idx" ON "pages_blocks_install" USING btree ("_path")',
+    'CREATE INDEX "pages_blocks_install_locale_idx" ON "pages_blocks_install" USING btree ("_locale")',
+    'CREATE INDEX "pages_blocks_swipe_cards_cards_order_idx" ON "pages_blocks_swipe_cards_cards" USING btree ("_order")',
+    'CREATE INDEX "pages_blocks_swipe_cards_cards_parent_id_idx" ON "pages_blocks_swipe_cards_cards" USING btree ("_parent_id")',
+    'CREATE INDEX "pages_blocks_swipe_cards_cards_locale_idx" ON "pages_blocks_swipe_cards_cards" USING btree ("_locale")',
+    'CREATE INDEX "pages_blocks_swipe_cards_cards_image_idx" ON "pages_blocks_swipe_cards_cards" USING btree ("image_id")',
+    'CREATE INDEX "pages_blocks_swipe_cards_order_idx" ON "pages_blocks_swipe_cards" USING btree ("_order")',
+    'CREATE INDEX "pages_blocks_swipe_cards_parent_id_idx" ON "pages_blocks_swipe_cards" USING btree ("_parent_id")',
+    'CREATE INDEX "pages_blocks_swipe_cards_path_idx" ON "pages_blocks_swipe_cards" USING btree ("_path")',
+    'CREATE INDEX "pages_blocks_swipe_cards_locale_idx" ON "pages_blocks_swipe_cards" USING btree ("_locale")',
+    'CREATE INDEX "pages_blocks_blog_order_idx" ON "pages_blocks_blog" USING btree ("_order")',
+    'CREATE INDEX "pages_blocks_blog_parent_id_idx" ON "pages_blocks_blog" USING btree ("_parent_id")',
+    'CREATE INDEX "pages_blocks_blog_path_idx" ON "pages_blocks_blog" USING btree ("_path")',
+    'CREATE INDEX "pages_blocks_blog_locale_idx" ON "pages_blocks_blog" USING btree ("_locale")',
+    'CREATE INDEX "pages_blocks_card_row_cards_order_idx" ON "pages_blocks_card_row_cards" USING btree ("_order")',
+    'CREATE INDEX "pages_blocks_card_row_cards_parent_id_idx" ON "pages_blocks_card_row_cards" USING btree ("_parent_id")',
+    'CREATE INDEX "pages_blocks_card_row_cards_locale_idx" ON "pages_blocks_card_row_cards" USING btree ("_locale")',
+    'CREATE INDEX "pages_blocks_card_row_cards_image_idx" ON "pages_blocks_card_row_cards" USING btree ("image_id")',
+    'CREATE INDEX "pages_blocks_card_row_order_idx" ON "pages_blocks_card_row" USING btree ("_order")',
+    'CREATE INDEX "pages_blocks_card_row_parent_id_idx" ON "pages_blocks_card_row" USING btree ("_parent_id")',
+    'CREATE INDEX "pages_blocks_card_row_path_idx" ON "pages_blocks_card_row" USING btree ("_path")',
+    'CREATE INDEX "pages_blocks_card_row_locale_idx" ON "pages_blocks_card_row" USING btree ("_locale")',
+    'CREATE INDEX "pages_blocks_roadmap_items_order_idx" ON "pages_blocks_roadmap_items" USING btree ("_order")',
+    'CREATE INDEX "pages_blocks_roadmap_items_parent_id_idx" ON "pages_blocks_roadmap_items" USING btree ("_parent_id")',
+    'CREATE INDEX "pages_blocks_roadmap_items_locale_idx" ON "pages_blocks_roadmap_items" USING btree ("_locale")',
+    'CREATE INDEX "pages_blocks_roadmap_order_idx" ON "pages_blocks_roadmap" USING btree ("_order")',
+    'CREATE INDEX "pages_blocks_roadmap_parent_id_idx" ON "pages_blocks_roadmap" USING btree ("_parent_id")',
+    'CREATE INDEX "pages_blocks_roadmap_path_idx" ON "pages_blocks_roadmap" USING btree ("_path")',
+    'CREATE INDEX "pages_blocks_roadmap_locale_idx" ON "pages_blocks_roadmap" USING btree ("_locale")',
+    'CREATE INDEX "pages_blocks_scroll_cards_items_order_idx" ON "pages_blocks_scroll_cards_items" USING btree ("_order")',
+    'CREATE INDEX "pages_blocks_scroll_cards_items_parent_id_idx" ON "pages_blocks_scroll_cards_items" USING btree ("_parent_id")',
+    'CREATE INDEX "pages_blocks_scroll_cards_items_locale_idx" ON "pages_blocks_scroll_cards_items" USING btree ("_locale")',
+    'CREATE INDEX "pages_blocks_scroll_cards_items_image_idx" ON "pages_blocks_scroll_cards_items" USING btree ("image_id")',
+    'CREATE INDEX "pages_blocks_scroll_cards_order_idx" ON "pages_blocks_scroll_cards" USING btree ("_order")',
+    'CREATE INDEX "pages_blocks_scroll_cards_parent_id_idx" ON "pages_blocks_scroll_cards" USING btree ("_parent_id")',
+    'CREATE INDEX "pages_blocks_scroll_cards_path_idx" ON "pages_blocks_scroll_cards" USING btree ("_path")',
+    'CREATE INDEX "pages_blocks_scroll_cards_locale_idx" ON "pages_blocks_scroll_cards" USING btree ("_locale")',
+    'CREATE INDEX "pages_blocks_standalone_card_order_idx" ON "pages_blocks_standalone_card" USING btree ("_order")',
+    'CREATE INDEX "pages_blocks_standalone_card_parent_id_idx" ON "pages_blocks_standalone_card" USING btree ("_parent_id")',
+    'CREATE INDEX "pages_blocks_standalone_card_path_idx" ON "pages_blocks_standalone_card" USING btree ("_path")',
+    'CREATE INDEX "pages_blocks_standalone_card_locale_idx" ON "pages_blocks_standalone_card" USING btree ("_locale")',
+    'CREATE INDEX "pages_blocks_standalone_card_image_idx" ON "pages_blocks_standalone_card" USING btree ("image_id")',
+    'CREATE INDEX "payload_ai_auditlog_updated_at_idx" ON "payload_ai_auditlog" USING btree ("updated_at")',
+    'CREATE INDEX "payload_ai_auditlog_created_at_idx" ON "payload_ai_auditlog" USING btree ("created_at")',
+    'CREATE INDEX "navigation_items_items_sub_menu_order_idx" ON "navigation_items_items_sub_menu" USING btree ("_order")',
+    'CREATE INDEX "navigation_items_items_sub_menu_parent_id_idx" ON "navigation_items_items_sub_menu" USING btree ("_parent_id")',
+    'CREATE UNIQUE INDEX "navigation_items_items_sub_menu_locales_locale_parent_id_uni" ON "navigation_items_items_sub_menu_locales" USING btree ("_locale","_parent_id")',
+    'CREATE INDEX "navigation_items_items_order_idx" ON "navigation_items_items" USING btree ("_order")',
+    'CREATE INDEX "navigation_items_items_parent_id_idx" ON "navigation_items_items" USING btree ("_parent_id")',
+    'CREATE UNIQUE INDEX "navigation_items_items_locales_locale_parent_id_unique" ON "navigation_items_items_locales" USING btree ("_locale","_parent_id")',
+    'CREATE INDEX "navigation_buttons_buttons_order_idx" ON "navigation_buttons_buttons" USING btree ("_order")',
+    'CREATE INDEX "navigation_buttons_buttons_parent_id_idx" ON "navigation_buttons_buttons" USING btree ("_parent_id")',
+    'CREATE UNIQUE INDEX "navigation_buttons_buttons_locales_locale_parent_id_unique" ON "navigation_buttons_buttons_locales" USING btree ("_locale","_parent_id")',
+    'CREATE INDEX "navigation_logo_idx" ON "navigation" USING btree ("logo_id")',
+    'ALTER TABLE "payload_locked_documents_rels" ADD CONSTRAINT "payload_locked_documents_rels_payload_ai_auditlog_fk" FOREIGN KEY ("payload_ai_auditlog_id") REFERENCES "public"."payload_ai_auditlog"("id") ON DELETE cascade ON UPDATE no action',
+    'CREATE INDEX "blog_is_pinned_idx" ON "blog" USING btree ("is_pinned")',
+    'CREATE INDEX "payload_locked_documents_rels_payload_ai_auditlog_id_idx" ON "payload_locked_documents_rels" USING btree ("payload_ai_auditlog_id")',
+    'ALTER TABLE "payload_locked_documents_rels" DROP COLUMN "navbar_items_id"',
+    'ALTER TABLE "payload_locked_documents_rels" DROP COLUMN "sections_id"',
+    'ALTER TABLE "payload_locked_documents_rels" DROP COLUMN "footer_id"',
+    'ALTER TABLE "payload_locked_documents_rels" DROP COLUMN "cookie_banner_id"',
+    'ALTER TABLE "payload_locked_documents_rels" DROP COLUMN "roadmap_items_id"',
+    'ALTER TABLE "payload_locked_documents_rels" DROP COLUMN "subscription_config_id"',
+    'DROP TYPE "public"."enum_sections_section_type"',
+    'DROP TYPE "public"."enum_pages_blocks_edition_hero_buttons_variant"',
+] as const
 
-  CREATE TABLE "sections_locales" (
-  	"heading" varchar NOT NULL,
-  	"subheading" varchar,
-  	"link_button_label" varchar,
-  	"id" serial PRIMARY KEY NOT NULL,
-  	"_locale" "_locales" NOT NULL,
-  	"_parent_id" integer NOT NULL
-  );
+const downStatements = [
+    "CREATE TYPE \"public\".\"enum_sections_section_type\" AS ENUM('AppFeatureSection', 'FaqSection', 'RoadmapSection', 'RuntimeFeatureSection', 'UseCaseSection', 'DeploymentSection')",
+    "CREATE TYPE \"public\".\"enum_pages_blocks_edition_hero_buttons_variant\" AS ENUM('none', 'normal', 'outlined', 'filled')",
+    'CREATE TABLE "navbar_items_sub_menu" (\n  \t"_order" integer NOT NULL,\n  \t"_parent_id" integer NOT NULL,\n  \t"id" varchar PRIMARY KEY NOT NULL,\n  \t"key" varchar NOT NULL,\n  \t"href" varchar NOT NULL,\n  \t"icon" varchar NOT NULL\n  )',
+    'CREATE TABLE "navbar_items_sub_menu_locales" (\n  \t"title" varchar NOT NULL,\n  \t"description" varchar NOT NULL,\n  \t"id" serial PRIMARY KEY NOT NULL,\n  \t"_locale" "_locales" NOT NULL,\n  \t"_parent_id" varchar NOT NULL\n  )',
+    'CREATE TABLE "navbar_items" (\n  \t"id" serial PRIMARY KEY NOT NULL,\n  \t"href" varchar,\n  \t"order" numeric DEFAULT 0 NOT NULL,\n  \t"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,\n  \t"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL\n  )',
+    'CREATE TABLE "navbar_items_locales" (\n  \t"title" varchar NOT NULL,\n  \t"id" serial PRIMARY KEY NOT NULL,\n  \t"_locale" "_locales" NOT NULL,\n  \t"_parent_id" integer NOT NULL\n  )',
+    'CREATE TABLE "sections" (\n  \t"id" serial PRIMARY KEY NOT NULL,\n  \t"section_type" "enum_sections_section_type" NOT NULL,\n  \t"link_button_url" varchar,\n  \t"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,\n  \t"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL\n  )',
+    'CREATE TABLE "sections_locales" (\n  \t"heading" varchar NOT NULL,\n  \t"subheading" varchar,\n  \t"link_button_label" varchar,\n  \t"id" serial PRIMARY KEY NOT NULL,\n  \t"_locale" "_locales" NOT NULL,\n  \t"_parent_id" integer NOT NULL\n  )',
+    'CREATE TABLE "pages_blocks_edition_hero_texts" (\n  \t"_order" integer NOT NULL,\n  \t"_parent_id" varchar NOT NULL,\n  \t"_locale" "_locales" NOT NULL,\n  \t"id" varchar PRIMARY KEY NOT NULL,\n  \t"text" varchar NOT NULL\n  )',
+    'CREATE TABLE "pages_blocks_edition_hero_buttons" (\n  \t"_order" integer NOT NULL,\n  \t"_parent_id" varchar NOT NULL,\n  \t"_locale" "_locales" NOT NULL,\n  \t"id" varchar PRIMARY KEY NOT NULL,\n  \t"label" varchar NOT NULL,\n  \t"url" varchar NOT NULL,\n  \t"variant" "enum_pages_blocks_edition_hero_buttons_variant" DEFAULT \'normal\'\n  )',
+    'CREATE TABLE "pages_blocks_edition_hero" (\n  \t"_order" integer NOT NULL,\n  \t"_parent_id" integer NOT NULL,\n  \t"_path" text NOT NULL,\n  \t"_locale" "_locales" NOT NULL,\n  \t"id" varchar PRIMARY KEY NOT NULL,\n  \t"heading" varchar NOT NULL,\n  \t"image_alt" varchar NOT NULL,\n  \t"block_name" varchar\n  )',
+    'CREATE TABLE "pages_blocks_edition_features_features" (\n  \t"_order" integer NOT NULL,\n  \t"_parent_id" varchar NOT NULL,\n  \t"_locale" "_locales" NOT NULL,\n  \t"id" varchar PRIMARY KEY NOT NULL,\n  \t"label" varchar NOT NULL,\n  \t"title" varchar NOT NULL,\n  \t"description" varchar NOT NULL,\n  \t"image_id" integer,\n  \t"link_label" varchar,\n  \t"link_url" varchar\n  )',
+    'CREATE TABLE "pages_blocks_edition_features" (\n  \t"_order" integer NOT NULL,\n  \t"_parent_id" integer NOT NULL,\n  \t"_path" text NOT NULL,\n  \t"_locale" "_locales" NOT NULL,\n  \t"id" varchar PRIMARY KEY NOT NULL,\n  \t"block_name" varchar\n  )',
+    'CREATE TABLE "pages_blocks_edition_install" (\n  \t"_order" integer NOT NULL,\n  \t"_parent_id" integer NOT NULL,\n  \t"_path" text NOT NULL,\n  \t"_locale" "_locales" NOT NULL,\n  \t"id" varchar PRIMARY KEY NOT NULL,\n  \t"heading" varchar NOT NULL,\n  \t"subheading" varchar NOT NULL,\n  \t"label" varchar,\n  \t"code" varchar NOT NULL,\n  \t"block_name" varchar\n  )',
+    'CREATE TABLE "pages_blocks_edition_use_cases_use_cases" (\n  \t"_order" integer NOT NULL,\n  \t"_parent_id" varchar NOT NULL,\n  \t"_locale" "_locales" NOT NULL,\n  \t"id" varchar PRIMARY KEY NOT NULL,\n  \t"title" varchar NOT NULL,\n  \t"description" varchar NOT NULL,\n  \t"image_id" integer,\n  \t"link_label" varchar,\n  \t"link_url" varchar\n  )',
+    'CREATE TABLE "pages_blocks_edition_use_cases" (\n  \t"_order" integer NOT NULL,\n  \t"_parent_id" integer NOT NULL,\n  \t"_path" text NOT NULL,\n  \t"_locale" "_locales" NOT NULL,\n  \t"id" varchar PRIMARY KEY NOT NULL,\n  \t"heading" varchar NOT NULL,\n  \t"subheading" varchar NOT NULL,\n  \t"block_name" varchar\n  )',
+    'CREATE TABLE "pages_blocks_usecase_use_cases" (\n  \t"_order" integer NOT NULL,\n  \t"_parent_id" varchar NOT NULL,\n  \t"_locale" "_locales" NOT NULL,\n  \t"id" varchar PRIMARY KEY NOT NULL,\n  \t"label" varchar NOT NULL,\n  \t"title" varchar NOT NULL,\n  \t"description" varchar NOT NULL,\n  \t"image_id" integer,\n  \t"link_label" varchar,\n  \t"link_url" varchar\n  )',
+    'CREATE TABLE "pages_blocks_usecase" (\n  \t"_order" integer NOT NULL,\n  \t"_parent_id" integer NOT NULL,\n  \t"_path" text NOT NULL,\n  \t"_locale" "_locales" NOT NULL,\n  \t"id" varchar PRIMARY KEY NOT NULL,\n  \t"block_name" varchar\n  )',
+    'CREATE TABLE "pages_blocks_deployment" (\n  \t"_order" integer NOT NULL,\n  \t"_parent_id" integer NOT NULL,\n  \t"_path" text NOT NULL,\n  \t"_locale" "_locales" NOT NULL,\n  \t"id" varchar PRIMARY KEY NOT NULL,\n  \t"cloud_title" varchar,\n  \t"cloud_description" varchar,\n  \t"cloud_link_label" varchar,\n  \t"cloud_link_url" varchar,\n  \t"selfhost_title" varchar,\n  \t"selfhost_description" varchar,\n  \t"selfhost_link_label" varchar,\n  \t"selfhost_link_url" varchar,\n  \t"dynamic_title" varchar,\n  \t"dynamic_description" varchar,\n  \t"dynamic_link_label" varchar,\n  \t"dynamic_link_url" varchar,\n  \t"block_name" varchar\n  )',
+    'CREATE TABLE "roadmap_items" (\n  \t"id" serial PRIMARY KEY NOT NULL,\n  \t"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,\n  \t"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL\n  )',
+    'CREATE TABLE "roadmap_items_locales" (\n  \t"time" varchar NOT NULL,\n  \t"title" varchar NOT NULL,\n  \t"description" varchar NOT NULL,\n  \t"id" serial PRIMARY KEY NOT NULL,\n  \t"_locale" "_locales" NOT NULL,\n  \t"_parent_id" integer NOT NULL\n  )',
+    'ALTER TABLE "pages_blocks_bento" DISABLE ROW LEVEL SECURITY',
+    'ALTER TABLE "pages_blocks_offset_cards_cards" DISABLE ROW LEVEL SECURITY',
+    'ALTER TABLE "pages_blocks_offset_cards" DISABLE ROW LEVEL SECURITY',
+    'ALTER TABLE "pages_blocks_install" DISABLE ROW LEVEL SECURITY',
+    'ALTER TABLE "pages_blocks_swipe_cards_cards" DISABLE ROW LEVEL SECURITY',
+    'ALTER TABLE "pages_blocks_swipe_cards" DISABLE ROW LEVEL SECURITY',
+    'ALTER TABLE "pages_blocks_blog" DISABLE ROW LEVEL SECURITY',
+    'ALTER TABLE "pages_blocks_card_row_cards" DISABLE ROW LEVEL SECURITY',
+    'ALTER TABLE "pages_blocks_card_row" DISABLE ROW LEVEL SECURITY',
+    'ALTER TABLE "pages_blocks_roadmap_items" DISABLE ROW LEVEL SECURITY',
+    'ALTER TABLE "pages_blocks_roadmap" DISABLE ROW LEVEL SECURITY',
+    'ALTER TABLE "pages_blocks_scroll_cards_items" DISABLE ROW LEVEL SECURITY',
+    'ALTER TABLE "pages_blocks_scroll_cards" DISABLE ROW LEVEL SECURITY',
+    'ALTER TABLE "pages_blocks_standalone_card" DISABLE ROW LEVEL SECURITY',
+    'ALTER TABLE "payload_ai_auditlog" DISABLE ROW LEVEL SECURITY',
+    'ALTER TABLE "navigation_items_items_sub_menu" DISABLE ROW LEVEL SECURITY',
+    'ALTER TABLE "navigation_items_items_sub_menu_locales" DISABLE ROW LEVEL SECURITY',
+    'ALTER TABLE "navigation_items_items" DISABLE ROW LEVEL SECURITY',
+    'ALTER TABLE "navigation_items_items_locales" DISABLE ROW LEVEL SECURITY',
+    'ALTER TABLE "navigation_buttons_buttons" DISABLE ROW LEVEL SECURITY',
+    'ALTER TABLE "navigation_buttons_buttons_locales" DISABLE ROW LEVEL SECURITY',
+    'ALTER TABLE "navigation" DISABLE ROW LEVEL SECURITY',
+    'DROP TABLE "pages_blocks_bento" CASCADE',
+    'DROP TABLE "pages_blocks_offset_cards_cards" CASCADE',
+    'DROP TABLE "pages_blocks_offset_cards" CASCADE',
+    'DROP TABLE "pages_blocks_install" CASCADE',
+    'DROP TABLE "pages_blocks_swipe_cards_cards" CASCADE',
+    'DROP TABLE "pages_blocks_swipe_cards" CASCADE',
+    'DROP TABLE "pages_blocks_blog" CASCADE',
+    'DROP TABLE "pages_blocks_card_row_cards" CASCADE',
+    'DROP TABLE "pages_blocks_card_row" CASCADE',
+    'DROP TABLE "pages_blocks_roadmap_items" CASCADE',
+    'DROP TABLE "pages_blocks_roadmap" CASCADE',
+    'DROP TABLE "pages_blocks_scroll_cards_items" CASCADE',
+    'DROP TABLE "pages_blocks_scroll_cards" CASCADE',
+    'DROP TABLE "pages_blocks_standalone_card" CASCADE',
+    'DROP TABLE "payload_ai_auditlog" CASCADE',
+    'DROP TABLE "navigation_items_items_sub_menu" CASCADE',
+    'DROP TABLE "navigation_items_items_sub_menu_locales" CASCADE',
+    'DROP TABLE "navigation_items_items" CASCADE',
+    'DROP TABLE "navigation_items_items_locales" CASCADE',
+    'DROP TABLE "navigation_buttons_buttons" CASCADE',
+    'DROP TABLE "navigation_buttons_buttons_locales" CASCADE',
+    'DROP TABLE "navigation" CASCADE',
+    'ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_payload_ai_auditlog_fk"',
+    'ALTER TABLE "pages" ALTER COLUMN "slug" SET DATA TYPE text',
+    'DROP TYPE "public"."enum_pages_slug"',
+    "CREATE TYPE \"public\".\"enum_pages_slug\" AS ENUM('main', 'jobs', 'features', 'about-us', 'legal-notice', 'privacy', 'terms', 'contact', 'actions', 'community-edition', 'enterprise-edition', 'subscription')",
+    'ALTER TABLE "pages" ALTER COLUMN "slug" SET DATA TYPE "public"."enum_pages_slug" USING "slug"::"public"."enum_pages_slug"',
+    'ALTER TABLE "footer_social_links" ALTER COLUMN "platform" SET DATA TYPE text',
+    'DROP TYPE "public"."enum_footer_social_links_platform"',
+    "CREATE TYPE \"public\".\"enum_footer_social_links_platform\" AS ENUM('instagram', 'discord', 'x', 'github')",
+    'ALTER TABLE "footer_social_links" ALTER COLUMN "platform" SET DATA TYPE "public"."enum_footer_social_links_platform" USING "platform"::"public"."enum_footer_social_links_platform"',
+    'DROP INDEX "blog_is_pinned_idx"',
+    'DROP INDEX "payload_locked_documents_rels_payload_ai_auditlog_id_idx"',
+    'ALTER TABLE "footer" ALTER COLUMN "updated_at" SET DEFAULT now()',
+    'ALTER TABLE "footer" ALTER COLUMN "updated_at" SET NOT NULL',
+    'ALTER TABLE "footer" ALTER COLUMN "created_at" SET DEFAULT now()',
+    'ALTER TABLE "footer" ALTER COLUMN "created_at" SET NOT NULL',
+    'ALTER TABLE "cookie_banner" ALTER COLUMN "updated_at" SET DEFAULT now()',
+    'ALTER TABLE "cookie_banner" ALTER COLUMN "updated_at" SET NOT NULL',
+    'ALTER TABLE "cookie_banner" ALTER COLUMN "created_at" SET DEFAULT now()',
+    'ALTER TABLE "cookie_banner" ALTER COLUMN "created_at" SET NOT NULL',
+    'ALTER TABLE "subscription_config" ALTER COLUMN "updated_at" SET DEFAULT now()',
+    'ALTER TABLE "subscription_config" ALTER COLUMN "updated_at" SET NOT NULL',
+    'ALTER TABLE "subscription_config" ALTER COLUMN "created_at" SET DEFAULT now()',
+    'ALTER TABLE "subscription_config" ALTER COLUMN "created_at" SET NOT NULL',
+    'ALTER TABLE "payload_locked_documents_rels" ADD COLUMN "navbar_items_id" integer',
+    'ALTER TABLE "payload_locked_documents_rels" ADD COLUMN "sections_id" integer',
+    'ALTER TABLE "payload_locked_documents_rels" ADD COLUMN "footer_id" integer',
+    'ALTER TABLE "payload_locked_documents_rels" ADD COLUMN "cookie_banner_id" integer',
+    'ALTER TABLE "payload_locked_documents_rels" ADD COLUMN "roadmap_items_id" integer',
+    'ALTER TABLE "payload_locked_documents_rels" ADD COLUMN "subscription_config_id" integer',
+    'ALTER TABLE "navbar_items_sub_menu" ADD CONSTRAINT "navbar_items_sub_menu_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."navbar_items"("id") ON DELETE cascade ON UPDATE no action',
+    'ALTER TABLE "navbar_items_sub_menu_locales" ADD CONSTRAINT "navbar_items_sub_menu_locales_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."navbar_items_sub_menu"("id") ON DELETE cascade ON UPDATE no action',
+    'ALTER TABLE "navbar_items_locales" ADD CONSTRAINT "navbar_items_locales_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."navbar_items"("id") ON DELETE cascade ON UPDATE no action',
+    'ALTER TABLE "sections_locales" ADD CONSTRAINT "sections_locales_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."sections"("id") ON DELETE cascade ON UPDATE no action',
+    'ALTER TABLE "pages_blocks_edition_hero_texts" ADD CONSTRAINT "pages_blocks_edition_hero_texts_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages_blocks_edition_hero"("id") ON DELETE cascade ON UPDATE no action',
+    'ALTER TABLE "pages_blocks_edition_hero_buttons" ADD CONSTRAINT "pages_blocks_edition_hero_buttons_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages_blocks_edition_hero"("id") ON DELETE cascade ON UPDATE no action',
+    'ALTER TABLE "pages_blocks_edition_hero" ADD CONSTRAINT "pages_blocks_edition_hero_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages"("id") ON DELETE cascade ON UPDATE no action',
+    'ALTER TABLE "pages_blocks_edition_features_features" ADD CONSTRAINT "pages_blocks_edition_features_features_image_id_media_id_fk" FOREIGN KEY ("image_id") REFERENCES "public"."media"("id") ON DELETE set null ON UPDATE no action',
+    'ALTER TABLE "pages_blocks_edition_features_features" ADD CONSTRAINT "pages_blocks_edition_features_features_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages_blocks_edition_features"("id") ON DELETE cascade ON UPDATE no action',
+    'ALTER TABLE "pages_blocks_edition_features" ADD CONSTRAINT "pages_blocks_edition_features_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages"("id") ON DELETE cascade ON UPDATE no action',
+    'ALTER TABLE "pages_blocks_edition_install" ADD CONSTRAINT "pages_blocks_edition_install_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages"("id") ON DELETE cascade ON UPDATE no action',
+    'ALTER TABLE "pages_blocks_edition_use_cases_use_cases" ADD CONSTRAINT "pages_blocks_edition_use_cases_use_cases_image_id_media_id_fk" FOREIGN KEY ("image_id") REFERENCES "public"."media"("id") ON DELETE set null ON UPDATE no action',
+    'ALTER TABLE "pages_blocks_edition_use_cases_use_cases" ADD CONSTRAINT "pages_blocks_edition_use_cases_use_cases_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages_blocks_edition_use_cases"("id") ON DELETE cascade ON UPDATE no action',
+    'ALTER TABLE "pages_blocks_edition_use_cases" ADD CONSTRAINT "pages_blocks_edition_use_cases_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages"("id") ON DELETE cascade ON UPDATE no action',
+    'ALTER TABLE "pages_blocks_usecase_use_cases" ADD CONSTRAINT "pages_blocks_usecase_use_cases_image_id_media_id_fk" FOREIGN KEY ("image_id") REFERENCES "public"."media"("id") ON DELETE set null ON UPDATE no action',
+    'ALTER TABLE "pages_blocks_usecase_use_cases" ADD CONSTRAINT "pages_blocks_usecase_use_cases_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages_blocks_usecase"("id") ON DELETE cascade ON UPDATE no action',
+    'ALTER TABLE "pages_blocks_usecase" ADD CONSTRAINT "pages_blocks_usecase_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages"("id") ON DELETE cascade ON UPDATE no action',
+    'ALTER TABLE "pages_blocks_deployment" ADD CONSTRAINT "pages_blocks_deployment_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages"("id") ON DELETE cascade ON UPDATE no action',
+    'ALTER TABLE "roadmap_items_locales" ADD CONSTRAINT "roadmap_items_locales_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."roadmap_items"("id") ON DELETE cascade ON UPDATE no action',
+    'CREATE INDEX "navbar_items_sub_menu_order_idx" ON "navbar_items_sub_menu" USING btree ("_order")',
+    'CREATE INDEX "navbar_items_sub_menu_parent_id_idx" ON "navbar_items_sub_menu" USING btree ("_parent_id")',
+    'CREATE UNIQUE INDEX "navbar_items_sub_menu_locales_locale_parent_id_unique" ON "navbar_items_sub_menu_locales" USING btree ("_locale","_parent_id")',
+    'CREATE INDEX "navbar_items_updated_at_idx" ON "navbar_items" USING btree ("updated_at")',
+    'CREATE INDEX "navbar_items_created_at_idx" ON "navbar_items" USING btree ("created_at")',
+    'CREATE UNIQUE INDEX "navbar_items_locales_locale_parent_id_unique" ON "navbar_items_locales" USING btree ("_locale","_parent_id")',
+    'CREATE INDEX "sections_updated_at_idx" ON "sections" USING btree ("updated_at")',
+    'CREATE INDEX "sections_created_at_idx" ON "sections" USING btree ("created_at")',
+    'CREATE UNIQUE INDEX "sections_locales_locale_parent_id_unique" ON "sections_locales" USING btree ("_locale","_parent_id")',
+    'CREATE INDEX "pages_blocks_edition_hero_texts_order_idx" ON "pages_blocks_edition_hero_texts" USING btree ("_order")',
+    'CREATE INDEX "pages_blocks_edition_hero_texts_parent_id_idx" ON "pages_blocks_edition_hero_texts" USING btree ("_parent_id")',
+    'CREATE INDEX "pages_blocks_edition_hero_texts_locale_idx" ON "pages_blocks_edition_hero_texts" USING btree ("_locale")',
+    'CREATE INDEX "pages_blocks_edition_hero_buttons_order_idx" ON "pages_blocks_edition_hero_buttons" USING btree ("_order")',
+    'CREATE INDEX "pages_blocks_edition_hero_buttons_parent_id_idx" ON "pages_blocks_edition_hero_buttons" USING btree ("_parent_id")',
+    'CREATE INDEX "pages_blocks_edition_hero_buttons_locale_idx" ON "pages_blocks_edition_hero_buttons" USING btree ("_locale")',
+    'CREATE INDEX "pages_blocks_edition_hero_order_idx" ON "pages_blocks_edition_hero" USING btree ("_order")',
+    'CREATE INDEX "pages_blocks_edition_hero_parent_id_idx" ON "pages_blocks_edition_hero" USING btree ("_parent_id")',
+    'CREATE INDEX "pages_blocks_edition_hero_path_idx" ON "pages_blocks_edition_hero" USING btree ("_path")',
+    'CREATE INDEX "pages_blocks_edition_hero_locale_idx" ON "pages_blocks_edition_hero" USING btree ("_locale")',
+    'CREATE INDEX "pages_blocks_edition_features_features_order_idx" ON "pages_blocks_edition_features_features" USING btree ("_order")',
+    'CREATE INDEX "pages_blocks_edition_features_features_parent_id_idx" ON "pages_blocks_edition_features_features" USING btree ("_parent_id")',
+    'CREATE INDEX "pages_blocks_edition_features_features_locale_idx" ON "pages_blocks_edition_features_features" USING btree ("_locale")',
+    'CREATE INDEX "pages_blocks_edition_features_features_image_idx" ON "pages_blocks_edition_features_features" USING btree ("image_id")',
+    'CREATE INDEX "pages_blocks_edition_features_order_idx" ON "pages_blocks_edition_features" USING btree ("_order")',
+    'CREATE INDEX "pages_blocks_edition_features_parent_id_idx" ON "pages_blocks_edition_features" USING btree ("_parent_id")',
+    'CREATE INDEX "pages_blocks_edition_features_path_idx" ON "pages_blocks_edition_features" USING btree ("_path")',
+    'CREATE INDEX "pages_blocks_edition_features_locale_idx" ON "pages_blocks_edition_features" USING btree ("_locale")',
+    'CREATE INDEX "pages_blocks_edition_install_order_idx" ON "pages_blocks_edition_install" USING btree ("_order")',
+    'CREATE INDEX "pages_blocks_edition_install_parent_id_idx" ON "pages_blocks_edition_install" USING btree ("_parent_id")',
+    'CREATE INDEX "pages_blocks_edition_install_path_idx" ON "pages_blocks_edition_install" USING btree ("_path")',
+    'CREATE INDEX "pages_blocks_edition_install_locale_idx" ON "pages_blocks_edition_install" USING btree ("_locale")',
+    'CREATE INDEX "pages_blocks_edition_use_cases_use_cases_order_idx" ON "pages_blocks_edition_use_cases_use_cases" USING btree ("_order")',
+    'CREATE INDEX "pages_blocks_edition_use_cases_use_cases_parent_id_idx" ON "pages_blocks_edition_use_cases_use_cases" USING btree ("_parent_id")',
+    'CREATE INDEX "pages_blocks_edition_use_cases_use_cases_locale_idx" ON "pages_blocks_edition_use_cases_use_cases" USING btree ("_locale")',
+    'CREATE INDEX "pages_blocks_edition_use_cases_use_cases_image_idx" ON "pages_blocks_edition_use_cases_use_cases" USING btree ("image_id")',
+    'CREATE INDEX "pages_blocks_edition_use_cases_order_idx" ON "pages_blocks_edition_use_cases" USING btree ("_order")',
+    'CREATE INDEX "pages_blocks_edition_use_cases_parent_id_idx" ON "pages_blocks_edition_use_cases" USING btree ("_parent_id")',
+    'CREATE INDEX "pages_blocks_edition_use_cases_path_idx" ON "pages_blocks_edition_use_cases" USING btree ("_path")',
+    'CREATE INDEX "pages_blocks_edition_use_cases_locale_idx" ON "pages_blocks_edition_use_cases" USING btree ("_locale")',
+    'CREATE INDEX "pages_blocks_usecase_use_cases_order_idx" ON "pages_blocks_usecase_use_cases" USING btree ("_order")',
+    'CREATE INDEX "pages_blocks_usecase_use_cases_parent_id_idx" ON "pages_blocks_usecase_use_cases" USING btree ("_parent_id")',
+    'CREATE INDEX "pages_blocks_usecase_use_cases_locale_idx" ON "pages_blocks_usecase_use_cases" USING btree ("_locale")',
+    'CREATE INDEX "pages_blocks_usecase_use_cases_image_idx" ON "pages_blocks_usecase_use_cases" USING btree ("image_id")',
+    'CREATE INDEX "pages_blocks_usecase_order_idx" ON "pages_blocks_usecase" USING btree ("_order")',
+    'CREATE INDEX "pages_blocks_usecase_parent_id_idx" ON "pages_blocks_usecase" USING btree ("_parent_id")',
+    'CREATE INDEX "pages_blocks_usecase_path_idx" ON "pages_blocks_usecase" USING btree ("_path")',
+    'CREATE INDEX "pages_blocks_usecase_locale_idx" ON "pages_blocks_usecase" USING btree ("_locale")',
+    'CREATE INDEX "pages_blocks_deployment_order_idx" ON "pages_blocks_deployment" USING btree ("_order")',
+    'CREATE INDEX "pages_blocks_deployment_parent_id_idx" ON "pages_blocks_deployment" USING btree ("_parent_id")',
+    'CREATE INDEX "pages_blocks_deployment_path_idx" ON "pages_blocks_deployment" USING btree ("_path")',
+    'CREATE INDEX "pages_blocks_deployment_locale_idx" ON "pages_blocks_deployment" USING btree ("_locale")',
+    'CREATE INDEX "roadmap_items_updated_at_idx" ON "roadmap_items" USING btree ("updated_at")',
+    'CREATE INDEX "roadmap_items_created_at_idx" ON "roadmap_items" USING btree ("created_at")',
+    'CREATE UNIQUE INDEX "roadmap_items_locales_locale_parent_id_unique" ON "roadmap_items_locales" USING btree ("_locale","_parent_id")',
+    'ALTER TABLE "payload_locked_documents_rels" ADD CONSTRAINT "payload_locked_documents_rels_navbar_items_fk" FOREIGN KEY ("navbar_items_id") REFERENCES "public"."navbar_items"("id") ON DELETE cascade ON UPDATE no action',
+    'ALTER TABLE "payload_locked_documents_rels" ADD CONSTRAINT "payload_locked_documents_rels_sections_fk" FOREIGN KEY ("sections_id") REFERENCES "public"."sections"("id") ON DELETE cascade ON UPDATE no action',
+    'ALTER TABLE "payload_locked_documents_rels" ADD CONSTRAINT "payload_locked_documents_rels_footer_fk" FOREIGN KEY ("footer_id") REFERENCES "public"."footer"("id") ON DELETE cascade ON UPDATE no action',
+    'ALTER TABLE "payload_locked_documents_rels" ADD CONSTRAINT "payload_locked_documents_rels_cookie_banner_fk" FOREIGN KEY ("cookie_banner_id") REFERENCES "public"."cookie_banner"("id") ON DELETE cascade ON UPDATE no action',
+    'ALTER TABLE "payload_locked_documents_rels" ADD CONSTRAINT "payload_locked_documents_rels_roadmap_items_fk" FOREIGN KEY ("roadmap_items_id") REFERENCES "public"."roadmap_items"("id") ON DELETE cascade ON UPDATE no action',
+    'ALTER TABLE "payload_locked_documents_rels" ADD CONSTRAINT "payload_locked_documents_rels_subscription_config_fk" FOREIGN KEY ("subscription_config_id") REFERENCES "public"."subscription_config"("id") ON DELETE cascade ON UPDATE no action',
+    'CREATE INDEX "payload_locked_documents_rels_navbar_items_id_idx" ON "payload_locked_documents_rels" USING btree ("navbar_items_id")',
+    'CREATE INDEX "payload_locked_documents_rels_sections_id_idx" ON "payload_locked_documents_rels" USING btree ("sections_id")',
+    'CREATE INDEX "payload_locked_documents_rels_footer_id_idx" ON "payload_locked_documents_rels" USING btree ("footer_id")',
+    'CREATE INDEX "payload_locked_documents_rels_cookie_banner_id_idx" ON "payload_locked_documents_rels" USING btree ("cookie_banner_id")',
+    'CREATE INDEX "payload_locked_documents_rels_roadmap_items_id_idx" ON "payload_locked_documents_rels" USING btree ("roadmap_items_id")',
+    'CREATE INDEX "payload_locked_documents_rels_subscription_config_id_idx" ON "payload_locked_documents_rels" USING btree ("subscription_config_id")',
+    'CREATE INDEX "footer_updated_at_idx" ON "footer" USING btree ("updated_at")',
+    'CREATE INDEX "footer_created_at_idx" ON "footer" USING btree ("created_at")',
+    'CREATE INDEX "cookie_banner_updated_at_idx" ON "cookie_banner" USING btree ("updated_at")',
+    'CREATE INDEX "cookie_banner_created_at_idx" ON "cookie_banner" USING btree ("created_at")',
+    'CREATE INDEX "subscription_config_updated_at_idx" ON "subscription_config" USING btree ("updated_at")',
+    'CREATE INDEX "subscription_config_created_at_idx" ON "subscription_config" USING btree ("created_at")',
+    'ALTER TABLE "users" DROP COLUMN "ai_provider"',
+    'ALTER TABLE "users" DROP COLUMN "ai_api_key"',
+    'ALTER TABLE "pages_blocks_hero" DROP COLUMN "centered"',
+    'ALTER TABLE "pages_blocks_hero" DROP COLUMN "grainient_colors_color1"',
+    'ALTER TABLE "pages_blocks_hero" DROP COLUMN "grainient_colors_color2"',
+    'ALTER TABLE "pages_blocks_hero" DROP COLUMN "grainient_colors_color3"',
+    'ALTER TABLE "pages_blocks_hero" DROP COLUMN "grainient_colors_background_color"',
+    'ALTER TABLE "pages_blocks_faq" DROP COLUMN "section_heading"',
+    'ALTER TABLE "pages_blocks_faq" DROP COLUMN "section_layout"',
+    'ALTER TABLE "pages_blocks_faq" DROP COLUMN "section_description"',
+    'ALTER TABLE "pages_blocks_faq" DROP COLUMN "section_link_button_label"',
+    'ALTER TABLE "pages_blocks_faq" DROP COLUMN "section_link_button_url"',
+    'ALTER TABLE "blog" DROP COLUMN "is_pinned"',
+    'ALTER TABLE "payload_locked_documents_rels" DROP COLUMN "payload_ai_auditlog_id"',
+    'ALTER TABLE "footer" DROP COLUMN "contact_email"',
+    'ALTER TABLE "footer" DROP COLUMN "legal_links_privacy_url"',
+    'ALTER TABLE "footer" DROP COLUMN "legal_links_legal_notice_url"',
+    'ALTER TABLE "footer_locales" DROP COLUMN "description"',
+    'ALTER TABLE "footer_locales" DROP COLUMN "legal_links_privacy_label"',
+    'ALTER TABLE "footer_locales" DROP COLUMN "legal_links_legal_notice_label"',
+    'DROP TYPE "public"."enum_users_ai_provider"',
+    'DROP TYPE "public"."enum_pages_blocks_bento_section_layout"',
+    'DROP TYPE "public"."enum_pages_blocks_bento_variant"',
+    'DROP TYPE "public"."enum_pages_blocks_offset_cards_section_layout"',
+    'DROP TYPE "public"."enum_pages_blocks_faq_section_layout"',
+    'DROP TYPE "public"."enum_pages_blocks_card_row_section_layout"',
+    'DROP TYPE "public"."enum_pages_blocks_roadmap_section_layout"',
+    'DROP TYPE "public"."enum_pages_blocks_scroll_cards_items_section_layout"',
+    'DROP TYPE "public"."enum_pages_blocks_scroll_cards_items_gradient"',
+    'DROP TYPE "public"."enum_pages_blocks_scroll_cards_items_gradient_direction"',
+    'DROP TYPE "public"."enum_pages_blocks_standalone_card_section_layout"',
+    'DROP TYPE "public"."enum_pages_blocks_standalone_card_gradient"',
+    'DROP TYPE "public"."enum_pages_blocks_standalone_card_gradient_direction"',
+    'DROP TYPE "public"."enum_payload_ai_auditlog_action"',
+    'DROP TYPE "public"."enum_payload_ai_auditlog_target_type"',
+    'DROP TYPE "public"."enum_navigation_buttons_buttons_variant"',
+] as const
 
-  CREATE TABLE "pages_blocks_edition_hero_texts" (
-  	"_order" integer NOT NULL,
-  	"_parent_id" varchar NOT NULL,
-  	"_locale" "_locales" NOT NULL,
-  	"id" varchar PRIMARY KEY NOT NULL,
-  	"text" varchar NOT NULL
-  );
+export async function up({ db }: MigrateUpArgs): Promise<void> {
+    await executeMigrationStatements(db, [...upStatements])
+}
 
-  CREATE TABLE "pages_blocks_edition_hero_buttons" (
-  	"_order" integer NOT NULL,
-  	"_parent_id" varchar NOT NULL,
-  	"_locale" "_locales" NOT NULL,
-  	"id" varchar PRIMARY KEY NOT NULL,
-  	"label" varchar NOT NULL,
-  	"url" varchar NOT NULL,
-  	"variant" "enum_pages_blocks_edition_hero_buttons_variant" DEFAULT 'normal'
-  );
-
-  CREATE TABLE "pages_blocks_edition_hero" (
-  	"_order" integer NOT NULL,
-  	"_parent_id" integer NOT NULL,
-  	"_path" text NOT NULL,
-  	"_locale" "_locales" NOT NULL,
-  	"id" varchar PRIMARY KEY NOT NULL,
-  	"heading" varchar NOT NULL,
-  	"image_alt" varchar NOT NULL,
-  	"block_name" varchar
-  );
-
-  CREATE TABLE "pages_blocks_edition_features_features" (
-  	"_order" integer NOT NULL,
-  	"_parent_id" varchar NOT NULL,
-  	"_locale" "_locales" NOT NULL,
-  	"id" varchar PRIMARY KEY NOT NULL,
-  	"label" varchar NOT NULL,
-  	"title" varchar NOT NULL,
-  	"description" varchar NOT NULL,
-  	"image_id" integer,
-  	"link_label" varchar,
-  	"link_url" varchar
-  );
-
-  CREATE TABLE "pages_blocks_edition_features" (
-  	"_order" integer NOT NULL,
-  	"_parent_id" integer NOT NULL,
-  	"_path" text NOT NULL,
-  	"_locale" "_locales" NOT NULL,
-  	"id" varchar PRIMARY KEY NOT NULL,
-  	"block_name" varchar
-  );
-
-  CREATE TABLE "pages_blocks_edition_install" (
-  	"_order" integer NOT NULL,
-  	"_parent_id" integer NOT NULL,
-  	"_path" text NOT NULL,
-  	"_locale" "_locales" NOT NULL,
-  	"id" varchar PRIMARY KEY NOT NULL,
-  	"heading" varchar NOT NULL,
-  	"subheading" varchar NOT NULL,
-  	"label" varchar,
-  	"code" varchar NOT NULL,
-  	"block_name" varchar
-  );
-
-  CREATE TABLE "pages_blocks_edition_use_cases_use_cases" (
-  	"_order" integer NOT NULL,
-  	"_parent_id" varchar NOT NULL,
-  	"_locale" "_locales" NOT NULL,
-  	"id" varchar PRIMARY KEY NOT NULL,
-  	"title" varchar NOT NULL,
-  	"description" varchar NOT NULL,
-  	"image_id" integer,
-  	"link_label" varchar,
-  	"link_url" varchar
-  );
-
-  CREATE TABLE "pages_blocks_edition_use_cases" (
-  	"_order" integer NOT NULL,
-  	"_parent_id" integer NOT NULL,
-  	"_path" text NOT NULL,
-  	"_locale" "_locales" NOT NULL,
-  	"id" varchar PRIMARY KEY NOT NULL,
-  	"heading" varchar NOT NULL,
-  	"subheading" varchar NOT NULL,
-  	"block_name" varchar
-  );
-
-  CREATE TABLE "pages_blocks_usecase_use_cases" (
-  	"_order" integer NOT NULL,
-  	"_parent_id" varchar NOT NULL,
-  	"_locale" "_locales" NOT NULL,
-  	"id" varchar PRIMARY KEY NOT NULL,
-  	"label" varchar NOT NULL,
-  	"title" varchar NOT NULL,
-  	"description" varchar NOT NULL,
-  	"image_id" integer,
-  	"link_label" varchar,
-  	"link_url" varchar
-  );
-
-  CREATE TABLE "pages_blocks_usecase" (
-  	"_order" integer NOT NULL,
-  	"_parent_id" integer NOT NULL,
-  	"_path" text NOT NULL,
-  	"_locale" "_locales" NOT NULL,
-  	"id" varchar PRIMARY KEY NOT NULL,
-  	"block_name" varchar
-  );
-
-  CREATE TABLE "pages_blocks_deployment" (
-  	"_order" integer NOT NULL,
-  	"_parent_id" integer NOT NULL,
-  	"_path" text NOT NULL,
-  	"_locale" "_locales" NOT NULL,
-  	"id" varchar PRIMARY KEY NOT NULL,
-  	"cloud_title" varchar,
-  	"cloud_description" varchar,
-  	"cloud_link_label" varchar,
-  	"cloud_link_url" varchar,
-  	"selfhost_title" varchar,
-  	"selfhost_description" varchar,
-  	"selfhost_link_label" varchar,
-  	"selfhost_link_url" varchar,
-  	"dynamic_title" varchar,
-  	"dynamic_description" varchar,
-  	"dynamic_link_label" varchar,
-  	"dynamic_link_url" varchar,
-  	"block_name" varchar
-  );
-
-  CREATE TABLE "roadmap_items" (
-  	"id" serial PRIMARY KEY NOT NULL,
-  	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
-  	"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
-  );
-
-  CREATE TABLE "roadmap_items_locales" (
-  	"time" varchar NOT NULL,
-  	"title" varchar NOT NULL,
-  	"description" varchar NOT NULL,
-  	"id" serial PRIMARY KEY NOT NULL,
-  	"_locale" "_locales" NOT NULL,
-  	"_parent_id" integer NOT NULL
-  );
-
-  ALTER TABLE "pages_blocks_bento" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "pages_blocks_offset_cards_cards" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "pages_blocks_offset_cards" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "pages_blocks_install" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "pages_blocks_swipe_cards_cards" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "pages_blocks_swipe_cards" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "pages_blocks_blog" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "pages_blocks_card_row_cards" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "pages_blocks_card_row" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "pages_blocks_roadmap_items" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "pages_blocks_roadmap" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "pages_blocks_scroll_cards_items" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "pages_blocks_scroll_cards" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "pages_blocks_standalone_card" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "payload_ai_auditlog" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "navigation_items_items_sub_menu" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "navigation_items_items_sub_menu_locales" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "navigation_items_items" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "navigation_items_items_locales" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "navigation_buttons_buttons" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "navigation_buttons_buttons_locales" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "navigation" DISABLE ROW LEVEL SECURITY;
-  DROP TABLE "pages_blocks_bento" CASCADE;
-  DROP TABLE "pages_blocks_offset_cards_cards" CASCADE;
-  DROP TABLE "pages_blocks_offset_cards" CASCADE;
-  DROP TABLE "pages_blocks_install" CASCADE;
-  DROP TABLE "pages_blocks_swipe_cards_cards" CASCADE;
-  DROP TABLE "pages_blocks_swipe_cards" CASCADE;
-  DROP TABLE "pages_blocks_blog" CASCADE;
-  DROP TABLE "pages_blocks_card_row_cards" CASCADE;
-  DROP TABLE "pages_blocks_card_row" CASCADE;
-  DROP TABLE "pages_blocks_roadmap_items" CASCADE;
-  DROP TABLE "pages_blocks_roadmap" CASCADE;
-  DROP TABLE "pages_blocks_scroll_cards_items" CASCADE;
-  DROP TABLE "pages_blocks_scroll_cards" CASCADE;
-  DROP TABLE "pages_blocks_standalone_card" CASCADE;
-  DROP TABLE "payload_ai_auditlog" CASCADE;
-  DROP TABLE "navigation_items_items_sub_menu" CASCADE;
-  DROP TABLE "navigation_items_items_sub_menu_locales" CASCADE;
-  DROP TABLE "navigation_items_items" CASCADE;
-  DROP TABLE "navigation_items_items_locales" CASCADE;
-  DROP TABLE "navigation_buttons_buttons" CASCADE;
-  DROP TABLE "navigation_buttons_buttons_locales" CASCADE;
-  DROP TABLE "navigation" CASCADE;
-  ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_payload_ai_auditlog_fk";
-
-  ALTER TABLE "pages" ALTER COLUMN "slug" SET DATA TYPE text;
-  DROP TYPE "public"."enum_pages_slug";
-  CREATE TYPE "public"."enum_pages_slug" AS ENUM('main', 'jobs', 'features', 'about-us', 'legal-notice', 'privacy', 'terms', 'contact', 'actions', 'community-edition', 'enterprise-edition', 'subscription');
-  ALTER TABLE "pages" ALTER COLUMN "slug" SET DATA TYPE "public"."enum_pages_slug" USING "slug"::"public"."enum_pages_slug";
-  ALTER TABLE "footer_social_links" ALTER COLUMN "platform" SET DATA TYPE text;
-  DROP TYPE "public"."enum_footer_social_links_platform";
-  CREATE TYPE "public"."enum_footer_social_links_platform" AS ENUM('instagram', 'discord', 'x', 'github');
-  ALTER TABLE "footer_social_links" ALTER COLUMN "platform" SET DATA TYPE "public"."enum_footer_social_links_platform" USING "platform"::"public"."enum_footer_social_links_platform";
-  DROP INDEX "blog_is_pinned_idx";
-  DROP INDEX "payload_locked_documents_rels_payload_ai_auditlog_id_idx";
-  ALTER TABLE "footer" ALTER COLUMN "updated_at" SET DEFAULT now();
-  ALTER TABLE "footer" ALTER COLUMN "updated_at" SET NOT NULL;
-  ALTER TABLE "footer" ALTER COLUMN "created_at" SET DEFAULT now();
-  ALTER TABLE "footer" ALTER COLUMN "created_at" SET NOT NULL;
-  ALTER TABLE "cookie_banner" ALTER COLUMN "updated_at" SET DEFAULT now();
-  ALTER TABLE "cookie_banner" ALTER COLUMN "updated_at" SET NOT NULL;
-  ALTER TABLE "cookie_banner" ALTER COLUMN "created_at" SET DEFAULT now();
-  ALTER TABLE "cookie_banner" ALTER COLUMN "created_at" SET NOT NULL;
-  ALTER TABLE "subscription_config" ALTER COLUMN "updated_at" SET DEFAULT now();
-  ALTER TABLE "subscription_config" ALTER COLUMN "updated_at" SET NOT NULL;
-  ALTER TABLE "subscription_config" ALTER COLUMN "created_at" SET DEFAULT now();
-  ALTER TABLE "subscription_config" ALTER COLUMN "created_at" SET NOT NULL;
-  ALTER TABLE "payload_locked_documents_rels" ADD COLUMN "navbar_items_id" integer;
-  ALTER TABLE "payload_locked_documents_rels" ADD COLUMN "sections_id" integer;
-  ALTER TABLE "payload_locked_documents_rels" ADD COLUMN "footer_id" integer;
-  ALTER TABLE "payload_locked_documents_rels" ADD COLUMN "cookie_banner_id" integer;
-  ALTER TABLE "payload_locked_documents_rels" ADD COLUMN "roadmap_items_id" integer;
-  ALTER TABLE "payload_locked_documents_rels" ADD COLUMN "subscription_config_id" integer;
-  ALTER TABLE "navbar_items_sub_menu" ADD CONSTRAINT "navbar_items_sub_menu_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."navbar_items"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "navbar_items_sub_menu_locales" ADD CONSTRAINT "navbar_items_sub_menu_locales_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."navbar_items_sub_menu"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "navbar_items_locales" ADD CONSTRAINT "navbar_items_locales_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."navbar_items"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "sections_locales" ADD CONSTRAINT "sections_locales_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."sections"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "pages_blocks_edition_hero_texts" ADD CONSTRAINT "pages_blocks_edition_hero_texts_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages_blocks_edition_hero"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "pages_blocks_edition_hero_buttons" ADD CONSTRAINT "pages_blocks_edition_hero_buttons_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages_blocks_edition_hero"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "pages_blocks_edition_hero" ADD CONSTRAINT "pages_blocks_edition_hero_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "pages_blocks_edition_features_features" ADD CONSTRAINT "pages_blocks_edition_features_features_image_id_media_id_fk" FOREIGN KEY ("image_id") REFERENCES "public"."media"("id") ON DELETE set null ON UPDATE no action;
-  ALTER TABLE "pages_blocks_edition_features_features" ADD CONSTRAINT "pages_blocks_edition_features_features_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages_blocks_edition_features"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "pages_blocks_edition_features" ADD CONSTRAINT "pages_blocks_edition_features_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "pages_blocks_edition_install" ADD CONSTRAINT "pages_blocks_edition_install_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "pages_blocks_edition_use_cases_use_cases" ADD CONSTRAINT "pages_blocks_edition_use_cases_use_cases_image_id_media_id_fk" FOREIGN KEY ("image_id") REFERENCES "public"."media"("id") ON DELETE set null ON UPDATE no action;
-  ALTER TABLE "pages_blocks_edition_use_cases_use_cases" ADD CONSTRAINT "pages_blocks_edition_use_cases_use_cases_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages_blocks_edition_use_cases"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "pages_blocks_edition_use_cases" ADD CONSTRAINT "pages_blocks_edition_use_cases_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "pages_blocks_usecase_use_cases" ADD CONSTRAINT "pages_blocks_usecase_use_cases_image_id_media_id_fk" FOREIGN KEY ("image_id") REFERENCES "public"."media"("id") ON DELETE set null ON UPDATE no action;
-  ALTER TABLE "pages_blocks_usecase_use_cases" ADD CONSTRAINT "pages_blocks_usecase_use_cases_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages_blocks_usecase"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "pages_blocks_usecase" ADD CONSTRAINT "pages_blocks_usecase_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "pages_blocks_deployment" ADD CONSTRAINT "pages_blocks_deployment_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "roadmap_items_locales" ADD CONSTRAINT "roadmap_items_locales_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."roadmap_items"("id") ON DELETE cascade ON UPDATE no action;
-  CREATE INDEX "navbar_items_sub_menu_order_idx" ON "navbar_items_sub_menu" USING btree ("_order");
-  CREATE INDEX "navbar_items_sub_menu_parent_id_idx" ON "navbar_items_sub_menu" USING btree ("_parent_id");
-  CREATE UNIQUE INDEX "navbar_items_sub_menu_locales_locale_parent_id_unique" ON "navbar_items_sub_menu_locales" USING btree ("_locale","_parent_id");
-  CREATE INDEX "navbar_items_updated_at_idx" ON "navbar_items" USING btree ("updated_at");
-  CREATE INDEX "navbar_items_created_at_idx" ON "navbar_items" USING btree ("created_at");
-  CREATE UNIQUE INDEX "navbar_items_locales_locale_parent_id_unique" ON "navbar_items_locales" USING btree ("_locale","_parent_id");
-  CREATE INDEX "sections_updated_at_idx" ON "sections" USING btree ("updated_at");
-  CREATE INDEX "sections_created_at_idx" ON "sections" USING btree ("created_at");
-  CREATE UNIQUE INDEX "sections_locales_locale_parent_id_unique" ON "sections_locales" USING btree ("_locale","_parent_id");
-  CREATE INDEX "pages_blocks_edition_hero_texts_order_idx" ON "pages_blocks_edition_hero_texts" USING btree ("_order");
-  CREATE INDEX "pages_blocks_edition_hero_texts_parent_id_idx" ON "pages_blocks_edition_hero_texts" USING btree ("_parent_id");
-  CREATE INDEX "pages_blocks_edition_hero_texts_locale_idx" ON "pages_blocks_edition_hero_texts" USING btree ("_locale");
-  CREATE INDEX "pages_blocks_edition_hero_buttons_order_idx" ON "pages_blocks_edition_hero_buttons" USING btree ("_order");
-  CREATE INDEX "pages_blocks_edition_hero_buttons_parent_id_idx" ON "pages_blocks_edition_hero_buttons" USING btree ("_parent_id");
-  CREATE INDEX "pages_blocks_edition_hero_buttons_locale_idx" ON "pages_blocks_edition_hero_buttons" USING btree ("_locale");
-  CREATE INDEX "pages_blocks_edition_hero_order_idx" ON "pages_blocks_edition_hero" USING btree ("_order");
-  CREATE INDEX "pages_blocks_edition_hero_parent_id_idx" ON "pages_blocks_edition_hero" USING btree ("_parent_id");
-  CREATE INDEX "pages_blocks_edition_hero_path_idx" ON "pages_blocks_edition_hero" USING btree ("_path");
-  CREATE INDEX "pages_blocks_edition_hero_locale_idx" ON "pages_blocks_edition_hero" USING btree ("_locale");
-  CREATE INDEX "pages_blocks_edition_features_features_order_idx" ON "pages_blocks_edition_features_features" USING btree ("_order");
-  CREATE INDEX "pages_blocks_edition_features_features_parent_id_idx" ON "pages_blocks_edition_features_features" USING btree ("_parent_id");
-  CREATE INDEX "pages_blocks_edition_features_features_locale_idx" ON "pages_blocks_edition_features_features" USING btree ("_locale");
-  CREATE INDEX "pages_blocks_edition_features_features_image_idx" ON "pages_blocks_edition_features_features" USING btree ("image_id");
-  CREATE INDEX "pages_blocks_edition_features_order_idx" ON "pages_blocks_edition_features" USING btree ("_order");
-  CREATE INDEX "pages_blocks_edition_features_parent_id_idx" ON "pages_blocks_edition_features" USING btree ("_parent_id");
-  CREATE INDEX "pages_blocks_edition_features_path_idx" ON "pages_blocks_edition_features" USING btree ("_path");
-  CREATE INDEX "pages_blocks_edition_features_locale_idx" ON "pages_blocks_edition_features" USING btree ("_locale");
-  CREATE INDEX "pages_blocks_edition_install_order_idx" ON "pages_blocks_edition_install" USING btree ("_order");
-  CREATE INDEX "pages_blocks_edition_install_parent_id_idx" ON "pages_blocks_edition_install" USING btree ("_parent_id");
-  CREATE INDEX "pages_blocks_edition_install_path_idx" ON "pages_blocks_edition_install" USING btree ("_path");
-  CREATE INDEX "pages_blocks_edition_install_locale_idx" ON "pages_blocks_edition_install" USING btree ("_locale");
-  CREATE INDEX "pages_blocks_edition_use_cases_use_cases_order_idx" ON "pages_blocks_edition_use_cases_use_cases" USING btree ("_order");
-  CREATE INDEX "pages_blocks_edition_use_cases_use_cases_parent_id_idx" ON "pages_blocks_edition_use_cases_use_cases" USING btree ("_parent_id");
-  CREATE INDEX "pages_blocks_edition_use_cases_use_cases_locale_idx" ON "pages_blocks_edition_use_cases_use_cases" USING btree ("_locale");
-  CREATE INDEX "pages_blocks_edition_use_cases_use_cases_image_idx" ON "pages_blocks_edition_use_cases_use_cases" USING btree ("image_id");
-  CREATE INDEX "pages_blocks_edition_use_cases_order_idx" ON "pages_blocks_edition_use_cases" USING btree ("_order");
-  CREATE INDEX "pages_blocks_edition_use_cases_parent_id_idx" ON "pages_blocks_edition_use_cases" USING btree ("_parent_id");
-  CREATE INDEX "pages_blocks_edition_use_cases_path_idx" ON "pages_blocks_edition_use_cases" USING btree ("_path");
-  CREATE INDEX "pages_blocks_edition_use_cases_locale_idx" ON "pages_blocks_edition_use_cases" USING btree ("_locale");
-  CREATE INDEX "pages_blocks_usecase_use_cases_order_idx" ON "pages_blocks_usecase_use_cases" USING btree ("_order");
-  CREATE INDEX "pages_blocks_usecase_use_cases_parent_id_idx" ON "pages_blocks_usecase_use_cases" USING btree ("_parent_id");
-  CREATE INDEX "pages_blocks_usecase_use_cases_locale_idx" ON "pages_blocks_usecase_use_cases" USING btree ("_locale");
-  CREATE INDEX "pages_blocks_usecase_use_cases_image_idx" ON "pages_blocks_usecase_use_cases" USING btree ("image_id");
-  CREATE INDEX "pages_blocks_usecase_order_idx" ON "pages_blocks_usecase" USING btree ("_order");
-  CREATE INDEX "pages_blocks_usecase_parent_id_idx" ON "pages_blocks_usecase" USING btree ("_parent_id");
-  CREATE INDEX "pages_blocks_usecase_path_idx" ON "pages_blocks_usecase" USING btree ("_path");
-  CREATE INDEX "pages_blocks_usecase_locale_idx" ON "pages_blocks_usecase" USING btree ("_locale");
-  CREATE INDEX "pages_blocks_deployment_order_idx" ON "pages_blocks_deployment" USING btree ("_order");
-  CREATE INDEX "pages_blocks_deployment_parent_id_idx" ON "pages_blocks_deployment" USING btree ("_parent_id");
-  CREATE INDEX "pages_blocks_deployment_path_idx" ON "pages_blocks_deployment" USING btree ("_path");
-  CREATE INDEX "pages_blocks_deployment_locale_idx" ON "pages_blocks_deployment" USING btree ("_locale");
-  CREATE INDEX "roadmap_items_updated_at_idx" ON "roadmap_items" USING btree ("updated_at");
-  CREATE INDEX "roadmap_items_created_at_idx" ON "roadmap_items" USING btree ("created_at");
-  CREATE UNIQUE INDEX "roadmap_items_locales_locale_parent_id_unique" ON "roadmap_items_locales" USING btree ("_locale","_parent_id");
-  ALTER TABLE "payload_locked_documents_rels" ADD CONSTRAINT "payload_locked_documents_rels_navbar_items_fk" FOREIGN KEY ("navbar_items_id") REFERENCES "public"."navbar_items"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "payload_locked_documents_rels" ADD CONSTRAINT "payload_locked_documents_rels_sections_fk" FOREIGN KEY ("sections_id") REFERENCES "public"."sections"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "payload_locked_documents_rels" ADD CONSTRAINT "payload_locked_documents_rels_footer_fk" FOREIGN KEY ("footer_id") REFERENCES "public"."footer"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "payload_locked_documents_rels" ADD CONSTRAINT "payload_locked_documents_rels_cookie_banner_fk" FOREIGN KEY ("cookie_banner_id") REFERENCES "public"."cookie_banner"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "payload_locked_documents_rels" ADD CONSTRAINT "payload_locked_documents_rels_roadmap_items_fk" FOREIGN KEY ("roadmap_items_id") REFERENCES "public"."roadmap_items"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "payload_locked_documents_rels" ADD CONSTRAINT "payload_locked_documents_rels_subscription_config_fk" FOREIGN KEY ("subscription_config_id") REFERENCES "public"."subscription_config"("id") ON DELETE cascade ON UPDATE no action;
-  CREATE INDEX "payload_locked_documents_rels_navbar_items_id_idx" ON "payload_locked_documents_rels" USING btree ("navbar_items_id");
-  CREATE INDEX "payload_locked_documents_rels_sections_id_idx" ON "payload_locked_documents_rels" USING btree ("sections_id");
-  CREATE INDEX "payload_locked_documents_rels_footer_id_idx" ON "payload_locked_documents_rels" USING btree ("footer_id");
-  CREATE INDEX "payload_locked_documents_rels_cookie_banner_id_idx" ON "payload_locked_documents_rels" USING btree ("cookie_banner_id");
-  CREATE INDEX "payload_locked_documents_rels_roadmap_items_id_idx" ON "payload_locked_documents_rels" USING btree ("roadmap_items_id");
-  CREATE INDEX "payload_locked_documents_rels_subscription_config_id_idx" ON "payload_locked_documents_rels" USING btree ("subscription_config_id");
-  CREATE INDEX "footer_updated_at_idx" ON "footer" USING btree ("updated_at");
-  CREATE INDEX "footer_created_at_idx" ON "footer" USING btree ("created_at");
-  CREATE INDEX "cookie_banner_updated_at_idx" ON "cookie_banner" USING btree ("updated_at");
-  CREATE INDEX "cookie_banner_created_at_idx" ON "cookie_banner" USING btree ("created_at");
-  CREATE INDEX "subscription_config_updated_at_idx" ON "subscription_config" USING btree ("updated_at");
-  CREATE INDEX "subscription_config_created_at_idx" ON "subscription_config" USING btree ("created_at");
-  ALTER TABLE "users" DROP COLUMN "ai_provider";
-  ALTER TABLE "users" DROP COLUMN "ai_api_key";
-  ALTER TABLE "pages_blocks_hero" DROP COLUMN "centered";
-  ALTER TABLE "pages_blocks_hero" DROP COLUMN "grainient_colors_color1";
-  ALTER TABLE "pages_blocks_hero" DROP COLUMN "grainient_colors_color2";
-  ALTER TABLE "pages_blocks_hero" DROP COLUMN "grainient_colors_color3";
-  ALTER TABLE "pages_blocks_hero" DROP COLUMN "grainient_colors_background_color";
-  ALTER TABLE "pages_blocks_faq" DROP COLUMN "section_heading";
-  ALTER TABLE "pages_blocks_faq" DROP COLUMN "section_layout";
-  ALTER TABLE "pages_blocks_faq" DROP COLUMN "section_description";
-  ALTER TABLE "pages_blocks_faq" DROP COLUMN "section_link_button_label";
-  ALTER TABLE "pages_blocks_faq" DROP COLUMN "section_link_button_url";
-  ALTER TABLE "blog" DROP COLUMN "is_pinned";
-  ALTER TABLE "payload_locked_documents_rels" DROP COLUMN "payload_ai_auditlog_id";
-  ALTER TABLE "footer" DROP COLUMN "contact_email";
-  ALTER TABLE "footer" DROP COLUMN "legal_links_privacy_url";
-  ALTER TABLE "footer" DROP COLUMN "legal_links_legal_notice_url";
-  ALTER TABLE "footer_locales" DROP COLUMN "description";
-  ALTER TABLE "footer_locales" DROP COLUMN "legal_links_privacy_label";
-  ALTER TABLE "footer_locales" DROP COLUMN "legal_links_legal_notice_label";
-  DROP TYPE "public"."enum_users_ai_provider";
-  DROP TYPE "public"."enum_pages_blocks_bento_section_layout";
-  DROP TYPE "public"."enum_pages_blocks_bento_variant";
-  DROP TYPE "public"."enum_pages_blocks_offset_cards_section_layout";
-  DROP TYPE "public"."enum_pages_blocks_faq_section_layout";
-  DROP TYPE "public"."enum_pages_blocks_card_row_section_layout";
-  DROP TYPE "public"."enum_pages_blocks_roadmap_section_layout";
-  DROP TYPE "public"."enum_pages_blocks_scroll_cards_items_section_layout";
-  DROP TYPE "public"."enum_pages_blocks_scroll_cards_items_gradient";
-  DROP TYPE "public"."enum_pages_blocks_scroll_cards_items_gradient_direction";
-  DROP TYPE "public"."enum_pages_blocks_standalone_card_section_layout";
-  DROP TYPE "public"."enum_pages_blocks_standalone_card_gradient";
-  DROP TYPE "public"."enum_pages_blocks_standalone_card_gradient_direction";
-  DROP TYPE "public"."enum_payload_ai_auditlog_action";
-  DROP TYPE "public"."enum_payload_ai_auditlog_target_type";
-  DROP TYPE "public"."enum_navigation_buttons_buttons_variant";`)
+export async function down({ db }: MigrateDownArgs): Promise<void> {
+    await executeMigrationStatements(db, [...downStatements])
 }
