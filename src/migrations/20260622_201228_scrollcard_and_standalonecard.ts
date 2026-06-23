@@ -1,7 +1,7 @@
-import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres'
+import { MigrateUpArgs, MigrateDownArgs, sql } from "@payloadcms/db-postgres"
 
 export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
-  await db.execute(sql`
+    await db.execute(sql`
    CREATE TYPE "public"."enum_users_ai_provider" AS ENUM('claude', 'google', 'mistral', 'openai', 'openrouter');
   CREATE TYPE "public"."enum_pages_blocks_bento_section_layout" AS ENUM('center', 'left');
   CREATE TYPE "public"."enum_pages_blocks_bento_variant" AS ENUM('feature', 'runtime');
@@ -35,7 +35,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"variant" "enum_pages_blocks_bento_variant" DEFAULT 'feature' NOT NULL,
   	"block_name" varchar
   );
-  
+
   CREATE TABLE "pages_blocks_offset_cards_cards" (
   	"_order" integer NOT NULL,
   	"_parent_id" varchar NOT NULL,
@@ -48,7 +48,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"link_label" varchar,
   	"link_url" varchar
   );
-  
+
   CREATE TABLE "pages_blocks_offset_cards" (
   	"_order" integer NOT NULL,
   	"_parent_id" integer NOT NULL,
@@ -62,7 +62,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"section_link_button_url" varchar,
   	"block_name" varchar
   );
-  
+
   CREATE TABLE "pages_blocks_install" (
   	"_order" integer NOT NULL,
   	"_parent_id" integer NOT NULL,
@@ -75,7 +75,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"code" varchar NOT NULL,
   	"block_name" varchar
   );
-  
+
   CREATE TABLE "pages_blocks_swipe_cards_cards" (
   	"_order" integer NOT NULL,
   	"_parent_id" varchar NOT NULL,
@@ -87,7 +87,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"link_label" varchar,
   	"link_url" varchar
   );
-  
+
   CREATE TABLE "pages_blocks_swipe_cards" (
   	"_order" integer NOT NULL,
   	"_parent_id" integer NOT NULL,
@@ -98,7 +98,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"subheading" varchar,
   	"block_name" varchar
   );
-  
+
   CREATE TABLE "pages_blocks_blog" (
   	"_order" integer NOT NULL,
   	"_parent_id" integer NOT NULL,
@@ -111,7 +111,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"loading_label" varchar DEFAULT 'Loading...' NOT NULL,
   	"block_name" varchar
   );
-  
+
   CREATE TABLE "pages_blocks_card_row_cards" (
   	"_order" integer NOT NULL,
   	"_parent_id" varchar NOT NULL,
@@ -123,7 +123,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"link_url" varchar,
   	"image_id" integer
   );
-  
+
   CREATE TABLE "pages_blocks_card_row" (
   	"_order" integer NOT NULL,
   	"_parent_id" integer NOT NULL,
@@ -137,7 +137,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"section_link_button_url" varchar,
   	"block_name" varchar
   );
-  
+
   CREATE TABLE "pages_blocks_roadmap_items" (
   	"_order" integer NOT NULL,
   	"_parent_id" varchar NOT NULL,
@@ -147,7 +147,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"title" varchar NOT NULL,
   	"description" varchar NOT NULL
   );
-  
+
   CREATE TABLE "pages_blocks_roadmap" (
   	"_order" integer NOT NULL,
   	"_parent_id" integer NOT NULL,
@@ -161,7 +161,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"section_link_button_url" varchar,
   	"block_name" varchar
   );
-  
+
   CREATE TABLE "pages_blocks_scroll_cards_items" (
   	"_order" integer NOT NULL,
   	"_parent_id" varchar NOT NULL,
@@ -177,7 +177,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"link_label" varchar,
   	"link_url" varchar
   );
-  
+
   CREATE TABLE "pages_blocks_scroll_cards" (
   	"_order" integer NOT NULL,
   	"_parent_id" integer NOT NULL,
@@ -186,7 +186,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"id" varchar PRIMARY KEY NOT NULL,
   	"block_name" varchar
   );
-  
+
   CREATE TABLE "pages_blocks_standalone_card" (
   	"_order" integer NOT NULL,
   	"_parent_id" integer NOT NULL,
@@ -204,7 +204,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"link_url" varchar,
   	"block_name" varchar
   );
-  
+
   CREATE TABLE "payload_ai_auditlog" (
   	"id" serial PRIMARY KEY NOT NULL,
   	"title" varchar NOT NULL,
@@ -229,7 +229,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
   	"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
   );
-  
+
   CREATE TABLE "navigation_items_items_sub_menu" (
   	"_order" integer NOT NULL,
   	"_parent_id" varchar NOT NULL,
@@ -238,7 +238,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"href" varchar NOT NULL,
   	"icon" varchar
   );
-  
+
   CREATE TABLE "navigation_items_items_sub_menu_locales" (
   	"title" varchar NOT NULL,
   	"description" varchar NOT NULL,
@@ -246,7 +246,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"_locale" "_locales" NOT NULL,
   	"_parent_id" varchar NOT NULL
   );
-  
+
   CREATE TABLE "navigation_items_items" (
   	"_order" integer NOT NULL,
   	"_parent_id" integer NOT NULL,
@@ -254,14 +254,14 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"href" varchar,
   	"order" numeric DEFAULT 0 NOT NULL
   );
-  
+
   CREATE TABLE "navigation_items_items_locales" (
   	"title" varchar NOT NULL,
   	"id" serial PRIMARY KEY NOT NULL,
   	"_locale" "_locales" NOT NULL,
   	"_parent_id" varchar NOT NULL
   );
-  
+
   CREATE TABLE "navigation_buttons_buttons" (
   	"_order" integer NOT NULL,
   	"_parent_id" integer NOT NULL,
@@ -272,21 +272,21 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"new_tab" boolean DEFAULT false,
   	"variant" "enum_navigation_buttons_buttons_variant" DEFAULT 'normal' NOT NULL
   );
-  
+
   CREATE TABLE "navigation_buttons_buttons_locales" (
   	"title" varchar NOT NULL,
   	"id" serial PRIMARY KEY NOT NULL,
   	"_locale" "_locales" NOT NULL,
   	"_parent_id" varchar NOT NULL
   );
-  
+
   CREATE TABLE "navigation" (
   	"id" serial PRIMARY KEY NOT NULL,
   	"logo_id" integer,
   	"updated_at" timestamp(3) with time zone,
   	"created_at" timestamp(3) with time zone
   );
-  
+
   ALTER TABLE "navbar_items_sub_menu" DISABLE ROW LEVEL SECURITY;
   ALTER TABLE "navbar_items_sub_menu_locales" DISABLE ROW LEVEL SECURITY;
   ALTER TABLE "navbar_items" DISABLE ROW LEVEL SECURITY;
@@ -326,17 +326,17 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   DROP TABLE "roadmap_items" CASCADE;
   DROP TABLE "roadmap_items_locales" CASCADE;
   ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_navbar_items_fk";
-  
+
   ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_sections_fk";
-  
+
   ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_footer_fk";
-  
+
   ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_cookie_banner_fk";
-  
+
   ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_roadmap_items_fk";
-  
+
   ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_subscription_config_fk";
-  
+
   DROP INDEX "footer_updated_at_idx";
   DROP INDEX "footer_created_at_idx";
   DROP INDEX "cookie_banner_updated_at_idx";
@@ -489,7 +489,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
 }
 
 export async function down({ db, payload, req }: MigrateDownArgs): Promise<void> {
-  await db.execute(sql`
+    await db.execute(sql`
    CREATE TYPE "public"."enum_sections_section_type" AS ENUM('AppFeatureSection', 'FaqSection', 'RoadmapSection', 'RuntimeFeatureSection', 'UseCaseSection', 'DeploymentSection');
   CREATE TYPE "public"."enum_pages_blocks_edition_hero_buttons_variant" AS ENUM('none', 'normal', 'outlined', 'filled');
   CREATE TABLE "navbar_items_sub_menu" (
@@ -500,7 +500,7 @@ export async function down({ db, payload, req }: MigrateDownArgs): Promise<void>
   	"href" varchar NOT NULL,
   	"icon" varchar NOT NULL
   );
-  
+
   CREATE TABLE "navbar_items_sub_menu_locales" (
   	"title" varchar NOT NULL,
   	"description" varchar NOT NULL,
@@ -508,7 +508,7 @@ export async function down({ db, payload, req }: MigrateDownArgs): Promise<void>
   	"_locale" "_locales" NOT NULL,
   	"_parent_id" varchar NOT NULL
   );
-  
+
   CREATE TABLE "navbar_items" (
   	"id" serial PRIMARY KEY NOT NULL,
   	"href" varchar,
@@ -516,14 +516,14 @@ export async function down({ db, payload, req }: MigrateDownArgs): Promise<void>
   	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
   	"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
   );
-  
+
   CREATE TABLE "navbar_items_locales" (
   	"title" varchar NOT NULL,
   	"id" serial PRIMARY KEY NOT NULL,
   	"_locale" "_locales" NOT NULL,
   	"_parent_id" integer NOT NULL
   );
-  
+
   CREATE TABLE "sections" (
   	"id" serial PRIMARY KEY NOT NULL,
   	"section_type" "enum_sections_section_type" NOT NULL,
@@ -531,7 +531,7 @@ export async function down({ db, payload, req }: MigrateDownArgs): Promise<void>
   	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
   	"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
   );
-  
+
   CREATE TABLE "sections_locales" (
   	"heading" varchar NOT NULL,
   	"subheading" varchar,
@@ -540,7 +540,7 @@ export async function down({ db, payload, req }: MigrateDownArgs): Promise<void>
   	"_locale" "_locales" NOT NULL,
   	"_parent_id" integer NOT NULL
   );
-  
+
   CREATE TABLE "pages_blocks_edition_hero_texts" (
   	"_order" integer NOT NULL,
   	"_parent_id" varchar NOT NULL,
@@ -548,7 +548,7 @@ export async function down({ db, payload, req }: MigrateDownArgs): Promise<void>
   	"id" varchar PRIMARY KEY NOT NULL,
   	"text" varchar NOT NULL
   );
-  
+
   CREATE TABLE "pages_blocks_edition_hero_buttons" (
   	"_order" integer NOT NULL,
   	"_parent_id" varchar NOT NULL,
@@ -558,7 +558,7 @@ export async function down({ db, payload, req }: MigrateDownArgs): Promise<void>
   	"url" varchar NOT NULL,
   	"variant" "enum_pages_blocks_edition_hero_buttons_variant" DEFAULT 'normal'
   );
-  
+
   CREATE TABLE "pages_blocks_edition_hero" (
   	"_order" integer NOT NULL,
   	"_parent_id" integer NOT NULL,
@@ -569,7 +569,7 @@ export async function down({ db, payload, req }: MigrateDownArgs): Promise<void>
   	"image_alt" varchar NOT NULL,
   	"block_name" varchar
   );
-  
+
   CREATE TABLE "pages_blocks_edition_features_features" (
   	"_order" integer NOT NULL,
   	"_parent_id" varchar NOT NULL,
@@ -582,7 +582,7 @@ export async function down({ db, payload, req }: MigrateDownArgs): Promise<void>
   	"link_label" varchar,
   	"link_url" varchar
   );
-  
+
   CREATE TABLE "pages_blocks_edition_features" (
   	"_order" integer NOT NULL,
   	"_parent_id" integer NOT NULL,
@@ -591,7 +591,7 @@ export async function down({ db, payload, req }: MigrateDownArgs): Promise<void>
   	"id" varchar PRIMARY KEY NOT NULL,
   	"block_name" varchar
   );
-  
+
   CREATE TABLE "pages_blocks_edition_install" (
   	"_order" integer NOT NULL,
   	"_parent_id" integer NOT NULL,
@@ -604,7 +604,7 @@ export async function down({ db, payload, req }: MigrateDownArgs): Promise<void>
   	"code" varchar NOT NULL,
   	"block_name" varchar
   );
-  
+
   CREATE TABLE "pages_blocks_edition_use_cases_use_cases" (
   	"_order" integer NOT NULL,
   	"_parent_id" varchar NOT NULL,
@@ -616,7 +616,7 @@ export async function down({ db, payload, req }: MigrateDownArgs): Promise<void>
   	"link_label" varchar,
   	"link_url" varchar
   );
-  
+
   CREATE TABLE "pages_blocks_edition_use_cases" (
   	"_order" integer NOT NULL,
   	"_parent_id" integer NOT NULL,
@@ -627,7 +627,7 @@ export async function down({ db, payload, req }: MigrateDownArgs): Promise<void>
   	"subheading" varchar NOT NULL,
   	"block_name" varchar
   );
-  
+
   CREATE TABLE "pages_blocks_usecase_use_cases" (
   	"_order" integer NOT NULL,
   	"_parent_id" varchar NOT NULL,
@@ -640,7 +640,7 @@ export async function down({ db, payload, req }: MigrateDownArgs): Promise<void>
   	"link_label" varchar,
   	"link_url" varchar
   );
-  
+
   CREATE TABLE "pages_blocks_usecase" (
   	"_order" integer NOT NULL,
   	"_parent_id" integer NOT NULL,
@@ -649,7 +649,7 @@ export async function down({ db, payload, req }: MigrateDownArgs): Promise<void>
   	"id" varchar PRIMARY KEY NOT NULL,
   	"block_name" varchar
   );
-  
+
   CREATE TABLE "pages_blocks_deployment" (
   	"_order" integer NOT NULL,
   	"_parent_id" integer NOT NULL,
@@ -670,13 +670,13 @@ export async function down({ db, payload, req }: MigrateDownArgs): Promise<void>
   	"dynamic_link_url" varchar,
   	"block_name" varchar
   );
-  
+
   CREATE TABLE "roadmap_items" (
   	"id" serial PRIMARY KEY NOT NULL,
   	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
   	"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
   );
-  
+
   CREATE TABLE "roadmap_items_locales" (
   	"time" varchar NOT NULL,
   	"title" varchar NOT NULL,
@@ -685,7 +685,7 @@ export async function down({ db, payload, req }: MigrateDownArgs): Promise<void>
   	"_locale" "_locales" NOT NULL,
   	"_parent_id" integer NOT NULL
   );
-  
+
   ALTER TABLE "pages_blocks_bento" DISABLE ROW LEVEL SECURITY;
   ALTER TABLE "pages_blocks_offset_cards_cards" DISABLE ROW LEVEL SECURITY;
   ALTER TABLE "pages_blocks_offset_cards" DISABLE ROW LEVEL SECURITY;
@@ -731,7 +731,7 @@ export async function down({ db, payload, req }: MigrateDownArgs): Promise<void>
   DROP TABLE "navigation_buttons_buttons_locales" CASCADE;
   DROP TABLE "navigation" CASCADE;
   ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_payload_ai_auditlog_fk";
-  
+
   ALTER TABLE "pages" ALTER COLUMN "slug" SET DATA TYPE text;
   DROP TYPE "public"."enum_pages_slug";
   CREATE TYPE "public"."enum_pages_slug" AS ENUM('main', 'jobs', 'features', 'about-us', 'legal-notice', 'privacy', 'terms', 'contact', 'actions', 'community-edition', 'enterprise-edition', 'subscription');
