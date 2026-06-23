@@ -35,7 +35,7 @@
         "@tabler/icons-react": "3.41.1",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
-        "graphql": "^17.0.0",
+        "graphql": "^16.14.2",
         "knip": "^6.18.0",
         "motion": "^12.40.0",
         "next": "^16.2.9",
