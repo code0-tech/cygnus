@@ -13,6 +13,7 @@ import * as migration_20260427_010_remove_edition_hero_block from './20260427_01
 import * as migration_20260526_011_section_layout from './20260526_011_section_layout';
 import * as migration_20260531_084500_navigation_globals from './20260531_084500_navigation_globals';
 import * as migration_20260622_201228_scrollcard_and_standalonecard from './20260622_201228_scrollcard_and_standalonecard';
+import * as migration_20260624_092957_cards_displayoptions from './20260624_092957_cards_displayoptions';
 
 export const migrations = [
   {
@@ -88,6 +89,11 @@ export const migrations = [
   {
     up: migration_20260622_201228_scrollcard_and_standalonecard.up,
     down: migration_20260622_201228_scrollcard_and_standalonecard.down,
-    name: '20260622_201228_scrollcard_and_standalonecard'
+    name: '20260622_201228_scrollcard_and_standalonecard',
+  },
+  {
+    up: migration_20260624_092957_cards_displayoptions.up,
+    down: migration_20260624_092957_cards_displayoptions.down,
+    name: '20260624_092957_cards_displayoptions'
   },
 ];

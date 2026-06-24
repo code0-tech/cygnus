@@ -50,6 +50,14 @@ export const ScrollCardBlock: Block = {
                             label: "Image fullscreen",
                             value: "imageFullscreen",
                         },
+                        {
+                            label: "Image right fullscreen",
+                            value: "imageRightFullscreen",
+                        },
+                        {
+                            label: "Image left fullscreen",
+                            value: "imageLeftFullscreen",
+                        },
                     ],
                 },
                 {

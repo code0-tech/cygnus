@@ -103,11 +103,15 @@ export function ScrollCardSection({ content }: ScrollCardSectionProps) {
                         const image = getImage(item.image)
                         const imageUrl = getMediaUrl(image?.url)
                         const itemSettings = item as {
-                            sectionLayout?: "imageRight" | "imageLeft" | "imageFullscreen" | null
+                            sectionLayout?: "imageRight" | "imageLeft" | "imageFullscreen" | "imageRightFullscreen" | "imageLeftFullscreen" | null
                             showImageBorder?: boolean | null
                         }
                         const isImageLeft = itemSettings.sectionLayout === "imageLeft"
                         const isFullscreen = itemSettings.sectionLayout === "imageFullscreen"
+                        const isSideFullscreen = itemSettings.sectionLayout === "imageRightFullscreen" || itemSettings.sectionLayout === "imageLeftFullscreen"
+                        const isSideFullscreenLeft = itemSettings.sectionLayout === "imageLeftFullscreen"
+                        const isSideFullscreenRight = itemSettings.sectionLayout === "imageRightFullscreen"
+
                         const showImageBorder = itemSettings.showImageBorder ?? true
                         const segmentProgress = index === 0 ? 1 : clamp((scrollProgress - (index - 1) * viewportHeight) / viewportHeight, 0, 1)
                         const translateY = (1 - segmentProgress) * 100
@@ -127,19 +131,77 @@ export function ScrollCardSection({ content }: ScrollCardSectionProps) {
                                     gradientDirection={item.gradientDirection}
                                     radialGradient={item.gradient}
                                     className={cn(
-                                        isFullscreen ? "relative h-[80%] overflow-hidden bg-primary p-0" : "relative grid h-[80%] overflow-hidden bg-primary p-12 md:grid-cols-[0.95fr_1.05fr]"
+                                        isFullscreen
+                                            ? "relative h-[80%] overflow-hidden bg-primary p-0"
+                                            : isSideFullscreen
+                                              ? "relative grid h-[80%] overflow-hidden bg-primary p-0 md:grid-cols-2"
+                                              : "relative grid h-[80%] overflow-hidden bg-primary p-12 gap-12 md:grid-cols-[0.95fr_1.05fr]"
                                     )}
                                 >
                                     {isFullscreen ? (
                                         <div className={cn("relative z-10 h-full w-full overflow-hidden rounded-3xl", showImageBorder && "border border-white/10")}>
                                             {imageUrl && <Image src={imageUrl} alt={image?.alt ?? item.title} fill sizes="100vw" className="object-cover object-center" />}
+
+                                            <div className="absolute inset-0 z-20 flex items-center justify-center">
+                                                <div className="mx-auto flex max-w-4xl flex-col items-center gap-6 px-6 text-center">
+                                                    <h2 className="text-3xl font-semibold text-white md:text-5xl">{item.title}</h2>
+
+                                                    {item.description && <p className="max-w-2xl text-base leading-7 text-white/80 md:text-lg">{item.description}</p>}
+
+                                                    <div className="space-y-6">
+                                                        <ul className="grid gap-2 text-sm text-white/75 md:text-base">
+                                                            {item.bulletPoints?.map((point, pointIndex) => (
+                                                                <li key={`${item.id ?? item.title}-point-${pointIndex}`} className="flex items-start gap-3">
+                                                                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brand" />
+                                                                    <span>{point}</span>
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+
+                                                        {item.link?.label && item.link?.url && <LinkButton href={item.link.url}>{item.link.label}</LinkButton>}
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
+                                    ) : isSideFullscreen ? (
+                                        <>
+                                            <div className={cn("relative z-10 flex h-full flex-col justify-center gap-8 p-12", isSideFullscreenLeft && "md:order-2")}>
+                                                <div className="flex flex-col gap-4">
+                                                    <h2 className="max-w-xl text-3xl font-semibold text-white md:text-5xl">{item.title}</h2>
+                                                    <p className="max-w-xl text-base leading-7 text-white/75 md:text-lg">{item.description}</p>
+                                                </div>
+
+                                                <div className="space-y-6">
+                                                    <ul className="grid gap-2 text-sm text-white/75 md:text-base">
+                                                        {item.bulletPoints?.map((point, pointIndex) => (
+                                                            <li key={`${item.id ?? item.title}-point-${pointIndex}`} className="flex items-start gap-3">
+                                                                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brand" />
+                                                                <span>{point}</span>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+
+                                                    {item.link?.label && item.link?.url && <LinkButton href={item.link.url}>{item.link.label}</LinkButton>}
+                                                </div>
+                                            </div>
+
+                                            <div
+                                                className={cn(
+                                                    "relative z-10 h-full w-full overflow-hidden mt-px",
+                                                    showImageBorder && "border-white/5",
+                                                    isSideFullscreenLeft && "md:order-1 border-r",
+                                                    isSideFullscreenRight && "border-l"
+                                                )}
+                                            >
+                                                {imageUrl && <Image src={imageUrl} alt={image?.alt ?? item.title} fill sizes="(min-width: 768px) 50vw, 100vw" className="object-cover object-center" />}
+                                            </div>
+                                        </>
                                     ) : (
                                         <>
                                             <div className={cn("relative z-10 flex h-full flex-col justify-center gap-8 rounded-3xl", isImageLeft && "md:order-2")}>
                                                 <div className="flex flex-col gap-4">
                                                     <h2 className="max-w-xl text-3xl font-semibold text-white md:text-5xl">{item.title}</h2>
-                                                    <p className="max-w-xl text-base leading-7 text-white/75 md:text-lg">{item.description}</p>
+                                                    {item.description && <p className="max-w-xl text-base leading-7 text-white/75 md:text-lg">{item.description}</p>}
                                                 </div>
 
                                                 <div className="space-y-6">

@@ -481,7 +481,12 @@ export interface Page {
               title: string;
               description?: string | null;
               showImageBorder?: boolean | null;
-              sectionLayout: 'imageRight' | 'imageLeft' | 'imageFullscreen';
+              sectionLayout:
+                | 'imageRight'
+                | 'imageLeft'
+                | 'imageFullscreen'
+                | 'imageRightFullscreen'
+                | 'imageLeftFullscreen';
               gradient?: ('blue' | 'yellow' | 'pink' | 'aqua' | 'brand' | 'neutral') | null;
               gradientDirection?: ('topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight') | null;
               bulletPoints?: string[] | null;
@@ -500,7 +505,12 @@ export interface Page {
             title: string;
             description?: string | null;
             showImageBorder?: boolean | null;
-            sectionLayout: 'imageRight' | 'imageLeft' | 'imageFullscreen';
+            sectionLayout:
+              | 'imageRight'
+              | 'imageLeft'
+              | 'imageFullscreen'
+              | 'imageRightFullscreen'
+              | 'imageLeftFullscreen';
             gradient?: ('blue' | 'yellow' | 'pink' | 'aqua' | 'brand' | 'neutral') | null;
             gradientDirection?: ('topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight') | null;
             bulletPoints?: string[] | null;
