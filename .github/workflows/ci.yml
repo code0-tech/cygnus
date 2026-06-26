@@ -21,7 +21,7 @@ jobs:
       NEXT_PUBLIC_GA_MEASUREMENT_ID: G-55EJVGDCLZ
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v6
         with:
           node-version: '24.17.0'
