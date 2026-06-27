@@ -28,7 +28,7 @@ export function FaqSection({ content }: FaqSectionProps) {
     return (
         <Section heading={content.sectionHeading} description={content.sectionDescription} linkButton={content.sectionLinkButton} funnelType={content.sectionLayout ?? "center"} showLinkButton={false}>
             <div aria-hidden="true" className="pointer-events-none absolute inset-0" />
-            <div className={"md:w-[50vw] flex flex-col gap-4 mx-auto"}>
+            <div className="mx-auto flex w-full min-w-0 max-w-3xl flex-col gap-4">
                 {content.items.map((faq, index) => (
                     <motion.div
                         key={`${faq.question}-${index}`}
