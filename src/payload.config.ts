@@ -121,7 +121,19 @@ export default buildConfig({
             },
         }),
         payloadAiPlugin({
+            media: {
+                acceptedMimeTypes: ["image/*"],
+                collectionSlug: "media",
+                enabled: true,
+                maxFileSize: 10 * 1024 * 1024,
+            },
             collections: {
+                media: {
+                    read: true,
+                    create: true,
+                    update: true,
+                    delete: false,
+                },
                 users: {
                     read: true,
                     create: false,
