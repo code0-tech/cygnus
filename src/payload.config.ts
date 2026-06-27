@@ -140,12 +140,6 @@ export default buildConfig({
                     update: false,
                     delete: false,
                 },
-                media: {
-                    read: true,
-                    create: true,
-                    update: true,
-                    delete: false,
-                },
                 pages: {
                     read: true,
                     create: true,
