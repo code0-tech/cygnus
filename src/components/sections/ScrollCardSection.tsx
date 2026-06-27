@@ -119,7 +119,7 @@ export function ScrollCardSection({ content }: ScrollCardSectionProps) {
                         return (
                             <motion.article
                                 key={item.id ?? `${item.title}-${index}`}
-                                className="absolute inset-0 will-change-transform"
+                                className="absolute inset-0 flex items-center justify-center will-change-transform"
                                 style={{
                                     opacity: 1,
                                     transform: `translateY(${translateY}%)`,
@@ -131,11 +131,12 @@ export function ScrollCardSection({ content }: ScrollCardSectionProps) {
                                     gradientDirection={item.gradientDirection}
                                     radialGradient={item.gradient}
                                     className={cn(
+                                        "relative aspect-video w-full shrink-0 overflow-hidden bg-primary",
                                         isFullscreen
-                                            ? "relative h-[80%] overflow-hidden bg-primary p-0"
+                                            ? "p-0"
                                             : isSideFullscreen
-                                              ? "relative grid h-[80%] overflow-hidden bg-primary p-0 md:grid-cols-2"
-                                              : "relative grid h-[80%] overflow-hidden bg-primary p-12 gap-12 md:grid-cols-[0.95fr_1.05fr]"
+                                              ? "grid p-0 md:grid-cols-2"
+                                              : "grid gap-12 p-12 md:grid-cols-[0.95fr_1.05fr]"
                                     )}
                                 >
                                     {isFullscreen ? (

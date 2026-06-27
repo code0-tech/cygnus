@@ -36,17 +36,18 @@ export function StandaloneCardSection({ content }: StandaloneCardSectionProps) {
     const showImageBorder = itemSettings.showImageBorder ?? true
 
     return (
-        <Section showFunnel={false} animation={{ preset: "none" }} className="h-[calc(100vh-6rem)]">
+        <Section showFunnel={false} animation={{ preset: "none" }} className="h-[calc(100vh-6rem)] justify-center">
             <Card
                 size="lg"
                 gradientDirection={itemSettings.gradientDirection as any}
                 radialGradient={itemSettings.gradient as any}
                 className={cn(
+                    "relative aspect-video w-full shrink-0 overflow-hidden bg-primary",
                     isFullscreen
-                        ? "relative h-[80%] overflow-hidden bg-primary p-0"
+                        ? "p-0"
                         : isSideFullscreen
-                          ? "relative grid h-[80%] overflow-hidden bg-primary p-0 md:grid-cols-2"
-                          : "relative grid h-[80%] overflow-hidden bg-primary p-12 gap-12 md:grid-cols-[0.95fr_1.05fr]"
+                          ? "grid p-0 md:grid-cols-2"
+                          : "grid gap-12 p-12 md:grid-cols-[0.95fr_1.05fr]"
                 )}
             >
                 {isFullscreen ? (
