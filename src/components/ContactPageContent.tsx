@@ -75,7 +75,7 @@ export function ContactPageContent({ locale, contactBlock }: ContactPageContentP
         <div className="grid gap-8 lg:grid-cols-2">
             <section className="min-w-0">
                 <h1 className="text-4xl font-semibold text-white">{pageHeading}</h1>
-                <p className="mt-4 text-white/75">{pageDescription}</p>
+                <p className="mt-4 text-secondary">{pageDescription}</p>
             </section>
 
             <section ref={desktopWrapperRef} className="relative min-w-0">

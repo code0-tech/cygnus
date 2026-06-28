@@ -40,7 +40,7 @@ export function RoadmapSection({ content }: RoadmapSectionProps) {
                                         {item.time}
                                     </StableBadge>
                                     <h3 className="mt-4 text-xl font-semibold tracking-tight text-white md:text-2xl">{item.title}</h3>
-                                    <p className="my-2 text-sm text-white/75">{item.description}</p>
+                                    <p className="my-2 text-sm text-secondary">{item.description}</p>
                                 </Card>
                             </div>
                         </div>

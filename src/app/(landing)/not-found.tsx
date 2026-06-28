@@ -15,10 +15,10 @@ export default function NotFound() {
                 </svg>
             </div>
             <h1 className="mb-2 font-mono text-5xl font-bold tracking-tighter">404 Not Found</h1>
-            <p className="mb-4 text-white/75">The page you are looking for does not exist.</p>
+            <p className="mb-4 text-secondary">The page you are looking for does not exist.</p>
             <Link href="/">
                 <Button variant="filled">
-                    <IconArrowBackUp size={16} className="-mt-0.5 text-white/50" />
+                    <IconArrowBackUp size={16} className="-mt-0.5 text-tertiary" />
                     Go back
                 </Button>
             </Link>

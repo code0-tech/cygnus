@@ -45,10 +45,10 @@ export function BrandSection({ content }: BrandSectionProps) {
                 whileInView="show"
                 viewport={{ once: true, amount: 0.3 }}
             >
-                <motion.p variants={staggerItem} className={"w-full text-center text-white/75 lg:w-1/3 lg:shrink-0 lg:text-left"}>
+                <motion.p variants={staggerItem} className={"w-full text-center text-secondary lg:w-1/3 lg:shrink-0 lg:text-left"}>
                     {content.description}
                 </motion.p>
-                <motion.div variants={staggerContainer} className={shouldLoopDesktop ? "hidden" : "hidden w-full min-w-0 grid-cols-4 gap-16 text-center text-white/75 md:grid lg:flex-1"}>
+                <motion.div variants={staggerContainer} className={shouldLoopDesktop ? "hidden" : "hidden w-full min-w-0 grid-cols-4 gap-16 text-center text-secondary md:grid lg:flex-1"}>
                     {logos.map((item, index) => (
                         <motion.div variants={staggerItem} key={`${(item as Media).id ?? (item as Media).url ?? index}-${index}`}>
                             <LogoItem logo={item} className="w-full" />

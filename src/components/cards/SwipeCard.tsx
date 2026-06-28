@@ -43,7 +43,7 @@ export function SwipeCard({ title, description, image, link, className }: SwipeC
 
                 <div className="flex flex-col gap-2 p-3 sm:p-4">
                     <h3 className="line-clamp-2 flex-none text-lg font-semibold text-white sm:text-xl">{title}</h3>
-                    <p className="text-sm leading-relaxed text-white/75">{description}</p>
+                    <p className="text-sm leading-relaxed text-secondary">{description}</p>
 
                     {link?.url && link?.label && (
                         <div className="min-w-0 flex-none pt-1">

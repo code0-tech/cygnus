@@ -122,7 +122,7 @@ export function SwipeCardSection({ content }: SwipeCardSectionProps) {
                 {hasHeader && (
                     <motion.div className="flex flex-col items-center gap-4 text-center" variants={staggerItem}>
                         {content.heading && <h2 className="text-4xl font-semibold text-white">{content.heading}</h2>}
-                        {content.subheading && <p className="relative z-10 max-w-[90vw] lg:w-1/2 text-center font-medium text-white/75 text-xl">{content.subheading}</p>}
+                        {content.subheading && <p className="relative z-10 max-w-[90vw] lg:w-1/2 text-center font-medium text-secondary text-xl">{content.subheading}</p>}
                     </motion.div>
                 )}
 

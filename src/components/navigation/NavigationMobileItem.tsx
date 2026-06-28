@@ -17,7 +17,7 @@ interface NavigationMobileItemProps {
 }
 
 const mobileNavItemClassName = navigationMenuTriggerStyle({
-    className: "h-auto w-full justify-between px-4 py-2 text-left text-base text-white/75 hover:text-white focus:text-white",
+    className: "h-auto w-full justify-between px-4 py-2 text-left text-base text-secondary hover:text-white focus:text-white",
 })
 
 export function NavigationMobileItem({ item, isOpen, onToggle, onNavigate }: NavigationMobileItemProps) {
@@ -49,26 +49,12 @@ export function NavigationMobileItem({ item, isOpen, onToggle, onNavigate }: Nav
     return (
         <div className="flex flex-col">
             {isAccordion ? (
-                <button
-                    type="button"
-                    className={cn(mobileNavItemClassName, isOpen && "bg-white/10 text-white")}
-                    onClick={onToggle}
-                >
+                <button type="button" className={cn(mobileNavItemClassName, isOpen && "bg-white/10 text-white")} onClick={onToggle}>
                     <span>{item.title}</span>
-                    <IconChevronUp
-                        size={20}
-                        className={cn("transition-transform text-white/75", !isOpen && "rotate-180")}
-                    />
+                    <IconChevronUp size={20} className={cn("transition-transform text-secondary", !isOpen && "rotate-180")} />
                 </button>
             ) : (
-                <Link
-                    href={item.href ?? "#"}
-                    className={cn(
-                        mobileNavItemClassName,
-                        !hasRoute && "pointer-events-none opacity-60",
-                    )}
-                    onClick={onNavigate}
-                >
+                <Link href={item.href ?? "#"} className={cn(mobileNavItemClassName, !hasRoute && "pointer-events-none opacity-60")} onClick={onNavigate}>
                     <span>{item.title}</span>
                 </Link>
             )}
@@ -94,10 +80,7 @@ export function NavigationMobileItem({ item, isOpen, onToggle, onNavigate }: Nav
                             className="overflow-hidden"
                         >
                             <div ref={submenuContentRef} className="mt-1 rounded-lg">
-                                <NavigationSubMenu
-                                    items={item.subMenu!}
-                                    onSelect={onNavigate}
-                                />
+                                <NavigationSubMenu items={item.subMenu!} onSelect={onNavigate} />
                             </div>
                         </motion.div>
                     )}

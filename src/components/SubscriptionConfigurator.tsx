@@ -185,11 +185,11 @@ function OptionCard({
                                 className={cn("pointer-events-none absolute left-1/2 top-1/2 h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-full blur-xl", accentStyles.activeGlow)}
                             />
                         ) : null}
-                        <div className={cn("relative inline-flex items-center justify-center text-white/80 [&>svg]:h-[1.05em] [&>svg]:w-[1.05em]", active && accentStyles.activeIcon)}>{icon}</div>
+                        <div className={cn("relative inline-flex items-center justify-center text-secondary [&>svg]:h-[1.05em] [&>svg]:w-[1.05em]", active && accentStyles.activeIcon)}>{icon}</div>
                     </div>
                     <p className="text-base font-semibold text-white">{title}</p>
                 </div>
-                <p className="text-sm leading-6 text-white/75">{description}</p>
+                <p className="text-sm leading-6 text-secondary">{description}</p>
             </div>
         </button>
     )
@@ -202,7 +202,7 @@ function FeatureRow({ icon, title, description }: { icon: ReactNode; title: stri
                 <div className="inline-flex shrink-0 items-center justify-center text-brand [&>svg]:h-[1.05em] [&>svg]:w-[1.05em]">{icon}</div>
                 <p className="text-base font-semibold tracking-wider text-white">{title}</p>
             </div>
-            <p className="text-sm text-white/70">{description}</p>
+            <p className="text-sm text-secondary">{description}</p>
         </div>
     )
 }
@@ -243,13 +243,13 @@ function AdditionalFeatureCard({
                                 className={cn("pointer-events-none absolute left-1/2 top-1/2 h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-full blur-xl", accentStyles.activeGlow)}
                             />
                         ) : null}
-                        <div className={cn("relative inline-flex items-center justify-center text-white/80 [&>svg]:h-[1.05em] [&>svg]:w-[1.05em]", active && accentStyles.activeIcon)}>{icon}</div>
+                        <div className={cn("relative inline-flex items-center justify-center text-secondary [&>svg]:h-[1.05em] [&>svg]:w-[1.05em]", active && accentStyles.activeIcon)}>{icon}</div>
                     </div>
                     <p className="text-base font-semibold text-white">{title}</p>
                 </div>
-                <p className="text-sm leading-6 text-white/75">{description}</p>
+                <p className="text-sm leading-6 text-secondary">{description}</p>
                 <div className="flex items-center justify-between gap-2">
-                    <p className="text-sm font-semibold tabular-nums text-white/60">{formattedPrice}</p>
+                    <p className="text-sm font-semibold tabular-nums text-secondary">{formattedPrice}</p>
                     <div
                         className={cn("flex h-5 w-5 items-center justify-center rounded-full border transition-all duration-200", active ? "border-brand bg-brand" : "border-white/20 bg-transparent")}
                     >
@@ -371,7 +371,7 @@ export function SubscriptionConfigurator({ locale, content }: { locale: AppLocal
                     >
                         <div className="max-w-2xl">
                             <h1 className="mt-4 max-w-xl text-balance text-3xl font-semibold text-white lg:text-4xl">{resolved.pageIntro.heading}</h1>
-                            <p className="mt-4 max-w-xl text-base leading-7 text-white/75 lg:text-lg">{resolved.pageIntro.description}</p>
+                            <p className="mt-4 max-w-xl text-base leading-7 text-secondary lg:text-lg">{resolved.pageIntro.description}</p>
                         </div>
 
                         <div className="grid gap-6">
@@ -387,7 +387,7 @@ export function SubscriptionConfigurator({ locale, content }: { locale: AppLocal
                         <h2 className="text-2xl font-semibold text-white lg:text-3xl">{resolved.optionsPanelHeading}</h2>
 
                         <div className="space-y-2">
-                            <p className="text-base text-white/75">{resolved.deployment.label}</p>
+                            <p className="text-base text-secondary">{resolved.deployment.label}</p>
                             <div className="grid gap-3 md:grid-cols-2">
                                 <OptionCard
                                     title={resolved.deployment.selfHosted.title}
@@ -409,7 +409,7 @@ export function SubscriptionConfigurator({ locale, content }: { locale: AppLocal
                         </div>
 
                         <div className="space-y-2">
-                            <p className="text-base text-white/75">{resolved.customerType.label}</p>
+                            <p className="text-base text-secondary">{resolved.customerType.label}</p>
                             <div className="grid gap-3 md:grid-cols-2">
                                 <OptionCard
                                     title={resolved.customerType.b2b.title}
@@ -434,7 +434,7 @@ export function SubscriptionConfigurator({ locale, content }: { locale: AppLocal
                             <div className="flex items-center justify-between gap-4">
                                 <div>
                                     <p className="text-lg font-semibold tracking-wider text-white">{workflowExecutions.title}</p>
-                                    <p className="text-sm text-white/75">{workflowExecutions.description}</p>
+                                    <p className="text-sm text-secondary">{workflowExecutions.description}</p>
                                 </div>
                             </div>
                             <Slider
@@ -449,8 +449,8 @@ export function SubscriptionConfigurator({ locale, content }: { locale: AppLocal
                                 maxLabel={workflowExecutions.maxLabel}
                             />
                             <div className="mt-2 flex flex-wrap items-center justify-end gap-2">
-                                <p className="text-sm font-medium text-white/50">{resolved.contactSales.prompt}</p>
-                                <LinkButton href={resolved.contactSales.href} className="border-b-0 text-white/75" showArrow={false}>
+                                <p className="text-sm font-medium text-tertiary">{resolved.contactSales.prompt}</p>
+                                <LinkButton href={resolved.contactSales.href} className="border-b-0 text-secondary" showArrow={false}>
                                     {resolved.contactSales.label}
                                 </LinkButton>
                             </div>
@@ -458,7 +458,7 @@ export function SubscriptionConfigurator({ locale, content }: { locale: AppLocal
 
                         {resolved.additionalFeatures && resolved.additionalFeatures.length > 0 && (
                             <div className="space-y-3">
-                                <p className="text-base text-white/75">{resolved.additionalFeaturesLabel ?? "Additional Features"}</p>
+                                <p className="text-base text-secondary">{resolved.additionalFeaturesLabel ?? "Additional Features"}</p>
                                 <div className="grid gap-3">
                                     {resolved.additionalFeatures.map((feature, index) => {
                                         const formattedFeaturePrice = new Intl.NumberFormat(locale === "de" ? "de-DE" : "en-US", {

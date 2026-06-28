@@ -173,7 +173,7 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({ locale, items, butt
                                     setIsOpen(!isOpen)
                                 }}
                             >
-                                {isOpen ? <IconX className="text-white/75" /> : <IconMenu2 className="text-white/75" />}
+                                {isOpen ? <IconX className="text-secondary" /> : <IconMenu2 className="text-secondary" />}
                             </button>
                         </motion.div>
                         <AnimatePresence initial={false}>

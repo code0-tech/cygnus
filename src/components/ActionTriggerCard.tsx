@@ -29,14 +29,14 @@ export function ActionTriggerCard({ type, item }: ActionTriggerCardProps) {
                     <div className="flex min-w-0 items-center gap-2">
                         <div className="flex size-12 shrink-0 items-center justify-center rounded-lg border border-white/5 bg-white/5 text-brand">{icon}</div>
                         <div className="min-w-0">
-                            <p className="text-xs font-medium tracking-wider text-white/50">{label}</p>
+                            <p className="text-xs font-medium tracking-wider text-tertiary">{label}</p>
                             <h3 className="mt-1 truncate text-base tracking-wide font-semibold text-white">{item.name || item.identifier}</h3>
                         </div>
                     </div>
-                    <div className="shrink-0 rounded-lg border border-white/5 bg-white/5 px-2 py-1 text-xs text-white/50">{item.identifier}</div>
+                    <div className="shrink-0 rounded-lg border border-white/5 bg-white/5 px-2 py-1 text-xs text-tertiary">{item.identifier}</div>
                 </div>
 
-                {item.description && <p className="line-clamp-3 text-sm leading-6 text-white/75">{item.description}</p>}
+                {item.description && <p className="line-clamp-3 text-sm leading-6 text-secondary">{item.description}</p>}
 
                 {parameters.length > 0 && (
                     <div className="mt-auto pt-2">
@@ -51,8 +51,8 @@ export function ActionTriggerCard({ type, item }: ActionTriggerCardProps) {
                                 <div className="flex flex-col gap-2">
                                     {parameters.map((parameter) => (
                                         <div key={parameter.id} className="rounded-md bg-white/2 p-2">
-                                            <div className="text-xs font-medium text-white/75">{parameter.name || parameter.identifier}</div>
-                                            {parameter.description && <div className="mt-1 text-xs leading-5 text-white/50">{parameter.description}</div>}
+                                            <div className="text-xs font-medium text-secondary">{parameter.name || parameter.identifier}</div>
+                                            {parameter.description && <div className="mt-1 text-xs leading-5 text-tertiary">{parameter.description}</div>}
                                         </div>
                                     ))}
                                 </div>

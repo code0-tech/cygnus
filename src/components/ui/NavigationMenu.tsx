@@ -31,7 +31,7 @@ function NavigationMenuTrigger({ className, children, showIcon = true, ...props 
             {showIcon && (
                 <IconChevronUp
                     size={16}
-                    className="relative top-px mx-1 mb-0.5 text-gray-400 transition duration-300 group-data-popup-open/navigation-menu-trigger:rotate-180 group-data-open/navigation-menu-trigger:rotate-180"
+                    className="relative top-px mx-1 mb-0.5 text-tertiary transition duration-300 group-data-popup-open/navigation-menu-trigger:rotate-180 group-data-open/navigation-menu-trigger:rotate-180"
                     aria-hidden="true"
                 />
             )}

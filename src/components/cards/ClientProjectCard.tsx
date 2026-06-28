@@ -8,7 +8,7 @@ export function ClientProjectCard() {
 
     return (
         <Card className="mx-auto w-[90%] pb-6 md:-mb-16 md:pb-16 bg-primary">
-            <p className="mb-2 text-white/75 text-lg font-medium">Personal Projects</p>
+            <p className="mb-2 text-secondary text-lg font-medium">Personal Projects</p>
             <div className="mt-3 w-full overflow-hidden rounded-xl">
                 {projects.map((project) => (
                     <div key={project.name} className="flex items-center gap-3 border-b border-white/5 px-3 py-3 last:border-b-0">

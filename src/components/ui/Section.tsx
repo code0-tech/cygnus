@@ -153,7 +153,7 @@ export function Section({
                     >
                         {createElement(motion[headingTag], { variants: staggerItem, className: headingClassName }, heading ? renderFormattedText(heading) : null)}
                         {description && (
-                            <motion.p variants={staggerItem} className="relative z-10 max-w-[90vw] text-center text-xl font-medium text-white/75 lg:w-1/2">
+                            <motion.p variants={staggerItem} className="relative z-10 max-w-[90vw] text-center text-xl font-medium text-secondary lg:w-1/2">
                                 {renderFormattedText(description)}
                             </motion.p>
                         )}
@@ -167,7 +167,7 @@ export function Section({
                     <motion.div className={"flex flex-col gap-4 text-left"} variants={staggerContainer} initial="hidden" whileInView="show" viewport={{ once, amount: 0.3 }}>
                         {createElement(motion[headingTag], { variants: staggerItem, className: headingClassName }, heading ? renderFormattedText(heading) : null)}
                         {description && (
-                            <motion.p variants={staggerItem} className="relative z-10 max-w-[90vw] text-xl font-medium text-white/75 lg:w-1/2">
+                            <motion.p variants={staggerItem} className="relative z-10 max-w-[90vw] text-xl font-medium text-secondary lg:w-1/2">
                                 {renderFormattedText(description)}
                             </motion.p>
                         )}

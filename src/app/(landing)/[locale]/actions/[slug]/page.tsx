@@ -55,7 +55,7 @@ export default async function ActionDetailPage({ params }: { params: LocaleSlugP
                                         {tags.length > 0 && (
                                             <div className="flex flex-wrap gap-2">
                                                 {tags.map((tag) => (
-                                                    <span key={tag} className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/70">
+                                                    <span key={tag} className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-secondary">
                                                         {tag}
                                                     </span>
                                                 ))}
@@ -71,13 +71,13 @@ export default async function ActionDetailPage({ params }: { params: LocaleSlugP
                                     </HapticButtonLink>
                                 )}
                             </div>
-                            {action.description && <div className="max-w-3xl whitespace-pre-line text-sm leading-6 text-white/75">{action.description}</div>}
+                            {action.description && <div className="max-w-3xl whitespace-pre-line text-sm leading-6 text-secondary">{action.description}</div>}
 
                             <ActionTriggerView locale={locale} triggers={triggers} functionDefs={functionDefs} />
 
                             {references.length > 0 && (
                                 <div className="space-y-3">
-                                    <p className="text-sm tracking-wider text-white/50">{referencesLabel}</p>
+                                    <p className="text-sm tracking-wider text-tertiary">{referencesLabel}</p>
                                     <div className="grid gap-4 md:grid-cols-2">
                                         {references.map((reference) => (
                                             <ActionCard key={reference.id} action={reference} locale={locale} />

@@ -27,7 +27,7 @@ export function ActionCard({ action, locale }: { action: ActionItem; locale: App
 
                         <div className="min-w-0 flex-1 mt-1">
                             <h2 className="text-lg font-semibold leading-tight tracking-tight text-white">{action.title}</h2>
-                            {action.shortDescription && <p className="mt-2 line-clamp-2 text-sm leading-6 text-white/75">{action.shortDescription}</p>}
+                            {action.shortDescription && <p className="mt-2 line-clamp-2 text-sm leading-6 text-secondary">{action.shortDescription}</p>}
                         </div>
                     </div>
                 </div>

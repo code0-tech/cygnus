@@ -11,7 +11,7 @@ export function ClientMemberCard() {
                 <Avatar identifier="Nico" />
                 <div>
                     <p className="text-base font-semibold text-white">@Nico</p>
-                    <p className="text-xs lg:text-sm text-white/75">nico@codezero.tech</p>
+                    <p className="text-xs lg:text-sm text-secondary">nico@codezero.tech</p>
                 </div>
                 <StableBadge color="info" className="hidden lg:flex ml-auto align-middle">
                     <Text size="xs" style={{ color: "inherit" }}>
@@ -19,7 +19,7 @@ export function ClientMemberCard() {
                     </Text>
                 </StableBadge>
             </div>
-            <p className="text-xs mt-6 text-white/50">Member since: 2 months ago</p>
+            <p className="text-xs mt-6 text-tertiary">Member since: 2 months ago</p>
         </Card>
     )
 }

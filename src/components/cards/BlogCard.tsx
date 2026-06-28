@@ -31,8 +31,8 @@ export function BlogCard({ locale, post }: { locale: string; post: BlogPostItem 
 
                     <div className="min-w-0 flex-1 px-1 pb-1 md:flex md:flex-col md:justify-between">
                         <h2 className="line-clamp-2 text-lg font-medium leading-tight tracking-tight text-white sm:text-xl">{post.title}</h2>
-                        {post.shortDescription ? <p className="mt-2 line-clamp-3 text-sm leading-6 text-white/75">{post.shortDescription}</p> : null}
-                        <p className="mt-4 mb-2 truncate text-xs text-white/50">
+                        {post.shortDescription ? <p className="mt-2 line-clamp-3 text-sm leading-6 text-secondary">{post.shortDescription}</p> : null}
+                        <p className="mt-4 mb-2 truncate text-xs text-tertiary">
                             {(post.author as TeamMember).name} - {publishedDate}
                         </p>
                     </div>

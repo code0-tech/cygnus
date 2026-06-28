@@ -12,7 +12,7 @@ interface ActionTriggerViewProps {
     functionDefs: Media | undefined
 }
 
-const itemClassName = "text-white/70! transition-colors! data-[state=on]:bg-brand/20! data-[state=on]:text-brand!"
+const itemClassName = "text-secondary! transition-colors! data-[state=on]:bg-brand/20! data-[state=on]:text-brand!"
 
 interface DisplayItem {
     type: "trigger" | "functionDef"

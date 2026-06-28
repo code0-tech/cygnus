@@ -21,7 +21,7 @@ export function FeatureCardText({ content, className }: FeatureCardTextProps) {
     return (
         <div className={cn("z-30 flex w-full min-w-0 flex-col", className)}>
             <p className={"font-semibold text-lg text-brand tracking-normal leading-6"}>{content.title}</p>
-            {content.description && <p className={"text-white/75 text-sm"}>{content.description}</p>}
+            {content.description && <p className={"text-secondary text-sm"}>{content.description}</p>}
             {content.link && content.link.label && content.link.url && (
                 <LinkButton href={content.link.url} className="mt-3 inline-flex max-w-full min-w-0 text-xs font-normal">
                     {content.link.label}

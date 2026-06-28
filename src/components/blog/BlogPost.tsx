@@ -119,7 +119,7 @@ export async function BlogPost({ slug, locale }: BlogPostProps) {
 
             <header className="text-center">
                 <h1 className="text-4xl font-semibold mb-3">{post.title}</h1>
-                {post.shortDescription ? <p className="text-balance text-lg text-white/70 mb-4">{post.shortDescription}</p> : null}
+                {post.shortDescription ? <p className="text-balance text-lg text-secondary mb-4">{post.shortDescription}</p> : null}
             </header>
 
             {heroImageUrl ? (
@@ -130,7 +130,7 @@ export async function BlogPost({ slug, locale }: BlogPostProps) {
                 </Card>
             ) : (
                 <Card size="lg" className="p-2">
-                    <div className="aspect-video w-full rounded-2xl border border-white/5 bg-white/10 flex items-center justify-center text-white/50 text-sm">
+                    <div className="aspect-video w-full rounded-2xl border border-white/5 bg-white/10 flex items-center justify-center text-tertiary text-sm">
                         {locale === "de" ? "Kein Hero-Bild vorhanden" : "No hero image available"}
                     </div>
                 </Card>
@@ -139,20 +139,20 @@ export async function BlogPost({ slug, locale }: BlogPostProps) {
             <div className="grid grid-cols-1 gap-12 lg:grid-cols-4">
                 <aside className="space-y-6">
                     {author ? (
-                        <div className="flex gap-3 text-sm text-white/50">
+                        <div className="flex gap-3 text-sm text-tertiary">
                             {authorImageUrl ? (
                                 <Image src={authorImageUrl} alt={authorImage?.alt ?? author.name} width={40} height={40} className="size-10 shrink-0 rounded-full object-cover" />
                             ) : (
-                                <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-white/10 text-xs font-semibold text-white/75">{getInitials(author.name)}</div>
+                                <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-white/10 text-xs font-semibold text-secondary">{getInitials(author.name)}</div>
                             )}
                             <div className="min-w-0 text-left">
-                                <p className="font-medium text-white/75">{author.name}</p>
-                                <p className="text-xs text-white/50">{author.role}</p>
-                                <p className="text-xs text-white/50">{publishedDate}</p>
+                                <p className="font-medium text-secondary">{author.name}</p>
+                                <p className="text-xs text-tertiary">{author.role}</p>
+                                <p className="text-xs text-tertiary">{publishedDate}</p>
                             </div>
                         </div>
                     ) : (
-                        <p className="text-sm text-white/60">{publishedDate}</p>
+                        <p className="text-sm text-tertiary">{publishedDate}</p>
                     )}
 
                     <TableOfContents headings={headings} />

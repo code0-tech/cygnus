@@ -43,11 +43,7 @@ export function StandaloneCardSection({ content }: StandaloneCardSectionProps) {
                 radialGradient={itemSettings.gradient as any}
                 className={cn(
                     "relative aspect-video w-full shrink-0 overflow-hidden bg-primary",
-                    isFullscreen
-                        ? "p-0"
-                        : isSideFullscreen
-                          ? "grid p-0 md:grid-cols-2"
-                          : "grid gap-12 p-12 md:grid-cols-[0.95fr_1.05fr]"
+                    isFullscreen ? "p-0" : isSideFullscreen ? "grid p-0 md:grid-cols-2" : "grid gap-12 p-12 md:grid-cols-[0.95fr_1.05fr]"
                 )}
             >
                 {isFullscreen ? (
@@ -58,10 +54,10 @@ export function StandaloneCardSection({ content }: StandaloneCardSectionProps) {
                             <div className="mx-auto flex max-w-4xl flex-col items-center gap-6 px-6 text-center">
                                 <h2 className="text-3xl font-semibold text-white md:text-5xl">{content.title}</h2>
 
-                                {content.description && <p className="max-w-2xl text-base leading-7 text-white/80 md:text-lg">{content.description}</p>}
+                                {content.description && <p className="max-w-2xl text-base leading-7 text-secondary md:text-lg">{content.description}</p>}
 
                                 <div className="space-y-6">
-                                    <ul className="grid gap-2 text-sm text-white/75 md:text-base">
+                                    <ul className="grid gap-2 text-sm text-secondary md:text-base">
                                         {content.bulletPoints?.map((point: any, pointIndex: number) => (
                                             <li key={`${content.id ?? content.title}-point-${pointIndex}`} className="flex items-start gap-3">
                                                 <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brand" />
@@ -80,11 +76,11 @@ export function StandaloneCardSection({ content }: StandaloneCardSectionProps) {
                         <div className={cn("relative z-10 flex h-full flex-col justify-center gap-8 p-12", isSideFullscreenLeft && "md:order-2")}>
                             <div className="flex flex-col gap-4">
                                 <h2 className="max-w-xl text-3xl font-semibold text-white md:text-5xl">{content.title}</h2>
-                                <p className="max-w-xl text-base leading-7 text-white/75 md:text-lg">{content.description}</p>
+                                <p className="max-w-xl text-base leading-7 text-secondary md:text-lg">{content.description}</p>
                             </div>
 
                             <div className="space-y-6">
-                                <ul className="grid gap-2 text-sm text-white/75 md:text-base">
+                                <ul className="grid gap-2 text-sm text-secondary md:text-base">
                                     {content.bulletPoints?.map((point: any, pointIndex: number) => (
                                         <li key={`${content.id ?? content.title}-point-${pointIndex}`} className="flex items-start gap-3">
                                             <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brand" />
@@ -113,11 +109,11 @@ export function StandaloneCardSection({ content }: StandaloneCardSectionProps) {
                         <div className={cn("relative z-10 flex h-full flex-col justify-center gap-8 rounded-3xl", isImageLeft && "md:order-2")}>
                             <div className="flex flex-col gap-4">
                                 <h2 className="max-w-xl text-3xl font-semibold text-white md:text-5xl">{content.title}</h2>
-                                {content.description && <p className="max-w-xl text-base leading-7 text-white/75 md:text-lg">{content.description}</p>}
+                                {content.description && <p className="max-w-xl text-base leading-7 text-secondary md:text-lg">{content.description}</p>}
                             </div>
 
                             <div className="space-y-6">
-                                <ul className="grid gap-2 text-sm text-white/75 md:text-base">
+                                <ul className="grid gap-2 text-sm text-secondary md:text-base">
                                     {content.bulletPoints?.map((point: any, pointIndex: number) => (
                                         <li key={`${content.id ?? content.title}-point-${pointIndex}`} className="flex items-start gap-3">
                                             <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brand" />

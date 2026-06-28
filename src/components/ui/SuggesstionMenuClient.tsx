@@ -197,13 +197,13 @@ export function SuggesstionMenuClient() {
                     .filter(([group]) => group === "Variables")
                     .map(([group, items]) => (
                         <div key={group} className="flex flex-col gap-1">
-                            <div className="flex items-center justify-between px-2 py-1 text-[11px] uppercase text-white/50">
+                            <div className="flex items-center justify-between px-2 py-1 text-[11px] uppercase text-tertiary">
                                 <span>{group}</span>
-                                <IconChevronUp size={14} className="text-white/50" />
+                                <IconChevronUp size={14} className="text-tertiary" />
                             </div>
                             <div className="flex flex-col gap-0.5">
                                 {items.map((suggestion) => (
-                                    <div key={`${group}-${suggestion.value}`} className="flex w-full items-center gap-3 rounded-xl bg-white/5 px-3 py-1.5 text-left text-white/90 transition-colors">
+                                    <div key={`${group}-${suggestion.value}`} className="flex w-full items-center gap-3 rounded-xl bg-white/5 px-3 py-1.5 text-left text-white transition-colors">
                                         <span className="flex h-4 w-4 shrink-0 items-center justify-center">{iconMap[suggestion.suggestionType]}</span>
                                         {renderSuggestionContent(suggestion)}
                                     </div>
@@ -217,13 +217,13 @@ export function SuggesstionMenuClient() {
                         .filter(([group]) => group !== "Variables")
                         .map(([group, items]) => (
                             <div key={group} className="flex flex-col">
-                                <div className="flex items-center justify-between px-3 py-1 text-[11px] uppercase text-white/50">
+                                <div className="flex items-center justify-between px-3 py-1 text-[11px] uppercase text-tertiary">
                                     <span>{group}</span>
-                                    <IconChevronUp size={14} className="text-white/50" />
+                                    <IconChevronUp size={14} className="text-tertiary" />
                                 </div>
                                 <div className="flex flex-col gap-0.5">
                                     {items.map((suggestion) => (
-                                        <div key={`${group}-${suggestion.value}`} className="flex w-full items-center gap-3 px-3 py-1.5 text-left text-white/90 transition-colors">
+                                        <div key={`${group}-${suggestion.value}`} className="flex w-full items-center gap-3 px-3 py-1.5 text-left text-white transition-colors">
                                             <span className="flex h-4 w-4 shrink-0 items-center justify-center">{iconMap[suggestion.suggestionType]}</span>
                                             {renderSuggestionContent(suggestion)}
                                         </div>
@@ -233,9 +233,9 @@ export function SuggesstionMenuClient() {
                         ))}
                 </div>
             </div>
-            <div className="flex items-center gap-2 px-3 py-1 text-[11px] uppercase text-white/50">
+            <div className="flex items-center gap-2 px-3 py-1 text-[11px] uppercase text-tertiary">
                 <span>Press</span>
-                <span className="text-white/70">Enter</span>
+                <span className="text-secondary">Enter</span>
                 <span>to insert</span>
                 <IconBulb size={12} className="ml-auto" />
             </div>

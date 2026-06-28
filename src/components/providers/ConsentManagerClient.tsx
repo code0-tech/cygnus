@@ -7,11 +7,11 @@ import type { ReactNode } from "react"
 const consentTheme = {
     slots: {
         consentBannerTitle: "text-white!",
-        consentBannerDescription: "text-white/75! [&_a]:text-brand!",
+        consentBannerDescription: "text-secondary! [&_a]:text-brand!",
         consentBannerCard: "bg-primary! border-white/5!",
         consentBannerFooter: "bg-primary! border-white/5!",
         consentDialogTitle: "text-white!",
-        consentDialogDescription: "text-white/75! [&_a]:text-brand!",
+        consentDialogDescription: "text-secondary! [&_a]:text-brand!",
         consentDialogCard: "bg-primary! border-white/5!",
         consentWidgetAccordion:
             "[--consent-widget-accordion-background-color:color-mix(in_oklab,var(--color-primary)_50%,transparent)] [--consent-widget-accordion-background-color-dark:color-mix(in_oklab,var(--color-primary)_50%,transparent)] [--consent-widget-accordion-background-hover:color-mix(in_oklab,var(--color-primary)_65%,transparent)] [--consent-widget-accordion-background-hover-dark:color-mix(in_oklab,var(--color-primary)_65%,transparent)] [--consent-widget-accordion-border-color:rgb(255_255_255_/0.05)] [--consent-widget-accordion-border-color-dark:rgb(255_255_255_/0.05)] [--consent-widget-accordion-text-color:rgb(255_255_255)] [--consent-widget-accordion-text-color-dark:rgb(255_255_255)] [--consent-widget-accordion-content-color:rgb(255_255_255_/0.75)] [--consent-widget-accordion-content-color-dark:rgb(255_255_255_/0.75)]",

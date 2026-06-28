@@ -55,16 +55,16 @@ export function InstallSection({ content }: InstallSectionProps) {
 
                     <motion.div variants={staggerItem} className="relative z-10 flex max-w-3xl flex-col items-center gap-4 text-center">
                         <h2 className="text-3xl font-semibold text-white lg:text-4xl">{content.heading}</h2>
-                        <p className="text-base font-medium text-white/75 lg:text-xl">{content.subheading}</p>
+                        <p className="text-base font-medium text-secondary lg:text-xl">{content.subheading}</p>
                     </motion.div>
 
                     <motion.div variants={staggerItem} className="relative z-10 w-full max-w-2xl overflow-hidden rounded-2xl border border-white/5 bg-primary">
                         <div className="flex items-center justify-between border-b border-white/5 px-4 py-2 pr-2">
-                            <span className="text-xs font-medium text-white/50">{content.label || "Install"}</span>
+                            <span className="text-xs font-medium text-tertiary">{content.label || "Install"}</span>
                             <button
                                 type="button"
                                 onClick={() => void handleCopy()}
-                                className="inline-flex size-7 items-center justify-center rounded-lg border border-white/5 bg-white/5 text-xs font-medium text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+                                className="inline-flex size-7 items-center justify-center rounded-lg border border-white/5 bg-white/5 text-xs font-medium text-secondary transition-colors hover:bg-white/10 hover:text-white"
                             >
                                 <AnimatePresence mode="wait" initial={false}>
                                     <motion.span
@@ -80,7 +80,7 @@ export function InstallSection({ content }: InstallSectionProps) {
                                 </AnimatePresence>
                             </button>
                         </div>
-                        <pre className="overflow-x-auto px-4 py-3 text-sm text-white/90 lg:text-[15px]">
+                        <pre className="overflow-x-auto px-4 py-3 text-sm text-white lg:text-[15px]">
                             <code>{content.code}</code>
                         </pre>
                     </motion.div>

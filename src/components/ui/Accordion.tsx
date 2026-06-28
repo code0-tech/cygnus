@@ -49,8 +49,8 @@ const AccordionItemComponent = ({ index, question, answer, isOpen, onToggle, cla
                 aria-expanded={isOpen}
                 className={cn("relative z-10 flex w-full min-w-0 items-center justify-between gap-5 px-5 py-4 pr-4 text-left", questionClassname)}
             >
-                <div className={cn("min-w-0 flex-1 text-sm font-medium text-white/75 sm:text-base lg:text-lg [overflow-wrap:anywhere] transition-colors", isOpen && "text-white")}>{question}</div>
-                <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center text-white/55 transition-transform", isOpen && "rotate-180")}>
+                <div className={cn("min-w-0 flex-1 text-sm font-medium text-secondary sm:text-base lg:text-lg warp-anywhere transition-colors", isOpen && "text-white")}>{question}</div>
+                <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center text-tertiary transition-transform", isOpen && "rotate-180")}>
                     <IconChevronDown className="h-5 w-5" />
                 </div>
             </button>
@@ -76,7 +76,7 @@ const AccordionItemComponent = ({ index, question, answer, isOpen, onToggle, cla
             >
                 <motion.div ref={contentRef} initial={false} animate={{ y: isOpen ? 0 : -2 }} transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }} className="min-h-0">
                     <div className="relative z-10 px-5 pb-5 pt-1">
-                        <div className="min-w-0 max-w-full text-sm leading-7 text-white/75 sm:text-base [overflow-wrap:anywhere]">{answer}</div>
+                        <div className="min-w-0 max-w-full text-sm leading-7 text-secondary sm:text-base warp-anywhere">{answer}</div>
                     </div>
                 </motion.div>
             </motion.div>
@@ -95,8 +95,8 @@ const BaseAccordionItemComponent = ({ index, question, answer, isOpen, onToggle,
                 aria-expanded={isOpen}
                 className={cn("relative z-10 flex w-full min-w-0 items-center justify-between gap-5 px-5 py-4 pr-4 text-left text-sm font-medium sm:text-base lg:text-lg", questionClassname)}
             >
-                <p className={cn("min-w-0 flex-1 [overflow-wrap:anywhere] text-white/75", isOpen && "text-white")}>{question}</p>
-                <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center text-white/50 transition-transform", isOpen && "rotate-180")}>
+                <p className={cn("min-w-0 flex-1 wrap-anywhere text-secondary", isOpen && "text-white")}>{question}</p>
+                <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center text-tertiary transition-transform", isOpen && "rotate-180")}>
                     <IconChevronDown className="h-5 w-5" />
                 </div>
             </button>
@@ -104,7 +104,7 @@ const BaseAccordionItemComponent = ({ index, question, answer, isOpen, onToggle,
                 <div className="overflow-hidden" aria-hidden={!isOpen}>
                     <div className="min-h-0">
                         <div className="relative z-10 px-5 pb-5 pt-1">
-                            <div className="min-w-0 max-w-full text-sm leading-7 text-white/50 sm:text-base [overflow-wrap:anywhere]">{answer}</div>
+                            <div className="min-w-0 max-w-full text-sm leading-7 text-tertiary sm:text-base wrap-anywhere">{answer}</div>
                         </div>
                     </div>
                 </div>

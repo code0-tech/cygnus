@@ -72,7 +72,7 @@ export function HeroSection({ content, imageSrc = "/code0_software.png" }: HeroS
                                 {content.heading}
                             </motion.h1>
 
-                            <motion.p variants={staggerItem} className="relative z-10 max-w-2xl text-base font-medium text-pretty text-white/80 lg:text-xl text-center">
+                            <motion.p variants={staggerItem} className="relative z-10 max-w-2xl text-base font-medium text-pretty text-secondary lg:text-xl text-center">
                                 {texts.map((text, index) => (
                                     <React.Fragment key={`${text}-${index}`}>
                                         {text}
@@ -165,19 +165,14 @@ export function HeroSection({ content, imageSrc = "/code0_software.png" }: HeroS
                             {content.heading}
                         </motion.h1>
 
-                        <motion.p variants={staggerItem} className="relative z-10 font-medium text-white/75 text-base lg:text-xl text-pretty">
-                            {texts.length > 0 ? (
+                        <motion.p variants={staggerItem} className="relative z-10 font-medium text-white text-base lg:text-xl text-pretty">
+                            {texts.length > 0 &&
                                 texts.map((text, index) => (
                                     <React.Fragment key={`${text}-${index}`}>
                                         {text}
                                         {index < texts.length - 1 && <br />}
                                     </React.Fragment>
-                                ))
-                            ) : (
-                                <>
-                                    Beschreibung1 <br /> Beschreibung2
-                                </>
-                            )}
+                                ))}
                         </motion.p>
 
                         <motion.div variants={staggerItem} className={"flex flex-col gap-2 sm:gap-4 mt-4"}>

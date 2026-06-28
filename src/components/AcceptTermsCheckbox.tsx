@@ -49,7 +49,7 @@ export function AcceptTermsCheckbox({ locale = DEFAULT_LOCALE, className, revali
         : undefined
 
     const label: ReactNode = (
-        <span className="text-sm leading-6 text-white/80">
+        <span className="text-sm leading-6 text-secondary">
             {labels.labelStart}{" "}
             <Link
                 href={termsHref}

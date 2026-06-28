@@ -22,13 +22,13 @@ export function FirstBlogCard({ locale, post }: { locale: string; post: BlogPost
         <div className="group block">
             <div className="relative z-10 flex flex-col gap-4 xl:flex-row xl:items-stretch xl:gap-8">
                 <div className="px-1 pb-1 xl:flex xl:w-2/5 xl:flex-col xl:justify-start">
-                    <p className="text-xs text-white/50 mb-3">
+                    <p className="text-xs text-tertiary mb-3">
                         {(post.author as TeamMember).name} - {publishedDate}
                     </p>
                     <Link href={postHref} onClick={() => trigger("medium")}>
                         <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-white text-balance leading-tight">{post.title}</h2>
                     </Link>
-                    {post.shortDescription && <p className="text-base text-balance md:text-lg leading-7 text-white/75 mt-4 mb-2">{post.shortDescription}</p>}
+                    {post.shortDescription && <p className="text-base text-balance md:text-lg leading-7 text-secondary mt-4 mb-2">{post.shortDescription}</p>}
                 </div>
 
                 <Card size="lg" className="w-full shrink-0 aspect-video p-2 xl:w-3/5">

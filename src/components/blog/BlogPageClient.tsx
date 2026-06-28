@@ -78,7 +78,7 @@ export function BlogPageClient({ heading, initialPosts, initialHasNextPage, init
             <h1 aria-hidden className="hidden">
                 {heading}
             </h1>
-            {posts.length === 0 && <p className="text-white/50">{noPostsLabel}</p>}
+            {posts.length === 0 && <p className="text-tertiary">{noPostsLabel}</p>}
             {firstPost && (
                 <>
                     <FirstBlogCard post={firstPost} locale={locale} />
@@ -88,7 +88,7 @@ export function BlogPageClient({ heading, initialPosts, initialHasNextPage, init
             {remainingPosts.length > 0 && (
                 <>
                     <div className="flex items-center gap-4">
-                        <h2 className="text-2xl font-medium text-white/75">{viewOtherBlogsLabel}</h2>
+                        <h2 className="text-2xl font-medium text-secondary">{viewOtherBlogsLabel}</h2>
                         <div className="flex-1 h-px bg-white/10" />
                     </div>
                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">

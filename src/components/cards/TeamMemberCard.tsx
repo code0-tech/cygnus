@@ -57,17 +57,17 @@ export function TeamMemberCard({ member, locale }: TeamMemberCardProps) {
                             {imageUrl ? (
                                 <Image src={imageUrl} alt={image.alt ?? member.name} width={56} height={56} className="h-14 w-14 rounded-full object-cover" />
                             ) : (
-                                <div className="h-14 w-14 rounded-full bg-white/10 flex items-center justify-center text-sm font-semibold text-white/80">{getInitials(member.name)}</div>
+                                <div className="h-14 w-14 rounded-full bg-white/10 flex items-center justify-center text-sm font-semibold text-secondary">{getInitials(member.name)}</div>
                             )}
                             <div>
                                 <h3 className="text-xl font-semibold text-white">{member.name}</h3>
-                                {member.role && <p className="text-sm text-white/75">{member.role}</p>}
+                                {member.role && <p className="text-sm text-secondary">{member.role}</p>}
                             </div>
                         </div>
 
-                        {member.shortDescription && <p className="text-white/75 leading-6 mb-3">{member.shortDescription}</p>}
+                        {member.shortDescription && <p className="text-secondary leading-6 mb-3">{member.shortDescription}</p>}
                         {joinedAtLabel && (
-                            <p className="text-xs text-white/50 mt-4">
+                            <p className="text-xs text-tertiary mt-4">
                                 {joinedLabel}: {joinedAtLabel}
                             </p>
                         )}
@@ -96,22 +96,22 @@ export function TeamMemberCard({ member, locale }: TeamMemberCardProps) {
                                             )}
                                             <div>
                                                 <h3 className="text-2xl font-semibold text-white">{member.name}</h3>
-                                                {member.role && <p className="text-sm text-white/75">{member.role}</p>}
+                                                {member.role && <p className="text-sm text-secondary">{member.role}</p>}
                                             </div>
                                         </div>
                                         <button
                                             type="button"
                                             onClick={() => setIsOpen(false)}
-                                            className="rounded-lg p-1 text-sm text-white/75 hover:text-white hover:bg-white/10 transition-colors"
+                                            className="rounded-lg p-1 text-sm text-secondary hover:text-white hover:bg-white/10 transition-colors"
                                             aria-label={locale === "de" ? "Dialog schliessen" : "Close dialog"}
                                         >
                                             <IconX size={20} />
                                         </button>
                                     </div>
 
-                                    {member.about && <p className="text-white/75 text-base">{member.about}</p>}
+                                    {member.about && <p className="text-secondary text-base">{member.about}</p>}
                                     {joinedAtLabel && (
-                                        <p className="text-xs text-white/50 mt-6">
+                                        <p className="text-xs text-tertiary mt-6">
                                             {joinedLabel}: {joinedAtLabel}
                                         </p>
                                     )}

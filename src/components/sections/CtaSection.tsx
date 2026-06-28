@@ -140,7 +140,7 @@ export function CtaSection({ content, floatingCta = false }: CtaSectionProps) {
                         {content.heading}
                     </motion.p>
 
-                    <motion.p variants={staggerItem} className="z-20 w-4/5 text-center text-white/75 sm:w-2/3 sm:text-lg lg:w-1/2">
+                    <motion.p variants={staggerItem} className="z-20 w-4/5 text-center text-secondary sm:w-2/3 sm:text-lg lg:w-1/2">
                         {content.subheading}
                     </motion.p>
 

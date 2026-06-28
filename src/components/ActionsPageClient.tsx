@@ -51,7 +51,7 @@ export function ActionsPageClient({ actions, locale, content }: ActionsPageClien
         <div className="mx-auto flex w-full max-w-4xl flex-col gap-8">
             <div className="space-y-4">
                 <h1 className="text-3xl font-semibold tracking-tight text-white">{labels.heading}</h1>
-                <p className="max-w-2xl text-sm leading-6 text-white/70">{labels.description}</p>
+                <p className="max-w-2xl text-sm leading-6 text-secondary">{labels.description}</p>
             </div>
             <TextInput
                 value={search}
@@ -66,7 +66,7 @@ export function ActionsPageClient({ actions, locale, content }: ActionsPageClien
                     <ActionCard key={action.id} action={action} locale={locale} />
                 ))}
             </div>
-            {filteredActions.length === 0 && <p className="text-center text-sm text-white/60">{labels.noActionsFoundLabel}</p>}
+            {filteredActions.length === 0 && <p className="text-center text-sm text-tertiary">{labels.noActionsFoundLabel}</p>}
         </div>
     )
 }

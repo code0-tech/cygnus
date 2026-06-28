@@ -78,10 +78,10 @@ export function OffsetCardsSection({ content }: OffsetCardsSectionProps) {
                                 <motion.p variants={staggerItem} className="text-xl font-semibold text-white lg:text-3xl">
                                     {item.title}
                                 </motion.p>
-                                <motion.p variants={staggerItem} className="mt-3 max-w-xl text-sm leading-7 text-white/75 lg:text-base">
+                                <motion.p variants={staggerItem} className="mt-3 max-w-xl text-sm leading-7 text-secondary lg:text-base">
                                     {item.description}
                                 </motion.p>
-                                <motion.ul variants={staggerItem} className="mt-5 space-y-2.5 text-sm text-white/80 lg:text-base">
+                                <motion.ul variants={staggerItem} className="mt-5 space-y-2.5 text-sm text-secondary lg:text-base">
                                     {item.bulletPoints?.map((point, pointIndex) => (
                                         <li key={`${item.id ?? item.label}-point-${pointIndex}`} className="flex items-center gap-2">
                                             <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-brand" />
@@ -108,10 +108,10 @@ export function OffsetCardsSection({ content }: OffsetCardsSectionProps) {
                                 <motion.p variants={staggerItem} className="text-xl font-semibold tracking-tight text-white">
                                     {item.title}
                                 </motion.p>
-                                <motion.p variants={staggerItem} className="mt-3 text-sm leading-7 text-white/75">
+                                <motion.p variants={staggerItem} className="mt-3 text-sm leading-7 text-secondary">
                                     {item.description}
                                 </motion.p>
-                                <motion.ul variants={staggerItem} className="mt-5 space-y-2.5 text-left text-sm text-white/80">
+                                <motion.ul variants={staggerItem} className="mt-5 space-y-2.5 text-left text-sm text-secondary">
                                     {item.bulletPoints?.map((point, pointIndex) => (
                                         <li key={`${item.id ?? item.label}-mobile-point-${pointIndex}`} className="flex items-start gap-3">
                                             <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brand" />

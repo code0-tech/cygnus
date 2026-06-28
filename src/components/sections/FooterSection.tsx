@@ -49,16 +49,16 @@ export const FooterSection: React.FC<FooterSectionProps> = ({ locale, footer }) 
                     <div className="flex items-start gap-2">
                         <Image src={"/code0_text_logo_white.png"} height={"150"} width={"150"} alt={"Code0 Logo"} />
                     </div>
-                    {footer.description && <p className={"text-white/50 text-sm pb-4"}>{footer.description}</p>}
+                    {footer.description && <p className={"text-secondary text-sm pb-4"}>{footer.description}</p>}
                 </div>
 
                 <div className={"grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12 pb-16"}>
                     {(footer.groups ?? []).map((group) => (
                         <div className={"flex flex-col gap-1"} key={`${group.heading}-${group.id ?? "group"}`}>
-                            <p className={"text-white/50"}>{group.heading}</p>
+                            <p className={"text-tertiary"}>{group.heading}</p>
                             {(group.items ?? []).map((item) => (
                                 <Link href={localizeHref(item.url, locale)} key={`${item.label}-${item.id ?? item.url}`} onClick={() => trigger("medium")}>
-                                    <p className={"text-white/75 hover:text-white hover:underline underline-offset-2 transition-colors"}>{item.label}</p>
+                                    <p className={"text-secondary hover:text-white hover:underline underline-offset-2 transition-colors"}>{item.label}</p>
                                 </Link>
                             ))}
                         </div>
@@ -66,10 +66,10 @@ export const FooterSection: React.FC<FooterSectionProps> = ({ locale, footer }) 
                 </div>
 
                 <div className="relative pt-8">
-                    <div className="relative z-10 flex flex-col gap-4 text-sm text-white/55 md:flex-row md:items-center md:justify-between">
+                    <div className="relative z-10 flex flex-col gap-4 text-sm text-tertiary md:flex-row md:items-center md:justify-between">
                         <div className="flex gap-2 flex-row items-center md:gap-4">
                             {footer.contactEmail && (
-                                <Link href={`mailto:${footer.contactEmail}`} onClick={() => trigger("medium")} className="text-xs text-white/65 hover:text-white">
+                                <Link href={`mailto:${footer.contactEmail}`} onClick={() => trigger("medium")} className="text-xs text-tertiary hover:text-white">
                                     {footer.contactEmail}
                                 </Link>
                             )}
@@ -88,7 +88,7 @@ export const FooterSection: React.FC<FooterSectionProps> = ({ locale, footer }) 
                                             target="_blank"
                                             rel="noreferrer"
                                         >
-                                            <Icon size={16} className="text-white/60 group-hover:text-white" />
+                                            <Icon size={16} className="text-tertiary group-hover:text-white" />
                                         </Link>
                                     )
                                 })}
@@ -96,7 +96,7 @@ export const FooterSection: React.FC<FooterSectionProps> = ({ locale, footer }) 
                         </div>
 
                         <div className="flex flex-col gap-4 md:flex-row md:items-center">
-                            <p className="text-white/50 text-xs">
+                            <p className="text-tertiary text-xs">
                                 © {new Date().getFullYear()} {footer.company_name}
                             </p>
                             <div className="flex flex-wrap items-center gap-4 text-xs">

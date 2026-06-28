@@ -25,10 +25,10 @@ export function BuyMenu({ price, priceHeading, priceCaption, subscribeHref, subs
     return createPortal(
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-row items-center gap-6 rounded-3xl bg-primary/30 backdrop-blur-md border border-white/10 p-4 shadow-[0_8px_32px_0_rgba(0,0,0,0.45),0_0_0_1px_rgba(255,255,255,0.04)]">
             <div className="flex flex-col justify-center">
-                <span className="text-xs font-semibold tracking-wider text-white/50 uppercase">{priceHeading}</span>
+                <span className="text-xs font-semibold tracking-wider text-tertiary uppercase">{priceHeading}</span>
                 <div className="flex flex-row items-baseline gap-1.5">
                     <span className="text-2xl font-semibold text-brand tabular-nums">{price}</span>
-                    <span className="text-xs text-white/45">{priceCaption}</span>
+                    <span className="text-xs text-tertiary">{priceCaption}</span>
                 </div>
             </div>
 

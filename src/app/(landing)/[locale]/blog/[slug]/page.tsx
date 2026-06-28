@@ -54,7 +54,7 @@ export default async function Page({ params }: { params: LocaleSlugPageParams })
 
                                     <div className={"z-20 flex max-w-2xl flex-col items-center text-center md:items-start md:text-left"}>
                                         <p className={"max-w-xl text-3xl font-semibold leading-tight text-white"}>{ctaBlock?.heading ?? "Contact us"}</p>
-                                        <p className={"mb-4 max-w-xl text-base leading-7 text-white/70"}>{ctaBlock?.subheading ?? ""}</p>
+                                        <p className={"mb-4 max-w-xl text-base leading-7 text-secondary"}>{ctaBlock?.subheading ?? ""}</p>
                                         <HapticButtonLink href={"/contact"} variant="normal" className={"h-11 rounded-xl px-8! bg-white/90! text-primary! hover:bg-white!"}>
                                             Contact us
                                         </HapticButtonLink>

@@ -229,7 +229,7 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
                             <div className="rounded-2xl border border-white/5 bg-primary/50 p-1.5 backdrop-blur-lg">
                                 <button
                                     type="button"
-                                    className="flex w-full items-center justify-between rounded-xl px-2 py-2 text-white/75 transition-colors hover:bg-white/10 hover:text-white"
+                                    className="flex w-full items-center justify-between rounded-xl px-2 py-2 text-secondary transition-colors hover:bg-white/10 hover:text-white"
                                     onClick={() => {
                                         trigger("soft")
                                         setIsOpen((prev) => !prev)
@@ -241,7 +241,7 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
                                         <IconAlignLeft size={16} />
                                         Content
                                     </span>
-                                    <IconChevronDown size={16} className={cn("text-white/75 transition-transform", isOpen && "rotate-180")} />
+                                    <IconChevronDown size={16} className={cn("text-secondary transition-transform", isOpen && "rotate-180")} />
                                 </button>
 
                                 <AnimatePresence initial={false}>
@@ -273,7 +273,7 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
                                                             setIsOpen(false)
                                                         }}
                                                         className={cn(
-                                                            "ml-5 block rounded-xl py-1.5 pl-4 pr-3 text-sm text-white/60 transition-colors hover:bg-white/10 hover:text-white",
+                                                            "ml-5 block rounded-xl py-1.5 pl-4 pr-3 text-sm text-tertiary transition-colors hover:bg-white/10 hover:text-white",
                                                             heading.level >= 3 && "pl-8",
                                                             activeIds.includes(heading.id) && "text-white"
                                                         )}
@@ -327,7 +327,7 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
                                         scrollToHeading(heading.id)
                                     }}
                                     className={cn(
-                                        "block py-1 pl-4 text-sm text-white/60 transition-colors hover:text-white",
+                                        "block py-1 pl-4 text-sm text-tertiary transition-colors hover:text-white",
                                         heading.level >= 3 && "pl-7",
                                         activeIds.includes(heading.id) && "text-white"
                                     )}

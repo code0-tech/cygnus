@@ -47,10 +47,10 @@ export function RuntimeControlClient() {
                         }}
                         className={controlClassName}
                     >
-                        <SegmentedControlItem value="dynamic" className="text-white/75! transition-colors! data-[state=on]:bg-brand/20! data-[state=on]:text-brand!">
+                        <SegmentedControlItem value="dynamic" className="text-secondary! transition-colors! data-[state=on]:bg-brand/20! data-[state=on]:text-brand!">
                             <Text className={textClassName}>Dynamic</Text>
                         </SegmentedControlItem>
-                        <SegmentedControlItem value="static" className="text-white/75! transition-colors! data-[state=on]:bg-yellow/20! data-[state=on]:text-yellow!">
+                        <SegmentedControlItem value="static" className="text-secondary! transition-colors! data-[state=on]:bg-yellow/20! data-[state=on]:text-yellow!">
                             <Text className={textClassName}>Static</Text>
                         </SegmentedControlItem>
                     </SegmentedControl>
@@ -63,10 +63,10 @@ export function RuntimeControlClient() {
                         }}
                         className={controlClassName}
                     >
-                        <SegmentedControlItem value="compiled" className="text-white/75! transition-colors! data-[state=on]:bg-pink/20! data-[state=on]:text-pink!">
+                        <SegmentedControlItem value="compiled" className="text-secondary! transition-colors! data-[state=on]:bg-pink/20! data-[state=on]:text-pink!">
                             <Text className={textClassName}>Compiled</Text>
                         </SegmentedControlItem>
-                        <SegmentedControlItem value="interpreted" className="text-white/75! transition-colors! data-[state=on]:bg-aqua/20! data-[state=on]:text-aqua!">
+                        <SegmentedControlItem value="interpreted" className="text-secondary! transition-colors! data-[state=on]:bg-aqua/20! data-[state=on]:text-aqua!">
                             <Text className={textClassName}>Interpreted</Text>
                         </SegmentedControlItem>
                     </SegmentedControl>
