@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils"
 import { IconAlignLeft, IconChevronDown } from "@tabler/icons-react"
 import { AnimatePresence, m as motion } from "motion/react"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useReducer, useRef, useState } from "react"
 import { useWebHaptics } from "web-haptics/react"
 
 export interface TocHeading {
@@ -16,18 +16,66 @@ interface TableOfContentsProps {
     headings: TocHeading[]
 }
 
+type DesktopMode = "static" | "fixed" | "bottom"
+type DesktopStyle = { left: number; width: number; top: number }
+
+interface TocLayoutState {
+    isOpen: boolean
+    isMobile: boolean
+    showMobileToc: boolean
+    desktopMode: DesktopMode
+    desktopStyle: DesktopStyle | null
+}
+
+type TocLayoutAction =
+    | { type: "mediaChanged"; isMobile: boolean }
+    | { type: "setOpen"; isOpen: boolean }
+    | { type: "toggleOpen" }
+    | { type: "mobileVisibilityChanged"; isVisible: boolean }
+    | { type: "desktopPositionChanged"; mode: DesktopMode; style?: DesktopStyle }
+
+const initialTocLayoutState: TocLayoutState = {
+    isOpen: false,
+    isMobile: false,
+    showMobileToc: false,
+    desktopMode: "static",
+    desktopStyle: null,
+}
+
+function tocLayoutReducer(state: TocLayoutState, action: TocLayoutAction): TocLayoutState {
+    switch (action.type) {
+        case "mediaChanged":
+            return state.isMobile === action.isMobile && !state.isOpen ? state : { ...state, isMobile: action.isMobile, isOpen: false }
+        case "setOpen":
+            return state.isOpen === action.isOpen ? state : { ...state, isOpen: action.isOpen }
+        case "toggleOpen":
+            return { ...state, isOpen: !state.isOpen }
+        case "mobileVisibilityChanged":
+            return state.showMobileToc === action.isVisible && !state.isOpen ? state : { ...state, showMobileToc: action.isVisible, isOpen: false }
+        case "desktopPositionChanged": {
+            const nextStyle = action.style ?? state.desktopStyle
+            const styleUnchanged =
+                state.desktopStyle === nextStyle ||
+                (state.desktopStyle !== null &&
+                    nextStyle !== null &&
+                    state.desktopStyle.left === nextStyle.left &&
+                    state.desktopStyle.width === nextStyle.width &&
+                    state.desktopStyle.top === nextStyle.top)
+
+            return state.desktopMode === action.mode && styleUnchanged ? state : { ...state, desktopMode: action.mode, desktopStyle: nextStyle }
+        }
+    }
+}
+
 export function TableOfContents({ headings }: TableOfContentsProps) {
     const { trigger } = useWebHaptics()
     const desktopTopOffset = 96
     const headingScrollOffset = 120
 
     const [activeIds, setActiveIds] = useState<string[]>([])
-    const [isOpen, setIsOpen] = useState(false)
-    const [isMobile, setIsMobile] = useState(false)
-    const [showMobileToc, setShowMobileToc] = useState(false)
     const [barStyle, setBarStyle] = useState({ y: 0, scaleY: 0, opacity: 0 })
-    const [desktopMode, setDesktopMode] = useState<"static" | "fixed" | "bottom">("static")
-    const [desktopStyle, setDesktopStyle] = useState<{ left: number; width: number; top: number } | null>(null)
+    const [layoutState, dispatchLayout] = useReducer(tocLayoutReducer, initialTocLayoutState)
+    const { isOpen, isMobile, showMobileToc, desktopMode, desktopStyle } = layoutState
 
     const mobileTocRef = useRef<HTMLDivElement>(null)
     const desktopTocRef = useRef<HTMLDivElement>(null)
@@ -37,8 +85,7 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
     useEffect(() => {
         const mediaQuery = window.matchMedia("(max-width: 1023px)")
         const handleMediaChange = (e: MediaQueryListEvent | { matches: boolean }) => {
-            setIsMobile(e.matches)
-            setIsOpen(false)
+            dispatchLayout({ type: "mediaChanged", isMobile: e.matches })
         }
 
         handleMediaChange(mediaQuery)
@@ -130,7 +177,7 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
 
     useEffect(() => {
         if (!isMobile) {
-            setShowMobileToc(true)
+            dispatchLayout({ type: "mobileVisibilityChanged", isVisible: true })
             return
         }
 
@@ -143,8 +190,7 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
                 frame = 0
 
                 const shouldShow = window.scrollY > 32
-                setShowMobileToc((prev) => (prev === shouldShow ? prev : shouldShow))
-                setIsOpen((prev) => (prev ? false : prev))
+                dispatchLayout({ type: "mobileVisibilityChanged", isVisible: shouldShow })
             })
         }
 
@@ -160,7 +206,7 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
 
     useEffect(() => {
         if (isMobile) {
-            setDesktopMode("static")
+            dispatchLayout({ type: "desktopPositionChanged", mode: "static" })
             return
         }
 
@@ -178,10 +224,11 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
 
             const nextMode = fixedTop <= wrapperTop ? "static" : fixedTop >= wrapperTop + maxTop ? "bottom" : "fixed"
 
-            setDesktopMode((prev) => (prev === nextMode ? prev : nextMode))
-            setDesktopStyle((prev) =>
-                prev?.left === wrapperRect.left && prev?.width === wrapperRect.width && prev?.top === maxTop ? prev : { left: wrapperRect.left, width: wrapperRect.width, top: maxTop }
-            )
+            dispatchLayout({
+                type: "desktopPositionChanged",
+                mode: nextMode,
+                style: { left: wrapperRect.left, width: wrapperRect.width, top: maxTop },
+            })
         }
 
         updateDesktopPosition()
@@ -199,18 +246,6 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
             window.removeEventListener("resize", updateDesktopPosition)
         }
     }, [desktopTopOffset, isMobile])
-
-    const scrollToHeading = (id: string) => {
-        const element = document.getElementById(id)
-        if (!element) return
-
-        const top = window.scrollY + element.getBoundingClientRect().top - headingScrollOffset
-        window.history.replaceState(null, "", `#${id}`)
-        window.scrollTo({
-            top,
-            behavior: "smooth",
-        })
-    }
 
     if (!headings.length) return null
 
@@ -232,7 +267,7 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
                                     className="flex w-full items-center justify-between rounded-xl px-2 py-2 text-secondary transition-colors hover:bg-white/10 hover:text-white"
                                     onClick={() => {
                                         trigger("soft")
-                                        setIsOpen((prev) => !prev)
+                                        dispatchLayout({ type: "toggleOpen" })
                                     }}
                                     aria-expanded={isOpen}
                                     aria-controls="mobile-toc-panel"
@@ -267,10 +302,8 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
                                                 <div key={heading.id} id={`toc-${heading.id}`} onClick={() => trigger("light")} data-toc-item="true">
                                                     <a
                                                         href={`#${heading.id}`}
-                                                        onClick={(event) => {
-                                                            event.preventDefault()
-                                                            scrollToHeading(heading.id)
-                                                            setIsOpen(false)
+                                                        onClick={() => {
+                                                            dispatchLayout({ type: "setOpen", isOpen: false })
                                                         }}
                                                         className={cn(
                                                             "ml-5 block rounded-xl py-1.5 pl-4 pr-3 text-sm text-tertiary transition-colors hover:bg-white/10 hover:text-white",
@@ -322,10 +355,6 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
                             <div key={heading.id} id={`toc-${heading.id}`} data-toc-item="true">
                                 <a
                                     href={`#${heading.id}`}
-                                    onClick={(event) => {
-                                        event.preventDefault()
-                                        scrollToHeading(heading.id)
-                                    }}
                                     className={cn(
                                         "block py-1 pl-4 text-sm text-tertiary transition-colors hover:text-white",
                                         heading.level >= 3 && "pl-7",

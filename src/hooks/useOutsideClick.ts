@@ -13,7 +13,7 @@ function useOutsideClick<T extends HTMLElement = HTMLElement>(callback: EventHan
         }
 
         document.addEventListener("mousedown", handle)
-        document.addEventListener("touchstart", handle)
+        document.addEventListener("touchstart", handle, { passive: true })
 
         return () => {
             document.removeEventListener("mousedown", handle)
