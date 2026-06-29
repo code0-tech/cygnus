@@ -6,7 +6,7 @@ import { notFound } from "next/navigation"
 export type LocalePageParams = Promise<{ locale: string }>
 export type LocaleSlugPageParams = Promise<{ locale: string; slug: string }>
 
-export function requireSupportedLocale(locale: string): AppLocale {
+function requireSupportedLocale(locale: string): AppLocale {
     if (!isSupportedLocale(locale)) {
         notFound()
     }

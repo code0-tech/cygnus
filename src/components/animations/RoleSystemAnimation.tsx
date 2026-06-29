@@ -3,7 +3,7 @@
 import { Text } from "@code0-tech/pictor"
 import { StableBadge } from "../ui/StableBadge"
 import { useInView, useReducedMotion } from "motion/react"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef } from "react"
 import { Card } from "../ui/Card"
 
 interface RoleItem {
@@ -20,10 +20,10 @@ interface RoleSystemAnimationProps {
 
 export function RoleSystemAnimation({ roles }: RoleSystemAnimationProps) {
     const containerRef = useRef<HTMLDivElement>(null)
+    const animationRef = useRef<HTMLDivElement>(null)
     const listRef = useRef<HTMLDivElement>(null)
     const isInView = useInView(containerRef, { amount: 0.2 })
     const prefersReducedMotion = useReducedMotion()
-    const [loopDistance, setLoopDistance] = useState(0)
     const groupGap = 16
     const velocity = 30
 
@@ -35,7 +35,10 @@ export function RoleSystemAnimation({ roles }: RoleSystemAnimationProps) {
             const entry = entries[0]
             if (!entry) return
 
-            setLoopDistance(Math.round(entry.contentRect.height + groupGap))
+            const loopDistance = Math.round(entry.contentRect.height + groupGap)
+            if (animationRef.current) {
+                animationRef.current.style.animationDuration = `${loopDistance / velocity}s`
+            }
         })
         resizeObserver.observe(listElement)
 
@@ -43,8 +46,6 @@ export function RoleSystemAnimation({ roles }: RoleSystemAnimationProps) {
     }, [])
 
     if (!roles.length) return null
-
-    const duration = loopDistance > 0 ? loopDistance / velocity : 0
 
     const renderRoleCard = (role: RoleItem, copy: "primary" | "duplicate") => (
         <Card key={`${copy}-${role.id}`} className="w-full p-3 md:p-5 bg-primary">
@@ -65,18 +66,15 @@ export function RoleSystemAnimation({ roles }: RoleSystemAnimationProps) {
     return (
         <div ref={containerRef} className="relative flex h-full w-full cursor-default items-start justify-center overflow-hidden">
             <div
+                ref={animationRef}
                 className="flex flex-col items-center gap-4 will-change-transform"
-                style={
-                    loopDistance > 0
-                        ? {
-                              animationName: "role-marquee-up",
-                              animationDuration: `${duration}s`,
-                              animationTimingFunction: "linear",
-                              animationIterationCount: "infinite",
-                              animationPlayState: isInView && !prefersReducedMotion ? "running" : "paused",
-                          }
-                        : undefined
-                }
+                style={{
+                    animationName: "role-marquee-up",
+                    animationDuration: "0s",
+                    animationTimingFunction: "linear",
+                    animationIterationCount: "infinite",
+                    animationPlayState: isInView && !prefersReducedMotion ? "running" : "paused",
+                }}
             >
                 <div ref={listRef} className="flex flex-col items-center gap-4">
                     {roles.map((role) => renderRoleCard(role, "primary"))}

@@ -3,11 +3,19 @@
 import { Card, Flex, Text } from "@code0-tech/pictor"
 import { IconNote, IconVariable } from "@tabler/icons-react"
 import { useInView, useReducedMotion } from "motion/react"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef } from "react"
 import { StableBadge } from "../ui/StableBadge"
 
 type NodeSegmentType = "text" | "literal" | "reference" | "node"
 type NodeAccent = "brand" | "yellow" | "aqua" | "blue" | "pink"
+
+const ICON_COLOR_MAP: Record<NodeAccent, string> = {
+    brand: "var(--text-brand)",
+    yellow: "var(--text-yellow)",
+    aqua: "var(--text-aqua)",
+    blue: "var(--text-blue)",
+    pink: "var(--text-pink)",
+}
 
 export interface NodeSegment {
     type: NodeSegmentType
@@ -21,17 +29,10 @@ export interface NodeItem {
 }
 
 function NodeRow({ nodes, direction, active }: { nodes: NodeItem[]; direction: "left" | "right"; active: boolean }) {
+    const animationRef = useRef<HTMLDivElement>(null)
     const listRef = useRef<HTMLDivElement>(null)
-    const [loopDistance, setLoopDistance] = useState(0)
     const groupGap = 16
     const velocity = 28
-    const iconColorMap: Record<NodeAccent, string> = {
-        brand: "var(--text-brand)",
-        yellow: "var(--text-yellow)",
-        aqua: "var(--text-aqua)",
-        blue: "var(--text-blue)",
-        pink: "var(--text-pink)",
-    }
 
     const displayMessage = (segments: NodeSegment[]) => {
         return segments.map((segment, index) => {
@@ -78,35 +79,33 @@ function NodeRow({ nodes, direction, active }: { nodes: NodeItem[]; direction: "
             const entry = entries[0]
             if (!entry) return
 
-            setLoopDistance(Math.round(entry.contentRect.width + groupGap))
+            const loopDistance = Math.round(entry.contentRect.width + groupGap)
+            if (animationRef.current) {
+                animationRef.current.style.animationDuration = `${loopDistance / velocity}s`
+            }
         })
         resizeObserver.observe(listElement)
 
         return () => resizeObserver.disconnect()
     }, [])
 
-    const duration = loopDistance > 0 ? loopDistance / velocity : 0
-
     return (
         <div
+            ref={animationRef}
             className="flex w-max items-start gap-4 will-change-transform"
-            style={
-                loopDistance > 0
-                    ? {
-                          animationName: direction === "left" ? "node-marquee-left" : "node-marquee-right",
-                          animationDuration: `${duration}s`,
-                          animationTimingFunction: "linear",
-                          animationIterationCount: "infinite",
-                          animationPlayState: active ? "running" : "paused",
-                      }
-                    : undefined
-            }
+            style={{
+                animationName: direction === "left" ? "node-marquee-left" : "node-marquee-right",
+                animationDuration: "0s",
+                animationTimingFunction: "linear",
+                animationIterationCount: "infinite",
+                animationPlayState: active ? "running" : "paused",
+            }}
         >
             <div ref={listRef} className="flex items-start gap-4">
                 {nodes.map((node, index) => (
                     <Card key={`${direction}-${node.color}-${index}`} paddingSize="xs" py="0.35" borderColor="info" color="primary" outline={node.outline}>
                         <Flex align="center" style={{ gap: "0.7rem" }}>
-                            <IconNote color={iconColorMap[node.color]} size={16} />
+                            <IconNote color={ICON_COLOR_MAP[node.color]} size={16} />
                             <Flex align="center" wrap="wrap" style={{ gap: "0.35rem", color: "var(--color-text-primary)" }}>
                                 {displayMessage(node.segments)}
                             </Flex>
@@ -118,7 +117,7 @@ function NodeRow({ nodes, direction, active }: { nodes: NodeItem[]; direction: "
                 {nodes.map((node, index) => (
                     <Card key={`${direction}-clone-${node.color}-${index}`} paddingSize="xs" py="0.35" borderColor="info" color="primary" outline={node.outline}>
                         <Flex align="center" style={{ gap: "0.7rem" }}>
-                            <IconNote color={iconColorMap[node.color]} size={16} />
+                            <IconNote color={ICON_COLOR_MAP[node.color]} size={16} />
                             <Flex align="center" wrap="wrap" style={{ gap: "0.35rem", color: "var(--color-text-primary)" }}>
                                 {displayMessage(node.segments)}
                             </Flex>

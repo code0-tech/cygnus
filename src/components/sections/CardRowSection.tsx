@@ -19,33 +19,19 @@ function getImageUrl(image: number | Media | null | undefined) {
     return typeof image === "object" ? getMediaUrl(image?.url) : ""
 }
 
+const STAGGER_CONTAINER: Variants = {
+    hidden: {},
+    show: { transition: { staggerChildren: 0.08, delayChildren: 0.04 } },
+}
+const STAGGER_ITEM: Variants = {
+    hidden: { opacity: 0, y: 14, scale: 0.985 },
+    show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.48, ease: [0.22, 1, 0.36, 1] } },
+}
+
 export function CardRowSection({ content, children }: CardRowSectionProps) {
     const cards = content?.cards?.filter((card) => Boolean(card.title)) ?? []
     const fallbackImages = Children.toArray(children)
     if (cards.length === 0) return null
-
-    const staggerContainer: Variants = {
-        hidden: {},
-        show: {
-            transition: {
-                staggerChildren: 0.08,
-                delayChildren: 0.04,
-            },
-        },
-    }
-
-    const staggerItem: Variants = {
-        hidden: { opacity: 0, y: 14, scale: 0.985 },
-        show: {
-            opacity: 1,
-            y: 0,
-            scale: 1,
-            transition: {
-                duration: 0.48,
-                ease: [0.22, 1, 0.36, 1],
-            },
-        },
-    }
 
     return (
         <Section
@@ -55,7 +41,7 @@ export function CardRowSection({ content, children }: CardRowSectionProps) {
             funnelType={content?.sectionLayout ?? "left"}
             animation={{ preset: "none" }}
         >
-            <motion.div className="grid grid-cols-1 gap-16 lg:grid-cols-3 lg:gap-8 z-10" variants={staggerContainer} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.15 }}>
+            <motion.div className="grid grid-cols-1 gap-16 lg:grid-cols-3 lg:gap-8 z-10" variants={STAGGER_CONTAINER} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.15 }}>
                 {cards.map((card, index) => {
                     const mediaImage = typeof card.image === "object" ? card.image : null
                     const imageUrl = getImageUrl(card.image)
@@ -64,7 +50,7 @@ export function CardRowSection({ content, children }: CardRowSectionProps) {
                     return (
                         <Card
                             key={card.id ?? `${card.title}-${index}`}
-                            variants={staggerItem}
+                            variants={STAGGER_ITEM}
                             size={"lg"}
                             className="group flex h-full p-2! transform-gpu flex-col will-change-transform before:pointer-events-none before:absolute before:inset-1px before:rounded-[calc(1.5rem-1px)] before:border before:border-white/5 before:content-['']"
                         >

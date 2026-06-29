@@ -64,6 +64,28 @@ interface SectionProps {
     }
 }
 
+const DEFAULT_SECTION_ANIMATION: NonNullable<SectionProps["animation"]> = {}
+const staggerContainer: Variants = {
+    hidden: {},
+    show: {
+        transition: {
+            staggerChildren: 0.1,
+            delayChildren: 0.04,
+        },
+    },
+}
+const staggerItem: Variants = {
+    hidden: { opacity: 0, y: 16 },
+    show: {
+        opacity: 1,
+        y: 0,
+        transition: {
+            duration: 0.4,
+            ease: [0.22, 1, 0.36, 1],
+        },
+    },
+}
+
 export function Section({
     heading,
     description,
@@ -74,7 +96,7 @@ export function Section({
     showFunnel = true,
     showLinkButton = true,
     fullHeight = false,
-    animation = {},
+    animation = DEFAULT_SECTION_ANIMATION,
     headingLevel = 2,
 }: SectionProps) {
     const { preset = "fade-up", delay = 0, duration, once = true, viewportAmount = 0.2, viewportMargin } = animation
@@ -85,26 +107,6 @@ export function Section({
     const linkUrl = rawLinkUrl ? localizeHref(rawLinkUrl, locale) : undefined
     const shouldShowFunnel = showFunnel && Boolean(heading || description || (showLinkButton && linkUrl && linkButton?.label))
     const animationConfig = preset === "none" ? null : ANIMATION_PRESETS[preset]
-    const staggerContainer: Variants = {
-        hidden: {},
-        show: {
-            transition: {
-                staggerChildren: 0.1,
-                delayChildren: 0.04,
-            },
-        },
-    }
-    const staggerItem: Variants = {
-        hidden: { opacity: 0, y: 16 },
-        show: {
-            opacity: 1,
-            y: 0,
-            transition: {
-                duration: 0.4,
-                ease: [0.22, 1, 0.36, 1],
-            },
-        },
-    }
     const headingTag = `h${headingLevel}` as const
     const headingClassName = cn("text-4xl font-semibold", hasHighlightedHeading(heading) ? "text-secondary" : "text-white")
 

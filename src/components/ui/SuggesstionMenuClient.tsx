@@ -46,150 +46,150 @@ function SuggestionContent({ suggestion }: { suggestion: SuggestionWithType }) {
     )
 }
 
-export function SuggesstionMenuClient() {
-    const iconMap: Record<FunctionSuggestionType, ReactNode> = {
-        [FunctionSuggestionType.FUNCTION]: <IconNote className="text-brand" size={16} />,
-        [FunctionSuggestionType.FUNCTION_COMBINATION]: <IconNote className="text-brand" size={16} />,
-        [FunctionSuggestionType.REF_OBJECT]: <IconVariable className="text-warning" size={16} />,
-        [FunctionSuggestionType.VALUE]: <IconCircleDot className="text-error" size={16} />,
-        [FunctionSuggestionType.DATA_TYPE]: <IconCircleDot className="text-error" size={16} />,
+const iconMap: Record<FunctionSuggestionType, ReactNode> = {
+    [FunctionSuggestionType.FUNCTION]: <IconNote className="text-brand" size={16} />,
+    [FunctionSuggestionType.FUNCTION_COMBINATION]: <IconNote className="text-brand" size={16} />,
+    [FunctionSuggestionType.REF_OBJECT]: <IconVariable className="text-warning" size={16} />,
+    [FunctionSuggestionType.VALUE]: <IconCircleDot className="text-error" size={16} />,
+    [FunctionSuggestionType.DATA_TYPE]: <IconCircleDot className="text-error" size={16} />,
+}
+
+const suggestions: SuggestionWithType[] = [
+    {
+        children: "Boolean as Number",
+        value: "Boolean as Number",
+        valueData: { id: "variable_1", type: "variable", label: "Boolean as Number" },
+        groupBy: "Variables",
+        insertMode: "insert",
+        suggestionType: FunctionSuggestionType.REF_OBJECT,
+    },
+    {
+        children: "Boolean from Number",
+        value: "boolean-from-number",
+        valueData: { id: "std_boolean_1", type: "action", label: "Boolean from Number" },
+        groupBy: "STD::BOOLEAN",
+        insertMode: "insert",
+        suggestionType: FunctionSuggestionType.FUNCTION,
+    },
+    {
+        children: "Boolean from Text",
+        value: "boolean-from-text",
+        valueData: { id: "std_boolean_2", type: "action", label: "Boolean from Text" },
+        groupBy: "STD::BOOLEAN",
+        insertMode: "insert",
+        suggestionType: FunctionSuggestionType.FUNCTION,
+    },
+    {
+        children: "Is Equal",
+        value: "is-equal-boolean",
+        valueData: { id: "std_boolean_3", type: "action", label: "Is Equal" },
+        groupBy: "STD::BOOLEAN",
+        insertMode: "insert",
+        suggestionType: FunctionSuggestionType.FUNCTION,
+    },
+    {
+        children: "Negate Boolean",
+        value: "negate-boolean",
+        valueData: { id: "std_boolean_4", type: "action", label: "Negate Boolean" },
+        groupBy: "STD::BOOLEAN",
+        insertMode: "insert",
+        suggestionType: FunctionSuggestionType.FUNCTION,
+    },
+    {
+        children: "Get Element of List",
+        value: "get-element-of-list",
+        valueData: { id: "std_list_1", type: "action", label: "Get Element of List" },
+        groupBy: "STD::LIST",
+        insertMode: "insert",
+        suggestionType: FunctionSuggestionType.FUNCTION,
+    },
+    {
+        children: "Find Element in List",
+        value: "find-element-in-list",
+        valueData: { id: "std_list_2", type: "action", label: "Find Element in List" },
+        groupBy: "STD::LIST",
+        insertMode: "insert",
+        suggestionType: FunctionSuggestionType.FUNCTION,
+    },
+    {
+        children: "Find Last Element in List",
+        value: "find-last-element-in-list",
+        valueData: { id: "std_list_3", type: "action", label: "Find Last Element in List" },
+        groupBy: "STD::LIST",
+        insertMode: "insert",
+        suggestionType: FunctionSuggestionType.FUNCTION,
+    },
+    {
+        children: "First Element of List",
+        value: "first-element-of-list",
+        valueData: { id: "std_list_4", type: "action", label: "First Element of List" },
+        groupBy: "STD::LIST",
+        insertMode: "insert",
+        suggestionType: FunctionSuggestionType.FUNCTION,
+    },
+    {
+        children: "Is List Empty",
+        value: "is-list-empty",
+        valueData: { id: "std_list_5", type: "action", label: "Is List Empty" },
+        groupBy: "STD::LIST",
+        insertMode: "insert",
+        suggestionType: FunctionSuggestionType.FUNCTION,
+    },
+    {
+        children: "Last Element of List",
+        value: "last-element-of-list",
+        valueData: { id: "std_list_6", type: "action", label: "Last Element of List" },
+        groupBy: "STD::LIST",
+        insertMode: "insert",
+        suggestionType: FunctionSuggestionType.FUNCTION,
+    },
+    {
+        children: "Pop from List",
+        value: "pop-from-list",
+        valueData: { id: "std_list_7", type: "action", label: "Pop from List" },
+        groupBy: "STD::LIST",
+        insertMode: "insert",
+        suggestionType: FunctionSuggestionType.FUNCTION,
+    },
+    {
+        children: "Is Equal",
+        value: "is-equal-number",
+        valueData: { id: "std_number_1", type: "action", label: "Is Equal" },
+        groupBy: "STD::NUMBER",
+        insertMode: "insert",
+        suggestionType: FunctionSuggestionType.FUNCTION,
+    },
+    {
+        children: "Is Greater",
+        value: "is-greater",
+        valueData: { id: "std_number_2", type: "action", label: "Is Greater" },
+        groupBy: "STD::NUMBER",
+        insertMode: "insert",
+        suggestionType: FunctionSuggestionType.FUNCTION,
+    },
+    {
+        children: "Is Less",
+        value: "is-less",
+        valueData: { id: "std_number_3", type: "action", label: "Is Less" },
+        groupBy: "STD::NUMBER",
+        insertMode: "insert",
+        suggestionType: FunctionSuggestionType.FUNCTION,
+    },
+]
+
+const groupedSuggestions = suggestions.reduce<Record<string, SuggestionWithType[]>>((acc, suggestion) => {
+    const group = suggestion.groupBy || "Suggestions"
+
+    if (!acc[group]) {
+        acc[group] = []
     }
 
-    const suggestions: SuggestionWithType[] = [
-        {
-            children: "Boolean as Number",
-            value: "Boolean as Number",
-            valueData: { id: "variable_1", type: "variable", label: "Boolean as Number" },
-            groupBy: "Variables",
-            insertMode: "insert",
-            suggestionType: FunctionSuggestionType.REF_OBJECT,
-        },
-        {
-            children: "Boolean from Number",
-            value: "boolean-from-number",
-            valueData: { id: "std_boolean_1", type: "action", label: "Boolean from Number" },
-            groupBy: "STD::BOOLEAN",
-            insertMode: "insert",
-            suggestionType: FunctionSuggestionType.FUNCTION,
-        },
-        {
-            children: "Boolean from Text",
-            value: "boolean-from-text",
-            valueData: { id: "std_boolean_2", type: "action", label: "Boolean from Text" },
-            groupBy: "STD::BOOLEAN",
-            insertMode: "insert",
-            suggestionType: FunctionSuggestionType.FUNCTION,
-        },
-        {
-            children: "Is Equal",
-            value: "is-equal-boolean",
-            valueData: { id: "std_boolean_3", type: "action", label: "Is Equal" },
-            groupBy: "STD::BOOLEAN",
-            insertMode: "insert",
-            suggestionType: FunctionSuggestionType.FUNCTION,
-        },
-        {
-            children: "Negate Boolean",
-            value: "negate-boolean",
-            valueData: { id: "std_boolean_4", type: "action", label: "Negate Boolean" },
-            groupBy: "STD::BOOLEAN",
-            insertMode: "insert",
-            suggestionType: FunctionSuggestionType.FUNCTION,
-        },
-        {
-            children: "Get Element of List",
-            value: "get-element-of-list",
-            valueData: { id: "std_list_1", type: "action", label: "Get Element of List" },
-            groupBy: "STD::LIST",
-            insertMode: "insert",
-            suggestionType: FunctionSuggestionType.FUNCTION,
-        },
-        {
-            children: "Find Element in List",
-            value: "find-element-in-list",
-            valueData: { id: "std_list_2", type: "action", label: "Find Element in List" },
-            groupBy: "STD::LIST",
-            insertMode: "insert",
-            suggestionType: FunctionSuggestionType.FUNCTION,
-        },
-        {
-            children: "Find Last Element in List",
-            value: "find-last-element-in-list",
-            valueData: { id: "std_list_3", type: "action", label: "Find Last Element in List" },
-            groupBy: "STD::LIST",
-            insertMode: "insert",
-            suggestionType: FunctionSuggestionType.FUNCTION,
-        },
-        {
-            children: "First Element of List",
-            value: "first-element-of-list",
-            valueData: { id: "std_list_4", type: "action", label: "First Element of List" },
-            groupBy: "STD::LIST",
-            insertMode: "insert",
-            suggestionType: FunctionSuggestionType.FUNCTION,
-        },
-        {
-            children: "Is List Empty",
-            value: "is-list-empty",
-            valueData: { id: "std_list_5", type: "action", label: "Is List Empty" },
-            groupBy: "STD::LIST",
-            insertMode: "insert",
-            suggestionType: FunctionSuggestionType.FUNCTION,
-        },
-        {
-            children: "Last Element of List",
-            value: "last-element-of-list",
-            valueData: { id: "std_list_6", type: "action", label: "Last Element of List" },
-            groupBy: "STD::LIST",
-            insertMode: "insert",
-            suggestionType: FunctionSuggestionType.FUNCTION,
-        },
-        {
-            children: "Pop from List",
-            value: "pop-from-list",
-            valueData: { id: "std_list_7", type: "action", label: "Pop from List" },
-            groupBy: "STD::LIST",
-            insertMode: "insert",
-            suggestionType: FunctionSuggestionType.FUNCTION,
-        },
-        {
-            children: "Is Equal",
-            value: "is-equal-number",
-            valueData: { id: "std_number_1", type: "action", label: "Is Equal" },
-            groupBy: "STD::NUMBER",
-            insertMode: "insert",
-            suggestionType: FunctionSuggestionType.FUNCTION,
-        },
-        {
-            children: "Is Greater",
-            value: "is-greater",
-            valueData: { id: "std_number_2", type: "action", label: "Is Greater" },
-            groupBy: "STD::NUMBER",
-            insertMode: "insert",
-            suggestionType: FunctionSuggestionType.FUNCTION,
-        },
-        {
-            children: "Is Less",
-            value: "is-less",
-            valueData: { id: "std_number_3", type: "action", label: "Is Less" },
-            groupBy: "STD::NUMBER",
-            insertMode: "insert",
-            suggestionType: FunctionSuggestionType.FUNCTION,
-        },
-    ]
+    acc[group].push(suggestion)
+    return acc
+}, {})
+const groupedEntries = Object.entries(groupedSuggestions)
 
-    const groupedSuggestions = suggestions.reduce<Record<string, SuggestionWithType[]>>((acc, suggestion) => {
-        const group = suggestion.groupBy || "Suggestions"
-
-        if (!acc[group]) {
-            acc[group] = []
-        }
-
-        acc[group].push(suggestion)
-        return acc
-    }, {})
-    const groupedEntries = Object.entries(groupedSuggestions)
-
+export function SuggesstionMenuClient() {
     return (
         <Card size="lg" className="w-full bg-primary/50 p-2">
             <div className="relative z-20 flex flex-col gap-2 rounded-[1.25rem] bg-primary p-2">

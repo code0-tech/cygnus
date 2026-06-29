@@ -21,6 +21,15 @@ type NavigationMobileProps = {
     logo?: NavigationLogoData
 }
 
+const MENU_TRANSITION = {
+    duration: 0.34,
+    ease: [0.16, 1, 0.3, 1] as const,
+}
+const SHELL_TRANSITION = {
+    duration: 0.46,
+    ease: [0.16, 1, 0.3, 1] as const,
+}
+
 const NavigationMobile: React.FC<NavigationMobileProps> = ({ homeHref, items: navbarItems, buttons: navbarButtons, logo: navigationLogo }) => {
     const { trigger } = useWebHaptics()
     const menuRef = useOutsideClick<HTMLElement>(() => setIsOpen(false))
@@ -32,14 +41,6 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({ homeHref, items: na
     const [isMenuClosing, setIsMenuClosing] = useState(false)
     const [shellInsetWidth, setShellInsetWidth] = useState(0)
     const [menuHeight, setMenuHeight] = useState(0)
-    const menuTransition = {
-        duration: 0.34,
-        ease: [0.16, 1, 0.3, 1] as const,
-    }
-    const shellTransition = {
-        duration: 0.46,
-        ease: [0.16, 1, 0.3, 1] as const,
-    }
     const isShellExpanded = isOpen || isMenuClosing
     const isScrolled = useNavigationScrollState({
         onScroll: isOpen ? () => setIsOpen(false) : undefined,
@@ -126,7 +127,7 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({ homeHref, items: na
                             scaleX: shellScale,
                         }}
                         style={{ transformOrigin: "center" }}
-                        transition={shellTransition}
+                        transition={SHELL_TRANSITION}
                     />
                     <motion.div
                         className="pointer-events-none absolute inset-0 z-10 rounded-2xl border border-white/5 will-change-transform"
@@ -136,7 +137,7 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({ homeHref, items: na
                             opacity: isScrolled || isShellExpanded ? 1 : 0,
                         }}
                         style={{ transformOrigin: "center" }}
-                        transition={shellTransition}
+                        transition={SHELL_TRANSITION}
                     />
                     <motion.div className="relative z-10 flex flex-col overflow-hidden rounded-2xl py-1.5" initial={false}>
                         <motion.div
@@ -146,7 +147,7 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({ homeHref, items: na
                                 paddingLeft: headerInlinePadding,
                                 paddingRight: headerRightPadding,
                             }}
-                            transition={shellTransition}
+                            transition={SHELL_TRANSITION}
                         >
                             <Link
                                 href={homeHref}
@@ -188,11 +189,11 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({ homeHref, items: na
                                     }}
                                     exit={{ opacity: 0, y: -4, height: 0 }}
                                     transition={{
-                                        height: menuTransition,
+                                        height: MENU_TRANSITION,
                                         opacity: { duration: 0.18, ease: "easeOut" },
-                                        y: menuTransition,
-                                        paddingLeft: shellTransition,
-                                        paddingRight: shellTransition,
+                                        y: MENU_TRANSITION,
+                                        paddingLeft: SHELL_TRANSITION,
+                                        paddingRight: SHELL_TRANSITION,
                                     }}
                                     style={{ overflow: "hidden" }}
                                     className="flex flex-col gap-2 mt-2"

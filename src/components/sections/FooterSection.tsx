@@ -16,17 +16,17 @@ interface FooterSectionProps {
     currentYear: number
 }
 
+const SOCIAL_ICONS = {
+    instagram: SiInstagram,
+    discord: SiDiscord,
+    x: SiX,
+    linkedin: IconBrandLinkedin,
+    github: SiGithub,
+} as const
+
 export const FooterSection: React.FC<FooterSectionProps> = ({ locale, footer, currentYear }) => {
     const { trigger } = useWebHaptics()
     if (!footer) return null
-
-    const socialIcons = {
-        instagram: SiInstagram,
-        discord: SiDiscord,
-        x: SiX,
-        linkedin: IconBrandLinkedin,
-        github: SiGithub,
-    } as const
 
     const legalLinks = [
         footer.legalLinks?.privacy?.url && footer.legalLinks?.privacy?.label
@@ -77,7 +77,7 @@ export const FooterSection: React.FC<FooterSectionProps> = ({ locale, footer, cu
                             {footer.contactEmail && <div className="h-4 w-px bg-white/10" />}
                             <div className="flex items-center gap-4">
                                 {(footer.socialLinks ?? []).map((socialLink) => {
-                                    const Icon = socialLink.platform ? socialIcons[socialLink.platform] : null
+                                    const Icon = socialLink.platform ? SOCIAL_ICONS[socialLink.platform] : null
                                     if (!Icon || !socialLink.url) return null
 
                                     return (

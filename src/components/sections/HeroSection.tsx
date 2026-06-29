@@ -17,29 +17,19 @@ interface HeroSectionProps {
     imageSrc?: string
 }
 
+const STAGGER_CONTAINER: Variants = {
+    hidden: {},
+    show: { transition: { staggerChildren: 0.08, delayChildren: 0 } },
+}
+const STAGGER_ITEM: Variants = {
+    hidden: { opacity: 0, y: 12 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] } },
+}
+
 export function HeroSection({ content, imageSrc = "/code0_software.png" }: HeroSectionProps) {
     const [isProductHuntBadgeVisible, setIsProductHuntBadgeVisible] = useState(false)
 
     if (!content?.heading) return
-
-    const staggerContainer: Variants = {
-        hidden: {},
-        show: {
-            transition: {
-                staggerChildren: 0.08,
-                delayChildren: 0,
-            },
-        },
-    }
-
-    const staggerItem: Variants = {
-        hidden: { opacity: 0, y: 12 },
-        show: {
-            opacity: 1,
-            y: 0,
-            transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] },
-        },
-    }
 
     const texts = content.texts?.map((item) => item.text).filter(Boolean) ?? []
     const buttons = content.buttons?.filter((button) => Boolean(button.label && button.url)) ?? []
@@ -62,17 +52,17 @@ export function HeroSection({ content, imageSrc = "/code0_software.png" }: HeroS
                     />
                     <motion.div
                         className="relative z-20 flex flex-col items-center justify-center gap-10 p-8 lg:p-16"
-                        variants={staggerContainer}
+                        variants={STAGGER_CONTAINER}
                         initial="hidden"
                         whileInView="show"
                         viewport={{ once: true, amount: 0.25 }}
                     >
                         <div className="flex w-full max-w-6xl flex-col items-center gap-4">
-                            <motion.h1 variants={staggerItem} className="relative z-10 text-balance text-3xl font-bold text-white lg:text-5xl text-center">
+                            <motion.h1 variants={STAGGER_ITEM} className="relative z-10 text-balance text-3xl font-bold text-white lg:text-5xl text-center">
                                 {content.heading}
                             </motion.h1>
 
-                            <motion.p variants={staggerItem} className="relative z-10 max-w-2xl text-base font-medium text-pretty text-secondary lg:text-xl text-center">
+                            <motion.p variants={STAGGER_ITEM} className="relative z-10 max-w-2xl text-base font-medium text-pretty text-secondary lg:text-xl text-center">
                                 {texts.map((text, index) => (
                                     <React.Fragment key={`${text}-${index}`}>
                                         {text}
@@ -81,7 +71,7 @@ export function HeroSection({ content, imageSrc = "/code0_software.png" }: HeroS
                                 ))}
                             </motion.p>
 
-                            <motion.div variants={staggerItem} className="mt-4 flex w-full flex-col items-center gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:gap-4">
+                            <motion.div variants={STAGGER_ITEM} className="mt-4 flex w-full flex-col items-center gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:gap-4">
                                 {buttons.map((button, index) => (
                                     <HapticButtonLink
                                         href={button.url}
@@ -146,13 +136,13 @@ export function HeroSection({ content, imageSrc = "/code0_software.png" }: HeroS
 
                 <motion.div
                     className={"relative z-20 flex h-full flex-col items-center justify-between gap-8 rounded-3xl p-8 lg:flex-row lg:p-16"}
-                    variants={staggerContainer}
+                    variants={STAGGER_CONTAINER}
                     initial="hidden"
                     whileInView="show"
                     viewport={{ once: true, amount: 0.25 }}
                 >
                     <div className="w-full lg:w-2/5 flex flex-col gap-4 text-start">
-                        <motion.div variants={staggerItem}>
+                        <motion.div variants={STAGGER_ITEM}>
                             <Link href={content.badge_link ?? ""}>
                                 <StableBadge className="group relative z-10 text-xs px-3 cursor-pointer" color="info">
                                     {content.badge}
@@ -161,11 +151,11 @@ export function HeroSection({ content, imageSrc = "/code0_software.png" }: HeroS
                             </Link>
                         </motion.div>
 
-                        <motion.h1 variants={staggerItem} className="relative z-10 font-bold text-3xl lg:text-4xl text-white text-balance">
+                        <motion.h1 variants={STAGGER_ITEM} className="relative z-10 font-bold text-3xl lg:text-4xl text-white text-balance">
                             {content.heading}
                         </motion.h1>
 
-                        <motion.p variants={staggerItem} className="relative z-10 font-medium text-white text-base lg:text-xl text-pretty">
+                        <motion.p variants={STAGGER_ITEM} className="relative z-10 font-medium text-white text-base lg:text-xl text-pretty">
                             {texts.length > 0 &&
                                 texts.map((text, index) => (
                                     <React.Fragment key={`${text}-${index}`}>
@@ -175,7 +165,7 @@ export function HeroSection({ content, imageSrc = "/code0_software.png" }: HeroS
                                 ))}
                         </motion.p>
 
-                        <motion.div variants={staggerItem} className={"flex flex-col gap-2 sm:gap-4 mt-4"}>
+                        <motion.div variants={STAGGER_ITEM} className={"flex flex-col gap-2 sm:gap-4 mt-4"}>
                             {buttons.map((button, index) => (
                                 <HapticButtonLink
                                     href={button.url}

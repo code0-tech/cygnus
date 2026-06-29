@@ -20,6 +20,16 @@ type NavigationDesktopProps = {
     logo?: NavigationLogoData
 }
 
+const NAV_ITEM_CLASS_NAME = "relative z-50 flex cursor-pointer items-center gap-2 rounded-xl px-4 py-1 font-medium"
+const NAV_TRIGGER_CLASS_NAME = cn(
+    NAV_ITEM_CLASS_NAME,
+    "h-auto pr-1 bg-transparent text-base text-white hover:bg-transparent focus:bg-transparent data-popup-open:bg-transparent data-open:bg-transparent"
+)
+const SHELL_TRANSITION = {
+    duration: 0.5,
+    ease: [0.16, 1, 0.3, 1],
+} as const
+
 const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ homeHref, items: navbarItems, buttons: navbarButtons, logo: navigationLogo }) => {
     const rootRef = useRef<HTMLDivElement>(null)
     const navTabsRef = useRef<HTMLDivElement>(null)
@@ -37,17 +47,8 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ homeHref, items: 
         },
     })
 
-    const navItemClassName = "relative z-50 flex cursor-pointer items-center gap-2 rounded-xl px-4 py-1 font-medium"
-    const navTriggerClassName = cn(
-        navItemClassName,
-        "h-auto pr-1 bg-transparent text-base text-white hover:bg-transparent focus:bg-transparent data-popup-open:bg-transparent data-open:bg-transparent"
-    )
     const activeMenuItem = navbarItems.find((item) => item.title === activeMenuValue)
     const activeSubMenu = activeMenuItem?.subMenu?.length ? activeMenuItem.subMenu : null
-    const shellTransition = {
-        duration: 0.5,
-        ease: [0.16, 1, 0.3, 1],
-    } as const
     const shellInset = isScrolled ? shellInsetWidth + 14 : 0
     const contentInset = isScrolled ? shellInsetWidth + 20 : 12
 
@@ -124,7 +125,7 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ homeHref, items: 
                             left: shellInset,
                             right: shellInset,
                         }}
-                        transition={shellTransition}
+                        transition={SHELL_TRANSITION}
                     />
                     <motion.div
                         className="pointer-events-none absolute inset-0 z-10 rounded-2xl border border-white/5"
@@ -134,7 +135,7 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ homeHref, items: 
                             right: shellInset,
                             opacity: isScrolled ? 1 : 0,
                         }}
-                        transition={shellTransition}
+                        transition={SHELL_TRANSITION}
                     />
                     <motion.div
                         className="relative z-10 flex flex-col overflow-visible rounded-2xl p-1.5"
@@ -143,7 +144,7 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ homeHref, items: 
                             paddingLeft: isScrolled ? contentInset : 0,
                             paddingRight: isScrolled ? contentInset : 0,
                         }}
-                        transition={shellTransition}
+                        transition={SHELL_TRANSITION}
                     >
                         <div className={"w-full h-full flex items-center justify-between gap-2"}>
                             <Link href={homeHref}>
@@ -202,7 +203,7 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ homeHref, items: 
                                                                     }
                                                                 }}
                                                             >
-                                                                <NavigationMenuTrigger className={navTriggerClassName}>{item.title}</NavigationMenuTrigger>
+                                                                <NavigationMenuTrigger className={NAV_TRIGGER_CLASS_NAME}>{item.title}</NavigationMenuTrigger>
                                                             </div>
                                                             {!isScrolled && (
                                                                 <NavigationMenuContent className="p-2">
@@ -224,7 +225,7 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ homeHref, items: 
                                                         >
                                                             <NavigationMenuLink
                                                                 render={<Link href={item.href} />}
-                                                                className={cn(navItemClassName, "text-base text-white hover:bg-transparent focus:bg-transparent")}
+                                                                className={cn(NAV_ITEM_CLASS_NAME, "text-base text-white hover:bg-transparent focus:bg-transparent")}
                                                             >
                                                                 {item.title}
                                                             </NavigationMenuLink>

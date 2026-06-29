@@ -284,10 +284,11 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
                                                 style={{ left: "11px", height: 1 }}
                                             />
                                             {headings.map((heading) => (
-                                                <div key={heading.id} id={`toc-${heading.id}`} onClick={() => trigger("light")} data-toc-item="true">
+                                                <div key={heading.id} id={`toc-${heading.id}`} data-toc-item="true">
                                                     <a
                                                         href={`#${heading.id}`}
                                                         onClick={() => {
+                                                            trigger("light")
                                                             dispatchLayout({ type: "setOpen", isOpen: false })
                                                         }}
                                                         className={cn(

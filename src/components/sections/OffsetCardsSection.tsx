@@ -15,31 +15,29 @@ interface OffsetCardsSectionProps {
 }
 
 const OFFSET_CARD_ANIMATION_SEQUENCE: Exclude<AnimationPreset, "none">[] = ["slide-left", "slide-right", "slide-left"]
+const staggerContainer: Variants = {
+    hidden: {},
+    show: {
+        transition: {
+            staggerChildren: 0.08,
+            delayChildren: 0.06,
+        },
+    },
+}
+const staggerItem: Variants = {
+    hidden: { opacity: 0, y: 14 },
+    show: {
+        opacity: 1,
+        y: 0,
+        transition: {
+            duration: 0.38,
+            ease: [0.22, 1, 0.36, 1],
+        },
+    },
+}
 
 export function OffsetCardsSection({ content }: OffsetCardsSectionProps) {
     if (!content?.cards?.length) return null
-
-    const staggerContainer: Variants = {
-        hidden: {},
-        show: {
-            transition: {
-                staggerChildren: 0.08,
-                delayChildren: 0.06,
-            },
-        },
-    }
-
-    const staggerItem: Variants = {
-        hidden: { opacity: 0, y: 14 },
-        show: {
-            opacity: 1,
-            y: 0,
-            transition: {
-                duration: 0.38,
-                ease: [0.22, 1, 0.36, 1],
-            },
-        },
-    }
 
     return (
         <Section

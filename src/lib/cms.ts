@@ -266,18 +266,6 @@ const getNavigationCached = cache(async (locale: AppLocale): Promise<NavigationD
     })
 })
 
-const getNavbarItemsCached = cache(async (locale: AppLocale): Promise<NavbarItemData[]> => {
-    const navigation = await getNavigationCached(locale)
-
-    return navigation?.items?.items ?? []
-})
-
-const getNavbarButtonsCached = cache(async (locale: AppLocale): Promise<NavbarButtonData[]> => {
-    const navigation = await getNavigationCached(locale)
-
-    return navigation?.buttons?.buttons ?? []
-})
-
 const getFooterCached = cache(async (locale: AppLocale): Promise<Footer | null> => {
     return cmsFindGlobal(`getFooter(${locale})`, null, {
         slug: "footer",
@@ -499,14 +487,6 @@ export async function getLandingPage(slug = "main", locale: AppLocale = DEFAULT_
 
 export async function getNavigation(locale: AppLocale = DEFAULT_LOCALE) {
     return getNavigationCached(locale)
-}
-
-export async function getNavbarItems(locale: AppLocale = DEFAULT_LOCALE) {
-    return getNavbarItemsCached(locale)
-}
-
-export async function getNavbarButtons(locale: AppLocale = DEFAULT_LOCALE) {
-    return getNavbarButtonsCached(locale)
 }
 
 export async function getFooter(locale: AppLocale = DEFAULT_LOCALE) {
