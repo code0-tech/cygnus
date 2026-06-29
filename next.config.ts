@@ -5,7 +5,6 @@ const isDev = process.env.NODE_ENV === "development"
 
 const nextConfig: NextConfig = {
     output: "standalone",
-    productionBrowserSourceMaps: true,
     images: {
         dangerouslyAllowLocalIP: isDev,
         remotePatterns: isDev
