@@ -1,9 +1,12 @@
 "use client"
 
-import { ConsentDialog, ConsentManagerProvider, ConsentBanner, type ConsentManagerOptions, type Theme, useConsentManager } from "@c15t/nextjs"
-import { gtag } from "@c15t/scripts/google-tag"
+import { ConsentManagerProvider, type ConsentManagerOptions, useConsentManager } from "@c15t/nextjs/headless"
+
+import { ConsentBanner } from "@c15t/react/components/consent-banner"
+import type { Theme } from "@c15t/nextjs"
 import dynamic from "next/dynamic"
-import type { ReactNode } from "react"
+import { ReactNode } from "react"
+import { gtag } from "@c15t/scripts/google-tag"
 
 const LazyConsentDialog = dynamic(() => import("./LazyConsentDialog"), { ssr: false })
 
