@@ -16,27 +16,31 @@ function hasHighlightedHeading(heading?: string | null) {
     return Boolean(heading && /\*\*.*?\*\*/.test(heading))
 }
 
-function renderFormattedText(text: string) {
-    return text.split(/(\*\*.*?\*\*)/g).flatMap((part, partIndex) => {
-        const highlighted = part.startsWith("**") && part.endsWith("**") && part.length > 4
-        const value = highlighted ? part.slice(2, -2) : part
+function FormattedText({ text }: { text: string }) {
+    return (
+        <>
+            {text.split(/(\*\*.*?\*\*)/g).flatMap((part, partIndex) => {
+                const highlighted = part.startsWith("**") && part.endsWith("**") && part.length > 4
+                const value = highlighted ? part.slice(2, -2) : part
 
-        return value.split(/(\\n|\r\n|\n|\r)/g).map((linePart, lineIndex) => {
-            const key = `${partIndex}-${lineIndex}`
+                return value.split(/(\\n|\r\n|\n|\r)/g).map((linePart, lineIndex) => {
+                    const key = `${partIndex}-${lineIndex}`
 
-            if (/^(\\n|\r\n|\n|\r)$/.test(linePart)) {
-                return <br key={key} />
-            }
+                    if (/^(\\n|\r\n|\n|\r)$/.test(linePart)) {
+                        return <br key={key} />
+                    }
 
-            if (!highlighted) return linePart
+                    if (!highlighted) return linePart
 
-            return (
-                <span className="text-white" key={key}>
-                    {linePart}
-                </span>
-            )
-        })
-    })
+                    return (
+                        <span className="text-white" key={key}>
+                            {linePart}
+                        </span>
+                    )
+                })
+            })}
+        </>
+    )
 }
 
 interface SectionProps {
@@ -151,10 +155,10 @@ export function Section({
                         whileInView="show"
                         viewport={{ once, amount: 0.3 }}
                     >
-                        {createElement(motion[headingTag], { variants: staggerItem, className: headingClassName }, heading ? renderFormattedText(heading) : null)}
+                        {createElement(motion[headingTag], { variants: staggerItem, className: headingClassName }, heading ? <FormattedText text={heading} /> : null)}
                         {description && (
                             <motion.p variants={staggerItem} className="relative z-10 max-w-[90vw] text-center text-xl font-medium text-secondary lg:w-1/2">
-                                {renderFormattedText(description)}
+                                <FormattedText text={description} />
                             </motion.p>
                         )}
                         {showLinkButton && linkUrl && (
@@ -165,10 +169,10 @@ export function Section({
                     </motion.div>
                 ) : (
                     <motion.div className={"flex flex-col gap-4 text-left"} variants={staggerContainer} initial="hidden" whileInView="show" viewport={{ once, amount: 0.3 }}>
-                        {createElement(motion[headingTag], { variants: staggerItem, className: headingClassName }, heading ? renderFormattedText(heading) : null)}
+                        {createElement(motion[headingTag], { variants: staggerItem, className: headingClassName }, heading ? <FormattedText text={heading} /> : null)}
                         {description && (
                             <motion.p variants={staggerItem} className="relative z-10 max-w-[90vw] text-xl font-medium text-secondary lg:w-1/2">
-                                {renderFormattedText(description)}
+                                <FormattedText text={description} />
                             </motion.p>
                         )}
                         {showLinkButton && linkUrl && (

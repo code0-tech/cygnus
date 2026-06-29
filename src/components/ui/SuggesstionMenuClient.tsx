@@ -21,6 +21,31 @@ type SuggestionWithType = InputSuggestion & {
     suggestionType: FunctionSuggestionType
 }
 
+function SuggestionContent({ suggestion }: { suggestion: SuggestionWithType }) {
+    const label = String(suggestion.children ?? suggestion.value)
+    const isVariableReference = suggestion.suggestionType === FunctionSuggestionType.REF_OBJECT && suggestion.valueData?.type === "variable"
+
+    if (isVariableReference) {
+        return (
+            <StableBadge style={{ verticalAlign: "middle" }} color="warning" border className="py-0!">
+                <IconVariable size={12} />
+                <StableBadge color="secondary" border className="min-w-0 max-w-full border-pink/40 bg-slate-900/90! text-pink">
+                    <IconNote size={12} className="text-pink" />
+                    <Text size="sm" className="min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap" style={{ color: "inherit" }}>
+                        {label}
+                    </Text>
+                </StableBadge>
+            </StableBadge>
+        )
+    }
+
+    return (
+        <Text size="sm" className="truncate" style={{ color: "inherit" }}>
+            {label}
+        </Text>
+    )
+}
+
 export function SuggesstionMenuClient() {
     const iconMap: Record<FunctionSuggestionType, ReactNode> = {
         [FunctionSuggestionType.FUNCTION]: <IconNote className="text-brand" size={16} />,
@@ -28,31 +53,6 @@ export function SuggesstionMenuClient() {
         [FunctionSuggestionType.REF_OBJECT]: <IconVariable className="text-warning" size={16} />,
         [FunctionSuggestionType.VALUE]: <IconCircleDot className="text-error" size={16} />,
         [FunctionSuggestionType.DATA_TYPE]: <IconCircleDot className="text-error" size={16} />,
-    }
-
-    const renderSuggestionContent = (suggestion: SuggestionWithType) => {
-        const label = String(suggestion.children ?? suggestion.value)
-        const isVariableReference = suggestion.suggestionType === FunctionSuggestionType.REF_OBJECT && suggestion.valueData?.type === "variable"
-
-        if (isVariableReference) {
-            return (
-                <StableBadge style={{ verticalAlign: "middle" }} color={"warning"} border className="py-0!">
-                    <IconVariable size={12} />
-                    <StableBadge color="secondary" border className="min-w-0 max-w-full border-pink/40 bg-slate-900/90! text-pink">
-                        <IconNote size={12} className="text-pink" />
-                        <Text size="sm" className="min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap" style={{ color: "inherit" }}>
-                            {label}
-                        </Text>
-                    </StableBadge>
-                </StableBadge>
-            )
-        }
-
-        return (
-            <Text size="sm" className="truncate" style={{ color: "inherit" }}>
-                {label}
-            </Text>
-        )
     }
 
     const suggestions: SuggestionWithType[] = [
@@ -205,7 +205,7 @@ export function SuggesstionMenuClient() {
                                 {items.map((suggestion) => (
                                     <div key={`${group}-${suggestion.value}`} className="flex w-full items-center gap-3 rounded-xl bg-white/5 px-3 py-1.5 text-left text-white transition-colors">
                                         <span className="flex h-4 w-4 shrink-0 items-center justify-center">{iconMap[suggestion.suggestionType]}</span>
-                                        {renderSuggestionContent(suggestion)}
+                                        <SuggestionContent suggestion={suggestion} />
                                     </div>
                                 ))}
                             </div>
@@ -225,7 +225,7 @@ export function SuggesstionMenuClient() {
                                     {items.map((suggestion) => (
                                         <div key={`${group}-${suggestion.value}`} className="flex w-full items-center gap-3 px-3 py-1.5 text-left text-white transition-colors">
                                             <span className="flex h-4 w-4 shrink-0 items-center justify-center">{iconMap[suggestion.suggestionType]}</span>
-                                            {renderSuggestionContent(suggestion)}
+                                            <SuggestionContent suggestion={suggestion} />
                                         </div>
                                     ))}
                                 </div>
