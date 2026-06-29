@@ -129,7 +129,7 @@ export function JobApplicationForm({ jobSlug, content, locale }: JobApplicationF
     const acceptTermsInputProps = inputs.getInputProps("acceptTerms")
 
     return (
-        <Card variant={"light"} className="flex flex-col gap-4 relative min-w-0 overflow-hidden">
+        <Card variant={"light"} size="lg" className="space-y-4 p-4 min-w-0">
             <h1 className="text-4xl font-semibold text-white mb-4">{labels.applicationHeading}</h1>
             <TextInput
                 placeholder={labels.applicationNamePlaceholder}

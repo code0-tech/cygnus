@@ -51,9 +51,9 @@ export function TeamMemberCard({ member, locale }: TeamMemberCardProps) {
                 aria-label={`${member.name} details`}
                 whileTap={{ scale: 0.98 }}
             >
-                <Card variant={"light"} size="lg" className="group h-full p-4! cursor-pointer hover:bg-white/10 transition-colors">
-                    <div className="relative z-10">
-                        <div className="flex items-center gap-4 mb-4">
+                <Card variant={"light"} size="lg" className="group h-full p-4 cursor-pointer hover:bg-white/10 transition-colors">
+                    <div className="flex flex-col relative z-10 gap-2">
+                        <div className="flex items-center gap-4">
                             {imageUrl ? (
                                 <Image src={imageUrl} alt={image.alt ?? member.name} width={56} height={56} className="h-14 w-14 rounded-full object-cover" />
                             ) : (
@@ -65,9 +65,9 @@ export function TeamMemberCard({ member, locale }: TeamMemberCardProps) {
                             </div>
                         </div>
 
-                        {member.shortDescription && <p className="text-secondary leading-6 mb-3">{member.shortDescription}</p>}
+                        {member.shortDescription && <p className="text-secondary leading-6">{member.shortDescription}</p>}
                         {joinedAtLabel && (
-                            <p className="text-xs text-tertiary mt-4">
+                            <p className="text-xs text-tertiary mt-2">
                                 {joinedLabel}: {joinedAtLabel}
                             </p>
                         )}

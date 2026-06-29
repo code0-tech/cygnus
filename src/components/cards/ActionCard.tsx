@@ -18,16 +18,16 @@ export function ActionCard({ action, locale }: { action: ActionItem; locale: App
         <Link href={`/${locale}/actions/${action.slug}`} onClick={() => trigger("medium")} className="block">
             <Card size="lg" variant="light" className="p-2! transition-colors hover:bg-white/10">
                 <div className="relative z-10 flex flex-col gap-4">
-                    <div className="flex items-start gap-4">
+                    <div className="flex items-start gap-2">
                         {iconUrl && (
                             <div className="relative size-14 shrink-0 overflow-hidden rounded-2xl border border-white/5 bg-white/5">
                                 <Image src={iconUrl} alt={icon?.alt ?? action.title} fill sizes="56px" className="object-contain p-2" />
                             </div>
                         )}
 
-                        <div className="min-w-0 flex-1 mt-1">
+                        <div className="min-w-0 flex flex-col justify-center mt-1">
                             <h2 className="text-lg font-semibold leading-tight tracking-tight text-white">{action.title}</h2>
-                            {action.shortDescription && <p className="mt-2 line-clamp-2 text-sm leading-6 text-secondary">{action.shortDescription}</p>}
+                            {action.shortDescription && <p className="line-clamp-2 text-sm leading-6 text-secondary">{action.shortDescription}</p>}
                         </div>
                     </div>
                 </div>

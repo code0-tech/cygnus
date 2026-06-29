@@ -33,7 +33,7 @@ export function SwipeCard({ title, description, image, link, className }: SwipeC
             <div className="relative flex flex-col items-stretch justify-start rounded-2xl">
                 <div className={"p-2"}>
                     {imageUrl ? (
-                        <div className="relative overflow-hidden aspect-video w-full rounded-2xl border border-white/5 bg-primary/50">
+                        <div className="relative overflow-hidden aspect-video w-full rounded-2xl">
                             <Image src={imageUrl} alt={title} fill sizes="(min-width: 768px) 66vw, 100vw" className="object-fill" />
                         </div>
                     ) : (

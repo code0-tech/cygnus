@@ -51,23 +51,11 @@ export function AcceptTermsCheckbox({ locale = DEFAULT_LOCALE, className, revali
     const label: ReactNode = (
         <span className="text-sm leading-6 text-secondary">
             {labels.labelStart}{" "}
-            <Link
-                href={termsHref}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => trigger("medium")}
-                className="font-medium text-white border-b-0 border-dashed border-brand hover:text-brand hover:border-b transition-all"
-            >
+            <Link href={termsHref} target="_blank" rel="noopener noreferrer" onClick={() => trigger("medium")} className="font-medium text-white hover:text-brand transition-all">
                 {labels.termsLabel}
             </Link>{" "}
             {labels.labelJoin}{" "}
-            <Link
-                href={privacyHref}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => trigger("medium")}
-                className="font-medium text-white border-b-0 border-dashed border-brand hover:text-brand hover:border-b transition-all"
-            >
+            <Link href={privacyHref} target="_blank" rel="noopener noreferrer" onClick={() => trigger("medium")} className="font-medium text-white hover:text-brand transition-all">
                 {labels.privacyLabel}
             </Link>
             .

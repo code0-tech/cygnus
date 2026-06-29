@@ -127,7 +127,7 @@ export function ContactForm({ content, locale }: ContactFormProps) {
     const acceptTermsInputProps = inputs.getInputProps("acceptTerms")
 
     return (
-        <Card variant={"light"} className="flex flex-col gap-4 min-w-0 overflow-hidden">
+        <Card size="lg" variant={"light"} className="space-y-4 p-4 min-w-0">
             <TextInput
                 placeholder={labels.namePlaceholder}
                 label={labels.nameLabel}

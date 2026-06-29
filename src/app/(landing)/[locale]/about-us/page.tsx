@@ -14,19 +14,17 @@ export default async function AboutPage({ params }: { params: LocalePageParams }
     const aboutUsPage = await getLandingPage("about-us", locale)
     const teamMembers = await getTeamMembers(locale)
     const markdownBlock = findPageBlock(aboutUsPage, "markdown")
-    const contentHtml = markdownBlock
-        ? convertLexicalToHTML({ data: markdownBlock.content, disableContainer: true })
-        : ""
+    const contentHtml = markdownBlock ? convertLexicalToHTML({ data: markdownBlock.content, disableContainer: true }) : ""
 
     return (
         <>
             <Aurora />
             <LandingContainer className="pt-32">
-                <div className="md:w-[50vw] mx-auto">
+                <div className="max-w-5xl mx-auto">
                     <div className={"w-full md:w-[50vw] mx-auto flex flex-col gap-8"}>
                         <MarkdownContent content={contentHtml} />
                         <p className="text-3xl -mb-4">Team</p>
-                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mt-2">
+                        <div className="grid grid-cols-1 gap-4 mt-2">
                             {teamMembers.map((member) => (
                                 <TeamMemberCard key={member.id} member={member} locale={locale} />
                             ))}
