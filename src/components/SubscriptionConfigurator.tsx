@@ -2,12 +2,13 @@
 
 import type { SubscriptionConfigData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
+import { useDesktopPinnedPosition } from "@/hooks/useDesktopPinnedPosition"
 import { cn } from "@/lib/utils"
 import { BuyMenu } from "@/components/BuyMenu"
 import { Slider } from "@/components/ui/Slider"
 import { IconCheck } from "@tabler/icons-react"
 import type { ReactNode } from "react"
-import { useEffect, useRef, useState } from "react"
+import { useState } from "react"
 import { LinkButton } from "./ui/LinkButton"
 import { Card } from "./ui/Card"
 
@@ -283,10 +284,7 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
     })
     const [selectedFeatures, setSelectedFeatures] = useState<Set<number>>(new Set())
     const desktopTopOffset = 96
-    const [desktopMode, setDesktopMode] = useState<"static" | "fixed" | "bottom">("static")
-    const [desktopStyle, setDesktopStyle] = useState<{ left: number; width: number; top: number } | null>(null)
-    const desktopWrapperRef = useRef<HTMLDivElement>(null)
-    const desktopContainerRef = useRef<HTMLDivElement>(null)
+    const { wrapperRef: desktopWrapperRef, containerRef: desktopContainerRef } = useDesktopPinnedPosition<HTMLDivElement, HTMLDivElement>(desktopTopOffset)
 
     const workflowExecutionPrice = 0.001 * selection.workflowExecutions
     const additionalFeaturesPrice = Array.from(selectedFeatures).reduce((acc, idx) => acc + (resolved.additionalFeatures?.[idx]?.price ?? 0), 0)
@@ -313,73 +311,13 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
         return `${resolved.subscribe.baseUrl}?${searchParams.toString()}`
     })()
 
-    useEffect(() => {
-        const mediaQuery = window.matchMedia("(max-width: 1023px)")
-
-        const updateDesktopPosition = () => {
-            if (mediaQuery.matches) {
-                setDesktopMode("static")
-                setDesktopStyle(null)
-                return
-            }
-
-            const wrapper = desktopWrapperRef.current
-            const container = desktopContainerRef.current
-            if (!wrapper || !container) return
-
-            const wrapperRect = wrapper.getBoundingClientRect()
-            const containerHeight = container.offsetHeight
-            const wrapperHeight = wrapper.offsetHeight
-            const maxTop = Math.max(wrapperHeight - containerHeight, 0)
-            const wrapperTop = window.scrollY + wrapperRect.top
-            const fixedTop = window.scrollY + desktopTopOffset
-
-            const nextMode = fixedTop <= wrapperTop ? "static" : fixedTop >= wrapperTop + maxTop ? "bottom" : "fixed"
-
-            setDesktopMode((prev) => (prev === nextMode ? prev : nextMode))
-            setDesktopStyle((prev) =>
-                prev?.left === wrapperRect.left && prev?.width === wrapperRect.width && prev?.top === maxTop ? prev : { left: wrapperRect.left, width: wrapperRect.width, top: maxTop }
-            )
-        }
-
-        updateDesktopPosition()
-
-        const resizeObserver = new ResizeObserver(updateDesktopPosition)
-        const wrapper = desktopWrapperRef.current
-        const container = desktopContainerRef.current
-        if (wrapper) resizeObserver.observe(wrapper)
-        if (container) resizeObserver.observe(container)
-
-        window.addEventListener("scroll", updateDesktopPosition, { passive: true })
-        window.addEventListener("resize", updateDesktopPosition)
-        mediaQuery.addEventListener("change", updateDesktopPosition)
-
-        return () => {
-            resizeObserver.disconnect()
-            window.removeEventListener("scroll", updateDesktopPosition)
-            window.removeEventListener("resize", updateDesktopPosition)
-            mediaQuery.removeEventListener("change", updateDesktopPosition)
-        }
-    }, [])
-
     return (
         <>
             <div className="grid gap-8 lg:grid-cols-5">
                 <section ref={desktopWrapperRef} className="relative min-w-0 lg:col-span-2">
                     <div
                         ref={desktopContainerRef}
-                        className={cn("relative z-10 flex min-w-0 flex-col gap-12", desktopMode === "fixed" && "fixed z-30", desktopMode === "bottom" && "absolute left-0 right-0")}
-                        style={
-                            desktopMode === "fixed" && desktopStyle
-                                ? {
-                                      top: `${desktopTopOffset}px`,
-                                      left: `${desktopStyle.left}px`,
-                                      width: `${desktopStyle.width}px`,
-                                  }
-                                : desktopMode === "bottom" && desktopStyle
-                                  ? { top: `${desktopStyle.top}px` }
-                                  : undefined
-                        }
+                        className="relative z-10 flex min-w-0 flex-col gap-12"
                     >
                         <div className="max-w-2xl">
                             <h1 className="mt-4 max-w-xl text-balance text-3xl font-semibold text-white lg:text-4xl">{resolved.pageIntro.heading}</h1>
@@ -455,6 +393,7 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
                                 step={workflowExecutions.step}
                                 value={selection.workflowExecutions}
                                 onChange={(workflowExecutionsValue) => setSelection((current) => ({ ...current, workflowExecutions: workflowExecutionsValue }))}
+                                ariaLabel={workflowExecutions.title}
                                 className="mt-4"
                                 minLabel={workflowExecutions.minLabel}
                                 centerLabel={`${selection.workflowExecutions} ${workflowExecutions.centerSuffix}`}

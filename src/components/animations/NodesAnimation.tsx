@@ -83,7 +83,7 @@ function NodeRow({ nodes, direction, active }: { nodes: NodeItem[]; direction: "
         resizeObserver.observe(listElement)
 
         return () => resizeObserver.disconnect()
-    }, [nodes.length])
+    }, [])
 
     const duration = loopDistance > 0 ? loopDistance / velocity : 0
 

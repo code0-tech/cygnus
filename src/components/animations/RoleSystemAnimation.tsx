@@ -40,7 +40,7 @@ export function RoleSystemAnimation({ roles }: RoleSystemAnimationProps) {
         resizeObserver.observe(listElement)
 
         return () => resizeObserver.disconnect()
-    }, [roles.length])
+    }, [])
 
     if (!roles.length) return null
 

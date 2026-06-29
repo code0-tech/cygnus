@@ -15,21 +15,18 @@ const toGraphNodes = (source: string) =>
 
 const groupEdgesByTarget = (source: string) => {
     const edges = toGraphNodes(source)
-    const grouped = new Map<string, string[]>()
+    const grouped = new Map<string, Set<string>>()
 
     for (const edge of edges) {
         const target = edge.to || "Node"
         const sourceNode = edge.from || "Node"
-        const existingSources = grouped.get(target) ?? []
+        const existingSources = grouped.get(target) ?? new Set<string>()
 
-        if (!existingSources.includes(sourceNode)) {
-            existingSources.push(sourceNode)
-        }
-
+        existingSources.add(sourceNode)
         grouped.set(target, existingSources)
     }
 
-    return Array.from(grouped.entries()).map(([target, sources]) => ({ target, sources }))
+    return Array.from(grouped.entries()).map(([target, sources]) => ({ target, sources: Array.from(sources) }))
 }
 
 const NODE_SIZE = 112

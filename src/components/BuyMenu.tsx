@@ -2,7 +2,7 @@
 
 import { HapticButtonLink } from "@/components/ui/HapticButtonLink"
 import { IconShoppingCart } from "@tabler/icons-react"
-import { useEffect, useState } from "react"
+import { useSyncExternalStore } from "react"
 import { createPortal } from "react-dom"
 
 interface BuyMenuProps {
@@ -13,14 +13,12 @@ interface BuyMenuProps {
     subscribeLabel: string
 }
 
+const subscribeToClient = () => () => {}
+
 export function BuyMenu({ price, priceHeading, priceCaption, subscribeHref, subscribeLabel }: BuyMenuProps) {
-    const [mounted, setMounted] = useState(false)
+    const isClient = useSyncExternalStore(subscribeToClient, () => true, () => false)
 
-    useEffect(() => {
-        setMounted(true)
-    }, [])
-
-    if (!mounted) return null
+    if (!isClient) return null
 
     return createPortal(
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-row items-center gap-6 rounded-3xl bg-primary/30 backdrop-blur-md border border-white/10 p-4 shadow-[0_8px_32px_0_rgba(0,0,0,0.45),0_0_0_1px_rgba(255,255,255,0.04)]">

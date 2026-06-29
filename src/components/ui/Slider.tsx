@@ -17,9 +17,10 @@ type SliderProps = {
     minLabel?: string
     maxLabel?: string
     centerLabel?: string
+    ariaLabel?: string
 }
 
-export function Slider({ min, max, step = 1, value, onChange, accent = "aqua", className, lines = 48, minLabel, maxLabel, centerLabel }: SliderProps) {
+export function Slider({ min, max, step = 1, value, onChange, accent = "aqua", className, lines = 48, minLabel, maxLabel, centerLabel, ariaLabel }: SliderProps) {
     const trackRef = useRef<HTMLDivElement>(null)
     const onChangeRef = useRef(onChange)
     onChangeRef.current = onChange
@@ -79,6 +80,7 @@ export function Slider({ min, max, step = 1, value, onChange, accent = "aqua", c
                 aria-valuemin={min}
                 aria-valuemax={max}
                 aria-valuenow={clampedValue}
+                aria-label={ariaLabel}
                 tabIndex={0}
                 onPointerDown={(event) => {
                     setIsDragging(true)

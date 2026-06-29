@@ -4,7 +4,7 @@ import { BlogCard } from "@/components/cards/BlogCard"
 import { FirstBlogCard } from "@/components/cards/FirstBlogCard"
 import type { BlogPostItem } from "@/lib/cms"
 import { Button } from "@code0-tech/pictor"
-import { useState, useTransition } from "react"
+import { useRef, useState, useTransition } from "react"
 import { Card } from "../ui/Card"
 
 interface BlogPageClientProps {
@@ -42,13 +42,14 @@ function BlogCardSkeleton() {
 export function BlogPageClient({ heading, initialPosts, initialHasNextPage, initialNextPage, locale, viewOtherBlogsLabel, noPostsLabel, loadMoreLabel, loadingLabel }: BlogPageClientProps) {
     const [posts, setPosts] = useState(initialPosts)
     const [hasNextPage, setHasNextPage] = useState(initialHasNextPage)
-    const [nextPage, setNextPage] = useState(initialNextPage)
+    const nextPageRef = useRef(initialNextPage)
     const [error, setError] = useState<string | null>(null)
     const [isPending, startTransition] = useTransition()
 
     const [firstPost, ...remainingPosts] = posts
 
     const handleLoadMore = () => {
+        const nextPage = nextPageRef.current
         if (!nextPage || isPending) return
 
         startTransition(async () => {
@@ -69,7 +70,7 @@ export function BlogPageClient({ heading, initialPosts, initialHasNextPage, init
 
             setPosts((current) => [...current, ...(data.posts ?? [])])
             setHasNextPage(Boolean(data.hasNextPage))
-            setNextPage(data.nextPage ?? null)
+            nextPageRef.current = data.nextPage ?? null
         })
     }
 

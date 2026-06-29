@@ -1,5 +1,6 @@
 "use client"
 
+import { useMediaQuery } from "@/hooks/useMediaQuery"
 import { cn } from "@/lib/utils"
 import { IconAlignLeft, IconChevronDown } from "@tabler/icons-react"
 import { AnimatePresence, m as motion } from "motion/react"
@@ -21,14 +22,12 @@ type DesktopStyle = { left: number; width: number; top: number }
 
 interface TocLayoutState {
     isOpen: boolean
-    isMobile: boolean
     showMobileToc: boolean
     desktopMode: DesktopMode
     desktopStyle: DesktopStyle | null
 }
 
 type TocLayoutAction =
-    | { type: "mediaChanged"; isMobile: boolean }
     | { type: "setOpen"; isOpen: boolean }
     | { type: "toggleOpen" }
     | { type: "mobileVisibilityChanged"; isVisible: boolean }
@@ -36,7 +35,6 @@ type TocLayoutAction =
 
 const initialTocLayoutState: TocLayoutState = {
     isOpen: false,
-    isMobile: false,
     showMobileToc: false,
     desktopMode: "static",
     desktopStyle: null,
@@ -44,8 +42,6 @@ const initialTocLayoutState: TocLayoutState = {
 
 function tocLayoutReducer(state: TocLayoutState, action: TocLayoutAction): TocLayoutState {
     switch (action.type) {
-        case "mediaChanged":
-            return state.isMobile === action.isMobile && !state.isOpen ? state : { ...state, isMobile: action.isMobile, isOpen: false }
         case "setOpen":
             return state.isOpen === action.isOpen ? state : { ...state, isOpen: action.isOpen }
         case "toggleOpen":
@@ -75,24 +71,13 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
     const [activeIds, setActiveIds] = useState<string[]>([])
     const [barStyle, setBarStyle] = useState({ y: 0, scaleY: 0, opacity: 0 })
     const [layoutState, dispatchLayout] = useReducer(tocLayoutReducer, initialTocLayoutState)
-    const { isOpen, isMobile, showMobileToc, desktopMode, desktopStyle } = layoutState
+    const { isOpen, showMobileToc, desktopMode, desktopStyle } = layoutState
+    const isMobile = useMediaQuery("(max-width: 1023px)")
 
     const mobileTocRef = useRef<HTMLDivElement>(null)
     const desktopTocRef = useRef<HTMLDivElement>(null)
     const desktopWrapperRef = useRef<HTMLDivElement>(null)
     const desktopContainerRef = useRef<HTMLDivElement>(null)
-
-    useEffect(() => {
-        const mediaQuery = window.matchMedia("(max-width: 1023px)")
-        const handleMediaChange = (e: MediaQueryListEvent | { matches: boolean }) => {
-            dispatchLayout({ type: "mediaChanged", isMobile: e.matches })
-        }
-
-        handleMediaChange(mediaQuery)
-        mediaQuery.addEventListener("change", handleMediaChange)
-
-        return () => mediaQuery.removeEventListener("change", handleMediaChange)
-    }, [])
 
     useEffect(() => {
         const elements = headings.map((heading) => document.getElementById(heading.id)).filter((el): el is HTMLElement => el !== null)

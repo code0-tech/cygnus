@@ -5,7 +5,7 @@ import { getLocaleFromPath, localizeHref } from "@/lib/i18n"
 import { ANIMATION_PRESETS, cn, type AnimationPreset } from "@/lib/utils"
 import { m as motion, type Variants } from "motion/react"
 import { usePathname } from "next/navigation"
-import { createElement, ReactNode, useEffect, useRef, useState } from "react"
+import { createElement, ReactNode, useEffect, useRef } from "react"
 
 interface SectionLinkButton {
     label?: string | null
@@ -81,7 +81,6 @@ export function Section({
     const sectionRef = useRef<HTMLElement | null>(null)
     const pathname = usePathname()
     const locale = getLocaleFromPath(pathname)
-    const [isInView, setIsInView] = useState(false)
     const rawLinkUrl = linkButton?.url?.trim()
     const linkUrl = rawLinkUrl ? localizeHref(rawLinkUrl, locale) : undefined
     const shouldShowFunnel = showFunnel && Boolean(heading || description || (showLinkButton && linkUrl && linkButton?.label))
@@ -116,7 +115,7 @@ export function Section({
         const observer = new IntersectionObserver(
             ([entry]) => {
                 if (entry?.isIntersecting) {
-                    setIsInView(true)
+                    currentRef.dataset.inView = "true"
                     observer.unobserve(currentRef)
                 }
             },
@@ -131,7 +130,7 @@ export function Section({
     return (
         <motion.section
             ref={sectionRef}
-            data-in-view={isInView}
+            data-in-view="false"
             className={cn("group/section relative overflow-hidden flex flex-col gap-8", fullHeight && "h-[200dvh] md:h-[min(100dvh,1080px)]", className)}
             initial={animationConfig?.initial}
             whileInView={animationConfig?.whileInView}

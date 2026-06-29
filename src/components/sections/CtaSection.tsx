@@ -18,65 +18,50 @@ interface CtaSectionProps {
 
 export function CtaSection({ content, floatingCta = false }: CtaSectionProps) {
     const isTouchDevice = useMediaQuery("(hover: none), (pointer: coarse)")
-    const [mounted, setMounted] = useState(false)
     const [docked, setDocked] = useState(false)
 
     const buttonAnchorRef = useRef<HTMLDivElement>(null)
     const buttonRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
-        setMounted(true)
-    }, [])
-
-    useEffect(() => {
-        if (!floatingCta) {
-            setDocked(false)
-            return
-        }
-
-        if (!mounted) return
+        if (!floatingCta) return
 
         const anchor = buttonAnchorRef.current
         const button = buttonRef.current
         if (!anchor || !button) return
 
         const floatingBottomOffset = 24
-        const hysteresis = 8
-        let frame = 0
+        let intersectionObserver: IntersectionObserver | null = null
 
-        const updateDocked = () => {
-            const anchorTop = anchor.getBoundingClientRect().top
+        const observeAnchor = () => {
+            intersectionObserver?.disconnect()
             const buttonHeight = button.getBoundingClientRect().height
-            const switchLine = window.innerHeight - floatingBottomOffset - buttonHeight
+            const bottomMargin = floatingBottomOffset + buttonHeight
 
-            setDocked((previous) => {
-                if (previous) {
-                    return anchorTop <= switchLine + hysteresis
+            intersectionObserver = new IntersectionObserver(
+                ([entry]) => {
+                    if (!entry) return
+
+                    const nextDocked = entry.isIntersecting || entry.boundingClientRect.top < 0
+                    setDocked((previous) => (previous === nextDocked ? previous : nextDocked))
+                },
+                {
+                    rootMargin: `0px 0px -${bottomMargin}px 0px`,
+                    threshold: 0,
                 }
-                return anchorTop <= switchLine - hysteresis
-            })
+            )
+            intersectionObserver.observe(anchor)
         }
 
-        const handleViewportChange = () => {
-            if (frame) return
-            frame = requestAnimationFrame(() => {
-                frame = 0
-                updateDocked()
-            })
-        }
-
-        updateDocked()
-        window.addEventListener("scroll", handleViewportChange, { passive: true })
-        window.addEventListener("resize", handleViewportChange)
+        observeAnchor()
+        const resizeObserver = new ResizeObserver(observeAnchor)
+        resizeObserver.observe(button)
 
         return () => {
-            if (frame) {
-                cancelAnimationFrame(frame)
-            }
-            window.removeEventListener("scroll", handleViewportChange)
-            window.removeEventListener("resize", handleViewportChange)
+            intersectionObserver?.disconnect()
+            resizeObserver.disconnect()
         }
-    }, [floatingCta, mounted])
+    }, [floatingCta])
 
     if (!content) return null
 
@@ -145,7 +130,7 @@ export function CtaSection({ content, floatingCta = false }: CtaSectionProps) {
                     </motion.p>
 
                     <motion.div ref={buttonAnchorRef} variants={staggerItem} className="z-20 mt-4 flex h-10 items-center justify-center">
-                        <div ref={buttonRef} className={cn("flex items-center gap-4", floatingCta && mounted && !docked && "fixed bottom-6 left-1/2 z-50 -translate-x-1/2")}>
+                        <div ref={buttonRef} className={cn("flex items-center gap-4", floatingCta && !docked && "fixed bottom-6 left-1/2 z-50 -translate-x-1/2")}>
                             <HapticButtonLink
                                 href={content.ctaLink.url}
                                 variant="normal"
