@@ -8,17 +8,11 @@ import { cn } from "@/lib/utils"
 import type { Media } from "@/payload-types"
 import { m as motion } from "motion/react"
 import Image from "next/image"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef } from "react"
 import { Card } from "../ui/Card"
 
 interface ScrollCardSectionProps {
     content?: ScrollCardsLayoutBlock | null
-}
-
-interface PinState {
-    phase: "before" | "active" | "after"
-    left: number
-    width: number
 }
 
 function getImage(image: number | Media | null | undefined) {
@@ -31,13 +25,9 @@ function clamp(value: number, min: number, max: number) {
 
 export function ScrollCardSection({ content }: ScrollCardSectionProps) {
     const containerRef = useRef<HTMLDivElement | null>(null)
-    const [scrollProgress, setScrollProgress] = useState(0)
-    const [viewportHeight, setViewportHeight] = useState(1)
-    const [pinState, setPinState] = useState<PinState>({
-        phase: "before",
-        left: 0,
-        width: 0,
-    })
+    const pinnedRef = useRef<HTMLDivElement | null>(null)
+    const articleRefs = useRef<Array<HTMLElement | null>>([])
+    const pinStyleRef = useRef({ phase: "before", left: 0, width: 0 })
     const items = content?.items?.filter((item) => Boolean(item.title)) ?? []
 
     useEffect(() => {
@@ -45,7 +35,8 @@ export function ScrollCardSection({ content }: ScrollCardSectionProps) {
 
         const updateProgress = () => {
             const container = containerRef.current
-            if (!container) return
+            const pinned = pinnedRef.current
+            if (!container || !pinned) return
 
             const rect = container.getBoundingClientRect()
             const topOffset = 96
@@ -53,13 +44,25 @@ export function ScrollCardSection({ content }: ScrollCardSectionProps) {
             const containerTop = rect.top + window.scrollY
             const rawProgress = window.scrollY - containerTop
             const activeEnd = Math.max((items.length - 1) * height, 0)
+            const scrollProgress = clamp(rawProgress, 0, activeEnd)
+            const phase = rect.top > topOffset ? "before" : rect.bottom <= height ? "after" : "active"
+            const previousPinStyle = pinStyleRef.current
 
-            setViewportHeight(height)
-            setScrollProgress(clamp(rawProgress, 0, activeEnd))
-            setPinState({
-                phase: rect.top > topOffset ? "before" : rect.bottom <= height ? "after" : "active",
-                left: rect.left,
-                width: rect.width,
+            if (phase !== previousPinStyle.phase || rect.left !== previousPinStyle.left || rect.width !== previousPinStyle.width) {
+                pinStyleRef.current = { phase, left: rect.left, width: rect.width }
+                pinned.style.position = phase === "active" ? "fixed" : phase === "after" ? "absolute" : "relative"
+                pinned.style.left = phase === "active" ? `${rect.left}px` : ""
+                pinned.style.right = phase === "active" ? "auto" : ""
+                pinned.style.top = phase === "active" ? `${topOffset}px` : ""
+                pinned.style.bottom = phase === "after" ? "0" : ""
+                pinned.style.width = phase === "active" ? `${rect.width}px` : "100%"
+            }
+
+            articleRefs.current.forEach((article, index) => {
+                if (!article) return
+
+                const segmentProgress = index === 0 ? 1 : clamp((scrollProgress - (index - 1) * height) / height, 0, 1)
+                article.style.transform = `translate3d(0, ${(1 - segmentProgress) * 100}%, 0)`
             })
         }
 
@@ -80,25 +83,14 @@ export function ScrollCardSection({ content }: ScrollCardSectionProps) {
             window.removeEventListener("scroll", handleViewportChange)
             window.removeEventListener("resize", handleViewportChange)
         }
-    }, [])
+    }, [items.length])
 
     if (items.length === 0) return null
 
     return (
         <Section showFunnel={false} animation={{ preset: "none" }}>
             <div ref={containerRef} className="relative" style={{ height: `${Math.max(items.length, 1) * 100}vh` }}>
-                <div
-                    className="h-[calc(100vh-6rem)]"
-                    style={{
-                        left: pinState.phase === "active" ? pinState.left : undefined,
-                        position: pinState.phase === "active" ? "fixed" : pinState.phase === "after" ? "absolute" : "relative",
-                        right: pinState.phase === "active" ? "auto" : undefined,
-                        top: pinState.phase === "active" ? 96 : pinState.phase === "after" ? "auto" : undefined,
-                        bottom: pinState.phase === "after" ? 0 : undefined,
-                        width: pinState.phase === "active" ? pinState.width : "100%",
-                        zIndex: 10,
-                    }}
-                >
+                <div ref={pinnedRef} className="relative z-10 h-[calc(100vh-6rem)] w-full">
                     {items.map((item, index) => {
                         const image = getImage(item.image)
                         const imageUrl = getMediaUrl(image?.url)
@@ -113,16 +105,16 @@ export function ScrollCardSection({ content }: ScrollCardSectionProps) {
                         const isSideFullscreenRight = itemSettings.sectionLayout === "imageRightFullscreen"
 
                         const showImageBorder = itemSettings.showImageBorder ?? true
-                        const segmentProgress = index === 0 ? 1 : clamp((scrollProgress - (index - 1) * viewportHeight) / viewportHeight, 0, 1)
-                        const translateY = (1 - segmentProgress) * 100
-
                         return (
                             <motion.article
+                                ref={(element) => {
+                                    articleRefs.current[index] = element
+                                }}
                                 key={item.id ?? `${item.title}-${index}`}
                                 className="absolute inset-0 flex items-center justify-center will-change-transform"
                                 style={{
                                     opacity: 1,
-                                    transform: `translateY(${translateY}%)`,
+                                    transform: `translate3d(0, ${index === 0 ? 0 : 100}%, 0)`,
                                     zIndex: index + 1,
                                 }}
                             >
