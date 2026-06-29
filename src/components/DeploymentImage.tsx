@@ -13,17 +13,17 @@ interface DeploymentImageProps {
 
 const palette: Record<DeploymentImageColor, { stroke: string; glow: string; chip: string }> = {
     aqua: {
-        stroke: "var(--text-aqua)",
+        stroke: "var(--bg-aqua)",
         glow: "bg-[radial-gradient(ellipse_at_center,rgba(122,203,255,0.2)_0%,rgba(122,203,255,0.1)_25%,transparent_70%)]",
         chip: "text-aqua",
     },
     pink: {
-        stroke: "var(--text-pink)",
+        stroke: "var(--bg-pink)",
         glow: "bg-[radial-gradient(ellipse_at_center,rgba(248,114,226,0.2)_0%,rgba(248,114,226,0.1)_25%,transparent_70%)]",
         chip: "text-pink",
     },
     brand: {
-        stroke: "var(--text-brand)",
+        stroke: "var(--bg-brand)",
         glow: "bg-[radial-gradient(ellipse_at_center,rgba(145,232,120,0.2)_0%,rgba(145,232,120,0.1)_25%,transparent_70%)]",
         chip: "text-brand",
     },
