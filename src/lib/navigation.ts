@@ -1,3 +1,5 @@
+import "server-only"
+
 import type { Navigation } from "@/payload-types"
 import { localizeHref, type AppLocale } from "@/lib/i18n"
 import { getTablerIcon } from "@/lib/tablerIcons"

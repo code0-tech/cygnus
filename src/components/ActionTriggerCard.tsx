@@ -2,22 +2,20 @@
 
 import { BaseAccordionItem } from "@/components/ui/Accordion"
 import type { ExtractedActionTriggerItem } from "@/lib/actionTriggerExtraction"
-import { getTablerIcon } from "@/lib/tablerIcons"
-import { useState } from "react"
+import { type ReactNode, useState } from "react"
 import { Card } from "./ui/Card"
 
 interface ActionTriggerCardProps {
     type: "trigger" | "functionDef"
     item: ExtractedActionTriggerItem
+    icon: ReactNode
 }
 
-export function ActionTriggerCard({ type, item }: ActionTriggerCardProps) {
+export function ActionTriggerCard({ type, item, icon }: ActionTriggerCardProps) {
     const [openItem, setOpenItem] = useState<number | null>(null)
     const parameters = item.kind === "functionDef" ? item.parameters : item.settings
     const label = type === "trigger" ? "Trigger" : "FunctionDefinition"
     const parameterLabel = type === "trigger" ? "Settings" : "Parameters"
-    const icon = getTablerIcon(item.kind === "trigger" ? item.displayIcon : "function", 32)
-
     const toggleItem = (index: number) => {
         setOpenItem((previousItem) => (previousItem === index ? null : index))
     }

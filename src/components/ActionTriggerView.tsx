@@ -1,15 +1,14 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { type ReactNode, useState } from "react"
 import { SegmentedControl, SegmentedControlItem, Text } from "@code0-tech/pictor"
-import type { Media } from "@/payload-types"
 import { ActionTriggerCard } from "@/components/ActionTriggerCard"
-import { extractFunctionDefsFromJson, extractTriggersFromJson, fetchMediaJson, type ExtractedActionTriggerItem, type ExtractedFunctionDef, type ExtractedTrigger } from "@/lib/actionTriggerExtraction"
+import type { ExtractedActionTriggerItem, ExtractedFunctionDef, ExtractedTrigger } from "@/lib/actionTriggerExtraction"
 
 interface ActionTriggerViewProps {
     locale: string
-    triggers: Media | undefined
-    functionDefs: Media | undefined
+    triggers: Array<{ item: ExtractedTrigger; icon: ReactNode }>
+    functionDefs: Array<{ item: ExtractedFunctionDef; icon: ReactNode }>
 }
 
 const itemClassName = "text-secondary! transition-colors! data-[state=on]:bg-brand/20! data-[state=on]:text-brand!"
@@ -17,42 +16,15 @@ const itemClassName = "text-secondary! transition-colors! data-[state=on]:bg-bra
 interface DisplayItem {
     type: "trigger" | "functionDef"
     item: ExtractedActionTriggerItem
+    icon: ReactNode
 }
 
 export function ActionTriggerView({ locale, triggers, functionDefs }: ActionTriggerViewProps) {
     const [viewMode, setViewMode] = useState<"both" | "triggers" | "functionDefs">("both")
-    const [extractedTriggers, setExtractedTriggers] = useState<ExtractedTrigger[]>([])
-    const [extractedFunctionDefs, setExtractedFunctionDefs] = useState<ExtractedFunctionDef[]>([])
-
-    useEffect(() => {
-        let cancelled = false
-
-        async function loadMediaJson() {
-            const [triggerJson, functionDefJson] = await Promise.all([fetchMediaJson(triggers), fetchMediaJson(functionDefs)])
-
-            if (cancelled) {
-                return
-            }
-
-            setExtractedTriggers(extractTriggersFromJson(triggerJson))
-            setExtractedFunctionDefs(extractFunctionDefsFromJson(functionDefJson))
-        }
-
-        loadMediaJson().catch(() => {
-            if (!cancelled) {
-                setExtractedTriggers([])
-                setExtractedFunctionDefs([])
-            }
-        })
-
-        return () => {
-            cancelled = true
-        }
-    }, [triggers, functionDefs])
 
     const visibleItems: DisplayItem[] = [
-        ...(viewMode === "both" || viewMode === "triggers" ? extractedTriggers.map((trigger) => ({ type: "trigger" as const, item: trigger })) : []),
-        ...(viewMode === "both" || viewMode === "functionDefs" ? extractedFunctionDefs.map((functionDef) => ({ type: "functionDef" as const, item: functionDef })) : []),
+        ...(viewMode === "both" || viewMode === "triggers" ? triggers.map(({ item, icon }) => ({ type: "trigger" as const, item, icon })) : []),
+        ...(viewMode === "both" || viewMode === "functionDefs" ? functionDefs.map(({ item, icon }) => ({ type: "functionDef" as const, item, icon })) : []),
     ]
 
     return (
@@ -79,8 +51,8 @@ export function ActionTriggerView({ locale, triggers, functionDefs }: ActionTrig
             </SegmentedControl>
 
             <div className="flex flex-col gap-4 md:hidden">
-                {visibleItems.map(({ type, item }) => (
-                    <ActionTriggerCard key={item.id} type={type} item={item} />
+                {visibleItems.map(({ type, item, icon }) => (
+                    <ActionTriggerCard key={item.id} type={type} item={item} icon={icon} />
                 ))}
             </div>
         </div>

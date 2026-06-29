@@ -2,9 +2,7 @@
 
 import { cn } from "@/lib/utils"
 import { useNavigationScrollState } from "@/hooks/useNavigationScrollState"
-import { useNavigationViewModel } from "@/hooks/useNavigationViewModel"
-import { type AppLocale } from "@/lib/i18n"
-import type { NavigationLogoData, NavbarButtonData, NavbarItemData } from "@/lib/navigation"
+import type { NavButton, NavItem, NavigationLogoData } from "@/lib/navigation"
 import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger } from "@/components/ui/NavigationMenu"
 import { Container } from "@code0-tech/pictor"
 import { AnimatePresence, m as motion } from "motion/react"
@@ -16,13 +14,13 @@ import { NavigationLink } from "./NavigationLink"
 import { NavigationSubMenu } from "./NavigationSubMenu"
 
 type NavigationDesktopProps = {
-    locale: AppLocale
-    items: NavbarItemData[]
-    buttons: NavbarButtonData[]
+    homeHref: string
+    items: NavItem[]
+    buttons: NavButton[]
     logo?: NavigationLogoData
 }
 
-const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ locale, items, buttons, logo }) => {
+const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ homeHref, items: navbarItems, buttons: navbarButtons, logo: navigationLogo }) => {
     const rootRef = useRef<HTMLDivElement>(null)
     const navTabsRef = useRef<HTMLDivElement>(null)
     const submenuContentRef = useRef<HTMLDivElement>(null)
@@ -31,7 +29,6 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ locale, items, bu
     const [activeMenuValue, setActiveMenuValue] = useState<string | null>(null)
     const [shellInsetWidth, setShellInsetWidth] = useState(0)
     const [submenuHeight, setSubmenuHeight] = useState(0)
-    const { homeHref, navbarItems, navbarButtons, logo: navigationLogo } = useNavigationViewModel(locale, items, buttons, logo)
     const isScrolled = useNavigationScrollState({
         onScroll: () => {
             suppressMenuOpenRef.current = true

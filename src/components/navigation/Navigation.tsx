@@ -1,5 +1,5 @@
 import { type AppLocale } from "@/lib/i18n"
-import type { NavigationLogoData, NavbarButtonData, NavbarItemData } from "@/lib/navigation"
+import { mapNavbarButtons, mapNavbarItems, type NavigationLogoData, type NavbarButtonData, type NavbarItemData } from "@/lib/navigation"
 import { NavigationDesktop } from "./NavigationDesktop"
 import { NavigationMobile } from "./NavigationMobile"
 
@@ -11,13 +11,17 @@ interface NavigationProps {
 }
 
 export function Navigation({ locale, items, buttons, logo }: NavigationProps) {
+    const homeHref = `/${locale}`
+    const navbarItems = mapNavbarItems(items, locale)
+    const navbarButtons = mapNavbarButtons(buttons, locale)
+
     return (
         <>
             <div className="hidden lg:block">
-                <NavigationDesktop locale={locale} items={items} buttons={buttons} logo={logo} />
+                <NavigationDesktop homeHref={homeHref} items={navbarItems} buttons={navbarButtons} logo={logo} />
             </div>
             <div className="lg:hidden">
-                <NavigationMobile locale={locale} items={items} buttons={buttons} logo={logo} />
+                <NavigationMobile homeHref={homeHref} items={navbarItems} buttons={navbarButtons} logo={logo} />
             </div>
         </>
     )

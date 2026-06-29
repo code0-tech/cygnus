@@ -1,3 +1,5 @@
+import "server-only"
+
 import * as TablerIcons from "@tabler/icons-react"
 import { createElement, type ComponentType, type ReactNode } from "react"
 

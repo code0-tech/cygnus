@@ -2,7 +2,6 @@
 
 import type { SubscriptionConfigData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
-import { getTablerIcon } from "@/lib/tablerIcons"
 import { cn } from "@/lib/utils"
 import { BuyMenu } from "@/components/BuyMenu"
 import { Slider } from "@/components/ui/Slider"
@@ -19,6 +18,19 @@ type SubscriptionSelection = {
     deployment: DeploymentMode
     customerType: CustomerType
     workflowExecutions: number
+}
+
+export interface SubscriptionIcons {
+    featureOverview: ReactNode[]
+    deployment: {
+        selfHosted: ReactNode
+        cloud: ReactNode
+    }
+    customerType: {
+        b2b: ReactNode
+        b2c: ReactNode
+    }
+    additionalFeatures: ReactNode[]
 }
 
 const defaultContent: Omit<SubscriptionConfigData, "id" | "title"> = {
@@ -261,7 +273,7 @@ function AdditionalFeatureCard({
     )
 }
 
-export function SubscriptionConfigurator({ locale, content }: { locale: AppLocale; content?: SubscriptionConfigData | null }) {
+export function SubscriptionConfigurator({ locale, content, icons }: { locale: AppLocale; content?: SubscriptionConfigData | null; icons: SubscriptionIcons }) {
     const resolved = content ?? ({ id: 0, title: "Subscription Config", ...defaultContent } satisfies SubscriptionConfigData)
     const workflowExecutions = resolved.workflowExecutions
     const [selection, setSelection] = useState<SubscriptionSelection>({
@@ -376,7 +388,7 @@ export function SubscriptionConfigurator({ locale, content }: { locale: AppLocal
 
                         <div className="grid gap-6">
                             {resolved.featureOverview.map((item, index) => (
-                                <FeatureRow key={item.id ?? `${item.title}-${index}`} icon={getTablerIcon(item.icon, 20)} title={item.title} description={item.description} />
+                                <FeatureRow key={item.id ?? `${item.title}-${index}`} icon={icons.featureOverview[index]} title={item.title} description={item.description} />
                             ))}
                         </div>
                     </div>
@@ -392,7 +404,7 @@ export function SubscriptionConfigurator({ locale, content }: { locale: AppLocal
                                 <OptionCard
                                     title={resolved.deployment.selfHosted.title}
                                     description={resolved.deployment.selfHosted.description}
-                                    icon={getTablerIcon(resolved.deployment.selfHosted.icon, 20)}
+                                    icon={icons.deployment.selfHosted}
                                     accent={resolved.deployment.selfHosted.color}
                                     active={selection.deployment === "self-hosted"}
                                     onClick={() => setSelection((current) => ({ ...current, deployment: "self-hosted" }))}
@@ -400,7 +412,7 @@ export function SubscriptionConfigurator({ locale, content }: { locale: AppLocal
                                 <OptionCard
                                     title={resolved.deployment.cloud.title}
                                     description={resolved.deployment.cloud.description}
-                                    icon={getTablerIcon(resolved.deployment.cloud.icon, 20)}
+                                    icon={icons.deployment.cloud}
                                     accent={resolved.deployment.cloud.color}
                                     active={selection.deployment === "cloud"}
                                     onClick={() => setSelection((current) => ({ ...current, deployment: "cloud" }))}
@@ -414,7 +426,7 @@ export function SubscriptionConfigurator({ locale, content }: { locale: AppLocal
                                 <OptionCard
                                     title={resolved.customerType.b2b.title}
                                     description={resolved.customerType.b2b.description}
-                                    icon={getTablerIcon(resolved.customerType.b2b.icon, 20)}
+                                    icon={icons.customerType.b2b}
                                     accent={resolved.customerType.b2b.color}
                                     active={selection.customerType === "b2b"}
                                     onClick={() => setSelection((current) => ({ ...current, customerType: "b2b" }))}
@@ -422,7 +434,7 @@ export function SubscriptionConfigurator({ locale, content }: { locale: AppLocal
                                 <OptionCard
                                     title={resolved.customerType.b2c.title}
                                     description={resolved.customerType.b2c.description}
-                                    icon={getTablerIcon(resolved.customerType.b2c.icon, 20)}
+                                    icon={icons.customerType.b2c}
                                     accent={resolved.customerType.b2c.color}
                                     active={selection.customerType === "b2c"}
                                     onClick={() => setSelection((current) => ({ ...current, customerType: "b2c" }))}
@@ -471,7 +483,7 @@ export function SubscriptionConfigurator({ locale, content }: { locale: AppLocal
                                                 key={feature.id ?? `feature-${index}`}
                                                 title={feature.title}
                                                 description={feature.description}
-                                                icon={getTablerIcon(feature.icon, 20)}
+                                                icon={icons.additionalFeatures[index]}
                                                 formattedPrice={`+${formattedFeaturePrice}/mo`}
                                                 active={selectedFeatures.has(index)}
                                                 onClick={() => {

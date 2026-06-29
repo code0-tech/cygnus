@@ -5,10 +5,12 @@ import { HapticButtonLink } from "@/components/ui/HapticButtonLink"
 import { LandingContainer } from "@/components/ui/LandingContainer"
 import { LinkButton } from "@/components/ui/LinkButton"
 import { getPageLocaleAndSlug, type LocaleSlugPageParams } from "@/lib/appRoute"
+import { extractFunctionDefsFromJson, extractTriggersFromJson, fetchMediaJson } from "@/lib/actionTriggerExtraction"
 import { getActionBySlug, getLandingPage } from "@/lib/cms"
 import { getMediaUrl } from "@/lib/media"
 import { findPageBlock } from "@/lib/pageBlocks"
 import { createMetadata } from "@/lib/siteConfig"
+import { getTablerIcon } from "@/lib/tablerIcons"
 import type { Media } from "@/payload-types"
 import { IconArrowLeft, IconExternalLink } from "@tabler/icons-react"
 import type { Metadata } from "next"
@@ -25,6 +27,17 @@ export default async function ActionDetailPage({ params }: { params: LocaleSlugP
     const iconUrl = getMediaUrl(icon?.url)
     const triggers = action.trigger as Media | undefined
     const functionDefs = action.functiondefinitions as Media | undefined
+    const [extractedTriggers, extractedFunctionDefs] = await Promise.all([fetchMediaJson(triggers), fetchMediaJson(functionDefs)])
+        .then(([triggerJson, functionDefJson]) => [extractTriggersFromJson(triggerJson), extractFunctionDefsFromJson(functionDefJson)] as const)
+        .catch(() => [[], []] as const)
+    const triggerItems = extractedTriggers.map((item) => ({
+        item,
+        icon: getTablerIcon(item.displayIcon, 32),
+    }))
+    const functionDefItems = extractedFunctionDefs.map((item) => ({
+        item,
+        icon: getTablerIcon("function", 32),
+    }))
     const references = (action.references ?? []).filter((reference): reference is Exclude<typeof reference, number> => typeof reference !== "number")
     const tags = (action.tags ?? []).filter((tag): tag is string => Boolean(tag))
     const actionsBlock = findPageBlock(actionsPage, "actions")
@@ -73,7 +86,7 @@ export default async function ActionDetailPage({ params }: { params: LocaleSlugP
                             </div>
                             {action.description && <div className="max-w-3xl whitespace-pre-line text-sm leading-6 text-secondary">{action.description}</div>}
 
-                            <ActionTriggerView locale={locale} triggers={triggers} functionDefs={functionDefs} />
+                            <ActionTriggerView locale={locale} triggers={triggerItems} functionDefs={functionDefItems} />
 
                             {references.length > 0 && (
                                 <div className="space-y-3">

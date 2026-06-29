@@ -2,10 +2,8 @@
 
 import { cn } from "@/lib/utils"
 import { useNavigationScrollState } from "@/hooks/useNavigationScrollState"
-import { useNavigationViewModel } from "@/hooks/useNavigationViewModel"
 import { useOutsideClick } from "@/hooks/useOutsideClick"
-import { type AppLocale } from "@/lib/i18n"
-import type { NavigationLogoData, NavbarButtonData, NavbarItemData } from "@/lib/navigation"
+import type { NavButton, NavItem, NavigationLogoData } from "@/lib/navigation"
 import { Container } from "@code0-tech/pictor"
 import { IconMenu2, IconX } from "@tabler/icons-react"
 import { AnimatePresence, m as motion } from "motion/react"
@@ -17,13 +15,13 @@ import { NavigationLink } from "./NavigationLink"
 import { NavigationMobileItem } from "./NavigationMobileItem"
 
 type NavigationMobileProps = {
-    locale: AppLocale
-    items: NavbarItemData[]
-    buttons: NavbarButtonData[]
+    homeHref: string
+    items: NavItem[]
+    buttons: NavButton[]
     logo?: NavigationLogoData
 }
 
-const NavigationMobile: React.FC<NavigationMobileProps> = ({ locale, items, buttons, logo }) => {
+const NavigationMobile: React.FC<NavigationMobileProps> = ({ homeHref, items: navbarItems, buttons: navbarButtons, logo: navigationLogo }) => {
     const { trigger } = useWebHaptics()
     const menuRef = useOutsideClick<HTMLElement>(() => setIsOpen(false))
     const rootRef = useRef<HTMLDivElement>(null)
@@ -34,7 +32,6 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({ locale, items, butt
     const [isMenuClosing, setIsMenuClosing] = useState(false)
     const [shellInsetWidth, setShellInsetWidth] = useState(0)
     const [menuHeight, setMenuHeight] = useState(0)
-    const { homeHref, navbarItems, navbarButtons, logo: navigationLogo } = useNavigationViewModel(locale, items, buttons, logo)
     const menuTransition = {
         duration: 0.34,
         ease: [0.16, 1, 0.3, 1] as const,

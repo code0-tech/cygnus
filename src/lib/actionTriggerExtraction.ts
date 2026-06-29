@@ -155,7 +155,14 @@ export async function fetchMediaJson(media: Media | undefined): Promise<unknown>
     const url = getMediaUrl(media?.url).trim()
     if (!url) return []
 
-    const response = await fetch(url)
+    const requestUrl =
+        typeof window === "undefined" && url.startsWith("/")
+            ? new URL(
+                  url,
+                  process.env.NEXT_PUBLIC_APP_URL?.trim() || (process.env.NODE_ENV === "development" ? "http://localhost:3000" : "https://codezero.build")
+              ).toString()
+            : url
+    const response = await fetch(requestUrl, { next: { revalidate: 300 } })
     if (!response.ok) throw new Error(`Could not load media JSON from ${url}`)
 
     return response.json()
