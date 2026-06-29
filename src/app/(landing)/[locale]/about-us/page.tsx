@@ -11,8 +11,7 @@ export const generateMetadata = createLandingMetadata("about-us")
 
 export default async function AboutPage({ params }: { params: LocalePageParams }) {
     const locale = await getPageLocale(params)
-    const aboutUsPage = await getLandingPage("about-us", locale)
-    const teamMembers = await getTeamMembers(locale)
+    const [aboutUsPage, teamMembers] = await Promise.all([getLandingPage("about-us", locale), getTeamMembers(locale)])
     const markdownBlock = findPageBlock(aboutUsPage, "markdown")
     const contentHtml = markdownBlock ? convertLexicalToHTML({ data: markdownBlock.content, disableContainer: true }) : ""
 
