@@ -1,8 +1,7 @@
 "use client"
 
 import { DEFAULT_LOCALE, isSupportedLocale } from "@/lib/i18n"
-import Link from "next/link"
-import { Button } from "@code0-tech/pictor"
+import { FilledButtonLink } from "@/components/ui/FilledButtonLink"
 import { IconArrowBackUp } from "@tabler/icons-react"
 import { useParams } from "next/navigation"
 
@@ -21,12 +20,10 @@ export default function LocalizedNotFound() {
             </div>
             <h1 className="mb-2 font-mono text-5xl font-bold tracking-tighter">404 Not Found</h1>
             <p className="mb-4 text-secondary">The page you are looking for does not exist.</p>
-            <Link href={`/${locale}`}>
-                <Button variant="filled">
-                    <IconArrowBackUp size={16} className="-mt-0.5 text-tertiary" />
-                    Go back
-                </Button>
-            </Link>
+            <FilledButtonLink href={`/${locale}`}>
+                <IconArrowBackUp size={16} className="-mt-0.5 text-tertiary" />
+                Go back
+            </FilledButtonLink>
         </section>
     )
 }
