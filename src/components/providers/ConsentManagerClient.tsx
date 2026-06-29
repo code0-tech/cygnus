@@ -1,8 +1,11 @@
 "use client"
 
-import { ConsentDialog, ConsentManagerProvider, ConsentBanner, type ConsentManagerOptions, type Theme } from "@c15t/nextjs"
+import { ConsentDialog, ConsentManagerProvider, ConsentBanner, type ConsentManagerOptions, type Theme, useConsentManager } from "@c15t/nextjs"
 import { gtag } from "@c15t/scripts/google-tag"
+import dynamic from "next/dynamic"
 import type { ReactNode } from "react"
+
+const LazyConsentDialog = dynamic(() => import("./LazyConsentDialog"), { ssr: false })
 
 const consentTheme = {
     slots: {
@@ -30,6 +33,13 @@ interface ConsentManagerClientProps {
     i18n: NonNullable<ConsentManagerOptions["i18n"]>
 }
 
+function ConsentDialogSlot() {
+    const { activeUI } = useConsentManager()
+    if (activeUI !== "dialog") return null
+
+    return <LazyConsentDialog legalLinks={["privacyPolicy", "termsOfService"]} />
+}
+
 export function ConsentManagerClient({ children, gaMeasurementId, legalLinks, i18n }: ConsentManagerClientProps) {
     return (
         <ConsentManagerProvider
@@ -50,7 +60,7 @@ export function ConsentManagerClient({ children, gaMeasurementId, legalLinks, i1
             }}
         >
             <ConsentBanner legalLinks={["privacyPolicy", "termsOfService"]} />
-            <ConsentDialog legalLinks={["privacyPolicy", "termsOfService"]} />
+            <ConsentDialogSlot />
             {children}
         </ConsentManagerProvider>
     )
