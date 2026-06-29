@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils"
 
 interface OrbitingCirclesProps extends React.HTMLAttributes<HTMLDivElement> {
     className?: string
-    children?: React.ReactNode
+    children?: React.ReactElement | React.ReactElement[]
     reverse?: boolean
     duration?: number
     delay?: number
@@ -15,6 +15,8 @@ interface OrbitingCirclesProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export function OrbitingCircles({ className, children, reverse, duration = 20, radius = 160, path = true, iconSize = 30, speed = 1, ...props }: OrbitingCirclesProps) {
     const calculatedDuration = duration / speed
+    const orbitItems = React.Children.toArray(children)
+
     return (
         <>
             {path && (
@@ -22,14 +24,14 @@ export function OrbitingCircles({ className, children, reverse, duration = 20, r
                     <circle className="stroke-white/10 stroke-1" cx="50%" cy="50%" r={radius} fill="none" />
                 </svg>
             )}
-            {React.Children.map(children, (child, index) => (
-                <div key={`orbit-item-${index}`} className="absolute inset-0 flex items-center justify-center text-white">
+            {orbitItems.map((child, index) => (
+                <div key={React.isValidElement(child) ? child.key : String(child)} className="absolute inset-0 flex items-center justify-center text-white">
                     <div
                         style={
                             {
                                 "--duration": calculatedDuration,
                                 "--radius": radius,
-                                "--angle": (360 / React.Children.count(children)) * index,
+                                "--angle": (360 / orbitItems.length) * index,
                                 "--icon-size": `${iconSize}px`,
                             } as React.CSSProperties
                         }

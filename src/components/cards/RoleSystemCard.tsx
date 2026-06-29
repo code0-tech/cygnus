@@ -14,24 +14,28 @@ export async function RoleSystemCard({ locale, animationDelay = 0 }: RoleSystemC
 
     const roles = [
         {
+            id: "owner",
             name: "Owner",
             description: "Can manage",
             badges: ["everything"],
             updatedAt: "Updated 16 days ago",
         },
         {
+            id: "maintainer",
             name: "Maintainer",
             description: "Can manage",
             badges: ["projects", "organization", "runtimes"],
             updatedAt: "Updated 16 days ago",
         },
         {
+            id: "member",
             name: "Member",
             description: "Can manage",
             badges: ["flows", "projects"],
             updatedAt: "Updated 16 days ago",
         },
         {
+            id: "test",
             name: "Test",
             description: "Can manage",
             badges: ["projects", "roles", "flows",],

@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from "react"
 import { Card } from "../ui/Card"
 
 interface RoleItem {
+    id: string
     name: string
     description: string
     badges: string[]
@@ -45,8 +46,8 @@ export function RoleSystemAnimation({ roles }: RoleSystemAnimationProps) {
 
     const duration = loopDistance > 0 ? loopDistance / velocity : 0
 
-    const renderRoleCard = (role: RoleItem, index: number) => (
-        <Card key={`${role.name}-${role.updatedAt}-${index}`} className="w-full p-3 md:p-5 bg-primary">
+    const renderRoleCard = (role: RoleItem, copy: "primary" | "duplicate") => (
+        <Card key={`${copy}-${role.id}`} className="w-full p-3 md:p-5 bg-primary">
             <p className="text-sm text-secondary sm:text-sm">{role.name}</p>
             <div className="mt-1 flex flex-wrap items-center gap-1 text-[10px] leading-5 text-tertiary sm:gap-1.5 sm:text-[11px] sm:leading-5">
                 <span>{role.description}</span>
@@ -78,10 +79,10 @@ export function RoleSystemAnimation({ roles }: RoleSystemAnimationProps) {
                 }
             >
                 <div ref={listRef} className="flex flex-col items-center gap-4">
-                    {roles.map(renderRoleCard)}
+                    {roles.map((role) => renderRoleCard(role, "primary"))}
                 </div>
                 <div className="flex flex-col items-center gap-4" aria-hidden="true">
-                    {roles.map((role, index) => renderRoleCard(role, index + roles.length))}
+                    {roles.map((role) => renderRoleCard(role, "duplicate"))}
                 </div>
             </div>
         </div>

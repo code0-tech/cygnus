@@ -5,13 +5,19 @@ import { LogoItem } from "@/components/ui/LogoItem"
 import { m as motion } from "motion/react"
 
 interface LogoMarqueeProps {
-    logos: Array<number | Media>
+    items: Array<{
+        id: string
+        logo: number | Media
+    }>
     duration?: number
 }
 
-export function LogoMarquee({ logos, duration = 18 }: LogoMarqueeProps) {
-    const marqueeLogos = [...logos, ...logos]
-    if (logos.length === 0) return null
+export function LogoMarquee({ items, duration = 18 }: LogoMarqueeProps) {
+    const marqueeItems = [
+        ...items.map((item) => ({ ...item, copy: "primary" as const })),
+        ...items.map((item) => ({ ...item, copy: "duplicate" as const })),
+    ]
+    if (items.length === 0) return null
 
     return (
         <div className="relative w-full overflow-hidden">
@@ -26,8 +32,8 @@ export function LogoMarquee({ logos, duration = 18 }: LogoMarqueeProps) {
                     repeat: Infinity,
                 }}
             >
-                {marqueeLogos.map((item, index) => (
-                    <LogoItem key={`${(item as Media).id ?? (item as Media).url ?? index}-${index}`} logo={item} className="w-32 shrink-0 sm:w-40 md:w-40 lg:w-48" />
+                {marqueeItems.map((item) => (
+                    <LogoItem key={`${item.copy}-${item.id}`} logo={item.logo} className="w-32 shrink-0 sm:w-40 md:w-40 lg:w-48" />
                 ))}
             </motion.div>
         </div>

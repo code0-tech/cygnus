@@ -18,18 +18,18 @@ export async function ActionListCard({ locale, animationDelay = 0 }: ActionListC
             <div className="pointer-events-none absolute inset-x-0 top-[52%] z-0 flex -translate-y-1/2 justify-center">
                 <div className="relative size-80 scale-[0.68] sm:size-88 sm:scale-[0.8] md:size-96 md:scale-[0.88] lg:size-104 lg:scale-100">
                     <OrbitingCircles iconSize={40}>
-                        <SiDiscord />
-                        <SiSap />
-                        <SiNotion />
-                        <SiGithub />
-                        <SiTelegram />
+                        <SiDiscord key="discord" />
+                        <SiSap key="sap" />
+                        <SiNotion key="notion" />
+                        <SiGithub key="github" />
+                        <SiTelegram key="telegram" />
                     </OrbitingCircles>
                     <OrbitingCircles iconSize={30} radius={110} reverse>
-                        <SiPaypal />
-                        <SiX />
-                        <SiGoogleanalytics />
-                        <SiGitlab />
-                        <SiDhl />
+                        <SiPaypal key="paypal" />
+                        <SiX key="x" />
+                        <SiGoogleanalytics key="google-analytics" />
+                        <SiGitlab key="gitlab" />
+                        <SiDhl key="dhl" />
                     </OrbitingCircles>
                 </div>
             </div>

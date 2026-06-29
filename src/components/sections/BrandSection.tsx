@@ -14,8 +14,18 @@ interface BrandSectionProps {
 export function BrandSection({ content }: BrandSectionProps) {
     if (!content || !content.logos) return
 
-    const logos = content.logos.map((item) => item.logo).filter((logo) => Boolean((logo as Media)?.url))
-    const shouldLoopDesktop = logos.length > 4
+    const logoItems = content.logos.flatMap((item) => {
+        const logo = item.logo as Media
+        if (!logo?.url) return []
+
+        return [
+            {
+                id: String(item.id ?? logo.id ?? logo.url),
+                logo,
+            },
+        ]
+    })
+    const shouldLoopDesktop = logoItems.length > 4
 
     const staggerContainer: Variants = {
         hidden: {},
@@ -49,14 +59,14 @@ export function BrandSection({ content }: BrandSectionProps) {
                     {content.description}
                 </motion.p>
                 <motion.div variants={staggerContainer} className={shouldLoopDesktop ? "hidden" : "hidden w-full min-w-0 grid-cols-4 gap-16 text-center text-secondary md:grid lg:flex-1"}>
-                    {logos.map((item, index) => (
-                        <motion.div variants={staggerItem} key={`${(item as Media).id ?? (item as Media).url ?? index}-${index}`}>
-                            <LogoItem logo={item} className="w-full" />
+                    {logoItems.map((item) => (
+                        <motion.div variants={staggerItem} key={item.id}>
+                            <LogoItem logo={item.logo} className="w-full" />
                         </motion.div>
                     ))}
                 </motion.div>
                 <motion.div variants={staggerItem} className={shouldLoopDesktop ? "w-full min-w-0 lg:flex-1" : "w-full md:hidden"}>
-                    <LogoMarquee logos={logos} />
+                    <LogoMarquee items={logoItems} />
                 </motion.div>
             </motion.div>
         </Section>
