@@ -1,7 +1,7 @@
 "use client"
 
 import { cn } from "@/lib/utils"
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 type SliderAccent = "aqua" | "blue" | "pink" | "yellow" | "brand"
 
@@ -21,6 +21,8 @@ type SliderProps = {
 
 export function Slider({ min, max, step = 1, value, onChange, accent = "aqua", className, lines = 48, minLabel, maxLabel, centerLabel }: SliderProps) {
     const trackRef = useRef<HTMLDivElement>(null)
+    const onChangeRef = useRef(onChange)
+    onChangeRef.current = onChange
     const [isDragging, setIsDragging] = useState(false)
     const clampedValue = Math.min(max, Math.max(min, value))
     const progress = ((clampedValue - min) / (max - min)) * 100
@@ -28,20 +30,26 @@ export function Slider({ min, max, step = 1, value, onChange, accent = "aqua", c
     const ticks = useMemo(() => Array.from({ length: lines }, (_, index) => index), [lines])
     const majorTickIndexes = useMemo(() => new Set([0, Math.round((lines - 1) * 0.25), Math.round((lines - 1) * 0.5), Math.round((lines - 1) * 0.75), lines - 1]), [lines])
 
-    function snapValue(nextValue: number) {
-        const stepped = Math.round((nextValue - min) / step) * step + min
-        return Math.min(max, Math.max(min, stepped))
-    }
+    const snapValue = useCallback(
+        (nextValue: number) => {
+            const stepped = Math.round((nextValue - min) / step) * step + min
+            return Math.min(max, Math.max(min, stepped))
+        },
+        [max, min, step]
+    )
 
-    function updateFromClientX(clientX: number) {
-        const track = trackRef.current
-        if (!track) return
+    const updateFromClientX = useCallback(
+        (clientX: number) => {
+            const track = trackRef.current
+            if (!track) return
 
-        const rect = track.getBoundingClientRect()
-        const ratio = (clientX - rect.left) / rect.width
-        const nextValue = min + ratio * (max - min)
-        onChange(snapValue(nextValue))
-    }
+            const rect = track.getBoundingClientRect()
+            const ratio = (clientX - rect.left) / rect.width
+            const nextValue = min + ratio * (max - min)
+            onChangeRef.current(snapValue(nextValue))
+        },
+        [max, min, snapValue]
+    )
 
     useEffect(() => {
         if (!isDragging) return
@@ -61,7 +69,7 @@ export function Slider({ min, max, step = 1, value, onChange, accent = "aqua", c
             window.removeEventListener("pointermove", handlePointerMove)
             window.removeEventListener("pointerup", handlePointerUp)
         }
-    }, [isDragging])
+    }, [isDragging, updateFromClientX])
 
     return (
         <div className={cn("w-full", className)}>

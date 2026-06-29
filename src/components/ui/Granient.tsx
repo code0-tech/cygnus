@@ -172,6 +172,8 @@ const Grainient: React.FC<Partial<GrainientPalette>> = ({ color1 = GRAINIENT_CON
     const containerRef = useRef<HTMLDivElement | null>(null)
     const runtimeRef = useRef<GrainientRuntime | null>(null)
     const prefersReducedMotion = useReducedMotion()
+    const prefersReducedMotionRef = useRef(prefersReducedMotion)
+    prefersReducedMotionRef.current = prefersReducedMotion
 
     useEffect(() => {
         if (!containerRef.current) return
@@ -306,7 +308,7 @@ const Grainient: React.FC<Partial<GrainientPalette>> = ({ color1 = GRAINIENT_CON
         }
 
         const startLoop = () => {
-            if (disposed || prefersReducedMotion || running || !isInViewport || !isPageVisible) return
+            if (disposed || prefersReducedMotionRef.current || running || !isInViewport || !isPageVisible) return
 
             running = true
             lastFrameTime = 0
@@ -328,7 +330,7 @@ const Grainient: React.FC<Partial<GrainientPalette>> = ({ color1 = GRAINIENT_CON
                 isInViewport = Boolean(entry?.isIntersecting)
 
                 if (isInViewport) {
-                    if (prefersReducedMotion) {
+                    if (prefersReducedMotionRef.current) {
                         renderFrame(performance.now())
                     } else {
                         startLoop()
@@ -350,7 +352,7 @@ const Grainient: React.FC<Partial<GrainientPalette>> = ({ color1 = GRAINIENT_CON
                 return
             }
 
-            if (prefersReducedMotion) {
+            if (prefersReducedMotionRef.current) {
                 renderFrame(performance.now())
             } else {
                 startLoop()
@@ -359,7 +361,7 @@ const Grainient: React.FC<Partial<GrainientPalette>> = ({ color1 = GRAINIENT_CON
 
         document.addEventListener("visibilitychange", handleVisibilityChange)
 
-        if (prefersReducedMotion) {
+        if (prefersReducedMotionRef.current) {
             renderFrame(performance.now())
         } else {
             startLoop()

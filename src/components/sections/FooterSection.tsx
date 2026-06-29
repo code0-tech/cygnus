@@ -13,9 +13,10 @@ import { useWebHaptics } from "web-haptics/react"
 interface FooterSectionProps {
     locale: AppLocale
     footer: Footer | null
+    currentYear: number
 }
 
-export const FooterSection: React.FC<FooterSectionProps> = ({ locale, footer }) => {
+export const FooterSection: React.FC<FooterSectionProps> = ({ locale, footer, currentYear }) => {
     const { trigger } = useWebHaptics()
     if (!footer) return null
 
@@ -97,7 +98,7 @@ export const FooterSection: React.FC<FooterSectionProps> = ({ locale, footer }) 
 
                         <div className="flex flex-col gap-4 md:flex-row md:items-center">
                             <p className="text-tertiary text-xs">
-                                © {new Date().getFullYear()} {footer.company_name}
+                                © {currentYear} {footer.company_name}
                             </p>
                             <div className="flex flex-wrap items-center gap-4 text-xs">
                                 {legalLinks.map((link) => (
