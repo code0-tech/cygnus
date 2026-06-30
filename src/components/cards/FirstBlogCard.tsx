@@ -1,6 +1,7 @@
 "use client"
 
 import { BlogPostItem } from "@/lib/cms"
+import { formatLongDate } from "@/lib/formatters"
 import { getMediaUrl } from "@/lib/media"
 import { Media, TeamMember } from "@/payload-types"
 import Image from "next/image"
@@ -13,9 +14,7 @@ export function FirstBlogCard({ locale, post }: { locale: string; post: BlogPost
     const heroImage = post.heroImage as Media
     const heroImageUrl = getMediaUrl(heroImage?.url)
 
-    const publishedDate = new Intl.DateTimeFormat(locale === "de" ? "de-DE" : "en-US", {
-        dateStyle: "long",
-    }).format(new Date(post.createdAt))
+    const publishedDate = formatLongDate(new Date(post.createdAt), locale)
     const postHref = `/${locale}/blog/${post.slug}`
 
     return (

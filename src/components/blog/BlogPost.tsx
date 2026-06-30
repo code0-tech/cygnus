@@ -1,4 +1,5 @@
 import { getBlogPostBySlug } from "@/lib/cms"
+import { formatLongDate } from "@/lib/formatters"
 import { getMediaUrl } from "@/lib/media"
 import { customLexicalHTMLConverters } from "@/lib/richText/customHTMLConverters"
 import type { AppLocale } from "@/lib/i18n"
@@ -104,9 +105,7 @@ export async function BlogPost({ slug, locale }: BlogPostProps) {
     const authorImage = author?.image && typeof author.image !== "number" ? author.image : undefined
     const heroImageUrl = getMediaUrl(heroImage?.url)
     const authorImageUrl = getMediaUrl(authorImage?.url)
-    const publishedDate = new Intl.DateTimeFormat(locale === "de" ? "de-DE" : "en-US", {
-        dateStyle: "long",
-    }).format(new Date(post.createdAt))
+    const publishedDate = formatLongDate(new Date(post.createdAt), locale)
 
     const headings = getTocHeadings(post.content)
     const contentHtml = await convertLexicalToHTMLAsync({

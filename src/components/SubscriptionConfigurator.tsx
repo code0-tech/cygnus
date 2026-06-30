@@ -1,6 +1,7 @@
 "use client"
 
 import type { SubscriptionConfigData } from "@/lib/cms"
+import { formatEuroCurrency } from "@/lib/formatters"
 import type { AppLocale } from "@/lib/i18n"
 import { useDesktopPinnedPosition } from "@/hooks/useDesktopPinnedPosition"
 import { cn } from "@/lib/utils"
@@ -288,11 +289,7 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
 
     const workflowExecutionPrice = 0.001 * selection.workflowExecutions
     const additionalFeaturesPrice = Array.from(selectedFeatures).reduce((acc, idx) => acc + (resolved.additionalFeatures?.[idx]?.price ?? 0), 0)
-    const totalPrice = new Intl.NumberFormat(locale === "de" ? "de-DE" : "en-US", {
-        style: "currency",
-        currency: "EUR",
-        maximumFractionDigits: 2,
-    }).format(workflowExecutionPrice + additionalFeaturesPrice)
+    const totalPrice = formatEuroCurrency(workflowExecutionPrice + additionalFeaturesPrice, locale)
 
     const subscribeHref = (() => {
         const searchParams = new URLSearchParams({
@@ -315,10 +312,7 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
         <>
             <div className="grid gap-8 lg:grid-cols-5">
                 <section ref={desktopWrapperRef} className="relative min-w-0 lg:col-span-2">
-                    <div
-                        ref={desktopContainerRef}
-                        className="relative z-10 flex min-w-0 flex-col gap-12"
-                    >
+                    <div ref={desktopContainerRef} className="relative z-10 flex min-w-0 flex-col gap-12">
                         <div className="max-w-2xl">
                             <h1 className="mt-4 max-w-xl text-balance text-3xl font-semibold text-white lg:text-4xl">{resolved.pageIntro.heading}</h1>
                             <p className="mt-4 max-w-xl text-base leading-7 text-secondary lg:text-lg">{resolved.pageIntro.description}</p>
@@ -412,11 +406,7 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
                                 <p className="text-base text-secondary">{resolved.additionalFeaturesLabel ?? "Additional Features"}</p>
                                 <div className="grid gap-3">
                                     {resolved.additionalFeatures.map((feature, index) => {
-                                        const formattedFeaturePrice = new Intl.NumberFormat(locale === "de" ? "de-DE" : "en-US", {
-                                            style: "currency",
-                                            currency: "EUR",
-                                            maximumFractionDigits: 2,
-                                        }).format(feature.price)
+                                        const formattedFeaturePrice = formatEuroCurrency(feature.price, locale)
                                         return (
                                             <AdditionalFeatureCard
                                                 key={feature.id ?? `feature-${index}`}

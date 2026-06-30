@@ -1,6 +1,7 @@
 "use client"
 
 import type { TeamMemberItem } from "@/lib/cms"
+import { formatMediumDate } from "@/lib/formatters"
 import { getMediaUrl } from "@/lib/media"
 import type { Media } from "@/payload-types"
 import { IconX } from "@tabler/icons-react"
@@ -27,7 +28,7 @@ export function TeamMemberCard({ member, locale }: TeamMemberCardProps) {
     const image = member.image as Media
     const imageUrl = getMediaUrl(image?.url)
     const cardLayoutId = `team-member-card-${member.id ?? member.name}`
-    const joinedAtLabel = member.joinedAt ? new Intl.DateTimeFormat(locale === "de" ? "de-DE" : "en-US", { dateStyle: "medium" }).format(new Date(member.joinedAt)) : null
+    const joinedAtLabel = member.joinedAt ? formatMediumDate(new Date(member.joinedAt), locale) : null
     const joinedLabel = locale === "de" ? "Beigetreten" : "Joined"
 
     return (
