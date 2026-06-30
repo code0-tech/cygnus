@@ -10,11 +10,11 @@ type NodeSegmentType = "text" | "literal" | "reference" | "node"
 type NodeAccent = "brand" | "yellow" | "aqua" | "blue" | "pink"
 
 const ICON_COLOR_MAP: Record<NodeAccent, string> = {
-    brand: "var(--text-brand)",
-    yellow: "var(--text-yellow)",
-    aqua: "var(--text-aqua)",
-    blue: "var(--text-blue)",
-    pink: "var(--text-pink)",
+    brand: "var(--bg-brand)",
+    yellow: "var(--bg-yellow)",
+    aqua: "var(--bg-aqua)",
+    blue: "var(--bg-blue)",
+    pink: "var(--bg-pink)",
 }
 
 export interface NodeSegment {
@@ -105,8 +105,8 @@ function NodeRow({ nodes, direction, active }: { nodes: NodeItem[]; direction: "
                 {nodes.map((node, index) => (
                     <Card key={`${direction}-${node.color}-${index}`} paddingSize="xs" py="0.35" borderColor="info" color="primary" outline={node.outline}>
                         <Flex align="center" style={{ gap: "0.7rem" }}>
-                            <IconNote color={ICON_COLOR_MAP[node.color]} size={16} />
-                            <Flex align="center" wrap="wrap" style={{ gap: "0.35rem", color: "var(--color-text-primary)" }}>
+                            <IconNote color={ICON_COLOR_MAP[node.color]} size={16} className="shrink-0" />
+                            <Flex align="center" wrap="wrap" style={{ gap: "0.35rem", color: "white" }}>
                                 {displayMessage(node.segments)}
                             </Flex>
                         </Flex>
@@ -117,8 +117,8 @@ function NodeRow({ nodes, direction, active }: { nodes: NodeItem[]; direction: "
                 {nodes.map((node, index) => (
                     <Card key={`${direction}-clone-${node.color}-${index}`} paddingSize="xs" py="0.35" borderColor="info" color="primary" outline={node.outline}>
                         <Flex align="center" style={{ gap: "0.7rem" }}>
-                            <IconNote color={ICON_COLOR_MAP[node.color]} size={16} />
-                            <Flex align="center" wrap="wrap" style={{ gap: "0.35rem", color: "var(--color-text-primary)" }}>
+                            <IconNote color={ICON_COLOR_MAP[node.color]} size={16} className="shrink-0" />
+                            <Flex align="center" wrap="wrap" style={{ gap: "0.35rem", color: "white" }}>
                                 {displayMessage(node.segments)}
                             </Flex>
                         </Flex>
