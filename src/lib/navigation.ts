@@ -81,7 +81,7 @@ function getSubMenuIcon(icon: string | null | undefined) {
 }
 
 export function mapNavbarItems(items: NavbarItemData[], locale: AppLocale): NavItem[] {
-    const sortedItems = [...items].sort((left, right) => left.order - right.order)
+    const sortedItems = items.toSorted((left, right) => left.order - right.order)
     const navbarItems: NavItem[] = []
 
     for (const item of sortedItems) {
@@ -107,7 +107,7 @@ export function mapNavbarItems(items: NavbarItemData[], locale: AppLocale): NavI
 }
 
 export function mapNavbarButtons(buttons: NavbarButtonData[], locale: AppLocale): NavButton[] {
-    const sortedButtons = [...buttons].sort((left, right) => left.order - right.order)
+    const sortedButtons = buttons.toSorted((left, right) => left.order - right.order)
     const navbarButtons: NavButton[] = []
 
     for (const button of sortedButtons) {

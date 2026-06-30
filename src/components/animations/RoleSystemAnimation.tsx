@@ -18,6 +18,24 @@ interface RoleSystemAnimationProps {
     roles: RoleItem[]
 }
 
+function renderRoleCard(role: RoleItem, copy: "primary" | "duplicate") {
+    return (
+        <Card key={`${copy}-${role.id}`} className="w-full p-3 md:p-5 bg-primary">
+            <p className="text-sm text-secondary sm:text-sm">{role.name}</p>
+            <div className="mt-1 flex flex-wrap items-center gap-1 text-[10px] leading-5 text-tertiary sm:gap-1.5 sm:text-[11px] sm:leading-5">
+                <span>{role.description}</span>
+                {role.badges.map((badge) => (
+                    <StableBadge key={`${role.name}-${badge}`} color="info" className="align-middle">
+                        <Text size="xs" className="text-inherit!">
+                            {badge}
+                        </Text>
+                    </StableBadge>
+                ))}
+            </div>
+        </Card>
+    )
+}
+
 export function RoleSystemAnimation({ roles }: RoleSystemAnimationProps) {
     const containerRef = useRef<HTMLDivElement>(null)
     const animationRef = useRef<HTMLDivElement>(null)
@@ -46,22 +64,6 @@ export function RoleSystemAnimation({ roles }: RoleSystemAnimationProps) {
     }, [])
 
     if (!roles.length) return null
-
-    const renderRoleCard = (role: RoleItem, copy: "primary" | "duplicate") => (
-        <Card key={`${copy}-${role.id}`} className="w-full p-3 md:p-5 bg-primary">
-            <p className="text-sm text-secondary sm:text-sm">{role.name}</p>
-            <div className="mt-1 flex flex-wrap items-center gap-1 text-[10px] leading-5 text-tertiary sm:gap-1.5 sm:text-[11px] sm:leading-5">
-                <span>{role.description}</span>
-                {role.badges.map((badge) => (
-                    <StableBadge key={`${role.name}-${badge}`} color="info" className="align-middle">
-                        <Text size="xs" className="text-inherit!">
-                            {badge}
-                        </Text>
-                    </StableBadge>
-                ))}
-            </div>
-        </Card>
-    )
 
     return (
         <div ref={containerRef} className="relative flex h-full w-full cursor-default items-start justify-center overflow-hidden">

@@ -28,48 +28,48 @@ export interface NodeItem {
     outline: boolean
 }
 
+function displayMessage(segments: NodeSegment[]) {
+    return segments.map((segment, index) => {
+        switch (segment.type) {
+            case "literal":
+                return (
+                    <StableBadge key={`${segment.type}-${segment.value}-${index}`} style={{ verticalAlign: "middle" }} color={"secondary"}>
+                        <Text size={"sm"}>{segment.value}</Text>
+                    </StableBadge>
+                )
+            case "reference":
+                return (
+                    <StableBadge key={`${segment.type}-${segment.value}-${index}`} style={{ verticalAlign: "middle" }} color={"warning"} border className="py-0">
+                        <IconVariable size={12} />
+                        <Text size={"sm"} style={{ color: "inherit" }}>
+                            {segment.value}
+                        </Text>
+                    </StableBadge>
+                )
+            case "node":
+                return (
+                    <StableBadge key={`${segment.type}-${segment.value}-${index}`} style={{ verticalAlign: "middle", textWrap: "nowrap" }} border>
+                        <IconNote size={12} />
+                        <Text size={"sm"} style={{ color: "inherit" }}>
+                            {segment.value}
+                        </Text>
+                    </StableBadge>
+                )
+            case "text":
+                return (
+                    <Text key={`${segment.type}-${index}`} size="sm" style={{ color: "inherit" }}>
+                        {segment.value}
+                    </Text>
+                )
+        }
+    })
+}
+
 function NodeRow({ nodes, direction, active }: { nodes: NodeItem[]; direction: "left" | "right"; active: boolean }) {
     const animationRef = useRef<HTMLDivElement>(null)
     const listRef = useRef<HTMLDivElement>(null)
     const groupGap = 16
     const velocity = 28
-
-    const displayMessage = (segments: NodeSegment[]) => {
-        return segments.map((segment, index) => {
-            switch (segment.type) {
-                case "literal":
-                    return (
-                        <StableBadge key={`${segment.type}-${segment.value}-${index}`} style={{ verticalAlign: "middle" }} color={"secondary"}>
-                            <Text size={"sm"}>{segment.value}</Text>
-                        </StableBadge>
-                    )
-                case "reference":
-                    return (
-                        <StableBadge key={`${segment.type}-${segment.value}-${index}`} style={{ verticalAlign: "middle" }} color={"warning"} border className="py-0">
-                            <IconVariable size={12} />
-                            <Text size={"sm"} style={{ color: "inherit" }}>
-                                {segment.value}
-                            </Text>
-                        </StableBadge>
-                    )
-                case "node":
-                    return (
-                        <StableBadge key={`${segment.type}-${segment.value}-${index}`} style={{ verticalAlign: "middle", textWrap: "nowrap" }} border>
-                            <IconNote size={12} />
-                            <Text size={"sm"} style={{ color: "inherit" }}>
-                                {segment.value}
-                            </Text>
-                        </StableBadge>
-                    )
-                case "text":
-                    return (
-                        <Text key={`${segment.type}-${index}`} size="sm" style={{ color: "inherit" }}>
-                            {segment.value}
-                        </Text>
-                    )
-            }
-        })
-    }
 
     useEffect(() => {
         const listElement = listRef.current

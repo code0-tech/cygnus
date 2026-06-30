@@ -74,7 +74,7 @@ interface PaginatedBlogPostsResult {
 }
 
 function sortBlogPosts(posts: BlogPostItem[]): BlogPostItem[] {
-    return [...posts].sort((left, right) => {
+    return posts.toSorted((left, right) => {
         const pinOrder = Number(Boolean(right.isPinned)) - Number(Boolean(left.isPinned))
         if (pinOrder !== 0) return pinOrder
         return new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()

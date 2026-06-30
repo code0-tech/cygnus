@@ -2,7 +2,7 @@
 
 import { BaseAccordionItem } from "@/components/ui/Accordion"
 import type { ExtractedActionTriggerItem } from "@/lib/actionTriggerExtraction"
-import { type ReactNode, useState } from "react"
+import { type ReactNode, useCallback, useMemo, useState } from "react"
 import { Card } from "./ui/Card"
 
 interface ActionTriggerCardProps {
@@ -16,9 +16,22 @@ export function ActionTriggerCard({ type, item, icon }: ActionTriggerCardProps) 
     const parameters = item.kind === "functionDef" ? item.parameters : item.settings
     const label = type === "trigger" ? "Trigger" : "FunctionDefinition"
     const parameterLabel = type === "trigger" ? "Settings" : "Parameters"
-    const toggleItem = (index: number) => {
+    const toggleItem = useCallback((index: number) => {
         setOpenItem((previousItem) => (previousItem === index ? null : index))
-    }
+    }, [])
+    const parameterList = useMemo(
+        () => (
+            <div className="flex flex-col gap-2">
+                {parameters.map((parameter) => (
+                    <div key={parameter.id} className="rounded-md bg-white/2 p-2">
+                        <div className="text-xs font-medium text-secondary">{parameter.name || parameter.identifier}</div>
+                        {parameter.description && <div className="mt-1 text-xs leading-5 text-tertiary">{parameter.description}</div>}
+                    </div>
+                ))}
+            </div>
+        ),
+        [parameters]
+    )
 
     return (
         <Card size="sm" className="bg-primary">
@@ -45,16 +58,7 @@ export function ActionTriggerCard({ type, item, icon }: ActionTriggerCardProps) 
                             onToggle={toggleItem}
                             className="rounded-lg before:bg-none"
                             questionClassname="pl-5 pr-2 py-1 text-sm lg:text-sm"
-                            answer={
-                                <div className="flex flex-col gap-2">
-                                    {parameters.map((parameter) => (
-                                        <div key={parameter.id} className="rounded-md bg-white/2 p-2">
-                                            <div className="text-xs font-medium text-secondary">{parameter.name || parameter.identifier}</div>
-                                            {parameter.description && <div className="mt-1 text-xs leading-5 text-tertiary">{parameter.description}</div>}
-                                        </div>
-                                    ))}
-                                </div>
-                            }
+                            answer={parameterList}
                         />
                     </div>
                 )}
