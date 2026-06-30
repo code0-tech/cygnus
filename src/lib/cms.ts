@@ -1,4 +1,4 @@
-"use server"
+import "server-only"
 
 import { DEFAULT_LOCALE, type AppLocale } from "@/lib/i18n"
 import { getPayloadClient } from "@/lib/payloadClient"

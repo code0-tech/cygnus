@@ -1,7 +1,7 @@
 "use client"
 
 import { cn } from "@/lib/utils"
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useMemo, useRef } from "react"
 
 type SliderAccent = "aqua" | "blue" | "pink" | "yellow" | "brand"
 
@@ -22,9 +22,6 @@ type SliderProps = {
 
 export function Slider({ min, max, step = 1, value, onChange, accent = "aqua", className, lines = 48, minLabel, maxLabel, centerLabel, ariaLabel }: SliderProps) {
     const trackRef = useRef<HTMLDivElement>(null)
-    const onChangeRef = useRef(onChange)
-    onChangeRef.current = onChange
-    const [isDragging, setIsDragging] = useState(false)
     const clampedValue = Math.min(max, Math.max(min, value))
     const progress = ((clampedValue - min) / (max - min)) * 100
 
@@ -47,30 +44,10 @@ export function Slider({ min, max, step = 1, value, onChange, accent = "aqua", c
             const rect = track.getBoundingClientRect()
             const ratio = (clientX - rect.left) / rect.width
             const nextValue = min + ratio * (max - min)
-            onChangeRef.current(snapValue(nextValue))
+            onChange(snapValue(nextValue))
         },
-        [max, min, snapValue]
+        [max, min, onChange, snapValue]
     )
-
-    useEffect(() => {
-        if (!isDragging) return
-
-        function handlePointerMove(event: PointerEvent) {
-            updateFromClientX(event.clientX)
-        }
-
-        function handlePointerUp() {
-            setIsDragging(false)
-        }
-
-        window.addEventListener("pointermove", handlePointerMove)
-        window.addEventListener("pointerup", handlePointerUp)
-
-        return () => {
-            window.removeEventListener("pointermove", handlePointerMove)
-            window.removeEventListener("pointerup", handlePointerUp)
-        }
-    }, [isDragging, updateFromClientX])
 
     return (
         <div className={cn("w-full", className)}>
@@ -83,8 +60,23 @@ export function Slider({ min, max, step = 1, value, onChange, accent = "aqua", c
                 aria-label={ariaLabel}
                 tabIndex={0}
                 onPointerDown={(event) => {
-                    setIsDragging(true)
+                    event.currentTarget.setPointerCapture(event.pointerId)
                     updateFromClientX(event.clientX)
+                }}
+                onPointerMove={(event) => {
+                    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+                        updateFromClientX(event.clientX)
+                    }
+                }}
+                onPointerUp={(event) => {
+                    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+                        event.currentTarget.releasePointerCapture(event.pointerId)
+                    }
+                }}
+                onPointerCancel={(event) => {
+                    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+                        event.currentTarget.releasePointerCapture(event.pointerId)
+                    }
                 }}
                 onKeyDown={(event) => {
                     if (event.key === "ArrowLeft" || event.key === "ArrowDown") {

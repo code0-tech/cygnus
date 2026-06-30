@@ -114,7 +114,7 @@ export function HeroSection({ content, imageSrc = "/code0_software.png" }: HeroS
                     href="https://www.producthunt.com/products/codezero?embed=true&amp;utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-codezero-2"
                     target="_blank"
                     rel="noopener noreferrer"
-                    aria-hidden={!isProductHuntBadgeVisible}
+                    inert={!isProductHuntBadgeVisible}
                     className={cn(!isProductHuntBadgeVisible && "pointer-events-none opacity-0")}
                 >
                     <img

@@ -1,5 +1,4 @@
 import { NavigationMenu as NavigationMenuPrimitive } from "@base-ui/react/navigation-menu"
-import { cva } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 import { IconChevronUp } from "@tabler/icons-react"
 
@@ -20,13 +19,17 @@ function NavigationMenuItem({ className, ...props }: React.ComponentPropsWithRef
     return <NavigationMenuPrimitive.Item data-slot="navigation-menu-item" className={cn("relative", className)} {...props} />
 }
 
-const navigationMenuTriggerStyle = cva(
-    "group/navigation-menu-trigger inline-flex h-9 w-max items-center justify-center rounded-xl px-4 py-1 text-sm font-medium text-white outline-none transition-colors hover:bg-white/10 focus:bg-white/10 disabled:pointer-events-none disabled:opacity-50 data-popup-open:bg-white/10 data-open:bg-white/10"
-)
-
 function NavigationMenuTrigger({ className, children, showIcon = true, ...props }: NavigationMenuPrimitive.Trigger.Props & { showIcon?: boolean }) {
     return (
-        <NavigationMenuPrimitive.Trigger data-slot="navigation-menu-trigger" className={cn(navigationMenuTriggerStyle(), "group", className)} {...props}>
+        <NavigationMenuPrimitive.Trigger
+            data-slot="navigation-menu-trigger"
+            className={cn(
+                "group/navigation-menu-trigger inline-flex h-9 w-max items-center justify-center rounded-xl px-4 py-1 text-sm font-medium text-white outline-none transition-colors hover:bg-white/10 focus:bg-white/10 disabled:pointer-events-none disabled:opacity-50 data-popup-open:bg-white/10 data-open:bg-white/10",
+                "group",
+                className
+            )}
+            {...props}
+        >
             {children}
             {showIcon && (
                 <IconChevronUp
@@ -87,4 +90,4 @@ function NavigationMenuLink({ className, ...props }: NavigationMenuPrimitive.Lin
     )
 }
 
-export { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, navigationMenuTriggerStyle }
+export { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger }

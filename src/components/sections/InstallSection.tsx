@@ -24,13 +24,13 @@ const STAGGER_ITEM: Variants = {
 export function InstallSection({ content }: InstallSectionProps) {
     const [copied, setCopied] = useState(false)
 
-    if (!content?.heading || !content.subheading || !content.code) return null
-
     useEffect(() => {
         if (!copied) return
         const timeout = window.setTimeout(() => setCopied(false), 3000)
         return () => window.clearTimeout(timeout)
     }, [copied])
+
+    if (!content?.heading || !content.subheading || !content.code) return null
 
     async function handleCopy() {
         await navigator.clipboard.writeText(content?.code ?? "")

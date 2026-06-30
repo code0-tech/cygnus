@@ -3,7 +3,7 @@
 import { useMediaQuery } from "@/hooks/useMediaQuery"
 import { cn } from "@/lib/utils"
 import { IconAlignLeft, IconChevronDown } from "@tabler/icons-react"
-import { AnimatePresence, m as motion } from "motion/react"
+import { animate, AnimatePresence, m as motion, useMotionValue } from "motion/react"
 import { useEffect, useReducer, useRef, useState } from "react"
 import { useWebHaptics } from "web-haptics/react"
 
@@ -69,10 +69,12 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
     const headingScrollOffset = 120
 
     const [activeIds, setActiveIds] = useState<string[]>([])
-    const [barStyle, setBarStyle] = useState({ y: 0, scaleY: 0, opacity: 0 })
     const [layoutState, dispatchLayout] = useReducer(tocLayoutReducer, initialTocLayoutState)
     const { isOpen, showMobileToc, desktopMode, desktopStyle } = layoutState
     const isMobile = useMediaQuery("(max-width: 1023px)")
+    const barY = useMotionValue(0)
+    const barScaleY = useMotionValue(0)
+    const barOpacity = useMotionValue(0)
 
     const mobileTocRef = useRef<HTMLDivElement>(null)
     const desktopTocRef = useRef<HTMLDivElement>(null)
@@ -138,16 +140,16 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
         if (!currentRef.current) return
 
         if (!activeIds.length) {
-            setBarStyle((prev) => ({ ...prev, opacity: 0 }))
-            return
+            const opacityAnimation = animate(barOpacity, 0, { duration: 0.2, ease: "easeOut" })
+            return () => opacityAnimation.stop()
         }
 
         const listItems = Array.from(currentRef.current.querySelectorAll("[data-toc-item='true']"))
         const activeElements = activeIds.map((id) => listItems.find((item) => item.id === `toc-${id}`)).filter((el): el is HTMLElement => el !== null && el !== undefined)
 
         if (!activeElements.length) {
-            setBarStyle((prev) => ({ ...prev, opacity: 0 }))
-            return
+            const opacityAnimation = animate(barOpacity, 0, { duration: 0.2, ease: "easeOut" })
+            return () => opacityAnimation.stop()
         }
 
         const sortedActiveElements = activeElements.sort((a, b) => a.offsetTop - b.offsetTop)
@@ -157,8 +159,16 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
         const bottom = lastElement.offsetTop + lastElement.offsetHeight
         const height = bottom - top
 
-        setBarStyle({ y: top, scaleY: height, opacity: 1 })
-    }, [activeIds, isOpen, isMobile])
+        const yAnimation = animate(barY, top, { duration: 0.2, ease: "easeOut" })
+        const scaleAnimation = animate(barScaleY, height, { duration: 0.2, ease: "easeOut" })
+        const opacityAnimation = animate(barOpacity, 1, { duration: 0.2, ease: "easeOut" })
+
+        return () => {
+            yAnimation.stop()
+            scaleAnimation.stop()
+            opacityAnimation.stop()
+        }
+    }, [activeIds, barOpacity, barScaleY, barY, isOpen, isMobile])
 
     useEffect(() => {
         if (!isMobile) {
@@ -279,9 +289,7 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
                                             <div className="absolute bottom-2 top-2 w-px bg-white/20" style={{ left: "11px" }} />
                                             <motion.div
                                                 className="absolute top-0 w-px origin-top bg-white will-change-transform"
-                                                animate={barStyle}
-                                                transition={{ duration: 0.2, ease: "easeOut" }}
-                                                style={{ left: "11px", height: 1 }}
+                                                style={{ left: "11px", height: 1, y: barY, scaleY: barScaleY, opacity: barOpacity }}
                                             />
                                             {headings.map((heading) => (
                                                 <div key={heading.id} id={`toc-${heading.id}`} data-toc-item="true">
@@ -331,12 +339,7 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
                         <h3 className="mb-2 text-sm font-semibold">Content</h3>
                     </div>
                     <div ref={desktopTocRef} className="relative border-l border-white/20 ml-1">
-                        <motion.div
-                            className="absolute top-0 w-px origin-top bg-white will-change-transform"
-                            animate={barStyle}
-                            transition={{ duration: 0.2, ease: "easeOut" }}
-                            style={{ left: "-1.5px", height: 1 }}
-                        />
+                        <motion.div className="absolute top-0 w-px origin-top bg-white will-change-transform" style={{ left: "-1.5px", height: 1, y: barY, scaleY: barScaleY, opacity: barOpacity }} />
                         {headings.map((heading) => (
                             <div key={heading.id} id={`toc-${heading.id}`} data-toc-item="true">
                                 <a

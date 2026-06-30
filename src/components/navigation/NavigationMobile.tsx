@@ -9,7 +9,7 @@ import { IconMenu2, IconX } from "@tabler/icons-react"
 import { AnimatePresence, m as motion } from "motion/react"
 import Image from "next/image"
 import Link from "next/link"
-import React, { useEffect, useLayoutEffect, useRef, useState } from "react"
+import React, { useEffect, useLayoutEffect, useReducer, useRef } from "react"
 import { useWebHaptics } from "web-haptics/react"
 import { NavigationLink } from "./NavigationLink"
 import { NavigationMobileItem } from "./NavigationMobileItem"
@@ -30,20 +30,77 @@ const SHELL_TRANSITION = {
     ease: [0.16, 1, 0.3, 1] as const,
 }
 
+interface NavigationMobileState {
+    isOpen: boolean
+    mobileOpenKey: string | null
+    isMenuClosing: boolean
+    shellInsetWidth: number
+    menuHeight: number
+}
+
+type NavigationMobileAction =
+    | { type: "setOpen"; isOpen: boolean }
+    | { type: "toggleOpen" }
+    | { type: "close" }
+    | { type: "toggleSubmenu"; key: string }
+    | { type: "finishClosing" }
+    | { type: "setShellInsetWidth"; width: number }
+    | { type: "setMenuHeight"; height: number }
+
+const initialNavigationMobileState: NavigationMobileState = {
+    isOpen: false,
+    mobileOpenKey: null,
+    isMenuClosing: false,
+    shellInsetWidth: 0,
+    menuHeight: 0,
+}
+
+function navigationMobileReducer(state: NavigationMobileState, action: NavigationMobileAction): NavigationMobileState {
+    switch (action.type) {
+        case "setOpen":
+            if (state.isOpen === action.isOpen) return state
+            return {
+                ...state,
+                isOpen: action.isOpen,
+                isMenuClosing: action.isOpen ? false : state.isOpen,
+            }
+        case "toggleOpen":
+            return {
+                ...state,
+                isOpen: !state.isOpen,
+                isMenuClosing: state.isOpen,
+            }
+        case "close":
+            return {
+                ...state,
+                isOpen: false,
+                mobileOpenKey: null,
+                isMenuClosing: state.isOpen || state.isMenuClosing,
+            }
+        case "toggleSubmenu":
+            return {
+                ...state,
+                mobileOpenKey: state.mobileOpenKey === action.key ? null : action.key,
+            }
+        case "finishClosing":
+            return state.isMenuClosing ? { ...state, isMenuClosing: false } : state
+        case "setShellInsetWidth":
+            return state.shellInsetWidth === action.width ? state : { ...state, shellInsetWidth: action.width }
+        case "setMenuHeight":
+            return state.menuHeight === action.height ? state : { ...state, menuHeight: action.height }
+    }
+}
+
 const NavigationMobile: React.FC<NavigationMobileProps> = ({ homeHref, items: navbarItems, buttons: navbarButtons, logo: navigationLogo }) => {
     const { trigger } = useWebHaptics()
-    const menuRef = useOutsideClick<HTMLElement>(() => setIsOpen(false))
+    const [state, dispatch] = useReducer(navigationMobileReducer, initialNavigationMobileState)
+    const { isOpen, mobileOpenKey, isMenuClosing, shellInsetWidth, menuHeight } = state
+    const menuRef = useOutsideClick<HTMLElement>(() => dispatch({ type: "setOpen", isOpen: false }))
     const rootRef = useRef<HTMLDivElement>(null)
     const menuContentRef = useRef<HTMLDivElement>(null)
-    const wasOpenRef = useRef(false)
-    const [isOpen, setIsOpen] = useState(false)
-    const [mobileOpenKey, setMobileOpenKey] = useState<string | null>(null)
-    const [isMenuClosing, setIsMenuClosing] = useState(false)
-    const [shellInsetWidth, setShellInsetWidth] = useState(0)
-    const [menuHeight, setMenuHeight] = useState(0)
     const isShellExpanded = isOpen || isMenuClosing
     const isScrolled = useNavigationScrollState({
-        onScroll: isOpen ? () => setIsOpen(false) : undefined,
+        onScroll: isOpen ? () => dispatch({ type: "setOpen", isOpen: false }) : undefined,
     })
     const shellScale = isScrolled && !isShellExpanded ? 0.8 : 1
     const scrolledHeaderInset = shellInsetWidth + 6
@@ -52,34 +109,22 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({ homeHref, items: na
     const headerRightPadding = isShellExpanded ? 6 : isScrolled ? scrolledHeaderInset : 0
 
     useEffect(() => {
-        let timeoutId: ReturnType<typeof setTimeout> | undefined
+        if (!isMenuClosing) return
 
-        if (isOpen) {
-            setIsMenuClosing(false)
-        } else if (wasOpenRef.current) {
-            setIsMenuClosing(true)
-            timeoutId = setTimeout(() => setIsMenuClosing(false), 460)
-        }
-
-        wasOpenRef.current = isOpen
-
-        return () => {
-            if (timeoutId) {
-                clearTimeout(timeoutId)
-            }
-        }
-    }, [isOpen])
+        const timeoutId = setTimeout(() => dispatch({ type: "finishClosing" }), 460)
+        return () => clearTimeout(timeoutId)
+    }, [isMenuClosing])
 
     useLayoutEffect(() => {
         const element = rootRef.current
 
         if (!element) {
-            setShellInsetWidth(0)
+            dispatch({ type: "setShellInsetWidth", width: 0 })
             return
         }
 
         const measure = () => {
-            setShellInsetWidth(element.clientWidth * 0.1)
+            dispatch({ type: "setShellInsetWidth", width: element.clientWidth * 0.1 })
         }
 
         measure()
@@ -94,12 +139,12 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({ homeHref, items: na
         const element = menuContentRef.current
 
         if (!element || !isOpen) {
-            setMenuHeight(0)
+            dispatch({ type: "setMenuHeight", height: 0 })
             return
         }
 
         const measure = () => {
-            setMenuHeight(element.scrollHeight)
+            dispatch({ type: "setMenuHeight", height: element.scrollHeight })
         }
 
         measure()
@@ -112,8 +157,7 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({ homeHref, items: na
 
     const closeMenu = () => {
         trigger("medium")
-        setIsOpen(false)
-        setMobileOpenKey(null)
+        dispatch({ type: "close" })
     }
 
     return (
@@ -153,7 +197,7 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({ homeHref, items: na
                                 href={homeHref}
                                 onClick={() => {
                                     trigger("medium")
-                                    setIsOpen(false)
+                                    dispatch({ type: "setOpen", isOpen: false })
                                 }}
                             >
                                 <div className="flex">
@@ -168,7 +212,7 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({ homeHref, items: na
                                 aria-controls="mobile-navigation-menu"
                                 onClick={() => {
                                     trigger("medium")
-                                    setIsOpen(!isOpen)
+                                    dispatch({ type: "toggleOpen" })
                                 }}
                             >
                                 {isOpen ? <IconX className="text-secondary" /> : <IconMenu2 className="text-secondary" />}
@@ -209,7 +253,7 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({ homeHref, items: na
                                                     isOpen={isOpenAcc}
                                                     onToggle={() => {
                                                         trigger("soft")
-                                                        setMobileOpenKey(isOpenAcc ? null : item.title)
+                                                        dispatch({ type: "toggleSubmenu", key: item.title })
                                                     }}
                                                     onNavigate={closeMenu}
                                                 />

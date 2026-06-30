@@ -8,7 +8,7 @@ import { CtaLayoutBlock } from "@/lib/cms"
 import { cn } from "@/lib/utils"
 import { m as motion, type Variants } from "motion/react"
 import Image from "next/image"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef } from "react"
 import { Card } from "../ui/Card"
 
 interface CtaSectionProps {
@@ -27,7 +27,6 @@ const STAGGER_ITEM: Variants = {
 
 export function CtaSection({ content, floatingCta = false }: CtaSectionProps) {
     const isTouchDevice = useMediaQuery("(hover: none), (pointer: coarse)")
-    const [docked, setDocked] = useState(false)
 
     const buttonAnchorRef = useRef<HTMLDivElement>(null)
     const buttonRef = useRef<HTMLDivElement>(null)
@@ -52,7 +51,7 @@ export function CtaSection({ content, floatingCta = false }: CtaSectionProps) {
                     if (!entry) return
 
                     const nextDocked = entry.isIntersecting || entry.boundingClientRect.top < 0
-                    setDocked((previous) => (previous === nextDocked ? previous : nextDocked))
+                    button.dataset.docked = String(nextDocked)
                 },
                 {
                     rootMargin: `0px 0px -${bottomMargin}px 0px`,
@@ -117,14 +116,22 @@ export function CtaSection({ content, floatingCta = false }: CtaSectionProps) {
                     </motion.p>
 
                     <motion.div ref={buttonAnchorRef} variants={STAGGER_ITEM} className="z-20 mt-4 flex h-10 items-center justify-center">
-                        <div ref={buttonRef} className={cn("flex items-center gap-4", floatingCta && !docked && "fixed bottom-6 left-1/2 z-50 -translate-x-1/2")}>
+                        <div
+                            ref={buttonRef}
+                            data-docked={floatingCta ? "false" : undefined}
+                            className={cn(
+                                "flex items-center gap-4",
+                                floatingCta &&
+                                    "group/floating-cta data-[docked=false]:fixed data-[docked=false]:bottom-6 data-[docked=false]:left-1/2 data-[docked=false]:z-50 data-[docked=false]:-translate-x-1/2"
+                            )}
+                        >
                             <HapticButtonLink
                                 href={content.ctaLink.url}
                                 variant="normal"
                                 className={cn(
                                     baseCtaClassName,
                                     floatingCta ? floatingCtaClassName : inlineCtaClassName,
-                                    floatingCta && (docked ? "shadow-none" : "shadow-[0_0_60px_20px_rgba(0,0,0,0.75)]")
+                                    floatingCta && "group-data-[docked=true]/floating-cta:shadow-none group-data-[docked=false]/floating-cta:shadow-[0_0_60px_20px_rgba(0,0,0,0.75)]"
                                 )}
                             >
                                 {content.ctaLink.label}

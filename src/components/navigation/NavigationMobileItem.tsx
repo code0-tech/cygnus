@@ -1,6 +1,5 @@
 "use client"
 
-import { navigationMenuTriggerStyle } from "@/components/ui/NavigationMenu"
 import { NavItem } from "@/lib/navigation"
 import { cn } from "@/lib/utils"
 import { IconChevronUp } from "@tabler/icons-react"
@@ -15,10 +14,6 @@ interface NavigationMobileItemProps {
     onToggle: () => void
     onNavigate: () => void
 }
-
-const mobileNavItemClassName = navigationMenuTriggerStyle({
-    className: "h-auto w-full justify-between px-4 py-2 text-left text-base text-secondary hover:text-white focus:text-white",
-})
 
 export function NavigationMobileItem({ item, isOpen, onToggle, onNavigate }: NavigationMobileItemProps) {
     const submenuContentRef = useRef<HTMLDivElement>(null)
@@ -49,12 +44,26 @@ export function NavigationMobileItem({ item, isOpen, onToggle, onNavigate }: Nav
     return (
         <div className="flex flex-col">
             {isAccordion ? (
-                <button type="button" className={cn(mobileNavItemClassName, isOpen && "bg-white/10 text-white")} onClick={onToggle}>
+                <button
+                    type="button"
+                    className={cn(
+                        "group/navigation-menu-trigger inline-flex h-auto w-full items-center justify-between rounded-xl px-4 py-2 text-left text-base font-medium text-secondary outline-none transition-colors hover:bg-white/10 hover:text-white focus:bg-white/10 focus:text-white disabled:pointer-events-none disabled:opacity-50 data-popup-open:bg-white/10 data-open:bg-white/10",
+                        isOpen && "bg-white/10 text-white"
+                    )}
+                    onClick={onToggle}
+                >
                     <span>{item.title}</span>
                     <IconChevronUp size={20} className={cn("transition-transform text-secondary", !isOpen && "rotate-180")} />
                 </button>
             ) : (
-                <Link href={item.href ?? "#"} className={cn(mobileNavItemClassName, !hasRoute && "pointer-events-none opacity-60")} onClick={onNavigate}>
+                <Link
+                    href={item.href ?? "#"}
+                    className={cn(
+                        "group/navigation-menu-trigger inline-flex h-auto w-full items-center justify-between rounded-xl px-4 py-2 text-left text-base font-medium text-secondary outline-none transition-colors hover:bg-white/10 hover:text-white focus:bg-white/10 focus:text-white disabled:pointer-events-none disabled:opacity-50 data-popup-open:bg-white/10 data-open:bg-white/10",
+                        !hasRoute && "pointer-events-none opacity-60"
+                    )}
+                    onClick={onNavigate}
+                >
                     <span>{item.title}</span>
                 </Link>
             )}

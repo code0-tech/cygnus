@@ -1,5 +1,6 @@
 import { GraphMarkdownBlock } from "@/components/blog/GraphMarkdownBlock"
 import { TriggerMarkdownBlock } from "@/components/blog/TriggerMarkdownBlock"
+import sanitizeHtml, { type IOptions } from "sanitize-html"
 
 interface MarkdownContentProps {
     content: string
@@ -29,6 +30,69 @@ const CUSTOM_TAG_COMPONENTS = {
     graph: GraphMarkdownBlock,
     trigger: TriggerMarkdownBlock,
 } as const
+
+const SANITIZE_OPTIONS: IOptions = {
+    allowedTags: [
+        "a",
+        "abbr",
+        "b",
+        "blockquote",
+        "br",
+        "code",
+        "del",
+        "div",
+        "em",
+        "figcaption",
+        "figure",
+        "h1",
+        "h2",
+        "h3",
+        "h4",
+        "h5",
+        "h6",
+        "hr",
+        "i",
+        "img",
+        "li",
+        "mark",
+        "ol",
+        "p",
+        "pre",
+        "s",
+        "span",
+        "strong",
+        "sub",
+        "sup",
+        "table",
+        "tbody",
+        "td",
+        "tfoot",
+        "th",
+        "thead",
+        "tr",
+        "u",
+        "ul",
+    ],
+    allowedAttributes: {
+        "*": ["aria-*", "class", "dir", "id", "title"],
+        a: ["href", "rel", "target"],
+        img: ["alt", "height", "loading", "src", "width"],
+        li: ["value"],
+        ol: ["start", "type"],
+        td: ["colspan", "rowspan"],
+        th: ["colspan", "rowspan", "scope"],
+    },
+    allowedSchemes: ["http", "https", "mailto", "tel"],
+    allowedSchemesByTag: {
+        img: ["http", "https"],
+    },
+    transformTags: {
+        a: (tagName, attributes) => ({
+            tagName,
+            attribs: attributes.target === "_blank" ? { ...attributes, rel: "noopener noreferrer" } : attributes,
+        }),
+    },
+}
 
 const htmlClassName = [
     "[&_h1]:mb-4 [&_h1]:mt-12 [&_h1]:text-4xl [&_h1]:font-semibold [&_h1]:leading-tight [&_h1:first-child]:mt-0 [&_h1]:tracking-normal",
@@ -113,7 +177,8 @@ export function MarkdownContent({ content }: MarkdownContentProps) {
         <div className={htmlClassName}>
             {segments.map((segment, index) => {
                 if (segment.type === "html") {
-                    return <div key={`html-${index}`} className={index === segments.length - 1 ? "[&>*:last-child]:mb-0" : undefined} dangerouslySetInnerHTML={{ __html: segment.html }} />
+                    const sanitizedHtml = sanitizeHtml(segment.html, SANITIZE_OPTIONS)
+                    return <div key={`html-${index}`} className={index === segments.length - 1 ? "[&>*:last-child]:mb-0" : undefined} dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />
                 }
 
                 if (segment.type === "custom-block") {
