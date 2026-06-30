@@ -21,7 +21,7 @@ export type SubNavItem = {
     icon: ReactNode
 }
 
-export type NavigationLinkVariant = "none" | "normal" | "outlined" | "filled"
+type NavigationLinkVariant = "none" | "normal" | "outlined" | "filled"
 
 export type NavigationData = Navigation
 export type NavigationLogoData = Navigation["logo"]

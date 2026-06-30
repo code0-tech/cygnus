@@ -66,4 +66,3 @@ function Card({ className, variant, size, topline = true, radialGradient, gradie
 }
 
 export { Card }
-export type { CardProps }
