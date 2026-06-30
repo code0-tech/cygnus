@@ -37,7 +37,10 @@ const extractText = (node?: LexicalNode): string => {
     if (!node) return ""
     if (typeof node.text === "string") return node.text
     if (!Array.isArray(node.children)) return ""
-    return node.children.map((child) => extractText(child)).join("")
+
+    let text = ""
+    for (const child of node.children) text += extractText(child)
+    return text
 }
 
 const getInitials = (name: string) => {

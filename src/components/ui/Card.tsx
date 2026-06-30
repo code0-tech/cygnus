@@ -1,6 +1,5 @@
 "use client"
 
-import * as React from "react"
 import { m as motion, type Variants, type HTMLMotionProps } from "motion/react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
@@ -47,7 +46,7 @@ type CardProps = HTMLMotionProps<"div"> &
         gradientDirection?: keyof typeof gradientDirections | null
     }
 
-const Card = React.forwardRef<HTMLDivElement, CardProps>(({ className, variant, size, topline = true, radialGradient, gradientDirection, variants, children, ...props }, ref) => {
+function Card({ className, variant, size, topline = true, radialGradient, gradientDirection, variants, children, ref, ...props }: CardProps) {
     const Component: any = variants ? motion.div : "div"
     return (
         <Component ref={ref} className={cn(cardVariants({ variant, size }), className)} variants={variants} {...props}>
@@ -64,8 +63,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(({ className, variant, 
             {children}
         </Component>
     )
-})
-Card.displayName = "Card"
+}
 
 export { Card }
 export type { CardProps }

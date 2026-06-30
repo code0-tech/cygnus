@@ -301,17 +301,24 @@ const getFeaturesCached = cache(async (locale: AppLocale): Promise<FeatureItem[]
             depth: 0,
         })
 
-        return docs
-            .filter((feature): feature is Feature & { title: string; description: string; link: { label: string; url: string } } =>
-                Boolean(feature.title && feature.description && feature.link?.label && feature.link?.url)
-            )
-            .map((feature) => ({
+        const features: FeatureItem[] = []
+
+        for (const feature of docs) {
+            const { title, description } = feature
+            const label = feature.link?.label
+            const url = feature.link?.url
+            if (!title || !description || !label || !url) continue
+
+            features.push({
                 id: feature.id,
                 slug: feature.slug,
-                title: feature.title,
-                description: feature.description,
-                link: { label: feature.link.label, url: feature.link.url },
-            }))
+                title,
+                description,
+                link: { label, url },
+            })
+        }
+
+        return features
     })
 })
 
