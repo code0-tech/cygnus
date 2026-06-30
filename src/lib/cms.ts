@@ -234,7 +234,7 @@ async function cmsFindMany<T>(operation: string, fallback: T[], args: CmsFindArg
 }
 
 async function cmsFindSlugs(operation: string, locale: AppLocale, collection: string): Promise<string[]> {
-    return cmsFindMany<{ slug: string }>(operation, [], {
+    const docs = await cmsFindMany<{ slug: string }>(operation, [], {
         collection,
         locale,
         fallbackLocale: DEFAULT_LOCALE,
@@ -242,7 +242,14 @@ async function cmsFindSlugs(operation: string, locale: AppLocale, collection: st
         limit: 1000,
         depth: 0,
         select: { slug: true },
-    }).then((docs) => docs.map((doc) => doc.slug).filter((slug) => slug.length > 0))
+    })
+    const slugs: string[] = []
+
+    for (const doc of docs) {
+        if (doc.slug.length > 0) slugs.push(doc.slug)
+    }
+
+    return slugs
 }
 
 const getLandingPageCached = cache(async (cachedSlug: string, cachedLocale: AppLocale): Promise<Page | null> => {

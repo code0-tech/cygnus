@@ -40,34 +40,39 @@ const extractText = (node?: LexicalNode): string => {
     return node.children.map((child) => extractText(child)).join("")
 }
 
-const getInitials = (name: string) =>
-    name
-        .split(" ")
-        .filter(Boolean)
-        .map((part) => part.charAt(0))
-        .slice(0, 2)
-        .join("")
-        .toUpperCase()
+const getInitials = (name: string) => {
+    let initials = ""
+
+    for (const part of name.split(" ")) {
+        if (!part) continue
+        initials += part.charAt(0)
+        if (initials.length === 2) break
+    }
+
+    return initials.toUpperCase()
+}
 
 const getTocHeadings = (content: Blog["content"]): TocHeading[] => {
     const rootChildren = (content as { root?: { children?: LexicalNode[] } })?.root?.children ?? []
     const counts = new Map<string, number>()
 
-    return rootChildren
-        .filter((node) => node.type === "heading" && /^h[1-6]$/.test(node.tag ?? ""))
-        .map((node) => {
-            const text = extractText(node).trim()
-            if (!text) return null
+    const headings: TocHeading[] = []
 
-            const base = slugify(text) || "section"
-            const count = counts.get(base) ?? 0
-            counts.set(base, count + 1)
-            const id = count === 0 ? base : `${base}-${count + 1}`
-            const level = Number((node.tag ?? "h2").slice(1)) as 1 | 2 | 3 | 4 | 5 | 6
+    for (const node of rootChildren) {
+        if (node.type !== "heading" || !/^h[1-6]$/.test(node.tag ?? "")) continue
 
-            return { id, text, level }
-        })
-        .filter((item): item is TocHeading => item !== null)
+        const text = extractText(node).trim()
+        if (!text) continue
+
+        const base = slugify(text) || "section"
+        const count = counts.get(base) ?? 0
+        counts.set(base, count + 1)
+        const id = count === 0 ? base : `${base}-${count + 1}`
+        const level = Number((node.tag ?? "h2").slice(1)) as 1 | 2 | 3 | 4 | 5 | 6
+        headings.push({ id, text, level })
+    }
+
+    return headings
 }
 
 const injectHeadingIds = (html: string, headings: TocHeading[]): string => {

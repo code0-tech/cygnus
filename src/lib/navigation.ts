@@ -41,12 +41,13 @@ type IconComponent = ComponentType<{ size?: number }>
 const fallbackButtonIcon = TablerIcons.IconCube as IconComponent
 
 function toPascalCase(value: string) {
-    return value
-        .trim()
-        .split(/[\s_-]+/)
-        .filter(Boolean)
-        .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
-        .join("")
+    let result = ""
+
+    for (const segment of value.trim().split(/[\s_-]+/)) {
+        if (segment) result += segment.charAt(0).toUpperCase() + segment.slice(1)
+    }
+
+    return result
 }
 
 function getTablerButtonIcon(icon: string) {
@@ -80,33 +81,45 @@ function getSubMenuIcon(icon: string | null | undefined) {
 }
 
 export function mapNavbarItems(items: NavbarItemData[], locale: AppLocale): NavItem[] {
-    return [...items]
-        .sort((left, right) => left.order - right.order)
-        .map((item) => {
-            const mappedSubMenu = (item.subMenu ?? [])
-                .filter((sub) => Boolean(sub?.title && sub?.href && sub?.description))
-                .map((sub) => ({
-                    ...sub,
-                    icon: getSubMenuIcon(sub.icon),
-                }))
+    const sortedItems = [...items].sort((left, right) => left.order - right.order)
+    const navbarItems: NavItem[] = []
 
-            return {
-                title: item.title,
-                href: item.href ? localizeHref(item.href, locale) : null,
-                subMenu: mappedSubMenu.length > 0 ? mappedSubMenu.map((sub) => ({ ...sub, href: localizeHref(sub.href, locale) })) : undefined,
-            }
+    for (const item of sortedItems) {
+        const mappedSubMenu: SubNavItem[] = []
+
+        for (const sub of item.subMenu ?? []) {
+            if (!sub?.title || !sub.href || !sub.description) continue
+            mappedSubMenu.push({
+                ...sub,
+                href: localizeHref(sub.href, locale),
+                icon: getSubMenuIcon(sub.icon),
+            })
+        }
+
+        navbarItems.push({
+            title: item.title,
+            href: item.href ? localizeHref(item.href, locale) : null,
+            subMenu: mappedSubMenu.length > 0 ? mappedSubMenu : undefined,
         })
+    }
+
+    return navbarItems
 }
 
 export function mapNavbarButtons(buttons: NavbarButtonData[], locale: AppLocale): NavButton[] {
-    return [...buttons]
-        .sort((left, right) => left.order - right.order)
-        .filter((button) => Boolean(button.title && button.href))
-        .map((button) => ({
+    const sortedButtons = [...buttons].sort((left, right) => left.order - right.order)
+    const navbarButtons: NavButton[] = []
+
+    for (const button of sortedButtons) {
+        if (!button.title || !button.href) continue
+        navbarButtons.push({
             title: button.title,
             href: localizeHref(button.href, locale),
             icon: getNavbarButtonIcon(button.icon, 20),
             newTab: Boolean(button.newTab),
             variant: button.variant,
-        }))
+        })
+    }
+
+    return navbarButtons
 }

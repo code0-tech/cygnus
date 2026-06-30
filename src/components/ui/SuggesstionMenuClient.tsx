@@ -188,22 +188,45 @@ const groupedSuggestions = suggestions.reduce<Record<string, SuggestionWithType[
     return acc
 }, {})
 const groupedEntries = Object.entries(groupedSuggestions)
+const [variableEntries, otherEntries] = groupedEntries.reduce<[typeof groupedEntries, typeof groupedEntries]>(
+    (entries, entry) => {
+        entries[entry[0] === "Variables" ? 0 : 1].push(entry)
+        return entries
+    },
+    [[], []]
+)
 
 export function SuggesstionMenuClient() {
     return (
         <Card size="lg" className="w-full bg-primary/50 p-2">
             <div className="relative z-20 flex flex-col gap-2 rounded-[1.25rem] bg-primary p-2">
-                {groupedEntries
-                    .filter(([group]) => group === "Variables")
-                    .map(([group, items]) => (
-                        <div key={group} className="flex flex-col gap-1">
-                            <div className="flex items-center justify-between px-2 py-1 text-[11px] uppercase text-tertiary">
+                {variableEntries.map(([group, items]) => (
+                    <div key={group} className="flex flex-col gap-1">
+                        <div className="flex items-center justify-between px-2 py-1 text-[11px] uppercase text-tertiary">
+                            <span>{group}</span>
+                            <IconChevronUp size={14} className="text-tertiary" />
+                        </div>
+                        <div className="flex flex-col gap-0.5">
+                            {items.map((suggestion) => (
+                                <div key={`${group}-${suggestion.value}`} className="flex w-full items-center gap-3 rounded-xl bg-white/5 px-3 py-1.5 text-left text-white transition-colors">
+                                    <span className="flex h-4 w-4 shrink-0 items-center justify-center">{iconMap[suggestion.suggestionType]}</span>
+                                    <SuggestionContent suggestion={suggestion} />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                ))}
+
+                <div className="flex flex-col gap-2 overflow-hidden rounded-xl py-1">
+                    {otherEntries.map(([group, items]) => (
+                        <div key={group} className="flex flex-col">
+                            <div className="flex items-center justify-between px-3 py-1 text-[11px] uppercase text-tertiary">
                                 <span>{group}</span>
                                 <IconChevronUp size={14} className="text-tertiary" />
                             </div>
                             <div className="flex flex-col gap-0.5">
                                 {items.map((suggestion) => (
-                                    <div key={`${group}-${suggestion.value}`} className="flex w-full items-center gap-3 rounded-xl bg-white/5 px-3 py-1.5 text-left text-white transition-colors">
+                                    <div key={`${group}-${suggestion.value}`} className="flex w-full items-center gap-3 px-3 py-1.5 text-left text-white transition-colors">
                                         <span className="flex h-4 w-4 shrink-0 items-center justify-center">{iconMap[suggestion.suggestionType]}</span>
                                         <SuggestionContent suggestion={suggestion} />
                                     </div>
@@ -211,26 +234,6 @@ export function SuggesstionMenuClient() {
                             </div>
                         </div>
                     ))}
-
-                <div className="flex flex-col gap-2 overflow-hidden rounded-xl py-1">
-                    {groupedEntries
-                        .filter(([group]) => group !== "Variables")
-                        .map(([group, items]) => (
-                            <div key={group} className="flex flex-col">
-                                <div className="flex items-center justify-between px-3 py-1 text-[11px] uppercase text-tertiary">
-                                    <span>{group}</span>
-                                    <IconChevronUp size={14} className="text-tertiary" />
-                                </div>
-                                <div className="flex flex-col gap-0.5">
-                                    {items.map((suggestion) => (
-                                        <div key={`${group}-${suggestion.value}`} className="flex w-full items-center gap-3 px-3 py-1.5 text-left text-white transition-colors">
-                                            <span className="flex h-4 w-4 shrink-0 items-center justify-center">{iconMap[suggestion.suggestionType]}</span>
-                                            <SuggestionContent suggestion={suggestion} />
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        ))}
                 </div>
             </div>
             <div className="flex items-center gap-2 px-3 py-1 text-[11px] uppercase text-tertiary">
