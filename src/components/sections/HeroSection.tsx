@@ -31,7 +31,7 @@ export function HeroSection({ content, imageSrc = "/code0_software.png" }: HeroS
 
     if (!content?.heading) return
 
-    const texts = content.texts?.map((item) => item.text).filter(Boolean) ?? []
+    const texts = content.texts?.flatMap((item) => (item.text ? [item.text] : [])) ?? []
     const buttons = content.buttons?.filter((button) => Boolean(button.label && button.url)) ?? []
     const centered = Boolean(content.centered)
     const grainientColors = {

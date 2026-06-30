@@ -33,12 +33,16 @@ const parseTriggerLine = (line: string, index: number): NodeItem => {
     }
 }
 
-const toNodes = (source: string) =>
-    source
-        .split(/\r?\n/)
-        .map((line) => line.trim())
-        .filter(Boolean)
-        .map((line, index) => parseTriggerLine(line, index))
+const toNodes = (source: string) => {
+    let nodeIndex = 0
+
+    return source.split(/\r?\n/).flatMap((rawLine) => {
+        const line = rawLine.trim()
+        if (!line) return []
+
+        return [parseTriggerLine(line, nodeIndex++)]
+    })
+}
 
 export function TriggerMarkdownBlock({ source, title }: TriggerMarkdownBlockProps) {
     const nodes = toNodes(source)

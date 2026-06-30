@@ -4,14 +4,13 @@ interface GraphMarkdownBlockProps {
 }
 
 const toGraphNodes = (source: string) =>
-    source
-        .split(/\r?\n/)
-        .map((line) => line.trim())
-        .filter(Boolean)
-        .map((line) => {
-            const [from, to] = line.split("->").map((part) => part.trim())
-            return { from: from ?? "", to: to ?? "" }
-        })
+    source.split(/\r?\n/).flatMap((rawLine) => {
+        const line = rawLine.trim()
+        if (!line) return []
+
+        const [rawFrom = "", rawTo = ""] = line.split("->")
+        return [{ from: rawFrom.trim(), to: rawTo.trim() }]
+    })
 
 const groupEdgesByTarget = (source: string) => {
     const edges = toGraphNodes(source)
