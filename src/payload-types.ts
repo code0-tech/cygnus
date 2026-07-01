@@ -235,6 +235,7 @@ export interface Page {
             badge_link?: string | null;
             heading: string;
             centered?: boolean | null;
+            image?: (number | null) | Media;
             grainientColors?: {
               color1?: string | null;
               color2?: string | null;
@@ -1055,6 +1056,7 @@ export interface PagesSelect<T extends boolean = true> {
               badge_link?: T;
               heading?: T;
               centered?: T;
+              image?: T;
               grainientColors?:
                 | T
                 | {

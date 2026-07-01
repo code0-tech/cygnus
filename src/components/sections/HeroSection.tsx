@@ -1,7 +1,9 @@
 "use client"
 
 import { Section } from "@/components/ui/Section"
+import { getMediaUrl } from "@/lib/media"
 import { cn } from "@/lib/utils"
+import type { Media } from "@/payload-types"
 import { IconArrowRight } from "@tabler/icons-react"
 import { m as motion, type Variants } from "motion/react"
 import Image from "next/image"
@@ -14,7 +16,6 @@ import { HeroLayoutBlock } from "@/lib/cms"
 
 interface HeroSectionProps {
     content?: HeroLayoutBlock | null
-    imageSrc?: string
 }
 
 const STAGGER_CONTAINER: Variants = {
@@ -26,7 +27,7 @@ const STAGGER_ITEM: Variants = {
     show: { opacity: 1, y: 0, transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] } },
 }
 
-export function HeroSection({ content, imageSrc = "/code0_software.png" }: HeroSectionProps) {
+export function HeroSection({ content }: HeroSectionProps) {
     const [isProductHuntBadgeVisible, setIsProductHuntBadgeVisible] = useState(false)
 
     if (!content?.heading) return
@@ -34,6 +35,9 @@ export function HeroSection({ content, imageSrc = "/code0_software.png" }: HeroS
     const texts = content.texts?.flatMap((item) => (item.text ? [item.text] : [])) ?? []
     const buttons = content.buttons?.filter((button) => Boolean(button.label && button.url)) ?? []
     const centered = Boolean(content.centered)
+    const heroImage = content.image && typeof content.image !== "number" ? (content.image as Media) : null
+    const resolvedImageSrc = getMediaUrl(heroImage?.url) || "/code0_software.png"
+    const resolvedImageAlt = heroImage?.alt || content.heading
     const grainientColors = {
         color1: content.grainientColors?.color1 ?? undefined,
         color2: content.grainientColors?.color2 ?? undefined,
@@ -89,8 +93,8 @@ export function HeroSection({ content, imageSrc = "/code0_software.png" }: HeroS
                             <div className="rounded-[1.3rem] border border-white/20 bg-white/10 p-1">
                                 <div className="relative overflow-hidden rounded-2xl">
                                     <Image
-                                        src={imageSrc}
-                                        alt={content.heading}
+                                        src={resolvedImageSrc}
+                                        alt={resolvedImageAlt}
                                         height={620}
                                         width={1200}
                                         priority
@@ -182,8 +186,8 @@ export function HeroSection({ content, imageSrc = "/code0_software.png" }: HeroS
                         <div className="rounded-[1.3rem] border border-white/20 bg-white/10 p-1 lg:rounded-l-[1.3rem] lg:rounded-r-none">
                             <div className="relative overflow-hidden rounded-2xl lg:rounded-l-2xl lg:rounded-r-none">
                                 <Image
-                                    src={imageSrc}
-                                    alt={"Code0 Example"}
+                                    src={resolvedImageSrc}
+                                    alt={resolvedImageAlt}
                                     height={620}
                                     width={900}
                                     priority

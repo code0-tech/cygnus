@@ -1,119 +1,126 @@
 import type { Block } from "payload"
 
 export const HeroBlock: Block = {
-  slug: "hero",
-  labels: {
-    singular: "Hero",
-    plural: "Hero Blocks",
-  },
-  fields: [
-    {
-      name: "badge",
-      type: "text",
-      required: false,
-      localized: true,
-      },
-      {
-        name: "badge_link",
-        type: "text",
-        required: false,
-      },
-    {
-      name: "heading",
-      type: "text",
-      required: true,
-      localized: true,
+    slug: "hero",
+    labels: {
+        singular: "Hero",
+        plural: "Hero Blocks",
     },
-    {
-      name: "centered",
-      label: "Centered layout",
-      type: "checkbox",
-      defaultValue: false,
-    },
-    {
-      name: "grainientColors",
-      label: "Grainient Colors",
-      type: "group",
-      fields: [
+    fields: [
         {
-          name: "color1",
-          type: "text",
-          required: false,
+            name: "badge",
+            type: "text",
+            required: false,
+            localized: true,
         },
         {
-          name: "color2",
-          type: "text",
-          required: false,
+            name: "badge_link",
+            type: "text",
+            required: false,
         },
         {
-          name: "color3",
-          type: "text",
-          required: false,
+            name: "heading",
+            type: "text",
+            required: true,
+            localized: true,
         },
         {
-          name: "backgroundColor",
-          type: "text",
-          required: false,
-        },
-      ],
-    },
-    {
-      name: "texts",
-      label: "Texts",
-      type: "array",
-      required: false,
-      fields: [
-        {
-          name: "text",
-          type: "text",
-          required: true,
-          localized: true,
-        },
-      ],
-    },
-    {
-      name: "buttons",
-      label: "Buttons",
-      type: "array",
-      required: false,
-      maxRows: 3,
-      fields: [
-        {
-          name: "label",
-          type: "text",
-          required: true,
-          localized: true,
+            name: "centered",
+            label: "Centered layout",
+            type: "checkbox",
+            defaultValue: false,
         },
         {
-          name: "url",
-          type: "text",
-          required: true,
+            name: "image",
+            label: "Image",
+            type: "upload",
+            relationTo: "media",
+            required: false,
         },
         {
-          name: "variant",
-          type: "select",
-          required: false,
-          defaultValue: "normal",
-          options: [
-            {
-              label: "None",
-              value: "none",
-            },
-            {
-              label: "Normal",
-              value: "normal",
-            },
-            {
-              label: "Outlined",
-              value: "outlined",
-            },
-            {
-              label: "Filled",
-              value: "filled",
-              },
-          ],
+            name: "grainientColors",
+            label: "Grainient Colors",
+            type: "group",
+            fields: [
+                {
+                    name: "color1",
+                    type: "text",
+                    required: false,
+                },
+                {
+                    name: "color2",
+                    type: "text",
+                    required: false,
+                },
+                {
+                    name: "color3",
+                    type: "text",
+                    required: false,
+                },
+                {
+                    name: "backgroundColor",
+                    type: "text",
+                    required: false,
+                },
+            ],
         },
-      ],
-    },
-  ],
+        {
+            name: "texts",
+            label: "Texts",
+            type: "array",
+            required: false,
+            fields: [
+                {
+                    name: "text",
+                    type: "text",
+                    required: true,
+                    localized: true,
+                },
+            ],
+        },
+        {
+            name: "buttons",
+            label: "Buttons",
+            type: "array",
+            required: false,
+            maxRows: 3,
+            fields: [
+                {
+                    name: "label",
+                    type: "text",
+                    required: true,
+                    localized: true,
+                },
+                {
+                    name: "url",
+                    type: "text",
+                    required: true,
+                },
+                {
+                    name: "variant",
+                    type: "select",
+                    required: false,
+                    defaultValue: "normal",
+                    options: [
+                        {
+                            label: "None",
+                            value: "none",
+                        },
+                        {
+                            label: "Normal",
+                            value: "normal",
+                        },
+                        {
+                            label: "Outlined",
+                            value: "outlined",
+                        },
+                        {
+                            label: "Filled",
+                            value: "filled",
+                        },
+                    ],
+                },
+            ],
+        },
+    ],
 }
