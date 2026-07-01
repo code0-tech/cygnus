@@ -50,10 +50,7 @@ export function HeroSection({ content }: HeroSectionProps) {
             <Section showFunnel={false}>
                 <div className="relative overflow-hidden border border-white/5 bg-[linear-gradient(160deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02)_28%,rgba(8,10,20,0.92)_100%)] isolate h-[min(85svh,918px)] md:h-[min(85dvh,918px)] rounded-4xl">
                     <Grainient {...grainientColors} />
-                    <div
-                        aria-hidden="true"
-                        className="pointer-events-none absolute inset-y-0 left-0 z-10 w-full bg-[radial-gradient(circle_at_18%_24%,rgba(5,8,18,0.68),transparent_40%),linear-gradient(90deg,rgba(5,8,18,0.56)_0%,rgba(5,8,18,0.28)_34%,transparent_62%)] lg:w-[56%]"
-                    />
+                    <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-10 bg-[linear-gradient(180deg,rgba(5,8,18,0.68)_0%,rgba(5,8,18,0.4)_34%,transparent_68%)]" />
                     <motion.div
                         className="relative z-20 flex flex-col items-center justify-center gap-10 p-8 lg:p-16"
                         variants={STAGGER_CONTAINER}
@@ -66,7 +63,7 @@ export function HeroSection({ content }: HeroSectionProps) {
                                 {content.heading}
                             </motion.h1>
 
-                            <motion.p variants={STAGGER_ITEM} className="relative z-10 max-w-2xl text-base font-medium text-pretty text-secondary lg:text-xl text-center">
+                            <motion.p variants={STAGGER_ITEM} className="relative z-10 max-w-2xl text-base font-medium text-pretty text-white lg:text-xl text-center">
                                 {texts.map((text, index) => (
                                     <React.Fragment key={`${text}-${index}`}>
                                         {text}
