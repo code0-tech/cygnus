@@ -15,6 +15,7 @@ import * as migration_20260531_084500_navigation_globals from './20260531_084500
 import * as migration_20260622_201228_scrollcard_and_standalonecard from './20260622_201228_scrollcard_and_standalonecard';
 import * as migration_20260624_092957_cards_displayoptions from './20260624_092957_cards_displayoptions';
 import * as migration_20260701_070938_20260701_hero_image from './20260701_070938_20260701_hero_image';
+import * as migration_20260701_170429_install_language from './20260701_170429_install_language';
 
 export const migrations = [
   {
@@ -100,6 +101,11 @@ export const migrations = [
   {
     up: migration_20260701_070938_20260701_hero_image.up,
     down: migration_20260701_070938_20260701_hero_image.down,
-    name: '20260701_070938_20260701_hero_image'
+    name: '20260701_070938_20260701_hero_image',
+  },
+  {
+    up: migration_20260701_170429_install_language.up,
+    down: migration_20260701_170429_install_language.down,
+    name: '20260701_170429_install_language'
   },
 ];

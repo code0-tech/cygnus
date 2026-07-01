@@ -1,4 +1,12 @@
 import type { Block } from "payload"
+import { bundledLanguagesInfo } from "shiki"
+
+const languageOptions = bundledLanguagesInfo
+  .map(({ id, name }) => ({
+    label: name,
+    value: id,
+  }))
+  .sort((a, b) => a.label.localeCompare(b.label))
 
 export const InstallBlock: Block = {
   slug: "install",
@@ -24,6 +32,15 @@ export const InstallBlock: Block = {
       type: "text",
       required: false,
       localized: true,
+    },
+    {
+      name: "language",
+      type: "select",
+      required: false,
+      options: languageOptions,
+      admin: {
+        description: "Syntax highlighting language. Defaults to Bash when left empty.",
+      },
     },
     {
       name: "code",
