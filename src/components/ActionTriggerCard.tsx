@@ -38,13 +38,13 @@ export function ActionTriggerCard({ type, item, icon }: ActionTriggerCardProps) 
             <div className="relative z-10 flex h-full flex-col gap-2">
                 <div className="flex items-start justify-between gap-3">
                     <div className="flex min-w-0 items-center gap-2">
-                        <div className="flex size-12 shrink-0 items-center justify-center rounded-lg border border-white/5 bg-white/5 text-brand">{icon}</div>
+                        <div className="flex size-12 shrink-0 items-center justify-center rounded-lg border border-white/5 bg-light text-brand">{icon}</div>
                         <div className="min-w-0">
                             <p className="text-xs font-medium tracking-wider text-tertiary">{label}</p>
                             <h3 className="mt-1 truncate text-base tracking-wide font-semibold text-white">{item.name || item.identifier}</h3>
                         </div>
                     </div>
-                    <div className="shrink-0 rounded-lg border border-white/5 bg-white/5 px-2 py-1 text-xs text-tertiary">{item.identifier}</div>
+                    <div className="shrink-0 rounded-lg border border-white/5 bg-light px-2 py-1 text-xs text-tertiary">{item.identifier}</div>
                 </div>
 
                 {item.description && <p className="line-clamp-3 text-sm leading-6 text-secondary">{item.description}</p>}

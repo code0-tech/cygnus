@@ -3,6 +3,7 @@
 
 @theme inline {
     --color-primary: var(--bg-primary);
+    --color-light: var(--bg-light);
     --color-secondary: var(--bg-secondary);
     --color-tertiary: var(--bg-tertiary);
     --color-info: var(--bg-info);
@@ -29,6 +30,7 @@
 :root {
     /* BACKGROUNDS */
     --bg-primary: oklch(0.0962 0.0562 285.05);
+    --bg-light: oklch(0.1698 0.0388 288.83);
     --bg-secondary: oklch(0.781 0.03 292.73);
     --bg-tertiary: oklch(0.674 0.017 292.6);
     --bg-info: oklch(0.88 0.17 150);

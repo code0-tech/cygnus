@@ -45,7 +45,7 @@ export default async function Page({ params }: { params: LocaleSlugPageParams })
                                 />
 
                                 <div className={"relative z-20 flex w-full max-w-4xl flex-col items-center gap-8 text-center md:flex-row md:items-center md:text-left"}>
-                                    <div className={"relative flex size-32 shrink-0 items-center justify-center rounded-3xl border border-white/10 bg-white/5 md:size-40"}>
+                                    <div className={"relative flex size-32 shrink-0 items-center justify-center rounded-3xl border border-white/10 bg-light md:size-40"}>
                                         <div className={"relative isolate flex items-center justify-center rounded-3xl ring ring-white/10 px-4 py-4"}>
                                             <div aria-hidden="true" className="pointer-events-none absolute inset-0 rounded-[1.25rem] bg-linear-to-br from-primary via-primary to-slate-900" />
                                             <Image src={"/code0_logo_white.png"} width={"120"} height={"120"} alt={"Code0 Logo"} className={"z-20"} />

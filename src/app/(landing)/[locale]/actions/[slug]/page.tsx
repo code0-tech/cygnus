@@ -58,7 +58,7 @@ export default async function ActionDetailPage({ params }: { params: LocaleSlugP
                             <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">
                                 <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
                                     {iconUrl && (
-                                        <div className="relative size-20 shrink-0 overflow-hidden rounded-3xl border border-white/10 bg-white/5">
+                                        <div className="relative size-20 shrink-0 overflow-hidden rounded-3xl border border-white/10 bg-light">
                                             <Image src={iconUrl} alt={icon?.alt ?? action.title} fill sizes="80px" className="object-contain p-2" />
                                         </div>
                                     )}
@@ -68,7 +68,7 @@ export default async function ActionDetailPage({ params }: { params: LocaleSlugP
                                         {tags.length > 0 && (
                                             <div className="flex flex-wrap gap-2">
                                                 {tags.map((tag) => (
-                                                    <span key={tag} className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-secondary">
+                                                    <span key={tag} className="rounded-full border border-white/10 bg-light px-3 py-1 text-xs text-secondary">
                                                         {tag}
                                                     </span>
                                                 ))}

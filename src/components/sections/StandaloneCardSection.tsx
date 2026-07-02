@@ -2,6 +2,7 @@
 
 import { LinkButton } from "@/components/ui/LinkButton"
 import { Section } from "@/components/ui/Section"
+import type { StandaloneCardLayoutBlock } from "@/lib/cms"
 import { getMediaUrl } from "@/lib/media"
 import { cn } from "@/lib/utils"
 import type { Media } from "@/payload-types"
@@ -9,7 +10,7 @@ import Image from "next/image"
 import { Card } from "../ui/Card"
 
 interface StandaloneCardSectionProps {
-    content?: any | null
+    content?: StandaloneCardLayoutBlock | null
 }
 
 function getImage(image: number | Media | null | undefined) {
@@ -21,26 +22,20 @@ export function StandaloneCardSection({ content }: StandaloneCardSectionProps) {
 
     const image = getImage(content.image)
     const imageUrl = getMediaUrl(image?.url)
-    const itemSettings = content as {
-        sectionLayout?: "imageRight" | "imageLeft" | "imageFullscreen" | "imageRightFullscreen" | "imageLeftFullscreen" | null
-        showImageBorder?: boolean | null
-        gradient?: string | null
-        gradientDirection?: string | null
-    }
-    const isImageLeft = itemSettings.sectionLayout === "imageLeft"
-    const isFullscreen = itemSettings.sectionLayout === "imageFullscreen"
-    const isSideFullscreen = itemSettings.sectionLayout === "imageRightFullscreen" || itemSettings.sectionLayout === "imageLeftFullscreen"
-    const isSideFullscreenLeft = itemSettings.sectionLayout === "imageLeftFullscreen"
-    const isSideFullscreenRight = itemSettings.sectionLayout === "imageRightFullscreen"
+    const isImageLeft = content.sectionLayout === "imageLeft"
+    const isFullscreen = content.sectionLayout === "imageFullscreen"
+    const isSideFullscreen = content.sectionLayout === "imageRightFullscreen" || content.sectionLayout === "imageLeftFullscreen"
+    const isSideFullscreenLeft = content.sectionLayout === "imageLeftFullscreen"
+    const isSideFullscreenRight = content.sectionLayout === "imageRightFullscreen"
 
-    const showImageBorder = itemSettings.showImageBorder ?? true
+    const showImageBorder = content.showImageBorder ?? true
 
     return (
         <Section showFunnel={false} animation={{ preset: "none" }} className="h-[calc(100vh-6rem)] justify-center">
             <Card
                 size="lg"
-                gradientDirection={itemSettings.gradientDirection as any}
-                radialGradient={itemSettings.gradient as any}
+                gradientDirection={content.gradientDirection}
+                radialGradient={content.gradient}
                 className={cn(
                     "relative aspect-video w-full shrink-0 overflow-hidden bg-primary",
                     isFullscreen ? "p-0" : isSideFullscreen ? "grid p-0 md:grid-cols-2" : "grid gap-12 p-12 md:grid-cols-[0.95fr_1.05fr]"
@@ -58,7 +53,7 @@ export function StandaloneCardSection({ content }: StandaloneCardSectionProps) {
 
                                 <div className="space-y-6">
                                     <ul className="grid gap-2 text-sm text-secondary md:text-base">
-                                        {content.bulletPoints?.map((point: any, pointIndex: number) => (
+                                        {content.bulletPoints?.map((point, pointIndex) => (
                                             <li key={`${content.id ?? content.title}-point-${pointIndex}`} className="flex items-start gap-3">
                                                 <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brand" />
                                                 <span>{point}</span>
@@ -81,7 +76,7 @@ export function StandaloneCardSection({ content }: StandaloneCardSectionProps) {
 
                             <div className="space-y-6">
                                 <ul className="grid gap-2 text-sm text-secondary md:text-base">
-                                    {content.bulletPoints?.map((point: any, pointIndex: number) => (
+                                    {content.bulletPoints?.map((point, pointIndex) => (
                                         <li key={`${content.id ?? content.title}-point-${pointIndex}`} className="flex items-start gap-3">
                                             <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brand" />
                                             <span>{point}</span>
@@ -114,7 +109,7 @@ export function StandaloneCardSection({ content }: StandaloneCardSectionProps) {
 
                             <div className="space-y-6">
                                 <ul className="grid gap-2 text-sm text-secondary md:text-base">
-                                    {content.bulletPoints?.map((point: any, pointIndex: number) => (
+                                    {content.bulletPoints?.map((point, pointIndex) => (
                                         <li key={`${content.id ?? content.title}-point-${pointIndex}`} className="flex items-start gap-3">
                                             <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brand" />
                                             <span>{point}</span>

@@ -20,7 +20,7 @@ export function ActionCard({ action, locale }: { action: ActionItem; locale: App
                 <div className="relative z-10 flex flex-col gap-4">
                     <div className="flex items-start gap-2">
                         {iconUrl && (
-                            <div className="relative size-14 shrink-0 overflow-hidden rounded-2xl border border-white/5 bg-white/5">
+                            <div className="relative size-14 shrink-0 overflow-hidden rounded-2xl border border-white/5 bg-light">
                                 <Image src={iconUrl} alt={icon?.alt ?? action.title} fill sizes="56px" className="object-contain p-2" />
                             </div>
                         )}

@@ -25,6 +25,7 @@ export type ContactLayoutBlock = Extract<PageLayoutBlock, { blockType: "contact"
 export type BlogLayoutBlock = Extract<PageLayoutBlock, { blockType: "blog" }>
 export type RoadmapLayoutBlock = Extract<PageLayoutBlock, { blockType: "roadmap" }>
 export type ScrollCardsLayoutBlock = Extract<PageLayoutBlock, { blockType: "scrollCards" }>
+export type StandaloneCardLayoutBlock = Extract<PageLayoutBlock, { blockType: "standaloneCard" }>
 
 type FeatureSlug = Feature["slug"]
 interface FeatureItem {

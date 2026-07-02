@@ -50,7 +50,7 @@ export function TriggerMarkdownBlock({ source, title }: TriggerMarkdownBlockProp
     if (nodes.length <= 0) return
 
     return (
-        <div className="my-6 overflow-hidden rounded-3xl bg-white/5 ring ring-white/10">
+        <div className="my-6 overflow-hidden rounded-3xl bg-light ring ring-white/10">
             {title && <div className="flex items-center gap-2 border-b border-white/10 bg-primary/50 px-6 py-3 text-xs font-semibold tracking-wide text-secondary">{title?.trim()}</div>}
             <div
                 className="py-4"

@@ -37,7 +37,7 @@ export function SwipeCard({ title, description, image, link, className }: SwipeC
                             <Image src={imageUrl} alt={title} fill sizes="(min-width: 768px) 66vw, 100vw" className="object-fill" />
                         </div>
                     ) : (
-                        <div className="relative w-full aspect-video bg-white/5 rounded-2xl" />
+                        <div className="relative w-full aspect-video bg-light rounded-2xl" />
                     )}
                 </div>
 

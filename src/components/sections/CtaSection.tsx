@@ -100,7 +100,7 @@ export function CtaSection({ content, floatingCta = false }: CtaSectionProps) {
                         )}
                     />
 
-                    <motion.div variants={STAGGER_ITEM} className="relative z-20 flex size-32 items-center justify-center rounded-2xl bg-white/5">
+                    <motion.div variants={STAGGER_ITEM} className="relative z-20 flex size-32 items-center justify-center rounded-2xl bg-light">
                         <div className="relative isolate flex items-center justify-center rounded-2xl px-4 py-4 ring ring-white/5">
                             <div aria-hidden="true" className="pointer-events-none absolute inset-0 rounded-2xl bg-linear-to-br from-primary via-primary to-slate-800" />
                             <Image src={"/code0_logo_white.png"} width={120} height={120} alt="Code0 Logo" className="z-20" />

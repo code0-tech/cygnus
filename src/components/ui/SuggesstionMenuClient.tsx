@@ -208,7 +208,7 @@ export function SuggesstionMenuClient() {
                         </div>
                         <div className="flex flex-col gap-0.5">
                             {items.map((suggestion) => (
-                                <div key={`${group}-${suggestion.value}`} className="flex w-full items-center gap-3 rounded-xl bg-white/5 px-3 py-1.5 text-left text-white transition-colors">
+                                <div key={`${group}-${suggestion.value}`} className="flex w-full items-center gap-3 rounded-xl bg-light px-3 py-1.5 text-left text-white transition-colors">
                                     <span className="flex h-4 w-4 shrink-0 items-center justify-center">{iconMap[suggestion.suggestionType]}</span>
                                     <SuggestionContent suggestion={suggestion} />
                                 </div>

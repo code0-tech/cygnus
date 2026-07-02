@@ -186,7 +186,7 @@ function OptionCard({
             disabled={disabled}
             className={cn(
                 "relative overflow-hidden rounded-2xl border p-4 text-left transition-all duration-300",
-                disabled ? "cursor-not-allowed border-white/10 opacity-45" : "border-white/10 hover:bg-white/5",
+                disabled ? "cursor-not-allowed border-white/10 opacity-45" : "border-white/10 hover:bg-light",
                 active && cn("bg-linear-to-br ring-1", accentStyles.activeBorder, accentStyles.activeBackground, accentStyles.activeRing)
             )}
         >
@@ -244,7 +244,7 @@ function AdditionalFeatureCard({
             onClick={onClick}
             className={cn(
                 "relative overflow-hidden rounded-2xl border p-4 text-left transition-all duration-300",
-                "border-white/10 hover:bg-white/5",
+                "border-white/10 hover:bg-light",
                 active && cn("bg-linear-to-br ring-1", accentStyles.activeBorder, accentStyles.activeBackground, accentStyles.activeRing)
             )}
         >
