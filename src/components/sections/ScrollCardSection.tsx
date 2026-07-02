@@ -42,10 +42,11 @@ export function ScrollCardSection({ content }: ScrollCardSectionProps) {
             const topOffset = 96
             const height = window.innerHeight
             const containerTop = rect.top + window.scrollY
-            const rawProgress = window.scrollY - containerTop
+            const rawProgress = window.scrollY - containerTop + topOffset
             const activeEnd = Math.max((items.length - 1) * height, 0)
             const scrollProgress = clamp(rawProgress, 0, activeEnd)
-            const phase = rect.top > topOffset ? "before" : rect.bottom <= height ? "after" : "active"
+            const cardTravelDistance = Math.max(height - topOffset, 0)
+            const phase = rect.top > topOffset ? "before" : rect.bottom <= height - topOffset ? "after" : "active"
             const previousPinStyle = pinStyleRef.current
 
             if (phase !== previousPinStyle.phase || rect.left !== previousPinStyle.left || rect.width !== previousPinStyle.width) {
@@ -62,7 +63,7 @@ export function ScrollCardSection({ content }: ScrollCardSectionProps) {
                 if (!article) return
 
                 const segmentProgress = index === 0 ? 1 : clamp((scrollProgress - (index - 1) * height) / height, 0, 1)
-                article.style.transform = `translate3d(0, ${(1 - segmentProgress) * 100}%, 0)`
+                article.style.transform = `translate3d(0, ${(1 - segmentProgress) * cardTravelDistance}px, 0)`
             })
         }
 
@@ -90,7 +91,7 @@ export function ScrollCardSection({ content }: ScrollCardSectionProps) {
     return (
         <Section showFunnel={false} animation={{ preset: "none" }}>
             <div ref={containerRef} className="relative" style={{ height: `${Math.max(items.length, 1) * 100}vh` }}>
-                <div ref={pinnedRef} className="relative z-10 h-[calc(100vh-6rem)] w-full">
+                <div ref={pinnedRef} className="relative z-10 h-[calc(100vh-12rem)] w-full">
                     {items.map((item, index) => {
                         const image = getImage(item.image)
                         const imageUrl = getMediaUrl(image?.url)
@@ -114,7 +115,7 @@ export function ScrollCardSection({ content }: ScrollCardSectionProps) {
                                 className="absolute inset-0 flex items-center justify-center will-change-transform"
                                 style={{
                                     opacity: 1,
-                                    transform: `translate3d(0, ${index === 0 ? 0 : 100}%, 0)`,
+                                    transform: `translate3d(0, ${index === 0 ? "0" : "calc(100% + 6rem)"}, 0)`,
                                     zIndex: index + 1,
                                 }}
                             >
