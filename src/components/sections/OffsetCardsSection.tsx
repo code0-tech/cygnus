@@ -47,7 +47,7 @@ export function OffsetCardsSection({ content }: OffsetCardsSectionProps) {
             funnelType={content.sectionLayout ?? "center"}
             animation={{ preset: "none" }}
         >
-            <div className="relative flex w-full flex-col items-stretch gap-32">
+            <div className="relative flex w-full flex-col items-stretch gap-12">
                 {content.cards.map((item, index) => {
                     const animationPreset = OFFSET_CARD_ANIMATION_SEQUENCE[index % OFFSET_CARD_ANIMATION_SEQUENCE.length]
                     const animationConfig = ANIMATION_PRESETS[animationPreset]

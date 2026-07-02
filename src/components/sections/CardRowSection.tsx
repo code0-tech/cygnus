@@ -41,7 +41,7 @@ export function CardRowSection({ content, children }: CardRowSectionProps) {
             funnelType={content?.sectionLayout ?? "left"}
             animation={{ preset: "none" }}
         >
-            <motion.div className="grid grid-cols-1 gap-16 lg:grid-cols-3 lg:gap-8 z-10" variants={STAGGER_CONTAINER} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.15 }}>
+            <motion.div className="grid grid-cols-1 gap-12 lg:grid-cols-3 lg:gap-8 z-10" variants={STAGGER_CONTAINER} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.15 }}>
                 {cards.map((card, index) => {
                     const mediaImage = typeof card.image === "object" ? card.image : null
                     const imageUrl = getImageUrl(card.image)

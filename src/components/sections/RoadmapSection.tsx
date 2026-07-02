@@ -25,7 +25,7 @@ export function RoadmapSection({ content }: RoadmapSectionProps) {
                     aria-hidden="true"
                     className="pointer-events-none absolute left-3 top-0 h-full w-0.5 rounded-full bg-linear-to-b from-brand/10 via-white/20 to-blue/10 md:left-1/2 md:-translate-x-1/2"
                 />
-                <div className="flex flex-col gap-10 md:gap-14">
+                <div className="flex flex-col gap-8 md:gap-12">
                     {items.map((item, index) => (
                         <div key={item.id ?? `roadmap-item-${index}`} className="relative">
                             <div aria-hidden="true" className="absolute left-3 top-6 h-3 w-3 -translate-x-1/2 rounded-full border border-brand/70 bg-brand md:left-1/2" />

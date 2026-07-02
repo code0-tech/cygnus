@@ -133,7 +133,7 @@ export function Section({
         <motion.section
             ref={sectionRef}
             data-in-view="false"
-            className={cn("group/section relative overflow-hidden flex flex-col gap-8", fullHeight && "h-[200dvh] md:h-[min(100dvh,1080px)]", className)}
+            className={cn("group/section relative overflow-hidden flex flex-col gap-16", fullHeight && "h-[200dvh] md:h-[min(100dvh,1080px)]", className)}
             initial={animationConfig?.initial}
             whileInView={animationConfig?.whileInView}
             viewport={animationConfig ? { once, amount: viewportAmount, margin: viewportMargin } : undefined}

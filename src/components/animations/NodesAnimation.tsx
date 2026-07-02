@@ -34,7 +34,9 @@ function displayMessage(segments: NodeSegment[]) {
             case "literal":
                 return (
                     <StableBadge key={`${segment.type}-${segment.value}-${index}`} style={{ verticalAlign: "middle" }} color={"secondary"}>
-                        <Text size={"sm"}>{segment.value}</Text>
+                        <Text size={"sm"} style={{ color: "white" }}>
+                            {segment.value}
+                        </Text>
                     </StableBadge>
                 )
             case "reference":
@@ -49,8 +51,8 @@ function displayMessage(segments: NodeSegment[]) {
             case "node":
                 return (
                     <StableBadge key={`${segment.type}-${segment.value}-${index}`} style={{ verticalAlign: "middle", textWrap: "nowrap" }} border>
-                        <IconNote size={12} />
-                        <Text size={"sm"} style={{ color: "inherit" }}>
+                        <IconNote size={12} className="text-white" />
+                        <Text size={"sm"} style={{ color: "white" }}>
                             {segment.value}
                         </Text>
                     </StableBadge>
@@ -106,7 +108,7 @@ function NodeRow({ nodes, direction, active }: { nodes: NodeItem[]; direction: "
                     <Card key={`${direction}-${node.color}-${index}`} paddingSize="xs" py="0.35" borderColor="info" color="primary" outline={node.outline}>
                         <Flex align="center" style={{ gap: "0.7rem" }}>
                             <IconNote color={ICON_COLOR_MAP[node.color]} size={16} className="shrink-0" />
-                            <Flex align="center" wrap="wrap" style={{ gap: "0.35rem", color: "white" }}>
+                            <Flex align="center" wrap="wrap" className="text-secondary!" style={{ gap: "0.35rem" }}>
                                 {displayMessage(node.segments)}
                             </Flex>
                         </Flex>
@@ -118,7 +120,7 @@ function NodeRow({ nodes, direction, active }: { nodes: NodeItem[]; direction: "
                     <Card key={`${direction}-clone-${node.color}-${index}`} paddingSize="xs" py="0.35" borderColor="info" color="primary" outline={node.outline}>
                         <Flex align="center" style={{ gap: "0.7rem" }}>
                             <IconNote color={ICON_COLOR_MAP[node.color]} size={16} className="shrink-0" />
-                            <Flex align="center" wrap="wrap" style={{ gap: "0.35rem", color: "white" }}>
+                            <Flex align="center" wrap="wrap" className="text-secondary!" style={{ gap: "0.35rem" }}>
                                 {displayMessage(node.segments)}
                             </Flex>
                         </Flex>
