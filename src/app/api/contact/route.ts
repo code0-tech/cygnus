@@ -4,6 +4,7 @@ import {
     getClientIdentifier,
     getRateLimitConfig,
 } from "@/lib/smtp"
+import { validateContactSubmission } from "@/lib/formSubmissions"
 import { getPayloadClient } from "@/lib/payloadClient"
 import { NextResponse } from "next/server"
 
@@ -29,12 +30,11 @@ export async function POST(req: Request) {
         )
     }
 
-    const payload = await req.json()
-    if (!payload) {
-        return new Response("Invalid request. Please check your input.", { status: 400 })
-    }
+    const validation = await validateContactSubmission(req)
+    if (!validation.success) return new Response(validation.error, { status: 400 })
 
     try {
+        const payload = validation.data
         const payloadClient = await getPayloadClient()
 
         await payloadClient.sendEmail({

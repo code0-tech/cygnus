@@ -129,6 +129,7 @@ export function ContactForm({ content, locale }: ContactFormProps) {
     return (
         <Card size="lg" variant={"light"} className="space-y-4 p-4 min-w-0">
             <TextInput
+                maxLength={100}
                 placeholder={labels.namePlaceholder}
                 label={labels.nameLabel}
                 onChange={() => {
@@ -139,6 +140,7 @@ export function ContactForm({ content, locale }: ContactFormProps) {
                 {...nameInputProps}
             />
             <EmailInput
+                maxLength={254}
                 placeholder={labels.emailPlaceholder}
                 label={labels.emailLabel}
                 onChange={() => {
@@ -155,6 +157,7 @@ export function ContactForm({ content, locale }: ContactFormProps) {
                 {...emailInputProps}
             />
             <TextAreaInput
+                maxLength={5000}
                 placeholder={labels.messagePlaceholder}
                 label={labels.messageLabel}
                 onChange={() => {

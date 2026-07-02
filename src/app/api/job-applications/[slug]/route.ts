@@ -1,4 +1,5 @@
 import { getPayloadClient } from "@/lib/payloadClient"
+import { validateJobApplicationSubmission } from "@/lib/formSubmissions"
 import {
     createRateLimitChecker,
     escapeHtml,
@@ -14,7 +15,7 @@ const checkRateLimit = createRateLimitChecker(
 export async function POST(req: Request, { params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params
     const jobSlug = slug?.trim()
-    if (!jobSlug) {
+    if (!jobSlug || jobSlug.length > 200 || /[\r\n]/.test(jobSlug)) {
         return new Response("Invalid job slug.", { status: 400 })
     }
 
@@ -32,12 +33,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
         )
     }
 
-    const payload = await req.json()
-    if (!payload) {
-        return new Response("Invalid request. Please check your input.", { status: 400 })
-    }
+    const validation = await validateJobApplicationSubmission(req)
+    if (!validation.success) return new Response(validation.error, { status: 400 })
 
     try {
+        const payload = validation.data
         const cms = await getPayloadClient()
         const jobResult = await cms.find({
             collection: "jobs",

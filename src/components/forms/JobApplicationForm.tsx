@@ -132,6 +132,7 @@ export function JobApplicationForm({ jobSlug, content, locale }: JobApplicationF
         <Card variant={"light"} size="lg" className="space-y-4 p-4 min-w-0">
             <h1 className="text-4xl font-semibold text-white mb-4">{labels.applicationHeading}</h1>
             <TextInput
+                maxLength={100}
                 placeholder={labels.applicationNamePlaceholder}
                 label={labels.applicationNameLabel}
                 onChange={() => {
@@ -142,6 +143,7 @@ export function JobApplicationForm({ jobSlug, content, locale }: JobApplicationF
                 {...nameInputProps}
             />
             <EmailInput
+                maxLength={254}
                 placeholder={labels.applicationEmailPlaceholder}
                 label={labels.applicationEmailLabel}
                 onChange={() => {
@@ -158,6 +160,7 @@ export function JobApplicationForm({ jobSlug, content, locale }: JobApplicationF
                 {...emailInputProps}
             />
             <TextAreaInput
+                maxLength={5000}
                 placeholder={labels.applicationMessagePlaceholder}
                 label={labels.applicationMessageLabel}
                 onChange={() => {
