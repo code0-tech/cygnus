@@ -637,6 +637,16 @@ export interface Page {
             blockType: 'blog';
           }
         | {
+            sectionHeading?: string | null;
+            sectionLayout: 'imageCenter' | 'imageLeft' | 'imageRight';
+            sectionDescription?: string | null;
+            blog: number | Blog;
+            showBorder?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'blogPreview';
+          }
+        | {
             heading: string;
             description: string;
             searchPlaceholder: string;
@@ -784,6 +794,59 @@ export interface Page {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blog".
+ */
+export interface Blog {
+  id: number;
+  title: string;
+  slug: string;
+  isPinned?: boolean | null;
+  author: number | TeamMember;
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  shortDescription?: string | null;
+  heroImage?: (number | null) | Media;
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "team-members".
+ */
+export interface TeamMember {
+  id: number;
+  name: string;
+  image?: (number | null) | Media;
+  shortDescription?: string | null;
+  about?: string | null;
+  role?: string | null;
+  joinedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "features".
  */
 export interface Feature {
@@ -862,59 +925,6 @@ export interface Job {
    * Optional manual sort order. Lower values appear first.
    */
   order?: number | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "blog".
- */
-export interface Blog {
-  id: number;
-  title: string;
-  slug: string;
-  isPinned?: boolean | null;
-  author: number | TeamMember;
-  content: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  };
-  shortDescription?: string | null;
-  heroImage?: (number | null) | Media;
-  meta?: {
-    title?: string | null;
-    description?: string | null;
-    /**
-     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
-     */
-    image?: (number | null) | Media;
-  };
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "team-members".
- */
-export interface TeamMember {
-  id: number;
-  name: string;
-  image?: (number | null) | Media;
-  shortDescription?: string | null;
-  about?: string | null;
-  role?: string | null;
-  joinedAt?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1486,6 +1496,17 @@ export interface PagesSelect<T extends boolean = true> {
               noPostsLabel?: T;
               loadMoreLabel?: T;
               loadingLabel?: T;
+              id?: T;
+              blockName?: T;
+            };
+        blogPreview?:
+          | T
+          | {
+              sectionHeading?: T;
+              sectionLayout?: T;
+              sectionDescription?: T;
+              blog?: T;
+              showBorder?: T;
               id?: T;
               blockName?: T;
             };
