@@ -779,6 +779,26 @@ export interface Page {
             blockName?: string | null;
             blockType: 'standaloneCard';
           }
+        | {
+            sectionHeading?: string | null;
+            sectionDescription?: string | null;
+            sectionLinkButton?: {
+              label?: string | null;
+              url?: string | null;
+            };
+            sourceType: 'url' | 'media';
+            videoUrl?: string | null;
+            video?: (number | null) | Media;
+            poster?: (number | null) | Media;
+            controls?: boolean | null;
+            autoPlay?: boolean | null;
+            muted?: boolean | null;
+            loop?: boolean | null;
+            playsInline?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'video';
+          }
       )[]
     | null;
   meta?: {
@@ -1637,6 +1657,29 @@ export interface PagesSelect<T extends boolean = true> {
                     label?: T;
                     url?: T;
                   };
+              id?: T;
+              blockName?: T;
+            };
+        video?:
+          | T
+          | {
+              sectionHeading?: T;
+              sectionDescription?: T;
+              sectionLinkButton?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                  };
+              sourceType?: T;
+              videoUrl?: T;
+              video?: T;
+              poster?: T;
+              controls?: T;
+              autoPlay?: T;
+              muted?: T;
+              loop?: T;
+              playsInline?: T;
               id?: T;
               blockName?: T;
             };

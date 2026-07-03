@@ -14,6 +14,7 @@ import type { AppLocale } from "@/lib/i18n"
 import type { Page } from "@/payload-types"
 import React, { type ReactNode } from "react"
 import { StandaloneCardSection } from "./sections/StandaloneCardSection"
+import { VideoSection } from "./sections/VideoSection"
 
 type PageBlock = NonNullable<Page["layout"]>[number]
 
@@ -41,6 +42,7 @@ const pageBlockRenderers: Partial<Record<PageBlock["blockType"], BlockRenderer>>
     scrollCards: (block) => <ScrollCardSection content={block as Extract<PageBlock, { blockType: "scrollCards" }>} />,
     swipeCards: (block) => <SwipeCardSection content={block as Extract<PageBlock, { blockType: "swipeCards" }>} />,
     standaloneCard: (block) => <StandaloneCardSection content={block as Extract<PageBlock, { blockType: "standaloneCard" }>} />,
+    video: (block) => <VideoSection content={block as Extract<PageBlock, { blockType: "video" }>} />,
 }
 
 function renderPageBlock(block: PageBlock, options: PageBlockRenderOptions) {

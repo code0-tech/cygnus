@@ -17,6 +17,7 @@ import { RoadmapBlock } from "../blocks/RoadmapBlock"
 import { ScrollCardBlock } from "../blocks/ScrollCardBlock"
 import type { CollectionConfig } from "payload"
 import { StandaloneBlock } from "@/blocks/StandaloneBlock"
+import { VideoBlock } from "@/blocks/VideoBlock"
 
 export const Pages: CollectionConfig = {
     slug: "pages",
@@ -83,6 +84,7 @@ export const Pages: CollectionConfig = {
                 RoadmapBlock,
                 ScrollCardBlock,
                 StandaloneBlock,
+                VideoBlock,
             ],
             required: false,
             localized: true,

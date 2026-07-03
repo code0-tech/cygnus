@@ -19,6 +19,7 @@ import * as migration_20260701_170429_install_language from './20260701_170429_i
 import * as migration_20260703_053522_offset_cards_placement from './20260703_053522_offset_cards_placement';
 import * as migration_20260703_054551_offset_cards_image_options from './20260703_054551_offset_cards_image_options';
 import * as migration_20260703_105958_blog_preview from './20260703_105958_blog_preview';
+import * as migration_20260703_112923_video_block from './20260703_112923_video_block';
 
 export const migrations = [
   {
@@ -124,6 +125,11 @@ export const migrations = [
   {
     up: migration_20260703_105958_blog_preview.up,
     down: migration_20260703_105958_blog_preview.down,
-    name: '20260703_105958_blog_preview'
+    name: '20260703_105958_blog_preview',
+  },
+  {
+    up: migration_20260703_112923_video_block.up,
+    down: migration_20260703_112923_video_block.down,
+    name: '20260703_112923_video_block'
   },
 ];
