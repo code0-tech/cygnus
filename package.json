@@ -23,7 +23,7 @@
         "@c15t/nextjs": "^2.1.0",
         "@c15t/react": "^2.1.0",
         "@c15t/scripts": "^2.1.0",
-        "@code0-tech/pictor": "^0.10.7",
+        "@code0-tech/pictor": "^0.10.9",
         "@icons-pack/react-simple-icons": "^13.13.0",
         "@mvriu5/payload-ai": "^1.3.2",
         "@openrouter/ai-sdk-provider": "^2.10.0",
