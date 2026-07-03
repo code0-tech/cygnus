@@ -1,4 +1,5 @@
 import { BrandSection } from "@/components/sections/BrandSection"
+import { BlogPreviewSection } from "@/components/sections/BlogPreviewSection"
 import { CardRowSection } from "@/components/sections/CardRowSection"
 import { CtaSection } from "@/components/sections/CtaSection"
 import { FaqSection } from "@/components/sections/FaqSection"
@@ -13,6 +14,7 @@ import type { AppLocale } from "@/lib/i18n"
 import type { Page } from "@/payload-types"
 import React, { type ReactNode } from "react"
 import { StandaloneCardSection } from "./sections/StandaloneCardSection"
+import { VideoSection } from "./sections/VideoSection"
 
 type PageBlock = NonNullable<Page["layout"]>[number]
 
@@ -29,6 +31,7 @@ type BlockRenderer = (block: PageBlock, options: PageBlockRenderOptions) => Reac
 const pageBlockRenderers: Partial<Record<PageBlock["blockType"], BlockRenderer>> = {
     hero: (block) => <HeroSection content={block as Extract<PageBlock, { blockType: "hero" }>} />,
     bento: (block, options) => <BentoSection content={block as Extract<PageBlock, { blockType: "bento" }>} locale={options.locale} />,
+    blogPreview: (block, options) => <BlogPreviewSection content={block as Extract<PageBlock, { blockType: "blogPreview" }>} locale={options.locale} />,
     brand: (block) => <BrandSection content={block as Extract<PageBlock, { blockType: "brand" }>} />,
     offsetCards: (block) => <OffsetCardsSection content={block as Extract<PageBlock, { blockType: "offsetCards" }>} />,
     cardRow: (block, options) => <CardRowSection content={block as Extract<PageBlock, { blockType: "cardRow" }>}>{options.cardRowChildren}</CardRowSection>,
@@ -39,6 +42,7 @@ const pageBlockRenderers: Partial<Record<PageBlock["blockType"], BlockRenderer>>
     scrollCards: (block) => <ScrollCardSection content={block as Extract<PageBlock, { blockType: "scrollCards" }>} />,
     swipeCards: (block) => <SwipeCardSection content={block as Extract<PageBlock, { blockType: "swipeCards" }>} />,
     standaloneCard: (block) => <StandaloneCardSection content={block as Extract<PageBlock, { blockType: "standaloneCard" }>} />,
+    video: (block) => <VideoSection content={block as Extract<PageBlock, { blockType: "video" }>} />,
 }
 
 function renderPageBlock(block: PageBlock, options: PageBlockRenderOptions) {

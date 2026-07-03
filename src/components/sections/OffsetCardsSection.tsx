@@ -15,6 +15,12 @@ interface OffsetCardsSectionProps {
 }
 
 const OFFSET_CARD_ANIMATION_SEQUENCE: Exclude<AnimationPreset, "none">[] = ["slide-left", "slide-right", "slide-left"]
+const IMAGE_MASK_CLASSES = {
+    top: "inset-x-0 top-0 h-1/3 bg-linear-to-b from-primary to-transparent",
+    right: "inset-y-0 right-0 w-1/3 bg-linear-to-l from-primary to-transparent",
+    bottom: "inset-x-0 bottom-0 h-1/3 bg-linear-to-t from-primary to-transparent",
+    left: "inset-y-0 left-0 w-1/3 bg-linear-to-r from-primary to-transparent",
+} as const
 const staggerContainer: Variants = {
     hidden: {},
     show: {
@@ -53,11 +59,13 @@ export function OffsetCardsSection({ content }: OffsetCardsSectionProps) {
                     const animationConfig = ANIMATION_PRESETS[animationPreset]
                     const image = item.image as Media
                     const imageUrl = getMediaUrl(image?.url)
+                    const cardPlacement = content.cardPlacement ?? "alternate"
+                    const isCardLeft = cardPlacement === "left" || (cardPlacement === "alternate" && index % 2 !== 0)
 
                     return (
                         <motion.div
                             key={item.id ?? item.label}
-                            className={`flex w-full flex-col items-center gap-8 ${index % 2 === 0 ? "lg:flex-row" : "lg:flex-row-reverse"}`}
+                            className={cn("flex w-full flex-col items-center gap-8", isCardLeft ? "lg:flex-row-reverse" : "lg:flex-row")}
                             initial={animationConfig.initial}
                             whileInView={animationConfig.whileInView}
                             viewport={{ once: true, amount: 0.2 }}
@@ -93,8 +101,15 @@ export function OffsetCardsSection({ content }: OffsetCardsSectionProps) {
                                     </motion.div>
                                 )}
                             </motion.div>
-                            <Card size="lg" className={cn("relative aspect-video w-full overflow-hidden lg:w-2/3")}>
+                            <Card
+                                size="lg"
+                                topline={item.showImageBorder ?? true}
+                                className={cn("relative aspect-video w-full overflow-hidden lg:w-2/3", item.showImageBorder === false && "border-0")}
+                            >
                                 {imageUrl && <Image src={imageUrl} alt={image.alt ?? item.title} fill sizes="(min-width: 768px) 66vw, 100vw" className="object-fill" />}
+                                {item.mask?.map((side) => (
+                                    <div key={side} aria-hidden="true" className={cn("pointer-events-none absolute z-10", IMAGE_MASK_CLASSES[side])} />
+                                ))}
                             </Card>
                             <motion.div
                                 className="w-full px-2 pb-2 text-left lg:hidden lg:text-center"

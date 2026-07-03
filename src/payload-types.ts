@@ -276,6 +276,7 @@ export interface Page {
         | {
             sectionHeading?: string | null;
             sectionLayout: 'center' | 'left';
+            cardPlacement: 'alternate' | 'right' | 'left';
             sectionDescription?: string | null;
             sectionLinkButton?: {
               label?: string | null;
@@ -286,6 +287,8 @@ export interface Page {
               title: string;
               description: string;
               image?: (number | null) | Media;
+              showImageBorder?: boolean | null;
+              mask?: ('top' | 'right' | 'bottom' | 'left')[] | null;
               bulletPoints?: string[] | null;
               link?: {
                 label?: string | null;
@@ -634,6 +637,16 @@ export interface Page {
             blockType: 'blog';
           }
         | {
+            sectionHeading?: string | null;
+            sectionLayout: 'imageCenter' | 'imageLeft' | 'imageRight';
+            sectionDescription?: string | null;
+            blog: number | Blog;
+            showBorder?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'blogPreview';
+          }
+        | {
             heading: string;
             description: string;
             searchPlaceholder: string;
@@ -766,6 +779,26 @@ export interface Page {
             blockName?: string | null;
             blockType: 'standaloneCard';
           }
+        | {
+            sectionHeading?: string | null;
+            sectionDescription?: string | null;
+            sectionLinkButton?: {
+              label?: string | null;
+              url?: string | null;
+            };
+            sourceType: 'url' | 'media';
+            videoUrl?: string | null;
+            video?: (number | null) | Media;
+            poster?: (number | null) | Media;
+            controls?: boolean | null;
+            autoPlay?: boolean | null;
+            muted?: boolean | null;
+            loop?: boolean | null;
+            playsInline?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'video';
+          }
       )[]
     | null;
   meta?: {
@@ -776,6 +809,59 @@ export interface Page {
      */
     image?: (number | null) | Media;
   };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blog".
+ */
+export interface Blog {
+  id: number;
+  title: string;
+  slug: string;
+  isPinned?: boolean | null;
+  author: number | TeamMember;
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  shortDescription?: string | null;
+  heroImage?: (number | null) | Media;
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "team-members".
+ */
+export interface TeamMember {
+  id: number;
+  name: string;
+  image?: (number | null) | Media;
+  shortDescription?: string | null;
+  about?: string | null;
+  role?: string | null;
+  joinedAt?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -859,59 +945,6 @@ export interface Job {
    * Optional manual sort order. Lower values appear first.
    */
   order?: number | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "blog".
- */
-export interface Blog {
-  id: number;
-  title: string;
-  slug: string;
-  isPinned?: boolean | null;
-  author: number | TeamMember;
-  content: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  };
-  shortDescription?: string | null;
-  heroImage?: (number | null) | Media;
-  meta?: {
-    title?: string | null;
-    description?: string | null;
-    /**
-     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
-     */
-    image?: (number | null) | Media;
-  };
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "team-members".
- */
-export interface TeamMember {
-  id: number;
-  name: string;
-  image?: (number | null) | Media;
-  shortDescription?: string | null;
-  about?: string | null;
-  role?: string | null;
-  joinedAt?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1345,6 +1378,7 @@ export interface PagesSelect<T extends boolean = true> {
           | {
               sectionHeading?: T;
               sectionLayout?: T;
+              cardPlacement?: T;
               sectionDescription?: T;
               sectionLinkButton?:
                 | T
@@ -1359,6 +1393,8 @@ export interface PagesSelect<T extends boolean = true> {
                     title?: T;
                     description?: T;
                     image?: T;
+                    showImageBorder?: T;
+                    mask?: T;
                     bulletPoints?: T;
                     link?:
                       | T
@@ -1480,6 +1516,17 @@ export interface PagesSelect<T extends boolean = true> {
               noPostsLabel?: T;
               loadMoreLabel?: T;
               loadingLabel?: T;
+              id?: T;
+              blockName?: T;
+            };
+        blogPreview?:
+          | T
+          | {
+              sectionHeading?: T;
+              sectionLayout?: T;
+              sectionDescription?: T;
+              blog?: T;
+              showBorder?: T;
               id?: T;
               blockName?: T;
             };
@@ -1610,6 +1657,29 @@ export interface PagesSelect<T extends boolean = true> {
                     label?: T;
                     url?: T;
                   };
+              id?: T;
+              blockName?: T;
+            };
+        video?:
+          | T
+          | {
+              sectionHeading?: T;
+              sectionDescription?: T;
+              sectionLinkButton?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                  };
+              sourceType?: T;
+              videoUrl?: T;
+              video?: T;
+              poster?: T;
+              controls?: T;
+              autoPlay?: T;
+              muted?: T;
+              loop?: T;
+              playsInline?: T;
               id?: T;
               blockName?: T;
             };

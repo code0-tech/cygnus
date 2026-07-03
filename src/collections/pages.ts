@@ -1,6 +1,7 @@
 import { ActionBlock } from "@/blocks/ActionBlock"
 import { SwipeCardBlock } from "@/blocks/SwipeCardBlock"
 import { BlogBlock } from "../blocks/BlogBlock"
+import { BlogPreviewBlock } from "../blocks/BlogPreviewBlock"
 import { BrandBlock } from "../blocks/BrandBlock"
 import { CardRowBlock } from "../blocks/CardRowBlock"
 import { ContactBlock } from "../blocks/ContactBlock"
@@ -16,6 +17,7 @@ import { RoadmapBlock } from "../blocks/RoadmapBlock"
 import { ScrollCardBlock } from "../blocks/ScrollCardBlock"
 import type { CollectionConfig } from "payload"
 import { StandaloneBlock } from "@/blocks/StandaloneBlock"
+import { VideoBlock } from "@/blocks/VideoBlock"
 
 export const Pages: CollectionConfig = {
     slug: "pages",
@@ -74,6 +76,7 @@ export const Pages: CollectionConfig = {
                 CtaBlock,
                 JobsBlock,
                 BlogBlock,
+                BlogPreviewBlock,
                 ActionBlock,
                 MarkdownBlock,
                 ContactBlock,
@@ -81,6 +84,7 @@ export const Pages: CollectionConfig = {
                 RoadmapBlock,
                 ScrollCardBlock,
                 StandaloneBlock,
+                VideoBlock,
             ],
             required: false,
             localized: true,
