@@ -36,6 +36,27 @@ export const OffsetCardsBlock: Block = {
           ],
         },
         {
+          name: "cardPlacement",
+          label: "Card Placement",
+          type: "select",
+          required: true,
+          defaultValue: "alternate",
+          options: [
+            {
+              label: "Alternate",
+              value: "alternate",
+            },
+            {
+              label: "Right",
+              value: "right",
+            },
+            {
+              label: "Left",
+              value: "left",
+            },
+          ],
+        },
+        {
           name: "sectionDescription",
           label: "Section Description",
           type: "textarea",

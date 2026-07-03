@@ -53,11 +53,13 @@ export function OffsetCardsSection({ content }: OffsetCardsSectionProps) {
                     const animationConfig = ANIMATION_PRESETS[animationPreset]
                     const image = item.image as Media
                     const imageUrl = getMediaUrl(image?.url)
+                    const cardPlacement = content.cardPlacement ?? "alternate"
+                    const isCardLeft = cardPlacement === "left" || (cardPlacement === "alternate" && index % 2 !== 0)
 
                     return (
                         <motion.div
                             key={item.id ?? item.label}
-                            className={`flex w-full flex-col items-center gap-8 ${index % 2 === 0 ? "lg:flex-row" : "lg:flex-row-reverse"}`}
+                            className={cn("flex w-full flex-col items-center gap-8", isCardLeft ? "lg:flex-row-reverse" : "lg:flex-row")}
                             initial={animationConfig.initial}
                             whileInView={animationConfig.whileInView}
                             viewport={{ once: true, amount: 0.2 }}

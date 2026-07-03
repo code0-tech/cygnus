@@ -276,6 +276,7 @@ export interface Page {
         | {
             sectionHeading?: string | null;
             sectionLayout: 'center' | 'left';
+            cardPlacement: 'alternate' | 'right' | 'left';
             sectionDescription?: string | null;
             sectionLinkButton?: {
               label?: string | null;
@@ -1345,6 +1346,7 @@ export interface PagesSelect<T extends boolean = true> {
           | {
               sectionHeading?: T;
               sectionLayout?: T;
+              cardPlacement?: T;
               sectionDescription?: T;
               sectionLinkButton?:
                 | T
