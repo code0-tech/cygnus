@@ -17,6 +17,7 @@ import * as migration_20260624_092957_cards_displayoptions from './20260624_0929
 import * as migration_20260701_070938_20260701_hero_image from './20260701_070938_20260701_hero_image';
 import * as migration_20260701_170429_install_language from './20260701_170429_install_language';
 import * as migration_20260703_053522_offset_cards_placement from './20260703_053522_offset_cards_placement';
+import * as migration_20260703_054551_offset_cards_image_options from './20260703_054551_offset_cards_image_options';
 
 export const migrations = [
   {
@@ -112,6 +113,11 @@ export const migrations = [
   {
     up: migration_20260703_053522_offset_cards_placement.up,
     down: migration_20260703_053522_offset_cards_placement.down,
-    name: '20260703_053522_offset_cards_placement'
+    name: '20260703_053522_offset_cards_placement',
+  },
+  {
+    up: migration_20260703_054551_offset_cards_image_options.up,
+    down: migration_20260703_054551_offset_cards_image_options.down,
+    name: '20260703_054551_offset_cards_image_options'
   },
 ];

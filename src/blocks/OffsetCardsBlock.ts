@@ -115,6 +115,37 @@ export const OffsetCardsBlock: Block = {
           required: false,
         },
         {
+          name: "showImageBorder",
+          label: "Show Image Border",
+          type: "checkbox",
+          defaultValue: true,
+        },
+        {
+          name: "mask",
+          label: "Image Mask",
+          type: "select",
+          hasMany: true,
+          required: false,
+          options: [
+            {
+              label: "Top",
+              value: "top",
+            },
+            {
+              label: "Right",
+              value: "right",
+            },
+            {
+              label: "Bottom",
+              value: "bottom",
+            },
+            {
+              label: "Left",
+              value: "left",
+            },
+          ],
+        },
+        {
           name: "bulletPoints",
           label: "Bullet Points",
           type: "text",

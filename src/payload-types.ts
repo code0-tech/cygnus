@@ -287,6 +287,8 @@ export interface Page {
               title: string;
               description: string;
               image?: (number | null) | Media;
+              showImageBorder?: boolean | null;
+              mask?: ('top' | 'right' | 'bottom' | 'left')[] | null;
               bulletPoints?: string[] | null;
               link?: {
                 label?: string | null;
@@ -1361,6 +1363,8 @@ export interface PagesSelect<T extends boolean = true> {
                     title?: T;
                     description?: T;
                     image?: T;
+                    showImageBorder?: T;
+                    mask?: T;
                     bulletPoints?: T;
                     link?:
                       | T
