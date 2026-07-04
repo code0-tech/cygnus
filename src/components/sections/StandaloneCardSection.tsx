@@ -31,14 +31,14 @@ export function StandaloneCardSection({ content }: StandaloneCardSectionProps) {
     const showImageBorder = content.showImageBorder ?? true
 
     return (
-        <Section showFunnel={false} animation={{ preset: "none" }} className="h-[calc(100vh-6rem)] justify-center">
+        <Section showFunnel={false} animation={{ preset: "none" }}>
             <Card
                 size="lg"
                 gradientDirection={content.gradientDirection}
                 radialGradient={content.gradient}
                 className={cn(
-                    "relative aspect-video w-full shrink-0 overflow-hidden bg-primary",
-                    isFullscreen ? "p-0" : isSideFullscreen ? "grid p-0 md:grid-cols-2" : "grid gap-12 p-12 md:grid-cols-[0.95fr_1.05fr]"
+                    "relative h-[min(85svh,918px)] w-full shrink-0 overflow-x-hidden overflow-y-auto bg-primary md:h-[min(85dvh,918px)] md:overflow-hidden",
+                    isFullscreen ? "p-0" : isSideFullscreen ? "grid p-0 md:grid-cols-2" : "grid gap-6 p-6 sm:gap-8 sm:p-8 md:gap-12 md:p-12 md:grid-cols-[0.95fr_1.05fr]"
                 )}
             >
                 {isFullscreen ? (
@@ -68,7 +68,7 @@ export function StandaloneCardSection({ content }: StandaloneCardSectionProps) {
                     </div>
                 ) : isSideFullscreen ? (
                     <>
-                        <div className={cn("relative z-10 flex h-full flex-col justify-center gap-8 p-12", isSideFullscreenLeft && "md:order-2")}>
+                        <div className={cn("relative z-10 flex flex-col justify-center gap-6 p-6 sm:p-8 md:h-full md:gap-8 md:p-12", isSideFullscreenLeft && "md:order-2")}>
                             <div className="flex flex-col gap-4">
                                 <h2 className="max-w-xl text-3xl font-semibold text-white md:text-5xl">{content.title}</h2>
                                 <p className="max-w-xl text-base leading-7 text-secondary md:text-lg">{content.description}</p>
@@ -90,7 +90,7 @@ export function StandaloneCardSection({ content }: StandaloneCardSectionProps) {
 
                         <div
                             className={cn(
-                                "relative z-10 h-full w-full overflow-hidden mt-px",
+                                "relative z-10 min-h-64 w-full overflow-hidden mt-px md:h-full",
                                 showImageBorder && "border-white/5",
                                 isSideFullscreenLeft && "md:order-1 border-r",
                                 isSideFullscreenRight && "border-l"

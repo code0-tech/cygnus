@@ -41,6 +41,9 @@ export function ScrollCardSection({ content }: ScrollCardSectionProps) {
             const rect = container.getBoundingClientRect()
             const topOffset = 96
             const height = window.innerHeight
+            const bottomOffset = topOffset
+            const availableHeight = Math.max(height - topOffset - bottomOffset, 0)
+            const cardWidth = Math.min(rect.width, availableHeight * (16 / 9))
             const containerTop = rect.top + window.scrollY
             const rawProgress = window.scrollY - containerTop + topOffset
             const activeEnd = Math.max((items.length - 1) * height, 0)
@@ -48,6 +51,9 @@ export function ScrollCardSection({ content }: ScrollCardSectionProps) {
             const cardTravelDistance = Math.max(height - topOffset, 0)
             const phase = rect.top > topOffset ? "before" : rect.bottom <= height - topOffset ? "after" : "active"
             const previousPinStyle = pinStyleRef.current
+
+            container.style.setProperty("--scroll-card-width", `${cardWidth}px`)
+            pinned.style.height = `${availableHeight}px`
 
             if (phase !== previousPinStyle.phase || rect.left !== previousPinStyle.left || rect.width !== previousPinStyle.width) {
                 pinStyleRef.current = { phase, left: rect.left, width: rect.width }
@@ -57,6 +63,7 @@ export function ScrollCardSection({ content }: ScrollCardSectionProps) {
                 pinned.style.top = phase === "active" ? `${topOffset}px` : ""
                 pinned.style.bottom = phase === "after" ? "0" : ""
                 pinned.style.width = phase === "active" ? `${rect.width}px` : "100%"
+                pinned.style.overflow = phase === "before" ? "hidden" : "visible"
             }
 
             articleRefs.current.forEach((article, index) => {
@@ -91,7 +98,7 @@ export function ScrollCardSection({ content }: ScrollCardSectionProps) {
     return (
         <Section showFunnel={false} animation={{ preset: "none" }}>
             <div ref={containerRef} className="relative" style={{ height: `${Math.max(items.length, 1) * 100}vh` }}>
-                <div ref={pinnedRef} className="relative z-10 h-[calc(100vh-12rem)] w-full">
+                <div ref={pinnedRef} className="relative z-10 h-[calc(100dvh-12rem)] w-full overflow-hidden">
                     {items.map((item, index) => {
                         const image = getImage(item.image)
                         const imageUrl = getMediaUrl(image?.url)
@@ -124,8 +131,8 @@ export function ScrollCardSection({ content }: ScrollCardSectionProps) {
                                     gradientDirection={item.gradientDirection}
                                     radialGradient={item.gradient}
                                     className={cn(
-                                        "relative aspect-video w-full shrink-0 overflow-hidden bg-primary",
-                                        isFullscreen ? "p-0" : isSideFullscreen ? "grid p-0 md:grid-cols-2" : "grid gap-12 p-12 md:grid-cols-[0.95fr_1.05fr]"
+                                        "relative h-full w-full shrink-0 overflow-x-hidden overflow-y-auto bg-primary md:h-auto md:w-(--scroll-card-width) md:aspect-video md:overflow-hidden",
+                                        isFullscreen ? "p-0" : isSideFullscreen ? "grid p-0 md:grid-cols-2" : "grid gap-6 p-6 sm:gap-8 sm:p-8 md:gap-12 md:p-12 md:grid-cols-[0.95fr_1.05fr]"
                                     )}
                                 >
                                     {isFullscreen ? (
@@ -155,7 +162,7 @@ export function ScrollCardSection({ content }: ScrollCardSectionProps) {
                                         </div>
                                     ) : isSideFullscreen ? (
                                         <>
-                                            <div className={cn("relative z-10 flex h-full flex-col justify-center gap-8 p-12", isSideFullscreenLeft && "md:order-2")}>
+                                            <div className={cn("relative z-10 flex flex-col justify-center gap-6 p-6 sm:p-8 md:h-full md:gap-8 md:p-12", isSideFullscreenLeft && "md:order-2")}>
                                                 <div className="flex flex-col gap-4">
                                                     <h2 className="max-w-xl text-3xl font-semibold text-white md:text-5xl">{item.title}</h2>
                                                     <p className="max-w-xl text-base leading-7 text-secondary md:text-lg">{item.description}</p>
@@ -177,7 +184,7 @@ export function ScrollCardSection({ content }: ScrollCardSectionProps) {
 
                                             <div
                                                 className={cn(
-                                                    "relative z-10 h-full w-full overflow-hidden mt-px",
+                                                    "relative z-10 min-h-64 w-full overflow-hidden mt-px md:h-full",
                                                     showImageBorder && "border-white/5",
                                                     isSideFullscreenLeft && "md:order-1 border-r",
                                                     isSideFullscreenRight && "border-l"
