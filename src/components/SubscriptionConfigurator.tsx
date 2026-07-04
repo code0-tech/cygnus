@@ -98,6 +98,7 @@ const defaultContent: Omit<SubscriptionConfigData, "id" | "title"> = {
         maxLabel: "10,000 exec",
         centerSuffix: "exec",
     },
+    workflowExecutionPriceFactor: 0.001,
     contactSales: {
         prompt: "Need more?",
         label: "Contact sales",
@@ -276,7 +277,80 @@ function AdditionalFeatureCard({
 }
 
 export function SubscriptionConfigurator({ locale, content, icons }: { locale: AppLocale; content?: SubscriptionConfigData | null; icons: SubscriptionIcons }) {
-    const resolved = content ?? ({ id: 0, title: "Subscription Config", ...defaultContent } satisfies SubscriptionConfigData)
+    const resolved: SubscriptionConfigData = {
+        id: content?.id ?? 0,
+        title: content?.title?.trim() || "Subscription Config",
+        pageIntro: {
+            heading: content?.pageIntro?.heading?.trim() || defaultContent.pageIntro.heading,
+            description: content?.pageIntro?.description?.trim() || defaultContent.pageIntro.description,
+        },
+        featureOverview:
+            content?.featureOverview && content.featureOverview.length > 0
+                ? content.featureOverview.map((item, index) => ({
+                      ...item,
+                      title: item.title?.trim() || defaultContent.featureOverview[index]?.title || "",
+                      description: item.description?.trim() || defaultContent.featureOverview[index]?.description || "",
+                      icon: item.icon?.trim() || defaultContent.featureOverview[index]?.icon || "cube",
+                  }))
+                : defaultContent.featureOverview,
+        optionsPanelHeading: content?.optionsPanelHeading?.trim() || defaultContent.optionsPanelHeading,
+        deployment: {
+            label: content?.deployment?.label?.trim() || defaultContent.deployment.label,
+            selfHosted: {
+                title: content?.deployment?.selfHosted?.title?.trim() || defaultContent.deployment.selfHosted.title,
+                description: content?.deployment?.selfHosted?.description?.trim() || defaultContent.deployment.selfHosted.description,
+                icon: content?.deployment?.selfHosted?.icon?.trim() || defaultContent.deployment.selfHosted.icon,
+                color: content?.deployment?.selfHosted?.color ?? defaultContent.deployment.selfHosted.color,
+            },
+            cloud: {
+                title: content?.deployment?.cloud?.title?.trim() || defaultContent.deployment.cloud.title,
+                description: content?.deployment?.cloud?.description?.trim() || defaultContent.deployment.cloud.description,
+                icon: content?.deployment?.cloud?.icon?.trim() || defaultContent.deployment.cloud.icon,
+                color: content?.deployment?.cloud?.color ?? defaultContent.deployment.cloud.color,
+            },
+        },
+        customerType: {
+            label: content?.customerType?.label?.trim() || defaultContent.customerType.label,
+            b2b: {
+                title: content?.customerType?.b2b?.title?.trim() || defaultContent.customerType.b2b.title,
+                description: content?.customerType?.b2b?.description?.trim() || defaultContent.customerType.b2b.description,
+                icon: content?.customerType?.b2b?.icon?.trim() || defaultContent.customerType.b2b.icon,
+                color: content?.customerType?.b2b?.color ?? defaultContent.customerType.b2b.color,
+            },
+            b2c: {
+                title: content?.customerType?.b2c?.title?.trim() || defaultContent.customerType.b2c.title,
+                description: content?.customerType?.b2c?.description?.trim() || defaultContent.customerType.b2c.description,
+                icon: content?.customerType?.b2c?.icon?.trim() || defaultContent.customerType.b2c.icon,
+                color: content?.customerType?.b2c?.color ?? defaultContent.customerType.b2c.color,
+            },
+        },
+        workflowExecutions: {
+            title: content?.workflowExecutions?.title?.trim() || defaultContent.workflowExecutions.title,
+            description: content?.workflowExecutions?.description?.trim() || defaultContent.workflowExecutions.description,
+            min: content?.workflowExecutions?.min ?? defaultContent.workflowExecutions.min,
+            max: content?.workflowExecutions?.max ?? defaultContent.workflowExecutions.max,
+            step: content?.workflowExecutions?.step ?? defaultContent.workflowExecutions.step,
+            minLabel: content?.workflowExecutions?.minLabel?.trim() || defaultContent.workflowExecutions.minLabel,
+            maxLabel: content?.workflowExecutions?.maxLabel?.trim() || defaultContent.workflowExecutions.maxLabel,
+            centerSuffix: content?.workflowExecutions?.centerSuffix?.trim() || defaultContent.workflowExecutions.centerSuffix,
+        },
+        workflowExecutionPriceFactor: content?.workflowExecutionPriceFactor ?? defaultContent.workflowExecutionPriceFactor,
+        contactSales: {
+            prompt: content?.contactSales?.prompt?.trim() || defaultContent.contactSales.prompt,
+            label: content?.contactSales?.label?.trim() || defaultContent.contactSales.label,
+            href: content?.contactSales?.href?.trim() || defaultContent.contactSales.href,
+        },
+        subscribe: {
+            label: content?.subscribe?.label?.trim() || defaultContent.subscribe.label,
+            baseUrl: content?.subscribe?.baseUrl?.trim() || defaultContent.subscribe.baseUrl,
+        },
+        price: {
+            heading: content?.price?.heading?.trim() || defaultContent.price.heading,
+            caption: content?.price?.caption?.trim() || defaultContent.price.caption,
+        },
+        additionalFeaturesLabel: content?.additionalFeaturesLabel?.trim() || null,
+        additionalFeatures: content?.additionalFeatures ?? null,
+    }
     const workflowExecutions = resolved.workflowExecutions
     const [selection, setSelection] = useState<SubscriptionSelection>({
         deployment: "self-hosted",
@@ -287,7 +361,7 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
     const desktopTopOffset = 96
     const { wrapperRef: desktopWrapperRef, containerRef: desktopContainerRef } = useDesktopPinnedPosition<HTMLDivElement, HTMLDivElement>(desktopTopOffset)
 
-    const workflowExecutionPrice = 0.001 * selection.workflowExecutions
+    const workflowExecutionPrice = resolved.workflowExecutionPriceFactor * selection.workflowExecutions
     const additionalFeaturesPrice = Array.from(selectedFeatures).reduce((acc, idx) => acc + (resolved.additionalFeatures?.[idx]?.price ?? 0), 0)
     const totalPrice = formatEuroCurrency(workflowExecutionPrice + additionalFeaturesPrice, locale)
 
@@ -326,7 +400,7 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
                     </div>
                 </section>
 
-                <Card size="lg" className="lg:col-span-3 relative min-w-0 overflow-hidden p-6 bg-primary/50">
+                <Card size="lg" className="lg:col-span-3 min-w-0 bg-primary">
                     <div className="relative z-10 flex flex-col gap-8">
                         <h2 className="text-2xl font-semibold text-white lg:text-3xl">{resolved.optionsPanelHeading}</h2>
 

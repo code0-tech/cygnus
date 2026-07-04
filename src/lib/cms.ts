@@ -136,6 +136,7 @@ export interface SubscriptionConfigData {
         maxLabel: string
         centerSuffix: string
     }
+    workflowExecutionPriceFactor: number
     contactSales: {
         prompt: string
         label: string

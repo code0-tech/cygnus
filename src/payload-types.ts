@@ -2173,6 +2173,7 @@ export interface SubscriptionConfig {
     maxLabel: string;
     centerSuffix: string;
   };
+  workflowExecutionPriceFactor: number;
   contactSales: {
     prompt: string;
     label: string;
@@ -2469,6 +2470,7 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
         maxLabel?: T;
         centerSuffix?: T;
       };
+  workflowExecutionPriceFactor?: T;
   contactSales?:
     | T
     | {

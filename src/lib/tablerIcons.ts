@@ -1,9 +1,9 @@
 import "server-only"
 
 import * as TablerIcons from "@tabler/icons-react"
-import { createElement, type ComponentType, type ReactNode } from "react"
+import { createElement, type ComponentType, type Key, type ReactNode } from "react"
 
-export function getTablerIcon(icon: string | null | undefined, size = 24): ReactNode {
+export function getTablerIcon(icon: string | null | undefined, size = 24, key?: Key): ReactNode {
     const fallbackIcon = TablerIcons.IconCube as ComponentType<{ size?: number }>
     const normalizedIconName = `Icon${(icon ?? "cube")
         .trim()
@@ -15,5 +15,5 @@ export function getTablerIcon(icon: string | null | undefined, size = 24): React
 
     const resolvedIcon = normalizedIconName in TablerIcons ? (TablerIcons[normalizedIconName as keyof typeof TablerIcons] as unknown as ComponentType<{ size?: number }>) : fallbackIcon
 
-    return createElement(resolvedIcon, { size })
+    return createElement(resolvedIcon, { key, size })
 }
