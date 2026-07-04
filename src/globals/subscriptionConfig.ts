@@ -204,6 +204,29 @@ export const SubscriptionCollection: GlobalConfig = {
             min: 0,
         },
         {
+            name: "aiTokens",
+            label: "AI Tokens",
+            type: "group",
+            fields: [
+                { name: "title", type: "text", required: true, localized: true, defaultValue: "AI Tokens" },
+                { name: "description", type: "textarea", required: true, localized: true, defaultValue: "How many AI tokens do you expect to consume per month?" },
+                { name: "min", type: "number", required: true, defaultValue: 100000 },
+                { name: "max", type: "number", required: true, defaultValue: 10000000 },
+                { name: "step", type: "number", required: true, defaultValue: 100000 },
+                { name: "minLabel", type: "text", required: true, localized: true, defaultValue: "100k tokens" },
+                { name: "maxLabel", type: "text", required: true, localized: true, defaultValue: "10m tokens" },
+                { name: "centerSuffix", type: "text", required: true, localized: true, defaultValue: "tokens" },
+            ],
+        },
+        {
+            name: "aiTokenPriceFactor",
+            label: "AI Token Price Factor",
+            type: "number",
+            required: true,
+            defaultValue: 0.000001,
+            min: 0,
+        },
+        {
             name: "contactSales",
             type: "group",
             fields: [

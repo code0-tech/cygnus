@@ -20,6 +20,7 @@ type SubscriptionSelection = {
     deployment: DeploymentMode
     customerType: CustomerType
     workflowExecutions: number
+    aiTokens: number
 }
 
 export interface SubscriptionIcons {
@@ -99,6 +100,17 @@ const defaultContent: Omit<SubscriptionConfigData, "id" | "title"> = {
         centerSuffix: "exec",
     },
     workflowExecutionPriceFactor: 0.001,
+    aiTokens: {
+        title: "AI Tokens",
+        description: "How many AI tokens do you expect to consume per month?",
+        min: 100000,
+        max: 10000000,
+        step: 100000,
+        minLabel: "100K tokens",
+        maxLabel: "10M tokens",
+        centerSuffix: "tokens",
+    },
+    aiTokenPriceFactor: 0.000001,
     contactSales: {
         prompt: "Need more?",
         label: "Contact sales",
@@ -335,6 +347,17 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
             centerSuffix: content?.workflowExecutions?.centerSuffix?.trim() || defaultContent.workflowExecutions.centerSuffix,
         },
         workflowExecutionPriceFactor: content?.workflowExecutionPriceFactor ?? defaultContent.workflowExecutionPriceFactor,
+        aiTokens: {
+            title: content?.aiTokens?.title?.trim() || defaultContent.aiTokens.title,
+            description: content?.aiTokens?.description?.trim() || defaultContent.aiTokens.description,
+            min: content?.aiTokens?.min ?? defaultContent.aiTokens.min,
+            max: content?.aiTokens?.max ?? defaultContent.aiTokens.max,
+            step: content?.aiTokens?.step ?? defaultContent.aiTokens.step,
+            minLabel: content?.aiTokens?.minLabel?.trim() || defaultContent.aiTokens.minLabel,
+            maxLabel: content?.aiTokens?.maxLabel?.trim() || defaultContent.aiTokens.maxLabel,
+            centerSuffix: content?.aiTokens?.centerSuffix?.trim() || defaultContent.aiTokens.centerSuffix,
+        },
+        aiTokenPriceFactor: content?.aiTokenPriceFactor ?? defaultContent.aiTokenPriceFactor,
         contactSales: {
             prompt: content?.contactSales?.prompt?.trim() || defaultContent.contactSales.prompt,
             label: content?.contactSales?.label?.trim() || defaultContent.contactSales.label,
@@ -352,24 +375,28 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
         additionalFeatures: content?.additionalFeatures ?? null,
     }
     const workflowExecutions = resolved.workflowExecutions
+    const aiTokens = resolved.aiTokens
     const [selection, setSelection] = useState<SubscriptionSelection>({
         deployment: "self-hosted",
         customerType: "b2b",
         workflowExecutions: 1000,
+        aiTokens: 1000000,
     })
     const [selectedFeatures, setSelectedFeatures] = useState<Set<number>>(new Set())
     const desktopTopOffset = 96
     const { wrapperRef: desktopWrapperRef, containerRef: desktopContainerRef } = useDesktopPinnedPosition<HTMLDivElement, HTMLDivElement>(desktopTopOffset)
 
     const workflowExecutionPrice = resolved.workflowExecutionPriceFactor * selection.workflowExecutions
+    const aiTokenPrice = resolved.aiTokenPriceFactor * selection.aiTokens
     const additionalFeaturesPrice = Array.from(selectedFeatures).reduce((acc, idx) => acc + (resolved.additionalFeatures?.[idx]?.price ?? 0), 0)
-    const totalPrice = formatEuroCurrency(workflowExecutionPrice + additionalFeaturesPrice, locale)
+    const totalPrice = formatEuroCurrency(workflowExecutionPrice + aiTokenPrice + additionalFeaturesPrice, locale)
 
     const subscribeHref = (() => {
         const searchParams = new URLSearchParams({
             deployment: selection.deployment,
             customerType: selection.customerType,
             workflowExecutions: String(selection.workflowExecutions),
+            aiTokens: String(selection.aiTokens),
         })
 
         if (selectedFeatures.size > 0 && resolved.additionalFeatures) {
@@ -473,6 +500,27 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
                                     {resolved.contactSales.label}
                                 </LinkButton>
                             </div>
+                        </div>
+
+                        <div className="rounded-2xl border border-white/10 p-5">
+                            <div className="flex items-center justify-between gap-4">
+                                <div>
+                                    <p className="text-lg font-semibold tracking-wider text-white">{aiTokens.title}</p>
+                                    <p className="text-sm text-secondary">{aiTokens.description}</p>
+                                </div>
+                            </div>
+                            <Slider
+                                min={aiTokens.min}
+                                max={aiTokens.max}
+                                step={aiTokens.step}
+                                value={selection.aiTokens}
+                                onChange={(aiTokensValue) => setSelection((current) => ({ ...current, aiTokens: aiTokensValue }))}
+                                ariaLabel={aiTokens.title}
+                                className="mt-4"
+                                minLabel={aiTokens.minLabel}
+                                centerLabel={`${selection.aiTokens.toLocaleString(locale)} ${aiTokens.centerSuffix}`}
+                                maxLabel={aiTokens.maxLabel}
+                            />
                         </div>
 
                         {resolved.additionalFeatures && resolved.additionalFeatures.length > 0 && (

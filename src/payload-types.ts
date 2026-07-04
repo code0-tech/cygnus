@@ -2174,6 +2174,17 @@ export interface SubscriptionConfig {
     centerSuffix: string;
   };
   workflowExecutionPriceFactor: number;
+  aiTokens: {
+    title: string;
+    description: string;
+    min: number;
+    max: number;
+    step: number;
+    minLabel: string;
+    maxLabel: string;
+    centerSuffix: string;
+  };
+  aiTokenPriceFactor: number;
   contactSales: {
     prompt: string;
     label: string;
@@ -2471,6 +2482,19 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
         centerSuffix?: T;
       };
   workflowExecutionPriceFactor?: T;
+  aiTokens?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        min?: T;
+        max?: T;
+        step?: T;
+        minLabel?: T;
+        maxLabel?: T;
+        centerSuffix?: T;
+      };
+  aiTokenPriceFactor?: T;
   contactSales?:
     | T
     | {

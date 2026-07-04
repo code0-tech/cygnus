@@ -20,7 +20,7 @@ type SliderProps = {
     ariaLabel?: string
 }
 
-export function Slider({ min, max, step = 1, value, onChange, accent = "aqua", className, lines = 48, minLabel, maxLabel, centerLabel, ariaLabel }: SliderProps) {
+export function Slider({ min, max, step = 1, value, onChange, accent = "aqua", className, lines = 72, minLabel, maxLabel, centerLabel, ariaLabel }: SliderProps) {
     const trackRef = useRef<HTMLDivElement>(null)
     const clampedValue = Math.min(max, Math.max(min, value))
     const progress = ((clampedValue - min) / (max - min)) * 100
@@ -98,7 +98,7 @@ export function Slider({ min, max, step = 1, value, onChange, accent = "aqua", c
                             const isMajor = majorTickIndexes.has(tick)
                             const heightRatio = lines <= 1 ? 1 : tick / (lines - 1)
                             const baseHeight = 8 + heightRatio * 28
-                            const tickHeight = isMajor ? Math.min(baseHeight + 8, 40) : baseHeight
+                            const tickHeight = isMajor ? Math.min(baseHeight + 4, 40) : baseHeight
                             const gradientSpan = `${Math.max(lines, 1) * 100}% 100%`
                             const gradientOffset = `${(tick / Math.max(lines - 1, 1)) * 100}% 50%`
 

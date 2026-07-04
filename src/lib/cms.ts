@@ -137,6 +137,17 @@ export interface SubscriptionConfigData {
         centerSuffix: string
     }
     workflowExecutionPriceFactor: number
+    aiTokens: {
+        title: string
+        description: string
+        min: number
+        max: number
+        step: number
+        minLabel: string
+        maxLabel: string
+        centerSuffix: string
+    }
+    aiTokenPriceFactor: number
     contactSales: {
         prompt: string
         label: string
