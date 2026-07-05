@@ -142,16 +142,19 @@ export interface SubscriptionConfigData {
         description: string
         closeLabel: string
         businessTypeLabel: string
+        businessTypeSearchPlaceholder: string
+        noBusinessTypesFoundLabel: string
         activeWorkflowsLabel: string
         runsPerDayLabel: string
         daysPerMonthLabel: string
         estimateLabel: string
-        rangeNote: string
         cancelLabel: string
         applyLabel: string
         businessTypes: {
             name: string
             conversion_rate: number
+            conversion_unit: string
+            icon: string
             id?: string | null
         }[]
     }

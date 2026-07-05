@@ -211,20 +211,12 @@ export const SubscriptionCollection: GlobalConfig = {
                 },
                 { name: "closeLabel", type: "text", required: false, localized: true, defaultValue: "Close dialog" },
                 { name: "businessTypeLabel", type: "text", required: false, localized: true, defaultValue: "Business type" },
+                { name: "businessTypeSearchPlaceholder", type: "text", required: false, localized: true, defaultValue: "Search business types" },
+                { name: "noBusinessTypesFoundLabel", type: "text", required: false, localized: true, defaultValue: "No business types found." },
                 { name: "activeWorkflowsLabel", type: "text", required: false, localized: true, defaultValue: "Active workflows" },
-                { name: "runsPerDayLabel", type: "text", required: false, localized: true, defaultValue: "Runs per day" },
+                { name: "runsPerDayLabel", type: "text", required: false, localized: true, defaultValue: "Runs per month" },
                 { name: "daysPerMonthLabel", type: "text", required: false, localized: true, defaultValue: "Days per month" },
                 { name: "estimateLabel", type: "text", required: false, localized: true, defaultValue: "Estimated monthly volume" },
-                {
-                    name: "rangeNote",
-                    type: "text",
-                    required: false,
-                    localized: true,
-                    defaultValue: "Rounded to the configurable range from {min} to {max}.",
-                    admin: {
-                        description: "Available placeholders: {min}, {max}.",
-                    },
-                },
                 { name: "cancelLabel", type: "text", required: false, localized: true, defaultValue: "Cancel" },
                 { name: "applyLabel", type: "text", required: false, localized: true, defaultValue: "Apply value" },
                 {
@@ -237,10 +229,14 @@ export const SubscriptionCollection: GlobalConfig = {
                         {
                             name: "General",
                             conversion_rate: 1,
+                            conversion_unit: "executions",
+                            icon: "building",
                         },
                     ],
                     fields: [
                         { name: "name", type: "text", required: false, localized: true },
+                        { name: "conversion_unit", label: "Conversion Unit", type: "text", required: true, localized: true, defaultValue: "executions" },
+                        { ...iconField, defaultValue: "building" },
                         {
                             name: "conversion_rate",
                             label: "Conversion Rate",

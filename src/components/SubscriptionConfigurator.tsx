@@ -34,6 +34,7 @@ export interface SubscriptionIcons {
         b2b: ReactNode
         b2c: ReactNode
     }
+    workflowBusinessTypes: ReactNode[]
     additionalFeatures: ReactNode[]
 }
 
@@ -106,14 +107,15 @@ const defaultContent: Omit<SubscriptionConfigData, "id" | "title"> = {
         description: "Estimate monthly volume from your active workflows and their average execution frequency.",
         closeLabel: "Close dialog",
         businessTypeLabel: "Business type",
+        businessTypeSearchPlaceholder: "Search business types",
+        noBusinessTypesFoundLabel: "No business types found.",
         activeWorkflowsLabel: "Active workflows",
-        runsPerDayLabel: "Runs per day",
+        runsPerDayLabel: "Runs per month",
         daysPerMonthLabel: "Days per month",
         estimateLabel: "Estimated monthly volume",
-        rangeNote: "Rounded to the configurable range from {min} to {max}.",
         cancelLabel: "Cancel",
         applyLabel: "Apply value",
-        businessTypes: [{ name: "General", conversion_rate: 1 }],
+        businessTypes: [{ name: "General", conversion_rate: 1, conversion_unit: "executions", icon: "building" }],
     },
     workflowExecutionPriceFactor: 0.001,
     aiTokens: {
@@ -363,17 +365,20 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
             description: content?.workflowCalculator?.description?.trim() || defaultContent.workflowCalculator.description,
             closeLabel: content?.workflowCalculator?.closeLabel?.trim() || defaultContent.workflowCalculator.closeLabel,
             businessTypeLabel: content?.workflowCalculator?.businessTypeLabel?.trim() || defaultContent.workflowCalculator.businessTypeLabel,
+            businessTypeSearchPlaceholder: content?.workflowCalculator?.businessTypeSearchPlaceholder?.trim() || defaultContent.workflowCalculator.businessTypeSearchPlaceholder,
+            noBusinessTypesFoundLabel: content?.workflowCalculator?.noBusinessTypesFoundLabel?.trim() || defaultContent.workflowCalculator.noBusinessTypesFoundLabel,
             activeWorkflowsLabel: content?.workflowCalculator?.activeWorkflowsLabel?.trim() || defaultContent.workflowCalculator.activeWorkflowsLabel,
             runsPerDayLabel: content?.workflowCalculator?.runsPerDayLabel?.trim() || defaultContent.workflowCalculator.runsPerDayLabel,
             daysPerMonthLabel: content?.workflowCalculator?.daysPerMonthLabel?.trim() || defaultContent.workflowCalculator.daysPerMonthLabel,
             estimateLabel: content?.workflowCalculator?.estimateLabel?.trim() || defaultContent.workflowCalculator.estimateLabel,
-            rangeNote: content?.workflowCalculator?.rangeNote?.trim() || defaultContent.workflowCalculator.rangeNote,
             cancelLabel: content?.workflowCalculator?.cancelLabel?.trim() || defaultContent.workflowCalculator.cancelLabel,
             applyLabel: content?.workflowCalculator?.applyLabel?.trim() || defaultContent.workflowCalculator.applyLabel,
             businessTypes: content?.workflowCalculator?.businessTypes?.length
                 ? content.workflowCalculator.businessTypes.map((businessType) => ({
                       name: businessType.name?.trim() || defaultContent.workflowCalculator.businessTypes[0].name,
                       conversion_rate: businessType.conversion_rate ?? 1,
+                      conversion_unit: businessType.conversion_unit?.trim() || defaultContent.workflowCalculator.businessTypes[0].conversion_unit,
+                      icon: businessType.icon?.trim() || defaultContent.workflowCalculator.businessTypes[0].icon,
                       id: businessType.id,
                   }))
                 : defaultContent.workflowCalculator.businessTypes,
@@ -516,6 +521,8 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
                                 <WorkflowCalculatorDialog
                                     locale={locale}
                                     content={resolved.workflowCalculator}
+                                    businessTypeIcons={icons.workflowBusinessTypes}
+                                    value={selection.workflowExecutions}
                                     min={workflowExecutions.min}
                                     max={workflowExecutions.max}
                                     step={workflowExecutions.step}

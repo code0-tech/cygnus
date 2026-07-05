@@ -2179,18 +2179,21 @@ export interface SubscriptionConfig {
     description?: string | null;
     closeLabel?: string | null;
     businessTypeLabel?: string | null;
+    businessTypeSearchPlaceholder?: string | null;
+    noBusinessTypesFoundLabel?: string | null;
     activeWorkflowsLabel?: string | null;
     runsPerDayLabel?: string | null;
     daysPerMonthLabel?: string | null;
     estimateLabel?: string | null;
-    /**
-     * Available placeholders: {min}, {max}.
-     */
-    rangeNote?: string | null;
     cancelLabel?: string | null;
     applyLabel?: string | null;
     businessTypes: {
       name?: string | null;
+      conversion_unit: string;
+      /**
+       * Tabler Icon Name ohne "Icon"-Praefix, z. B. "server", "cloud" oder "users-group". Unbekannte Werte fallen auf "cube" zurueck.
+       */
+      icon: string;
       conversion_rate: number;
       id?: string | null;
     }[];
@@ -2511,17 +2514,20 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
         description?: T;
         closeLabel?: T;
         businessTypeLabel?: T;
+        businessTypeSearchPlaceholder?: T;
+        noBusinessTypesFoundLabel?: T;
         activeWorkflowsLabel?: T;
         runsPerDayLabel?: T;
         daysPerMonthLabel?: T;
         estimateLabel?: T;
-        rangeNote?: T;
         cancelLabel?: T;
         applyLabel?: T;
         businessTypes?:
           | T
           | {
               name?: T;
+              conversion_unit?: T;
+              icon?: T;
               conversion_rate?: T;
               id?: T;
             };

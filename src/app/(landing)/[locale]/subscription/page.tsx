@@ -24,6 +24,11 @@ export default async function SubscriptionPage({ params }: { params: LocalePageP
             b2b: getTablerIcon(subscriptionConfig?.customerType?.b2b?.icon?.trim() || "briefcase-2", 20),
             b2c: getTablerIcon(subscriptionConfig?.customerType?.b2c?.icon?.trim() || "building-store", 20),
         },
+        workflowBusinessTypes: (
+            subscriptionConfig?.workflowCalculator?.businessTypes?.length
+                ? subscriptionConfig.workflowCalculator.businessTypes.map((businessType) => businessType.icon?.trim() || "building")
+                : ["building"]
+        ).map((icon, index) => getTablerIcon(icon, 18, `workflow-business-type-${index}-${icon}`)),
         additionalFeatures: (subscriptionConfig?.additionalFeatures ?? []).map((feature, index) =>
             getTablerIcon(feature.icon?.trim() || "cube", 20, feature.id ?? `additional-feature-${index}`)
         ),

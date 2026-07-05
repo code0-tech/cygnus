@@ -23,6 +23,8 @@ import * as migration_20260703_112923_video_block from './20260703_112923_video_
 import * as migration_20260704_045353_workflow_execution_price_factor from './20260704_045353_workflow_execution_price_factor';
 import * as migration_20260704_050046_ai_tokens from './20260704_050046_ai_tokens';
 import * as migration_20260705_054134_20260705_workflow_calculator from './20260705_054134_20260705_workflow_calculator';
+import * as migration_20260705_180056_workflow_business_type_metadata from './20260705_180056_workflow_business_type_metadata';
+import * as migration_20260705_180710_remove_workflow_calculator_range_note from './20260705_180710_remove_workflow_calculator_range_note';
 
 export const migrations = [
   {
@@ -148,6 +150,16 @@ export const migrations = [
   {
     up: migration_20260705_054134_20260705_workflow_calculator.up,
     down: migration_20260705_054134_20260705_workflow_calculator.down,
-    name: '20260705_054134_20260705_workflow_calculator'
+    name: '20260705_054134_20260705_workflow_calculator',
+  },
+  {
+    up: migration_20260705_180056_workflow_business_type_metadata.up,
+    down: migration_20260705_180056_workflow_business_type_metadata.down,
+    name: '20260705_180056_workflow_business_type_metadata',
+  },
+  {
+    up: migration_20260705_180710_remove_workflow_calculator_range_note.up,
+    down: migration_20260705_180710_remove_workflow_calculator_range_note.down,
+    name: '20260705_180710_remove_workflow_calculator_range_note'
   },
 ];
