@@ -1,8 +1,25 @@
 "use client"
 
-import { Button, Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogOverlay, DialogPortal, DialogTitle, DialogTrigger } from "@code0-tech/pictor"
-import { IconCalculator, IconCheck, IconX } from "@tabler/icons-react"
-import { useState } from "react"
+import {
+    Button,
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogOverlay,
+    DialogPortal,
+    DialogTitle,
+    DialogTrigger,
+    Menu,
+    MenuContent,
+    MenuItem,
+    MenuTrigger,
+    NumberInput,
+} from "@code0-tech/pictor"
+import { IconCalculator, IconCheck, IconChevronDown, IconX } from "@tabler/icons-react"
+import { type MouseEvent, useId, useState } from "react"
 
 interface WorkflowCalculatorContent {
     triggerLabel: string
@@ -42,14 +59,12 @@ function clampToStep(value: number, min: number, max: number, step: number) {
 
 export function WorkflowCalculatorDialog({ locale, content, min, max, step, suffix, onApply }: WorkflowCalculatorDialogProps) {
     const [selectedBusinessTypeIndex, setSelectedBusinessTypeIndex] = useState(0)
-    const [activeWorkflows, setActiveWorkflows] = useState(1)
     const [runsPerDay, setRunsPerDay] = useState(10)
-    const [daysPerMonth, setDaysPerMonth] = useState(30)
     const selectedBusinessType = content.businessTypes[selectedBusinessTypeIndex] ?? content.businessTypes[0]
-    const rawEstimate = activeWorkflows * runsPerDay * daysPerMonth * (selectedBusinessType?.conversion_rate ?? 1)
-    const estimatedExecutions = clampToStep(rawEstimate, min, max, step)
+    const rawEstimate = runsPerDay * (selectedBusinessType?.conversion_rate ?? 1)
+    const estimatedExecutions = Math.max(0, Math.round(rawEstimate))
+    const applicableExecutions = clampToStep(estimatedExecutions, min, max, step)
     const formatterLocale = locale === "de" ? "de-DE" : "en-US"
-    const rangeNote = content.rangeNote.replace("{min}", min.toLocaleString(formatterLocale)).replace("{max}", max.toLocaleString(formatterLocale))
 
     return (
         <Dialog>
@@ -62,57 +77,59 @@ export function WorkflowCalculatorDialog({ locale, content, min, max, step, suff
 
             <DialogPortal>
                 <DialogOverlay className="bg-primary/70 backdrop-blur-sm" />
-                <DialogContent className="border border-white/10 bg-primary! p-5! sm:p-6!">
+                <DialogContent className="border border-white/5 bg-primary! p-4! sm:p-6!">
                     <DialogHeader className="pr-10 text-left!">
-                        <DialogTitle>{content.title}</DialogTitle>
-                        <DialogDescription>{content.description}</DialogDescription>
+                        <DialogTitle className="text-white!">{content.title}</DialogTitle>
+                        <DialogDescription className="text-secondary!">{content.description}</DialogDescription>
                     </DialogHeader>
 
-                    <DialogClose asChild>
-                        <Button type="button" variant="none" className="absolute right-4 top-4 size-9! p-0! text-secondary hover:text-white" aria-label={content.closeLabel}>
-                            <IconX size={18} />
-                        </Button>
-                    </DialogClose>
-
-                    <div className="mt-6 grid gap-4">
-                        <label className="flex flex-col gap-2 text-xs font-medium text-secondary">
-                            <span>{content.businessTypeLabel}</span>
-                            <select
-                                value={selectedBusinessTypeIndex}
-                                onChange={(event) => setSelectedBusinessTypeIndex(Number(event.currentTarget.value))}
-                                className="h-11 rounded-lg border border-white/10 bg-white/5 px-3 text-base text-white outline-none focus:border-white/30"
-                            >
-                                {content.businessTypes.map((businessType, index) => (
-                                    <option key={businessType.id ?? `${businessType.name}-${index}`} value={index} className="bg-primary">
-                                        {businessType.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </label>
-
-                        <div className="grid gap-4 sm:grid-cols-3">
-                            <CalculatorInput label={content.activeWorkflowsLabel} value={activeWorkflows} onChange={setActiveWorkflows} />
-                            <CalculatorInput label={content.runsPerDayLabel} value={runsPerDay} onChange={setRunsPerDay} />
-                            <CalculatorInput label={content.daysPerMonthLabel} value={daysPerMonth} onChange={setDaysPerMonth} max={31} />
-                        </div>
+                    <div className="absolute right-4 top-4 z-10">
+                        <DialogClose asChild>
+                            <Button type="button" variant="none" className="size-9! p-0! text-secondary hover:text-white" aria-label={content.closeLabel}>
+                                <IconX size={18} />
+                            </Button>
+                        </DialogClose>
                     </div>
 
-                    <div className="mt-6 border-y border-white/10 py-4">
+                    <div className="py-4 grid gap-4">
+                        <div className="flex flex-col gap-2 text-xs font-medium text-secondary">
+                            <span>{content.businessTypeLabel}</span>
+                            <Menu modal={false}>
+                                <MenuTrigger asChild>
+                                    <Button className="w-full! justify-between">
+                                        {selectedBusinessType?.name}
+                                        <IconChevronDown size={16} />
+                                    </Button>
+                                </MenuTrigger>
+                                <MenuContent className="w-(--radix-dropdown-menu-trigger-width)">
+                                    {content.businessTypes.map((businessType, index) => (
+                                        <MenuItem key={businessType.id ?? `${businessType.name}-${index}`} onClick={() => setSelectedBusinessTypeIndex(index)}>
+                                            {businessType.name}
+                                        </MenuItem>
+                                    ))}
+                                </MenuContent>
+                            </Menu>
+                        </div>
+
+                        <CalculatorInput label={content.runsPerDayLabel} value={runsPerDay} onChange={setRunsPerDay} />
+                    </div>
+
+                    <div className="py-4">
                         <p className="text-xs font-medium uppercase text-tertiary">{content.estimateLabel}</p>
                         <p className="mt-1 text-2xl font-semibold tabular-nums text-white">
                             {estimatedExecutions.toLocaleString(formatterLocale)} {suffix}
                         </p>
-                        {rawEstimate !== estimatedExecutions && <p className="mt-1 text-xs text-tertiary">{rangeNote}</p>}
+                        <p className="mt-1 text-xs text-tertiary">{content.rangeNote.replace("{min}", min.toLocaleString(formatterLocale)).replace("{max}", max.toLocaleString(formatterLocale))}</p>
                     </div>
 
-                    <DialogFooter className="mt-5">
+                    <DialogFooter className="">
                         <DialogClose asChild>
                             <Button type="button" variant="normal">
                                 {content.cancelLabel}
                             </Button>
                         </DialogClose>
                         <DialogClose asChild>
-                            <Button type="button" variant="filled" onClick={() => onApply(estimatedExecutions)} className="gap-2">
+                            <Button type="button" variant="filled" onClick={() => onApply(applicableExecutions)} className="gap-2 bg-white/80! text-primary! hover:bg-white! transition-colors">
                                 <IconCheck size={17} />
                                 {content.applyLabel}
                             </Button>
@@ -132,21 +149,41 @@ interface CalculatorInputProps {
 }
 
 function CalculatorInput({ label, value, onChange, max }: CalculatorInputProps) {
+    const inputId = useId()
+    const clampValue = (nextValue: number) => Math.min(max ?? Number.MAX_SAFE_INTEGER, Math.max(1, Number.isFinite(nextValue) ? nextValue : 1))
+    const updateValue = (rawValue: string) => onChange(clampValue(Number(rawValue)))
+
+    const handleStepperClick = (event: MouseEvent<HTMLDivElement>) => {
+        if (!(event.target instanceof Element)) return
+
+        const button = event.target.closest("button")
+        if (!button) return
+
+        const direction = button.closest(".input__left") ? -1 : button.closest(".input__right") ? 1 : 0
+        if (!direction) return
+
+        event.preventDefault()
+        event.stopPropagation()
+        onChange(clampValue(value + direction))
+    }
+
     return (
-        <label className="flex min-w-0 flex-col gap-2 text-xs font-medium text-secondary">
-            <span>{label}</span>
-            <input
-                type="number"
-                min={1}
-                max={max}
-                step={1}
-                value={value}
-                onChange={(event) => {
-                    const nextValue = Number(event.currentTarget.value)
-                    onChange(Math.min(max ?? Number.MAX_SAFE_INTEGER, Math.max(1, Number.isFinite(nextValue) ? nextValue : 1)))
-                }}
-                className="h-11 min-w-0 rounded-lg border border-white/10 bg-white/5 px-3 text-base tabular-nums text-white outline-none transition-colors focus:border-white/30"
-            />
-        </label>
+        <div className="flex min-w-0 flex-col gap-2">
+            <label htmlFor={inputId} className="text-xs font-medium text-secondary">
+                {label}
+            </label>
+            <div onClickCapture={handleStepperClick}>
+                <NumberInput
+                    id={inputId}
+                    min={1}
+                    max={max}
+                    step={1}
+                    value={String(value)}
+                    onChange={(event) => updateValue(event.currentTarget.value)}
+                    onInput={(event) => updateValue(event.currentTarget.value)}
+                    className="w-full"
+                />
+            </div>
+        </div>
     )
 }

@@ -508,7 +508,7 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
                         </div>
 
                         <div className="rounded-2xl border border-white/10 p-5">
-                            <div className="flex items-center justify-between gap-4">
+                            <div className="flex items-start justify-between gap-4">
                                 <div>
                                     <p className="text-lg font-semibold tracking-wider text-white">{workflowExecutions.title}</p>
                                     <p className="text-sm text-secondary">{workflowExecutions.description}</p>
