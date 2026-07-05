@@ -2173,6 +2173,28 @@ export interface SubscriptionConfig {
     maxLabel: string;
     centerSuffix: string;
   };
+  workflowCalculator: {
+    triggerLabel?: string | null;
+    title?: string | null;
+    description?: string | null;
+    closeLabel?: string | null;
+    businessTypeLabel?: string | null;
+    activeWorkflowsLabel?: string | null;
+    runsPerDayLabel?: string | null;
+    daysPerMonthLabel?: string | null;
+    estimateLabel?: string | null;
+    /**
+     * Available placeholders: {min}, {max}.
+     */
+    rangeNote?: string | null;
+    cancelLabel?: string | null;
+    applyLabel?: string | null;
+    businessTypes: {
+      name?: string | null;
+      conversion_rate: number;
+      id?: string | null;
+    }[];
+  };
   workflowExecutionPriceFactor: number;
   aiTokens: {
     title: string;
@@ -2480,6 +2502,29 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
         minLabel?: T;
         maxLabel?: T;
         centerSuffix?: T;
+      };
+  workflowCalculator?:
+    | T
+    | {
+        triggerLabel?: T;
+        title?: T;
+        description?: T;
+        closeLabel?: T;
+        businessTypeLabel?: T;
+        activeWorkflowsLabel?: T;
+        runsPerDayLabel?: T;
+        daysPerMonthLabel?: T;
+        estimateLabel?: T;
+        rangeNote?: T;
+        cancelLabel?: T;
+        applyLabel?: T;
+        businessTypes?:
+          | T
+          | {
+              name?: T;
+              conversion_rate?: T;
+              id?: T;
+            };
       };
   workflowExecutionPriceFactor?: T;
   aiTokens?:

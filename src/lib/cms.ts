@@ -136,6 +136,25 @@ export interface SubscriptionConfigData {
         maxLabel: string
         centerSuffix: string
     }
+    workflowCalculator: {
+        triggerLabel: string
+        title: string
+        description: string
+        closeLabel: string
+        businessTypeLabel: string
+        activeWorkflowsLabel: string
+        runsPerDayLabel: string
+        daysPerMonthLabel: string
+        estimateLabel: string
+        rangeNote: string
+        cancelLabel: string
+        applyLabel: string
+        businessTypes: {
+            name: string
+            conversion_rate: number
+            id?: string | null
+        }[]
+    }
     workflowExecutionPriceFactor: number
     aiTokens: {
         title: string

@@ -6,6 +6,7 @@ import type { AppLocale } from "@/lib/i18n"
 import { useDesktopPinnedPosition } from "@/hooks/useDesktopPinnedPosition"
 import { cn } from "@/lib/utils"
 import { BuyMenu } from "@/components/BuyMenu"
+import { WorkflowCalculatorDialog } from "@/components/dialogs/WorkflowCalculatorDialog"
 import { Slider } from "@/components/ui/Slider"
 import { IconCheck } from "@tabler/icons-react"
 import type { ReactNode } from "react"
@@ -99,6 +100,21 @@ const defaultContent: Omit<SubscriptionConfigData, "id" | "title"> = {
         maxLabel: "10,000 exec",
         centerSuffix: "exec",
     },
+    workflowCalculator: {
+        triggerLabel: "Calculate",
+        title: "Calculate workflow executions",
+        description: "Estimate monthly volume from your active workflows and their average execution frequency.",
+        closeLabel: "Close dialog",
+        businessTypeLabel: "Business type",
+        activeWorkflowsLabel: "Active workflows",
+        runsPerDayLabel: "Runs per day",
+        daysPerMonthLabel: "Days per month",
+        estimateLabel: "Estimated monthly volume",
+        rangeNote: "Rounded to the configurable range from {min} to {max}.",
+        cancelLabel: "Cancel",
+        applyLabel: "Apply value",
+        businessTypes: [{ name: "General", conversion_rate: 1 }],
+    },
     workflowExecutionPriceFactor: 0.001,
     aiTokens: {
         title: "AI Tokens",
@@ -173,15 +189,7 @@ const optionAccentStyles: Record<
     },
 }
 
-function OptionCard({
-    title,
-    description,
-    active,
-    onClick,
-    icon,
-    disabled = false,
-    accent = "aqua",
-}: {
+interface OptionCardProps {
     title: string
     description: string
     active: boolean
@@ -189,7 +197,24 @@ function OptionCard({
     icon: ReactNode
     disabled?: boolean
     accent?: OptionAccent
-}) {
+}
+
+interface FeatureRowProps {
+    icon: ReactNode
+    title: string
+    description: string
+}
+
+interface AdditionalFeatureCardProps {
+    title: string
+    description: string
+    active: boolean
+    onClick?: () => void
+    icon: ReactNode
+    formattedPrice: string
+}
+
+function OptionCard({ title, description, active, onClick, icon, disabled = false, accent = "aqua" }: OptionCardProps) {
     const accentStyles = optionAccentStyles[accent]
 
     return (
@@ -222,7 +247,7 @@ function OptionCard({
     )
 }
 
-function FeatureRow({ icon, title, description }: { icon: ReactNode; title: string; description: string }) {
+function FeatureRow({ icon, title, description }: FeatureRowProps) {
     return (
         <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
@@ -234,21 +259,7 @@ function FeatureRow({ icon, title, description }: { icon: ReactNode; title: stri
     )
 }
 
-function AdditionalFeatureCard({
-    title,
-    description,
-    active,
-    onClick,
-    icon,
-    formattedPrice,
-}: {
-    title: string
-    description: string
-    active: boolean
-    onClick?: () => void
-    icon: ReactNode
-    formattedPrice: string
-}) {
+function AdditionalFeatureCard({ title, description, active, onClick, icon, formattedPrice }: AdditionalFeatureCardProps) {
     const accentStyles = optionAccentStyles["brand"]
 
     return (
@@ -346,6 +357,27 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
             maxLabel: content?.workflowExecutions?.maxLabel?.trim() || defaultContent.workflowExecutions.maxLabel,
             centerSuffix: content?.workflowExecutions?.centerSuffix?.trim() || defaultContent.workflowExecutions.centerSuffix,
         },
+        workflowCalculator: {
+            triggerLabel: content?.workflowCalculator?.triggerLabel?.trim() || defaultContent.workflowCalculator.triggerLabel,
+            title: content?.workflowCalculator?.title?.trim() || defaultContent.workflowCalculator.title,
+            description: content?.workflowCalculator?.description?.trim() || defaultContent.workflowCalculator.description,
+            closeLabel: content?.workflowCalculator?.closeLabel?.trim() || defaultContent.workflowCalculator.closeLabel,
+            businessTypeLabel: content?.workflowCalculator?.businessTypeLabel?.trim() || defaultContent.workflowCalculator.businessTypeLabel,
+            activeWorkflowsLabel: content?.workflowCalculator?.activeWorkflowsLabel?.trim() || defaultContent.workflowCalculator.activeWorkflowsLabel,
+            runsPerDayLabel: content?.workflowCalculator?.runsPerDayLabel?.trim() || defaultContent.workflowCalculator.runsPerDayLabel,
+            daysPerMonthLabel: content?.workflowCalculator?.daysPerMonthLabel?.trim() || defaultContent.workflowCalculator.daysPerMonthLabel,
+            estimateLabel: content?.workflowCalculator?.estimateLabel?.trim() || defaultContent.workflowCalculator.estimateLabel,
+            rangeNote: content?.workflowCalculator?.rangeNote?.trim() || defaultContent.workflowCalculator.rangeNote,
+            cancelLabel: content?.workflowCalculator?.cancelLabel?.trim() || defaultContent.workflowCalculator.cancelLabel,
+            applyLabel: content?.workflowCalculator?.applyLabel?.trim() || defaultContent.workflowCalculator.applyLabel,
+            businessTypes: content?.workflowCalculator?.businessTypes?.length
+                ? content.workflowCalculator.businessTypes.map((businessType) => ({
+                      name: businessType.name?.trim() || defaultContent.workflowCalculator.businessTypes[0].name,
+                      conversion_rate: businessType.conversion_rate ?? 1,
+                      id: businessType.id,
+                  }))
+                : defaultContent.workflowCalculator.businessTypes,
+        },
         workflowExecutionPriceFactor: content?.workflowExecutionPriceFactor ?? defaultContent.workflowExecutionPriceFactor,
         aiTokens: {
             title: content?.aiTokens?.title?.trim() || defaultContent.aiTokens.title,
@@ -376,6 +408,7 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
     }
     const workflowExecutions = resolved.workflowExecutions
     const aiTokens = resolved.aiTokens
+
     const [selection, setSelection] = useState<SubscriptionSelection>({
         deployment: "self-hosted",
         customerType: "b2b",
@@ -383,8 +416,7 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
         aiTokens: 1000000,
     })
     const [selectedFeatures, setSelectedFeatures] = useState<Set<number>>(new Set())
-    const desktopTopOffset = 96
-    const { wrapperRef: desktopWrapperRef, containerRef: desktopContainerRef } = useDesktopPinnedPosition<HTMLDivElement, HTMLDivElement>(desktopTopOffset)
+    const { wrapperRef: desktopWrapperRef, containerRef: desktopContainerRef } = useDesktopPinnedPosition<HTMLDivElement, HTMLDivElement>(96)
 
     const workflowExecutionPrice = resolved.workflowExecutionPriceFactor * selection.workflowExecutions
     const aiTokenPrice = resolved.aiTokenPriceFactor * selection.aiTokens
@@ -481,6 +513,15 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
                                     <p className="text-lg font-semibold tracking-wider text-white">{workflowExecutions.title}</p>
                                     <p className="text-sm text-secondary">{workflowExecutions.description}</p>
                                 </div>
+                                <WorkflowCalculatorDialog
+                                    locale={locale}
+                                    content={resolved.workflowCalculator}
+                                    min={workflowExecutions.min}
+                                    max={workflowExecutions.max}
+                                    step={workflowExecutions.step}
+                                    suffix={workflowExecutions.centerSuffix}
+                                    onApply={(workflowExecutionsValue) => setSelection((current) => ({ ...current, workflowExecutions: workflowExecutionsValue }))}
+                                />
                             </div>
                             <Slider
                                 min={workflowExecutions.min}

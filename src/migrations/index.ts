@@ -22,6 +22,7 @@ import * as migration_20260703_105958_blog_preview from './20260703_105958_blog_
 import * as migration_20260703_112923_video_block from './20260703_112923_video_block';
 import * as migration_20260704_045353_workflow_execution_price_factor from './20260704_045353_workflow_execution_price_factor';
 import * as migration_20260704_050046_ai_tokens from './20260704_050046_ai_tokens';
+import * as migration_20260705_054134_20260705_workflow_calculator from './20260705_054134_20260705_workflow_calculator';
 
 export const migrations = [
   {
@@ -142,6 +143,11 @@ export const migrations = [
   {
     up: migration_20260704_050046_ai_tokens.up,
     down: migration_20260704_050046_ai_tokens.down,
-    name: '20260704_050046_ai_tokens'
+    name: '20260704_050046_ai_tokens',
+  },
+  {
+    up: migration_20260705_054134_20260705_workflow_calculator.up,
+    down: migration_20260705_054134_20260705_workflow_calculator.down,
+    name: '20260705_054134_20260705_workflow_calculator'
   },
 ];
