@@ -2085,95 +2085,97 @@ export interface CookieBanner {
  */
 export interface SubscriptionConfig {
   id: number;
-  title: string;
-  pageIntro: {
-    heading: string;
-    description: string;
+  title?: string | null;
+  pageIntro?: {
+    heading?: string | null;
+    description?: string | null;
   };
-  featureOverview: {
-    title: string;
-    description: string;
-    /**
-     * Tabler Icon Name ohne "Icon"-Praefix, z. B. "server", "cloud" oder "users-group". Unbekannte Werte fallen auf "cube" zurueck.
-     */
-    icon: string;
-    id?: string | null;
-  }[];
-  optionsPanelHeading: string;
-  deployment: {
-    label: string;
-    selfHosted: {
-      title: string;
-      description: string;
+  featureOverview?:
+    | {
+        title?: string | null;
+        description?: string | null;
+        /**
+         * Tabler Icon Name ohne "Icon"-Praefix, z. B. "server", "cloud" oder "users-group". Unbekannte Werte fallen auf "cube" zurueck.
+         */
+        icon?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  optionsPanelHeading?: string | null;
+  deployment?: {
+    label?: string | null;
+    selfHosted?: {
+      title?: string | null;
+      description?: string | null;
       /**
        * Tabler Icon Name ohne "Icon"-Praefix, z. B. "server", "cloud" oder "users-group". Unbekannte Werte fallen auf "cube" zurueck.
        */
-      icon: string;
-      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue';
+      icon?: string | null;
+      color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue') | null;
     };
-    cloud: {
-      title: string;
-      description: string;
+    cloud?: {
+      title?: string | null;
+      description?: string | null;
       /**
        * Tabler Icon Name ohne "Icon"-Praefix, z. B. "server", "cloud" oder "users-group". Unbekannte Werte fallen auf "cube" zurueck.
        */
-      icon: string;
-      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue';
-    };
-  };
-  customerType: {
-    label: string;
-    b2b: {
-      title: string;
-      description: string;
-      /**
-       * Tabler Icon Name ohne "Icon"-Praefix, z. B. "server", "cloud" oder "users-group". Unbekannte Werte fallen auf "cube" zurueck.
-       */
-      icon: string;
-      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue';
-    };
-    b2c: {
-      title: string;
-      description: string;
-      /**
-       * Tabler Icon Name ohne "Icon"-Praefix, z. B. "server", "cloud" oder "users-group". Unbekannte Werte fallen auf "cube" zurueck.
-       */
-      icon: string;
-      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue';
+      icon?: string | null;
+      color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue') | null;
     };
   };
-  subscriptionTier: {
-    label: string;
-    pro: {
-      title: string;
-      description: string;
+  customerType?: {
+    label?: string | null;
+    b2b?: {
+      title?: string | null;
+      description?: string | null;
       /**
        * Tabler Icon Name ohne "Icon"-Praefix, z. B. "server", "cloud" oder "users-group". Unbekannte Werte fallen auf "cube" zurueck.
        */
-      icon: string;
-      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue';
+      icon?: string | null;
+      color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue') | null;
     };
-    team: {
-      title: string;
-      description: string;
+    b2c?: {
+      title?: string | null;
+      description?: string | null;
       /**
        * Tabler Icon Name ohne "Icon"-Praefix, z. B. "server", "cloud" oder "users-group". Unbekannte Werte fallen auf "cube" zurueck.
        */
-      icon: string;
-      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue';
+      icon?: string | null;
+      color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue') | null;
     };
   };
-  workflowExecutions: {
-    title: string;
-    description: string;
-    min: number;
-    max: number;
-    step: number;
-    minLabel: string;
-    maxLabel: string;
-    centerSuffix: string;
+  subscriptionTier?: {
+    label?: string | null;
+    pro?: {
+      title?: string | null;
+      description?: string | null;
+      /**
+       * Tabler Icon Name ohne "Icon"-Praefix, z. B. "server", "cloud" oder "users-group". Unbekannte Werte fallen auf "cube" zurueck.
+       */
+      icon?: string | null;
+      color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue') | null;
+    };
+    team?: {
+      title?: string | null;
+      description?: string | null;
+      /**
+       * Tabler Icon Name ohne "Icon"-Praefix, z. B. "server", "cloud" oder "users-group". Unbekannte Werte fallen auf "cube" zurueck.
+       */
+      icon?: string | null;
+      color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue') | null;
+    };
   };
-  workflowCalculator: {
+  workflowExecutions?: {
+    title?: string | null;
+    description?: string | null;
+    min?: number | null;
+    max?: number | null;
+    step?: number | null;
+    minLabel?: string | null;
+    maxLabel?: string | null;
+    centerSuffix?: string | null;
+  };
+  workflowCalculator?: {
     triggerLabel?: string | null;
     title?: string | null;
     description?: string | null;
@@ -2187,41 +2189,43 @@ export interface SubscriptionConfig {
     estimateLabel?: string | null;
     cancelLabel?: string | null;
     applyLabel?: string | null;
-    businessTypes: {
-      name?: string | null;
-      conversion_unit: string;
-      /**
-       * Tabler Icon Name ohne "Icon"-Praefix, z. B. "server", "cloud" oder "users-group". Unbekannte Werte fallen auf "cube" zurueck.
-       */
-      icon: string;
-      conversion_rate: number;
-      id?: string | null;
-    }[];
+    businessTypes?:
+      | {
+          name?: string | null;
+          conversion_unit?: string | null;
+          /**
+           * Tabler Icon Name ohne "Icon"-Praefix, z. B. "server", "cloud" oder "users-group". Unbekannte Werte fallen auf "cube" zurueck.
+           */
+          icon?: string | null;
+          conversion_rate?: number | null;
+          id?: string | null;
+        }[]
+      | null;
   };
-  workflowExecutionPriceFactor: number;
-  aiTokens: {
-    title: string;
-    description: string;
-    min: number;
-    max: number;
-    step: number;
-    minLabel: string;
-    maxLabel: string;
-    centerSuffix: string;
+  workflowExecutionPriceFactor?: number | null;
+  aiTokens?: {
+    title?: string | null;
+    description?: string | null;
+    min?: number | null;
+    max?: number | null;
+    step?: number | null;
+    minLabel?: string | null;
+    maxLabel?: string | null;
+    centerSuffix?: string | null;
   };
-  aiTokenPriceFactor: number;
-  contactSales: {
-    prompt: string;
-    label: string;
-    href: string;
+  aiTokenPriceFactor?: number | null;
+  contactSales?: {
+    prompt?: string | null;
+    label?: string | null;
+    href?: string | null;
   };
-  subscribe: {
-    label: string;
-    baseUrl: string;
+  subscribe?: {
+    label?: string | null;
+    baseUrl?: string | null;
   };
-  price: {
-    heading: string;
-    caption: string;
+  price?: {
+    heading?: string | null;
+    caption?: string | null;
   };
   /**
    * Optional section heading shown above the additional features list.
@@ -2232,16 +2236,16 @@ export interface SubscriptionConfig {
    */
   additionalFeatures?:
     | {
-        title: string;
-        description: string;
+        title?: string | null;
+        description?: string | null;
         /**
          * Tabler Icon Name ohne "Icon"-Praefix, z. B. "server", "cloud" oder "users-group". Unbekannte Werte fallen auf "cube" zurueck.
          */
-        icon: string;
+        icon?: string | null;
         /**
          * Monthly price in EUR.
          */
-        price: number;
+        price?: number | null;
         id?: string | null;
       }[]
     | null;

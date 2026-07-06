@@ -9,7 +9,7 @@ import { BuyMenu } from "@/components/BuyMenu"
 import { WorkflowCalculatorDialog } from "@/components/dialogs/WorkflowCalculatorDialog"
 import { Slider } from "@/components/ui/Slider"
 import { IconCheck } from "@tabler/icons-react"
-import type { ReactNode } from "react"
+import type { CSSProperties, ReactNode } from "react"
 import { useState } from "react"
 import { LinkButton } from "./ui/LinkButton"
 import { Card } from "./ui/Card"
@@ -38,157 +38,25 @@ export interface SubscriptionIcons {
     additionalFeatures: ReactNode[]
 }
 
-const defaultContent: Omit<SubscriptionConfigData, "id" | "title"> = {
-    pageIntro: {
-        heading: "Configure your setup before you talk pricing.",
-        description: "Pick your operating model, customer shape, and usage pattern. The right-hand side updates into a purchase-ready configuration flow instead of a generic pricing table.",
-    },
-    featureOverview: [
-        {
-            title: "Fast onboarding",
-            description: "Move from evaluation to a concrete subscription path without guessing which packaging model fits your rollout.",
-            icon: "rocket",
-        },
-        {
-            title: "Commercial clarity",
-            description: "Separate customer type, hosting model, and runtime expectations before a plan is proposed.",
-            icon: "user-shield",
-        },
-        {
-            title: "Usage visibility",
-            description: "Shape your quote around expected workflow execution volume instead of a generic flat plan.",
-            icon: "gauge",
-        },
-    ],
-    optionsPanelHeading: "Build the subscription shape",
-    deployment: {
-        label: "Deployment",
-        selfHosted: {
-            title: "Self-hosted",
-            description: "Deploy on your own infrastructure with full operational control.",
-            icon: "server",
-            color: "yellow",
-        },
-        cloud: {
-            title: "Cloud",
-            description: "Use managed infrastructure with selectable runtime consumption.",
-            icon: "cloud",
-            color: "aqua",
-        },
-    },
-    customerType: {
-        label: "Customer Type",
-        b2b: {
-            title: "B2B",
-            description: "Organization purchase flow with tailored commercial handling.",
-            icon: "briefcase-2",
-            color: "blue",
-        },
-        b2c: {
-            title: "B2C",
-            description: "Standardized subscription flow with directly selectable plans.",
-            icon: "building-store",
-            color: "pink",
-        },
-    },
-    workflowExecutions: {
-        title: "Workflow Executions",
-        description: "How many workflow executions do you expect per month?",
-        min: 200,
-        max: 10000,
-        step: 100,
-        minLabel: "200 exec",
-        maxLabel: "10,000 exec",
-        centerSuffix: "exec",
-    },
-    workflowCalculator: {
-        triggerLabel: "Calculate",
-        title: "Calculate workflow executions",
-        description: "Estimate monthly volume from your active workflows and their average execution frequency.",
-        closeLabel: "Close dialog",
-        businessTypeLabel: "Business type",
-        businessTypeSearchPlaceholder: "Search business types",
-        noBusinessTypesFoundLabel: "No business types found.",
-        activeWorkflowsLabel: "Active workflows",
-        runsPerDayLabel: "Runs per month",
-        daysPerMonthLabel: "Days per month",
-        estimateLabel: "Estimated monthly volume",
-        cancelLabel: "Cancel",
-        applyLabel: "Apply value",
-        businessTypes: [{ name: "General", conversion_rate: 1, conversion_unit: "executions", icon: "building" }],
-    },
-    workflowExecutionPriceFactor: 0.001,
-    aiTokens: {
-        title: "AI Tokens",
-        description: "How many AI tokens do you expect to consume per month?",
-        min: 100000,
-        max: 10000000,
-        step: 100000,
-        minLabel: "100K tokens",
-        maxLabel: "10M tokens",
-        centerSuffix: "tokens",
-    },
-    aiTokenPriceFactor: 0.000001,
-    contactSales: {
-        prompt: "Need more?",
-        label: "Contact sales",
-        href: "/contact",
-    },
-    subscribe: {
-        label: "Buy now",
-        baseUrl: "",
-    },
-    price: {
-        heading: "Price",
-        caption: "per month",
-    },
+const ACTIVE_ACCENT_GLOW_STYLE: CSSProperties = {
+    background: "radial-gradient(circle at top right, color-mix(in oklab, var(--option-accent) 16%, transparent), transparent 38%)",
 }
 
-const optionAccentStyles: Record<
-    OptionAccent,
-    {
-        activeBorder: string
-        activeBackground: string
-        activeRing: string
-        activeGlow: string
-        activeIcon: string
-    }
-> = {
-    aqua: {
-        activeBorder: "border-aqua/60",
-        activeBackground: "from-aqua/14 via-white/[0.04] to-transparent",
-        activeRing: "ring-aqua/25",
-        activeGlow: "bg-[radial-gradient(circle_at_top_right,rgba(114,201,248,0.16),transparent_38%)]",
-        activeIcon: "text-aqua",
-    },
-    yellow: {
-        activeBorder: "border-yellow/60",
-        activeBackground: "from-yellow/14 via-white/[0.04] to-transparent",
-        activeRing: "ring-yellow/25",
-        activeGlow: "bg-[radial-gradient(circle_at_top_right,rgba(248,241,114,0.16),transparent_38%)]",
-        activeIcon: "text-yellow",
-    },
-    pink: {
-        activeBorder: "border-pink/60",
-        activeBackground: "from-pink/14 via-white/[0.04] to-transparent",
-        activeRing: "ring-pink/25",
-        activeGlow: "bg-[radial-gradient(circle_at_top_right,rgba(248,114,226,0.16),transparent_38%)]",
-        activeIcon: "text-pink",
-    },
-    blue: {
-        activeBorder: "border-blue/60",
-        activeBackground: "from-blue/14 via-white/[0.04] to-transparent",
-        activeRing: "ring-blue/25",
-        activeGlow: "bg-[radial-gradient(circle_at_top_right,rgba(114,169,248,0.16),transparent_38%)]",
-        activeIcon: "text-blue",
-    },
-    brand: {
-        activeBorder: "border-brand/60",
-        activeBackground: "from-brand/14 via-white/[0.04] to-transparent",
-        activeRing: "ring-brand/25",
-        activeGlow: "bg-[radial-gradient(circle_at_top_right,rgba(114,248,150,0.16),transparent_38%)]",
-        activeIcon: "text-brand",
-    },
+const ACTIVE_ACCENT_ICON_STYLE: CSSProperties = {
+    color: "var(--option-accent)",
+}
+
+function getOptionAccentStyle(accent: OptionAccent, active: boolean): CSSProperties {
+    const accentColor = `var(--bg-${accent})`
+
+    return {
+        "--option-accent": accentColor,
+        ...(active && {
+            borderColor: `color-mix(in oklab, ${accentColor} 60%, transparent)`,
+            background: `linear-gradient(to bottom right, color-mix(in oklab, ${accentColor} 14%, transparent), rgba(255, 255, 255, 0.04), transparent)`,
+            boxShadow: `0 0 0 1px color-mix(in oklab, ${accentColor} 25%, transparent)`,
+        }),
+    } as CSSProperties
 }
 
 interface OptionCardProps {
@@ -217,17 +85,15 @@ interface AdditionalFeatureCardProps {
 }
 
 function OptionCard({ title, description, active, onClick, icon, disabled = false, accent = "aqua" }: OptionCardProps) {
-    const accentStyles = optionAccentStyles[accent]
-
     return (
         <button
             type="button"
             onClick={onClick}
             disabled={disabled}
+            style={getOptionAccentStyle(accent, active)}
             className={cn(
                 "relative overflow-hidden rounded-2xl border p-4 text-left transition-all duration-300",
-                disabled ? "cursor-not-allowed border-white/10 opacity-45" : "border-white/10 hover:bg-light",
-                active && cn("bg-linear-to-br ring-1", accentStyles.activeBorder, accentStyles.activeBackground, accentStyles.activeRing)
+                disabled ? "cursor-not-allowed border-white/10 opacity-45" : "border-white/10 hover:bg-light"
             )}
         >
             <div className="relative z-10 flex flex-col gap-2">
@@ -236,10 +102,13 @@ function OptionCard({ title, description, active, onClick, icon, disabled = fals
                         {active ? (
                             <div
                                 aria-hidden="true"
-                                className={cn("pointer-events-none absolute left-1/2 top-1/2 h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-full blur-xl", accentStyles.activeGlow)}
+                                style={ACTIVE_ACCENT_GLOW_STYLE}
+                                className="pointer-events-none absolute left-1/2 top-1/2 h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-full blur-xl"
                             />
                         ) : null}
-                        <div className={cn("relative inline-flex items-center justify-center text-secondary [&>svg]:h-[1.05em] [&>svg]:w-[1.05em]", active && accentStyles.activeIcon)}>{icon}</div>
+                        <div style={active ? ACTIVE_ACCENT_ICON_STYLE : undefined} className="relative inline-flex items-center justify-center text-secondary [&>svg]:h-[1.05em] [&>svg]:w-[1.05em]">
+                            {icon}
+                        </div>
                     </div>
                     <p className="text-base font-semibold text-white">{title}</p>
                 </div>
@@ -262,17 +131,12 @@ function FeatureRow({ icon, title, description }: FeatureRowProps) {
 }
 
 function AdditionalFeatureCard({ title, description, active, onClick, icon, formattedPrice }: AdditionalFeatureCardProps) {
-    const accentStyles = optionAccentStyles["brand"]
-
     return (
         <button
             type="button"
             onClick={onClick}
-            className={cn(
-                "relative overflow-hidden rounded-2xl border p-4 text-left transition-all duration-300",
-                "border-white/10 hover:bg-light",
-                active && cn("bg-linear-to-br ring-1", accentStyles.activeBorder, accentStyles.activeBackground, accentStyles.activeRing)
-            )}
+            style={getOptionAccentStyle("brand", active)}
+            className="relative overflow-hidden rounded-2xl border border-white/10 p-4 text-left transition-all duration-300 hover:bg-light"
         >
             <div className="relative z-10 flex flex-col gap-2">
                 <div className="flex items-center gap-2">
@@ -280,10 +144,13 @@ function AdditionalFeatureCard({ title, description, active, onClick, icon, form
                         {active ? (
                             <div
                                 aria-hidden="true"
-                                className={cn("pointer-events-none absolute left-1/2 top-1/2 h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-full blur-xl", accentStyles.activeGlow)}
+                                style={ACTIVE_ACCENT_GLOW_STYLE}
+                                className="pointer-events-none absolute left-1/2 top-1/2 h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-full blur-xl"
                             />
                         ) : null}
-                        <div className={cn("relative inline-flex items-center justify-center text-secondary [&>svg]:h-[1.05em] [&>svg]:w-[1.05em]", active && accentStyles.activeIcon)}>{icon}</div>
+                        <div style={active ? ACTIVE_ACCENT_ICON_STYLE : undefined} className="relative inline-flex items-center justify-center text-secondary [&>svg]:h-[1.05em] [&>svg]:w-[1.05em]">
+                            {icon}
+                        </div>
                     </div>
                     <p className="text-base font-semibold text-white">{title}</p>
                 </div>
@@ -301,118 +168,9 @@ function AdditionalFeatureCard({ title, description, active, onClick, icon, form
     )
 }
 
-export function SubscriptionConfigurator({ locale, content, icons }: { locale: AppLocale; content?: SubscriptionConfigData | null; icons: SubscriptionIcons }) {
-    const resolved: SubscriptionConfigData = {
-        id: content?.id ?? 0,
-        title: content?.title?.trim() || "Subscription Config",
-        pageIntro: {
-            heading: content?.pageIntro?.heading?.trim() || defaultContent.pageIntro.heading,
-            description: content?.pageIntro?.description?.trim() || defaultContent.pageIntro.description,
-        },
-        featureOverview:
-            content?.featureOverview && content.featureOverview.length > 0
-                ? content.featureOverview.map((item, index) => ({
-                      ...item,
-                      title: item.title?.trim() || defaultContent.featureOverview[index]?.title || "",
-                      description: item.description?.trim() || defaultContent.featureOverview[index]?.description || "",
-                      icon: item.icon?.trim() || defaultContent.featureOverview[index]?.icon || "cube",
-                  }))
-                : defaultContent.featureOverview,
-        optionsPanelHeading: content?.optionsPanelHeading?.trim() || defaultContent.optionsPanelHeading,
-        deployment: {
-            label: content?.deployment?.label?.trim() || defaultContent.deployment.label,
-            selfHosted: {
-                title: content?.deployment?.selfHosted?.title?.trim() || defaultContent.deployment.selfHosted.title,
-                description: content?.deployment?.selfHosted?.description?.trim() || defaultContent.deployment.selfHosted.description,
-                icon: content?.deployment?.selfHosted?.icon?.trim() || defaultContent.deployment.selfHosted.icon,
-                color: content?.deployment?.selfHosted?.color ?? defaultContent.deployment.selfHosted.color,
-            },
-            cloud: {
-                title: content?.deployment?.cloud?.title?.trim() || defaultContent.deployment.cloud.title,
-                description: content?.deployment?.cloud?.description?.trim() || defaultContent.deployment.cloud.description,
-                icon: content?.deployment?.cloud?.icon?.trim() || defaultContent.deployment.cloud.icon,
-                color: content?.deployment?.cloud?.color ?? defaultContent.deployment.cloud.color,
-            },
-        },
-        customerType: {
-            label: content?.customerType?.label?.trim() || defaultContent.customerType.label,
-            b2b: {
-                title: content?.customerType?.b2b?.title?.trim() || defaultContent.customerType.b2b.title,
-                description: content?.customerType?.b2b?.description?.trim() || defaultContent.customerType.b2b.description,
-                icon: content?.customerType?.b2b?.icon?.trim() || defaultContent.customerType.b2b.icon,
-                color: content?.customerType?.b2b?.color ?? defaultContent.customerType.b2b.color,
-            },
-            b2c: {
-                title: content?.customerType?.b2c?.title?.trim() || defaultContent.customerType.b2c.title,
-                description: content?.customerType?.b2c?.description?.trim() || defaultContent.customerType.b2c.description,
-                icon: content?.customerType?.b2c?.icon?.trim() || defaultContent.customerType.b2c.icon,
-                color: content?.customerType?.b2c?.color ?? defaultContent.customerType.b2c.color,
-            },
-        },
-        workflowExecutions: {
-            title: content?.workflowExecutions?.title?.trim() || defaultContent.workflowExecutions.title,
-            description: content?.workflowExecutions?.description?.trim() || defaultContent.workflowExecutions.description,
-            min: content?.workflowExecutions?.min ?? defaultContent.workflowExecutions.min,
-            max: content?.workflowExecutions?.max ?? defaultContent.workflowExecutions.max,
-            step: content?.workflowExecutions?.step ?? defaultContent.workflowExecutions.step,
-            minLabel: content?.workflowExecutions?.minLabel?.trim() || defaultContent.workflowExecutions.minLabel,
-            maxLabel: content?.workflowExecutions?.maxLabel?.trim() || defaultContent.workflowExecutions.maxLabel,
-            centerSuffix: content?.workflowExecutions?.centerSuffix?.trim() || defaultContent.workflowExecutions.centerSuffix,
-        },
-        workflowCalculator: {
-            triggerLabel: content?.workflowCalculator?.triggerLabel?.trim() || defaultContent.workflowCalculator.triggerLabel,
-            title: content?.workflowCalculator?.title?.trim() || defaultContent.workflowCalculator.title,
-            description: content?.workflowCalculator?.description?.trim() || defaultContent.workflowCalculator.description,
-            closeLabel: content?.workflowCalculator?.closeLabel?.trim() || defaultContent.workflowCalculator.closeLabel,
-            businessTypeLabel: content?.workflowCalculator?.businessTypeLabel?.trim() || defaultContent.workflowCalculator.businessTypeLabel,
-            businessTypeSearchPlaceholder: content?.workflowCalculator?.businessTypeSearchPlaceholder?.trim() || defaultContent.workflowCalculator.businessTypeSearchPlaceholder,
-            noBusinessTypesFoundLabel: content?.workflowCalculator?.noBusinessTypesFoundLabel?.trim() || defaultContent.workflowCalculator.noBusinessTypesFoundLabel,
-            activeWorkflowsLabel: content?.workflowCalculator?.activeWorkflowsLabel?.trim() || defaultContent.workflowCalculator.activeWorkflowsLabel,
-            runsPerDayLabel: content?.workflowCalculator?.runsPerDayLabel?.trim() || defaultContent.workflowCalculator.runsPerDayLabel,
-            daysPerMonthLabel: content?.workflowCalculator?.daysPerMonthLabel?.trim() || defaultContent.workflowCalculator.daysPerMonthLabel,
-            estimateLabel: content?.workflowCalculator?.estimateLabel?.trim() || defaultContent.workflowCalculator.estimateLabel,
-            cancelLabel: content?.workflowCalculator?.cancelLabel?.trim() || defaultContent.workflowCalculator.cancelLabel,
-            applyLabel: content?.workflowCalculator?.applyLabel?.trim() || defaultContent.workflowCalculator.applyLabel,
-            businessTypes: content?.workflowCalculator?.businessTypes?.length
-                ? content.workflowCalculator.businessTypes.map((businessType) => ({
-                      name: businessType.name?.trim() || defaultContent.workflowCalculator.businessTypes[0].name,
-                      conversion_rate: businessType.conversion_rate ?? 1,
-                      conversion_unit: businessType.conversion_unit?.trim() || defaultContent.workflowCalculator.businessTypes[0].conversion_unit,
-                      icon: businessType.icon?.trim() || defaultContent.workflowCalculator.businessTypes[0].icon,
-                      id: businessType.id,
-                  }))
-                : defaultContent.workflowCalculator.businessTypes,
-        },
-        workflowExecutionPriceFactor: content?.workflowExecutionPriceFactor ?? defaultContent.workflowExecutionPriceFactor,
-        aiTokens: {
-            title: content?.aiTokens?.title?.trim() || defaultContent.aiTokens.title,
-            description: content?.aiTokens?.description?.trim() || defaultContent.aiTokens.description,
-            min: content?.aiTokens?.min ?? defaultContent.aiTokens.min,
-            max: content?.aiTokens?.max ?? defaultContent.aiTokens.max,
-            step: content?.aiTokens?.step ?? defaultContent.aiTokens.step,
-            minLabel: content?.aiTokens?.minLabel?.trim() || defaultContent.aiTokens.minLabel,
-            maxLabel: content?.aiTokens?.maxLabel?.trim() || defaultContent.aiTokens.maxLabel,
-            centerSuffix: content?.aiTokens?.centerSuffix?.trim() || defaultContent.aiTokens.centerSuffix,
-        },
-        aiTokenPriceFactor: content?.aiTokenPriceFactor ?? defaultContent.aiTokenPriceFactor,
-        contactSales: {
-            prompt: content?.contactSales?.prompt?.trim() || defaultContent.contactSales.prompt,
-            label: content?.contactSales?.label?.trim() || defaultContent.contactSales.label,
-            href: content?.contactSales?.href?.trim() || defaultContent.contactSales.href,
-        },
-        subscribe: {
-            label: content?.subscribe?.label?.trim() || defaultContent.subscribe.label,
-            baseUrl: content?.subscribe?.baseUrl?.trim() || defaultContent.subscribe.baseUrl,
-        },
-        price: {
-            heading: content?.price?.heading?.trim() || defaultContent.price.heading,
-            caption: content?.price?.caption?.trim() || defaultContent.price.caption,
-        },
-        additionalFeaturesLabel: content?.additionalFeaturesLabel?.trim() || null,
-        additionalFeatures: content?.additionalFeatures ?? null,
-    }
-    const workflowExecutions = resolved.workflowExecutions
-    const aiTokens = resolved.aiTokens
+export function SubscriptionConfigurator({ locale, content, icons }: { locale: AppLocale; content: SubscriptionConfigData; icons: SubscriptionIcons }) {
+    const workflowExecutions = content.workflowExecutions
+    const aiTokens = content.aiTokens
 
     const [selection, setSelection] = useState<SubscriptionSelection>({
         deployment: "self-hosted",
@@ -423,9 +181,9 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
     const [selectedFeatures, setSelectedFeatures] = useState<Set<number>>(new Set())
     const { wrapperRef: desktopWrapperRef, containerRef: desktopContainerRef } = useDesktopPinnedPosition<HTMLDivElement, HTMLDivElement>(96)
 
-    const workflowExecutionPrice = resolved.workflowExecutionPriceFactor * selection.workflowExecutions
-    const aiTokenPrice = resolved.aiTokenPriceFactor * selection.aiTokens
-    const additionalFeaturesPrice = Array.from(selectedFeatures).reduce((acc, idx) => acc + (resolved.additionalFeatures?.[idx]?.price ?? 0), 0)
+    const workflowExecutionPrice = content.workflowExecutionPriceFactor * selection.workflowExecutions
+    const aiTokenPrice = content.aiTokenPriceFactor * selection.aiTokens
+    const additionalFeaturesPrice = Array.from(selectedFeatures).reduce((acc, idx) => acc + (content.additionalFeatures?.[idx]?.price ?? 0), 0)
     const totalPrice = formatEuroCurrency(workflowExecutionPrice + aiTokenPrice + additionalFeaturesPrice, locale)
 
     const subscribeHref = (() => {
@@ -436,14 +194,14 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
             aiTokens: String(selection.aiTokens),
         })
 
-        if (selectedFeatures.size > 0 && resolved.additionalFeatures) {
+        if (selectedFeatures.size > 0 && content.additionalFeatures) {
             const featureIds = Array.from(selectedFeatures)
-                .map((idx) => resolved.additionalFeatures![idx]?.id ?? String(idx))
+                .map((idx) => content.additionalFeatures![idx]?.id ?? String(idx))
                 .join(",")
             searchParams.set("additionalFeatures", featureIds)
         }
 
-        return `${resolved.subscribe.baseUrl}?${searchParams.toString()}`
+        return `${content.subscribe.baseUrl}?${searchParams.toString()}`
     })()
 
     return (
@@ -452,12 +210,12 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
                 <section ref={desktopWrapperRef} className="relative min-w-0 lg:col-span-2">
                     <div ref={desktopContainerRef} className="relative z-10 flex min-w-0 flex-col gap-12">
                         <div className="max-w-2xl">
-                            <h1 className="mt-4 max-w-xl text-balance text-3xl font-semibold text-white lg:text-4xl">{resolved.pageIntro.heading}</h1>
-                            <p className="mt-4 max-w-xl text-base leading-7 text-secondary lg:text-lg">{resolved.pageIntro.description}</p>
+                            <h1 className="mt-4 max-w-xl text-balance text-3xl font-semibold text-white lg:text-4xl">{content.pageIntro.heading}</h1>
+                            <p className="mt-4 max-w-xl text-base leading-7 text-secondary lg:text-lg">{content.pageIntro.description}</p>
                         </div>
 
                         <div className="grid gap-6">
-                            {resolved.featureOverview.map((item, index) => (
+                            {content.featureOverview.map((item, index) => (
                                 <FeatureRow key={item.id ?? `${item.title}-${index}`} icon={icons.featureOverview[index]} title={item.title} description={item.description} />
                             ))}
                         </div>
@@ -466,24 +224,24 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
 
                 <Card size="lg" className="lg:col-span-3 min-w-0 bg-primary">
                     <div className="relative z-10 flex flex-col gap-8">
-                        <h2 className="text-2xl font-semibold text-white lg:text-3xl">{resolved.optionsPanelHeading}</h2>
+                        <h2 className="text-2xl font-semibold text-white lg:text-3xl">{content.optionsPanelHeading}</h2>
 
                         <div className="space-y-2">
-                            <p className="text-base text-secondary">{resolved.deployment.label}</p>
+                            <p className="text-base text-secondary">{content.deployment.label}</p>
                             <div className="grid gap-3 md:grid-cols-2">
                                 <OptionCard
-                                    title={resolved.deployment.selfHosted.title}
-                                    description={resolved.deployment.selfHosted.description}
+                                    title={content.deployment.selfHosted.title}
+                                    description={content.deployment.selfHosted.description}
                                     icon={icons.deployment.selfHosted}
-                                    accent={resolved.deployment.selfHosted.color}
+                                    accent={content.deployment.selfHosted.color}
                                     active={selection.deployment === "self-hosted"}
                                     onClick={() => setSelection((current) => ({ ...current, deployment: "self-hosted" }))}
                                 />
                                 <OptionCard
-                                    title={resolved.deployment.cloud.title}
-                                    description={resolved.deployment.cloud.description}
+                                    title={content.deployment.cloud.title}
+                                    description={content.deployment.cloud.description}
                                     icon={icons.deployment.cloud}
-                                    accent={resolved.deployment.cloud.color}
+                                    accent={content.deployment.cloud.color}
                                     active={selection.deployment === "cloud"}
                                     onClick={() => setSelection((current) => ({ ...current, deployment: "cloud" }))}
                                 />
@@ -491,21 +249,21 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
                         </div>
 
                         <div className="space-y-2">
-                            <p className="text-base text-secondary">{resolved.customerType.label}</p>
+                            <p className="text-base text-secondary">{content.customerType.label}</p>
                             <div className="grid gap-3 md:grid-cols-2">
                                 <OptionCard
-                                    title={resolved.customerType.b2b.title}
-                                    description={resolved.customerType.b2b.description}
+                                    title={content.customerType.b2b.title}
+                                    description={content.customerType.b2b.description}
                                     icon={icons.customerType.b2b}
-                                    accent={resolved.customerType.b2b.color}
+                                    accent={content.customerType.b2b.color}
                                     active={selection.customerType === "b2b"}
                                     onClick={() => setSelection((current) => ({ ...current, customerType: "b2b" }))}
                                 />
                                 <OptionCard
-                                    title={resolved.customerType.b2c.title}
-                                    description={resolved.customerType.b2c.description}
+                                    title={content.customerType.b2c.title}
+                                    description={content.customerType.b2c.description}
                                     icon={icons.customerType.b2c}
-                                    accent={resolved.customerType.b2c.color}
+                                    accent={content.customerType.b2c.color}
                                     active={selection.customerType === "b2c"}
                                     onClick={() => setSelection((current) => ({ ...current, customerType: "b2c" }))}
                                 />
@@ -520,7 +278,7 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
                                 </div>
                                 <WorkflowCalculatorDialog
                                     locale={locale}
-                                    content={resolved.workflowCalculator}
+                                    content={content.workflowCalculator}
                                     businessTypeIcons={icons.workflowBusinessTypes}
                                     value={selection.workflowExecutions}
                                     min={workflowExecutions.min}
@@ -543,9 +301,9 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
                                 maxLabel={workflowExecutions.maxLabel}
                             />
                             <div className="mt-2 flex flex-wrap items-center justify-end gap-2">
-                                <p className="text-sm font-medium text-tertiary">{resolved.contactSales.prompt}</p>
-                                <LinkButton href={resolved.contactSales.href} className="border-b-0 text-secondary" showArrow={false}>
-                                    {resolved.contactSales.label}
+                                <p className="text-sm font-medium text-tertiary">{content.contactSales.prompt}</p>
+                                <LinkButton href={content.contactSales.href} className="border-b-0 text-secondary" showArrow={false}>
+                                    {content.contactSales.label}
                                 </LinkButton>
                             </div>
                         </div>
@@ -571,11 +329,11 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
                             />
                         </div>
 
-                        {resolved.additionalFeatures && resolved.additionalFeatures.length > 0 && (
+                        {content.additionalFeatures && content.additionalFeatures.length > 0 && (
                             <div className="space-y-3">
-                                <p className="text-base text-secondary">{resolved.additionalFeaturesLabel ?? "Additional Features"}</p>
+                                <p className="text-base text-secondary">{content.additionalFeaturesLabel ?? "Additional Features"}</p>
                                 <div className="grid gap-3">
-                                    {resolved.additionalFeatures.map((feature, index) => {
+                                    {content.additionalFeatures.map((feature, index) => {
                                         const formattedFeaturePrice = formatEuroCurrency(feature.price, locale)
                                         return (
                                             <AdditionalFeatureCard
@@ -605,7 +363,7 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
                     </div>
                 </Card>
             </div>
-            <BuyMenu price={totalPrice} priceHeading={resolved.price.heading} priceCaption={resolved.price.caption} subscribeHref={subscribeHref} subscribeLabel={resolved.subscribe.label} />
+            <BuyMenu price={totalPrice} priceHeading={content.price.heading} priceCaption={content.price.caption} subscribeHref={subscribeHref} subscribeLabel={content.subscribe.label} />
         </>
     )
 }
