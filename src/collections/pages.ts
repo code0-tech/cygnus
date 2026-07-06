@@ -18,6 +18,7 @@ import { ScrollCardBlock } from "../blocks/ScrollCardBlock"
 import type { CollectionConfig } from "payload"
 import { StandaloneBlock } from "@/blocks/StandaloneBlock"
 import { VideoBlock } from "@/blocks/VideoBlock"
+import { WideHeroBlock } from "@/blocks/WideHeroBlock"
 
 export const Pages: CollectionConfig = {
     slug: "pages",
@@ -85,6 +86,7 @@ export const Pages: CollectionConfig = {
                 ScrollCardBlock,
                 StandaloneBlock,
                 VideoBlock,
+                WideHeroBlock,
             ],
             required: false,
             localized: true,

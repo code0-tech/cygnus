@@ -27,6 +27,8 @@ import * as migration_20260705_180056_workflow_business_type_metadata from './20
 import * as migration_20260705_180710_remove_workflow_calculator_range_note from './20260705_180710_remove_workflow_calculator_range_note';
 import * as migration_20260706_062643_20260706_subscription_config_optional_defaults from './20260706_062643_20260706_subscription_config_optional_defaults';
 import * as migration_20260706_063003_20260706_subscription_tier_defaults from './20260706_063003_20260706_subscription_tier_defaults';
+import * as migration_20260706_095051_wide_hero from './20260706_095051_wide_hero';
+import * as migration_20260706_104232_wide_hero_image_options from './20260706_104232_wide_hero_image_options';
 
 export const migrations = [
   {
@@ -172,6 +174,16 @@ export const migrations = [
   {
     up: migration_20260706_063003_20260706_subscription_tier_defaults.up,
     down: migration_20260706_063003_20260706_subscription_tier_defaults.down,
-    name: '20260706_063003_20260706_subscription_tier_defaults'
+    name: '20260706_063003_20260706_subscription_tier_defaults',
+  },
+  {
+    up: migration_20260706_095051_wide_hero.up,
+    down: migration_20260706_095051_wide_hero.down,
+    name: '20260706_095051_wide_hero',
+  },
+  {
+    up: migration_20260706_104232_wide_hero_image_options.up,
+    down: migration_20260706_104232_wide_hero_image_options.down,
+    name: '20260706_104232_wide_hero_image_options'
   },
 ];

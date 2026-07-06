@@ -15,6 +15,7 @@ import type { Page } from "@/payload-types"
 import React, { type ReactNode } from "react"
 import { StandaloneCardSection } from "./sections/StandaloneCardSection"
 import { VideoSection } from "./sections/VideoSection"
+import { WideHeroSection } from "./sections/WideHeroSection"
 
 type PageBlock = NonNullable<Page["layout"]>[number]
 
@@ -43,6 +44,7 @@ const pageBlockRenderers: Partial<Record<PageBlock["blockType"], BlockRenderer>>
     swipeCards: (block) => <SwipeCardSection content={block as Extract<PageBlock, { blockType: "swipeCards" }>} />,
     standaloneCard: (block) => <StandaloneCardSection content={block as Extract<PageBlock, { blockType: "standaloneCard" }>} />,
     video: (block) => <VideoSection content={block as Extract<PageBlock, { blockType: "video" }>} />,
+    widehero: (block) => <WideHeroSection content={block as Extract<PageBlock, { blockType: "widehero" }>} />,
 }
 
 function renderPageBlock(block: PageBlock, options: PageBlockRenderOptions) {

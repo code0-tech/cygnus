@@ -738,11 +738,7 @@ export interface Page {
               description?: string | null;
               showImageBorder?: boolean | null;
               sectionLayout:
-                | 'imageRight'
-                | 'imageLeft'
-                | 'imageFullscreen'
-                | 'imageRightFullscreen'
-                | 'imageLeftFullscreen';
+                'imageRight' | 'imageLeft' | 'imageFullscreen' | 'imageRightFullscreen' | 'imageLeftFullscreen';
               gradient?: ('blue' | 'yellow' | 'pink' | 'aqua' | 'brand' | 'neutral') | null;
               gradientDirection?: ('topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight') | null;
               bulletPoints?: string[] | null;
@@ -762,11 +758,7 @@ export interface Page {
             description?: string | null;
             showImageBorder?: boolean | null;
             sectionLayout:
-              | 'imageRight'
-              | 'imageLeft'
-              | 'imageFullscreen'
-              | 'imageRightFullscreen'
-              | 'imageLeftFullscreen';
+              'imageRight' | 'imageLeft' | 'imageFullscreen' | 'imageRightFullscreen' | 'imageLeftFullscreen';
             gradient?: ('blue' | 'yellow' | 'pink' | 'aqua' | 'brand' | 'neutral') | null;
             gradientDirection?: ('topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight') | null;
             bulletPoints?: string[] | null;
@@ -798,6 +790,36 @@ export interface Page {
             id?: string | null;
             blockName?: string | null;
             blockType: 'video';
+          }
+        | {
+            badge?: string | null;
+            badge_link?: string | null;
+            heading: string;
+            image?: (number | null) | Media;
+            showImageBorder?: boolean | null;
+            mask?: ('top' | 'right' | 'bottom' | 'left')[] | null;
+            shineColors?: {
+              color1?: string | null;
+              color2?: string | null;
+              color3?: string | null;
+            };
+            texts?:
+              | {
+                  text: string;
+                  id?: string | null;
+                }[]
+              | null;
+            buttons?:
+              | {
+                  label: string;
+                  url: string;
+                  variant?: ('none' | 'normal' | 'outlined' | 'filled') | null;
+                  id?: string | null;
+                }[]
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'widehero';
           }
       )[]
     | null;
@@ -1680,6 +1702,39 @@ export interface PagesSelect<T extends boolean = true> {
               muted?: T;
               loop?: T;
               playsInline?: T;
+              id?: T;
+              blockName?: T;
+            };
+        widehero?:
+          | T
+          | {
+              badge?: T;
+              badge_link?: T;
+              heading?: T;
+              image?: T;
+              showImageBorder?: T;
+              mask?: T;
+              shineColors?:
+                | T
+                | {
+                    color1?: T;
+                    color2?: T;
+                    color3?: T;
+                  };
+              texts?:
+                | T
+                | {
+                    text?: T;
+                    id?: T;
+                  };
+              buttons?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                    variant?: T;
+                    id?: T;
+                  };
               id?: T;
               blockName?: T;
             };
@@ -2603,16 +2658,7 @@ export interface TaskCreateCollectionExport {
     name: string;
     batchSize?: number | null;
     collectionSlug:
-      | 'users'
-      | 'media'
-      | 'pages'
-      | 'features'
-      | 'actions'
-      | 'jobs'
-      | 'blog'
-      | 'team-members'
-      | 'exports'
-      | 'imports';
+      'users' | 'media' | 'pages' | 'features' | 'actions' | 'jobs' | 'blog' | 'team-members' | 'exports' | 'imports';
     drafts?: ('yes' | 'no') | null;
     exportCollection: string;
     fields?: string[] | null;
