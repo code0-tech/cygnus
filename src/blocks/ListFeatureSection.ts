@@ -1,3 +1,4 @@
+import { iconField } from "@mvriu5/payload-icon-picker"
 import type { Block } from "payload"
 
 export const ListFeatureSection: Block = {
@@ -68,12 +69,16 @@ export const ListFeatureSection: Block = {
             type: "array",
             required: false,
             fields: [
-                {
+                iconField({
                     name: "icon",
                     label: "Icon",
-                    type: "text",
-                    required: false,
-                },
+                    required: true,
+                    placeholder: "Search icons",
+                    noResultsLabel: "No icons found",
+                    admin: {
+                        position: "sidebar",
+                    },
+                }),
                 {
                     name: "title",
                     label: "Title",

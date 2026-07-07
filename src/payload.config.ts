@@ -21,6 +21,9 @@ import { TeamMembers } from "./collections/teamMembers"
 import { Users } from "./collections/users"
 import { GraphLexicalBlock, TriggerLexicalBlock } from "./lib/richText/customLexicalBlocks"
 import { payloadAiPlugin } from "@mvriu5/payload-ai"
+import { payloadIconPlugin } from "@mvriu5/payload-icon-picker"
+import * as TablerIcons from "@tabler/icons-react"
+import { tablerIconAdapter } from "@mvriu5/payload-icon-picker/adapters/tabler"
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -119,6 +122,10 @@ export default buildConfig({
 
                 return ""
             },
+        }),
+        payloadIconPlugin({
+            icons: tablerIconAdapter(TablerIcons),
+            resolveIcon: ({ name }) => name,
         }),
         payloadAiPlugin({
             media: {

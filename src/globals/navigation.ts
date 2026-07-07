@@ -1,7 +1,16 @@
+import { iconField } from "@mvriu5/payload-icon-picker"
 import type { GlobalConfig } from "payload"
 
-const iconDescription =
-  'Tabler Icon Name, z.B. "brand-github", oder Simple Icon mit "si", z.B. "siGithub". Leer lassen für kein Icon.'
+const pickerIconField = iconField({
+  name: "icon",
+  label: "Icon",
+  required: true,
+  placeholder: "Search icons",
+  noResultsLabel: "No icons found",
+  admin: {
+    position: "sidebar",
+  },
+})
 
 export const Navigation: GlobalConfig = {
   slug: "navigation",
@@ -74,14 +83,7 @@ export const Navigation: GlobalConfig = {
                   required: true,
                   localized: true,
                 },
-                {
-                  name: "icon",
-                  type: "text",
-                  required: false,
-                  admin: {
-                    description: 'Tabler Icon Name. Unbekannte Werte fallen auf "cube" zurück.',
-                  },
-                },
+                pickerIconField,
               ],
             },
           ],
@@ -114,14 +116,7 @@ export const Navigation: GlobalConfig = {
               required: true,
               defaultValue: 0,
             },
-            {
-              name: "icon",
-              type: "text",
-              required: false,
-              admin: {
-                description: iconDescription,
-              },
-            },
+            pickerIconField,
             {
               name: "newTab",
               type: "checkbox",

@@ -831,7 +831,7 @@ export interface Page {
             };
             features?:
               | {
-                  icon?: string | null;
+                  icon: string;
                   title: string;
                   description?: string | null;
                   id?: string | null;
@@ -2065,10 +2065,7 @@ export interface Navigation {
             title: string;
             href: string;
             description: string;
-            /**
-             * Tabler Icon Name. Unbekannte Werte fallen auf "cube" zurück.
-             */
-            icon?: string | null;
+            icon: string;
             id?: string | null;
           }[]
         | null;
@@ -2080,10 +2077,7 @@ export interface Navigation {
       title: string;
       href: string;
       order: number;
-      /**
-       * Tabler Icon Name, z.B. "brand-github", oder Simple Icon mit "si", z.B. "siGithub". Leer lassen für kein Icon.
-       */
-      icon?: string | null;
+      icon: string;
       newTab?: boolean | null;
       variant: 'none' | 'normal' | 'outlined' | 'filled';
       id?: string | null;
@@ -2192,74 +2186,53 @@ export interface SubscriptionConfig {
     | {
         title?: string | null;
         description?: string | null;
-        /**
-         * Tabler Icon Name ohne "Icon"-Praefix, z. B. "server", "cloud" oder "users-group". Unbekannte Werte fallen auf "cube" zurueck.
-         */
-        icon?: string | null;
+        icon: string;
         id?: string | null;
       }[]
     | null;
   optionsPanelHeading?: string | null;
-  deployment?: {
+  deployment: {
     label?: string | null;
-    selfHosted?: {
+    selfHosted: {
       title?: string | null;
       description?: string | null;
-      /**
-       * Tabler Icon Name ohne "Icon"-Praefix, z. B. "server", "cloud" oder "users-group". Unbekannte Werte fallen auf "cube" zurueck.
-       */
-      icon?: string | null;
+      icon: string;
       color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue') | null;
     };
-    cloud?: {
+    cloud: {
       title?: string | null;
       description?: string | null;
-      /**
-       * Tabler Icon Name ohne "Icon"-Praefix, z. B. "server", "cloud" oder "users-group". Unbekannte Werte fallen auf "cube" zurueck.
-       */
-      icon?: string | null;
+      icon: string;
       color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue') | null;
     };
   };
-  customerType?: {
+  customerType: {
     label?: string | null;
-    b2b?: {
+    b2b: {
       title?: string | null;
       description?: string | null;
-      /**
-       * Tabler Icon Name ohne "Icon"-Praefix, z. B. "server", "cloud" oder "users-group". Unbekannte Werte fallen auf "cube" zurueck.
-       */
-      icon?: string | null;
+      icon: string;
       color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue') | null;
     };
-    b2c?: {
+    b2c: {
       title?: string | null;
       description?: string | null;
-      /**
-       * Tabler Icon Name ohne "Icon"-Praefix, z. B. "server", "cloud" oder "users-group". Unbekannte Werte fallen auf "cube" zurueck.
-       */
-      icon?: string | null;
+      icon: string;
       color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue') | null;
     };
   };
-  subscriptionTier?: {
+  subscriptionTier: {
     label?: string | null;
-    pro?: {
+    pro: {
       title?: string | null;
       description?: string | null;
-      /**
-       * Tabler Icon Name ohne "Icon"-Praefix, z. B. "server", "cloud" oder "users-group". Unbekannte Werte fallen auf "cube" zurueck.
-       */
-      icon?: string | null;
+      icon: string;
       color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue') | null;
     };
-    team?: {
+    team: {
       title?: string | null;
       description?: string | null;
-      /**
-       * Tabler Icon Name ohne "Icon"-Praefix, z. B. "server", "cloud" oder "users-group". Unbekannte Werte fallen auf "cube" zurueck.
-       */
-      icon?: string | null;
+      icon: string;
       color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue') | null;
     };
   };
@@ -2291,10 +2264,7 @@ export interface SubscriptionConfig {
       | {
           name?: string | null;
           conversion_unit?: string | null;
-          /**
-           * Tabler Icon Name ohne "Icon"-Praefix, z. B. "server", "cloud" oder "users-group". Unbekannte Werte fallen auf "cube" zurueck.
-           */
-          icon?: string | null;
+          icon: string;
           conversion_rate?: number | null;
           id?: string | null;
         }[]
@@ -2336,10 +2306,7 @@ export interface SubscriptionConfig {
     | {
         title?: string | null;
         description?: string | null;
-        /**
-         * Tabler Icon Name ohne "Icon"-Praefix, z. B. "server", "cloud" oder "users-group". Unbekannte Werte fallen auf "cube" zurueck.
-         */
-        icon?: string | null;
+        icon: string;
         /**
          * Monthly price in EUR.
          */

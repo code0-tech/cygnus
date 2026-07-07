@@ -1,3 +1,4 @@
+import { iconField as payloadIconField } from "@mvriu5/payload-icon-picker"
 import type { GlobalConfig } from "payload"
 
 const accentColorOptions = [
@@ -8,16 +9,16 @@ const accentColorOptions = [
     { label: "Blue", value: "blue" },
 ]
 
-const iconFieldDescription = 'Tabler Icon Name ohne "Icon"-Praefix, z. B. "server", "cloud" oder "users-group". Unbekannte Werte fallen auf "cube" zurueck.'
-
-const iconField = {
+const iconField = payloadIconField({
     name: "icon",
-    type: "text",
-    required: false,
+    label: "Icon",
+    required: true,
+    placeholder: "Search icons",
+    noResultsLabel: "No icons found",
     admin: {
-        description: iconFieldDescription,
+        position: "sidebar",
     },
-} as const
+})
 
 const colorField = {
     name: "color",
@@ -388,14 +389,7 @@ export const SubscriptionCollection: GlobalConfig = {
             fields: [
                 { name: "title", type: "text", required: false, localized: true },
                 { name: "description", type: "textarea", required: false, localized: true },
-                {
-                    name: "icon",
-                    type: "text",
-                    required: false,
-                    admin: {
-                        description: 'Tabler Icon Name ohne "Icon"-Praefix, z. B. "server", "cloud" oder "users-group". Unbekannte Werte fallen auf "cube" zurueck.',
-                    },
-                },
+                iconField,
                 { name: "price", type: "number", required: false, defaultValue: 0, admin: { description: "Monthly price in EUR." } },
             ],
         },
