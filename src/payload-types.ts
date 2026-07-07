@@ -821,6 +821,26 @@ export interface Page {
             blockName?: string | null;
             blockType: 'widehero';
           }
+        | {
+            sectionHeading?: string | null;
+            sectionLayout: 'center' | 'left';
+            sectionDescription?: string | null;
+            sectionLinkButton?: {
+              label?: string | null;
+              url?: string | null;
+            };
+            features?:
+              | {
+                  icon?: string | null;
+                  title: string;
+                  description?: string | null;
+                  id?: string | null;
+                }[]
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'listFeature';
+          }
       )[]
     | null;
   meta?: {
@@ -1733,6 +1753,29 @@ export interface PagesSelect<T extends boolean = true> {
                     label?: T;
                     url?: T;
                     variant?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        listFeature?:
+          | T
+          | {
+              sectionHeading?: T;
+              sectionLayout?: T;
+              sectionDescription?: T;
+              sectionLinkButton?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                  };
+              features?:
+                | T
+                | {
+                    icon?: T;
+                    title?: T;
+                    description?: T;
                     id?: T;
                   };
               id?: T;

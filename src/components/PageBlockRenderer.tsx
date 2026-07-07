@@ -6,6 +6,7 @@ import { FaqSection } from "@/components/sections/FaqSection"
 import { BentoSection } from "@/components/sections/BentoSection"
 import { HeroSection } from "@/components/sections/HeroSection"
 import { InstallSection } from "@/components/sections/InstallSection"
+import { ListFeatureSection } from "@/components/sections/ListFeatureSection"
 import { OffsetCardsSection } from "@/components/sections/OffsetCardsSection"
 import { RoadmapSection } from "@/components/sections/RoadmapSection"
 import { ScrollCardSection } from "@/components/sections/ScrollCardSection"
@@ -45,6 +46,7 @@ const pageBlockRenderers: Partial<Record<PageBlock["blockType"], BlockRenderer>>
     standaloneCard: (block) => <StandaloneCardSection content={block as Extract<PageBlock, { blockType: "standaloneCard" }>} />,
     video: (block) => <VideoSection content={block as Extract<PageBlock, { blockType: "video" }>} />,
     widehero: (block) => <WideHeroSection content={block as Extract<PageBlock, { blockType: "widehero" }>} />,
+    listFeature: (block) => <ListFeatureSection content={block as Extract<PageBlock, { blockType: "listFeature" }>} />,
 }
 
 function renderPageBlock(block: PageBlock, options: PageBlockRenderOptions) {

@@ -11,6 +11,7 @@ import { BentoBlock } from "../blocks/BentoBlock"
 import { HeroBlock } from "../blocks/HeroBlock"
 import { InstallBlock } from "../blocks/InstallBlock"
 import { JobsBlock } from "../blocks/JobsBlock"
+import { ListFeatureSection } from "../blocks/ListFeatureSection"
 import { MarkdownBlock } from "../blocks/MarkdownBlock"
 import { OffsetCardsBlock } from "../blocks/OffsetCardsBlock"
 import { RoadmapBlock } from "../blocks/RoadmapBlock"
@@ -87,6 +88,7 @@ export const Pages: CollectionConfig = {
                 StandaloneBlock,
                 VideoBlock,
                 WideHeroBlock,
+                ListFeatureSection,
             ],
             required: false,
             localized: true,

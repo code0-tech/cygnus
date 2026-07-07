@@ -29,6 +29,7 @@ export type ScrollCardsLayoutBlock = Extract<PageLayoutBlock, { blockType: "scro
 export type StandaloneCardLayoutBlock = Extract<PageLayoutBlock, { blockType: "standaloneCard" }>
 export type VideoLayoutBlock = Extract<PageLayoutBlock, { blockType: "video" }>
 export type WideHeroLayoutBlock = Extract<PageLayoutBlock, { blockType: "widehero" }>
+export type ListFeatureLayoutBlock = Extract<PageLayoutBlock, { blockType: "listFeature" }>
 
 type FeatureSlug = Feature["slug"]
 interface FeatureItem {
