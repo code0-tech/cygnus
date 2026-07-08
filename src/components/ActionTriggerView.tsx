@@ -32,7 +32,7 @@ export function ActionTriggerView({ locale, triggers, functionDefs }: ActionTrig
             <SegmentedControl
                 type="single"
                 value={viewMode}
-                onValueChange={(value) => {
+                onValueChange={(value: string) => {
                     if (value === "both" || value === "triggers" || value === "functionDefs") {
                         setViewMode(value)
                     }

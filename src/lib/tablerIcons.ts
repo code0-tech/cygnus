@@ -1,32 +1,21 @@
 import "server-only"
 
 import { createIconResolver } from "@mvriu5/payload-icon-picker"
+import { simpleIconsAdapter } from "@mvriu5/payload-icon-picker/adapters/simple-icons"
+import { tablerIconAdapter } from "@mvriu5/payload-icon-picker/adapters/tabler"
 import * as SimpleIcons from "@icons-pack/react-simple-icons"
-import { icons as tablerIcons } from "@tabler/icons-react"
-import type { ComponentType } from "react"
-import { createElement, type Key, type ReactNode } from "react"
+import * as TablerIcons from "@tabler/icons-react"
+import { createElement, type CSSProperties, type Key, type ReactNode } from "react"
 
-type IconComponent = ComponentType<{
-    size?: number
-    "aria-hidden"?: boolean
-    focusable?: boolean
-}>
-type IconResolverConfig = Parameters<typeof createIconResolver>[0]
-
-const prefixedTablerIcons = Object.fromEntries(Object.entries(tablerIcons).map(([name, Icon]) => [`tabler:${name}`, Icon]))
-const prefixedSimpleIcons = Object.fromEntries(
-    Object.entries(SimpleIcons)
-        .filter(([, Icon]) => typeof Icon === "object" || typeof Icon === "function")
-        .map(([name, Icon]) => [`si:${name}`, Icon])
-)
+const iconResolverIcons = [
+    ...tablerIconAdapter(TablerIcons),
+    ...tablerIconAdapter(TablerIcons, { prefix: "tabler" }),
+    ...simpleIconsAdapter(SimpleIcons),
+    ...simpleIconsAdapter(SimpleIcons, { prefix: "si" }),
+]
 
 const resolveStoredIcon = createIconResolver({
-    icons: {
-        ...tablerIcons,
-        ...prefixedTablerIcons,
-        ...prefixedSimpleIcons,
-    } as unknown as IconResolverConfig["icons"],
-    resolveIcon: ({ name }) => name,
+    icons: iconResolverIcons,
 })
 
 function toPascalIconName(icon: string | null | undefined) {
@@ -59,14 +48,25 @@ function toSimpleIconName(icon: string | null | undefined) {
 }
 
 export function getTablerIcon(icon: string | null | undefined, size = 24, key?: Key): ReactNode {
-    const fallbackIcon = tablerIcons.IconCube as IconComponent
     const normalizedIcon = icon?.trim()
-    const resolvedIcon =
-        resolveStoredIcon(normalizedIcon)?.Icon ??
-        (normalizedIcon?.startsWith("tabler:") ? resolveStoredIcon(`tabler:${toPayloadIconName(normalizedIcon.slice("tabler:".length))}`)?.Icon : undefined) ??
-        (normalizedIcon?.startsWith("si:") ? resolveStoredIcon(`si:${toSimpleIconName(normalizedIcon.slice("si:".length))}`)?.Icon : undefined) ??
-        resolveStoredIcon(toPayloadIconName(icon))?.Icon ??
-        fallbackIcon
+    const candidateValues = [
+        normalizedIcon,
+        normalizedIcon?.startsWith("tabler:") ? `tabler:${toPayloadIconName(normalizedIcon.slice("tabler:".length))}` : undefined,
+        normalizedIcon?.startsWith("si:") ? `si:${toSimpleIconName(normalizedIcon.slice("si:".length))}` : undefined,
+        toPayloadIconName(icon),
+        toSimpleIconName(icon),
+        "IconCube",
+    ]
+    const resolvedIcon = candidateValues.map((candidate) => resolveStoredIcon(candidate)).find((candidate) => Boolean(candidate?.svg))
+    const iconSizeStyle = { "--icon-size": `${size}px` } as CSSProperties
 
-    return createElement(resolvedIcon as IconComponent, { key, size, "aria-hidden": true })
+    if (!resolvedIcon?.svg) return null
+
+    return createElement("span", {
+        key,
+        "aria-hidden": true,
+        className: "inline-flex size-(--icon-size) shrink-0 [&>svg]:size-full",
+        dangerouslySetInnerHTML: { __html: resolvedIcon.svg },
+        style: iconSizeStyle,
+    })
 }

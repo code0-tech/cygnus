@@ -42,7 +42,7 @@ export function RuntimeControlClient() {
                     <SegmentedControl
                         type="single"
                         value={runtimeType}
-                        onValueChange={(value) => {
+                        onValueChange={(value: string) => {
                             if (value) setRuntimeType(value as RuntimeType)
                         }}
                         className={controlClassName}
@@ -58,7 +58,7 @@ export function RuntimeControlClient() {
                     <SegmentedControl
                         type="single"
                         value={executionType}
-                        onValueChange={(value) => {
+                        onValueChange={(value: string) => {
                             if (value) setExecutionType(value as ExecutionType)
                         }}
                         className={controlClassName}
