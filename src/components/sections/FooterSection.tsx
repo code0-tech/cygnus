@@ -56,7 +56,7 @@ export const FooterSection: React.FC<FooterSectionProps> = ({ locale, footer, cu
                     <div className="flex items-start gap-2">
                         <Image src={imageUrl} height={imageHeight} width={imageWidth} alt={image?.alt || "Code0 Logo"} className="h-auto w-37.5" />
                     </div>
-                    {footer.description && <p className={"text-secondary text-sm pb-4"}>{footer.description}</p>}
+                    {footer.description && <p className={"text-secondary pb-4"}>{footer.description}</p>}
                 </div>
 
                 <div className={"grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12 pb-16"}>
