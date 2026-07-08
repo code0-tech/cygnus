@@ -36,14 +36,23 @@ export async function BlogPreviewSection({ content, locale = "en" }: BlogPreview
     const heroImageUrl = getMediaUrl(heroImage?.url)
     const authorName = post.author && typeof post.author === "object" ? post.author.name : null
     const publishedDate = formatLongDate(new Date(post.createdAt), locale)
+    const showBorder = Boolean(content.showBorder)
     const isImageCenter = content.sectionLayout === "imageCenter"
     const isImageRight = content.sectionLayout === "imageRight"
+    const isImageLeft = content.sectionLayout === "imageLeft"
     const postHref = `/${locale}/blog/${post.slug}`
+    const contentSpacingClassName = isImageCenter
+        ? showBorder
+            ? "p-6 px-2 pb-4 md:p-10 md:px-2 md:pb-4"
+            : "px-0 pb-0 md:px-0 md:pb-0"
+        : showBorder
+          ? "p-6 md:p-10"
+          : cn(isImageRight && "pr-8", isImageLeft && "pl-8")
 
     return (
         <Section heading={content.sectionHeading} description={content.sectionDescription} funnelType="center" animation={{ preset: "none" }}>
             <Link href={postHref} className={cn("group block", isImageCenter && "mx-auto w-full max-w-5xl")}>
-                <PreviewFrame showBorder={content.showBorder ?? false}>
+                <PreviewFrame showBorder={showBorder}>
                     <article className={cn("relative z-10 overflow-hidden", isImageCenter ? "flex flex-col" : "grid min-h-96 lg:grid-cols-2")}>
                         <div className={cn("relative overflow-hidden bg-primary/40", isImageCenter ? "aspect-video" : "min-h-64 lg:min-h-96", isImageRight && "lg:order-2")}>
                             {heroImageUrl ? (
@@ -59,14 +68,7 @@ export async function BlogPreviewSection({ content, locale = "en" }: BlogPreview
                             )}
                         </div>
 
-                        <div
-                            className={cn(
-                                "flex flex-col justify-center p-6 md:p-10",
-                                isImageCenter && "px-0 md:px-0 pb-0 md:pb-0",
-                                content.showBorder && isImageCenter && "px-2 md:px-2 pb-4 md:pb-4",
-                                isImageRight && "lg:order-1"
-                            )}
-                        >
+                        <div className={cn("flex flex-col justify-center", contentSpacingClassName, isImageRight && "lg:order-1")}>
                             <p className="mb-3 text-xs text-tertiary">{[authorName, publishedDate].filter(Boolean).join(" · ")}</p>
                             <h3 className="max-w-3xl text-3xl font-semibold leading-tight tracking-tight text-white md:text-4xl">{post.title}</h3>
                             {post.shortDescription && <p className="mt-4 max-w-2xl text-base leading-7 text-secondary md:text-lg">{post.shortDescription}</p>}
