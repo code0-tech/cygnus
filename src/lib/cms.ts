@@ -62,6 +62,12 @@ type ActionDetailItem = Pick<Action, "id" | "slug" | "title" | "shortDescription
     functiondefinitions?: (number | null) | Media
 }
 
+interface SubscriptionUsageRange {
+    step: number
+    min: number
+    max: number
+}
+
 export type JobItem = Pick<Job, "id" | "title" | "slug" | "category" | "type" | "location" | "description" | "order">
 type JobDetailItem = Pick<Job, "id" | "title" | "slug" | "category" | "type" | "location" | "description" | "order" | "content">
 export type TeamMemberItem = Pick<TeamMember, "id" | "name" | "image" | "shortDescription" | "about" | "role" | "joinedAt">
@@ -130,15 +136,21 @@ export interface SubscriptionConfigData {
             color: "brand" | "pink" | "yellow" | "aqua" | "blue"
         }
     }
+    paymentPeriod: {
+        label: string
+        description: string
+        monthlyText: string
+        quarterlyText: string
+        yearlyText: string
+        quarterlyDiscount: number
+        yearlyDiscount: number
+    }
     workflowExecutions: {
         title: string
         description: string
-        min: number
-        max: number
-        step: number
-        minLabel: string
-        maxLabel: string
-        centerSuffix: string
+        b2b: SubscriptionUsageRange
+        b2c: SubscriptionUsageRange
+        suffix: string
     }
     workflowCalculator: {
         triggerLabel: string
@@ -166,12 +178,9 @@ export interface SubscriptionConfigData {
     aiTokens: {
         title: string
         description: string
-        min: number
-        max: number
-        step: number
-        minLabel: string
-        maxLabel: string
-        centerSuffix: string
+        b2b: SubscriptionUsageRange
+        b2c: SubscriptionUsageRange
+        suffix: string
     }
     aiTokenPriceFactor: number
     contactSales: {

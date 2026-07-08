@@ -23,6 +23,11 @@ type SubscriptionSelection = {
     workflowExecutions: number
     aiTokens: number
 }
+type UsageRange = {
+    min: number
+    max: number
+    step: number
+}
 
 export interface SubscriptionIcons {
     featureOverview: ReactNode[]
@@ -168,6 +173,14 @@ function AdditionalFeatureCard({ title, description, active, onClick, icon, form
     )
 }
 
+function clampToRange(value: number, range: UsageRange) {
+    return Math.min(Math.max(value, range.min), range.max)
+}
+
+function formatUsageLabel(value: number, suffix: string, locale: AppLocale) {
+    return `${value.toLocaleString(locale)} ${suffix}`
+}
+
 export function SubscriptionConfigurator({ locale, content, icons }: { locale: AppLocale; content: SubscriptionConfigData; icons: SubscriptionIcons }) {
     const workflowExecutions = content.workflowExecutions
     const aiTokens = content.aiTokens
@@ -178,6 +191,8 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
         workflowExecutions: 1000,
         aiTokens: 1000000,
     })
+    const workflowExecutionRange = workflowExecutions[selection.customerType]
+    const aiTokenRange = aiTokens[selection.customerType]
     const [selectedFeatures, setSelectedFeatures] = useState<Set<number>>(new Set())
     const { wrapperRef: desktopWrapperRef, containerRef: desktopContainerRef } = useDesktopPinnedPosition<HTMLDivElement, HTMLDivElement>(96)
 
@@ -257,7 +272,14 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
                                     icon={icons.customerType.b2b}
                                     accent={content.customerType.b2b.color}
                                     active={selection.customerType === "b2b"}
-                                    onClick={() => setSelection((current) => ({ ...current, customerType: "b2b" }))}
+                                    onClick={() =>
+                                        setSelection((current) => ({
+                                            ...current,
+                                            customerType: "b2b",
+                                            workflowExecutions: clampToRange(current.workflowExecutions, workflowExecutions.b2b),
+                                            aiTokens: clampToRange(current.aiTokens, aiTokens.b2b),
+                                        }))
+                                    }
                                 />
                                 <OptionCard
                                     title={content.customerType.b2c.title}
@@ -265,7 +287,14 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
                                     icon={icons.customerType.b2c}
                                     accent={content.customerType.b2c.color}
                                     active={selection.customerType === "b2c"}
-                                    onClick={() => setSelection((current) => ({ ...current, customerType: "b2c" }))}
+                                    onClick={() =>
+                                        setSelection((current) => ({
+                                            ...current,
+                                            customerType: "b2c",
+                                            workflowExecutions: clampToRange(current.workflowExecutions, workflowExecutions.b2c),
+                                            aiTokens: clampToRange(current.aiTokens, aiTokens.b2c),
+                                        }))
+                                    }
                                 />
                             </div>
                         </div>
@@ -281,24 +310,24 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
                                     content={content.workflowCalculator}
                                     businessTypeIcons={icons.workflowBusinessTypes}
                                     value={selection.workflowExecutions}
-                                    min={workflowExecutions.min}
-                                    max={workflowExecutions.max}
-                                    step={workflowExecutions.step}
-                                    suffix={workflowExecutions.centerSuffix}
+                                    min={workflowExecutionRange.min}
+                                    max={workflowExecutionRange.max}
+                                    step={workflowExecutionRange.step}
+                                    suffix={workflowExecutions.suffix}
                                     onApply={(workflowExecutionsValue) => setSelection((current) => ({ ...current, workflowExecutions: workflowExecutionsValue }))}
                                 />
                             </div>
                             <Slider
-                                min={workflowExecutions.min}
-                                max={workflowExecutions.max}
-                                step={workflowExecutions.step}
+                                min={workflowExecutionRange.min}
+                                max={workflowExecutionRange.max}
+                                step={workflowExecutionRange.step}
                                 value={selection.workflowExecutions}
                                 onChange={(workflowExecutionsValue) => setSelection((current) => ({ ...current, workflowExecutions: workflowExecutionsValue }))}
                                 ariaLabel={workflowExecutions.title}
                                 className="mt-4"
-                                minLabel={workflowExecutions.minLabel}
-                                centerLabel={`${selection.workflowExecutions} ${workflowExecutions.centerSuffix}`}
-                                maxLabel={workflowExecutions.maxLabel}
+                                minLabel={formatUsageLabel(workflowExecutionRange.min, workflowExecutions.suffix, locale)}
+                                centerLabel={formatUsageLabel(selection.workflowExecutions, workflowExecutions.suffix, locale)}
+                                maxLabel={formatUsageLabel(workflowExecutionRange.max, workflowExecutions.suffix, locale)}
                             />
                             <div className="mt-2 flex flex-wrap items-center justify-end gap-2">
                                 <p className="text-sm font-medium text-tertiary">{content.contactSales.prompt}</p>
@@ -316,16 +345,16 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
                                 </div>
                             </div>
                             <Slider
-                                min={aiTokens.min}
-                                max={aiTokens.max}
-                                step={aiTokens.step}
+                                min={aiTokenRange.min}
+                                max={aiTokenRange.max}
+                                step={aiTokenRange.step}
                                 value={selection.aiTokens}
                                 onChange={(aiTokensValue) => setSelection((current) => ({ ...current, aiTokens: aiTokensValue }))}
                                 ariaLabel={aiTokens.title}
                                 className="mt-4"
-                                minLabel={aiTokens.minLabel}
-                                centerLabel={`${selection.aiTokens.toLocaleString(locale)} ${aiTokens.centerSuffix}`}
-                                maxLabel={aiTokens.maxLabel}
+                                minLabel={formatUsageLabel(aiTokenRange.min, aiTokens.suffix, locale)}
+                                centerLabel={formatUsageLabel(selection.aiTokens, aiTokens.suffix, locale)}
+                                maxLabel={formatUsageLabel(aiTokenRange.max, aiTokens.suffix, locale)}
                             />
                         </div>
 

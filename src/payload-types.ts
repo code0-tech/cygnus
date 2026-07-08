@@ -2307,15 +2307,29 @@ export interface SubscriptionConfig {
       color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue') | null;
     };
   };
+  paymentPeriod?: {
+    label?: string | null;
+    description?: string | null;
+    monthlyText?: string | null;
+    quarterlyText?: string | null;
+    yearlyText?: string | null;
+    quarterlyDiscount?: number | null;
+    yearlyDiscount?: number | null;
+  };
   workflowExecutions?: {
     title?: string | null;
     description?: string | null;
-    min?: number | null;
-    max?: number | null;
-    step?: number | null;
-    minLabel?: string | null;
-    maxLabel?: string | null;
-    centerSuffix?: string | null;
+    b2b?: {
+      step?: number | null;
+      min?: number | null;
+      max?: number | null;
+    };
+    b2c?: {
+      step?: number | null;
+      min?: number | null;
+      max?: number | null;
+    };
+    suffix?: string | null;
   };
   workflowCalculator?: {
     triggerLabel?: string | null;
@@ -2345,12 +2359,17 @@ export interface SubscriptionConfig {
   aiTokens?: {
     title?: string | null;
     description?: string | null;
-    min?: number | null;
-    max?: number | null;
-    step?: number | null;
-    minLabel?: string | null;
-    maxLabel?: string | null;
-    centerSuffix?: string | null;
+    b2b?: {
+      step?: number | null;
+      min?: number | null;
+      max?: number | null;
+    };
+    b2c?: {
+      step?: number | null;
+      min?: number | null;
+      max?: number | null;
+    };
+    suffix?: string | null;
   };
   aiTokenPriceFactor?: number | null;
   contactSales?: {
@@ -2635,17 +2654,37 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
               color?: T;
             };
       };
+  paymentPeriod?:
+    | T
+    | {
+        label?: T;
+        description?: T;
+        monthlyText?: T;
+        quarterlyText?: T;
+        yearlyText?: T;
+        quarterlyDiscount?: T;
+        yearlyDiscount?: T;
+      };
   workflowExecutions?:
     | T
     | {
         title?: T;
         description?: T;
-        min?: T;
-        max?: T;
-        step?: T;
-        minLabel?: T;
-        maxLabel?: T;
-        centerSuffix?: T;
+        b2b?:
+          | T
+          | {
+              step?: T;
+              min?: T;
+              max?: T;
+            };
+        b2c?:
+          | T
+          | {
+              step?: T;
+              min?: T;
+              max?: T;
+            };
+        suffix?: T;
       };
   workflowCalculator?:
     | T
@@ -2679,12 +2718,21 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
     | {
         title?: T;
         description?: T;
-        min?: T;
-        max?: T;
-        step?: T;
-        minLabel?: T;
-        maxLabel?: T;
-        centerSuffix?: T;
+        b2b?:
+          | T
+          | {
+              step?: T;
+              min?: T;
+              max?: T;
+            };
+        b2c?:
+          | T
+          | {
+              step?: T;
+              min?: T;
+              max?: T;
+            };
+        suffix?: T;
       };
   aiTokenPriceFactor?: T;
   contactSales?:

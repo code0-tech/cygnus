@@ -1,5 +1,5 @@
 import { iconField as payloadIconField } from "@mvriu5/payload-icon-picker"
-import type { GlobalConfig } from "payload"
+import type { Field, GlobalConfig } from "payload"
 
 const accentColorOptions = [
     { label: "Brand", value: "brand" },
@@ -27,6 +27,12 @@ const colorField = {
     options: accentColorOptions,
     defaultValue: "aqua",
 } as const
+
+const usageRangeFields = (defaults: { min: number; max: number; step: number }): Field[] => [
+    { name: "step", type: "number", required: false, defaultValue: defaults.step },
+    { name: "min", type: "number", required: false, defaultValue: defaults.min },
+    { name: "max", type: "number", required: false, defaultValue: defaults.max },
+]
 
 export const SubscriptionCollection: GlobalConfig = {
     slug: "subscriptionConfig",
@@ -243,6 +249,42 @@ export const SubscriptionCollection: GlobalConfig = {
             ],
         },
         {
+            name: "paymentPeriod",
+            label: "Payment Period",
+            type: "group",
+            fields: [
+                { name: "label", type: "text", required: false, localized: true, defaultValue: "Payment period" },
+                {
+                    name: "description",
+                    type: "textarea",
+                    required: false,
+                    localized: true,
+                    defaultValue: "Choose how often you want to be billed.",
+                },
+                { name: "monthlyText", type: "text", required: false, localized: true, defaultValue: "Monthly" },
+                { name: "quarterlyText", type: "text", required: false, localized: true, defaultValue: "Quarterly" },
+                { name: "yearlyText", type: "text", required: false, localized: true, defaultValue: "Yearly" },
+                {
+                    name: "quarterlyDiscount",
+                    label: "Quarterly Discount",
+                    type: "number",
+                    required: false,
+                    defaultValue: 0,
+                    min: 0,
+                    max: 1,
+                },
+                {
+                    name: "yearlyDiscount",
+                    label: "Yearly Discount",
+                    type: "number",
+                    required: false,
+                    defaultValue: 0,
+                    min: 0,
+                    max: 1,
+                },
+            ],
+        },
+        {
             name: "workflowExecutions",
             type: "group",
             fields: [
@@ -254,12 +296,19 @@ export const SubscriptionCollection: GlobalConfig = {
                     localized: true,
                     defaultValue: "How many workflow executions do you expect per month?",
                 },
-                { name: "min", type: "number", required: false, defaultValue: 200 },
-                { name: "max", type: "number", required: false, defaultValue: 10000 },
-                { name: "step", type: "number", required: false, defaultValue: 100 },
-                { name: "minLabel", type: "text", required: false, localized: true, defaultValue: "200 exec" },
-                { name: "maxLabel", type: "text", required: false, localized: true, defaultValue: "10,000 exec" },
-                { name: "centerSuffix", type: "text", required: false, localized: true, defaultValue: "exec" },
+                {
+                    name: "b2b",
+                    label: "B2B",
+                    type: "group",
+                    fields: usageRangeFields({ min: 200, max: 10000, step: 100 }),
+                },
+                {
+                    name: "b2c",
+                    label: "B2C",
+                    type: "group",
+                    fields: usageRangeFields({ min: 10, max: 1000, step: 10 }),
+                },
+                { name: "suffix", type: "text", required: false, localized: true, defaultValue: "exec" },
             ],
         },
         {
@@ -331,12 +380,19 @@ export const SubscriptionCollection: GlobalConfig = {
             fields: [
                 { name: "title", type: "text", required: false, localized: true, defaultValue: "AI Tokens" },
                 { name: "description", type: "textarea", required: false, localized: true, defaultValue: "How many AI tokens do you expect to consume per month?" },
-                { name: "min", type: "number", required: false, defaultValue: 100000 },
-                { name: "max", type: "number", required: false, defaultValue: 10000000 },
-                { name: "step", type: "number", required: false, defaultValue: 100000 },
-                { name: "minLabel", type: "text", required: false, localized: true, defaultValue: "100K tokens" },
-                { name: "maxLabel", type: "text", required: false, localized: true, defaultValue: "10M tokens" },
-                { name: "centerSuffix", type: "text", required: false, localized: true, defaultValue: "tokens" },
+                {
+                    name: "b2b",
+                    label: "B2B",
+                    type: "group",
+                    fields: usageRangeFields({ min: 100000, max: 10000000, step: 100000 }),
+                },
+                {
+                    name: "b2c",
+                    label: "B2C",
+                    type: "group",
+                    fields: usageRangeFields({ min: 10000, max: 1000000, step: 10000 }),
+                },
+                { name: "suffix", type: "text", required: false, localized: true, defaultValue: "tokens" },
             ],
         },
         {

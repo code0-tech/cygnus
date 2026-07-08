@@ -11,7 +11,6 @@ type SliderProps = {
     step?: number
     value: number
     onChange: (value: number) => void
-    accent?: SliderAccent
     className?: string
     lines?: number
     minLabel?: string
@@ -20,7 +19,7 @@ type SliderProps = {
     ariaLabel?: string
 }
 
-export function Slider({ min, max, step = 1, value, onChange, accent = "aqua", className, lines = 72, minLabel, maxLabel, centerLabel, ariaLabel }: SliderProps) {
+export function Slider({ min, max, step = 1, value, onChange, className, lines = 72, minLabel, maxLabel, centerLabel, ariaLabel }: SliderProps) {
     const trackRef = useRef<HTMLDivElement>(null)
     const clampedValue = Math.min(max, Math.max(min, value))
     const progress = ((clampedValue - min) / (max - min)) * 100
