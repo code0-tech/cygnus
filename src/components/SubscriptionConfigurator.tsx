@@ -16,10 +16,12 @@ import { Card } from "./ui/Card"
 
 type DeploymentMode = "self-hosted" | "cloud"
 type CustomerType = "b2b" | "b2c"
+type PaymentPeriod = "monthly" | "quarterly" | "yearly"
 type OptionAccent = "aqua" | "yellow" | "pink" | "blue" | "brand"
 type SubscriptionSelection = {
     deployment: DeploymentMode
     customerType: CustomerType
+    paymentPeriod: PaymentPeriod
     workflowExecutions: number
     aiTokens: number
 }
@@ -89,6 +91,19 @@ interface AdditionalFeatureCardProps {
     formattedPrice: string
 }
 
+interface PaymentPeriodSwitchProps {
+    content: SubscriptionConfigData["paymentPeriod"]
+    locale: AppLocale
+    value: PaymentPeriod
+    onChange: (value: PaymentPeriod) => void
+}
+
+const paymentPeriodOptions = [
+    { value: "monthly", textKey: "monthlyText", indicatorClassName: "translate-x-0" },
+    { value: "quarterly", textKey: "quarterlyText", indicatorClassName: "translate-x-full" },
+    { value: "yearly", textKey: "yearlyText", indicatorClassName: "translate-x-[200%]" },
+] as const
+
 function OptionCard({ title, description, active, onClick, icon, disabled = false, accent = "aqua" }: OptionCardProps) {
     return (
         <button
@@ -120,6 +135,49 @@ function OptionCard({ title, description, active, onClick, icon, disabled = fals
                 <p className="text-sm leading-6 text-secondary">{description}</p>
             </div>
         </button>
+    )
+}
+
+function PaymentPeriodSwitch({ content, locale, value, onChange }: PaymentPeriodSwitchProps) {
+    const activeOption = paymentPeriodOptions.find((option) => option.value === value) ?? paymentPeriodOptions[0]
+
+    return (
+        <div className="space-y-3">
+            <div>
+                <p className="text-base text-secondary">{content.label}</p>
+                <p className="mt-1 text-sm text-tertiary">{content.description}</p>
+            </div>
+            <div className="relative grid grid-cols-3 overflow-hidden rounded-2xl border border-white/10 bg-white/3 p-1">
+                <div
+                    className={cn(
+                        "absolute left-1 top-1 h-[calc(100%-0.5rem)] w-[calc((100%-0.5rem)/3)] rounded-xl bg-white/10 transition-transform duration-300 ease-out",
+                        activeOption.indicatorClassName
+                    )}
+                />
+                {paymentPeriodOptions.map((option) => {
+                    const active = value === option.value
+                    const discount = getPaymentPeriodDiscount(option.value, content)
+
+                    return (
+                        <button
+                            key={option.value}
+                            type="button"
+                            onClick={() => onChange(option.value)}
+                            className={cn("relative z-10 min-w-0 rounded-xl px-3 py-2 text-sm font-medium transition-colors", active ? "text-white" : "text-secondary hover:text-white")}
+                        >
+                            <span className="inline-flex min-w-0 items-center justify-center gap-2">
+                                <span className="min-w-0 truncate">{content[option.textKey]}</span>
+                                {discount > 0 ? (
+                                    <span className={cn("shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold leading-none bg-brand/15 text-brand")}>
+                                        -{formatDiscountBadge(discount, locale)}
+                                    </span>
+                                ) : null}
+                            </span>
+                        </button>
+                    )
+                })}
+            </div>
+        </div>
     )
 }
 
@@ -181,6 +239,19 @@ function formatUsageLabel(value: number, suffix: string, locale: AppLocale) {
     return `${value.toLocaleString(locale)} ${suffix}`
 }
 
+function formatDiscountBadge(discount: number, locale: AppLocale) {
+    return new Intl.NumberFormat(locale === "de" ? "de-DE" : "en-US", {
+        style: "percent",
+        maximumFractionDigits: 0,
+    }).format(discount)
+}
+
+function getPaymentPeriodDiscount(period: PaymentPeriod, paymentPeriod: SubscriptionConfigData["paymentPeriod"]) {
+    if (period === "quarterly") return paymentPeriod.quarterlyDiscount
+    if (period === "yearly") return paymentPeriod.yearlyDiscount
+    return 0
+}
+
 export function SubscriptionConfigurator({ locale, content, icons }: { locale: AppLocale; content: SubscriptionConfigData; icons: SubscriptionIcons }) {
     const workflowExecutions = content.workflowExecutions
     const aiTokens = content.aiTokens
@@ -188,6 +259,7 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
     const [selection, setSelection] = useState<SubscriptionSelection>({
         deployment: "self-hosted",
         customerType: "b2b",
+        paymentPeriod: "monthly",
         workflowExecutions: 1000,
         aiTokens: 1000000,
     })
@@ -199,12 +271,15 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
     const workflowExecutionPrice = content.workflowExecutionPriceFactor * selection.workflowExecutions
     const aiTokenPrice = content.aiTokenPriceFactor * selection.aiTokens
     const additionalFeaturesPrice = Array.from(selectedFeatures).reduce((acc, idx) => acc + (content.additionalFeatures?.[idx]?.price ?? 0), 0)
-    const totalPrice = formatEuroCurrency(workflowExecutionPrice + aiTokenPrice + additionalFeaturesPrice, locale)
+    const paymentPeriodDiscount = getPaymentPeriodDiscount(selection.paymentPeriod, content.paymentPeriod)
+    const totalBeforeDiscount = workflowExecutionPrice + aiTokenPrice + additionalFeaturesPrice
+    const totalPrice = formatEuroCurrency(totalBeforeDiscount * (1 - paymentPeriodDiscount), locale)
 
     const subscribeHref = (() => {
         const searchParams = new URLSearchParams({
             deployment: selection.deployment,
             customerType: selection.customerType,
+            paymentPeriod: selection.paymentPeriod,
             workflowExecutions: String(selection.workflowExecutions),
             aiTokens: String(selection.aiTokens),
         })
@@ -240,6 +315,13 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
                 <Card size="lg" className="lg:col-span-3 min-w-0 bg-primary">
                     <div className="relative z-10 flex flex-col gap-8">
                         <h2 className="text-2xl font-semibold text-white lg:text-3xl">{content.optionsPanelHeading}</h2>
+
+                        <PaymentPeriodSwitch
+                            content={content.paymentPeriod}
+                            locale={locale}
+                            value={selection.paymentPeriod}
+                            onChange={(paymentPeriod) => setSelection((current) => ({ ...current, paymentPeriod }))}
+                        />
 
                         <div className="space-y-2">
                             <p className="text-base text-secondary">{content.deployment.label}</p>
