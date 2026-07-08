@@ -22,6 +22,7 @@ import { Users } from "./collections/users"
 import { GraphLexicalBlock, TriggerLexicalBlock } from "./lib/richText/customLexicalBlocks"
 import { payloadAiPlugin } from "@mvriu5/payload-ai"
 import { payloadIconPlugin } from "@mvriu5/payload-icon-picker"
+import * as SimpleIcons from "@icons-pack/react-simple-icons"
 import * as TablerIcons from "@tabler/icons-react"
 import { tablerIconAdapter } from "@mvriu5/payload-icon-picker/adapters/tabler"
 
@@ -33,6 +34,14 @@ const isDevelopment = process.env.NODE_ENV === "development"
 const appURL = (process.env.NEXT_PUBLIC_APP_URL?.trim() || (isDevelopment ? "http://localhost:3000" : "https://codezero.build")).replace(/\/$/, "")
 const allowedOrigins = Array.from(new Set([appURL, "http://localhost:3000", "https://localhost:3000", "https://codezero.build"]))
 const shouldSkipEmailVerify = isDevelopment || isBuildPhase || process.env.PAYLOAD_SKIP_EMAIL_VERIFY === "true" || !smtpHost
+const prefixIconValues = (icons: ReturnType<typeof tablerIconAdapter>, prefix: "tabler" | "si") =>
+    icons.map((icon) => ({
+        ...icon,
+        label: `${prefix}:${icon.label}`,
+        value: `${prefix}:${icon.name}`,
+    }))
+
+const iconPickerIcons = [...prefixIconValues(tablerIconAdapter(TablerIcons), "tabler"), ...prefixIconValues(tablerIconAdapter(SimpleIcons), "si")]
 
 export default buildConfig({
     serverURL: appURL,
@@ -124,8 +133,8 @@ export default buildConfig({
             },
         }),
         payloadIconPlugin({
-            icons: tablerIconAdapter(TablerIcons),
-            resolveIcon: ({ name }) => name,
+            icons: iconPickerIcons,
+            resolveIcon: ({ name, value }) => value ?? name,
         }),
         payloadAiPlugin({
             media: {
