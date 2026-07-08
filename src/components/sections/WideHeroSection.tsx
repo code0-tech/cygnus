@@ -103,13 +103,13 @@ export function WideHeroSection({ content }: WideHeroSectionProps) {
                         )}
 
                         {buttons.length > 0 && (
-                            <motion.div variants={STAGGER_ITEM} className="mt-8 flex w-full flex-col items-center justify-center gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:gap-4 lg:justify-start">
+                            <motion.div variants={STAGGER_ITEM} className="mt-8 flex w-full flex-col justify-center gap-2 sm:gap-4 lg:justify-start">
                                 {buttons.map((button, index) => (
                                     <HapticButtonLink
                                         href={button.url}
                                         key={`${button.label}-${button.id ?? index}`}
                                         variant={button.variant ?? "normal"}
-                                        className={cn("w-full sm:w-auto", button.variant === "filled" && "bg-white/80! text-primary! hover:bg-white!")}
+                                        className={cn("w-full", button.variant === "filled" && "bg-white/80! text-primary! hover:bg-white!")}
                                     >
                                         {button.label}
                                     </HapticButtonLink>
