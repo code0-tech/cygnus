@@ -317,7 +317,7 @@ const getFooterCached = cache(async (locale: AppLocale): Promise<Footer | null> 
         slug: "footer",
         locale,
         fallbackLocale: DEFAULT_LOCALE,
-        depth: 0,
+        depth: 1,
     })
 })
 

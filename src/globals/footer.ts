@@ -20,6 +20,13 @@ export const Footer: GlobalConfig = {
       localized: true,
     },
     {
+      name: "image",
+      label: "Image",
+      type: "upload",
+      relationTo: "media",
+      required: false,
+    },
+    {
       name: "contactEmail",
       label: "Contact Mail",
       type: "email",

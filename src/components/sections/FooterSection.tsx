@@ -2,7 +2,8 @@
 
 import { LandingContainer } from "@/components/ui/LandingContainer"
 import { localizeHref, type AppLocale } from "@/lib/i18n"
-import type { Footer } from "@/payload-types"
+import { getMediaUrl } from "@/lib/media"
+import type { Footer, Media } from "@/payload-types"
 import { SiDiscord, SiGithub, SiInstagram, SiX } from "@icons-pack/react-simple-icons"
 import { IconBrandLinkedin } from "@tabler/icons-react"
 import Image from "next/image"
@@ -28,6 +29,11 @@ export const FooterSection: React.FC<FooterSectionProps> = ({ locale, footer, cu
     const { trigger } = useWebHaptics()
     if (!footer) return null
 
+    const image = footer.image && typeof footer.image === "object" ? (footer.image as Media) : null
+    const imageUrl = getMediaUrl(image?.url) || "/code0_text_logo_white.png"
+    const imageWidth = image?.width || 150
+    const imageHeight = image?.height || 150
+
     const legalLinks = [
         footer.legalLinks?.privacy?.url && footer.legalLinks?.privacy?.label
             ? {
@@ -48,7 +54,7 @@ export const FooterSection: React.FC<FooterSectionProps> = ({ locale, footer, cu
             <div className={"relative flex flex-col gap-4 overflow-visible"}>
                 <div className="flex max-w-xl flex-col gap-2">
                     <div className="flex items-start gap-2">
-                        <Image src={"/code0_text_logo_white.png"} height={"150"} width={"150"} alt={"Code0 Logo"} />
+                        <Image src={imageUrl} height={imageHeight} width={imageWidth} alt={image?.alt || "Code0 Logo"} className="h-auto w-[150px]" />
                     </div>
                     {footer.description && <p className={"text-secondary text-sm pb-4"}>{footer.description}</p>}
                 </div>

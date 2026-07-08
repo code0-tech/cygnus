@@ -2164,6 +2164,7 @@ export interface Footer {
   id: number;
   company_name: string;
   description?: string | null;
+  image?: (number | null) | Media;
   contactEmail?: string | null;
   legalLinks: {
     privacy: {
@@ -2441,6 +2442,7 @@ export interface NavigationSelect<T extends boolean = true> {
 export interface FooterSelect<T extends boolean = true> {
   company_name?: T;
   description?: T;
+  image?: T;
   contactEmail?: T;
   legalLinks?:
     | T
