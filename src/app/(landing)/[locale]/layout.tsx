@@ -20,10 +20,7 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
         notFound()
     }
 
-    const [navigation, footer] = await Promise.all([
-        getNavigation(locale),
-        getFooter(locale),
-    ])
+    const [navigation, footer] = await Promise.all([getNavigation(locale), getFooter(locale)])
     const items = navigation?.items?.items ?? []
     const buttons = navigation?.buttons?.buttons ?? []
     const currentYear = new Date().getUTCFullYear()
@@ -36,9 +33,6 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
                     {children}
                 </main>
                 <FooterSection locale={locale} footer={footer} currentYear={currentYear} />
-                <div className="pointer-events-none absolute inset-x-0 bottom-0 z-50 flex justify-center" aria-hidden="true">
-                    <div className="h-16 w-full bg-blue/20 blur-3xl" />
-                </div>
             </div>
         </ConsentManager>
     )

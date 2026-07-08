@@ -54,7 +54,7 @@ export const FooterSection: React.FC<FooterSectionProps> = ({ locale, footer, cu
             <div className={"relative flex flex-col gap-4 overflow-visible"}>
                 <div className="flex max-w-xl flex-col gap-2">
                     <div className="flex items-start gap-2">
-                        <Image src={imageUrl} height={imageHeight} width={imageWidth} alt={image?.alt || "Code0 Logo"} className="h-auto w-[150px]" />
+                        <Image src={imageUrl} height={imageHeight} width={imageWidth} alt={image?.alt || "Code0 Logo"} className="h-auto w-37.5" />
                     </div>
                     {footer.description && <p className={"text-secondary text-sm pb-4"}>{footer.description}</p>}
                 </div>
