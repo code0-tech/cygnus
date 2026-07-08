@@ -18,6 +18,7 @@ export type InstallLayoutBlock = Extract<PageLayoutBlock, { blockType: "install"
 export type SwipeCardsLayoutBlock = Extract<PageLayoutBlock, { blockType: "swipeCards" }>
 export type BrandLayoutBlock = Extract<PageLayoutBlock, { blockType: "brand" }>
 export type CtaLayoutBlock = Extract<PageLayoutBlock, { blockType: "cta" }>
+export type CTAImageLayoutBlock = Extract<PageLayoutBlock, { blockType: "ctaImage" }>
 export type FaqLayoutBlock = Extract<PageLayoutBlock, { blockType: "faq" }>
 export type CardRowLayoutBlock = Extract<PageLayoutBlock, { blockType: "cardRow" }>
 export type JobsLayoutBlock = Extract<PageLayoutBlock, { blockType: "jobs" }>

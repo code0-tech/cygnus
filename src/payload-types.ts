@@ -609,6 +609,30 @@ export interface Page {
             blockType: 'cta';
           }
         | {
+            title: string;
+            texts?:
+              | {
+                  text: string;
+                  id?: string | null;
+                }[]
+              | null;
+            buttons?:
+              | {
+                  label: string;
+                  url: string;
+                  variant?: ('none' | 'normal' | 'outlined' | 'filled') | null;
+                  id?: string | null;
+                }[]
+              | null;
+            image?: (number | null) | Media;
+            showCard?: boolean | null;
+            showImageBorder?: boolean | null;
+            imageMask?: ('top' | 'right' | 'bottom' | 'left')[] | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'ctaImage';
+          }
+        | {
             heading: string;
             searchPlaceholder: string;
             allLocationsLabel: string;
@@ -1528,6 +1552,31 @@ export interface PagesSelect<T extends boolean = true> {
                     label?: T;
                     url?: T;
                   };
+              id?: T;
+              blockName?: T;
+            };
+        ctaImage?:
+          | T
+          | {
+              title?: T;
+              texts?:
+                | T
+                | {
+                    text?: T;
+                    id?: T;
+                  };
+              buttons?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                    variant?: T;
+                    id?: T;
+                  };
+              image?: T;
+              showCard?: T;
+              showImageBorder?: T;
+              imageMask?: T;
               id?: T;
               blockName?: T;
             };

@@ -1,6 +1,7 @@
 import { BrandSection } from "@/components/sections/BrandSection"
 import { BlogPreviewSection } from "@/components/sections/BlogPreviewSection"
 import { CardRowSection } from "@/components/sections/CardRowSection"
+import { CTAImageSection } from "@/components/sections/CTAImageSection"
 import { CtaSection } from "@/components/sections/CtaSection"
 import { FaqSection } from "@/components/sections/FaqSection"
 import { BentoSection } from "@/components/sections/BentoSection"
@@ -39,6 +40,7 @@ const pageBlockRenderers: Partial<Record<PageBlock["blockType"], BlockRenderer>>
     cardRow: (block, options) => <CardRowSection content={block as Extract<PageBlock, { blockType: "cardRow" }>}>{options.cardRowChildren}</CardRowSection>,
     faq: (block) => <FaqSection content={block as Extract<PageBlock, { blockType: "faq" }>} />,
     cta: (block, options) => <CtaSection content={block as Extract<PageBlock, { blockType: "cta" }>} floatingCta={options.ctaFloating} />,
+    ctaImage: (block) => <CTAImageSection content={block as Extract<PageBlock, { blockType: "ctaImage" }>} />,
     install: (block) => <InstallSection content={block as Extract<PageBlock, { blockType: "install" }>} />,
     roadmap: (block) => <RoadmapSection content={block as Extract<PageBlock, { blockType: "roadmap" }>} />,
     scrollCards: (block) => <ScrollCardSection content={block as Extract<PageBlock, { blockType: "scrollCards" }>} />,

@@ -6,6 +6,7 @@ import { BrandBlock } from "../blocks/BrandBlock"
 import { CardRowBlock } from "../blocks/CardRowBlock"
 import { ContactBlock } from "../blocks/ContactBlock"
 import { CtaBlock } from "../blocks/CtaBlock"
+import { CTAImageBlock } from "../blocks/CTAImageBlock"
 import { FaqBlock } from "../blocks/FaqBlock"
 import { BentoBlock } from "../blocks/BentoBlock"
 import { HeroBlock } from "../blocks/HeroBlock"
@@ -76,6 +77,7 @@ export const Pages: CollectionConfig = {
                 BrandBlock,
                 FaqBlock,
                 CtaBlock,
+                CTAImageBlock,
                 JobsBlock,
                 BlogBlock,
                 BlogPreviewBlock,
