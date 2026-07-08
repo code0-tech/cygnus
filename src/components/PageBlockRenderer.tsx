@@ -1,5 +1,6 @@
 import { BrandSection } from "@/components/sections/BrandSection"
 import { BlogPreviewSection } from "@/components/sections/BlogPreviewSection"
+import { BorderSection } from "@/components/sections/BorderSection"
 import { CardRowSection } from "@/components/sections/CardRowSection"
 import { CTAImageSection } from "@/components/sections/CTAImageSection"
 import { CtaSection } from "@/components/sections/CtaSection"
@@ -35,6 +36,7 @@ const pageBlockRenderers: Partial<Record<PageBlock["blockType"], BlockRenderer>>
     hero: (block) => <HeroSection content={block as Extract<PageBlock, { blockType: "hero" }>} />,
     bento: (block, options) => <BentoSection content={block as Extract<PageBlock, { blockType: "bento" }>} locale={options.locale} />,
     blogPreview: (block, options) => <BlogPreviewSection content={block as Extract<PageBlock, { blockType: "blogPreview" }>} locale={options.locale} />,
+    border: (block) => <BorderSection content={block as Extract<PageBlock, { blockType: "border" }>} />,
     brand: (block) => <BrandSection content={block as Extract<PageBlock, { blockType: "brand" }>} />,
     offsetCards: (block) => <OffsetCardsSection content={block as Extract<PageBlock, { blockType: "offsetCards" }>} />,
     cardRow: (block, options) => <CardRowSection content={block as Extract<PageBlock, { blockType: "cardRow" }>}>{options.cardRowChildren}</CardRowSection>,

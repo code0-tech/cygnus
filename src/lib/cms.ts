@@ -25,6 +25,7 @@ export type JobsLayoutBlock = Extract<PageLayoutBlock, { blockType: "jobs" }>
 export type ContactLayoutBlock = Extract<PageLayoutBlock, { blockType: "contact" }>
 export type BlogLayoutBlock = Extract<PageLayoutBlock, { blockType: "blog" }>
 export type BlogPreviewLayoutBlock = Extract<PageLayoutBlock, { blockType: "blogPreview" }>
+export type BorderLayoutBlock = Extract<PageLayoutBlock, { blockType: "border" }>
 export type RoadmapLayoutBlock = Extract<PageLayoutBlock, { blockType: "roadmap" }>
 export type ScrollCardsLayoutBlock = Extract<PageLayoutBlock, { blockType: "scrollCards" }>
 export type StandaloneCardLayoutBlock = Extract<PageLayoutBlock, { blockType: "standaloneCard" }>

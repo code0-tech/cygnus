@@ -671,6 +671,19 @@ export interface Page {
             blockType: 'blogPreview';
           }
         | {
+            /**
+             * Spacing above the border in pixels.
+             */
+            paddingTop?: number | null;
+            /**
+             * Spacing below the border in pixels.
+             */
+            paddingBottom?: number | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'border';
+          }
+        | {
             heading: string;
             description: string;
             searchPlaceholder: string;
@@ -1618,6 +1631,14 @@ export interface PagesSelect<T extends boolean = true> {
               sectionDescription?: T;
               blog?: T;
               showBorder?: T;
+              id?: T;
+              blockName?: T;
+            };
+        border?:
+          | T
+          | {
+              paddingTop?: T;
+              paddingBottom?: T;
               id?: T;
               blockName?: T;
             };

@@ -2,6 +2,7 @@ import { ActionBlock } from "@/blocks/ActionBlock"
 import { SwipeCardBlock } from "@/blocks/SwipeCardBlock"
 import { BlogBlock } from "../blocks/BlogBlock"
 import { BlogPreviewBlock } from "../blocks/BlogPreviewBlock"
+import { BorderBlock } from "../blocks/BorderBlock"
 import { BrandBlock } from "../blocks/BrandBlock"
 import { CardRowBlock } from "../blocks/CardRowBlock"
 import { ContactBlock } from "../blocks/ContactBlock"
@@ -81,6 +82,7 @@ export const Pages: CollectionConfig = {
                 JobsBlock,
                 BlogBlock,
                 BlogPreviewBlock,
+                BorderBlock,
                 ActionBlock,
                 MarkdownBlock,
                 ContactBlock,
