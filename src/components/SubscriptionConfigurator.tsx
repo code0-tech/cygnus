@@ -273,7 +273,7 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
     const additionalFeaturesPrice = Array.from(selectedFeatures).reduce((acc, idx) => acc + (content.additionalFeatures?.[idx]?.price ?? 0), 0)
     const paymentPeriodDiscount = getPaymentPeriodDiscount(selection.paymentPeriod, content.paymentPeriod)
     const totalBeforeDiscount = workflowExecutionPrice + aiTokenPrice + additionalFeaturesPrice
-    const totalPrice = formatEuroCurrency(totalBeforeDiscount * (1 - paymentPeriodDiscount), locale)
+    const totalPrice = totalBeforeDiscount * (1 - paymentPeriodDiscount)
 
     const subscribeHref = (() => {
         const searchParams = new URLSearchParams({

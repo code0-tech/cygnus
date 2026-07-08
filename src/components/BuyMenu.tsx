@@ -4,9 +4,10 @@ import { HapticButtonLink } from "@/components/ui/HapticButtonLink"
 import { IconShoppingCart } from "@tabler/icons-react"
 import { useSyncExternalStore } from "react"
 import { createPortal } from "react-dom"
+import NumberFlow from "@number-flow/react"
 
 interface BuyMenuProps {
-    price: string
+    price: number
     priceHeading: string
     priceCaption: string
     subscribeHref: string
@@ -16,7 +17,11 @@ interface BuyMenuProps {
 const subscribeToClient = () => () => {}
 
 export function BuyMenu({ price, priceHeading, priceCaption, subscribeHref, subscribeLabel }: BuyMenuProps) {
-    const isClient = useSyncExternalStore(subscribeToClient, () => true, () => false)
+    const isClient = useSyncExternalStore(
+        subscribeToClient,
+        () => true,
+        () => false
+    )
 
     if (!isClient) return null
 
@@ -25,7 +30,7 @@ export function BuyMenu({ price, priceHeading, priceCaption, subscribeHref, subs
             <div className="flex flex-col justify-center">
                 <span className="text-xs font-semibold tracking-wider text-tertiary uppercase">{priceHeading}</span>
                 <div className="flex flex-row items-baseline gap-1.5">
-                    <span className="text-2xl font-semibold text-brand tabular-nums">{price}</span>
+                    <NumberFlow value={price} format={{ style: "currency", currency: "EUR", trailingZeroDisplay: "stripIfInteger" }} className="text-2xl font-semibold text-brand" />
                     <span className="text-xs text-tertiary">{priceCaption}</span>
                 </div>
             </div>
