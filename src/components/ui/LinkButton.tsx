@@ -18,7 +18,7 @@ interface LinkButtonProps extends Omit<LinkProps, "href" | "locale"> {
 const baseClassName =
     "group/link relative w-max h-auto min-w-0 px-0 py-0 text-sm inline-flex items-center justify-center gap-1 tracking-normal" +
     " rounded-none cursor-pointer text-tertiary hover:text-brand transition-colors disabled:opacity-50" +
-    " after:pointer-events-none after:absolute after:bottom-0 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-current after:transition-transform after:duration-300 after:ease-out hover:after:scale-x-100" +
+    " after:pointer-events-none after:absolute after:bottom-0 after:left-0 after:h-px after:w-0 after:bg-current after:transition-[width] after:duration-300 after:ease-out hover:after:w-full" +
     " focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 disabled:pointer-events-none"
 
 export function LinkButton({ className, children, href, showArrow = true, locale, ...props }: LinkButtonProps) {
