@@ -64,7 +64,7 @@ export function CardRowSection({ content, children }: CardRowSectionProps) {
 
                             <div className="relative z-10 flex h-full flex-1 flex-col px-2 pb-2 pt-4">
                                 <h3 className="text-xl font-semibold text-white tracking-normal">{card.title}</h3>
-                                {card.description && <p className="mt-1 text-sm text-secondary">{card.description}</p>}
+                                {card.description && <p className="mt-1 text-secondary">{card.description}</p>}
                                 {card.link?.url && (
                                     <LinkButton href={card.link.url} className="mt-auto pt-4">
                                         {card.link.label}
