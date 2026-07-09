@@ -165,10 +165,10 @@ function PaymentPeriodSwitch({ content, locale, value, onChange }: PaymentPeriod
                             onClick={() => onChange(option.value)}
                             className={cn("relative z-10 min-w-0 rounded-xl px-3 py-2 text-sm font-medium transition-colors", active ? "text-white" : "text-secondary hover:text-white")}
                         >
-                            <span className="inline-flex min-w-0 items-center justify-center gap-2">
+                            <span className="inline-flex min-w-0 items-center justify-center gap-1">
                                 <span className="min-w-0 truncate">{content[option.textKey]}</span>
                                 {discount > 0 ? (
-                                    <span className={cn("shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold leading-none bg-brand/15 text-brand")}>
+                                    <span className={cn("shrink-0 rounded-full -mt-3 px-1 py-0.5 text-[10px] tracking-wider leading-none bg-brand/15 text-brand")}>
                                         -{formatDiscountBadge(discount, locale)}
                                     </span>
                                 ) : null}
@@ -235,10 +235,6 @@ function clampToRange(value: number, range: UsageRange) {
     return Math.min(Math.max(value, range.min), range.max)
 }
 
-function formatUsageLabel(value: number, suffix: string, locale: AppLocale) {
-    return `${value.toLocaleString(locale)} ${suffix}`
-}
-
 function formatDiscountBadge(discount: number, locale: AppLocale) {
     return new Intl.NumberFormat(locale === "de" ? "de-DE" : "en-US", {
         style: "percent",
@@ -255,13 +251,18 @@ function getPaymentPeriodDiscount(period: PaymentPeriod, paymentPeriod: Subscrip
 export function SubscriptionConfigurator({ locale, content, icons }: { locale: AppLocale; content: SubscriptionConfigData; icons: SubscriptionIcons }) {
     const workflowExecutions = content.workflowExecutions
     const aiTokens = content.aiTokens
+    const defaultSelection = content.defaults
+    const defaultWorkflowExecutionRange = workflowExecutions[defaultSelection.customerType]
+    const defaultAiTokenRange = aiTokens[defaultSelection.customerType]
+    const defaultWorkflowExecutions = defaultSelection.workflowExecutions[defaultSelection.customerType]
+    const defaultAiTokens = defaultSelection.aiTokens[defaultSelection.customerType]
 
     const [selection, setSelection] = useState<SubscriptionSelection>({
-        deployment: "self-hosted",
-        customerType: "b2b",
-        paymentPeriod: "monthly",
-        workflowExecutions: 1000,
-        aiTokens: 1000000,
+        deployment: defaultSelection.deployment,
+        customerType: defaultSelection.customerType,
+        paymentPeriod: defaultSelection.paymentPeriod,
+        workflowExecutions: clampToRange(defaultWorkflowExecutions, defaultWorkflowExecutionRange),
+        aiTokens: clampToRange(defaultAiTokens, defaultAiTokenRange),
     })
     const workflowExecutionRange = workflowExecutions[selection.customerType]
     const aiTokenRange = aiTokens[selection.customerType]
@@ -407,9 +408,7 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
                                 onChange={(workflowExecutionsValue) => setSelection((current) => ({ ...current, workflowExecutions: workflowExecutionsValue }))}
                                 ariaLabel={workflowExecutions.title}
                                 className="mt-4"
-                                minLabel={formatUsageLabel(workflowExecutionRange.min, workflowExecutions.suffix, locale)}
-                                centerLabel={formatUsageLabel(selection.workflowExecutions, workflowExecutions.suffix, locale)}
-                                maxLabel={formatUsageLabel(workflowExecutionRange.max, workflowExecutions.suffix, locale)}
+                                valueLabelSuffix={workflowExecutions.suffix}
                             />
                             <div className="mt-2 flex flex-wrap items-center justify-end gap-2">
                                 <p className="text-sm font-medium text-tertiary">{content.contactSales.prompt}</p>
@@ -434,9 +433,7 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
                                 onChange={(aiTokensValue) => setSelection((current) => ({ ...current, aiTokens: aiTokensValue }))}
                                 ariaLabel={aiTokens.title}
                                 className="mt-4"
-                                minLabel={formatUsageLabel(aiTokenRange.min, aiTokens.suffix, locale)}
-                                centerLabel={formatUsageLabel(selection.aiTokens, aiTokens.suffix, locale)}
-                                maxLabel={formatUsageLabel(aiTokenRange.max, aiTokens.suffix, locale)}
+                                valueLabelSuffix={aiTokens.suffix}
                             />
                         </div>
 

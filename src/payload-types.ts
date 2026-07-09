@@ -2262,6 +2262,19 @@ export interface SubscriptionConfig {
       }[]
     | null;
   optionsPanelHeading?: string | null;
+  defaults?: {
+    deployment?: ('self-hosted' | 'cloud') | null;
+    customerType?: ('b2b' | 'b2c') | null;
+    paymentPeriod?: ('monthly' | 'quarterly' | 'yearly') | null;
+    workflowExecutions?: {
+      b2b?: number | null;
+      b2c?: number | null;
+    };
+    aiTokens?: {
+      b2b?: number | null;
+      b2c?: number | null;
+    };
+  };
   deployment: {
     label?: string | null;
     selfHosted: {
@@ -2591,6 +2604,25 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
         id?: T;
       };
   optionsPanelHeading?: T;
+  defaults?:
+    | T
+    | {
+        deployment?: T;
+        customerType?: T;
+        paymentPeriod?: T;
+        workflowExecutions?:
+          | T
+          | {
+              b2b?: T;
+              b2c?: T;
+            };
+        aiTokens?:
+          | T
+          | {
+              b2b?: T;
+              b2c?: T;
+            };
+      };
   deployment?:
     | T
     | {

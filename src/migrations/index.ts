@@ -34,6 +34,7 @@ import * as migration_20260708_070818_20260708_cta_image_block from './20260708_
 import * as migration_20260708_071528_20260708_border_block from './20260708_071528_20260708_border_block';
 import * as migration_20260708_072801_20260708_footer_image from './20260708_072801_20260708_footer_image';
 import * as migration_20260708_105500_subscription_payment_period_usage_ranges from './20260708_105500_subscription_payment_period_usage_ranges';
+import * as migration_20260709_183358_subscription_configurator_defaults from './20260709_183358_subscription_configurator_defaults';
 
 export const migrations = [
   {
@@ -215,5 +216,10 @@ export const migrations = [
     up: migration_20260708_105500_subscription_payment_period_usage_ranges.up,
     down: migration_20260708_105500_subscription_payment_period_usage_ranges.down,
     name: '20260708_105500_subscription_payment_period_usage_ranges',
+  },
+  {
+    up: migration_20260709_183358_subscription_configurator_defaults.up,
+    down: migration_20260709_183358_subscription_configurator_defaults.down,
+    name: '20260709_183358_subscription_configurator_defaults'
   },
 ];

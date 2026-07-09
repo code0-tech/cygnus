@@ -21,10 +21,10 @@ import {
     Menu,
     MenuContent,
     MenuTrigger,
-    NumberInput,
 } from "@code0-tech/pictor"
+import { Slider } from "@/components/ui/Slider"
 import { IconCalculator, IconCheck, IconChevronDown, IconSearch, IconX } from "@tabler/icons-react"
-import { type ReactNode, useEffect, useId, useRef, useState } from "react"
+import { type ReactNode, useEffect, useState } from "react"
 
 interface WorkflowCalculatorContent {
     triggerLabel: string
@@ -76,6 +76,8 @@ export function WorkflowCalculatorDialog({ locale, content, businessTypeIcons, v
     const estimatedExecutions = Math.max(0, Math.round(rawEstimate))
     const applicableExecutions = clampToStep(estimatedExecutions, min, max, step)
     const formatterLocale = locale === "de" ? "de-DE" : "en-US"
+    const unit = selectedBusinessType?.conversion_unit
+    const unitLabel = unit ? `${unit.charAt(0).toUpperCase()}${unit.slice(1)} per month` : content.runsPerDayLabel
 
     useEffect(() => {
         setRunsPerDay(value)
@@ -106,7 +108,7 @@ export function WorkflowCalculatorDialog({ locale, content, businessTypeIcons, v
                         </DialogClose>
                     </div>
 
-                    <div className="grid gap-4 py-6">
+                    <div className="grid gap-8 py-6">
                         <div className="flex flex-col gap-2 text-xs font-medium text-secondary">
                             <span>{content.businessTypeLabel}</span>
                             <Menu modal={false} open={businessTypeMenuOpen} onOpenChange={setBusinessTypeMenuOpen}>
@@ -150,7 +152,7 @@ export function WorkflowCalculatorDialog({ locale, content, businessTypeIcons, v
                             </Menu>
                         </div>
 
-                        <CalculatorInput label={content.runsPerDayLabel} unit={selectedBusinessType?.conversion_unit} value={runsPerDay} min={min} max={max} onChange={setRunsPerDay} />
+                        <Slider min={min} max={max} step={step} value={runsPerDay} onChange={setRunsPerDay} ariaLabel={unitLabel} lines={48} valueLabelSuffix={unit} />
                     </div>
 
                     <DialogFooter className="pt-4! items-end! justify-between!">
@@ -170,75 +172,5 @@ export function WorkflowCalculatorDialog({ locale, content, businessTypeIcons, v
                 </DialogContent>
             </DialogPortal>
         </Dialog>
-    )
-}
-
-interface CalculatorInputProps {
-    label: string
-    unit?: string
-    value: number
-    onChange: (value: number) => void
-    min: number
-    max: number
-}
-
-function CalculatorInput({ label, unit, value, onChange, min, max }: CalculatorInputProps) {
-    const inputId = useId()
-    const wrapperRef = useRef<HTMLDivElement | null>(null)
-    const unitLabel = unit ? `${unit.charAt(0).toUpperCase()}${unit.slice(1)} per month` : label
-    const clampValue = (nextValue: number) => Math.min(max, Math.max(min, Number.isFinite(nextValue) ? nextValue : min))
-
-    const updateValue = (input: HTMLInputElement) => {
-        const rawValue = input.value
-        if (rawValue.trim() === "") return
-
-        const nextValue = Number(rawValue)
-        if (!Number.isFinite(nextValue)) return
-
-        if (nextValue > max) {
-            input.value = String(max)
-            onChange(max)
-        } else if (nextValue >= min) {
-            onChange(nextValue)
-        }
-    }
-
-    useEffect(() => {
-        const input = wrapperRef.current?.querySelector<HTMLInputElement>("input")
-        if (input && Number(input.value) !== value) input.value = String(value)
-    }, [value])
-
-    return (
-        <div className="flex min-w-0 flex-col gap-2">
-            <label htmlFor={inputId} className="text-xs font-medium text-secondary">
-                {unitLabel}
-            </label>
-            <div
-                ref={wrapperRef}
-                className="[&_.input__control]:text-center"
-                onInputCapture={(event) => {
-                    if (event.target instanceof HTMLInputElement) updateValue(event.target)
-                }}
-                onBlurCapture={(event) => {
-                    if (!(event.target instanceof HTMLInputElement)) return
-
-                    const nextValue = clampValue(Number(event.target.value))
-                    event.target.value = String(nextValue)
-                    onChange(nextValue)
-                }}
-                onClick={(event) => {
-                    if (!(event.target instanceof Element) || !event.target.closest(".input__left, .input__right")) return
-
-                    const input = event.currentTarget.querySelector<HTMLInputElement>("input")
-                    if (!input) return
-
-                    const nextValue = clampValue(Number(input.value))
-                    input.value = String(nextValue)
-                    onChange(nextValue)
-                }}
-            >
-                <NumberInput id={inputId} min={min} max={max} step={1} defaultValue={String(value)} className="number-input w-full text-center" />
-            </div>
-        </div>
     )
 }

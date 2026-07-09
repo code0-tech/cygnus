@@ -17,12 +17,37 @@ type SliderProps = {
     maxLabel?: string
     centerLabel?: string
     ariaLabel?: string
+    valueLabelSuffix?: string
 }
 
-export function Slider({ min, max, step = 1, value, onChange, className, lines = 72, minLabel, maxLabel, centerLabel, ariaLabel }: SliderProps) {
+function formatCompactSliderValue(value: number) {
+    const absoluteValue = Math.abs(value)
+    const compactUnits = [
+        { suffix: "B", value: 1_000_000_000 },
+        { suffix: "M", value: 1_000_000 },
+        { suffix: "K", value: 1_000 },
+    ]
+    const unit = compactUnits.find((compactUnit) => absoluteValue >= compactUnit.value)
+
+    if (!unit) return String(value)
+
+    const compactValue = value / unit.value
+    const maximumFractionDigits = Number.isInteger(compactValue) ? 0 : 1
+
+    return `${compactValue.toLocaleString("en-US", { maximumFractionDigits })}${unit.suffix}`
+}
+
+function formatSliderLabel(value: number, suffix?: string) {
+    return `${formatCompactSliderValue(value)}${suffix ? ` ${suffix}` : ""}`
+}
+
+export function Slider({ min, max, step = 1, value, onChange, className, lines = 72, minLabel, maxLabel, centerLabel, ariaLabel, valueLabelSuffix }: SliderProps) {
     const trackRef = useRef<HTMLDivElement>(null)
     const clampedValue = Math.min(max, Math.max(min, value))
     const progress = ((clampedValue - min) / (max - min)) * 100
+    const resolvedMinLabel = minLabel ?? formatSliderLabel(min, valueLabelSuffix)
+    const resolvedCenterLabel = centerLabel ?? formatSliderLabel(clampedValue, valueLabelSuffix)
+    const resolvedMaxLabel = maxLabel ?? formatSliderLabel(max, valueLabelSuffix)
 
     const ticks = useMemo(() => Array.from({ length: lines }, (_, index) => index), [lines])
     const majorTickIndexes = useMemo(() => new Set([0, Math.round((lines - 1) * 0.25), Math.round((lines - 1) * 0.5), Math.round((lines - 1) * 0.75), lines - 1]), [lines])
@@ -122,12 +147,12 @@ export function Slider({ min, max, step = 1, value, onChange, className, lines =
             </div>
 
             <div className="mt-2 grid grid-cols-3 text-xs text-tertiary">
-                <span>{minLabel ?? min}</span>
+                <span>{resolvedMinLabel}</span>
                 <span className="relative tabular-nums text-center text-base text-white">
                     <span aria-hidden="true" className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-4 w-20 rounded-full bg-white/25 blur-xl" />
-                    {centerLabel}
+                    {resolvedCenterLabel}
                 </span>
-                <span className="text-right">{maxLabel ?? max}</span>
+                <span className="text-right">{resolvedMaxLabel}</span>
             </div>
         </div>
     )

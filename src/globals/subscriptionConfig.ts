@@ -114,6 +114,90 @@ export const SubscriptionCollection: GlobalConfig = {
             defaultValue: "Build the subscription shape",
         },
         {
+            name: "defaults",
+            label: "Configurator Defaults",
+            type: "group",
+            fields: [
+                {
+                    name: "deployment",
+                    type: "select",
+                    required: false,
+                    defaultValue: "self-hosted",
+                    options: [
+                        { label: "Self-hosted", value: "self-hosted" },
+                        { label: "Cloud", value: "cloud" },
+                    ],
+                },
+                {
+                    name: "customerType",
+                    type: "select",
+                    required: false,
+                    defaultValue: "b2b",
+                    options: [
+                        { label: "B2B", value: "b2b" },
+                        { label: "B2C", value: "b2c" },
+                    ],
+                },
+                {
+                    name: "paymentPeriod",
+                    type: "select",
+                    required: false,
+                    defaultValue: "monthly",
+                    options: [
+                        { label: "Monthly", value: "monthly" },
+                        { label: "Quarterly", value: "quarterly" },
+                        { label: "Yearly", value: "yearly" },
+                    ],
+                },
+                {
+                    name: "workflowExecutions",
+                    label: "Workflow Executions",
+                    type: "group",
+                    fields: [
+                        {
+                            name: "b2b",
+                            label: "B2B",
+                            type: "number",
+                            required: false,
+                            defaultValue: 1000,
+                            min: 0,
+                        },
+                        {
+                            name: "b2c",
+                            label: "B2C",
+                            type: "number",
+                            required: false,
+                            defaultValue: 100,
+                            min: 0,
+                        },
+                    ],
+                },
+                {
+                    name: "aiTokens",
+                    label: "AI Tokens",
+                    type: "group",
+                    fields: [
+                        {
+                            name: "b2b",
+                            label: "B2B",
+                            type: "number",
+                            required: false,
+                            defaultValue: 1000000,
+                            min: 0,
+                        },
+                        {
+                            name: "b2c",
+                            label: "B2C",
+                            type: "number",
+                            required: false,
+                            defaultValue: 100000,
+                            min: 0,
+                        },
+                    ],
+                },
+            ],
+        },
+        {
             name: "deployment",
             type: "group",
             fields: [

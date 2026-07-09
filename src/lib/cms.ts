@@ -106,6 +106,19 @@ export interface SubscriptionConfigData {
         id?: string | null
     }[]
     optionsPanelHeading: string
+    defaults: {
+        deployment: "self-hosted" | "cloud"
+        customerType: "b2b" | "b2c"
+        paymentPeriod: "monthly" | "quarterly" | "yearly"
+        workflowExecutions: {
+            b2b: number
+            b2c: number
+        }
+        aiTokens: {
+            b2b: number
+            b2c: number
+        }
+    }
     deployment: {
         label: string
         selfHosted: {
