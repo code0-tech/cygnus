@@ -10,7 +10,7 @@ import { getActionBySlug, getLandingPage } from "@/lib/cms"
 import { getMediaUrl } from "@/lib/media"
 import { findPageBlock } from "@/lib/pageBlocks"
 import { createMetadata } from "@/lib/siteConfig"
-import { getTablerIcon } from "@/lib/tablerIcons"
+import { getIcon } from "@/components/IconRenderer"
 import type { Media } from "@/payload-types"
 import { IconArrowLeft, IconExternalLink } from "@tabler/icons-react"
 import type { Metadata } from "next"
@@ -32,11 +32,11 @@ export default async function ActionDetailPage({ params }: { params: LocaleSlugP
         .catch(() => [[], []] as const)
     const triggerItems = extractedTriggers.map((item) => ({
         item,
-        icon: getTablerIcon(item.displayIcon, 32),
+        icon: getIcon(item.displayIcon, 32),
     }))
     const functionDefItems = extractedFunctionDefs.map((item) => ({
         item,
-        icon: getTablerIcon("function", 32),
+        icon: getIcon("function", 32),
     }))
     const references = (action.references ?? []).filter((reference): reference is Exclude<typeof reference, number> => typeof reference !== "number")
     const tags = (action.tags ?? []).filter((tag): tag is string => Boolean(tag))

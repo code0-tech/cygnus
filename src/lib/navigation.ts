@@ -2,7 +2,7 @@ import "server-only"
 
 import type { Navigation } from "@/payload-types"
 import { localizeHref, type AppLocale } from "@/lib/i18n"
-import { getTablerIcon } from "@/lib/tablerIcons"
+import { getIcon } from "@/components/IconRenderer"
 import type { ReactNode } from "react"
 
 export type NavItem = {
@@ -39,11 +39,11 @@ function getNavbarButtonIcon(icon: string | null | undefined, size = 20) {
 
     if (!trimmedIcon) return null
 
-    return getTablerIcon(trimmedIcon, size)
+    return getIcon(trimmedIcon, size)
 }
 
 function getSubMenuIcon(icon: string | null | undefined) {
-    return getTablerIcon(icon, 30)
+    return getIcon(icon, 30)
 }
 
 export function mapNavbarItems(items: NavbarItemData[], locale: AppLocale): NavItem[] {
