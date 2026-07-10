@@ -155,6 +155,9 @@ export interface SubscriptionConfigData {
         monthlyText: string
         quarterlyText: string
         yearlyText: string
+        monthlyPeriodSuffix: string
+        quarterlyPeriodSuffix: string
+        yearlyPeriodSuffix: string
         quarterlyDiscount: number
         yearlyDiscount: number
     }

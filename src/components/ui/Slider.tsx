@@ -3,8 +3,6 @@
 import { cn } from "@/lib/utils"
 import { useCallback, useMemo, useRef } from "react"
 
-type SliderAccent = "aqua" | "blue" | "pink" | "yellow" | "brand"
-
 type SliderProps = {
     min: number
     max: number
@@ -18,6 +16,7 @@ type SliderProps = {
     centerLabel?: string
     ariaLabel?: string
     valueLabelSuffix?: string
+    centerLabelSuffix?: string
 }
 
 function formatCompactSliderValue(value: number) {
@@ -37,16 +36,16 @@ function formatCompactSliderValue(value: number) {
     return `${compactValue.toLocaleString("en-US", { maximumFractionDigits })}${unit.suffix}`
 }
 
-function formatSliderLabel(value: number, suffix?: string) {
-    return `${formatCompactSliderValue(value)}${suffix ? ` ${suffix}` : ""}`
+function formatSliderLabel(value: number, suffix?: string, trailingSuffix = "") {
+    return `${formatCompactSliderValue(value)}${suffix ? ` ${suffix}` : ""}${trailingSuffix ? ` ${trailingSuffix}` : ""}`
 }
 
-export function Slider({ min, max, step = 1, value, onChange, className, lines = 72, minLabel, maxLabel, centerLabel, ariaLabel, valueLabelSuffix }: SliderProps) {
+export function Slider({ min, max, step = 1, value, onChange, className, lines = 72, minLabel, maxLabel, centerLabel, ariaLabel, valueLabelSuffix, centerLabelSuffix = "" }: SliderProps) {
     const trackRef = useRef<HTMLDivElement>(null)
     const clampedValue = Math.min(max, Math.max(min, value))
     const progress = ((clampedValue - min) / (max - min)) * 100
     const resolvedMinLabel = minLabel ?? formatSliderLabel(min, valueLabelSuffix)
-    const resolvedCenterLabel = centerLabel ?? formatSliderLabel(clampedValue, valueLabelSuffix)
+    const resolvedCenterLabel = centerLabel ?? formatSliderLabel(clampedValue, valueLabelSuffix, centerLabelSuffix)
     const resolvedMaxLabel = maxLabel ?? formatSliderLabel(max, valueLabelSuffix)
 
     const ticks = useMemo(() => Array.from({ length: lines }, (_, index) => index), [lines])

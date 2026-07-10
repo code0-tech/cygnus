@@ -348,6 +348,9 @@ export const SubscriptionCollection: GlobalConfig = {
                 { name: "monthlyText", type: "text", required: false, localized: true, defaultValue: "Monthly" },
                 { name: "quarterlyText", type: "text", required: false, localized: true, defaultValue: "Quarterly" },
                 { name: "yearlyText", type: "text", required: false, localized: true, defaultValue: "Yearly" },
+                { name: "monthlyPeriodSuffix", type: "text", required: false, localized: true, defaultValue: "per month" },
+                { name: "quarterlyPeriodSuffix", type: "text", required: false, localized: true, defaultValue: "per quarter" },
+                { name: "yearlyPeriodSuffix", type: "text", required: false, localized: true, defaultValue: "per year" },
                 {
                     name: "quarterlyDiscount",
                     label: "Quarterly Discount",

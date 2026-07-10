@@ -23,7 +23,7 @@ import {
     MenuTrigger,
 } from "@code0-tech/pictor"
 import { Slider } from "@/components/ui/Slider"
-import { IconCalculator, IconCheck, IconChevronDown, IconSearch, IconX } from "@tabler/icons-react"
+import { IconCheck, IconChevronDown, IconSearch, IconX } from "@tabler/icons-react"
 import { type ReactNode, useEffect, useState } from "react"
 
 interface WorkflowCalculatorContent {
@@ -58,6 +58,7 @@ interface WorkflowCalculatorDialogProps {
     max: number
     step: number
     suffix: string
+    centerLabelSuffix?: string
     onApply: (value: number) => void
 }
 
@@ -67,7 +68,7 @@ function clampToStep(value: number, min: number, max: number, step: number) {
     return Math.min(max, Math.max(min, steppedValue))
 }
 
-export function WorkflowCalculatorDialog({ locale, content, businessTypeIcons, value, min, max, step, suffix, onApply }: WorkflowCalculatorDialogProps) {
+export function WorkflowCalculatorDialog({ locale, content, businessTypeIcons, value, min, max, step, suffix, centerLabelSuffix, onApply }: WorkflowCalculatorDialogProps) {
     const [businessTypeMenuOpen, setBusinessTypeMenuOpen] = useState(false)
     const [selectedBusinessTypeIndex, setSelectedBusinessTypeIndex] = useState(0)
     const [runsPerDay, setRunsPerDay] = useState(value)
@@ -86,9 +87,13 @@ export function WorkflowCalculatorDialog({ locale, content, businessTypeIcons, v
     return (
         <Dialog>
             <DialogTrigger asChild>
-                <Button type="button" variant="filled" className="shrink-0 gap-2" aria-label={content.title}>
-                    <IconCalculator size={18} />
-                    <span className="hidden sm:inline">{content.triggerLabel}</span>
+                <Button
+                    type="button"
+                    variant="none"
+                    className="group/link relative h-auto! min-w-0 shrink-0 rounded-none! border-0! bg-transparent! px-0! py-0! text-sm! tracking-normal text-tertiary shadow-none! transition-colors hover:border-transparent! hover:bg-transparent! hover:text-brand! hover:shadow-none! focus:border-transparent! focus:bg-transparent! focus:shadow-none! [&_*]:transition-colors hover:[&_*]:text-brand! after:pointer-events-none after:absolute after:bottom-0 after:left-0 after:h-px after:w-0 after:bg-current after:transition-[width] after:duration-300 after:ease-out hover:after:w-full"
+                    aria-label={content.title}
+                >
+                    <span className="flex min-w-0 items-center gap-1 truncate">{content.triggerLabel}</span>
                 </Button>
             </DialogTrigger>
 
@@ -152,7 +157,7 @@ export function WorkflowCalculatorDialog({ locale, content, businessTypeIcons, v
                             </Menu>
                         </div>
 
-                        <Slider min={min} max={max} step={step} value={runsPerDay} onChange={setRunsPerDay} ariaLabel={unitLabel} lines={48} valueLabelSuffix={unit} />
+                        <Slider min={min} max={max} step={step} value={runsPerDay} onChange={setRunsPerDay} ariaLabel={unitLabel} lines={48} valueLabelSuffix={unit} centerLabelSuffix={centerLabelSuffix} />
                     </div>
 
                     <DialogFooter className="pt-4! items-end! justify-between!">
@@ -163,8 +168,7 @@ export function WorkflowCalculatorDialog({ locale, content, businessTypeIcons, v
                             </p>
                         </div>
                         <DialogClose asChild>
-                            <Button type="button" variant="filled" onClick={() => onApply(applicableExecutions)} className="gap-2 bg-white/80! text-primary! hover:bg-white! transition-colors">
-                                <IconCheck size={17} />
+                            <Button type="button" variant="filled" onClick={() => onApply(applicableExecutions)} className="bg-white/80! text-primary! hover:bg-white! transition-colors">
                                 {content.applyLabel}
                             </Button>
                         </DialogClose>

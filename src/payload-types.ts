@@ -2326,6 +2326,9 @@ export interface SubscriptionConfig {
     monthlyText?: string | null;
     quarterlyText?: string | null;
     yearlyText?: string | null;
+    monthlyPeriodSuffix?: string | null;
+    quarterlyPeriodSuffix?: string | null;
+    yearlyPeriodSuffix?: string | null;
     quarterlyDiscount?: number | null;
     yearlyDiscount?: number | null;
   };
@@ -2694,6 +2697,9 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
         monthlyText?: T;
         quarterlyText?: T;
         yearlyText?: T;
+        monthlyPeriodSuffix?: T;
+        quarterlyPeriodSuffix?: T;
+        yearlyPeriodSuffix?: T;
         quarterlyDiscount?: T;
         yearlyDiscount?: T;
       };

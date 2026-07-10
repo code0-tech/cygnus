@@ -248,6 +248,12 @@ function getPaymentPeriodDiscount(period: PaymentPeriod, paymentPeriod: Subscrip
     return 0
 }
 
+function getPaymentPeriodSuffix(period: PaymentPeriod, paymentPeriod: SubscriptionConfigData["paymentPeriod"]) {
+    if (period === "quarterly") return paymentPeriod.quarterlyPeriodSuffix
+    if (period === "yearly") return paymentPeriod.yearlyPeriodSuffix
+    return paymentPeriod.monthlyPeriodSuffix
+}
+
 export function SubscriptionConfigurator({ locale, content, icons }: { locale: AppLocale; content: SubscriptionConfigData; icons: SubscriptionIcons }) {
     const workflowExecutions = content.workflowExecutions
     const aiTokens = content.aiTokens
@@ -273,6 +279,7 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
     const aiTokenPrice = content.aiTokenPriceFactor * selection.aiTokens
     const additionalFeaturesPrice = Array.from(selectedFeatures).reduce((acc, idx) => acc + (content.additionalFeatures?.[idx]?.price ?? 0), 0)
     const paymentPeriodDiscount = getPaymentPeriodDiscount(selection.paymentPeriod, content.paymentPeriod)
+    const paymentPeriodSuffix = getPaymentPeriodSuffix(selection.paymentPeriod, content.paymentPeriod)
     const totalBeforeDiscount = workflowExecutionPrice + aiTokenPrice + additionalFeaturesPrice
     const totalPrice = totalBeforeDiscount * (1 - paymentPeriodDiscount)
 
@@ -388,17 +395,6 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
                                     <p className="text-lg font-semibold tracking-wider text-white">{workflowExecutions.title}</p>
                                     <p className="text-sm text-secondary">{workflowExecutions.description}</p>
                                 </div>
-                                <WorkflowCalculatorDialog
-                                    locale={locale}
-                                    content={content.workflowCalculator}
-                                    businessTypeIcons={icons.workflowBusinessTypes}
-                                    value={selection.workflowExecutions}
-                                    min={workflowExecutionRange.min}
-                                    max={workflowExecutionRange.max}
-                                    step={workflowExecutionRange.step}
-                                    suffix={workflowExecutions.suffix}
-                                    onApply={(workflowExecutionsValue) => setSelection((current) => ({ ...current, workflowExecutions: workflowExecutionsValue }))}
-                                />
                             </div>
                             <Slider
                                 min={workflowExecutionRange.min}
@@ -409,12 +405,27 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
                                 ariaLabel={workflowExecutions.title}
                                 className="mt-4"
                                 valueLabelSuffix={workflowExecutions.suffix}
+                                centerLabelSuffix={paymentPeriodSuffix}
                             />
-                            <div className="mt-2 flex flex-wrap items-center justify-end gap-2">
-                                <p className="text-sm font-medium text-tertiary">{content.contactSales.prompt}</p>
-                                <LinkButton href={content.contactSales.href} className="border-b-0 text-secondary" showArrow={false}>
-                                    {content.contactSales.label}
-                                </LinkButton>
+                            <div className="flex items-center w-full justify-between gap-4">
+                                <WorkflowCalculatorDialog
+                                    locale={locale}
+                                    content={content.workflowCalculator}
+                                    businessTypeIcons={icons.workflowBusinessTypes}
+                                    value={selection.workflowExecutions}
+                                    min={workflowExecutionRange.min}
+                                    max={workflowExecutionRange.max}
+                                    step={workflowExecutionRange.step}
+                                    suffix={workflowExecutions.suffix}
+                                    centerLabelSuffix={paymentPeriodSuffix}
+                                    onApply={(workflowExecutionsValue) => setSelection((current) => ({ ...current, workflowExecutions: workflowExecutionsValue }))}
+                                />
+                                <div className="mt-2 flex flex-wrap items-center justify-end gap-2">
+                                    <p className="text-sm font-medium text-tertiary">{content.contactSales.prompt}</p>
+                                    <LinkButton href={content.contactSales.href} className="border-b-0 text-secondary" showArrow={false}>
+                                        {content.contactSales.label}
+                                    </LinkButton>
+                                </div>
                             </div>
                         </div>
 
@@ -434,6 +445,7 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
                                 ariaLabel={aiTokens.title}
                                 className="mt-4"
                                 valueLabelSuffix={aiTokens.suffix}
+                                centerLabelSuffix={paymentPeriodSuffix}
                             />
                         </div>
 
