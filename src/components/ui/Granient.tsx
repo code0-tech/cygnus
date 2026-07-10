@@ -1,3 +1,5 @@
+"use client"
+
 import React, { useEffect, useRef } from "react"
 import { useReducedMotion } from "motion/react"
 import { Renderer, Program, Mesh, Triangle } from "ogl"

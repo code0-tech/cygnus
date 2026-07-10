@@ -1,23 +1,12 @@
-"use client"
-
+import { StaggerContainer, StaggerItem } from "@/components/animations/Stagger"
 import { LogoItem } from "@/components/ui/LogoItem"
 import { LogoMarquee } from "@/components/ui/LogoMarquee"
 import { Section } from "@/components/ui/Section"
-import { BrandLayoutBlock } from "@/lib/cms"
+import type { BrandLayoutBlock } from "@/lib/cms"
 import type { Media } from "@/payload-types"
-import { m as motion, type Variants } from "motion/react"
 
 interface BrandSectionProps {
     content?: BrandLayoutBlock | null
-}
-
-const STAGGER_CONTAINER: Variants = {
-    hidden: {},
-    show: { transition: { staggerChildren: 0.08, delayChildren: 0.06 } },
-}
-const STAGGER_ITEM: Variants = {
-    hidden: { opacity: 0, y: 14 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.38, ease: [0.22, 1, 0.36, 1] } },
 }
 
 export function BrandSection({ content }: BrandSectionProps) {
@@ -38,27 +27,25 @@ export function BrandSection({ content }: BrandSectionProps) {
 
     return (
         <Section showFunnel={false} animation={{ preset: "none" }} className="-mt-32">
-            <motion.div
+            <StaggerContainer
                 className="flex w-full flex-col items-center justify-center gap-8 pt-16 lg:flex-row"
-                variants={STAGGER_CONTAINER}
-                initial="hidden"
-                whileInView="show"
-                viewport={{ once: true, amount: 0.3 }}
+                delayChildren={0.06}
+                staggerChildren={0.08}
             >
-                <motion.p variants={STAGGER_ITEM} className={"w-full text-center text-secondary lg:w-1/3 lg:shrink-0 lg:text-left"}>
+                <StaggerItem as="p" y={14} duration={0.38} className={"w-full text-center text-secondary lg:w-1/3 lg:shrink-0 lg:text-left"}>
                     {content.description}
-                </motion.p>
-                <motion.div variants={STAGGER_CONTAINER} className={shouldLoopDesktop ? "hidden" : "hidden w-full min-w-0 grid-cols-4 gap-16 text-center text-secondary md:grid lg:flex-1"}>
+                </StaggerItem>
+                <StaggerContainer delayChildren={0.06} staggerChildren={0.08} className={shouldLoopDesktop ? "hidden" : "hidden w-full min-w-0 grid-cols-4 gap-16 text-center text-secondary md:grid lg:flex-1"}>
                     {logoItems.map((item) => (
-                        <motion.div variants={STAGGER_ITEM} key={item.id}>
+                        <StaggerItem y={14} duration={0.38} key={item.id}>
                             <LogoItem logo={item.logo} className="w-full" />
-                        </motion.div>
+                        </StaggerItem>
                     ))}
-                </motion.div>
-                <motion.div variants={STAGGER_ITEM} className={shouldLoopDesktop ? "w-full min-w-0 lg:flex-1" : "w-full md:hidden"}>
+                </StaggerContainer>
+                <StaggerItem y={14} duration={0.38} className={shouldLoopDesktop ? "w-full min-w-0 lg:flex-1" : "w-full md:hidden"}>
                     <LogoMarquee items={logoItems} />
-                </motion.div>
-            </motion.div>
+                </StaggerItem>
+            </StaggerContainer>
         </Section>
     )
 }

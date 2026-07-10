@@ -1,5 +1,4 @@
-"use client"
-
+import { HapticLink } from "@/components/ui/HapticLink"
 import { LandingContainer } from "@/components/ui/LandingContainer"
 import { localizeHref, type AppLocale } from "@/lib/i18n"
 import { getMediaUrl } from "@/lib/media"
@@ -7,9 +6,7 @@ import type { Footer, Media } from "@/payload-types"
 import { SiDiscord, SiGithub, SiInstagram, SiX } from "@icons-pack/react-simple-icons"
 import { IconBrandLinkedin } from "@tabler/icons-react"
 import Image from "next/image"
-import Link from "next/link"
 import React from "react"
-import { useWebHaptics } from "web-haptics/react"
 
 interface FooterSectionProps {
     locale: AppLocale
@@ -26,7 +23,6 @@ const SOCIAL_ICONS = {
 } as const
 
 export const FooterSection: React.FC<FooterSectionProps> = ({ locale, footer, currentYear }) => {
-    const { trigger } = useWebHaptics()
     if (!footer) return null
 
     const image = footer.image && typeof footer.image === "object" ? (footer.image as Media) : null
@@ -64,9 +60,9 @@ export const FooterSection: React.FC<FooterSectionProps> = ({ locale, footer, cu
                         <div className={"flex flex-col gap-1"} key={`${group.heading}-${group.id ?? "group"}`}>
                             <p className={"text-tertiary"}>{group.heading}</p>
                             {(group.items ?? []).map((item) => (
-                                <Link href={localizeHref(item.url, locale)} key={`${item.label}-${item.id ?? item.url}`} onClick={() => trigger("medium")}>
+                                <HapticLink href={localizeHref(item.url, locale)} key={`${item.label}-${item.id ?? item.url}`}>
                                     <p className={"text-secondary hover:text-white hover:underline underline-offset-2 transition-colors"}>{item.label}</p>
-                                </Link>
+                                </HapticLink>
                             ))}
                         </div>
                     ))}
@@ -76,9 +72,9 @@ export const FooterSection: React.FC<FooterSectionProps> = ({ locale, footer, cu
                     <div className="relative z-10 flex flex-col gap-4 text-sm text-tertiary md:flex-row md:items-center md:justify-between">
                         <div className="flex gap-2 flex-row items-center md:gap-4">
                             {footer.contactEmail && (
-                                <Link href={`mailto:${footer.contactEmail}`} onClick={() => trigger("medium")} className="text-xs text-tertiary hover:text-white">
+                                <HapticLink href={`mailto:${footer.contactEmail}`} className="text-xs text-tertiary hover:text-white">
                                     {footer.contactEmail}
-                                </Link>
+                                </HapticLink>
                             )}
                             {footer.contactEmail && <div className="h-4 w-px bg-white/10" />}
                             <div className="flex items-center gap-4">
@@ -87,16 +83,15 @@ export const FooterSection: React.FC<FooterSectionProps> = ({ locale, footer, cu
                                     if (!Icon || !socialLink.url) return null
 
                                     return (
-                                        <Link
+                                        <HapticLink
                                             href={socialLink.url}
                                             key={`${socialLink.platform}-${socialLink.id ?? socialLink.url}`}
-                                            onClick={() => trigger("medium")}
                                             className="group"
                                             target="_blank"
                                             rel="noreferrer"
                                         >
                                             <Icon size={16} className="text-tertiary group-hover:text-white" />
-                                        </Link>
+                                        </HapticLink>
                                     )
                                 })}
                             </div>
@@ -108,9 +103,9 @@ export const FooterSection: React.FC<FooterSectionProps> = ({ locale, footer, cu
                             </p>
                             <div className="flex flex-wrap items-center gap-4 text-xs">
                                 {legalLinks.map((link) => (
-                                    <Link key={link.url} href={localizeHref(link.url, locale)} onClick={() => trigger("medium")}>
+                                    <HapticLink key={link.url} href={localizeHref(link.url, locale)}>
                                         <span className="hover:text-white hover:underline underline-offset-2">{link.label}</span>
-                                    </Link>
+                                    </HapticLink>
                                 ))}
                             </div>
                         </div>

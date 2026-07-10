@@ -1,27 +1,15 @@
-"use client"
-
+import { StaggerContainer, StaggerItem } from "@/components/animations/Stagger"
 import { HapticButtonLink } from "@/components/ui/HapticButtonLink"
 import { Section } from "@/components/ui/Section"
 import type { CTAImageLayoutBlock } from "@/lib/cms"
 import { getMediaUrl } from "@/lib/media"
 import { cn } from "@/lib/utils"
 import type { Media } from "@/payload-types"
-import { m as motion, type Variants } from "motion/react"
 import Image from "next/image"
 import { Fragment } from "react"
 
 interface CTAImageSectionProps {
     content?: CTAImageLayoutBlock | null
-}
-
-const STAGGER_CONTAINER: Variants = {
-    hidden: {},
-    show: { transition: { staggerChildren: 0.08, delayChildren: 0 } },
-}
-
-const STAGGER_ITEM: Variants = {
-    hidden: { opacity: 0, y: 12 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] } },
 }
 
 const IMAGE_MASK_CLASSES = {
@@ -58,31 +46,25 @@ export function CTAImageSection({ content }: CTAImageSectionProps) {
                     />
                 )}
 
-                <motion.div
-                    className={cn("relative z-20 flex min-h-0 flex-col items-center justify-between gap-8 lg:flex-row", showCard ? "rounded-3xl p-8 lg:p-16" : "p-0")}
-                    variants={STAGGER_CONTAINER}
-                    initial="hidden"
-                    whileInView="show"
-                    viewport={{ once: true, amount: 0.25 }}
-                >
+                <StaggerContainer className={cn("relative z-20 flex min-h-0 flex-col items-center justify-between gap-8 lg:flex-row", showCard ? "rounded-3xl p-8 lg:p-16" : "p-0")}>
                     <div className={cn("flex w-full flex-col gap-4 text-center lg:text-start", showCard ? "lg:w-2/5" : "lg:w-[42%]")}>
-                        <motion.h2 variants={STAGGER_ITEM} className="relative z-10 text-balance text-3xl font-bold text-white lg:text-4xl">
+                        <StaggerItem as="h2" className="relative z-10 text-balance text-3xl font-bold text-white lg:text-4xl">
                             {content.title}
-                        </motion.h2>
+                        </StaggerItem>
 
                         {texts.length > 0 && (
-                            <motion.p variants={STAGGER_ITEM} className="relative z-10 text-pretty text-base font-medium text-white lg:text-xl">
+                            <StaggerItem as="p" className="relative z-10 text-pretty text-base font-medium text-white lg:text-xl">
                                 {texts.map((text, index) => (
                                     <Fragment key={`${text}-${index}`}>
                                         {text}
                                         {index < texts.length - 1 && <br />}
                                     </Fragment>
                                 ))}
-                            </motion.p>
+                            </StaggerItem>
                         )}
 
                         {buttons.length > 0 && (
-                            <motion.div variants={STAGGER_ITEM} className="mt-4 flex flex-col gap-2 sm:gap-4">
+                            <StaggerItem className="mt-4 flex flex-col gap-2 sm:gap-4">
                                 {buttons.map((button, index) => (
                                     <HapticButtonLink
                                         href={button.url}
@@ -93,7 +75,7 @@ export function CTAImageSection({ content }: CTAImageSectionProps) {
                                         {button.label}
                                     </HapticButtonLink>
                                 ))}
-                            </motion.div>
+                            </StaggerItem>
                         )}
                     </div>
 
@@ -114,7 +96,7 @@ export function CTAImageSection({ content }: CTAImageSectionProps) {
                             </div>
                         </div>
                     </div>
-                </motion.div>
+                </StaggerContainer>
             </div>
         </Section>
     )

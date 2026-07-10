@@ -1,5 +1,3 @@
-"use client"
-
 import { LinkButton } from "@/components/ui/LinkButton"
 import { Section } from "@/components/ui/Section"
 import type { StandaloneCardLayoutBlock } from "@/lib/cms"
