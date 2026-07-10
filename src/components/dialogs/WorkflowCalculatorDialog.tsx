@@ -119,11 +119,11 @@ export function WorkflowCalculatorDialog({ locale, content, businessTypeIcons, v
                             <Menu modal={false} open={businessTypeMenuOpen} onOpenChange={setBusinessTypeMenuOpen}>
                                 <MenuTrigger asChild>
                                     <Button className="w-full! justify-between">
-                                        <span className="flex min-w-0 items-center gap-2">
+                                        <span className="flex min-w-0 flex-1 items-center gap-2">
                                             <span className="shrink-0 text-tertiary">{businessTypeIcons[selectedBusinessTypeIndex]}</span>
                                             <span className="truncate">{selectedBusinessType?.name}</span>
                                         </span>
-                                        <IconChevronDown size={16} />
+                                        <IconChevronDown size={16} className="ml-auto shrink-0" />
                                     </Button>
                                 </MenuTrigger>
                                 <MenuContent className="w-(--radix-dropdown-menu-trigger-width) p-0!">
