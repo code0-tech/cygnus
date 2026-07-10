@@ -56,6 +56,7 @@
         "web-haptics": "^0.0.6"
     },
     "devDependencies": {
+        "@next/bundle-analyzer": "^16.2.10",
         "@swc-node/register": "^1.11.1",
         "@tailwindcss/postcss": "^4.3.2",
         "@types/node": "^25.9.4",
