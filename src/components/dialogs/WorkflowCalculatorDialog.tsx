@@ -158,19 +158,34 @@ export function WorkflowCalculatorDialog({ locale, content, businessTypeIcons, v
                         </div>
 
                         <div className="min-w-0 pb-2">
-                            <Slider min={min} max={max} step={step} value={runsPerDay} onChange={setRunsPerDay} ariaLabel={unitLabel} valueLabelSuffix={unit} centerLabelSuffix={centerLabelSuffix} />
+                            <Slider
+                                min={min}
+                                max={max}
+                                step={step}
+                                value={runsPerDay}
+                                onChange={setRunsPerDay}
+                                ariaLabel={unitLabel}
+                                valueLabelSuffix={unit}
+                                centerLabelSuffix={centerLabelSuffix}
+                                lines={40}
+                            />
                         </div>
                     </div>
 
-                    <DialogFooter className="pt-4! items-end! justify-between!">
-                        <div className="">
+                    <DialogFooter className="grid! grid-cols-[minmax(0,1fr)_auto]! items-end! gap-4! pt-4!">
+                        <div className="min-w-0 text-left">
                             <p className="text-sm font-medium text-tertiary">{content.estimateLabel}</p>
                             <p className="mt-1 text-2xl font-semibold tabular-nums text-white">
                                 {estimatedExecutions.toLocaleString(formatterLocale)} {suffix}
                             </p>
                         </div>
                         <DialogClose asChild>
-                            <Button type="button" variant="filled" onClick={() => onApply(applicableExecutions)} className="bg-white/80! text-primary! hover:bg-white! transition-colors">
+                            <Button
+                                type="button"
+                                variant="filled"
+                                onClick={() => onApply(applicableExecutions)}
+                                className="justify-self-end bg-white/80! text-primary! hover:bg-white! transition-colors"
+                            >
                                 {content.applyLabel}
                             </Button>
                         </DialogClose>
