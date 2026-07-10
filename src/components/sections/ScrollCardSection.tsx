@@ -1,3 +1,4 @@
+import { StaggerContainer, StaggerItem } from "@/components/animations/Stagger"
 import { LinkButton } from "@/components/ui/LinkButton"
 import { Section } from "@/components/ui/Section"
 import type { ScrollCardsLayoutBlock } from "@/lib/cms"
@@ -14,6 +15,39 @@ interface ScrollCardSectionProps {
 
 function getImage(image: number | Media | null | undefined) {
     return typeof image === "object" ? image : null
+}
+
+type ScrollCardItem = NonNullable<ScrollCardsLayoutBlock["items"]>[number]
+
+function ScrollCardContent({ item, centered = false }: { item: ScrollCardItem; centered?: boolean }) {
+    return (
+        <StaggerContainer className={cn("flex flex-col gap-6", centered ? "items-center text-center" : "text-left")} delayChildren={0.04} staggerChildren={0.08}>
+            <StaggerItem as="h2" y={14} duration={0.38} className={cn("text-3xl font-semibold text-white md:text-5xl", centered ? "max-w-4xl" : "max-w-xl")}>
+                {item.title}
+            </StaggerItem>
+
+            {item.description && (
+                <StaggerItem as="p" y={14} duration={0.38} className={cn("text-base leading-7 text-secondary md:text-lg", centered ? "max-w-2xl" : "max-w-xl")}>
+                    {item.description}
+                </StaggerItem>
+            )}
+
+            <StaggerItem as="ul" y={14} duration={0.38} className="grid gap-2 text-sm text-secondary md:text-base">
+                {item.bulletPoints?.map((point, pointIndex) => (
+                    <li key={`${item.id ?? item.title}-point-${pointIndex}`} className="flex items-start gap-3">
+                        <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brand" />
+                        <span>{point}</span>
+                    </li>
+                ))}
+            </StaggerItem>
+
+            {item.link?.label && item.link?.url && (
+                <StaggerItem y={14} duration={0.38}>
+                    <LinkButton href={item.link.url}>{item.link.label}</LinkButton>
+                </StaggerItem>
+            )}
+        </StaggerContainer>
+    )
 }
 
 export function ScrollCardSection({ content }: ScrollCardSectionProps) {
@@ -62,46 +96,15 @@ export function ScrollCardSection({ content }: ScrollCardSectionProps) {
                                         {imageUrl && <Image src={imageUrl} alt={image?.alt ?? item.title} fill sizes="100vw" className="object-cover object-center" />}
 
                                         <div className="absolute inset-0 z-20 flex items-center justify-center">
-                                            <div className="mx-auto flex max-w-4xl flex-col items-center gap-6 px-6 text-center">
-                                                <h2 className="text-3xl font-semibold text-white md:text-5xl">{item.title}</h2>
-
-                                                {item.description && <p className="max-w-2xl text-base leading-7 text-secondary md:text-lg">{item.description}</p>}
-
-                                                <div className="space-y-6">
-                                                    <ul className="grid gap-2 text-sm text-secondary md:text-base">
-                                                        {item.bulletPoints?.map((point, pointIndex) => (
-                                                            <li key={`${item.id ?? item.title}-point-${pointIndex}`} className="flex items-start gap-3">
-                                                                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brand" />
-                                                                <span>{point}</span>
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-
-                                                    {item.link?.label && item.link?.url && <LinkButton href={item.link.url}>{item.link.label}</LinkButton>}
-                                                </div>
+                                            <div className="mx-auto max-w-4xl px-6">
+                                                <ScrollCardContent item={item} centered />
                                             </div>
                                         </div>
                                     </div>
                                 ) : isSideFullscreen ? (
                                     <>
                                         <div className={cn("relative z-10 flex flex-col justify-center gap-6 p-6 sm:p-8 md:h-full md:gap-8 md:p-12", isSideFullscreenLeft && "md:order-2")}>
-                                            <div className="flex flex-col gap-4">
-                                                <h2 className="max-w-xl text-3xl font-semibold text-white md:text-5xl">{item.title}</h2>
-                                                <p className="max-w-xl text-base leading-7 text-secondary md:text-lg">{item.description}</p>
-                                            </div>
-
-                                            <div className="space-y-6">
-                                                <ul className="grid gap-2 text-sm text-secondary md:text-base">
-                                                    {item.bulletPoints?.map((point, pointIndex) => (
-                                                        <li key={`${item.id ?? item.title}-point-${pointIndex}`} className="flex items-start gap-3">
-                                                            <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brand" />
-                                                            <span>{point}</span>
-                                                        </li>
-                                                    ))}
-                                                </ul>
-
-                                                {item.link?.label && item.link?.url && <LinkButton href={item.link.url}>{item.link.label}</LinkButton>}
-                                            </div>
+                                            <ScrollCardContent item={item} />
                                         </div>
 
                                         <div
@@ -118,23 +121,7 @@ export function ScrollCardSection({ content }: ScrollCardSectionProps) {
                                 ) : (
                                     <>
                                         <div className={cn("relative z-10 flex h-full flex-col justify-center gap-8 rounded-3xl", isImageLeft && "md:order-2")}>
-                                            <div className="flex flex-col gap-4">
-                                                <h2 className="max-w-xl text-3xl font-semibold text-white md:text-5xl">{item.title}</h2>
-                                                {item.description && <p className="max-w-xl text-base leading-7 text-secondary md:text-lg">{item.description}</p>}
-                                            </div>
-
-                                            <div className="space-y-6">
-                                                <ul className="grid gap-2 text-sm text-secondary md:text-base">
-                                                    {item.bulletPoints?.map((point, pointIndex) => (
-                                                        <li key={`${item.id ?? item.title}-point-${pointIndex}`} className="flex items-start gap-3">
-                                                            <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brand" />
-                                                            <span>{point}</span>
-                                                        </li>
-                                                    ))}
-                                                </ul>
-
-                                                {item.link?.label && item.link?.url && <LinkButton href={item.link.url}>{item.link.label}</LinkButton>}
-                                            </div>
+                                            <ScrollCardContent item={item} />
                                         </div>
 
                                         <div

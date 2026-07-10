@@ -1,6 +1,7 @@
+import { StaggerContainer, StaggerItem } from "@/components/animations/Stagger"
+import { getIcon } from "@/components/IconRenderer"
 import { Section } from "@/components/ui/Section"
 import type { ListFeatureLayoutBlock } from "@/lib/cms"
-import { getIcon } from "@/components/IconRenderer"
 
 interface ListFeatureSectionProps {
     content?: ListFeatureLayoutBlock | null
@@ -19,18 +20,18 @@ export function ListFeatureSection({ content }: ListFeatureSectionProps) {
             funnelType={content.sectionLayout ?? "center"}
             animation={{ preset: "none" }}
         >
-            <div className="grid gap-8 md:gap-12 md:grid-cols-2 lg:grid-cols-3">
+            <StaggerContainer className="grid gap-8 md:gap-12 md:grid-cols-2 lg:grid-cols-3" delayChildren={0.04} staggerChildren={0.08}>
                 {features.map((feature, index) => (
-                    <div key={feature.id ?? `${feature.title}-${index}`} className="flex flex-col gap-4">
+                    <StaggerItem key={feature.id ?? `${feature.title}-${index}`} y={14} duration={0.38} className="flex flex-col gap-4">
                         <div className="flex size-12 items-center justify-center rounded-xl border border-white/5 bg-white/5 text-white">{getIcon(feature.icon, 24)}</div>
 
                         <div className="flex flex-col">
                             <h3 className="text-lg font-semibold tracking-wide text-white">{feature.title}</h3>
                             {feature.description && <p className="text-secondary">{feature.description}</p>}
                         </div>
-                    </div>
+                    </StaggerItem>
                 ))}
-            </div>
+            </StaggerContainer>
         </Section>
     )
 }
