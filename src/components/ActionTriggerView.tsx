@@ -1,8 +1,8 @@
 "use client"
 
 import { type ReactNode, useState } from "react"
-import { SegmentedControl, SegmentedControlItem, Text } from "@code0-tech/pictor"
 import { ActionTriggerCard } from "@/components/ActionTriggerCard"
+import { Switch, type SwitchOption } from "@/components/ui/Switch"
 import type { ExtractedActionTriggerItem, ExtractedFunctionDef, ExtractedTrigger } from "@/lib/actionTriggerExtraction"
 
 interface ActionTriggerViewProps {
@@ -11,7 +11,7 @@ interface ActionTriggerViewProps {
     functionDefs: Array<{ item: ExtractedFunctionDef; icon: ReactNode }>
 }
 
-const itemClassName = "text-secondary! transition-colors! data-[state=on]:bg-brand/20! data-[state=on]:text-brand!"
+type ViewMode = "both" | "triggers" | "functionDefs"
 
 interface DisplayItem {
     type: "trigger" | "functionDef"
@@ -20,7 +20,12 @@ interface DisplayItem {
 }
 
 export function ActionTriggerView({ locale, triggers, functionDefs }: ActionTriggerViewProps) {
-    const [viewMode, setViewMode] = useState<"both" | "triggers" | "functionDefs">("both")
+    const [viewMode, setViewMode] = useState<ViewMode>("both")
+    const viewModeOptions: SwitchOption<ViewMode>[] = [
+        { value: "both", label: locale === "en" ? "Both" : "Beide" },
+        { value: "triggers", label: "Triggers" },
+        { value: "functionDefs", label: "FunctionDefinitions" },
+    ]
 
     const visibleItems: DisplayItem[] = [
         ...(viewMode === "both" || viewMode === "triggers" ? triggers.map(({ item, icon }) => ({ type: "trigger" as const, item, icon })) : []),
@@ -29,26 +34,7 @@ export function ActionTriggerView({ locale, triggers, functionDefs }: ActionTrig
 
     return (
         <div className="space-y-6">
-            <SegmentedControl
-                type="single"
-                value={viewMode}
-                onValueChange={(value: string) => {
-                    if (value === "both" || value === "triggers" || value === "functionDefs") {
-                        setViewMode(value)
-                    }
-                }}
-                className={"h-10! w-max!"}
-            >
-                <SegmentedControlItem value="both" className={itemClassName}>
-                    <Text>{locale === "en" ? "Both" : "Beide"}</Text>
-                </SegmentedControlItem>
-                <SegmentedControlItem value="triggers" className={itemClassName}>
-                    <Text>Triggers</Text>
-                </SegmentedControlItem>
-                <SegmentedControlItem value="functionDefs" className={itemClassName}>
-                    <Text>FunctionDefinitions</Text>
-                </SegmentedControlItem>
-            </SegmentedControl>
+            <Switch value={viewMode} options={viewModeOptions} onChange={setViewMode} className="w-max" />
 
             <div className="flex flex-col gap-4 md:hidden">
                 {visibleItems.map(({ type, item, icon }) => (

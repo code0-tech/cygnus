@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils"
 import { BuyMenu } from "@/components/BuyMenu"
 import { WorkflowCalculatorDialog } from "@/components/dialogs/WorkflowCalculatorDialog"
 import { Slider } from "@/components/ui/Slider"
+import { Switch, type SwitchOption } from "@/components/ui/Switch"
 import { IconCheck } from "@tabler/icons-react"
 import type { CSSProperties, ReactNode } from "react"
 import { useState } from "react"
@@ -91,17 +92,10 @@ interface AdditionalFeatureCardProps {
     formattedPrice: string
 }
 
-interface PaymentPeriodSwitchProps {
-    content: SubscriptionConfigData["paymentPeriod"]
-    locale: AppLocale
-    value: PaymentPeriod
-    onChange: (value: PaymentPeriod) => void
-}
-
 const paymentPeriodOptions = [
-    { value: "monthly", textKey: "monthlyText", indicatorClassName: "translate-x-0" },
-    { value: "quarterly", textKey: "quarterlyText", indicatorClassName: "translate-x-full" },
-    { value: "yearly", textKey: "yearlyText", indicatorClassName: "translate-x-[200%]" },
+    { value: "monthly", textKey: "monthlyText" },
+    { value: "quarterly", textKey: "quarterlyText" },
+    { value: "yearly", textKey: "yearlyText" },
 ] as const
 
 function OptionCard({ title, description, active, onClick, icon, disabled = false, accent = "aqua" }: OptionCardProps) {
@@ -135,49 +129,6 @@ function OptionCard({ title, description, active, onClick, icon, disabled = fals
                 <p className="text-sm leading-6 text-secondary">{description}</p>
             </div>
         </button>
-    )
-}
-
-function PaymentPeriodSwitch({ content, locale, value, onChange }: PaymentPeriodSwitchProps) {
-    const activeOption = paymentPeriodOptions.find((option) => option.value === value) ?? paymentPeriodOptions[0]
-
-    return (
-        <div className="space-y-3">
-            <div>
-                <p className="text-base text-secondary">{content.label}</p>
-                <p className="mt-1 text-sm text-tertiary">{content.description}</p>
-            </div>
-            <div className="relative grid grid-cols-3 overflow-hidden rounded-2xl border border-white/10 bg-white/3 p-1">
-                <div
-                    className={cn(
-                        "absolute left-1 top-1 h-[calc(100%-0.5rem)] w-[calc((100%-0.5rem)/3)] rounded-xl bg-white/10 transition-transform duration-300 ease-out",
-                        activeOption.indicatorClassName
-                    )}
-                />
-                {paymentPeriodOptions.map((option) => {
-                    const active = value === option.value
-                    const discount = getPaymentPeriodDiscount(option.value, content)
-
-                    return (
-                        <button
-                            key={option.value}
-                            type="button"
-                            onClick={() => onChange(option.value)}
-                            className={cn("relative z-10 min-w-0 rounded-xl px-3 py-2 text-sm font-medium transition-colors", active ? "text-white" : "text-secondary hover:text-white")}
-                        >
-                            <span className="inline-flex min-w-0 items-center justify-center gap-1">
-                                <span className="min-w-0 truncate">{content[option.textKey]}</span>
-                                {discount > 0 ? (
-                                    <span className={cn("shrink-0 rounded-full -mt-3 px-1 py-0.5 text-[10px] tracking-wider leading-none bg-brand/15 text-brand")}>
-                                        -{formatDiscountBadge(discount, locale)}
-                                    </span>
-                                ) : null}
-                            </span>
-                        </button>
-                    )
-                })}
-            </div>
-        </div>
     )
 }
 
@@ -282,6 +233,15 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
     const paymentPeriodSuffix = getPaymentPeriodSuffix(selection.paymentPeriod, content.paymentPeriod)
     const totalBeforeDiscount = workflowExecutionPrice + aiTokenPrice + additionalFeaturesPrice
     const totalPrice = totalBeforeDiscount * (1 - paymentPeriodDiscount)
+    const paymentPeriodSwitchOptions: SwitchOption<PaymentPeriod>[] = paymentPeriodOptions.map((option) => {
+        const discount = getPaymentPeriodDiscount(option.value, content.paymentPeriod)
+
+        return {
+            value: option.value,
+            label: content.paymentPeriod[option.textKey],
+            badge: discount > 0 ? `-${formatDiscountBadge(discount, locale)}` : null,
+        }
+    })
 
     const subscribeHref = (() => {
         const searchParams = new URLSearchParams({
@@ -324,9 +284,10 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
                     <div className="relative z-10 flex flex-col gap-8">
                         <h2 className="text-2xl font-semibold text-white lg:text-3xl">{content.optionsPanelHeading}</h2>
 
-                        <PaymentPeriodSwitch
-                            content={content.paymentPeriod}
-                            locale={locale}
+                        <Switch
+                            label={content.paymentPeriod.label}
+                            description={content.paymentPeriod.description}
+                            options={paymentPeriodSwitchOptions}
                             value={selection.paymentPeriod}
                             onChange={(paymentPeriod) => setSelection((current) => ({ ...current, paymentPeriod }))}
                         />
