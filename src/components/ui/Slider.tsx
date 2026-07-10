@@ -49,7 +49,7 @@ function getDefaultLines() {
 
 export function Slider({ min, max, step = 1, value, onChange, className, lines, minLabel, maxLabel, centerLabel, ariaLabel, valueLabelSuffix, centerLabelSuffix = "" }: SliderProps) {
     const trackRef = useRef<HTMLDivElement>(null)
-    const [responsiveLines, setResponsiveLines] = useState(lines ?? getDefaultLines)
+    const [responsiveLines, setResponsiveLines] = useState(lines ?? 72)
     const resolvedLines = lines ?? responsiveLines
     const clampedValue = Math.min(max, Math.max(min, value))
     const progress = ((clampedValue - min) / (max - min)) * 100
@@ -178,8 +178,8 @@ export function Slider({ min, max, step = 1, value, onChange, className, lines, 
 
             <div className="mt-2 grid grid-cols-3 text-xs text-tertiary">
                 <span>{resolvedMinLabel}</span>
-                <span className="relative tabular-nums text-center text-sm sm:text-base text-white">
-                    <span aria-hidden="true" className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-4 w-20 rounded-full bg-white/25 blur-xl" />
+                <span className="relative min-w-32 whitespace-nowrap tabular-nums text-center text-sm text-white sm:text-base">
+                    <span aria-hidden="true" className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-4 w-32 rounded-full bg-white/25 blur-xl" />
                     {resolvedCenterLabel}
                 </span>
                 <span className="text-right">{resolvedMaxLabel}</span>
