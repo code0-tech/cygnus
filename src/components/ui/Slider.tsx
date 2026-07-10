@@ -1,7 +1,7 @@
 "use client"
 
 import { cn } from "@/lib/utils"
-import { useCallback, useMemo, useRef } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 type SliderProps = {
     min: number
@@ -40,16 +40,45 @@ function formatSliderLabel(value: number, suffix?: string, trailingSuffix = "") 
     return `${formatCompactSliderValue(value)}${suffix ? ` ${suffix}` : ""}${trailingSuffix ? ` ${trailingSuffix}` : ""}`
 }
 
-export function Slider({ min, max, step = 1, value, onChange, className, lines = 72, minLabel, maxLabel, centerLabel, ariaLabel, valueLabelSuffix, centerLabelSuffix = "" }: SliderProps) {
+function getDefaultLines() {
+    if (typeof window === "undefined") return 72
+    if (window.matchMedia("(min-width: 1280px)").matches) return 72
+    if (window.matchMedia("(min-width: 768px)").matches) return 56
+    return 36
+}
+
+export function Slider({ min, max, step = 1, value, onChange, className, lines, minLabel, maxLabel, centerLabel, ariaLabel, valueLabelSuffix, centerLabelSuffix = "" }: SliderProps) {
     const trackRef = useRef<HTMLDivElement>(null)
+    const [responsiveLines, setResponsiveLines] = useState(lines ?? getDefaultLines)
+    const resolvedLines = lines ?? responsiveLines
     const clampedValue = Math.min(max, Math.max(min, value))
     const progress = ((clampedValue - min) / (max - min)) * 100
     const resolvedMinLabel = minLabel ?? formatSliderLabel(min, valueLabelSuffix)
     const resolvedCenterLabel = centerLabel ?? formatSliderLabel(clampedValue, valueLabelSuffix, centerLabelSuffix)
     const resolvedMaxLabel = maxLabel ?? formatSliderLabel(max, valueLabelSuffix)
 
-    const ticks = useMemo(() => Array.from({ length: lines }, (_, index) => index), [lines])
-    const majorTickIndexes = useMemo(() => new Set([0, Math.round((lines - 1) * 0.25), Math.round((lines - 1) * 0.5), Math.round((lines - 1) * 0.75), lines - 1]), [lines])
+    useEffect(() => {
+        if (lines !== undefined) {
+            setResponsiveLines(lines)
+            return
+        }
+
+        const mediaQueries = [window.matchMedia("(min-width: 1280px)"), window.matchMedia("(min-width: 768px)")]
+        const updateLines = () => setResponsiveLines(getDefaultLines())
+
+        updateLines()
+        mediaQueries.forEach((mediaQuery) => mediaQuery.addEventListener("change", updateLines))
+
+        return () => {
+            mediaQueries.forEach((mediaQuery) => mediaQuery.removeEventListener("change", updateLines))
+        }
+    }, [lines])
+
+    const ticks = useMemo(() => Array.from({ length: resolvedLines }, (_, index) => index), [resolvedLines])
+    const majorTickIndexes = useMemo(
+        () => new Set([0, Math.round((resolvedLines - 1) * 0.25), Math.round((resolvedLines - 1) * 0.5), Math.round((resolvedLines - 1) * 0.75), resolvedLines - 1]),
+        [resolvedLines]
+    )
 
     const snapValue = useCallback(
         (nextValue: number) => {
@@ -83,6 +112,7 @@ export function Slider({ min, max, step = 1, value, onChange, className, lines =
                 aria-label={ariaLabel}
                 tabIndex={0}
                 onPointerDown={(event) => {
+                    event.preventDefault()
                     event.currentTarget.setPointerCapture(event.pointerId)
                     updateFromClientX(event.clientX)
                 }}
@@ -111,19 +141,20 @@ export function Slider({ min, max, step = 1, value, onChange, className, lines =
                         onChange(snapValue(clampedValue + step))
                     }
                 }}
-                className="relative h-14 cursor-pointer touch-none outline-none"
+                onDragStart={(event) => event.preventDefault()}
+                className="relative h-14 cursor-pointer touch-none select-none outline-none active:cursor-grabbing"
             >
                 <div className="absolute inset-x-0 top-1/2 -translate-y-1/2">
                     <div className="grid h-12 items-center grid-flow-col gap-1">
                         {ticks.map((tick) => {
-                            const tickProgress = (tick / Math.max(lines - 1, 1)) * 100
+                            const tickProgress = (tick / Math.max(resolvedLines - 1, 1)) * 100
                             const active = tickProgress <= progress
                             const isMajor = majorTickIndexes.has(tick)
-                            const heightRatio = lines <= 1 ? 1 : tick / (lines - 1)
+                            const heightRatio = resolvedLines <= 1 ? 1 : tick / (resolvedLines - 1)
                             const baseHeight = 8 + heightRatio * 28
                             const tickHeight = isMajor ? Math.min(baseHeight + 4, 40) : baseHeight
-                            const gradientSpan = `${Math.max(lines, 1) * 100}% 100%`
-                            const gradientOffset = `${(tick / Math.max(lines - 1, 1)) * 100}% 50%`
+                            const gradientSpan = `${Math.max(resolvedLines, 1) * 100}% 100%`
+                            const gradientOffset = `${(tick / Math.max(resolvedLines - 1, 1)) * 100}% 50%`
 
                             return (
                                 <div

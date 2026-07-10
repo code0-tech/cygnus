@@ -99,7 +99,7 @@ export function WorkflowCalculatorDialog({ locale, content, businessTypeIcons, v
 
             <DialogPortal>
                 <DialogOverlay className="backdrop-blur-sm" />
-                <DialogContent className="border border-white/5 bg-primary! p-4! sm:p-6!">
+                <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto border border-white/5 bg-primary! p-4! sm:p-6!">
                     <DialogHeader className="pr-10 text-left!">
                         <DialogTitle className="text-white!">{content.title}</DialogTitle>
                         <DialogDescription className="text-secondary! text-sm!">{content.description}</DialogDescription>
@@ -157,7 +157,9 @@ export function WorkflowCalculatorDialog({ locale, content, businessTypeIcons, v
                             </Menu>
                         </div>
 
-                        <Slider min={min} max={max} step={step} value={runsPerDay} onChange={setRunsPerDay} ariaLabel={unitLabel} lines={48} valueLabelSuffix={unit} centerLabelSuffix={centerLabelSuffix} />
+                        <div className="min-w-0 pb-2">
+                            <Slider min={min} max={max} step={step} value={runsPerDay} onChange={setRunsPerDay} ariaLabel={unitLabel} valueLabelSuffix={unit} centerLabelSuffix={centerLabelSuffix} />
+                        </div>
                     </div>
 
                     <DialogFooter className="pt-4! items-end! justify-between!">
