@@ -178,7 +178,7 @@ export function Slider({ min, max, step = 1, value, onChange, className, lines, 
 
             <div className="mt-2 grid grid-cols-3 text-xs text-tertiary">
                 <span>{resolvedMinLabel}</span>
-                <span className="relative tabular-nums text-center text-base text-white">
+                <span className="relative tabular-nums text-center text-sm sm:text-base text-white">
                     <span aria-hidden="true" className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-4 w-20 rounded-full bg-white/25 blur-xl" />
                     {resolvedCenterLabel}
                 </span>

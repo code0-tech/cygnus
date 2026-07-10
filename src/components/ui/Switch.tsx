@@ -48,12 +48,17 @@ export function Switch<TValue extends string>({ label, description, value, optio
                             key={option.value}
                             type="button"
                             onClick={() => onChange(option.value)}
-                            className={cn("relative z-10 min-w-0 rounded-xl px-3 py-2 text-sm font-medium transition-colors", active ? "text-white" : "text-secondary hover:text-white")}
+                            className={cn(
+                                "relative z-10 grid min-w-0 place-items-center rounded-xl px-3 py-2 text-xs font-medium transition-colors sm:text-sm",
+                                active ? "text-white" : "text-secondary hover:text-white"
+                            )}
                         >
-                            <span className="inline-flex min-w-0 items-center justify-center gap-1">
-                                <span className="min-w-0 truncate">{option.label}</span>
-                                {option.badge && <span className="shrink-0 rounded-full -mt-3 bg-brand/15 px-1 py-0.5 text-[10px] leading-none tracking-wider text-brand">{option.badge}</span>}
-                            </span>
+                            <span className="min-w-0 max-w-[calc(100%-2.25rem)] truncate">{option.label}</span>
+                            {option.badge && (
+                                <span className="absolute left-1/2 top-1/2 ml-6 sm:ml-8 translate-y-[-85%] rounded-full bg-brand/15 px-1 py-0.5 text-[10px] leading-none tracking-wider text-brand">
+                                    {option.badge}
+                                </span>
+                            )}
                         </button>
                     )
                 })}

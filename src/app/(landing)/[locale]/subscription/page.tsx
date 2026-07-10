@@ -33,7 +33,7 @@ export default async function SubscriptionPage({ params }: { params: LocalePageP
     return (
         <>
             <Aurora />
-            <LandingContainer className="pt-32">{subscriptionConfig && <SubscriptionConfigurator locale={locale} content={subscriptionConfig} icons={icons} />}</LandingContainer>
+            <LandingContainer className="pt-16 sm:pt-32">{subscriptionConfig && <SubscriptionConfigurator locale={locale} content={subscriptionConfig} icons={icons} />}</LandingContainer>
         </>
     )
 }
