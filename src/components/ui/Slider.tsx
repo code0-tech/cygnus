@@ -109,6 +109,7 @@ export function Slider({ min, max, step = 1, value, onChange, className, lines, 
                 aria-valuemin={min}
                 aria-valuemax={max}
                 aria-valuenow={clampedValue}
+                aria-valuetext={resolvedCenterLabel}
                 aria-label={ariaLabel}
                 tabIndex={0}
                 onPointerDown={(event) => {
@@ -139,6 +140,22 @@ export function Slider({ min, max, step = 1, value, onChange, className, lines, 
                     if (event.key === "ArrowRight" || event.key === "ArrowUp") {
                         event.preventDefault()
                         onChange(snapValue(clampedValue + step))
+                    }
+                    if (event.key === "Home") {
+                        event.preventDefault()
+                        onChange(min)
+                    }
+                    if (event.key === "End") {
+                        event.preventDefault()
+                        onChange(max)
+                    }
+                    if (event.key === "PageDown") {
+                        event.preventDefault()
+                        onChange(snapValue(clampedValue - step * 10))
+                    }
+                    if (event.key === "PageUp") {
+                        event.preventDefault()
+                        onChange(snapValue(clampedValue + step * 10))
                     }
                 }}
                 onDragStart={(event) => event.preventDefault()}
