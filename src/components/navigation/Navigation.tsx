@@ -1,7 +1,9 @@
 import { type AppLocale } from "@/lib/i18n"
 import { mapNavbarButtons, mapNavbarItems, type NavigationLogoData, type NavbarButtonData, type NavbarItemData } from "@/lib/navigation"
+import dynamic from "next/dynamic"
 import { NavigationDesktop } from "./NavigationDesktop"
-import { NavigationMobile } from "./NavigationMobile"
+
+const NavigationMobile = dynamic(() => import("./NavigationMobile").then((mod) => mod.NavigationMobile))
 
 interface NavigationProps {
     locale: AppLocale
