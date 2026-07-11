@@ -16,6 +16,7 @@
         "lint": "npm run typecheck",
         "typecheck": "tsc --noEmit",
         "knip": "node --import tsx ./node_modules/knip/bin/knip.js",
+        "test": "node --import tsx --test tests/*.test.ts",
         "generate": "payload generate:types"
     },
     "dependencies": {

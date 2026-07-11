@@ -3,6 +3,7 @@
 import type { SubscriptionConfigData } from "@/lib/cms"
 import { formatEuroCurrency } from "@/lib/formatters"
 import type { AppLocale } from "@/lib/i18n"
+import { calculateSubscriptionPrice, clampToRange, formatDiscountBadge, getPaymentPeriodDiscount, getPaymentPeriodSuffix, type PaymentPeriod, type UsageRange } from "@/lib/subscriptionCalculator"
 import { useDesktopPinnedPosition } from "@/hooks/useDesktopPinnedPosition"
 import { cn } from "@/lib/utils"
 import { BuyMenu } from "@/components/BuyMenu"
@@ -17,7 +18,6 @@ import { Card } from "./ui/Card"
 
 type DeploymentMode = "self-hosted" | "cloud"
 type CustomerType = "b2b" | "b2c"
-type PaymentPeriod = "monthly" | "quarterly" | "yearly"
 type OptionAccent = "aqua" | "yellow" | "pink" | "blue" | "brand"
 type SubscriptionSelection = {
     deployment: DeploymentMode
@@ -26,12 +26,6 @@ type SubscriptionSelection = {
     workflowExecutions: number
     aiTokens: number
 }
-type UsageRange = {
-    min: number
-    max: number
-    step: number
-}
-
 export interface SubscriptionIcons {
     featureOverview: ReactNode[]
     deployment: {
@@ -182,29 +176,6 @@ function AdditionalFeatureCard({ title, description, active, onClick, icon, form
     )
 }
 
-function clampToRange(value: number, range: UsageRange) {
-    return Math.min(Math.max(value, range.min), range.max)
-}
-
-function formatDiscountBadge(discount: number, locale: AppLocale) {
-    return new Intl.NumberFormat(locale === "de" ? "de-DE" : "en-US", {
-        style: "percent",
-        maximumFractionDigits: 0,
-    }).format(discount)
-}
-
-function getPaymentPeriodDiscount(period: PaymentPeriod, paymentPeriod: SubscriptionConfigData["paymentPeriod"]) {
-    if (period === "quarterly") return paymentPeriod.quarterlyDiscount
-    if (period === "yearly") return paymentPeriod.yearlyDiscount
-    return 0
-}
-
-function getPaymentPeriodSuffix(period: PaymentPeriod, paymentPeriod: SubscriptionConfigData["paymentPeriod"]) {
-    if (period === "quarterly") return paymentPeriod.quarterlyPeriodSuffix
-    if (period === "yearly") return paymentPeriod.yearlyPeriodSuffix
-    return paymentPeriod.monthlyPeriodSuffix
-}
-
 export function SubscriptionConfigurator({ locale, content, icons }: { locale: AppLocale; content: SubscriptionConfigData; icons: SubscriptionIcons }) {
     const workflowExecutions = content.workflowExecutions
     const aiTokens = content.aiTokens
@@ -226,13 +197,17 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
     const [selectedFeatures, setSelectedFeatures] = useState<Set<number>>(new Set())
     const { wrapperRef: desktopWrapperRef, containerRef: desktopContainerRef } = useDesktopPinnedPosition<HTMLDivElement, HTMLDivElement>(96)
 
-    const workflowExecutionPrice = content.workflowExecutionPriceFactor * selection.workflowExecutions
-    const aiTokenPrice = content.aiTokenPriceFactor * selection.aiTokens
     const additionalFeaturesPrice = Array.from(selectedFeatures).reduce((acc, idx) => acc + (content.additionalFeatures?.[idx]?.price ?? 0), 0)
     const paymentPeriodDiscount = getPaymentPeriodDiscount(selection.paymentPeriod, content.paymentPeriod)
     const paymentPeriodSuffix = getPaymentPeriodSuffix(selection.paymentPeriod, content.paymentPeriod)
-    const totalBeforeDiscount = workflowExecutionPrice + aiTokenPrice + additionalFeaturesPrice
-    const totalPrice = totalBeforeDiscount * (1 - paymentPeriodDiscount)
+    const { totalPrice } = calculateSubscriptionPrice({
+        additionalFeaturesPrice,
+        aiTokenPriceFactor: content.aiTokenPriceFactor,
+        aiTokens: selection.aiTokens,
+        discount: paymentPeriodDiscount,
+        workflowExecutionPriceFactor: content.workflowExecutionPriceFactor,
+        workflowExecutions: selection.workflowExecutions,
+    })
     const paymentPeriodSwitchOptions: SwitchOption<PaymentPeriod>[] = paymentPeriodOptions.map((option) => {
         const discount = getPaymentPeriodDiscount(option.value, content.paymentPeriod)
 
