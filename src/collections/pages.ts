@@ -23,6 +23,7 @@ import { StandaloneBlock } from "@/blocks/StandaloneBlock"
 import { VideoBlock } from "@/blocks/VideoBlock"
 import { WideHeroBlock } from "@/blocks/WideHeroBlock"
 import { StatsBlock } from "@/blocks/StatsBlock"
+import { FlowExampleBlock } from "@/blocks/FlowExampleBlock"
 
 export const Pages: CollectionConfig = {
     slug: "pages",
@@ -95,6 +96,7 @@ export const Pages: CollectionConfig = {
                 WideHeroBlock,
                 ListFeatureSection,
                 StatsBlock,
+                FlowExampleBlock,
             ],
             required: false,
             localized: true,

@@ -897,6 +897,34 @@ export interface Page {
             blockName?: string | null;
             blockType: 'stats';
           }
+        | {
+            sectionHeading?: string | null;
+            sectionLayout: 'flowCenter' | 'flowLeft' | 'flowRight';
+            sectionDescription?: string | null;
+            sectionLinkButton?: {
+              label?: string | null;
+              url?: string | null;
+            };
+            contentHeading?: string | null;
+            contentDescription?: string | null;
+            flow: {
+              trigger: {
+                icon: string;
+                name: string;
+              };
+              items?:
+                | {
+                    icon: string;
+                    text: string;
+                    id?: string | null;
+                  }[]
+                | null;
+            };
+            showBorder?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'flowExample';
+          }
       )[]
     | null;
   meta?: {
@@ -1891,6 +1919,41 @@ export interface PagesSelect<T extends boolean = true> {
                     showPlus?: T;
                     id?: T;
                   };
+              id?: T;
+              blockName?: T;
+            };
+        flowExample?:
+          | T
+          | {
+              sectionHeading?: T;
+              sectionLayout?: T;
+              sectionDescription?: T;
+              sectionLinkButton?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                  };
+              contentHeading?: T;
+              contentDescription?: T;
+              flow?:
+                | T
+                | {
+                    trigger?:
+                      | T
+                      | {
+                          icon?: T;
+                          name?: T;
+                        };
+                    items?:
+                      | T
+                      | {
+                          icon?: T;
+                          text?: T;
+                          id?: T;
+                        };
+                  };
+              showBorder?: T;
               id?: T;
               blockName?: T;
             };
