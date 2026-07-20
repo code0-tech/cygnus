@@ -1,20 +1,17 @@
 import { ActionTriggerView } from "@/components/ActionTriggerView"
 import { ActionCard } from "@/components/cards/ActionCard"
 import { Aurora } from "@/components/ui/Aurora"
-import { HapticButtonLink } from "@/components/ui/HapticButtonLink"
 import { LandingContainer } from "@/components/ui/LandingContainer"
 import { LinkButton } from "@/components/ui/LinkButton"
 import { getPageLocaleAndSlug, type LocaleSlugPageParams } from "@/lib/appRoute"
-import { extractFunctionDefsFromJson, extractTriggersFromJson, fetchMediaJson } from "@/lib/actionTriggerExtraction"
+import { extractFlowTypesFromJson, extractFunctionDefinitionsFromJson, fetchMediaJson } from "@/lib/actionExtraction"
 import { getActionBySlug, getLandingPage } from "@/lib/cms"
-import { getMediaUrl } from "@/lib/media"
 import { findPageBlock } from "@/lib/pageBlocks"
 import { createMetadata } from "@/lib/siteConfig"
 import { getIcon } from "@/components/IconRenderer"
 import type { Media } from "@/payload-types"
-import { IconArrowLeft, IconExternalLink } from "@tabler/icons-react"
+import { IconArrowLeft } from "@tabler/icons-react"
 import type { Metadata } from "next"
-import Image from "next/image"
 import { notFound } from "next/navigation"
 
 export default async function ActionDetailPage({ params }: { params: LocaleSlugPageParams }) {
@@ -23,25 +20,27 @@ export default async function ActionDetailPage({ params }: { params: LocaleSlugP
     if (!action) notFound()
     const actionsPage = await getLandingPage("actions", locale)
 
-    const icon = action.icon as Media | undefined
-    const iconUrl = getMediaUrl(icon?.url)
-    const triggers = action.trigger as Media | undefined
-    const functionDefs = action.functiondefinitions as Media | undefined
-    const [extractedTriggers, extractedFunctionDefs] = await Promise.all([fetchMediaJson(triggers), fetchMediaJson(functionDefs)])
-        .then(([triggerJson, functionDefJson]) => [extractTriggersFromJson(triggerJson), extractFunctionDefsFromJson(functionDefJson)] as const)
-        .catch(() => [[], []] as const)
-    const triggerItems = extractedTriggers.map((item) => ({
+    const module = action.module as Media | undefined
+    const moduleJson = await fetchMediaJson(module).catch(() => null)
+    const extractedFlowTypes = extractFlowTypesFromJson(moduleJson)
+    const extractedFunctionDefinitions = extractFunctionDefinitionsFromJson(moduleJson)
+    const flowTypeItems = extractedFlowTypes.map((item) => ({
         item,
         icon: getIcon(item.displayIcon, 32),
     }))
-    const functionDefItems = extractedFunctionDefs.map((item) => ({
+    const functionDefinitionItems = extractedFunctionDefinitions.map((item) => ({
         item,
-        icon: getIcon("function", 32),
+        icon: getIcon(item.displayIcon ?? "function", 32),
     }))
     const references = (action.references ?? []).filter((reference): reference is Exclude<typeof reference, number> => typeof reference !== "number")
     const tags = (action.tags ?? []).filter((tag): tag is string => Boolean(tag))
     const actionsBlock = findPageBlock(actionsPage, "actions")
     const referencesLabel = actionsBlock?.referencesLabel ?? (locale === "de" ? "Referenzen" : "References")
+    const emptyDefinitionLabels = {
+        flowTypes: actionsBlock?.noFlowTypesFoundLabel ?? (locale === "de" ? "Keine FlowTypes gefunden." : "No flow types found."),
+        functionDefinitions: actionsBlock?.noFunctionDefinitionsFoundLabel ?? (locale === "de" ? "Keine FunctionDefinitions gefunden." : "No function definitions found."),
+        both: actionsBlock?.noActionDefinitionsFoundLabel ?? (locale === "de" ? "Keine FlowTypes oder FunctionDefinitions gefunden." : "No flow types or function definitions found."),
+    }
 
     return (
         <>
@@ -57,9 +56,9 @@ export default async function ActionDetailPage({ params }: { params: LocaleSlugP
                         <div className="relative z-10 flex flex-col gap-8">
                             <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">
                                 <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
-                                    {iconUrl && (
-                                        <div className="relative size-20 shrink-0 overflow-hidden rounded-3xl border border-white/10 bg-light">
-                                            <Image src={iconUrl} alt={icon?.alt ?? action.title} fill sizes="80px" className="object-contain p-2" />
+                                    {action.icon && (
+                                        <div className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-3xl border border-white/10 bg-light text-white">
+                                            {getIcon(action.icon, 40)}
                                         </div>
                                     )}
 
@@ -76,17 +75,10 @@ export default async function ActionDetailPage({ params }: { params: LocaleSlugP
                                         )}
                                     </div>
                                 </div>
-
-                                {action.documentation?.label && action.documentation?.url && (
-                                    <HapticButtonLink href={action.documentation.url} variant="normal" className="text-sm!">
-                                        <IconExternalLink size={16} />
-                                        {action.documentation.label}
-                                    </HapticButtonLink>
-                                )}
                             </div>
                             {action.description && <div className="max-w-3xl whitespace-pre-line text-sm leading-6 text-secondary">{action.description}</div>}
 
-                            <ActionTriggerView locale={locale} triggers={triggerItems} functionDefs={functionDefItems} />
+                            <ActionTriggerView locale={locale} flowTypes={flowTypeItems} functionDefinitions={functionDefinitionItems} emptyLabels={emptyDefinitionLabels} />
 
                             {references.length > 0 && (
                                 <div className="space-y-3">

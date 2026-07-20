@@ -1,5 +1,3 @@
-import "server-only"
-
 import { IconRenderer as PayloadIconRenderer } from "@mvriu5/payload-icon-picker/client"
 import type { CSSProperties, Key, ReactNode } from "react"
 import { simpleIconsAdapter } from "@mvriu5/payload-icon-picker/adapters/simple-icons"

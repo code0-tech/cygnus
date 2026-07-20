@@ -689,6 +689,9 @@ export interface Page {
             searchPlaceholder: string;
             noActionsFoundLabel: string;
             referencesLabel: string;
+            noFlowTypesFoundLabel: string;
+            noFunctionDefinitionsFoundLabel: string;
+            noActionDefinitionsFoundLabel: string;
             id?: string | null;
             blockName?: string | null;
             blockType: 'actions';
@@ -993,21 +996,8 @@ export interface Feature {
  */
 export interface Action {
   id: number;
-  title: string;
-  /**
-   * URL slug for the action subpage, e.g. 'slack-sync'.
-   */
-  slug: string;
-  shortDescription?: string | null;
-  description?: string | null;
-  icon?: (number | null) | Media;
-  trigger?: (number | null) | Media;
-  functiondefinitions?: (number | null) | Media;
+  module: number | Media;
   tags?: string[] | null;
-  documentation?: {
-    label?: string | null;
-    url?: string | null;
-  };
   references?: (number | Action)[] | null;
   updatedAt: string;
   createdAt: string;
@@ -1669,6 +1659,9 @@ export interface PagesSelect<T extends boolean = true> {
               searchPlaceholder?: T;
               noActionsFoundLabel?: T;
               referencesLabel?: T;
+              noFlowTypesFoundLabel?: T;
+              noFunctionDefinitionsFoundLabel?: T;
+              noActionDefinitionsFoundLabel?: T;
               id?: T;
               blockName?: T;
             };
@@ -1927,20 +1920,8 @@ export interface FeaturesSelect<T extends boolean = true> {
  * via the `definition` "actions_select".
  */
 export interface ActionsSelect<T extends boolean = true> {
-  title?: T;
-  slug?: T;
-  shortDescription?: T;
-  description?: T;
-  icon?: T;
-  trigger?: T;
-  functiondefinitions?: T;
+  module?: T;
   tags?: T;
-  documentation?:
-    | T
-    | {
-        label?: T;
-        url?: T;
-      };
   references?: T;
   updatedAt?: T;
   createdAt?: T;

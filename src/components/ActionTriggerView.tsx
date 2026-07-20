@@ -3,44 +3,54 @@
 import { type ReactNode, useState } from "react"
 import { ActionTriggerCard } from "@/components/ActionTriggerCard"
 import { Switch, type SwitchOption } from "@/components/ui/Switch"
-import type { ExtractedActionTriggerItem, ExtractedFunctionDef, ExtractedTrigger } from "@/lib/actionTriggerExtraction"
+import type { ExtractedFlowType, ExtractedFunctionDefinition } from "@/lib/actionExtraction"
 
 interface ActionTriggerViewProps {
     locale: string
-    triggers: Array<{ item: ExtractedTrigger; icon: ReactNode }>
-    functionDefs: Array<{ item: ExtractedFunctionDef; icon: ReactNode }>
+    flowTypes: Array<{ item: ExtractedFlowType; icon: ReactNode }>
+    functionDefinitions: Array<{ item: ExtractedFunctionDefinition; icon: ReactNode }>
+    emptyLabels: {
+        flowTypes: string
+        functionDefinitions: string
+        both: string
+    }
 }
 
-type ViewMode = "both" | "triggers" | "functionDefs"
+type ViewMode = "both" | "flowTypes" | "functionDefinitions"
 
 interface DisplayItem {
-    type: "trigger" | "functionDef"
-    item: ExtractedActionTriggerItem
+    type: "flowType" | "functionDefinition"
+    item: ExtractedFlowType | ExtractedFunctionDefinition
     icon: ReactNode
 }
 
-export function ActionTriggerView({ locale, triggers, functionDefs }: ActionTriggerViewProps) {
+export function ActionTriggerView({ locale, flowTypes, functionDefinitions, emptyLabels }: ActionTriggerViewProps) {
     const [viewMode, setViewMode] = useState<ViewMode>("both")
     const viewModeOptions: SwitchOption<ViewMode>[] = [
+        { value: "flowTypes", label: "FlowTypes" },
+        { value: "functionDefinitions", label: "FunctionDefinitions" },
         { value: "both", label: locale === "en" ? "Both" : "Beide" },
-        { value: "triggers", label: "Triggers" },
-        { value: "functionDefs", label: "FunctionDefinitions" },
     ]
 
     const visibleItems: DisplayItem[] = [
-        ...(viewMode === "both" || viewMode === "triggers" ? triggers.map(({ item, icon }) => ({ type: "trigger" as const, item, icon })) : []),
-        ...(viewMode === "both" || viewMode === "functionDefs" ? functionDefs.map(({ item, icon }) => ({ type: "functionDef" as const, item, icon })) : []),
+        ...(viewMode === "both" || viewMode === "flowTypes" ? flowTypes.map(({ item, icon }) => ({ type: "flowType" as const, item, icon })) : []),
+        ...(viewMode === "both" || viewMode === "functionDefinitions" ? functionDefinitions.map(({ item, icon }) => ({ type: "functionDefinition" as const, item, icon })) : []),
     ]
+    const emptyLabel = viewMode === "both" ? emptyLabels.both : viewMode === "flowTypes" ? emptyLabels.flowTypes : emptyLabels.functionDefinitions
 
     return (
         <div className="space-y-6">
-            <Switch value={viewMode} options={viewModeOptions} onChange={setViewMode} className="w-max" />
+            <Switch value={viewMode} options={viewModeOptions} onChange={setViewMode} className="w-max max-w-full overflow-x-auto" fitContent />
 
-            <div className="flex flex-col gap-4 md:hidden">
-                {visibleItems.map(({ type, item, icon }) => (
-                    <ActionTriggerCard key={item.id} type={type} item={item} icon={icon} />
-                ))}
-            </div>
+            {visibleItems.length > 0 ? (
+                <div className="flex flex-col gap-4 md:hidden">
+                    {visibleItems.map(({ type, item, icon }) => (
+                        <ActionTriggerCard key={item.id} type={type} item={item} icon={icon} />
+                    ))}
+                </div>
+            ) : (
+                <p className="px-2 text-sm text-tertiary">{emptyLabel}</p>
+            )}
         </div>
     )
 }

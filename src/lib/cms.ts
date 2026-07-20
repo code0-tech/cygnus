@@ -1,5 +1,6 @@
 import "server-only"
 
+import { extractActionModuleInfo, fetchMediaJson } from "@/lib/actionExtraction"
 import { DEFAULT_LOCALE, type AppLocale } from "@/lib/i18n"
 import { getPayloadClient } from "@/lib/payloadClient"
 import type { Action, Blog, CookieBanner, Feature, Footer, Job, Media, Navigation, Page, TeamMember } from "@/payload-types"
@@ -46,22 +47,16 @@ interface FeatureItem {
     }
 }
 
-type ActionReferenceItem = Pick<Action, "id" | "slug" | "title" | "shortDescription" | "description" | "tags"> & {
-    icon?: (number | null) | Media
+export type ActionItem = Pick<Action, "id" | "module" | "tags"> & {
+    slug: string
+    title: string
+    shortDescription?: string | null
+    description?: string | null
+    icon?: string
+    documentation?: string | null
+    references?: Array<number | ActionItem> | null
 }
-
-export type ActionItem = Pick<Action, "id" | "slug" | "title" | "shortDescription" | "description" | "tags"> & {
-    icon?: (number | null) | Media
-    trigger?: (number | null) | Media
-    functiondefinitions?: (number | null) | Media
-    documentation?: Action["documentation"]
-    references?: Array<number | ActionReferenceItem> | null
-}
-type ActionDetailItem = Pick<Action, "id" | "slug" | "title" | "shortDescription" | "description" | "tags" | "documentation" | "references"> & {
-    icon?: (number | null) | Media
-    trigger?: (number | null) | Media
-    functiondefinitions?: (number | null) | Media
-}
+type ActionDetailItem = ActionItem
 
 interface SubscriptionUsageRange {
     step: number
@@ -407,27 +402,54 @@ const getJobsCached = cache(async (locale: AppLocale): Promise<JobItem[]> => {
     })
 })
 
+async function enrichAction(action: Action, includeReferences = true): Promise<ActionItem> {
+    const module = typeof action.module === "number" ? undefined : action.module
+    const moduleJson = await fetchMediaJson(module).catch(() => null)
+    const moduleInfo = extractActionModuleInfo(moduleJson)
+    const slug = moduleInfo?.identifier || `action-${action.id}`
+    const title = moduleInfo?.title || slug
+    const references = includeReferences
+        ? await enrichActions(
+              (action.references ?? []).filter((reference): reference is Action => typeof reference !== "number"),
+              false
+          )
+        : null
+
+    return {
+        id: action.id,
+        module: action.module,
+        slug,
+        title,
+        shortDescription: moduleInfo?.description || null,
+        description: moduleInfo?.description || null,
+        icon: moduleInfo?.icon,
+        documentation: moduleInfo?.documentation || null,
+        tags: action.tags,
+        references,
+    }
+}
+
+async function enrichActions(actions: Action[], includeReferences = true): Promise<ActionItem[]> {
+    const enrichedActions = await Promise.all(actions.map((action) => enrichAction(action, includeReferences)))
+    return enrichedActions.sort((a, b) => a.title.localeCompare(b.title))
+}
+
 const getActionsCached = cache(async (locale: AppLocale): Promise<ActionItem[]> => {
-    return cmsFindMany(`getActions(${locale})`, [], {
+    const actions = await cmsFindMany(`getActions(${locale})`, [], {
         collection: "actions",
         locale,
         fallbackLocale: DEFAULT_LOCALE,
-        sort: "title",
+        sort: "createdAt",
         pagination: false,
         depth: 1,
         select: {
-            slug: true,
-            title: true,
-            shortDescription: true,
-            description: true,
-            icon: true,
-            trigger: true,
-            functiondefinitions: true,
+            module: true,
             tags: true,
-            documentation: true,
             references: true,
         },
     })
+
+    return enrichActions(actions)
 })
 
 const getJobBySlugCached = cache(async (slug: string, locale: AppLocale): Promise<JobDetailItem | null> => {
@@ -443,27 +465,8 @@ const getJobBySlugCached = cache(async (slug: string, locale: AppLocale): Promis
 })
 
 const getActionBySlugCached = cache(async (slug: string, locale: AppLocale): Promise<ActionDetailItem | null> => {
-    return cmsFindOne(`getActionBySlug(${slug}, ${locale})`, null, {
-        collection: "actions",
-        locale,
-        fallbackLocale: DEFAULT_LOCALE,
-        where: { slug: { equals: slug } },
-        limit: 1,
-        pagination: false,
-        depth: 2,
-        select: {
-            slug: true,
-            title: true,
-            shortDescription: true,
-            description: true,
-            icon: true,
-            trigger: true,
-            functiondefinitions: true,
-            tags: true,
-            documentation: true,
-            references: true,
-        },
-    })
+    const actions = await getActionsCached(locale)
+    return actions.find((action) => action.slug === slug) ?? null
 })
 
 const getTeamMembersCached = cache(async (locale: AppLocale): Promise<TeamMemberItem[]> => {

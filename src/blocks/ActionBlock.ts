@@ -42,5 +42,26 @@ export const ActionBlock: Block = {
       localized: true,
       defaultValue: "References",
     },
+    {
+      name: "noFlowTypesFoundLabel",
+      type: "text",
+      required: true,
+      localized: true,
+      defaultValue: "No flow types found.",
+    },
+    {
+      name: "noFunctionDefinitionsFoundLabel",
+      type: "text",
+      required: true,
+      localized: true,
+      defaultValue: "No function definitions found.",
+    },
+    {
+      name: "noActionDefinitionsFoundLabel",
+      type: "text",
+      required: true,
+      localized: true,
+      defaultValue: "No flow types or function definitions found.",
+    },
   ],
 }

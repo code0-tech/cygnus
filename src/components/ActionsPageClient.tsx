@@ -61,7 +61,7 @@ export function ActionsPageClient({ actions, locale, content }: ActionsPageClien
                 clearable
                 className="text-white!"
             />
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="flex flex-col gap-4">
                 {filteredActions.map((action) => (
                     <ActionCard key={action.id} action={action} locale={locale} />
                 ))}

@@ -11,6 +11,7 @@ interface FAQItemProps {
     onToggle: (index: number) => void
     className?: string
     questionClassname?: string
+    answerClassname?: string
 }
 
 const AccordionItemComponent = ({ index, question, answer, isOpen, onToggle, className, questionClassname }: FAQItemProps) => {
@@ -86,7 +87,7 @@ const AccordionItemComponent = ({ index, question, answer, isOpen, onToggle, cla
 
 export const AccordionItem = React.memo(AccordionItemComponent)
 
-const BaseAccordionItemComponent = ({ index, question, answer, isOpen, onToggle, className, questionClassname }: FAQItemProps) => {
+const BaseAccordionItemComponent = ({ index, question, answer, isOpen, onToggle, className, questionClassname, answerClassname }: FAQItemProps) => {
     return (
         <div className={cn("group relative z-10 w-full min-w-0 max-w-full cursor-pointer overflow-hidden rounded-2xl border border-white/5", isOpen && "border-white/10", className)}>
             <button
@@ -103,7 +104,7 @@ const BaseAccordionItemComponent = ({ index, question, answer, isOpen, onToggle,
             {isOpen && (
                 <div className="overflow-hidden" aria-hidden={!isOpen}>
                     <div className="min-h-0">
-                        <div className="relative z-10 px-5 pb-5 pt-1">
+                        <div className={cn("relative z-10 px-5 pb-5 pt-1", answerClassname)}>
                             <div className="min-w-0 max-w-full text-sm leading-7 text-tertiary sm:text-base wrap-anywhere">{answer}</div>
                         </div>
                     </div>
