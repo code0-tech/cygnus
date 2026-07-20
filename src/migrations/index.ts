@@ -36,6 +36,8 @@ import * as migration_20260708_072801_20260708_footer_image from './20260708_072
 import * as migration_20260708_105500_subscription_payment_period_usage_ranges from './20260708_105500_subscription_payment_period_usage_ranges';
 import * as migration_20260709_183358_subscription_configurator_defaults from './20260709_183358_subscription_configurator_defaults';
 import * as migration_20260710_052024_subscription_payment_period_suffixes from './20260710_052024_subscription_payment_period_suffixes';
+import * as migration_20260720_105407_20260720_stats_block from './20260720_105407_20260720_stats_block';
+import * as migration_20260720_111300_20260720_stats_show_plus from './20260720_111300_20260720_stats_show_plus';
 
 export const migrations = [
   {
@@ -226,6 +228,16 @@ export const migrations = [
   {
     up: migration_20260710_052024_subscription_payment_period_suffixes.up,
     down: migration_20260710_052024_subscription_payment_period_suffixes.down,
-    name: '20260710_052024_subscription_payment_period_suffixes'
+    name: '20260710_052024_subscription_payment_period_suffixes',
+  },
+  {
+    up: migration_20260720_105407_20260720_stats_block.up,
+    down: migration_20260720_105407_20260720_stats_block.down,
+    name: '20260720_105407_20260720_stats_block',
+  },
+  {
+    up: migration_20260720_111300_20260720_stats_show_plus.up,
+    down: migration_20260720_111300_20260720_stats_show_plus.down,
+    name: '20260720_111300_20260720_stats_show_plus'
   },
 ];

@@ -878,6 +878,25 @@ export interface Page {
             blockName?: string | null;
             blockType: 'listFeature';
           }
+        | {
+            sectionHeading?: string | null;
+            sectionLayout: 'center' | 'left';
+            sectionDescription?: string | null;
+            sectionLinkButton?: {
+              label?: string | null;
+              url?: string | null;
+            };
+            items: {
+              number: number;
+              description: string;
+              enableNumberFlow?: boolean | null;
+              showPlus?: boolean | null;
+              id?: string | null;
+            }[];
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'stats';
+          }
       )[]
     | null;
   meta?: {
@@ -1846,6 +1865,30 @@ export interface PagesSelect<T extends boolean = true> {
                     icon?: T;
                     title?: T;
                     description?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        stats?:
+          | T
+          | {
+              sectionHeading?: T;
+              sectionLayout?: T;
+              sectionDescription?: T;
+              sectionLinkButton?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                  };
+              items?:
+                | T
+                | {
+                    number?: T;
+                    description?: T;
+                    enableNumberFlow?: T;
+                    showPlus?: T;
                     id?: T;
                   };
               id?: T;

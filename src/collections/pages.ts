@@ -22,6 +22,7 @@ import type { CollectionConfig } from "payload"
 import { StandaloneBlock } from "@/blocks/StandaloneBlock"
 import { VideoBlock } from "@/blocks/VideoBlock"
 import { WideHeroBlock } from "@/blocks/WideHeroBlock"
+import { StatsBlock } from "@/blocks/StatsBlock"
 
 export const Pages: CollectionConfig = {
     slug: "pages",
@@ -93,6 +94,7 @@ export const Pages: CollectionConfig = {
                 VideoBlock,
                 WideHeroBlock,
                 ListFeatureSection,
+                StatsBlock,
             ],
             required: false,
             localized: true,

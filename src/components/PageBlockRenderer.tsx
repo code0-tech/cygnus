@@ -19,6 +19,7 @@ import React, { type ReactNode } from "react"
 import { StandaloneCardSection } from "./sections/StandaloneCardSection"
 import { VideoSection } from "./sections/VideoSection"
 import { WideHeroSection } from "./sections/WideHeroSection"
+import { StatsSection } from "./sections/StatsSection"
 
 type PageBlock = NonNullable<Page["layout"]>[number]
 
@@ -51,6 +52,7 @@ const pageBlockRenderers: Partial<Record<PageBlock["blockType"], BlockRenderer>>
     video: (block) => <VideoSection content={block as Extract<PageBlock, { blockType: "video" }>} />,
     widehero: (block) => <WideHeroSection content={block as Extract<PageBlock, { blockType: "widehero" }>} />,
     listFeature: (block) => <ListFeatureSection content={block as Extract<PageBlock, { blockType: "listFeature" }>} />,
+    stats: (block) => <StatsSection content={block as Extract<PageBlock, { blockType: "stats" }>} />,
 }
 
 function renderPageBlock(block: PageBlock, options: PageBlockRenderOptions) {
