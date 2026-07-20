@@ -65,7 +65,7 @@
         "@types/react-dom": "^19.2.3",
         "@types/sanitize-html": "^2.16.1",
         "postcss": "^8.5.16",
-        "prettier": "^3.9.4",
+        "prettier": "^3.9.5",
         "tailwindcss": "^4.3.2",
         "tsx": "^4.23.0",
         "typescript": "^6.0.3"
