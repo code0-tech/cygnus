@@ -29,7 +29,7 @@
         "@mvriu5/payload-ai": "^1.3.2",
         "@mvriu5/payload-icon-picker": "^1.0.2",
         "@number-flow/react": "^0.6.1",
-        "@openrouter/ai-sdk-provider": "^2.10.0",
+        "@openrouter/ai-sdk-provider": "^3.0.0",
         "@payloadcms/db-postgres": "3.86.0",
         "@payloadcms/email-nodemailer": "3.86.0",
         "@payloadcms/next": "3.86.0",
