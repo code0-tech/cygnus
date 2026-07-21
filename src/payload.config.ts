@@ -45,9 +45,25 @@ export default buildConfig({
         importMap: {
             baseDir: path.resolve(dirname),
         },
+        components: {
+            graphics: {
+                Icon: "/graphics/Icon.tsx#Icon",
+                Logo: "/graphics/Logo.tsx#Logo",
+            },
+        },
         livePreview: {
             url: "http://localhost:3000",
             collections: ["pages", "jobs", "actions", "team-members", "features", "blog"],
+        },
+        meta: {
+            titleSuffix: "- CodeZero",
+            icons: [
+                {
+                    type: "image/ico",
+                    rel: "icon",
+                    url: "/favicons/favicon.ico",
+                },
+            ],
         },
     },
     localization: {
