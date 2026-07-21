@@ -1,14 +1,14 @@
 "use client"
 
-import { type ReactNode, useState } from "react"
+import { useState } from "react"
 import { ActionTriggerCard } from "@/components/ActionTriggerCard"
 import { Switch, type SwitchOption } from "@/components/ui/Switch"
 import type { ExtractedFlowType, ExtractedFunctionDefinition } from "@/lib/actionExtraction"
 
 interface ActionTriggerViewProps {
     locale: string
-    flowTypes: Array<{ item: ExtractedFlowType; icon: ReactNode }>
-    functionDefinitions: Array<{ item: ExtractedFunctionDefinition; icon: ReactNode }>
+    flowTypes: Array<{ item: ExtractedFlowType; icon?: string }>
+    functionDefinitions: Array<{ item: ExtractedFunctionDefinition; icon?: string }>
     emptyLabels: {
         flowTypes: string
         functionDefinitions: string
@@ -21,7 +21,7 @@ type ViewMode = "both" | "flowTypes" | "functionDefinitions"
 interface DisplayItem {
     type: "flowType" | "functionDefinition"
     item: ExtractedFlowType | ExtractedFunctionDefinition
-    icon: ReactNode
+    icon?: string
 }
 
 export function ActionTriggerView({ locale, flowTypes, functionDefinitions, emptyLabels }: ActionTriggerViewProps) {

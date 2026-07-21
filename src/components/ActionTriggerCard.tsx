@@ -2,13 +2,14 @@
 
 import { BaseAccordionItem } from "@/components/ui/Accordion"
 import type { ExtractedFlowType, ExtractedFunctionDefinition } from "@/lib/actionExtraction"
-import { type ReactNode, useCallback, useMemo, useState } from "react"
+import { Icon } from "@code0-tech/pictor"
+import { useCallback, useMemo, useState } from "react"
 import { Card } from "./ui/Card"
 
 interface ActionTriggerCardProps {
     type: "flowType" | "functionDefinition"
     item: ExtractedFlowType | ExtractedFunctionDefinition
-    icon: ReactNode
+    icon?: string
 }
 
 export function ActionTriggerCard({ type, item, icon }: ActionTriggerCardProps) {
@@ -38,7 +39,9 @@ export function ActionTriggerCard({ type, item, icon }: ActionTriggerCardProps) 
             <div className="relative z-10 flex h-full flex-col gap-2">
                 <div className="flex items-start justify-between gap-3">
                     <div className="flex min-w-0 items-center gap-2">
-                        <div className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-white/5 bg-light text-brand">{icon}</div>
+                        <div className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-white/5 bg-light text-brand">
+                            <Icon icon={icon ?? "tabler:IconFunction"} size={24} />
+                        </div>
                         <div className="min-w-0">
                             <p className="text-xs tracking-wide text-tertiary">{label}</p>
                             <h3 className="truncate tracking-wide text-white">{item.name || item.identifier}</h3>

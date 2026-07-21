@@ -1,4 +1,5 @@
 import { ActionTriggerView } from "@/components/ActionTriggerView"
+import { ActionIcon } from "@/components/ActionIcon"
 import { ActionCard } from "@/components/cards/ActionCard"
 import { Aurora } from "@/components/ui/Aurora"
 import { LandingContainer } from "@/components/ui/LandingContainer"
@@ -8,7 +9,6 @@ import { extractFlowTypesFromJson, extractFunctionDefinitionsFromJson, fetchMedi
 import { getActionBySlug, getLandingPage } from "@/lib/cms"
 import { findPageBlock } from "@/lib/pageBlocks"
 import { createMetadata } from "@/lib/siteConfig"
-import { getIcon } from "@/components/IconRenderer"
 import type { Media } from "@/payload-types"
 import { IconArrowLeft } from "@tabler/icons-react"
 import type { Metadata } from "next"
@@ -26,11 +26,11 @@ export default async function ActionDetailPage({ params }: { params: LocaleSlugP
     const extractedFunctionDefinitions = extractFunctionDefinitionsFromJson(moduleJson)
     const flowTypeItems = extractedFlowTypes.map((item) => ({
         item,
-        icon: getIcon(item.displayIcon, 32),
+        icon: item.displayIcon,
     }))
     const functionDefinitionItems = extractedFunctionDefinitions.map((item) => ({
         item,
-        icon: getIcon(item.displayIcon ?? "function", 32),
+        icon: item.displayIcon ?? "tabler:IconFunction",
     }))
     const references = (action.references ?? []).filter((reference): reference is Exclude<typeof reference, number> => typeof reference !== "number")
     const tags = (action.tags ?? []).filter((tag): tag is string => Boolean(tag))
@@ -58,7 +58,7 @@ export default async function ActionDetailPage({ params }: { params: LocaleSlugP
                                 <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
                                     {action.icon && (
                                         <div className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-3xl border border-white/10 bg-light text-white">
-                                            {getIcon(action.icon, 40)}
+                                            <ActionIcon icon={action.icon} size={40} />
                                         </div>
                                     )}
 

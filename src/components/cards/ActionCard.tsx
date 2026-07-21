@@ -1,4 +1,6 @@
-import { getIcon } from "@/components/IconRenderer"
+"use client"
+
+import { ActionIcon } from "@/components/ActionIcon"
 import type { ActionItem } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import Link from "next/link"
@@ -11,7 +13,9 @@ export function ActionCard({ action, locale }: { action: ActionItem; locale: App
                 <div className="relative z-10 flex flex-col gap-4">
                     <div className="flex items-start gap-2">
                         {action.icon && (
-                            <div className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/5 bg-light text-white">{getIcon(action.icon, 28)}</div>
+                            <div className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/5 bg-light text-white">
+                                <ActionIcon icon={action.icon} size={28} />
+                            </div>
                         )}
 
                         <div className="min-w-0 flex flex-col justify-center mt-1">
