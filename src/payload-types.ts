@@ -914,8 +914,13 @@ export interface Page {
               };
               items?:
                 | {
-                    icon: string;
-                    text: string;
+                    color: 'brand' | 'yellow' | 'aqua' | 'blue' | 'pink';
+                    outline?: boolean | null;
+                    segments: {
+                      type: 'text' | 'literal' | 'reference' | 'node';
+                      value: string;
+                      id?: string | null;
+                    }[];
                     id?: string | null;
                   }[]
                 | null;
@@ -1948,8 +1953,15 @@ export interface PagesSelect<T extends boolean = true> {
                     items?:
                       | T
                       | {
-                          icon?: T;
-                          text?: T;
+                          color?: T;
+                          outline?: T;
+                          segments?:
+                            | T
+                            | {
+                                type?: T;
+                                value?: T;
+                                id?: T;
+                              };
                           id?: T;
                         };
                   };

@@ -1,10 +1,12 @@
 import { getIcon } from "@/components/IconRenderer"
 import { StaggerContainer, StaggerItem } from "@/components/animations/Stagger"
 import { Card } from "@/components/ui/Card"
+import { DotBackground } from "@/components/ui/DotBackground"
 import { Section } from "@/components/ui/Section"
 import type { FlowExampleLayoutBlock } from "@/lib/cms"
 import { cn } from "@/lib/utils"
-import { FlowExampleDiagram, type FlowDiagramNode } from "./client/FlowExampleDiagram"
+import type { NodeAccent, NodeSegmentType } from "@/components/nodes/NodeDisplay"
+import { FlowExampleDiagram, type FlowDiagramItem, type FlowDiagramNode } from "./client/FlowExampleDiagram"
 
 interface FlowExampleSectionProps {
     content?: FlowExampleLayoutBlock | null
@@ -19,27 +21,45 @@ export function FlowExampleSection({ content }: FlowExampleSectionProps) {
         icon: getIcon(trigger.icon, 20),
         text: trigger.name,
     }
-    const items: FlowDiagramNode[] =
+    const items: FlowDiagramItem[] =
         content.flow?.items?.map((item, index) => ({
             id: String(item.id ?? index),
-            icon: getIcon(item.icon, 20, item.id ?? index),
-            text: item.text,
+            node: {
+                color: item.color as NodeAccent,
+                outline: item.outline !== false,
+                segments: item.segments.map((segment) => ({
+                    type: segment.type as NodeSegmentType,
+                    value: segment.value,
+                })),
+            },
         })) ?? []
     const isCenter = content.sectionLayout === "flowCenter"
     const isRight = content.sectionLayout === "flowRight"
+    const showBorder = Boolean(content.showBorder)
     const flow = (
-        <div
-            className={cn(
-                "relative m-2 min-w-0 overflow-hidden rounded-2xl border border-white/10 bg-primary/40",
-                isCenter ? "min-h-72" : "min-h-72 lg:min-h-96",
-                isRight && "lg:order-2"
-            )}
-        >
+        <div className={cn("relative m-2 min-w-0 overflow-hidden rounded-2xl border border-white/10 bg-light", isCenter ? "min-h-72" : "min-h-72 lg:min-h-96", isRight && "lg:order-2")}>
+            <DotBackground
+                className="opacity-50 mask-[radial-gradient(ellipse_at_center,black_35%,transparent_85%)]"
+                dotColor="rgba(255,255,255,0.14)"
+                dotSize={1}
+                spacing={18}
+            />
             <FlowExampleDiagram trigger={triggerNode} items={items} />
         </div>
     )
     const body = (
-        <StaggerContainer className={cn("flex flex-col justify-center p-8 md:p-10", isRight && "lg:order-1")} delayChildren={0.06} staggerChildren={0.08}>
+        <StaggerContainer
+            className={cn(
+                "flex flex-col justify-center",
+                showBorder && "p-8 md:p-10",
+                !showBorder && isCenter && "pt-8 md:pt-10",
+                !showBorder && !isCenter && !isRight && "py-8 pl-8 md:py-10 md:pl-10",
+                !showBorder && isRight && "py-8 pr-8 md:py-10 md:pr-10",
+                isRight && "lg:order-1"
+            )}
+            delayChildren={0.06}
+            staggerChildren={0.08}
+        >
             {content.contentHeading && (
                 <StaggerItem as="h2" y={14} duration={0.38} className="text-3xl font-semibold leading-tight tracking-tight text-white md:text-4xl">
                     {content.contentHeading}
@@ -53,18 +73,32 @@ export function FlowExampleSection({ content }: FlowExampleSectionProps) {
         </StaggerContainer>
     )
 
-    const example = <article className={cn("relative z-10 overflow-hidden", isCenter ? "flex flex-col" : "grid lg:grid-cols-2")}>{isCenter ? <>{flow}{(content.contentHeading || content.contentDescription) && body}</> : <>{flow}{body}</>}</article>
+    const example = (
+        <article className={cn("relative z-10 overflow-hidden", isCenter ? "flex flex-col" : "grid lg:grid-cols-2")}>
+            {isCenter ? (
+                <>
+                    {flow}
+                    {(content.contentHeading || content.contentDescription) && body}
+                </>
+            ) : (
+                <>
+                    {flow}
+                    {body}
+                </>
+            )}
+        </article>
+    )
 
     return (
-        <Section
-            heading={content.sectionHeading}
-            description={content.sectionDescription}
-            linkButton={content.sectionLinkButton}
-            funnelType="center"
-            animation={{ preset: "none" }}
-        >
+        <Section heading={content.sectionHeading} description={content.sectionDescription} linkButton={content.sectionLinkButton} funnelType="center" animation={{ preset: "none" }}>
             <div className={cn("mx-auto w-full", isCenter && "max-w-5xl")}>
-                {content.showBorder ? <Card size="lg" variant="light" className="p-2!">{example}</Card> : example}
+                {showBorder ? (
+                    <Card size="lg" variant="light" className="p-2!">
+                        {example}
+                    </Card>
+                ) : (
+                    example
+                )}
             </div>
         </Section>
     )

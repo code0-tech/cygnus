@@ -1,4 +1,5 @@
-import { NodesAnimation, type NodeItem, type NodeSegment } from "../animations/NodesAnimation"
+import { NodesAnimation } from "../animations/NodesAnimation"
+import type { NodeItem, NodeSegment } from "../nodes/NodeDisplay"
 
 interface TriggerMarkdownBlockProps {
     source: string

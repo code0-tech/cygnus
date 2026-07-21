@@ -39,6 +39,7 @@ import * as migration_20260710_052024_subscription_payment_period_suffixes from 
 import * as migration_20260720_105407_20260720_stats_block from './20260720_105407_20260720_stats_block';
 import * as migration_20260720_111300_20260720_stats_show_plus from './20260720_111300_20260720_stats_show_plus';
 import * as migration_20260720_123334_20260720_flow_example from './20260720_123334_20260720_flow_example';
+import * as migration_20260721_092035_20260721_flow_example_segments from './20260721_092035_20260721_flow_example_segments';
 
 export const migrations = [
   {
@@ -244,6 +245,11 @@ export const migrations = [
   {
     up: migration_20260720_123334_20260720_flow_example.up,
     down: migration_20260720_123334_20260720_flow_example.down,
-    name: '20260720_123334_20260720_flow_example'
+    name: '20260720_123334_20260720_flow_example',
+  },
+  {
+    up: migration_20260721_092035_20260721_flow_example_segments.up,
+    down: migration_20260721_092035_20260721_flow_example_segments.down,
+    name: '20260721_092035_20260721_flow_example_segments'
   },
 ];

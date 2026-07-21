@@ -92,12 +92,49 @@ export const FlowExampleBlock: Block = {
                     label: "Flow items",
                     type: "array",
                     fields: [
-                        flowIconField(),
                         {
-                            name: "text",
-                            type: "text",
+                            name: "color",
+                            type: "select",
                             required: true,
-                            localized: true,
+                            defaultValue: "brand",
+                            options: [
+                                { label: "Brand", value: "brand" },
+                                { label: "Yellow", value: "yellow" },
+                                { label: "Aqua", value: "aqua" },
+                                { label: "Blue", value: "blue" },
+                                { label: "Pink", value: "pink" },
+                            ],
+                        },
+                        {
+                            name: "outline",
+                            type: "checkbox",
+                            defaultValue: true,
+                        },
+                        {
+                            name: "segments",
+                            type: "array",
+                            required: true,
+                            minRows: 1,
+                            fields: [
+                                {
+                                    name: "type",
+                                    type: "select",
+                                    required: true,
+                                    defaultValue: "text",
+                                    options: [
+                                        { label: "Text", value: "text" },
+                                        { label: "Literal", value: "literal" },
+                                        { label: "Reference", value: "reference" },
+                                        { label: "Node", value: "node" },
+                                    ],
+                                },
+                                {
+                                    name: "value",
+                                    type: "text",
+                                    required: true,
+                                    localized: true,
+                                },
+                            ],
                         },
                     ],
                 },
