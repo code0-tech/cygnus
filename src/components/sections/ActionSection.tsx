@@ -2,12 +2,13 @@
 
 import { ActionCard } from "@/components/cards/ActionCard"
 import type { ActionItem } from "@/lib/cms"
+import { cn } from "@/lib/utils"
 import { TextInput } from "@code0-tech/pictor"
 import { IconSearch } from "@tabler/icons-react"
 import type { ChangeEvent } from "react"
 import { useMemo, useState } from "react"
 
-interface ActionsPageContent {
+interface ActionSectionContent {
     heading: string
     description: string
     searchPlaceholder: string
@@ -15,13 +16,13 @@ interface ActionsPageContent {
     referencesLabel: string
 }
 
-interface ActionsPageClientProps {
+interface ActionSectionProps {
     actions: ActionItem[]
     locale: string
-    content?: Partial<ActionsPageContent> | null
+    content?: Partial<ActionSectionContent> | null
 }
 
-const defaultContent: ActionsPageContent = {
+const defaultContent: ActionSectionContent = {
     heading: "Actions",
     description: "Browse available actions and integrations.",
     searchPlaceholder: "Search actions",
@@ -29,23 +30,33 @@ const defaultContent: ActionsPageContent = {
     referencesLabel: "References",
 }
 
-export function ActionsPageClient({ actions, locale, content }: ActionsPageClientProps) {
+export function ActionSection({ actions, locale, content }: ActionSectionProps) {
     const labels = { ...defaultContent, ...content }
     const [search, setSearch] = useState("")
+    const [selectedTags, setSelectedTags] = useState<string[]>([])
+
+    const tags = useMemo(() => {
+        return Array.from(new Set(actions.flatMap((action) => action.tags?.filter((tag): tag is string => Boolean(tag?.trim())).map((tag) => tag.trim()) ?? []))).sort((a, b) => a.localeCompare(b))
+    }, [actions])
 
     const filteredActions = useMemo(() => {
         const searchTerm = search.trim().toLowerCase()
-        if (!searchTerm) return actions
 
         return actions.filter((action) => {
             const item = [action.title, action.shortDescription, action.description, ...(action.tags ?? [])]
                 .filter((value) => Boolean(value))
                 .join(" ")
                 .toLowerCase()
+            const matchesSearch = !searchTerm || item.includes(searchTerm)
+            const matchesTags = selectedTags.length === 0 || selectedTags.some((selectedTag) => action.tags?.includes(selectedTag))
 
-            return item.includes(searchTerm)
+            return matchesSearch && matchesTags
         })
-    }, [actions, search])
+    }, [actions, search, selectedTags])
+
+    const toggleTag = (tag: string) => {
+        setSelectedTags((currentTags) => (currentTags.includes(tag) ? currentTags.filter((currentTag) => currentTag !== tag) : [...currentTags, tag]))
+    }
 
     return (
         <div className="mx-auto flex w-full max-w-4xl flex-col gap-8">
@@ -61,6 +72,27 @@ export function ActionsPageClient({ actions, locale, content }: ActionsPageClien
                 clearable
                 className="text-white!"
             />
+            {tags.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                    {tags.map((tag) => {
+                        const selected = selectedTags.includes(tag)
+
+                        return (
+                            <button
+                                key={tag}
+                                type="button"
+                                onClick={() => toggleTag(tag)}
+                                className={cn(
+                                    "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                                    selected ? "border-brand/40 bg-brand/15 text-brand" : "border-white/10 bg-white/3 text-tertiary hover:border-white/20 hover:text-white"
+                                )}
+                            >
+                                {tag}
+                            </button>
+                        )
+                    })}
+                </div>
+            )}
             <div className="flex flex-col gap-4">
                 {filteredActions.map((action) => (
                     <ActionCard key={action.id} action={action} locale={locale} />

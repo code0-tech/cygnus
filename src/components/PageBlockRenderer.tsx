@@ -20,7 +20,7 @@ import { StandaloneCardSection } from "./sections/StandaloneCardSection"
 import { VideoSection } from "./sections/VideoSection"
 import { WideHeroSection } from "./sections/WideHeroSection"
 import { StatsSection } from "./sections/StatsSection"
-import { ActionsPageClient } from "./ActionsPageClient"
+import { ActionSection } from "./sections/ActionSection"
 import type { ActionItem } from "@/lib/cms"
 
 type PageBlock = NonNullable<Page["layout"]>[number]
@@ -56,7 +56,7 @@ const pageBlockRenderers: Partial<Record<PageBlock["blockType"], BlockRenderer>>
     widehero: (block) => <WideHeroSection content={block as Extract<PageBlock, { blockType: "widehero" }>} />,
     listFeature: (block) => <ListFeatureSection content={block as Extract<PageBlock, { blockType: "listFeature" }>} />,
     stats: (block) => <StatsSection content={block as Extract<PageBlock, { blockType: "stats" }>} />,
-    actions: (block, options) => <ActionsPageClient actions={options.actions ?? []} locale={options.locale ?? "en"} content={block as Extract<PageBlock, { blockType: "actions" }>} />,
+    actions: (block, options) => <ActionSection actions={options.actions ?? []} locale={options.locale ?? "en"} content={block as Extract<PageBlock, { blockType: "actions" }>} />,
 }
 
 function renderPageBlock(block: PageBlock, options: PageBlockRenderOptions) {
