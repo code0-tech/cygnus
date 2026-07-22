@@ -13,7 +13,7 @@ export function ActionCard({ action, locale }: { action: ActionItem; locale: App
                 <div className="relative z-10 flex flex-col gap-4">
                     <div className="flex items-start gap-2">
                         {action.icon && (
-                            <div className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/5 bg-light text-white">
+                            <div className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-primary text-white">
                                 <ActionIcon icon={action.icon} size={28} />
                             </div>
                         )}

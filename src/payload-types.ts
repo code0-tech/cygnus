@@ -689,6 +689,8 @@ export interface Page {
             searchPlaceholder: string;
             noActionsFoundLabel: string;
             referencesLabel: string;
+            flowTypesLabel: string;
+            functionDefinitionsLabel: string;
             noFlowTypesFoundLabel: string;
             noFunctionDefinitionsFoundLabel: string;
             noActionDefinitionsFoundLabel: string;
@@ -1659,6 +1661,8 @@ export interface PagesSelect<T extends boolean = true> {
               searchPlaceholder?: T;
               noActionsFoundLabel?: T;
               referencesLabel?: T;
+              flowTypesLabel?: T;
+              functionDefinitionsLabel?: T;
               noFlowTypesFoundLabel?: T;
               noFunctionDefinitionsFoundLabel?: T;
               noActionDefinitionsFoundLabel?: T;

@@ -43,6 +43,20 @@ export const ActionBlock: Block = {
       defaultValue: "References",
     },
     {
+      name: "flowTypesLabel",
+      type: "text",
+      required: true,
+      localized: true,
+      defaultValue: "FlowTypes",
+    },
+    {
+      name: "functionDefinitionsLabel",
+      type: "text",
+      required: true,
+      localized: true,
+      defaultValue: "FunctionDefinitions",
+    },
+    {
       name: "noFlowTypesFoundLabel",
       type: "text",
       required: true,

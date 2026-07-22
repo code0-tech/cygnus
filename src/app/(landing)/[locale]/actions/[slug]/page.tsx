@@ -1,5 +1,5 @@
-import { ActionTriggerView } from "@/components/ActionTriggerView"
 import { ActionIcon } from "@/components/ActionIcon"
+import { ActionTriggerCard } from "@/components/ActionTriggerCard"
 import { ActionCard } from "@/components/cards/ActionCard"
 import { Aurora } from "@/components/ui/Aurora"
 import { LandingContainer } from "@/components/ui/LandingContainer"
@@ -13,6 +13,7 @@ import type { Media } from "@/payload-types"
 import { IconArrowLeft } from "@tabler/icons-react"
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
+import type { ReactNode } from "react"
 
 export default async function ActionDetailPage({ params }: { params: LocaleSlugPageParams }) {
     const { locale, slug } = await getPageLocaleAndSlug(params)
@@ -24,18 +25,12 @@ export default async function ActionDetailPage({ params }: { params: LocaleSlugP
     const moduleJson = await fetchMediaJson(module).catch(() => null)
     const extractedFlowTypes = extractFlowTypesFromJson(moduleJson)
     const extractedFunctionDefinitions = extractFunctionDefinitionsFromJson(moduleJson)
-    const flowTypeItems = extractedFlowTypes.map((item) => ({
-        item,
-        icon: item.displayIcon,
-    }))
-    const functionDefinitionItems = extractedFunctionDefinitions.map((item) => ({
-        item,
-        icon: item.displayIcon ?? "tabler:IconFunction",
-    }))
     const references = (action.references ?? []).filter((reference): reference is Exclude<typeof reference, number> => typeof reference !== "number")
     const tags = (action.tags ?? []).filter((tag): tag is string => Boolean(tag))
     const actionsBlock = findPageBlock(actionsPage, "actions")
     const referencesLabel = actionsBlock?.referencesLabel ?? (locale === "de" ? "Referenzen" : "References")
+    const flowTypesLabel = actionsBlock?.flowTypesLabel ?? "FlowTypes"
+    const functionDefinitionsLabel = actionsBlock?.functionDefinitionsLabel ?? "FunctionDefinitions"
     const emptyDefinitionLabels = {
         flowTypes: actionsBlock?.noFlowTypesFoundLabel ?? (locale === "de" ? "Keine FlowTypes gefunden." : "No flow types found."),
         functionDefinitions: actionsBlock?.noFunctionDefinitionsFoundLabel ?? (locale === "de" ? "Keine FunctionDefinitions gefunden." : "No function definitions found."),
@@ -78,7 +73,27 @@ export default async function ActionDetailPage({ params }: { params: LocaleSlugP
                             </div>
                             {action.description && <div className="max-w-3xl whitespace-pre-line text-sm leading-6 text-secondary">{action.description}</div>}
 
-                            <ActionTriggerView locale={locale} flowTypes={flowTypeItems} functionDefinitions={functionDefinitionItems} emptyLabels={emptyDefinitionLabels} />
+                            {extractedFlowTypes.length > 0 || extractedFunctionDefinitions.length > 0 ? (
+                                <div className="space-y-8">
+                                    <ActionDefinitionGroup label={flowTypesLabel}>
+                                        {extractedFlowTypes.length > 0 ? (
+                                            extractedFlowTypes.map((item) => <ActionTriggerCard key={item.id} type="flowType" item={item} />)
+                                        ) : (
+                                            <p className="px-2 text-sm text-tertiary">{emptyDefinitionLabels.flowTypes}</p>
+                                        )}
+                                    </ActionDefinitionGroup>
+
+                                    <ActionDefinitionGroup label={functionDefinitionsLabel}>
+                                        {extractedFunctionDefinitions.length > 0 ? (
+                                            extractedFunctionDefinitions.map((item) => <ActionTriggerCard key={item.id} type="functionDefinition" item={item} />)
+                                        ) : (
+                                            <p className="px-2 text-sm text-tertiary">{emptyDefinitionLabels.functionDefinitions}</p>
+                                        )}
+                                    </ActionDefinitionGroup>
+                                </div>
+                            ) : (
+                                <p className="px-2 text-sm text-tertiary">{emptyDefinitionLabels.both}</p>
+                            )}
 
                             {references.length > 0 && (
                                 <div className="space-y-3">
@@ -95,6 +110,19 @@ export default async function ActionDetailPage({ params }: { params: LocaleSlugP
                 </div>
             </LandingContainer>
         </>
+    )
+}
+
+function ActionDefinitionGroup({ label, children }: { label: string; children: ReactNode }) {
+    return (
+        <div className="space-y-4">
+            <div className="flex items-center gap-3">
+                <div className="h-px flex-1 bg-white/10" />
+                <p className="shrink-0 text-xs font-medium tracking-wider text-tertiary">{label}</p>
+                <div className="h-px flex-1 bg-white/10" />
+            </div>
+            <div className="flex flex-col gap-3">{children}</div>
+        </div>
     )
 }
 

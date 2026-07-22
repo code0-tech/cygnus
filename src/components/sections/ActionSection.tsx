@@ -93,7 +93,7 @@ export function ActionSection({ actions, locale, content }: ActionSectionProps) 
                     })}
                 </div>
             )}
-            <div className="flex flex-col gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {filteredActions.map((action) => (
                     <ActionCard key={action.id} action={action} locale={locale} />
                 ))}
