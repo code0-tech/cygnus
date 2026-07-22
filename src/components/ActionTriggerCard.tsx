@@ -1,9 +1,9 @@
 "use client"
 
 import type { ExtractedFlowType, ExtractedFunctionDefinition } from "@/lib/actionExtraction"
+import { cn } from "@/lib/utils"
 import { IconChevronDown } from "@tabler/icons-react"
 import { useCallback, useMemo, useState } from "react"
-import { Card } from "./ui/Card"
 
 interface ActionTriggerCardProps {
     type: "flowType" | "functionDefinition"
@@ -21,19 +21,22 @@ export function ActionTriggerCard({ type, item }: ActionTriggerCardProps) {
     }, [])
     const parameterList = useMemo(
         () => (
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-2">
                 <div className="grid gap-1 text-xs">
                     <div className="text-tertiary">{label}</div>
                     <div className="font-medium text-white">{item.identifier}</div>
                 </div>
 
                 {parameters.length > 0 && (
-                    <div className="flex flex-col gap-2">
+                    <div className="-mx-2 flex flex-col gap-1 border-t border-white/5 px-2 pt-2">
                         <div className="text-xs text-tertiary">{parameterLabel}</div>
                         {parameters.map((parameter) => (
-                            <div key={parameter.id} className="rounded-md bg-primary/50 p-2">
-                                <div className="text-xs font-medium text-white">{parameter.name || parameter.identifier}</div>
-                                {parameter.description && <div className="mt-1 text-xs leading-5 text-tertiary">{parameter.description}</div>}
+                            <div key={parameter.id} className="flex flex-col md:flex-row md:gap-1 md:items-center">
+                                <div className="text-xs font-medium text-white">
+                                    {parameter.name || parameter.identifier}
+                                    {parameter.description ? ":" : ""}
+                                </div>
+                                {parameter.description && <div className="text-xs leading-5 text-secondary">{parameter.description}</div>}
                             </div>
                         ))}
                     </div>
@@ -44,15 +47,24 @@ export function ActionTriggerCard({ type, item }: ActionTriggerCardProps) {
     )
 
     return (
-        <Card size="sm" className="bg-light p-0!">
+        <div
+            className={cn(
+                "overflow-hidden rounded-xl border transition-[background-color,border-color,box-shadow] duration-300 ease-out",
+                open ? "border-white/10 bg-light shadow-[0_10px_30px_rgba(0,0,0,0.18)]" : "border-transparent bg-transparent"
+            )}
+        >
             <div className="relative z-10">
-                <button type="button" onClick={() => toggleItem(0)} className="flex w-full items-center justify-between gap-3 p-3 text-left">
+                <button type="button" onClick={() => toggleItem(0)} className={cn("flex w-full items-center justify-between gap-3 text-left transition-[padding] duration-300 ease-out", open ? "px-2 py-2" : "p-0")}>
                     <span className="min-w-0 truncate text-sm font-medium text-white">{item.name || item.identifier}</span>
-                    <IconChevronDown size={16} className={`shrink-0 text-tertiary transition-transform ${open ? "rotate-180" : ""}`} />
+                    <IconChevronDown size={16} className={cn("shrink-0 text-tertiary transition-transform duration-300 ease-out", open && "rotate-180")} />
                 </button>
 
-                {open && <div className="border-t border-white/5 px-3 pb-3 pt-2">{parameterList}</div>}
+                <div className={cn("grid transition-[grid-template-rows,opacity] duration-300 ease-out", open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0")}>
+                    <div className="min-h-0 overflow-hidden">
+                        <div className="border-t border-white/5 px-2 pb-2 pt-2">{parameterList}</div>
+                    </div>
+                </div>
             </div>
-        </Card>
+        </div>
     )
 }

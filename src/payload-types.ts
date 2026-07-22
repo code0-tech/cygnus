@@ -691,9 +691,6 @@ export interface Page {
             referencesLabel: string;
             flowTypesLabel: string;
             functionDefinitionsLabel: string;
-            noFlowTypesFoundLabel: string;
-            noFunctionDefinitionsFoundLabel: string;
-            noActionDefinitionsFoundLabel: string;
             id?: string | null;
             blockName?: string | null;
             blockType: 'actions';
@@ -1663,9 +1660,6 @@ export interface PagesSelect<T extends boolean = true> {
               referencesLabel?: T;
               flowTypesLabel?: T;
               functionDefinitionsLabel?: T;
-              noFlowTypesFoundLabel?: T;
-              noFunctionDefinitionsFoundLabel?: T;
-              noActionDefinitionsFoundLabel?: T;
               id?: T;
               blockName?: T;
             };

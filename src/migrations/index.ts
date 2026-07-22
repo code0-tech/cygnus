@@ -41,6 +41,7 @@ import * as migration_20260720_111300_20260720_stats_show_plus from './20260720_
 import * as migration_20260720_212600_actions_module_only from './20260720_212600_actions_module_only';
 import * as migration_20260720_224003_action_block_empty_labels from './20260720_224003_action_block_empty_labels';
 import * as migration_20260722_114458_action_block_definition_labels from './20260722_114458_action_block_definition_labels';
+import * as migration_20260722_123249_remove_action_definition_empty_labels from './20260722_123249_remove_action_definition_empty_labels';
 
 export const migrations = [
   {
@@ -256,6 +257,11 @@ export const migrations = [
   {
     up: migration_20260722_114458_action_block_definition_labels.up,
     down: migration_20260722_114458_action_block_definition_labels.down,
-    name: '20260722_114458_action_block_definition_labels'
+    name: '20260722_114458_action_block_definition_labels',
+  },
+  {
+    up: migration_20260722_123249_remove_action_definition_empty_labels.up,
+    down: migration_20260722_123249_remove_action_definition_empty_labels.down,
+    name: '20260722_123249_remove_action_definition_empty_labels'
   },
 ];

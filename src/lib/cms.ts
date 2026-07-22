@@ -319,7 +319,7 @@ const getLandingPageCached = cache(async (cachedSlug: string, cachedLocale: AppL
         fallbackLocale: DEFAULT_LOCALE,
         where: { slug: { equals: cachedSlug } },
         limit: 1,
-        depth: 1,
+        depth: 2,
         pagination: false,
     })
 })
@@ -329,7 +329,7 @@ const getNavigationCached = cache(async (locale: AppLocale): Promise<NavigationD
         slug: "navigation",
         locale,
         fallbackLocale: DEFAULT_LOCALE,
-        depth: 1,
+        depth: 2,
     })
 })
 
@@ -402,18 +402,12 @@ const getJobsCached = cache(async (locale: AppLocale): Promise<JobItem[]> => {
     })
 })
 
-async function enrichAction(action: Action, includeReferences = true): Promise<ActionItem> {
+async function enrichAction(action: Action): Promise<ActionItem> {
     const module = typeof action.module === "number" ? undefined : action.module
     const moduleJson = await fetchMediaJson(module).catch(() => null)
     const moduleInfo = extractActionModuleInfo(moduleJson)
     const slug = moduleInfo?.identifier || `action-${action.id}`
     const title = moduleInfo?.title || slug
-    const references = includeReferences
-        ? await enrichActions(
-              (action.references ?? []).filter((reference): reference is Action => typeof reference !== "number"),
-              false
-          )
-        : null
 
     return {
         id: action.id,
@@ -425,13 +419,23 @@ async function enrichAction(action: Action, includeReferences = true): Promise<A
         icon: moduleInfo?.icon,
         documentation: moduleInfo?.documentation || null,
         tags: action.tags,
-        references,
+        references: action.references?.map((reference) => (typeof reference === "number" ? reference : reference.id)) ?? null,
     }
 }
 
-async function enrichActions(actions: Action[], includeReferences = true): Promise<ActionItem[]> {
-    const enrichedActions = await Promise.all(actions.map((action) => enrichAction(action, includeReferences)))
-    return enrichedActions.sort((a, b) => a.title.localeCompare(b.title))
+async function enrichActions(actions: Action[]): Promise<ActionItem[]> {
+    const enrichedActions = await Promise.all(actions.map((action) => enrichAction(action)))
+    const enrichedActionsById = new Map(enrichedActions.map((action) => [action.id, action]))
+
+    return enrichedActions
+        .map((action) => ({
+            ...action,
+            references:
+                action.references
+                    ?.map((reference) => enrichedActionsById.get(typeof reference === "number" ? reference : reference.id))
+                    .filter((reference): reference is ActionItem => Boolean(reference)) ?? null,
+        }))
+        .sort((a, b) => a.title.localeCompare(b.title))
 }
 
 const getActionsCached = cache(async (locale: AppLocale): Promise<ActionItem[]> => {

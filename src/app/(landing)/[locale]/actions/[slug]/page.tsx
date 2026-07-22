@@ -31,11 +31,6 @@ export default async function ActionDetailPage({ params }: { params: LocaleSlugP
     const referencesLabel = actionsBlock?.referencesLabel ?? (locale === "de" ? "Referenzen" : "References")
     const flowTypesLabel = actionsBlock?.flowTypesLabel ?? "FlowTypes"
     const functionDefinitionsLabel = actionsBlock?.functionDefinitionsLabel ?? "FunctionDefinitions"
-    const emptyDefinitionLabels = {
-        flowTypes: actionsBlock?.noFlowTypesFoundLabel ?? (locale === "de" ? "Keine FlowTypes gefunden." : "No flow types found."),
-        functionDefinitions: actionsBlock?.noFunctionDefinitionsFoundLabel ?? (locale === "de" ? "Keine FunctionDefinitions gefunden." : "No function definitions found."),
-        both: actionsBlock?.noActionDefinitionsFoundLabel ?? (locale === "de" ? "Keine FlowTypes oder FunctionDefinitions gefunden." : "No flow types or function definitions found."),
-    }
 
     return (
         <>
@@ -50,49 +45,38 @@ export default async function ActionDetailPage({ params }: { params: LocaleSlugP
                     <div className="flex flex-col gap-8">
                         <div className="relative z-10 flex flex-col gap-8">
                             <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">
-                                <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
+                                <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
                                     {action.icon && (
-                                        <div className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-3xl border border-white/10 bg-light text-white">
+                                        <div className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-3xl border border-white/10 bg-primary text-white">
                                             <ActionIcon icon={action.icon} size={40} />
                                         </div>
                                     )}
 
                                     <div className="flex flex-col min-w-0 flex-1 gap-2">
                                         <h1 className="mt-1 text-3xl font-semibold tracking-tight text-white sm:text-4xl">{action.title}</h1>
-                                        {tags.length > 0 && (
-                                            <div className="flex flex-wrap gap-2">
-                                                {tags.map((tag) => (
-                                                    <span key={tag} className="rounded-full border border-white/10 bg-light px-3 py-1 text-xs text-secondary">
-                                                        {tag}
-                                                    </span>
-                                                ))}
-                                            </div>
-                                        )}
+                                        {action.description && <div className="max-w-3xl whitespace-pre-line text-sm leading-6 text-secondary">{action.description}</div>}
                                     </div>
                                 </div>
                             </div>
-                            {action.description && <div className="max-w-3xl whitespace-pre-line text-sm leading-6 text-secondary">{action.description}</div>}
 
-                            {extractedFlowTypes.length > 0 || extractedFunctionDefinitions.length > 0 ? (
+                            {(extractedFlowTypes.length > 0 || extractedFunctionDefinitions.length > 0) && (
                                 <div className="space-y-8">
-                                    <ActionDefinitionGroup label={flowTypesLabel}>
-                                        {extractedFlowTypes.length > 0 ? (
-                                            extractedFlowTypes.map((item) => <ActionTriggerCard key={item.id} type="flowType" item={item} />)
-                                        ) : (
-                                            <p className="px-2 text-sm text-tertiary">{emptyDefinitionLabels.flowTypes}</p>
-                                        )}
-                                    </ActionDefinitionGroup>
+                                    {extractedFlowTypes.length > 0 && (
+                                        <ActionDefinitionGroup label={flowTypesLabel}>
+                                            {extractedFlowTypes.map((item) => (
+                                                <ActionTriggerCard key={item.id} type="flowType" item={item} />
+                                            ))}
+                                        </ActionDefinitionGroup>
+                                    )}
 
-                                    <ActionDefinitionGroup label={functionDefinitionsLabel}>
-                                        {extractedFunctionDefinitions.length > 0 ? (
-                                            extractedFunctionDefinitions.map((item) => <ActionTriggerCard key={item.id} type="functionDefinition" item={item} />)
-                                        ) : (
-                                            <p className="px-2 text-sm text-tertiary">{emptyDefinitionLabels.functionDefinitions}</p>
-                                        )}
-                                    </ActionDefinitionGroup>
+                                    {extractedFunctionDefinitions.length > 0 && (
+                                        <ActionDefinitionGroup label={functionDefinitionsLabel}>
+                                            {extractedFunctionDefinitions.map((item) => (
+                                                <ActionTriggerCard key={item.id} type="functionDefinition" item={item} />
+                                            ))}
+                                        </ActionDefinitionGroup>
+                                    )}
                                 </div>
-                            ) : (
-                                <p className="px-2 text-sm text-tertiary">{emptyDefinitionLabels.both}</p>
                             )}
 
                             {references.length > 0 && (
@@ -116,11 +100,7 @@ export default async function ActionDetailPage({ params }: { params: LocaleSlugP
 function ActionDefinitionGroup({ label, children }: { label: string; children: ReactNode }) {
     return (
         <div className="space-y-4">
-            <div className="flex items-center gap-3">
-                <div className="h-px flex-1 bg-white/10" />
-                <p className="shrink-0 text-xs font-medium tracking-wider text-tertiary">{label}</p>
-                <div className="h-px flex-1 bg-white/10" />
-            </div>
+            <p className="shrink-0 text-sm text-tertiary">{label}</p>
             <div className="flex flex-col gap-3">{children}</div>
         </div>
     )
