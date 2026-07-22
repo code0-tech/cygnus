@@ -222,9 +222,9 @@ export interface Page {
     | 'legal-notice'
     | 'privacy'
     | 'terms'
-    | 'open-source-no-code-automation'
     | 'contact'
     | 'actions'
+    | 'action-details'
     | 'community-edition'
     | 'enterprise-edition'
     | 'subscription';
@@ -684,16 +684,69 @@ export interface Page {
             blockType: 'border';
           }
         | {
-            heading: string;
-            description: string;
-            searchPlaceholder: string;
-            noActionsFoundLabel: string;
-            referencesLabel: string;
+            badge?: string | null;
+            badge_link?: string | null;
+            /**
+             * Use {} as a placeholder for the action title.
+             */
+            heading?: string | null;
+            texts?:
+              | {
+                  text: string;
+                  id?: string | null;
+                }[]
+              | null;
+            buttons?:
+              | {
+                  label: string;
+                  url: string;
+                  variant?: ('none' | 'normal' | 'outlined' | 'filled') | null;
+                  id?: string | null;
+                }[]
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'actionHero';
+          }
+        | {
+            sectionHeading?: string | null;
+            sectionLayout: 'center' | 'left';
+            sectionDescription?: string | null;
+            sectionLinkButton?: {
+              label?: string | null;
+              url?: string | null;
+            };
             flowTypesLabel: string;
             functionDefinitionsLabel: string;
             id?: string | null;
             blockName?: string | null;
-            blockType: 'actions';
+            blockType: 'actionDetails';
+          }
+        | {
+            sectionHeading?: string | null;
+            sectionLayout: 'center' | 'left';
+            sectionDescription?: string | null;
+            sectionLinkButton?: {
+              label?: string | null;
+              url?: string | null;
+            };
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'actionReferences';
+          }
+        | {
+            sectionHeading?: string | null;
+            sectionLayout: 'center' | 'left';
+            sectionDescription?: string | null;
+            sectionLinkButton?: {
+              label?: string | null;
+              url?: string | null;
+            };
+            searchPlaceholder: string;
+            noActionsFoundLabel: string;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'actionList';
           }
         | {
             content: {
@@ -1651,16 +1704,75 @@ export interface PagesSelect<T extends boolean = true> {
               id?: T;
               blockName?: T;
             };
-        actions?:
+        actionHero?:
           | T
           | {
+              badge?: T;
+              badge_link?: T;
               heading?: T;
-              description?: T;
-              searchPlaceholder?: T;
-              noActionsFoundLabel?: T;
-              referencesLabel?: T;
+              texts?:
+                | T
+                | {
+                    text?: T;
+                    id?: T;
+                  };
+              buttons?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                    variant?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        actionDetails?:
+          | T
+          | {
+              sectionHeading?: T;
+              sectionLayout?: T;
+              sectionDescription?: T;
+              sectionLinkButton?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                  };
               flowTypesLabel?: T;
               functionDefinitionsLabel?: T;
+              id?: T;
+              blockName?: T;
+            };
+        actionReferences?:
+          | T
+          | {
+              sectionHeading?: T;
+              sectionLayout?: T;
+              sectionDescription?: T;
+              sectionLinkButton?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        actionList?:
+          | T
+          | {
+              sectionHeading?: T;
+              sectionLayout?: T;
+              sectionDescription?: T;
+              sectionLinkButton?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                  };
+              searchPlaceholder?: T;
+              noActionsFoundLabel?: T;
               id?: T;
               blockName?: T;
             };

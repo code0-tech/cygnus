@@ -1,0 +1,184 @@
+{
+  "identifier": "example-action",
+  "name": [
+    {
+      "code": "en-US",
+      "content": "Example Action"
+    }
+  ],
+  "documentation": "A simple example action",
+  "author": "code0-tech",
+  "icon": "tabler:bolt",
+  "version": "0.0.0",
+  "flowTypes": [
+    {
+      "identifier": "user_created",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "User created event"
+        }
+      ],
+      "description": [
+        {
+          "code": "en-US",
+          "content": "Triggers on user creation and has a payload including the user database id"
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Triggers on user creation"
+        }
+      ],
+      "version": "0.0.0",
+      "displayIcon": "tabler:note",
+      "definitionSource": "action",
+      "signature": "(): {userId: number}",
+      "runtimeIdentifier": "user_created"
+    }
+  ],
+  "runtimeFlowTypes": [
+    {
+      "identifier": "user_created",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "User created event"
+        }
+      ],
+      "description": [
+        {
+          "code": "en-US",
+          "content": "Triggers on user creation and has a payload including the user database id"
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Triggers on user creation"
+        }
+      ],
+      "version": "0.0.0",
+      "displayIcon": "tabler:note",
+      "definitionSource": "action",
+      "signature": "(): {userId: number}"
+    }
+  ],
+  "functionDefinitions": [
+    {
+      "runtimeName": "fibonacci",
+      "parameterDefinitions": [
+        {
+          "runtimeName": "test",
+          "defaultValue": {
+            "numberValue": {
+              "integer": "10"
+            }
+          },
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Input Number"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The position in the Fibonacci sequence"
+            }
+          ],
+          "runtimeDefinitionName": "test"
+        }
+      ],
+      "signature": "(test: number): number",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Compute Fibonacci Number"
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Computes the n-th Fibonacci number"
+        }
+      ],
+      "version": "0.0.0",
+      "displayIcon": "tabler:note",
+      "definitionSource": "action",
+      "runtimeDefinitionName": "fibonacci_runtime"
+    }
+  ],
+  "runtimeFunctionDefinitions": [
+    {
+      "runtimeName": "fibonacci_runtime",
+      "runtimeParameterDefinitions": [
+        {
+          "runtimeName": "test",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "N"
+            }
+          ]
+        }
+      ],
+      "signature": "(test: number): number",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Fibonacci (Runtime)"
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Computes the n-th Fibonacci number"
+        }
+      ],
+      "version": "0.0.0",
+      "displayIcon": "tabler:note",
+      "definitionSource": "action"
+    }
+  ],
+  "definitionDataTypes": [
+    {
+      "identifier": "email_address",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Email Address"
+        }
+      ],
+      "rules": [
+        {
+          "regex": {
+            "pattern": "^[^@]+@[^@]+\\.[^@]+$"
+          }
+        }
+      ],
+      "type": "string",
+      "version": "0.0.0",
+      "definitionSource": "action"
+    }
+  ],
+  "configurations": [
+    {
+      "identifier": "EXAMPLE_CONFIG",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Example Config"
+        }
+      ],
+      "type": "string",
+      "optional": false,
+      "hidden": false
+    }
+  ]
+}

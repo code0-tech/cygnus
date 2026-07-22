@@ -20,7 +20,10 @@ import { StandaloneCardSection } from "./sections/StandaloneCardSection"
 import { VideoSection } from "./sections/VideoSection"
 import { WideHeroSection } from "./sections/WideHeroSection"
 import { StatsSection } from "./sections/StatsSection"
-import { ActionSection } from "./sections/ActionSection"
+import { ActionHeroSection } from "./sections/ActionHeroSection"
+import { ActionDetailSection } from "./sections/ActionDetailSection"
+import { ActionReferencesSection } from "./sections/ActionReferencesSection"
+import { ActionListSection } from "./sections/ActionListSection"
 import type { ActionItem } from "@/lib/cms"
 
 type PageBlock = NonNullable<Page["layout"]>[number]
@@ -31,9 +34,12 @@ interface PageBlocksRendererProps {
     cardRowChildren?: ReactNode
     ctaFloating?: boolean
     locale?: AppLocale
+    action?: ActionItem
+    actionModuleJson?: unknown
+    actionReferences?: ActionItem[]
 }
 
-type PageBlockRenderOptions = Pick<PageBlocksRendererProps, "actions" | "cardRowChildren" | "ctaFloating" | "locale">
+type PageBlockRenderOptions = Pick<PageBlocksRendererProps, "actions" | "cardRowChildren" | "ctaFloating" | "locale" | "action" | "actionModuleJson" | "actionReferences">
 type BlockRenderer = (block: PageBlock, options: PageBlockRenderOptions) => ReactNode
 
 const pageBlockRenderers: Partial<Record<PageBlock["blockType"], BlockRenderer>> = {
@@ -56,7 +62,17 @@ const pageBlockRenderers: Partial<Record<PageBlock["blockType"], BlockRenderer>>
     widehero: (block) => <WideHeroSection content={block as Extract<PageBlock, { blockType: "widehero" }>} />,
     listFeature: (block) => <ListFeatureSection content={block as Extract<PageBlock, { blockType: "listFeature" }>} />,
     stats: (block) => <StatsSection content={block as Extract<PageBlock, { blockType: "stats" }>} />,
-    actions: (block, options) => <ActionSection actions={options.actions ?? []} locale={options.locale ?? "en"} content={block as Extract<PageBlock, { blockType: "actions" }>} />,
+    actionHero: (block, options) => options.action ? <ActionHeroSection action={options.action} locale={options.locale ?? "en"} content={block as Extract<PageBlock, { blockType: "actionHero" }>} /> : null,
+    actionDetails: (block, options) => {
+        if (!options.action) return null
+        const content = block as Extract<PageBlock, { blockType: "actionDetails" }>
+        return <ActionDetailSection action={options.action} moduleJson={options.actionModuleJson} sectionHeading={content.sectionHeading} sectionLayout={content.sectionLayout} sectionDescription={content.sectionDescription} sectionLinkButton={content.sectionLinkButton} flowTypesLabel={content.flowTypesLabel} functionDefinitionsLabel={content.functionDefinitionsLabel} />
+    },
+    actionReferences: (block, options) => {
+        const content = block as Extract<PageBlock, { blockType: "actionReferences" }>
+        return <ActionReferencesSection references={options.actionReferences ?? []} locale={options.locale ?? "en"} sectionHeading={content.sectionHeading} sectionLayout={content.sectionLayout} sectionDescription={content.sectionDescription} sectionLinkButton={content.sectionLinkButton} />
+    },
+    actionList: (block, options) => <ActionListSection actions={options.actions ?? []} locale={options.locale ?? "en"} content={block as Extract<PageBlock, { blockType: "actionList" }>} />,
 }
 
 function renderPageBlock(block: PageBlock, options: PageBlockRenderOptions) {
@@ -64,10 +80,10 @@ function renderPageBlock(block: PageBlock, options: PageBlockRenderOptions) {
     return renderer ? renderer(block, options) : null
 }
 
-export function PageBlocks({ blocks, actions, cardRowChildren, ctaFloating = false, locale }: PageBlocksRendererProps) {
+export function PageBlocks({ blocks, actions, cardRowChildren, ctaFloating = false, locale, action, actionModuleJson, actionReferences }: PageBlocksRendererProps) {
     const renderableBlocks =
         blocks?.flatMap((block) => {
-            const element = renderPageBlock(block, { actions, cardRowChildren, ctaFloating, locale })
+            const element = renderPageBlock(block, { actions, cardRowChildren, ctaFloating, locale, action, actionModuleJson, actionReferences })
             return element ? [{ block, element }] : []
         }) ?? []
 

@@ -1,0 +1,39 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.pages_blocks_action_hero": {
+      "name": "pages_blocks_action_hero",
+      "schema": "public",
+      "columns": {
+        "badge": { "name": "badge", "type": "varchar" },
+        "badge_link": { "name": "badge_link", "type": "varchar" },
+        "heading": { "name": "heading", "type": "varchar" }
+      }
+    },
+    "public.pages_blocks_action_hero_texts": {
+      "name": "pages_blocks_action_hero_texts",
+      "schema": "public",
+      "columns": {
+        "_order": { "name": "_order", "type": "integer", "notNull": true },
+        "_parent_id": { "name": "_parent_id", "type": "varchar", "notNull": true },
+        "_locale": { "name": "_locale", "type": "_locales", "notNull": true },
+        "id": { "name": "id", "type": "varchar", "primaryKey": true, "notNull": true },
+        "text": { "name": "text", "type": "varchar", "notNull": true }
+      }
+    },
+    "public.pages_blocks_action_hero_buttons": {
+      "name": "pages_blocks_action_hero_buttons",
+      "schema": "public",
+      "columns": {
+        "_order": { "name": "_order", "type": "integer", "notNull": true },
+        "_parent_id": { "name": "_parent_id", "type": "varchar", "notNull": true },
+        "_locale": { "name": "_locale", "type": "_locales", "notNull": true },
+        "id": { "name": "id", "type": "varchar", "primaryKey": true, "notNull": true },
+        "label": { "name": "label", "type": "varchar", "notNull": true },
+        "url": { "name": "url", "type": "varchar", "notNull": true },
+        "variant": { "name": "variant", "type": "enum_pages_blocks_action_hero_buttons_variant" }
+      }
+    }
+  }
+}

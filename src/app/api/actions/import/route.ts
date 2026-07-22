@@ -1,6 +1,7 @@
 import { extractActionModuleInfo } from "@/lib/actionExtraction"
 import { getPayloadClient } from "@/lib/payloadClient"
 import type { Action } from "@/payload-types"
+import { createHmac, timingSafeEqual } from "node:crypto"
 import { NextResponse } from "next/server"
 
 function getBearerToken(request: Request) {
@@ -8,6 +9,25 @@ function getBearerToken(request: Request) {
     if (!authorization?.toLowerCase().startsWith("bearer ")) return null
 
     return authorization.slice("bearer ".length).trim()
+}
+
+function verifyJwt(token: string | null, secret: string) {
+    if (!token) return false
+    const parts = token.split(".")
+    if (parts.length !== 3) return false
+
+    const [encodedHeader, encodedPayload, signature] = parts
+    try {
+        const header = JSON.parse(Buffer.from(encodedHeader, "base64url").toString("utf8")) as { alg?: string; typ?: string }
+        const payload = JSON.parse(Buffer.from(encodedPayload, "base64url").toString("utf8")) as { exp?: number; nbf?: number }
+        if (header.alg !== "HS256" || header.typ !== "JWT") return false
+        const expectedSignature = createHmac("sha256", secret).update(`${encodedHeader}.${encodedPayload}`).digest("base64url")
+        if (signature.length !== expectedSignature.length || !timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature))) return false
+        const now = Math.floor(Date.now() / 1000)
+        return !(typeof payload.exp === "number" && payload.exp <= now) && !(typeof payload.nbf === "number" && payload.nbf > now)
+    } catch {
+        return false
+    }
 }
 
 function createJsonUploadFile(identifier: string, module: unknown) {
@@ -24,7 +44,10 @@ export async function POST(request: Request) {
     const expectedToken = process.env.ACTIONS_IMPORT_SECRET?.trim()
     const receivedToken = getBearerToken(request)
 
-    if (!expectedToken || receivedToken !== expectedToken) {
+    const isValidJwt = verifyJwt(receivedToken, expectedToken ?? "")
+    const isDevelopmentSecret = process.env.NODE_ENV === "development" && receivedToken === expectedToken
+
+    if (!expectedToken || (!isValidJwt && !isDevelopmentSecret)) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 

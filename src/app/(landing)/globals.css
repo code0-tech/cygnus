@@ -82,6 +82,13 @@
     --animate-cell-ripple: cell-ripple var(--cell-ripple-duration, 200ms) ease-out none 1 var(--cell-ripple-delay, 0ms);
 }
 
+@keyframes action-hero-pulse {
+    0%, 100% { left: -60%; opacity: 0; }
+    15% { opacity: 1; }
+    85% { opacity: 1; }
+    100% { left: 100%; opacity: 0; }
+}
+
 @keyframes cell-ripple {
     0% {
         opacity: 0.4;

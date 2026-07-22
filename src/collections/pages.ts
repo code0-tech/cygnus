@@ -1,4 +1,7 @@
-import { ActionBlock } from "@/blocks/ActionBlock"
+import { ActionHeroBlock } from "@/blocks/ActionHeroBlock"
+import { ActionDetailBlock } from "@/blocks/ActionDetailBlock"
+import { ActionReferencesBlock } from "@/blocks/ActionReferencesBlock"
+import { ActionListBlock } from "@/blocks/ActionListBlock"
 import { SwipeCardBlock } from "@/blocks/SwipeCardBlock"
 import { BlogBlock } from "../blocks/BlogBlock"
 import { BlogPreviewBlock } from "../blocks/BlogPreviewBlock"
@@ -58,9 +61,9 @@ export const Pages: CollectionConfig = {
                 { label: "legal-notice", value: "legal-notice" },
                 { label: "privacy", value: "privacy" },
                 { label: "terms", value: "terms" },
-                { label: "open-source-no-code-automation", value: "open-source-no-code-automation" },
                 { label: "contact", value: "contact" },
                 { label: "actions", value: "actions" },
+                { label: "action-details", value: "action-details" },
                 { label: "community-edition", value: "community-edition" },
                 { label: "enterprise-edition", value: "enterprise-edition" },
                 { label: "subscription", value: "subscription" },
@@ -84,7 +87,10 @@ export const Pages: CollectionConfig = {
                 BlogBlock,
                 BlogPreviewBlock,
                 BorderBlock,
-                ActionBlock,
+                ActionHeroBlock,
+                ActionDetailBlock,
+                ActionReferencesBlock,
+                ActionListBlock,
                 MarkdownBlock,
                 ContactBlock,
                 CardRowBlock,
