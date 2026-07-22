@@ -47,14 +47,13 @@ export function ActionTriggerCard({ type, item }: ActionTriggerCardProps) {
     )
 
     return (
-        <div
-            className={cn(
-                "overflow-hidden rounded-xl border transition-[background-color,border-color,box-shadow] duration-300 ease-out",
-                open ? "border-white/10 bg-light shadow-[0_10px_30px_rgba(0,0,0,0.18)]" : "border-transparent bg-transparent"
-            )}
-        >
+        <div className={cn("overflow-hidden rounded-xl border duration-300 ease-out", open ? "border-white/10 bg-light" : "border-transparent bg-transparent")}>
             <div className="relative z-10">
-                <button type="button" onClick={() => toggleItem(0)} className={cn("flex w-full items-center justify-between gap-3 text-left transition-[padding] duration-300 ease-out", open ? "px-2 py-2" : "p-0")}>
+                <button
+                    type="button"
+                    onClick={() => toggleItem(0)}
+                    className={cn("flex w-full items-center justify-between gap-3 text-left transition-[padding] duration-300 ease-out", open ? "px-2 py-2" : "p-0")}
+                >
                     <span className="min-w-0 truncate text-sm font-medium text-white">{item.name || item.identifier}</span>
                     <IconChevronDown size={16} className={cn("shrink-0 text-tertiary transition-transform duration-300 ease-out", open && "rotate-180")} />
                 </button>

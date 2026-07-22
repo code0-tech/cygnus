@@ -13,6 +13,13 @@ export const Actions: CollectionConfig = {
     },
     fields: [
         {
+            name: "identifier",
+            type: "text",
+            required: true,
+            unique: true,
+            index: true,
+        },
+        {
             name: "module",
             type: "upload",
             relationTo: "media",

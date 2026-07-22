@@ -47,7 +47,7 @@ interface FeatureItem {
     }
 }
 
-export type ActionItem = Pick<Action, "id" | "module" | "tags"> & {
+export type ActionItem = Pick<Action, "id" | "identifier" | "module" | "tags"> & {
     slug: string
     title: string
     shortDescription?: string | null
@@ -406,11 +406,12 @@ async function enrichAction(action: Action): Promise<ActionItem> {
     const module = typeof action.module === "number" ? undefined : action.module
     const moduleJson = await fetchMediaJson(module).catch(() => null)
     const moduleInfo = extractActionModuleInfo(moduleJson)
-    const slug = moduleInfo?.identifier || `action-${action.id}`
+    const slug = moduleInfo?.identifier || action.identifier || `action-${action.id}`
     const title = moduleInfo?.title || slug
 
     return {
         id: action.id,
+        identifier: action.identifier,
         module: action.module,
         slug,
         title,
@@ -448,6 +449,7 @@ const getActionsCached = cache(async (locale: AppLocale): Promise<ActionItem[]> 
         depth: 1,
         select: {
             module: true,
+            identifier: true,
             tags: true,
             references: true,
         },

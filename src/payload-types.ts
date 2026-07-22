@@ -995,6 +995,7 @@ export interface Feature {
  */
 export interface Action {
   id: number;
+  identifier: string;
   module: number | Media;
   tags?: string[] | null;
   references?: (number | Action)[] | null;
@@ -1918,6 +1919,7 @@ export interface FeaturesSelect<T extends boolean = true> {
  * via the `definition` "actions_select".
  */
 export interface ActionsSelect<T extends boolean = true> {
+  identifier?: T;
   module?: T;
   tags?: T;
   references?: T;

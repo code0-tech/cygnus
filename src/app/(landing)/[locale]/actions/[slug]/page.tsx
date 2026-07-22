@@ -43,7 +43,7 @@ export default async function ActionDetailPage({ params }: { params: LocaleSlugP
                     </LinkButton>
 
                     <div className="flex flex-col gap-8">
-                        <div className="relative z-10 flex flex-col gap-8">
+                        <div className="relative z-10 flex flex-col gap-12">
                             <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">
                                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
                                     {action.icon && (
@@ -80,8 +80,8 @@ export default async function ActionDetailPage({ params }: { params: LocaleSlugP
                             )}
 
                             {references.length > 0 && (
-                                <div className="space-y-3">
-                                    <p className="text-sm tracking-wider text-tertiary">{referencesLabel}</p>
+                                <div className="space-y-4">
+                                    <p className="text-sm text-tertiary">{referencesLabel}</p>
                                     <div className="grid gap-4 md:grid-cols-2">
                                         {references.map((reference) => (
                                             <ActionCard key={reference.id} action={reference} locale={locale} />

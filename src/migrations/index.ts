@@ -42,6 +42,7 @@ import * as migration_20260720_212600_actions_module_only from './20260720_21260
 import * as migration_20260720_224003_action_block_empty_labels from './20260720_224003_action_block_empty_labels';
 import * as migration_20260722_114458_action_block_definition_labels from './20260722_114458_action_block_definition_labels';
 import * as migration_20260722_123249_remove_action_definition_empty_labels from './20260722_123249_remove_action_definition_empty_labels';
+import * as migration_20260722_144106_actions_identifier_and_import_route from './20260722_144106_actions_identifier_and_import_route';
 
 export const migrations = [
   {
@@ -262,6 +263,11 @@ export const migrations = [
   {
     up: migration_20260722_123249_remove_action_definition_empty_labels.up,
     down: migration_20260722_123249_remove_action_definition_empty_labels.down,
-    name: '20260722_123249_remove_action_definition_empty_labels'
+    name: '20260722_123249_remove_action_definition_empty_labels',
+  },
+  {
+    up: migration_20260722_144106_actions_identifier_and_import_route.up,
+    down: migration_20260722_144106_actions_identifier_and_import_route.down,
+    name: '20260722_144106_actions_identifier_and_import_route'
   },
 ];
