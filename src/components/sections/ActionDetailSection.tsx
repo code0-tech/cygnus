@@ -1,12 +1,10 @@
 import { ActionTriggerCard } from "@/components/ActionTriggerCard"
-import { extractFlowTypesFromJson, extractFunctionDefinitionsFromJson } from "@/lib/actionExtraction"
-import type { ActionItem } from "@/lib/cms"
-import type { ReactNode } from "react"
 import { Section } from "@/components/ui/Section"
+import { extractFlowTypesFromJson, extractFunctionDefinitionsFromJson } from "@/lib/actionExtraction"
 import { cn } from "@/lib/utils"
+import type { ReactNode } from "react"
 
 interface ActionDetailSectionProps {
-    action: ActionItem
     moduleJson: unknown
     sectionHeading?: string | null
     sectionLayout?: "center" | "left" | null
@@ -16,7 +14,7 @@ interface ActionDetailSectionProps {
     functionDefinitionsLabel: string
 }
 
-export function ActionDetailSection({ action, moduleJson, sectionHeading, sectionLayout, sectionDescription, sectionLinkButton, flowTypesLabel, functionDefinitionsLabel }: ActionDetailSectionProps) {
+export function ActionDetailSection({ moduleJson, sectionHeading, sectionLayout, sectionDescription, sectionLinkButton, flowTypesLabel, functionDefinitionsLabel }: ActionDetailSectionProps) {
     const flowTypes = extractFlowTypesFromJson(moduleJson)
     const functionDefinitions = extractFunctionDefinitionsFromJson(moduleJson)
     if (!flowTypes.length && !functionDefinitions.length) return null

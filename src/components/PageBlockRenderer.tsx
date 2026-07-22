@@ -62,15 +62,35 @@ const pageBlockRenderers: Partial<Record<PageBlock["blockType"], BlockRenderer>>
     widehero: (block) => <WideHeroSection content={block as Extract<PageBlock, { blockType: "widehero" }>} />,
     listFeature: (block) => <ListFeatureSection content={block as Extract<PageBlock, { blockType: "listFeature" }>} />,
     stats: (block) => <StatsSection content={block as Extract<PageBlock, { blockType: "stats" }>} />,
-    actionHero: (block, options) => options.action ? <ActionHeroSection action={options.action} locale={options.locale ?? "en"} content={block as Extract<PageBlock, { blockType: "actionHero" }>} /> : null,
+    actionHero: (block, options) =>
+        options.action ? <ActionHeroSection action={options.action} locale={options.locale ?? "en"} content={block as Extract<PageBlock, { blockType: "actionHero" }>} /> : null,
     actionDetails: (block, options) => {
         if (!options.action) return null
         const content = block as Extract<PageBlock, { blockType: "actionDetails" }>
-        return <ActionDetailSection action={options.action} moduleJson={options.actionModuleJson} sectionHeading={content.sectionHeading} sectionLayout={content.sectionLayout} sectionDescription={content.sectionDescription} sectionLinkButton={content.sectionLinkButton} flowTypesLabel={content.flowTypesLabel} functionDefinitionsLabel={content.functionDefinitionsLabel} />
+        return (
+            <ActionDetailSection
+                moduleJson={options.actionModuleJson}
+                sectionHeading={content.sectionHeading}
+                sectionLayout={content.sectionLayout}
+                sectionDescription={content.sectionDescription}
+                sectionLinkButton={content.sectionLinkButton}
+                flowTypesLabel={content.flowTypesLabel}
+                functionDefinitionsLabel={content.functionDefinitionsLabel}
+            />
+        )
     },
     actionReferences: (block, options) => {
         const content = block as Extract<PageBlock, { blockType: "actionReferences" }>
-        return <ActionReferencesSection references={options.actionReferences ?? []} locale={options.locale ?? "en"} sectionHeading={content.sectionHeading} sectionLayout={content.sectionLayout} sectionDescription={content.sectionDescription} sectionLinkButton={content.sectionLinkButton} />
+        return (
+            <ActionReferencesSection
+                references={options.actionReferences ?? []}
+                locale={options.locale ?? "en"}
+                sectionHeading={content.sectionHeading}
+                sectionLayout={content.sectionLayout}
+                sectionDescription={content.sectionDescription}
+                sectionLinkButton={content.sectionLinkButton}
+            />
+        )
     },
     actionList: (block, options) => <ActionListSection actions={options.actions ?? []} locale={options.locale ?? "en"} content={block as Extract<PageBlock, { blockType: "actionList" }>} />,
 }
