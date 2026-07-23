@@ -47,10 +47,7 @@ export function ActionHeroSection({ action, locale, content }: { action: ActionI
         <Section showFunnel={false} className="w-full">
             <div className="relative overflow-hidden rounded-4xl border border-white/5 bg-light/35 h-[min(58svh,620px)] md:h-[min(62dvh,680px)]">
                 <Grainient {...grainientColors} />
-                <div
-                    aria-hidden="true"
-                    className="pointer-events-none absolute inset-0 z-1 bg-[linear-gradient(90deg,rgba(5,8,18,0.64)_0%,rgba(5,8,18,0.4)_42%,rgba(5,8,18,0.16)_100%)]"
-                />
+                <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-1 bg-[linear-gradient(90deg,rgba(5,8,18,0.64)_0%,rgba(5,8,18,0.4)_42%,rgba(5,8,18,0.16)_100%)]" />
                 <StaggerContainer className="relative z-10 flex h-full flex-col items-center justify-between gap-8 p-8 lg:flex-row lg:p-16">
                     <div className="flex w-full flex-col gap-4 text-left lg:w-1/2">
                         {content?.badge && (
@@ -93,17 +90,21 @@ export function ActionHeroSection({ action, locale, content }: { action: ActionI
                         )}
                     </div>
                     <StaggerItem className="flex w-full items-center justify-center gap-0 lg:w-1/2">
-                        <div className="flex size-28 shrink-0 items-center justify-center rounded-3xl border border-white/10 bg-primary text-white sm:size-32">
-                            <ActionIcon icon={action.icon} size={64} />
-                        </div>
-                        <div className="relative h-1 w-10 overflow-hidden bg-brand/20 sm:w-16">
-                            <div
-                                className="absolute inset-y-0 w-2/5 bg-brand shadow-[0_0_12px_var(--color-brand)]"
-                                style={{ animation: "action-hero-pulse 1.8s ease-in-out infinite", willChange: "left, opacity" }}
-                            />
-                        </div>
-                        <div className="flex size-28 shrink-0 items-center justify-center rounded-3xl border border-white/10 bg-white p-4 sm:size-32">
+                        <div className="flex size-28 shrink-0 items-center justify-center rounded-3xl border border-white/25 bg-white p-4 shadow-[0_0_0_4px_rgba(255,255,255,0.045),0_12px_32px_rgba(0,0,0,0.18)] sm:size-32">
                             <Image src="/code0_logo_white.png" alt="Code0" width={80} height={80} className="size-full object-contain invert" />
+                        </div>
+                        <div className="flex w-10 flex-col gap-3 sm:w-16">
+                            {[0, 0.22, 0.44].map((delay) => (
+                                <div key={delay} className="relative h-0.5 overflow-hidden bg-white/25">
+                                    <div
+                                        className="absolute inset-y-0 w-2/5 bg-white shadow-[0_0_8px_rgba(255,255,255,0.9)]"
+                                        style={{ animation: "action-hero-pulse 1.8s linear infinite", animationDelay: `${delay}s`, willChange: "left, opacity" }}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                        <div className="flex size-28 shrink-0 items-center justify-center rounded-3xl border border-white/20 bg-primary text-white shadow-[0_0_0_4px_rgba(255,255,255,0.035),0_12px_32px_rgba(0,0,0,0.22)] sm:size-32">
+                            <ActionIcon icon={action.icon} size={64} />
                         </div>
                     </StaggerItem>
                 </StaggerContainer>
