@@ -280,6 +280,8 @@ export const migrations = [
     up: migration_20260723_084800_20260723_stats_suffix.up,
     down: migration_20260723_084800_20260723_stats_suffix.down,
     name: '20260723_084800_20260723_stats_suffix',
+  },
+  {
     up: migration_20260720_212600_actions_module_only.up,
     down: migration_20260720_212600_actions_module_only.down,
     name: '20260720_212600_actions_module_only',
