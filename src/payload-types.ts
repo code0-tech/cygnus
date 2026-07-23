@@ -891,7 +891,7 @@ export interface Page {
               number: number;
               description: string;
               enableNumberFlow?: boolean | null;
-              showPlus?: boolean | null;
+              suffix?: string | null;
               id?: string | null;
             }[];
             id?: string | null;
@@ -1924,7 +1924,7 @@ export interface PagesSelect<T extends boolean = true> {
                     number?: T;
                     description?: T;
                     enableNumberFlow?: T;
-                    showPlus?: T;
+                    suffix?: T;
                     id?: T;
                   };
               id?: T;
