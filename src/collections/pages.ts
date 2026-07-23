@@ -62,6 +62,7 @@ export const Pages: CollectionConfig = {
                 { label: "open-source-no-code-automation", value: "open-source-no-code-automation" },
                 { label: "contact", value: "contact" },
                 { label: "actions", value: "actions" },
+                { label: "action-details", value: "action-details" },
                 { label: "community-edition", value: "community-edition" },
                 { label: "enterprise-edition", value: "enterprise-edition" },
                 { label: "subscription", value: "subscription" },

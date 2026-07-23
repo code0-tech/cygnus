@@ -225,6 +225,7 @@ export interface Page {
     | 'open-source-no-code-automation'
     | 'contact'
     | 'actions'
+    | 'action-details'
     | 'community-edition'
     | 'enterprise-edition'
     | 'subscription';
@@ -899,7 +900,7 @@ export interface Page {
           }
         | {
             sectionHeading?: string | null;
-            sectionLayout: 'flowCenter' | 'flowLeft' | 'flowRight';
+            sectionLayout: 'center' | 'left';
             sectionDescription?: string | null;
             sectionLinkButton?: {
               label?: string | null;
@@ -907,6 +908,7 @@ export interface Page {
             };
             contentHeading?: string | null;
             contentDescription?: string | null;
+            flowLayout: 'left' | 'right';
             flow: {
               trigger: {
                 icon: string;
@@ -914,6 +916,7 @@ export interface Page {
               };
               items?:
                 | {
+                    icon: string;
                     color: 'brand' | 'yellow' | 'aqua' | 'blue' | 'pink';
                     outline?: boolean | null;
                     segments: {
@@ -1941,6 +1944,7 @@ export interface PagesSelect<T extends boolean = true> {
                   };
               contentHeading?: T;
               contentDescription?: T;
+              flowLayout?: T;
               flow?:
                 | T
                 | {
@@ -1953,6 +1957,7 @@ export interface PagesSelect<T extends boolean = true> {
                     items?:
                       | T
                       | {
+                          icon?: T;
                           color?: T;
                           outline?: T;
                           segments?:

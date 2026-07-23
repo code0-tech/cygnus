@@ -25,6 +25,7 @@ export function FlowExampleSection({ content }: FlowExampleSectionProps) {
         content.flow?.items?.map((item, index) => ({
             id: String(item.id ?? index),
             node: {
+                icon: getIcon(item.icon, 16),
                 color: item.color as NodeAccent,
                 outline: item.outline !== false,
                 segments: item.segments.map((segment) => ({
@@ -33,11 +34,10 @@ export function FlowExampleSection({ content }: FlowExampleSectionProps) {
                 })),
             },
         })) ?? []
-    const isCenter = content.sectionLayout === "flowCenter"
-    const isRight = content.sectionLayout === "flowRight"
+    const isFlowRight = content.flowLayout === "right"
     const showBorder = Boolean(content.showBorder)
     const flow = (
-        <div className={cn("relative m-2 min-w-0 overflow-hidden rounded-2xl border border-white/10 bg-light", isCenter ? "min-h-72" : "min-h-72 lg:min-h-96", isRight && "lg:order-2")}>
+        <div className={cn("relative m-2 min-h-72 min-w-0 overflow-hidden rounded-2xl border border-white/10 bg-light lg:min-h-96", isFlowRight && "lg:order-2")}>
             <DotBackground
                 className="opacity-50 mask-[radial-gradient(ellipse_at_center,black_35%,transparent_85%)]"
                 dotColor="rgba(255,255,255,0.14)"
@@ -52,10 +52,9 @@ export function FlowExampleSection({ content }: FlowExampleSectionProps) {
             className={cn(
                 "flex flex-col justify-center",
                 showBorder && "p-8 md:p-10",
-                !showBorder && isCenter && "pt-8 md:pt-10",
-                !showBorder && !isCenter && !isRight && "py-8 pl-8 md:py-10 md:pl-10",
-                !showBorder && isRight && "py-8 pr-8 md:py-10 md:pr-10",
-                isRight && "lg:order-1"
+                !showBorder && !isFlowRight && "py-8 pl-8 md:py-10 md:pl-10",
+                !showBorder && isFlowRight && "py-8 pr-8 md:py-10 md:pr-10",
+                isFlowRight && "lg:order-1"
             )}
             delayChildren={0.06}
             staggerChildren={0.08}
@@ -72,26 +71,22 @@ export function FlowExampleSection({ content }: FlowExampleSectionProps) {
             )}
         </StaggerContainer>
     )
-
     const example = (
-        <article className={cn("relative z-10 overflow-hidden", isCenter ? "flex flex-col" : "grid lg:grid-cols-2")}>
-            {isCenter ? (
-                <>
-                    {flow}
-                    {(content.contentHeading || content.contentDescription) && body}
-                </>
-            ) : (
-                <>
-                    {flow}
-                    {body}
-                </>
-            )}
+        <article className="relative z-10 grid min-h-96 overflow-hidden lg:grid-cols-2">
+            {flow}
+            {body}
         </article>
     )
 
     return (
-        <Section heading={content.sectionHeading} description={content.sectionDescription} linkButton={content.sectionLinkButton} funnelType="center" animation={{ preset: "none" }}>
-            <div className={cn("mx-auto w-full", isCenter && "max-w-5xl")}>
+        <Section
+            heading={content.sectionHeading}
+            description={content.sectionDescription}
+            linkButton={content.sectionLinkButton}
+            funnelType={content.sectionLayout ?? "center"}
+            animation={{ preset: "none" }}
+        >
+            <div className="mx-auto w-full">
                 {showBorder ? (
                     <Card size="lg" variant="light" className="p-2!">
                         {example}

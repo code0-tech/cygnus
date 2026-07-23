@@ -31,14 +31,13 @@ export const FlowExampleBlock: Block = {
                 },
                 {
                     name: "sectionLayout",
-                    label: "Flow Layout",
+                    label: "Section Layout",
                     type: "select",
                     required: true,
-                    defaultValue: "flowCenter",
+                    defaultValue: "center",
                     options: [
-                        { label: "Flow center", value: "flowCenter" },
-                        { label: "Flow left", value: "flowLeft" },
-                        { label: "Flow right", value: "flowRight" },
+                        { label: "Center", value: "center" },
+                        { label: "Left", value: "left" },
                     ],
                 },
                 {
@@ -71,6 +70,17 @@ export const FlowExampleBlock: Block = {
             localized: true,
         },
         {
+            name: "flowLayout",
+            label: "Flow Layout",
+            type: "select",
+            required: true,
+            defaultValue: "left",
+            options: [
+                { label: "Flow left", value: "left" },
+                { label: "Flow right", value: "right" },
+            ],
+        },
+        {
             name: "flow",
             type: "group",
             fields: [
@@ -92,6 +102,7 @@ export const FlowExampleBlock: Block = {
                     label: "Flow items",
                     type: "array",
                     fields: [
+                        flowIconField(),
                         {
                             name: "color",
                             type: "select",

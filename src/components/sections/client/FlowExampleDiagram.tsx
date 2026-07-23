@@ -1,7 +1,7 @@
 "use client"
 
-import { Text } from "@code0-tech/pictor"
 import { getNodeAccentColor, NodeDisplay, type NodeItem } from "@/components/nodes/NodeDisplay"
+import { TriggerDisplay } from "@/components/nodes/TriggerDisplay"
 import { m as motion, useReducedMotion } from "motion/react"
 import type { ReactNode } from "react"
 
@@ -14,19 +14,6 @@ export interface FlowDiagramNode {
 export interface FlowDiagramItem {
     id: string
     node: NodeItem
-}
-
-function FlowNode({ node }: { node: FlowDiagramNode }) {
-    return (
-        <div className="relative z-10 flex min-w-44 shrink-0 flex-col items-center">
-            <div className="flex size-12 rotate-45 items-center justify-center rounded-xl border border-white/10 bg-primary text-brand shadow-lg shadow-black/20">
-                <span className="flex -rotate-45 items-center justify-center">{node.icon}</span>
-            </div>
-            <Text size="sm" className="absolute left-1/2 top-[calc(100%+0.25rem)] z-20 -translate-x-1/2 whitespace-nowrap text-center font-medium text-secondary!">
-                {node.text}
-            </Text>
-        </div>
-    )
 }
 
 export function FlowExampleDiagram({ trigger, items }: { trigger: FlowDiagramNode; items: FlowDiagramItem[] }) {
@@ -84,7 +71,7 @@ export function FlowExampleDiagram({ trigger, items }: { trigger: FlowDiagramNod
                         transition={{ duration: 0.38, delay: index * 0.2, ease: [0.22, 1, 0.36, 1] }}
                     >
                         {"trigger" in node ? (
-                            <FlowNode node={node.trigger} />
+                            <TriggerDisplay icon={node.trigger.icon} text={node.trigger.text} />
                         ) : (
                             <motion.div
                                 className="relative isolate rounded-2xl"
