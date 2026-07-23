@@ -1,0 +1,50 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.pages_blocks_action_hero": {
+      "name": "pages_blocks_action_hero",
+      "schema": "public",
+      "columns": {
+        "block_name": {
+          "name": "block_name",
+          "type": "varchar",
+          "notNull": false
+        }
+      }
+    },
+    "public.pages_blocks_action_details": {
+      "name": "pages_blocks_action_details",
+      "schema": "public",
+      "columns": {
+        "block_name": {
+          "name": "block_name",
+          "type": "varchar",
+          "notNull": false
+        }
+      }
+    },
+    "public.pages_blocks_action_references": {
+      "name": "pages_blocks_action_references",
+      "schema": "public",
+      "columns": {
+        "block_name": {
+          "name": "block_name",
+          "type": "varchar",
+          "notNull": false
+        }
+      }
+    },
+    "public.pages_blocks_action_list": {
+      "name": "pages_blocks_action_list",
+      "schema": "public",
+      "columns": {
+        "block_name": {
+          "name": "block_name",
+          "type": "varchar",
+          "notNull": false
+        }
+      }
+    }
+  }
+}

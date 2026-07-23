@@ -54,6 +54,7 @@ import * as migration_20260722_184500_action_detail_section_fields from './20260
 import * as migration_20260722_190500_action_hero_fields from './20260722_190500_action_hero_fields';
 import * as migration_20260722_195500_action_section_props from './20260722_195500_action_section_props';
 import * as migration_20260723_082800_action_hero_grainient_colors from './20260723_082800_action_hero_grainient_colors';
+import * as migration_20260723_202005_action_block_names from './20260723_202005_action_block_names';
 
 export const migrations = [
   {
@@ -335,5 +336,10 @@ export const migrations = [
     up: migration_20260723_082800_action_hero_grainient_colors.up,
     down: migration_20260723_082800_action_hero_grainient_colors.down,
     name: '20260723_082800_action_hero_grainient_colors',
+  },
+  {
+    up: migration_20260723_202005_action_block_names.up,
+    down: migration_20260723_202005_action_block_names.down,
+    name: '20260723_202005_action_block_names',
   },
 ];
