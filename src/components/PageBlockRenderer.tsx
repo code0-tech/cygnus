@@ -20,6 +20,7 @@ import { StandaloneCardSection } from "./sections/StandaloneCardSection"
 import { VideoSection } from "./sections/VideoSection"
 import { WideHeroSection } from "./sections/WideHeroSection"
 import { StatsSection } from "./sections/StatsSection"
+import { FlowExampleSection } from "./sections/FlowExampleSection"
 import { ActionHeroSection } from "./sections/ActionHeroSection"
 import { ActionDetailSection } from "./sections/ActionDetailSection"
 import { ActionReferencesSection } from "./sections/ActionReferencesSection"
@@ -62,6 +63,7 @@ const pageBlockRenderers: Partial<Record<PageBlock["blockType"], BlockRenderer>>
     widehero: (block) => <WideHeroSection content={block as Extract<PageBlock, { blockType: "widehero" }>} />,
     listFeature: (block) => <ListFeatureSection content={block as Extract<PageBlock, { blockType: "listFeature" }>} />,
     stats: (block) => <StatsSection content={block as Extract<PageBlock, { blockType: "stats" }>} />,
+    flowExample: (block) => <FlowExampleSection content={block as Extract<PageBlock, { blockType: "flowExample" }>} />,
     actionHero: (block, options) =>
         options.action ? <ActionHeroSection action={options.action} locale={options.locale ?? "en"} content={block as Extract<PageBlock, { blockType: "actionHero" }>} /> : null,
     actionDetails: (block, options) => {

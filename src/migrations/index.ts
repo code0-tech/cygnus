@@ -38,6 +38,11 @@ import * as migration_20260709_183358_subscription_configurator_defaults from '.
 import * as migration_20260710_052024_subscription_payment_period_suffixes from './20260710_052024_subscription_payment_period_suffixes';
 import * as migration_20260720_105407_20260720_stats_block from './20260720_105407_20260720_stats_block';
 import * as migration_20260720_111300_20260720_stats_show_plus from './20260720_111300_20260720_stats_show_plus';
+import * as migration_20260720_123334_20260720_flow_example from './20260720_123334_20260720_flow_example';
+import * as migration_20260721_092035_20260721_flow_example_segments from './20260721_092035_20260721_flow_example_segments';
+import * as migration_20260723_073358_20260723_flow_example_item_icons from './20260723_073358_20260723_flow_example_item_icons';
+import * as migration_20260723_083548_20260723_flow_example_layouts from './20260723_083548_20260723_flow_example_layouts';
+import * as migration_20260723_084800_20260723_stats_suffix from './20260723_084800_20260723_stats_suffix';
 import * as migration_20260720_212600_actions_module_only from './20260720_212600_actions_module_only';
 import * as migration_20260720_224003_action_block_empty_labels from './20260720_224003_action_block_empty_labels';
 import * as migration_20260722_114458_action_block_definition_labels from './20260722_114458_action_block_definition_labels';
@@ -250,6 +255,31 @@ export const migrations = [
     up: migration_20260720_111300_20260720_stats_show_plus.up,
     down: migration_20260720_111300_20260720_stats_show_plus.down,
     name: '20260720_111300_20260720_stats_show_plus',
+  },
+  {
+    up: migration_20260720_123334_20260720_flow_example.up,
+    down: migration_20260720_123334_20260720_flow_example.down,
+    name: '20260720_123334_20260720_flow_example',
+  },
+  {
+    up: migration_20260721_092035_20260721_flow_example_segments.up,
+    down: migration_20260721_092035_20260721_flow_example_segments.down,
+    name: '20260721_092035_20260721_flow_example_segments',
+  },
+  {
+    up: migration_20260723_073358_20260723_flow_example_item_icons.up,
+    down: migration_20260723_073358_20260723_flow_example_item_icons.down,
+    name: '20260723_073358_20260723_flow_example_item_icons',
+  },
+  {
+    up: migration_20260723_083548_20260723_flow_example_layouts.up,
+    down: migration_20260723_083548_20260723_flow_example_layouts.down,
+    name: '20260723_083548_20260723_flow_example_layouts'
+  },
+  {
+    up: migration_20260723_084800_20260723_stats_suffix.up,
+    down: migration_20260723_084800_20260723_stats_suffix.down,
+    name: '20260723_084800_20260723_stats_suffix',
   },
   {
     up: migration_20260720_212600_actions_module_only.up,

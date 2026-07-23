@@ -22,17 +22,17 @@ function getCompactNumber(number: number) {
     return { value: Math.round(number), suffix: "" }
 }
 
-function StatNumber({ number, animate, showPlus }: { number: number; animate: boolean; showPlus: boolean }) {
+function StatNumber({ number, animate, suffix }: { number: number; animate: boolean; suffix?: string | null }) {
     const ref = useRef<HTMLDivElement>(null)
     const isInView = useInView(ref, { once: true, amount: 0.5 })
     const compactNumber = getCompactNumber(number)
-    const suffix = `${compactNumber.suffix}${showPlus ? "+" : ""}`
+    const displaySuffix = `${compactNumber.suffix}${suffix?.trim() ?? ""}`
 
     return (
         <div ref={ref} className="text-5xl font-semibold tabular-nums text-white md:text-6xl">
             <NumberFlow
                 value={animate && !isInView ? 0 : compactNumber.value}
-                suffix={!animate || isInView ? suffix : ""}
+                suffix={!animate || isInView ? displaySuffix : ""}
                 animated={animate}
                 transformTiming={{ duration: 1200, easing: "ease-out" }}
             />
@@ -68,7 +68,7 @@ export function StatsSection({ content }: StatsSectionProps) {
                         duration={0.4}
                         key={item.id ?? index}
                     >
-                        <StatNumber number={item.number} animate={item.enableNumberFlow !== false} showPlus={item.showPlus === true} />
+                        <StatNumber number={item.number} animate={item.enableNumberFlow !== false} suffix={item.suffix} />
                         <p className="text-lg font-medium text-secondary">{item.description}</p>
                     </StaggerItem>
                 ))}

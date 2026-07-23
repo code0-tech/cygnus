@@ -48,6 +48,8 @@ import { ExportPreview as ExportPreview_cdf7e044479f899a31f804427d568b36 } from 
 import { ExportSaveButton as ExportSaveButton_cdf7e044479f899a31f804427d568b36 } from '@payloadcms/plugin-import-export/rsc'
 import { ImportPreview as ImportPreview_cdf7e044479f899a31f804427d568b36 } from '@payloadcms/plugin-import-export/rsc'
 import { ImportSaveButton as ImportSaveButton_cdf7e044479f899a31f804427d568b36 } from '@payloadcms/plugin-import-export/rsc'
+import { Icon as Icon_7713273ba727ca134b49716b27b5174a } from '../../../graphics/Icon.tsx'
+import { Logo as Logo_12230abedf9f016bfbf324f3f3e8c31d } from '../../../graphics/Logo.tsx'
 import { Dashboard as Dashboard_9bc5ba0ba94cef620e04c74aadf9cea5 } from '@mvriu5/payload-ai/client'
 import { ImportExportProvider as ImportExportProvider_cdf7e044479f899a31f804427d568b36 } from '@payloadcms/plugin-import-export/rsc'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
@@ -104,6 +106,8 @@ export const importMap = {
   "@payloadcms/plugin-import-export/rsc#ExportSaveButton": ExportSaveButton_cdf7e044479f899a31f804427d568b36,
   "@payloadcms/plugin-import-export/rsc#ImportPreview": ImportPreview_cdf7e044479f899a31f804427d568b36,
   "@payloadcms/plugin-import-export/rsc#ImportSaveButton": ImportSaveButton_cdf7e044479f899a31f804427d568b36,
+  "/graphics/Icon.tsx#Icon": Icon_7713273ba727ca134b49716b27b5174a,
+  "/graphics/Logo.tsx#Logo": Logo_12230abedf9f016bfbf324f3f3e8c31d,
   "@mvriu5/payload-ai/client#Dashboard": Dashboard_9bc5ba0ba94cef620e04c74aadf9cea5,
   "@payloadcms/plugin-import-export/rsc#ImportExportProvider": ImportExportProvider_cdf7e044479f899a31f804427d568b36,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1

@@ -957,12 +957,47 @@ export interface Page {
               number: number;
               description: string;
               enableNumberFlow?: boolean | null;
-              showPlus?: boolean | null;
+              suffix?: string | null;
               id?: string | null;
             }[];
             id?: string | null;
             blockName?: string | null;
             blockType: 'stats';
+          }
+        | {
+            sectionHeading?: string | null;
+            sectionLayout: 'center' | 'left';
+            sectionDescription?: string | null;
+            sectionLinkButton?: {
+              label?: string | null;
+              url?: string | null;
+            };
+            contentHeading?: string | null;
+            contentDescription?: string | null;
+            flowLayout: 'left' | 'right';
+            flow: {
+              trigger: {
+                icon: string;
+                name: string;
+              };
+              items?:
+                | {
+                    icon: string;
+                    color: 'brand' | 'yellow' | 'aqua' | 'blue' | 'pink';
+                    outline?: boolean | null;
+                    segments: {
+                      type: 'text' | 'literal' | 'reference' | 'node';
+                      value: string;
+                      id?: string | null;
+                    }[];
+                    id?: string | null;
+                  }[]
+                | null;
+            };
+            showBorder?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'flowExample';
           }
       )[]
     | null;
@@ -2012,9 +2047,53 @@ export interface PagesSelect<T extends boolean = true> {
                     number?: T;
                     description?: T;
                     enableNumberFlow?: T;
-                    showPlus?: T;
+                    suffix?: T;
                     id?: T;
                   };
+              id?: T;
+              blockName?: T;
+            };
+        flowExample?:
+          | T
+          | {
+              sectionHeading?: T;
+              sectionLayout?: T;
+              sectionDescription?: T;
+              sectionLinkButton?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                  };
+              contentHeading?: T;
+              contentDescription?: T;
+              flowLayout?: T;
+              flow?:
+                | T
+                | {
+                    trigger?:
+                      | T
+                      | {
+                          icon?: T;
+                          name?: T;
+                        };
+                    items?:
+                      | T
+                      | {
+                          icon?: T;
+                          color?: T;
+                          outline?: T;
+                          segments?:
+                            | T
+                            | {
+                                type?: T;
+                                value?: T;
+                                id?: T;
+                              };
+                          id?: T;
+                        };
+                  };
+              showBorder?: T;
               id?: T;
               blockName?: T;
             };
