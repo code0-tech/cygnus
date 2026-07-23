@@ -1,0 +1,21 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.pages_blocks_action_list": {
+      "name": "pages_blocks_action_list",
+      "schema": "public",
+      "columns": {
+        "_order": { "name": "_order", "type": "integer", "notNull": true },
+        "_parent_id": { "name": "_parent_id", "type": "integer", "notNull": true },
+        "_path": { "name": "_path", "type": "text", "notNull": true },
+        "_locale": { "name": "_locale", "type": "_locales", "notNull": true },
+        "id": { "name": "id", "type": "varchar", "primaryKey": true, "notNull": true },
+        "section_heading": { "name": "section_heading", "type": "varchar", "default": "'Actions'" },
+        "section_description": { "name": "section_description", "type": "varchar", "default": "'Browse available actions and integrations.'" },
+        "search_placeholder": { "name": "search_placeholder", "type": "varchar", "notNull": true, "default": "'Search actions'" },
+        "no_actions_found_label": { "name": "no_actions_found_label", "type": "varchar", "notNull": true, "default": "'No actions found for your search.'" }
+      }
+    }
+  }
+}

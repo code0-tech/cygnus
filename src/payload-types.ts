@@ -222,7 +222,6 @@ export interface Page {
     | 'legal-notice'
     | 'privacy'
     | 'terms'
-    | 'open-source-no-code-automation'
     | 'contact'
     | 'actions'
     | 'action-details'
@@ -685,14 +684,81 @@ export interface Page {
             blockType: 'border';
           }
         | {
-            heading: string;
-            description: string;
-            searchPlaceholder: string;
-            noActionsFoundLabel: string;
-            referencesLabel: string;
+            badge?: string | null;
+            badge_link?: string | null;
+            /**
+             * Use {} as a placeholder for the action title.
+             */
+            heading?: string | null;
+            grainientColors?: {
+              /**
+               * Used when the action module does not define brandColor1.
+               */
+              color1?: string | null;
+              /**
+               * Used when the action module does not define brandColor2.
+               */
+              color2?: string | null;
+              color3?: string | null;
+              backgroundColor?: string | null;
+            };
+            texts?:
+              | {
+                  text: string;
+                  id?: string | null;
+                }[]
+              | null;
+            buttons?:
+              | {
+                  label: string;
+                  url: string;
+                  variant?: ('none' | 'normal' | 'outlined' | 'filled') | null;
+                  id?: string | null;
+                }[]
+              | null;
             id?: string | null;
             blockName?: string | null;
-            blockType: 'actions';
+            blockType: 'actionHero';
+          }
+        | {
+            sectionHeading?: string | null;
+            sectionLayout: 'center' | 'left';
+            sectionDescription?: string | null;
+            sectionLinkButton?: {
+              label?: string | null;
+              url?: string | null;
+            };
+            flowTypesLabel: string;
+            functionDefinitionsLabel: string;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'actionDetails';
+          }
+        | {
+            sectionHeading?: string | null;
+            sectionLayout: 'center' | 'left';
+            sectionDescription?: string | null;
+            sectionLinkButton?: {
+              label?: string | null;
+              url?: string | null;
+            };
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'actionReferences';
+          }
+        | {
+            sectionHeading?: string | null;
+            sectionLayout: 'center' | 'left';
+            sectionDescription?: string | null;
+            sectionLinkButton?: {
+              label?: string | null;
+              url?: string | null;
+            };
+            searchPlaceholder: string;
+            noActionsFoundLabel: string;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'actionList';
           }
         | {
             content: {
@@ -1029,21 +1095,9 @@ export interface Feature {
  */
 export interface Action {
   id: number;
-  title: string;
-  /**
-   * URL slug for the action subpage, e.g. 'slack-sync'.
-   */
-  slug: string;
-  shortDescription?: string | null;
-  description?: string | null;
-  icon?: (number | null) | Media;
-  trigger?: (number | null) | Media;
-  functiondefinitions?: (number | null) | Media;
+  identifier: string;
+  module: number | Media;
   tags?: string[] | null;
-  documentation?: {
-    label?: string | null;
-    url?: string | null;
-  };
   references?: (number | Action)[] | null;
   updatedAt: string;
   createdAt: string;
@@ -1697,14 +1751,83 @@ export interface PagesSelect<T extends boolean = true> {
               id?: T;
               blockName?: T;
             };
-        actions?:
+        actionHero?:
           | T
           | {
+              badge?: T;
+              badge_link?: T;
               heading?: T;
-              description?: T;
+              grainientColors?:
+                | T
+                | {
+                    color1?: T;
+                    color2?: T;
+                    color3?: T;
+                    backgroundColor?: T;
+                  };
+              texts?:
+                | T
+                | {
+                    text?: T;
+                    id?: T;
+                  };
+              buttons?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                    variant?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        actionDetails?:
+          | T
+          | {
+              sectionHeading?: T;
+              sectionLayout?: T;
+              sectionDescription?: T;
+              sectionLinkButton?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                  };
+              flowTypesLabel?: T;
+              functionDefinitionsLabel?: T;
+              id?: T;
+              blockName?: T;
+            };
+        actionReferences?:
+          | T
+          | {
+              sectionHeading?: T;
+              sectionLayout?: T;
+              sectionDescription?: T;
+              sectionLinkButton?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        actionList?:
+          | T
+          | {
+              sectionHeading?: T;
+              sectionLayout?: T;
+              sectionDescription?: T;
+              sectionLinkButton?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                  };
               searchPlaceholder?: T;
               noActionsFoundLabel?: T;
-              referencesLabel?: T;
               id?: T;
               blockName?: T;
             };
@@ -2007,20 +2130,9 @@ export interface FeaturesSelect<T extends boolean = true> {
  * via the `definition` "actions_select".
  */
 export interface ActionsSelect<T extends boolean = true> {
-  title?: T;
-  slug?: T;
-  shortDescription?: T;
-  description?: T;
-  icon?: T;
-  trigger?: T;
-  functiondefinitions?: T;
+  identifier?: T;
+  module?: T;
   tags?: T;
-  documentation?:
-    | T
-    | {
-        label?: T;
-        url?: T;
-      };
   references?: T;
   updatedAt?: T;
   createdAt?: T;

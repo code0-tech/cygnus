@@ -43,6 +43,17 @@ import * as migration_20260721_092035_20260721_flow_example_segments from './202
 import * as migration_20260723_073358_20260723_flow_example_item_icons from './20260723_073358_20260723_flow_example_item_icons';
 import * as migration_20260723_083548_20260723_flow_example_layouts from './20260723_083548_20260723_flow_example_layouts';
 import * as migration_20260723_084800_20260723_stats_suffix from './20260723_084800_20260723_stats_suffix';
+import * as migration_20260720_212600_actions_module_only from './20260720_212600_actions_module_only';
+import * as migration_20260720_224003_action_block_empty_labels from './20260720_224003_action_block_empty_labels';
+import * as migration_20260722_114458_action_block_definition_labels from './20260722_114458_action_block_definition_labels';
+import * as migration_20260722_123249_remove_action_definition_empty_labels from './20260722_123249_remove_action_definition_empty_labels';
+import * as migration_20260722_144106_actions_identifier_and_import_route from './20260722_144106_actions_identifier_and_import_route';
+import * as migration_20260722_174300_action_detail_blocks from './20260722_174300_action_detail_blocks';
+import * as migration_20260722_183000_action_list_block from './20260722_183000_action_list_block';
+import * as migration_20260722_184500_action_detail_section_fields from './20260722_184500_action_detail_section_fields';
+import * as migration_20260722_190500_action_hero_fields from './20260722_190500_action_hero_fields';
+import * as migration_20260722_195500_action_section_props from './20260722_195500_action_section_props';
+import * as migration_20260723_082800_action_hero_grainient_colors from './20260723_082800_action_hero_grainient_colors';
 
 export const migrations = [
   {
@@ -269,5 +280,58 @@ export const migrations = [
     up: migration_20260723_084800_20260723_stats_suffix.up,
     down: migration_20260723_084800_20260723_stats_suffix.down,
     name: '20260723_084800_20260723_stats_suffix',
+    up: migration_20260720_212600_actions_module_only.up,
+    down: migration_20260720_212600_actions_module_only.down,
+    name: '20260720_212600_actions_module_only',
+  },
+  {
+    up: migration_20260720_224003_action_block_empty_labels.up,
+    down: migration_20260720_224003_action_block_empty_labels.down,
+    name: '20260720_224003_action_block_empty_labels',
+  },
+  {
+    up: migration_20260722_114458_action_block_definition_labels.up,
+    down: migration_20260722_114458_action_block_definition_labels.down,
+    name: '20260722_114458_action_block_definition_labels',
+  },
+  {
+    up: migration_20260722_123249_remove_action_definition_empty_labels.up,
+    down: migration_20260722_123249_remove_action_definition_empty_labels.down,
+    name: '20260722_123249_remove_action_definition_empty_labels',
+  },
+  {
+    up: migration_20260722_144106_actions_identifier_and_import_route.up,
+    down: migration_20260722_144106_actions_identifier_and_import_route.down,
+    name: '20260722_144106_actions_identifier_and_import_route'
+  },
+  {
+    up: migration_20260722_174300_action_detail_blocks.up,
+    down: migration_20260722_174300_action_detail_blocks.down,
+    name: '20260722_174300_action_detail_blocks',
+  },
+  {
+    up: migration_20260722_183000_action_list_block.up,
+    down: migration_20260722_183000_action_list_block.down,
+    name: '20260722_183000_action_list_block',
+  },
+  {
+    up: migration_20260722_184500_action_detail_section_fields.up,
+    down: migration_20260722_184500_action_detail_section_fields.down,
+    name: '20260722_184500_action_detail_section_fields',
+  },
+  {
+    up: migration_20260722_190500_action_hero_fields.up,
+    down: migration_20260722_190500_action_hero_fields.down,
+    name: '20260722_190500_action_hero_fields',
+  },
+  {
+    up: migration_20260722_195500_action_section_props.up,
+    down: migration_20260722_195500_action_section_props.down,
+    name: '20260722_195500_action_section_props',
+  },
+  {
+    up: migration_20260723_082800_action_hero_grainient_colors.up,
+    down: migration_20260723_082800_action_hero_grainient_colors.down,
+    name: '20260723_082800_action_hero_grainient_colors',
   },
 ];

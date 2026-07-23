@@ -1,84 +1,40 @@
 import type { CollectionConfig } from "payload"
 
 export const Actions: CollectionConfig = {
-  slug: "actions",
-  admin: {
-    useAsTitle: "title",
-    defaultColumns: ["title", "updatedAt"],
-  },
-  access: {
-    read: () => true,
-    create: ({ req }) => Boolean(req.user),
-    update: ({ req }) => Boolean(req.user),
-    delete: ({ req }) => Boolean(req.user),
-  },
-  fields: [
-    {
-      name: "title",
-      type: "text",
-      required: true,
-      localized: true,
+    slug: "actions",
+    admin: {
+        defaultColumns: ["module", "tags", "updatedAt"],
     },
-    {
-      name: "slug",
-      type: "text",
-      required: true,
-      unique: true,
-      index: true,
-      admin: {
-        description: "URL slug for the action subpage, e.g. 'slack-sync'.",
-      },
+    access: {
+        read: () => true,
+        create: ({ req }) => Boolean(req.user),
+        update: ({ req }) => Boolean(req.user),
+        delete: ({ req }) => Boolean(req.user),
     },
-    {
-      name: "shortDescription",
-      type: "textarea",
-      localized: true,
-    },
-    {
-      name: "description",
-      type: "textarea",
-      localized: true,
-    },
-    {
-      name: "icon",
-      type: "upload",
-      relationTo: "media",
-    },
-    {
-      name: "trigger",
-      type: "upload",
-      relationTo: "media",
-    },
-    {
-      name: "functiondefinitions",
-      type: "upload",
-      relationTo: "media",
-    },
-    {
-      name: "tags",
-      type: "text",
-      hasMany: true,
-    },
-    {
-      name: "documentation",
-      type: "group",
-      fields: [
+    fields: [
         {
-          name: "label",
-          type: "text",
-          localized: true,
+            name: "identifier",
+            type: "text",
+            required: true,
+            unique: true,
+            index: true,
         },
         {
-          name: "url",
-          type: "text",
+            name: "module",
+            type: "upload",
+            relationTo: "media",
+            required: true,
         },
-      ],
-    },
-    {
-      name: "references",
-      type: "relationship",
-      relationTo: "actions",
-      hasMany: true,
-    },
-  ],
+        {
+            name: "tags",
+            type: "text",
+            hasMany: true,
+        },
+        {
+            name: "references",
+            type: "relationship",
+            relationTo: "actions",
+            hasMany: true,
+        },
+    ],
 }

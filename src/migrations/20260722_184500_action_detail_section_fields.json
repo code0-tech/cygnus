@@ -1,0 +1,14 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.pages_blocks_action_details": {
+      "name": "pages_blocks_action_details",
+      "schema": "public",
+      "columns": {
+        "section_heading": { "name": "section_heading", "type": "varchar" },
+        "section_description": { "name": "section_description", "type": "varchar" }
+      }
+    }
+  }
+}

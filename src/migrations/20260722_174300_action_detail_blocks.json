@@ -1,0 +1,44 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.pages_blocks_action_hero": {
+      "name": "pages_blocks_action_hero",
+      "schema": "public",
+      "columns": {
+        "_order": { "name": "_order", "type": "integer", "notNull": true },
+        "_parent_id": { "name": "_parent_id", "type": "integer", "notNull": true },
+        "_path": { "name": "_path", "type": "text", "notNull": true },
+        "_locale": { "name": "_locale", "type": "_locales", "notNull": true },
+        "id": { "name": "id", "type": "varchar", "primaryKey": true, "notNull": true }
+      }
+    },
+    "public.pages_blocks_action_details": {
+      "name": "pages_blocks_action_details",
+      "schema": "public",
+      "columns": {
+        "_order": { "name": "_order", "type": "integer", "notNull": true },
+        "_parent_id": { "name": "_parent_id", "type": "integer", "notNull": true },
+        "_path": { "name": "_path", "type": "text", "notNull": true },
+        "_locale": { "name": "_locale", "type": "_locales", "notNull": true },
+        "id": { "name": "id", "type": "varchar", "primaryKey": true, "notNull": true },
+        "section_heading": { "name": "section_heading", "type": "varchar" },
+        "section_description": { "name": "section_description", "type": "varchar" },
+        "flow_types_label": { "name": "flow_types_label", "type": "varchar", "notNull": true, "default": "'FlowTypes'" },
+        "function_definitions_label": { "name": "function_definitions_label", "type": "varchar", "notNull": true, "default": "'FunctionDefinitions'" }
+      }
+    },
+    "public.pages_blocks_action_references": {
+      "name": "pages_blocks_action_references",
+      "schema": "public",
+      "columns": {
+        "_order": { "name": "_order", "type": "integer", "notNull": true },
+        "_parent_id": { "name": "_parent_id", "type": "integer", "notNull": true },
+        "_path": { "name": "_path", "type": "text", "notNull": true },
+        "_locale": { "name": "_locale", "type": "_locales", "notNull": true },
+        "id": { "name": "id", "type": "varchar", "primaryKey": true, "notNull": true },
+        "label": { "name": "label", "type": "varchar", "notNull": true, "default": "'References'" }
+      }
+    }
+  }
+}

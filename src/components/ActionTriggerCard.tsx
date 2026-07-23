@@ -1,68 +1,65 @@
 "use client"
 
-import { BaseAccordionItem } from "@/components/ui/Accordion"
-import type { ExtractedActionTriggerItem } from "@/lib/actionTriggerExtraction"
-import { type ReactNode, useCallback, useMemo, useState } from "react"
-import { Card } from "./ui/Card"
+import type { ExtractedFlowType, ExtractedFunctionDefinition } from "@/lib/actionExtraction"
+import { cn } from "@/lib/utils"
+import { IconChevronDown } from "@tabler/icons-react"
+import { useCallback, useMemo, useState } from "react"
 
 interface ActionTriggerCardProps {
-    type: "trigger" | "functionDef"
-    item: ExtractedActionTriggerItem
-    icon: ReactNode
+    type: "flowType" | "functionDefinition"
+    item: ExtractedFlowType | ExtractedFunctionDefinition
 }
 
-export function ActionTriggerCard({ type, item, icon }: ActionTriggerCardProps) {
+export function ActionTriggerCard({ type, item }: ActionTriggerCardProps) {
     const [openItem, setOpenItem] = useState<number | null>(null)
-    const parameters = item.kind === "functionDef" ? item.parameters : item.settings
-    const label = type === "trigger" ? "Trigger" : "FunctionDefinition"
-    const parameterLabel = type === "trigger" ? "Settings" : "Parameters"
+    const open = openItem === 0
+    const parameters = item.kind === "functionDefinition" ? item.parameters : item.kind === "flowType" ? item.settings : []
+    const label = type === "flowType" ? "FlowType" : "FunctionDefinition"
+    const parameterLabel = type === "flowType" ? "Settings" : "Parameters"
     const toggleItem = useCallback((index: number) => {
         setOpenItem((previousItem) => (previousItem === index ? null : index))
     }, [])
     const parameterList = useMemo(
         () => (
             <div className="flex flex-col gap-2">
-                {parameters.map((parameter) => (
-                    <div key={parameter.id} className="rounded-md bg-white/2 p-2">
-                        <div className="text-xs font-medium text-secondary">{parameter.name || parameter.identifier}</div>
-                        {parameter.description && <div className="mt-1 text-xs leading-5 text-tertiary">{parameter.description}</div>}
-                    </div>
-                ))}
-            </div>
-        ),
-        [parameters]
-    )
-
-    return (
-        <Card size="sm" className="bg-primary">
-            <div className="relative z-10 flex h-full flex-col gap-2">
-                <div className="flex items-start justify-between gap-3">
-                    <div className="flex min-w-0 items-center gap-2">
-                        <div className="flex size-12 shrink-0 items-center justify-center rounded-lg border border-white/5 bg-light text-brand">{icon}</div>
-                        <div className="min-w-0">
-                            <p className="text-xs font-medium tracking-wider text-tertiary">{label}</p>
-                            <h3 className="mt-1 truncate text-base tracking-wide font-semibold text-white">{item.name || item.identifier}</h3>
-                        </div>
-                    </div>
-                    <div className="shrink-0 rounded-lg border border-white/5 bg-light px-2 py-1 text-xs text-tertiary">{item.identifier}</div>
+                <div className="grid gap-1 text-sm">
+                    <div className="text-tertiary">{label}</div>
+                    <div className="font-medium text-white">{item.identifier}</div>
                 </div>
 
-                {item.description && <p className="line-clamp-3 text-sm leading-6 text-secondary">{item.description}</p>}
-
                 {parameters.length > 0 && (
-                    <div className="mt-auto pt-2">
-                        <BaseAccordionItem
-                            index={0}
-                            question={`${parameterLabel} (${parameters.length})`}
-                            isOpen={openItem === 0}
-                            onToggle={toggleItem}
-                            className="rounded-lg before:bg-none"
-                            questionClassname="pl-5 pr-2 py-1 text-sm lg:text-sm"
-                            answer={parameterList}
-                        />
+                    <div className="-mx-2 flex flex-col gap-1 border-t border-white/5 px-2 pt-2">
+                        <div className="text-sm text-tertiary">{parameterLabel}</div>
+                        {parameters.map((parameter) => (
+                            <div key={parameter.id} className="text-sm leading-5">
+                                <span className="font-medium text-white">
+                                    {parameter.name || parameter.identifier}
+                                    {parameter.description ? ":" : ""}
+                                </span>{" "}
+                                {parameter.description && <span className="text-secondary">{parameter.description}</span>}
+                            </div>
+                        ))}
                     </div>
                 )}
             </div>
-        </Card>
+        ),
+        [item.identifier, label, parameterLabel, parameters]
+    )
+
+    return (
+        <div className={cn("overflow-hidden rounded-xl border duration-300 ease-out", open ? "border-white/10 bg-light" : "border-white/5 bg-light/40 hover:bg-light/70")}>
+            <div className="relative z-10">
+                <button type="button" onClick={() => toggleItem(0)} className="flex w-full items-center justify-between gap-3 px-2 py-2 text-left">
+                    <span className="min-w-0 truncate font-medium text-white">{item.name || item.identifier}</span>
+                    <IconChevronDown size={16} className={cn("shrink-0 text-tertiary transition-transform duration-300 ease-out", open && "rotate-180")} />
+                </button>
+
+                <div className={cn("grid transition-[grid-template-rows,opacity] duration-300 ease-out", open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0")}>
+                    <div className="min-h-0 overflow-hidden">
+                        <div className="border-t border-white/5 px-2 pb-2 pt-2">{parameterList}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     )
 }
