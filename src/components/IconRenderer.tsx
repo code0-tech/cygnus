@@ -12,9 +12,9 @@ type IconRendererProps = {
 
 const ICON_CLASS_NAME = "inline-flex size-(--icon-size) shrink-0 [&>svg]:size-full"
 
-export const iconRendererIcons = [...tablerIconAdapter(TablerIcons, { prefix: "tabler" }), ...simpleIconsAdapter(SimpleIcons, { prefix: "si" })]
+const iconRendererIcons = [...tablerIconAdapter(TablerIcons, { prefix: "tabler" }), ...simpleIconsAdapter(SimpleIcons, { prefix: "si" })]
 
-export function IconRenderer({ size = 24, value }: IconRendererProps): ReactNode {
+function IconRenderer({ size = 24, value }: IconRendererProps): ReactNode {
     const iconSizeStyle = { "--icon-size": `${size}px` } as CSSProperties
     const normalizedValue = value?.trim() || "tabler:IconCube"
 

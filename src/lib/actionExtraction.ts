@@ -58,27 +58,6 @@ export interface ExtractedFunctionDefinition {
     displayIcon?: string
 }
 
-export interface ExtractedDefinitionDataType {
-    kind: "definitionDataType"
-    id: string
-    identifier: string
-    name: string
-    type: string
-    version?: string
-}
-
-export interface ExtractedConfiguration {
-    kind: "configuration"
-    id: string
-    identifier: string
-    name: string
-    type: string
-    optional?: boolean
-    hidden?: boolean
-}
-
-export type ExtractedActionDefinitionItem = ExtractedFlowType | ExtractedFunctionDefinition | ExtractedDefinitionDataType | ExtractedConfiguration
-
 type JsonRecord = Record<string, unknown>
 
 const isRecord = (value: unknown): value is JsonRecord => typeof value === "object" && value !== null && !Array.isArray(value)
@@ -262,55 +241,6 @@ export function extractFunctionDefinitionsFromJson(json: unknown): ExtractedFunc
     }
 
     return functionDefinitions
-}
-
-export function extractDefinitionDataTypesFromJson(json: unknown): ExtractedDefinitionDataType[] {
-    const definitionDataTypes: ExtractedDefinitionDataType[] = []
-    const definitionDataTypeItems = isRecord(json) ? getArray(json.definitionDataTypes) : getArray(json)
-
-    for (const definitionDataType of definitionDataTypeItems) {
-        if (!isRecord(definitionDataType)) continue
-
-        const id = getString(definitionDataType.id) || getString(definitionDataType.identifier)
-        const identifier = getString(definitionDataType.identifier) || id
-        if (!id || !identifier) continue
-
-        definitionDataTypes.push({
-            kind: "definitionDataType",
-            id,
-            identifier,
-            name: getPrimaryTranslation(definitionDataType.names) || getPrimaryTranslation(definitionDataType.name),
-            type: getString(definitionDataType.type),
-            version: getString(definitionDataType.version) || undefined,
-        })
-    }
-
-    return definitionDataTypes
-}
-
-export function extractConfigurationsFromJson(json: unknown): ExtractedConfiguration[] {
-    const configurations: ExtractedConfiguration[] = []
-    const configurationItems = isRecord(json) ? getArray(json.configurations) : getArray(json)
-
-    for (const configuration of configurationItems) {
-        if (!isRecord(configuration)) continue
-
-        const id = getString(configuration.id) || getString(configuration.identifier)
-        const identifier = getString(configuration.identifier) || id
-        if (!id || !identifier) continue
-
-        configurations.push({
-            kind: "configuration",
-            id,
-            identifier,
-            name: getPrimaryTranslation(configuration.names) || getPrimaryTranslation(configuration.name),
-            type: getString(configuration.type),
-            optional: getBoolean(configuration.optional),
-            hidden: getBoolean(configuration.hidden),
-        })
-    }
-
-    return configurations
 }
 
 export async function fetchMediaJson(media: Media | undefined): Promise<unknown> {

@@ -86,32 +86,3 @@ const AccordionItemComponent = ({ index, question, answer, isOpen, onToggle, cla
 }
 
 export const AccordionItem = React.memo(AccordionItemComponent)
-
-const BaseAccordionItemComponent = ({ index, question, answer, isOpen, onToggle, className, questionClassname, answerClassname }: FAQItemProps) => {
-    return (
-        <div className={cn("group relative z-10 w-full min-w-0 max-w-full cursor-pointer overflow-hidden rounded-2xl border border-white/5", isOpen && "border-white/10", className)}>
-            <button
-                type="button"
-                onClick={() => onToggle(index)}
-                aria-expanded={isOpen}
-                className={cn("relative z-10 flex w-full min-w-0 items-center justify-between gap-5 px-5 py-4 pr-4 text-left text-sm font-medium sm:text-base lg:text-lg", questionClassname)}
-            >
-                <p className={cn("min-w-0 flex-1 wrap-anywhere text-secondary", isOpen && "text-white")}>{question}</p>
-                <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center text-tertiary transition-transform", isOpen && "rotate-180")}>
-                    <IconChevronDown className="h-5 w-5" />
-                </div>
-            </button>
-            {isOpen && (
-                <div className="overflow-hidden" aria-hidden={!isOpen}>
-                    <div className="min-h-0">
-                        <div className={cn("relative z-10 px-5 pb-5 pt-1", answerClassname)}>
-                            <div className="min-w-0 max-w-full text-sm leading-7 text-tertiary sm:text-base wrap-anywhere">{answer}</div>
-                        </div>
-                    </div>
-                </div>
-            )}
-        </div>
-    )
-}
-
-export const BaseAccordionItem = React.memo(BaseAccordionItemComponent)

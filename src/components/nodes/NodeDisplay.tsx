@@ -32,7 +32,7 @@ export interface NodeItem {
     outline: boolean
 }
 
-export function NodeMessage({ segments }: { segments: NodeSegment[] }) {
+function NodeMessage({ segments }: { segments: NodeSegment[] }) {
     return segments.map((segment, index) => {
         switch (segment.type) {
             case "literal":
