@@ -16,6 +16,45 @@ export const ActionHeroBlock: Block = {
             },
         },
         {
+            name: "grainientColors",
+            label: "Grainient Colors",
+            type: "group",
+            fields: [
+                {
+                    name: "color1",
+                    label: "Fallback Color 1",
+                    type: "text",
+                    required: false,
+                    defaultValue: "#72f896",
+                    admin: {
+                        description: "Used when the action module does not define brandColor1.",
+                    },
+                },
+                {
+                    name: "color2",
+                    label: "Fallback Color 2",
+                    type: "text",
+                    required: false,
+                    defaultValue: "#7472f8",
+                    admin: {
+                        description: "Used when the action module does not define brandColor2.",
+                    },
+                },
+                {
+                    name: "color3",
+                    type: "text",
+                    required: false,
+                    defaultValue: "#13102d",
+                },
+                {
+                    name: "backgroundColor",
+                    type: "text",
+                    required: false,
+                    defaultValue: "#13102d",
+                },
+            ],
+        },
+        {
             name: "texts",
             label: "Texts",
             type: "array",

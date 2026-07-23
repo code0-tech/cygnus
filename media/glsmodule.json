@@ -1,0 +1,4048 @@
+{
+  "identifier": "gls-action",
+  "brandColor1": "#061ab1",
+  "brandColor2": "#FFD100",
+  "name": [
+    {
+      "code": "en-US",
+      "content": "GLS"
+    }
+  ],
+  "documentation": "GLS shipping integration: create, validate, cancel, reprint, and report shipments via the GLS ShipIt API.",
+  "author": "code0-tech",
+  "icon": "codezero:gls",
+  "version": "1.0.0",
+  "functionDefinitions": [
+    {
+      "runtimeName": "cancelShipment",
+      "parameterDefinitions": [
+        {
+          "runtimeName": "TrackID",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Track ID"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The Track ID of the shipment to cancel."
+            }
+          ],
+          "runtimeDefinitionName": "TrackID"
+        }
+      ],
+      "signature": "(TrackID: string): GLS_CANCEL_SHIPMENT_RESPONSE_DATA",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Cancel shipment"
+        }
+      ],
+      "description": [
+        {
+          "code": "en-US",
+          "content": "Cancels an existing shipment by its Track ID. Only possible if the parcel has not yet been scanned."
+        }
+      ],
+      "documentation": [
+        {
+          "code": "en-US",
+          "content": "Cancels an existing shipment by its Track ID. Only possible if the parcel has not yet been scanned."
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Cancel shipment"
+        }
+      ],
+      "version": "1.0.0",
+      "displayIcon": "codezero:gls",
+      "definitionSource": "action",
+      "runtimeDefinitionName": "cancelShipment"
+    },
+    {
+      "runtimeName": "getAllowedServices",
+      "parameterDefinitions": [
+        {
+          "runtimeName": "SourceCountryCode",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Source country code"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The ISO alpha-2 country code of the origin. For example, DE for Germany."
+            }
+          ],
+          "runtimeDefinitionName": "SourceCountryCode"
+        },
+        {
+          "runtimeName": "SourceZIPCode",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Source ZIP code"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The ZIP code of the origin. Max length is 10 characters."
+            }
+          ],
+          "runtimeDefinitionName": "SourceZIPCode"
+        },
+        {
+          "runtimeName": "DestinationCountryCode",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Destination country code"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The ISO alpha-2 country code of the destination. For example, FR for France."
+            }
+          ],
+          "runtimeDefinitionName": "DestinationCountryCode"
+        },
+        {
+          "runtimeName": "DestinationZIPCode",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Destination ZIP code"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The ZIP code of the destination. Max length is 10 characters."
+            }
+          ],
+          "runtimeDefinitionName": "DestinationZIPCode"
+        },
+        {
+          "runtimeName": "ContactID",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Contact ID"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The GLS contact ID to use for the request."
+            }
+          ],
+          "runtimeDefinitionName": "ContactID"
+        }
+      ],
+      "signature": "(SourceCountryCode: string, SourceZIPCode: string, DestinationCountryCode: string, DestinationZIPCode: string, ContactID?: string): GLS_ALLOWED_SERVICES_RESPONSE_DATA",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Get allowed services"
+        }
+      ],
+      "description": [
+        {
+          "code": "en-US",
+          "content": "Returns the GLS services available for a given origin/destination country and ZIP code combination."
+        }
+      ],
+      "documentation": [
+        {
+          "code": "en-US",
+          "content": "Returns the GLS services available for a given origin/destination country and ZIP code combination."
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Get allowed services"
+        }
+      ],
+      "version": "1.0.0",
+      "displayIcon": "codezero:gls",
+      "definitionSource": "action",
+      "runtimeDefinitionName": "getAllowedServices"
+    },
+    {
+      "runtimeName": "getEndOfDayReport",
+      "parameterDefinitions": [
+        {
+          "runtimeName": "date",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Date"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The dispatch date to retrieve shipments for, in ISO format (YYYY-MM-DD)."
+            }
+          ],
+          "runtimeDefinitionName": "date"
+        }
+      ],
+      "signature": "(date: string): GLS_END_OF_DAY_RESPONSE_DATA",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Get end of day report"
+        }
+      ],
+      "description": [
+        {
+          "code": "en-US",
+          "content": "Retrieves all shipments dispatched on a given date. Useful for reconciliation and end-of-day processing."
+        }
+      ],
+      "documentation": [
+        {
+          "code": "en-US",
+          "content": "Retrieves all shipments dispatched on a given date. Useful for reconciliation and end-of-day processing."
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Get end of day report"
+        }
+      ],
+      "version": "1.0.0",
+      "displayIcon": "codezero:gls",
+      "definitionSource": "action",
+      "runtimeDefinitionName": "getEndOfDayReport"
+    },
+    {
+      "runtimeName": "reprintParcel",
+      "parameterDefinitions": [
+        {
+          "runtimeName": "CreationDate",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Creation date"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The creation date of the parcel, in ISO format (YYYY-MM-DD)."
+            }
+          ],
+          "runtimeDefinitionName": "CreationDate"
+        },
+        {
+          "runtimeName": "TemplateSet",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Template set"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The template set to use for the reprinted label."
+            }
+          ],
+          "runtimeDefinitionName": "TemplateSet"
+        },
+        {
+          "runtimeName": "LabelFormat",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Label format"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The format of the reprinted label."
+            }
+          ],
+          "runtimeDefinitionName": "LabelFormat"
+        },
+        {
+          "runtimeName": "TrackID",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Track ID"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The Track ID of the parcel to reprint. Max length is 8 characters."
+            }
+          ],
+          "runtimeDefinitionName": "TrackID"
+        },
+        {
+          "runtimeName": "ParcelNumber",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Parcel number"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The parcel number of the parcel to reprint."
+            }
+          ],
+          "runtimeDefinitionName": "ParcelNumber"
+        },
+        {
+          "runtimeName": "ShipmentReference",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Shipment reference"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The shipment reference of the parcel to reprint. Max length is 40 characters."
+            }
+          ],
+          "runtimeDefinitionName": "ShipmentReference"
+        },
+        {
+          "runtimeName": "ShipmentUnitReference",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Shipment unit reference"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The shipment unit reference of the parcel to reprint. Max length is 40 characters."
+            }
+          ],
+          "runtimeDefinitionName": "ShipmentUnitReference"
+        },
+        {
+          "runtimeName": "PartnerParcelNumber",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Partner parcel number"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The partner parcel number of the parcel to reprint. Max length is 50 characters."
+            }
+          ],
+          "runtimeDefinitionName": "PartnerParcelNumber"
+        }
+      ],
+      "signature": "(CreationDate: string, TemplateSet: \"NONE\"|\"D_200\"|\"PF_4_I\"|\"PF_4_I_200\"|\"PF_4_I_300\"|\"PF_8_D_200\"|\"T_200_BF\"|\"T_300_BF\"|\"ZPL_200\"|\"ZPL_200_TRACKID_EAN_128\"|\"ZPL_200_TRACKID_CODE_39\"|\"ZPL_200_REFNO_EAN_128\"|\"ZPL_200_REFNO_CODE_39\"|\"ZPL_300\"|\"ZPL_300_TRACKID_EAN_128\"|\"ZPL_300_TRACKID_CODE_39\"|\"ZPL_300_REFNO_EAN_128\"|\"ZPL_300_REFNO_CODE_39\", LabelFormat: \"PDF\"|\"ZEBRA\"|\"INTERMEC\"|\"DATAMAX\"|\"TOSHIBA\"|\"PNG\", TrackID?: string, ParcelNumber?: number, ShipmentReference?: string, ShipmentUnitReference?: string, PartnerParcelNumber?: string): GLS_REPRINT_PARCEL_RESPONSE_DATA",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Reprint parcel"
+        }
+      ],
+      "description": [
+        {
+          "code": "en-US",
+          "content": "Reprints the label for an existing parcel.\nUse this if the original label is damaged, lost, or needs to be printed in a different format."
+        }
+      ],
+      "documentation": [
+        {
+          "code": "en-US",
+          "content": "Reprints the label for an existing parcel.\nUse this if the original label is damaged, lost, or needs to be printed in a different format."
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Reprint parcel"
+        }
+      ],
+      "version": "1.0.0",
+      "displayIcon": "codezero:gls",
+      "definitionSource": "action",
+      "runtimeDefinitionName": "reprintParcel"
+    },
+    {
+      "runtimeName": "updateParcelWeight",
+      "parameterDefinitions": [
+        {
+          "runtimeName": "Weight",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Weight"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The new weight of the parcel in kilograms. Minimum is 0.1."
+            }
+          ],
+          "runtimeDefinitionName": "Weight"
+        },
+        {
+          "runtimeName": "TrackID",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Track ID"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The Track ID of the parcel to update. Max length is 8 characters."
+            }
+          ],
+          "runtimeDefinitionName": "TrackID"
+        },
+        {
+          "runtimeName": "ParcelNumber",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Parcel number"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The parcel number of the parcel to update."
+            }
+          ],
+          "runtimeDefinitionName": "ParcelNumber"
+        },
+        {
+          "runtimeName": "ShipmentReference",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Shipment reference"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The shipment reference of the parcel to update. Max length is 40 characters."
+            }
+          ],
+          "runtimeDefinitionName": "ShipmentReference"
+        },
+        {
+          "runtimeName": "ShipmentUnitReference",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Shipment unit reference"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The shipment unit reference of the parcel to update. Max length is 40 characters."
+            }
+          ],
+          "runtimeDefinitionName": "ShipmentUnitReference"
+        },
+        {
+          "runtimeName": "PartnerParcelNumber",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Partner parcel number"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The partner parcel number of the parcel to update. Max length is 50 characters."
+            }
+          ],
+          "runtimeDefinitionName": "PartnerParcelNumber"
+        }
+      ],
+      "signature": "(Weight: number, TrackID?: string, ParcelNumber?: number, ShipmentReference?: string, ShipmentUnitReference?: string, PartnerParcelNumber?: string): GLS_UPDATE_PARCEL_WEIGHT_RESPONSE_DATA",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Update parcel weight"
+        }
+      ],
+      "description": [
+        {
+          "code": "en-US",
+          "content": "Updates the weight of an already-created parcel. Useful when the final weight is only known after packaging."
+        }
+      ],
+      "documentation": [
+        {
+          "code": "en-US",
+          "content": "Updates the weight of an already-created parcel. Useful when the final weight is only known after packaging."
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Update parcel weight"
+        }
+      ],
+      "version": "1.0.0",
+      "displayIcon": "codezero:gls",
+      "definitionSource": "action",
+      "runtimeDefinitionName": "updateParcelWeight"
+    },
+    {
+      "runtimeName": "validateShipment",
+      "parameterDefinitions": [
+        {
+          "runtimeName": "Shipment",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Shipment"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The shipment to validate."
+            }
+          ],
+          "runtimeDefinitionName": "Shipment"
+        }
+      ],
+      "signature": "(Shipment: GLS_SHIPMENT): GLS_VALIDATE_SHIPMENT_RESPONSE_DATA",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Validate shipment"
+        }
+      ],
+      "description": [
+        {
+          "code": "en-US",
+          "content": "Validates a shipment against the GLS API without creating it.\nUse this before `createShipment` functions to catch errors early."
+        }
+      ],
+      "documentation": [
+        {
+          "code": "en-US",
+          "content": "Validates a shipment against the GLS API without creating it.\nUse this before `createShipment` functions to catch errors early."
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Validate shipment"
+        }
+      ],
+      "version": "1.0.0",
+      "displayIcon": "codezero:gls",
+      "definitionSource": "action",
+      "runtimeDefinitionName": "validateShipment"
+    },
+    {
+      "runtimeName": "createFlexDeliveryShipment",
+      "parameterDefinitions": [
+        {
+          "runtimeName": "shipment",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Shipment"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The shipment for which to create the parcels. Must include all necessary information and services for the shipment."
+            }
+          ],
+          "runtimeDefinitionName": "shipment"
+        },
+        {
+          "runtimeName": "printingOptions",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Printing options"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The printing options for the shipment. Specifies options for the labels to be printed for the shipment."
+            }
+          ],
+          "runtimeDefinitionName": "printingOptions"
+        },
+        {
+          "runtimeName": "customContent",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Custom content"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The custom content for the shipment. Specifies options for custom content to be printed on the labels."
+            }
+          ],
+          "runtimeDefinitionName": "customContent"
+        },
+        {
+          "runtimeName": "returnOptions",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Return options"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The return options for the shipment. Specifies options for return shipments."
+            }
+          ],
+          "runtimeDefinitionName": "returnOptions"
+        }
+      ],
+      "signature": "(shipment: GLS_SHIPMENT_WITHOUT_SERVICES, printingOptions: GLS_PRINTING_OPTIONS, customContent?: GLS_CUSTOM_CONTENT, returnOptions?: GLS_RETURN_OPTIONS): GLS_CREATE_PARCELS_RESPONSE",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Send flex delivery shipment"
+        }
+      ],
+      "description": [
+        {
+          "code": "en-US",
+          "content": "Creates a shipment with flexible delivery - the recipient can redirect or reschedule delivery."
+        }
+      ],
+      "documentation": [
+        {
+          "code": "en-US",
+          "content": "Creates a shipment with flexible delivery - the recipient can redirect or reschedule delivery."
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Send flex delivery shipment"
+        }
+      ],
+      "version": "1.0.0",
+      "displayIcon": "codezero:gls",
+      "definitionSource": "action",
+      "runtimeDefinitionName": "createFlexDeliveryShipment"
+    },
+    {
+      "runtimeName": "createAddress",
+      "parameterDefinitions": [
+        {
+          "runtimeName": "Name1",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Name 1"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The name of the recipient or company. Max length is 40 characters."
+            }
+          ],
+          "runtimeDefinitionName": "Name1"
+        },
+        {
+          "runtimeName": "CountryCode",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Country code"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The ISO alpha-2 country code. For example, DE for Germany or FR for France."
+            }
+          ],
+          "runtimeDefinitionName": "CountryCode"
+        },
+        {
+          "runtimeName": "City",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "City"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The city of the address. Max length is 40 characters."
+            }
+          ],
+          "runtimeDefinitionName": "City"
+        },
+        {
+          "runtimeName": "Street",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Street"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The street name of the address. Min length is 4 characters."
+            }
+          ],
+          "runtimeDefinitionName": "Street"
+        },
+        {
+          "runtimeName": "ZIPCode",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "ZIP code"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The ZIP code of the address. Max length is 10 characters."
+            }
+          ],
+          "runtimeDefinitionName": "ZIPCode"
+        },
+        {
+          "runtimeName": "Name2",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Name 2"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "Additional name information. Max length is 40 characters."
+            }
+          ],
+          "runtimeDefinitionName": "Name2"
+        },
+        {
+          "runtimeName": "Name3",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Name 3"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "Additional name information. Max length is 40 characters."
+            }
+          ],
+          "runtimeDefinitionName": "Name3"
+        },
+        {
+          "runtimeName": "Province",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Province/State"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The province or state of the address. Max length is 40 characters."
+            }
+          ],
+          "runtimeDefinitionName": "Province"
+        },
+        {
+          "runtimeName": "StreetNumber",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Street number"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The street number of the address. Max length is 40 characters."
+            }
+          ],
+          "runtimeDefinitionName": "StreetNumber"
+        },
+        {
+          "runtimeName": "ContactPerson",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Contact person"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The contact person for the address. Max length is 40 characters."
+            }
+          ],
+          "runtimeDefinitionName": "ContactPerson"
+        },
+        {
+          "runtimeName": "FixedLinePhonenumber",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Fixed line phone number"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The fixed line phone number for the address. Max length is 35 characters."
+            }
+          ],
+          "runtimeDefinitionName": "FixedLinePhonenumber"
+        },
+        {
+          "runtimeName": "MobilePhoneNumber",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Mobile phone number"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The mobile phone number for the address. Max length is 35 characters."
+            }
+          ],
+          "runtimeDefinitionName": "MobilePhoneNumber"
+        },
+        {
+          "runtimeName": "Email",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Email"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The email address for the address. Max length is 80 characters."
+            }
+          ],
+          "runtimeDefinitionName": "Email"
+        }
+      ],
+      "signature": "(Name1: string, CountryCode: string, City: string, Street: string, ZIPCode: string, Name2?: string, Name3?: string, Province?: string, StreetNumber?: string, ContactPerson?: string, FixedLinePhonenumber?: string, MobilePhoneNumber?: string, Email?: string): GLS_ADDRESS",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Create GLS address object"
+        }
+      ],
+      "description": [
+        {
+          "code": "en-US",
+          "content": "Creates a GLS address object which can be used for shipments."
+        }
+      ],
+      "documentation": [
+        {
+          "code": "en-US",
+          "content": "Creates a GLS address object (`GLS_ADDRESS`) for use in shipments as consignee, shipper, or return address."
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Create GLS address object for ${Name1}"
+        }
+      ],
+      "version": "1.0.0",
+      "displayIcon": "codezero:gls",
+      "definitionSource": "action",
+      "runtimeDefinitionName": "createAddress"
+    },
+    {
+      "runtimeName": "createConsignee",
+      "parameterDefinitions": [
+        {
+          "runtimeName": "Address",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Address"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The address of the consignee."
+            }
+          ],
+          "runtimeDefinitionName": "Address"
+        },
+        {
+          "runtimeName": "ConsigneeID",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Consignee ID"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "A customer-defined identifier for the consignee. Max 40 characters."
+            }
+          ],
+          "runtimeDefinitionName": "ConsigneeID"
+        },
+        {
+          "runtimeName": "CostCenter",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Cost center"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The cost center to assign to the consignee. Max 80 characters."
+            }
+          ],
+          "runtimeDefinitionName": "CostCenter"
+        },
+        {
+          "runtimeName": "Category",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Category"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The category of the consignee. Can be either BUSINESS or PRIVATE."
+            }
+          ],
+          "runtimeDefinitionName": "Category"
+        }
+      ],
+      "signature": "(Address: GLS_ADDRESS, ConsigneeID?: string, CostCenter?: string, Category?: \"BUSINESS\"|\"PRIVATE\"): GLS_CONSIGNEE",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Create GLS consignee object"
+        }
+      ],
+      "description": [
+        {
+          "code": "en-US",
+          "content": "Creates a GLS consignee (recipient) object for use in shipments."
+        }
+      ],
+      "documentation": [
+        {
+          "code": "en-US",
+          "content": "Creates a GLS consignee (recipient) object for use in shipments."
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Create GLS consignee object with address ${Address}"
+        }
+      ],
+      "version": "1.0.0",
+      "displayIcon": "codezero:gls",
+      "definitionSource": "action",
+      "runtimeDefinitionName": "createConsignee"
+    },
+    {
+      "runtimeName": "createCustomContent",
+      "parameterDefinitions": [
+        {
+          "runtimeName": "barcodeContentType",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Barcode content type"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "Type of content encoded in the barcode (TRACK_ID or GLS_SHIPMENT_REFERENCE)."
+            }
+          ],
+          "runtimeDefinitionName": "barcodeContentType"
+        },
+        {
+          "runtimeName": "customerLogo",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Customer logo"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "Base64-encoded customer logo to print on the label."
+            }
+          ],
+          "runtimeDefinitionName": "customerLogo"
+        },
+        {
+          "runtimeName": "hideShipperAddress",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Hide shipper address"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "Whether to hide the shipper address on the label."
+            }
+          ],
+          "runtimeDefinitionName": "hideShipperAddress"
+        },
+        {
+          "runtimeName": "barcodeType",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Barcode type"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "Type of barcode to use (EAN_128 or CODE_39)."
+            }
+          ],
+          "runtimeDefinitionName": "barcodeType"
+        },
+        {
+          "runtimeName": "barcode",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Barcode"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "Barcode value to print on the label."
+            }
+          ],
+          "runtimeDefinitionName": "barcode"
+        }
+      ],
+      "signature": "(barcodeContentType?: \"TRACK_ID\"|\"GLS_SHIPMENT_REFERENCE\", customerLogo?: string, hideShipperAddress?: boolean, barcodeType?: \"EAN_128\"|\"CODE_39\", barcode?: string): GLS_CUSTOM_CONTENT",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Create GLS custom label content"
+        }
+      ],
+      "description": [
+        {
+          "code": "en-US",
+          "content": "Creates a GLS custom content object for shipment labels."
+        }
+      ],
+      "documentation": [
+        {
+          "code": "en-US",
+          "content": "Creates custom content settings for GLS labels, including logos and barcodes."
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Create GLS custom label content"
+        }
+      ],
+      "version": "1.0.0",
+      "displayIcon": "codezero:gls",
+      "definitionSource": "action",
+      "runtimeDefinitionName": "createCustomContent"
+    },
+    {
+      "runtimeName": "createPrintingOptions",
+      "parameterDefinitions": [
+        {
+          "runtimeName": "TemplateSet",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Template set"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The label template set to use for return labels. Required together with LabelFormat to generate return labels."
+            }
+          ],
+          "runtimeDefinitionName": "TemplateSet"
+        },
+        {
+          "runtimeName": "LabelFormat",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Label format"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The file format for return labels. Required together with TemplateSet to generate return labels."
+            }
+          ],
+          "runtimeDefinitionName": "LabelFormat"
+        },
+        {
+          "runtimeName": "UseDefault",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Use default"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "Identifier of the default printing profile to use. Max 7 characters."
+            }
+          ],
+          "runtimeDefinitionName": "UseDefault"
+        },
+        {
+          "runtimeName": "LabelPrinter",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Label printer"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "Name of the printer to use for shipment labels. Max 255 characters."
+            }
+          ],
+          "runtimeDefinitionName": "LabelPrinter"
+        },
+        {
+          "runtimeName": "DocumentPrinter",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Document printer"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "Name of the printer to use for documents. Max 255 characters."
+            }
+          ],
+          "runtimeDefinitionName": "DocumentPrinter"
+        }
+      ],
+      "signature": "(TemplateSet?: \"NONE\"|\"D_200\"|\"PF_4_I\"|\"PF_4_I_200\"|\"PF_4_I_300\"|\"PF_8_D_200\"|\"T_200_BF\"|\"T_300_BF\"|\"ZPL_200\"|\"ZPL_200_TRACKID_EAN_128\"|\"ZPL_200_TRACKID_CODE_39\"|\"ZPL_200_REFNO_EAN_128\"|\"ZPL_200_REFNO_CODE_39\"|\"ZPL_300\"|\"ZPL_300_TRACKID_EAN_128\"|\"ZPL_300_TRACKID_CODE_39\"|\"ZPL_300_REFNO_EAN_128\"|\"ZPL_300_REFNO_CODE_39\", LabelFormat?: \"PDF\"|\"ZEBRA\"|\"INTERMEC\"|\"DATAMAX\"|\"TOSHIBA\"|\"PNG\", UseDefault?: string, LabelPrinter?: string, DocumentPrinter?: string): GLS_PRINTING_OPTIONS",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Create GLS printing settings"
+        }
+      ],
+      "description": [
+        {
+          "code": "en-US",
+          "content": "Creates a GLS printing options object that controls how shipment labels are generated and printed."
+        }
+      ],
+      "documentation": [
+        {
+          "code": "en-US",
+          "content": "Creates a GLS printing options object that controls how shipment labels are generated and printed."
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Create GLS printing settings in format ${TemplateSet} as ${LabelFormat}"
+        }
+      ],
+      "version": "1.0.0",
+      "displayIcon": "codezero:gls",
+      "definitionSource": "action",
+      "runtimeDefinitionName": "createPrintingOptions"
+    },
+    {
+      "runtimeName": "createShipment",
+      "parameterDefinitions": [
+        {
+          "runtimeName": "Consignee",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Consignee"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The recipient of the shipment."
+            }
+          ],
+          "runtimeDefinitionName": "Consignee"
+        },
+        {
+          "runtimeName": "ShipmentUnit",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Shipment unit"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "One or more parcels included in this shipment. At least one unit is required."
+            }
+          ],
+          "runtimeDefinitionName": "ShipmentUnit"
+        },
+        {
+          "runtimeName": "Product",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Product"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The GLS product type for the shipment. Defaults to PARCEL."
+            }
+          ],
+          "runtimeDefinitionName": "Product"
+        },
+        {
+          "runtimeName": "ShipmentReference",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Shipment reference"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "A customer-defined reference for the shipment. Max 40 characters."
+            }
+          ],
+          "runtimeDefinitionName": "ShipmentReference"
+        },
+        {
+          "runtimeName": "ShippingDate",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Shipment date"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The date the shipment is handed over to GLS, in ISO 8601 date format (YYYY-MM-DD)."
+            }
+          ],
+          "runtimeDefinitionName": "ShippingDate"
+        },
+        {
+          "runtimeName": "IncotermCode",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Incoterm code"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "Numeric incoterm code for the shipment. Max value is 99."
+            }
+          ],
+          "runtimeDefinitionName": "IncotermCode"
+        },
+        {
+          "runtimeName": "Identifier",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Identifier"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "An additional customer-defined identifier for the shipment. Max 40 characters."
+            }
+          ],
+          "runtimeDefinitionName": "Identifier"
+        },
+        {
+          "runtimeName": "ExpressAltDeliveryAllowed",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Express alternative delivery allowed"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "Whether an alternative delivery is permitted for express shipments."
+            }
+          ],
+          "runtimeDefinitionName": "ExpressAltDeliveryAllowed"
+        },
+        {
+          "runtimeName": "Shipper",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Shipper"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The shipper for this shipment. If not provided, the default shipper from the action configuration is used."
+            }
+          ],
+          "runtimeDefinitionName": "Shipper"
+        },
+        {
+          "runtimeName": "Carrier",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Carrier"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The carrier to use for the shipment. Currently only ROYALMAIL is supported."
+            }
+          ],
+          "runtimeDefinitionName": "Carrier"
+        },
+        {
+          "runtimeName": "Return",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Return address"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The return address for the shipment. If provided, a return label is generated."
+            }
+          ],
+          "runtimeDefinitionName": "Return"
+        }
+      ],
+      "signature": "(Consignee: GLS_CONSIGNEE, ShipmentUnit: GLS_SHIPMENT_UNIT, Product?: \"PARCEL\"|\"EXPRESS\", ShipmentReference?: string, ShippingDate?: string, IncotermCode?: number, Identifier?: string, ExpressAltDeliveryAllowed?: boolean, Shipper?: GLS_SHIPPER, Carrier?: \"ROYALMAIL\", Return?: GLS_ADDRESS): GLS_SHIPMENT_WITHOUT_SERVICES",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Create GLS shipment object"
+        }
+      ],
+      "description": [
+        {
+          "code": "en-US",
+          "content": "Creates a GLS shipment object without services for use with the create shipment functions."
+        }
+      ],
+      "documentation": [
+        {
+          "code": "en-US",
+          "content": "Creates a GLS shipment object without services for use with the create shipment functions."
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Create GLS shipment to consignee ${Consignee}"
+        }
+      ],
+      "version": "1.0.0",
+      "displayIcon": "codezero:gls",
+      "definitionSource": "action",
+      "runtimeDefinitionName": "createShipment"
+    },
+    {
+      "runtimeName": "createShipmentUnit",
+      "parameterDefinitions": [
+        {
+          "runtimeName": "weight",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Weight (kg)"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The weight of the shipment unit in kilograms. Must be a positive number and greater than 0.10 and less than 99."
+            }
+          ],
+          "runtimeDefinitionName": "weight"
+        },
+        {
+          "runtimeName": "shipmentUnitReference",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Shipment unit reference"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The reference for the shipment unit. Max length is 40 characters."
+            }
+          ],
+          "runtimeDefinitionName": "shipmentUnitReference"
+        },
+        {
+          "runtimeName": "partnerParcelNumber",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Partner parcel number"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The partner parcel number for the shipment unit. Max length is 50 characters."
+            }
+          ],
+          "runtimeDefinitionName": "partnerParcelNumber"
+        },
+        {
+          "runtimeName": "note1",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Note 1"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "Note 1 for the shipment unit. Max length is 50 characters."
+            }
+          ],
+          "runtimeDefinitionName": "note1"
+        },
+        {
+          "runtimeName": "note2",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Note 2"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "Note 2 for the shipment unit. Max length is 50 characters."
+            }
+          ],
+          "runtimeDefinitionName": "note2"
+        },
+        {
+          "runtimeName": "shipmentUnitService",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Shipment unit service"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The service associated with the shipment unit."
+            }
+          ],
+          "runtimeDefinitionName": "shipmentUnitService"
+        }
+      ],
+      "signature": "(weight: number, shipmentUnitReference?: string, partnerParcelNumber?: string, note1?: string, note2?: string, shipmentUnitService?: GLS_UNIT_SERVICE): GLS_SHIPMENT_UNIT",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Create GLS shipment unit object"
+        }
+      ],
+      "description": [
+        {
+          "code": "en-US",
+          "content": "Creates a GLS shipment unit object which can be used for shipments."
+        }
+      ],
+      "documentation": [
+        {
+          "code": "en-US",
+          "content": "Creates a GLS shipment unit (an individual parcel within a shipment)."
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Create GLS shipment unit object of weight ${weight}"
+        }
+      ],
+      "version": "1.0.0",
+      "displayIcon": "codezero:gls",
+      "definitionSource": "action",
+      "runtimeDefinitionName": "createShipmentUnit"
+    },
+    {
+      "runtimeName": "createShipper",
+      "parameterDefinitions": [
+        {
+          "runtimeName": "Address",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Address"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The primary address of the shipper."
+            }
+          ],
+          "runtimeDefinitionName": "Address"
+        },
+        {
+          "runtimeName": "AlternativeShipperAddress",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Alternative shipper address"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "An alternative address for the shipper, used when the shipment originates from a different location."
+            }
+          ],
+          "runtimeDefinitionName": "AlternativeShipperAddress"
+        }
+      ],
+      "signature": "(Address?: GLS_ADDRESS, AlternativeShipperAddress?: GLS_ADDRESS): GLS_SHIPPER",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Create GLS shipper object"
+        }
+      ],
+      "description": [
+        {
+          "code": "en-US",
+          "content": "Creates a GLS shipper object for use in shipments."
+        }
+      ],
+      "documentation": [
+        {
+          "code": "en-US",
+          "content": "Creates a GLS shipper object for use in shipments."
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Create GLS shipper object"
+        }
+      ],
+      "version": "1.0.0",
+      "displayIcon": "codezero:gls",
+      "definitionSource": "action",
+      "runtimeDefinitionName": "createShipper"
+    }
+  ],
+  "runtimeFunctionDefinitions": [
+    {
+      "runtimeName": "cancelShipment",
+      "runtimeParameterDefinitions": [
+        {
+          "runtimeName": "TrackID",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Track ID"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The Track ID of the shipment to cancel."
+            }
+          ]
+        }
+      ],
+      "signature": "(TrackID: string): GLS_CANCEL_SHIPMENT_RESPONSE_DATA",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Cancel shipment"
+        }
+      ],
+      "description": [
+        {
+          "code": "en-US",
+          "content": "Cancels an existing shipment by its Track ID. Only possible if the parcel has not yet been scanned."
+        }
+      ],
+      "documentation": [
+        {
+          "code": "en-US",
+          "content": "Cancels an existing shipment by its Track ID. Only possible if the parcel has not yet been scanned."
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Cancel shipment"
+        }
+      ],
+      "version": "1.0.0",
+      "displayIcon": "codezero:gls",
+      "definitionSource": "action"
+    },
+    {
+      "runtimeName": "getAllowedServices",
+      "runtimeParameterDefinitions": [
+        {
+          "runtimeName": "SourceCountryCode",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Source country code"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The ISO alpha-2 country code of the origin. For example, DE for Germany."
+            }
+          ]
+        },
+        {
+          "runtimeName": "SourceZIPCode",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Source ZIP code"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The ZIP code of the origin. Max length is 10 characters."
+            }
+          ]
+        },
+        {
+          "runtimeName": "DestinationCountryCode",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Destination country code"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The ISO alpha-2 country code of the destination. For example, FR for France."
+            }
+          ]
+        },
+        {
+          "runtimeName": "DestinationZIPCode",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Destination ZIP code"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The ZIP code of the destination. Max length is 10 characters."
+            }
+          ]
+        },
+        {
+          "runtimeName": "ContactID",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Contact ID"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The GLS contact ID to use for the request."
+            }
+          ]
+        }
+      ],
+      "signature": "(SourceCountryCode: string, SourceZIPCode: string, DestinationCountryCode: string, DestinationZIPCode: string, ContactID?: string): GLS_ALLOWED_SERVICES_RESPONSE_DATA",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Get allowed services"
+        }
+      ],
+      "description": [
+        {
+          "code": "en-US",
+          "content": "Returns the GLS services available for a given origin/destination country and ZIP code combination."
+        }
+      ],
+      "documentation": [
+        {
+          "code": "en-US",
+          "content": "Returns the GLS services available for a given origin/destination country and ZIP code combination."
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Get allowed services"
+        }
+      ],
+      "version": "1.0.0",
+      "displayIcon": "codezero:gls",
+      "definitionSource": "action"
+    },
+    {
+      "runtimeName": "getEndOfDayReport",
+      "runtimeParameterDefinitions": [
+        {
+          "runtimeName": "date",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Date"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The dispatch date to retrieve shipments for, in ISO format (YYYY-MM-DD)."
+            }
+          ]
+        }
+      ],
+      "signature": "(date: string): GLS_END_OF_DAY_RESPONSE_DATA",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Get end of day report"
+        }
+      ],
+      "description": [
+        {
+          "code": "en-US",
+          "content": "Retrieves all shipments dispatched on a given date. Useful for reconciliation and end-of-day processing."
+        }
+      ],
+      "documentation": [
+        {
+          "code": "en-US",
+          "content": "Retrieves all shipments dispatched on a given date. Useful for reconciliation and end-of-day processing."
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Get end of day report"
+        }
+      ],
+      "version": "1.0.0",
+      "displayIcon": "codezero:gls",
+      "definitionSource": "action"
+    },
+    {
+      "runtimeName": "reprintParcel",
+      "runtimeParameterDefinitions": [
+        {
+          "runtimeName": "CreationDate",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Creation date"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The creation date of the parcel, in ISO format (YYYY-MM-DD)."
+            }
+          ]
+        },
+        {
+          "runtimeName": "TemplateSet",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Template set"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The template set to use for the reprinted label."
+            }
+          ]
+        },
+        {
+          "runtimeName": "LabelFormat",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Label format"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The format of the reprinted label."
+            }
+          ]
+        },
+        {
+          "runtimeName": "TrackID",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Track ID"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The Track ID of the parcel to reprint. Max length is 8 characters."
+            }
+          ]
+        },
+        {
+          "runtimeName": "ParcelNumber",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Parcel number"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The parcel number of the parcel to reprint."
+            }
+          ]
+        },
+        {
+          "runtimeName": "ShipmentReference",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Shipment reference"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The shipment reference of the parcel to reprint. Max length is 40 characters."
+            }
+          ]
+        },
+        {
+          "runtimeName": "ShipmentUnitReference",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Shipment unit reference"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The shipment unit reference of the parcel to reprint. Max length is 40 characters."
+            }
+          ]
+        },
+        {
+          "runtimeName": "PartnerParcelNumber",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Partner parcel number"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The partner parcel number of the parcel to reprint. Max length is 50 characters."
+            }
+          ]
+        }
+      ],
+      "signature": "(CreationDate: string, TemplateSet: \"NONE\"|\"D_200\"|\"PF_4_I\"|\"PF_4_I_200\"|\"PF_4_I_300\"|\"PF_8_D_200\"|\"T_200_BF\"|\"T_300_BF\"|\"ZPL_200\"|\"ZPL_200_TRACKID_EAN_128\"|\"ZPL_200_TRACKID_CODE_39\"|\"ZPL_200_REFNO_EAN_128\"|\"ZPL_200_REFNO_CODE_39\"|\"ZPL_300\"|\"ZPL_300_TRACKID_EAN_128\"|\"ZPL_300_TRACKID_CODE_39\"|\"ZPL_300_REFNO_EAN_128\"|\"ZPL_300_REFNO_CODE_39\", LabelFormat: \"PDF\"|\"ZEBRA\"|\"INTERMEC\"|\"DATAMAX\"|\"TOSHIBA\"|\"PNG\", TrackID?: string, ParcelNumber?: number, ShipmentReference?: string, ShipmentUnitReference?: string, PartnerParcelNumber?: string): GLS_REPRINT_PARCEL_RESPONSE_DATA",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Reprint parcel"
+        }
+      ],
+      "description": [
+        {
+          "code": "en-US",
+          "content": "Reprints the label for an existing parcel.\nUse this if the original label is damaged, lost, or needs to be printed in a different format."
+        }
+      ],
+      "documentation": [
+        {
+          "code": "en-US",
+          "content": "Reprints the label for an existing parcel.\nUse this if the original label is damaged, lost, or needs to be printed in a different format."
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Reprint parcel"
+        }
+      ],
+      "version": "1.0.0",
+      "displayIcon": "codezero:gls",
+      "definitionSource": "action"
+    },
+    {
+      "runtimeName": "updateParcelWeight",
+      "runtimeParameterDefinitions": [
+        {
+          "runtimeName": "Weight",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Weight"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The new weight of the parcel in kilograms. Minimum is 0.1."
+            }
+          ]
+        },
+        {
+          "runtimeName": "TrackID",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Track ID"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The Track ID of the parcel to update. Max length is 8 characters."
+            }
+          ]
+        },
+        {
+          "runtimeName": "ParcelNumber",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Parcel number"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The parcel number of the parcel to update."
+            }
+          ]
+        },
+        {
+          "runtimeName": "ShipmentReference",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Shipment reference"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The shipment reference of the parcel to update. Max length is 40 characters."
+            }
+          ]
+        },
+        {
+          "runtimeName": "ShipmentUnitReference",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Shipment unit reference"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The shipment unit reference of the parcel to update. Max length is 40 characters."
+            }
+          ]
+        },
+        {
+          "runtimeName": "PartnerParcelNumber",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Partner parcel number"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The partner parcel number of the parcel to update. Max length is 50 characters."
+            }
+          ]
+        }
+      ],
+      "signature": "(Weight: number, TrackID?: string, ParcelNumber?: number, ShipmentReference?: string, ShipmentUnitReference?: string, PartnerParcelNumber?: string): GLS_UPDATE_PARCEL_WEIGHT_RESPONSE_DATA",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Update parcel weight"
+        }
+      ],
+      "description": [
+        {
+          "code": "en-US",
+          "content": "Updates the weight of an already-created parcel. Useful when the final weight is only known after packaging."
+        }
+      ],
+      "documentation": [
+        {
+          "code": "en-US",
+          "content": "Updates the weight of an already-created parcel. Useful when the final weight is only known after packaging."
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Update parcel weight"
+        }
+      ],
+      "version": "1.0.0",
+      "displayIcon": "codezero:gls",
+      "definitionSource": "action"
+    },
+    {
+      "runtimeName": "validateShipment",
+      "runtimeParameterDefinitions": [
+        {
+          "runtimeName": "Shipment",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Shipment"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The shipment to validate."
+            }
+          ]
+        }
+      ],
+      "signature": "(Shipment: GLS_SHIPMENT): GLS_VALIDATE_SHIPMENT_RESPONSE_DATA",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Validate shipment"
+        }
+      ],
+      "description": [
+        {
+          "code": "en-US",
+          "content": "Validates a shipment against the GLS API without creating it.\nUse this before `createShipment` functions to catch errors early."
+        }
+      ],
+      "documentation": [
+        {
+          "code": "en-US",
+          "content": "Validates a shipment against the GLS API without creating it.\nUse this before `createShipment` functions to catch errors early."
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Validate shipment"
+        }
+      ],
+      "version": "1.0.0",
+      "displayIcon": "codezero:gls",
+      "definitionSource": "action"
+    },
+    {
+      "runtimeName": "createFlexDeliveryShipment",
+      "runtimeParameterDefinitions": [
+        {
+          "runtimeName": "shipment",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Shipment"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The shipment for which to create the parcels. Must include all necessary information and services for the shipment."
+            }
+          ]
+        },
+        {
+          "runtimeName": "printingOptions",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Printing options"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The printing options for the shipment. Specifies options for the labels to be printed for the shipment."
+            }
+          ]
+        },
+        {
+          "runtimeName": "customContent",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Custom content"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The custom content for the shipment. Specifies options for custom content to be printed on the labels."
+            }
+          ]
+        },
+        {
+          "runtimeName": "returnOptions",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Return options"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The return options for the shipment. Specifies options for return shipments."
+            }
+          ]
+        }
+      ],
+      "signature": "(shipment: GLS_SHIPMENT_WITHOUT_SERVICES, printingOptions: GLS_PRINTING_OPTIONS, customContent?: GLS_CUSTOM_CONTENT, returnOptions?: GLS_RETURN_OPTIONS): GLS_CREATE_PARCELS_RESPONSE",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Send flex delivery shipment"
+        }
+      ],
+      "description": [
+        {
+          "code": "en-US",
+          "content": "Creates a shipment with flexible delivery - the recipient can redirect or reschedule delivery."
+        }
+      ],
+      "documentation": [
+        {
+          "code": "en-US",
+          "content": "Creates a shipment with flexible delivery - the recipient can redirect or reschedule delivery."
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Send flex delivery shipment"
+        }
+      ],
+      "version": "1.0.0",
+      "displayIcon": "codezero:gls",
+      "definitionSource": "action"
+    },
+    {
+      "runtimeName": "createAddress",
+      "runtimeParameterDefinitions": [
+        {
+          "runtimeName": "Name1",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Name 1"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The name of the recipient or company. Max length is 40 characters."
+            }
+          ]
+        },
+        {
+          "runtimeName": "CountryCode",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Country code"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The ISO alpha-2 country code. For example, DE for Germany or FR for France."
+            }
+          ]
+        },
+        {
+          "runtimeName": "City",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "City"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The city of the address. Max length is 40 characters."
+            }
+          ]
+        },
+        {
+          "runtimeName": "Street",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Street"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The street name of the address. Min length is 4 characters."
+            }
+          ]
+        },
+        {
+          "runtimeName": "ZIPCode",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "ZIP code"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The ZIP code of the address. Max length is 10 characters."
+            }
+          ]
+        },
+        {
+          "runtimeName": "Name2",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Name 2"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "Additional name information. Max length is 40 characters."
+            }
+          ]
+        },
+        {
+          "runtimeName": "Name3",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Name 3"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "Additional name information. Max length is 40 characters."
+            }
+          ]
+        },
+        {
+          "runtimeName": "Province",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Province/State"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The province or state of the address. Max length is 40 characters."
+            }
+          ]
+        },
+        {
+          "runtimeName": "StreetNumber",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Street number"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The street number of the address. Max length is 40 characters."
+            }
+          ]
+        },
+        {
+          "runtimeName": "ContactPerson",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Contact person"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The contact person for the address. Max length is 40 characters."
+            }
+          ]
+        },
+        {
+          "runtimeName": "FixedLinePhonenumber",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Fixed line phone number"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The fixed line phone number for the address. Max length is 35 characters."
+            }
+          ]
+        },
+        {
+          "runtimeName": "MobilePhoneNumber",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Mobile phone number"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The mobile phone number for the address. Max length is 35 characters."
+            }
+          ]
+        },
+        {
+          "runtimeName": "Email",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Email"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The email address for the address. Max length is 80 characters."
+            }
+          ]
+        }
+      ],
+      "signature": "(Name1: string, CountryCode: string, City: string, Street: string, ZIPCode: string, Name2?: string, Name3?: string, Province?: string, StreetNumber?: string, ContactPerson?: string, FixedLinePhonenumber?: string, MobilePhoneNumber?: string, Email?: string): GLS_ADDRESS",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Create GLS address object"
+        }
+      ],
+      "description": [
+        {
+          "code": "en-US",
+          "content": "Creates a GLS address object which can be used for shipments."
+        }
+      ],
+      "documentation": [
+        {
+          "code": "en-US",
+          "content": "Creates a GLS address object (`GLS_ADDRESS`) for use in shipments as consignee, shipper, or return address."
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Create GLS address object for ${Name1}"
+        }
+      ],
+      "version": "1.0.0",
+      "displayIcon": "codezero:gls",
+      "definitionSource": "action"
+    },
+    {
+      "runtimeName": "createConsignee",
+      "runtimeParameterDefinitions": [
+        {
+          "runtimeName": "Address",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Address"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The address of the consignee."
+            }
+          ]
+        },
+        {
+          "runtimeName": "ConsigneeID",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Consignee ID"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "A customer-defined identifier for the consignee. Max 40 characters."
+            }
+          ]
+        },
+        {
+          "runtimeName": "CostCenter",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Cost center"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The cost center to assign to the consignee. Max 80 characters."
+            }
+          ]
+        },
+        {
+          "runtimeName": "Category",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Category"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The category of the consignee. Can be either BUSINESS or PRIVATE."
+            }
+          ]
+        }
+      ],
+      "signature": "(Address: GLS_ADDRESS, ConsigneeID?: string, CostCenter?: string, Category?: \"BUSINESS\"|\"PRIVATE\"): GLS_CONSIGNEE",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Create GLS consignee object"
+        }
+      ],
+      "description": [
+        {
+          "code": "en-US",
+          "content": "Creates a GLS consignee (recipient) object for use in shipments."
+        }
+      ],
+      "documentation": [
+        {
+          "code": "en-US",
+          "content": "Creates a GLS consignee (recipient) object for use in shipments."
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Create GLS consignee object with address ${Address}"
+        }
+      ],
+      "version": "1.0.0",
+      "displayIcon": "codezero:gls",
+      "definitionSource": "action"
+    },
+    {
+      "runtimeName": "createCustomContent",
+      "runtimeParameterDefinitions": [
+        {
+          "runtimeName": "barcodeContentType",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Barcode content type"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "Type of content encoded in the barcode (TRACK_ID or GLS_SHIPMENT_REFERENCE)."
+            }
+          ]
+        },
+        {
+          "runtimeName": "customerLogo",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Customer logo"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "Base64-encoded customer logo to print on the label."
+            }
+          ]
+        },
+        {
+          "runtimeName": "hideShipperAddress",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Hide shipper address"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "Whether to hide the shipper address on the label."
+            }
+          ]
+        },
+        {
+          "runtimeName": "barcodeType",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Barcode type"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "Type of barcode to use (EAN_128 or CODE_39)."
+            }
+          ]
+        },
+        {
+          "runtimeName": "barcode",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Barcode"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "Barcode value to print on the label."
+            }
+          ]
+        }
+      ],
+      "signature": "(barcodeContentType?: \"TRACK_ID\"|\"GLS_SHIPMENT_REFERENCE\", customerLogo?: string, hideShipperAddress?: boolean, barcodeType?: \"EAN_128\"|\"CODE_39\", barcode?: string): GLS_CUSTOM_CONTENT",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Create GLS custom label content"
+        }
+      ],
+      "description": [
+        {
+          "code": "en-US",
+          "content": "Creates a GLS custom content object for shipment labels."
+        }
+      ],
+      "documentation": [
+        {
+          "code": "en-US",
+          "content": "Creates custom content settings for GLS labels, including logos and barcodes."
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Create GLS custom label content"
+        }
+      ],
+      "version": "1.0.0",
+      "displayIcon": "codezero:gls",
+      "definitionSource": "action"
+    },
+    {
+      "runtimeName": "createPrintingOptions",
+      "runtimeParameterDefinitions": [
+        {
+          "runtimeName": "TemplateSet",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Template set"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The label template set to use for return labels. Required together with LabelFormat to generate return labels."
+            }
+          ]
+        },
+        {
+          "runtimeName": "LabelFormat",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Label format"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The file format for return labels. Required together with TemplateSet to generate return labels."
+            }
+          ]
+        },
+        {
+          "runtimeName": "UseDefault",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Use default"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "Identifier of the default printing profile to use. Max 7 characters."
+            }
+          ]
+        },
+        {
+          "runtimeName": "LabelPrinter",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Label printer"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "Name of the printer to use for shipment labels. Max 255 characters."
+            }
+          ]
+        },
+        {
+          "runtimeName": "DocumentPrinter",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Document printer"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "Name of the printer to use for documents. Max 255 characters."
+            }
+          ]
+        }
+      ],
+      "signature": "(TemplateSet?: \"NONE\"|\"D_200\"|\"PF_4_I\"|\"PF_4_I_200\"|\"PF_4_I_300\"|\"PF_8_D_200\"|\"T_200_BF\"|\"T_300_BF\"|\"ZPL_200\"|\"ZPL_200_TRACKID_EAN_128\"|\"ZPL_200_TRACKID_CODE_39\"|\"ZPL_200_REFNO_EAN_128\"|\"ZPL_200_REFNO_CODE_39\"|\"ZPL_300\"|\"ZPL_300_TRACKID_EAN_128\"|\"ZPL_300_TRACKID_CODE_39\"|\"ZPL_300_REFNO_EAN_128\"|\"ZPL_300_REFNO_CODE_39\", LabelFormat?: \"PDF\"|\"ZEBRA\"|\"INTERMEC\"|\"DATAMAX\"|\"TOSHIBA\"|\"PNG\", UseDefault?: string, LabelPrinter?: string, DocumentPrinter?: string): GLS_PRINTING_OPTIONS",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Create GLS printing settings"
+        }
+      ],
+      "description": [
+        {
+          "code": "en-US",
+          "content": "Creates a GLS printing options object that controls how shipment labels are generated and printed."
+        }
+      ],
+      "documentation": [
+        {
+          "code": "en-US",
+          "content": "Creates a GLS printing options object that controls how shipment labels are generated and printed."
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Create GLS printing settings in format ${TemplateSet} as ${LabelFormat}"
+        }
+      ],
+      "version": "1.0.0",
+      "displayIcon": "codezero:gls",
+      "definitionSource": "action"
+    },
+    {
+      "runtimeName": "createShipment",
+      "runtimeParameterDefinitions": [
+        {
+          "runtimeName": "Consignee",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Consignee"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The recipient of the shipment."
+            }
+          ]
+        },
+        {
+          "runtimeName": "ShipmentUnit",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Shipment unit"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "One or more parcels included in this shipment. At least one unit is required."
+            }
+          ]
+        },
+        {
+          "runtimeName": "Product",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Product"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The GLS product type for the shipment. Defaults to PARCEL."
+            }
+          ]
+        },
+        {
+          "runtimeName": "ShipmentReference",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Shipment reference"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "A customer-defined reference for the shipment. Max 40 characters."
+            }
+          ]
+        },
+        {
+          "runtimeName": "ShippingDate",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Shipment date"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The date the shipment is handed over to GLS, in ISO 8601 date format (YYYY-MM-DD)."
+            }
+          ]
+        },
+        {
+          "runtimeName": "IncotermCode",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Incoterm code"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "Numeric incoterm code for the shipment. Max value is 99."
+            }
+          ]
+        },
+        {
+          "runtimeName": "Identifier",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Identifier"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "An additional customer-defined identifier for the shipment. Max 40 characters."
+            }
+          ]
+        },
+        {
+          "runtimeName": "ExpressAltDeliveryAllowed",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Express alternative delivery allowed"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "Whether an alternative delivery is permitted for express shipments."
+            }
+          ]
+        },
+        {
+          "runtimeName": "Shipper",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Shipper"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The shipper for this shipment. If not provided, the default shipper from the action configuration is used."
+            }
+          ]
+        },
+        {
+          "runtimeName": "Carrier",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Carrier"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The carrier to use for the shipment. Currently only ROYALMAIL is supported."
+            }
+          ]
+        },
+        {
+          "runtimeName": "Return",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Return address"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The return address for the shipment. If provided, a return label is generated."
+            }
+          ]
+        }
+      ],
+      "signature": "(Consignee: GLS_CONSIGNEE, ShipmentUnit: GLS_SHIPMENT_UNIT, Product?: \"PARCEL\"|\"EXPRESS\", ShipmentReference?: string, ShippingDate?: string, IncotermCode?: number, Identifier?: string, ExpressAltDeliveryAllowed?: boolean, Shipper?: GLS_SHIPPER, Carrier?: \"ROYALMAIL\", Return?: GLS_ADDRESS): GLS_SHIPMENT_WITHOUT_SERVICES",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Create GLS shipment object"
+        }
+      ],
+      "description": [
+        {
+          "code": "en-US",
+          "content": "Creates a GLS shipment object without services for use with the create shipment functions."
+        }
+      ],
+      "documentation": [
+        {
+          "code": "en-US",
+          "content": "Creates a GLS shipment object without services for use with the create shipment functions."
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Create GLS shipment to consignee ${Consignee}"
+        }
+      ],
+      "version": "1.0.0",
+      "displayIcon": "codezero:gls",
+      "definitionSource": "action"
+    },
+    {
+      "runtimeName": "createShipmentUnit",
+      "runtimeParameterDefinitions": [
+        {
+          "runtimeName": "weight",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Weight (kg)"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The weight of the shipment unit in kilograms. Must be a positive number and greater than 0.10 and less than 99."
+            }
+          ]
+        },
+        {
+          "runtimeName": "shipmentUnitReference",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Shipment unit reference"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The reference for the shipment unit. Max length is 40 characters."
+            }
+          ]
+        },
+        {
+          "runtimeName": "partnerParcelNumber",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Partner parcel number"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The partner parcel number for the shipment unit. Max length is 50 characters."
+            }
+          ]
+        },
+        {
+          "runtimeName": "note1",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Note 1"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "Note 1 for the shipment unit. Max length is 50 characters."
+            }
+          ]
+        },
+        {
+          "runtimeName": "note2",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Note 2"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "Note 2 for the shipment unit. Max length is 50 characters."
+            }
+          ]
+        },
+        {
+          "runtimeName": "shipmentUnitService",
+          "optional": false,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Shipment unit service"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The service associated with the shipment unit."
+            }
+          ]
+        }
+      ],
+      "signature": "(weight: number, shipmentUnitReference?: string, partnerParcelNumber?: string, note1?: string, note2?: string, shipmentUnitService?: GLS_UNIT_SERVICE): GLS_SHIPMENT_UNIT",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Create GLS shipment unit object"
+        }
+      ],
+      "description": [
+        {
+          "code": "en-US",
+          "content": "Creates a GLS shipment unit object which can be used for shipments."
+        }
+      ],
+      "documentation": [
+        {
+          "code": "en-US",
+          "content": "Creates a GLS shipment unit (an individual parcel within a shipment)."
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Create GLS shipment unit object of weight ${weight}"
+        }
+      ],
+      "version": "1.0.0",
+      "displayIcon": "codezero:gls",
+      "definitionSource": "action"
+    },
+    {
+      "runtimeName": "createShipper",
+      "runtimeParameterDefinitions": [
+        {
+          "runtimeName": "Address",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Address"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "The primary address of the shipper."
+            }
+          ]
+        },
+        {
+          "runtimeName": "AlternativeShipperAddress",
+          "optional": true,
+          "hidden": false,
+          "name": [
+            {
+              "code": "en-US",
+              "content": "Alternative shipper address"
+            }
+          ],
+          "description": [
+            {
+              "code": "en-US",
+              "content": "An alternative address for the shipper, used when the shipment originates from a different location."
+            }
+          ]
+        }
+      ],
+      "signature": "(Address?: GLS_ADDRESS, AlternativeShipperAddress?: GLS_ADDRESS): GLS_SHIPPER",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Create GLS shipper object"
+        }
+      ],
+      "description": [
+        {
+          "code": "en-US",
+          "content": "Creates a GLS shipper object for use in shipments."
+        }
+      ],
+      "documentation": [
+        {
+          "code": "en-US",
+          "content": "Creates a GLS shipper object for use in shipments."
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Create GLS shipper object"
+        }
+      ],
+      "version": "1.0.0",
+      "displayIcon": "codezero:gls",
+      "definitionSource": "action"
+    }
+  ],
+  "definitionDataTypes": [
+    {
+      "identifier": "GLS_ADDRESS",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Address"
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Address"
+        }
+      ],
+      "type": "{ Name1: string; Name2?: (string | null) | undefined; Name3?: (string | null) | undefined; CountryCode: string; Province?: (string | null) | undefined; City: string; Street: string; StreetNumber?: (string | null) | undefined; ContactPerson?: (string | null) | undefined; FixedLinePhonenumber?: (string | null) | undefined; MobilePhoneNumber?: (string | null) | undefined; eMail?: (string | null) | undefined; ZIPCode: string; }",
+      "version": "1.0.0",
+      "definitionSource": "action"
+    },
+    {
+      "identifier": "GLS_ALLOWED_SERVICES_REQUEST_DATA",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Allowed services request data"
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Allowed services request data"
+        }
+      ],
+      "type": "{ Source: { CountryCode: string; ZIPCode: string; }; Destination: { CountryCode: string; ZIPCode: string; }; ContactID?: string | undefined; }",
+      "version": "1.0.0",
+      "definitionSource": "action"
+    },
+    {
+      "identifier": "GLS_ALLOWED_SERVICES_RESPONSE_DATA",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Allowed services response data"
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Allowed services response data"
+        }
+      ],
+      "type": "{ AllowedServices: { ServiceName?: string | undefined; ProductName?: string | undefined; }[]; }",
+      "version": "1.0.0",
+      "definitionSource": "action"
+    },
+    {
+      "identifier": "GLS_CANCEL_SHIPMENT_REQUEST_DATA",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Cancel shipment request data"
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Cancel shipment request data"
+        }
+      ],
+      "type": "{ TrackID: string; }",
+      "version": "1.0.0",
+      "definitionSource": "action"
+    },
+    {
+      "identifier": "GLS_CANCEL_SHIPMENT_RESPONSE_DATA",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Cancel shipment response data"
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Cancel shipment response data"
+        }
+      ],
+      "type": "{ TrackID: string; result: \"CANCELLED\" | \"CANCELLATION_PENDING\" | \"SCANNED\" | \"ERROR\"; }",
+      "version": "1.0.0",
+      "definitionSource": "action"
+    },
+    {
+      "identifier": "GLS_CONSIGNEE",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Consignee"
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Consignee"
+        }
+      ],
+      "type": "{ ConsigneeID?: (string | null) | undefined; CostCenter?: (string | null) | undefined; Category?: ((\"BUSINESS\" | \"PRIVATE\") | null) | undefined; Address: GLS_ADDRESS; }",
+      "version": "1.0.0",
+      "definitionSource": "action"
+    },
+    {
+      "identifier": "GLS_CREATE_PARCELS_RESPONSE",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Create parcels response"
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Create parcels response"
+        }
+      ],
+      "type": "{ CreatedShipment: { ShipmentReference: string[]; ParcelData: { TrackID: string; ParcelNumber: string; Barcodes: { Primary2D: string; Secondary2D: string; Primary1D: string; Primary1DPrint: boolean; }; RoutingInfo: { Tour: string; InboundSortingFlag: string; FinalLocationCode: string; LastRoutingDate: string; HubLocation: string; }; }[]; PrintData: { Data: string; LabelFormat: \"PDF\" | \"ZEBRA\" | \"INTERMEC\" | \"DATAMAX\" | \"TOSHIBA\" | \"PNG\"; }[]; CustomerID: string; PickupLocation: string; GDPR: string[]; }; }",
+      "version": "1.0.0",
+      "definitionSource": "action"
+    },
+    {
+      "identifier": "GLS_CUSTOM_CONTENT",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Custom content"
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Custom content"
+        }
+      ],
+      "type": "{ CustomerLogo?: (string | null) | undefined; BarcodeContentType?: ((\"TRACK_ID\" | \"GLS_SHIPMENT_REFERENCE\") | null) | undefined; Barcode?: (string | null) | undefined; BarcodeType?: ((\"EAN_128\" | \"CODE_39\") | null) | undefined; HideShipperAddress?: (boolean | null) | undefined; }",
+      "version": "1.0.0",
+      "definitionSource": "action"
+    },
+    {
+      "identifier": "GLS_END_OF_DAY_REQUEST_DATA",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "End of day request data"
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "End of day request data"
+        }
+      ],
+      "type": "{ date: string; }",
+      "version": "1.0.0",
+      "definitionSource": "action"
+    },
+    {
+      "identifier": "GLS_END_OF_DAY_RESPONSE_DATA",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "End of day response data"
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "End of day response data"
+        }
+      ],
+      "type": "{ Shipments?: { ShippingDate: string; Product: \"PARCEL\" | \"EXPRESS\"; Consignee: { Address: GLS_ADDRESS; }; Shipper: { ContactID: string; AlternativeShipperAddress?: GLS_ADDRESS | undefined; }; ShipmentUnit?: { Weight: string; TrackID: string; ParcelNumber: string; }[] | undefined; }[] | undefined; }",
+      "version": "1.0.0",
+      "definitionSource": "action"
+    },
+    {
+      "identifier": "GLS_PRINTING_OPTIONS",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Printing Options"
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Printing Options"
+        }
+      ],
+      "type": "{ ReturnLabels?: ({ TemplateSet: \"NONE\" | \"D_200\" | \"PF_4_I\" | \"PF_4_I_200\" | \"PF_4_I_300\" | \"PF_8_D_200\" | \"T_200_BF\" | \"T_300_BF\" | \"ZPL_200\" | \"ZPL_200_TRACKID_EAN_128\" | \"ZPL_200_TRACKID_CODE_39\" | \"ZPL_200_REFNO_EAN_128\" | \"ZPL_200_REFNO_CODE_39\" | \"ZPL_300\" | \"ZPL_300_TRACKID_EAN_128\" | \"ZPL_300_TRACKID_CODE_39\" | \"ZPL_300_REFNO_EAN_128\" | \"ZPL_300_REFNO_CODE_39\"; LabelFormat: \"PDF\" | \"ZEBRA\" | \"INTERMEC\" | \"DATAMAX\" | \"TOSHIBA\" | \"PNG\"; } | null) | undefined; UseDefault?: (string | null) | undefined; DefinePrinter?: ({ LabelPrinter?: (string | null) | undefined; DocumentPrinter?: (string | null) | undefined; } | null) | undefined; }",
+      "version": "1.0.0",
+      "definitionSource": "action"
+    },
+    {
+      "identifier": "RETURN_LABELS",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Return Labels"
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Return Labels"
+        }
+      ],
+      "type": "{ TemplateSet: \"NONE\" | \"D_200\" | \"PF_4_I\" | \"PF_4_I_200\" | \"PF_4_I_300\" | \"PF_8_D_200\" | \"T_200_BF\" | \"T_300_BF\" | \"ZPL_200\" | \"ZPL_200_TRACKID_EAN_128\" | \"ZPL_200_TRACKID_CODE_39\" | \"ZPL_200_REFNO_EAN_128\" | \"ZPL_200_REFNO_CODE_39\" | \"ZPL_300\" | \"ZPL_300_TRACKID_EAN_128\" | \"ZPL_300_TRACKID_CODE_39\" | \"ZPL_300_REFNO_EAN_128\" | \"ZPL_300_REFNO_CODE_39\"; LabelFormat: \"PDF\" | \"ZEBRA\" | \"INTERMEC\" | \"DATAMAX\" | \"TOSHIBA\" | \"PNG\"; }",
+      "version": "1.0.0",
+      "definitionSource": "action"
+    },
+    {
+      "identifier": "GLS_REPRINT_PARCEL_REQUEST_DATA",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Reprint parcel request data"
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Reprint parcel request data"
+        }
+      ],
+      "type": "{ TrackID?: string | undefined; ParcelNumber?: number | undefined; ShipmentReference?: string | undefined; ShipmentUnitReference?: string | undefined; PartnerParcelNumber?: string | undefined; CreationDate: string; PrintingOptions: { ReturnLabels: RETURN_LABELS; }; }",
+      "version": "1.0.0",
+      "definitionSource": "action"
+    },
+    {
+      "identifier": "GLS_REPRINT_PARCEL_RESPONSE_DATA",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Reprint parcel response data"
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Reprint parcel response data"
+        }
+      ],
+      "type": "{ CreatedShipment: { ParcelData: { TrackID: string; ShipmentUnitReference?: string[] | undefined; ParcelNumber: string; Barcodes: { Primary2D: string; Secondary2D: string; Primary1D: string; Primary1DPrint: boolean; }; RoutingInfo: { Tour: string; InboundSortingFlag: string; FinalLocationCode: string; LastRoutingDate: string; HubLocation: string; }; }[]; PrintData: { Data: string; LabelFormat: \"PDF\" | \"ZEBRA\" | \"PNG\" | \"PNG_200\"; }[]; CustomerID: string; PickupLocation: string; GDPR: string[]; }; }",
+      "version": "1.0.0",
+      "definitionSource": "action"
+    },
+    {
+      "identifier": "GLS_RETURN_OPTIONS",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Return Options"
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Return Options"
+        }
+      ],
+      "type": "{ ReturnPrintData?: (boolean | null) | undefined; ReturnRoutingInfo?: (boolean | null) | undefined; }",
+      "version": "1.0.0",
+      "definitionSource": "action"
+    },
+    {
+      "identifier": "GLS_SHIPMENT",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Shipment"
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Shipment"
+        }
+      ],
+      "type": "{ ShipmentReference?: (string | null) | undefined; ShippingDate?: (string | null) | undefined; IncotermCode?: (number | null) | undefined; Identifier?: (string | null) | undefined; Product: \"PARCEL\" | \"EXPRESS\"; ExpressAltDeliveryAllowed?: (boolean | null) | undefined; Consignee: GLS_CONSIGNEE; Shipper?: ({ AlternativeShipperAddress?: (GLS_ADDRESS | null) | undefined; Address?: (GLS_ADDRESS | null) | undefined; } | null) | undefined; Carrier?: ((\"ROYALMAIL\") | null) | undefined; ShipmentUnit: { ShipmentUnitReference?: string | undefined; PartnerParcelNumber?: string | undefined; Weight: number; Note1?: string | undefined; Note2?: string | undefined; Service?: { Cash?: { Reason: string; Amount: number; Currency: string; } | undefined; AddonLiability?: { Amount: number; Currency: string; ParcelContent: string; } | undefined; HazardousGoods?: { HarzardousGood: { Weight: number; GLSHazNo: string; }[]; } | undefined; ExWorks?: {} | undefined; LimitedQuantities?: { Weight?: number | undefined; } | undefined; }[] | undefined; }[]; Service?: { Service?: { ServiceName: \"service_inbound\" | \"service_documentreturn\" | \"service_completedeliveryconsignment\" | \"service_flexdelivery\" | \"service_signature\" | \"service_t24\" | \"service_t48\" | \"service_guaranteed24\" | \"service_addresseeonly\" | \"service_tyre\" | \"service_eob\" | \"service_0800\" | \"service_0900\" | \"service_1000\" | \"service_1200\" | \"service_1300\" | \"service_saturday_1000\" | \"service_saturday_1200\" | \"service_Saturday\"; } | undefined; ShopDelivery?: { ParcelShopID: string; } | undefined; ShopReturn?: { NumberOfLabels: number; ReturnQR?: (\"PDF\" | \"PNG\" | \"ZPL\") | undefined; } | undefined; Intercompany?: { Address: GLS_ADDRESS; NumberOfLabels: number; ExpectedWeight?: number | undefined; } | undefined; Exchange?: { Address: GLS_ADDRESS; ExpectedWeight?: number | undefined; } | undefined; DeliveryAtWork?: { RecipientName: string; AlternateRecipientName?: string | undefined; Building: string; Floor: number; Room?: number | undefined; Phonenumber?: string | undefined; } | undefined; Deposit?: { PlaceOfDeposit: string; } | undefined; IdentPin?: { PIN: string; Birthdate?: string | undefined; } | undefined; Ident?: { Birthdate: string; Firstname: string; Lastname: string; Nationality: string; } | undefined; PickAndShip?: { PickupDate: string; } | undefined; PickAndReturn?: { PickupDate: string; } | undefined; }[] | undefined; Return?: (GLS_ADDRESS | null) | undefined; }",
+      "version": "1.0.0",
+      "definitionSource": "action"
+    },
+    {
+      "identifier": "GLS_SHIPMENT_WITHOUT_SERVICES",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Shipment without services"
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Shipment without services"
+        }
+      ],
+      "type": "{ ShipmentReference?: (string | null) | undefined; ShippingDate?: (string | null) | undefined; IncotermCode?: (number | null) | undefined; Identifier?: (string | null) | undefined; Product: \"PARCEL\" | \"EXPRESS\"; ExpressAltDeliveryAllowed?: (boolean | null) | undefined; Consignee: GLS_CONSIGNEE; Shipper?: ({ AlternativeShipperAddress?: (GLS_ADDRESS | null) | undefined; Address?: (GLS_ADDRESS | null) | undefined; } | null) | undefined; Carrier?: ((\"ROYALMAIL\") | null) | undefined; ShipmentUnit: { ShipmentUnitReference?: string | undefined; PartnerParcelNumber?: string | undefined; Weight: number; Note1?: string | undefined; Note2?: string | undefined; Service?: { Cash?: { Reason: string; Amount: number; Currency: string; } | undefined; AddonLiability?: { Amount: number; Currency: string; ParcelContent: string; } | undefined; HazardousGoods?: { HarzardousGood: { Weight: number; GLSHazNo: string; }[]; } | undefined; ExWorks?: {} | undefined; LimitedQuantities?: { Weight?: number | undefined; } | undefined; }[] | undefined; }[]; Return?: (GLS_ADDRESS | null) | undefined; }",
+      "version": "1.0.0",
+      "definitionSource": "action"
+    },
+    {
+      "identifier": "GLS_SHIPMENT_UNIT",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Shipment Unit"
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Shipment Unit"
+        }
+      ],
+      "type": "{ ShipmentUnitReference?: string | undefined; PartnerParcelNumber?: string | undefined; Weight: number; Note1?: string | undefined; Note2?: string | undefined; Service?: { Cash?: { Reason: string; Amount: number; Currency: string; } | undefined; AddonLiability?: { Amount: number; Currency: string; ParcelContent: string; } | undefined; HazardousGoods?: { HarzardousGood: { Weight: number; GLSHazNo: string; }[]; } | undefined; ExWorks?: {} | undefined; LimitedQuantities?: { Weight?: number | undefined; } | undefined; }[] | undefined; }[]",
+      "version": "1.0.0",
+      "definitionSource": "action"
+    },
+    {
+      "identifier": "GLS_SHIPPER",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Shipper"
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Shipper"
+        }
+      ],
+      "type": "{ AlternativeShipperAddress?: (GLS_ADDRESS | null) | undefined; Address?: (GLS_ADDRESS | null) | undefined; }",
+      "version": "1.0.0",
+      "definitionSource": "action"
+    },
+    {
+      "identifier": "GLS_UNIT_SERVICE",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "GLS unit service"
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "GLS unit service"
+        }
+      ],
+      "type": "{ Cash?: { Reason: string; Amount: number; Currency: string; } | undefined; AddonLiability?: { Amount: number; Currency: string; ParcelContent: string; } | undefined; HazardousGoods?: { HarzardousGood: { Weight: number; GLSHazNo: string; }[]; } | undefined; ExWorks?: {} | undefined; LimitedQuantities?: { Weight?: number | undefined; } | undefined; }[] | undefined",
+      "version": "1.0.0",
+      "definitionSource": "action"
+    },
+    {
+      "identifier": "GLS_UPDATE_PARCEL_WEIGHT_REQUEST_DATA",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Update parcel weight request data"
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Update parcel weight request data"
+        }
+      ],
+      "type": "{ TrackID?: string | undefined; ParcelNumber?: number | undefined; ShipmentReference?: string | undefined; ShipmentUnitReference?: string | undefined; PartnerParcelNumber?: string | undefined; Weight: number; }",
+      "version": "1.0.0",
+      "definitionSource": "action"
+    },
+    {
+      "identifier": "GLS_UPDATE_PARCEL_WEIGHT_RESPONSE_DATA",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Update parcel weight response data"
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Update parcel weight response data"
+        }
+      ],
+      "type": "{ UpdatedWeight: string; }",
+      "version": "1.0.0",
+      "definitionSource": "action"
+    },
+    {
+      "identifier": "GLS_VALIDATE_SHIPMENT_REQUEST_DATA",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Validate shipment request data"
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Validate shipment request data"
+        }
+      ],
+      "type": "{ Shipment: GLS_SHIPMENT; }",
+      "version": "1.0.0",
+      "definitionSource": "action"
+    },
+    {
+      "identifier": "GLS_VALIDATE_SHIPMENT_RESPONSE_DATA",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Validate shipment response data"
+        }
+      ],
+      "displayMessage": [
+        {
+          "code": "en-US",
+          "content": "Validate shipment response data"
+        }
+      ],
+      "type": "{ success: boolean; validationResult: { Issues: { Rule: string; Location: string; Parameters?: string[] | undefined; }[]; }; }",
+      "version": "1.0.0",
+      "definitionSource": "action"
+    }
+  ],
+  "configurations": [
+    {
+      "identifier": "auth_url",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "The Auth API url"
+        }
+      ],
+      "description": [
+        {
+          "code": "en-US",
+          "content": "The url of the Auth api ending in /token."
+        }
+      ],
+      "type": "TEXT",
+      "linkedDataTypeIdentifiers": [
+        "TEXT"
+      ],
+      "defaultValue": {
+        "stringValue": "https://api.gls-group.net/oauth2/v2/token"
+      },
+      "optional": false,
+      "hidden": false
+    },
+    {
+      "identifier": "client_id",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Client ID"
+        }
+      ],
+      "description": [
+        {
+          "code": "en-US",
+          "content": "The client id to authenticate with the GLS API."
+        }
+      ],
+      "type": "TEXT",
+      "linkedDataTypeIdentifiers": [
+        "TEXT"
+      ],
+      "optional": false,
+      "hidden": false
+    },
+    {
+      "identifier": "client_secret",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Client secret"
+        }
+      ],
+      "description": [
+        {
+          "code": "en-US",
+          "content": "The client secret to authenticate with the GLS API."
+        }
+      ],
+      "type": "TEXT",
+      "linkedDataTypeIdentifiers": [
+        "TEXT"
+      ],
+      "optional": false,
+      "hidden": false
+    },
+    {
+      "identifier": "contact_id",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Contact ID"
+        }
+      ],
+      "description": [
+        {
+          "code": "en-US",
+          "content": "The contact id identifying the GLS account to use for the API requests. This contact must be linked to a GLS contract with API access."
+        }
+      ],
+      "type": "TEXT",
+      "linkedDataTypeIdentifiers": [
+        "TEXT"
+      ],
+      "defaultValue": {
+        "stringValue": ""
+      },
+      "optional": false,
+      "hidden": false
+    },
+    {
+      "identifier": "ship_it_api_url",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "The ShipIt API url"
+        }
+      ],
+      "description": [
+        {
+          "code": "en-US",
+          "content": "The url of the GLS ShipIt API."
+        }
+      ],
+      "type": "TEXT",
+      "linkedDataTypeIdentifiers": [
+        "TEXT"
+      ],
+      "defaultValue": {
+        "stringValue": "https://api.gls-group.net/shipit-farm/v1/backend/rs"
+      },
+      "optional": false,
+      "hidden": false
+    },
+    {
+      "identifier": "default_shipper",
+      "name": [
+        {
+          "code": "en-US",
+          "content": "Shipper"
+        }
+      ],
+      "description": [
+        {
+          "code": "en-US",
+          "content": "The shipper information to use for the shipments. This will be used if the shipper information is not provided in the shipment data."
+        }
+      ],
+      "type": "GLS_SHIPPER",
+      "linkedDataTypeIdentifiers": [
+        "GLS_SHIPPER"
+      ],
+      "optional": false,
+      "hidden": false
+    }
+  ]
+}

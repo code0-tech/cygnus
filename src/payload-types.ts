@@ -690,6 +690,18 @@ export interface Page {
              * Use {} as a placeholder for the action title.
              */
             heading?: string | null;
+            grainientColors?: {
+              /**
+               * Used when the action module does not define brandColor1.
+               */
+              color1?: string | null;
+              /**
+               * Used when the action module does not define brandColor2.
+               */
+              color2?: string | null;
+              color3?: string | null;
+              backgroundColor?: string | null;
+            };
             texts?:
               | {
                   text: string;
@@ -1710,6 +1722,14 @@ export interface PagesSelect<T extends boolean = true> {
               badge?: T;
               badge_link?: T;
               heading?: T;
+              grainientColors?:
+                | T
+                | {
+                    color1?: T;
+                    color2?: T;
+                    color3?: T;
+                    backgroundColor?: T;
+                  };
               texts?:
                 | T
                 | {

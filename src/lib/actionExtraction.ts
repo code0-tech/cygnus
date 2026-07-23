@@ -115,6 +115,8 @@ export interface ExtractedActionModuleInfo {
     author: string
     icon?: string
     version: string
+    brandColor1?: string
+    brandColor2?: string
 }
 
 export function extractActionModuleInfo(json: unknown): ExtractedActionModuleInfo | null {
@@ -128,6 +130,8 @@ export function extractActionModuleInfo(json: unknown): ExtractedActionModuleInf
         author: getString(json.author),
         icon: getString(json.icon) || undefined,
         version: getString(json.version),
+        brandColor1: getString(json.brandColor1) || undefined,
+        brandColor2: getString(json.brandColor2) || undefined,
     }
 }
 

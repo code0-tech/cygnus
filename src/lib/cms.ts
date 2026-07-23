@@ -53,6 +53,8 @@ export type ActionItem = Pick<Action, "id" | "identifier" | "module" | "tags"> &
     shortDescription?: string | null
     description?: string | null
     icon?: string
+    brandColor1?: string
+    brandColor2?: string
     documentation?: string | null
     references?: Array<number | ActionItem> | null
 }
@@ -418,6 +420,8 @@ async function enrichAction(action: Action): Promise<ActionItem> {
         shortDescription: moduleInfo?.description || null,
         description: moduleInfo?.description || null,
         icon: moduleInfo?.icon,
+        brandColor1: moduleInfo?.brandColor1,
+        brandColor2: moduleInfo?.brandColor2,
         documentation: moduleInfo?.documentation || null,
         tags: action.tags,
         references: action.references?.map((reference) => (typeof reference === "number" ? reference : reference.id)) ?? null,

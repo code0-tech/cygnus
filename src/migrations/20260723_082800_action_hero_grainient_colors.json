@@ -1,0 +1,40 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.pages_blocks_action_hero": {
+      "name": "pages_blocks_action_hero",
+      "schema": "public",
+      "columns": {
+        "grainient_colors_color1": {
+          "name": "grainient_colors_color1",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'#72f896'"
+        },
+        "grainient_colors_color2": {
+          "name": "grainient_colors_color2",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'#7472f8'"
+        },
+        "grainient_colors_color3": {
+          "name": "grainient_colors_color3",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'#13102d'"
+        },
+        "grainient_colors_background_color": {
+          "name": "grainient_colors_background_color",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'#13102d'"
+        }
+      }
+    }
+  }
+}
