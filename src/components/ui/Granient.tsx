@@ -202,6 +202,7 @@ const Grainient: React.FC<Partial<GrainientPalette>> = ({ color1 = GRAINIENT_CON
         canvas.style.display = "block"
         canvas.style.position = "absolute"
         canvas.style.inset = "0"
+        canvas.style.borderRadius = "inherit"
 
         const container = containerRef.current
         container.appendChild(canvas)
@@ -407,7 +408,7 @@ const Grainient: React.FC<Partial<GrainientPalette>> = ({ color1 = GRAINIENT_CON
     return (
         <div
             ref={containerRef}
-            className="pointer-events-none absolute inset-0 z-0 h-full w-full overflow-hidden"
+            className="pointer-events-none absolute inset-0 z-0 h-full w-full overflow-hidden rounded-[inherit]"
             aria-hidden="true"
             style={{
                 backgroundColor,
