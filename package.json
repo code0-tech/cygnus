@@ -58,7 +58,7 @@
         "web-haptics": "^0.0.6"
     },
     "devDependencies": {
-        "@swc-node/register": "^1.11.1",
+        "@swc-node/register": "^1.12.0",
         "@tailwindcss/postcss": "^4.3.2",
         "@types/node": "^25.9.5",
         "@types/react": "^19.2.17",
