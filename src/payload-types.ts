@@ -236,6 +236,10 @@ export interface Page {
             heading: string;
             centered?: boolean | null;
             image?: (number | null) | Media;
+            /**
+             * CSS color shown behind the hero image, for example #13102d or rgb(19, 16, 45).
+             */
+            imageBackground?: string | null;
             grainientColors?: {
               color1?: string | null;
               color2?: string | null;
@@ -1530,6 +1534,7 @@ export interface PagesSelect<T extends boolean = true> {
               heading?: T;
               centered?: T;
               image?: T;
+              imageBackground?: T;
               grainientColors?:
                 | T
                 | {

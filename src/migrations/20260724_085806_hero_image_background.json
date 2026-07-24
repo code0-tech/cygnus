@@ -1,0 +1,17 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.pages_blocks_hero": {
+      "name": "pages_blocks_hero",
+      "schema": "public",
+      "columns": {
+        "image_background": {
+          "name": "image_background",
+          "type": "varchar",
+          "notNull": false
+        }
+      }
+    }
+  }
+}

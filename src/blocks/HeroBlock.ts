@@ -38,6 +38,15 @@ export const HeroBlock: Block = {
             required: false,
         },
         {
+            name: "imageBackground",
+            label: "Image Background",
+            type: "text",
+            required: false,
+            admin: {
+                description: "CSS color shown behind the hero image, for example #13102d or rgb(19, 16, 45).",
+            },
+        },
+        {
             name: "grainientColors",
             label: "Grainient Colors",
             type: "group",

@@ -69,7 +69,10 @@ export function HeroSection({ content }: HeroSectionProps) {
                         </div>
 
                         <div className="w-full max-w-6xl">
-                            <div className="rounded-[1.3rem] border border-white/20 bg-white/10 p-1">
+                            <div
+                                className="rounded-[1.3rem] border border-white/20 bg-white/10 p-1"
+                                style={content.imageBackground?.trim() ? { backgroundColor: content.imageBackground.trim() } : undefined}
+                            >
                                 <div className="relative overflow-hidden rounded-2xl">
                                     <Image
                                         src={resolvedImageSrc}
@@ -140,7 +143,10 @@ export function HeroSection({ content }: HeroSectionProps) {
                         </StaggerItem>
                     </div>
                     <div className="h-auto w-full lg:w-4/5 lg:-mr-56">
-                        <div className="rounded-[1.3rem] border border-white/20 bg-white/10 p-1 lg:rounded-l-[1.3rem] lg:rounded-r-none">
+                        <div
+                            className="rounded-[1.3rem] border border-white/20 bg-white/10 p-1 lg:rounded-l-[1.3rem] lg:rounded-r-none"
+                            style={content.imageBackground?.trim() ? { backgroundColor: content.imageBackground.trim() } : undefined}
+                        >
                             <div className="relative overflow-hidden rounded-2xl lg:rounded-l-2xl lg:rounded-r-none">
                                 <Image
                                     src={resolvedImageSrc}
