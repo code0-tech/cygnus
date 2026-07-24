@@ -3,7 +3,8 @@ import type { CollectionConfig } from "payload"
 export const Actions: CollectionConfig = {
     slug: "actions",
     admin: {
-        defaultColumns: ["module", "tags", "updatedAt"],
+        useAsTitle: "identifier",
+        defaultColumns: ["identifier", "module", "tags", "updatedAt"],
     },
     access: {
         read: () => true,
