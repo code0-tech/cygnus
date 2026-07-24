@@ -17,7 +17,7 @@ export function ActionReferencesSection({ references, locale, sectionHeading, se
 
     return (
         <Section heading={sectionHeading} description={sectionDescription} funnelType={sectionLayout ?? "left"} linkButton={sectionLinkButton} className="w-full">
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">
                 {references.map((reference) => (
                     <ActionCard key={reference.id} action={reference} locale={locale} />
                 ))}
