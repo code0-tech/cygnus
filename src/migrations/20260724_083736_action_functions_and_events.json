@@ -1,0 +1,36 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.pages_blocks_action_functions": {
+      "name": "pages_blocks_action_functions",
+      "schema": "public",
+      "columns": {
+        "function_definitions_label": {
+          "name": "function_definitions_label",
+          "type": "varchar",
+          "notNull": true,
+          "default": "'FunctionDefinitions'"
+        }
+      }
+    },
+    "public.pages_blocks_action_events": {
+      "name": "pages_blocks_action_events",
+      "schema": "public",
+      "columns": {
+        "_order": { "name": "_order", "type": "integer", "notNull": true },
+        "_parent_id": { "name": "_parent_id", "type": "integer", "notNull": true },
+        "_path": { "name": "_path", "type": "text", "notNull": true },
+        "_locale": { "name": "_locale", "type": "_locales", "notNull": true },
+        "id": { "name": "id", "type": "varchar", "primaryKey": true, "notNull": true },
+        "section_heading": { "name": "section_heading", "type": "varchar", "notNull": false },
+        "section_layout": { "name": "section_layout", "type": "enum_pages_blocks_action_events_section_layout", "notNull": true, "default": "'left'" },
+        "section_description": { "name": "section_description", "type": "varchar", "notNull": false },
+        "section_link_button_label": { "name": "section_link_button_label", "type": "varchar", "notNull": false },
+        "section_link_button_url": { "name": "section_link_button_url", "type": "varchar", "notNull": false },
+        "events_label": { "name": "events_label", "type": "varchar", "notNull": true, "default": "'Events'" },
+        "block_name": { "name": "block_name", "type": "varchar", "notNull": false }
+      }
+    }
+  }
+}

@@ -22,7 +22,8 @@ import { WideHeroSection } from "./sections/WideHeroSection"
 import { StatsSection } from "./sections/StatsSection"
 import { FlowExampleSection } from "./sections/FlowExampleSection"
 import { ActionHeroSection } from "./sections/ActionHeroSection"
-import { ActionDetailSection } from "./sections/ActionDetailSection"
+import { ActionFunctionsSection } from "./sections/ActionFunctionsSection"
+import { ActionEventsSection } from "./sections/ActionEventsSection"
 import { ActionReferencesSection } from "./sections/ActionReferencesSection"
 import { ActionListSection } from "./sections/ActionListSection"
 import type { ActionItem } from "@/lib/cms"
@@ -66,18 +67,29 @@ const pageBlockRenderers: Partial<Record<PageBlock["blockType"], BlockRenderer>>
     flowExample: (block) => <FlowExampleSection content={block as Extract<PageBlock, { blockType: "flowExample" }>} />,
     actionHero: (block, options) =>
         options.action ? <ActionHeroSection action={options.action} locale={options.locale ?? "en"} content={block as Extract<PageBlock, { blockType: "actionHero" }>} /> : null,
-    actionDetails: (block, options) => {
+    actionFunctions: (block, options) => {
         if (!options.action) return null
-        const content = block as Extract<PageBlock, { blockType: "actionDetails" }>
+        const content = block as Extract<PageBlock, { blockType: "actionFunctions" }>
         return (
-            <ActionDetailSection
+            <ActionFunctionsSection
                 moduleJson={options.actionModuleJson}
                 sectionHeading={content.sectionHeading}
                 sectionLayout={content.sectionLayout}
                 sectionDescription={content.sectionDescription}
                 sectionLinkButton={content.sectionLinkButton}
-                flowTypesLabel={content.flowTypesLabel}
-                functionDefinitionsLabel={content.functionDefinitionsLabel}
+            />
+        )
+    },
+    actionEvents: (block, options) => {
+        if (!options.action) return null
+        const content = block as Extract<PageBlock, { blockType: "actionEvents" }>
+        return (
+            <ActionEventsSection
+                moduleJson={options.actionModuleJson}
+                sectionHeading={content.sectionHeading}
+                sectionLayout={content.sectionLayout}
+                sectionDescription={content.sectionDescription}
+                sectionLinkButton={content.sectionLinkButton}
             />
         )
     },

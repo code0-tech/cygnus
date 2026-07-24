@@ -1,8 +1,8 @@
 import type { Block } from "payload"
 
-export const ActionDetailBlock: Block = {
-    slug: "actionDetails",
-    labels: { singular: "Action Details", plural: "Action Detail Blocks" },
+export const ActionFunctionsBlock: Block = {
+    slug: "actionFunctions",
+    labels: { singular: "Action Functions", plural: "Action Functions Blocks" },
     fields: [
         {
             type: "collapsible",
@@ -14,7 +14,5 @@ export const ActionDetailBlock: Block = {
                 { name: "sectionLinkButton", label: "Section Link Button", type: "group", fields: [{ name: "label", type: "text", required: false, localized: true }, { name: "url", type: "text", required: false }] },
             ],
         },
-        { name: "flowTypesLabel", type: "text", required: true, localized: true, defaultValue: "FlowTypes" },
-        { name: "functionDefinitionsLabel", type: "text", required: true, localized: true, defaultValue: "FunctionDefinitions" },
     ],
 }

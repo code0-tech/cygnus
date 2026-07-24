@@ -1,5 +1,6 @@
 import { ActionHeroBlock } from "@/blocks/ActionHeroBlock"
-import { ActionDetailBlock } from "@/blocks/ActionDetailBlock"
+import { ActionFunctionsBlock } from "@/blocks/ActionFunctionsBlock"
+import { ActionEventsBlock } from "@/blocks/ActionEventsBlock"
 import { ActionReferencesBlock } from "@/blocks/ActionReferencesBlock"
 import { ActionListBlock } from "@/blocks/ActionListBlock"
 import { SwipeCardBlock } from "@/blocks/SwipeCardBlock"
@@ -89,7 +90,8 @@ export const Pages: CollectionConfig = {
                 BlogPreviewBlock,
                 BorderBlock,
                 ActionHeroBlock,
-                ActionDetailBlock,
+                ActionFunctionsBlock,
+                ActionEventsBlock,
                 ActionReferencesBlock,
                 ActionListBlock,
                 MarkdownBlock,

@@ -728,11 +728,21 @@ export interface Page {
               label?: string | null;
               url?: string | null;
             };
-            flowTypesLabel: string;
-            functionDefinitionsLabel: string;
             id?: string | null;
             blockName?: string | null;
-            blockType: 'actionDetails';
+            blockType: 'actionFunctions';
+          }
+        | {
+            sectionHeading?: string | null;
+            sectionLayout: 'center' | 'left';
+            sectionDescription?: string | null;
+            sectionLinkButton?: {
+              label?: string | null;
+              url?: string | null;
+            };
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'actionEvents';
           }
         | {
             sectionHeading?: string | null;
@@ -1782,7 +1792,7 @@ export interface PagesSelect<T extends boolean = true> {
               id?: T;
               blockName?: T;
             };
-        actionDetails?:
+        actionFunctions?:
           | T
           | {
               sectionHeading?: T;
@@ -1794,8 +1804,21 @@ export interface PagesSelect<T extends boolean = true> {
                     label?: T;
                     url?: T;
                   };
-              flowTypesLabel?: T;
-              functionDefinitionsLabel?: T;
+              id?: T;
+              blockName?: T;
+            };
+        actionEvents?:
+          | T
+          | {
+              sectionHeading?: T;
+              sectionLayout?: T;
+              sectionDescription?: T;
+              sectionLinkButton?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                  };
               id?: T;
               blockName?: T;
             };

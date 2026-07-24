@@ -1,0 +1,16 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.pages_blocks_action_functions": {
+      "name": "pages_blocks_action_functions",
+      "schema": "public",
+      "removedColumns": ["function_definitions_label"]
+    },
+    "public.pages_blocks_action_events": {
+      "name": "pages_blocks_action_events",
+      "schema": "public",
+      "removedColumns": ["events_label"]
+    }
+  }
+}
