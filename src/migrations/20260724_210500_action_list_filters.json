@@ -1,0 +1,37 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.pages_blocks_action_list": {
+      "name": "pages_blocks_action_list",
+      "schema": "public",
+      "columns": {
+        "sort_newest_label": { "name": "sort_newest_label", "type": "varchar", "primaryKey": false, "notNull": true, "default": "'Newest'" },
+        "sort_oldest_label": { "name": "sort_oldest_label", "type": "varchar", "primaryKey": false, "notNull": true, "default": "'Oldest'" },
+        "all_categories_label": { "name": "all_categories_label", "type": "varchar", "primaryKey": false, "notNull": true, "default": "'All Categories'" },
+        "category_labels_ai": { "name": "category_labels_ai", "type": "varchar", "primaryKey": false, "notNull": true, "default": "'AI'" },
+        "category_labels_analytics": { "name": "category_labels_analytics", "type": "varchar", "primaryKey": false, "notNull": true, "default": "'Analytics'" },
+        "category_labels_communication": { "name": "category_labels_communication", "type": "varchar", "primaryKey": false, "notNull": true, "default": "'Communication'" },
+        "category_labels_cybersecurity": { "name": "category_labels_cybersecurity", "type": "varchar", "primaryKey": false, "notNull": true, "default": "'Cybersecurity'" },
+        "category_labels_data_storage": { "name": "category_labels_data_storage", "type": "varchar", "primaryKey": false, "notNull": true, "default": "'Data & Storage'" },
+        "category_labels_developer_tools": { "name": "category_labels_developer_tools", "type": "varchar", "primaryKey": false, "notNull": true, "default": "'Developer Tools'" },
+        "category_labels_development": { "name": "category_labels_development", "type": "varchar", "primaryKey": false, "notNull": true, "default": "'Development'" },
+        "category_labels_finance_accounting": { "name": "category_labels_finance_accounting", "type": "varchar", "primaryKey": false, "notNull": true, "default": "'Finance & Accounting'" },
+        "category_labels_hitl": { "name": "category_labels_hitl", "type": "varchar", "primaryKey": false, "notNull": true, "default": "'HITL'" },
+        "category_labels_marketing": { "name": "category_labels_marketing", "type": "varchar", "primaryKey": false, "notNull": true, "default": "'Marketing'" },
+        "category_labels_miscellaneous": { "name": "category_labels_miscellaneous", "type": "varchar", "primaryKey": false, "notNull": true, "default": "'Miscellaneous'" },
+        "category_labels_productivity": { "name": "category_labels_productivity", "type": "varchar", "primaryKey": false, "notNull": true, "default": "'Productivity'" },
+        "category_labels_sales": { "name": "category_labels_sales", "type": "varchar", "primaryKey": false, "notNull": true, "default": "'Sales'" },
+        "category_labels_utility": { "name": "category_labels_utility", "type": "varchar", "primaryKey": false, "notNull": true, "default": "'Utility'" }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "_meta": {},
+  "id": "20260724_210500_action_list_filters",
+  "prevId": "20260724_201000_actions_tags_select"
+}

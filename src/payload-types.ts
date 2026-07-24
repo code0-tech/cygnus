@@ -769,7 +769,26 @@ export interface Page {
               url?: string | null;
             };
             searchPlaceholder: string;
+            sortNewestLabel: string;
+            sortOldestLabel: string;
             noActionsFoundLabel: string;
+            allCategoriesLabel: string;
+            categoryLabels: {
+              ai: string;
+              analytics: string;
+              communication: string;
+              cybersecurity: string;
+              dataStorage: string;
+              developerTools: string;
+              development: string;
+              financeAccounting: string;
+              hitl: string;
+              marketing: string;
+              miscellaneous: string;
+              productivity: string;
+              sales: string;
+              utility: string;
+            };
             id?: string | null;
             blockName?: string | null;
             blockType: 'actionList';
@@ -1121,7 +1140,7 @@ export interface Action {
         | 'Developer Tools'
         | 'Development'
         | 'Finance & Accounting'
-        | 'HTL'
+        | 'HITL'
         | 'Marketing'
         | 'Miscellaneous'
         | 'Productivity'
@@ -1872,7 +1891,28 @@ export interface PagesSelect<T extends boolean = true> {
                     url?: T;
                   };
               searchPlaceholder?: T;
+              sortNewestLabel?: T;
+              sortOldestLabel?: T;
               noActionsFoundLabel?: T;
+              allCategoriesLabel?: T;
+              categoryLabels?:
+                | T
+                | {
+                    ai?: T;
+                    analytics?: T;
+                    communication?: T;
+                    cybersecurity?: T;
+                    dataStorage?: T;
+                    developerTools?: T;
+                    development?: T;
+                    financeAccounting?: T;
+                    hitl?: T;
+                    marketing?: T;
+                    miscellaneous?: T;
+                    productivity?: T;
+                    sales?: T;
+                    utility?: T;
+                  };
               id?: T;
               blockName?: T;
             };

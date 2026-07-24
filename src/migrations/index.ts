@@ -59,6 +59,7 @@ import * as migration_20260724_083736_action_functions_and_events from "./202607
 import * as migration_20260724_084150_remove_action_definition_labels from "./20260724_084150_remove_action_definition_labels"
 import * as migration_20260724_085806_hero_image_background from "./20260724_085806_hero_image_background"
 import * as migration_20260724_201000_actions_tags_select from "./20260724_201000_actions_tags_select"
+import * as migration_20260724_210500_action_list_filters from "./20260724_210500_action_list_filters"
 
 export const migrations = [
     {
@@ -365,5 +366,10 @@ export const migrations = [
         up: migration_20260724_201000_actions_tags_select.up,
         down: migration_20260724_201000_actions_tags_select.down,
         name: "20260724_201000_actions_tags_select",
+    },
+    {
+        up: migration_20260724_210500_action_list_filters.up,
+        down: migration_20260724_210500_action_list_filters.down,
+        name: "20260724_210500_action_list_filters",
     },
 ]

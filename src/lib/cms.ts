@@ -48,7 +48,7 @@ interface FeatureItem {
     }
 }
 
-export type ActionItem = Pick<Action, "id" | "identifier" | "module" | "tags"> & {
+export type ActionItem = Pick<Action, "id" | "identifier" | "module" | "tags" | "createdAt"> & {
     slug: string
     title: string
     shortDescription?: string | null
@@ -416,6 +416,7 @@ async function enrichAction(action: Action): Promise<ActionItem> {
         id: action.id,
         identifier: action.identifier,
         module: action.module,
+        createdAt: action.createdAt,
         slug,
         title,
         shortDescription: moduleInfo?.description || null,
@@ -457,6 +458,7 @@ const getActionsCached = cache(async (locale: AppLocale): Promise<ActionItem[]> 
             identifier: true,
             tags: true,
             references: true,
+            createdAt: true,
         },
     })
 

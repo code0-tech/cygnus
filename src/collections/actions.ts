@@ -39,7 +39,7 @@ export const Actions: CollectionConfig = {
                 { label: "Developer Tools", value: "Developer Tools" },
                 { label: "Development", value: "Development" },
                 { label: "Finance & Accounting", value: "Finance & Accounting" },
-                { label: "HTL", value: "HTL" },
+                { label: "HITL", value: "HITL" },
                 { label: "Marketing", value: "Marketing" },
                 { label: "Miscellaneous", value: "Miscellaneous" },
                 { label: "Productivity", value: "Productivity" },

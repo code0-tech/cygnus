@@ -4,7 +4,7 @@ import { Icon } from "@code0-tech/pictor"
 
 interface ActionIconProps {
     icon: string | null | undefined
-    size?: number
+    size?: number | string
 }
 
 export function ActionIcon({ icon, size = 24 }: ActionIconProps) {
