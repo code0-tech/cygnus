@@ -1,3 +1,4 @@
+import { colorField } from "@mvriu5/payload-color-picker"
 import type { Block } from "payload"
 
 export const WideHeroBlock: Block = {
@@ -67,21 +68,18 @@ export const WideHeroBlock: Block = {
             label: "Shine Colors",
             type: "group",
             fields: [
-                {
+                colorField({
                     name: "color1",
-                    type: "text",
                     required: false,
-                },
-                {
+                }),
+                colorField({
                     name: "color2",
-                    type: "text",
                     required: false,
-                },
-                {
+                }),
+                colorField({
                     name: "color3",
-                    type: "text",
                     required: false,
-                },
+                }),
             ],
         },
         {

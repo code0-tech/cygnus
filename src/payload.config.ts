@@ -21,6 +21,7 @@ import { TeamMembers } from "./collections/teamMembers"
 import { Users } from "./collections/users"
 import { GraphLexicalBlock, TriggerLexicalBlock } from "./lib/richText/customLexicalBlocks"
 import { payloadAiPlugin } from "@mvriu5/payload-ai"
+import { payloadColorPlugin } from "@mvriu5/payload-color-picker"
 import { payloadIconPlugin } from "@mvriu5/payload-icon-picker"
 import * as SimpleIcons from "@icons-pack/react-simple-icons"
 import * as TablerIcons from "@tabler/icons-react"
@@ -114,6 +115,9 @@ export default buildConfig({
     }),
     sharp,
     plugins: [
+        payloadColorPlugin({
+            suggestedColors: ["#030014", "#0f0c1f", "#b8b5ca", "#9695a0", "#7af69a", "#5e9a00", "#f2a700", "#d30046", "#72f896", "#f8f172", "#72c9f8", "#7472f8", "#f872e2"],
+        }),
         importExportPlugin({
             collections: [{ slug: "users" }, { slug: "media" }, { slug: "pages" }, { slug: "features" }, { slug: "actions" }, { slug: "jobs" }, { slug: "blog" }, { slug: "team-members" }],
         }),

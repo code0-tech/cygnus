@@ -1,3 +1,4 @@
+import { colorField } from "@mvriu5/payload-color-picker"
 import type { Block } from "payload"
 
 export const ActionHeroBlock: Block = {
@@ -20,38 +21,34 @@ export const ActionHeroBlock: Block = {
             label: "Grainient Colors",
             type: "group",
             fields: [
-                {
+                colorField({
                     name: "color1",
                     label: "Fallback Color 1",
-                    type: "text",
                     required: false,
                     defaultValue: "#72f896",
                     admin: {
                         description: "Used when the action module does not define brandColor1.",
                     },
-                },
-                {
+                }),
+                colorField({
                     name: "color2",
                     label: "Fallback Color 2",
-                    type: "text",
                     required: false,
                     defaultValue: "#7472f8",
                     admin: {
                         description: "Used when the action module does not define brandColor2.",
                     },
-                },
-                {
+                }),
+                colorField({
                     name: "color3",
-                    type: "text",
                     required: false,
                     defaultValue: "#13102d",
-                },
-                {
+                }),
+                colorField({
                     name: "backgroundColor",
-                    type: "text",
                     required: false,
                     defaultValue: "#13102d",
-                },
+                }),
             ],
         },
         {

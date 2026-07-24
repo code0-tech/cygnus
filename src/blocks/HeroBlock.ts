@@ -1,3 +1,4 @@
+import { colorField } from "@mvriu5/payload-color-picker"
 import type { Block } from "payload"
 
 export const HeroBlock: Block = {
@@ -37,40 +38,35 @@ export const HeroBlock: Block = {
             relationTo: "media",
             required: false,
         },
-        {
+        colorField({
             name: "imageBackground",
             label: "Image Background",
-            type: "text",
             required: false,
             admin: {
                 description: "CSS color shown behind the hero image, for example #13102d or rgb(19, 16, 45).",
             },
-        },
+        }),
         {
             name: "grainientColors",
             label: "Grainient Colors",
             type: "group",
             fields: [
-                {
+                colorField({
                     name: "color1",
-                    type: "text",
                     required: false,
-                },
-                {
+                }),
+                colorField({
                     name: "color2",
-                    type: "text",
                     required: false,
-                },
-                {
+                }),
+                colorField({
                     name: "color3",
-                    type: "text",
                     required: false,
-                },
-                {
+                }),
+                colorField({
                     name: "backgroundColor",
-                    type: "text",
                     required: false,
-                },
+                }),
             ],
         },
         {
