@@ -1,5 +1,4 @@
 import { ContactPageContent } from "@/components/ContactPageContent"
-import { Aurora } from "@/components/ui/Aurora"
 import { LandingContainer } from "@/components/ui/LandingContainer"
 import { createLandingMetadata, getPageLocale, type LocalePageParams } from "@/lib/appRoute"
 import { getLandingPage } from "@/lib/cms"
@@ -16,13 +15,10 @@ export default async function ContactPage({ params }: { params: LocalePageParams
     const contactBlock = findPageBlock(page, "contact")
 
     return (
-        <>
-            <Aurora />
-            <LandingContainer className="pt-32">
+        <LandingContainer className="pt-32">
                 <div className="mx-auto w-full max-w-5xl">
                     <ContactPageContent locale={locale} contactBlock={contactBlock} />
                 </div>
-            </LandingContainer>
-        </>
+        </LandingContainer>
     )
 }

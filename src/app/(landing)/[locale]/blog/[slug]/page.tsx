@@ -1,7 +1,6 @@
 import { BlogPost } from "@/components/blog/BlogPost"
 import { BlogSkeleton } from "@/components/blog/BlogSkeleton"
 import { InteractiveGridPattern } from "@/components/InteractiveGridPattern"
-import { Aurora } from "@/components/ui/Aurora"
 import { Card } from "@/components/ui/Card"
 import { HapticButtonLink } from "@/components/ui/HapticButtonLink"
 import { LandingContainer } from "@/components/ui/LandingContainer"
@@ -28,9 +27,7 @@ export default async function Page({ params }: { params: LocaleSlugPageParams })
     const ctaBlock = findPageBlock(page, "cta")
 
     return (
-        <>
-            <Aurora />
-            <LandingContainer>
+        <LandingContainer>
                 <div className={"pt-32 w-full max-w-5xl mx-auto"}>
                     <Suspense fallback={<BlogSkeleton />}>
                         <BlogPost slug={slug} locale={locale} />
@@ -64,8 +61,7 @@ export default async function Page({ params }: { params: LocaleSlugPageParams })
                         </Card>
                     </Suspense>
                 </div>
-            </LandingContainer>
-        </>
+        </LandingContainer>
     )
 }
 

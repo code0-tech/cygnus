@@ -1,5 +1,4 @@
 import { SubscriptionConfigurator, type SubscriptionIcons } from "@/components/SubscriptionConfigurator"
-import { Aurora } from "@/components/ui/Aurora"
 import { LandingContainer } from "@/components/ui/LandingContainer"
 import { createLandingMetadata, getPageLocale, type LocalePageParams } from "@/lib/appRoute"
 import { getSubscriptionConfig } from "@/lib/cms"
@@ -31,9 +30,6 @@ export default async function SubscriptionPage({ params }: { params: LocalePageP
     }
 
     return (
-        <>
-            <Aurora />
-            <LandingContainer className="pt-16 sm:pt-32">{subscriptionConfig && <SubscriptionConfigurator locale={locale} content={subscriptionConfig} icons={icons} />}</LandingContainer>
-        </>
+        <LandingContainer className="pt-16 sm:pt-32">{subscriptionConfig && <SubscriptionConfigurator locale={locale} content={subscriptionConfig} icons={icons} />}</LandingContainer>
     )
 }

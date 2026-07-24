@@ -1,5 +1,4 @@
 import { JobsPageClient } from "@/components/JobsPageClient"
-import { Aurora } from "@/components/ui/Aurora"
 import { LandingContainer } from "@/components/ui/LandingContainer"
 import { createLandingMetadata, getPageLocale, type LocalePageParams } from "@/lib/appRoute"
 import { getLandingPage } from "@/lib/cms"
@@ -17,11 +16,8 @@ export default async function JobPage({ params }: { params: LocalePageParams }) 
     const jobsBlock = findPageBlock(jobsPage, "jobs")
 
     return (
-        <>
-            <Aurora />
-            <LandingContainer className="pt-32">
+        <LandingContainer className="pt-32">
                 <JobsPageClient jobs={jobs} locale={locale} content={jobsBlock} />
-            </LandingContainer>
-        </>
+        </LandingContainer>
     )
 }

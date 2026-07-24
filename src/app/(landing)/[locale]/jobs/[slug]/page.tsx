@@ -1,5 +1,4 @@
 import { JobDetailContent } from "@/components/JobDetailContent"
-import { Aurora } from "@/components/ui/Aurora"
 import { LandingContainer } from "@/components/ui/LandingContainer"
 import { getPageLocaleAndSlug, type LocaleSlugPageParams } from "@/lib/appRoute"
 import { createMetadata } from "@/lib/siteConfig"
@@ -24,14 +23,11 @@ export default async function JobDetailPage({ params }: { params: LocaleSlugPage
     })
 
     return (
-        <>
-            <Aurora />
-            <LandingContainer className="pt-32">
+        <LandingContainer className="pt-32">
                 <div className="mx-auto w-full max-w-5xl">
                     <JobDetailContent contentHtml={contentHtml} jobSlug={job.slug} jobsBlock={jobsBlock} locale={locale} />
                 </div>
-            </LandingContainer>
-        </>
+        </LandingContainer>
     )
 }
 

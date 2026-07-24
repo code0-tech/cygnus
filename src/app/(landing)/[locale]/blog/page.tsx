@@ -1,5 +1,4 @@
 import { BlogPageClient } from "@/components/blog/BlogPageClient"
-import { Aurora } from "@/components/ui/Aurora"
 import { LandingContainer } from "@/components/ui/LandingContainer"
 import { createLandingMetadata, getPageLocale, type LocalePageParams } from "@/lib/appRoute"
 import { BlogLayoutBlock, getBlogPosts, getLandingPage } from "@/lib/cms"
@@ -38,9 +37,7 @@ export default async function BlogPage({ params }: { params: LocalePageParams })
     const loadingLabel = blogBlock?.loadingLabel?.trim() || fallbackLabels.loadingLabel
 
     return (
-        <>
-            <Aurora />
-            <LandingContainer>
+        <LandingContainer>
                 <div className="h-32" aria-hidden="true" />
                 <BlogPageClient
                     heading={blogPage?.title?.trim() ?? "Blog"}
@@ -54,7 +51,6 @@ export default async function BlogPage({ params }: { params: LocalePageParams })
                     loadingLabel={loadingLabel}
                 />
                 <div className="h-32" aria-hidden="true" />
-            </LandingContainer>
-        </>
+        </LandingContainer>
     )
 }

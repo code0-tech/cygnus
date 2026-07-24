@@ -1,5 +1,4 @@
 import { PageBlocks } from "@/components/PageBlockRenderer"
-import { Aurora } from "@/components/ui/Aurora"
 import { LandingContainer } from "@/components/ui/LandingContainer"
 import { fetchMediaJson } from "@/lib/actionExtraction"
 import { getPageLocaleAndSlug, type LocaleSlugPageParams } from "@/lib/appRoute"
@@ -21,12 +20,9 @@ export default async function ActionDetailPage({ params }: { params: LocaleSlugP
     const tags = (action.tags ?? []).filter((tag): tag is string => Boolean(tag))
 
     return (
-        <>
-            <Aurora />
-            <LandingContainer className="pt-16">
+        <LandingContainer className="pt-16">
                 <PageBlocks blocks={actionsPage?.layout} locale={locale} action={action} actionModuleJson={moduleJson} actionReferences={references as (typeof action)[]} />
-            </LandingContainer>
-        </>
+        </LandingContainer>
     )
 }
 

@@ -1,6 +1,5 @@
 import { TeamMemberCard } from "@/components/cards/TeamMemberCard"
 import { MarkdownContent } from "@/components/blog/MarkdownContent"
-import { Aurora } from "@/components/ui/Aurora"
 import { LandingContainer } from "@/components/ui/LandingContainer"
 import { createLandingMetadata, getPageLocale, type LocalePageParams } from "@/lib/appRoute"
 import { getLandingPage, getTeamMembers } from "@/lib/cms"
@@ -16,9 +15,7 @@ export default async function AboutPage({ params }: { params: LocalePageParams }
     const contentHtml = markdownBlock ? convertLexicalToHTML({ data: markdownBlock.content, disableContainer: true }) : ""
 
     return (
-        <>
-            <Aurora />
-            <LandingContainer className="pt-32">
+        <LandingContainer className="pt-32">
                 <div className="max-w-5xl mx-auto">
                     <div className={"w-full md:w-[50vw] mx-auto flex flex-col gap-8"}>
                         <MarkdownContent content={contentHtml} />
@@ -30,7 +27,6 @@ export default async function AboutPage({ params }: { params: LocalePageParams }
                         </div>
                     </div>
                 </div>
-            </LandingContainer>
-        </>
+        </LandingContainer>
     )
 }

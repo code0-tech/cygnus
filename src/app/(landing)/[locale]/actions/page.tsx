@@ -1,4 +1,3 @@
-import { Aurora } from "@/components/ui/Aurora"
 import { LandingContainer } from "@/components/ui/LandingContainer"
 import { PageBlocks } from "@/components/PageBlockRenderer"
 import { createLandingMetadata, getPageLocale, type LocalePageParams } from "@/lib/appRoute"
@@ -11,12 +10,9 @@ export default async function ActionsPage({ params }: { params: LocalePageParams
     const [actions, actionsPage] = await Promise.all([getActions(locale), getLandingPage("actions", locale)])
 
     return (
-        <>
-            <Aurora />
-            <LandingContainer>
+        <LandingContainer>
                 <div className="h-12 lg:h-16" aria-hidden="true" />
                 <PageBlocks blocks={actionsPage?.layout} actions={actions} locale={locale} />
-            </LandingContainer>
-        </>
+        </LandingContainer>
     )
 }
