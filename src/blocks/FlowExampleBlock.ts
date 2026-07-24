@@ -114,6 +114,8 @@ export const FlowExampleBlock: Block = {
                                 { label: "Aqua", value: "aqua" },
                                 { label: "Blue", value: "blue" },
                                 { label: "Pink", value: "pink" },
+                                { label: "Lime", value: "lime" },
+                                { label: "Magenta", value: "magenta" },
                             ],
                         },
                         {

@@ -124,13 +124,13 @@ export interface SubscriptionConfigData {
             title: string
             description: string
             icon: string
-            color: "brand" | "pink" | "yellow" | "aqua" | "blue"
+            color: "brand" | "pink" | "yellow" | "aqua" | "blue" | "lime" | "magenta"
         }
         cloud: {
             title: string
             description: string
             icon: string
-            color: "brand" | "pink" | "yellow" | "aqua" | "blue"
+            color: "brand" | "pink" | "yellow" | "aqua" | "blue" | "lime" | "magenta"
         }
     }
     customerType: {
@@ -139,13 +139,13 @@ export interface SubscriptionConfigData {
             title: string
             description: string
             icon: string
-            color: "brand" | "pink" | "yellow" | "aqua" | "blue"
+            color: "brand" | "pink" | "yellow" | "aqua" | "blue" | "lime" | "magenta"
         }
         b2c: {
             title: string
             description: string
             icon: string
-            color: "brand" | "pink" | "yellow" | "aqua" | "blue"
+            color: "brand" | "pink" | "yellow" | "aqua" | "blue" | "lime" | "magenta"
         }
     }
     paymentPeriod: {

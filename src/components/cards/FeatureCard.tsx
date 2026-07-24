@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils"
 import { ReactNode } from "react"
 import { Card } from "../ui/Card"
 
-type FeatureCardTone = "brand" | "aqua" | "blue" | "pink" | "yellow"
+type FeatureCardTone = "brand" | "aqua" | "blue" | "pink" | "yellow" | "lime" | "magenta"
 type FeatureCardStyle = {
     glow?: string
     orb?: string
@@ -28,6 +28,14 @@ const toneStyles: Record<FeatureCardTone, Required<FeatureCardStyle>> = {
     yellow: {
         glow: "from-yellow/22 via-yellow/8 to-transparent",
         orb: "bg-yellow/18",
+    },
+    lime: {
+        glow: "from-lime/22 via-lime/8 to-transparent",
+        orb: "bg-lime/18",
+    },
+    magenta: {
+        glow: "from-magenta/22 via-magenta/8 to-transparent",
+        orb: "bg-magenta/18",
     },
 }
 

@@ -18,7 +18,7 @@ import { Card } from "./ui/Card"
 
 type DeploymentMode = "self-hosted" | "cloud"
 type CustomerType = "b2b" | "b2c"
-type OptionAccent = "aqua" | "yellow" | "pink" | "blue" | "brand"
+type OptionAccent = "aqua" | "yellow" | "pink" | "blue" | "brand" | "lime" | "magenta"
 type SubscriptionSelection = {
     deployment: DeploymentMode
     customerType: CustomerType

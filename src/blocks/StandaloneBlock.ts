@@ -82,6 +82,14 @@ export const StandaloneBlock: Block = {
                     value: "brand",
                 },
                 {
+                    label: "Lime",
+                    value: "lime",
+                },
+                {
+                    label: "Magenta",
+                    value: "magenta",
+                },
+                {
                     label: "Neutral",
                     value: "neutral",
                 },

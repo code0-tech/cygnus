@@ -5,12 +5,14 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const cardGradients = {
-    blue: "rgba(114,201,248,0.2)",
-    yellow: "rgba(248,241,114,0.2)",
-    pink: "rgba(248,114,226,0.2)",
-    aqua: "rgba(122,203,255,0.2)",
-    brand: "rgba(145,232,120,0.2)",
-    neutral: "rgba(255,255,255,0.1)",
+    blue: "oklch(0.6232 0.1948 279.8 / 0.2)",
+    yellow: "oklch(0.9391 0.1483 106.03 / 0.2)",
+    pink: "oklch(0.7477 0.2075 334.16 / 0.2)",
+    aqua: "oklch(0.7991 0.1074 233.93 / 0.2)",
+    brand: "oklch(0.9018 0.165 157.04 / 0.2)",
+    lime: "oklch(0.9332 0.1813 127.46 / 0.2)",
+    magenta: "oklch(0.7321 0.2231 319.1 / 0.2)",
+    neutral: "oklch(1 0 0 / 0.1)",
 } as const
 
 const gradientDirections = {

@@ -7,6 +7,8 @@ const accentColorOptions = [
     { label: "Yellow", value: "yellow" },
     { label: "Aqua", value: "aqua" },
     { label: "Blue", value: "blue" },
+    { label: "Lime", value: "lime" },
+    { label: "Magenta", value: "magenta" },
 ]
 
 const iconField = payloadIconField({

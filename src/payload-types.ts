@@ -857,7 +857,7 @@ export interface Page {
               showImageBorder?: boolean | null;
               sectionLayout:
                 'imageRight' | 'imageLeft' | 'imageFullscreen' | 'imageRightFullscreen' | 'imageLeftFullscreen';
-              gradient?: ('blue' | 'yellow' | 'pink' | 'aqua' | 'brand' | 'neutral') | null;
+              gradient?: ('blue' | 'yellow' | 'pink' | 'aqua' | 'brand' | 'lime' | 'magenta' | 'neutral') | null;
               gradientDirection?: ('topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight') | null;
               bulletPoints?: string[] | null;
               image?: (number | null) | Media;
@@ -877,7 +877,7 @@ export interface Page {
             showImageBorder?: boolean | null;
             sectionLayout:
               'imageRight' | 'imageLeft' | 'imageFullscreen' | 'imageRightFullscreen' | 'imageLeftFullscreen';
-            gradient?: ('blue' | 'yellow' | 'pink' | 'aqua' | 'brand' | 'neutral') | null;
+            gradient?: ('blue' | 'yellow' | 'pink' | 'aqua' | 'brand' | 'lime' | 'magenta' | 'neutral') | null;
             gradientDirection?: ('topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight') | null;
             bulletPoints?: string[] | null;
             image?: (number | null) | Media;
@@ -997,7 +997,7 @@ export interface Page {
               items?:
                 | {
                     icon: string;
-                    color: 'brand' | 'yellow' | 'aqua' | 'blue' | 'pink';
+                    color: 'brand' | 'yellow' | 'aqua' | 'blue' | 'pink' | 'lime' | 'magenta';
                     outline?: boolean | null;
                     segments: {
                       type: 'text' | 'literal' | 'reference' | 'node';
@@ -2544,13 +2544,13 @@ export interface SubscriptionConfig {
       title?: string | null;
       description?: string | null;
       icon: string;
-      color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue') | null;
+      color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
     };
     cloud: {
       title?: string | null;
       description?: string | null;
       icon: string;
-      color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue') | null;
+      color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
     };
   };
   customerType: {
@@ -2559,13 +2559,13 @@ export interface SubscriptionConfig {
       title?: string | null;
       description?: string | null;
       icon: string;
-      color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue') | null;
+      color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
     };
     b2c: {
       title?: string | null;
       description?: string | null;
       icon: string;
-      color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue') | null;
+      color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
     };
   };
   subscriptionTier: {
@@ -2574,13 +2574,13 @@ export interface SubscriptionConfig {
       title?: string | null;
       description?: string | null;
       icon: string;
-      color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue') | null;
+      color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
     };
     team: {
       title?: string | null;
       description?: string | null;
       icon: string;
-      color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue') | null;
+      color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
     };
   };
   paymentPeriod?: {

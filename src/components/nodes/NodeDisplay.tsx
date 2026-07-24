@@ -6,7 +6,7 @@ import { IconNote, IconVariable } from "@tabler/icons-react"
 import type { ReactNode } from "react"
 
 export type NodeSegmentType = "text" | "literal" | "reference" | "node"
-export type NodeAccent = "brand" | "yellow" | "aqua" | "blue" | "pink"
+export type NodeAccent = "brand" | "yellow" | "aqua" | "blue" | "pink" | "lime" | "magenta"
 
 const ICON_COLOR_MAP: Record<NodeAccent, string> = {
     brand: "var(--bg-brand)",
@@ -14,6 +14,8 @@ const ICON_COLOR_MAP: Record<NodeAccent, string> = {
     aqua: "var(--bg-aqua)",
     blue: "var(--bg-blue)",
     pink: "var(--bg-pink)",
+    lime: "var(--bg-lime)",
+    magenta: "var(--bg-magenta)",
 }
 
 export function getNodeAccentColor(accent: NodeAccent) {
