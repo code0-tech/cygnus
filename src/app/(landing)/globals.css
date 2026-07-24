@@ -15,6 +15,8 @@
     --color-aqua: var(--bg-aqua);
     --color-blue: var(--bg-blue);
     --color-pink: var(--bg-pink);
+    --color-magenta: var(--bg-magenta);
+    --color-lime: var(--bg-lime);
     --animate-orbit: orbit calc(var(--duration) * 1s) linear infinite;
 
     @keyframes orbit {
@@ -29,19 +31,21 @@
 
 :root {
     /* BACKGROUNDS */
-    --bg-primary: oklch(0.0962 0.0562 285.05);
-    --bg-light: oklch(0.1698 0.0388 288.83);
+    --bg-primary: oklch(0.1298 0.0346 288.38);
+    --bg-light: oklch(0.2166 0.0253 287.61);
     --bg-secondary: oklch(0.781 0.03 292.73);
     --bg-tertiary: oklch(0.674 0.017 292.6);
-    --bg-info: oklch(0.88 0.17 150);
-    --bg-success: oklch(0.62 0.19 130);
-    --bg-warning: oklch(0.78 0.18 80);
-    --bg-error: oklch(0.55 0.22 15);
-    --bg-brand: oklch(0.88 0.18 150);
+    --bg-info: oklch(0.9018 0.165 157.04);
+    --bg-success: oklch(0.7015 0.2286 141.65);
+    --bg-warning: oklch(0.8385 0.1709 83.34);
+    --bg-error: oklch(0.5591 0.2248 23.97);
+    --bg-brand: oklch(0.9018 0.165 157.04);
     --bg-yellow: oklch(0.9391 0.1483 106.03);
     --bg-aqua: oklch(0.7991 0.1074 233.93);
     --bg-blue: oklch(0.6232 0.1948 279.8);
     --bg-pink: oklch(0.7477 0.2075 334.16);
+    --bg-magenta: oklch(0.7321 0.2231 319.1);
+    --bg-lime: oklch(0.9332 0.1813 127.46);
 }
 
 @layer base {
@@ -83,10 +87,21 @@
 }
 
 @keyframes action-hero-pulse {
-    0%, 100% { left: -60%; opacity: 0; }
-    15% { opacity: 1; }
-    85% { opacity: 1; }
-    100% { left: 100%; opacity: 0; }
+    0%,
+    100% {
+        left: -60%;
+        opacity: 0;
+    }
+    15% {
+        opacity: 1;
+    }
+    85% {
+        opacity: 1;
+    }
+    100% {
+        left: 100%;
+        opacity: 0;
+    }
 }
 
 @keyframes cell-ripple {

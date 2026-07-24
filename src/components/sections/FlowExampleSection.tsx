@@ -37,13 +37,8 @@ export function FlowExampleSection({ content }: FlowExampleSectionProps) {
     const isFlowRight = content.flowLayout === "right"
     const showBorder = Boolean(content.showBorder)
     const flow = (
-        <div className={cn("relative m-2 min-h-72 min-w-0 overflow-hidden rounded-2xl border border-white/10 bg-light lg:min-h-96", isFlowRight && "lg:order-2")}>
-            <DotBackground
-                className="opacity-50 mask-[radial-gradient(ellipse_at_center,black_35%,transparent_85%)]"
-                dotColor="rgba(255,255,255,0.14)"
-                dotSize={1}
-                spacing={18}
-            />
+        <div className={cn("relative m-2 min-h-72 min-w-0 overflow-hidden rounded-2xl border border-white/10 bg-light/50 lg:min-h-96", isFlowRight && "lg:order-2")}>
+            <DotBackground className="opacity-50 mask-[radial-gradient(ellipse_at_center,black_35%,transparent_85%)]" dotColor="rgba(255,255,255,0.14)" dotSize={1} spacing={18} />
             <FlowExampleDiagram trigger={triggerNode} items={items} />
         </div>
     )
