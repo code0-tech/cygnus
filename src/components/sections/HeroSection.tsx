@@ -24,7 +24,8 @@ export function HeroSection({ content }: HeroSectionProps) {
     const buttons = content.buttons?.filter((button) => Boolean(button.label && button.url)) ?? []
     const centered = Boolean(content.centered)
     const heroImage = content.image && typeof content.image !== "number" ? (content.image as Media) : null
-    const resolvedImageSrc = getMediaUrl(heroImage?.url) || "/code0_software.png"
+    const resolvedImageSrc = getMediaUrl(heroImage?.url)
+    const hasHeroImage = Boolean(resolvedImageSrc)
     const resolvedImageAlt = heroImage?.alt || content.heading
     const grainientColors = {
         color1: content.grainientColors?.color1 ?? undefined,
@@ -36,7 +37,12 @@ export function HeroSection({ content }: HeroSectionProps) {
     if (centered) {
         return (
             <Section showFunnel={false}>
-                <div className="relative overflow-hidden border border-white/5 bg-[linear-gradient(160deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02)_28%,rgba(8,10,20,0.92)_100%)] isolate h-[min(85svh,918px)] md:h-[min(85dvh,918px)] rounded-4xl">
+                <div
+                    className={cn(
+                        "relative isolate overflow-hidden rounded-4xl border border-white/5 bg-[linear-gradient(160deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02)_28%,rgba(8,10,20,0.92)_100%)]",
+                        hasHeroImage ? "h-[min(85svh,918px)] md:h-[min(85dvh,918px)]" : "h-fit"
+                    )}
+                >
                     <Grainient {...grainientColors} />
                     <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-10 bg-[linear-gradient(180deg,rgba(5,8,18,0.68)_0%,rgba(5,8,18,0.4)_34%,transparent_68%)]" />
                     <StaggerContainer className="relative z-20 flex flex-col items-center justify-center gap-10 p-8 lg:p-16">
@@ -68,7 +74,7 @@ export function HeroSection({ content }: HeroSectionProps) {
                             </StaggerItem>
                         </div>
 
-                        <div className="w-full max-w-6xl">
+                        {hasHeroImage && <div className="w-full max-w-6xl">
                             <div
                                 className="rounded-[1.3rem] border border-white/20 bg-white/10 p-1"
                                 style={content.imageBackground?.trim() ? { backgroundColor: content.imageBackground.trim() } : undefined}
@@ -86,7 +92,7 @@ export function HeroSection({ content }: HeroSectionProps) {
                                     />
                                 </div>
                             </div>
-                        </div>
+                        </div>}
                     </StaggerContainer>
                 </div>
             </Section>
@@ -95,7 +101,12 @@ export function HeroSection({ content }: HeroSectionProps) {
 
     return (
         <Section showFunnel={false}>
-            <div className="relative overflow-hidden border border-white/5 bg-[linear-gradient(160deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02)_28%,rgba(8,10,20,0.92)_100%)] isolate h-[min(85svh,918px)] md:h-[min(85dvh,918px)] rounded-4xl">
+            <div
+                className={cn(
+                    "relative isolate overflow-hidden rounded-4xl border border-white/5 bg-[linear-gradient(160deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02)_28%,rgba(8,10,20,0.92)_100%)]",
+                    hasHeroImage ? "h-[min(85svh,918px)] md:h-[min(85dvh,918px)]" : "h-fit"
+                )}
+            >
                 <ProductHuntBadge />
 
                 <Grainient />
@@ -105,7 +116,7 @@ export function HeroSection({ content }: HeroSectionProps) {
                 />
 
                 <StaggerContainer className={"relative z-20 flex h-full flex-col items-center justify-between gap-8 rounded-3xl p-8 lg:flex-row lg:p-16"}>
-                    <div className="w-full lg:w-2/5 flex flex-col gap-4 text-start">
+                    <div className={cn("flex w-full flex-col gap-4 text-start", hasHeroImage ? "lg:w-2/5" : "lg:max-w-3xl")}>
                         <StaggerItem>
                             <Link href={content.badge_link ?? ""}>
                                 <StableBadge className="group relative z-10 text-xs px-3 cursor-pointer" color="info">
@@ -142,7 +153,7 @@ export function HeroSection({ content }: HeroSectionProps) {
                             ))}
                         </StaggerItem>
                     </div>
-                    <div className="h-auto w-full lg:w-4/5 lg:-mr-56">
+                    {hasHeroImage && <div className="h-auto w-full lg:w-4/5 lg:-mr-56">
                         <div
                             className="rounded-[1.3rem] border border-white/20 bg-white/10 p-1 lg:rounded-l-[1.3rem] lg:rounded-r-none"
                             style={content.imageBackground?.trim() ? { backgroundColor: content.imageBackground.trim() } : undefined}
@@ -160,7 +171,7 @@ export function HeroSection({ content }: HeroSectionProps) {
                                 />
                             </div>
                         </div>
-                    </div>
+                    </div>}
                 </StaggerContainer>
             </div>
         </Section>
