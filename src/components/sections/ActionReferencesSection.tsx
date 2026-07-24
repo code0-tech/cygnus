@@ -14,6 +14,7 @@ interface ActionReferencesSectionProps {
 
 export function ActionReferencesSection({ references, locale, sectionHeading, sectionLayout, sectionDescription, sectionLinkButton }: ActionReferencesSectionProps) {
     if (!references.length) return null
+
     return (
         <Section heading={sectionHeading} description={sectionDescription} funnelType={sectionLayout ?? "left"} linkButton={sectionLinkButton} className="w-full">
             <div className="grid gap-4 md:grid-cols-2">

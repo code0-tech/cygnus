@@ -94,10 +94,13 @@ const pageBlockRenderers: Partial<Record<PageBlock["blockType"], BlockRenderer>>
         )
     },
     actionReferences: (block, options) => {
+        const references = options.actionReferences ?? []
+        if (references.length === 0) return null
+
         const content = block as Extract<PageBlock, { blockType: "actionReferences" }>
         return (
             <ActionReferencesSection
-                references={options.actionReferences ?? []}
+                references={references}
                 locale={options.locale ?? "en"}
                 sectionHeading={content.sectionHeading}
                 sectionLayout={content.sectionLayout}

@@ -14,6 +14,7 @@ interface ActionEventsSectionProps {
 export function ActionEventsSection({ moduleJson, sectionHeading, sectionLayout, sectionDescription, sectionLinkButton }: ActionEventsSectionProps) {
     const events = extractFlowTypesFromJson(moduleJson)
     if (!events.length) return null
+
     const columnCount = Math.min(events.length, 3)
     const columns = Array.from({ length: columnCount }, (_, columnIndex) => events.filter((_, itemIndex) => itemIndex % columnCount === columnIndex))
 
