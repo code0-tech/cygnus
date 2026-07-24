@@ -1,0 +1,57 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.pages_blocks_action_functions": {
+      "name": "pages_blocks_action_functions",
+      "schema": "public",
+      "columns": {
+        "function_definition_label": {
+          "name": "function_definition_label",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'FunctionDefinition'"
+        },
+        "parameters_label": {
+          "name": "parameters_label",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'Parameters'"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
+    },
+    "public.pages_blocks_action_events": {
+      "name": "pages_blocks_action_events",
+      "schema": "public",
+      "columns": {
+        "flow_type_label": {
+          "name": "flow_type_label",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'FlowType'"
+        },
+        "settings_label": {
+          "name": "settings_label",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'Settings'"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "_meta": {},
+  "id": "20260724_212500_action_definition_card_labels",
+  "prevId": "20260724_210500_action_list_filters"
+}

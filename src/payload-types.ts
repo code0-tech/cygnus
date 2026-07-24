@@ -732,6 +732,8 @@ export interface Page {
               label?: string | null;
               url?: string | null;
             };
+            functionDefinitionLabel: string;
+            parametersLabel: string;
             id?: string | null;
             blockName?: string | null;
             blockType: 'actionFunctions';
@@ -744,6 +746,8 @@ export interface Page {
               label?: string | null;
               url?: string | null;
             };
+            flowTypeLabel: string;
+            settingsLabel: string;
             id?: string | null;
             blockName?: string | null;
             blockType: 'actionEvents';
@@ -1845,6 +1849,8 @@ export interface PagesSelect<T extends boolean = true> {
                     label?: T;
                     url?: T;
                   };
+              functionDefinitionLabel?: T;
+              parametersLabel?: T;
               id?: T;
               blockName?: T;
             };
@@ -1860,6 +1866,8 @@ export interface PagesSelect<T extends boolean = true> {
                     label?: T;
                     url?: T;
                   };
+              flowTypeLabel?: T;
+              settingsLabel?: T;
               id?: T;
               blockName?: T;
             };

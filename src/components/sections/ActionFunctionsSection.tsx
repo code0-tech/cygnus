@@ -9,9 +9,11 @@ interface ActionFunctionsSectionProps {
     sectionLayout?: "center" | "left" | null
     sectionDescription?: string | null
     sectionLinkButton?: { label?: string | null; url?: string | null } | null
+    functionDefinitionLabel?: string | null
+    parametersLabel?: string | null
 }
 
-export function ActionFunctionsSection({ moduleJson, sectionHeading, sectionLayout, sectionDescription, sectionLinkButton }: ActionFunctionsSectionProps) {
+export function ActionFunctionsSection({ moduleJson, sectionHeading, sectionLayout, sectionDescription, sectionLinkButton, functionDefinitionLabel, parametersLabel }: ActionFunctionsSectionProps) {
     const functionDefinitions = extractFunctionDefinitionsFromJson(moduleJson)
     if (!functionDefinitions.length) return null
     const columnCount = Math.min(functionDefinitions.length, 3)
@@ -23,7 +25,7 @@ export function ActionFunctionsSection({ moduleJson, sectionHeading, sectionLayo
                 {columns.map((column, columnIndex) => (
                     <div key={columnIndex} className="flex min-w-0 flex-col gap-3">
                         {column.map((item) => (
-                            <ActionTriggerCard key={item.id} type="functionDefinition" item={item} />
+                            <ActionTriggerCard key={item.id} type="functionDefinition" item={item} typeLabel={functionDefinitionLabel} parameterLabel={parametersLabel} />
                         ))}
                     </div>
                 ))}

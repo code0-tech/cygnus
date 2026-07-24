@@ -32,5 +32,7 @@ export const ActionFunctionsBlock: Block = {
                 },
             ],
         },
+        { name: "functionDefinitionLabel", type: "text", required: true, localized: true, defaultValue: "FunctionDefinition" },
+        { name: "parametersLabel", type: "text", required: true, localized: true, defaultValue: "Parameters" },
     ],
 }

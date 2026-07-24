@@ -32,5 +32,7 @@ export const ActionEventsBlock: Block = {
                 },
             ],
         },
+        { name: "flowTypeLabel", type: "text", required: true, localized: true, defaultValue: "FlowType" },
+        { name: "settingsLabel", type: "text", required: true, localized: true, defaultValue: "Settings" },
     ],
 }

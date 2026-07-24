@@ -8,14 +8,16 @@ import { useCallback, useMemo, useState } from "react"
 interface ActionTriggerCardProps {
     type: "flowType" | "functionDefinition"
     item: ExtractedFlowType | ExtractedFunctionDefinition
+    typeLabel?: string | null
+    parameterLabel?: string | null
 }
 
-export function ActionTriggerCard({ type, item }: ActionTriggerCardProps) {
+export function ActionTriggerCard({ type, item, typeLabel, parameterLabel: configuredParameterLabel }: ActionTriggerCardProps) {
     const [openItem, setOpenItem] = useState<number | null>(null)
     const open = openItem === 0
     const parameters = item.kind === "functionDefinition" ? item.parameters : item.kind === "flowType" ? item.settings : []
-    const label = type === "flowType" ? "FlowType" : "FunctionDefinition"
-    const parameterLabel = type === "flowType" ? "Settings" : "Parameters"
+    const label = typeLabel || (type === "flowType" ? "FlowType" : "FunctionDefinition")
+    const parameterLabel = configuredParameterLabel || (type === "flowType" ? "Settings" : "Parameters")
     const toggleItem = useCallback((index: number) => {
         setOpenItem((previousItem) => (previousItem === index ? null : index))
     }, [])

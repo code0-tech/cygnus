@@ -9,9 +9,11 @@ interface ActionEventsSectionProps {
     sectionLayout?: "center" | "left" | null
     sectionDescription?: string | null
     sectionLinkButton?: { label?: string | null; url?: string | null } | null
+    flowTypeLabel?: string | null
+    settingsLabel?: string | null
 }
 
-export function ActionEventsSection({ moduleJson, sectionHeading, sectionLayout, sectionDescription, sectionLinkButton }: ActionEventsSectionProps) {
+export function ActionEventsSection({ moduleJson, sectionHeading, sectionLayout, sectionDescription, sectionLinkButton, flowTypeLabel, settingsLabel }: ActionEventsSectionProps) {
     const events = extractFlowTypesFromJson(moduleJson)
     if (!events.length) return null
 
@@ -24,7 +26,7 @@ export function ActionEventsSection({ moduleJson, sectionHeading, sectionLayout,
                 {columns.map((column, columnIndex) => (
                     <div key={columnIndex} className="flex min-w-0 flex-col gap-3">
                         {column.map((item) => (
-                            <ActionTriggerCard key={item.id} type="flowType" item={item} />
+                            <ActionTriggerCard key={item.id} type="flowType" item={item} typeLabel={flowTypeLabel} parameterLabel={settingsLabel} />
                         ))}
                     </div>
                 ))}
