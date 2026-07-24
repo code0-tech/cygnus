@@ -17,7 +17,6 @@ export default async function ActionDetailPage({ params }: { params: LocaleSlugP
     const module = action.module as Media | undefined
     const moduleJson = await fetchMediaJson(module).catch(() => null)
     const references = (action.references ?? []).filter((reference): reference is Exclude<typeof reference, number> => typeof reference !== "number")
-    const tags = (action.tags ?? []).filter((tag): tag is string => Boolean(tag))
 
     return (
         <LandingContainer className="pt-16">

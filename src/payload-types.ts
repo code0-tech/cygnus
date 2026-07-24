@@ -1111,7 +1111,24 @@ export interface Action {
   id: number;
   identifier: string;
   module: number | Media;
-  tags?: string[] | null;
+  tags?:
+    | (
+        | 'AI'
+        | 'Analytics'
+        | 'Communication'
+        | 'Cybersecurity'
+        | 'Data & Storage'
+        | 'Developer Tools'
+        | 'Development'
+        | 'Finance & Accounting'
+        | 'HTL'
+        | 'Marketing'
+        | 'Miscellaneous'
+        | 'Productivity'
+        | 'Sales'
+        | 'Utility'
+      )[]
+    | null;
   references?: (number | Action)[] | null;
   updatedAt: string;
   createdAt: string;

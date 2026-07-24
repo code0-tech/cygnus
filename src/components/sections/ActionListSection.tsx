@@ -18,11 +18,13 @@ interface ActionListContent {
     noActionsFoundLabel: string
 }
 
+type ActionTag = NonNullable<ActionItem["tags"]>[number]
+
 export function ActionListSection({ actions, locale, content }: { actions: ActionItem[]; locale: string; content: ActionListContent }) {
     const [search, setSearch] = useState("")
-    const [selectedTags, setSelectedTags] = useState<string[]>([])
+    const [selectedTags, setSelectedTags] = useState<ActionTag[]>([])
     const tags = useMemo(
-        () => Array.from(new Set(actions.flatMap((action) => action.tags?.filter((tag): tag is string => Boolean(tag?.trim())).map((tag) => tag.trim()) ?? []))).sort((a, b) => a.localeCompare(b)),
+        () => Array.from(new Set(actions.flatMap((action) => action.tags ?? []))).sort((a, b) => a.localeCompare(b)),
         [actions]
     )
     const filteredActions = useMemo(() => {
