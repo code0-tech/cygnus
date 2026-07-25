@@ -11,6 +11,16 @@ import { gtag } from "@c15t/scripts/google-tag"
 const LazyConsentDialog = dynamic(() => import("./LazyConsentDialog"), { ssr: false })
 
 const consentTheme = {
+    consentActions: {
+        accept: {
+            variant: "primary",
+            mode: "filled",
+        },
+        customize: {
+            variant: "neutral",
+            mode: "ghost",
+        },
+    },
     slots: {
         consentBannerTitle: "text-white!",
         consentBannerDescription: "text-secondary! [&_a]:text-brand!",
@@ -62,7 +72,7 @@ export function ConsentManagerClient({ children, gaMeasurementId, legalLinks, i1
                 i18n,
             }}
         >
-            <ConsentBanner legalLinks={["privacyPolicy", "termsOfService"]} />
+            <ConsentBanner legalLinks={["privacyPolicy", "termsOfService"]} layout={[["reject", "customize"], "accept"]} primaryButton="accept" />
             <ConsentDialogSlot />
             {children}
         </ConsentManagerProvider>
