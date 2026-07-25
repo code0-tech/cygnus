@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils"
 import { Button, Menu, MenuContent, MenuItem, MenuTrigger, TextInput } from "@code0-tech/pictor"
 import { IconChevronDown, IconSearch } from "@tabler/icons-react"
 import { Section } from "@/components/ui/Section"
+import { Switch, type SwitchOption } from "@/components/ui/Switch"
 import type { ChangeEvent } from "react"
 import { useMemo, useState } from "react"
 
@@ -64,6 +65,10 @@ export function ActionListSection({ actions, locale, content }: { actions: Actio
     const allCategoriesLabel = content.allCategoriesLabel || "All Categories"
     const selectedCategory = CATEGORY_LABEL_KEYS.find(({ tag }) => tag === selectedTag)
     const selectedCategoryLabel = selectedCategory ? content.categoryLabels?.[selectedCategory.label] || selectedCategory.tag : allCategoriesLabel
+    const sortOptions: SwitchOption<SortOrder>[] = [
+        { value: "newest", label: content.sortNewestLabel },
+        { value: "oldest", label: content.sortOldestLabel },
+    ]
     const filteredActions = useMemo(() => {
         const term = search.trim().toLowerCase()
         return actions
@@ -88,7 +93,7 @@ export function ActionListSection({ actions, locale, content }: { actions: Actio
             headingLevel={1}
         >
             <div className="flex flex-col gap-4">
-                <div className="flex flex-col gap-2 sm:gap-4 sm:flex-row">
+                <div className="flex flex-row gap-2 sm:gap-4">
                     <div className="min-w-0 flex-1">
                         <TextInput
                             value={search}
@@ -99,18 +104,7 @@ export function ActionListSection({ actions, locale, content }: { actions: Actio
                             className="w-full! text-white!"
                         />
                     </div>
-                    <Menu modal={false}>
-                        <MenuTrigger asChild>
-                            <Button className="w-full! justify-between sm:w-auto! sm:min-w-36">
-                                {sortOrder === "newest" ? content.sortNewestLabel : content.sortOldestLabel}
-                                <IconChevronDown size={16} />
-                            </Button>
-                        </MenuTrigger>
-                        <MenuContent className="w-(--radix-dropdown-menu-trigger-width)">
-                            <MenuItem onClick={() => setSortOrder("newest")}>{content.sortNewestLabel}</MenuItem>
-                            <MenuItem onClick={() => setSortOrder("oldest")}>{content.sortOldestLabel}</MenuItem>
-                        </MenuContent>
-                    </Menu>
+                    <Switch value={sortOrder} options={sortOptions} onChange={setSortOrder} className="w-auto shrink-0 [&>div]:h-10.5 [&>div>button]:py-0" fitContent />
                 </div>
             </div>
             <div className="grid items-start gap-6 md:grid-cols-[13rem_minmax(0,1fr)]">
