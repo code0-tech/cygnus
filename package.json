@@ -5,6 +5,7 @@
     "type": "module",
     "scripts": {
         "dev": "next dev",
+        "prebuild": "npm run migration:check",
         "build": "next build",
         "postbuild": "next-sitemap --config next-sitemap.config.cjs && node scripts/prepare-standalone.mjs",
         "start": "next start",
@@ -12,6 +13,8 @@
         "migrate": "payload migrate",
         "migrate:create": "payload migrate:create",
         "migrate:status": "payload migrate:status",
+        "migration:check": "node scripts/check-migrations.mjs",
+        "migration:snapshot": "payload generate:db-schema --log=false --prettify=false",
         "generate:importmap": "payload generate:importmap",
         "lint": "npm run typecheck",
         "typecheck": "tsc --noEmit",
@@ -72,7 +75,8 @@
     },
     "knip": {
         "ignoreFiles": [
-            "next-sitemap.config.cjs"
+            "next-sitemap.config.cjs",
+            "src/payload-schema.snapshot"
         ],
         "ignoreDependencies": [
             "@swc-node/register",
