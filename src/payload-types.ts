@@ -2259,42 +2259,42 @@ export interface Footer {
  */
 export interface CookieBanner {
   id: number;
-  common: {
-    acceptAll: string;
-    rejectAll: string;
-    customize: string;
-    save: string;
+  common?: {
+    acceptAll?: string | null;
+    rejectAll?: string | null;
+    customize?: string | null;
+    save?: string | null;
   };
-  cookieBanner: {
-    title: string;
-    description: string;
+  cookieBanner?: {
+    title?: string | null;
+    description?: string | null;
   };
-  consentManagerDialog: {
-    title: string;
-    description: string;
+  consentManagerDialog?: {
+    title?: string | null;
+    description?: string | null;
   };
-  consentTypes: {
-    necessary: {
-      title: string;
-      description: string;
+  consentTypes?: {
+    necessary?: {
+      title?: string | null;
+      description?: string | null;
     };
-    measurement: {
-      title: string;
-      description: string;
+    measurement?: {
+      title?: string | null;
+      description?: string | null;
     };
-    marketing: {
-      title: string;
-      description: string;
+    marketing?: {
+      title?: string | null;
+      description?: string | null;
     };
   };
-  legalLinks: {
-    privacyPolicy: {
-      label: string;
-      href: string;
+  legalLinks?: {
+    privacyPolicy?: {
+      label?: string | null;
+      href?: string | null;
     };
-    termsOfService: {
-      label: string;
-      href: string;
+    termsOfService?: {
+      label?: string | null;
+      href?: string | null;
     };
   };
   updatedAt?: string | null;

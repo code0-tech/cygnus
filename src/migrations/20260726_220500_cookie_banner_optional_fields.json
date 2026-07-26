@@ -1,0 +1,38 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.cookie_banner_locales": {
+      "name": "cookie_banner_locales",
+      "schema": "public",
+      "columns": {
+        "common_accept_all": { "name": "common_accept_all", "type": "varchar", "primaryKey": false, "notNull": false },
+        "common_reject_all": { "name": "common_reject_all", "type": "varchar", "primaryKey": false, "notNull": false },
+        "common_customize": { "name": "common_customize", "type": "varchar", "primaryKey": false, "notNull": false },
+        "common_save": { "name": "common_save", "type": "varchar", "primaryKey": false, "notNull": false },
+        "cookie_banner_title": { "name": "cookie_banner_title", "type": "varchar", "primaryKey": false, "notNull": false },
+        "cookie_banner_description": { "name": "cookie_banner_description", "type": "varchar", "primaryKey": false, "notNull": false },
+        "consent_manager_dialog_title": { "name": "consent_manager_dialog_title", "type": "varchar", "primaryKey": false, "notNull": false },
+        "consent_manager_dialog_description": { "name": "consent_manager_dialog_description", "type": "varchar", "primaryKey": false, "notNull": false },
+        "consent_types_necessary_title": { "name": "consent_types_necessary_title", "type": "varchar", "primaryKey": false, "notNull": false },
+        "consent_types_necessary_description": { "name": "consent_types_necessary_description", "type": "varchar", "primaryKey": false, "notNull": false },
+        "consent_types_measurement_title": { "name": "consent_types_measurement_title", "type": "varchar", "primaryKey": false, "notNull": false },
+        "consent_types_measurement_description": { "name": "consent_types_measurement_description", "type": "varchar", "primaryKey": false, "notNull": false },
+        "consent_types_marketing_title": { "name": "consent_types_marketing_title", "type": "varchar", "primaryKey": false, "notNull": false },
+        "consent_types_marketing_description": { "name": "consent_types_marketing_description", "type": "varchar", "primaryKey": false, "notNull": false },
+        "legal_links_privacy_policy_label": { "name": "legal_links_privacy_policy_label", "type": "varchar", "primaryKey": false, "notNull": false },
+        "legal_links_privacy_policy_href": { "name": "legal_links_privacy_policy_href", "type": "varchar", "primaryKey": false, "notNull": false },
+        "legal_links_terms_of_service_label": { "name": "legal_links_terms_of_service_label", "type": "varchar", "primaryKey": false, "notNull": false },
+        "legal_links_terms_of_service_href": { "name": "legal_links_terms_of_service_href", "type": "varchar", "primaryKey": false, "notNull": false }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "_meta": {},
+  "id": "20260726_220500_cookie_banner_optional_fields",
+  "prevId": "20260724_212500_action_definition_card_labels"
+}

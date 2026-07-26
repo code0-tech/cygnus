@@ -1,7 +1,6 @@
 import { postgresAdapter } from "@payloadcms/db-postgres"
 import { nodemailerAdapter } from "@payloadcms/email-nodemailer"
 import { seoPlugin } from "@payloadcms/plugin-seo"
-import { importExportPlugin } from "@payloadcms/plugin-import-export"
 import { BlocksFeature, CodeBlock, FixedToolbarFeature, lexicalEditor } from "@payloadcms/richtext-lexical"
 import path from "path"
 import { buildConfig } from "payload"

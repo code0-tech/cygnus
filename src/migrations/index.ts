@@ -61,6 +61,7 @@ import * as migration_20260724_085806_hero_image_background from "./20260724_085
 import * as migration_20260724_201000_actions_tags_select from "./20260724_201000_actions_tags_select"
 import * as migration_20260724_210500_action_list_filters from "./20260724_210500_action_list_filters"
 import * as migration_20260724_212500_action_definition_card_labels from "./20260724_212500_action_definition_card_labels"
+import * as migration_20260726_220500_cookie_banner_optional_fields from "./20260726_220500_cookie_banner_optional_fields"
 
 export const migrations = [
     {
@@ -377,5 +378,10 @@ export const migrations = [
         up: migration_20260724_212500_action_definition_card_labels.up,
         down: migration_20260724_212500_action_definition_card_labels.down,
         name: "20260724_212500_action_definition_card_labels",
+    },
+    {
+        up: migration_20260726_220500_cookie_banner_optional_fields.up,
+        down: migration_20260726_220500_cookie_banner_optional_fields.down,
+        name: "20260726_220500_cookie_banner_optional_fields",
     },
 ]

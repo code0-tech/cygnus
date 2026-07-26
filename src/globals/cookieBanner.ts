@@ -1,107 +1,81 @@
 import type { GlobalConfig } from "payload"
 
 const localizedText = (name: string, label: string) => ({
-  name,
-  label,
-  type: "text" as const,
-  required: true,
-  localized: true,
+    name,
+    label,
+    type: "text" as const,
+    required: false,
+    localized: true,
 })
 
 export const CookieBanner: GlobalConfig = {
-  slug: "cookie-banner",
-  access: {
-    read: () => true,
-    update: ({ req }) => Boolean(req.user),
-  },
-  fields: [
-    {
-      name: "common",
-      label: "Common",
-      type: "group",
-      fields: [
-        localizedText("acceptAll", "Accept all"),
-        localizedText("rejectAll", "Reject all"),
-        localizedText("customize", "Customize"),
-        localizedText("save", "Save"),
-      ],
+    slug: "cookie-banner",
+    access: {
+        read: () => true,
+        update: ({ req }) => Boolean(req.user),
     },
-    {
-      name: "cookieBanner",
-      label: "Cookie Banner",
-      type: "group",
-      fields: [
-        localizedText("title", "Title"),
-        localizedText("description", "Description"),
-      ],
-    },
-    {
-      name: "consentManagerDialog",
-      label: "Consent Manager Dialog",
-      type: "group",
-      fields: [
-        localizedText("title", "Title"),
-        localizedText("description", "Description"),
-      ],
-    },
-    {
-      name: "consentTypes",
-      label: "Consent Types",
-      type: "group",
-      fields: [
+    fields: [
         {
-          name: "necessary",
-          label: "Necessary",
-          type: "group",
-          fields: [
-            localizedText("title", "Title"),
-            localizedText("description", "Description"),
-          ],
+            name: "common",
+            label: "Common",
+            type: "group",
+            fields: [localizedText("acceptAll", "Accept all"), localizedText("rejectAll", "Reject all"), localizedText("customize", "Customize"), localizedText("save", "Save")],
         },
         {
-          name: "measurement",
-          label: "Measurement",
-          type: "group",
-          fields: [
-            localizedText("title", "Title"),
-            localizedText("description", "Description"),
-          ],
+            name: "cookieBanner",
+            label: "Cookie Banner",
+            type: "group",
+            fields: [localizedText("title", "Title"), localizedText("description", "Description")],
         },
         {
-          name: "marketing",
-          label: "Marketing",
-          type: "group",
-          fields: [
-            localizedText("title", "Title"),
-            localizedText("description", "Description"),
-          ],
-        },
-      ],
-    },
-    {
-      name: "legalLinks",
-      label: "Legal Links",
-      type: "group",
-      fields: [
-        {
-          name: "privacyPolicy",
-          label: "Privacy Policy",
-          type: "group",
-          fields: [
-            localizedText("label", "Label"),
-            localizedText("href", "Href"),
-          ],
+            name: "consentManagerDialog",
+            label: "Consent Manager Dialog",
+            type: "group",
+            fields: [localizedText("title", "Title"), localizedText("description", "Description")],
         },
         {
-          name: "termsOfService",
-          label: "Terms of Service",
-          type: "group",
-          fields: [
-            localizedText("label", "Label"),
-            localizedText("href", "Href"),
-          ],
+            name: "consentTypes",
+            label: "Consent Types",
+            type: "group",
+            fields: [
+                {
+                    name: "necessary",
+                    label: "Necessary",
+                    type: "group",
+                    fields: [localizedText("title", "Title"), localizedText("description", "Description")],
+                },
+                {
+                    name: "measurement",
+                    label: "Measurement",
+                    type: "group",
+                    fields: [localizedText("title", "Title"), localizedText("description", "Description")],
+                },
+                {
+                    name: "marketing",
+                    label: "Marketing",
+                    type: "group",
+                    fields: [localizedText("title", "Title"), localizedText("description", "Description")],
+                },
+            ],
         },
-      ],
-    },
-  ],
+        {
+            name: "legalLinks",
+            label: "Legal Links",
+            type: "group",
+            fields: [
+                {
+                    name: "privacyPolicy",
+                    label: "Privacy Policy",
+                    type: "group",
+                    fields: [localizedText("label", "Label"), localizedText("href", "Href")],
+                },
+                {
+                    name: "termsOfService",
+                    label: "Terms of Service",
+                    type: "group",
+                    fields: [localizedText("label", "Label"), localizedText("href", "Href")],
+                },
+            ],
+        },
+    ],
 }

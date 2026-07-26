@@ -51,17 +51,8 @@ export const enum_actions_tags = pgEnum('enum_actions_tags', ['AI', 'Analytics',
 export const enum_jobs_category = pgEnum('enum_jobs_category', ['engineering', 'marketing', 'design', 'product', 'sales', 'operations'])
 export const enum_jobs_type = pgEnum('enum_jobs_type', ['full-time', 'part-time', 'contract', 'internship', 'working-student', 'freelance'])
 export const enum_jobs_location = pgEnum('enum_jobs_location', ['remote', 'hybrid', 'leipzig', 'solingen'])
-export const enum_exports_format = pgEnum('enum_exports_format', ['csv', 'json'])
-export const enum_exports_sort_order = pgEnum('enum_exports_sort_order', ['asc', 'desc'])
-export const enum_exports_locale = pgEnum('enum_exports_locale', ['all', 'en', 'de'])
-export const enum_exports_drafts = pgEnum('enum_exports_drafts', ['yes', 'no'])
-export const enum_imports_import_mode = pgEnum('enum_imports_import_mode', ['create', 'update', 'upsert'])
-export const enum_imports_status = pgEnum('enum_imports_status', ['pending', 'completed', 'partial', 'failed'])
 export const enum_payload_ai_auditlog_action = pgEnum('enum_payload_ai_auditlog_action', ['create', 'update', 'delete', 'updateGlobal'])
 export const enum_payload_ai_auditlog_target_type = pgEnum('enum_payload_ai_auditlog_target_type', ['collection', 'global'])
-export const enum_payload_jobs_log_task_slug = pgEnum('enum_payload_jobs_log_task_slug', ['inline', 'createCollectionExport', 'createCollectionImport'])
-export const enum_payload_jobs_log_state = pgEnum('enum_payload_jobs_log_state', ['failed', 'succeeded'])
-export const enum_payload_jobs_task_slug = pgEnum('enum_payload_jobs_task_slug', ['inline', 'createCollectionExport', 'createCollectionImport'])
 export const enum_navigation_buttons_buttons_variant = pgEnum('enum_navigation_buttons_buttons_variant', ['none', 'normal', 'outlined', 'filled'])
 export const enum_footer_social_links_platform = pgEnum('enum_footer_social_links_platform', ['instagram', 'discord', 'x', 'linkedin', 'github'])
 export const enum_subscription_config_defaults_deployment = pgEnum('enum_subscription_config_defaults_deployment', ['self-hosted', 'cloud'])
@@ -1463,79 +1454,6 @@ export const team_members_locales = pgTable('team_members_locales', {
 )
 
 
-export const exports = pgTable('exports', {
-  id: serial('id').primaryKey(),
-  name: varchar('name'),
-  format: enum_exports_format('format').notNull().default("csv"),
-  limit: numeric('limit', {mode: 'number'}),
-  page: numeric('page', {mode: 'number'}).default(1),
-  sort: varchar('sort'),
-  sortOrder: enum_exports_sort_order('sort_order'),
-  locale: enum_exports_locale('locale').default("all"),
-  drafts: enum_exports_drafts('drafts').default("yes"),
-  collectionSlug: varchar('collection_slug').notNull().default("users"),
-  where: jsonb('where').default(sql`'{}'::jsonb`),
-  updatedAt: timestamp('updated_at', {mode: 'string',withTimezone: true,precision: 3}).defaultNow().notNull(),
-  createdAt: timestamp('created_at', {mode: 'string',withTimezone: true,precision: 3}).defaultNow().notNull(),
-  url: varchar('url'),
-  thumbnailURL: varchar('thumbnail_u_r_l'),
-  filename: varchar('filename'),
-  mimeType: varchar('mime_type'),
-  filesize: numeric('filesize', {mode: 'number'}),
-  width: numeric('width', {mode: 'number'}),
-  height: numeric('height', {mode: 'number'}),
-  focalX: numeric('focal_x', {mode: 'number'}),
-  focalY: numeric('focal_y', {mode: 'number'}),
-}, (columns) => [
-    index('exports_updated_at_idx').on(columns.updatedAt), index('exports_created_at_idx').on(columns.createdAt), uniqueIndex('exports_filename_idx').on(columns.filename),
-]
-)
-
-
-export const exports_texts = pgTable('exports_texts', {
-  id: serial('id').primaryKey(),
-  order: integer('order').notNull(),
-  parent: integer('parent_id').notNull(),
-  path: varchar('path').notNull(),
-  text: varchar('text'),
-}, (columns) => [
-    index('exports_texts_order_parent').on(columns.order, columns.parent), foreignKey({
-      columns: [columns['parent']],
-      foreignColumns: [exports.id],
-      name: 'exports_texts_parent_fk'
-    }).onDelete('cascade'),
-]
-)
-
-
-export const imports = pgTable('imports', {
-  id: serial('id').primaryKey(),
-  collectionSlug: varchar('collection_slug').notNull().default("users"),
-  importMode: enum_imports_import_mode('import_mode'),
-  matchField: varchar('match_field').default("id"),
-  status: enum_imports_status('status').default("pending"),
-  summary_imported: numeric('summary_imported', {mode: 'number'}),
-  summary_updated: numeric('summary_updated', {mode: 'number'}),
-  summary_total: numeric('summary_total', {mode: 'number'}),
-  summary_issues: numeric('summary_issues', {mode: 'number'}),
-  summary_issueDetails: jsonb('summary_issue_details'),
-  updatedAt: timestamp('updated_at', {mode: 'string',withTimezone: true,precision: 3}).defaultNow().notNull(),
-  createdAt: timestamp('created_at', {mode: 'string',withTimezone: true,precision: 3}).defaultNow().notNull(),
-  url: varchar('url'),
-  thumbnailURL: varchar('thumbnail_u_r_l'),
-  filename: varchar('filename'),
-  mimeType: varchar('mime_type'),
-  filesize: numeric('filesize', {mode: 'number'}),
-  width: numeric('width', {mode: 'number'}),
-  height: numeric('height', {mode: 'number'}),
-  focalX: numeric('focal_x', {mode: 'number'}),
-  focalY: numeric('focal_y', {mode: 'number'}),
-}, (columns) => [
-    index('imports_updated_at_idx').on(columns.updatedAt), index('imports_created_at_idx').on(columns.createdAt), uniqueIndex('imports_filename_idx').on(columns.filename),
-]
-)
-
-
 export const payload_ai_auditlog = pgTable('payload_ai_auditlog', {
   id: serial('id').primaryKey(),
   title: varchar('title').notNull(),
@@ -1571,47 +1489,6 @@ export const payload_kv = pgTable('payload_kv', {
   data: jsonb('data').notNull(),
 }, (columns) => [
     uniqueIndex('payload_kv_key_idx').on(columns.key),
-]
-)
-
-
-export const payload_jobs_log = pgTable('payload_jobs_log', {
-  _order: integer('_order').notNull(),
-  _parentID: integer('_parent_id').notNull(),
-  id: varchar('id').primaryKey(),
-  executedAt: timestamp('executed_at', {mode: 'string',withTimezone: true,precision: 3}).notNull(),
-  completedAt: timestamp('completed_at', {mode: 'string',withTimezone: true,precision: 3}).notNull(),
-  taskSlug: enum_payload_jobs_log_task_slug('task_slug').notNull(),
-  taskID: varchar('task_i_d').notNull(),
-  input: jsonb('input'),
-  output: jsonb('output'),
-  state: enum_payload_jobs_log_state('state').notNull(),
-  error: jsonb('error'),
-}, (columns) => [
-    index('payload_jobs_log_order_idx').on(columns._order), index('payload_jobs_log_parent_id_idx').on(columns._parentID), foreignKey({
-      columns: [columns['_parentID']],
-      foreignColumns: [payload_jobs.id],
-      name: 'payload_jobs_log_parent_id_fk'
-    }).onDelete('cascade'),
-]
-)
-
-
-export const payload_jobs = pgTable('payload_jobs', {
-  id: serial('id').primaryKey(),
-  input: jsonb('input'),
-  completedAt: timestamp('completed_at', {mode: 'string',withTimezone: true,precision: 3}),
-  totalTried: numeric('total_tried', {mode: 'number'}).default(0),
-  hasError: boolean('has_error').default(false),
-  error: jsonb('error'),
-  taskSlug: enum_payload_jobs_task_slug('task_slug'),
-  queue: varchar('queue').default("default"),
-  waitUntil: timestamp('wait_until', {mode: 'string',withTimezone: true,precision: 3}),
-  processing: boolean('processing').default(false),
-  updatedAt: timestamp('updated_at', {mode: 'string',withTimezone: true,precision: 3}).defaultNow().notNull(),
-  createdAt: timestamp('created_at', {mode: 'string',withTimezone: true,precision: 3}).defaultNow().notNull(),
-}, (columns) => [
-    index('payload_jobs_completed_at_idx').on(columns.completedAt), index('payload_jobs_total_tried_idx').on(columns.totalTried), index('payload_jobs_has_error_idx').on(columns.hasError), index('payload_jobs_task_slug_idx').on(columns.taskSlug), index('payload_jobs_queue_idx').on(columns.queue), index('payload_jobs_wait_until_idx').on(columns.waitUntil), index('payload_jobs_processing_idx').on(columns.processing), index('payload_jobs_updated_at_idx').on(columns.updatedAt), index('payload_jobs_created_at_idx').on(columns.createdAt),
 ]
 )
 
@@ -1960,24 +1837,24 @@ export const cookie_banner = pgTable('cookie_banner', {
 
 
 export const cookie_banner_locales = pgTable('cookie_banner_locales', {
-  common_acceptAll: varchar('common_accept_all').notNull(),
-  common_rejectAll: varchar('common_reject_all').notNull(),
-  common_customize: varchar('common_customize').notNull(),
-  common_save: varchar('common_save').notNull(),
-  cookieBanner_title: varchar('cookie_banner_title').notNull(),
-  cookieBanner_description: varchar('cookie_banner_description').notNull(),
-  consentManagerDialog_title: varchar('consent_manager_dialog_title').notNull(),
-  consentManagerDialog_description: varchar('consent_manager_dialog_description').notNull(),
-  consentTypes_necessary_title: varchar('consent_types_necessary_title').notNull(),
-  consentTypes_necessary_description: varchar('consent_types_necessary_description').notNull(),
-  consentTypes_measurement_title: varchar('consent_types_measurement_title').notNull(),
-  consentTypes_measurement_description: varchar('consent_types_measurement_description').notNull(),
-  consentTypes_marketing_title: varchar('consent_types_marketing_title').notNull(),
-  consentTypes_marketing_description: varchar('consent_types_marketing_description').notNull(),
-  legalLinks_privacyPolicy_label: varchar('legal_links_privacy_policy_label').notNull(),
-  legalLinks_privacyPolicy_href: varchar('legal_links_privacy_policy_href').notNull(),
-  legalLinks_termsOfService_label: varchar('legal_links_terms_of_service_label').notNull(),
-  legalLinks_termsOfService_href: varchar('legal_links_terms_of_service_href').notNull(),
+  common_acceptAll: varchar('common_accept_all'),
+  common_rejectAll: varchar('common_reject_all'),
+  common_customize: varchar('common_customize'),
+  common_save: varchar('common_save'),
+  cookieBanner_title: varchar('cookie_banner_title'),
+  cookieBanner_description: varchar('cookie_banner_description'),
+  consentManagerDialog_title: varchar('consent_manager_dialog_title'),
+  consentManagerDialog_description: varchar('consent_manager_dialog_description'),
+  consentTypes_necessary_title: varchar('consent_types_necessary_title'),
+  consentTypes_necessary_description: varchar('consent_types_necessary_description'),
+  consentTypes_measurement_title: varchar('consent_types_measurement_title'),
+  consentTypes_measurement_description: varchar('consent_types_measurement_description'),
+  consentTypes_marketing_title: varchar('consent_types_marketing_title'),
+  consentTypes_marketing_description: varchar('consent_types_marketing_description'),
+  legalLinks_privacyPolicy_label: varchar('legal_links_privacy_policy_label'),
+  legalLinks_privacyPolicy_href: varchar('legal_links_privacy_policy_href'),
+  legalLinks_termsOfService_label: varchar('legal_links_terms_of_service_label'),
+  legalLinks_termsOfService_href: varchar('legal_links_terms_of_service_href'),
   id: serial('id').primaryKey(),
   _locale: enum__locales('_locale').notNull(),
   _parentID: integer('_parent_id').notNull(),
@@ -2993,40 +2870,11 @@ export const relations_team_members = relations(team_members, ({ one, many }) =>
             relationName: '_locales',
     }),
       }))
-export const relations_exports_texts = relations(exports_texts, ({ one }) => ({
-  parent: one(exports, {
-    
-    fields: [exports_texts.parent],
-    references: [exports.id],
-    relationName: '_texts',
-    }),
-      }))
-export const relations_exports = relations(exports, ({ many }) => ({
-  _texts: many(exports_texts, {
-            relationName: '_texts',
-    }),
-      }))
-export const relations_imports = relations(imports, () => ({
-  
-      }))
 export const relations_payload_ai_auditlog = relations(payload_ai_auditlog, () => ({
   
       }))
 export const relations_payload_kv = relations(payload_kv, () => ({
   
-      }))
-export const relations_payload_jobs_log = relations(payload_jobs_log, ({ one }) => ({
-  _parentID: one(payload_jobs, {
-    
-    fields: [payload_jobs_log._parentID],
-    references: [payload_jobs.id],
-    relationName: 'log',
-    }),
-      }))
-export const relations_payload_jobs = relations(payload_jobs, ({ many }) => ({
-  log: many(payload_jobs_log, {
-            relationName: 'log',
-    }),
       }))
 export const relations_payload_locked_documents_rels = relations(payload_locked_documents_rels, ({ one }) => ({
   parent: one(payload_locked_documents, {
@@ -3400,17 +3248,8 @@ type DatabaseSchema = {
   enum_jobs_category: typeof enum_jobs_category
   enum_jobs_type: typeof enum_jobs_type
   enum_jobs_location: typeof enum_jobs_location
-  enum_exports_format: typeof enum_exports_format
-  enum_exports_sort_order: typeof enum_exports_sort_order
-  enum_exports_locale: typeof enum_exports_locale
-  enum_exports_drafts: typeof enum_exports_drafts
-  enum_imports_import_mode: typeof enum_imports_import_mode
-  enum_imports_status: typeof enum_imports_status
   enum_payload_ai_auditlog_action: typeof enum_payload_ai_auditlog_action
   enum_payload_ai_auditlog_target_type: typeof enum_payload_ai_auditlog_target_type
-  enum_payload_jobs_log_task_slug: typeof enum_payload_jobs_log_task_slug
-  enum_payload_jobs_log_state: typeof enum_payload_jobs_log_state
-  enum_payload_jobs_task_slug: typeof enum_payload_jobs_task_slug
   enum_navigation_buttons_buttons_variant: typeof enum_navigation_buttons_buttons_variant
   enum_footer_social_links_platform: typeof enum_footer_social_links_platform
   enum_subscription_config_defaults_deployment: typeof enum_subscription_config_defaults_deployment
@@ -3490,13 +3329,8 @@ type DatabaseSchema = {
   blog_locales: typeof blog_locales
   team_members: typeof team_members
   team_members_locales: typeof team_members_locales
-  exports: typeof exports
-  exports_texts: typeof exports_texts
-  imports: typeof imports
   payload_ai_auditlog: typeof payload_ai_auditlog
   payload_kv: typeof payload_kv
-  payload_jobs_log: typeof payload_jobs_log
-  payload_jobs: typeof payload_jobs
   payload_locked_documents: typeof payload_locked_documents
   payload_locked_documents_rels: typeof payload_locked_documents_rels
   payload_preferences: typeof payload_preferences
@@ -3594,13 +3428,8 @@ type DatabaseSchema = {
   relations_blog: typeof relations_blog
   relations_team_members_locales: typeof relations_team_members_locales
   relations_team_members: typeof relations_team_members
-  relations_exports_texts: typeof relations_exports_texts
-  relations_exports: typeof relations_exports
-  relations_imports: typeof relations_imports
   relations_payload_ai_auditlog: typeof relations_payload_ai_auditlog
   relations_payload_kv: typeof relations_payload_kv
-  relations_payload_jobs_log: typeof relations_payload_jobs_log
-  relations_payload_jobs: typeof relations_payload_jobs
   relations_payload_locked_documents_rels: typeof relations_payload_locked_documents_rels
   relations_payload_locked_documents: typeof relations_payload_locked_documents
   relations_payload_preferences_rels: typeof relations_payload_preferences_rels

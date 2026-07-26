@@ -17,31 +17,31 @@ function getOptionalValue(value?: string | null) {
 function mapCookieBannerTranslations(content: CookieBannerContent | null) {
     return {
         common: {
-            acceptAll: getOptionalValue(content?.common.acceptAll),
-            rejectAll: getOptionalValue(content?.common.rejectAll),
-            customize: getOptionalValue(content?.common.customize),
-            save: getOptionalValue(content?.common.save),
+            acceptAll: getOptionalValue(content?.common?.acceptAll),
+            rejectAll: getOptionalValue(content?.common?.rejectAll),
+            customize: getOptionalValue(content?.common?.customize),
+            save: getOptionalValue(content?.common?.save),
         },
         cookieBanner: {
-            title: getOptionalValue(content?.cookieBanner.title),
-            description: getOptionalValue(content?.cookieBanner.description),
+            title: getOptionalValue(content?.cookieBanner?.title),
+            description: getOptionalValue(content?.cookieBanner?.description),
         },
         consentManagerDialog: {
-            title: getOptionalValue(content?.consentManagerDialog.title),
-            description: getOptionalValue(content?.consentManagerDialog.description),
+            title: getOptionalValue(content?.consentManagerDialog?.title),
+            description: getOptionalValue(content?.consentManagerDialog?.description),
         },
         consentTypes: {
             necessary: {
-                title: getOptionalValue(content?.consentTypes.necessary.title),
-                description: getOptionalValue(content?.consentTypes.necessary.description),
+                title: getOptionalValue(content?.consentTypes?.necessary?.title),
+                description: getOptionalValue(content?.consentTypes?.necessary?.description),
             },
             measurement: {
-                title: getOptionalValue(content?.consentTypes.measurement.title),
-                description: getOptionalValue(content?.consentTypes.measurement.description),
+                title: getOptionalValue(content?.consentTypes?.measurement?.title),
+                description: getOptionalValue(content?.consentTypes?.measurement?.description),
             },
             marketing: {
-                title: getOptionalValue(content?.consentTypes.marketing.title),
-                description: getOptionalValue(content?.consentTypes.marketing.description),
+                title: getOptionalValue(content?.consentTypes?.marketing?.title),
+                description: getOptionalValue(content?.consentTypes?.marketing?.description),
             },
         },
     }
@@ -56,12 +56,12 @@ export default async function ConsentManager({ children, locale }: ConsentManage
     const gaMeasurementId = getOptionalValue(process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID)
     const legalLinks = {
         privacyPolicy: {
-            href: activeContent?.legalLinks.privacyPolicy.href ?? "",
-            label: getOptionalValue(activeContent?.legalLinks.privacyPolicy.label),
+            href: activeContent?.legalLinks?.privacyPolicy?.href ?? "",
+            label: getOptionalValue(activeContent?.legalLinks?.privacyPolicy?.label),
         },
         termsOfService: {
-            href: activeContent?.legalLinks.termsOfService.href ?? "",
-            label: getOptionalValue(activeContent?.legalLinks.termsOfService.label),
+            href: activeContent?.legalLinks?.termsOfService?.href ?? "",
+            label: getOptionalValue(activeContent?.legalLinks?.termsOfService?.label),
         }
     }
     const i18n = {
