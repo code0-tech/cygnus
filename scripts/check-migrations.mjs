@@ -8,6 +8,7 @@ const baselinePath = process.env.PAYLOAD_SCHEMA_BASELINE_FILE ? resolve(projectR
 const temporaryDirectory = mkdtempSync(join(tmpdir(), "cygnus-payload-schema-"))
 const generatedPath = join(temporaryDirectory, "payload-schema.snapshot")
 const payloadBin = resolve(projectRoot, "node_modules/payload/bin.js")
+const schemaCheckSecret = "migration-schema-check-only-not-for-runtime"
 
 function normalizedFile(path) {
     return readFileSync(path, "utf8").replaceAll("\r\n", "\n").trim()
@@ -20,7 +21,7 @@ try {
         env: {
             ...process.env,
             PATH: `${resolve(projectRoot, "node_modules/.bin")}${delimiter}${process.env.PATH ?? ""}`,
-            PAYLOAD_SECRET: process.env.PAYLOAD_SECRET?.trim(),
+            PAYLOAD_SECRET: process.env.PAYLOAD_SECRET?.trim() || schemaCheckSecret,
             PAYLOAD_SCHEMA_OUTPUT_FILE: generatedPath,
         },
         timeout: 120_000,
