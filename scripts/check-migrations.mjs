@@ -20,6 +20,7 @@ try {
         env: {
             ...process.env,
             PATH: `${resolve(projectRoot, "node_modules/.bin")}${delimiter}${process.env.PATH ?? ""}`,
+            PAYLOAD_SECRET: process.env.PAYLOAD_SECRET?.trim(),
             PAYLOAD_SCHEMA_OUTPUT_FILE: generatedPath,
         },
         timeout: 120_000,
@@ -37,10 +38,7 @@ try {
         process.stderr.write(result.stdout ?? "")
         process.stderr.write(result.stderr ?? "")
         throw new Error(
-            [
-                `Payload did not create the temporary schema at ${generatedPath}.`,
-                "Ensure postgresAdapter.generateSchemaOutputFile uses PAYLOAD_SCHEMA_OUTPUT_FILE when it is set.",
-            ].join("\n")
+            [`Payload did not create the temporary schema at ${generatedPath}.`, "Ensure postgresAdapter.generateSchemaOutputFile uses PAYLOAD_SCHEMA_OUTPUT_FILE when it is set."].join("\n")
         )
     }
 
