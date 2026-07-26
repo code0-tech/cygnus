@@ -27,6 +27,7 @@ import * as SimpleIcons from "@icons-pack/react-simple-icons"
 import * as TablerIcons from "@tabler/icons-react"
 import { simpleIconsAdapter } from "@mvriu5/payload-icon-picker/adapters/simple-icons"
 import { tablerIconAdapter } from "@mvriu5/payload-icon-picker/adapters/tabler"
+import { payloadPortablePlugin } from "@mvriu5/payload-portable-plugin"
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -109,6 +110,7 @@ export default buildConfig({
         outputFile: path.resolve(dirname, "payload-types.ts"),
     },
     db: postgresAdapter({
+        allowIDOnCreate: true,
         generateSchemaOutputFile: process.env.PAYLOAD_SCHEMA_OUTPUT_FILE?.trim() || path.resolve(dirname, "payload-schema.snapshot"),
         pool: {
             connectionString: process.env.DATABASE_URL,
@@ -119,8 +121,9 @@ export default buildConfig({
         payloadColorPlugin({
             suggestedColors: ["#030014", "#0f0c1f", "#b8b5ca", "#9695a0", "#7af69a", "#5e9a00", "#f2a700", "#d30046", "#72f896", "#f8f172", "#72c9f8", "#7472f8", "#f872e2"],
         }),
-        importExportPlugin({
-            collections: [{ slug: "users" }, { slug: "media" }, { slug: "pages" }, { slug: "features" }, { slug: "actions" }, { slug: "jobs" }, { slug: "blog" }, { slug: "team-members" }],
+        payloadPortablePlugin({
+            access: () => true,
+            importMode: "merge",
         }),
         seoPlugin({
             collections: ["pages", "blog"],
