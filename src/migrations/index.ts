@@ -70,6 +70,7 @@ import * as migration_20260727_193000_small_pricing_block from "./20260727_19300
 import * as migration_20260727_200000_small_pricing_package_config from "./20260727_200000_small_pricing_package_config"
 import * as migration_20260727_203000_pricing_block_rename from "./20260727_203000_pricing_block_rename"
 import * as migration_20260727_210000_small_pricing_block from "./20260727_210000_small_pricing_block"
+import * as migration_20260727_220000_repair_actions_tags from "./20260727_220000_repair_actions_tags"
 
 export const migrations = [
     {
@@ -431,5 +432,10 @@ export const migrations = [
         up: migration_20260727_210000_small_pricing_block.up,
         down: migration_20260727_210000_small_pricing_block.down,
         name: "20260727_210000_small_pricing_block",
+    },
+    {
+        up: migration_20260727_220000_repair_actions_tags.up,
+        down: migration_20260727_220000_repair_actions_tags.down,
+        name: "20260727_220000_repair_actions_tags",
     },
 ]
