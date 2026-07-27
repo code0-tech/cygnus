@@ -198,7 +198,6 @@ const pageBlockRenderers: Partial<Record<PageBlock["blockType"], BlockRenderer>>
                 content={block as Extract<PageBlock, { blockType: "smallPricing" }>}
                 locale={options.locale ?? "en"}
                 packages={config.packages}
-                paymentPeriod={config.paymentPeriod}
             />
         )
     },

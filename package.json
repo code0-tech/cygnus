@@ -41,6 +41,7 @@
         "@payloadcms/plugin-seo": "3.86.0",
         "@payloadcms/richtext-lexical": "3.86.0",
         "@tabler/icons-react": "3.41.1",
+        "border-beam": "^1.3.0",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "graphql": "^16.14.2",

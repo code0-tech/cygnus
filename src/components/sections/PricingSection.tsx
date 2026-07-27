@@ -10,6 +10,7 @@ import type { AppLocale } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
 import NumberFlow from "@number-flow/react"
 import { IconCheck, IconX } from "@tabler/icons-react"
+import { BorderBeam } from "border-beam"
 import { useState } from "react"
 
 type PricingPeriod = "monthly" | "quarterly" | "yearly"
@@ -32,9 +33,9 @@ export function PricingSection({ content, locale, packages, paymentPeriod }: Pri
         { value: "yearly", label: paymentPeriod.yearlyText },
     ] as const
     const periodSuffix = {
-        monthly: paymentPeriod.monthlyPeriodSuffix,
-        quarterly: paymentPeriod.quarterlyPeriodSuffix,
-        yearly: paymentPeriod.yearlyPeriodSuffix,
+        monthly: "/mo",
+        quarterly: "/qtr",
+        yearly: "/yr",
     }[selectedPeriod]
     const pricingPackages = [
         {
@@ -96,18 +97,14 @@ export function PricingSection({ content, locale, packages, paymentPeriod }: Pri
                             ? Math.max(0, Math.round((1 - pricingPackage.price / (pricingPackage.monthlyPrice * periodMonths)) * 100))
                             : 0
 
-                    return (
+                    const card = (
                         <StaggerItem
                             key={pricingPackage.key}
                             y={14}
                             duration={0.42}
-                            className={cn(
-                                "relative flex h-full min-w-0 flex-col overflow-hidden rounded-3xl border border-white/5 bg-[linear-gradient(160deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02)_28%,rgba(8,10,20,0.6)_100%)] p-6 md:p-8",
-                                highlighted &&
-                                    "z-10 border-brand/40 bg-[linear-gradient(160deg,rgba(145,232,120,0.14),rgba(255,255,255,0.04)_32%,rgba(8,10,20,0.72)_100%)] transition-[scale] duration-300 md:scale-[1.025] lg:scale-[1.05]"
-                            )}
+                            className="relative flex h-full min-w-0 flex-col overflow-hidden rounded-3xl border border-white/5 bg-[linear-gradient(160deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02)_28%,rgba(8,10,20,0.6)_100%)] p-6 md:p-8"
                         >
-                            <div className={cn("pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-white/30 to-transparent", highlighted && "via-brand")} />
+                            <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-white/30 to-transparent" />
                             {discount > 0 && (
                                 <StableBadge
                                     border
@@ -117,10 +114,9 @@ export function PricingSection({ content, locale, packages, paymentPeriod }: Pri
                                 </StableBadge>
                             )}
                             <h3 className={cn("relative z-10 text-2xl font-semibold text-white", discount > 0 && "pr-20")}>{pricingPackage.title}</h3>
-                            {pricingPackage.description && <p className="relative z-10 mt-3 leading-6 text-secondary">{pricingPackage.description}</p>}
 
                             {pricingPackage.price !== null && (
-                                <div className="relative z-10 mt-6">
+                                <div className="relative z-10 mt-2">
                                     <div className="flex flex-wrap items-center gap-2">
                                         <NumberFlow
                                             value={pricingPackage.price}
@@ -128,13 +124,14 @@ export function PricingSection({ content, locale, packages, paymentPeriod }: Pri
                                             format={{ style: "currency", currency: "EUR", trailingZeroDisplay: "stripIfInteger" }}
                                             className="text-4xl font-semibold text-white"
                                         />
+                                        <span className="text-lg font-semibold text-tertiary">{periodSuffix}</span>
                                     </div>
-                                    {periodSuffix && <p className="mt-1 text-sm text-tertiary">{periodSuffix}</p>}
                                 </div>
                             )}
+                            {pricingPackage.description && <p className="relative z-10 leading-6 text-secondary">{pricingPackage.description}</p>}
 
                             {(features.length > 0 || missingFeatures.length > 0) && (
-                                <ul className="relative z-10 mt-8 flex flex-col gap-3">
+                                <ul className="relative z-10 mt-8 flex flex-col gap-2">
                                     {features.map((feature, featureIndex) => (
                                         <li key={feature.id ?? `feature-${featureIndex}`} className="flex items-start gap-3 text-sm text-white">
                                             <IconCheck size={18} className="mt-0.5 shrink-0 text-brand" />
@@ -162,6 +159,14 @@ export function PricingSection({ content, locale, packages, paymentPeriod }: Pri
                                 </div>
                             )}
                         </StaggerItem>
+                    )
+
+                    return highlighted ? (
+                        <BorderBeam key={pricingPackage.key} size="pulse-inner" colorVariant="colorful" strength={0.7} className="h-full">
+                            {card}
+                        </BorderBeam>
+                    ) : (
+                        card
                     )
                 })}
             </StaggerContainer>
