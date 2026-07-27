@@ -1,3 +1,4 @@
+import { sectionFields } from "@/fields/sectionFields"
 import type { Block } from "payload"
 
 export const BlogPreviewBlock: Block = {
@@ -7,47 +8,15 @@ export const BlogPreviewBlock: Block = {
         plural: "Blog Previews",
     },
     fields: [
-        {
-            type: "collapsible",
-            label: "Section",
-            fields: [
-                {
-                    name: "sectionHeading",
-                    label: "Section Heading",
-                    type: "text",
-                    required: false,
-                    localized: true,
-                },
-                {
-                    name: "sectionLayout",
-                    label: "Section Layout",
-                    type: "select",
-                    required: true,
-                    defaultValue: "imageCenter",
-                    options: [
-                        {
-                            label: "Image center",
-                            value: "imageCenter",
-                        },
-                        {
-                            label: "Image left",
-                            value: "imageLeft",
-                        },
-                        {
-                            label: "Image right",
-                            value: "imageRight",
-                        },
-                    ],
-                },
-                {
-                    name: "sectionDescription",
-                    label: "Section Description",
-                    type: "textarea",
-                    required: false,
-                    localized: true,
-                },
+        sectionFields({
+            includeLinkButton: false,
+            layoutDefaultValue: "imageCenter",
+            layoutOptions: [
+                { label: "Image center", value: "imageCenter" },
+                { label: "Image left", value: "imageLeft" },
+                { label: "Image right", value: "imageRight" },
             ],
-        },
+        }),
         {
             name: "blog",
             label: "Blog",

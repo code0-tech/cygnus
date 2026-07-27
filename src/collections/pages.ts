@@ -29,17 +29,69 @@ import { WideHeroBlock } from "@/blocks/WideHeroBlock"
 import { StatsBlock } from "@/blocks/StatsBlock"
 import { FlowExampleBlock } from "@/blocks/FlowExampleBlock"
 
+const RESERVED_PAGE_SLUGS = [
+    "main",
+    "jobs",
+    "blog",
+    "features",
+    "about-us",
+    "legal-notice",
+    "privacy",
+    "terms",
+    "contact",
+    "actions",
+    "action-details",
+    "community-edition",
+    "enterprise-edition",
+    "subscription",
+] as const
+
+function formatSlug(value: string) {
+    return value
+        .normalize("NFKD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+}
+
+function isCustomPage(siblingData: unknown) {
+    return Boolean(siblingData && typeof siblingData === "object" && "customPage" in siblingData && siblingData.customPage)
+}
+
 export const Pages: CollectionConfig = {
     slug: "pages",
     admin: {
         useAsTitle: "title",
-        defaultColumns: ["title", "slug", "updatedAt"],
+        defaultColumns: ["title", "slug", "customSlug", "updatedAt"],
     },
     access: {
         read: () => true,
         create: ({ req }) => Boolean(req.user),
         update: ({ req }) => Boolean(req.user),
         delete: ({ req }) => Boolean(req.user),
+    },
+    hooks: {
+        beforeValidate: [
+            ({ data, originalDoc }) => {
+                if (!data) return data
+
+                const customPage = Boolean(data.customPage ?? originalDoc?.customPage)
+                if (!customPage) {
+                    data.customSlug = null
+                    return data
+                }
+
+                const submittedSlug = typeof data.customSlug === "string" ? data.customSlug : typeof originalDoc?.customSlug === "string" ? originalDoc.customSlug : ""
+                const title = typeof data.title === "string" ? data.title : typeof originalDoc?.title === "string" ? originalDoc.title : ""
+
+                data.slug = null
+                data.customSlug = formatSlug(submittedSlug.trim() || title)
+
+                return data
+            },
+        ],
     },
     fields: [
         {
@@ -49,27 +101,52 @@ export const Pages: CollectionConfig = {
             localized: true,
         },
         {
+            name: "customPage",
+            label: "Custom Page",
+            type: "checkbox",
+            defaultValue: false,
+            admin: {
+                description: "Enable this to use a custom URL slug instead of one of the predefined pages.",
+            },
+        },
+        {
             name: "slug",
+            label: "Slug",
             type: "select",
-            required: true,
+            required: false,
             unique: true,
             index: true,
-            options: [
-                { label: "main", value: "main" },
-                { label: "jobs", value: "jobs" },
-                { label: "blog", value: "blog" },
-                { label: "features", value: "features" },
-                { label: "about-us", value: "about-us" },
-                { label: "legal-notice", value: "legal-notice" },
-                { label: "privacy", value: "privacy" },
-                { label: "terms", value: "terms" },
-                { label: "contact", value: "contact" },
-                { label: "actions", value: "actions" },
-                { label: "action-details", value: "action-details" },
-                { label: "community-edition", value: "community-edition" },
-                { label: "enterprise-edition", value: "enterprise-edition" },
-                { label: "subscription", value: "subscription" },
-            ],
+            options: RESERVED_PAGE_SLUGS.map((slug) => ({ label: slug, value: slug })),
+            admin: {
+                condition: (_, siblingData) => !isCustomPage(siblingData),
+            },
+            validate: (value: string | null | undefined, { siblingData }: { siblingData: unknown }) => {
+                if (isCustomPage(siblingData)) return true
+                return value ? true : "Select a predefined slug or enable Custom Page."
+            },
+        },
+        {
+            name: "customSlug",
+            label: "Slug",
+            type: "text",
+            required: false,
+            unique: true,
+            index: true,
+            admin: {
+                condition: (_, siblingData) => isCustomPage(siblingData),
+                description: "Generated from the title when left empty. Predefined page slugs cannot be used.",
+            },
+            validate: (value: string | null | undefined, { siblingData }: { siblingData: unknown }) => {
+                if (!isCustomPage(siblingData)) return true
+
+                const slug = formatSlug(typeof value === "string" ? value : "")
+                if (!slug) return true
+                if ((RESERVED_PAGE_SLUGS as readonly string[]).includes(slug)) {
+                    return `"${slug}" is reserved for a predefined page.`
+                }
+
+                return true
+            },
         },
         {
             name: "layout",

@@ -1,3 +1,4 @@
+import { sectionFields } from "@/fields/sectionFields"
 import { iconField } from "@mvriu5/payload-icon-picker"
 import type { Block, Field } from "payload"
 
@@ -19,44 +20,7 @@ export const FlowExampleBlock: Block = {
         plural: "Flow Examples",
     },
     fields: [
-        {
-            type: "collapsible",
-            label: "Section",
-            fields: [
-                {
-                    name: "sectionHeading",
-                    label: "Section Heading",
-                    type: "text",
-                    localized: true,
-                },
-                {
-                    name: "sectionLayout",
-                    label: "Section Layout",
-                    type: "select",
-                    required: true,
-                    defaultValue: "center",
-                    options: [
-                        { label: "Center", value: "center" },
-                        { label: "Left", value: "left" },
-                    ],
-                },
-                {
-                    name: "sectionDescription",
-                    label: "Section Description",
-                    type: "textarea",
-                    localized: true,
-                },
-                {
-                    name: "sectionLinkButton",
-                    label: "Section Link Button",
-                    type: "group",
-                    fields: [
-                        { name: "label", type: "text", localized: true },
-                        { name: "url", type: "text" },
-                    ],
-                },
-            ],
-        },
+        sectionFields(),
         {
             name: "contentHeading",
             label: "Content Heading",

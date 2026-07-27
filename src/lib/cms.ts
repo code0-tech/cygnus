@@ -327,6 +327,35 @@ const getLandingPageCached = cache(async (cachedSlug: string, cachedLocale: AppL
     })
 })
 
+const getCustomLandingPageCached = cache(async (customSlug: string, locale: AppLocale): Promise<Page | null> => {
+    return cmsFindOne(`getCustomLandingPage(${customSlug}, ${locale})`, null, {
+        collection: "pages",
+        locale,
+        fallbackLocale: DEFAULT_LOCALE,
+        where: {
+            and: [{ customPage: { equals: true } }, { customSlug: { equals: customSlug } }],
+        },
+        limit: 1,
+        depth: 2,
+        pagination: false,
+    })
+})
+
+const getCustomLandingPageSlugsCached = cache(async (locale: AppLocale): Promise<string[]> => {
+    const pages = await cmsFindMany<Pick<Page, "customSlug">>(`getCustomLandingPageSlugs(${locale})`, [], {
+        collection: "pages",
+        locale,
+        fallbackLocale: DEFAULT_LOCALE,
+        where: { customPage: { equals: true } },
+        pagination: false,
+        limit: 1000,
+        depth: 0,
+        select: { customSlug: true },
+    })
+
+    return pages.flatMap((page) => (page.customSlug ? [page.customSlug] : []))
+})
+
 const getNavigationCached = cache(async (locale: AppLocale): Promise<NavigationData | null> => {
     return cmsFindGlobal<Navigation>(`getNavigation(${locale})`, null, {
         slug: "navigation",
@@ -578,6 +607,14 @@ const getSubscriptionConfigCached = cache(async (locale: AppLocale): Promise<Sub
 
 export async function getLandingPage(slug = "main", locale: AppLocale = DEFAULT_LOCALE): Promise<Page | null> {
     return getLandingPageCached(slug, locale)
+}
+
+export async function getCustomLandingPage(customSlug: string, locale: AppLocale = DEFAULT_LOCALE): Promise<Page | null> {
+    return getCustomLandingPageCached(customSlug, locale)
+}
+
+export async function getCustomLandingPageSlugs(locale: AppLocale = DEFAULT_LOCALE): Promise<string[]> {
+    return getCustomLandingPageSlugsCached(locale)
 }
 
 export async function getNavigation(locale: AppLocale = DEFAULT_LOCALE) {

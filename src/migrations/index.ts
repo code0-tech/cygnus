@@ -62,6 +62,7 @@ import * as migration_20260724_201000_actions_tags_select from "./20260724_20100
 import * as migration_20260724_210500_action_list_filters from "./20260724_210500_action_list_filters"
 import * as migration_20260724_212500_action_definition_card_labels from "./20260724_212500_action_definition_card_labels"
 import * as migration_20260726_220500_cookie_banner_optional_fields from "./20260726_220500_cookie_banner_optional_fields"
+import * as migration_20260727_145500_custom_pages from "./20260727_145500_custom_pages"
 
 export const migrations = [
     {
@@ -383,5 +384,10 @@ export const migrations = [
         up: migration_20260726_220500_cookie_banner_optional_fields.up,
         down: migration_20260726_220500_cookie_banner_optional_fields.down,
         name: "20260726_220500_cookie_banner_optional_fields",
+    },
+    {
+        up: migration_20260727_145500_custom_pages.up,
+        down: migration_20260727_145500_custom_pages.down,
+        name: "20260727_145500_custom_pages",
     },
 ]

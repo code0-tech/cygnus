@@ -1226,11 +1226,13 @@ export const pages_blocks_flow_example = pgTable('pages_blocks_flow_example', {
 
 export const pages = pgTable('pages', {
   id: serial('id').primaryKey(),
-  slug: enum_pages_slug('slug').notNull(),
+  customPage: boolean('custom_page').default(false),
+  slug: enum_pages_slug('slug'),
+  customSlug: varchar('custom_slug'),
   updatedAt: timestamp('updated_at', {mode: 'string',withTimezone: true,precision: 3}).defaultNow().notNull(),
   createdAt: timestamp('created_at', {mode: 'string',withTimezone: true,precision: 3}).defaultNow().notNull(),
 }, (columns) => [
-    uniqueIndex('pages_slug_idx').on(columns.slug), index('pages_updated_at_idx').on(columns.updatedAt), index('pages_created_at_idx').on(columns.createdAt),
+    uniqueIndex('pages_slug_idx').on(columns.slug), uniqueIndex('pages_custom_slug_idx').on(columns.customSlug), index('pages_updated_at_idx').on(columns.updatedAt), index('pages_created_at_idx').on(columns.createdAt),
 ]
 )
 

@@ -1,5 +1,5 @@
 import { type Media, type Page } from "@/payload-types"
-import { getLandingPage } from "@/lib/cms"
+import { getCustomLandingPage, getLandingPage } from "@/lib/cms"
 import { isSupportedLocale, type AppLocale } from "@/lib/i18n"
 import { createMetadata, resolveSiteUrl } from "@/lib/siteConfig"
 import type { Metadata } from "next"
@@ -29,10 +29,24 @@ export async function getLandingPageMetadata(slug: string, locale: string): Prom
     return mapLandingPageToMetadata(page, locale)
 }
 
+export async function getCustomLandingPageMetadata(slug: string, locale: string): Promise<Metadata> {
+    if (!isSupportedLocale(locale)) {
+        return createMetadata()
+    }
+
+    const page = await getCustomLandingPage(slug, locale)
+    if (!page) {
+        return createMetadata()
+    }
+
+    return mapLandingPageToMetadata(page, locale)
+}
+
 function mapLandingPageToMetadata(page: Page, locale: AppLocale): Metadata {
     const title = page.meta?.title ?? page.title
     const description = page.meta?.description ?? undefined
-    const canonicalPath = getPagePath(locale, page.slug)
+    const slug = page.customPage ? page.customSlug : page.slug
+    const canonicalPath = getPagePath(locale, slug ?? "")
     const canonicalUrl = new URL(canonicalPath, resolveSiteUrl()).toString()
     const image = getMediaUrl(page.meta?.image)
 
