@@ -50,65 +50,6 @@ export const SubscriptionCollection: GlobalConfig = {
             defaultValue: "Subscription Config",
         },
         {
-            name: "pageIntro",
-            type: "group",
-            fields: [
-                {
-                    name: "heading",
-                    type: "text",
-                    required: false,
-                    localized: true,
-                    defaultValue: "Configure your setup before you talk pricing.",
-                },
-                {
-                    name: "description",
-                    type: "textarea",
-                    required: false,
-                    localized: true,
-                    defaultValue:
-                        "Pick your operating model, customer shape, and usage pattern. The right-hand side updates into a purchase-ready configuration flow instead of a generic pricing table.",
-                },
-            ],
-        },
-        {
-            name: "featureOverview",
-            type: "array",
-            required: false,
-            minRows: 1,
-            defaultValue: [
-                {
-                    title: "Fast onboarding",
-                    description: "Move from evaluation to a concrete subscription path without guessing which packaging model fits your rollout.",
-                    icon: "rocket",
-                },
-                {
-                    title: "Commercial clarity",
-                    description: "Separate customer type, hosting model, and runtime expectations before a plan is proposed.",
-                    icon: "user-shield",
-                },
-                {
-                    title: "Usage visibility",
-                    description: "Shape your quote around expected workflow execution volume instead of a generic flat plan.",
-                    icon: "gauge",
-                },
-            ],
-            fields: [
-                {
-                    name: "title",
-                    type: "text",
-                    required: false,
-                    localized: true,
-                },
-                {
-                    name: "description",
-                    type: "textarea",
-                    required: false,
-                    localized: true,
-                },
-                iconField,
-            ],
-        },
-        {
             name: "optionsPanelHeading",
             type: "text",
             required: false,

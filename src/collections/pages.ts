@@ -28,6 +28,7 @@ import { VideoBlock } from "@/blocks/VideoBlock"
 import { WideHeroBlock } from "@/blocks/WideHeroBlock"
 import { StatsBlock } from "@/blocks/StatsBlock"
 import { FlowExampleBlock } from "@/blocks/FlowExampleBlock"
+import { SubscriptionConfiguratorBlock } from "@/blocks/SubscriptionConfiguratorBlock"
 
 const RESERVED_PAGE_SLUGS = [
     "main",
@@ -183,6 +184,7 @@ export const Pages: CollectionConfig = {
                 ListFeatureSection,
                 StatsBlock,
                 FlowExampleBlock,
+                SubscriptionConfiguratorBlock,
             ],
             required: false,
             localized: true,

@@ -1035,6 +1035,31 @@ export interface Page {
             blockName?: string | null;
             blockType: 'flowExample';
           }
+        | {
+            pageIntro?: {
+              heading?: string | null;
+              description?: string | null;
+            };
+            featureOverview?:
+              | {
+                  title?: string | null;
+                  description?: string | null;
+                  icon: string;
+                  id?: string | null;
+                }[]
+              | null;
+            buttons?:
+              | {
+                  label: string;
+                  url: string;
+                  variant?: ('none' | 'normal' | 'outlined' | 'filled') | null;
+                  id?: string | null;
+                }[]
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'subscriptionConfigurator';
+          }
       )[]
     | null;
   meta?: {
@@ -2024,6 +2049,34 @@ export interface PagesSelect<T extends boolean = true> {
               id?: T;
               blockName?: T;
             };
+        subscriptionConfigurator?:
+          | T
+          | {
+              pageIntro?:
+                | T
+                | {
+                    heading?: T;
+                    description?: T;
+                  };
+              featureOverview?:
+                | T
+                | {
+                    title?: T;
+                    description?: T;
+                    icon?: T;
+                    id?: T;
+                  };
+              buttons?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                    variant?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
       };
   meta?:
     | T
@@ -2321,18 +2374,6 @@ export interface CookieBanner {
 export interface SubscriptionConfig {
   id: number;
   title?: string | null;
-  pageIntro?: {
-    heading?: string | null;
-    description?: string | null;
-  };
-  featureOverview?:
-    | {
-        title?: string | null;
-        description?: string | null;
-        icon: string;
-        id?: string | null;
-      }[]
-    | null;
   optionsPanelHeading?: string | null;
   defaults?: {
     deployment?: ('self-hosted' | 'cloud') | null;
@@ -2664,20 +2705,6 @@ export interface CookieBannerSelect<T extends boolean = true> {
  */
 export interface SubscriptionConfigSelect<T extends boolean = true> {
   title?: T;
-  pageIntro?:
-    | T
-    | {
-        heading?: T;
-        description?: T;
-      };
-  featureOverview?:
-    | T
-    | {
-        title?: T;
-        description?: T;
-        icon?: T;
-        id?: T;
-      };
   optionsPanelHeading?: T;
   defaults?:
     | T

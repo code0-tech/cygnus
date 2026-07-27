@@ -1,6 +1,6 @@
 "use client"
 
-import type { SubscriptionConfigData } from "@/lib/cms"
+import type { SubscriptionConfiguratorContent } from "@/lib/cms"
 import { formatEuroCurrency } from "@/lib/formatters"
 import type { AppLocale } from "@/lib/i18n"
 import { calculateSubscriptionPrice, clampToRange, formatDiscountBadge, getPaymentPeriodDiscount, getPaymentPeriodSuffix, type PaymentPeriod, type UsageRange } from "@/lib/subscriptionCalculator"
@@ -10,6 +10,7 @@ import { BuyMenu } from "@/components/payment/BuyMenu"
 import { WorkflowCalculatorDialog } from "@/components/dialogs/WorkflowCalculatorDialog"
 import { Slider } from "@/components/ui/Slider"
 import { Switch, type SwitchOption } from "@/components/ui/Switch"
+import { HapticButtonLink } from "@/components/ui/HapticButtonLink"
 import { IconCheck } from "@tabler/icons-react"
 import type { CSSProperties, ReactNode } from "react"
 import { useState } from "react"
@@ -176,7 +177,7 @@ function AdditionalFeatureCard({ title, description, active, onClick, icon, form
     )
 }
 
-export function SubscriptionConfigurator({ locale, content, icons }: { locale: AppLocale; content: SubscriptionConfigData; icons: SubscriptionIcons }) {
+export function SubscriptionConfiguratorSection({ locale, content, icons }: { locale: AppLocale; content: SubscriptionConfiguratorContent; icons: SubscriptionIcons }) {
     const workflowExecutions = content.workflowExecutions
     const aiTokens = content.aiTokens
     const defaultSelection = content.defaults
@@ -252,6 +253,21 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
                                 <FeatureRow key={item.id ?? `${item.title}-${index}`} icon={icons.featureOverview[index]} title={item.title} description={item.description} />
                             ))}
                         </div>
+
+                        {content.buttons.length > 0 && (
+                            <div className="flex flex-col gap-6">
+                                {content.buttons.map((button, index) => (
+                                    <HapticButtonLink
+                                        href={button.url}
+                                        key={`${button.label}-${button.id ?? index}`}
+                                        variant={button.variant ?? "normal"}
+                                        className={cn("w-full", button.variant === "filled" && "bg-white/80! text-primary! hover:bg-white!")}
+                                    >
+                                        {button.label}
+                                    </HapticButtonLink>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </section>
 

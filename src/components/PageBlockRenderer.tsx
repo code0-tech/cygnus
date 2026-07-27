@@ -26,7 +26,9 @@ import { ActionFunctionsSection } from "./sections/ActionFunctionsSection"
 import { ActionEventsSection } from "./sections/ActionEventsSection"
 import { ActionReferencesSection } from "./sections/ActionReferencesSection"
 import { ActionListSection } from "./sections/ActionListSection"
-import type { ActionItem } from "@/lib/cms"
+import { SubscriptionConfiguratorSection, type SubscriptionIcons } from "./sections/SubscriptionConfiguratorSection"
+import { getIcon } from "@/components/IconRenderer"
+import type { ActionItem, SubscriptionConfigData, SubscriptionConfiguratorBlockData } from "@/lib/cms"
 
 type PageBlock = NonNullable<Page["layout"]>[number]
 
@@ -39,9 +41,13 @@ interface PageBlocksRendererProps {
     action?: ActionItem
     actionModuleJson?: unknown
     actionReferences?: ActionItem[]
+    subscriptionConfig?: SubscriptionConfigData | null
 }
 
-type PageBlockRenderOptions = Pick<PageBlocksRendererProps, "actions" | "cardRowChildren" | "ctaFloating" | "locale" | "action" | "actionModuleJson" | "actionReferences">
+type PageBlockRenderOptions = Pick<
+    PageBlocksRendererProps,
+    "actions" | "cardRowChildren" | "ctaFloating" | "locale" | "action" | "actionModuleJson" | "actionReferences" | "subscriptionConfig"
+>
 type BlockRenderer = (block: PageBlock, options: PageBlockRenderOptions) => ReactNode
 
 const pageBlockRenderers: Partial<Record<PageBlock["blockType"], BlockRenderer>> = {
@@ -114,6 +120,60 @@ const pageBlockRenderers: Partial<Record<PageBlock["blockType"], BlockRenderer>>
         )
     },
     actionList: (block, options) => <ActionListSection actions={options.actions ?? []} locale={options.locale ?? "en"} content={block as Extract<PageBlock, { blockType: "actionList" }>} />,
+    subscriptionConfigurator: (block, options) => {
+        const config = options.subscriptionConfig
+        if (!config) return null
+
+        const content = block as Extract<PageBlock, { blockType: "subscriptionConfigurator" }>
+        const featureOverview: SubscriptionConfiguratorBlockData["featureOverview"] =
+            content.featureOverview?.map((item) => ({
+                id: item.id,
+                title: item.title?.trim() || "",
+                description: item.description?.trim() || "",
+                icon: item.icon?.trim() || "tabler:IconCube",
+            })) ?? []
+        const blockContent: SubscriptionConfiguratorBlockData = {
+            pageIntro: {
+                heading: content.pageIntro?.heading?.trim() || "",
+                description: content.pageIntro?.description?.trim() || "",
+            },
+            featureOverview,
+            buttons:
+                content.buttons?.flatMap((button) => {
+                    const label = button.label?.trim()
+                    const url = button.url?.trim()
+                    return label && url
+                        ? [
+                              {
+                                  id: button.id,
+                                  label,
+                                  url,
+                                  variant: button.variant,
+                              },
+                          ]
+                        : []
+                }) ?? [],
+        }
+        const icons: SubscriptionIcons = {
+            featureOverview: featureOverview.map((item, index) => getIcon(item.icon, 20, `feature-overview-${index}-${item.icon}`)),
+            deployment: {
+                selfHosted: getIcon(config.deployment.selfHosted.icon?.trim() || "tabler:IconServer", 20),
+                cloud: getIcon(config.deployment.cloud.icon?.trim() || "tabler:IconCloud", 20),
+            },
+            customerType: {
+                b2b: getIcon(config.customerType.b2b.icon?.trim() || "tabler:IconBriefcase2", 20),
+                b2c: getIcon(config.customerType.b2c.icon?.trim() || "tabler:IconBuildingStore", 20),
+            },
+            workflowBusinessTypes: (config.workflowCalculator.businessTypes.length ? config.workflowCalculator.businessTypes : [{ icon: "tabler:IconBuilding" }]).map((businessType, index) =>
+                getIcon(businessType.icon?.trim() || "tabler:IconBuilding", 18, `workflow-business-type-${index}-${businessType.icon}`)
+            ),
+            additionalFeatures: (config.additionalFeatures ?? []).map((feature, index) =>
+                getIcon(feature.icon?.trim() || "tabler:IconCube", 20, feature.id ?? `additional-feature-${index}`)
+            ),
+        }
+
+        return <SubscriptionConfiguratorSection locale={options.locale ?? "en"} content={{ ...config, ...blockContent }} icons={icons} />
+    },
 }
 
 function renderPageBlock(block: PageBlock, options: PageBlockRenderOptions) {
@@ -121,10 +181,10 @@ function renderPageBlock(block: PageBlock, options: PageBlockRenderOptions) {
     return renderer ? renderer(block, options) : null
 }
 
-export function PageBlocks({ blocks, actions, cardRowChildren, ctaFloating = false, locale, action, actionModuleJson, actionReferences }: PageBlocksRendererProps) {
+export function PageBlocks({ blocks, actions, cardRowChildren, ctaFloating = false, locale, action, actionModuleJson, actionReferences, subscriptionConfig }: PageBlocksRendererProps) {
     const renderableBlocks =
         blocks?.flatMap((block) => {
-            const element = renderPageBlock(block, { actions, cardRowChildren, ctaFloating, locale, action, actionModuleJson, actionReferences })
+            const element = renderPageBlock(block, { actions, cardRowChildren, ctaFloating, locale, action, actionModuleJson, actionReferences, subscriptionConfig })
             return element ? [{ block, element }] : []
         }) ?? []
 

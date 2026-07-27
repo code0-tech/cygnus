@@ -45,6 +45,7 @@ export const enum_pages_blocks_flow_example_flow_items_segments_type = pgEnum('e
 export const enum_pages_blocks_flow_example_flow_items_color = pgEnum('enum_pages_blocks_flow_example_flow_items_color', ['brand', 'yellow', 'aqua', 'blue', 'pink', 'lime', 'magenta'])
 export const enum_pages_blocks_flow_example_section_layout = pgEnum('enum_pages_blocks_flow_example_section_layout', ['center', 'left'])
 export const enum_pages_blocks_flow_example_flow_layout = pgEnum('enum_pages_blocks_flow_example_flow_layout', ['left', 'right'])
+export const enum_pages_blocks_subscription_configurator_buttons_variant = pgEnum('enum_pages_blocks_subscription_configurator_buttons_variant', ['none', 'normal', 'outlined', 'filled'])
 export const enum_pages_slug = pgEnum('enum_pages_slug', ['main', 'jobs', 'blog', 'features', 'about-us', 'legal-notice', 'privacy', 'terms', 'contact', 'actions', 'action-details', 'community-edition', 'enterprise-edition', 'pricing', 'subscription'])
 export const enum_features_slug = pgEnum('enum_features_slug', ['projects', 'role-system', 'member-management', 'organizations', 'suggestion-menu', 'nodes', 'runtime-types', 'action-list'])
 export const enum_actions_tags = pgEnum('enum_actions_tags', ['AI', 'Analytics', 'Communication', 'Cybersecurity', 'Data & Storage', 'Developer Tools', 'Development', 'Finance & Accounting', 'HITL', 'Marketing', 'Miscellaneous', 'Productivity', 'Sales', 'Utility'])
@@ -1224,6 +1225,61 @@ export const pages_blocks_flow_example = pgTable('pages_blocks_flow_example', {
 )
 
 
+export const pages_blocks_subscription_configurator_feature_overview = pgTable('pages_blocks_subscription_configurator_feature_overview', {
+  _order: integer('_order').notNull(),
+  _parentID: varchar('_parent_id').notNull(),
+  _locale: enum__locales('_locale').notNull(),
+  id: varchar('id').primaryKey(),
+  title: varchar('title'),
+  description: varchar('description'),
+  icon: varchar('icon').notNull(),
+}, (columns) => [
+    index('pages_blocks_subscription_configurator_feature_overview_order_idx').on(columns._order), index('pages_blocks_subscription_configurator_feature_overview_parent_id_idx').on(columns._parentID), index('pages_blocks_subscription_configurator_feature_overview_locale_idx').on(columns._locale), foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [pages_blocks_subscription_configurator.id],
+      name: 'pages_blocks_subscription_configurator_feature_overview_parent_id_fk'
+    }).onDelete('cascade'),
+]
+)
+
+
+export const pages_blocks_subscription_configurator_buttons = pgTable('pages_blocks_subscription_configurator_buttons', {
+  _order: integer('_order').notNull(),
+  _parentID: varchar('_parent_id').notNull(),
+  _locale: enum__locales('_locale').notNull(),
+  id: varchar('id').primaryKey(),
+  label: varchar('label').notNull(),
+  url: varchar('url').notNull(),
+  variant: enum_pages_blocks_subscription_configurator_buttons_variant('variant').default("normal"),
+}, (columns) => [
+    index('pages_blocks_subscription_configurator_buttons_order_idx').on(columns._order), index('pages_blocks_subscription_configurator_buttons_parent_id_idx').on(columns._parentID), index('pages_blocks_subscription_configurator_buttons_locale_idx').on(columns._locale), foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [pages_blocks_subscription_configurator.id],
+      name: 'pages_blocks_subscription_configurator_buttons_parent_id_fk'
+    }).onDelete('cascade'),
+]
+)
+
+
+export const pages_blocks_subscription_configurator = pgTable('pages_blocks_subscription_configurator', {
+  _order: integer('_order').notNull(),
+  _parentID: integer('_parent_id').notNull(),
+  _path: text('_path').notNull(),
+  _locale: enum__locales('_locale').notNull(),
+  id: varchar('id').primaryKey(),
+  pageIntro_heading: varchar('page_intro_heading').default("Configure your setup before you talk pricing."),
+  pageIntro_description: varchar('page_intro_description').default("Pick your operating model, customer shape, and usage pattern. The right-hand side updates into a purchase-ready configuration flow instead of a generic pricing table."),
+  blockName: varchar('block_name'),
+}, (columns) => [
+    index('pages_blocks_subscription_configurator_order_idx').on(columns._order), index('pages_blocks_subscription_configurator_parent_id_idx').on(columns._parentID), index('pages_blocks_subscription_configurator_path_idx').on(columns._path), index('pages_blocks_subscription_configurator_locale_idx').on(columns._locale), foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [pages.id],
+      name: 'pages_blocks_subscription_configurator_parent_id_fk'
+    }).onDelete('cascade'),
+]
+)
+
+
 export const pages = pgTable('pages', {
   id: serial('id').primaryKey(),
   customPage: boolean('custom_page').default(false),
@@ -1870,37 +1926,6 @@ export const cookie_banner_locales = pgTable('cookie_banner_locales', {
 )
 
 
-export const subscription_config_feature_overview = pgTable('subscription_config_feature_overview', {
-  _order: integer('_order').notNull(),
-  _parentID: integer('_parent_id').notNull(),
-  id: varchar('id').primaryKey(),
-  icon: varchar('icon').notNull(),
-}, (columns) => [
-    index('subscription_config_feature_overview_order_idx').on(columns._order), index('subscription_config_feature_overview_parent_id_idx').on(columns._parentID), foreignKey({
-      columns: [columns['_parentID']],
-      foreignColumns: [subscription_config.id],
-      name: 'subscription_config_feature_overview_parent_id_fk'
-    }).onDelete('cascade'),
-]
-)
-
-
-export const subscription_config_feature_overview_locales = pgTable('subscription_config_feature_overview_locales', {
-  title: varchar('title'),
-  description: varchar('description'),
-  id: serial('id').primaryKey(),
-  _locale: enum__locales('_locale').notNull(),
-  _parentID: varchar('_parent_id').notNull(),
-}, (columns) => [
-    uniqueIndex('subscription_config_feature_overview_locales_locale_parent_i').on(columns._locale, columns._parentID), foreignKey({
-      columns: [columns['_parentID']],
-      foreignColumns: [subscription_config_feature_overview.id],
-      name: 'subscription_config_feature_overview_locales_parent_id_fk'
-    }).onDelete('cascade'),
-]
-)
-
-
 export const subscription_config_workflow_calculator_business_types = pgTable('subscription_config_workflow_calculator_business_types', {
   _order: integer('_order').notNull(),
   _parentID: integer('_parent_id').notNull(),
@@ -2012,8 +2037,6 @@ export const subscription_config = pgTable('subscription_config', {
 
 
 export const subscription_config_locales = pgTable('subscription_config_locales', {
-  pageIntro_heading: varchar('page_intro_heading').default("Configure your setup before you talk pricing."),
-  pageIntro_description: varchar('page_intro_description').default("Pick your operating model, customer shape, and usage pattern. The right-hand side updates into a purchase-ready configuration flow instead of a generic pricing table."),
   optionsPanelHeading: varchar('options_panel_heading').default("Build the subscription shape"),
   deployment_label: varchar('deployment_label').default("Deployment"),
   deployment_selfHosted_title: varchar('deployment_self_hosted_title').default("Self-hosted"),
@@ -2643,6 +2666,36 @@ export const relations_pages_blocks_flow_example = relations(pages_blocks_flow_e
             relationName: 'flow_items',
     }),
       }))
+export const relations_pages_blocks_subscription_configurator_feature_overview = relations(pages_blocks_subscription_configurator_feature_overview, ({ one }) => ({
+  _parentID: one(pages_blocks_subscription_configurator, {
+    
+    fields: [pages_blocks_subscription_configurator_feature_overview._parentID],
+    references: [pages_blocks_subscription_configurator.id],
+    relationName: 'featureOverview',
+    }),
+      }))
+export const relations_pages_blocks_subscription_configurator_buttons = relations(pages_blocks_subscription_configurator_buttons, ({ one }) => ({
+  _parentID: one(pages_blocks_subscription_configurator, {
+    
+    fields: [pages_blocks_subscription_configurator_buttons._parentID],
+    references: [pages_blocks_subscription_configurator.id],
+    relationName: 'buttons',
+    }),
+      }))
+export const relations_pages_blocks_subscription_configurator = relations(pages_blocks_subscription_configurator, ({ one, many }) => ({
+  _parentID: one(pages, {
+    
+    fields: [pages_blocks_subscription_configurator._parentID],
+    references: [pages.id],
+    relationName: '_blocks_subscriptionConfigurator',
+    }),
+    featureOverview: many(pages_blocks_subscription_configurator_feature_overview, {
+            relationName: 'featureOverview',
+    }),
+    buttons: many(pages_blocks_subscription_configurator_buttons, {
+            relationName: 'buttons',
+    }),
+      }))
 export const relations_pages_locales = relations(pages_locales, ({ one }) => ({
   _parentID: one(pages, {
     
@@ -2752,6 +2805,9 @@ export const relations_pages = relations(pages, ({ many }) => ({
     }),
     _blocks_flowExample: many(pages_blocks_flow_example, {
             relationName: '_blocks_flowExample',
+    }),
+    _blocks_subscriptionConfigurator: many(pages_blocks_subscription_configurator, {
+            relationName: '_blocks_subscriptionConfigurator',
     }),
     _locales: many(pages_locales, {
             relationName: '_locales',
@@ -3128,25 +3184,6 @@ export const relations_cookie_banner = relations(cookie_banner, ({ many }) => ({
             relationName: '_locales',
     }),
       }))
-export const relations_subscription_config_feature_overview_locales = relations(subscription_config_feature_overview_locales, ({ one }) => ({
-  _parentID: one(subscription_config_feature_overview, {
-    
-    fields: [subscription_config_feature_overview_locales._parentID],
-    references: [subscription_config_feature_overview.id],
-    relationName: '_locales',
-    }),
-      }))
-export const relations_subscription_config_feature_overview = relations(subscription_config_feature_overview, ({ one, many }) => ({
-  _parentID: one(subscription_config, {
-    
-    fields: [subscription_config_feature_overview._parentID],
-    references: [subscription_config.id],
-    relationName: 'featureOverview',
-    }),
-    _locales: many(subscription_config_feature_overview_locales, {
-            relationName: '_locales',
-    }),
-      }))
 export const relations_subscription_config_workflow_calculator_business_types_locales = relations(subscription_config_workflow_calculator_business_types_locales, ({ one }) => ({
   _parentID: one(subscription_config_workflow_calculator_business_types, {
     
@@ -3194,10 +3231,7 @@ export const relations_subscription_config_locales = relations(subscription_conf
     }),
       }))
 export const relations_subscription_config = relations(subscription_config, ({ many }) => ({
-  featureOverview: many(subscription_config_feature_overview, {
-            relationName: 'featureOverview',
-    }),
-    workflowCalculator_businessTypes: many(subscription_config_workflow_calculator_business_types, {
+  workflowCalculator_businessTypes: many(subscription_config_workflow_calculator_business_types, {
             relationName: 'workflowCalculator_businessTypes',
     }),
     additionalFeatures: many(subscription_config_additional_features, {
@@ -3244,6 +3278,7 @@ type DatabaseSchema = {
   enum_pages_blocks_flow_example_flow_items_color: typeof enum_pages_blocks_flow_example_flow_items_color
   enum_pages_blocks_flow_example_section_layout: typeof enum_pages_blocks_flow_example_section_layout
   enum_pages_blocks_flow_example_flow_layout: typeof enum_pages_blocks_flow_example_flow_layout
+  enum_pages_blocks_subscription_configurator_buttons_variant: typeof enum_pages_blocks_subscription_configurator_buttons_variant
   enum_pages_slug: typeof enum_pages_slug
   enum_features_slug: typeof enum_features_slug
   enum_actions_tags: typeof enum_actions_tags
@@ -3317,6 +3352,9 @@ type DatabaseSchema = {
   pages_blocks_flow_example_flow_items_segments: typeof pages_blocks_flow_example_flow_items_segments
   pages_blocks_flow_example_flow_items: typeof pages_blocks_flow_example_flow_items
   pages_blocks_flow_example: typeof pages_blocks_flow_example
+  pages_blocks_subscription_configurator_feature_overview: typeof pages_blocks_subscription_configurator_feature_overview
+  pages_blocks_subscription_configurator_buttons: typeof pages_blocks_subscription_configurator_buttons
+  pages_blocks_subscription_configurator: typeof pages_blocks_subscription_configurator
   pages: typeof pages
   pages_locales: typeof pages_locales
   pages_texts: typeof pages_texts
@@ -3354,8 +3392,6 @@ type DatabaseSchema = {
   footer_locales: typeof footer_locales
   cookie_banner: typeof cookie_banner
   cookie_banner_locales: typeof cookie_banner_locales
-  subscription_config_feature_overview: typeof subscription_config_feature_overview
-  subscription_config_feature_overview_locales: typeof subscription_config_feature_overview_locales
   subscription_config_workflow_calculator_business_types: typeof subscription_config_workflow_calculator_business_types
   subscription_config_workflow_calculator_business_types_locales: typeof subscription_config_workflow_calculator_business_types_locales
   subscription_config_additional_features: typeof subscription_config_additional_features
@@ -3416,6 +3452,9 @@ type DatabaseSchema = {
   relations_pages_blocks_flow_example_flow_items_segments: typeof relations_pages_blocks_flow_example_flow_items_segments
   relations_pages_blocks_flow_example_flow_items: typeof relations_pages_blocks_flow_example_flow_items
   relations_pages_blocks_flow_example: typeof relations_pages_blocks_flow_example
+  relations_pages_blocks_subscription_configurator_feature_overview: typeof relations_pages_blocks_subscription_configurator_feature_overview
+  relations_pages_blocks_subscription_configurator_buttons: typeof relations_pages_blocks_subscription_configurator_buttons
+  relations_pages_blocks_subscription_configurator: typeof relations_pages_blocks_subscription_configurator
   relations_pages_locales: typeof relations_pages_locales
   relations_pages_texts: typeof relations_pages_texts
   relations_pages: typeof relations_pages
@@ -3453,8 +3492,6 @@ type DatabaseSchema = {
   relations_footer: typeof relations_footer
   relations_cookie_banner_locales: typeof relations_cookie_banner_locales
   relations_cookie_banner: typeof relations_cookie_banner
-  relations_subscription_config_feature_overview_locales: typeof relations_subscription_config_feature_overview_locales
-  relations_subscription_config_feature_overview: typeof relations_subscription_config_feature_overview
   relations_subscription_config_workflow_calculator_business_types_locales: typeof relations_subscription_config_workflow_calculator_business_types_locales
   relations_subscription_config_workflow_calculator_business_types: typeof relations_subscription_config_workflow_calculator_business_types
   relations_subscription_config_additional_features_locales: typeof relations_subscription_config_additional_features_locales

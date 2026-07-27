@@ -64,6 +64,8 @@ import * as migration_20260724_212500_action_definition_card_labels from "./2026
 import * as migration_20260726_220500_cookie_banner_optional_fields from "./20260726_220500_cookie_banner_optional_fields"
 import * as migration_20260727_145500_custom_pages from "./20260727_145500_custom_pages"
 import * as migration_20260727_184500_pricing_page from "./20260727_184500_pricing_page"
+import * as migration_20260727_190000_subscription_configurator_block from "./20260727_190000_subscription_configurator_block"
+import * as migration_20260727_191000_subscription_configurator_buttons from "./20260727_191000_subscription_configurator_buttons"
 
 export const migrations = [
     {
@@ -395,5 +397,15 @@ export const migrations = [
         up: migration_20260727_184500_pricing_page.up,
         down: migration_20260727_184500_pricing_page.down,
         name: "20260727_184500_pricing_page",
+    },
+    {
+        up: migration_20260727_190000_subscription_configurator_block.up,
+        down: migration_20260727_190000_subscription_configurator_block.down,
+        name: "20260727_190000_subscription_configurator_block",
+    },
+    {
+        up: migration_20260727_191000_subscription_configurator_buttons.up,
+        down: migration_20260727_191000_subscription_configurator_buttons.down,
+        name: "20260727_191000_subscription_configurator_buttons",
     },
 ]

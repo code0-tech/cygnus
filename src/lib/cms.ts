@@ -94,16 +94,6 @@ function sortBlogPosts(posts: BlogPostItem[]): BlogPostItem[] {
 export interface SubscriptionConfigData {
     id: number
     title: string
-    pageIntro: {
-        heading: string
-        description: string
-    }
-    featureOverview: {
-        title: string
-        description: string
-        icon: string
-        id?: string | null
-    }[]
     optionsPanelHeading: string
     defaults: {
         deployment: "self-hosted" | "cloud"
@@ -222,6 +212,27 @@ export interface SubscriptionConfigData {
           }[]
         | null
 }
+
+export interface SubscriptionConfiguratorBlockData {
+    pageIntro: {
+        heading: string
+        description: string
+    }
+    featureOverview: {
+        title: string
+        description: string
+        icon: string
+        id?: string | null
+    }[]
+    buttons: {
+        label: string
+        url: string
+        variant?: "none" | "normal" | "outlined" | "filled" | null
+        id?: string | null
+    }[]
+}
+
+export type SubscriptionConfiguratorContent = SubscriptionConfigData & SubscriptionConfiguratorBlockData
 
 function isMissingPayloadTablesError(error: unknown): boolean {
     if (!error || typeof error !== "object") {

@@ -1,0 +1,39 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.pages_blocks_subscription_configurator_buttons": {
+      "name": "pages_blocks_subscription_configurator_buttons",
+      "schema": "public",
+      "columns": {
+        "_order": { "name": "_order", "type": "integer", "primaryKey": false, "notNull": true },
+        "_parent_id": { "name": "_parent_id", "type": "varchar", "primaryKey": false, "notNull": true },
+        "_locale": { "name": "_locale", "type": "_locales", "primaryKey": false, "notNull": true },
+        "id": { "name": "id", "type": "varchar", "primaryKey": true, "notNull": true },
+        "label": { "name": "label", "type": "varchar", "primaryKey": false, "notNull": true },
+        "url": { "name": "url", "type": "varchar", "primaryKey": false, "notNull": true },
+        "variant": {
+          "name": "variant",
+          "type": "enum_pages_blocks_subscription_configurator_buttons_variant",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'normal'"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
+    }
+  },
+  "enums": {
+    "public.enum_pages_blocks_subscription_configurator_buttons_variant": {
+      "name": "enum_pages_blocks_subscription_configurator_buttons_variant",
+      "schema": "public",
+      "values": ["none", "normal", "outlined", "filled"]
+    }
+  },
+  "schemas": {},
+  "_meta": {},
+  "id": "20260727_191000_subscription_configurator_buttons",
+  "prevId": "20260727_190000_subscription_configurator_block"
+}

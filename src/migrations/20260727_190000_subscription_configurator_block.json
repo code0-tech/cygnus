@@ -1,0 +1,44 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.pages_blocks_subscription_configurator": {
+      "name": "pages_blocks_subscription_configurator",
+      "schema": "public",
+      "columns": {
+        "_order": { "name": "_order", "type": "integer", "primaryKey": false, "notNull": true },
+        "_parent_id": { "name": "_parent_id", "type": "integer", "primaryKey": false, "notNull": true },
+        "_path": { "name": "_path", "type": "text", "primaryKey": false, "notNull": true },
+        "_locale": { "name": "_locale", "type": "_locales", "primaryKey": false, "notNull": true },
+        "id": { "name": "id", "type": "varchar", "primaryKey": true, "notNull": true },
+        "page_intro_heading": { "name": "page_intro_heading", "type": "varchar", "primaryKey": false, "notNull": false, "default": "'Configure your setup before you talk pricing.'" },
+        "page_intro_description": { "name": "page_intro_description", "type": "varchar", "primaryKey": false, "notNull": false, "default": "'Pick your operating model, customer shape, and usage pattern. The right-hand side updates into a purchase-ready configuration flow instead of a generic pricing table.'" },
+        "block_name": { "name": "block_name", "type": "varchar", "primaryKey": false, "notNull": false }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
+    },
+    "public.pages_blocks_subscription_configurator_feature_overview": {
+      "name": "pages_blocks_subscription_configurator_feature_overview",
+      "schema": "public",
+      "columns": {
+        "_order": { "name": "_order", "type": "integer", "primaryKey": false, "notNull": true },
+        "_parent_id": { "name": "_parent_id", "type": "varchar", "primaryKey": false, "notNull": true },
+        "_locale": { "name": "_locale", "type": "_locales", "primaryKey": false, "notNull": true },
+        "id": { "name": "id", "type": "varchar", "primaryKey": true, "notNull": true },
+        "title": { "name": "title", "type": "varchar", "primaryKey": false, "notNull": false },
+        "description": { "name": "description", "type": "varchar", "primaryKey": false, "notNull": false },
+        "icon": { "name": "icon", "type": "varchar", "primaryKey": false, "notNull": true }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "_meta": {},
+  "id": "20260727_190000_subscription_configurator_block",
+  "prevId": "20260727_184500_pricing_page"
+}
