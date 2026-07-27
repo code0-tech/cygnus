@@ -25,6 +25,8 @@ export function FlowExampleDiagram({ trigger, items }: { trigger: FlowDiagramNod
     const cycleDuration = Math.max((items.length - 1) * stepDuration + travelDuration + 1.5, travelDuration + 1.5)
     const resetStart = cycleDuration - resetDuration
     const resetEnd = resetStart + 0.01
+    const resetStartTime = resetStart / cycleDuration
+    const resetEndTime = resetEnd / cycleDuration
 
     return (
         <motion.div
@@ -33,82 +35,107 @@ export function FlowExampleDiagram({ trigger, items }: { trigger: FlowDiagramNod
             whileInView="show"
             viewport={{ once: true, amount: 0.35 }}
         >
-            {nodes.map((node, index) => (
-                <div className="flex flex-col items-center" key={node.id}>
-                    {index > 0 && (
-                        <div className="relative h-12 w-px overflow-hidden bg-white/10 md:h-16" aria-hidden="true">
-                            <motion.div
-                                className="absolute inset-0 origin-top bg-brand"
-                                animate={
-                                    reducedMotion
-                                        ? { scaleY: 1, opacity: 0.45 }
-                                        : {
-                                              scaleY: [0, 0, 1, 1, 1, 1],
-                                              opacity: [0, 0, 1, 1, 0, 0],
-                                          }
-                                }
-                                transition={{
-                                    duration: reducedMotion ? 0 : cycleDuration,
-                                    repeat: reducedMotion ? 0 : Infinity,
-                                    ease: "linear",
-                                    times: [
-                                        0,
-                                        ((index - 1) * stepDuration) / cycleDuration,
-                                        ((index - 1) * stepDuration + travelDuration) / cycleDuration,
-                                        resetStart / cycleDuration,
-                                        resetEnd / cycleDuration,
-                                        1,
-                                    ],
-                                }}
-                            />
-                        </div>
-                    )}
-                    <motion.div
-                        variants={{
-                            hidden: { opacity: reducedMotion ? 1 : 0, y: reducedMotion ? 0 : 12 },
-                            show: { opacity: 1, y: 0 },
-                        }}
-                        transition={{ duration: 0.38, delay: index * 0.2, ease: [0.22, 1, 0.36, 1] }}
-                    >
-                        {"trigger" in node ? (
-                            <TriggerDisplay icon={node.trigger.icon} text={node.trigger.text} />
-                        ) : (
-                            <motion.div
-                                className="relative isolate rounded-2xl"
-                            >
+            {nodes.map((node, index) => {
+                const arrivalTime = index > 0 ? ((index - 1) * stepDuration + travelDuration) / cycleDuration : 0
+                const arrivalPeakTime = Math.min(arrivalTime + 0.04, resetStartTime)
+                const arrivalSettleTime = Math.min(arrivalTime + 0.1, resetStartTime)
+
+                return (
+                    <div className="flex flex-col items-center" key={node.id}>
+                        {index > 0 && (
+                            <div className="relative h-12 w-px overflow-hidden bg-white/10 md:h-16" aria-hidden="true">
                                 <motion.div
-                                    className="pointer-events-none absolute -inset-1 z-0 rounded-2xl blur-sm"
-                                    style={{ backgroundColor: getNodeAccentColor(node.node.color) }}
+                                    className="absolute inset-0 origin-top bg-linear-to-b from-brand/50 via-brand to-brand/70"
                                     animate={
                                         reducedMotion
-                                            ? { opacity: 0.16, scale: 1 }
+                                            ? { scaleY: 1, opacity: 0.45 }
                                             : {
-                                                  opacity: [0, 0, 0.16, 0.16, 0, 0],
-                                                  scale: [0.98, 0.98, 1, 1, 1, 1],
+                                                  scaleY: [0, 0, 1, 1, 1, 1],
+                                                  opacity: [0, 0, 1, 1, 0, 0],
                                               }
                                     }
                                     transition={{
                                         duration: reducedMotion ? 0 : cycleDuration,
                                         repeat: reducedMotion ? 0 : Infinity,
                                         ease: "linear",
-                                        times: [
-                                            0,
-                                            ((index - 1) * stepDuration + travelDuration) / cycleDuration,
-                                            ((index - 1) * stepDuration + travelDuration + 0.45) / cycleDuration,
-                                            resetStart / cycleDuration,
-                                            resetEnd / cycleDuration,
-                                            1,
-                                        ],
+                                        times: [0, ((index - 1) * stepDuration) / cycleDuration, arrivalTime, resetStartTime, resetEndTime, 1],
                                     }}
                                 />
-                                <div className="relative z-10">
-                                    <NodeDisplay node={node.node} />
-                                </div>
-                            </motion.div>
+                            </div>
                         )}
-                    </motion.div>
-                </div>
-            ))}
+                        <motion.div
+                            variants={{
+                                hidden: { opacity: reducedMotion ? 1 : 0, y: reducedMotion ? 0 : 12 },
+                                show: { opacity: 1, y: 0 },
+                            }}
+                            transition={{ duration: 0.38, delay: index * 0.2, ease: [0.22, 1, 0.36, 1] }}
+                        >
+                            {"trigger" in node ? (
+                                <TriggerDisplay icon={node.trigger.icon} text={node.trigger.text} />
+                            ) : (
+                                <motion.div
+                                    className="relative isolate rounded-2xl"
+                                    animate={
+                                        reducedMotion
+                                            ? { scale: 1 }
+                                            : {
+                                                  scale: [1, 1, 1.012, 1, 1, 1, 1],
+                                              }
+                                    }
+                                    transition={{
+                                        duration: reducedMotion ? 0 : cycleDuration,
+                                        repeat: reducedMotion ? 0 : Infinity,
+                                        ease: "linear",
+                                        times: [0, arrivalTime, arrivalPeakTime, arrivalSettleTime, resetStartTime, resetEndTime, 1],
+                                    }}
+                                >
+                                    <motion.div
+                                        aria-hidden="true"
+                                        className="pointer-events-none absolute inset-0 z-0 rounded-[inherit]"
+                                        style={{
+                                            boxShadow: `0 0 0 1px color-mix(in srgb, ${getNodeAccentColor(node.node.color)} 24%, transparent), 0 0 14px color-mix(in srgb, ${getNodeAccentColor(node.node.color)} 22%, transparent)`,
+                                        }}
+                                        animate={
+                                            reducedMotion
+                                                ? { opacity: 0.45 }
+                                                : {
+                                                      opacity: [0, 0, 0.75, 0.45, 0.45, 0, 0],
+                                                  }
+                                        }
+                                        transition={{
+                                            duration: reducedMotion ? 0 : cycleDuration,
+                                            repeat: reducedMotion ? 0 : Infinity,
+                                            ease: "linear",
+                                            times: [0, arrivalTime, arrivalPeakTime, arrivalSettleTime, resetStartTime, resetEndTime, 1],
+                                        }}
+                                    />
+                                    <motion.div
+                                        aria-hidden="true"
+                                        className="pointer-events-none absolute -inset-2 z-0 rounded-3xl blur-xl"
+                                        style={{ backgroundColor: getNodeAccentColor(node.node.color) }}
+                                        animate={
+                                            reducedMotion
+                                                ? { opacity: 0.08 }
+                                                : {
+                                                      opacity: [0, 0, 0.14, 0.08, 0.08, 0, 0],
+                                                  }
+                                        }
+                                        transition={{
+                                            duration: reducedMotion ? 0 : cycleDuration,
+                                            repeat: reducedMotion ? 0 : Infinity,
+                                            ease: "linear",
+                                            times: [0, arrivalTime, arrivalPeakTime, arrivalSettleTime, resetStartTime, resetEndTime, 1],
+                                        }}
+                                    />
+                                    <div className="relative z-10">
+                                        <NodeDisplay node={node.node} />
+                                    </div>
+                                </motion.div>
+                            )}
+                        </motion.div>
+                    </div>
+                )
+            })}
         </motion.div>
     )
 }
