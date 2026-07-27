@@ -1,3 +1,4 @@
+import { sectionFields } from "@/fields/sectionFields"
 import type { Block } from "payload"
 
 export const OffsetCardsBlock: Block = {
@@ -7,34 +8,8 @@ export const OffsetCardsBlock: Block = {
         plural: "Offset Cards Blocks",
     },
     fields: [
-        {
-            type: "collapsible",
-            label: "Section",
-            fields: [
-                {
-                    name: "sectionHeading",
-                    label: "Section Heading",
-                    type: "text",
-                    required: false,
-                    localized: true,
-                },
-                {
-                    name: "sectionLayout",
-                    label: "Section Layout",
-                    type: "select",
-                    required: true,
-                    defaultValue: "center",
-                    options: [
-                        {
-                            label: "Center",
-                            value: "center",
-                        },
-                        {
-                            label: "Left",
-                            value: "left",
-                        },
-                    ],
-                },
+        sectionFields({
+            additionalFieldsAfterLayout: [
                 {
                     name: "cardPlacement",
                     label: "Card Placement",
@@ -42,47 +17,13 @@ export const OffsetCardsBlock: Block = {
                     required: true,
                     defaultValue: "alternate",
                     options: [
-                        {
-                            label: "Alternate",
-                            value: "alternate",
-                        },
-                        {
-                            label: "Right",
-                            value: "right",
-                        },
-                        {
-                            label: "Left",
-                            value: "left",
-                        },
-                    ],
-                },
-                {
-                    name: "sectionDescription",
-                    label: "Section Description",
-                    type: "textarea",
-                    required: false,
-                    localized: true,
-                },
-                {
-                    name: "sectionLinkButton",
-                    label: "Section Link Button",
-                    type: "group",
-                    fields: [
-                        {
-                            name: "label",
-                            type: "text",
-                            required: false,
-                            localized: true,
-                        },
-                        {
-                            name: "url",
-                            type: "text",
-                            required: false,
-                        },
+                        { label: "Alternate", value: "alternate" },
+                        { label: "Right", value: "right" },
+                        { label: "Left", value: "left" },
                     ],
                 },
             ],
-        },
+        }),
         {
             name: "cards",
             label: "Cards",
