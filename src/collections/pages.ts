@@ -43,6 +43,7 @@ const RESERVED_PAGE_SLUGS = [
     "action-details",
     "community-edition",
     "enterprise-edition",
+    "pricing",
     "subscription",
 ] as const
 

@@ -1,0 +1,32 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {},
+  "enums": {
+    "public.enum_pages_slug": {
+      "name": "enum_pages_slug",
+      "schema": "public",
+      "values": [
+        "main",
+        "jobs",
+        "blog",
+        "features",
+        "about-us",
+        "legal-notice",
+        "privacy",
+        "terms",
+        "contact",
+        "actions",
+        "action-details",
+        "community-edition",
+        "enterprise-edition",
+        "pricing",
+        "subscription"
+      ]
+    }
+  },
+  "schemas": {},
+  "_meta": {},
+  "id": "20260727_184500_pricing_page",
+  "prevId": "20260727_145500_custom_pages"
+}

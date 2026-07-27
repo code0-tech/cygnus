@@ -63,6 +63,7 @@ import * as migration_20260724_210500_action_list_filters from "./20260724_21050
 import * as migration_20260724_212500_action_definition_card_labels from "./20260724_212500_action_definition_card_labels"
 import * as migration_20260726_220500_cookie_banner_optional_fields from "./20260726_220500_cookie_banner_optional_fields"
 import * as migration_20260727_145500_custom_pages from "./20260727_145500_custom_pages"
+import * as migration_20260727_184500_pricing_page from "./20260727_184500_pricing_page"
 
 export const migrations = [
     {
@@ -389,5 +390,10 @@ export const migrations = [
         up: migration_20260727_145500_custom_pages.up,
         down: migration_20260727_145500_custom_pages.down,
         name: "20260727_145500_custom_pages",
+    },
+    {
+        up: migration_20260727_184500_pricing_page.up,
+        down: migration_20260727_184500_pricing_page.down,
+        name: "20260727_184500_pricing_page",
     },
 ]

@@ -219,6 +219,7 @@ export interface Page {
         | 'action-details'
         | 'community-edition'
         | 'enterprise-edition'
+        | 'pricing'
         | 'subscription'
       )
     | null;
