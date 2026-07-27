@@ -3,7 +3,7 @@
 import { StableBadge } from "@/components/ui/StableBadge"
 import { Card, Flex, Text } from "@code0-tech/pictor"
 import { IconNote, IconVariable } from "@tabler/icons-react"
-import type { ReactNode } from "react"
+import type { CSSProperties, ReactNode } from "react"
 
 export type NodeSegmentType = "text" | "literal" | "reference" | "node"
 export type NodeAccent = "brand" | "yellow" | "aqua" | "blue" | "pink" | "lime" | "magenta"
@@ -78,9 +78,21 @@ function NodeMessage({ segments }: { segments: NodeSegment[] }) {
     })
 }
 
-export function NodeDisplay({ node }: { node: NodeItem }) {
+export function NodeDisplay({ node, animatedOutline = false }: { node: NodeItem; animatedOutline?: boolean }) {
     return (
-        <Card paddingSize="xs" py="0.35" borderColor="info" color="primary" outline={node.outline}>
+        <Card
+            paddingSize="xs"
+            py="0.35"
+            borderColor="info"
+            color="primary"
+            outline={node.outline}
+            className={
+                animatedOutline && node.outline
+                    ? "after:pointer-events-none after:absolute after:-inset-[calc(var(--padding)/3)] after:rounded-[calc(1rem+var(--padding)/3)] after:border after:border-[var(--node-accent-color)] after:opacity-[var(--node-accent-opacity,0)]"
+                    : undefined
+            }
+            style={{ "--node-accent-color": ICON_COLOR_MAP[node.color] } as CSSProperties}
+        >
             <Flex align="center" style={{ gap: "0.7rem" }}>
                 <span className="flex size-4 shrink-0 items-center justify-center [&>svg]:size-4" style={{ color: ICON_COLOR_MAP[node.color] }}>
                     {node.icon ?? <IconNote size={16} />}

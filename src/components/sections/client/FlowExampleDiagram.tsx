@@ -77,9 +77,9 @@ export function FlowExampleDiagram({ trigger, items }: { trigger: FlowDiagramNod
                                     className="relative isolate rounded-2xl"
                                     animate={
                                         reducedMotion
-                                            ? { scale: 1 }
+                                            ? { "--node-accent-opacity": 0.45 }
                                             : {
-                                                  scale: [1, 1, 1.012, 1, 1, 1, 1],
+                                                  "--node-accent-opacity": [0, 0, 0.8, 0.45, 0.45, 0, 0],
                                               }
                                     }
                                     transition={{
@@ -91,33 +91,13 @@ export function FlowExampleDiagram({ trigger, items }: { trigger: FlowDiagramNod
                                 >
                                     <motion.div
                                         aria-hidden="true"
-                                        className="pointer-events-none absolute inset-0 z-0 rounded-[inherit]"
-                                        style={{
-                                            boxShadow: `0 0 0 1px color-mix(in srgb, ${getNodeAccentColor(node.node.color)} 24%, transparent), 0 0 14px color-mix(in srgb, ${getNodeAccentColor(node.node.color)} 22%, transparent)`,
-                                        }}
-                                        animate={
-                                            reducedMotion
-                                                ? { opacity: 0.45 }
-                                                : {
-                                                      opacity: [0, 0, 0.75, 0.45, 0.45, 0, 0],
-                                                  }
-                                        }
-                                        transition={{
-                                            duration: reducedMotion ? 0 : cycleDuration,
-                                            repeat: reducedMotion ? 0 : Infinity,
-                                            ease: "linear",
-                                            times: [0, arrivalTime, arrivalPeakTime, arrivalSettleTime, resetStartTime, resetEndTime, 1],
-                                        }}
-                                    />
-                                    <motion.div
-                                        aria-hidden="true"
                                         className="pointer-events-none absolute -inset-2 z-0 rounded-3xl blur-xl"
                                         style={{ backgroundColor: getNodeAccentColor(node.node.color) }}
                                         animate={
                                             reducedMotion
                                                 ? { opacity: 0.08 }
                                                 : {
-                                                      opacity: [0, 0, 0.14, 0.08, 0.08, 0, 0],
+                                                      opacity: [0, 0, 0.1, 0.05, 0.05, 0, 0],
                                                   }
                                         }
                                         transition={{
@@ -128,7 +108,7 @@ export function FlowExampleDiagram({ trigger, items }: { trigger: FlowDiagramNod
                                         }}
                                     />
                                     <div className="relative z-10">
-                                        <NodeDisplay node={node.node} />
+                                        <NodeDisplay node={node.node} animatedOutline />
                                     </div>
                                 </motion.div>
                             )}
