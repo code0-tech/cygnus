@@ -72,19 +72,25 @@ export function SmallPricingSection({ content, locale, packages }: SmallPricingS
             animation={{ preset: "none" }}
         >
             <Card size="lg" variant="light" radialGradient={content.gradient} gradientDirection={content.gradientDirection} className="mx-auto w-full max-w-5xl p-2!">
+                <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-y-0 left-1/3 hidden w-1/3 bg-[radial-gradient(ellipse_at_top,oklch(1_0_0/0.1),transparent_68%)] md:block"
+                />
                 <StaggerContainer className="relative z-10 grid grid-cols-1 md:grid-cols-3" delayChildren={0.04} staggerChildren={0.08}>
                     {pricingPackages.map((pricingPackage) => {
                         const features = pricingPackage.content?.features?.filter((feature) => Boolean(feature.text)) ?? []
                         const missingFeatures = pricingPackage.content?.missingFeatures?.filter((feature) => Boolean(feature.text)) ?? []
                         const buttonLabel = pricingPackage.content?.button?.label?.trim()
                         const buttonUrl = pricingPackage.content?.button?.url?.trim()
+                        const highlighted = pricingPackage.key === "max"
                         const discount =
                             selectedPeriod !== "monthly" && pricingPackage.price !== null && pricingPackage.monthlyPrice !== null && pricingPackage.monthlyPrice > 0
                                 ? Math.max(0, Math.round((1 - pricingPackage.price / (pricingPackage.monthlyPrice * periodMonths)) * 100))
                                 : 0
 
                         return (
-                            <StaggerItem key={pricingPackage.key} y={10} duration={0.36} className="flex min-w-0 flex-col p-5 sm:p-6">
+                            <StaggerItem key={pricingPackage.key} y={10} duration={0.36} className="relative flex min-w-0 flex-col overflow-hidden p-5 sm:p-6">
+                                {highlighted && <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,oklch(1_0_0/0.1),transparent_68%)] md:hidden" />}
                                 <div className="flex items-start justify-between gap-2">
                                     <h3 className="text-xl font-semibold text-white">{pricingPackage.title}</h3>
                                     {discount > 0 && (

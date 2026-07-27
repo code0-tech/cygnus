@@ -104,6 +104,7 @@ export function PricingSection({ content, locale, packages, paymentPeriod }: Pri
                             duration={0.42}
                             className="relative flex h-full min-w-0 flex-col overflow-hidden rounded-3xl border border-white/5 bg-[linear-gradient(160deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02)_28%,rgba(8,10,20,0.6)_100%)] p-6 md:p-8"
                         >
+                            {highlighted && <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,oklch(1_0_0/0.1),transparent_36%)]" />}
                             <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-white/30 to-transparent" />
                             {discount > 0 && (
                                 <StableBadge
