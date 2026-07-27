@@ -36,6 +36,12 @@ const usageRangeFields = (defaults: { min: number; max: number; step: number }):
     { name: "max", type: "number", required: false, defaultValue: defaults.max },
 ]
 
+const packagePriceFields = (): Field[] => [
+    { name: "monthly", label: "Monthly", type: "number", required: false, defaultValue: 0, min: 0 },
+    { name: "quarterly", label: "Quarterly", type: "number", required: false, defaultValue: 0, min: 0 },
+    { name: "yearly", label: "Yearly", type: "number", required: false, defaultValue: 0, min: 0 },
+]
+
 export const SubscriptionCollection: GlobalConfig = {
     slug: "subscriptionConfig",
     access: {
@@ -271,6 +277,70 @@ export const SubscriptionCollection: GlobalConfig = {
                         },
                         { ...iconField, defaultValue: "users-group" },
                         { ...colorField, defaultValue: "aqua" },
+                    ],
+                },
+            ],
+        },
+        {
+            name: "packages",
+            label: "Pricing Packages",
+            type: "group",
+            fields: [
+                {
+                    name: "pro",
+                    label: "Pro",
+                    type: "group",
+                    fields: [
+                        { name: "title", type: "text", required: false, localized: true, defaultValue: "Pro" },
+                        {
+                            name: "description",
+                            type: "textarea",
+                            required: false,
+                            localized: true,
+                            defaultValue: "For individuals and smaller teams.",
+                        },
+                        {
+                            name: "prices",
+                            label: "Prices",
+                            type: "group",
+                            fields: packagePriceFields(),
+                        },
+                    ],
+                },
+                {
+                    name: "max",
+                    label: "Max",
+                    type: "group",
+                    fields: [
+                        { name: "title", type: "text", required: false, localized: true, defaultValue: "Max" },
+                        {
+                            name: "description",
+                            type: "textarea",
+                            required: false,
+                            localized: true,
+                            defaultValue: "For organizations with higher requirements.",
+                        },
+                        {
+                            name: "prices",
+                            label: "Prices",
+                            type: "group",
+                            fields: packagePriceFields(),
+                        },
+                    ],
+                },
+                {
+                    name: "custom",
+                    label: "Custom",
+                    type: "group",
+                    fields: [
+                        { name: "title", type: "text", required: false, localized: true, defaultValue: "Custom" },
+                        {
+                            name: "description",
+                            type: "textarea",
+                            required: false,
+                            localized: true,
+                            defaultValue: "A tailored package for individual requirements.",
+                        },
                     ],
                 },
             ],

@@ -46,6 +46,10 @@ export const enum_pages_blocks_flow_example_flow_items_color = pgEnum('enum_page
 export const enum_pages_blocks_flow_example_section_layout = pgEnum('enum_pages_blocks_flow_example_section_layout', ['center', 'left'])
 export const enum_pages_blocks_flow_example_flow_layout = pgEnum('enum_pages_blocks_flow_example_flow_layout', ['left', 'right'])
 export const enum_pages_blocks_subscription_configurator_buttons_variant = pgEnum('enum_pages_blocks_subscription_configurator_buttons_variant', ['none', 'normal', 'outlined', 'filled'])
+export const enum_pages_blocks_pricing_section_layout = pgEnum('enum_pages_blocks_pricing_section_layout', ['center', 'left'])
+export const enum_pages_blocks_pricing_pro_button_variant = pgEnum('enum_pages_blocks_pricing_pro_button_variant', ['none', 'normal', 'outlined', 'filled'])
+export const enum_pages_blocks_pricing_max_button_variant = pgEnum('enum_pages_blocks_pricing_max_button_variant', ['none', 'normal', 'outlined', 'filled'])
+export const enum_pages_blocks_pricing_custom_button_variant = pgEnum('enum_pages_blocks_pricing_custom_button_variant', ['none', 'normal', 'outlined', 'filled'])
 export const enum_pages_slug = pgEnum('enum_pages_slug', ['main', 'jobs', 'blog', 'features', 'about-us', 'legal-notice', 'privacy', 'terms', 'contact', 'actions', 'action-details', 'community-edition', 'enterprise-edition', 'pricing', 'subscription'])
 export const enum_features_slug = pgEnum('enum_features_slug', ['projects', 'role-system', 'member-management', 'organizations', 'suggestion-menu', 'nodes', 'runtime-types', 'action-list'])
 export const enum_actions_tags = pgEnum('enum_actions_tags', ['AI', 'Analytics', 'Communication', 'Cybersecurity', 'Data & Storage', 'Developer Tools', 'Development', 'Finance & Accounting', 'HITL', 'Marketing', 'Miscellaneous', 'Productivity', 'Sales', 'Utility'])
@@ -1280,6 +1284,133 @@ export const pages_blocks_subscription_configurator = pgTable('pages_blocks_subs
 )
 
 
+export const pages_blocks_pricing_pro_features = pgTable('pages_blocks_pricing_pro_features', {
+  _order: integer('_order').notNull(),
+  _parentID: varchar('_parent_id').notNull(),
+  _locale: enum__locales('_locale').notNull(),
+  id: varchar('id').primaryKey(),
+  text: varchar('text').notNull(),
+}, (columns) => [
+    index('pages_blocks_pricing_pro_features_order_idx').on(columns._order), index('pages_blocks_pricing_pro_features_parent_id_idx').on(columns._parentID), index('pages_blocks_pricing_pro_features_locale_idx').on(columns._locale), foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [pages_blocks_pricing.id],
+      name: 'pages_blocks_pricing_pro_features_parent_id_fk'
+    }).onDelete('cascade'),
+]
+)
+
+
+export const pages_blocks_pricing_pro_missing_features = pgTable('pages_blocks_pricing_pro_missing_features', {
+  _order: integer('_order').notNull(),
+  _parentID: varchar('_parent_id').notNull(),
+  _locale: enum__locales('_locale').notNull(),
+  id: varchar('id').primaryKey(),
+  text: varchar('text').notNull(),
+}, (columns) => [
+    index('pages_blocks_pricing_pro_missing_features_order_idx').on(columns._order), index('pages_blocks_pricing_pro_missing_features_parent_id_idx').on(columns._parentID), index('pages_blocks_pricing_pro_missing_features_locale_idx').on(columns._locale), foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [pages_blocks_pricing.id],
+      name: 'pages_blocks_pricing_pro_missing_features_parent_id_fk'
+    }).onDelete('cascade'),
+]
+)
+
+
+export const pages_blocks_pricing_max_features = pgTable('pages_blocks_pricing_max_features', {
+  _order: integer('_order').notNull(),
+  _parentID: varchar('_parent_id').notNull(),
+  _locale: enum__locales('_locale').notNull(),
+  id: varchar('id').primaryKey(),
+  text: varchar('text').notNull(),
+}, (columns) => [
+    index('pages_blocks_pricing_max_features_order_idx').on(columns._order), index('pages_blocks_pricing_max_features_parent_id_idx').on(columns._parentID), index('pages_blocks_pricing_max_features_locale_idx').on(columns._locale), foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [pages_blocks_pricing.id],
+      name: 'pages_blocks_pricing_max_features_parent_id_fk'
+    }).onDelete('cascade'),
+]
+)
+
+
+export const pages_blocks_pricing_max_missing_features = pgTable('pages_blocks_pricing_max_missing_features', {
+  _order: integer('_order').notNull(),
+  _parentID: varchar('_parent_id').notNull(),
+  _locale: enum__locales('_locale').notNull(),
+  id: varchar('id').primaryKey(),
+  text: varchar('text').notNull(),
+}, (columns) => [
+    index('pages_blocks_pricing_max_missing_features_order_idx').on(columns._order), index('pages_blocks_pricing_max_missing_features_parent_id_idx').on(columns._parentID), index('pages_blocks_pricing_max_missing_features_locale_idx').on(columns._locale), foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [pages_blocks_pricing.id],
+      name: 'pages_blocks_pricing_max_missing_features_parent_id_fk'
+    }).onDelete('cascade'),
+]
+)
+
+
+export const pages_blocks_pricing_custom_features = pgTable('pages_blocks_pricing_custom_features', {
+  _order: integer('_order').notNull(),
+  _parentID: varchar('_parent_id').notNull(),
+  _locale: enum__locales('_locale').notNull(),
+  id: varchar('id').primaryKey(),
+  text: varchar('text').notNull(),
+}, (columns) => [
+    index('pages_blocks_pricing_custom_features_order_idx').on(columns._order), index('pages_blocks_pricing_custom_features_parent_id_idx').on(columns._parentID), index('pages_blocks_pricing_custom_features_locale_idx').on(columns._locale), foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [pages_blocks_pricing.id],
+      name: 'pages_blocks_pricing_custom_features_parent_id_fk'
+    }).onDelete('cascade'),
+]
+)
+
+
+export const pages_blocks_pricing_custom_missing_features = pgTable('pages_blocks_pricing_custom_missing_features', {
+  _order: integer('_order').notNull(),
+  _parentID: varchar('_parent_id').notNull(),
+  _locale: enum__locales('_locale').notNull(),
+  id: varchar('id').primaryKey(),
+  text: varchar('text').notNull(),
+}, (columns) => [
+    index('pages_blocks_pricing_custom_missing_features_order_idx').on(columns._order), index('pages_blocks_pricing_custom_missing_features_parent_id_idx').on(columns._parentID), index('pages_blocks_pricing_custom_missing_features_locale_idx').on(columns._locale), foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [pages_blocks_pricing.id],
+      name: 'pages_blocks_pricing_custom_missing_features_parent_id_fk'
+    }).onDelete('cascade'),
+]
+)
+
+
+export const pages_blocks_pricing = pgTable('pages_blocks_pricing', {
+  _order: integer('_order').notNull(),
+  _parentID: integer('_parent_id').notNull(),
+  _path: text('_path').notNull(),
+  _locale: enum__locales('_locale').notNull(),
+  id: varchar('id').primaryKey(),
+  sectionHeading: varchar('section_heading'),
+  sectionLayout: enum_pages_blocks_pricing_section_layout('section_layout').notNull().default("center"),
+  sectionDescription: varchar('section_description'),
+  sectionLinkButton_label: varchar('section_link_button_label'),
+  sectionLinkButton_url: varchar('section_link_button_url'),
+  pro_button_label: varchar('pro_button_label'),
+  pro_button_url: varchar('pro_button_url'),
+  pro_button_variant: enum_pages_blocks_pricing_pro_button_variant('pro_button_variant').default("normal"),
+  max_button_label: varchar('max_button_label'),
+  max_button_url: varchar('max_button_url'),
+  max_button_variant: enum_pages_blocks_pricing_max_button_variant('max_button_variant').default("normal"),
+  custom_button_label: varchar('custom_button_label'),
+  custom_button_url: varchar('custom_button_url'),
+  custom_button_variant: enum_pages_blocks_pricing_custom_button_variant('custom_button_variant').default("normal"),
+  blockName: varchar('block_name'),
+}, (columns) => [
+    index('pages_blocks_pricing_order_idx').on(columns._order), index('pages_blocks_pricing_parent_id_idx').on(columns._parentID), index('pages_blocks_pricing_path_idx').on(columns._path), index('pages_blocks_pricing_locale_idx').on(columns._locale), foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [pages.id],
+      name: 'pages_blocks_pricing_parent_id_fk'
+    }).onDelete('cascade'),
+]
+)
+
+
 export const pages = pgTable('pages', {
   id: serial('id').primaryKey(),
   customPage: boolean('custom_page').default(false),
@@ -2012,6 +2143,12 @@ export const subscription_config = pgTable('subscription_config', {
   subscriptionTier_pro_color: enum_subscription_config_subscription_tier_pro_color('subscription_tier_pro_color').default("brand"),
   subscriptionTier_team_icon: varchar('subscription_tier_team_icon').notNull().default("users-group"),
   subscriptionTier_team_color: enum_subscription_config_subscription_tier_team_color('subscription_tier_team_color').default("aqua"),
+  packages_pro_prices_monthly: numeric('packages_pro_prices_monthly', {mode: 'number'}).default(0),
+  packages_pro_prices_quarterly: numeric('packages_pro_prices_quarterly', {mode: 'number'}).default(0),
+  packages_pro_prices_yearly: numeric('packages_pro_prices_yearly', {mode: 'number'}).default(0),
+  packages_max_prices_monthly: numeric('packages_max_prices_monthly', {mode: 'number'}).default(0),
+  packages_max_prices_quarterly: numeric('packages_max_prices_quarterly', {mode: 'number'}).default(0),
+  packages_max_prices_yearly: numeric('packages_max_prices_yearly', {mode: 'number'}).default(0),
   paymentPeriod_quarterlyDiscount: numeric('payment_period_quarterly_discount', {mode: 'number'}).default(0),
   paymentPeriod_yearlyDiscount: numeric('payment_period_yearly_discount', {mode: 'number'}).default(0),
   workflowExecutions_b2b_step: numeric('workflow_executions_b2b_step', {mode: 'number'}).default(100),
@@ -2053,6 +2190,12 @@ export const subscription_config_locales = pgTable('subscription_config_locales'
   subscriptionTier_pro_description: varchar('subscription_tier_pro_description').default("Single-owner setup for advanced personal or expert workflows."),
   subscriptionTier_team_title: varchar('subscription_tier_team_title').default("TEAM"),
   subscriptionTier_team_description: varchar('subscription_tier_team_description').default("Shared workspace model with seat-based team access."),
+  packages_pro_title: varchar('packages_pro_title').default("Pro"),
+  packages_pro_description: varchar('packages_pro_description').default("For individuals and smaller teams."),
+  packages_max_title: varchar('packages_max_title').default("Max"),
+  packages_max_description: varchar('packages_max_description').default("For organizations with higher requirements."),
+  packages_custom_title: varchar('packages_custom_title').default("Custom"),
+  packages_custom_description: varchar('packages_custom_description').default("A tailored package for individual requirements."),
   paymentPeriod_label: varchar('payment_period_label').default("Payment period"),
   paymentPeriod_description: varchar('payment_period_description').default("Choose how often you want to be billed."),
   paymentPeriod_monthlyText: varchar('payment_period_monthly_text').default("Monthly"),
@@ -2696,6 +2839,80 @@ export const relations_pages_blocks_subscription_configurator = relations(pages_
             relationName: 'buttons',
     }),
       }))
+export const relations_pages_blocks_pricing_pro_features = relations(pages_blocks_pricing_pro_features, ({ one }) => ({
+  _parentID: one(pages_blocks_pricing, {
+    
+    fields: [pages_blocks_pricing_pro_features._parentID],
+    references: [pages_blocks_pricing.id],
+    relationName: 'pro_features',
+    }),
+      }))
+export const relations_pages_blocks_pricing_pro_missing_features = relations(pages_blocks_pricing_pro_missing_features, ({ one }) => ({
+  _parentID: one(pages_blocks_pricing, {
+    
+    fields: [pages_blocks_pricing_pro_missing_features._parentID],
+    references: [pages_blocks_pricing.id],
+    relationName: 'pro_missingFeatures',
+    }),
+      }))
+export const relations_pages_blocks_pricing_max_features = relations(pages_blocks_pricing_max_features, ({ one }) => ({
+  _parentID: one(pages_blocks_pricing, {
+    
+    fields: [pages_blocks_pricing_max_features._parentID],
+    references: [pages_blocks_pricing.id],
+    relationName: 'max_features',
+    }),
+      }))
+export const relations_pages_blocks_pricing_max_missing_features = relations(pages_blocks_pricing_max_missing_features, ({ one }) => ({
+  _parentID: one(pages_blocks_pricing, {
+    
+    fields: [pages_blocks_pricing_max_missing_features._parentID],
+    references: [pages_blocks_pricing.id],
+    relationName: 'max_missingFeatures',
+    }),
+      }))
+export const relations_pages_blocks_pricing_custom_features = relations(pages_blocks_pricing_custom_features, ({ one }) => ({
+  _parentID: one(pages_blocks_pricing, {
+    
+    fields: [pages_blocks_pricing_custom_features._parentID],
+    references: [pages_blocks_pricing.id],
+    relationName: 'custom_features',
+    }),
+      }))
+export const relations_pages_blocks_pricing_custom_missing_features = relations(pages_blocks_pricing_custom_missing_features, ({ one }) => ({
+  _parentID: one(pages_blocks_pricing, {
+    
+    fields: [pages_blocks_pricing_custom_missing_features._parentID],
+    references: [pages_blocks_pricing.id],
+    relationName: 'custom_missingFeatures',
+    }),
+      }))
+export const relations_pages_blocks_pricing = relations(pages_blocks_pricing, ({ one, many }) => ({
+  _parentID: one(pages, {
+    
+    fields: [pages_blocks_pricing._parentID],
+    references: [pages.id],
+    relationName: '_blocks_pricing',
+    }),
+    pro_features: many(pages_blocks_pricing_pro_features, {
+            relationName: 'pro_features',
+    }),
+    pro_missingFeatures: many(pages_blocks_pricing_pro_missing_features, {
+            relationName: 'pro_missingFeatures',
+    }),
+    max_features: many(pages_blocks_pricing_max_features, {
+            relationName: 'max_features',
+    }),
+    max_missingFeatures: many(pages_blocks_pricing_max_missing_features, {
+            relationName: 'max_missingFeatures',
+    }),
+    custom_features: many(pages_blocks_pricing_custom_features, {
+            relationName: 'custom_features',
+    }),
+    custom_missingFeatures: many(pages_blocks_pricing_custom_missing_features, {
+            relationName: 'custom_missingFeatures',
+    }),
+      }))
 export const relations_pages_locales = relations(pages_locales, ({ one }) => ({
   _parentID: one(pages, {
     
@@ -2808,6 +3025,9 @@ export const relations_pages = relations(pages, ({ many }) => ({
     }),
     _blocks_subscriptionConfigurator: many(pages_blocks_subscription_configurator, {
             relationName: '_blocks_subscriptionConfigurator',
+    }),
+    _blocks_pricing: many(pages_blocks_pricing, {
+            relationName: '_blocks_pricing',
     }),
     _locales: many(pages_locales, {
             relationName: '_locales',
@@ -3279,6 +3499,10 @@ type DatabaseSchema = {
   enum_pages_blocks_flow_example_section_layout: typeof enum_pages_blocks_flow_example_section_layout
   enum_pages_blocks_flow_example_flow_layout: typeof enum_pages_blocks_flow_example_flow_layout
   enum_pages_blocks_subscription_configurator_buttons_variant: typeof enum_pages_blocks_subscription_configurator_buttons_variant
+  enum_pages_blocks_pricing_section_layout: typeof enum_pages_blocks_pricing_section_layout
+  enum_pages_blocks_pricing_pro_button_variant: typeof enum_pages_blocks_pricing_pro_button_variant
+  enum_pages_blocks_pricing_max_button_variant: typeof enum_pages_blocks_pricing_max_button_variant
+  enum_pages_blocks_pricing_custom_button_variant: typeof enum_pages_blocks_pricing_custom_button_variant
   enum_pages_slug: typeof enum_pages_slug
   enum_features_slug: typeof enum_features_slug
   enum_actions_tags: typeof enum_actions_tags
@@ -3355,6 +3579,13 @@ type DatabaseSchema = {
   pages_blocks_subscription_configurator_feature_overview: typeof pages_blocks_subscription_configurator_feature_overview
   pages_blocks_subscription_configurator_buttons: typeof pages_blocks_subscription_configurator_buttons
   pages_blocks_subscription_configurator: typeof pages_blocks_subscription_configurator
+  pages_blocks_pricing_pro_features: typeof pages_blocks_pricing_pro_features
+  pages_blocks_pricing_pro_missing_features: typeof pages_blocks_pricing_pro_missing_features
+  pages_blocks_pricing_max_features: typeof pages_blocks_pricing_max_features
+  pages_blocks_pricing_max_missing_features: typeof pages_blocks_pricing_max_missing_features
+  pages_blocks_pricing_custom_features: typeof pages_blocks_pricing_custom_features
+  pages_blocks_pricing_custom_missing_features: typeof pages_blocks_pricing_custom_missing_features
+  pages_blocks_pricing: typeof pages_blocks_pricing
   pages: typeof pages
   pages_locales: typeof pages_locales
   pages_texts: typeof pages_texts
@@ -3455,6 +3686,13 @@ type DatabaseSchema = {
   relations_pages_blocks_subscription_configurator_feature_overview: typeof relations_pages_blocks_subscription_configurator_feature_overview
   relations_pages_blocks_subscription_configurator_buttons: typeof relations_pages_blocks_subscription_configurator_buttons
   relations_pages_blocks_subscription_configurator: typeof relations_pages_blocks_subscription_configurator
+  relations_pages_blocks_pricing_pro_features: typeof relations_pages_blocks_pricing_pro_features
+  relations_pages_blocks_pricing_pro_missing_features: typeof relations_pages_blocks_pricing_pro_missing_features
+  relations_pages_blocks_pricing_max_features: typeof relations_pages_blocks_pricing_max_features
+  relations_pages_blocks_pricing_max_missing_features: typeof relations_pages_blocks_pricing_max_missing_features
+  relations_pages_blocks_pricing_custom_features: typeof relations_pages_blocks_pricing_custom_features
+  relations_pages_blocks_pricing_custom_missing_features: typeof relations_pages_blocks_pricing_custom_missing_features
+  relations_pages_blocks_pricing: typeof relations_pages_blocks_pricing
   relations_pages_locales: typeof relations_pages_locales
   relations_pages_texts: typeof relations_pages_texts
   relations_pages: typeof relations_pages

@@ -27,6 +27,7 @@ import { ActionEventsSection } from "./sections/ActionEventsSection"
 import { ActionReferencesSection } from "./sections/ActionReferencesSection"
 import { ActionListSection } from "./sections/ActionListSection"
 import { SubscriptionConfiguratorSection, type SubscriptionIcons } from "./sections/SubscriptionConfiguratorSection"
+import { PricingSection } from "./sections/PricingSection"
 import { getIcon } from "@/components/IconRenderer"
 import type { ActionItem, SubscriptionConfigData, SubscriptionConfiguratorBlockData } from "@/lib/cms"
 
@@ -173,6 +174,19 @@ const pageBlockRenderers: Partial<Record<PageBlock["blockType"], BlockRenderer>>
         }
 
         return <SubscriptionConfiguratorSection locale={options.locale ?? "en"} content={{ ...config, ...blockContent }} icons={icons} />
+    },
+    pricing: (block, options) => {
+        const config = options.subscriptionConfig
+        if (!config?.packages) return null
+
+        return (
+            <PricingSection
+                content={block as Extract<PageBlock, { blockType: "pricing" }>}
+                locale={options.locale ?? "en"}
+                packages={config.packages}
+                paymentPeriod={config.paymentPeriod}
+            />
+        )
     },
 }
 

@@ -35,6 +35,7 @@ export type WideHeroLayoutBlock = Extract<PageLayoutBlock, { blockType: "wideher
 export type ListFeatureLayoutBlock = Extract<PageLayoutBlock, { blockType: "listFeature" }>
 export type StatsLayoutBlock = Extract<PageLayoutBlock, { blockType: "stats" }>
 export type FlowExampleLayoutBlock = Extract<PageLayoutBlock, { blockType: "flowExample" }>
+export type PricingLayoutBlock = Extract<PageLayoutBlock, { blockType: "pricing" }>
 
 type FeatureSlug = Feature["slug"]
 interface FeatureItem {
@@ -136,6 +137,30 @@ export interface SubscriptionConfigData {
             description: string
             icon: string
             color: "brand" | "pink" | "yellow" | "aqua" | "blue" | "lime" | "magenta"
+        }
+    }
+    packages: {
+        pro: {
+            title: string
+            description: string
+            prices: {
+                monthly: number
+                quarterly: number
+                yearly: number
+            }
+        }
+        max: {
+            title: string
+            description: string
+            prices: {
+                monthly: number
+                quarterly: number
+                yearly: number
+            }
+        }
+        custom: {
+            title: string
+            description: string
         }
     }
     paymentPeriod: {

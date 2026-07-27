@@ -66,6 +66,9 @@ import * as migration_20260727_145500_custom_pages from "./20260727_145500_custo
 import * as migration_20260727_184500_pricing_page from "./20260727_184500_pricing_page"
 import * as migration_20260727_190000_subscription_configurator_block from "./20260727_190000_subscription_configurator_block"
 import * as migration_20260727_191000_subscription_configurator_buttons from "./20260727_191000_subscription_configurator_buttons"
+import * as migration_20260727_193000_small_pricing_block from "./20260727_193000_small_pricing_block"
+import * as migration_20260727_200000_small_pricing_package_config from "./20260727_200000_small_pricing_package_config"
+import * as migration_20260727_203000_pricing_block_rename from "./20260727_203000_pricing_block_rename"
 
 export const migrations = [
     {
@@ -407,5 +410,20 @@ export const migrations = [
         up: migration_20260727_191000_subscription_configurator_buttons.up,
         down: migration_20260727_191000_subscription_configurator_buttons.down,
         name: "20260727_191000_subscription_configurator_buttons",
+    },
+    {
+        up: migration_20260727_193000_small_pricing_block.up,
+        down: migration_20260727_193000_small_pricing_block.down,
+        name: "20260727_193000_small_pricing_block",
+    },
+    {
+        up: migration_20260727_200000_small_pricing_package_config.up,
+        down: migration_20260727_200000_small_pricing_package_config.down,
+        name: "20260727_200000_small_pricing_package_config",
+    },
+    {
+        up: migration_20260727_203000_pricing_block_rename.up,
+        down: migration_20260727_203000_pricing_block_rename.down,
+        name: "20260727_203000_pricing_block_rename",
     },
 ]

@@ -1060,6 +1060,75 @@ export interface Page {
             blockName?: string | null;
             blockType: 'subscriptionConfigurator';
           }
+        | {
+            sectionHeading?: string | null;
+            sectionLayout: 'center' | 'left';
+            sectionDescription?: string | null;
+            sectionLinkButton?: {
+              label?: string | null;
+              url?: string | null;
+            };
+            pro?: {
+              features?:
+                | {
+                    text: string;
+                    id?: string | null;
+                  }[]
+                | null;
+              missingFeatures?:
+                | {
+                    text: string;
+                    id?: string | null;
+                  }[]
+                | null;
+              button?: {
+                label?: string | null;
+                url?: string | null;
+                variant?: ('none' | 'normal' | 'outlined' | 'filled') | null;
+              };
+            };
+            max?: {
+              features?:
+                | {
+                    text: string;
+                    id?: string | null;
+                  }[]
+                | null;
+              missingFeatures?:
+                | {
+                    text: string;
+                    id?: string | null;
+                  }[]
+                | null;
+              button?: {
+                label?: string | null;
+                url?: string | null;
+                variant?: ('none' | 'normal' | 'outlined' | 'filled') | null;
+              };
+            };
+            custom?: {
+              features?:
+                | {
+                    text: string;
+                    id?: string | null;
+                  }[]
+                | null;
+              missingFeatures?:
+                | {
+                    text: string;
+                    id?: string | null;
+                  }[]
+                | null;
+              button?: {
+                label?: string | null;
+                url?: string | null;
+                variant?: ('none' | 'normal' | 'outlined' | 'filled') | null;
+              };
+            };
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'pricing';
+          }
       )[]
     | null;
   meta?: {
@@ -2077,6 +2146,90 @@ export interface PagesSelect<T extends boolean = true> {
               id?: T;
               blockName?: T;
             };
+        pricing?:
+          | T
+          | {
+              sectionHeading?: T;
+              sectionLayout?: T;
+              sectionDescription?: T;
+              sectionLinkButton?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                  };
+              pro?:
+                | T
+                | {
+                    features?:
+                      | T
+                      | {
+                          text?: T;
+                          id?: T;
+                        };
+                    missingFeatures?:
+                      | T
+                      | {
+                          text?: T;
+                          id?: T;
+                        };
+                    button?:
+                      | T
+                      | {
+                          label?: T;
+                          url?: T;
+                          variant?: T;
+                        };
+                  };
+              max?:
+                | T
+                | {
+                    features?:
+                      | T
+                      | {
+                          text?: T;
+                          id?: T;
+                        };
+                    missingFeatures?:
+                      | T
+                      | {
+                          text?: T;
+                          id?: T;
+                        };
+                    button?:
+                      | T
+                      | {
+                          label?: T;
+                          url?: T;
+                          variant?: T;
+                        };
+                  };
+              custom?:
+                | T
+                | {
+                    features?:
+                      | T
+                      | {
+                          text?: T;
+                          id?: T;
+                        };
+                    missingFeatures?:
+                      | T
+                      | {
+                          text?: T;
+                          id?: T;
+                        };
+                    button?:
+                      | T
+                      | {
+                          label?: T;
+                          url?: T;
+                          variant?: T;
+                        };
+                  };
+              id?: T;
+              blockName?: T;
+            };
       };
   meta?:
     | T
@@ -2433,6 +2586,30 @@ export interface SubscriptionConfig {
       color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
     };
   };
+  packages?: {
+    pro?: {
+      title?: string | null;
+      description?: string | null;
+      prices?: {
+        monthly?: number | null;
+        quarterly?: number | null;
+        yearly?: number | null;
+      };
+    };
+    max?: {
+      title?: string | null;
+      description?: string | null;
+      prices?: {
+        monthly?: number | null;
+        quarterly?: number | null;
+        yearly?: number | null;
+      };
+    };
+    custom?: {
+      title?: string | null;
+      description?: string | null;
+    };
+  };
   paymentPeriod?: {
     label?: string | null;
     description?: string | null;
@@ -2786,6 +2963,42 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
               description?: T;
               icon?: T;
               color?: T;
+            };
+      };
+  packages?:
+    | T
+    | {
+        pro?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              prices?:
+                | T
+                | {
+                    monthly?: T;
+                    quarterly?: T;
+                    yearly?: T;
+                  };
+            };
+        max?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              prices?:
+                | T
+                | {
+                    monthly?: T;
+                    quarterly?: T;
+                    yearly?: T;
+                  };
+            };
+        custom?:
+          | T
+          | {
+              title?: T;
+              description?: T;
             };
       };
   paymentPeriod?:

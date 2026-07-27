@@ -1,0 +1,159 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.subscription_config": {
+      "name": "subscription_config",
+      "schema": "public",
+      "columns": {
+        "packages_pro_prices_monthly": { "name": "packages_pro_prices_monthly", "type": "numeric", "primaryKey": false, "notNull": false, "default": 0 },
+        "packages_pro_prices_quarterly": { "name": "packages_pro_prices_quarterly", "type": "numeric", "primaryKey": false, "notNull": false, "default": 0 },
+        "packages_pro_prices_yearly": { "name": "packages_pro_prices_yearly", "type": "numeric", "primaryKey": false, "notNull": false, "default": 0 },
+        "packages_max_prices_monthly": { "name": "packages_max_prices_monthly", "type": "numeric", "primaryKey": false, "notNull": false, "default": 0 },
+        "packages_max_prices_quarterly": { "name": "packages_max_prices_quarterly", "type": "numeric", "primaryKey": false, "notNull": false, "default": 0 },
+        "packages_max_prices_yearly": { "name": "packages_max_prices_yearly", "type": "numeric", "primaryKey": false, "notNull": false, "default": 0 }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
+    },
+    "public.subscription_config_locales": {
+      "name": "subscription_config_locales",
+      "schema": "public",
+      "columns": {
+        "packages_pro_title": { "name": "packages_pro_title", "type": "varchar", "primaryKey": false, "notNull": false, "default": "'Pro'" },
+        "packages_pro_description": { "name": "packages_pro_description", "type": "varchar", "primaryKey": false, "notNull": false, "default": "'For individuals and smaller teams.'" },
+        "packages_max_title": { "name": "packages_max_title", "type": "varchar", "primaryKey": false, "notNull": false, "default": "'Max'" },
+        "packages_max_description": { "name": "packages_max_description", "type": "varchar", "primaryKey": false, "notNull": false, "default": "'For organizations with higher requirements.'" },
+        "packages_custom_title": { "name": "packages_custom_title", "type": "varchar", "primaryKey": false, "notNull": false, "default": "'Custom'" },
+        "packages_custom_description": { "name": "packages_custom_description", "type": "varchar", "primaryKey": false, "notNull": false, "default": "'A tailored package for individual requirements.'" }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
+    },
+    "public.pages_blocks_small_pricing": {
+      "name": "pages_blocks_small_pricing",
+      "schema": "public",
+      "columns": {
+        "pro_button_label": { "name": "pro_button_label", "type": "varchar", "primaryKey": false, "notNull": false },
+        "pro_button_url": { "name": "pro_button_url", "type": "varchar", "primaryKey": false, "notNull": false },
+        "pro_button_variant": { "name": "pro_button_variant", "type": "enum_pages_blocks_small_pricing_pro_button_variant", "primaryKey": false, "notNull": false, "default": "'normal'" },
+        "max_button_label": { "name": "max_button_label", "type": "varchar", "primaryKey": false, "notNull": false },
+        "max_button_url": { "name": "max_button_url", "type": "varchar", "primaryKey": false, "notNull": false },
+        "max_button_variant": { "name": "max_button_variant", "type": "enum_pages_blocks_small_pricing_max_button_variant", "primaryKey": false, "notNull": false, "default": "'normal'" },
+        "custom_button_label": { "name": "custom_button_label", "type": "varchar", "primaryKey": false, "notNull": false },
+        "custom_button_url": { "name": "custom_button_url", "type": "varchar", "primaryKey": false, "notNull": false },
+        "custom_button_variant": { "name": "custom_button_variant", "type": "enum_pages_blocks_small_pricing_custom_button_variant", "primaryKey": false, "notNull": false, "default": "'normal'" }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
+    },
+    "public.pages_blocks_small_pricing_pro_features": {
+      "name": "pages_blocks_small_pricing_pro_features",
+      "schema": "public",
+      "columns": {
+        "_order": { "name": "_order", "type": "integer", "primaryKey": false, "notNull": true },
+        "_parent_id": { "name": "_parent_id", "type": "varchar", "primaryKey": false, "notNull": true },
+        "_locale": { "name": "_locale", "type": "_locales", "primaryKey": false, "notNull": true },
+        "id": { "name": "id", "type": "varchar", "primaryKey": true, "notNull": true },
+        "text": { "name": "text", "type": "varchar", "primaryKey": false, "notNull": true }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
+    },
+    "public.pages_blocks_small_pricing_pro_missing_features": {
+      "name": "pages_blocks_small_pricing_pro_missing_features",
+      "schema": "public",
+      "columns": {
+        "_order": { "name": "_order", "type": "integer", "primaryKey": false, "notNull": true },
+        "_parent_id": { "name": "_parent_id", "type": "varchar", "primaryKey": false, "notNull": true },
+        "_locale": { "name": "_locale", "type": "_locales", "primaryKey": false, "notNull": true },
+        "id": { "name": "id", "type": "varchar", "primaryKey": true, "notNull": true },
+        "text": { "name": "text", "type": "varchar", "primaryKey": false, "notNull": true }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
+    },
+    "public.pages_blocks_small_pricing_max_features": {
+      "name": "pages_blocks_small_pricing_max_features",
+      "schema": "public",
+      "columns": {
+        "_order": { "name": "_order", "type": "integer", "primaryKey": false, "notNull": true },
+        "_parent_id": { "name": "_parent_id", "type": "varchar", "primaryKey": false, "notNull": true },
+        "_locale": { "name": "_locale", "type": "_locales", "primaryKey": false, "notNull": true },
+        "id": { "name": "id", "type": "varchar", "primaryKey": true, "notNull": true },
+        "text": { "name": "text", "type": "varchar", "primaryKey": false, "notNull": true }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
+    },
+    "public.pages_blocks_small_pricing_max_missing_features": {
+      "name": "pages_blocks_small_pricing_max_missing_features",
+      "schema": "public",
+      "columns": {
+        "_order": { "name": "_order", "type": "integer", "primaryKey": false, "notNull": true },
+        "_parent_id": { "name": "_parent_id", "type": "varchar", "primaryKey": false, "notNull": true },
+        "_locale": { "name": "_locale", "type": "_locales", "primaryKey": false, "notNull": true },
+        "id": { "name": "id", "type": "varchar", "primaryKey": true, "notNull": true },
+        "text": { "name": "text", "type": "varchar", "primaryKey": false, "notNull": true }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
+    },
+    "public.pages_blocks_small_pricing_custom_features": {
+      "name": "pages_blocks_small_pricing_custom_features",
+      "schema": "public",
+      "columns": {
+        "_order": { "name": "_order", "type": "integer", "primaryKey": false, "notNull": true },
+        "_parent_id": { "name": "_parent_id", "type": "varchar", "primaryKey": false, "notNull": true },
+        "_locale": { "name": "_locale", "type": "_locales", "primaryKey": false, "notNull": true },
+        "id": { "name": "id", "type": "varchar", "primaryKey": true, "notNull": true },
+        "text": { "name": "text", "type": "varchar", "primaryKey": false, "notNull": true }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
+    },
+    "public.pages_blocks_small_pricing_custom_missing_features": {
+      "name": "pages_blocks_small_pricing_custom_missing_features",
+      "schema": "public",
+      "columns": {
+        "_order": { "name": "_order", "type": "integer", "primaryKey": false, "notNull": true },
+        "_parent_id": { "name": "_parent_id", "type": "varchar", "primaryKey": false, "notNull": true },
+        "_locale": { "name": "_locale", "type": "_locales", "primaryKey": false, "notNull": true },
+        "id": { "name": "id", "type": "varchar", "primaryKey": true, "notNull": true },
+        "text": { "name": "text", "type": "varchar", "primaryKey": false, "notNull": true }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
+    }
+  },
+  "enums": {
+    "public.enum_pages_blocks_small_pricing_pro_button_variant": {
+      "name": "enum_pages_blocks_small_pricing_pro_button_variant",
+      "schema": "public",
+      "values": ["none", "normal", "outlined", "filled"]
+    },
+    "public.enum_pages_blocks_small_pricing_max_button_variant": {
+      "name": "enum_pages_blocks_small_pricing_max_button_variant",
+      "schema": "public",
+      "values": ["none", "normal", "outlined", "filled"]
+    },
+    "public.enum_pages_blocks_small_pricing_custom_button_variant": {
+      "name": "enum_pages_blocks_small_pricing_custom_button_variant",
+      "schema": "public",
+      "values": ["none", "normal", "outlined", "filled"]
+    }
+  },
+  "schemas": {},
+  "_meta": {},
+  "id": "20260727_200000_small_pricing_package_config",
+  "prevId": "20260727_193000_small_pricing_block"
+}

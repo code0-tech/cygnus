@@ -1,0 +1,89 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.pages_blocks_small_pricing": {
+      "name": "pages_blocks_small_pricing",
+      "schema": "public",
+      "columns": {
+        "_order": { "name": "_order", "type": "integer", "primaryKey": false, "notNull": true },
+        "_parent_id": { "name": "_parent_id", "type": "integer", "primaryKey": false, "notNull": true },
+        "_path": { "name": "_path", "type": "text", "primaryKey": false, "notNull": true },
+        "_locale": { "name": "_locale", "type": "_locales", "primaryKey": false, "notNull": true },
+        "id": { "name": "id", "type": "varchar", "primaryKey": true, "notNull": true },
+        "section_heading": { "name": "section_heading", "type": "varchar", "primaryKey": false, "notNull": false },
+        "section_layout": { "name": "section_layout", "type": "enum_pages_blocks_small_pricing_section_layout", "primaryKey": false, "notNull": true, "default": "'center'" },
+        "section_description": { "name": "section_description", "type": "varchar", "primaryKey": false, "notNull": false },
+        "section_link_button_label": { "name": "section_link_button_label", "type": "varchar", "primaryKey": false, "notNull": false },
+        "section_link_button_url": { "name": "section_link_button_url", "type": "varchar", "primaryKey": false, "notNull": false },
+        "show_card": { "name": "show_card", "type": "boolean", "primaryKey": false, "notNull": false, "default": true },
+        "block_name": { "name": "block_name", "type": "varchar", "primaryKey": false, "notNull": false }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
+    },
+    "public.pages_blocks_small_pricing_packages": {
+      "name": "pages_blocks_small_pricing_packages",
+      "schema": "public",
+      "columns": {
+        "_order": { "name": "_order", "type": "integer", "primaryKey": false, "notNull": true },
+        "_parent_id": { "name": "_parent_id", "type": "varchar", "primaryKey": false, "notNull": true },
+        "_locale": { "name": "_locale", "type": "_locales", "primaryKey": false, "notNull": true },
+        "id": { "name": "id", "type": "varchar", "primaryKey": true, "notNull": true },
+        "title": { "name": "title", "type": "varchar", "primaryKey": false, "notNull": true },
+        "description": { "name": "description", "type": "varchar", "primaryKey": false, "notNull": false },
+        "button_label": { "name": "button_label", "type": "varchar", "primaryKey": false, "notNull": false },
+        "button_url": { "name": "button_url", "type": "varchar", "primaryKey": false, "notNull": false },
+        "button_variant": { "name": "button_variant", "type": "enum_pages_blocks_small_pricing_packages_button_variant", "primaryKey": false, "notNull": false, "default": "'normal'" }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
+    },
+    "public.pages_blocks_small_pricing_packages_features": {
+      "name": "pages_blocks_small_pricing_packages_features",
+      "schema": "public",
+      "columns": {
+        "_order": { "name": "_order", "type": "integer", "primaryKey": false, "notNull": true },
+        "_parent_id": { "name": "_parent_id", "type": "varchar", "primaryKey": false, "notNull": true },
+        "_locale": { "name": "_locale", "type": "_locales", "primaryKey": false, "notNull": true },
+        "id": { "name": "id", "type": "varchar", "primaryKey": true, "notNull": true },
+        "text": { "name": "text", "type": "varchar", "primaryKey": false, "notNull": true }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
+    },
+    "public.pages_blocks_small_pricing_packages_missing_features": {
+      "name": "pages_blocks_small_pricing_packages_missing_features",
+      "schema": "public",
+      "columns": {
+        "_order": { "name": "_order", "type": "integer", "primaryKey": false, "notNull": true },
+        "_parent_id": { "name": "_parent_id", "type": "varchar", "primaryKey": false, "notNull": true },
+        "_locale": { "name": "_locale", "type": "_locales", "primaryKey": false, "notNull": true },
+        "id": { "name": "id", "type": "varchar", "primaryKey": true, "notNull": true },
+        "text": { "name": "text", "type": "varchar", "primaryKey": false, "notNull": true }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
+    }
+  },
+  "enums": {
+    "public.enum_pages_blocks_small_pricing_packages_button_variant": {
+      "name": "enum_pages_blocks_small_pricing_packages_button_variant",
+      "schema": "public",
+      "values": ["none", "normal", "outlined", "filled"]
+    },
+    "public.enum_pages_blocks_small_pricing_section_layout": {
+      "name": "enum_pages_blocks_small_pricing_section_layout",
+      "schema": "public",
+      "values": ["center", "left"]
+    }
+  },
+  "schemas": {},
+  "_meta": {},
+  "id": "20260727_193000_small_pricing_block",
+  "prevId": "20260727_191000_subscription_configurator_buttons"
+}
