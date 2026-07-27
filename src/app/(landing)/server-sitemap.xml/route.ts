@@ -1,4 +1,4 @@
-import { getActionSlugs, getBlogSlugs, getJobSlugs } from "@/lib/cms"
+import { getActionSlugs, getBlogSlugs, getCustomLandingPageSlugs, getJobSlugs } from "@/lib/cms"
 import { SUPPORTED_LOCALES } from "@/lib/i18n"
 import { resolveSiteUrl } from "@/lib/siteConfig"
 
@@ -44,11 +44,19 @@ export async function GET() {
 
     const localizedUrls = await Promise.all(
         SUPPORTED_LOCALES.map(async (locale) => {
-            const [blogSlugs, jobSlugs, actionSlugs] = await Promise.all([
+            const [blogSlugs, jobSlugs, actionSlugs, customPageSlugs] = await Promise.all([
                 getBlogSlugs(locale),
                 getJobSlugs(locale),
-                getActionSlugs(locale)
+                getActionSlugs(locale),
+                getCustomLandingPageSlugs(locale),
             ])
+
+            const customPageUrls = customPageSlugs.map((slug): SitemapUrl => ({
+                loc: new URL(`/${locale}/${slug}`, siteUrl).toString(),
+                lastmod,
+                changefreq: "weekly",
+                priority: 0.7,
+            }))
 
             const blogUrls = blogSlugs.map((slug): SitemapUrl => ({
                 loc: new URL(`/${locale}/blog/${slug}`, siteUrl).toString(),
@@ -71,7 +79,7 @@ export async function GET() {
                 priority: 0.6
             }))
 
-            return [...blogUrls, ...jobUrls, ...actionUrls]
+            return [...customPageUrls, ...blogUrls, ...jobUrls, ...actionUrls]
         })
     )
 

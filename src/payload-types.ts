@@ -200,21 +200,32 @@ export interface Media {
 export interface Page {
   id: number;
   title: string;
-  slug:
-    | 'main'
-    | 'jobs'
-    | 'blog'
-    | 'features'
-    | 'about-us'
-    | 'legal-notice'
-    | 'privacy'
-    | 'terms'
-    | 'contact'
-    | 'actions'
-    | 'action-details'
-    | 'community-edition'
-    | 'enterprise-edition'
-    | 'subscription';
+  /**
+   * Enable this to use a custom URL slug instead of one of the predefined pages.
+   */
+  customPage?: boolean | null;
+  slug?:
+    | (
+        | 'main'
+        | 'jobs'
+        | 'blog'
+        | 'features'
+        | 'about-us'
+        | 'legal-notice'
+        | 'privacy'
+        | 'terms'
+        | 'contact'
+        | 'actions'
+        | 'action-details'
+        | 'community-edition'
+        | 'enterprise-edition'
+        | 'subscription'
+      )
+    | null;
+  /**
+   * Generated from the title when left empty. Predefined page slugs cannot be used.
+   */
+  customSlug?: string | null;
   layout?:
     | (
         | {
@@ -1382,7 +1393,9 @@ export interface MediaSelect<T extends boolean = true> {
  */
 export interface PagesSelect<T extends boolean = true> {
   title?: T;
+  customPage?: T;
   slug?: T;
+  customSlug?: T;
   layout?:
     | T
     | {

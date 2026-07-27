@@ -1,0 +1,57 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.pages": {
+      "name": "pages",
+      "schema": "public",
+      "columns": {
+        "custom_page": {
+          "name": "custom_page",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "slug": {
+          "name": "slug",
+          "type": "enum_pages_slug",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "custom_slug": {
+          "name": "custom_slug",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "pages_slug_idx": {
+          "name": "pages_slug_idx",
+          "columns": [{ "expression": "slug", "isExpression": false, "asc": true, "nulls": "last" }],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "pages_custom_slug_idx": {
+          "name": "pages_custom_slug_idx",
+          "columns": [{ "expression": "custom_slug", "isExpression": false, "asc": true, "nulls": "last" }],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "_meta": {},
+  "id": "20260727_145500_custom_pages",
+  "prevId": "20260726_220500_cookie_banner_optional_fields"
+}
