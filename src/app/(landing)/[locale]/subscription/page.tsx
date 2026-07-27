@@ -1,4 +1,4 @@
-import { SubscriptionConfigurator, type SubscriptionIcons } from "@/components/SubscriptionConfigurator"
+import { SubscriptionConfigurator, type SubscriptionIcons } from "@/components/payment/SubscriptionConfigurator"
 import { LandingContainer } from "@/components/ui/LandingContainer"
 import { createLandingMetadata, getPageLocale, type LocalePageParams } from "@/lib/appRoute"
 import { getSubscriptionConfig } from "@/lib/cms"
@@ -29,7 +29,5 @@ export default async function SubscriptionPage({ params }: { params: LocalePageP
         additionalFeatures: (subscriptionConfig?.additionalFeatures ?? []).map((feature, index) => getIcon(feature.icon?.trim() || "cube", 20, feature.id ?? `additional-feature-${index}`)),
     }
 
-    return (
-        <LandingContainer className="pt-16 sm:pt-32">{subscriptionConfig && <SubscriptionConfigurator locale={locale} content={subscriptionConfig} icons={icons} />}</LandingContainer>
-    )
+    return <LandingContainer className="pt-16 sm:pt-32">{subscriptionConfig && <SubscriptionConfigurator locale={locale} content={subscriptionConfig} icons={icons} />}</LandingContainer>
 }
