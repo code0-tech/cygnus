@@ -69,6 +69,7 @@ import * as migration_20260727_191000_subscription_configurator_buttons from "./
 import * as migration_20260727_193000_small_pricing_block from "./20260727_193000_small_pricing_block"
 import * as migration_20260727_200000_small_pricing_package_config from "./20260727_200000_small_pricing_package_config"
 import * as migration_20260727_203000_pricing_block_rename from "./20260727_203000_pricing_block_rename"
+import * as migration_20260727_210000_small_pricing_block from "./20260727_210000_small_pricing_block"
 
 export const migrations = [
     {
@@ -425,5 +426,10 @@ export const migrations = [
         up: migration_20260727_203000_pricing_block_rename.up,
         down: migration_20260727_203000_pricing_block_rename.down,
         name: "20260727_203000_pricing_block_rename",
+    },
+    {
+        up: migration_20260727_210000_small_pricing_block.up,
+        down: migration_20260727_210000_small_pricing_block.down,
+        name: "20260727_210000_small_pricing_block",
     },
 ]

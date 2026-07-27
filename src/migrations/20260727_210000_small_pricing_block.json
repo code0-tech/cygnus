@@ -1,0 +1,127 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.pages_blocks_small_pricing": {
+      "name": "pages_blocks_small_pricing",
+      "schema": "public",
+      "columns": {
+        "_order": { "name": "_order", "type": "integer", "primaryKey": false, "notNull": true },
+        "_parent_id": { "name": "_parent_id", "type": "integer", "primaryKey": false, "notNull": true },
+        "_path": { "name": "_path", "type": "text", "primaryKey": false, "notNull": true },
+        "_locale": { "name": "_locale", "type": "_locales", "primaryKey": false, "notNull": true },
+        "id": { "name": "id", "type": "varchar", "primaryKey": true, "notNull": true },
+        "section_heading": { "name": "section_heading", "type": "varchar", "primaryKey": false, "notNull": false },
+        "section_layout": { "name": "section_layout", "type": "enum_pages_blocks_small_pricing_section_layout", "primaryKey": false, "notNull": true, "default": "'center'" },
+        "section_description": { "name": "section_description", "type": "varchar", "primaryKey": false, "notNull": false },
+        "section_link_button_label": { "name": "section_link_button_label", "type": "varchar", "primaryKey": false, "notNull": false },
+        "section_link_button_url": { "name": "section_link_button_url", "type": "varchar", "primaryKey": false, "notNull": false },
+        "pricing_period": { "name": "pricing_period", "type": "enum_pages_blocks_small_pricing_pricing_period", "primaryKey": false, "notNull": true, "default": "'monthly'" },
+        "gradient": { "name": "gradient", "type": "enum_pages_blocks_small_pricing_gradient", "primaryKey": false, "notNull": false, "default": "'blue'" },
+        "gradient_direction": { "name": "gradient_direction", "type": "enum_pages_blocks_small_pricing_gradient_direction", "primaryKey": false, "notNull": false, "default": "'topLeft'" },
+        "pro_button_label": { "name": "pro_button_label", "type": "varchar", "primaryKey": false, "notNull": false },
+        "pro_button_url": { "name": "pro_button_url", "type": "varchar", "primaryKey": false, "notNull": false },
+        "pro_button_variant": { "name": "pro_button_variant", "type": "enum_pages_blocks_small_pricing_pro_button_variant", "primaryKey": false, "notNull": false, "default": "'normal'" },
+        "max_button_label": { "name": "max_button_label", "type": "varchar", "primaryKey": false, "notNull": false },
+        "max_button_url": { "name": "max_button_url", "type": "varchar", "primaryKey": false, "notNull": false },
+        "max_button_variant": { "name": "max_button_variant", "type": "enum_pages_blocks_small_pricing_max_button_variant", "primaryKey": false, "notNull": false, "default": "'normal'" },
+        "custom_button_label": { "name": "custom_button_label", "type": "varchar", "primaryKey": false, "notNull": false },
+        "custom_button_url": { "name": "custom_button_url", "type": "varchar", "primaryKey": false, "notNull": false },
+        "custom_button_variant": { "name": "custom_button_variant", "type": "enum_pages_blocks_small_pricing_custom_button_variant", "primaryKey": false, "notNull": false, "default": "'normal'" },
+        "block_name": { "name": "block_name", "type": "varchar", "primaryKey": false, "notNull": false }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
+    },
+    "public.pages_blocks_small_pricing_pro_features": {
+      "name": "pages_blocks_small_pricing_pro_features",
+      "schema": "public",
+      "columns": {},
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
+    },
+    "public.pages_blocks_small_pricing_pro_missing_features": {
+      "name": "pages_blocks_small_pricing_pro_missing_features",
+      "schema": "public",
+      "columns": {},
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
+    },
+    "public.pages_blocks_small_pricing_max_features": {
+      "name": "pages_blocks_small_pricing_max_features",
+      "schema": "public",
+      "columns": {},
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
+    },
+    "public.pages_blocks_small_pricing_max_missing_features": {
+      "name": "pages_blocks_small_pricing_max_missing_features",
+      "schema": "public",
+      "columns": {},
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
+    },
+    "public.pages_blocks_small_pricing_custom_features": {
+      "name": "pages_blocks_small_pricing_custom_features",
+      "schema": "public",
+      "columns": {},
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
+    },
+    "public.pages_blocks_small_pricing_custom_missing_features": {
+      "name": "pages_blocks_small_pricing_custom_missing_features",
+      "schema": "public",
+      "columns": {},
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
+    }
+  },
+  "enums": {
+    "public.enum_pages_blocks_small_pricing_section_layout": {
+      "name": "enum_pages_blocks_small_pricing_section_layout",
+      "schema": "public",
+      "values": ["center", "left"]
+    },
+    "public.enum_pages_blocks_small_pricing_pricing_period": {
+      "name": "enum_pages_blocks_small_pricing_pricing_period",
+      "schema": "public",
+      "values": ["monthly", "quarterly", "yearly"]
+    },
+    "public.enum_pages_blocks_small_pricing_gradient": {
+      "name": "enum_pages_blocks_small_pricing_gradient",
+      "schema": "public",
+      "values": ["blue", "yellow", "pink", "aqua", "brand", "lime", "magenta", "neutral"]
+    },
+    "public.enum_pages_blocks_small_pricing_gradient_direction": {
+      "name": "enum_pages_blocks_small_pricing_gradient_direction",
+      "schema": "public",
+      "values": ["topLeft", "topRight", "bottomLeft", "bottomRight"]
+    },
+    "public.enum_pages_blocks_small_pricing_pro_button_variant": {
+      "name": "enum_pages_blocks_small_pricing_pro_button_variant",
+      "schema": "public",
+      "values": ["none", "normal", "outlined", "filled"]
+    },
+    "public.enum_pages_blocks_small_pricing_max_button_variant": {
+      "name": "enum_pages_blocks_small_pricing_max_button_variant",
+      "schema": "public",
+      "values": ["none", "normal", "outlined", "filled"]
+    },
+    "public.enum_pages_blocks_small_pricing_custom_button_variant": {
+      "name": "enum_pages_blocks_small_pricing_custom_button_variant",
+      "schema": "public",
+      "values": ["none", "normal", "outlined", "filled"]
+    }
+  },
+  "schemas": {},
+  "_meta": {},
+  "id": "20260727_210000_small_pricing_block",
+  "prevId": "20260727_203000_pricing_block_rename"
+}

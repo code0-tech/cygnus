@@ -36,6 +36,7 @@ export type ListFeatureLayoutBlock = Extract<PageLayoutBlock, { blockType: "list
 export type StatsLayoutBlock = Extract<PageLayoutBlock, { blockType: "stats" }>
 export type FlowExampleLayoutBlock = Extract<PageLayoutBlock, { blockType: "flowExample" }>
 export type PricingLayoutBlock = Extract<PageLayoutBlock, { blockType: "pricing" }>
+export type SmallPricingLayoutBlock = Extract<PageLayoutBlock, { blockType: "smallPricing" }>
 
 type FeatureSlug = Feature["slug"]
 interface FeatureItem {

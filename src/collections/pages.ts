@@ -30,6 +30,7 @@ import { StatsBlock } from "@/blocks/StatsBlock"
 import { FlowExampleBlock } from "@/blocks/FlowExampleBlock"
 import { SubscriptionConfiguratorBlock } from "@/blocks/SubscriptionConfiguratorBlock"
 import { PricingBlock } from "@/blocks/PricingBlock"
+import { SmallPricingBlock } from "@/blocks/SmallPricingBlock"
 
 const RESERVED_PAGE_SLUGS = [
     "main",
@@ -187,6 +188,7 @@ export const Pages: CollectionConfig = {
                 FlowExampleBlock,
                 SubscriptionConfiguratorBlock,
                 PricingBlock,
+                SmallPricingBlock,
             ],
             required: false,
             localized: true,

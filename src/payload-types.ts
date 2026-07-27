@@ -1129,6 +1129,78 @@ export interface Page {
             blockName?: string | null;
             blockType: 'pricing';
           }
+        | {
+            sectionHeading?: string | null;
+            sectionLayout: 'center' | 'left';
+            sectionDescription?: string | null;
+            sectionLinkButton?: {
+              label?: string | null;
+              url?: string | null;
+            };
+            pricingPeriod: 'monthly' | 'quarterly' | 'yearly';
+            gradient?: ('blue' | 'yellow' | 'pink' | 'aqua' | 'brand' | 'lime' | 'magenta' | 'neutral') | null;
+            gradientDirection?: ('topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight') | null;
+            pro?: {
+              features?:
+                | {
+                    text: string;
+                    id?: string | null;
+                  }[]
+                | null;
+              missingFeatures?:
+                | {
+                    text: string;
+                    id?: string | null;
+                  }[]
+                | null;
+              button?: {
+                label?: string | null;
+                url?: string | null;
+                variant?: ('none' | 'normal' | 'outlined' | 'filled') | null;
+              };
+            };
+            max?: {
+              features?:
+                | {
+                    text: string;
+                    id?: string | null;
+                  }[]
+                | null;
+              missingFeatures?:
+                | {
+                    text: string;
+                    id?: string | null;
+                  }[]
+                | null;
+              button?: {
+                label?: string | null;
+                url?: string | null;
+                variant?: ('none' | 'normal' | 'outlined' | 'filled') | null;
+              };
+            };
+            custom?: {
+              features?:
+                | {
+                    text: string;
+                    id?: string | null;
+                  }[]
+                | null;
+              missingFeatures?:
+                | {
+                    text: string;
+                    id?: string | null;
+                  }[]
+                | null;
+              button?: {
+                label?: string | null;
+                url?: string | null;
+                variant?: ('none' | 'normal' | 'outlined' | 'filled') | null;
+              };
+            };
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'smallPricing';
+          }
       )[]
     | null;
   meta?: {
@@ -2158,6 +2230,93 @@ export interface PagesSelect<T extends boolean = true> {
                     label?: T;
                     url?: T;
                   };
+              pro?:
+                | T
+                | {
+                    features?:
+                      | T
+                      | {
+                          text?: T;
+                          id?: T;
+                        };
+                    missingFeatures?:
+                      | T
+                      | {
+                          text?: T;
+                          id?: T;
+                        };
+                    button?:
+                      | T
+                      | {
+                          label?: T;
+                          url?: T;
+                          variant?: T;
+                        };
+                  };
+              max?:
+                | T
+                | {
+                    features?:
+                      | T
+                      | {
+                          text?: T;
+                          id?: T;
+                        };
+                    missingFeatures?:
+                      | T
+                      | {
+                          text?: T;
+                          id?: T;
+                        };
+                    button?:
+                      | T
+                      | {
+                          label?: T;
+                          url?: T;
+                          variant?: T;
+                        };
+                  };
+              custom?:
+                | T
+                | {
+                    features?:
+                      | T
+                      | {
+                          text?: T;
+                          id?: T;
+                        };
+                    missingFeatures?:
+                      | T
+                      | {
+                          text?: T;
+                          id?: T;
+                        };
+                    button?:
+                      | T
+                      | {
+                          label?: T;
+                          url?: T;
+                          variant?: T;
+                        };
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        smallPricing?:
+          | T
+          | {
+              sectionHeading?: T;
+              sectionLayout?: T;
+              sectionDescription?: T;
+              sectionLinkButton?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                  };
+              pricingPeriod?: T;
+              gradient?: T;
+              gradientDirection?: T;
               pro?:
                 | T
                 | {
