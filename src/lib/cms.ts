@@ -249,6 +249,8 @@ export interface SubscriptionConfiguratorBlockData {
 
 export type SubscriptionConfiguratorContent = SubscriptionConfigData & SubscriptionConfiguratorBlockData
 
+export type CheckoutSummaryIconColor = "neutral" | "brand" | "aqua" | "blue" | "pink" | "yellow" | "lime" | "magenta"
+
 export interface CheckoutData {
     id: number
     title: string
@@ -260,9 +262,26 @@ export interface CheckoutData {
         heading: string
         description: string
         deploymentLabel: string
+        deploymentIcons: {
+            cloud: string
+            selfHosted: string
+        }
+        deploymentIconColor: CheckoutSummaryIconColor
         customerTypeLabel: string
+        customerTypeIcons: {
+            b2b: string
+            b2c: string
+        }
+        customerTypeIconColor: CheckoutSummaryIconColor
+        aiTokensLabel: string
+        aiTokensIcon: string
+        aiTokensIconColor: CheckoutSummaryIconColor
         workflowExecutionsLabel: string
+        workflowExecutionsIcon: string
+        workflowExecutionsIconColor: CheckoutSummaryIconColor
         additionalFeaturesLabel: string
+        additionalFeaturesIcon: string
+        additionalFeaturesIconColor: CheckoutSummaryIconColor
         additionalFeaturesDescription: string
         pricing: {
             label: string

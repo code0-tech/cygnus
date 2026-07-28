@@ -27,6 +27,23 @@ export function formatEuroCurrency(value: number, locale: string) {
     return euroCurrencyFormatters[getFormatterLocale(locale)].format(value)
 }
 
+export function formatCompactNumber(value: number) {
+    const absoluteValue = Math.abs(value)
+    const compactUnits = [
+        { suffix: "B", value: 1_000_000_000 },
+        { suffix: "M", value: 1_000_000 },
+        { suffix: "K", value: 1_000 },
+    ]
+    const unit = compactUnits.find((compactUnit) => absoluteValue >= compactUnit.value)
+
+    if (!unit) return String(value)
+
+    const compactValue = value / unit.value
+    const maximumFractionDigits = Number.isInteger(compactValue) ? 0 : 1
+
+    return `${compactValue.toLocaleString("en-US", { maximumFractionDigits })}${unit.suffix}`
+}
+
 export function formatLongDate(value: Date, locale: string) {
     return longDateFormatters[getFormatterLocale(locale)].format(value)
 }

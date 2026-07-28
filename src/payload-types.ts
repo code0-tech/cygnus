@@ -3091,9 +3091,26 @@ export interface Checkout {
     heading: string;
     description: string;
     deploymentLabel: string;
+    deploymentIcons: {
+      cloud: string;
+      selfHosted: string;
+    };
+    deploymentIconColor: 'neutral' | 'brand' | 'aqua' | 'blue' | 'pink' | 'yellow' | 'lime' | 'magenta';
     customerTypeLabel: string;
+    customerTypeIcons: {
+      b2b: string;
+      b2c: string;
+    };
+    customerTypeIconColor: 'neutral' | 'brand' | 'aqua' | 'blue' | 'pink' | 'yellow' | 'lime' | 'magenta';
+    aiTokensLabel: string;
+    aiTokensIcon: string;
+    aiTokensIconColor: 'neutral' | 'brand' | 'aqua' | 'blue' | 'pink' | 'yellow' | 'lime' | 'magenta';
     workflowExecutionsLabel: string;
+    workflowExecutionsIcon: string;
+    workflowExecutionsIconColor: 'neutral' | 'brand' | 'aqua' | 'blue' | 'pink' | 'yellow' | 'lime' | 'magenta';
     additionalFeaturesLabel: string;
+    additionalFeaturesIcon: string;
+    additionalFeaturesIconColor: 'neutral' | 'brand' | 'aqua' | 'blue' | 'pink' | 'yellow' | 'lime' | 'magenta';
     additionalFeaturesDescription: string;
     pricing: {
       label: string;
@@ -3561,9 +3578,30 @@ export interface CheckoutSelect<T extends boolean = true> {
         heading?: T;
         description?: T;
         deploymentLabel?: T;
+        deploymentIcons?:
+          | T
+          | {
+              cloud?: T;
+              selfHosted?: T;
+            };
+        deploymentIconColor?: T;
         customerTypeLabel?: T;
+        customerTypeIcons?:
+          | T
+          | {
+              b2b?: T;
+              b2c?: T;
+            };
+        customerTypeIconColor?: T;
+        aiTokensLabel?: T;
+        aiTokensIcon?: T;
+        aiTokensIconColor?: T;
         workflowExecutionsLabel?: T;
+        workflowExecutionsIcon?: T;
+        workflowExecutionsIconColor?: T;
         additionalFeaturesLabel?: T;
+        additionalFeaturesIcon?: T;
+        additionalFeaturesIconColor?: T;
         additionalFeaturesDescription?: T;
         pricing?:
           | T

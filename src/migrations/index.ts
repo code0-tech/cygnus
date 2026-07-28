@@ -75,6 +75,8 @@ import * as migration_20260728_131500_bento_content_remove_features from './2026
 import * as migration_20260728_140000_compare_application_block from './20260728_140000_compare_application_block';
 import * as migration_20260728_165042_checkout_licenses_globals from './20260728_165042_checkout_licenses_globals';
 import * as migration_20260728_191952_checkout_defaults from './20260728_191952_checkout_defaults';
+import * as migration_20260728_193456_checkout_summary_icons from './20260728_193456_checkout_summary_icons';
+import * as migration_20260728_194234_checkout_summary_ai_tokens from './20260728_194234_checkout_summary_ai_tokens';
 
 export const migrations = [
   {
@@ -460,6 +462,16 @@ export const migrations = [
   {
     up: migration_20260728_191952_checkout_defaults.up,
     down: migration_20260728_191952_checkout_defaults.down,
-    name: '20260728_191952_checkout_defaults'
+    name: '20260728_191952_checkout_defaults',
+  },
+  {
+    up: migration_20260728_193456_checkout_summary_icons.up,
+    down: migration_20260728_193456_checkout_summary_icons.down,
+    name: '20260728_193456_checkout_summary_icons',
+  },
+  {
+    up: migration_20260728_194234_checkout_summary_ai_tokens.up,
+    down: migration_20260728_194234_checkout_summary_ai_tokens.down,
+    name: '20260728_194234_checkout_summary_ai_tokens'
   },
 ];

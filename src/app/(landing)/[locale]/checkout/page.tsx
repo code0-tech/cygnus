@@ -14,9 +14,9 @@ export default async function CheckoutPage({ params }: { params: Promise<{ local
 
     return (
         <div className="flex flex-col gap-8">
-            <LinkButton href={"/subscription"} showArrow={false} className="border-0 hover:bg-white/10 pl-2.5 pr-4 py-1 rounded-xl hover:text-white">
+            <LinkButton href={"/subscription"} showArrow={false} className="border-0 hover:bg-white/10 pl-2.5 pr-4 py-1 rounded-[10px] hover:text-white after:hidden">
                 <IconArrowLeft size={16} />
-                {checkoutContent?.navigation.backLabel ?? (locale === "de" ? "Zurück" : "Back")}
+                {checkoutContent?.navigation.backLabel}
             </LinkButton>
             <div className="w-full flex gap-16">
                 <CheckoutSummary content={checkoutContent?.summary} subscriptionConfig={subscriptionConfig} />

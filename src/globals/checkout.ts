@@ -1,4 +1,35 @@
-import type { GlobalConfig } from "payload"
+import { iconField } from "@mvriu5/payload-icon-picker"
+import type { Field, GlobalConfig } from "payload"
+
+const iconColorOptions = [
+    { label: "Neutral", value: "neutral" },
+    { label: "Brand", value: "brand" },
+    { label: "Aqua", value: "aqua" },
+    { label: "Blue", value: "blue" },
+    { label: "Pink", value: "pink" },
+    { label: "Yellow", value: "yellow" },
+    { label: "Lime", value: "lime" },
+    { label: "Magenta", value: "magenta" },
+]
+
+const summaryIconField = (name: string, label: string, defaultValue: string): Field =>
+    iconField({
+        name,
+        label,
+        required: true,
+        defaultValue,
+        placeholder: "Search icons",
+        noResultsLabel: "No icons found",
+    })
+
+const summaryIconColorField = (name: string, defaultValue: string): Field => ({
+    name,
+    label: "Icon Color",
+    type: "select",
+    required: true,
+    defaultValue,
+    options: iconColorOptions,
+})
 
 export const Checkout: GlobalConfig = {
     slug: "checkout",
@@ -32,9 +63,30 @@ export const Checkout: GlobalConfig = {
                     defaultValue: "This checkout reflects the subscription shape you configured, including runtime and optional add-ons.",
                 },
                 { name: "deploymentLabel", type: "text", required: true, localized: true, defaultValue: "Deployment" },
+                {
+                    name: "deploymentIcons",
+                    label: "Deployment Icons",
+                    type: "group",
+                    fields: [summaryIconField("cloud", "Cloud Icon", "tabler:IconCloud"), summaryIconField("selfHosted", "Self-hosted Icon", "tabler:IconServer")],
+                },
+                summaryIconColorField("deploymentIconColor", "aqua"),
                 { name: "customerTypeLabel", type: "text", required: true, localized: true, defaultValue: "Customer Type" },
+                {
+                    name: "customerTypeIcons",
+                    label: "Customer Type Icons",
+                    type: "group",
+                    fields: [summaryIconField("b2b", "B2B Icon", "tabler:IconUsers"), summaryIconField("b2c", "B2C Icon", "tabler:IconBuildingStore")],
+                },
+                summaryIconColorField("customerTypeIconColor", "yellow"),
+                { name: "aiTokensLabel", type: "text", required: true, localized: true, defaultValue: "AI Tokens" },
+                summaryIconField("aiTokensIcon", "AI Tokens Icon", "tabler:IconBrain"),
+                summaryIconColorField("aiTokensIconColor", "magenta"),
                 { name: "workflowExecutionsLabel", type: "text", required: true, localized: true, defaultValue: "Workflow Executions" },
+                summaryIconField("workflowExecutionsIcon", "Workflow Executions Icon", "tabler:IconBolt"),
+                summaryIconColorField("workflowExecutionsIconColor", "brand"),
                 { name: "additionalFeaturesLabel", type: "text", required: true, localized: true, defaultValue: "Additional Features" },
+                summaryIconField("additionalFeaturesIcon", "Additional Features Icon", "tabler:IconSparkles"),
+                summaryIconColorField("additionalFeaturesIconColor", "yellow"),
                 {
                     name: "additionalFeaturesDescription",
                     type: "textarea",

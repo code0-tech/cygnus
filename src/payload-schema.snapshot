@@ -79,6 +79,11 @@ export const enum_subscription_config_customer_type_b2b_color = pgEnum('enum_sub
 export const enum_subscription_config_customer_type_b2c_color = pgEnum('enum_subscription_config_customer_type_b2c_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
 export const enum_subscription_config_subscription_tier_pro_color = pgEnum('enum_subscription_config_subscription_tier_pro_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
 export const enum_subscription_config_subscription_tier_team_color = pgEnum('enum_subscription_config_subscription_tier_team_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
+export const enum_checkout_summary_deployment_icon_color = pgEnum('enum_checkout_summary_deployment_icon_color', ['neutral', 'brand', 'aqua', 'blue', 'pink', 'yellow', 'lime', 'magenta'])
+export const enum_checkout_summary_customer_type_icon_color = pgEnum('enum_checkout_summary_customer_type_icon_color', ['neutral', 'brand', 'aqua', 'blue', 'pink', 'yellow', 'lime', 'magenta'])
+export const enum_checkout_summary_ai_tokens_icon_color = pgEnum('enum_checkout_summary_ai_tokens_icon_color', ['neutral', 'brand', 'aqua', 'blue', 'pink', 'yellow', 'lime', 'magenta'])
+export const enum_checkout_summary_workflow_executions_icon_color = pgEnum('enum_checkout_summary_workflow_executions_icon_color', ['neutral', 'brand', 'aqua', 'blue', 'pink', 'yellow', 'lime', 'magenta'])
+export const enum_checkout_summary_additional_features_icon_color = pgEnum('enum_checkout_summary_additional_features_icon_color', ['neutral', 'brand', 'aqua', 'blue', 'pink', 'yellow', 'lime', 'magenta'])
 
 export const users_sessions = pgTable('users_sessions', {
   _order: integer('_order').notNull(),
@@ -2462,6 +2467,18 @@ export const subscription_config_locales = pgTable('subscription_config_locales'
 export const checkout = pgTable('checkout', {
   id: serial('id').primaryKey(),
   title: varchar('title').notNull().default("Checkout Content"),
+  summary_deploymentIcons_cloud: varchar('summary_deployment_icons_cloud').notNull().default("tabler:IconCloud"),
+  summary_deploymentIcons_selfHosted: varchar('summary_deployment_icons_self_hosted').notNull().default("tabler:IconServer"),
+  summary_deploymentIconColor: enum_checkout_summary_deployment_icon_color('summary_deployment_icon_color').notNull().default("aqua"),
+  summary_customerTypeIcons_b2b: varchar('summary_customer_type_icons_b2b').notNull().default("tabler:IconUsers"),
+  summary_customerTypeIcons_b2c: varchar('summary_customer_type_icons_b2c').notNull().default("tabler:IconBuildingStore"),
+  summary_customerTypeIconColor: enum_checkout_summary_customer_type_icon_color('summary_customer_type_icon_color').notNull().default("yellow"),
+  summary_aiTokensIcon: varchar('summary_ai_tokens_icon').notNull().default("tabler:IconBrain"),
+  summary_aiTokensIconColor: enum_checkout_summary_ai_tokens_icon_color('summary_ai_tokens_icon_color').notNull().default("magenta"),
+  summary_workflowExecutionsIcon: varchar('summary_workflow_executions_icon').notNull().default("tabler:IconBolt"),
+  summary_workflowExecutionsIconColor: enum_checkout_summary_workflow_executions_icon_color('summary_workflow_executions_icon_color').notNull().default("brand"),
+  summary_additionalFeaturesIcon: varchar('summary_additional_features_icon').notNull().default("tabler:IconSparkles"),
+  summary_additionalFeaturesIconColor: enum_checkout_summary_additional_features_icon_color('summary_additional_features_icon_color').notNull().default("yellow"),
   updatedAt: timestamp('updated_at', {mode: 'string',withTimezone: true,precision: 3}),
   createdAt: timestamp('created_at', {mode: 'string',withTimezone: true,precision: 3}),
 }
@@ -2475,6 +2492,7 @@ export const checkout_locales = pgTable('checkout_locales', {
   summary_description: varchar('summary_description').notNull().default("This checkout reflects the subscription shape you configured, including runtime and optional add-ons."),
   summary_deploymentLabel: varchar('summary_deployment_label').notNull().default("Deployment"),
   summary_customerTypeLabel: varchar('summary_customer_type_label').notNull().default("Customer Type"),
+  summary_aiTokensLabel: varchar('summary_ai_tokens_label').notNull().default("AI Tokens"),
   summary_workflowExecutionsLabel: varchar('summary_workflow_executions_label').notNull().default("Workflow Executions"),
   summary_additionalFeaturesLabel: varchar('summary_additional_features_label').notNull().default("Additional Features"),
   summary_additionalFeaturesDescription: varchar('summary_additional_features_description').notNull().default("Selected add-ons that extend the base subscription."),
@@ -3959,6 +3977,11 @@ type DatabaseSchema = {
   enum_subscription_config_customer_type_b2c_color: typeof enum_subscription_config_customer_type_b2c_color
   enum_subscription_config_subscription_tier_pro_color: typeof enum_subscription_config_subscription_tier_pro_color
   enum_subscription_config_subscription_tier_team_color: typeof enum_subscription_config_subscription_tier_team_color
+  enum_checkout_summary_deployment_icon_color: typeof enum_checkout_summary_deployment_icon_color
+  enum_checkout_summary_customer_type_icon_color: typeof enum_checkout_summary_customer_type_icon_color
+  enum_checkout_summary_ai_tokens_icon_color: typeof enum_checkout_summary_ai_tokens_icon_color
+  enum_checkout_summary_workflow_executions_icon_color: typeof enum_checkout_summary_workflow_executions_icon_color
+  enum_checkout_summary_additional_features_icon_color: typeof enum_checkout_summary_additional_features_icon_color
   users_sessions: typeof users_sessions
   users: typeof users
   media: typeof media
