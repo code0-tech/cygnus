@@ -32,7 +32,7 @@
         "@mvriu5/payload-ai": "^1.6.1",
         "@mvriu5/payload-color-picker": "^1.0.2",
         "@mvriu5/payload-icon-picker": "^1.1.1",
-        "@mvriu5/payload-portable-plugin": "^0.8.4",
+        "@mvriu5/payload-portable-plugin": "^0.8.5",
         "@number-flow/react": "^0.6.2",
         "@openrouter/ai-sdk-provider": "^3.0.0",
         "@payloadcms/db-postgres": "3.86.0",
@@ -62,6 +62,7 @@
         "web-haptics": "^0.0.6"
     },
     "devDependencies": {
+        "@ai-sdk/mistral": "^4.0.16",
         "@swc-node/register": "^1.12.1",
         "@tailwindcss/postcss": "^4.3.3",
         "@types/node": "^25.9.5",
