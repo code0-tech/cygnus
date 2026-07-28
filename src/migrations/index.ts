@@ -74,6 +74,7 @@ import * as migration_20260727_220000_repair_actions_tags from './20260727_22000
 import * as migration_20260728_131500_bento_content_remove_features from './20260728_131500_bento_content_remove_features';
 import * as migration_20260728_140000_compare_application_block from './20260728_140000_compare_application_block';
 import * as migration_20260728_165042_checkout_licenses_globals from './20260728_165042_checkout_licenses_globals';
+import * as migration_20260728_191952_checkout_defaults from './20260728_191952_checkout_defaults';
 
 export const migrations = [
   {
@@ -454,6 +455,11 @@ export const migrations = [
   {
     up: migration_20260728_165042_checkout_licenses_globals.up,
     down: migration_20260728_165042_checkout_licenses_globals.down,
-    name: '20260728_165042_checkout_licenses_globals'
+    name: '20260728_165042_checkout_licenses_globals',
+  },
+  {
+    up: migration_20260728_191952_checkout_defaults.up,
+    down: migration_20260728_191952_checkout_defaults.down,
+    name: '20260728_191952_checkout_defaults'
   },
 ];
