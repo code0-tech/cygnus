@@ -101,12 +101,12 @@ function OptionCard({ title, description, active, onClick, icon, disabled = fals
             disabled={disabled}
             style={getOptionAccentStyle(accent, active)}
             className={cn(
-                "relative overflow-hidden rounded-2xl border p-4 text-left transition-all duration-300",
+                "relative overflow-hidden rounded-2xl border p-3 text-left transition-all duration-300",
                 disabled ? "cursor-not-allowed border-white/10 opacity-45" : "border-white/10 hover:bg-light"
             )}
         >
-            <div className="relative z-10 flex flex-col gap-2">
-                <div className="flex items-center gap-2">
+            <div className="relative z-10 flex flex-col gap-1">
+                <div className="flex items-center gap-1.5">
                     <div className="relative inline-flex shrink-0 items-center justify-center">
                         {active ? (
                             <div
@@ -119,9 +119,11 @@ function OptionCard({ title, description, active, onClick, icon, disabled = fals
                             {icon}
                         </div>
                     </div>
-                    <p className="text-base font-semibold text-white">{title}</p>
+                    <p className="text-base text-white" style={active ? ACTIVE_ACCENT_ICON_STYLE : undefined}>
+                        {title}
+                    </p>
                 </div>
-                <p className="text-sm leading-6 text-secondary">{description}</p>
+                <p className="text-sm text-secondary">{description}</p>
             </div>
         </button>
     )
@@ -145,7 +147,7 @@ function AdditionalFeatureCard({ title, description, active, onClick, icon, form
             type="button"
             onClick={onClick}
             style={getOptionAccentStyle("brand", active)}
-            className="relative overflow-hidden rounded-2xl border border-white/10 p-4 text-left transition-all duration-300 hover:bg-light"
+            className="relative overflow-hidden rounded-2xl border border-white/10 p-3 text-left transition-all duration-300 hover:bg-light"
         >
             <div className="relative z-10 flex flex-col gap-2">
                 <div className="flex items-center gap-2">
@@ -256,7 +258,7 @@ export function SubscriptionConfiguratorSection({ locale, content, icons }: { lo
                         </div>
 
                         {content.buttons.length > 0 && (
-                            <div className="flex flex-col gap-6">
+                            <div className="flex flex-col gap-4">
                                 {content.buttons.map((button, index) => (
                                     <HapticButtonLink
                                         href={button.url}
@@ -273,7 +275,7 @@ export function SubscriptionConfiguratorSection({ locale, content, icons }: { lo
                 </section>
 
                 <Card size="lg" className="lg:col-span-3 min-w-0 bg-primary">
-                    <div className="relative z-10 flex flex-col gap-8">
+                    <div className="relative z-10 flex flex-col gap-6">
                         <h2 className="text-2xl font-semibold text-white lg:text-3xl">{content.optionsPanelHeading}</h2>
 
                         <Switch
@@ -285,7 +287,7 @@ export function SubscriptionConfiguratorSection({ locale, content, icons }: { lo
                         />
 
                         <div className="space-y-2">
-                            <p className="text-base text-secondary">{content.deployment.label}</p>
+                            <p className="text-sm tracking-wide text-tertiary">{content.deployment.label}</p>
                             <div className="grid gap-3 md:grid-cols-2">
                                 <OptionCard
                                     title={content.deployment.selfHosted.title}
@@ -307,7 +309,7 @@ export function SubscriptionConfiguratorSection({ locale, content, icons }: { lo
                         </div>
 
                         <div className="space-y-2">
-                            <p className="text-base text-secondary">{content.customerType.label}</p>
+                            <p className="text-sm tracking-wide text-tertiary">{content.customerType.label}</p>
                             <div className="grid gap-3 md:grid-cols-2">
                                 <OptionCard
                                     title={content.customerType.b2b.title}
@@ -342,12 +344,10 @@ export function SubscriptionConfiguratorSection({ locale, content, icons }: { lo
                             </div>
                         </div>
 
-                        <div className="rounded-2xl border border-white/10 p-5">
-                            <div className="flex items-start justify-between gap-4">
-                                <div>
-                                    <p className="text-lg font-semibold tracking-wider text-white">{workflowExecutions.title}</p>
-                                    <p className="text-sm text-secondary">{workflowExecutions.description}</p>
-                                </div>
+                        <div className="rounded-2xl border border-white/10 p-3">
+                            <div className="flex flex-col items-start justify-between">
+                                <p className="text-base tracking-wide text-white">{workflowExecutions.title}</p>
+                                <p className="text-sm text-secondary">{workflowExecutions.description}</p>
                             </div>
                             <Slider
                                 min={workflowExecutionRange.min}
@@ -360,7 +360,7 @@ export function SubscriptionConfiguratorSection({ locale, content, icons }: { lo
                                 valueLabelSuffix={workflowExecutions.suffix}
                                 centerLabelSuffix={paymentPeriodSuffix}
                             />
-                            <div className="flex items-center w-full justify-between gap-4">
+                            <div className="flex items-center w-full justify-between gap-4 mt-2">
                                 <WorkflowCalculatorDialog
                                     locale={locale}
                                     content={content.workflowCalculator}
@@ -382,12 +382,10 @@ export function SubscriptionConfiguratorSection({ locale, content, icons }: { lo
                             </div>
                         </div>
 
-                        <div className="rounded-2xl border border-white/10 p-5">
-                            <div className="flex items-center justify-between gap-4">
-                                <div>
-                                    <p className="text-lg font-semibold tracking-wider text-white">{aiTokens.title}</p>
-                                    <p className="text-sm text-secondary">{aiTokens.description}</p>
-                                </div>
+                        <div className="rounded-2xl border border-white/10 p-3">
+                            <div className="flex flex-col items-start justify-between">
+                                <p className="text-base tracking-wide text-white">{aiTokens.title}</p>
+                                <p className="text-sm text-secondary">{aiTokens.description}</p>
                             </div>
                             <Slider
                                 min={aiTokenRange.min}
