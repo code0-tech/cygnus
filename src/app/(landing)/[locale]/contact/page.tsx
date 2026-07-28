@@ -1,8 +1,7 @@
-import { ContactPageContent } from "@/components/ContactPageContent"
+import { PageBlocks } from "@/components/ui/PageBlockRenderer"
 import { LandingContainer } from "@/components/ui/LandingContainer"
 import { createLandingMetadata, getPageLocale, type LocalePageParams } from "@/lib/appRoute"
 import { getLandingPage } from "@/lib/cms"
-import { findPageBlock } from "@/lib/pageBlocks"
 import { notFound } from "next/navigation"
 
 export const generateMetadata = createLandingMetadata("contact")
@@ -12,13 +11,10 @@ export default async function ContactPage({ params }: { params: LocalePageParams
     const page = await getLandingPage("contact", locale)
     if (!page) notFound()
 
-    const contactBlock = findPageBlock(page, "contact")
-
     return (
-        <LandingContainer className="pt-32">
-                <div className="mx-auto w-full max-w-5xl">
-                    <ContactPageContent locale={locale} contactBlock={contactBlock} />
-                </div>
+        <LandingContainer>
+            <div className="h-28" aria-hidden="true" />
+            <PageBlocks blocks={page.layout} locale={locale} />
         </LandingContainer>
     )
 }
