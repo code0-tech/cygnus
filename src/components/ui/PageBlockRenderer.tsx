@@ -30,6 +30,7 @@ import { SubscriptionConfiguratorSection, type SubscriptionIcons } from "../sect
 import { PricingSection } from "../sections/PricingSection"
 import { SmallPricingSection } from "../sections/SmallPricingSection"
 import { ContactSection } from "../sections/ContactSection"
+import { CompareApplicationSection } from "../sections/CompareApplicationSection"
 import { getIcon } from "@/components/ui/IconRenderer"
 import type { ActionItem, SubscriptionConfigData, SubscriptionConfiguratorBlockData } from "@/lib/cms"
 
@@ -185,6 +186,7 @@ const pageBlockRenderers: Partial<Record<PageBlock["blockType"], BlockRenderer>>
         return <SmallPricingSection content={block as Extract<PageBlock, { blockType: "smallPricing" }>} locale={options.locale ?? "en"} packages={config.packages} />
     },
     contact: (block, options) => <ContactSection content={block as Extract<PageBlock, { blockType: "contact" }>} locale={options.locale ?? "en"} />,
+    compareApplication: (block) => <CompareApplicationSection content={block as Extract<PageBlock, { blockType: "compareApplication" }>} />,
 }
 
 function renderPageBlock(block: PageBlock, options: PageBlockRenderOptions) {

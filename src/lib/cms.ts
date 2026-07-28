@@ -37,6 +37,7 @@ export type StatsLayoutBlock = Extract<PageLayoutBlock, { blockType: "stats" }>
 export type FlowExampleLayoutBlock = Extract<PageLayoutBlock, { blockType: "flowExample" }>
 export type PricingLayoutBlock = Extract<PageLayoutBlock, { blockType: "pricing" }>
 export type SmallPricingLayoutBlock = Extract<PageLayoutBlock, { blockType: "smallPricing" }>
+export type CompareApplicationLayoutBlock = Extract<PageLayoutBlock, { blockType: "compareApplication" }>
 
 export type ActionItem = Pick<Action, "id" | "identifier" | "module" | "tags" | "createdAt"> & {
     slug: string

@@ -177,7 +177,7 @@ export function PricingSection({ content, locale, packages, paymentPeriod }: Pri
                     )
 
                     return highlighted ? (
-                        <BorderBeam key={pricingPackage.key} size="pulse-inner" colorVariant="colorful" strength={0.7} className="h-full">
+                        <BorderBeam key={pricingPackage.key} size="md" colorVariant="colorful" strength={0.7} className="h-full">
                             {card}
                         </BorderBeam>
                     ) : (

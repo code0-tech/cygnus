@@ -1267,6 +1267,41 @@ export interface Page {
             blockName?: string | null;
             blockType: 'smallPricing';
           }
+        | {
+            sectionHeading?: string | null;
+            sectionLayout: 'center' | 'left';
+            sectionDescription?: string | null;
+            sectionLinkButton?: {
+              label?: string | null;
+              url?: string | null;
+            };
+            apps: {
+              logo: number | Media;
+              name: string;
+              features?:
+                | {
+                    title: string;
+                    exists?: boolean | null;
+                    id?: string | null;
+                  }[]
+                | null;
+              id?: string | null;
+            }[];
+            showIcon?: boolean | null;
+            gradient?: ('blue' | 'yellow' | 'pink' | 'aqua' | 'brand' | 'lime' | 'magenta' | 'neutral') | null;
+            gradientDirection?: ('topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight') | null;
+            buttons?:
+              | {
+                  label: string;
+                  url: string;
+                  variant?: ('none' | 'normal' | 'outlined' | 'filled') | null;
+                  id?: string | null;
+                }[]
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'compareApplication';
+          }
       )[]
     | null;
   meta?: {
@@ -2527,6 +2562,46 @@ export interface PagesSelect<T extends boolean = true> {
                           url?: T;
                           variant?: T;
                         };
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        compareApplication?:
+          | T
+          | {
+              sectionHeading?: T;
+              sectionLayout?: T;
+              sectionDescription?: T;
+              sectionLinkButton?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                  };
+              apps?:
+                | T
+                | {
+                    logo?: T;
+                    name?: T;
+                    features?:
+                      | T
+                      | {
+                          title?: T;
+                          exists?: T;
+                          id?: T;
+                        };
+                    id?: T;
+                  };
+              showIcon?: T;
+              gradient?: T;
+              gradientDirection?: T;
+              buttons?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                    variant?: T;
+                    id?: T;
                   };
               id?: T;
               blockName?: T;

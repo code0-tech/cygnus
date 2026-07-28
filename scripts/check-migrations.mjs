@@ -11,7 +11,12 @@ const payloadBin = resolve(projectRoot, "node_modules/payload/bin.js")
 const schemaCheckSecret = "migration-schema-check-only-not-for-runtime"
 
 function normalizedFile(path) {
-    return readFileSync(path, "utf8").replaceAll("\r\n", "\n").trim()
+    return readFileSync(path, "utf8")
+        .replaceAll("\r\n", "\n")
+        .split("\n")
+        .map((line) => line.trimEnd())
+        .join("\n")
+        .trim()
 }
 
 try {
