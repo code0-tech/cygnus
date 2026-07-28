@@ -18,10 +18,15 @@ export default async function CheckoutLayout({ children, params }: CheckoutLayou
 
     const footer = await getFooter(locale)
     const currentYear = new Date().getUTCFullYear()
+    const stripePublishableKey = process.env.STRIPE_PUBLIC_KEY
+
+    if (!stripePublishableKey) {
+        throw new Error("STRIPE_PUBLIC_KEY is not configured.")
+    }
 
     return (
         <>
-            <CheckoutLayoutClient>{children}</CheckoutLayoutClient>
+            <CheckoutLayoutClient publishableKey={stripePublishableKey}>{children}</CheckoutLayoutClient>
             <FooterSection locale={locale} footer={footer} currentYear={currentYear} />
             <div className="pointer-events-none absolute inset-x-0 bottom-0 z-50 flex justify-center" aria-hidden="true">
                 <div className="h-16 w-full bg-blue/20 blur-3xl" />
