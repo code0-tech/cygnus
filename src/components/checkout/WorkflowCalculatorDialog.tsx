@@ -101,7 +101,7 @@ export function WorkflowCalculatorDialog({ locale, content, businessTypeIcons, v
                 <DialogOverlay className="backdrop-blur-sm" />
                 <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto border border-white/5 bg-primary! p-4! sm:p-6!">
                     <DialogHeader className="pr-10 text-left!">
-                        <DialogTitle className="text-white!">{content.title}</DialogTitle>
+                        <DialogTitle className="text-white! font-normal!">{content.title}</DialogTitle>
                         <DialogDescription className="text-secondary! text-sm!">{content.description}</DialogDescription>
                     </DialogHeader>
 
@@ -114,13 +114,13 @@ export function WorkflowCalculatorDialog({ locale, content, businessTypeIcons, v
                     </div>
 
                     <div className="grid gap-8 py-6">
-                        <div className="flex flex-col gap-2 text-xs font-medium text-secondary">
+                        <div className="flex flex-col gap-2 text-sm font-medium text-tertiary">
                             <span>{content.businessTypeLabel}</span>
                             <Menu modal={false} open={businessTypeMenuOpen} onOpenChange={setBusinessTypeMenuOpen}>
                                 <MenuTrigger asChild>
                                     <Button className="w-full! justify-between">
                                         <span className="flex min-w-0 flex-1 items-center gap-2">
-                                            <span className="shrink-0 text-tertiary">{businessTypeIcons[selectedBusinessTypeIndex]}</span>
+                                            <span className="shrink-0 text-tertiary mt-1">{businessTypeIcons[selectedBusinessTypeIndex]}</span>
                                             <span className="truncate">{selectedBusinessType?.name}</span>
                                         </span>
                                         <IconChevronDown size={16} className="ml-auto shrink-0" />
@@ -142,7 +142,7 @@ export function WorkflowCalculatorDialog({ locale, content, businessTypeIcons, v
                                                         }}
                                                         className="flex items-center gap-2"
                                                     >
-                                                        <span className="shrink-0 text-tertiary">{businessTypeIcons[index]}</span>
+                                                        <span className="shrink-0 mt-1.5 text-tertiary">{businessTypeIcons[index]}</span>
                                                         <span className="min-w-0 flex-1">
                                                             <span className="block truncate">{businessType.name}</span>
                                                             <span className="block truncate text-xs text-tertiary">{businessType.conversion_unit}</span>
@@ -184,7 +184,7 @@ export function WorkflowCalculatorDialog({ locale, content, businessTypeIcons, v
                                 type="button"
                                 variant="filled"
                                 onClick={() => onApply(applicableExecutions)}
-                                className="justify-self-end bg-white/80! text-primary! hover:bg-white! transition-colors"
+                                className="justify-self-end bg-white/80! text-sm! text-primary! hover:bg-white! transition-colors"
                             >
                                 {content.applyLabel}
                             </Button>
