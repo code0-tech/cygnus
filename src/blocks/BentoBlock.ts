@@ -1,3 +1,4 @@
+import { linkField } from "@/fields/linkField"
 import { sectionFields } from "@/fields/sectionFields"
 import type { Block, Field } from "payload"
 
@@ -17,22 +18,7 @@ function cardContentFields(name: string, label: string): Field {
                 type: "textarea",
                 localized: true,
             },
-            {
-                name: "link",
-                label: "Link",
-                type: "group",
-                fields: [
-                    {
-                        name: "label",
-                        type: "text",
-                        localized: true,
-                    },
-                    {
-                        name: "url",
-                        type: "text",
-                    },
-                ],
-            },
+            linkField(),
         ],
     }
 }

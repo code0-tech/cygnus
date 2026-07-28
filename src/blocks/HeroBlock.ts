@@ -1,3 +1,4 @@
+import { buttonField } from "@/fields/buttonField"
 import { colorField } from "@mvriu5/payload-color-picker"
 import type { Block } from "payload"
 
@@ -83,49 +84,6 @@ export const HeroBlock: Block = {
                 },
             ],
         },
-        {
-            name: "buttons",
-            label: "Buttons",
-            type: "array",
-            required: false,
-            maxRows: 3,
-            fields: [
-                {
-                    name: "label",
-                    type: "text",
-                    required: true,
-                    localized: true,
-                },
-                {
-                    name: "url",
-                    type: "text",
-                    required: true,
-                },
-                {
-                    name: "variant",
-                    type: "select",
-                    required: false,
-                    defaultValue: "normal",
-                    options: [
-                        {
-                            label: "None",
-                            value: "none",
-                        },
-                        {
-                            label: "Normal",
-                            value: "normal",
-                        },
-                        {
-                            label: "Outlined",
-                            value: "outlined",
-                        },
-                        {
-                            label: "Filled",
-                            value: "filled",
-                        },
-                    ],
-                },
-            ],
-        },
+        buttonField(3),
     ],
 }

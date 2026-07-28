@@ -1,3 +1,5 @@
+import { gradientFields } from "@/fields/gradientFields"
+import { linkField } from "@/fields/linkField"
 import type { Block } from "payload"
 
 export const StandaloneBlock: Block = {
@@ -54,72 +56,7 @@ export const StandaloneBlock: Block = {
                 },
             ],
         },
-        {
-            name: "gradient",
-            label: "Gradient",
-            type: "select",
-            required: false,
-            defaultValue: "blue",
-            options: [
-                {
-                    label: "Blue",
-                    value: "blue",
-                },
-                {
-                    label: "Yellow",
-                    value: "yellow",
-                },
-                {
-                    label: "Pink",
-                    value: "pink",
-                },
-                {
-                    label: "Aqua",
-                    value: "aqua",
-                },
-                {
-                    label: "Brand",
-                    value: "brand",
-                },
-                {
-                    label: "Lime",
-                    value: "lime",
-                },
-                {
-                    label: "Magenta",
-                    value: "magenta",
-                },
-                {
-                    label: "Neutral",
-                    value: "neutral",
-                },
-            ],
-        },
-        {
-            name: "gradientDirection",
-            label: "Gradient Direction",
-            type: "select",
-            required: false,
-            defaultValue: "topLeft",
-            options: [
-                {
-                    label: "Top left",
-                    value: "topLeft",
-                },
-                {
-                    label: "Top right",
-                    value: "topRight",
-                },
-                {
-                    label: "Bottom left",
-                    value: "bottomLeft",
-                },
-                {
-                    label: "Bottom right",
-                    value: "bottomRight",
-                },
-            ],
-        },
+        ...gradientFields(),
         {
             name: "bulletPoints",
             label: "Bullet Points",
@@ -135,23 +72,6 @@ export const StandaloneBlock: Block = {
             relationTo: "media",
             required: false,
         },
-        {
-            name: "link",
-            label: "Link",
-            type: "group",
-            fields: [
-                {
-                    name: "label",
-                    type: "text",
-                    required: false,
-                    localized: true,
-                },
-                {
-                    name: "url",
-                    type: "text",
-                    required: false,
-                },
-            ],
-        },
+        linkField(),
     ],
 }

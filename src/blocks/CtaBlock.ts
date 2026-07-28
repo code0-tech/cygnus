@@ -1,3 +1,4 @@
+import { linkField } from "@/fields/linkField"
 import type { Block } from "payload"
 
 export const CtaBlock: Block = {
@@ -19,24 +20,6 @@ export const CtaBlock: Block = {
             required: true,
             localized: true,
         },
-        {
-            name: "ctaLink",
-            label: "CTA Link",
-            type: "group",
-            required: true,
-            fields: [
-                {
-                    name: "label",
-                    type: "text",
-                    required: true,
-                    localized: true,
-                },
-                {
-                    name: "url",
-                    type: "text",
-                    required: true,
-                },
-            ],
-        },
+        linkField({ name: "ctaLink", label: "CTA Link", required: true }),
     ],
 }

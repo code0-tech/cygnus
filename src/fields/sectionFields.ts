@@ -1,3 +1,4 @@
+import { linkField } from "@/fields/linkField"
 import type { CollapsibleField, Field, SelectField } from "payload"
 
 const DEFAULT_LAYOUT_OPTIONS: SelectField["options"] = [
@@ -59,24 +60,7 @@ export function sectionFields({
     )
 
     if (includeLinkButton) {
-        fields.push({
-            name: "sectionLinkButton",
-            label: "Section Link Button",
-            type: "group",
-            fields: [
-                {
-                    name: "label",
-                    type: "text",
-                    required: false,
-                    localized: true,
-                },
-                {
-                    name: "url",
-                    type: "text",
-                    required: false,
-                },
-            ],
-        })
+        fields.push(linkField({ name: "sectionLinkButton", label: "Section Link Button" }))
     }
 
     return {

@@ -1,3 +1,4 @@
+import { linkField } from "@/fields/linkField"
 import { sectionFields } from "@/fields/sectionFields"
 import type { Block } from "payload"
 
@@ -27,23 +28,7 @@ export const CardRowBlock: Block = {
                     required: false,
                     localized: true,
                 },
-                {
-                    name: "link",
-                    type: "group",
-                    fields: [
-                        {
-                            name: "label",
-                            type: "text",
-                            required: false,
-                            localized: true,
-                        },
-                        {
-                            name: "url",
-                            type: "text",
-                            required: false,
-                        },
-                    ],
-                },
+                linkField(),
                 {
                     name: "image",
                     type: "upload",
