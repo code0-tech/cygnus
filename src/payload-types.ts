@@ -104,12 +104,16 @@ export interface Config {
     footer: Footer;
     'cookie-banner': CookieBanner;
     subscriptionConfig: SubscriptionConfig;
+    checkout: Checkout;
+    licenses: License;
   };
   globalsSelect: {
     navigation: NavigationSelect<false> | NavigationSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
     'cookie-banner': CookieBannerSelect<false> | CookieBannerSelect<true>;
     subscriptionConfig: SubscriptionConfigSelect<false> | SubscriptionConfigSelect<true>;
+    checkout: CheckoutSelect<false> | CheckoutSelect<true>;
+    licenses: LicensesSelect<false> | LicensesSelect<true>;
   };
   locale: 'en' | 'de';
   widgets: {
@@ -3074,6 +3078,68 @@ export interface SubscriptionConfig {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "checkout".
+ */
+export interface Checkout {
+  id: number;
+  title: string;
+  navigation: {
+    backLabel: string;
+  };
+  summary: {
+    eyebrow: string;
+    heading: string;
+    description: string;
+    deploymentLabel: string;
+    customerTypeLabel: string;
+    workflowExecutionsLabel: string;
+    additionalFeaturesLabel: string;
+    additionalFeaturesDescription: string;
+    pricing: {
+      label: string;
+      description: string;
+      baseLabel: string;
+      workflowExecutionsLabel: string;
+      additionalFeaturesLabel: string;
+      totalLabel: string;
+      perMonthSuffix: string;
+    };
+  };
+  form: {
+    billingHeading: string;
+    paymentHeading: string;
+    continueLabel: string;
+    backToBillingLabel: string;
+    payNowLabel: string;
+    processingLabel: string;
+    paymentErrorFallback: string;
+  };
+  success: {
+    heading: string;
+    description: string;
+    backToHomepageLabel: string;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "licenses".
+ */
+export interface License {
+  id: number;
+  title: string;
+  cards?: {
+    licenses?: string | null;
+    subscriptions?: string | null;
+    paymentProfiles?: string | null;
+    invoices?: string | null;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "navigation_select".
  */
 export interface NavigationSelect<T extends boolean = true> {
@@ -3472,6 +3538,80 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
         icon?: T;
         price?: T;
         id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "checkout_select".
+ */
+export interface CheckoutSelect<T extends boolean = true> {
+  title?: T;
+  navigation?:
+    | T
+    | {
+        backLabel?: T;
+      };
+  summary?:
+    | T
+    | {
+        eyebrow?: T;
+        heading?: T;
+        description?: T;
+        deploymentLabel?: T;
+        customerTypeLabel?: T;
+        workflowExecutionsLabel?: T;
+        additionalFeaturesLabel?: T;
+        additionalFeaturesDescription?: T;
+        pricing?:
+          | T
+          | {
+              label?: T;
+              description?: T;
+              baseLabel?: T;
+              workflowExecutionsLabel?: T;
+              additionalFeaturesLabel?: T;
+              totalLabel?: T;
+              perMonthSuffix?: T;
+            };
+      };
+  form?:
+    | T
+    | {
+        billingHeading?: T;
+        paymentHeading?: T;
+        continueLabel?: T;
+        backToBillingLabel?: T;
+        payNowLabel?: T;
+        processingLabel?: T;
+        paymentErrorFallback?: T;
+      };
+  success?:
+    | T
+    | {
+        heading?: T;
+        description?: T;
+        backToHomepageLabel?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "licenses_select".
+ */
+export interface LicensesSelect<T extends boolean = true> {
+  title?: T;
+  cards?:
+    | T
+    | {
+        licenses?: T;
+        subscriptions?: T;
+        paymentProfiles?: T;
+        invoices?: T;
       };
   updatedAt?: T;
   createdAt?: T;

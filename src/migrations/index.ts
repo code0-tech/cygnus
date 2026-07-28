@@ -73,6 +73,7 @@ import * as migration_20260727_210000_small_pricing_block from './20260727_21000
 import * as migration_20260727_220000_repair_actions_tags from './20260727_220000_repair_actions_tags';
 import * as migration_20260728_131500_bento_content_remove_features from './20260728_131500_bento_content_remove_features';
 import * as migration_20260728_140000_compare_application_block from './20260728_140000_compare_application_block';
+import * as migration_20260728_165042_checkout_licenses_globals from './20260728_165042_checkout_licenses_globals';
 
 export const migrations = [
   {
@@ -443,11 +444,16 @@ export const migrations = [
   {
     up: migration_20260728_131500_bento_content_remove_features.up,
     down: migration_20260728_131500_bento_content_remove_features.down,
-    name: '20260728_131500_bento_content_remove_features'
+    name: '20260728_131500_bento_content_remove_features',
   },
   {
     up: migration_20260728_140000_compare_application_block.up,
     down: migration_20260728_140000_compare_application_block.down,
     name: '20260728_140000_compare_application_block',
+  },
+  {
+    up: migration_20260728_165042_checkout_licenses_globals.up,
+    down: migration_20260728_165042_checkout_licenses_globals.down,
+    name: '20260728_165042_checkout_licenses_globals'
   },
 ];

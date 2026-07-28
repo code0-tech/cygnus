@@ -40,6 +40,8 @@
         "@payloadcms/next": "3.86.0",
         "@payloadcms/plugin-seo": "3.86.0",
         "@payloadcms/richtext-lexical": "3.86.0",
+        "@stripe/react-stripe-js": "^6.8.0",
+        "@stripe/stripe-js": "^9.12.1",
         "@tabler/icons-react": "3.41.1",
         "border-beam": "^1.3.0",
         "class-variance-authority": "^0.7.1",
@@ -58,6 +60,7 @@
         "sass": "^1.101.3",
         "sharp": "^0.35.3",
         "shiki": "^4.3.1",
+        "stripe": "^22.3.2",
         "tailwind-merge": "^3.6.0",
         "web-haptics": "^0.0.6"
     },

@@ -2458,6 +2458,82 @@ export const subscription_config_locales = pgTable('subscription_config_locales'
 ]
 )
 
+
+export const checkout = pgTable('checkout', {
+  id: serial('id').primaryKey(),
+  title: varchar('title').notNull().default("Checkout Content"),
+  updatedAt: timestamp('updated_at', {mode: 'string',withTimezone: true,precision: 3}),
+  createdAt: timestamp('created_at', {mode: 'string',withTimezone: true,precision: 3}),
+}
+)
+
+
+export const checkout_locales = pgTable('checkout_locales', {
+  navigation_backLabel: varchar('navigation_back_label').notNull(),
+  summary_eyebrow: varchar('summary_eyebrow').notNull(),
+  summary_heading: varchar('summary_heading').notNull(),
+  summary_description: varchar('summary_description').notNull(),
+  summary_deploymentLabel: varchar('summary_deployment_label').notNull(),
+  summary_customerTypeLabel: varchar('summary_customer_type_label').notNull(),
+  summary_workflowExecutionsLabel: varchar('summary_workflow_executions_label').notNull(),
+  summary_additionalFeaturesLabel: varchar('summary_additional_features_label').notNull(),
+  summary_additionalFeaturesDescription: varchar('summary_additional_features_description').notNull(),
+  summary_pricing_label: varchar('summary_pricing_label').notNull(),
+  summary_pricing_description: varchar('summary_pricing_description').notNull(),
+  summary_pricing_baseLabel: varchar('summary_pricing_base_label').notNull(),
+  summary_pricing_workflowExecutionsLabel: varchar('summary_pricing_workflow_executions_label').notNull(),
+  summary_pricing_additionalFeaturesLabel: varchar('summary_pricing_additional_features_label').notNull(),
+  summary_pricing_totalLabel: varchar('summary_pricing_total_label').notNull(),
+  summary_pricing_perMonthSuffix: varchar('summary_pricing_per_month_suffix').notNull(),
+  form_billingHeading: varchar('form_billing_heading').notNull(),
+  form_paymentHeading: varchar('form_payment_heading').notNull(),
+  form_continueLabel: varchar('form_continue_label').notNull(),
+  form_backToBillingLabel: varchar('form_back_to_billing_label').notNull(),
+  form_payNowLabel: varchar('form_pay_now_label').notNull(),
+  form_processingLabel: varchar('form_processing_label').notNull(),
+  form_paymentErrorFallback: varchar('form_payment_error_fallback').notNull(),
+  success_heading: varchar('success_heading').notNull(),
+  success_description: varchar('success_description').notNull(),
+  success_backToHomepageLabel: varchar('success_back_to_homepage_label').notNull(),
+  id: serial('id').primaryKey(),
+  _locale: enum__locales('_locale').notNull(),
+  _parentID: integer('_parent_id').notNull(),
+}, (columns) => [
+    uniqueIndex('checkout_locales_locale_parent_id_unique').on(columns._locale, columns._parentID), foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [checkout.id],
+      name: 'checkout_locales_parent_id_fk'
+    }).onDelete('cascade'),
+]
+)
+
+
+export const licenses = pgTable('licenses', {
+  id: serial('id').primaryKey(),
+  title: varchar('title').notNull().default("License Collection"),
+  updatedAt: timestamp('updated_at', {mode: 'string',withTimezone: true,precision: 3}),
+  createdAt: timestamp('created_at', {mode: 'string',withTimezone: true,precision: 3}),
+}
+)
+
+
+export const licenses_locales = pgTable('licenses_locales', {
+  cards_licenses: varchar('cards_licenses'),
+  cards_subscriptions: varchar('cards_subscriptions'),
+  cards_paymentProfiles: varchar('cards_payment_profiles'),
+  cards_invoices: varchar('cards_invoices'),
+  id: serial('id').primaryKey(),
+  _locale: enum__locales('_locale').notNull(),
+  _parentID: integer('_parent_id').notNull(),
+}, (columns) => [
+    uniqueIndex('licenses_locales_locale_parent_id_unique').on(columns._locale, columns._parentID), foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [licenses.id],
+      name: 'licenses_locales_parent_id_fk'
+    }).onDelete('cascade'),
+]
+)
+
 export const relations_users_sessions = relations(users_sessions, ({ one }) => ({
   _parentID: one(users, {
     
@@ -3206,7 +3282,7 @@ export const relations_pages_blocks_small_pricing = relations(pages_blocks_small
       }))
 export const relations_pages_blocks_compare_application_apps_features = relations(pages_blocks_compare_application_apps_features, ({ one }) => ({
   _parentID: one(pages_blocks_compare_application_apps, {
-
+    
     fields: [pages_blocks_compare_application_apps_features._parentID],
     references: [pages_blocks_compare_application_apps.id],
     relationName: 'features',
@@ -3214,13 +3290,13 @@ export const relations_pages_blocks_compare_application_apps_features = relation
       }))
 export const relations_pages_blocks_compare_application_apps = relations(pages_blocks_compare_application_apps, ({ one, many }) => ({
   _parentID: one(pages_blocks_compare_application, {
-
+    
     fields: [pages_blocks_compare_application_apps._parentID],
     references: [pages_blocks_compare_application.id],
     relationName: 'apps',
     }),
     logo: one(media, {
-
+    
     fields: [pages_blocks_compare_application_apps.logo],
     references: [media.id],
     relationName: 'logo',
@@ -3231,7 +3307,7 @@ export const relations_pages_blocks_compare_application_apps = relations(pages_b
       }))
 export const relations_pages_blocks_compare_application_buttons = relations(pages_blocks_compare_application_buttons, ({ one }) => ({
   _parentID: one(pages_blocks_compare_application, {
-
+    
     fields: [pages_blocks_compare_application_buttons._parentID],
     references: [pages_blocks_compare_application.id],
     relationName: 'buttons',
@@ -3239,7 +3315,7 @@ export const relations_pages_blocks_compare_application_buttons = relations(page
       }))
 export const relations_pages_blocks_compare_application = relations(pages_blocks_compare_application, ({ one, many }) => ({
   _parentID: one(pages, {
-
+    
     fields: [pages_blocks_compare_application._parentID],
     references: [pages.id],
     relationName: '_blocks_compareApplication',
@@ -3786,6 +3862,32 @@ export const relations_subscription_config = relations(subscription_config, ({ m
             relationName: '_locales',
     }),
       }))
+export const relations_checkout_locales = relations(checkout_locales, ({ one }) => ({
+  _parentID: one(checkout, {
+    
+    fields: [checkout_locales._parentID],
+    references: [checkout.id],
+    relationName: '_locales',
+    }),
+      }))
+export const relations_checkout = relations(checkout, ({ many }) => ({
+  _locales: many(checkout_locales, {
+            relationName: '_locales',
+    }),
+      }))
+export const relations_licenses_locales = relations(licenses_locales, ({ one }) => ({
+  _parentID: one(licenses, {
+    
+    fields: [licenses_locales._parentID],
+    references: [licenses.id],
+    relationName: '_locales',
+    }),
+      }))
+export const relations_licenses = relations(licenses, ({ many }) => ({
+  _locales: many(licenses_locales, {
+            relationName: '_locales',
+    }),
+      }))
 
 type DatabaseSchema = {
   enum__locales: typeof enum__locales
@@ -3973,6 +4075,10 @@ type DatabaseSchema = {
   subscription_config_additional_features_locales: typeof subscription_config_additional_features_locales
   subscription_config: typeof subscription_config
   subscription_config_locales: typeof subscription_config_locales
+  checkout: typeof checkout
+  checkout_locales: typeof checkout_locales
+  licenses: typeof licenses
+  licenses_locales: typeof licenses_locales
   relations_users_sessions: typeof relations_users_sessions
   relations_users: typeof relations_users
   relations_media: typeof relations_media
@@ -4089,11 +4195,16 @@ type DatabaseSchema = {
   relations_subscription_config_additional_features: typeof relations_subscription_config_additional_features
   relations_subscription_config_locales: typeof relations_subscription_config_locales
   relations_subscription_config: typeof relations_subscription_config
+  relations_checkout_locales: typeof relations_checkout_locales
+  relations_checkout: typeof relations_checkout
+  relations_licenses_locales: typeof relations_licenses_locales
+  relations_licenses: typeof relations_licenses
 }
-
+    
 
 declare module '@payloadcms/db-postgres' {
   export interface GeneratedDatabaseSchema {
     schema: DatabaseSchema
   }
 }
+    

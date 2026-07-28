@@ -249,6 +249,65 @@ export interface SubscriptionConfiguratorBlockData {
 
 export type SubscriptionConfiguratorContent = SubscriptionConfigData & SubscriptionConfiguratorBlockData
 
+export interface CheckoutData {
+    id: number
+    title: string
+    navigation: {
+        backLabel: string
+    }
+    summary: {
+        eyebrow: string
+        heading: string
+        description: string
+        deploymentLabel: string
+        customerTypeLabel: string
+        workflowExecutionsLabel: string
+        additionalFeaturesLabel: string
+        additionalFeaturesDescription: string
+        pricing: {
+            label: string
+            description: string
+            baseLabel: string
+            workflowExecutionsLabel: string
+            additionalFeaturesLabel: string
+            totalLabel: string
+            perMonthSuffix: string
+        }
+    }
+    form: {
+        billingHeading: string
+        paymentHeading: string
+        continueLabel: string
+        backToBillingLabel: string
+        payNowLabel: string
+        processingLabel: string
+        paymentErrorFallback: string
+    }
+    success: {
+        heading: string
+        description: string
+        backToHomepageLabel: string
+    }
+}
+
+const LICENSE_CARD_HEADINGS_FALLBACK = {
+    licenses: "Licenses",
+    subscriptions: "Subscriptions",
+    paymentProfiles: "Payment Profiles",
+    invoices: "Invoices",
+} as const
+
+export interface LicenseData {
+    id: number
+    title: string
+    cards: {
+        licenses: string
+        subscriptions: string
+        paymentProfiles: string
+        invoices: string
+    }
+}
+
 function isMissingPayloadTablesError(error: unknown): boolean {
     if (!error || typeof error !== "object") {
         return false
@@ -600,6 +659,37 @@ const getSubscriptionConfigCached = cache(async (locale: AppLocale): Promise<Sub
     })
 })
 
+const getCheckoutContentCached = cache(async (locale: AppLocale): Promise<CheckoutData | null> => {
+    return cmsFindGlobal(`getCheckout(${locale})`, null, {
+        slug: "checkout",
+        locale,
+        fallbackLocale: DEFAULT_LOCALE,
+        depth: 0,
+    })
+})
+
+const getLicenseCollectionCached = cache(async (locale: AppLocale): Promise<LicenseData | null> => {
+    const licenseCollection = await cmsFindGlobal<LicenseData>(`getLicenses(${locale})`, null, {
+        slug: "licenses",
+        locale,
+        fallbackLocale: DEFAULT_LOCALE,
+        depth: 0,
+    })
+
+    if (!licenseCollection) return null
+
+    return {
+        id: licenseCollection.id ?? 0,
+        title: licenseCollection.title?.trim() || "Licenses",
+        cards: {
+            licenses: licenseCollection.cards?.licenses?.trim() || LICENSE_CARD_HEADINGS_FALLBACK.licenses,
+            subscriptions: licenseCollection.cards?.subscriptions?.trim() || LICENSE_CARD_HEADINGS_FALLBACK.subscriptions,
+            paymentProfiles: licenseCollection.cards?.paymentProfiles?.trim() || LICENSE_CARD_HEADINGS_FALLBACK.paymentProfiles,
+            invoices: licenseCollection.cards?.invoices?.trim() || LICENSE_CARD_HEADINGS_FALLBACK.invoices,
+        },
+    }
+})
+
 export async function getLandingPage(slug = "main", locale: AppLocale = DEFAULT_LOCALE): Promise<Page | null> {
     return getLandingPageCached(slug, locale)
 }
@@ -666,4 +756,12 @@ export async function getBlogSlugs(locale: AppLocale = DEFAULT_LOCALE): Promise<
 
 export async function getSubscriptionConfig(locale: AppLocale = DEFAULT_LOCALE): Promise<SubscriptionConfigData | null> {
     return getSubscriptionConfigCached(locale)
+}
+
+export async function getCheckoutContent(locale: AppLocale = DEFAULT_LOCALE): Promise<CheckoutData | null> {
+    return getCheckoutContentCached(locale)
+}
+
+export async function getLicenseContent(locale: AppLocale = DEFAULT_LOCALE): Promise<LicenseData | null> {
+    return getLicenseCollectionCached(locale)
 }

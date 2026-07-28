@@ -1,9 +1,27 @@
-import { LandingContainer } from "@/components/ui/LandingContainer";
+import { getCheckoutContent, getSubscriptionConfig } from "@/lib/cms"
+import { isSupportedLocale } from "@/lib/i18n"
+import { CheckoutSummary } from "@/components/checkout/CheckoutSummary"
+import { CheckoutForm } from "@/components/checkout/CheckoutForm"
+import { LinkButton } from "@/components/ui/LinkButton"
+import { IconArrowLeft } from "@tabler/icons-react"
+import { notFound } from "next/navigation"
 
-export default function CheckoutPage() {
+export default async function CheckoutPage({ params }: { params: Promise<{ locale: string }> }) {
+    const { locale } = await params
+    if (!isSupportedLocale(locale)) notFound()
+
+    const [checkoutContent, subscriptionConfig] = await Promise.all([getCheckoutContent(locale), getSubscriptionConfig(locale)])
+
     return (
-        <LandingContainer>
-            <div/>
-        </LandingContainer>
+        <div className="flex flex-col gap-8">
+            <LinkButton href={"/subscription"} showArrow={false} className="border-0 hover:bg-white/10 pl-2.5 pr-4 py-1 rounded-xl hover:text-white">
+                <IconArrowLeft size={16} />
+                {checkoutContent?.navigation.backLabel ?? (locale === "de" ? "Zurück" : "Back")}
+            </LinkButton>
+            <div className="w-full flex gap-16">
+                <CheckoutSummary content={checkoutContent?.summary} subscriptionConfig={subscriptionConfig} />
+                <CheckoutForm content={checkoutContent?.form} />
+            </div>
+        </div>
     )
 }
