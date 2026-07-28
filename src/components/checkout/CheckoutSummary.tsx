@@ -53,6 +53,7 @@ export function CheckoutSummary({ content, subscriptionConfig }: CheckoutSummary
 
     const deployment = searchParams.get("deployment")
     const customerType = searchParams.get("customerType")
+    const planParam = searchParams.get("plan")
     const paymentPeriod = searchParams.get("paymentPeriod")
     const workflowExecutionsParam = searchParams.get("workflowExecutions")
     const aiTokensParam = searchParams.get("aiTokens")
@@ -62,12 +63,13 @@ export function CheckoutSummary({ content, subscriptionConfig }: CheckoutSummary
             ?.split(",")
             .map((feature) => feature.trim())
             .filter((feature) => feature.length > 0) ?? []
-    const { additionalFeaturesPrice, aiTokens, periodSuffix, pricing, selectedAdditionalFeatures, workflowExecutions } = resolveCheckoutPricing({
+    const { additionalFeaturesPrice, aiTokens, isCustomPlan, periodSuffix, planTitle, pricing, selectedAdditionalFeatures, workflowExecutions } = resolveCheckoutPricing({
         additionalFeatureIds: selectedAdditionalFeatureIds,
         aiTokensParam,
         customerTypeParam: customerType,
         fallbackPeriodSuffix: content.pricing.perMonthSuffix,
         paymentPeriodParam: paymentPeriod,
+        planParam,
         subscriptionConfig,
         workflowExecutionsParam,
     })
@@ -86,7 +88,7 @@ export function CheckoutSummary({ content, subscriptionConfig }: CheckoutSummary
             </div>
 
             <div className="space-y-2">
-                {deployment && (
+                {isCustomPlan && deployment && (
                     <SummaryRow
                         icon={getIcon(deployment === "cloud" ? content.deploymentIcons.cloud : content.deploymentIcons.selfHosted, 16)}
                         label={content.deploymentLabel}
@@ -95,7 +97,7 @@ export function CheckoutSummary({ content, subscriptionConfig }: CheckoutSummary
                     />
                 )}
 
-                {customerType && (
+                {isCustomPlan && customerType && (
                     <SummaryRow
                         icon={getIcon(customerType === "b2c" ? content.customerTypeIcons.b2c : content.customerTypeIcons.b2b, 16)}
                         label={content.customerTypeLabel}
@@ -104,11 +106,11 @@ export function CheckoutSummary({ content, subscriptionConfig }: CheckoutSummary
                     />
                 )}
 
-                {aiTokensParam && (
+                {isCustomPlan && aiTokensParam && (
                     <SummaryRow icon={getIcon(content.aiTokensIcon, 16)} label={content.aiTokensLabel} tone={content.aiTokensIconColor} value={<span>{formatCompactNumber(aiTokens)}</span>} />
                 )}
 
-                {workflowExecutionsParam && (
+                {isCustomPlan && workflowExecutionsParam && (
                     <SummaryRow
                         icon={getIcon(content.workflowExecutionsIcon, 16)}
                         label={content.workflowExecutionsLabel}
@@ -136,14 +138,23 @@ export function CheckoutSummary({ content, subscriptionConfig }: CheckoutSummary
 
                     <div className="space-y-2 pt-4">
                         <div className="flex items-center justify-between gap-4 text-sm">
-                            <span className="text-secondary">{content.pricing.baseLabel}</span>
-                            <span className="tabular-nums text-white">{formattedBasePrice}</span>
+                            <span className="text-secondary">{content.pricing.planLabel}</span>
+                            <span className="text-white">{planTitle}</span>
                         </div>
 
-                        <div className="flex items-center justify-between gap-4 text-sm">
-                            <span className="text-secondary">{content.pricing.workflowExecutionsLabel}</span>
-                            <span className="tabular-nums text-white">{formattedWorkflowExecutionsPrice}</span>
-                        </div>
+                        {isCustomPlan && (
+                            <>
+                                <div className="flex items-center justify-between gap-4 text-sm">
+                                    <span className="text-secondary">{content.pricing.baseLabel}</span>
+                                    <span className="tabular-nums text-white">{formattedBasePrice}</span>
+                                </div>
+
+                                <div className="flex items-center justify-between gap-4 text-sm">
+                                    <span className="text-secondary">{content.pricing.workflowExecutionsLabel}</span>
+                                    <span className="tabular-nums text-white">{formattedWorkflowExecutionsPrice}</span>
+                                </div>
+                            </>
+                        )}
 
                         {selectedAdditionalFeatures.length > 0 && (
                             <div className="flex items-center justify-between gap-4 text-sm">

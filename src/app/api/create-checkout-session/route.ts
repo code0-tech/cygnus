@@ -1,3 +1,5 @@
+import { getSubscriptionConfig } from "@/lib/cms"
+import { resolveCheckoutPricing } from "@/lib/subscriptionCalculator"
 import { NextResponse } from "next/server"
 import Stripe from "stripe"
 
@@ -11,16 +13,56 @@ export async function POST(req: Request) {
     try {
         const rawBody = await req.text()
         const body = rawBody ? JSON.parse(rawBody) : {}
-        const metadata = Object.fromEntries(Object.entries(body.metadata ?? body).map(([key, value]) => [key, String(value ?? "")]))
-        const unitAmount = Number.isFinite(Number(body.amount)) && Number(body.amount) > 0 ? Math.round(Number(body.amount)) : 50
+        const requestData = Object.fromEntries(Object.entries(body.metadata ?? body).map(([key, value]) => [key, String(value ?? "")]))
+        const subscriptionConfig = await getSubscriptionConfig("en")
+
+        if (!subscriptionConfig) {
+            throw new Error("Subscription configuration is unavailable.")
+        }
+
+        const additionalFeatureIds = requestData.additionalFeatures
+            ? requestData.additionalFeatures
+                  .split(",")
+                  .map((featureId) => featureId.trim())
+                  .filter(Boolean)
+            : []
+        const resolvedCheckout = resolveCheckoutPricing({
+            additionalFeatureIds,
+            aiTokensParam: requestData.aiTokens ?? null,
+            customerTypeParam: requestData.customerType ?? null,
+            fallbackPeriodSuffix: "/mo",
+            paymentPeriodParam: requestData.paymentPeriod ?? null,
+            planParam: requestData.plan ?? null,
+            subscriptionConfig,
+            workflowExecutionsParam: requestData.workflowExecutions ?? null,
+        })
+        const metadata = resolvedCheckout.isCustomPlan
+            ? requestData
+            : {
+                  paymentPeriod: resolvedCheckout.paymentPeriod,
+                  plan: resolvedCheckout.plan,
+              }
+        const unitAmount = Math.round(resolvedCheckout.pricing.totalPrice * 100)
+
+        if (unitAmount <= 0) {
+            throw new Error(`The configured ${resolvedCheckout.planTitle} price must be greater than zero.`)
+        }
 
         const customer = await stripe.customers.create({ metadata })
 
         const product = await stripe.products.create({
-            name: body.productName ?? "Subscription",
-            description: body.productDescription,
+            name: `${resolvedCheckout.planTitle} Subscription`,
+            description: subscriptionConfig.packages[resolvedCheckout.plan].description,
             metadata,
         })
+
+        const recurring =
+            resolvedCheckout.paymentPeriod === "yearly"
+                ? ({ interval: "year" } as const)
+                : ({
+                      interval: "month",
+                      ...(resolvedCheckout.paymentPeriod === "quarterly" ? { interval_count: 3 } : {}),
+                  } as const)
 
         const subscription = await stripe.subscriptions.create({
             customer: customer.id,
@@ -34,9 +76,7 @@ export async function POST(req: Request) {
                         currency: "eur",
                         unit_amount: unitAmount,
                         product: product.id,
-                        recurring: {
-                            interval: "month",
-                        },
+                        recurring,
                     },
                 },
             ],
