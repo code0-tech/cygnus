@@ -1,5 +1,5 @@
 import { StaggerContainer, StaggerItem } from "@/components/animations/Stagger"
-import { getIcon } from "@/components/IconRenderer"
+import { getIcon } from "@/components/ui/IconRenderer"
 import { Section } from "@/components/ui/Section"
 import type { ListFeatureLayoutBlock } from "@/lib/cms"
 

@@ -1,4 +1,4 @@
-import { ActionTriggerCard } from "@/components/ActionTriggerCard"
+import { ActionTriggerCard } from "@/components/actions/ActionTriggerCard"
 import { Section } from "@/components/ui/Section"
 import { extractFlowTypesFromJson } from "@/lib/actionExtraction"
 import { cn } from "@/lib/utils"

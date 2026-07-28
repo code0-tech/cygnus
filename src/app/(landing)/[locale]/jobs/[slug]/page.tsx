@@ -1,4 +1,4 @@
-import { JobDetailContent } from "@/components/JobDetailContent"
+import { JobDetailContent } from "@/components/jobs/JobDetailContent"
 import { LandingContainer } from "@/components/ui/LandingContainer"
 import { getPageLocaleAndSlug, type LocaleSlugPageParams } from "@/lib/appRoute"
 import { createMetadata } from "@/lib/siteConfig"
@@ -24,9 +24,9 @@ export default async function JobDetailPage({ params }: { params: LocaleSlugPage
 
     return (
         <LandingContainer className="pt-32">
-                <div className="mx-auto w-full max-w-5xl">
-                    <JobDetailContent contentHtml={contentHtml} jobSlug={job.slug} jobsBlock={jobsBlock} locale={locale} />
-                </div>
+            <div className="mx-auto w-full max-w-5xl">
+                <JobDetailContent contentHtml={contentHtml} jobSlug={job.slug} jobsBlock={jobsBlock} locale={locale} />
+            </div>
         </LandingContainer>
     )
 }
@@ -44,4 +44,3 @@ export async function generateMetadata({ params }: { params: LocaleSlugPageParam
         description: job.description ?? undefined,
     })
 }
-

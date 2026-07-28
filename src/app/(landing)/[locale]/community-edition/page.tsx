@@ -1,4 +1,4 @@
-import { PageBlocks } from "@/components/PageBlockRenderer"
+import { PageBlocks } from "@/components/ui/PageBlockRenderer"
 import { LandingContainer } from "@/components/ui/LandingContainer"
 import { createLandingMetadata, getPageLocale, type LocalePageParams } from "@/lib/appRoute"
 import { getLandingPage } from "@/lib/cms"

@@ -16,20 +16,20 @@ import { SwipeCardSection } from "@/components/sections/SwipeCardSection"
 import type { AppLocale } from "@/lib/i18n"
 import type { Page } from "@/payload-types"
 import React, { type ReactNode } from "react"
-import { StandaloneCardSection } from "./sections/StandaloneCardSection"
-import { VideoSection } from "./sections/VideoSection"
-import { WideHeroSection } from "./sections/WideHeroSection"
-import { StatsSection } from "./sections/StatsSection"
-import { FlowExampleSection } from "./sections/FlowExampleSection"
-import { ActionHeroSection } from "./sections/ActionHeroSection"
-import { ActionFunctionsSection } from "./sections/ActionFunctionsSection"
-import { ActionEventsSection } from "./sections/ActionEventsSection"
-import { ActionReferencesSection } from "./sections/ActionReferencesSection"
-import { ActionListSection } from "./sections/ActionListSection"
-import { SubscriptionConfiguratorSection, type SubscriptionIcons } from "./sections/SubscriptionConfiguratorSection"
-import { PricingSection } from "./sections/PricingSection"
-import { SmallPricingSection } from "./sections/SmallPricingSection"
-import { getIcon } from "@/components/IconRenderer"
+import { StandaloneCardSection } from "../sections/StandaloneCardSection"
+import { VideoSection } from "../sections/VideoSection"
+import { WideHeroSection } from "../sections/WideHeroSection"
+import { StatsSection } from "../sections/StatsSection"
+import { FlowExampleSection } from "../sections/FlowExampleSection"
+import { ActionHeroSection } from "../sections/ActionHeroSection"
+import { ActionFunctionsSection } from "../sections/ActionFunctionsSection"
+import { ActionEventsSection } from "../sections/ActionEventsSection"
+import { ActionReferencesSection } from "../sections/ActionReferencesSection"
+import { ActionListSection } from "../sections/ActionListSection"
+import { SubscriptionConfiguratorSection, type SubscriptionIcons } from "../sections/SubscriptionConfiguratorSection"
+import { PricingSection } from "../sections/PricingSection"
+import { SmallPricingSection } from "../sections/SmallPricingSection"
+import { getIcon } from "@/components/ui/IconRenderer"
 import type { ActionItem, SubscriptionConfigData, SubscriptionConfiguratorBlockData } from "@/lib/cms"
 
 type PageBlock = NonNullable<Page["layout"]>[number]
@@ -46,10 +46,7 @@ interface PageBlocksRendererProps {
     subscriptionConfig?: SubscriptionConfigData | null
 }
 
-type PageBlockRenderOptions = Pick<
-    PageBlocksRendererProps,
-    "actions" | "cardRowChildren" | "ctaFloating" | "locale" | "action" | "actionModuleJson" | "actionReferences" | "subscriptionConfig"
->
+type PageBlockRenderOptions = Pick<PageBlocksRendererProps, "actions" | "cardRowChildren" | "ctaFloating" | "locale" | "action" | "actionModuleJson" | "actionReferences" | "subscriptionConfig">
 type BlockRenderer = (block: PageBlock, options: PageBlockRenderOptions) => ReactNode
 
 const pageBlockRenderers: Partial<Record<PageBlock["blockType"], BlockRenderer>> = {
@@ -169,9 +166,7 @@ const pageBlockRenderers: Partial<Record<PageBlock["blockType"], BlockRenderer>>
             workflowBusinessTypes: (config.workflowCalculator.businessTypes.length ? config.workflowCalculator.businessTypes : [{ icon: "tabler:IconBuilding" }]).map((businessType, index) =>
                 getIcon(businessType.icon?.trim() || "tabler:IconBuilding", 18, `workflow-business-type-${index}-${businessType.icon}`)
             ),
-            additionalFeatures: (config.additionalFeatures ?? []).map((feature, index) =>
-                getIcon(feature.icon?.trim() || "tabler:IconCube", 20, feature.id ?? `additional-feature-${index}`)
-            ),
+            additionalFeatures: (config.additionalFeatures ?? []).map((feature, index) => getIcon(feature.icon?.trim() || "tabler:IconCube", 20, feature.id ?? `additional-feature-${index}`)),
         }
 
         return <SubscriptionConfiguratorSection locale={options.locale ?? "en"} content={{ ...config, ...blockContent }} icons={icons} />
@@ -180,26 +175,13 @@ const pageBlockRenderers: Partial<Record<PageBlock["blockType"], BlockRenderer>>
         const config = options.subscriptionConfig
         if (!config?.packages) return null
 
-        return (
-            <PricingSection
-                content={block as Extract<PageBlock, { blockType: "pricing" }>}
-                locale={options.locale ?? "en"}
-                packages={config.packages}
-                paymentPeriod={config.paymentPeriod}
-            />
-        )
+        return <PricingSection content={block as Extract<PageBlock, { blockType: "pricing" }>} locale={options.locale ?? "en"} packages={config.packages} paymentPeriod={config.paymentPeriod} />
     },
     smallPricing: (block, options) => {
         const config = options.subscriptionConfig
         if (!config?.packages) return null
 
-        return (
-            <SmallPricingSection
-                content={block as Extract<PageBlock, { blockType: "smallPricing" }>}
-                locale={options.locale ?? "en"}
-                packages={config.packages}
-            />
-        )
+        return <SmallPricingSection content={block as Extract<PageBlock, { blockType: "smallPricing" }>} locale={options.locale ?? "en"} packages={config.packages} />
     },
 }
 

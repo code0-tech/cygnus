@@ -9,6 +9,5 @@ interface ActionIconProps {
 
 export function ActionIcon({ icon, size = 24 }: ActionIconProps) {
     if (!icon) return null
-
     return <Icon icon={icon} size={size} />
 }

@@ -1,6 +1,6 @@
 "use client"
 
-import { ActionCard } from "@/components/cards/ActionCard"
+import { ActionCard } from "@/components/actions/ActionCard"
 import type { ActionItem } from "@/lib/cms"
 import { cn } from "@/lib/utils"
 import { Button, Menu, MenuContent, MenuItem, MenuTrigger, TextInput } from "@code0-tech/pictor"

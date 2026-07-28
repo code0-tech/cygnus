@@ -1,6 +1,6 @@
 import { getFeatureBySlug } from "@/lib/cms"
 import { type AppLocale } from "@/lib/i18n"
-import { FeatureCardText } from "../FeatureCardText"
+import { FeatureCardText } from "../ui/FeatureCardText"
 import { SuggesstionMenuClient } from "../ui/SuggesstionMenuClient"
 import { FeatureCard } from "./FeatureCard"
 
@@ -13,12 +13,7 @@ export async function SuggestionMenuCard({ locale, animationDelay = 0 }: Suggest
     const content = await getFeatureBySlug("suggestion-menu", locale)
 
     return (
-        <FeatureCard
-            className="col-span-1 row-span-7"
-            contentClassName="justify-end"
-            tone="aqua"
-            animationDelay={animationDelay}
-        >
+        <FeatureCard className="col-span-1 row-span-7" contentClassName="justify-end" tone="aqua" animationDelay={animationDelay}>
             <div className="flex w-[90%] flex-1 mx-auto justify-center min-h-0 pt-2 pl-2">
                 <div className="mx-auto w-full">
                     <SuggesstionMenuClient />

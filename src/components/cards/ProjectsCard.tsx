@@ -1,6 +1,6 @@
 import { getFeatureBySlug } from "@/lib/cms"
 import { type AppLocale } from "@/lib/i18n"
-import { FeatureCardText } from "../FeatureCardText"
+import { FeatureCardText } from "../ui/FeatureCardText"
 import { ClientProjectCard } from "./ClientProjectCard"
 import { FeatureCard } from "./FeatureCard"
 

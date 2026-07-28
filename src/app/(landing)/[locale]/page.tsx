@@ -1,5 +1,5 @@
-import { DeploymentImage } from "@/components/DeploymentImage"
-import { PageBlocks } from "@/components/PageBlockRenderer"
+import { DeploymentImage } from "@/components/ui/DeploymentImage"
+import { PageBlocks } from "@/components/ui/PageBlockRenderer"
 import { LandingContainer } from "@/components/ui/LandingContainer"
 import { createLandingMetadata, getPageLocale, type LocalePageParams } from "@/lib/appRoute"
 import { getLandingPage } from "@/lib/cms"

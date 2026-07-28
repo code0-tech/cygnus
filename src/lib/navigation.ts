@@ -2,7 +2,7 @@ import "server-only"
 
 import type { Navigation } from "@/payload-types"
 import { localizeHref, type AppLocale } from "@/lib/i18n"
-import { getIcon } from "@/components/IconRenderer"
+import { getIcon } from "@/components/ui/IconRenderer"
 import type { ReactNode } from "react"
 
 export type NavItem = {

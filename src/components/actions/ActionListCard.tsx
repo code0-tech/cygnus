@@ -2,8 +2,8 @@ import { getFeatureBySlug } from "@/lib/cms"
 import { type AppLocale } from "@/lib/i18n"
 import { SiDhl, SiDiscord, SiGithub, SiGitlab, SiGoogleanalytics, SiNotion, SiPaypal, SiSap, SiTelegram, SiX } from "@icons-pack/react-simple-icons"
 import { OrbitingCircles } from "../animations/OrbitingCircles"
-import { FeatureCardText } from "../FeatureCardText"
-import { FeatureCard } from "./FeatureCard"
+import { FeatureCardText } from "../ui/FeatureCardText"
+import { FeatureCard } from "../cards/FeatureCard"
 
 interface ActionListCardProps {
     locale: AppLocale

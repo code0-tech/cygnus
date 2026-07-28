@@ -1,4 +1,4 @@
-import { PageBlocks } from "@/components/PageBlockRenderer"
+import { PageBlocks } from "@/components/ui/PageBlockRenderer"
 import { LandingContainer } from "@/components/ui/LandingContainer"
 import { getCustomLandingPage } from "@/lib/cms"
 import { isSupportedLocale } from "@/lib/i18n"

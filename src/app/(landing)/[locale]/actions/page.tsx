@@ -1,5 +1,5 @@
 import { LandingContainer } from "@/components/ui/LandingContainer"
-import { PageBlocks } from "@/components/PageBlockRenderer"
+import { PageBlocks } from "@/components/ui/PageBlockRenderer"
 import { createLandingMetadata, getPageLocale, type LocalePageParams } from "@/lib/appRoute"
 import { getActions, getLandingPage } from "@/lib/cms"
 
@@ -11,8 +11,8 @@ export default async function ActionsPage({ params }: { params: LocalePageParams
 
     return (
         <LandingContainer>
-                <div className="h-12 lg:h-16" aria-hidden="true" />
-                <PageBlocks blocks={actionsPage?.layout} actions={actions} locale={locale} />
+            <div className="h-12 lg:h-16" aria-hidden="true" />
+            <PageBlocks blocks={actionsPage?.layout} actions={actions} locale={locale} />
         </LandingContainer>
     )
 }

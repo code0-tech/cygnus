@@ -1,4 +1,4 @@
-import { ActionCard } from "@/components/cards/ActionCard"
+import { ActionCard } from "@/components/actions/ActionCard"
 import type { ActionItem } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { Section } from "@/components/ui/Section"

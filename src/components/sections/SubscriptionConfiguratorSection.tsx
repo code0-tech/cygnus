@@ -7,7 +7,7 @@ import { calculateSubscriptionPrice, clampToRange, formatDiscountBadge, getPayme
 import { useDesktopPinnedPosition } from "@/hooks/useDesktopPinnedPosition"
 import { cn } from "@/lib/utils"
 import { BuyMenu } from "@/components/payment/BuyMenu"
-import { WorkflowCalculatorDialog } from "@/components/dialogs/WorkflowCalculatorDialog"
+import { WorkflowCalculatorDialog } from "@/components/payment/WorkflowCalculatorDialog"
 import { Slider } from "@/components/ui/Slider"
 import { Switch, type SwitchOption } from "@/components/ui/Switch"
 import { HapticButtonLink } from "@/components/ui/HapticButtonLink"

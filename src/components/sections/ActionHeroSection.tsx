@@ -1,4 +1,4 @@
-import { ActionIcon } from "@/components/ActionIcon"
+import { ActionIcon } from "@/components/actions/ActionIcon"
 import { StaggerContainer, StaggerItem } from "@/components/animations/Stagger"
 import { Section } from "@/components/ui/Section"
 import { HapticButtonLink } from "@/components/ui/HapticButtonLink"

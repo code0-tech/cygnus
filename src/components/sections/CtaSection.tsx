@@ -1,5 +1,5 @@
 import { StaggerContainer, StaggerItem } from "@/components/animations/Stagger"
-import { InteractiveGridPattern } from "@/components/InteractiveGridPattern"
+import { InteractiveGridPattern } from "@/components/ui/InteractiveGridPattern"
 import { HapticButtonLink } from "@/components/ui/HapticButtonLink"
 import { Section } from "@/components/ui/Section"
 import type { CtaLayoutBlock } from "@/lib/cms"

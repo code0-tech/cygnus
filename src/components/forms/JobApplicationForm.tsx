@@ -1,6 +1,6 @@
 "use client"
 
-import { AcceptTermsCheckbox } from "@/components/AcceptTermsCheckbox"
+import { AcceptTermsCheckbox } from "@/components/forms/AcceptTermsCheckbox"
 import type { AppLocale } from "@/lib/i18n"
 import { Button, EmailInput, emailValidation, TextAreaInput, TextInput, useForm } from "@code0-tech/pictor"
 import type { FocusEvent } from "react"

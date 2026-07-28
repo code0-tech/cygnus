@@ -1,5 +1,5 @@
 import { type AppLocale } from "@/lib/i18n"
-import { ActionListCard } from "../cards/ActionListCard"
+import { ActionListCard } from "../actions/ActionListCard"
 import { NodeCard } from "../cards/NodeCard"
 import { RuntimeTypesCard } from "../cards/RuntimeTypesCard"
 import { SuggestionMenuCard } from "../cards/SuggestionMenuCard"

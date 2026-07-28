@@ -1,4 +1,4 @@
-import { getIcon } from "@/components/IconRenderer"
+import { getIcon } from "@/components/ui/IconRenderer"
 import { StaggerContainer, StaggerItem } from "@/components/animations/Stagger"
 import { Card } from "@/components/ui/Card"
 import { DotBackground } from "@/components/ui/DotBackground"

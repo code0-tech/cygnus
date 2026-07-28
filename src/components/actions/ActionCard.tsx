@@ -1,6 +1,6 @@
 "use client"
 
-import { ActionIcon } from "@/components/ActionIcon"
+import { ActionIcon } from "@/components/actions/ActionIcon"
 import type { ActionItem } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import Link from "next/link"
