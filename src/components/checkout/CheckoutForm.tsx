@@ -1,10 +1,13 @@
 "use client"
 
 import type { CheckoutData } from "@/lib/cms"
-import { Button, Card } from "@code0-tech/pictor"
+import { linkButtonClassName } from "@/components/ui/LinkButton"
+import { cn } from "@/lib/utils"
+import { Button } from "@code0-tech/pictor"
 import { AddressElement, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js"
 import { useParams } from "next/navigation"
 import { useState } from "react"
+import { Card } from "../ui/Card"
 
 type CheckoutFormContent = CheckoutData["form"]
 
@@ -71,12 +74,9 @@ export function CheckoutForm({ content }: { content?: CheckoutFormContent | null
 
     if (step === "billing") {
         return (
-            <Card variant="filled" className="glass-card-shell p-6! flex-1! h-max!">
-                <div aria-hidden="true" className="glass-card-tint" />
-                <div aria-hidden="true" className="glass-card-topline" />
-
+            <Card variant="default" className="flex-1! h-max!">
                 <form onSubmit={handleContinue} className="flex-1 space-y-6">
-                    <h2 className="text-2xl font-bold text-white">{labels.billingHeading}</h2>
+                    <h2 className="text-2xl text-white">{labels.billingHeading}</h2>
 
                     <div className="relative min-h-58">
                         {!isAddressReady && (
@@ -91,13 +91,13 @@ export function CheckoutForm({ content }: { content?: CheckoutFormContent | null
                         </div>
                     </div>
 
-                    {errorMessage && <div className="text-red-500 text-sm">{errorMessage}</div>}
+                    {errorMessage && <div className="text-error text-sm">{errorMessage}</div>}
 
                     <Button
                         type="submit"
                         variant="normal"
                         disabled={!elements}
-                        className="h-10! w-full! px-8! whitespace-nowrap bg-white/80! hover:bg-white! ring-1! ring-white/20! text-primary! font-semibold! transition-all duration-300"
+                        className="h-10! w-full! px-8! whitespace-nowrap bg-white/80! hover:bg-white! ring-1! ring-white/20! text-sm! text-primary! transition-all duration-300"
                     >
                         {labels.continueLabel}
                     </Button>
@@ -107,24 +107,20 @@ export function CheckoutForm({ content }: { content?: CheckoutFormContent | null
     }
 
     return (
-        <Card variant="filled" className="glass-card-shell p-6! flex-1! h-max!">
-            <div aria-hidden="true" className="glass-card-tint" />
-            <div aria-hidden="true" className="glass-card-topline" />
-
+        <Card variant="default" className="flex-1! h-max!">
             <form onSubmit={handlePayment} className="flex-1 space-y-6">
                 <div className="mb-4 flex items-center justify-between">
-                    <h2 className="text-2xl font-bold text-white">{labels.paymentHeading}</h2>
-                    <Button
+                    <h2 className="text-2xl text-white">{labels.paymentHeading}</h2>
+                    <button
                         type="button"
-                        variant="none"
                         onClick={() => {
                             setStep("billing")
                             setIsAddressReady(false)
                         }}
-                        className="border-0 hover:bg-white/10 pl-2.5 pr-4 py-1 rounded-xl hover:text-white"
+                        className={cn(linkButtonClassName, "rounded-[10px] border-0 py-1 pr-4 pl-2.5 hover:bg-white/10 hover:text-white after:hidden")}
                     >
                         {labels.backToBillingLabel}
-                    </Button>
+                    </button>
                 </div>
 
                 <div className="relative min-h-58">
@@ -152,13 +148,13 @@ export function CheckoutForm({ content }: { content?: CheckoutFormContent | null
                     </div>
                 </div>
 
-                {errorMessage && <div className="text-red-500 text-sm">{errorMessage}</div>}
+                {errorMessage && <div className="text-error text-sm">{errorMessage}</div>}
 
                 <Button
                     type="submit"
                     variant="normal"
-                    disabled={!elements}
-                    className="h-10! w-full! px-8! whitespace-nowrap bg-white/80! hover:bg-white! ring-1! ring-white/20! text-primary! font-semibold! transition-all duration-300"
+                    disabled={!elements || isLoading}
+                    className="h-10! w-full! px-8! whitespace-nowrap bg-white/80! hover:bg-white! ring-1! ring-white/20! text-primary! text-sm! transition-all duration-300"
                 >
                     {isLoading ? labels.processingLabel : labels.payNowLabel}
                 </Button>

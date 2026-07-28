@@ -12,9 +12,7 @@ interface CheckoutLayoutProps {
 
 export default async function CheckoutLayout({ children, params }: CheckoutLayoutProps) {
     const { locale } = await params
-    if (!isSupportedLocale(locale)) {
-        notFound()
-    }
+    if (!isSupportedLocale(locale)) notFound()
 
     const footer = await getFooter(locale)
     const currentYear = new Date().getUTCFullYear()

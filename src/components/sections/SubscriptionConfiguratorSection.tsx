@@ -221,6 +221,7 @@ export function SubscriptionConfiguratorSection({ locale, content, icons }: { lo
 
     const subscribeHref = (() => {
         const searchParams = new URLSearchParams({
+            plan: "custom",
             deployment: selection.deployment,
             customerType: selection.customerType,
             paymentPeriod: selection.paymentPeriod,

@@ -3115,6 +3115,7 @@ export interface Checkout {
     pricing: {
       label: string;
       description: string;
+      planLabel: string;
       baseLabel: string;
       workflowExecutionsLabel: string;
       additionalFeaturesLabel: string;
@@ -3608,6 +3609,7 @@ export interface CheckoutSelect<T extends boolean = true> {
           | {
               label?: T;
               description?: T;
+              planLabel?: T;
               baseLabel?: T;
               workflowExecutionsLabel?: T;
               additionalFeaturesLabel?: T;

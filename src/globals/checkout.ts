@@ -106,6 +106,7 @@ export const Checkout: GlobalConfig = {
                             localized: true,
                             defaultValue: "Monthly breakdown based on your current setup.",
                         },
+                        { name: "planLabel", type: "text", required: true, localized: true, defaultValue: "Plan" },
                         { name: "baseLabel", type: "text", required: true, localized: true, defaultValue: "AI Tokens" },
                         { name: "workflowExecutionsLabel", type: "text", required: true, localized: true, defaultValue: "Workflow Executions" },
                         { name: "additionalFeaturesLabel", type: "text", required: true, localized: true, defaultValue: "Additional Features" },

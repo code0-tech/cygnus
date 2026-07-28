@@ -5,6 +5,7 @@ import { Elements } from "@stripe/react-stripe-js"
 import { loadStripe } from "@stripe/stripe-js"
 import { LandingContainer } from "@/components/ui/LandingContainer"
 import Image from "next/image"
+import { useSearchParams } from "next/navigation"
 import type { ReactNode } from "react"
 import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
@@ -123,7 +124,7 @@ const appearance = {
     },
 }
 
-function CheckoutFallback() {
+function CheckoutFallback({ isCustomPlan }: { isCustomPlan: boolean }) {
     return (
         <div className="flex flex-col gap-8">
             <div className="ml-3 h-7 w-22 rounded-xl bg-white/10 animate-pulse" />
@@ -131,42 +132,44 @@ function CheckoutFallback() {
                 <div className="flex-1 min-w-0 h-max space-y-2 pl-3">
                     <div className="mb-5">
                         <div className="h-4 w-28 rounded bg-brand/15 animate-pulse" />
-                        <div className="mt-3 h-8 w-64 rounded-lg bg-white/10 animate-pulse" />
-                        <div className="mt-4 space-y-2">
+                        <div className="mt-4 h-8 w-64 rounded-lg bg-white/10 animate-pulse" />
+                        <div className="mt-2 space-y-2">
                             <div className="h-4 w-full max-w-md rounded bg-white/10 animate-pulse" />
                             <div className="h-4 w-4/5 rounded bg-white/10 animate-pulse" />
                         </div>
                     </div>
-                    <div className="space-y-2">
-                        <div className="flex items-center gap-3 py-1">
-                            <div className="size-10 rounded-xl bg-white/10 animate-pulse" />
-                            <div className="space-y-1.5 flex-1">
-                                <div className="h-3 w-20 rounded bg-white/10 animate-pulse" />
-                                <div className="h-4 w-12 rounded bg-white/10 animate-pulse" />
+                    {isCustomPlan && (
+                        <div className="space-y-2">
+                            <div className="flex items-center gap-3 py-1">
+                                <div className="size-10 rounded-xl bg-white/10 animate-pulse" />
+                                <div className="space-y-1.5 flex-1">
+                                    <div className="h-3 w-20 rounded bg-white/10 animate-pulse" />
+                                    <div className="h-4 w-12 rounded bg-white/10 animate-pulse" />
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3 py-1">
+                                <div className="size-10 rounded-xl bg-white/10 animate-pulse" />
+                                <div className="space-y-1.5 flex-1">
+                                    <div className="h-3 w-20 rounded bg-white/10 animate-pulse" />
+                                    <div className="h-4 w-12 rounded bg-white/10 animate-pulse" />
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3 py-1">
+                                <div className="size-10 rounded-xl bg-white/10 animate-pulse" />
+                                <div className="space-y-1.5 flex-1">
+                                    <div className="h-3 w-20 rounded bg-white/10 animate-pulse" />
+                                    <div className="h-4 w-12 rounded bg-white/10 animate-pulse" />
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3 py-1">
+                                <div className="size-10 rounded-xl bg-white/10 animate-pulse" />
+                                <div className="space-y-1.5 flex-1">
+                                    <div className="h-3 w-20 rounded bg-white/10 animate-pulse" />
+                                    <div className="h-4 w-12 rounded bg-white/10 animate-pulse" />
+                                </div>
                             </div>
                         </div>
-                        <div className="flex items-center gap-3 py-1">
-                            <div className="size-10 rounded-xl bg-white/10 animate-pulse" />
-                            <div className="space-y-1.5 flex-1">
-                                <div className="h-3 w-20 rounded bg-white/10 animate-pulse" />
-                                <div className="h-4 w-12 rounded bg-white/10 animate-pulse" />
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-3 py-1">
-                            <div className="size-10 rounded-xl bg-white/10 animate-pulse" />
-                            <div className="space-y-1.5 flex-1">
-                                <div className="h-3 w-20 rounded bg-white/10 animate-pulse" />
-                                <div className="h-4 w-12 rounded bg-white/10 animate-pulse" />
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-3 py-1">
-                            <div className="size-10 rounded-xl bg-white/10 animate-pulse" />
-                            <div className="space-y-1.5 flex-1">
-                                <div className="h-3 w-20 rounded bg-white/10 animate-pulse" />
-                                <div className="h-4 w-12 rounded bg-white/10 animate-pulse" />
-                            </div>
-                        </div>
-                    </div>
+                    )}
                     <div className="mt-5 rounded-2xl border border-white/10 bg-white/2 p-4 shadow-[0_18px_40px_rgba(0,0,0,0.18)]">
                         <div className="border-b border-white/8 pb-3">
                             <div className="space-y-2">
@@ -179,10 +182,18 @@ function CheckoutFallback() {
                                 <div className="h-4 w-20 rounded bg-white/10 animate-pulse" />
                                 <div className="h-4 w-16 rounded bg-white/10 animate-pulse" />
                             </div>
-                            <div className="flex items-center justify-between gap-4">
-                                <div className="h-4 w-24 rounded bg-white/10 animate-pulse" />
-                                <div className="h-4 w-14 rounded bg-white/10 animate-pulse" />
-                            </div>
+                            {isCustomPlan && (
+                                <>
+                                    <div className="flex items-center justify-between gap-4">
+                                        <div className="h-4 w-24 rounded bg-white/10 animate-pulse" />
+                                        <div className="h-4 w-14 rounded bg-white/10 animate-pulse" />
+                                    </div>
+                                    <div className="flex items-center justify-between gap-4">
+                                        <div className="h-4 w-24 rounded bg-white/10 animate-pulse" />
+                                        <div className="h-4 w-14 rounded bg-white/10 animate-pulse" />
+                                    </div>
+                                </>
+                            )}
                         </div>
                         <div className="mt-4 flex items-center justify-between gap-4 border-t border-white/8 pt-4">
                             <div className="h-5 w-12 rounded bg-white/10 animate-pulse" />
@@ -226,8 +237,11 @@ function CheckoutShell({ children }: { children: ReactNode }) {
 }
 
 export function CheckoutLayoutClient({ children, publishableKey }: { children: ReactNode; publishableKey: string }) {
+    const searchParams = useSearchParams()
     const [clientSecret, setClientSecret] = useState<string | null>(null)
     const stripePromise = useMemo(() => loadStripe(publishableKey), [publishableKey])
+    const plan = searchParams.get("plan")
+    const isCustomPlan = plan !== "pro" && plan !== "max"
 
     useEffect(() => {
         const fetchClientSecret = async () => {
@@ -258,7 +272,7 @@ export function CheckoutLayoutClient({ children, publishableKey }: { children: R
     if (!clientSecret) {
         return (
             <CheckoutShell>
-                <CheckoutFallback />
+                <CheckoutFallback isCustomPlan={isCustomPlan} />
             </CheckoutShell>
         )
     }

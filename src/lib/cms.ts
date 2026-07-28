@@ -286,6 +286,7 @@ export interface CheckoutData {
         pricing: {
             label: string
             description: string
+            planLabel: string
             baseLabel: string
             workflowExecutionsLabel: string
             additionalFeaturesLabel: string

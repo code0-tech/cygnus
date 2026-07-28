@@ -77,6 +77,7 @@ import * as migration_20260728_165042_checkout_licenses_globals from './20260728
 import * as migration_20260728_191952_checkout_defaults from './20260728_191952_checkout_defaults';
 import * as migration_20260728_193456_checkout_summary_icons from './20260728_193456_checkout_summary_icons';
 import * as migration_20260728_194234_checkout_summary_ai_tokens from './20260728_194234_checkout_summary_ai_tokens';
+import * as migration_20260728_195348_checkout_summary_plan from './20260728_195348_checkout_summary_plan';
 
 export const migrations = [
   {
@@ -472,6 +473,11 @@ export const migrations = [
   {
     up: migration_20260728_194234_checkout_summary_ai_tokens.up,
     down: migration_20260728_194234_checkout_summary_ai_tokens.down,
-    name: '20260728_194234_checkout_summary_ai_tokens'
+    name: '20260728_194234_checkout_summary_ai_tokens',
+  },
+  {
+    up: migration_20260728_195348_checkout_summary_plan.up,
+    down: migration_20260728_195348_checkout_summary_plan.down,
+    name: '20260728_195348_checkout_summary_plan'
   },
 ];

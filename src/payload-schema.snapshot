@@ -2498,6 +2498,7 @@ export const checkout_locales = pgTable('checkout_locales', {
   summary_additionalFeaturesDescription: varchar('summary_additional_features_description').notNull().default("Selected add-ons that extend the base subscription."),
   summary_pricing_label: varchar('summary_pricing_label').notNull().default("Pricing"),
   summary_pricing_description: varchar('summary_pricing_description').notNull().default("Monthly breakdown based on your current setup."),
+  summary_pricing_planLabel: varchar('summary_pricing_plan_label').notNull().default("Plan"),
   summary_pricing_baseLabel: varchar('summary_pricing_base_label').notNull().default("AI Tokens"),
   summary_pricing_workflowExecutionsLabel: varchar('summary_pricing_workflow_executions_label').notNull().default("Workflow Executions"),
   summary_pricing_additionalFeaturesLabel: varchar('summary_pricing_additional_features_label').notNull().default("Additional Features"),
