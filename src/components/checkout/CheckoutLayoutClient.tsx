@@ -6,10 +6,8 @@ import { loadStripe } from "@stripe/stripe-js"
 import { LandingContainer } from "@/components/ui/LandingContainer"
 import Image from "next/image"
 import type { ReactNode } from "react"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
-
-const stripePromise = loadStripe(process.env.STRIPE_PUBLIC_KEY!!)
 
 const appearance = {
     theme: "night" as const,
@@ -227,8 +225,9 @@ function CheckoutShell({ children }: { children: ReactNode }) {
     )
 }
 
-export function CheckoutLayoutClient({ children }: { children: ReactNode }) {
+export function CheckoutLayoutClient({ children, publishableKey }: { children: ReactNode; publishableKey: string }) {
     const [clientSecret, setClientSecret] = useState<string | null>(null)
+    const stripePromise = useMemo(() => loadStripe(publishableKey), [publishableKey])
 
     useEffect(() => {
         const fetchClientSecret = async () => {
