@@ -54,12 +54,12 @@ export function Switch<TValue extends string>({ label, description, value, optio
 
     return (
         <div className={cn("space-y-3", className)}>
-            {label || description ? (
+            {(label || description) && (
                 <div>
-                    {label ? <p className="text-base text-secondary">{label}</p> : null}
-                    {description ? <p className="mt-1 text-sm text-tertiary">{description}</p> : null}
+                    {label && <p className="text-base text-secondary">{label}</p>}
+                    {description && <p className="mt-1 text-sm text-tertiary">{description}</p>}
                 </div>
-            ) : null}
+            )}
             <div
                 ref={trackRef}
                 className="relative grid overflow-hidden rounded-2xl border border-white/10 bg-white/3 p-1"
@@ -101,7 +101,7 @@ export function Switch<TValue extends string>({ label, description, value, optio
                         >
                             <span className={cn("min-w-0", fitContent ? "whitespace-nowrap" : "max-w-[calc(100%-2.25rem)] truncate")}>{option.label}</span>
                             {option.badge && (
-                                <span className="absolute left-1/2 top-1/2 ml-6 sm:ml-8 translate-y-[-85%] rounded-full bg-brand/15 px-1 py-0.5 text-[10px] leading-none tracking-wider text-brand">
+                                <span className="absolute left-1/2 top-1/2 ml-6 sm:ml-8 translate-y-[-85%] rounded-full bg-brand/10 border border-brand/10 px-1 py-0.5 text-[10px] leading-none tracking-wider text-brand">
                                     {option.badge}
                                 </span>
                             )}
