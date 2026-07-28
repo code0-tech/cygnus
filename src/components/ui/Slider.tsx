@@ -1,5 +1,6 @@
 "use client"
 
+import { formatCompactNumber } from "@/lib/formatters"
 import { cn } from "@/lib/utils"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
@@ -19,25 +20,8 @@ type SliderProps = {
     centerLabelSuffix?: string
 }
 
-function formatCompactSliderValue(value: number) {
-    const absoluteValue = Math.abs(value)
-    const compactUnits = [
-        { suffix: "B", value: 1_000_000_000 },
-        { suffix: "M", value: 1_000_000 },
-        { suffix: "K", value: 1_000 },
-    ]
-    const unit = compactUnits.find((compactUnit) => absoluteValue >= compactUnit.value)
-
-    if (!unit) return String(value)
-
-    const compactValue = value / unit.value
-    const maximumFractionDigits = Number.isInteger(compactValue) ? 0 : 1
-
-    return `${compactValue.toLocaleString("en-US", { maximumFractionDigits })}${unit.suffix}`
-}
-
 function formatSliderLabel(value: number, suffix?: string, trailingSuffix = "") {
-    return `${formatCompactSliderValue(value)}${suffix ? ` ${suffix}` : ""}${trailingSuffix ? ` ${trailingSuffix}` : ""}`
+    return `${formatCompactNumber(value)}${suffix ? ` ${suffix}` : ""}${trailingSuffix ? ` ${trailingSuffix}` : ""}`
 }
 
 function getDefaultLines() {
