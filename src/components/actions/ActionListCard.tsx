@@ -1,18 +1,14 @@
-import { getFeatureBySlug } from "@/lib/cms"
-import { type AppLocale } from "@/lib/i18n"
 import { SiDhl, SiDiscord, SiGithub, SiGitlab, SiGoogleanalytics, SiNotion, SiPaypal, SiSap, SiTelegram, SiX } from "@icons-pack/react-simple-icons"
 import { OrbitingCircles } from "../animations/OrbitingCircles"
-import { FeatureCardText } from "../ui/FeatureCardText"
+import { FeatureCardText, type FeatureCardContent } from "../ui/FeatureCardText"
 import { FeatureCard } from "../cards/FeatureCard"
 
 interface ActionListCardProps {
-    locale: AppLocale
+    content?: FeatureCardContent
     animationDelay?: number
 }
 
-export async function ActionListCard({ locale, animationDelay = 0 }: ActionListCardProps) {
-    const content = await getFeatureBySlug("action-list", locale)
-
+export function ActionListCard({ content, animationDelay = 0 }: ActionListCardProps) {
     return (
         <FeatureCard className="col-span-1 row-span-4" contentClassName="items-start justify-end" tone="aqua" animationDelay={animationDelay}>
             <div className="pointer-events-none absolute inset-x-0 top-[52%] z-0 flex -translate-y-1/2 justify-center">

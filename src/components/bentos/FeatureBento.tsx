@@ -1,4 +1,4 @@
-import { type AppLocale } from "@/lib/i18n"
+import type { BentoLayoutBlock } from "@/lib/cms"
 import { BentoGrid } from "../ui/BentoGrid"
 import { ProjectsCard } from "../cards/ProjectsCard"
 import { RoleSystemCard } from "../cards/RoleSystemCard"
@@ -6,16 +6,16 @@ import { OrganizationCard } from "../cards/OrganizationCard"
 import { MemberManagementCard } from "../cards/MemberManagementCard"
 
 interface FeatureBentoProps {
-    locale: AppLocale
+    content?: BentoLayoutBlock["featureContent"]
 }
 
-export function FeatureBento({ locale }: FeatureBentoProps) {
+export function FeatureBento({ content }: FeatureBentoProps) {
     return (
         <BentoGrid>
-            <ProjectsCard locale={locale} animationDelay={0} />
-            <RoleSystemCard locale={locale} animationDelay={120} />
-            <OrganizationCard locale={locale} animationDelay={240} />
-            <MemberManagementCard locale={locale} animationDelay={360} />
+            <ProjectsCard content={content?.projects} animationDelay={0} />
+            <RoleSystemCard content={content?.roleSystem} animationDelay={120} />
+            <OrganizationCard content={content?.organizations} animationDelay={240} />
+            <MemberManagementCard content={content?.memberManagement} animationDelay={360} />
         </BentoGrid>
     )
 }

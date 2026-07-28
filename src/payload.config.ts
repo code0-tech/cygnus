@@ -9,7 +9,6 @@ import { fileURLToPath } from "url"
 import { Actions } from "./collections/actions"
 import { Blog } from "./collections/blog"
 import { CookieBanner } from "./globals/cookieBanner"
-import { Features } from "./collections/features"
 import { Footer } from "./globals/footer"
 import { Jobs } from "./collections/jobs"
 import { Media } from "./collections/media"
@@ -54,7 +53,7 @@ export default buildConfig({
         },
         livePreview: {
             url: "http://localhost:3000",
-            collections: ["pages", "jobs", "actions", "team-members", "features", "blog"],
+            collections: ["pages", "jobs", "actions", "team-members", "blog"],
         },
         meta: {
             titleSuffix: "- CodeZero",
@@ -71,7 +70,7 @@ export default buildConfig({
         locales: ["en", "de"],
         defaultLocale: "en",
     },
-    collections: [Users, Media, Pages, Features, Actions, Jobs, Blog, TeamMembers],
+    collections: [Users, Media, Pages, Actions, Jobs, Blog, TeamMembers],
     globals: [Navigation, Footer, CookieBanner, SubscriptionCollection],
     jobs: {
         autoRun: [
@@ -180,12 +179,6 @@ export default buildConfig({
                     delete: false,
                 },
                 pages: {
-                    read: true,
-                    create: true,
-                    update: true,
-                    delete: false,
-                },
-                features: {
                     read: true,
                     create: true,
                     update: true,

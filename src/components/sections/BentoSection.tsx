@@ -1,20 +1,18 @@
 import { FeatureBento } from "@/components/bentos/FeatureBento"
 import { RuntimeBento } from "@/components/bentos/RuntimeBento"
 import { Section } from "@/components/ui/Section"
-import { BentoLayoutBlock } from "@/lib/cms"
-import type { AppLocale } from "@/lib/i18n"
+import type { BentoLayoutBlock } from "@/lib/cms"
 
 interface BentoSectionProps {
     content?: BentoLayoutBlock | null
-    locale?: AppLocale
 }
 
-export function BentoSection({ content, locale = "en" }: BentoSectionProps) {
+export function BentoSection({ content }: BentoSectionProps) {
     const variant = content?.variant ?? "feature"
 
     return (
         <Section heading={content?.sectionHeading} description={content?.sectionDescription} linkButton={content?.sectionLinkButton} funnelType={content?.sectionLayout ?? "center"} fullHeight>
-            {variant === "runtime" ? <RuntimeBento locale={locale} /> : <FeatureBento locale={locale} />}
+            {variant === "runtime" ? <RuntimeBento content={content?.runtimeContent} /> : <FeatureBento content={content?.featureContent} />}
         </Section>
     )
 }

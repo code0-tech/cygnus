@@ -58,7 +58,6 @@ export const enum_pages_blocks_small_pricing_pro_button_variant = pgEnum('enum_p
 export const enum_pages_blocks_small_pricing_max_button_variant = pgEnum('enum_pages_blocks_small_pricing_max_button_variant', ['none', 'normal', 'outlined', 'filled'])
 export const enum_pages_blocks_small_pricing_custom_button_variant = pgEnum('enum_pages_blocks_small_pricing_custom_button_variant', ['none', 'normal', 'outlined', 'filled'])
 export const enum_pages_slug = pgEnum('enum_pages_slug', ['main', 'jobs', 'blog', 'features', 'about-us', 'legal-notice', 'privacy', 'terms', 'contact', 'actions', 'action-details', 'community-edition', 'enterprise-edition', 'pricing', 'subscription'])
-export const enum_features_slug = pgEnum('enum_features_slug', ['projects', 'role-system', 'member-management', 'organizations', 'suggestion-menu', 'nodes', 'runtime-types', 'action-list'])
 export const enum_actions_tags = pgEnum('enum_actions_tags', ['AI', 'Analytics', 'Communication', 'Cybersecurity', 'Data & Storage', 'Developer Tools', 'Development', 'Finance & Accounting', 'HITL', 'Marketing', 'Miscellaneous', 'Productivity', 'Sales', 'Utility'])
 export const enum_jobs_category = pgEnum('enum_jobs_category', ['engineering', 'marketing', 'design', 'product', 'sales', 'operations'])
 export const enum_jobs_type = pgEnum('enum_jobs_type', ['full-time', 'part-time', 'contract', 'internship', 'working-student', 'freelance'])
@@ -212,6 +211,38 @@ export const pages_blocks_bento = pgTable('pages_blocks_bento', {
   sectionLinkButton_label: varchar('section_link_button_label'),
   sectionLinkButton_url: varchar('section_link_button_url'),
   variant: enum_pages_blocks_bento_variant('variant').notNull().default("feature"),
+  featureContent_projects_title: varchar('feature_content_projects_title'),
+  featureContent_projects_description: varchar('feature_content_projects_description'),
+  featureContent_projects_link_label: varchar('feature_content_projects_link_label'),
+  featureContent_projects_link_url: varchar('feature_content_projects_link_url'),
+  featureContent_roleSystem_title: varchar('feature_content_role_system_title'),
+  featureContent_roleSystem_description: varchar('feature_content_role_system_description'),
+  featureContent_roleSystem_link_label: varchar('feature_content_role_system_link_label'),
+  featureContent_roleSystem_link_url: varchar('feature_content_role_system_link_url'),
+  featureContent_organizations_title: varchar('feature_content_organizations_title'),
+  featureContent_organizations_description: varchar('feature_content_organizations_description'),
+  featureContent_organizations_link_label: varchar('feature_content_organizations_link_label'),
+  featureContent_organizations_link_url: varchar('feature_content_organizations_link_url'),
+  featureContent_memberManagement_title: varchar('feature_content_member_management_title'),
+  featureContent_memberManagement_description: varchar('feature_content_member_management_description'),
+  featureContent_memberManagement_link_label: varchar('feature_content_member_management_link_label'),
+  featureContent_memberManagement_link_url: varchar('feature_content_member_management_link_url'),
+  runtimeContent_nodes_title: varchar('runtime_content_nodes_title'),
+  runtimeContent_nodes_description: varchar('runtime_content_nodes_description'),
+  runtimeContent_nodes_link_label: varchar('runtime_content_nodes_link_label'),
+  runtimeContent_nodes_link_url: varchar('runtime_content_nodes_link_url'),
+  runtimeContent_suggestionMenu_title: varchar('runtime_content_suggestion_menu_title'),
+  runtimeContent_suggestionMenu_description: varchar('runtime_content_suggestion_menu_description'),
+  runtimeContent_suggestionMenu_link_label: varchar('runtime_content_suggestion_menu_link_label'),
+  runtimeContent_suggestionMenu_link_url: varchar('runtime_content_suggestion_menu_link_url'),
+  runtimeContent_actionList_title: varchar('runtime_content_action_list_title'),
+  runtimeContent_actionList_description: varchar('runtime_content_action_list_description'),
+  runtimeContent_actionList_link_label: varchar('runtime_content_action_list_link_label'),
+  runtimeContent_actionList_link_url: varchar('runtime_content_action_list_link_url'),
+  runtimeContent_runtimeTypes_title: varchar('runtime_content_runtime_types_title'),
+  runtimeContent_runtimeTypes_description: varchar('runtime_content_runtime_types_description'),
+  runtimeContent_runtimeTypes_link_label: varchar('runtime_content_runtime_types_link_label'),
+  runtimeContent_runtimeTypes_link_url: varchar('runtime_content_runtime_types_link_url'),
   blockName: varchar('block_name'),
 }, (columns) => [
     index('pages_blocks_bento_order_idx').on(columns._order), index('pages_blocks_bento_parent_id_idx').on(columns._parentID), index('pages_blocks_bento_path_idx').on(columns._path), index('pages_blocks_bento_locale_idx').on(columns._locale), foreignKey({
@@ -1598,35 +1629,6 @@ export const pages_texts = pgTable('pages_texts', {
 )
 
 
-export const features = pgTable('features', {
-  id: serial('id').primaryKey(),
-  slug: enum_features_slug('slug').notNull(),
-  link_url: varchar('link_url'),
-  updatedAt: timestamp('updated_at', {mode: 'string',withTimezone: true,precision: 3}).defaultNow().notNull(),
-  createdAt: timestamp('created_at', {mode: 'string',withTimezone: true,precision: 3}).defaultNow().notNull(),
-}, (columns) => [
-    uniqueIndex('features_slug_idx').on(columns.slug), index('features_updated_at_idx').on(columns.updatedAt), index('features_created_at_idx').on(columns.createdAt),
-]
-)
-
-
-export const features_locales = pgTable('features_locales', {
-  title: varchar('title').notNull(),
-  description: varchar('description'),
-  link_label: varchar('link_label'),
-  id: serial('id').primaryKey(),
-  _locale: enum__locales('_locale').notNull(),
-  _parentID: integer('_parent_id').notNull(),
-}, (columns) => [
-    uniqueIndex('features_locales_locale_parent_id_unique').on(columns._locale, columns._parentID), foreignKey({
-      columns: [columns['_parentID']],
-      foreignColumns: [features.id],
-      name: 'features_locales_parent_id_fk'
-    }).onDelete('cascade'),
-]
-)
-
-
 export const actions_tags = pgTable('actions_tags', {
   order: integer('order').notNull(),
   parent: integer('parent_id').notNull(),
@@ -1838,14 +1840,13 @@ export const payload_locked_documents_rels = pgTable('payload_locked_documents_r
   usersID: integer('users_id'),
   mediaID: integer('media_id'),
   pagesID: integer('pages_id'),
-  featuresID: integer('features_id'),
   actionsID: integer('actions_id'),
   jobsID: integer('jobs_id'),
   blogID: integer('blog_id'),
   'team-membersID': integer('team_members_id'),
   'payload-ai-auditlogID': integer('payload_ai_auditlog_id'),
 }, (columns) => [
-    index('payload_locked_documents_rels_order_idx').on(columns.order), index('payload_locked_documents_rels_parent_idx').on(columns.parent), index('payload_locked_documents_rels_path_idx').on(columns.path), index('payload_locked_documents_rels_users_id_idx').on(columns.usersID), index('payload_locked_documents_rels_media_id_idx').on(columns.mediaID), index('payload_locked_documents_rels_pages_id_idx').on(columns.pagesID), index('payload_locked_documents_rels_features_id_idx').on(columns.featuresID), index('payload_locked_documents_rels_actions_id_idx').on(columns.actionsID), index('payload_locked_documents_rels_jobs_id_idx').on(columns.jobsID), index('payload_locked_documents_rels_blog_id_idx').on(columns.blogID), index('payload_locked_documents_rels_team_members_id_idx').on(columns['team-membersID']), index('payload_locked_documents_rels_payload_ai_auditlog_id_idx').on(columns['payload-ai-auditlogID']), foreignKey({
+    index('payload_locked_documents_rels_order_idx').on(columns.order), index('payload_locked_documents_rels_parent_idx').on(columns.parent), index('payload_locked_documents_rels_path_idx').on(columns.path), index('payload_locked_documents_rels_users_id_idx').on(columns.usersID), index('payload_locked_documents_rels_media_id_idx').on(columns.mediaID), index('payload_locked_documents_rels_pages_id_idx').on(columns.pagesID), index('payload_locked_documents_rels_actions_id_idx').on(columns.actionsID), index('payload_locked_documents_rels_jobs_id_idx').on(columns.jobsID), index('payload_locked_documents_rels_blog_id_idx').on(columns.blogID), index('payload_locked_documents_rels_team_members_id_idx').on(columns['team-membersID']), index('payload_locked_documents_rels_payload_ai_auditlog_id_idx').on(columns['payload-ai-auditlogID']), foreignKey({
       columns: [columns['parent']],
       foreignColumns: [payload_locked_documents.id],
       name: 'payload_locked_documents_rels_parent_fk'
@@ -1861,10 +1862,6 @@ export const payload_locked_documents_rels = pgTable('payload_locked_documents_r
       columns: [columns['pagesID']],
       foreignColumns: [pages.id],
       name: 'payload_locked_documents_rels_pages_fk'
-    }).onDelete('cascade'), foreignKey({
-      columns: [columns['featuresID']],
-      foreignColumns: [features.id],
-      name: 'payload_locked_documents_rels_features_fk'
     }).onDelete('cascade'), foreignKey({
       columns: [columns['actionsID']],
       foreignColumns: [actions.id],
@@ -3250,19 +3247,6 @@ export const relations_pages = relations(pages, ({ many }) => ({
             relationName: '_texts',
     }),
       }))
-export const relations_features_locales = relations(features_locales, ({ one }) => ({
-  _parentID: one(features, {
-    
-    fields: [features_locales._parentID],
-    references: [features.id],
-    relationName: '_locales',
-    }),
-      }))
-export const relations_features = relations(features, ({ many }) => ({
-  _locales: many(features_locales, {
-            relationName: '_locales',
-    }),
-      }))
 export const relations_actions_tags = relations(actions_tags, ({ one }) => ({
   parent: one(actions, {
     
@@ -3392,12 +3376,6 @@ export const relations_payload_locked_documents_rels = relations(payload_locked_
     fields: [payload_locked_documents_rels.pagesID],
     references: [pages.id],
     relationName: 'pages',
-    }),
-    featuresID: one(features, {
-    
-    fields: [payload_locked_documents_rels.featuresID],
-    references: [features.id],
-    relationName: 'features',
     }),
     actionsID: one(actions, {
     
@@ -3725,7 +3703,6 @@ type DatabaseSchema = {
   enum_pages_blocks_small_pricing_max_button_variant: typeof enum_pages_blocks_small_pricing_max_button_variant
   enum_pages_blocks_small_pricing_custom_button_variant: typeof enum_pages_blocks_small_pricing_custom_button_variant
   enum_pages_slug: typeof enum_pages_slug
-  enum_features_slug: typeof enum_features_slug
   enum_actions_tags: typeof enum_actions_tags
   enum_jobs_category: typeof enum_jobs_category
   enum_jobs_type: typeof enum_jobs_type
@@ -3817,8 +3794,6 @@ type DatabaseSchema = {
   pages: typeof pages
   pages_locales: typeof pages_locales
   pages_texts: typeof pages_texts
-  features: typeof features
-  features_locales: typeof features_locales
   actions_tags: typeof actions_tags
   actions: typeof actions
   actions_rels: typeof actions_rels
@@ -3931,8 +3906,6 @@ type DatabaseSchema = {
   relations_pages_locales: typeof relations_pages_locales
   relations_pages_texts: typeof relations_pages_texts
   relations_pages: typeof relations_pages
-  relations_features_locales: typeof relations_features_locales
-  relations_features: typeof relations_features
   relations_actions_tags: typeof relations_actions_tags
   relations_actions_rels: typeof relations_actions_rels
   relations_actions: typeof relations_actions

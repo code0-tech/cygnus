@@ -71,6 +71,7 @@ import * as migration_20260727_200000_small_pricing_package_config from "./20260
 import * as migration_20260727_203000_pricing_block_rename from "./20260727_203000_pricing_block_rename"
 import * as migration_20260727_210000_small_pricing_block from "./20260727_210000_small_pricing_block"
 import * as migration_20260727_220000_repair_actions_tags from "./20260727_220000_repair_actions_tags"
+import * as migration_20260728_131500_bento_content_remove_features from "./20260728_131500_bento_content_remove_features"
 
 export const migrations = [
     {
@@ -437,5 +438,10 @@ export const migrations = [
         up: migration_20260727_220000_repair_actions_tags.up,
         down: migration_20260727_220000_repair_actions_tags.down,
         name: "20260727_220000_repair_actions_tags",
+    },
+    {
+        up: migration_20260728_131500_bento_content_remove_features.up,
+        down: migration_20260728_131500_bento_content_remove_features.down,
+        name: "20260728_131500_bento_content_remove_features",
     },
 ]

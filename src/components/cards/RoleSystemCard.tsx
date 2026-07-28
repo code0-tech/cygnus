@@ -1,11 +1,9 @@
-import { getFeatureBySlug } from "@/lib/cms"
-import { type AppLocale } from "@/lib/i18n"
-import { FeatureCardText } from "../ui/FeatureCardText"
+import { FeatureCardText, type FeatureCardContent } from "../ui/FeatureCardText"
 import { FeatureCard } from "./FeatureCard"
 import { RoleSystemAnimation } from "../animations/RoleSystemAnimation"
 
 interface RoleSystemCardProps {
-    locale: AppLocale
+    content?: FeatureCardContent
     animationDelay?: number
 }
 
@@ -40,9 +38,7 @@ const ROLES = [
     },
 ]
 
-export async function RoleSystemCard({ locale, animationDelay = 0 }: RoleSystemCardProps) {
-    const content = await getFeatureBySlug("role-system", locale)
-
+export function RoleSystemCard({ content, animationDelay = 0 }: RoleSystemCardProps) {
     return (
         <FeatureCard
             className="col-span-1 md:col-span-3 row-span-2"

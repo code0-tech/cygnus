@@ -70,7 +70,6 @@ export interface Config {
     users: User;
     media: Media;
     pages: Page;
-    features: Feature;
     actions: Action;
     jobs: Job;
     blog: Blog;
@@ -86,7 +85,6 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
-    features: FeaturesSelect<false> | FeaturesSelect<true>;
     actions: ActionsSelect<false> | ActionsSelect<true>;
     jobs: JobsSelect<false> | JobsSelect<true>;
     blog: BlogSelect<false> | BlogSelect<true>;
@@ -272,6 +270,74 @@ export interface Page {
               url?: string | null;
             };
             variant: 'feature' | 'runtime';
+            featureContent?: {
+              projects?: {
+                title?: string | null;
+                description?: string | null;
+                link?: {
+                  label?: string | null;
+                  url?: string | null;
+                };
+              };
+              roleSystem?: {
+                title?: string | null;
+                description?: string | null;
+                link?: {
+                  label?: string | null;
+                  url?: string | null;
+                };
+              };
+              organizations?: {
+                title?: string | null;
+                description?: string | null;
+                link?: {
+                  label?: string | null;
+                  url?: string | null;
+                };
+              };
+              memberManagement?: {
+                title?: string | null;
+                description?: string | null;
+                link?: {
+                  label?: string | null;
+                  url?: string | null;
+                };
+              };
+            };
+            runtimeContent?: {
+              nodes?: {
+                title?: string | null;
+                description?: string | null;
+                link?: {
+                  label?: string | null;
+                  url?: string | null;
+                };
+              };
+              suggestionMenu?: {
+                title?: string | null;
+                description?: string | null;
+                link?: {
+                  label?: string | null;
+                  url?: string | null;
+                };
+              };
+              actionList?: {
+                title?: string | null;
+                description?: string | null;
+                link?: {
+                  label?: string | null;
+                  url?: string | null;
+                };
+              };
+              runtimeTypes?: {
+                title?: string | null;
+                description?: string | null;
+                link?: {
+                  label?: string | null;
+                  url?: string | null;
+                };
+              };
+            };
             id?: string | null;
             blockName?: string | null;
             blockType: 'bento';
@@ -1269,30 +1335,6 @@ export interface TeamMember {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "features".
- */
-export interface Feature {
-  id: number;
-  slug:
-    | 'projects'
-    | 'role-system'
-    | 'member-management'
-    | 'organizations'
-    | 'suggestion-menu'
-    | 'nodes'
-    | 'runtime-types'
-    | 'action-list';
-  title: string;
-  description?: string | null;
-  link?: {
-    label?: string | null;
-    url?: string | null;
-  };
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "actions".
  */
 export interface Action {
@@ -1442,10 +1484,6 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'pages';
         value: number | Page;
-      } | null)
-    | ({
-        relationTo: 'features';
-        value: number | Feature;
       } | null)
     | ({
         relationTo: 'actions';
@@ -1613,6 +1651,110 @@ export interface PagesSelect<T extends boolean = true> {
                     url?: T;
                   };
               variant?: T;
+              featureContent?:
+                | T
+                | {
+                    projects?:
+                      | T
+                      | {
+                          title?: T;
+                          description?: T;
+                          link?:
+                            | T
+                            | {
+                                label?: T;
+                                url?: T;
+                              };
+                        };
+                    roleSystem?:
+                      | T
+                      | {
+                          title?: T;
+                          description?: T;
+                          link?:
+                            | T
+                            | {
+                                label?: T;
+                                url?: T;
+                              };
+                        };
+                    organizations?:
+                      | T
+                      | {
+                          title?: T;
+                          description?: T;
+                          link?:
+                            | T
+                            | {
+                                label?: T;
+                                url?: T;
+                              };
+                        };
+                    memberManagement?:
+                      | T
+                      | {
+                          title?: T;
+                          description?: T;
+                          link?:
+                            | T
+                            | {
+                                label?: T;
+                                url?: T;
+                              };
+                        };
+                  };
+              runtimeContent?:
+                | T
+                | {
+                    nodes?:
+                      | T
+                      | {
+                          title?: T;
+                          description?: T;
+                          link?:
+                            | T
+                            | {
+                                label?: T;
+                                url?: T;
+                              };
+                        };
+                    suggestionMenu?:
+                      | T
+                      | {
+                          title?: T;
+                          description?: T;
+                          link?:
+                            | T
+                            | {
+                                label?: T;
+                                url?: T;
+                              };
+                        };
+                    actionList?:
+                      | T
+                      | {
+                          title?: T;
+                          description?: T;
+                          link?:
+                            | T
+                            | {
+                                label?: T;
+                                url?: T;
+                              };
+                        };
+                    runtimeTypes?:
+                      | T
+                      | {
+                          title?: T;
+                          description?: T;
+                          link?:
+                            | T
+                            | {
+                                label?: T;
+                                url?: T;
+                              };
+                        };
+                  };
               id?: T;
               blockName?: T;
             };
@@ -2396,23 +2538,6 @@ export interface PagesSelect<T extends boolean = true> {
         title?: T;
         description?: T;
         image?: T;
-      };
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "features_select".
- */
-export interface FeaturesSelect<T extends boolean = true> {
-  slug?: T;
-  title?: T;
-  description?: T;
-  link?:
-    | T
-    | {
-        label?: T;
-        url?: T;
       };
   updatedAt?: T;
   createdAt?: T;

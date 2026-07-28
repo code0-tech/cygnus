@@ -1,13 +1,13 @@
 import { LinkButton } from "@/components/ui/LinkButton"
 import { cn } from "@/lib/utils"
 
-interface FeatureCardContent {
-    title: string
-    description: string
-    link: {
-        label: string
-        url: string
-    }
+export interface FeatureCardContent {
+    title?: string | null
+    description?: string | null
+    link?: {
+        label?: string | null
+        url?: string | null
+    } | null
 }
 
 interface FeatureCardTextProps {
@@ -16,7 +16,7 @@ interface FeatureCardTextProps {
 }
 
 export function FeatureCardText({ content, className }: FeatureCardTextProps) {
-    if (!content) return null
+    if (!content?.title) return null
 
     return (
         <div className={cn("z-30 flex w-full min-w-0 flex-col", className)}>

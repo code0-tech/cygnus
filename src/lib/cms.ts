@@ -3,7 +3,7 @@ import "server-only"
 import { extractActionModuleInfo, fetchMediaJson } from "@/lib/actionExtraction"
 import { DEFAULT_LOCALE, type AppLocale } from "@/lib/i18n"
 import { getPayloadClient } from "@/lib/payloadClient"
-import type { Action, Blog, CookieBanner, Feature, Footer, Job, Media, Navigation, Page, TeamMember } from "@/payload-types"
+import type { Action, Blog, CookieBanner, Footer, Job, Media, Navigation, Page, TeamMember } from "@/payload-types"
 import type { NavigationData, NavbarButtonData, NavbarItemData } from "@/lib/navigation"
 import { cache } from "react"
 
@@ -37,18 +37,6 @@ export type StatsLayoutBlock = Extract<PageLayoutBlock, { blockType: "stats" }>
 export type FlowExampleLayoutBlock = Extract<PageLayoutBlock, { blockType: "flowExample" }>
 export type PricingLayoutBlock = Extract<PageLayoutBlock, { blockType: "pricing" }>
 export type SmallPricingLayoutBlock = Extract<PageLayoutBlock, { blockType: "smallPricing" }>
-
-type FeatureSlug = Feature["slug"]
-interface FeatureItem {
-    id: Feature["id"]
-    slug: FeatureSlug
-    title: NonNullable<Feature["title"]>
-    description: NonNullable<Feature["description"]>
-    link: {
-        label: NonNullable<NonNullable<Feature["link"]>["label"]>
-        url: NonNullable<NonNullable<Feature["link"]>["url"]>
-    }
-}
 
 export type ActionItem = Pick<Action, "id" | "identifier" | "module" | "tags" | "createdAt"> & {
     slug: string
@@ -420,37 +408,6 @@ const getCookieBannerCached = cache(async (locale: AppLocale): Promise<CookieBan
     })
 })
 
-const getFeaturesCached = cache(async (locale: AppLocale): Promise<FeatureItem[]> => {
-    return withCmsFallback(`getFeatures(${locale})`, [], async () => {
-        const docs = await cmsFind<Feature>({
-            collection: "features",
-            locale,
-            fallbackLocale: DEFAULT_LOCALE,
-            pagination: false,
-            depth: 0,
-        })
-
-        const features: FeatureItem[] = []
-
-        for (const feature of docs) {
-            const { title, description } = feature
-            const label = feature.link?.label
-            const url = feature.link?.url
-            if (!title || !description || !label || !url) continue
-
-            features.push({
-                id: feature.id,
-                slug: feature.slug,
-                title,
-                description,
-                link: { label, url },
-            })
-        }
-
-        return features
-    })
-})
-
 const getJobsCached = cache(async (locale: AppLocale): Promise<JobItem[]> => {
     return cmsFindMany(`getJobs(${locale})`, [], {
         collection: "jobs",
@@ -664,11 +621,6 @@ export async function getFooter(locale: AppLocale = DEFAULT_LOCALE) {
 
 export async function getCookieBanner(locale: AppLocale = DEFAULT_LOCALE) {
     return getCookieBannerCached(locale)
-}
-
-export async function getFeatureBySlug(slug: FeatureSlug, locale: AppLocale = DEFAULT_LOCALE) {
-    const features = await getFeaturesCached(locale)
-    return features.find((feature) => feature.slug === slug) ?? null
 }
 
 export async function getJobs(locale: AppLocale = DEFAULT_LOCALE): Promise<JobItem[]> {

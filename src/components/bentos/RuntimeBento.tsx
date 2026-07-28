@@ -1,4 +1,4 @@
-import { type AppLocale } from "@/lib/i18n"
+import type { BentoLayoutBlock } from "@/lib/cms"
 import { ActionListCard } from "../actions/ActionListCard"
 import { NodeCard } from "../cards/NodeCard"
 import { RuntimeTypesCard } from "../cards/RuntimeTypesCard"
@@ -6,16 +6,16 @@ import { SuggestionMenuCard } from "../cards/SuggestionMenuCard"
 import { BentoGrid } from "../ui/BentoGrid"
 
 interface RuntimeFeatureSectionProps {
-    locale: AppLocale
+    content?: BentoLayoutBlock["runtimeContent"]
 }
 
-export function RuntimeBento({ locale }: RuntimeFeatureSectionProps) {
+export function RuntimeBento({ content }: RuntimeFeatureSectionProps) {
     return (
         <BentoGrid columns={3}>
-            <NodeCard locale={locale} animationDelay={0} />
-            <SuggestionMenuCard locale={locale} animationDelay={120} />
-            <ActionListCard locale={locale} animationDelay={240} />
-            <RuntimeTypesCard locale={locale} animationDelay={360} />
+            <NodeCard content={content?.nodes} animationDelay={0} />
+            <SuggestionMenuCard content={content?.suggestionMenu} animationDelay={120} />
+            <ActionListCard content={content?.actionList} animationDelay={240} />
+            <RuntimeTypesCard content={content?.runtimeTypes} animationDelay={360} />
         </BentoGrid>
     )
 }

@@ -1,17 +1,13 @@
-import { getFeatureBySlug } from "@/lib/cms"
-import { type AppLocale } from "@/lib/i18n"
-import { FeatureCardText } from "../ui/FeatureCardText"
+import { FeatureCardText, type FeatureCardContent } from "../ui/FeatureCardText"
 import { SuggesstionMenuClient } from "../ui/SuggesstionMenuClient"
 import { FeatureCard } from "./FeatureCard"
 
 interface SuggestionMenuCardProps {
-    locale: AppLocale
+    content?: FeatureCardContent
     animationDelay?: number
 }
 
-export async function SuggestionMenuCard({ locale, animationDelay = 0 }: SuggestionMenuCardProps) {
-    const content = await getFeatureBySlug("suggestion-menu", locale)
-
+export function SuggestionMenuCard({ content, animationDelay = 0 }: SuggestionMenuCardProps) {
     return (
         <FeatureCard className="col-span-1 row-span-7" contentClassName="justify-end" tone="aqua" animationDelay={animationDelay}>
             <div className="flex w-[90%] flex-1 mx-auto justify-center min-h-0 pt-2 pl-2">

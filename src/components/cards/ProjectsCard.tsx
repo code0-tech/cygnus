@@ -1,17 +1,13 @@
-import { getFeatureBySlug } from "@/lib/cms"
-import { type AppLocale } from "@/lib/i18n"
-import { FeatureCardText } from "../ui/FeatureCardText"
+import { FeatureCardText, type FeatureCardContent } from "../ui/FeatureCardText"
 import { ClientProjectCard } from "./ClientProjectCard"
 import { FeatureCard } from "./FeatureCard"
 
 interface ProjectsCardProps {
-    locale: AppLocale
+    content?: FeatureCardContent
     animationDelay?: number
 }
 
-export async function ProjectsCard({ locale, animationDelay = 0 }: ProjectsCardProps) {
-    const content = await getFeatureBySlug("projects", locale)
-
+export function ProjectsCard({ content, animationDelay = 0 }: ProjectsCardProps) {
     return (
         <FeatureCard className="col-span-1 md:col-span-2 row-span-3" tone="aqua" animationDelay={animationDelay}>
             <div className="flex w-full flex-1 items-start justify-center min-h-0">

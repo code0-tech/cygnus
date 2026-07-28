@@ -52,7 +52,7 @@ type BlockRenderer = (block: PageBlock, options: PageBlockRenderOptions) => Reac
 
 const pageBlockRenderers: Partial<Record<PageBlock["blockType"], BlockRenderer>> = {
     hero: (block) => <HeroSection content={block as Extract<PageBlock, { blockType: "hero" }>} />,
-    bento: (block, options) => <BentoSection content={block as Extract<PageBlock, { blockType: "bento" }>} locale={options.locale} />,
+    bento: (block) => <BentoSection content={block as Extract<PageBlock, { blockType: "bento" }>} />,
     blogPreview: (block, options) => <BlogPreviewSection content={block as Extract<PageBlock, { blockType: "blogPreview" }>} locale={options.locale} />,
     border: (block) => <BorderSection content={block as Extract<PageBlock, { blockType: "border" }>} />,
     brand: (block) => <BrandSection content={block as Extract<PageBlock, { blockType: "brand" }>} />,

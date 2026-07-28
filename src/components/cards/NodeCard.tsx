@@ -1,17 +1,13 @@
-import { getFeatureBySlug } from "@/lib/cms"
-import { type AppLocale } from "@/lib/i18n"
-import { FeatureCardText } from "../ui/FeatureCardText"
+import { FeatureCardText, type FeatureCardContent } from "../ui/FeatureCardText"
 import { FeatureCard } from "./FeatureCard"
 import { NodesAnimation } from "../animations/NodesAnimation"
 
 interface NodeTabsCardProps {
-    locale: AppLocale
+    content?: FeatureCardContent
     animationDelay?: number
 }
 
-export async function NodeCard({ locale, animationDelay = 0 }: NodeTabsCardProps) {
-    const content = await getFeatureBySlug("nodes", locale)
-
+export function NodeCard({ content, animationDelay = 0 }: NodeTabsCardProps) {
     return (
         <FeatureCard className="col-span-1 md:col-span-2 row-span-4 md:row-span-3" tone="pink" animationDelay={animationDelay}>
             <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-4 z-0 flex items-start justify-center overflow-hidden lg:top-8 2xl:top-16">

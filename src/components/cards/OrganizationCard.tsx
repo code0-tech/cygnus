@@ -1,17 +1,13 @@
-import { type AppLocale } from "@/lib/i18n"
-import { getFeatureBySlug } from "@/lib/cms"
 import { FeatureCard } from "./FeatureCard"
-import { FeatureCardText } from "../ui/FeatureCardText"
+import { FeatureCardText, type FeatureCardContent } from "../ui/FeatureCardText"
 import { ClientOrganizationCard } from "./ClientOrganizationCard"
 
 interface OrganizationCardProps {
-    locale: AppLocale
+    content?: FeatureCardContent
     animationDelay?: number
 }
 
-export async function OrganizationCard({ locale, animationDelay = 0 }: OrganizationCardProps) {
-    const content = await getFeatureBySlug("organizations", locale)
-
+export function OrganizationCard({ content, animationDelay = 0 }: OrganizationCardProps) {
     return (
         <FeatureCard className="col-span-1 md:col-span-3 row-span-3" tone="blue" animationDelay={animationDelay}>
             <div className="flex w-full flex-1 items-start justify-center min-h-0">

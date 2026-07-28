@@ -1,17 +1,13 @@
-import { getFeatureBySlug } from "@/lib/cms"
-import { type AppLocale } from "@/lib/i18n"
 import { ClientMemberCard } from "./ClientMemberCard"
-import { FeatureCardText } from "../ui/FeatureCardText"
+import { FeatureCardText, type FeatureCardContent } from "../ui/FeatureCardText"
 import { FeatureCard } from "./FeatureCard"
 
 interface MemberMangementCardProps {
-    locale: AppLocale
+    content?: FeatureCardContent
     animationDelay?: number
 }
 
-export async function MemberManagementCard({ locale, animationDelay = 0 }: MemberMangementCardProps) {
-    const content = await getFeatureBySlug("member-management", locale)
-
+export function MemberManagementCard({ content, animationDelay = 0 }: MemberMangementCardProps) {
     return (
         <FeatureCard className="col-span-1 md:col-span-2 row-span-2" contentClassName="justify-between" animationDelay={animationDelay}>
             <div className="flex w-full flex-1 items-start justify-center min-h-0">

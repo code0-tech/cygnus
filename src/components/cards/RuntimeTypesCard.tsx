@@ -1,17 +1,13 @@
-import { getFeatureBySlug } from "@/lib/cms"
-import { type AppLocale } from "@/lib/i18n"
-import { FeatureCardText } from "../ui/FeatureCardText"
+import { FeatureCardText, type FeatureCardContent } from "../ui/FeatureCardText"
 import { RuntimeControlClient } from "../ui/RuntimeControlClient"
 import { FeatureCard } from "./FeatureCard"
 
 interface RuntimeTypesCardProps {
-    locale: AppLocale
+    content?: FeatureCardContent
     animationDelay?: number
 }
 
-export async function RuntimeTypesCard({ locale, animationDelay = 0 }: RuntimeTypesCardProps) {
-    const content = await getFeatureBySlug("runtime-types", locale)
-
+export function RuntimeTypesCard({ content, animationDelay = 0 }: RuntimeTypesCardProps) {
     return (
         <FeatureCard className="col-span-1 row-span-4" contentClassName="justify-between gap-2" tone="brand" animationDelay={animationDelay}>
             <div className="relative flex w-full flex-1 items-center justify-center min-h-0 px-4 py-6">
