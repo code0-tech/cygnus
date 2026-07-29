@@ -18,7 +18,7 @@ export default async function CheckoutPage({ params }: { params: Promise<{ local
                 <IconArrowLeft size={16} />
                 {checkoutContent?.navigation.backLabel}
             </LinkButton>
-            <div className="w-full flex gap-16">
+            <div className="flex w-full flex-col gap-16 lg:flex-row">
                 <CheckoutSummary content={checkoutContent?.summary} subscriptionConfig={subscriptionConfig} />
                 <CheckoutForm content={checkoutContent?.form} />
             </div>

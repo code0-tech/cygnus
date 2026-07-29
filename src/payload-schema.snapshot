@@ -70,7 +70,7 @@ export const enum_payload_ai_auditlog_action = pgEnum('enum_payload_ai_auditlog_
 export const enum_payload_ai_auditlog_target_type = pgEnum('enum_payload_ai_auditlog_target_type', ['collection', 'global'])
 export const enum_navigation_buttons_buttons_variant = pgEnum('enum_navigation_buttons_buttons_variant', ['none', 'normal', 'outlined', 'filled'])
 export const enum_footer_social_links_platform = pgEnum('enum_footer_social_links_platform', ['instagram', 'discord', 'x', 'linkedin', 'github'])
-export const enum_subscription_config_defaults_deployment = pgEnum('enum_subscription_config_defaults_deployment', ['self-hosted', 'cloud'])
+export const enum_subscription_config_defaults_deployment = pgEnum('enum_subscription_config_defaults_deployment', ['self_hosted', 'cloud'])
 export const enum_subscription_config_defaults_customer_type = pgEnum('enum_subscription_config_defaults_customer_type', ['b2b', 'b2c'])
 export const enum_subscription_config_defaults_payment_period = pgEnum('enum_subscription_config_defaults_payment_period', ['monthly', 'quarterly', 'yearly'])
 export const enum_subscription_config_deployment_self_hosted_color = pgEnum('enum_subscription_config_deployment_self_hosted_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
@@ -2346,7 +2346,7 @@ export const subscription_config_additional_features_locales = pgTable('subscrip
 export const subscription_config = pgTable('subscription_config', {
   id: serial('id').primaryKey(),
   title: varchar('title').default("Subscription Config"),
-  defaults_deployment: enum_subscription_config_defaults_deployment('defaults_deployment').default("self-hosted"),
+  defaults_deployment: enum_subscription_config_defaults_deployment('defaults_deployment').default("self_hosted"),
   defaults_customerType: enum_subscription_config_defaults_customer_type('defaults_customer_type').default("b2b"),
   defaults_paymentPeriod: enum_subscription_config_defaults_payment_period('defaults_payment_period').default("monthly"),
   defaults_workflowExecutions_b2b: numeric('defaults_workflow_executions_b2b', {mode: 'number'}).default(1000),
@@ -2517,6 +2517,26 @@ export const checkout_locales = pgTable('checkout_locales', {
   form_payNowLabel: varchar('form_pay_now_label').notNull().default("Pay now"),
   form_processingLabel: varchar('form_processing_label').notNull().default("Processing..."),
   form_paymentErrorFallback: varchar('form_payment_error_fallback').notNull().default("An unexpected error occurred."),
+  form_nameLabel: varchar('form_name_label').notNull().default("Name"),
+  form_namePlaceholder: varchar('form_name_placeholder').notNull().default("Full name or company name"),
+  form_emailLabel: varchar('form_email_label').notNull().default("Email"),
+  form_emailPlaceholder: varchar('form_email_placeholder').notNull().default("billing@example.com"),
+  form_phoneLabel: varchar('form_phone_label').notNull().default("Phone"),
+  form_phonePlaceholder: varchar('form_phone_placeholder').notNull().default("Optional"),
+  form_line1Label: varchar('form_line1_label').notNull().default("Address"),
+  form_line1Placeholder: varchar('form_line1_placeholder').notNull().default("Street and house number"),
+  form_line2Label: varchar('form_line2_label').notNull().default("Address line 2"),
+  form_line2Placeholder: varchar('form_line2_placeholder').notNull().default("Optional"),
+  form_cityLabel: varchar('form_city_label').notNull().default("City"),
+  form_stateLabel: varchar('form_state_label').notNull().default("State"),
+  form_statePlaceholder: varchar('form_state_placeholder').notNull().default("Optional"),
+  form_postalCodeLabel: varchar('form_postal_code_label').notNull().default("Postal code"),
+  form_countryLabel: varchar('form_country_label').notNull().default("Country code"),
+  form_countryPlaceholder: varchar('form_country_placeholder').notNull().default("DE"),
+  form_taxIdTypeLabel: varchar('form_tax_id_type_label').notNull().default("Tax ID type"),
+  form_taxIdTypePlaceholder: varchar('form_tax_id_type_placeholder').notNull().default("eu_vat"),
+  form_taxIdValueLabel: varchar('form_tax_id_value_label').notNull().default("Tax ID"),
+  form_taxIdValuePlaceholder: varchar('form_tax_id_value_placeholder').notNull().default("DE123456789"),
   success_heading: varchar('success_heading').notNull().default("Payment submitted"),
   success_description: varchar('success_description').notNull().default("Stripe has received your payment confirmation. You can close this page or return to the site."),
   success_backToHomepageLabel: varchar('success_back_to_homepage_label').notNull().default("Return to homepage"),

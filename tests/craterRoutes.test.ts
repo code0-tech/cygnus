@@ -11,21 +11,32 @@ const sessionHeaders = {
 }
 
 test("Crater login requires a Sagittarius token", async () => {
-    const response = await createSession(
-        new Request("https://example.com/api/crater/login", {
-            method: "POST",
-            headers: {
-                "content-type": "application/json",
-            },
-            body: JSON.stringify({}),
-        })
-    )
+    const configuredToken = process.env.CRATER_SAGITTARIUS_TOKEN
+    delete process.env.CRATER_SAGITTARIUS_TOKEN
 
-    assert.equal(response.status, 400)
-    assert.deepEqual(await response.json(), {
-        error: "sagittariusToken is required.",
-    })
-    assert.equal(response.headers.get("cache-control"), "no-store")
+    try {
+        const response = await createSession(
+            new Request("https://example.com/api/crater/login", {
+                method: "POST",
+                headers: {
+                    "content-type": "application/json",
+                },
+                body: JSON.stringify({}),
+            })
+        )
+
+        assert.equal(response.status, 400)
+        assert.deepEqual(await response.json(), {
+            error: "sagittariusToken is required.",
+        })
+        assert.equal(response.headers.get("cache-control"), "no-store")
+    } finally {
+        if (configuredToken === undefined) {
+            delete process.env.CRATER_SAGITTARIUS_TOKEN
+        } else {
+            process.env.CRATER_SAGITTARIUS_TOKEN = configuredToken
+        }
+    }
 })
 
 test("customer creation requires a Crater session", async () => {

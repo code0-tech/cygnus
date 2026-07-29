@@ -71,9 +71,9 @@ export const SubscriptionCollection: GlobalConfig = {
                     name: "deployment",
                     type: "select",
                     required: false,
-                    defaultValue: "self-hosted",
+                    defaultValue: "self_hosted",
                     options: [
-                        { label: "Self-hosted", value: "self-hosted" },
+                        { label: "Self-hosted", value: "self_hosted" },
                         { label: "Cloud", value: "cloud" },
                     ],
                 },

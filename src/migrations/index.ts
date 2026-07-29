@@ -81,6 +81,8 @@ import * as migration_20260728_195348_checkout_summary_plan from './20260728_195
 import * as migration_20260729_025329_subscription_option_descriptions from './20260729_025329_subscription_option_descriptions';
 import * as migration_20260729_100227_checkout_discount_tax_labels from './20260729_100227_checkout_discount_tax_labels';
 import * as migration_20260729_105759_checkout_discount_form_labels from './20260729_105759_checkout_discount_form_labels';
+import * as migration_20260729_132535_subscription_default_deployment_self_hosted from './20260729_132535_subscription_default_deployment_self_hosted';
+import * as migration_20260729_134832_checkout_customer_form from './20260729_134832_checkout_customer_form';
 
 export const migrations = [
   {
@@ -496,6 +498,16 @@ export const migrations = [
   {
     up: migration_20260729_105759_checkout_discount_form_labels.up,
     down: migration_20260729_105759_checkout_discount_form_labels.down,
-    name: '20260729_105759_checkout_discount_form_labels'
+    name: '20260729_105759_checkout_discount_form_labels',
+  },
+  {
+    up: migration_20260729_132535_subscription_default_deployment_self_hosted.up,
+    down: migration_20260729_132535_subscription_default_deployment_self_hosted.down,
+    name: '20260729_132535_subscription_default_deployment_self_hosted',
+  },
+  {
+    up: migration_20260729_134832_checkout_customer_form.up,
+    down: migration_20260729_134832_checkout_customer_form.down,
+    name: '20260729_134832_checkout_customer_form',
   },
 ];

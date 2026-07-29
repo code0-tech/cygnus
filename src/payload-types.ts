@@ -2892,7 +2892,7 @@ export interface SubscriptionConfig {
   title?: string | null;
   optionsPanelHeading?: string | null;
   defaults?: {
-    deployment?: ('self-hosted' | 'cloud') | null;
+    deployment?: ('self_hosted' | 'cloud') | null;
     customerType?: ('b2b' | 'b2c') | null;
     paymentPeriod?: ('monthly' | 'quarterly' | 'yearly') | null;
     workflowExecutions?: {
@@ -3137,6 +3137,26 @@ export interface Checkout {
     payNowLabel: string;
     processingLabel: string;
     paymentErrorFallback: string;
+    nameLabel: string;
+    namePlaceholder: string;
+    emailLabel: string;
+    emailPlaceholder: string;
+    phoneLabel: string;
+    phonePlaceholder: string;
+    line1Label: string;
+    line1Placeholder: string;
+    line2Label: string;
+    line2Placeholder: string;
+    cityLabel: string;
+    stateLabel: string;
+    statePlaceholder: string;
+    postalCodeLabel: string;
+    countryLabel: string;
+    countryPlaceholder: string;
+    taxIdTypeLabel: string;
+    taxIdTypePlaceholder: string;
+    taxIdValueLabel: string;
+    taxIdValuePlaceholder: string;
   };
   success: {
     heading: string;
@@ -3639,6 +3659,26 @@ export interface CheckoutSelect<T extends boolean = true> {
         payNowLabel?: T;
         processingLabel?: T;
         paymentErrorFallback?: T;
+        nameLabel?: T;
+        namePlaceholder?: T;
+        emailLabel?: T;
+        emailPlaceholder?: T;
+        phoneLabel?: T;
+        phonePlaceholder?: T;
+        line1Label?: T;
+        line1Placeholder?: T;
+        line2Label?: T;
+        line2Placeholder?: T;
+        cityLabel?: T;
+        stateLabel?: T;
+        statePlaceholder?: T;
+        postalCodeLabel?: T;
+        countryLabel?: T;
+        countryPlaceholder?: T;
+        taxIdTypeLabel?: T;
+        taxIdTypePlaceholder?: T;
+        taxIdValueLabel?: T;
+        taxIdValuePlaceholder?: T;
       };
   success?:
     | T

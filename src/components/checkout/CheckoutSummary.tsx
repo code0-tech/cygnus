@@ -58,7 +58,7 @@ export function CheckoutSummary({ content, sessionToken, subscriptionConfig, tax
     const params = useParams<{ locale?: string }>()
     if (!content) return null
 
-    const deployment = searchParams.get("deployment")
+    const deployment = searchParams.get("deploymentType") ?? searchParams.get("deployment")
     const customerType = searchParams.get("customerType")
     const planParam = searchParams.get("plan")
     const paymentPeriod = searchParams.get("paymentPeriod")
@@ -107,7 +107,7 @@ export function CheckoutSummary({ content, sessionToken, subscriptionConfig, tax
                         icon={getIcon(deployment === "cloud" ? content.deploymentIcons.cloud : content.deploymentIcons.selfHosted, 16)}
                         label={content.deploymentLabel}
                         tone={content.deploymentIconColor}
-                        value={<span className="capitalize">{deployment.replace("-", " ")}</span>}
+                        value={<span className="capitalize">{deployment.replaceAll("_", " ").replaceAll("-", " ")}</span>}
                     />
                 )}
 
@@ -150,11 +150,7 @@ export function CheckoutSummary({ content, sessionToken, subscriptionConfig, tax
                         </div>
                     </div>
 
-                    <CheckoutDiscount
-                        buttonLabel={content.pricing.discountButtonLabel}
-                        inputPlaceholder={content.pricing.discountInputPlaceholder}
-                        sessionToken={sessionToken}
-                    />
+                    <CheckoutDiscount buttonLabel={content.pricing.discountButtonLabel} inputPlaceholder={content.pricing.discountInputPlaceholder} sessionToken={sessionToken} />
 
                     <div className="space-y-2 pt-4">
                         <div className="flex items-center justify-between gap-4 text-sm">

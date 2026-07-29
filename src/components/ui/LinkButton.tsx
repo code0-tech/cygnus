@@ -15,7 +15,7 @@ interface LinkButtonProps extends Omit<LinkProps, "href" | "locale"> {
     locale?: AppLocale
 }
 
-export const linkButtonClassName =
+const linkButtonClassName =
     "group/link relative w-max h-auto min-w-0 px-0 py-0 text-sm inline-flex items-center justify-center gap-1 tracking-normal" +
     " rounded-none cursor-pointer text-tertiary hover:text-brand transition-colors disabled:opacity-50" +
     " after:pointer-events-none after:absolute after:bottom-0 after:left-0 after:h-px after:w-0 after:bg-current after:transition-[width] after:duration-300 after:ease-out hover:after:w-full" +

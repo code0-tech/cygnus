@@ -14,7 +14,7 @@ type CraterDetailedError =
       }
 
 export type CraterMutationError = {
-    details: CraterDetailedError[] | null
+    details?: CraterDetailedError[] | null
     errorCode: string
 }
 

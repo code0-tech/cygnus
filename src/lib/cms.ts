@@ -87,7 +87,7 @@ export interface SubscriptionConfigData {
     title: string
     optionsPanelHeading: string
     defaults: {
-        deployment: "self-hosted" | "cloud"
+        deployment: "self_hosted" | "cloud"
         customerType: "b2b" | "b2c"
         paymentPeriod: "monthly" | "quarterly" | "yearly"
         workflowExecutions: {
@@ -308,6 +308,26 @@ export interface CheckoutData {
         payNowLabel: string
         processingLabel: string
         paymentErrorFallback: string
+        nameLabel: string
+        namePlaceholder: string
+        emailLabel: string
+        emailPlaceholder: string
+        phoneLabel: string
+        phonePlaceholder: string
+        line1Label: string
+        line1Placeholder: string
+        line2Label: string
+        line2Placeholder: string
+        cityLabel: string
+        stateLabel: string
+        statePlaceholder: string
+        postalCodeLabel: string
+        countryLabel: string
+        countryPlaceholder: string
+        taxIdTypeLabel: string
+        taxIdTypePlaceholder: string
+        taxIdValueLabel: string
+        taxIdValuePlaceholder: string
     }
     success: {
         heading: string

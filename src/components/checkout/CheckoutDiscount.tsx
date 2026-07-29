@@ -1,6 +1,7 @@
 "use client"
 
 import { Button, TextInput } from "@code0-tech/pictor"
+import { useCraterSession } from "@/components/checkout/CraterSessionProvider"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useState } from "react"
 
@@ -20,6 +21,7 @@ interface CheckoutDiscountProps {
 }
 
 export function CheckoutDiscount({ buttonLabel, inputPlaceholder, onApplied, sessionToken }: CheckoutDiscountProps) {
+    const { token: contextSessionToken } = useCraterSession()
     const pathname = usePathname()
     const router = useRouter()
     const searchParams = useSearchParams()
@@ -27,6 +29,7 @@ export function CheckoutDiscount({ buttonLabel, inputPlaceholder, onApplied, ses
     const [appliedCode, setAppliedCode] = useState<string | null>(null)
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
     const [isApplying, setIsApplying] = useState(false)
+    const authorizationToken = sessionToken ?? contextSessionToken
 
     const handleSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
         event.preventDefault()
@@ -34,7 +37,7 @@ export function CheckoutDiscount({ buttonLabel, inputPlaceholder, onApplied, ses
         const normalizedCode = code.trim()
         if (!normalizedCode || isApplying) return
 
-        if (!sessionToken) {
+        if (!authorizationToken) {
             setErrorMessage("A Crater session is required to validate a discount.")
             return
         }
@@ -46,7 +49,7 @@ export function CheckoutDiscount({ buttonLabel, inputPlaceholder, onApplied, ses
             const response = await fetch("/api/crater/checkout/discount", {
                 method: "POST",
                 headers: {
-                    authorization: `Session ${sessionToken}`,
+                    authorization: `Session ${authorizationToken}`,
                     "content-type": "application/json",
                 },
                 body: JSON.stringify({ code: normalizedCode }),
