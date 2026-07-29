@@ -1,4 +1,5 @@
 import { createApolloClient } from "@/lib/apolloClient"
+import { normalizeCheckoutSelection, validateCheckoutSelection } from "@/lib/checkoutValidation"
 import { craterJson, craterMutationErrorResponse, craterTransportErrorResponse, optionalString, readJsonObject, requireCraterSession, type CraterMutationError, type JsonObject } from "@/lib/craterApi"
 import { resolveSiteUrl } from "@/lib/siteConfig"
 import { gql, type TypedDocumentNode } from "@apollo/client"
@@ -62,6 +63,10 @@ export async function POST(request: Request) {
         const deploymentType = optionalString(requestData.deploymentType)
         const namespaceId = optionalString(requestData.namespaceId)
         const promotionCode = optionalString(requestData.promotionCode)
+        const customerType = optionalString(requestData.customerType)
+        const paymentPeriod = optionalString(requestData.paymentPeriod)
+        const workflowExecutions = optionalString(requestData.workflowExecutions)
+        const aiTokens = optionalString(requestData.aiTokens)
 
         if (Boolean(plan) === Boolean(customCheckoutConfigurationId)) {
             return craterJson({ error: "Provide either plan or customCheckoutConfigurationId." }, 400)
@@ -73,6 +78,37 @@ export async function POST(request: Request) {
 
         if (namespaceId && deploymentType !== "cloud") {
             return craterJson({ error: "namespaceId is only allowed for cloud deployments." }, 400)
+        }
+
+        if (!customCheckoutConfigurationId) {
+            const { getSubscriptionConfig } = await import("@/lib/cms")
+            const subscriptionConfig = await getSubscriptionConfig()
+
+            if (!subscriptionConfig) {
+                return craterJson({ error: "Subscription configuration is unavailable." }, 503)
+            }
+
+            const normalizedSelection = normalizeCheckoutSelection(
+                {
+                    plan,
+                    customerType,
+                    paymentPeriod,
+                    workflowExecutions,
+                    aiTokens,
+                },
+                subscriptionConfig
+            )
+            const validation = validateCheckoutSelection(normalizedSelection, subscriptionConfig)
+
+            if (!validation.valid) {
+                return craterJson(
+                    {
+                        error: "The checkout configuration is invalid.",
+                        details: validation.details,
+                    },
+                    400
+                )
+            }
         }
 
         const siteUrl = resolveSiteUrl()

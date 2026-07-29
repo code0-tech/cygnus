@@ -3,7 +3,7 @@
 import { Button } from "@code0-tech/pictor"
 import { useCraterSession } from "@/components/checkout/CraterSessionProvider"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
-import { useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 
 export interface CheckoutDiscountValue {
     amountOff: number | null
@@ -30,50 +30,116 @@ export function CheckoutDiscount({ buttonLabel, inputPlaceholder, onApplied, ses
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
     const [isApplying, setIsApplying] = useState(false)
     const authorizationToken = sessionToken ?? contextSessionToken
+    const validationRequestRef = useRef(0)
+    const automaticallyValidatedCodeRef = useRef<string | null>(null)
 
-    const handleSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
-        event.preventDefault()
+    const replacePromotionCode = useCallback(
+        (nextCode: string | null) => {
+            const nextSearchParams = new URLSearchParams(searchParams.toString())
 
-        const normalizedCode = code.trim()
-        if (!normalizedCode || isApplying) return
+            if (nextCode) {
+                nextSearchParams.set("promotionCode", nextCode)
+            } else {
+                nextSearchParams.delete("promotionCode")
+            }
 
-        if (!authorizationToken) {
-            setErrorMessage("A Crater session is required to validate a discount.")
+            const query = nextSearchParams.toString()
+            router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false })
+        },
+        [pathname, router, searchParams]
+    )
+
+    const validateDiscount = useCallback(
+        async (normalizedCode: string) => {
+            if (!authorizationToken) {
+                setErrorMessage("A Crater session is required to validate a discount.")
+                return
+            }
+
+            const requestId = ++validationRequestRef.current
+            setIsApplying(true)
+            setErrorMessage(null)
+
+            try {
+                const response = await fetch("/api/crater/checkout/discount", {
+                    method: "POST",
+                    headers: {
+                        authorization: `Session ${authorizationToken}`,
+                        "content-type": "application/json",
+                    },
+                    body: JSON.stringify({ code: normalizedCode }),
+                })
+                const result = await response.json()
+
+                if (!response.ok) {
+                    const details = Array.isArray(result.details) ? result.details.filter((detail: unknown) => typeof detail === "string").join(" ") : ""
+                    throw new Error(details || result.error || "Could not validate the discount.")
+                }
+
+                if (requestId !== validationRequestRef.current) return
+
+                const discount = result as CheckoutDiscountValue
+                replacePromotionCode(discount.code)
+                setCode((currentCode) => (currentCode.trim() === normalizedCode ? discount.code : currentCode))
+                setAppliedCode(discount.code)
+                onApplied?.(discount)
+            } catch (error) {
+                if (requestId !== validationRequestRef.current) return
+
+                replacePromotionCode(null)
+                setAppliedCode(null)
+                onApplied?.(null)
+                setErrorMessage(error instanceof Error ? error.message : "Could not validate the discount.")
+            } finally {
+                if (requestId === validationRequestRef.current) {
+                    setIsApplying(false)
+                }
+            }
+        },
+        [authorizationToken, onApplied, replacePromotionCode]
+    )
+
+    useEffect(() => {
+        const promotionCode = searchParams.get("promotionCode")?.trim()
+
+        if (!authorizationToken || !promotionCode || appliedCode === promotionCode || automaticallyValidatedCodeRef.current === promotionCode) {
             return
         }
 
-        setIsApplying(true)
+        automaticallyValidatedCodeRef.current = promotionCode
+        setCode(promotionCode)
+        void validateDiscount(promotionCode)
+    }, [appliedCode, authorizationToken, searchParams, validateDiscount])
+
+    const applyEmptyDiscount = () => {
+        validationRequestRef.current += 1
+        automaticallyValidatedCodeRef.current = searchParams.get("promotionCode")?.trim() ?? null
+        setAppliedCode(null)
         setErrorMessage(null)
+        setIsApplying(false)
+        replacePromotionCode(null)
+        onApplied?.(null)
+    }
 
-        try {
-            const response = await fetch("/api/crater/checkout/discount", {
-                method: "POST",
-                headers: {
-                    authorization: `Session ${authorizationToken}`,
-                    "content-type": "application/json",
-                },
-                body: JSON.stringify({ code: normalizedCode }),
-            })
-            const result = await response.json()
+    const handleSubmit = (event: React.SubmitEvent<HTMLFormElement>) => {
+        event.preventDefault()
 
-            if (!response.ok) {
-                const details = Array.isArray(result.details) ? result.details.filter((detail: unknown) => typeof detail === "string").join(" ") : ""
-                throw new Error(details || result.error || "Could not validate the discount.")
-            }
+        const normalizedCode = code.trim()
+        if (isApplying) return
 
-            const discount = result as CheckoutDiscountValue
-            const nextSearchParams = new URLSearchParams(searchParams.toString())
-            nextSearchParams.set("promotionCode", discount.code)
-            router.replace(`${pathname}?${nextSearchParams.toString()}`, { scroll: false })
-            setCode(discount.code)
-            setAppliedCode(discount.code)
-            onApplied?.(discount)
-        } catch (error) {
+        if (normalizedCode !== appliedCode) {
+            automaticallyValidatedCodeRef.current = searchParams.get("promotionCode")?.trim() ?? null
             setAppliedCode(null)
-            setErrorMessage(error instanceof Error ? error.message : "Could not validate the discount.")
-        } finally {
-            setIsApplying(false)
+            replacePromotionCode(null)
+            onApplied?.(null)
         }
+
+        if (!normalizedCode) {
+            applyEmptyDiscount()
+            return
+        }
+
+        void validateDiscount(normalizedCode)
     }
 
     return (
@@ -86,9 +152,7 @@ export function CheckoutDiscount({ buttonLabel, inputPlaceholder, onApplied, ses
                     maxLength={128}
                     onChange={(event) => {
                         setCode(event.currentTarget.value)
-                        setAppliedCode(null)
                         setErrorMessage(null)
-                        onApplied?.(null)
                     }}
                     placeholder={inputPlaceholder}
                     value={code}
@@ -96,7 +160,7 @@ export function CheckoutDiscount({ buttonLabel, inputPlaceholder, onApplied, ses
                 <Button
                     type="submit"
                     variant="normal"
-                    disabled={!code.trim() || isApplying || appliedCode === code.trim()}
+                    disabled={isApplying || code.trim() === (appliedCode ?? "")}
                     className="h-10! shrink-0 px-5! whitespace-nowrap bg-white/80! hover:bg-white! ring-1! ring-white/20! text-sm! text-primary!"
                 >
                     {buttonLabel}

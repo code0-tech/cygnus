@@ -1,6 +1,16 @@
 import assert from "node:assert/strict"
 import test from "node:test"
-import { calculateExclusiveTaxRate, calculatePromotionDiscountAmount, calculateSubscriptionPrice, clampToRange, formatDiscountBadge, getPaymentPeriodDiscount, getPaymentPeriodSuffix, resolveCheckoutPricing } from "@/lib/subscriptionCalculator"
+import {
+    calculateExclusiveTaxRate,
+    calculatePromotionDiscountAmount,
+    calculateSubscriptionPrice,
+    clampToRange,
+    formatDiscountBadge,
+    getPaymentPeriodDiscount,
+    getPaymentPeriodMonths,
+    getPaymentPeriodSuffix,
+    resolveCheckoutPricing,
+} from "@/lib/subscriptionCalculator"
 
 const paymentPeriod = {
     description: "Choose how often to pay.",
@@ -31,6 +41,10 @@ test("resolves payment period discounts and suffixes", () => {
     assert.equal(getPaymentPeriodSuffix("monthly", paymentPeriod), "per month")
     assert.equal(getPaymentPeriodSuffix("quarterly", paymentPeriod), "per quarter")
     assert.equal(getPaymentPeriodSuffix("yearly", paymentPeriod), "per year")
+
+    assert.equal(getPaymentPeriodMonths("monthly"), 1)
+    assert.equal(getPaymentPeriodMonths("quarterly"), 3)
+    assert.equal(getPaymentPeriodMonths("yearly"), 12)
 })
 
 test("formats discount badges by locale", () => {
@@ -69,6 +83,26 @@ test("calculates subscription totals before and after discount", () => {
     )
 })
 
+test("scales monthly custom-plan prices to the selected billing period before applying its discount", () => {
+    assert.deepEqual(
+        calculateSubscriptionPrice({
+            additionalFeaturesPrice: 25,
+            aiTokenPriceFactor: 0.00001,
+            aiTokens: 1_000_000,
+            billingPeriodMonths: 12,
+            discount: 0.2,
+            workflowExecutionPriceFactor: 0.01,
+            workflowExecutions: 1_000,
+        }),
+        {
+            aiTokenPrice: 120,
+            totalBeforeDiscount: 540,
+            totalPrice: 432,
+            workflowExecutionPrice: 120,
+        }
+    )
+})
+
 test("preserves the regular fixed-plan price for period discount summaries", () => {
     const config = {
         paymentPeriod,
@@ -93,4 +127,49 @@ test("preserves the regular fixed-plan price for period discount summaries", () 
 
     assert.equal(result.pricing.totalBeforeDiscount, 30)
     assert.equal(result.pricing.totalPrice, 27)
+})
+
+test("clamps manipulated custom-plan usage parameters before calculating the price", () => {
+    const config = {
+        additionalFeatures: [],
+        aiTokenPriceFactor: 0.001,
+        aiTokens: {
+            b2b: { min: 100, max: 1_000, step: 100 },
+            b2c: { min: 10, max: 100, step: 10 },
+        },
+        defaults: {
+            aiTokens: { b2b: 100, b2c: 10 },
+            customerType: "b2b",
+            paymentPeriod: "monthly",
+            workflowExecutions: { b2b: 20, b2c: 10 },
+        },
+        packages: {
+            custom: {
+                title: "Custom",
+            },
+        },
+        paymentPeriod,
+        workflowExecutionPriceFactor: 0.01,
+        workflowExecutions: {
+            b2b: { min: 20, max: 200, step: 10 },
+            b2c: { min: 10, max: 100, step: 10 },
+        },
+    } as never
+
+    const result = resolveCheckoutPricing({
+        additionalFeatureIds: [],
+        aiTokensParam: "1",
+        customerTypeParam: "b2b",
+        fallbackPeriodSuffix: "/mo",
+        paymentPeriodParam: "monthly",
+        planParam: "custom",
+        subscriptionConfig: config,
+        workflowExecutionsParam: "999999",
+    })
+
+    assert.equal(result.aiTokens, 100)
+    assert.equal(result.workflowExecutions, 200)
+    assert.equal(result.pricing.aiTokenPrice, 0.1)
+    assert.equal(result.pricing.workflowExecutionPrice, 2)
+    assert.equal(result.pricing.totalPrice, 2.1)
 })

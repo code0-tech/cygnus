@@ -2,8 +2,9 @@
 
 import { useCraterSession } from "@/components/checkout/CraterSessionProvider"
 import { Card } from "@/components/ui/Card"
-import type { CheckoutData } from "@/lib/cms"
+import type { CheckoutData, SubscriptionConfigData } from "@/lib/cms"
 import { normalizeCountryCode, resolveCraterCustomerType } from "@/lib/craterCustomer"
+import { normalizeCheckoutSelection } from "@/lib/checkoutValidation"
 import { Button, EmailInput, emailValidation, TextInput, useForm } from "@code0-tech/pictor"
 import { useSearchParams } from "next/navigation"
 import { useMemo, useState } from "react"
@@ -44,7 +45,15 @@ async function readCheckoutError(response: Response, fallback: string) {
     }
 }
 
-export function CheckoutForm({ content, onCustomerReady }: { content?: CheckoutFormContent | null; onCustomerReady?: () => Promise<void> }) {
+export function CheckoutForm({
+    content,
+    onCustomerReady,
+    subscriptionConfig,
+}: {
+    content?: CheckoutFormContent | null
+    onCustomerReady?: () => Promise<void>
+    subscriptionConfig?: SubscriptionConfigData | null
+}) {
     const searchParams = useSearchParams()
     const [isLoading, setIsLoading] = useState(false)
     const [isCustomerReady, setIsCustomerReady] = useState(false)
@@ -146,13 +155,14 @@ export function CheckoutForm({ content, onCustomerReady }: { content?: CheckoutF
                     }
 
                     const checkoutPayload = Object.fromEntries(searchParams.entries())
+                    const normalizedCheckoutPayload = subscriptionConfig ? normalizeCheckoutSelection(checkoutPayload, subscriptionConfig) : checkoutPayload
                     const checkoutResponse = await fetch("/api/crater/checkout/session", {
                         method: "POST",
                         headers: {
                             Authorization: authorization,
                             "Content-Type": "application/json",
                         },
-                        body: JSON.stringify(checkoutPayload),
+                        body: JSON.stringify(normalizedCheckoutPayload),
                     })
 
                     if (!checkoutResponse.ok) {

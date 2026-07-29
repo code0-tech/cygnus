@@ -20,7 +20,7 @@ export function CheckoutPageContent({ form, subscriptionConfig, summary }: Check
     return (
         <div className="flex w-full flex-col gap-16 lg:flex-row">
             <CheckoutSummary content={summary} sessionToken={sessionToken} subscriptionConfig={subscriptionConfig} />
-            <CheckoutForm content={form} />
+            <CheckoutForm content={form} subscriptionConfig={subscriptionConfig} />
         </div>
     )
 }
