@@ -10,11 +10,11 @@ export function CheckoutLayoutClient({ children }: { children: ReactNode }) {
     return (
         <>
             <div className="fixed top-0 right-0 left-0 z-50 border-b border-white/10 bg-primary/50 backdrop-blur-sm">
-                <Link href="/">
-                    <div className="mx-auto px-8 py-4">
+                <div className="mx-auto px-6 py-3 mt-1">
+                    <Link href="/" className="inline-flex">
                         <Image src="/code0_text_logo_white.png" alt="code0" width={100} height={100} className="h-8 w-32" loading="eager" />
-                    </div>
-                </Link>
+                    </Link>
+                </div>
             </div>
             <CraterSessionProvider>
                 <LandingContainer className="py-[12vh]">{children}</LandingContainer>
