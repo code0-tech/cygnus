@@ -76,6 +76,8 @@ import * as migration_20260728_140000_compare_application_block from './20260728
 import * as migration_20260729_112540_pricing_popular_pill from './20260729_112540_pricing_popular_pill';
 import * as migration_20260729_113121_pricing_popular_pill_color from './20260729_113121_pricing_popular_pill_color';
 import * as migration_20260729_114646_pricing_whats_included_text from './20260729_114646_pricing_whats_included_text';
+import * as migration_20260729_115704_pricing_card_title_color from './20260729_115704_pricing_card_title_color';
+import * as migration_20260729_120627_pricing_highlighted_card_color from './20260729_120627_pricing_highlighted_card_color';
 
 export const migrations = [
   {
@@ -467,5 +469,15 @@ export const migrations = [
     up: migration_20260729_114646_pricing_whats_included_text.up,
     down: migration_20260729_114646_pricing_whats_included_text.down,
     name: '20260729_114646_pricing_whats_included_text',
+  },
+  {
+    up: migration_20260729_115704_pricing_card_title_color.up,
+    down: migration_20260729_115704_pricing_card_title_color.down,
+    name: '20260729_115704_pricing_card_title_color',
+  },
+  {
+    up: migration_20260729_120627_pricing_highlighted_card_color.up,
+    down: migration_20260729_120627_pricing_highlighted_card_color.down,
+    name: '20260729_120627_pricing_highlighted_card_color',
   },
 ];

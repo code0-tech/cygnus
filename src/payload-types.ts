@@ -1140,6 +1140,14 @@ export interface Page {
               color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
             };
             whatsIncludedText?: string | null;
+            /**
+             * Optional color applied to all card titles. Leave empty to use white.
+             */
+            titleColor?: string | null;
+            /**
+             * Optional accent color for the highlighted card background. Leave empty to use the white gradient.
+             */
+            highlightedCardColor?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
             pro?: {
               features?:
                 | {
@@ -2421,6 +2429,8 @@ export interface PagesSelect<T extends boolean = true> {
                     color?: T;
                   };
               whatsIncludedText?: T;
+              titleColor?: T;
+              highlightedCardColor?: T;
               pro?:
                 | T
                 | {

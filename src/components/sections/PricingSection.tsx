@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils"
 import NumberFlow from "@number-flow/react"
 import { IconCheck, IconX } from "@tabler/icons-react"
 import { BorderBeam } from "border-beam"
+import { AnimatePresence, m as motion } from "motion/react"
 import { useState } from "react"
 
 type PricingPeriod = "monthly" | "quarterly" | "yearly"
@@ -25,6 +26,16 @@ const popularPillColorClasses = {
     blue: "border-blue/10! bg-blue/10! text-blue!",
     lime: "border-lime/10! bg-lime/10! text-lime!",
     magenta: "border-magenta/10! bg-magenta/10! text-magenta!",
+} as const
+
+const highlightedCardColors = {
+    brand: "var(--bg-brand)",
+    pink: "var(--bg-pink)",
+    yellow: "var(--bg-yellow)",
+    aqua: "var(--bg-aqua)",
+    blue: "var(--bg-blue)",
+    lime: "var(--bg-lime)",
+    magenta: "var(--bg-magenta)",
 } as const
 
 interface PricingSectionProps {
@@ -105,6 +116,7 @@ export function PricingSection({ content, locale, packages, paymentPeriod }: Pri
                     const buttonUrl = pricingPackage.content?.button?.url?.trim()
                     const highlighted = pricingPackage.key === "max"
                     const popularPillColor = content.popularPill?.color ?? "brand"
+                    const highlightedCardColor = content.highlightedCardColor ? highlightedCardColors[content.highlightedCardColor] : null
                     const periodMonths = selectedPeriod === "quarterly" ? 3 : selectedPeriod === "yearly" ? 12 : 1
                     const configuredDiscount = selectedPeriod === "quarterly" ? paymentPeriod.quarterlyDiscount : selectedPeriod === "yearly" ? paymentPeriod.yearlyDiscount : 0
                     const priceWithoutPeriodDiscount = pricingPackage.price !== null && configuredDiscount > 0 && configuredDiscount < 1 ? pricingPackage.price / (1 - configuredDiscount) : null
@@ -120,6 +132,13 @@ export function PricingSection({ content, locale, packages, paymentPeriod }: Pri
                             y={14}
                             duration={0.42}
                             className="relative flex h-full min-w-0 flex-col overflow-hidden rounded-3xl border border-white/5 bg-[linear-gradient(160deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02)_28%,rgba(8,10,20,0.6)_100%)] p-6 md:p-8"
+                            style={
+                                highlighted && highlightedCardColor
+                                    ? {
+                                          background: `linear-gradient(160deg, color-mix(in oklch, ${highlightedCardColor} 8%, transparent), color-mix(in oklch, ${highlightedCardColor} 2%, transparent) 28%, rgba(8, 10, 20, 0.6) 100%)`,
+                                      }
+                                    : undefined
+                            }
                         >
                             {highlighted && <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,oklch(1_0_0/0.1),transparent_36%)]" />}
                             <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-white/30 to-transparent" />
@@ -133,21 +152,35 @@ export function PricingSection({ content, locale, packages, paymentPeriod }: Pri
                                     </StableBadge>
                                 </div>
                             )}
-                            <h3 className={cn("relative z-10 text-2xl font-semibold text-white", pricingPackage.price !== null && "pr-20")}>{pricingPackage.title}</h3>
+                            <h3
+                                className={cn("relative z-10 text-2xl font-semibold text-white", pricingPackage.price !== null && "pr-20")}
+                                style={highlighted && content.titleColor ? { color: content.titleColor } : undefined}
+                            >
+                                {pricingPackage.title}
+                            </h3>
                             {pricingPackage.description && <p className="relative z-10 mt-1 leading-6 text-secondary">{pricingPackage.description}</p>}
 
                             {pricingPackage.price !== null && (
                                 <div className="relative z-10 mt-6 flex flex-col items-start gap-0">
-                                    {hasDiscount && (
-                                        <span className="relative -mb-1 inline-flex text-sm leading-none font-medium text-tertiary after:absolute after:top-1/2 after:right-0 after:left-0 after:z-10 after:h-px after:bg-current after:content-['']">
-                                            {regularPrice.toLocaleString(locale === "de" ? "de-DE" : "en-US", {
-                                                style: "currency",
-                                                currency: "EUR",
-                                                minimumFractionDigits: 0,
-                                                maximumFractionDigits: 2,
-                                            })}
-                                        </span>
-                                    )}
+                                    <AnimatePresence initial={false}>
+                                        {hasDiscount && (
+                                            <motion.span
+                                                key={selectedPeriod}
+                                                initial={{ opacity: 0, y: 4 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, y: 4 }}
+                                                transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                                                className="relative -mb-1 inline-flex text-sm leading-none font-medium text-tertiary after:absolute after:top-1/2 after:right-0 after:left-0 after:z-10 after:h-px after:bg-current after:content-['']"
+                                            >
+                                                {regularPrice.toLocaleString(locale === "de" ? "de-DE" : "en-US", {
+                                                    style: "currency",
+                                                    currency: "EUR",
+                                                    minimumFractionDigits: 0,
+                                                    maximumFractionDigits: 2,
+                                                })}
+                                            </motion.span>
+                                        )}
+                                    </AnimatePresence>
                                     <div className="flex flex-wrap items-center gap-2">
                                         <NumberFlow
                                             value={pricingPackage.price}
