@@ -99,7 +99,7 @@ export function WorkflowCalculatorDialog({ locale, content, businessTypeIcons, v
 
             <DialogPortal>
                 <DialogOverlay className="backdrop-blur-sm" />
-                <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto border border-white/5 bg-primary! p-4! sm:p-6!">
+                <DialogContent className="w-[calc(100vw-2rem)]! max-w-2xl! max-h-[calc(100dvh-2rem)] overflow-y-auto border border-white/5 bg-primary! p-4! sm:p-6!">
                     <DialogHeader className="pr-10 text-left!">
                         <DialogTitle className="text-white! font-normal!">{content.title}</DialogTitle>
                         <DialogDescription className="text-secondary! text-sm!">{content.description}</DialogDescription>
@@ -147,7 +147,7 @@ export function WorkflowCalculatorDialog({ locale, content, businessTypeIcons, v
                                                             <span className="block truncate">{businessType.name}</span>
                                                             <span className="block truncate text-xs text-tertiary">{businessType.conversion_unit}</span>
                                                         </span>
-                                                        {index === selectedBusinessTypeIndex && <IconCheck size={15} className="shrink-0 text-brand" />}
+                                                        {index === selectedBusinessTypeIndex && <IconCheck size={15} className="shrink-0 text-brand mr-1.5" />}
                                                     </CommandItem>
                                                 ))}
                                             </CommandGroup>
