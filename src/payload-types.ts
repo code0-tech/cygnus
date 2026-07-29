@@ -2923,6 +2923,7 @@ export interface SubscriptionConfig {
   };
   deployment: {
     label?: string | null;
+    description?: string | null;
     selfHosted: {
       title?: string | null;
       description?: string | null;
@@ -2938,6 +2939,7 @@ export interface SubscriptionConfig {
   };
   customerType: {
     label?: string | null;
+    description?: string | null;
     b2b: {
       title?: string | null;
       description?: string | null;
@@ -3366,6 +3368,7 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
     | T
     | {
         label?: T;
+        description?: T;
         selfHosted?:
           | T
           | {
@@ -3387,6 +3390,7 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
     | T
     | {
         label?: T;
+        description?: T;
         b2b?:
           | T
           | {

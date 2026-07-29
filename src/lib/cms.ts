@@ -109,6 +109,7 @@ export interface SubscriptionConfigData {
     }
     deployment: {
         label: string
+        description: string
         selfHosted: {
             title: string
             description: string
@@ -124,6 +125,7 @@ export interface SubscriptionConfigData {
     }
     customerType: {
         label: string
+        description: string
         b2b: {
             title: string
             description: string
