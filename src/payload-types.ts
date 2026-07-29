@@ -3138,6 +3138,8 @@ export interface Checkout {
       baseLabel: string;
       workflowExecutionsLabel: string;
       additionalFeaturesLabel: string;
+      quarterlyDiscountLabel: string;
+      yearlyDiscountLabel: string;
       discountLabel: string;
       discountInputPlaceholder: string;
       discountButtonLabel: string;
@@ -3658,6 +3660,8 @@ export interface CheckoutSelect<T extends boolean = true> {
               baseLabel?: T;
               workflowExecutionsLabel?: T;
               additionalFeaturesLabel?: T;
+              quarterlyDiscountLabel?: T;
+              yearlyDiscountLabel?: T;
               discountLabel?: T;
               discountInputPlaceholder?: T;
               discountButtonLabel?: T;

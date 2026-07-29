@@ -119,6 +119,8 @@ export function resolveCheckoutPricing({
 
     if (plan !== "custom") {
         const planPrice = subscriptionConfig?.packages[plan].prices[paymentPeriod] ?? 0
+        const periodMonths = paymentPeriod === "quarterly" ? 3 : paymentPeriod === "yearly" ? 12 : 1
+        const regularPrice = (subscriptionConfig?.packages[plan].prices.monthly ?? planPrice) * periodMonths
 
         return {
             additionalFeaturesPrice: 0,
@@ -131,7 +133,7 @@ export function resolveCheckoutPricing({
             planTitle,
             pricing: {
                 aiTokenPrice: 0,
-                totalBeforeDiscount: planPrice,
+                totalBeforeDiscount: Math.max(planPrice, regularPrice),
                 totalPrice: planPrice,
                 workflowExecutionPrice: 0,
             },
