@@ -65,9 +65,10 @@ function FormField({
     )
 }
 
-export function CheckoutForm({ content }: { content?: CheckoutFormContent | null }) {
+export function CheckoutForm({ content, onCustomerReady }: { content?: CheckoutFormContent | null; onCustomerReady?: () => Promise<void> }) {
     const searchParams = useSearchParams()
     const [isLoading, setIsLoading] = useState(false)
+    const [isCustomerReady, setIsCustomerReady] = useState(false)
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
     const { error: sessionError, isLoading: isSessionLoading, token: sessionToken } = useCraterSession()
     const customerType = resolveCraterCustomerType(searchParams.get("customerType"))
@@ -86,36 +87,45 @@ export function CheckoutForm({ content }: { content?: CheckoutFormContent | null
             }
 
             const authorization = `Session ${sessionToken}`
-            const customerResponse = await fetch("/api/crater/customer", {
-                method: "POST",
-                headers: {
-                    Authorization: authorization,
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    customerType,
-                    name: formData.get("name"),
-                    email: formData.get("email"),
-                    phone: formData.get("phone"),
-                    address: {
-                        line1: formData.get("line1"),
-                        line2: formData.get("line2"),
-                        city: formData.get("city"),
-                        state: formData.get("state"),
-                        postalCode: formData.get("postalCode"),
-                        country: normalizeCountryCode(formData.get("country")),
+            if (!isCustomerReady) {
+                const customerResponse = await fetch("/api/crater/customer", {
+                    method: "POST",
+                    headers: {
+                        Authorization: authorization,
+                        "Content-Type": "application/json",
                     },
-                    ...(customerType === "business"
-                        ? {
-                              taxIdType: formData.get("taxIdType"),
-                              taxIdValue: formData.get("taxIdValue"),
-                          }
-                        : {}),
-                }),
-            })
+                    body: JSON.stringify({
+                        customerType,
+                        name: formData.get("name"),
+                        email: formData.get("email"),
+                        phone: formData.get("phone"),
+                        address: {
+                            line1: formData.get("line1"),
+                            line2: formData.get("line2"),
+                            city: formData.get("city"),
+                            state: formData.get("state"),
+                            postalCode: formData.get("postalCode"),
+                            country: normalizeCountryCode(formData.get("country")),
+                        },
+                        ...(customerType === "business"
+                            ? {
+                                  taxIdType: formData.get("taxIdType"),
+                                  taxIdValue: formData.get("taxIdValue"),
+                              }
+                            : {}),
+                    }),
+                })
 
-            if (!customerResponse.ok) {
-                throw new Error(await readCheckoutError(customerResponse, "Failed to create the billing customer."))
+                if (!customerResponse.ok) {
+                    throw new Error(await readCheckoutError(customerResponse, "Failed to create the billing customer."))
+                }
+
+                if (onCustomerReady) {
+                    await onCustomerReady()
+                    setIsCustomerReady(true)
+                    setIsLoading(false)
+                    return
+                }
             }
 
             const checkoutPayload = Object.fromEntries(searchParams.entries())
@@ -152,7 +162,7 @@ export function CheckoutForm({ content }: { content?: CheckoutFormContent | null
             <form onSubmit={handleSubmit} className="flex-1 space-y-6">
                 <h2 className="text-2xl text-white">{content.billingHeading}</h2>
 
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <fieldset disabled={isCustomerReady} className="grid grid-cols-1 gap-4 disabled:opacity-60 sm:grid-cols-2">
                     <FormField className="sm:col-span-2" name="name" label={content.nameLabel} placeholder={content.namePlaceholder} autoComplete="name" required />
                     <FormField name="email" label={content.emailLabel} placeholder={content.emailPlaceholder} autoComplete="email" type="email" required />
                     <FormField name="phone" label={content.phoneLabel} placeholder={content.phonePlaceholder} autoComplete="tel" type="tel" />
@@ -169,7 +179,7 @@ export function CheckoutForm({ content }: { content?: CheckoutFormContent | null
                             <FormField name="taxIdValue" label={content.taxIdValueLabel} placeholder={content.taxIdValuePlaceholder} required />
                         </>
                     )}
-                </div>
+                </fieldset>
 
                 {(errorMessage || sessionError) && <div className="text-sm text-error">{errorMessage ?? sessionError}</div>}
 
@@ -179,7 +189,7 @@ export function CheckoutForm({ content }: { content?: CheckoutFormContent | null
                     disabled={isLoading || isSessionLoading || !sessionToken}
                     className="h-10! w-full! whitespace-nowrap bg-white/80! px-8! text-sm! text-primary! ring-1! ring-white/20! transition-all duration-300 hover:bg-white!"
                 >
-                    {isLoading || isSessionLoading ? content.processingLabel : content.continueLabel}
+                    {isLoading || isSessionLoading ? content.processingLabel : isCustomerReady ? content.payNowLabel : content.continueLabel}
                 </Button>
             </form>
         </Card>

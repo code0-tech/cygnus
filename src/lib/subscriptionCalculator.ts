@@ -26,6 +26,26 @@ export function calculateExclusiveTaxRate(amountTotal: number, taxAmountExclusiv
     return amountBeforeTax > 0 ? taxAmountExclusive / amountBeforeTax : 0
 }
 
+export function calculatePromotionDiscountAmount(
+    total: number,
+    discount: {
+        amountOff: number | null
+        percentOff: number | null
+    } | null
+) {
+    if (!discount || total <= 0) return 0
+
+    if (discount.amountOff !== null && Number.isFinite(discount.amountOff)) {
+        return Math.min(total, Math.max(0, discount.amountOff / 100))
+    }
+
+    if (discount.percentOff !== null && Number.isFinite(discount.percentOff)) {
+        return total * (Math.min(100, Math.max(0, discount.percentOff)) / 100)
+    }
+
+    return 0
+}
+
 export function getPaymentPeriodDiscount(period: PaymentPeriod, paymentPeriod: SubscriptionConfigData["paymentPeriod"]) {
     if (period === "quarterly") return paymentPeriod.quarterlyDiscount
     if (period === "yearly") return paymentPeriod.yearlyDiscount
