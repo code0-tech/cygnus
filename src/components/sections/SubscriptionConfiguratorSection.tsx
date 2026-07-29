@@ -274,7 +274,7 @@ export function SubscriptionConfiguratorSection({ locale, content, icons }: { lo
                     </div>
                 </section>
 
-                <Card size="lg" className="lg:col-span-3 min-w-0 bg-primary">
+                <Card size="lg" variant="light" className="lg:col-span-3 min-w-0">
                     <div className="relative z-10 flex flex-col gap-6">
                         <h2 className="text-2xl font-semibold text-white lg:text-3xl">{content.optionsPanelHeading}</h2>
 
