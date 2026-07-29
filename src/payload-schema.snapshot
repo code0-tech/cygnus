@@ -2505,6 +2505,8 @@ export const checkout_locales = pgTable('checkout_locales', {
   summary_pricing_workflowExecutionsLabel: varchar('summary_pricing_workflow_executions_label').notNull().default("Workflow Executions"),
   summary_pricing_additionalFeaturesLabel: varchar('summary_pricing_additional_features_label').notNull().default("Additional Features"),
   summary_pricing_discountLabel: varchar('summary_pricing_discount_label').notNull().default("Discount"),
+  summary_pricing_discountInputPlaceholder: varchar('summary_pricing_discount_input_placeholder').notNull().default("Discount code"),
+  summary_pricing_discountButtonLabel: varchar('summary_pricing_discount_button_label').notNull().default("Apply"),
   summary_pricing_taxLabel: varchar('summary_pricing_tax_label').notNull().default("Tax"),
   summary_pricing_totalLabel: varchar('summary_pricing_total_label').notNull().default("Total"),
   summary_pricing_perMonthSuffix: varchar('summary_pricing_per_month_suffix').notNull().default("/mo"),

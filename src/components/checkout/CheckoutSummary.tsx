@@ -1,5 +1,6 @@
 "use client"
 
+import { CheckoutDiscount } from "@/components/checkout/CheckoutDiscount"
 import { getIcon } from "@/components/ui/IconRenderer"
 import type { CheckoutData, CheckoutSummaryIconColor, SubscriptionConfigData } from "@/lib/cms"
 import { formatCompactNumber, formatEuroCurrency } from "@/lib/formatters"
@@ -11,6 +12,7 @@ type CheckoutSummaryContent = CheckoutData["summary"]
 
 interface CheckoutSummaryProps {
     content?: CheckoutSummaryContent | null
+    sessionToken?: string | null
     subscriptionConfig?: SubscriptionConfigData | null
     taxQuote?: {
         amountTotal: number
@@ -51,7 +53,7 @@ function SummaryRow({ icon, label, value, tone = "neutral" }: SummaryRowProps) {
     )
 }
 
-export function CheckoutSummary({ content, subscriptionConfig, taxQuote }: CheckoutSummaryProps) {
+export function CheckoutSummary({ content, sessionToken, subscriptionConfig, taxQuote }: CheckoutSummaryProps) {
     const searchParams = useSearchParams()
     const params = useParams<{ locale?: string }>()
     if (!content) return null
@@ -147,6 +149,12 @@ export function CheckoutSummary({ content, subscriptionConfig, taxQuote }: Check
                             <p className="mt-1 text-sm text-white">{content.pricing.description}</p>
                         </div>
                     </div>
+
+                    <CheckoutDiscount
+                        buttonLabel={content.pricing.discountButtonLabel}
+                        inputPlaceholder={content.pricing.discountInputPlaceholder}
+                        sessionToken={sessionToken}
+                    />
 
                     <div className="space-y-2 pt-4">
                         <div className="flex items-center justify-between gap-4 text-sm">
