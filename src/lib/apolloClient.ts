@@ -1,23 +1,33 @@
 import { ApolloClient, HttpLink, InMemoryCache } from "@apollo/client"
 
-let apolloClient: ApolloClient | undefined
-
-export function getApolloClient() {
-    if (apolloClient) return apolloClient
-
+export function createApolloClient(sessionToken?: string) {
     const uri = process.env.CRATER_GRAPHQL_URL
 
     if (!uri) {
         throw new Error("CRATER_GRAPHQL_URL is not configured.")
     }
 
-    apolloClient = new ApolloClient({
+    return new ApolloClient({
         cache: new InMemoryCache(),
+        defaultOptions: {
+            mutate: {
+                fetchPolicy: "no-cache",
+            },
+            query: {
+                fetchPolicy: "no-cache",
+            },
+            watchQuery: {
+                fetchPolicy: "no-cache",
+            },
+        },
         link: new HttpLink({
             uri,
             fetch,
+            headers: sessionToken
+                ? {
+                      authorization: `Session ${sessionToken}`,
+                  }
+                : undefined,
         }),
     })
-
-    return apolloClient
 }

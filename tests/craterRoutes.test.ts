@@ -1,0 +1,96 @@
+import assert from "node:assert/strict"
+import test from "node:test"
+import { POST as createOrGetCustomer } from "../src/app/api/crater/customer/route"
+import { POST as validateDiscount } from "../src/app/api/crater/checkout/discount/route"
+import { POST as calculateTax } from "../src/app/api/crater/checkout/tax/route"
+import { POST as createSession } from "../src/app/api/crater/session/route"
+
+const sessionHeaders = {
+    authorization: "Session c_ust_example",
+    "content-type": "application/json",
+}
+
+test("Crater login requires a Sagittarius token", async () => {
+    const response = await createSession(
+        new Request("https://example.com/api/crater/session", {
+            method: "POST",
+            headers: {
+                "content-type": "application/json",
+            },
+            body: JSON.stringify({}),
+        })
+    )
+
+    assert.equal(response.status, 400)
+    assert.deepEqual(await response.json(), {
+        error: "sagittariusToken is required.",
+    })
+    assert.equal(response.headers.get("cache-control"), "no-store")
+})
+
+test("customer creation requires a Crater session", async () => {
+    const response = await createOrGetCustomer(
+        new Request("https://example.com/api/crater/customer", {
+            method: "POST",
+            headers: {
+                "content-type": "application/json",
+            },
+            body: JSON.stringify({
+                customerType: "personal",
+                email: "person@example.com",
+                name: "Example Person",
+            }),
+        })
+    )
+
+    assert.equal(response.status, 403)
+})
+
+test("business customer creation requires tax ID fields", async () => {
+    const response = await createOrGetCustomer(
+        new Request("https://example.com/api/crater/customer", {
+            method: "POST",
+            headers: sessionHeaders,
+            body: JSON.stringify({
+                customerType: "business",
+                email: "company@example.com",
+                name: "Example Company",
+            }),
+        })
+    )
+
+    assert.equal(response.status, 400)
+    assert.deepEqual(await response.json(), {
+        error: "taxIdType and taxIdValue are required for business customers.",
+    })
+})
+
+test("tax calculation requires a plan", async () => {
+    const response = await calculateTax(
+        new Request("https://example.com/api/crater/checkout/tax", {
+            method: "POST",
+            headers: sessionHeaders,
+            body: JSON.stringify({}),
+        })
+    )
+
+    assert.equal(response.status, 400)
+    assert.deepEqual(await response.json(), {
+        error: "plan is required.",
+    })
+})
+
+test("discount validation requires a code", async () => {
+    const response = await validateDiscount(
+        new Request("https://example.com/api/crater/checkout/discount", {
+            method: "POST",
+            headers: sessionHeaders,
+            body: JSON.stringify({}),
+        })
+    )
+
+    assert.equal(response.status, 400)
+    assert.deepEqual(await response.json(), {
+        error: "code is required.",
+    })
+})

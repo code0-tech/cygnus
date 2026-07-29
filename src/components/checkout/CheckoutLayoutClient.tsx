@@ -236,7 +236,7 @@ export function CheckoutLayoutClient({ children, publishableKey }: { children: R
         const fetchClientSecret = async () => {
             try {
                 const payload = Object.fromEntries(new URLSearchParams(window.location.search).entries())
-                const response = await fetch("/api/create-checkout-session", {
+                const response = await fetch("/api/crater/checkout/session", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
