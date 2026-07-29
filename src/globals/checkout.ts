@@ -111,6 +111,8 @@ export const Checkout: GlobalConfig = {
                         { name: "workflowExecutionsLabel", type: "text", required: true, localized: true, defaultValue: "Workflow Executions" },
                         { name: "additionalFeaturesLabel", type: "text", required: true, localized: true, defaultValue: "Additional Features" },
                         { name: "discountLabel", type: "text", required: true, localized: true, defaultValue: "Discount" },
+                        { name: "discountInputPlaceholder", type: "text", required: true, localized: true, defaultValue: "Discount code" },
+                        { name: "discountButtonLabel", type: "text", required: true, localized: true, defaultValue: "Apply" },
                         { name: "taxLabel", type: "text", required: true, localized: true, defaultValue: "Tax" },
                         { name: "totalLabel", type: "text", required: true, localized: true, defaultValue: "Total" },
                         { name: "perMonthSuffix", type: "text", required: true, localized: true, defaultValue: "/mo" },

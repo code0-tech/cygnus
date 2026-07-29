@@ -3139,6 +3139,8 @@ export interface Checkout {
       workflowExecutionsLabel: string;
       additionalFeaturesLabel: string;
       discountLabel: string;
+      discountInputPlaceholder: string;
+      discountButtonLabel: string;
       taxLabel: string;
       totalLabel: string;
       perMonthSuffix: string;
@@ -3637,6 +3639,8 @@ export interface CheckoutSelect<T extends boolean = true> {
               workflowExecutionsLabel?: T;
               additionalFeaturesLabel?: T;
               discountLabel?: T;
+              discountInputPlaceholder?: T;
+              discountButtonLabel?: T;
               taxLabel?: T;
               totalLabel?: T;
               perMonthSuffix?: T;
