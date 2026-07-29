@@ -73,6 +73,9 @@ import * as migration_20260727_210000_small_pricing_block from './20260727_21000
 import * as migration_20260727_220000_repair_actions_tags from './20260727_220000_repair_actions_tags';
 import * as migration_20260728_131500_bento_content_remove_features from './20260728_131500_bento_content_remove_features';
 import * as migration_20260728_140000_compare_application_block from './20260728_140000_compare_application_block';
+import * as migration_20260729_112540_pricing_popular_pill from './20260729_112540_pricing_popular_pill';
+import * as migration_20260729_113121_pricing_popular_pill_color from './20260729_113121_pricing_popular_pill_color';
+import * as migration_20260729_114646_pricing_whats_included_text from './20260729_114646_pricing_whats_included_text';
 
 export const migrations = [
   {
@@ -443,11 +446,26 @@ export const migrations = [
   {
     up: migration_20260728_131500_bento_content_remove_features.up,
     down: migration_20260728_131500_bento_content_remove_features.down,
-    name: '20260728_131500_bento_content_remove_features'
+    name: '20260728_131500_bento_content_remove_features',
   },
   {
     up: migration_20260728_140000_compare_application_block.up,
     down: migration_20260728_140000_compare_application_block.down,
     name: '20260728_140000_compare_application_block',
+  },
+  {
+    up: migration_20260729_112540_pricing_popular_pill.up,
+    down: migration_20260729_112540_pricing_popular_pill.down,
+    name: '20260729_112540_pricing_popular_pill',
+  },
+  {
+    up: migration_20260729_113121_pricing_popular_pill_color.up,
+    down: migration_20260729_113121_pricing_popular_pill_color.down,
+    name: '20260729_113121_pricing_popular_pill_color',
+  },
+  {
+    up: migration_20260729_114646_pricing_whats_included_text.up,
+    down: migration_20260729_114646_pricing_whats_included_text.down,
+    name: '20260729_114646_pricing_whats_included_text',
   },
 ];

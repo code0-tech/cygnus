@@ -1134,6 +1134,12 @@ export interface Page {
               label?: string | null;
               url?: string | null;
             };
+            popularPill?: {
+              icon?: string | null;
+              text?: string | null;
+              color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
+            };
+            whatsIncludedText?: string | null;
             pro?: {
               features?:
                 | {
@@ -2407,6 +2413,14 @@ export interface PagesSelect<T extends boolean = true> {
                     label?: T;
                     url?: T;
                   };
+              popularPill?:
+                | T
+                | {
+                    icon?: T;
+                    text?: T;
+                    color?: T;
+                  };
+              whatsIncludedText?: T;
               pro?:
                 | T
                 | {

@@ -2,6 +2,7 @@
 
 import { StaggerContainer, StaggerItem } from "@/components/animations/Stagger"
 import { HapticButtonLink } from "@/components/ui/HapticButtonLink"
+import { getIcon } from "@/components/ui/IconRenderer"
 import { Section } from "@/components/ui/Section"
 import { StableBadge } from "@/components/ui/StableBadge"
 import { Switch } from "@/components/ui/Switch"
@@ -11,11 +12,20 @@ import { cn } from "@/lib/utils"
 import NumberFlow from "@number-flow/react"
 import { IconCheck, IconX } from "@tabler/icons-react"
 import { BorderBeam } from "border-beam"
-import { AnimatePresence, m as motion } from "motion/react"
 import { useState } from "react"
 
 type PricingPeriod = "monthly" | "quarterly" | "yearly"
 type PackageContent = NonNullable<PricingLayoutBlock["pro"]>
+
+const popularPillColorClasses = {
+    brand: "border-brand/10! bg-brand/10! text-brand!",
+    pink: "border-pink/10! bg-pink/10! text-pink!",
+    yellow: "border-yellow/10! bg-yellow/10! text-yellow!",
+    aqua: "border-aqua/10! bg-aqua/10! text-aqua!",
+    blue: "border-blue/10! bg-blue/10! text-blue!",
+    lime: "border-lime/10! bg-lime/10! text-lime!",
+    magenta: "border-magenta/10! bg-magenta/10! text-magenta!",
+} as const
 
 interface PricingSectionProps {
     content?: PricingLayoutBlock | null
@@ -36,9 +46,9 @@ export function PricingSection({ content, locale, packages, paymentPeriod }: Pri
         { value: "yearly", label: paymentPeriod.yearlyText, badge: yearlyDiscount > 0 ? `-${yearlyDiscount}%` : null },
     ] as const
     const periodSuffix = {
-        monthly: "/mo",
-        quarterly: "/qtr",
-        yearly: "/yr",
+        monthly: paymentPeriod.monthlyPeriodSuffix,
+        quarterly: paymentPeriod.quarterlyPeriodSuffix,
+        yearly: paymentPeriod.yearlyPeriodSuffix,
     }[selectedPeriod]
     const pricingPackages = [
         {
@@ -94,13 +104,15 @@ export function PricingSection({ content, locale, packages, paymentPeriod }: Pri
                     const buttonLabel = pricingPackage.content?.button?.label?.trim()
                     const buttonUrl = pricingPackage.content?.button?.url?.trim()
                     const highlighted = pricingPackage.key === "max"
+                    const popularPillColor = content.popularPill?.color ?? "brand"
                     const periodMonths = selectedPeriod === "quarterly" ? 3 : selectedPeriod === "yearly" ? 12 : 1
-                    const calculatedDiscount =
-                        selectedPeriod !== "monthly" && pricingPackage.price !== null && pricingPackage.price > 0 && pricingPackage.monthlyPrice !== null && pricingPackage.monthlyPrice > 0
-                            ? Math.max(0, Math.round((1 - pricingPackage.price / (pricingPackage.monthlyPrice * periodMonths)) * 100))
-                            : 0
                     const configuredDiscount = selectedPeriod === "quarterly" ? paymentPeriod.quarterlyDiscount : selectedPeriod === "yearly" ? paymentPeriod.yearlyDiscount : 0
-                    const discount = pricingPackage.price === null ? 0 : calculatedDiscount || Math.round((configuredDiscount ?? 0) * 100)
+                    const priceWithoutPeriodDiscount = pricingPackage.price !== null && configuredDiscount > 0 && configuredDiscount < 1 ? pricingPackage.price / (1 - configuredDiscount) : null
+                    const priceBasedOnMonthlyRate =
+                        selectedPeriod !== "monthly" && pricingPackage.monthlyPrice !== null && pricingPackage.monthlyPrice > 0 ? pricingPackage.monthlyPrice * periodMonths : null
+                    const regularPrice =
+                        priceBasedOnMonthlyRate !== null && pricingPackage.price !== null && priceBasedOnMonthlyRate > pricingPackage.price ? priceBasedOnMonthlyRate : priceWithoutPeriodDiscount
+                    const hasDiscount = regularPrice !== null && pricingPackage.price !== null && pricingPackage.price < regularPrice
 
                     const card = (
                         <StaggerItem
@@ -111,27 +123,31 @@ export function PricingSection({ content, locale, packages, paymentPeriod }: Pri
                         >
                             {highlighted && <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,oklch(1_0_0/0.1),transparent_36%)]" />}
                             <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-white/30 to-transparent" />
-                            <AnimatePresence initial={false}>
-                                {discount > 0 && (
-                                    <motion.div
-                                        initial={{ opacity: 0, scale: 0.88, y: -4 }}
-                                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                                        exit={{ opacity: 0, scale: 0.88, y: -4 }}
-                                        transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-                                        className="absolute right-4 top-4 z-20 md:right-6 md:top-6"
-                                    >
-                                        <StableBadge border className="border! border-brand/10! bg-brand/10! px-3 py-1 text-sm font-medium text-brand!">
-                                            <span className="inline-flex items-baseline gap-0">
-                                                -<NumberFlow value={discount} />%
-                                            </span>
-                                        </StableBadge>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
+                            {highlighted && content.popularPill?.text && (
+                                <div className="absolute right-4 top-4 z-20 md:right-6 md:top-6">
+                                    <StableBadge border className={cn("border! py-0.5 pr-3 pl-2 text-sm font-medium", popularPillColorClasses[popularPillColor])}>
+                                        <span className="inline-flex items-center gap-1.5">
+                                            {getIcon(content.popularPill.icon, 14)}
+                                            {content.popularPill.text}
+                                        </span>
+                                    </StableBadge>
+                                </div>
+                            )}
                             <h3 className={cn("relative z-10 text-2xl font-semibold text-white", pricingPackage.price !== null && "pr-20")}>{pricingPackage.title}</h3>
+                            {pricingPackage.description && <p className="relative z-10 mt-1 leading-6 text-secondary">{pricingPackage.description}</p>}
 
                             {pricingPackage.price !== null && (
-                                <div className="relative z-10 mt-2">
+                                <div className="relative z-10 mt-6 flex flex-col items-start gap-0">
+                                    {hasDiscount && (
+                                        <span className="relative -mb-1 inline-flex text-sm leading-none font-medium text-tertiary after:absolute after:top-1/2 after:right-0 after:left-0 after:z-10 after:h-px after:bg-current after:content-['']">
+                                            {regularPrice.toLocaleString(locale === "de" ? "de-DE" : "en-US", {
+                                                style: "currency",
+                                                currency: "EUR",
+                                                minimumFractionDigits: 0,
+                                                maximumFractionDigits: 2,
+                                            })}
+                                        </span>
+                                    )}
                                     <div className="flex flex-wrap items-center gap-2">
                                         <NumberFlow
                                             value={pricingPackage.price}
@@ -139,27 +155,29 @@ export function PricingSection({ content, locale, packages, paymentPeriod }: Pri
                                             format={{ style: "currency", currency: "EUR", trailingZeroDisplay: "stripIfInteger" }}
                                             className="text-4xl font-semibold text-white"
                                         />
-                                        <span className="mt-2 text-lg font-semibold text-tertiary">{periodSuffix}</span>
+                                        <span className="mt-2 text-base text-tertiary">{periodSuffix}</span>
                                     </div>
                                 </div>
                             )}
-                            {pricingPackage.description && <p className="relative z-10 leading-6 text-secondary">{pricingPackage.description}</p>}
 
                             {(features.length > 0 || missingFeatures.length > 0) && (
-                                <ul className="relative z-10 mt-8 flex flex-col gap-2">
-                                    {features.map((feature, featureIndex) => (
-                                        <li key={feature.id ?? `feature-${featureIndex}`} className="flex items-start gap-3 text-sm text-white">
-                                            <IconCheck size={18} className="mt-0.5 shrink-0 text-brand" />
-                                            <span>{feature.text}</span>
-                                        </li>
-                                    ))}
-                                    {missingFeatures.map((feature, featureIndex) => (
-                                        <li key={feature.id ?? `missing-feature-${featureIndex}`} className="flex items-start gap-3 text-sm text-tertiary">
-                                            <IconX size={18} className="mt-0.5 shrink-0" />
-                                            <span>{feature.text}</span>
-                                        </li>
-                                    ))}
-                                </ul>
+                                <div className="relative z-10 mt-8">
+                                    {content.whatsIncludedText && <p className="text-sm text-secondary">{content.whatsIncludedText}</p>}
+                                    <ul className={cn("flex flex-col gap-2", content.whatsIncludedText && "mt-3")}>
+                                        {features.map((feature, featureIndex) => (
+                                            <li key={feature.id ?? `feature-${featureIndex}`} className="flex items-start gap-3 text-sm text-white">
+                                                <IconCheck size={18} className="mt-0.5 shrink-0 text-brand" />
+                                                <span>{feature.text}</span>
+                                            </li>
+                                        ))}
+                                        {missingFeatures.map((feature, featureIndex) => (
+                                            <li key={feature.id ?? `missing-feature-${featureIndex}`} className="flex items-start gap-3 text-sm text-tertiary">
+                                                <IconX size={18} className="mt-0.5 shrink-0" />
+                                                <span>{feature.text}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
                             )}
 
                             {buttonLabel && buttonUrl && (
@@ -177,7 +195,7 @@ export function PricingSection({ content, locale, packages, paymentPeriod }: Pri
                     )
 
                     return highlighted ? (
-                        <BorderBeam key={pricingPackage.key} size="md" colorVariant="colorful" strength={0.7} className="h-full">
+                        <BorderBeam key={pricingPackage.key} size="md" colorVariant="colorful" strength={0.7} duration={3.5} className="h-full">
                             {card}
                         </BorderBeam>
                     ) : (
