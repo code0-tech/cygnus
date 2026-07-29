@@ -21,6 +21,11 @@ export function formatDiscountBadge(discount: number, locale: AppLocale) {
     }).format(discount)
 }
 
+export function calculateExclusiveTaxRate(amountTotal: number, taxAmountExclusive: number) {
+    const amountBeforeTax = amountTotal - taxAmountExclusive
+    return amountBeforeTax > 0 ? taxAmountExclusive / amountBeforeTax : 0
+}
+
 export function getPaymentPeriodDiscount(period: PaymentPeriod, paymentPeriod: SubscriptionConfigData["paymentPeriod"]) {
     if (period === "quarterly") return paymentPeriod.quarterlyDiscount
     if (period === "yearly") return paymentPeriod.yearlyDiscount

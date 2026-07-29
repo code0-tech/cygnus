@@ -3138,6 +3138,8 @@ export interface Checkout {
       baseLabel: string;
       workflowExecutionsLabel: string;
       additionalFeaturesLabel: string;
+      discountLabel: string;
+      taxLabel: string;
       totalLabel: string;
       perMonthSuffix: string;
     };
@@ -3634,6 +3636,8 @@ export interface CheckoutSelect<T extends boolean = true> {
               baseLabel?: T;
               workflowExecutionsLabel?: T;
               additionalFeaturesLabel?: T;
+              discountLabel?: T;
+              taxLabel?: T;
               totalLabel?: T;
               perMonthSuffix?: T;
             };
