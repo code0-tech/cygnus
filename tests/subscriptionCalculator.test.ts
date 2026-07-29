@@ -1,6 +1,6 @@
 import assert from "node:assert/strict"
 import test from "node:test"
-import { calculateSubscriptionPrice, clampToRange, formatDiscountBadge, getPaymentPeriodDiscount, getPaymentPeriodSuffix } from "@/lib/subscriptionCalculator"
+import { calculateExclusiveTaxRate, calculateSubscriptionPrice, clampToRange, formatDiscountBadge, getPaymentPeriodDiscount, getPaymentPeriodSuffix } from "@/lib/subscriptionCalculator"
 
 const paymentPeriod = {
     description: "Choose how often to pay.",
@@ -36,6 +36,11 @@ test("resolves payment period discounts and suffixes", () => {
 test("formats discount badges by locale", () => {
     assert.equal(formatDiscountBadge(0.2, "en"), "20%")
     assert.equal(formatDiscountBadge(0.2, "de"), "20\u00a0%")
+})
+
+test("calculates the exclusive tax rate from a Crater tax quote", () => {
+    assert.equal(calculateExclusiveTaxRate(11_900, 1_900), 0.19)
+    assert.equal(calculateExclusiveTaxRate(0, 0), 0)
 })
 
 test("calculates subscription totals before and after discount", () => {

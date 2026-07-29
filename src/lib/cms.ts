@@ -292,6 +292,8 @@ export interface CheckoutData {
             baseLabel: string
             workflowExecutionsLabel: string
             additionalFeaturesLabel: string
+            discountLabel: string
+            taxLabel: string
             totalLabel: string
             perMonthSuffix: string
         }

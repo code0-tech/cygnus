@@ -3,7 +3,7 @@
 import { getIcon } from "@/components/ui/IconRenderer"
 import type { CheckoutData, CheckoutSummaryIconColor, SubscriptionConfigData } from "@/lib/cms"
 import { formatCompactNumber, formatEuroCurrency } from "@/lib/formatters"
-import { resolveCheckoutPricing } from "@/lib/subscriptionCalculator"
+import { calculateExclusiveTaxRate, formatDiscountBadge, resolveCheckoutPricing } from "@/lib/subscriptionCalculator"
 import { useParams, useSearchParams } from "next/navigation"
 import type { ReactNode } from "react"
 
@@ -12,6 +12,11 @@ type CheckoutSummaryContent = CheckoutData["summary"]
 interface CheckoutSummaryProps {
     content?: CheckoutSummaryContent | null
     subscriptionConfig?: SubscriptionConfigData | null
+    taxQuote?: {
+        amountTotal: number
+        currency: string
+        taxAmountExclusive: number
+    } | null
 }
 
 interface SummaryRowProps {
@@ -46,7 +51,7 @@ function SummaryRow({ icon, label, value, tone = "neutral" }: SummaryRowProps) {
     )
 }
 
-export function CheckoutSummary({ content, subscriptionConfig }: CheckoutSummaryProps) {
+export function CheckoutSummary({ content, subscriptionConfig, taxQuote }: CheckoutSummaryProps) {
     const searchParams = useSearchParams()
     const params = useParams<{ locale?: string }>()
     if (!content) return null
@@ -74,10 +79,17 @@ export function CheckoutSummary({ content, subscriptionConfig }: CheckoutSummary
         workflowExecutionsParam,
     })
     const locale = params?.locale === "de" ? "de" : "en"
-    const formattedTotalPrice = formatEuroCurrency(pricing.totalPrice, locale)
+    const discountAmount = Math.max(0, pricing.totalBeforeDiscount - pricing.totalPrice)
+    const discountPercentage = pricing.totalBeforeDiscount > 0 ? discountAmount / pricing.totalBeforeDiscount : 0
+    const taxAmount = taxQuote ? taxQuote.taxAmountExclusive / 100 : 0
+    const taxPercentage = taxQuote ? calculateExclusiveTaxRate(taxQuote.amountTotal, taxQuote.taxAmountExclusive) : 0
+    const totalPrice = taxQuote ? taxQuote.amountTotal / 100 : pricing.totalPrice
+    const formattedTotalPrice = formatEuroCurrency(totalPrice, locale)
     const formattedBasePrice = formatEuroCurrency(pricing.aiTokenPrice, locale)
     const formattedWorkflowExecutionsPrice = formatEuroCurrency(pricing.workflowExecutionPrice, locale)
     const formattedAdditionalFeaturesPrice = formatEuroCurrency(additionalFeaturesPrice, locale)
+    const formattedDiscountAmount = formatEuroCurrency(discountAmount, locale)
+    const formattedTaxAmount = formatEuroCurrency(taxAmount, locale)
 
     return (
         <div className="flex-1 h-max pl-3">
@@ -160,6 +172,24 @@ export function CheckoutSummary({ content, subscriptionConfig }: CheckoutSummary
                             <div className="flex items-center justify-between gap-4 text-sm">
                                 <span className="text-secondary">{content.pricing.additionalFeaturesLabel}</span>
                                 <span className="tabular-nums text-white">{formattedAdditionalFeaturesPrice}</span>
+                            </div>
+                        )}
+
+                        {discountAmount > 0 && (
+                            <div className="flex items-center justify-between gap-4 text-sm">
+                                <span className="text-secondary">
+                                    {content.pricing.discountLabel} (-{formatDiscountBadge(discountPercentage, locale)})
+                                </span>
+                                <span className="tabular-nums text-white">-{formattedDiscountAmount}</span>
+                            </div>
+                        )}
+
+                        {taxQuote && (
+                            <div className="flex items-center justify-between gap-4 text-sm">
+                                <span className="text-secondary">
+                                    {content.pricing.taxLabel} ({formatDiscountBadge(taxPercentage, locale)})
+                                </span>
+                                <span className="tabular-nums text-white">{formattedTaxAmount}</span>
                             </div>
                         )}
                     </div>

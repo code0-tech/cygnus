@@ -79,6 +79,7 @@ import * as migration_20260728_193456_checkout_summary_icons from './20260728_19
 import * as migration_20260728_194234_checkout_summary_ai_tokens from './20260728_194234_checkout_summary_ai_tokens';
 import * as migration_20260728_195348_checkout_summary_plan from './20260728_195348_checkout_summary_plan';
 import * as migration_20260729_025329_subscription_option_descriptions from './20260729_025329_subscription_option_descriptions';
+import * as migration_20260729_100227_checkout_discount_tax_labels from './20260729_100227_checkout_discount_tax_labels';
 
 export const migrations = [
   {
@@ -484,6 +485,11 @@ export const migrations = [
   {
     up: migration_20260729_025329_subscription_option_descriptions.up,
     down: migration_20260729_025329_subscription_option_descriptions.down,
-    name: '20260729_025329_subscription_option_descriptions'
+    name: '20260729_025329_subscription_option_descriptions',
+  },
+  {
+    up: migration_20260729_100227_checkout_discount_tax_labels.up,
+    down: migration_20260729_100227_checkout_discount_tax_labels.down,
+    name: '20260729_100227_checkout_discount_tax_labels'
   },
 ];
