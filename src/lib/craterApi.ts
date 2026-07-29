@@ -1,0 +1,120 @@
+import { readCraterSessionAuthorization } from "@/lib/craterSession"
+import { ServerError } from "@apollo/client/errors"
+import { NextResponse } from "next/server"
+
+export type CraterDetailedError =
+    | {
+          __typename: "ActiveModelError"
+          attribute: string
+          type: string
+      }
+    | {
+          __typename: "MessageError"
+          message: string
+      }
+
+export type CraterMutationError = {
+    details: CraterDetailedError[] | null
+    errorCode: string
+}
+
+export type JsonObject = Record<string, unknown>
+
+export function craterJson(body: unknown, status = 200) {
+    return NextResponse.json(body, {
+        status,
+        headers: {
+            "cache-control": "no-store",
+        },
+    })
+}
+
+export async function readJsonObject(request: Request): Promise<JsonObject | null> {
+    try {
+        const body: unknown = await request.json()
+        return body !== null && typeof body === "object" && !Array.isArray(body) ? (body as JsonObject) : null
+    } catch {
+        return null
+    }
+}
+
+export function optionalString(value: unknown) {
+    return typeof value === "string" && value.trim() ? value.trim() : undefined
+}
+
+export function readOptionalAddress(value: unknown) {
+    if (value === undefined || value === null) {
+        return undefined
+    }
+
+    if (typeof value !== "object" || Array.isArray(value)) {
+        return null
+    }
+
+    const address = value as JsonObject
+
+    return {
+        ...(optionalString(address.city) ? { city: optionalString(address.city) } : {}),
+        ...(optionalString(address.country) ? { country: optionalString(address.country) } : {}),
+        ...(optionalString(address.line1) ? { line1: optionalString(address.line1) } : {}),
+        ...(optionalString(address.line2) ? { line2: optionalString(address.line2) } : {}),
+        ...(optionalString(address.postalCode) ? { postalCode: optionalString(address.postalCode) } : {}),
+        ...(optionalString(address.state) ? { state: optionalString(address.state) } : {}),
+    }
+}
+
+export function requireCraterSession(request: Request): { response: NextResponse; token?: never } | { response?: never; token: string } {
+    const authorization = readCraterSessionAuthorization(request)
+
+    if (authorization.status === "missing") {
+        return {
+            response: craterJson({ error: "Crater session authorization is required." }, 403),
+        }
+    }
+
+    if (authorization.status === "invalid") {
+        return {
+            response: craterJson({ error: "Crater session authorization is invalid." }, 401),
+        }
+    }
+
+    return { token: authorization.token }
+}
+
+export function craterMutationErrorResponse(errors: CraterMutationError[], message: string) {
+    if (errors.length === 0) {
+        return null
+    }
+
+    const [error] = errors
+    const details =
+        error.details?.map((detail) => {
+            if (detail.__typename === "MessageError") {
+                return detail.message
+            }
+
+            return `${detail.attribute}: ${detail.type}`
+        }) ?? []
+
+    return craterJson(
+        {
+            error: message,
+            errorCode: error.errorCode,
+            details,
+        },
+        422
+    )
+}
+
+export function craterTransportErrorResponse(error: unknown) {
+    if (!ServerError.is(error) || (error.statusCode !== 401 && error.statusCode !== 403)) {
+        return null
+    }
+
+    return craterJson(
+        {
+            error: error.statusCode === 401 ? "The Crater session is invalid or expired." : "The Crater session is not allowed to perform this operation.",
+        },
+        error.statusCode
+    )
+}

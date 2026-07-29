@@ -57,6 +57,14 @@ A `UserSession` contains:
 
 Login uses a token issued by Sagittarius. Session lists follow the GraphQL connection model with `nodes`, `edges`, cursors, a total count, and `pageInfo`.
 
+Except for `usersLogin`, mutations require an active Crater session. Send its token using the exact authorization scheme:
+
+```http
+Authorization: Session <user-session-token>
+```
+
+Crater does not use cookies for GraphQL authentication. A missing authorization header causes a protected mutation to return HTTP `403 Forbidden`. An invalid, inactive, or expired session causes HTTP `401 Unauthorized`.
+
 ### Checkout and Stripe
 
 Crater creates Stripe Checkout Sessions in subscription mode for the current customer. A checkout can be based either on a regular internal plan or on an individually negotiated `CustomCheckoutConfiguration`.
@@ -182,6 +190,7 @@ For `checkoutCreateSession`:
 - A regular checkout uses `plan` and, where applicable, `deploymentType`, `namespaceId`, and `promotionCode`.
 - A custom checkout uses `customCheckoutConfigurationId`; `plan` and `deploymentType` are then ignored.
 - `namespaceId` is only relevant to cloud deployments.
+- The authenticated user must already be associated with a customer. Otherwise the mutation returns `INVALID_CHECKOUT_SESSION` with the message `Customer must be created first`.
 
 #### Licenses
 
