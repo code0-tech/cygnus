@@ -47,16 +47,13 @@ async function readCheckoutError(response: Response, fallback: string) {
 
 export function CheckoutForm({
     content,
-    onCustomerReady,
     subscriptionConfig,
 }: {
     content?: CheckoutFormContent | null
-    onCustomerReady?: () => Promise<void>
     subscriptionConfig?: SubscriptionConfigData | null
 }) {
     const searchParams = useSearchParams()
     const [isLoading, setIsLoading] = useState(false)
-    const [isCustomerReady, setIsCustomerReady] = useState(false)
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
     const { error: sessionError, isLoading: isSessionLoading, token: sessionToken } = useCraterSession()
     const customerType = resolveCraterCustomerType(searchParams.get("customerType"))
@@ -113,45 +110,36 @@ export function CheckoutForm({
                     }
 
                     const authorization = `Session ${sessionToken}`
-                    if (!isCustomerReady) {
-                        const customerResponse = await fetch("/api/crater/customer", {
-                            method: "POST",
-                            headers: {
-                                Authorization: authorization,
-                                "Content-Type": "application/json",
+                    const customerResponse = await fetch("/api/crater/customer", {
+                        method: "POST",
+                        headers: {
+                            Authorization: authorization,
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            customerType,
+                            name: values.name.trim(),
+                            email: values.email.trim(),
+                            phone: values.phone.trim(),
+                            address: {
+                                line1: values.line1.trim(),
+                                line2: values.line2.trim(),
+                                city: values.city.trim(),
+                                state: values.state.trim(),
+                                postalCode: values.postalCode.trim(),
+                                country: normalizeCountryCode(values.country),
                             },
-                            body: JSON.stringify({
-                                customerType,
-                                name: values.name.trim(),
-                                email: values.email.trim(),
-                                phone: values.phone.trim(),
-                                address: {
-                                    line1: values.line1.trim(),
-                                    line2: values.line2.trim(),
-                                    city: values.city.trim(),
-                                    state: values.state.trim(),
-                                    postalCode: values.postalCode.trim(),
-                                    country: normalizeCountryCode(values.country),
-                                },
-                                ...(customerType === "business"
-                                    ? {
-                                          taxIdType: values.taxIdType.trim(),
-                                          taxIdValue: values.taxIdValue.trim(),
-                                      }
-                                    : {}),
-                            }),
-                        })
+                            ...(customerType === "business"
+                                ? {
+                                      taxIdType: values.taxIdType.trim(),
+                                      taxIdValue: values.taxIdValue.trim(),
+                                  }
+                                : {}),
+                        }),
+                    })
 
-                        if (!customerResponse.ok) {
-                            throw new Error(await readCheckoutError(customerResponse, "Failed to create the billing customer."))
-                        }
-
-                        if (onCustomerReady) {
-                            await onCustomerReady()
-                            setIsCustomerReady(true)
-                            setIsLoading(false)
-                            return
-                        }
+                    if (!customerResponse.ok) {
+                        throw new Error(await readCheckoutError(customerResponse, "Failed to create the billing customer."))
                     }
 
                     const checkoutPayload = Object.fromEntries(searchParams.entries())
@@ -193,7 +181,7 @@ export function CheckoutForm({
             <div className="flex-1 space-y-6">
                 <h2 className="text-2xl text-white">{content.billingHeading}</h2>
 
-                <fieldset disabled={isCustomerReady} className="grid grid-cols-1 gap-4 disabled:opacity-60 sm:grid-cols-2">
+                <fieldset className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div className="sm:col-span-2">
                         <TextInput maxLength={256} title={content.nameLabel} placeholder={content.namePlaceholder} className="w-full!" {...inputs.getInputProps("name")} />
                     </div>
@@ -227,7 +215,7 @@ export function CheckoutForm({
                     onClick={() => validate()}
                     className="h-10! w-full! whitespace-nowrap bg-white/80! px-8! text-sm! text-primary! ring-1! ring-white/20! transition-all duration-300 hover:bg-white!"
                 >
-                    {isLoading || isSessionLoading ? content.processingLabel : isCustomerReady ? content.payNowLabel : content.continueLabel}
+                    {isLoading || isSessionLoading ? content.processingLabel : content.continueLabel}
                 </Button>
             </div>
         </Card>
