@@ -183,7 +183,9 @@ const pageBlockRenderers: Partial<Record<PageBlock["blockType"], BlockRenderer>>
         const config = options.subscriptionConfig
         if (!config?.packages) return null
 
-        return <SmallPricingSection content={block as Extract<PageBlock, { blockType: "smallPricing" }>} locale={options.locale ?? "en"} packages={config.packages} />
+        return (
+            <SmallPricingSection content={block as Extract<PageBlock, { blockType: "smallPricing" }>} locale={options.locale ?? "en"} packages={config.packages} paymentPeriod={config.paymentPeriod} />
+        )
     },
     contact: (block, options) => <ContactSection content={block as Extract<PageBlock, { blockType: "contact" }>} locale={options.locale ?? "en"} />,
     compareApplication: (block) => <CompareApplicationSection content={block as Extract<PageBlock, { blockType: "compareApplication" }>} />,
