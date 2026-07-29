@@ -1,12 +1,12 @@
 "use client"
 
-import { CheckoutDiscount } from "@/components/checkout/CheckoutDiscount"
+import { CheckoutDiscount, type CheckoutDiscountValue } from "@/components/checkout/CheckoutDiscount"
 import { getIcon } from "@/components/ui/IconRenderer"
 import type { CheckoutData, CheckoutSummaryIconColor, SubscriptionConfigData } from "@/lib/cms"
 import { formatCompactNumber, formatEuroCurrency } from "@/lib/formatters"
-import { calculateExclusiveTaxRate, formatDiscountBadge, resolveCheckoutPricing } from "@/lib/subscriptionCalculator"
+import { calculateExclusiveTaxRate, calculatePromotionDiscountAmount, formatDiscountBadge, resolveCheckoutPricing } from "@/lib/subscriptionCalculator"
 import { useParams, useSearchParams } from "next/navigation"
-import type { ReactNode } from "react"
+import { useState, type ReactNode } from "react"
 
 type CheckoutSummaryContent = CheckoutData["summary"]
 
@@ -56,6 +56,7 @@ function SummaryRow({ icon, label, value, tone = "neutral" }: SummaryRowProps) {
 export function CheckoutSummary({ content, sessionToken, subscriptionConfig, taxQuote }: CheckoutSummaryProps) {
     const searchParams = useSearchParams()
     const params = useParams<{ locale?: string }>()
+    const [promotionDiscount, setPromotionDiscount] = useState<CheckoutDiscountValue | null>(null)
     if (!content) return null
 
     const deployment = searchParams.get("deploymentType") ?? searchParams.get("deployment")
@@ -81,11 +82,13 @@ export function CheckoutSummary({ content, sessionToken, subscriptionConfig, tax
         workflowExecutionsParam,
     })
     const locale = params?.locale === "de" ? "de" : "en"
-    const discountAmount = Math.max(0, pricing.totalBeforeDiscount - pricing.totalPrice)
+    const promotionDiscountAmount = calculatePromotionDiscountAmount(pricing.totalPrice, promotionDiscount)
+    const discountedPrice = Math.max(0, pricing.totalPrice - promotionDiscountAmount)
+    const discountAmount = Math.max(0, pricing.totalBeforeDiscount - discountedPrice)
     const discountPercentage = pricing.totalBeforeDiscount > 0 ? discountAmount / pricing.totalBeforeDiscount : 0
     const taxAmount = taxQuote ? taxQuote.taxAmountExclusive / 100 : 0
     const taxPercentage = taxQuote ? calculateExclusiveTaxRate(taxQuote.amountTotal, taxQuote.taxAmountExclusive) : 0
-    const totalPrice = taxQuote ? taxQuote.amountTotal / 100 : pricing.totalPrice
+    const totalPrice = taxQuote ? Math.max(0, taxQuote.amountTotal / 100 - promotionDiscountAmount) : discountedPrice
     const formattedTotalPrice = formatEuroCurrency(totalPrice, locale)
     const formattedBasePrice = formatEuroCurrency(pricing.aiTokenPrice, locale)
     const formattedWorkflowExecutionsPrice = formatEuroCurrency(pricing.workflowExecutionPrice, locale)
@@ -150,7 +153,12 @@ export function CheckoutSummary({ content, sessionToken, subscriptionConfig, tax
                         </div>
                     </div>
 
-                    <CheckoutDiscount buttonLabel={content.pricing.discountButtonLabel} inputPlaceholder={content.pricing.discountInputPlaceholder} sessionToken={sessionToken} />
+                    <CheckoutDiscount
+                        buttonLabel={content.pricing.discountButtonLabel}
+                        inputPlaceholder={content.pricing.discountInputPlaceholder}
+                        onApplied={setPromotionDiscount}
+                        sessionToken={sessionToken}
+                    />
 
                     <div className="space-y-2 pt-4">
                         <div className="flex items-center justify-between gap-4 text-sm">

@@ -1,11 +1,11 @@
 "use client"
 
-import { Button, TextInput } from "@code0-tech/pictor"
+import { Button } from "@code0-tech/pictor"
 import { useCraterSession } from "@/components/checkout/CraterSessionProvider"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useState } from "react"
 
-interface CheckoutDiscountValue {
+export interface CheckoutDiscountValue {
     amountOff: number | null
     code: string
     currency: string | null
@@ -16,7 +16,7 @@ interface CheckoutDiscountValue {
 interface CheckoutDiscountProps {
     buttonLabel: string
     inputPlaceholder: string
-    onApplied?: (discount: CheckoutDiscountValue) => void
+    onApplied?: (discount: CheckoutDiscountValue | null) => void
     sessionToken?: string | null
 }
 
@@ -79,15 +79,16 @@ export function CheckoutDiscount({ buttonLabel, inputPlaceholder, onApplied, ses
     return (
         <form onSubmit={handleSubmit} className="space-y-2 pt-4">
             <div className="flex items-start gap-2">
-                <TextInput
+                <input
                     aria-label={inputPlaceholder}
                     autoComplete="off"
-                    className="min-w-0 flex-1 text-white!"
+                    className="h-10 w-full min-w-0 flex-1 rounded-xl border border-white/10 bg-white/5 px-4 text-sm text-white outline-none transition-colors placeholder:text-tertiary hover:bg-white/8 focus:border-brand/40 focus:bg-white/8"
                     maxLength={128}
                     onChange={(event) => {
                         setCode(event.currentTarget.value)
                         setAppliedCode(null)
                         setErrorMessage(null)
+                        onApplied?.(null)
                     }}
                     placeholder={inputPlaceholder}
                     value={code}

@@ -1,7 +1,6 @@
 import { getCheckoutContent, getSubscriptionConfig } from "@/lib/cms"
 import { isSupportedLocale } from "@/lib/i18n"
-import { CheckoutSummary } from "@/components/checkout/CheckoutSummary"
-import { CheckoutForm } from "@/components/checkout/CheckoutForm"
+import { CheckoutPageContent } from "@/components/checkout/CheckoutPageContent"
 import { LinkButton } from "@/components/ui/LinkButton"
 import { IconArrowLeft } from "@tabler/icons-react"
 import { notFound } from "next/navigation"
@@ -18,10 +17,7 @@ export default async function CheckoutPage({ params }: { params: Promise<{ local
                 <IconArrowLeft size={16} />
                 {checkoutContent?.navigation.backLabel}
             </LinkButton>
-            <div className="flex w-full flex-col gap-16 lg:flex-row">
-                <CheckoutSummary content={checkoutContent?.summary} subscriptionConfig={subscriptionConfig} />
-                <CheckoutForm content={checkoutContent?.form} />
-            </div>
+            <CheckoutPageContent form={checkoutContent?.form} subscriptionConfig={subscriptionConfig} summary={checkoutContent?.summary} />
         </div>
     )
 }
