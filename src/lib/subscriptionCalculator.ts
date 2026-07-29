@@ -2,7 +2,7 @@ import type { SubscriptionConfigData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 
 export type PaymentPeriod = "monthly" | "quarterly" | "yearly"
-export type SubscriptionPlan = "custom" | "pro" | "max"
+type SubscriptionPlan = "custom" | "pro" | "max"
 
 export type UsageRange = {
     min: number

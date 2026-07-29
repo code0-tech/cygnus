@@ -2,7 +2,7 @@ import { readCraterSessionAuthorization } from "@/lib/craterSession"
 import { ServerError } from "@apollo/client/errors"
 import { NextResponse } from "next/server"
 
-export type CraterDetailedError =
+type CraterDetailedError =
     | {
           __typename: "ActiveModelError"
           attribute: string
