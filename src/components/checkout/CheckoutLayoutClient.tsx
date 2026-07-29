@@ -1,6 +1,5 @@
 "use client"
 
-import { Card } from "@code0-tech/pictor"
 import { Elements } from "@stripe/react-stripe-js"
 import { loadStripe } from "@stripe/stripe-js"
 import { LandingContainer } from "@/components/ui/LandingContainer"
@@ -9,6 +8,7 @@ import { useSearchParams } from "next/navigation"
 import type { ReactNode } from "react"
 import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
+import { Card } from "@code0-tech/pictor"
 
 const appearance = {
     theme: "night" as const,
@@ -33,25 +33,25 @@ const appearance = {
     },
     rules: {
         ".Input": {
-            backgroundColor: "rgba(7,5,20,0.92)",
+            backgroundColor: "rgba(255,255,255,0.05)",
             border: "none",
-            boxShadow: "inset 0 1px 1px rgba(255,255,255,0.24)",
+            boxShadow: "none",
             color: "#ffffff",
+            outline: "none",
         },
         ".Input:hover": {
-            backgroundColor: "#070514",
+            backgroundColor: "rgba(255,255,255,0.1)",
             border: "none",
-            boxShadow: "inset 0 1px 1px rgba(255,255,255,0.24)",
         },
         ".Input:focus": {
-            backgroundColor: "#070514",
+            backgroundColor: "rgba(255,255,255,0.1)",
             border: "none",
-            boxShadow: "inset 0 1px 1px rgba(255,255,255,0.24)",
+            boxShadow: "none",
+            outline: "none",
         },
         ".Input:autofill": {
-            backgroundColor: "#070514",
+            backgroundColor: "rgba(255,255,255,0.1)",
             border: "none",
-            boxShadow: "inset 0 1px 1px rgba(255,255,255,0.24)",
             color: "#ffffff",
         },
         ".Input::placeholder": {
@@ -60,30 +60,25 @@ const appearance = {
         ".Input--invalid": {
             backgroundColor: "rgba(217,4,41,0.18)",
             border: "none",
-            boxShadow: "inset 0 1px 1px rgba(217,4,41,0.45)",
         },
         ".Label": {
             color: "rgba(255,255,255,0.5)",
             fontWeight: "500",
             fontSize: "11.2px",
-            textTransform: "uppercase",
         },
         ".Tab": {
             backgroundColor: "rgba(255,255,255,0.16)",
             border: "none",
             borderRadius: "1rem",
-            boxShadow: "inset 0 1px 1px rgba(255,255,255,0.3)",
             color: "#ffffff",
         },
         ".Tab:hover": {
             color: "#ffffff",
             backgroundColor: "rgba(255,255,255,0.22)",
-            boxShadow: "inset 0 1px 1px rgba(255,255,255,0.34)",
         },
         ".Tab--selected": {
             backgroundColor: "rgba(255,255,255,0.26)",
             border: "none",
-            boxShadow: "inset 0 1px 1px rgba(255,255,255,0.38)",
         },
         ".TabIcon": {
             color: "rgba(255,255,255,0.5)",
@@ -92,18 +87,15 @@ const appearance = {
             backgroundColor: "rgba(255,255,255,0.05)",
             border: "none",
             borderRadius: "1rem",
-            boxShadow: "inset 0 1px 1px rgba(255,255,255,0.28)",
             color: "#ffffff",
         },
         ".AccordionItem:hover": {
             backgroundColor: "rgba(255,255,255,0.1)",
             border: "none",
-            boxShadow: "inset 0 1px 1px rgba(255,255,255,0.32)",
         },
         ".AccordionItem--selected": {
             backgroundColor: "rgba(255,255,255,0.1)",
             border: "none",
-            boxShadow: "inset 0 1px 1px rgba(255,255,255,0.36)",
         },
         ".Block": {
             backgroundColor: "transparent",
@@ -113,7 +105,6 @@ const appearance = {
         ".CodeInput": {
             backgroundColor: "rgba(7,5,20,0.92)",
             border: "none",
-            boxShadow: "inset 0 1px 1px rgba(255,255,255,0.24)",
         },
         ".Error": {
             color: "#D90429",
@@ -170,7 +161,7 @@ function CheckoutFallback({ isCustomPlan }: { isCustomPlan: boolean }) {
                             </div>
                         </div>
                     )}
-                    <div className="mt-5 rounded-2xl border border-white/10 bg-white/2 p-4 shadow-[0_18px_40px_rgba(0,0,0,0.18)]">
+                    <div className="mt-5 rounded-2xl border border-white/10 bg-white/2 p-4">
                         <div className="border-b border-white/8 pb-3">
                             <div className="space-y-2">
                                 <div className="h-3 w-16 rounded bg-white/10 animate-pulse" />
@@ -201,9 +192,7 @@ function CheckoutFallback({ isCustomPlan }: { isCustomPlan: boolean }) {
                         </div>
                     </div>
                 </div>
-                <Card variant="filled" className="glass-card-shell p-6! flex-1! h-max! min-w-0">
-                    <div aria-hidden="true" className="glass-card-tint" />
-                    <div aria-hidden="true" className="glass-card-topline" />
+                <Card className="flex-1! h-max! min-w-0">
                     <div className="flex-1 space-y-6">
                         <div className="h-7 w-52 rounded-lg bg-white/10 animate-pulse" />
                         <div className="space-y-4">
@@ -212,7 +201,7 @@ function CheckoutFallback({ isCustomPlan }: { isCustomPlan: boolean }) {
                             <div className="h-13.5 w-full rounded-xl bg-white/10 animate-pulse" />
                         </div>
                         <div className="pt-10">
-                            <div className="h-10 w-full rounded-xl bg-white/80 shadow-[inset_0_1px_1px_rgba(255,255,255,0.25)] animate-pulse" />
+                            <div className="h-10 w-full rounded-xl bg-white/80 animate-pulse" />
                         </div>
                     </div>
                 </Card>
