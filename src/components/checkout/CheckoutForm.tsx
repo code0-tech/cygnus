@@ -1,14 +1,28 @@
 "use client"
 
-import type { CheckoutData } from "@/lib/cms"
-import { Card } from "@/components/ui/Card"
-import { normalizeCountryCode, resolveCraterCustomerType } from "@/lib/craterCustomer"
 import { useCraterSession } from "@/components/checkout/CraterSessionProvider"
-import { Button } from "@code0-tech/pictor"
+import { Card } from "@/components/ui/Card"
+import type { CheckoutData } from "@/lib/cms"
+import { normalizeCountryCode, resolveCraterCustomerType } from "@/lib/craterCustomer"
+import { Button, EmailInput, emailValidation, TextInput, useForm } from "@code0-tech/pictor"
 import { useSearchParams } from "next/navigation"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 
 type CheckoutFormContent = CheckoutData["form"]
+
+interface CheckoutFormValues {
+    city: string
+    country: string
+    email: string
+    line1: string
+    line2: string
+    name: string
+    phone: string
+    postalCode: string
+    state: string
+    taxIdType: string
+    taxIdValue: string
+}
 
 type CheckoutErrorBody = {
     details?: unknown
@@ -30,41 +44,6 @@ async function readCheckoutError(response: Response, fallback: string) {
     }
 }
 
-function FormField({
-    autoComplete,
-    className,
-    label,
-    maxLength,
-    name,
-    placeholder,
-    required,
-    type = "text",
-}: {
-    autoComplete?: string
-    className?: string
-    label: string
-    maxLength?: number
-    name: string
-    placeholder?: string
-    required?: boolean
-    type?: "email" | "tel" | "text"
-}) {
-    return (
-        <label className={className}>
-            <span className="mb-1.5 block text-xs font-medium text-secondary">{label}</span>
-            <input
-                autoComplete={autoComplete}
-                className="h-12 w-full rounded-xl border border-white/10 bg-white/5 px-4 text-sm text-white outline-none transition-colors placeholder:text-tertiary hover:bg-white/8 focus:border-brand/40 focus:bg-white/8"
-                maxLength={maxLength}
-                name={name}
-                placeholder={placeholder}
-                required={required}
-                type={type}
-            />
-        </label>
-    )
-}
-
 export function CheckoutForm({ content, onCustomerReady }: { content?: CheckoutFormContent | null; onCustomerReady?: () => Promise<void> }) {
     const searchParams = useSearchParams()
     const [isLoading, setIsLoading] = useState(false)
@@ -72,111 +51,159 @@ export function CheckoutForm({ content, onCustomerReady }: { content?: CheckoutF
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
     const { error: sessionError, isLoading: isSessionLoading, token: sessionToken } = useCraterSession()
     const customerType = resolveCraterCustomerType(searchParams.get("customerType"))
+    const initialValues = useMemo<CheckoutFormValues>(
+        () => ({
+            city: "",
+            country: "",
+            email: "",
+            line1: "",
+            line2: "",
+            name: "",
+            phone: "",
+            postalCode: "",
+            state: "",
+            taxIdType: "",
+            taxIdValue: "",
+        }),
+        []
+    )
+    const validation = useMemo(
+        () => ({
+            name: (value: string) => (value.trim() ? null : "Name is required"),
+            email: (value: string) => {
+                if (!value.trim()) return "Email is required"
+                return emailValidation(value.trim()) ? null : "Please provide a valid email"
+            },
+            phone: () => null,
+            line1: (value: string) => (value.trim() ? null : "Address is required"),
+            line2: () => null,
+            postalCode: (value: string) => (value.trim() ? null : "Postal code is required"),
+            city: (value: string) => (value.trim() ? null : "City is required"),
+            state: () => null,
+            country: (value: string) => (value.trim().length === 2 ? null : "Please provide a two-letter country code"),
+            taxIdType: (value: string) => (customerType === "business" && !value.trim() ? "Tax ID type is required" : null),
+            taxIdValue: (value: string) => (customerType === "business" && !value.trim() ? "Tax ID is required" : null),
+        }),
+        [customerType]
+    )
+
+    const [inputs, validate] = useForm({
+        useInitialValidation: false,
+        initialValues,
+        validate: validation,
+        onSubmit: (values: CheckoutFormValues) => {
+            if (isLoading) return
+
+            setIsLoading(true)
+            setErrorMessage(null)
+
+            void (async () => {
+                try {
+                    if (!sessionToken) {
+                        throw new Error(sessionError ?? "A Crater session is required.")
+                    }
+
+                    const authorization = `Session ${sessionToken}`
+                    if (!isCustomerReady) {
+                        const customerResponse = await fetch("/api/crater/customer", {
+                            method: "POST",
+                            headers: {
+                                Authorization: authorization,
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                customerType,
+                                name: values.name.trim(),
+                                email: values.email.trim(),
+                                phone: values.phone.trim(),
+                                address: {
+                                    line1: values.line1.trim(),
+                                    line2: values.line2.trim(),
+                                    city: values.city.trim(),
+                                    state: values.state.trim(),
+                                    postalCode: values.postalCode.trim(),
+                                    country: normalizeCountryCode(values.country),
+                                },
+                                ...(customerType === "business"
+                                    ? {
+                                          taxIdType: values.taxIdType.trim(),
+                                          taxIdValue: values.taxIdValue.trim(),
+                                      }
+                                    : {}),
+                            }),
+                        })
+
+                        if (!customerResponse.ok) {
+                            throw new Error(await readCheckoutError(customerResponse, "Failed to create the billing customer."))
+                        }
+
+                        if (onCustomerReady) {
+                            await onCustomerReady()
+                            setIsCustomerReady(true)
+                            setIsLoading(false)
+                            return
+                        }
+                    }
+
+                    const checkoutPayload = Object.fromEntries(searchParams.entries())
+                    const checkoutResponse = await fetch("/api/crater/checkout/session", {
+                        method: "POST",
+                        headers: {
+                            Authorization: authorization,
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify(checkoutPayload),
+                    })
+
+                    if (!checkoutResponse.ok) {
+                        throw new Error(await readCheckoutError(checkoutResponse, "Failed to create a Crater checkout session."))
+                    }
+
+                    const checkout: unknown = await checkoutResponse.json()
+                    const checkoutUrl = checkout && typeof checkout === "object" && "url" in checkout && typeof checkout.url === "string" ? checkout.url : null
+
+                    if (!checkoutUrl) {
+                        throw new Error("Crater returned no checkout redirect URL.")
+                    }
+
+                    window.location.assign(checkoutUrl)
+                } catch (error) {
+                    console.error("Failed to start Crater checkout:", error)
+                    setErrorMessage(error instanceof Error ? error.message : content?.paymentErrorFallback || "Checkout failed.")
+                    setIsLoading(false)
+                }
+            })()
+        },
+    })
 
     if (!content) return null
 
-    const handleSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
-        event.preventDefault()
-        setIsLoading(true)
-        setErrorMessage(null)
-
-        try {
-            const formData = new FormData(event.currentTarget)
-            if (!sessionToken) {
-                throw new Error(sessionError ?? "A Crater session is required.")
-            }
-
-            const authorization = `Session ${sessionToken}`
-            if (!isCustomerReady) {
-                const customerResponse = await fetch("/api/crater/customer", {
-                    method: "POST",
-                    headers: {
-                        Authorization: authorization,
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        customerType,
-                        name: formData.get("name"),
-                        email: formData.get("email"),
-                        phone: formData.get("phone"),
-                        address: {
-                            line1: formData.get("line1"),
-                            line2: formData.get("line2"),
-                            city: formData.get("city"),
-                            state: formData.get("state"),
-                            postalCode: formData.get("postalCode"),
-                            country: normalizeCountryCode(formData.get("country")),
-                        },
-                        ...(customerType === "business"
-                            ? {
-                                  taxIdType: formData.get("taxIdType"),
-                                  taxIdValue: formData.get("taxIdValue"),
-                              }
-                            : {}),
-                    }),
-                })
-
-                if (!customerResponse.ok) {
-                    throw new Error(await readCheckoutError(customerResponse, "Failed to create the billing customer."))
-                }
-
-                if (onCustomerReady) {
-                    await onCustomerReady()
-                    setIsCustomerReady(true)
-                    setIsLoading(false)
-                    return
-                }
-            }
-
-            const checkoutPayload = Object.fromEntries(searchParams.entries())
-            const checkoutResponse = await fetch("/api/crater/checkout/session", {
-                method: "POST",
-                headers: {
-                    Authorization: authorization,
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(checkoutPayload),
-            })
-
-            if (!checkoutResponse.ok) {
-                throw new Error(await readCheckoutError(checkoutResponse, "Failed to create a Crater checkout session."))
-            }
-
-            const checkout: unknown = await checkoutResponse.json()
-            const checkoutUrl = checkout && typeof checkout === "object" && "url" in checkout && typeof checkout.url === "string" ? checkout.url : null
-
-            if (!checkoutUrl) {
-                throw new Error("Crater returned no checkout redirect URL.")
-            }
-
-            window.location.assign(checkoutUrl)
-        } catch (error) {
-            console.error("Failed to start Crater checkout:", error)
-            setErrorMessage(error instanceof Error ? error.message : content.paymentErrorFallback)
-            setIsLoading(false)
-        }
-    }
-
     return (
         <Card variant="default" className="h-max! flex-1!">
-            <form onSubmit={handleSubmit} className="flex-1 space-y-6">
+            <div className="flex-1 space-y-6">
                 <h2 className="text-2xl text-white">{content.billingHeading}</h2>
 
                 <fieldset disabled={isCustomerReady} className="grid grid-cols-1 gap-4 disabled:opacity-60 sm:grid-cols-2">
-                    <FormField className="sm:col-span-2" name="name" label={content.nameLabel} placeholder={content.namePlaceholder} autoComplete="name" required />
-                    <FormField name="email" label={content.emailLabel} placeholder={content.emailPlaceholder} autoComplete="email" type="email" required />
-                    <FormField name="phone" label={content.phoneLabel} placeholder={content.phonePlaceholder} autoComplete="tel" type="tel" />
-                    <FormField className="sm:col-span-2" name="line1" label={content.line1Label} placeholder={content.line1Placeholder} autoComplete="address-line1" required />
-                    <FormField className="sm:col-span-2" name="line2" label={content.line2Label} placeholder={content.line2Placeholder} autoComplete="address-line2" />
-                    <FormField name="postalCode" label={content.postalCodeLabel} autoComplete="postal-code" required />
-                    <FormField name="city" label={content.cityLabel} autoComplete="address-level2" required />
-                    <FormField name="state" label={content.stateLabel} placeholder={content.statePlaceholder} autoComplete="address-level1" />
-                    <FormField name="country" label={content.countryLabel} placeholder={content.countryPlaceholder} autoComplete="country" maxLength={2} required />
+                    <div className="sm:col-span-2">
+                        <TextInput maxLength={256} title={content.nameLabel} placeholder={content.namePlaceholder} className="w-full!" {...inputs.getInputProps("name")} />
+                    </div>
+                    <EmailInput maxLength={512} title={content.emailLabel} placeholder={content.emailPlaceholder} className="w-full!" {...inputs.getInputProps("email")} />
+                    <TextInput maxLength={50} title={content.phoneLabel} placeholder={content.phonePlaceholder} className="w-full!" {...inputs.getInputProps("phone")} />
+                    <div className="sm:col-span-2">
+                        <TextInput maxLength={100} title={content.line1Label} placeholder={content.line1Placeholder} className="w-full!" {...inputs.getInputProps("line1")} />
+                    </div>
+                    <div className="sm:col-span-2">
+                        <TextInput maxLength={100} title={content.line2Label} placeholder={content.line2Placeholder} className="w-full!" {...inputs.getInputProps("line2")} />
+                    </div>
+                    <TextInput maxLength={50} title={content.postalCodeLabel} className="w-full!" {...inputs.getInputProps("postalCode")} />
+                    <TextInput maxLength={100} title={content.cityLabel} className="w-full!" {...inputs.getInputProps("city")} />
+                    <TextInput maxLength={100} title={content.stateLabel} placeholder={content.statePlaceholder} className="w-full!" {...inputs.getInputProps("state")} />
+                    <TextInput maxLength={2} title={content.countryLabel} placeholder={content.countryPlaceholder} className="w-full!" {...inputs.getInputProps("country")} />
 
                     {customerType === "business" && (
                         <>
-                            <FormField name="taxIdType" label={content.taxIdTypeLabel} placeholder={content.taxIdTypePlaceholder} required />
-                            <FormField name="taxIdValue" label={content.taxIdValueLabel} placeholder={content.taxIdValuePlaceholder} required />
+                            <TextInput maxLength={50} title={content.taxIdTypeLabel} placeholder={content.taxIdTypePlaceholder} className="w-full!" {...inputs.getInputProps("taxIdType")} />
+                            <TextInput maxLength={100} title={content.taxIdValueLabel} placeholder={content.taxIdValuePlaceholder} className="w-full!" {...inputs.getInputProps("taxIdValue")} />
                         </>
                     )}
                 </fieldset>
@@ -187,11 +214,12 @@ export function CheckoutForm({ content, onCustomerReady }: { content?: CheckoutF
                     type="submit"
                     variant="normal"
                     disabled={isLoading || isSessionLoading || !sessionToken}
+                    onClick={() => validate()}
                     className="h-10! w-full! whitespace-nowrap bg-white/80! px-8! text-sm! text-primary! ring-1! ring-white/20! transition-all duration-300 hover:bg-white!"
                 >
                     {isLoading || isSessionLoading ? content.processingLabel : isCustomerReady ? content.payNowLabel : content.continueLabel}
                 </Button>
-            </form>
+            </div>
         </Card>
     )
 }
