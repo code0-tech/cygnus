@@ -2398,11 +2398,13 @@ export const subscription_config = pgTable('subscription_config', {
 export const subscription_config_locales = pgTable('subscription_config_locales', {
   optionsPanelHeading: varchar('options_panel_heading').default("Build the subscription shape"),
   deployment_label: varchar('deployment_label').default("Deployment"),
+  deployment_description: varchar('deployment_description').default("Choose where your code0 instance will run."),
   deployment_selfHosted_title: varchar('deployment_self_hosted_title').default("Self-hosted"),
   deployment_selfHosted_description: varchar('deployment_self_hosted_description').default("Deploy on your own infrastructure with full operational control."),
   deployment_cloud_title: varchar('deployment_cloud_title').default("Cloud"),
   deployment_cloud_description: varchar('deployment_cloud_description').default("Use managed infrastructure with selectable runtime consumption."),
   customerType_label: varchar('customer_type_label').default("Customer Type"),
+  customerType_description: varchar('customer_type_description').default("Choose the customer model that best matches your use case."),
   customerType_b2b_title: varchar('customer_type_b2b_title').default("B2B"),
   customerType_b2b_description: varchar('customer_type_b2b_description').default("Organization purchase flow with tailored commercial handling."),
   customerType_b2c_title: varchar('customer_type_b2c_title').default("B2C"),

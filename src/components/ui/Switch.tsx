@@ -56,8 +56,8 @@ export function Switch<TValue extends string>({ label, description, value, optio
         <div className={cn("space-y-3", className)}>
             {(label || description) && (
                 <div>
-                    {label && <p className="text-sm tracking-wide text-tertiary">{label}</p>}
-                    {description && <p className="text-base text-secondary">{description}</p>}
+                    {label && <p className="text-white">{label}</p>}
+                    {description && <p className="text-sm text-secondary">{description}</p>}
                 </div>
             )}
             <div

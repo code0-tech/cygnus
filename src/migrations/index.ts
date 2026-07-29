@@ -78,6 +78,7 @@ import * as migration_20260728_191952_checkout_defaults from './20260728_191952_
 import * as migration_20260728_193456_checkout_summary_icons from './20260728_193456_checkout_summary_icons';
 import * as migration_20260728_194234_checkout_summary_ai_tokens from './20260728_194234_checkout_summary_ai_tokens';
 import * as migration_20260728_195348_checkout_summary_plan from './20260728_195348_checkout_summary_plan';
+import * as migration_20260729_025329_subscription_option_descriptions from './20260729_025329_subscription_option_descriptions';
 
 export const migrations = [
   {
@@ -478,6 +479,11 @@ export const migrations = [
   {
     up: migration_20260728_195348_checkout_summary_plan.up,
     down: migration_20260728_195348_checkout_summary_plan.down,
-    name: '20260728_195348_checkout_summary_plan'
+    name: '20260728_195348_checkout_summary_plan',
+  },
+  {
+    up: migration_20260729_025329_subscription_option_descriptions.up,
+    down: migration_20260729_025329_subscription_option_descriptions.down,
+    name: '20260729_025329_subscription_option_descriptions'
   },
 ];

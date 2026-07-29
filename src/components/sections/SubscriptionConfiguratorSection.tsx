@@ -287,7 +287,10 @@ export function SubscriptionConfiguratorSection({ locale, content, icons }: { lo
                         />
 
                         <div className="space-y-2">
-                            <p className="text-sm tracking-wide text-tertiary">{content.deployment.label}</p>
+                            <div>
+                                <p className="text-white">{content.deployment.label}</p>
+                                <p className="text-sm text-secondary">{content.deployment.description}</p>
+                            </div>
                             <div className="grid gap-3 md:grid-cols-2">
                                 <OptionCard
                                     title={content.deployment.selfHosted.title}
@@ -309,7 +312,10 @@ export function SubscriptionConfiguratorSection({ locale, content, icons }: { lo
                         </div>
 
                         <div className="space-y-2">
-                            <p className="text-sm tracking-wide text-tertiary">{content.customerType.label}</p>
+                            <div>
+                                <p className="text-white">{content.customerType.label}</p>
+                                <p className="text-sm text-secondary">{content.customerType.description}</p>
+                            </div>
                             <div className="grid gap-3 md:grid-cols-2">
                                 <OptionCard
                                     title={content.customerType.b2b.title}
@@ -346,7 +352,7 @@ export function SubscriptionConfiguratorSection({ locale, content, icons }: { lo
 
                         <div className="rounded-2xl border border-white/10 p-3">
                             <div className="flex flex-col items-start justify-between">
-                                <p className="text-base tracking-wide text-white">{workflowExecutions.title}</p>
+                                <p className="text-white">{workflowExecutions.title}</p>
                                 <p className="text-sm text-secondary">{workflowExecutions.description}</p>
                             </div>
                             <Slider
@@ -384,7 +390,7 @@ export function SubscriptionConfiguratorSection({ locale, content, icons }: { lo
 
                         <div className="rounded-2xl border border-white/10 p-3">
                             <div className="flex flex-col items-start justify-between">
-                                <p className="text-base tracking-wide text-white">{aiTokens.title}</p>
+                                <p className="text-white">{aiTokens.title}</p>
                                 <p className="text-sm text-secondary">{aiTokens.description}</p>
                             </div>
                             <Slider

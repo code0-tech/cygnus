@@ -158,6 +158,13 @@ export const SubscriptionCollection: GlobalConfig = {
                     defaultValue: "Deployment",
                 },
                 {
+                    name: "description",
+                    type: "textarea",
+                    required: false,
+                    localized: true,
+                    defaultValue: "Choose where your code0 instance will run.",
+                },
+                {
                     name: "selfHosted",
                     type: "group",
                     fields: [
@@ -201,6 +208,13 @@ export const SubscriptionCollection: GlobalConfig = {
                     required: false,
                     localized: true,
                     defaultValue: "Customer Type",
+                },
+                {
+                    name: "description",
+                    type: "textarea",
+                    required: false,
+                    localized: true,
+                    defaultValue: "Choose the customer model that best matches your use case.",
                 },
                 {
                     name: "b2b",
