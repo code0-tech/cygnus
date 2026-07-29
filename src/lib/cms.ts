@@ -292,6 +292,8 @@ export interface CheckoutData {
             baseLabel: string
             workflowExecutionsLabel: string
             additionalFeaturesLabel: string
+            quarterlyDiscountLabel: string
+            yearlyDiscountLabel: string
             discountLabel: string
             discountInputPlaceholder: string
             discountButtonLabel: string

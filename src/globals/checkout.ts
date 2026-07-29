@@ -110,6 +110,8 @@ export const Checkout: GlobalConfig = {
                         { name: "baseLabel", type: "text", required: true, localized: true, defaultValue: "AI Tokens" },
                         { name: "workflowExecutionsLabel", type: "text", required: true, localized: true, defaultValue: "Workflow Executions" },
                         { name: "additionalFeaturesLabel", type: "text", required: true, localized: true, defaultValue: "Additional Features" },
+                        { name: "quarterlyDiscountLabel", type: "text", required: true, localized: true, defaultValue: "Quarterly discount" },
+                        { name: "yearlyDiscountLabel", type: "text", required: true, localized: true, defaultValue: "Yearly discount" },
                         { name: "discountLabel", type: "text", required: true, localized: true, defaultValue: "Discount" },
                         { name: "discountInputPlaceholder", type: "text", required: true, localized: true, defaultValue: "Discount code" },
                         { name: "discountButtonLabel", type: "text", required: true, localized: true, defaultValue: "Apply" },

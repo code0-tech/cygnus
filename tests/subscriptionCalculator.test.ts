@@ -1,6 +1,6 @@
 import assert from "node:assert/strict"
 import test from "node:test"
-import { calculateExclusiveTaxRate, calculatePromotionDiscountAmount, calculateSubscriptionPrice, clampToRange, formatDiscountBadge, getPaymentPeriodDiscount, getPaymentPeriodSuffix } from "@/lib/subscriptionCalculator"
+import { calculateExclusiveTaxRate, calculatePromotionDiscountAmount, calculateSubscriptionPrice, clampToRange, formatDiscountBadge, getPaymentPeriodDiscount, getPaymentPeriodSuffix, resolveCheckoutPricing } from "@/lib/subscriptionCalculator"
 
 const paymentPeriod = {
     description: "Choose how often to pay.",
@@ -67,4 +67,30 @@ test("calculates subscription totals before and after discount", () => {
             workflowExecutionPrice: 10,
         }
     )
+})
+
+test("preserves the regular fixed-plan price for period discount summaries", () => {
+    const config = {
+        paymentPeriod,
+        packages: {
+            pro: {
+                prices: { monthly: 10, quarterly: 27, yearly: 96 },
+                title: "Pro",
+            },
+        },
+    } as never
+
+    const result = resolveCheckoutPricing({
+        additionalFeatureIds: [],
+        aiTokensParam: null,
+        customerTypeParam: null,
+        fallbackPeriodSuffix: "/qtr",
+        paymentPeriodParam: "quarterly",
+        planParam: "pro",
+        subscriptionConfig: config,
+        workflowExecutionsParam: null,
+    })
+
+    assert.equal(result.pricing.totalBeforeDiscount, 30)
+    assert.equal(result.pricing.totalPrice, 27)
 })

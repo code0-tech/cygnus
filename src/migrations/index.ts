@@ -83,6 +83,7 @@ import * as migration_20260729_100227_checkout_discount_tax_labels from './20260
 import * as migration_20260729_105759_checkout_discount_form_labels from './20260729_105759_checkout_discount_form_labels';
 import * as migration_20260729_132535_subscription_default_deployment_self_hosted from './20260729_132535_subscription_default_deployment_self_hosted';
 import * as migration_20260729_134832_checkout_customer_form from './20260729_134832_checkout_customer_form';
+import * as migration_20260729_160138_checkout_period_discount_labels from './20260729_160138_checkout_period_discount_labels';
 
 export const migrations = [
   {
@@ -509,5 +510,10 @@ export const migrations = [
     up: migration_20260729_134832_checkout_customer_form.up,
     down: migration_20260729_134832_checkout_customer_form.down,
     name: '20260729_134832_checkout_customer_form',
+  },
+  {
+    up: migration_20260729_160138_checkout_period_discount_labels.up,
+    down: migration_20260729_160138_checkout_period_discount_labels.down,
+    name: '20260729_160138_checkout_period_discount_labels',
   },
 ];

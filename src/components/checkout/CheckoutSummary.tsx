@@ -62,7 +62,7 @@ export function CheckoutSummary({ content, sessionToken, subscriptionConfig, tax
     const deployment = searchParams.get("deploymentType") ?? searchParams.get("deployment")
     const customerType = searchParams.get("customerType")
     const planParam = searchParams.get("plan")
-    const paymentPeriod = searchParams.get("paymentPeriod")
+    const paymentPeriodParam = searchParams.get("paymentPeriod")
     const workflowExecutionsParam = searchParams.get("workflowExecutions")
     const aiTokensParam = searchParams.get("aiTokens")
     const additionalFeaturesParam = searchParams.get("additionalFeatures")
@@ -71,21 +71,23 @@ export function CheckoutSummary({ content, sessionToken, subscriptionConfig, tax
             ?.split(",")
             .map((feature) => feature.trim())
             .filter((feature) => feature.length > 0) ?? []
-    const { additionalFeaturesPrice, aiTokens, isCustomPlan, periodSuffix, planTitle, pricing, selectedAdditionalFeatures, workflowExecutions } = resolveCheckoutPricing({
+    const { additionalFeaturesPrice, aiTokens, isCustomPlan, paymentPeriod, periodSuffix, planTitle, pricing, selectedAdditionalFeatures, workflowExecutions } = resolveCheckoutPricing({
         additionalFeatureIds: selectedAdditionalFeatureIds,
         aiTokensParam,
         customerTypeParam: customerType,
         fallbackPeriodSuffix: content.pricing.perMonthSuffix,
-        paymentPeriodParam: paymentPeriod,
+        paymentPeriodParam,
         planParam,
         subscriptionConfig,
         workflowExecutionsParam,
     })
     const locale = params?.locale === "de" ? "de" : "en"
+    const paymentPeriodDiscountAmount = Math.max(0, pricing.totalBeforeDiscount - pricing.totalPrice)
+    const paymentPeriodDiscountPercentage = pricing.totalBeforeDiscount > 0 ? paymentPeriodDiscountAmount / pricing.totalBeforeDiscount : 0
+    const paymentPeriodDiscountLabel = paymentPeriod === "quarterly" ? content.pricing.quarterlyDiscountLabel : paymentPeriod === "yearly" ? content.pricing.yearlyDiscountLabel : null
     const promotionDiscountAmount = calculatePromotionDiscountAmount(pricing.totalPrice, promotionDiscount)
     const discountedPrice = Math.max(0, pricing.totalPrice - promotionDiscountAmount)
-    const discountAmount = Math.max(0, pricing.totalBeforeDiscount - discountedPrice)
-    const discountPercentage = pricing.totalBeforeDiscount > 0 ? discountAmount / pricing.totalBeforeDiscount : 0
+    const discountPercentage = pricing.totalPrice > 0 ? promotionDiscountAmount / pricing.totalPrice : 0
     const taxAmount = taxQuote ? taxQuote.taxAmountExclusive / 100 : 0
     const taxPercentage = taxQuote ? calculateExclusiveTaxRate(taxQuote.amountTotal, taxQuote.taxAmountExclusive) : 0
     const totalPrice = taxQuote ? Math.max(0, taxQuote.amountTotal / 100 - promotionDiscountAmount) : discountedPrice
@@ -93,7 +95,8 @@ export function CheckoutSummary({ content, sessionToken, subscriptionConfig, tax
     const formattedBasePrice = formatEuroCurrency(pricing.aiTokenPrice, locale)
     const formattedWorkflowExecutionsPrice = formatEuroCurrency(pricing.workflowExecutionPrice, locale)
     const formattedAdditionalFeaturesPrice = formatEuroCurrency(additionalFeaturesPrice, locale)
-    const formattedDiscountAmount = formatEuroCurrency(discountAmount, locale)
+    const formattedPaymentPeriodDiscountAmount = formatEuroCurrency(paymentPeriodDiscountAmount, locale)
+    const formattedDiscountAmount = formatEuroCurrency(promotionDiscountAmount, locale)
     const formattedTaxAmount = formatEuroCurrency(taxAmount, locale)
 
     return (
@@ -104,7 +107,7 @@ export function CheckoutSummary({ content, sessionToken, subscriptionConfig, tax
                 <p className="mt-2 max-w-md text-sm leading-6 text-secondary">{content.description}</p>
             </div>
 
-            <div className="space-y-2">
+            <div className="grid gap-2 grid-cols-2">
                 {isCustomPlan && deployment && (
                     <SummaryRow
                         icon={getIcon(deployment === "cloud" ? content.deploymentIcons.cloud : content.deploymentIcons.selfHosted, 16)}
@@ -144,74 +147,83 @@ export function CheckoutSummary({ content, sessionToken, subscriptionConfig, tax
                         value={<span>{selectedAdditionalFeatures.map((feature) => feature.title).join(", ")}</span>}
                     />
                 )}
+            </div>
 
-                <div className="mt-5 rounded-2xl border border-white/10 bg-white/2 p-4">
-                    <div className="-mx-4 flex items-center justify-between gap-3 border-b border-white/10 px-4 pb-3">
-                        <div>
-                            <p className="text-xs tracking-wide text-tertiary">{content.pricing.label}</p>
-                            <p className="mt-1 text-sm text-white">{content.pricing.description}</p>
-                        </div>
+            <div className="mt-5 rounded-2xl border border-white/10 bg-white/2 p-4">
+                <div className="-mx-4 flex items-center justify-between gap-3 border-b border-white/10 px-4 pb-3">
+                    <div>
+                        <p className="text-xs tracking-wide text-tertiary">{content.pricing.label}</p>
+                        <p className="mt-1 text-sm text-white">{content.pricing.description}</p>
+                    </div>
+                </div>
+
+                <CheckoutDiscount
+                    buttonLabel={content.pricing.discountButtonLabel}
+                    inputPlaceholder={content.pricing.discountInputPlaceholder}
+                    onApplied={setPromotionDiscount}
+                    sessionToken={sessionToken}
+                />
+
+                <div className="space-y-2 pt-4">
+                    <div className="flex items-center justify-between gap-4 text-sm">
+                        <span className="text-secondary">{content.pricing.planLabel}</span>
+                        <span className="text-white">{planTitle}</span>
                     </div>
 
-                    <CheckoutDiscount
-                        buttonLabel={content.pricing.discountButtonLabel}
-                        inputPlaceholder={content.pricing.discountInputPlaceholder}
-                        onApplied={setPromotionDiscount}
-                        sessionToken={sessionToken}
-                    />
+                    {isCustomPlan && (
+                        <>
+                            <div className="flex items-center justify-between gap-4 text-sm">
+                                <span className="text-secondary">{content.pricing.baseLabel}</span>
+                                <span className="tabular-nums text-white">{formattedBasePrice}</span>
+                            </div>
 
-                    <div className="space-y-2 pt-4">
+                            <div className="flex items-center justify-between gap-4 text-sm">
+                                <span className="text-secondary">{content.pricing.workflowExecutionsLabel}</span>
+                                <span className="tabular-nums text-white">{formattedWorkflowExecutionsPrice}</span>
+                            </div>
+                        </>
+                    )}
+
+                    {selectedAdditionalFeatures.length > 0 && (
                         <div className="flex items-center justify-between gap-4 text-sm">
-                            <span className="text-secondary">{content.pricing.planLabel}</span>
-                            <span className="text-white">{planTitle}</span>
+                            <span className="text-secondary">{content.pricing.additionalFeaturesLabel}</span>
+                            <span className="tabular-nums text-white">{formattedAdditionalFeaturesPrice}</span>
                         </div>
+                    )}
 
-                        {isCustomPlan && (
-                            <>
-                                <div className="flex items-center justify-between gap-4 text-sm">
-                                    <span className="text-secondary">{content.pricing.baseLabel}</span>
-                                    <span className="tabular-nums text-white">{formattedBasePrice}</span>
-                                </div>
+                    {paymentPeriodDiscountLabel && paymentPeriodDiscountAmount > 0 && (
+                        <div className="flex items-center justify-between gap-4 text-sm">
+                            <span className="text-secondary">
+                                {paymentPeriodDiscountLabel} (-{formatDiscountBadge(paymentPeriodDiscountPercentage, locale)})
+                            </span>
+                            <span className="tabular-nums text-white">-{formattedPaymentPeriodDiscountAmount}</span>
+                        </div>
+                    )}
 
-                                <div className="flex items-center justify-between gap-4 text-sm">
-                                    <span className="text-secondary">{content.pricing.workflowExecutionsLabel}</span>
-                                    <span className="tabular-nums text-white">{formattedWorkflowExecutionsPrice}</span>
-                                </div>
-                            </>
-                        )}
+                    {promotionDiscountAmount > 0 && (
+                        <div className="flex items-center justify-between gap-4 text-sm">
+                            <span className="text-secondary">
+                                {content.pricing.discountLabel} (-{formatDiscountBadge(discountPercentage, locale)})
+                            </span>
+                            <span className="tabular-nums text-white">-{formattedDiscountAmount}</span>
+                        </div>
+                    )}
 
-                        {selectedAdditionalFeatures.length > 0 && (
-                            <div className="flex items-center justify-between gap-4 text-sm">
-                                <span className="text-secondary">{content.pricing.additionalFeaturesLabel}</span>
-                                <span className="tabular-nums text-white">{formattedAdditionalFeaturesPrice}</span>
-                            </div>
-                        )}
+                    {taxQuote && (
+                        <div className="flex items-center justify-between gap-4 text-sm">
+                            <span className="text-secondary">
+                                {content.pricing.taxLabel} ({formatDiscountBadge(taxPercentage, locale)})
+                            </span>
+                            <span className="tabular-nums text-white">{formattedTaxAmount}</span>
+                        </div>
+                    )}
+                </div>
 
-                        {discountAmount > 0 && (
-                            <div className="flex items-center justify-between gap-4 text-sm">
-                                <span className="text-secondary">
-                                    {content.pricing.discountLabel} (-{formatDiscountBadge(discountPercentage, locale)})
-                                </span>
-                                <span className="tabular-nums text-white">-{formattedDiscountAmount}</span>
-                            </div>
-                        )}
-
-                        {taxQuote && (
-                            <div className="flex items-center justify-between gap-4 text-sm">
-                                <span className="text-secondary">
-                                    {content.pricing.taxLabel} ({formatDiscountBadge(taxPercentage, locale)})
-                                </span>
-                                <span className="tabular-nums text-white">{formattedTaxAmount}</span>
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="-mx-4 mt-4 flex items-center justify-between gap-4 border-t border-white/10 px-4 pt-4 text-sm">
-                        <span className="text-secondary">{content.pricing.totalLabel}</span>
-                        <span className="tabular-nums text-brand text-lg">
-                            {formattedTotalPrice} <span className="text-tertiary text-sm">{periodSuffix}</span>
-                        </span>
-                    </div>
+                <div className="-mx-4 mt-4 flex items-center justify-between gap-4 border-t border-white/10 px-4 pt-4 text-sm">
+                    <span className="text-secondary">{content.pricing.totalLabel}</span>
+                    <span className="tabular-nums text-brand text-lg">
+                        {formattedTotalPrice} <span className="text-tertiary text-sm">{periodSuffix}</span>
+                    </span>
                 </div>
             </div>
         </div>
