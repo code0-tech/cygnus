@@ -82,6 +82,7 @@ export function CheckoutSummary({ content, sessionToken, subscriptionConfig, tax
         workflowExecutionsParam,
     })
     const locale = params?.locale === "de" ? "de" : "en"
+    const monthlyPeriodSuffix = subscriptionConfig?.paymentPeriod.monthlyPeriodSuffix ?? content.pricing.perMonthSuffix
     const paymentPeriodDiscountAmount = Math.max(0, pricing.totalBeforeDiscount - pricing.totalPrice)
     const paymentPeriodDiscountPercentage = pricing.totalBeforeDiscount > 0 ? paymentPeriodDiscountAmount / pricing.totalBeforeDiscount : 0
     const paymentPeriodDiscountLabel = paymentPeriod === "quarterly" ? content.pricing.quarterlyDiscountLabel : paymentPeriod === "yearly" ? content.pricing.yearlyDiscountLabel : null
@@ -127,7 +128,16 @@ export function CheckoutSummary({ content, sessionToken, subscriptionConfig, tax
                 )}
 
                 {isCustomPlan && aiTokensParam && (
-                    <SummaryRow icon={getIcon(content.aiTokensIcon, 16)} label={content.aiTokensLabel} tone={content.aiTokensIconColor} value={<span>{formatCompactNumber(aiTokens)}</span>} />
+                    <SummaryRow
+                        icon={getIcon(content.aiTokensIcon, 16)}
+                        label={content.aiTokensLabel}
+                        tone={content.aiTokensIconColor}
+                        value={
+                            <span>
+                                {formatCompactNumber(aiTokens)} <span className="font-normal text-tertiary">{monthlyPeriodSuffix}</span>
+                            </span>
+                        }
+                    />
                 )}
 
                 {isCustomPlan && workflowExecutionsParam && (
@@ -135,7 +145,11 @@ export function CheckoutSummary({ content, sessionToken, subscriptionConfig, tax
                         icon={getIcon(content.workflowExecutionsIcon, 16)}
                         label={content.workflowExecutionsLabel}
                         tone={content.workflowExecutionsIconColor}
-                        value={<span>{formatCompactNumber(workflowExecutions)}</span>}
+                        value={
+                            <span>
+                                {formatCompactNumber(workflowExecutions)} <span className="font-normal text-tertiary">{monthlyPeriodSuffix}</span>
+                            </span>
+                        }
                     />
                 )}
 

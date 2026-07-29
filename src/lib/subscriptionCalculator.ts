@@ -52,6 +52,12 @@ export function getPaymentPeriodDiscount(period: PaymentPeriod, paymentPeriod: S
     return 0
 }
 
+export function getPaymentPeriodMonths(period: PaymentPeriod) {
+    if (period === "quarterly") return 3
+    if (period === "yearly") return 12
+    return 1
+}
+
 export function getPaymentPeriodSuffix(period: PaymentPeriod, paymentPeriod: SubscriptionConfigData["paymentPeriod"]) {
     if (period === "quarterly") return paymentPeriod.quarterlyPeriodSuffix
     if (period === "yearly") return paymentPeriod.yearlyPeriodSuffix
@@ -62,6 +68,7 @@ export function calculateSubscriptionPrice({
     additionalFeaturesPrice = 0,
     aiTokenPriceFactor,
     aiTokens,
+    billingPeriodMonths = 1,
     discount = 0,
     workflowExecutionPriceFactor,
     workflowExecutions,
@@ -69,13 +76,16 @@ export function calculateSubscriptionPrice({
     additionalFeaturesPrice?: number
     aiTokenPriceFactor: number
     aiTokens: number
+    billingPeriodMonths?: number
     discount?: number
     workflowExecutionPriceFactor: number
     workflowExecutions: number
 }) {
-    const workflowExecutionPrice = workflowExecutionPriceFactor * workflowExecutions
-    const aiTokenPrice = aiTokenPriceFactor * aiTokens
-    const totalBeforeDiscount = workflowExecutionPrice + aiTokenPrice + additionalFeaturesPrice
+    const periodMonths = Number.isFinite(billingPeriodMonths) && billingPeriodMonths > 0 ? billingPeriodMonths : 1
+    const workflowExecutionPrice = workflowExecutionPriceFactor * workflowExecutions * periodMonths
+    const aiTokenPrice = aiTokenPriceFactor * aiTokens * periodMonths
+    const recurringAdditionalFeaturesPrice = additionalFeaturesPrice * periodMonths
+    const totalBeforeDiscount = workflowExecutionPrice + aiTokenPrice + recurringAdditionalFeaturesPrice
 
     return {
         aiTokenPrice,
@@ -119,7 +129,7 @@ export function resolveCheckoutPricing({
 
     if (plan !== "custom") {
         const planPrice = subscriptionConfig?.packages[plan].prices[paymentPeriod] ?? 0
-        const periodMonths = paymentPeriod === "quarterly" ? 3 : paymentPeriod === "yearly" ? 12 : 1
+        const periodMonths = getPaymentPeriodMonths(paymentPeriod)
         const regularPrice = (subscriptionConfig?.packages[plan].prices.monthly ?? planPrice) * periodMonths
 
         return {
@@ -146,7 +156,9 @@ export function resolveCheckoutPricing({
         const matchingFeature = subscriptionConfig?.additionalFeatures?.find((feature, index) => String(feature.id ?? index) === selectedFeatureId)
         return matchingFeature ? [matchingFeature] : []
     })
-    const additionalFeaturesPrice = selectedAdditionalFeatures.reduce((total, feature) => total + feature.price, 0)
+    const monthlyAdditionalFeaturesPrice = selectedAdditionalFeatures.reduce((total, feature) => total + feature.price, 0)
+    const periodMonths = getPaymentPeriodMonths(paymentPeriod)
+    const additionalFeaturesPrice = monthlyAdditionalFeaturesPrice * periodMonths
     const customerType = customerTypeParam === "b2b" || customerTypeParam === "b2c" ? customerTypeParam : (subscriptionConfig?.defaults.customerType ?? "b2b")
     const defaultWorkflowExecutions = subscriptionConfig?.defaults.workflowExecutions[customerType] ?? 200
     const defaultAiTokens = subscriptionConfig?.defaults.aiTokens[customerType] ?? 0
@@ -156,9 +168,10 @@ export function resolveCheckoutPricing({
     const aiTokens = subscriptionConfig ? clampToRange(parseNumber(aiTokensParam, defaultAiTokens), subscriptionConfig.aiTokens[customerType]) : parseNumber(aiTokensParam, defaultAiTokens)
     const discount = subscriptionConfig ? getPaymentPeriodDiscount(paymentPeriod, subscriptionConfig.paymentPeriod) : 0
     const pricing = calculateSubscriptionPrice({
-        additionalFeaturesPrice,
+        additionalFeaturesPrice: monthlyAdditionalFeaturesPrice,
         aiTokenPriceFactor: subscriptionConfig?.aiTokenPriceFactor ?? 0,
         aiTokens,
+        billingPeriodMonths: periodMonths,
         discount,
         workflowExecutionPriceFactor: subscriptionConfig?.workflowExecutionPriceFactor ?? 0,
         workflowExecutions,

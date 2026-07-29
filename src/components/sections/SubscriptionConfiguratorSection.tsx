@@ -3,7 +3,7 @@
 import type { SubscriptionConfiguratorContent } from "@/lib/cms"
 import { formatEuroCurrency } from "@/lib/formatters"
 import type { AppLocale } from "@/lib/i18n"
-import { calculateSubscriptionPrice, clampToRange, formatDiscountBadge, getPaymentPeriodDiscount, getPaymentPeriodSuffix, type PaymentPeriod, type UsageRange } from "@/lib/subscriptionCalculator"
+import { calculateSubscriptionPrice, clampToRange, formatDiscountBadge, getPaymentPeriodDiscount, getPaymentPeriodMonths, getPaymentPeriodSuffix, type PaymentPeriod, type UsageRange } from "@/lib/subscriptionCalculator"
 import { useDesktopPinnedPosition } from "@/hooks/useDesktopPinnedPosition"
 import { cn } from "@/lib/utils"
 import { BuyMenu } from "@/components/checkout/BuyMenu"
@@ -208,6 +208,7 @@ export function SubscriptionConfiguratorSection({ locale, content, icons }: { lo
         additionalFeaturesPrice,
         aiTokenPriceFactor: content.aiTokenPriceFactor,
         aiTokens: selection.aiTokens,
+        billingPeriodMonths: getPaymentPeriodMonths(selection.paymentPeriod),
         discount: paymentPeriodDiscount,
         workflowExecutionPriceFactor: content.workflowExecutionPriceFactor,
         workflowExecutions: selection.workflowExecutions,
