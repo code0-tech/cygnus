@@ -194,6 +194,7 @@ export function CheckoutForm({ content, locale, subscriptionConfig }: { content?
                     <TextInput maxLength={100} title={content.cityLabel} className="w-full!" {...inputs.getInputProps("city")} />
                     <TextInput maxLength={100} title={content.stateLabel} placeholder={content.statePlaceholder} className="w-full!" {...inputs.getInputProps("state")} />
                     <CountryPicker
+                        emptyLabel={content.countryEmptyLabel}
                         errorMessage={countryInputProps.formValidation?.notValidMessage}
                         label={content.countryLabel}
                         locale={locale}

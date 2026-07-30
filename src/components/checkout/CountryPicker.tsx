@@ -1,12 +1,13 @@
-import { getCountryOptions, normalizeCountrySearchValue, type CountryOption } from "@/lib/checkout/countries"
+import { getCountryOptions, normalizeCountrySearchValue } from "@/lib/checkout/countries"
 import type { AppLocale } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
-import { TextInput, type InputSuggestion } from "@code0-tech/pictor"
+import { Menu, MenuContent, MenuItem, MenuTrigger, TextInput } from "@code0-tech/pictor"
 import { IconCheck, IconChevronDown } from "@tabler/icons-react"
 import * as FlagIcons from "country-flag-icons/react/3x2"
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type RefObject } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 
 interface CountryPickerProps {
+    emptyLabel: string
     errorMessage?: string | null
     label: string
     locale: AppLocale
@@ -23,129 +24,115 @@ function CountryFlag({ countryCode, className }: { countryCode: string; classNam
     return <FlagIcon aria-hidden="true" className={cn("h-3.5 w-5 shrink-0 rounded-xs", className)} />
 }
 
-function CountryMenuWidth({ inputRef }: { inputRef: RefObject<HTMLInputElement | null> }) {
-    const markerRef = useRef<HTMLSpanElement>(null)
-
-    useLayoutEffect(() => {
-        const input = inputRef.current
-        const menu = markerRef.current?.closest<HTMLElement>(".menu__content")
-
-        if (!input || !menu) return
-
-        const inputContainer = input.closest<HTMLElement>(".input") ?? input
-        const updateWidth = () => {
-            const width = inputContainer.getBoundingClientRect().width
-            const menuWidth = `${width}px`
-
-            menu.style.setProperty("width", menuWidth, "important")
-            menu.style.setProperty("min-width", menuWidth, "important")
-            menu.style.setProperty("max-width", menuWidth, "important")
-            menu.style.setProperty("overflow", "hidden", "important")
-            menu.style.setProperty("border-radius", "1rem", "important")
-
-            menu.querySelectorAll<HTMLElement>(".card, .scroll-area, .scroll-area__viewport, .scroll-area__viewport > div, .menu__item").forEach((element) => {
-                element.style.setProperty("box-sizing", "border-box", "important")
-                element.style.setProperty("width", "100%", "important")
-                element.style.setProperty("min-width", "0", "important")
-                element.style.setProperty("max-width", "100%", "important")
-            })
-
-            menu.querySelectorAll<HTMLElement>(".scroll-area__viewport > div").forEach((element) => {
-                element.style.setProperty("display", "block", "important")
-            })
-        }
-
-        updateWidth()
-        const resizeObserver = new ResizeObserver(updateWidth)
-        resizeObserver.observe(inputContainer)
-        const mutationObserver = new MutationObserver(updateWidth)
-        mutationObserver.observe(menu, { childList: true, subtree: true })
-
-        return () => {
-            resizeObserver.disconnect()
-            mutationObserver.disconnect()
-        }
-    }, [inputRef])
-
-    return <span ref={markerRef} className="hidden" aria-hidden="true" />
-}
-
-export function CountryPicker({ errorMessage, label, locale, onValueChange, placeholder, required, value }: CountryPickerProps) {
+export function CountryPicker({ emptyLabel, errorMessage, label, locale, onValueChange, placeholder, required, value }: CountryPickerProps) {
     const inputRef = useRef<HTMLInputElement>(null)
+    const [open, setOpen] = useState(false)
     const options = useMemo(() => getCountryOptions(locale), [locale])
     const selectedCountry = options.find((country) => country.value === value) ?? null
     const [inputValue, setInputValue] = useState(selectedCountry?.label ?? "")
     const normalizedQuery = normalizeCountrySearchValue(inputValue.trim())
+    const selectedCountryIsDisplayed = Boolean(selectedCountry && normalizeCountrySearchValue(selectedCountry.label) === normalizedQuery)
 
     const visibleOptions = useMemo(() => {
-        if (!normalizedQuery || normalizeCountrySearchValue(selectedCountry?.label ?? "") === normalizedQuery) return options
+        if (!normalizedQuery || selectedCountryIsDisplayed) return options
 
         return options.filter((country) => country.searchValue.includes(normalizedQuery))
-    }, [normalizedQuery, options, selectedCountry?.label])
-
-    const emptyLabel = locale === "de" ? "Kein Land gefunden." : "No country found."
-    const suggestions = useMemo<InputSuggestion[]>(
-        () =>
-            visibleOptions.map((country) => ({
-                value: country.label,
-                valueData: country,
-                children: (
-                    <span
-                        style={{
-                            boxSizing: "border-box",
-                            display: "grid",
-                            gridTemplateColumns: "1.25rem minmax(0, 1fr) 1rem",
-                            width: "100%",
-                        }}
-                        className="min-w-0 gap-2 items-center"
-                    >
-                        <CountryFlag countryCode={country.value} />
-                        <span className="block min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">{country.label}</span>
-                        <IconCheck size={14} className={selectedCountry?.value === country.value ? "justify-self-end text-brand" : "justify-self-end opacity-0"} />
-                    </span>
-                ),
-            })),
-        [selectedCountry?.value, visibleOptions]
-    )
+    }, [normalizedQuery, options, selectedCountryIsDisplayed])
 
     useEffect(() => {
-        if (selectedCountry) {
-            setInputValue(selectedCountry.label)
-        }
-    }, [selectedCountry])
+        setInputValue(selectedCountry?.label ?? "")
+    }, [selectedCountry?.label])
+
+    useEffect(() => {
+        if (!open) return
+
+        requestAnimationFrame(() => inputRef.current?.focus({ preventScroll: true }))
+    }, [open])
 
     return (
-        <TextInput
-            ref={inputRef}
-            title={label}
-            placeholder={placeholder}
-            required={required}
-            value={inputValue}
-            suggestions={suggestions}
-            suggestionsHeader={<CountryMenuWidth inputRef={inputRef} />}
-            suggestionsEmptyState={<span className="block px-3 py-3 text-center text-xs text-tertiary">{emptyLabel}</span>}
-            left={selectedCountry && normalizeCountrySearchValue(selectedCountry.label) === normalizedQuery ? <CountryFlag countryCode={selectedCountry.value} className="-mr-2" /> : undefined}
-            leftType="icon"
-            right={<IconChevronDown size={16} className="text-tertiary" />}
-            rightType="icon"
-            formValidation={{
-                valid: !errorMessage,
-                notValidMessage: errorMessage,
-            }}
-            onChange={(event) => {
-                const nextValue = event.currentTarget.value
-                setInputValue(nextValue)
+        <div className="min-w-0">
+            <label className="input__label">{label}</label>
+            <Menu modal={false} open={open} onOpenChange={setOpen}>
+                <MenuTrigger asChild>
+                    <div className="w-full">
+                        <TextInput
+                            ref={inputRef}
+                            aria-label={label}
+                            autoComplete="off"
+                            placeholder={placeholder}
+                            required={required}
+                            value={inputValue}
+                            left={selectedCountryIsDisplayed && selectedCountry ? <CountryFlag countryCode={selectedCountry.value} className="-mr-1" /> : undefined}
+                            leftType="icon"
+                            right={<IconChevronDown size={16} className={cn("text-tertiary transition-transform", open && "rotate-180")} />}
+                            rightType="icon"
+                            formValidation={{
+                                valid: !errorMessage,
+                                notValidMessage: errorMessage,
+                            }}
+                            onFocus={() => setOpen(true)}
+                            onPointerDown={(event) => {
+                                event.stopPropagation()
+                                setOpen(true)
+                            }}
+                            onChange={(event) => {
+                                const nextValue = event.currentTarget.value
+                                setInputValue(nextValue)
+                                setOpen(true)
 
-                if (value && normalizeCountrySearchValue(selectedCountry?.label ?? "") !== normalizeCountrySearchValue(nextValue)) {
-                    onValueChange("")
-                }
-            }}
-            onSuggestionSelect={(suggestion) => {
-                const country = suggestion.valueData as CountryOption
-                setInputValue(country.label)
-                onValueChange(country.value)
-            }}
-            className="w-full!"
-        />
+                                if (value && normalizeCountrySearchValue(selectedCountry?.label ?? "") !== normalizeCountrySearchValue(nextValue)) {
+                                    onValueChange("")
+                                }
+                            }}
+                            onKeyDown={(event) => {
+                                if (event.key === "Escape") {
+                                    setOpen(false)
+                                }
+                            }}
+                            className="w-full!"
+                        />
+                    </div>
+                </MenuTrigger>
+
+                <MenuContent
+                    align="start"
+                    sideOffset={6}
+                    onCloseAutoFocus={(event) => event.preventDefault()}
+                    onFocusOutside={(event) => {
+                        if (event.target === inputRef.current) {
+                            event.preventDefault()
+                        }
+                    }}
+                    onInteractOutside={(event) => {
+                        if (event.target === inputRef.current) {
+                            event.preventDefault()
+                        }
+                    }}
+                    className="max-h-72! w-(--radix-dropdown-menu-trigger-width)! min-w-(--radix-dropdown-menu-trigger-width)! max-w-(--radix-dropdown-menu-trigger-width)! overflow-hidden! p-1! [&>.scroll-area]:w-full! [&>.scroll-area]:min-w-0! [&_.scroll-area__viewport]:w-full! [&_.scroll-area__viewport>div]:block! [&_.scroll-area__viewport>div]:w-full! [&_.scroll-area__viewport>div>div]:w-full!"
+                >
+                    <div className="w-full min-w-0 max-w-full">
+                        {visibleOptions.length === 0 ? (
+                            <span className="block w-full px-3 py-3 text-center text-xs text-tertiary">{emptyLabel}</span>
+                        ) : (
+                            visibleOptions.map((country) => (
+                                <MenuItem
+                                    key={country.value}
+                                    onSelect={() => {
+                                        setInputValue(country.label)
+                                        onValueChange(country.value)
+                                        setOpen(false)
+                                    }}
+                                    className="grid! w-full! min-w-0! max-w-full! grid-cols-[1.25rem_minmax(0,1fr)_1rem] items-center gap-2 overflow-hidden!"
+                                >
+                                    <CountryFlag countryCode={country.value} />
+                                    <span className="block min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">{country.label}</span>
+                                    <IconCheck size={14} className={selectedCountry?.value === country.value ? "justify-self-end text-brand" : "justify-self-end opacity-0"} />
+                                </MenuItem>
+                            ))
+                        )}
+                    </div>
+                </MenuContent>
+            </Menu>
+        </div>
     )
 }
