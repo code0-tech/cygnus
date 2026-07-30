@@ -1,29 +1,15 @@
 import { createApolloClient } from "@/lib/apolloClient"
-import { craterJson, craterMutationErrorResponse, optionalString, readJsonObject, type CraterMutationError } from "@/lib/craterApi"
+import { craterJson, craterMutationErrorResponse, optionalString, readJsonObject } from "@/lib/craterApi"
+import type { Mutation, MutationUsersLoginArgs } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 
 export const runtime = "nodejs"
 
-type UsersLoginData = {
-    usersLogin: {
-        errors: Array<Pick<CraterMutationError, "errorCode">>
-        userSession: {
-            active: boolean
-            createdAt: string
-            id: string
-            token: string | null
-            updatedAt: string
-        } | null
-    }
-}
+type UsersLoginData = Pick<Mutation, "usersLogin">
 
-type UsersLoginVariables = {
-    sagittariusToken: string
-}
-
-const USERS_LOGIN: TypedDocumentNode<UsersLoginData, UsersLoginVariables> = gql`
-    mutation UsersLogin($sagittariusToken: String!) {
-        usersLogin(input: { sagittariusToken: $sagittariusToken }) {
+const USERS_LOGIN: TypedDocumentNode<UsersLoginData, MutationUsersLoginArgs> = gql`
+    mutation UsersLogin($input: UsersLoginInput!) {
+        usersLogin(input: $input) {
             userSession {
                 active
                 createdAt
@@ -41,6 +27,7 @@ const USERS_LOGIN: TypedDocumentNode<UsersLoginData, UsersLoginVariables> = gql`
 export async function POST(request: Request) {
     const body = await readJsonObject(request)
     const sagittariusToken = optionalString(body?.sagittariusToken) ?? optionalString(process.env.CRATER_SAGITTARIUS_TOKEN)
+    const clientMutationId = optionalString(body?.clientMutationId)
 
     if (!sagittariusToken) {
         return craterJson({ error: "sagittariusToken is required." }, 400)
@@ -49,19 +36,20 @@ export async function POST(request: Request) {
     try {
         const result = await createApolloClient().mutate({
             mutation: USERS_LOGIN,
-            variables: { sagittariusToken },
+            variables: {
+                input: {
+                    sagittariusToken,
+                    ...(clientMutationId ? { clientMutationId } : {}),
+                },
+            },
         })
-        const data = result.data as UsersLoginData | undefined
-        const payload = data?.usersLogin
+        const payload = result.data?.usersLogin
 
         if (!payload) {
             throw new Error("Crater returned no login payload.")
         }
 
-        const errorResponse = craterMutationErrorResponse(
-            payload.errors.map((error) => ({ ...error, details: null })),
-            "Crater could not create a user session."
-        )
+        const errorResponse = craterMutationErrorResponse(payload.errors, "Crater could not create a user session.")
         if (errorResponse) return errorResponse
 
         if (!payload.userSession?.token) {

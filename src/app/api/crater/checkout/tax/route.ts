@@ -1,27 +1,13 @@
 import { createApolloClient } from "@/lib/apolloClient"
-import { craterJson, craterMutationErrorResponse, craterTransportErrorResponse, optionalString, readJsonObject, requireCraterSession, type CraterMutationError } from "@/lib/craterApi"
+import { craterJson, craterMutationErrorResponse, craterTransportErrorResponse, optionalString, readJsonObject, requireCraterSession } from "@/lib/craterApi"
+import type { Mutation, MutationCheckoutCalculateTaxArgs } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 
 export const runtime = "nodejs"
 
-type CheckoutCalculateTaxData = {
-    checkoutCalculateTax: {
-        errors: CraterMutationError[]
-        taxQuote: {
-            amountTotal: number
-            currency: string
-            taxAmountExclusive: number
-        } | null
-    }
-}
+type CheckoutCalculateTaxData = Pick<Mutation, "checkoutCalculateTax">
 
-type CheckoutCalculateTaxVariables = {
-    input: {
-        plan: string
-    }
-}
-
-const CHECKOUT_CALCULATE_TAX: TypedDocumentNode<CheckoutCalculateTaxData, CheckoutCalculateTaxVariables> = gql`
+const CHECKOUT_CALCULATE_TAX: TypedDocumentNode<CheckoutCalculateTaxData, MutationCheckoutCalculateTaxArgs> = gql`
     mutation CheckoutCalculateTax($input: CheckoutCalculateTaxInput!) {
         checkoutCalculateTax(input: $input) {
             taxQuote {

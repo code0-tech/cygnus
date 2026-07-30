@@ -51,3 +51,21 @@ test("checkout requires a deployment type for regular plans", async () => {
         error: "deploymentType must be cloud or self_hosted for a regular checkout.",
     })
 })
+
+test("checkout rejects malformed custom checkout configuration ids", async () => {
+    const response = await POST(
+        new Request("https://example.com/api/crater/checkout/session", {
+            method: "POST",
+            headers: {
+                authorization: "Session c_ust_example",
+                "content-type": "application/json",
+            },
+            body: JSON.stringify({ customCheckoutConfigurationId: "123" }),
+        })
+    )
+
+    assert.equal(response.status, 400)
+    assert.deepEqual(await response.json(), {
+        error: "customCheckoutConfigurationId must be a valid Crater global ID.",
+    })
+})

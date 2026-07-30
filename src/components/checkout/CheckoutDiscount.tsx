@@ -2,15 +2,15 @@
 
 import { Button } from "@code0-tech/pictor"
 import { useCraterSession } from "@/components/checkout/CraterSessionProvider"
+import type { CheckoutDiscount as CraterCheckoutDiscount } from "@code0-tech/crater-graphql-types"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useCallback, useEffect, useRef, useState } from "react"
 
-export interface CheckoutDiscountValue {
-    amountOff: number | null
-    code: string
-    currency: string | null
-    duration: string
-    percentOff: number | null
+type CheckoutDiscountFields = Required<Pick<CraterCheckoutDiscount, "amountOff" | "code" | "currency" | "duration" | "percentOff">>
+
+export type CheckoutDiscountValue = Omit<CheckoutDiscountFields, "code" | "duration"> & {
+    code: NonNullable<CraterCheckoutDiscount["code"]>
+    duration: NonNullable<CraterCheckoutDiscount["duration"]>
 }
 
 interface CheckoutDiscountProps {

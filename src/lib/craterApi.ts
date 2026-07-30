@@ -1,22 +1,7 @@
 import { readCraterSessionAuthorization } from "@/lib/craterSession"
+import type { Error } from "@code0-tech/crater-graphql-types"
 import { ServerError } from "@apollo/client/errors"
 import { NextResponse } from "next/server"
-
-type CraterDetailedError =
-    | {
-          __typename: "ActiveModelError"
-          attribute: string
-          type: string
-      }
-    | {
-          __typename: "MessageError"
-          message: string
-      }
-
-export type CraterMutationError = {
-    details?: CraterDetailedError[] | null
-    errorCode: string
-}
 
 export type JsonObject = Record<string, unknown>
 
@@ -81,25 +66,29 @@ export function requireCraterSession(request: Request): { response: NextResponse
     return { token: authorization.token }
 }
 
-export function craterMutationErrorResponse(errors: CraterMutationError[], message: string) {
-    if (errors.length === 0) {
-        return null
-    }
+export function craterMutationErrorResponse(errors: Error[] | null | undefined, message: string) {
+    const error = errors?.[0]
+    if (!error) return null
 
-    const [error] = errors
     const details =
-        error.details?.map((detail) => {
-            if (detail.__typename === "MessageError") {
-                return detail.message
-            }
+        error.details
+            ?.map((detail) => {
+                if (detail.__typename === "MessageError") {
+                    return detail.message ?? ""
+                }
 
-            return `${detail.attribute}: ${detail.type}`
-        }) ?? []
+                if (detail.__typename === "ActiveModelError") {
+                    return `${detail.attribute ?? "base"}: ${detail.type ?? "invalid"}`
+                }
+
+                return ""
+            })
+            .filter(Boolean) ?? []
 
     return craterJson(
         {
             error: message,
-            errorCode: error.errorCode,
+            errorCode: error.errorCode ?? "UNKNOWN",
             details,
         },
         422

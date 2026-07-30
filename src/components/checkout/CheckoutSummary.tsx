@@ -5,20 +5,19 @@ import { getIcon } from "@/components/ui/IconRenderer"
 import type { CheckoutData, CheckoutSummaryIconColor, SubscriptionConfigData } from "@/lib/cms"
 import { formatCompactNumber, formatEuroCurrency } from "@/lib/formatters"
 import { calculateExclusiveTaxRate, calculatePromotionDiscountAmount, formatDiscountBadge, resolveCheckoutPricing } from "@/lib/subscriptionCalculator"
+import type { CheckoutTaxQuote } from "@code0-tech/crater-graphql-types"
 import { useParams, useSearchParams } from "next/navigation"
 import { useState, type ReactNode } from "react"
 
-type CheckoutSummaryContent = CheckoutData["summary"]
+type CheckoutTaxQuoteValue = {
+    [Key in "amountTotal" | "currency" | "taxAmountExclusive"]-?: NonNullable<CheckoutTaxQuote[Key]>
+}
 
 interface CheckoutSummaryProps {
-    content?: CheckoutSummaryContent | null
+    content?: CheckoutData["summary"] | null
     sessionToken?: string | null
     subscriptionConfig?: SubscriptionConfigData | null
-    taxQuote?: {
-        amountTotal: number
-        currency: string
-        taxAmountExclusive: number
-    } | null
+    taxQuote?: CheckoutTaxQuoteValue | null
 }
 
 interface SummaryRowProps {
