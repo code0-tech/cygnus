@@ -172,9 +172,14 @@ export function CheckoutForm({ content, locale, subscriptionConfig }: { content?
 
     if (!content) return null
     const countryInputProps = inputs.getInputProps("country")
+    const isBillingFormComplete =
+        Boolean(values.name.trim() && values.line1.trim() && values.postalCode.trim() && values.city.trim()) &&
+        emailValidation(values.email.trim()) &&
+        values.country.trim().length === 2 &&
+        (customerType !== "business" || Boolean(values.taxIdType.trim() && values.taxIdValue.trim()))
 
     return (
-        <Card variant="default" className="h-max! flex-1!">
+        <Card variant="light" className="h-max! flex-1!">
             <div className="flex-1 space-y-6">
                 <h2 className="text-2xl text-white">{content.billingHeading}</h2>
 
@@ -217,7 +222,7 @@ export function CheckoutForm({ content, locale, subscriptionConfig }: { content?
                 <Button
                     type="submit"
                     variant="normal"
-                    disabled={isLoading || isSessionLoading || !sessionToken}
+                    disabled={!isBillingFormComplete || isLoading || isSessionLoading || !sessionToken}
                     onClick={() => validate()}
                     className="h-10! w-full! whitespace-nowrap bg-white/80! px-8! text-sm! text-primary! ring-1! ring-white/20! transition-all duration-300 hover:bg-white!"
                 >

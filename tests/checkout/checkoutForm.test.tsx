@@ -183,18 +183,16 @@ function useTestForm<T extends Record<string, unknown>>({
     ] as const
 }
 
-test("validates billing fields before creating a customer", async () => {
+test("disables checkout until all required billing fields are valid", async () => {
     const requests: string[] = []
     globalThis.fetch = (async (input) => {
         requests.push(String(input))
         return new Response()
     }) as typeof fetch
-    const user = userEvent.setup()
 
     render(<CheckoutForm content={content} locale="en" subscriptionConfig={subscriptionConfig} />)
-    await user.click(screen.getByRole("button", { name: "Continue to payment" }))
 
-    await waitFor(() => assert.ok(screen.getByText("Name is required")))
+    assert.equal((screen.getByRole("button", { name: "Continue to payment" }) as HTMLButtonElement).disabled, true)
     assert.equal(requests.length, 0)
 })
 

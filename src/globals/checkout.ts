@@ -115,6 +115,8 @@ export const Checkout: GlobalConfig = {
                         { name: "discountLabel", type: "text", required: true, localized: true, defaultValue: "Discount" },
                         { name: "discountInputPlaceholder", type: "text", required: true, localized: true, defaultValue: "Discount code" },
                         { name: "discountButtonLabel", type: "text", required: true, localized: true, defaultValue: "Apply" },
+                        { name: "discountPromptLabel", type: "text", required: true, localized: true, defaultValue: "Have a discount?" },
+                        { name: "discountRemoveLabel", type: "text", required: true, localized: true, defaultValue: "Remove" },
                         { name: "taxLabel", type: "text", required: true, localized: true, defaultValue: "Tax" },
                         { name: "totalLabel", type: "text", required: true, localized: true, defaultValue: "Total" },
                         { name: "perMonthSuffix", type: "text", required: true, localized: true, defaultValue: "/mo" },

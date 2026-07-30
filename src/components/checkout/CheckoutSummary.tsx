@@ -87,7 +87,6 @@ export function CheckoutSummary({ content, sessionToken, subscriptionConfig, tax
     const paymentPeriodDiscountLabel = paymentPeriod === "quarterly" ? content.pricing.quarterlyDiscountLabel : paymentPeriod === "yearly" ? content.pricing.yearlyDiscountLabel : null
     const promotionDiscountAmount = calculatePromotionDiscountAmount(pricing.totalPrice, promotionDiscount)
     const discountedPrice = Math.max(0, pricing.totalPrice - promotionDiscountAmount)
-    const discountPercentage = pricing.totalPrice > 0 ? promotionDiscountAmount / pricing.totalPrice : 0
     const taxAmount = taxQuote ? taxQuote.taxAmountExclusive / 100 : 0
     const taxPercentage = taxQuote ? calculateExclusiveTaxRate(taxQuote.amountTotal, taxQuote.taxAmountExclusive) : 0
     const totalPrice = taxQuote ? Math.max(0, taxQuote.amountTotal / 100 - promotionDiscountAmount) : discountedPrice
@@ -170,13 +169,6 @@ export function CheckoutSummary({ content, sessionToken, subscriptionConfig, tax
                     </div>
                 </div>
 
-                <CheckoutDiscount
-                    buttonLabel={content.pricing.discountButtonLabel}
-                    inputPlaceholder={content.pricing.discountInputPlaceholder}
-                    onApplied={setPromotionDiscount}
-                    sessionToken={sessionToken}
-                />
-
                 <div className="space-y-2 pt-4">
                     <div className="flex items-center justify-between gap-4 text-sm">
                         <span className="text-secondary">{content.pricing.planLabel}</span>
@@ -213,14 +205,15 @@ export function CheckoutSummary({ content, sessionToken, subscriptionConfig, tax
                         </div>
                     )}
 
-                    {promotionDiscountAmount > 0 && (
-                        <div className="flex items-center justify-between gap-4 text-sm">
-                            <span className="text-secondary">
-                                {content.pricing.discountLabel} (-{formatDiscountBadge(discountPercentage, locale)})
-                            </span>
-                            <span className="tabular-nums text-white">-{formattedDiscountAmount}</span>
-                        </div>
-                    )}
+                    <CheckoutDiscount
+                        appliedAmount={promotionDiscountAmount > 0 ? formattedDiscountAmount : null}
+                        buttonLabel={content.pricing.discountButtonLabel}
+                        inputPlaceholder={content.pricing.discountInputPlaceholder}
+                        onApplied={setPromotionDiscount}
+                        promptLabel={content.pricing.discountPromptLabel}
+                        removeLabel={content.pricing.discountRemoveLabel}
+                        sessionToken={sessionToken}
+                    />
 
                     {taxQuote && (
                         <div className="flex items-center justify-between gap-4 text-sm">
