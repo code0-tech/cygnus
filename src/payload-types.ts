@@ -3143,6 +3143,8 @@ export interface Checkout {
       discountLabel: string;
       discountInputPlaceholder: string;
       discountButtonLabel: string;
+      discountPromptLabel: string;
+      discountRemoveLabel: string;
       taxLabel: string;
       totalLabel: string;
       perMonthSuffix: string;
@@ -3666,6 +3668,8 @@ export interface CheckoutSelect<T extends boolean = true> {
               discountLabel?: T;
               discountInputPlaceholder?: T;
               discountButtonLabel?: T;
+              discountPromptLabel?: T;
+              discountRemoveLabel?: T;
               taxLabel?: T;
               totalLabel?: T;
               perMonthSuffix?: T;

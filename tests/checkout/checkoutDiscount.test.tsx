@@ -56,7 +56,7 @@ function discountResponse(code: string, percentOff: number) {
     )
 }
 
-test("applies, replaces, and clears only confirmed discount input values", async () => {
+test("opens, applies, and removes a discount code", async () => {
     const requestedCodes: string[] = []
     globalThis.fetch = (async (_input, init) => {
         const body = JSON.parse(String(init?.body))
@@ -66,7 +66,23 @@ test("applies, replaces, and clears only confirmed discount input values", async
     const appliedValues: Array<CheckoutDiscountValue | null> = []
     const user = userEvent.setup()
 
-    render(<CheckoutDiscount buttonLabel="Apply" inputPlaceholder="Discount code" sessionToken="session-token" onApplied={(discount) => appliedValues.push(discount)} />)
+    render(
+        <CheckoutDiscount
+            buttonLabel="Apply"
+            inputPlaceholder="Discount code"
+            promptLabel="Have a discount?"
+            removeLabel="Remove"
+            sessionToken="session-token"
+            onApplied={(discount) => appliedValues.push(discount)}
+        />
+    )
+
+    const promptButton = screen.getByRole("button", { name: "Have a discount?" })
+    await user.click(promptButton)
+    assert.ok(screen.getByPlaceholderText("Discount code"))
+    await user.click(promptButton)
+    assert.equal(screen.queryByPlaceholderText("Discount code"), null)
+    await user.click(promptButton)
 
     const input = screen.getByPlaceholderText("Discount code")
     const applyButton = screen.getByRole("button", { name: "Apply" })
@@ -76,25 +92,13 @@ test("applies, replaces, and clears only confirmed discount input values", async
     await waitFor(() => assert.equal(appliedValues.at(-1)?.code, "SAVE10"))
     assert.deepEqual(requestedCodes, ["SAVE10"])
     assert.equal(replacedUrls.at(-1), "/en/checkout?promotionCode=SAVE10")
+    assert.ok(screen.getByText("SAVE10"))
 
-    const confirmedValueCount = appliedValues.length
-    await user.clear(input)
-    await user.type(input, "SAVE20")
-    assert.equal(appliedValues.length, confirmedValueCount)
-    assert.equal(appliedValues.at(-1)?.code, "SAVE10")
-
-    await user.click(applyButton)
-    await waitFor(() => assert.equal(appliedValues.at(-1)?.code, "SAVE20"))
-    assert.deepEqual(requestedCodes, ["SAVE10", "SAVE20"])
-    assert.ok(replacedUrls.includes("/en/checkout"))
-    assert.equal(replacedUrls.at(-1), "/en/checkout?promotionCode=SAVE20")
-
-    await user.clear(input)
-    assert.equal(appliedValues.at(-1)?.code, "SAVE20")
-    await user.click(applyButton)
+    await user.click(screen.getByRole("button", { name: "(Remove)" }))
     await waitFor(() => assert.equal(appliedValues.at(-1), null))
-    assert.deepEqual(requestedCodes, ["SAVE10", "SAVE20"])
+    assert.deepEqual(requestedCodes, ["SAVE10"])
     assert.equal(replacedUrls.at(-1), "/en/checkout")
+    assert.ok(screen.getByRole("button", { name: "Have a discount?" }))
 })
 
 test("validates and applies a promotion code already present in the URL", async () => {
@@ -102,9 +106,19 @@ test("validates and applies a promotion code already present in the URL", async 
     globalThis.fetch = (async () => discountResponse("WELCOME", 15)) as typeof fetch
     const appliedValues: Array<CheckoutDiscountValue | null> = []
 
-    render(<CheckoutDiscount buttonLabel="Apply" inputPlaceholder="Discount code" sessionToken="session-token" onApplied={(discount) => appliedValues.push(discount)} />)
+    render(
+        <CheckoutDiscount
+            buttonLabel="Apply"
+            inputPlaceholder="Discount code"
+            promptLabel="Have a discount?"
+            removeLabel="Remove"
+            sessionToken="session-token"
+            onApplied={(discount) => appliedValues.push(discount)}
+        />
+    )
 
     await waitFor(() => assert.equal(appliedValues.at(-1)?.code, "WELCOME"))
-    assert.equal((screen.getByPlaceholderText("Discount code") as HTMLInputElement).value, "WELCOME")
+    assert.ok(screen.getByText("WELCOME"))
+    assert.ok(screen.getByRole("button", { name: "(Remove)" }))
     assert.equal(replacedUrls.at(-1), "/en/checkout?plan=pro&promotionCode=WELCOME")
 })

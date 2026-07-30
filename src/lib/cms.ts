@@ -305,6 +305,8 @@ export interface CheckoutData {
             discountLabel: string
             discountInputPlaceholder: string
             discountButtonLabel: string
+            discountPromptLabel: string
+            discountRemoveLabel: string
             taxLabel: string
             totalLabel: string
             perMonthSuffix: string
