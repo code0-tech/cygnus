@@ -17,7 +17,7 @@ export default async function CheckoutPage({ params }: { params: Promise<{ local
                 <IconArrowLeft size={16} />
                 {checkoutContent?.navigation.backLabel}
             </LinkButton>
-            <CheckoutPageContent form={checkoutContent?.form} subscriptionConfig={subscriptionConfig} summary={checkoutContent?.summary} />
+            <CheckoutPageContent form={checkoutContent?.form} locale={locale} subscriptionConfig={subscriptionConfig} summary={checkoutContent?.summary} />
         </div>
     )
 }

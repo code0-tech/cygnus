@@ -1,10 +1,12 @@
 "use client"
 
 import { useCraterSession } from "@/components/checkout/CraterSessionProvider"
+import { CountryPicker } from "@/components/checkout/CountryPicker"
 import { Card } from "@/components/ui/Card"
 import type { CheckoutData, SubscriptionConfigData } from "@/lib/cms"
 import { normalizeCountryCode, resolveCraterCustomerType } from "@/lib/checkout/craterCustomer"
 import { normalizeCheckoutSelection } from "@/lib/checkout/checkoutValidation"
+import type { AppLocale } from "@/lib/i18n"
 import { Button, EmailInput, emailValidation, TextInput, useForm } from "@code0-tech/pictor"
 import { useSearchParams } from "next/navigation"
 import { useMemo, useState } from "react"
@@ -45,7 +47,7 @@ async function readCheckoutError(response: Response, fallback: string) {
     }
 }
 
-export function CheckoutForm({ content, subscriptionConfig }: { content?: CheckoutFormContent | null; subscriptionConfig?: SubscriptionConfigData | null }) {
+export function CheckoutForm({ content, locale, subscriptionConfig }: { content?: CheckoutFormContent | null; locale: AppLocale; subscriptionConfig?: SubscriptionConfigData | null }) {
     const searchParams = useSearchParams()
     const [isLoading, setIsLoading] = useState(false)
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -87,7 +89,7 @@ export function CheckoutForm({ content, subscriptionConfig }: { content?: Checko
         [customerType]
     )
 
-    const [inputs, validate] = useForm({
+    const [inputs, validate, values] = useForm({
         useInitialValidation: false,
         initialValues,
         validate: validation,
@@ -169,6 +171,7 @@ export function CheckoutForm({ content, subscriptionConfig }: { content?: Checko
     })
 
     if (!content) return null
+    const countryInputProps = inputs.getInputProps("country")
 
     return (
         <Card variant="default" className="h-max! flex-1!">
@@ -190,7 +193,15 @@ export function CheckoutForm({ content, subscriptionConfig }: { content?: Checko
                     <TextInput maxLength={50} title={content.postalCodeLabel} className="w-full!" {...inputs.getInputProps("postalCode")} />
                     <TextInput maxLength={100} title={content.cityLabel} className="w-full!" {...inputs.getInputProps("city")} />
                     <TextInput maxLength={100} title={content.stateLabel} placeholder={content.statePlaceholder} className="w-full!" {...inputs.getInputProps("state")} />
-                    <TextInput maxLength={2} title={content.countryLabel} placeholder={content.countryPlaceholder} className="w-full!" {...inputs.getInputProps("country")} />
+                    <CountryPicker
+                        errorMessage={countryInputProps.formValidation?.notValidMessage}
+                        label={content.countryLabel}
+                        locale={locale}
+                        onValueChange={(countryCode) => countryInputProps.formValidation?.setValue?.(countryCode)}
+                        placeholder={content.countryPlaceholder}
+                        required={countryInputProps.required}
+                        value={values.country}
+                    />
 
                     {customerType === "business" && (
                         <>
