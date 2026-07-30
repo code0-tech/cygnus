@@ -3155,6 +3155,7 @@ export interface Checkout {
     postalCodeLabel: string;
     countryLabel: string;
     countryPlaceholder: string;
+    countryEmptyLabel: string;
     taxIdTypeLabel: string;
     taxIdTypePlaceholder: string;
     taxIdValueLabel: string;
@@ -3679,6 +3680,7 @@ export interface CheckoutSelect<T extends boolean = true> {
         postalCodeLabel?: T;
         countryLabel?: T;
         countryPlaceholder?: T;
+        countryEmptyLabel?: T;
         taxIdTypeLabel?: T;
         taxIdTypePlaceholder?: T;
         taxIdValueLabel?: T;

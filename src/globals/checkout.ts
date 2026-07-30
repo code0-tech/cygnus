@@ -149,6 +149,7 @@ export const Checkout: GlobalConfig = {
                 { name: "postalCodeLabel", type: "text", required: true, localized: true, defaultValue: "Postal code" },
                 { name: "countryLabel", type: "text", required: true, localized: true, defaultValue: "Country" },
                 { name: "countryPlaceholder", type: "text", required: true, localized: true, defaultValue: "Select a country" },
+                { name: "countryEmptyLabel", type: "text", required: true, localized: true, defaultValue: "No country found." },
                 { name: "taxIdTypeLabel", type: "text", required: true, localized: true, defaultValue: "Tax ID type" },
                 { name: "taxIdTypePlaceholder", type: "text", required: true, localized: true, defaultValue: "eu_vat" },
                 { name: "taxIdValueLabel", type: "text", required: true, localized: true, defaultValue: "Tax ID" },

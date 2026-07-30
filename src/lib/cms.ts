@@ -326,6 +326,7 @@ export interface CheckoutData {
         postalCodeLabel: string
         countryLabel: string
         countryPlaceholder: string
+        countryEmptyLabel: string
         taxIdTypeLabel: string
         taxIdTypePlaceholder: string
         taxIdValueLabel: string

@@ -94,6 +94,7 @@ const content = {
     postalCodeLabel: "Postal code",
     countryLabel: "Country",
     countryPlaceholder: "DE",
+    countryEmptyLabel: "No country found.",
     taxIdTypeLabel: "Tax ID type",
     taxIdTypePlaceholder: "eu_vat",
     taxIdValueLabel: "Tax ID",

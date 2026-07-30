@@ -85,6 +85,7 @@ import * as migration_20260729_132535_subscription_default_deployment_self_hoste
 import * as migration_20260729_134832_checkout_customer_form from './20260729_134832_checkout_customer_form';
 import * as migration_20260729_160138_checkout_period_discount_labels from './20260729_160138_checkout_period_discount_labels';
 import * as migration_20260730_093447_checkout_country_label from './20260730_093447_checkout_country_label';
+import * as migration_20260730_161006_checkout_country_empty_label from './20260730_161006_checkout_country_empty_label';
 
 export const migrations = [
   {
@@ -520,6 +521,11 @@ export const migrations = [
   {
     up: migration_20260730_093447_checkout_country_label.up,
     down: migration_20260730_093447_checkout_country_label.down,
-    name: '20260730_093447_checkout_country_label'
+    name: '20260730_093447_checkout_country_label',
+  },
+  {
+    up: migration_20260730_161006_checkout_country_empty_label.up,
+    down: migration_20260730_161006_checkout_country_empty_label.down,
+    name: '20260730_161006_checkout_country_empty_label'
   },
 ];
