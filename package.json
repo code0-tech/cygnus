@@ -19,7 +19,7 @@
         "lint": "npm run typecheck",
         "typecheck": "tsc --noEmit",
         "knip": "node --import tsx ./node_modules/knip/bin/knip.js",
-        "test": "node --import tsx --test tests/*.test.ts",
+        "test": "node --experimental-test-module-mocks --import tsx --test tests/*.test.ts tests/checkout/*.test.ts tests/checkout/*.test.tsx",
         "generate": "payload generate:types"
     },
     "dependencies": {
@@ -68,10 +68,13 @@
         "@ai-sdk/mistral": "^4.0.16",
         "@swc-node/register": "^1.12.1",
         "@tailwindcss/postcss": "^4.3.3",
+        "@testing-library/react": "^16.3.2",
+        "@testing-library/user-event": "^14.6.1",
         "@types/node": "^25.9.5",
         "@types/react": "^19.2.17",
         "@types/react-dom": "^19.2.3",
         "@types/sanitize-html": "^2.16.1",
+        "happy-dom": "^20.10.6",
         "postcss": "^8.5.21",
         "prettier": "^3.9.6",
         "tailwindcss": "^4.3.3",
