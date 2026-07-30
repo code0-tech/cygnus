@@ -2,6 +2,7 @@
 
 import { CheckoutDiscount, type CheckoutDiscountValue } from "@/components/checkout/CheckoutDiscount"
 import { getIcon } from "@/components/ui/IconRenderer"
+import { StableBadge } from "@/components/ui/StableBadge"
 import type { CheckoutData, CheckoutSummaryIconColor, SubscriptionConfigData } from "@/lib/cms"
 import { formatCompactNumber, formatEuroCurrency } from "@/lib/formatters"
 import { calculateExclusiveTaxRate, calculatePromotionDiscountAmount, formatDiscountBadge, resolveCheckoutPricing } from "@/lib/subscriptionCalculator"
@@ -20,14 +21,13 @@ interface CheckoutSummaryProps {
     taxQuote?: CheckoutTaxQuoteValue | null
 }
 
-interface SummaryRowProps {
+interface SummaryBadgeProps {
     icon: ReactNode
-    label: string
     value: ReactNode
     tone?: CheckoutSummaryIconColor
 }
 
-function SummaryRow({ icon, label, value, tone = "neutral" }: SummaryRowProps) {
+function SummaryBadge({ icon, value, tone = "neutral" }: SummaryBadgeProps) {
     const iconToneClassName = {
         neutral: "text-white",
         brand: "text-brand",
@@ -40,15 +40,10 @@ function SummaryRow({ icon, label, value, tone = "neutral" }: SummaryRowProps) {
     }[tone]
 
     return (
-        <div className="flex items-center gap-3 py-1">
-            <div className="flex min-w-0 items-center gap-3">
-                <div className={`inline-flex size-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/2 ${iconToneClassName}`}>{icon}</div>
-                <div className="min-w-0">
-                    <p className="text-xs tracking-wide text-tertiary">{label}</p>
-                    <div className="mt-0.5 text-sm font-semibold tracking-wide text-white">{value}</div>
-                </div>
-            </div>
-        </div>
+        <StableBadge color="secondary" border className="min-w-0 max-w-full gap-1.5! border-white/10! px-2! py-1!">
+            <span className={`inline-flex shrink-0 ${iconToneClassName}`}>{icon}</span>
+            <span className="min-w-0 truncate font-medium text-white">{value}</span>
+        </StableBadge>
     )
 }
 
@@ -106,93 +101,87 @@ export function CheckoutSummary({ content, sessionToken, subscriptionConfig, tax
                 <p className="mt-2 max-w-md text-sm leading-6 text-secondary">{content.description}</p>
             </div>
 
-            <div className="grid gap-2 grid-cols-2">
-                {isCustomPlan && deployment && (
-                    <SummaryRow
-                        icon={getIcon(deployment === "cloud" ? content.deploymentIcons.cloud : content.deploymentIcons.selfHosted, 16)}
-                        label={content.deploymentLabel}
-                        tone={content.deploymentIconColor}
-                        value={<span className="capitalize">{deployment.replaceAll("_", " ").replaceAll("-", " ")}</span>}
-                    />
-                )}
-
-                {isCustomPlan && customerType && (
-                    <SummaryRow
-                        icon={getIcon(customerType === "b2c" ? content.customerTypeIcons.b2c : content.customerTypeIcons.b2b, 16)}
-                        label={content.customerTypeLabel}
-                        tone={content.customerTypeIconColor}
-                        value={<span className="uppercase">{customerType}</span>}
-                    />
-                )}
-
-                {isCustomPlan && aiTokensParam && (
-                    <SummaryRow
-                        icon={getIcon(content.aiTokensIcon, 16)}
-                        label={content.aiTokensLabel}
-                        tone={content.aiTokensIconColor}
-                        value={
-                            <span>
-                                {formatCompactNumber(aiTokens)} <span className="font-normal text-tertiary">{monthlyPeriodSuffix}</span>
-                            </span>
-                        }
-                    />
-                )}
-
-                {isCustomPlan && workflowExecutionsParam && (
-                    <SummaryRow
-                        icon={getIcon(content.workflowExecutionsIcon, 16)}
-                        label={content.workflowExecutionsLabel}
-                        tone={content.workflowExecutionsIconColor}
-                        value={
-                            <span>
-                                {formatCompactNumber(workflowExecutions)} <span className="font-normal text-tertiary">{monthlyPeriodSuffix}</span>
-                            </span>
-                        }
-                    />
-                )}
-
-                {selectedAdditionalFeatures.length > 0 && (
-                    <SummaryRow
-                        icon={getIcon(content.additionalFeaturesIcon, 16)}
-                        label={content.additionalFeaturesLabel}
-                        tone={content.additionalFeaturesIconColor}
-                        value={<span>{selectedAdditionalFeatures.map((feature) => feature.title).join(", ")}</span>}
-                    />
-                )}
-            </div>
-
             <div className="mt-5 rounded-2xl border border-white/10 bg-white/2 p-4">
                 <div className="-mx-4 flex items-center justify-between gap-3 border-b border-white/10 px-4 pb-3">
                     <div>
-                        <p className="text-xs tracking-wide text-tertiary">{content.pricing.label}</p>
-                        <p className="mt-1 text-sm text-white">{content.pricing.description}</p>
+                        <p className="text-sm text-white">{content.pricing.label}</p>
+                        <p className="mt-1 text-sm text-tertiary">{content.pricing.description}</p>
                     </div>
                 </div>
 
                 <div className="space-y-2 pt-4">
-                    <div className="flex items-center justify-between gap-4 text-sm">
-                        <span className="text-secondary">{content.pricing.planLabel}</span>
-                        <span className="text-white">{planTitle}</span>
+                    <div className="flex items-start justify-between gap-4 text-sm">
+                        <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                            <span className="text-secondary">{content.pricing.planLabel}</span>
+                            {isCustomPlan && deployment && (
+                                <SummaryBadge
+                                    icon={getIcon(deployment === "cloud" ? content.deploymentIcons.cloud : content.deploymentIcons.selfHosted, 12)}
+                                    tone={content.deploymentIconColor}
+                                    value={<span className="capitalize">{deployment.replaceAll("_", " ").replaceAll("-", " ")}</span>}
+                                />
+                            )}
+                            {isCustomPlan && customerType && (
+                                <SummaryBadge
+                                    icon={getIcon(customerType === "b2c" ? content.customerTypeIcons.b2c : content.customerTypeIcons.b2b, 12)}
+                                    tone={content.customerTypeIconColor}
+                                    value={<span className="uppercase">{customerType}</span>}
+                                />
+                            )}
+                        </div>
+                        <span className="shrink-0 text-white">{planTitle}</span>
                     </div>
 
                     {isCustomPlan && (
                         <>
-                            <div className="flex items-center justify-between gap-4 text-sm">
-                                <span className="text-secondary">{content.pricing.baseLabel}</span>
-                                <span className="tabular-nums text-white">{formattedBasePrice}</span>
+                            <div className="flex items-start justify-between gap-4 text-sm">
+                                <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                                    <span className="text-secondary">{content.pricing.baseLabel}</span>
+                                    {aiTokensParam && (
+                                        <SummaryBadge
+                                            icon={getIcon(content.aiTokensIcon, 12)}
+                                            tone={content.aiTokensIconColor}
+                                            value={
+                                                <span>
+                                                    {formatCompactNumber(aiTokens)} {monthlyPeriodSuffix}
+                                                </span>
+                                            }
+                                        />
+                                    )}
+                                </div>
+                                <span className="shrink-0 tabular-nums text-white">{formattedBasePrice}</span>
                             </div>
 
-                            <div className="flex items-center justify-between gap-4 text-sm">
-                                <span className="text-secondary">{content.pricing.workflowExecutionsLabel}</span>
-                                <span className="tabular-nums text-white">{formattedWorkflowExecutionsPrice}</span>
+                            <div className="flex items-start justify-between gap-4 text-sm">
+                                <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                                    <span className="text-secondary">{content.pricing.workflowExecutionsLabel}</span>
+                                    {workflowExecutionsParam && (
+                                        <SummaryBadge
+                                            icon={getIcon(content.workflowExecutionsIcon, 12)}
+                                            tone={content.workflowExecutionsIconColor}
+                                            value={
+                                                <span>
+                                                    {formatCompactNumber(workflowExecutions)} {monthlyPeriodSuffix}
+                                                </span>
+                                            }
+                                        />
+                                    )}
+                                </div>
+                                <span className="shrink-0 tabular-nums text-white">{formattedWorkflowExecutionsPrice}</span>
                             </div>
                         </>
                     )}
 
                     {selectedAdditionalFeatures.length > 0 && (
-                        <div className="flex items-center justify-between gap-4 text-sm">
-                            <span className="text-secondary">{content.pricing.additionalFeaturesLabel}</span>
-                            <span className="tabular-nums text-white">{formattedAdditionalFeaturesPrice}</span>
+                        <div className="flex items-start justify-between gap-4 text-sm">
+                            <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                                <span className="text-secondary">{content.pricing.additionalFeaturesLabel}</span>
+                                <SummaryBadge
+                                    icon={getIcon(content.additionalFeaturesIcon, 12)}
+                                    tone={content.additionalFeaturesIconColor}
+                                    value={selectedAdditionalFeatures.map((feature) => feature.title).join(", ")}
+                                />
+                            </div>
+                            <span className="shrink-0 tabular-nums text-white">{formattedAdditionalFeaturesPrice}</span>
                         </div>
                     )}
 

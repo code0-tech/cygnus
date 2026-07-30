@@ -179,7 +179,7 @@ export function CheckoutForm({ content, locale, subscriptionConfig }: { content?
         (customerType !== "business" || Boolean(values.taxIdType.trim() && values.taxIdValue.trim()))
 
     return (
-        <Card variant="light" className="h-max! flex-1!">
+        <div className="h-max! flex-1! flex flex-col">
             <div className="flex-1 space-y-6">
                 <h2 className="text-2xl text-white">{content.billingHeading}</h2>
 
@@ -229,6 +229,6 @@ export function CheckoutForm({ content, locale, subscriptionConfig }: { content?
                     {isLoading || isSessionLoading ? content.processingLabel : content.continueLabel}
                 </Button>
             </div>
-        </Card>
+        </div>
     )
 }
