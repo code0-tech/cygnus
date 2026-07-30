@@ -1,6 +1,6 @@
 import { createApolloClient } from "@/lib/apolloClient"
-import { normalizeCheckoutSelection, validateCheckoutSelection } from "@/lib/checkoutValidation"
-import { craterJson, craterMutationErrorResponse, craterTransportErrorResponse, optionalString, readJsonObject, requireCraterSession, type JsonObject } from "@/lib/craterApi"
+import { normalizeCheckoutSelection, validateCheckoutSelection } from "@/lib/checkout/checkoutValidation"
+import { craterJson, craterMutationErrorResponse, craterTransportErrorResponse, optionalString, readJsonObject, requireCraterSession, type JsonObject } from "@/lib/checkout/craterApi"
 import { resolveSiteUrl } from "@/lib/siteConfig"
 import type { Mutation, MutationCheckoutCreateSessionArgs, Scalars } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
