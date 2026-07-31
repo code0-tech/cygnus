@@ -15,7 +15,7 @@ export function CheckoutLayoutClient({ children, stepperContent }: { children: R
                     <Link href="/" className="inline-flex shrink-0">
                         <Image src="/code0_text_logo_white.png" alt="code0" width={100} height={100} className="h-8 w-32" loading="eager" />
                     </Link>
-                    <div className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 sm:block">
+                    <div className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 lg:block">
                         <CheckoutStepper content={stepperContent} />
                     </div>
                 </div>

@@ -72,6 +72,7 @@ export const Checkout: GlobalConfig = {
                     localized: true,
                     defaultValue: "This checkout reflects the subscription shape you configured, including runtime and optional add-ons.",
                 },
+                { name: "configurationLabel", type: "text", required: true, localized: true, defaultValue: "Your configuration" },
                 { name: "deploymentLabel", type: "text", required: true, localized: true, defaultValue: "Deployment" },
                 {
                     name: "deploymentIcons",

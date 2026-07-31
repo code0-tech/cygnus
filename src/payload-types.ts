@@ -3109,6 +3109,7 @@ export interface Checkout {
     eyebrow: string;
     heading: string;
     description: string;
+    configurationLabel: string;
     deploymentLabel: string;
     deploymentIcons: {
       cloud: string;
@@ -3672,6 +3673,7 @@ export interface CheckoutSelect<T extends boolean = true> {
         eyebrow?: T;
         heading?: T;
         description?: T;
+        configurationLabel?: T;
         deploymentLabel?: T;
         deploymentIcons?:
           | T

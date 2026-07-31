@@ -291,6 +291,7 @@ export interface CheckoutData {
         eyebrow: string
         heading: string
         description: string
+        configurationLabel: string
         deploymentLabel: string
         deploymentIcons: {
             cloud: string
