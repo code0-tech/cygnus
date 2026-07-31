@@ -8,34 +8,25 @@ import { Slider } from "@/components/ui/Slider"
 import type { SubscriptionConfiguratorContent } from "@/lib/cms"
 import { formatEuroCurrency } from "@/lib/formatters"
 import type { AppLocale } from "@/lib/i18n"
+import { calculateSubscriptionPrice, clampToRange, formatDiscountBadge, getPaymentPeriodDiscount, getPaymentPeriodMonths, getPaymentPeriodSuffix } from "@/lib/subscriptionCalculator"
 import {
-    calculateSubscriptionPrice,
-    clampToRange,
-    formatDiscountBadge,
-    getPaymentPeriodDiscount,
-    getPaymentPeriodMonths,
-    getPaymentPeriodSuffix,
-    type PaymentPeriod,
-} from "@/lib/subscriptionCalculator"
-import { getPlanForCustomerType, getSubscriptionConfiguratorSteps, type SubscriptionConfiguratorPlan, type SubscriptionConfiguratorStep } from "@/lib/subscriptionConfigurator"
+    buildSubscriptionSelectionSearchParams,
+    getPlanForCustomerType,
+    getSubscriptionConfiguratorSteps,
+    parseSelectedAdditionalFeatureIndexes,
+    parseSubscriptionSelectionFromSearchParams,
+    type SubscriptionConfiguratorStep,
+    type SubscriptionSelection,
+} from "@/lib/subscriptionConfigurator"
 import { cn } from "@/lib/utils"
 import NumberFlow from "@number-flow/react"
 import { IconCalendarMonth } from "@tabler/icons-react"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import type { ReactNode } from "react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Card } from "../ui/Card"
 import { LinkButton } from "../ui/LinkButton"
 
-type DeploymentMode = "self_hosted" | "cloud"
-type CustomerType = "b2b" | "b2c"
-type SubscriptionSelection = {
-    plan: SubscriptionConfiguratorPlan
-    deployment: DeploymentMode
-    customerType: CustomerType
-    paymentPeriod: PaymentPeriod
-    workflowExecutions: number
-    aiTokens: number
-}
 export interface SubscriptionIcons {
     deployment: {
         selfHosted: ReactNode
@@ -54,34 +45,20 @@ export interface SubscriptionIcons {
     additionalFeatures: ReactNode[]
 }
 
-const paymentPeriodOptions = [
-    { value: "monthly", textKey: "monthlyText", suffixKey: "monthlyPeriodSuffix", accent: "brand" },
-    { value: "quarterly", textKey: "quarterlyText", suffixKey: "quarterlyPeriodSuffix", accent: "aqua" },
-    { value: "yearly", textKey: "yearlyText", suffixKey: "yearlyPeriodSuffix", accent: "magenta" },
-] as const
+const paymentPeriodOptions = ["monthly", "quarterly", "yearly"] as const
 
 export function SubscriptionConfigurator({ locale, content, icons }: { locale: AppLocale; content: SubscriptionConfiguratorContent; icons: SubscriptionIcons }) {
     const workflowExecutions = content.workflowExecutions
     const aiTokens = content.aiTokens
-    const defaultSelection = content.defaults
-    const defaultDeployment: DeploymentMode = defaultSelection.deployment === "cloud" ? "cloud" : "self_hosted"
-    const defaultWorkflowExecutionRange = workflowExecutions[defaultSelection.customerType]
-    const defaultAiTokenRange = aiTokens[defaultSelection.customerType]
-    const defaultWorkflowExecutions = defaultSelection.workflowExecutions[defaultSelection.customerType]
-    const defaultAiTokens = defaultSelection.aiTokens[defaultSelection.customerType]
+    const router = useRouter()
+    const pathname = usePathname()
+    const searchParams = useSearchParams()
 
-    const [selection, setSelection] = useState<SubscriptionSelection>({
-        plan: "custom",
-        deployment: defaultDeployment,
-        customerType: defaultSelection.customerType,
-        paymentPeriod: defaultSelection.paymentPeriod,
-        workflowExecutions: clampToRange(defaultWorkflowExecutions, defaultWorkflowExecutionRange),
-        aiTokens: clampToRange(defaultAiTokens, defaultAiTokenRange),
-    })
+    const [selection, setSelection] = useState<SubscriptionSelection>(() => parseSubscriptionSelectionFromSearchParams(searchParams, content))
     const [currentStep, setCurrentStep] = useState<SubscriptionConfiguratorStep>("customerType")
     const workflowExecutionRange = workflowExecutions[selection.customerType]
     const aiTokenRange = aiTokens[selection.customerType]
-    const [selectedFeatures, setSelectedFeatures] = useState<Set<number>>(new Set())
+    const [selectedFeatures, setSelectedFeatures] = useState<Set<number>>(() => parseSelectedAdditionalFeatureIndexes(searchParams, content.additionalFeatures))
     const additionalFeaturesPrice = Array.from(selectedFeatures).reduce((acc, idx) => acc + (content.additionalFeatures?.[idx]?.price ?? 0), 0)
     const paymentPeriodDiscount = getPaymentPeriodDiscount(selection.paymentPeriod, content.paymentPeriod)
     const paymentPeriodSuffix = getPaymentPeriodSuffix(selection.paymentPeriod, content.paymentPeriod)
@@ -103,28 +80,13 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
     const goToPreviousStep = () => setCurrentStep(configuratorSteps[Math.max(0, currentStepIndex - 1)])
     const goToNextStep = () => setCurrentStep(configuratorSteps[Math.min(configuratorSteps.length - 1, currentStepIndex + 1)])
 
-    const subscribeHref = (() => {
-        const searchParams = new URLSearchParams({
-            plan: selection.plan,
-            deploymentType: selection.deployment,
-            customerType: selection.customerType,
-            paymentPeriod: selection.paymentPeriod,
-        })
+    const additionalFeatureIds = Array.from(selectedFeatures).map((idx) => content.additionalFeatures?.[idx]?.id ?? String(idx))
+    const selectionSearchParamsString = buildSubscriptionSelectionSearchParams(selection, additionalFeatureIds).toString()
+    const subscribeHref = `${content.subscribe.baseUrl}?${selectionSearchParamsString}`
 
-        if (selection.plan === "custom") {
-            searchParams.set("workflowExecutions", String(selection.workflowExecutions))
-            searchParams.set("aiTokens", String(selection.aiTokens))
-        }
-
-        if (selection.plan === "custom" && selectedFeatures.size > 0 && content.additionalFeatures) {
-            const featureIds = Array.from(selectedFeatures)
-                .map((idx) => content.additionalFeatures![idx]?.id ?? String(idx))
-                .join(",")
-            searchParams.set("additionalFeatures", featureIds)
-        }
-
-        return `${content.subscribe.baseUrl}?${searchParams.toString()}`
-    })()
+    useEffect(() => {
+        router.replace(`${pathname}?${selectionSearchParamsString}`, { scroll: false })
+    }, [pathname, router, selectionSearchParamsString])
 
     return (
         <Card size="lg" variant="light" className="min-w-0 lg:col-span-1">
@@ -338,19 +300,19 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
                             <p className="text-sm text-secondary">{content.paymentPeriod.description}</p>
                         </div>
                         <div className="grid gap-3">
-                            {paymentPeriodOptions.map((option) => {
-                                const discount = getPaymentPeriodDiscount(option.value, content.paymentPeriod)
+                            {paymentPeriodOptions.map((period) => {
+                                const discount = getPaymentPeriodDiscount(period, content.paymentPeriod)
 
                                 return (
                                     <SubscriptionOptionCard
-                                        key={option.value}
-                                        title={content.paymentPeriod[option.textKey]}
-                                        description={content.paymentPeriod[option.suffixKey]}
+                                        key={period}
+                                        title={content.paymentPeriod[`${period}Text`]}
+                                        description={content.paymentPeriod[`${period}PeriodSuffix`]}
                                         icon={<IconCalendarMonth size={18} />}
-                                        accent={option.accent}
+                                        accent={content.paymentPeriod[`${period}Color`]}
                                         badge={discount > 0 ? `-${formatDiscountBadge(discount, locale)}` : undefined}
-                                        active={selection.paymentPeriod === option.value}
-                                        onClick={() => setSelection((current) => ({ ...current, paymentPeriod: option.value }))}
+                                        active={selection.paymentPeriod === period}
+                                        onClick={() => setSelection((current) => ({ ...current, paymentPeriod: period }))}
                                     />
                                 )
                             })}

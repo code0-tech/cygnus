@@ -71,6 +71,8 @@ export async function POST(request: Request) {
             return craterJson({ error: "namespaceId is only allowed for cloud deployments." }, 400)
         }
 
+        let normalizedPlan = plan
+
         if (!customCheckoutConfigurationId) {
             const { getSubscriptionConfig } = await import("@/lib/cms")
             const subscriptionConfig = await getSubscriptionConfig()
@@ -100,6 +102,8 @@ export async function POST(request: Request) {
                     400
                 )
             }
+
+            normalizedPlan = normalizedSelection.plan
         }
 
         const siteUrl = resolveSiteUrl()
@@ -109,7 +113,7 @@ export async function POST(request: Request) {
             ...(craterCustomCheckoutConfigurationId
                 ? { customCheckoutConfigurationId: craterCustomCheckoutConfigurationId }
                 : {
-                      plan,
+                      plan: normalizedPlan,
                       deploymentType,
                       ...(namespaceId ? { namespaceId } : {}),
                   }),

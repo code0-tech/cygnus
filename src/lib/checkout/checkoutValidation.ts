@@ -23,14 +23,29 @@ function clampUsageValue(rawValue: string | undefined, range: UsageRange) {
 }
 
 export function normalizeCheckoutSelection(selection: CheckoutSelection, subscriptionConfig: SubscriptionConfigData): CheckoutSelection {
-    if (selection.plan !== "custom" || (selection.customerType !== "b2b" && selection.customerType !== "b2c")) {
-        return selection
+    const isFixedPlanRestrictedToBusiness = (selection.plan === "pro" || selection.plan === "max") && selection.customerType === "b2b"
+    const plan = isFixedPlanRestrictedToBusiness ? "custom" : selection.plan
+
+    if (plan !== "custom" || (selection.customerType !== "b2b" && selection.customerType !== "b2c")) {
+        return { ...selection, plan }
+    }
+
+    const customerType = selection.customerType
+
+    if (isFixedPlanRestrictedToBusiness) {
+        return {
+            ...selection,
+            plan,
+            aiTokens: clampUsageValue(String(subscriptionConfig.defaults.aiTokens[customerType]), subscriptionConfig.aiTokens[customerType]),
+            workflowExecutions: clampUsageValue(String(subscriptionConfig.defaults.workflowExecutions[customerType]), subscriptionConfig.workflowExecutions[customerType]),
+        }
     }
 
     return {
         ...selection,
-        aiTokens: clampUsageValue(selection.aiTokens, subscriptionConfig.aiTokens[selection.customerType]),
-        workflowExecutions: clampUsageValue(selection.workflowExecutions, subscriptionConfig.workflowExecutions[selection.customerType]),
+        plan,
+        aiTokens: clampUsageValue(selection.aiTokens, subscriptionConfig.aiTokens[customerType]),
+        workflowExecutions: clampUsageValue(selection.workflowExecutions, subscriptionConfig.workflowExecutions[customerType]),
     }
 }
 

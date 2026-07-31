@@ -121,7 +121,9 @@ export function resolveCheckoutPricing({
     subscriptionConfig?: SubscriptionConfigData | null
     workflowExecutionsParam: string | null
 }) {
-    const plan: SubscriptionPlan = planParam === "pro" || planParam === "max" ? planParam : "custom"
+    const customerType = customerTypeParam === "b2b" || customerTypeParam === "b2c" ? customerTypeParam : (subscriptionConfig?.defaults?.customerType ?? "b2b")
+    const requestedPlan: SubscriptionPlan = planParam === "pro" || planParam === "max" ? planParam : "custom"
+    const plan: SubscriptionPlan = customerTypeParam === "b2b" ? "custom" : requestedPlan
     const paymentPeriod: PaymentPeriod =
         paymentPeriodParam === "quarterly" || paymentPeriodParam === "yearly" || paymentPeriodParam === "monthly" ? paymentPeriodParam : (subscriptionConfig?.defaults.paymentPeriod ?? "monthly")
     const periodSuffix = subscriptionConfig ? getPaymentPeriodSuffix(paymentPeriod, subscriptionConfig.paymentPeriod) : fallbackPeriodSuffix
@@ -159,7 +161,6 @@ export function resolveCheckoutPricing({
     const monthlyAdditionalFeaturesPrice = selectedAdditionalFeatures.reduce((total, feature) => total + feature.price, 0)
     const periodMonths = getPaymentPeriodMonths(paymentPeriod)
     const additionalFeaturesPrice = monthlyAdditionalFeaturesPrice * periodMonths
-    const customerType = customerTypeParam === "b2b" || customerTypeParam === "b2c" ? customerTypeParam : (subscriptionConfig?.defaults.customerType ?? "b2b")
     const defaultWorkflowExecutions = subscriptionConfig?.defaults.workflowExecutions[customerType] ?? 200
     const defaultAiTokens = subscriptionConfig?.defaults.aiTokens[customerType] ?? 0
     const workflowExecutions = subscriptionConfig

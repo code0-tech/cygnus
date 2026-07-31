@@ -45,7 +45,6 @@ export const enum_pages_blocks_flow_example_flow_items_segments_type = pgEnum('e
 export const enum_pages_blocks_flow_example_flow_items_color = pgEnum('enum_pages_blocks_flow_example_flow_items_color', ['brand', 'yellow', 'aqua', 'blue', 'pink', 'lime', 'magenta'])
 export const enum_pages_blocks_flow_example_section_layout = pgEnum('enum_pages_blocks_flow_example_section_layout', ['center', 'left'])
 export const enum_pages_blocks_flow_example_flow_layout = pgEnum('enum_pages_blocks_flow_example_flow_layout', ['left', 'right'])
-export const enum_pages_blocks_subscription_configurator_buttons_variant = pgEnum('enum_pages_blocks_subscription_configurator_buttons_variant', ['none', 'normal', 'outlined', 'filled'])
 export const enum_pages_blocks_pricing_section_layout = pgEnum('enum_pages_blocks_pricing_section_layout', ['center', 'left'])
 export const enum_pages_blocks_pricing_pro_button_variant = pgEnum('enum_pages_blocks_pricing_pro_button_variant', ['none', 'normal', 'outlined', 'filled'])
 export const enum_pages_blocks_pricing_max_button_variant = pgEnum('enum_pages_blocks_pricing_max_button_variant', ['none', 'normal', 'outlined', 'filled'])
@@ -79,6 +78,9 @@ export const enum_subscription_config_customer_type_b2b_color = pgEnum('enum_sub
 export const enum_subscription_config_customer_type_b2c_color = pgEnum('enum_subscription_config_customer_type_b2c_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
 export const enum_subscription_config_subscription_tier_pro_color = pgEnum('enum_subscription_config_subscription_tier_pro_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
 export const enum_subscription_config_subscription_tier_team_color = pgEnum('enum_subscription_config_subscription_tier_team_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
+export const enum_subscription_config_payment_period_monthly_color = pgEnum('enum_subscription_config_payment_period_monthly_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
+export const enum_subscription_config_payment_period_quarterly_color = pgEnum('enum_subscription_config_payment_period_quarterly_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
+export const enum_subscription_config_payment_period_yearly_color = pgEnum('enum_subscription_config_payment_period_yearly_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
 export const enum_checkout_summary_deployment_icon_color = pgEnum('enum_checkout_summary_deployment_icon_color', ['neutral', 'brand', 'aqua', 'blue', 'pink', 'yellow', 'lime', 'magenta'])
 export const enum_checkout_summary_customer_type_icon_color = pgEnum('enum_checkout_summary_customer_type_icon_color', ['neutral', 'brand', 'aqua', 'blue', 'pink', 'yellow', 'lime', 'magenta'])
 export const enum_checkout_summary_ai_tokens_icon_color = pgEnum('enum_checkout_summary_ai_tokens_icon_color', ['neutral', 'brand', 'aqua', 'blue', 'pink', 'yellow', 'lime', 'magenta'])
@@ -1276,42 +1278,6 @@ export const pages_blocks_flow_example = pgTable('pages_blocks_flow_example', {
 )
 
 
-export const pages_blocks_subscription_configurator_feature_overview = pgTable('pages_blocks_subscription_configurator_feature_overview', {
-  _order: integer('_order').notNull(),
-  _parentID: varchar('_parent_id').notNull(),
-  _locale: enum__locales('_locale').notNull(),
-  id: varchar('id').primaryKey(),
-  title: varchar('title'),
-  description: varchar('description'),
-  icon: varchar('icon').notNull(),
-}, (columns) => [
-    index('pages_blocks_subscription_configurator_feature_overview_order_idx').on(columns._order), index('pages_blocks_subscription_configurator_feature_overview_parent_id_idx').on(columns._parentID), index('pages_blocks_subscription_configurator_feature_overview_locale_idx').on(columns._locale), foreignKey({
-      columns: [columns['_parentID']],
-      foreignColumns: [pages_blocks_subscription_configurator.id],
-      name: 'pages_blocks_subscription_configurator_feature_overview_parent_id_fk'
-    }).onDelete('cascade'),
-]
-)
-
-
-export const pages_blocks_subscription_configurator_buttons = pgTable('pages_blocks_subscription_configurator_buttons', {
-  _order: integer('_order').notNull(),
-  _parentID: varchar('_parent_id').notNull(),
-  _locale: enum__locales('_locale').notNull(),
-  id: varchar('id').primaryKey(),
-  label: varchar('label').notNull(),
-  url: varchar('url').notNull(),
-  variant: enum_pages_blocks_subscription_configurator_buttons_variant('variant').default("normal"),
-}, (columns) => [
-    index('pages_blocks_subscription_configurator_buttons_order_idx').on(columns._order), index('pages_blocks_subscription_configurator_buttons_parent_id_idx').on(columns._parentID), index('pages_blocks_subscription_configurator_buttons_locale_idx').on(columns._locale), foreignKey({
-      columns: [columns['_parentID']],
-      foreignColumns: [pages_blocks_subscription_configurator.id],
-      name: 'pages_blocks_subscription_configurator_buttons_parent_id_fk'
-    }).onDelete('cascade'),
-]
-)
-
-
 export const pages_blocks_subscription_configurator = pgTable('pages_blocks_subscription_configurator', {
   _order: integer('_order').notNull(),
   _parentID: integer('_parent_id').notNull(),
@@ -2357,6 +2323,9 @@ export const subscription_config = pgTable('subscription_config', {
   deployment_selfHosted_color: enum_subscription_config_deployment_self_hosted_color('deployment_self_hosted_color').default("yellow"),
   deployment_cloud_icon: varchar('deployment_cloud_icon').notNull().default("cloud"),
   deployment_cloud_color: enum_subscription_config_deployment_cloud_color('deployment_cloud_color').default("aqua"),
+  plan_pro_icon: varchar('plan_pro_icon').notNull().default("sparkles"),
+  plan_max_icon: varchar('plan_max_icon').notNull().default("rocket"),
+  plan_custom_icon: varchar('plan_custom_icon').notNull().default("settings"),
   customerType_b2b_icon: varchar('customer_type_b2b_icon').notNull().default("briefcase-2"),
   customerType_b2b_color: enum_subscription_config_customer_type_b2b_color('customer_type_b2b_color').default("blue"),
   customerType_b2c_icon: varchar('customer_type_b2c_icon').notNull().default("building-store"),
@@ -2371,6 +2340,9 @@ export const subscription_config = pgTable('subscription_config', {
   packages_max_prices_monthly: numeric('packages_max_prices_monthly', {mode: 'number'}).default(0),
   packages_max_prices_quarterly: numeric('packages_max_prices_quarterly', {mode: 'number'}).default(0),
   packages_max_prices_yearly: numeric('packages_max_prices_yearly', {mode: 'number'}).default(0),
+  paymentPeriod_monthlyColor: enum_subscription_config_payment_period_monthly_color('payment_period_monthly_color').default("brand"),
+  paymentPeriod_quarterlyColor: enum_subscription_config_payment_period_quarterly_color('payment_period_quarterly_color').default("aqua"),
+  paymentPeriod_yearlyColor: enum_subscription_config_payment_period_yearly_color('payment_period_yearly_color').default("magenta"),
   paymentPeriod_quarterlyDiscount: numeric('payment_period_quarterly_discount', {mode: 'number'}).default(0),
   paymentPeriod_yearlyDiscount: numeric('payment_period_yearly_discount', {mode: 'number'}).default(0),
   workflowExecutions_b2b_step: numeric('workflow_executions_b2b_step', {mode: 'number'}).default(100),
@@ -2397,12 +2369,22 @@ export const subscription_config = pgTable('subscription_config', {
 
 export const subscription_config_locales = pgTable('subscription_config_locales', {
   optionsPanelHeading: varchar('options_panel_heading').default("Build the subscription shape"),
+  configuratorNavigation_backLabel: varchar('configurator_navigation_back_label').default("Back"),
+  configuratorNavigation_nextLabel: varchar('configurator_navigation_next_label').default("Next"),
   deployment_label: varchar('deployment_label').default("Deployment"),
   deployment_description: varchar('deployment_description').default("Choose where your code0 instance will run."),
   deployment_selfHosted_title: varchar('deployment_self_hosted_title').default("Self-hosted"),
   deployment_selfHosted_description: varchar('deployment_self_hosted_description').default("Deploy on your own infrastructure with full operational control."),
   deployment_cloud_title: varchar('deployment_cloud_title').default("Cloud"),
   deployment_cloud_description: varchar('deployment_cloud_description').default("Use managed infrastructure with selectable runtime consumption."),
+  plan_title: varchar('plan_title').default("Plan"),
+  plan_description: varchar('plan_description').default("Choose the plan that best matches your requirements."),
+  plan_pro_title: varchar('plan_pro_title').default("Pro"),
+  plan_pro_description: varchar('plan_pro_description').default("A ready-to-use plan for individuals and smaller teams."),
+  plan_max_title: varchar('plan_max_title').default("Max"),
+  plan_max_description: varchar('plan_max_description').default("A ready-to-use plan for organizations with higher requirements."),
+  plan_custom_title: varchar('plan_custom_title').default("Custom"),
+  plan_custom_description: varchar('plan_custom_description').default("Configure usage and additional features for an individual setup."),
   customerType_label: varchar('customer_type_label').default("Customer Type"),
   customerType_description: varchar('customer_type_description').default("Choose the customer model that best matches your use case."),
   customerType_b2b_title: varchar('customer_type_b2b_title').default("B2B"),
@@ -2509,6 +2491,8 @@ export const checkout_locales = pgTable('checkout_locales', {
   summary_pricing_discountLabel: varchar('summary_pricing_discount_label').notNull().default("Discount"),
   summary_pricing_discountInputPlaceholder: varchar('summary_pricing_discount_input_placeholder').notNull().default("Discount code"),
   summary_pricing_discountButtonLabel: varchar('summary_pricing_discount_button_label').notNull().default("Apply"),
+  summary_pricing_discountPromptLabel: varchar('summary_pricing_discount_prompt_label').notNull().default("Have a discount?"),
+  summary_pricing_discountRemoveLabel: varchar('summary_pricing_discount_remove_label').notNull().default("Remove"),
   summary_pricing_taxLabel: varchar('summary_pricing_tax_label').notNull().default("Tax"),
   summary_pricing_totalLabel: varchar('summary_pricing_total_label').notNull().default("Total"),
   summary_pricing_perMonthSuffix: varchar('summary_pricing_per_month_suffix').notNull().default("/mo"),
@@ -2535,6 +2519,7 @@ export const checkout_locales = pgTable('checkout_locales', {
   form_postalCodeLabel: varchar('form_postal_code_label').notNull().default("Postal code"),
   form_countryLabel: varchar('form_country_label').notNull().default("Country"),
   form_countryPlaceholder: varchar('form_country_placeholder').notNull().default("Select a country"),
+  form_countryEmptyLabel: varchar('form_country_empty_label').notNull().default("No country found."),
   form_taxIdTypeLabel: varchar('form_tax_id_type_label').notNull().default("Tax ID type"),
   form_taxIdTypePlaceholder: varchar('form_tax_id_type_placeholder').notNull().default("eu_vat"),
   form_taxIdValueLabel: varchar('form_tax_id_value_label').notNull().default("Tax ID"),
@@ -3149,34 +3134,12 @@ export const relations_pages_blocks_flow_example = relations(pages_blocks_flow_e
             relationName: 'flow_items',
     }),
       }))
-export const relations_pages_blocks_subscription_configurator_feature_overview = relations(pages_blocks_subscription_configurator_feature_overview, ({ one }) => ({
-  _parentID: one(pages_blocks_subscription_configurator, {
-    
-    fields: [pages_blocks_subscription_configurator_feature_overview._parentID],
-    references: [pages_blocks_subscription_configurator.id],
-    relationName: 'featureOverview',
-    }),
-      }))
-export const relations_pages_blocks_subscription_configurator_buttons = relations(pages_blocks_subscription_configurator_buttons, ({ one }) => ({
-  _parentID: one(pages_blocks_subscription_configurator, {
-    
-    fields: [pages_blocks_subscription_configurator_buttons._parentID],
-    references: [pages_blocks_subscription_configurator.id],
-    relationName: 'buttons',
-    }),
-      }))
-export const relations_pages_blocks_subscription_configurator = relations(pages_blocks_subscription_configurator, ({ one, many }) => ({
+export const relations_pages_blocks_subscription_configurator = relations(pages_blocks_subscription_configurator, ({ one }) => ({
   _parentID: one(pages, {
     
     fields: [pages_blocks_subscription_configurator._parentID],
     references: [pages.id],
     relationName: '_blocks_subscriptionConfigurator',
-    }),
-    featureOverview: many(pages_blocks_subscription_configurator_feature_overview, {
-            relationName: 'featureOverview',
-    }),
-    buttons: many(pages_blocks_subscription_configurator_buttons, {
-            relationName: 'buttons',
     }),
       }))
 export const relations_pages_blocks_pricing_pro_features = relations(pages_blocks_pricing_pro_features, ({ one }) => ({
@@ -3972,7 +3935,6 @@ type DatabaseSchema = {
   enum_pages_blocks_flow_example_flow_items_color: typeof enum_pages_blocks_flow_example_flow_items_color
   enum_pages_blocks_flow_example_section_layout: typeof enum_pages_blocks_flow_example_section_layout
   enum_pages_blocks_flow_example_flow_layout: typeof enum_pages_blocks_flow_example_flow_layout
-  enum_pages_blocks_subscription_configurator_buttons_variant: typeof enum_pages_blocks_subscription_configurator_buttons_variant
   enum_pages_blocks_pricing_section_layout: typeof enum_pages_blocks_pricing_section_layout
   enum_pages_blocks_pricing_pro_button_variant: typeof enum_pages_blocks_pricing_pro_button_variant
   enum_pages_blocks_pricing_max_button_variant: typeof enum_pages_blocks_pricing_max_button_variant
@@ -4006,6 +3968,9 @@ type DatabaseSchema = {
   enum_subscription_config_customer_type_b2c_color: typeof enum_subscription_config_customer_type_b2c_color
   enum_subscription_config_subscription_tier_pro_color: typeof enum_subscription_config_subscription_tier_pro_color
   enum_subscription_config_subscription_tier_team_color: typeof enum_subscription_config_subscription_tier_team_color
+  enum_subscription_config_payment_period_monthly_color: typeof enum_subscription_config_payment_period_monthly_color
+  enum_subscription_config_payment_period_quarterly_color: typeof enum_subscription_config_payment_period_quarterly_color
+  enum_subscription_config_payment_period_yearly_color: typeof enum_subscription_config_payment_period_yearly_color
   enum_checkout_summary_deployment_icon_color: typeof enum_checkout_summary_deployment_icon_color
   enum_checkout_summary_customer_type_icon_color: typeof enum_checkout_summary_customer_type_icon_color
   enum_checkout_summary_ai_tokens_icon_color: typeof enum_checkout_summary_ai_tokens_icon_color
@@ -4065,8 +4030,6 @@ type DatabaseSchema = {
   pages_blocks_flow_example_flow_items_segments: typeof pages_blocks_flow_example_flow_items_segments
   pages_blocks_flow_example_flow_items: typeof pages_blocks_flow_example_flow_items
   pages_blocks_flow_example: typeof pages_blocks_flow_example
-  pages_blocks_subscription_configurator_feature_overview: typeof pages_blocks_subscription_configurator_feature_overview
-  pages_blocks_subscription_configurator_buttons: typeof pages_blocks_subscription_configurator_buttons
   pages_blocks_subscription_configurator: typeof pages_blocks_subscription_configurator
   pages_blocks_pricing_pro_features: typeof pages_blocks_pricing_pro_features
   pages_blocks_pricing_pro_missing_features: typeof pages_blocks_pricing_pro_missing_features
@@ -4185,8 +4148,6 @@ type DatabaseSchema = {
   relations_pages_blocks_flow_example_flow_items_segments: typeof relations_pages_blocks_flow_example_flow_items_segments
   relations_pages_blocks_flow_example_flow_items: typeof relations_pages_blocks_flow_example_flow_items
   relations_pages_blocks_flow_example: typeof relations_pages_blocks_flow_example
-  relations_pages_blocks_subscription_configurator_feature_overview: typeof relations_pages_blocks_subscription_configurator_feature_overview
-  relations_pages_blocks_subscription_configurator_buttons: typeof relations_pages_blocks_subscription_configurator_buttons
   relations_pages_blocks_subscription_configurator: typeof relations_pages_blocks_subscription_configurator
   relations_pages_blocks_pricing_pro_features: typeof relations_pages_blocks_pricing_pro_features
   relations_pages_blocks_pricing_pro_missing_features: typeof relations_pages_blocks_pricing_pro_missing_features

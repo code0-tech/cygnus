@@ -187,6 +187,9 @@ export interface SubscriptionConfigData {
         monthlyPeriodSuffix: string
         quarterlyPeriodSuffix: string
         yearlyPeriodSuffix: string
+        monthlyColor: "brand" | "pink" | "yellow" | "aqua" | "blue" | "lime" | "magenta"
+        quarterlyColor: "brand" | "pink" | "yellow" | "aqua" | "blue" | "lime" | "magenta"
+        yearlyColor: "brand" | "pink" | "yellow" | "aqua" | "blue" | "lime" | "magenta"
         quarterlyDiscount: number
         yearlyDiscount: number
     }
