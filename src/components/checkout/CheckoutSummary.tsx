@@ -1,10 +1,12 @@
 "use client"
 
 import { CheckoutDiscount, type CheckoutDiscountValue } from "@/components/checkout/CheckoutDiscount"
+import { CheckoutLegalFooter } from "@/components/checkout/CheckoutLegalFooter"
 import { getIcon } from "@/components/ui/IconRenderer"
 import type { CheckoutData, CheckoutSummaryIconColor, SubscriptionConfigData } from "@/lib/cms"
 import { formatCompactNumber, formatEuroCurrency } from "@/lib/formatters"
 import { calculateExclusiveTaxRate, calculatePromotionDiscountAmount, formatDiscountBadge, resolveCheckoutPricing } from "@/lib/subscriptionCalculator"
+import type { Footer } from "@/payload-types"
 import type { CheckoutTaxQuote } from "@code0-tech/crater-graphql-types"
 import { useParams, useSearchParams } from "next/navigation"
 import { useState, type ReactNode } from "react"
@@ -15,6 +17,8 @@ type CheckoutTaxQuoteValue = {
 
 interface CheckoutSummaryProps {
     content?: CheckoutData["summary"] | null
+    currentYear: number
+    footer?: Footer | null
     sessionToken?: string | null
     subscriptionConfig?: SubscriptionConfigData | null
     taxQuote?: CheckoutTaxQuoteValue | null
@@ -56,7 +60,7 @@ function SummaryBadge({ icon, value, tone = "neutral" }: SummaryBadgeProps) {
     )
 }
 
-export function CheckoutSummary({ content, sessionToken, subscriptionConfig, taxQuote }: CheckoutSummaryProps) {
+export function CheckoutSummary({ content, currentYear, footer, sessionToken, subscriptionConfig, taxQuote }: CheckoutSummaryProps) {
     const searchParams = useSearchParams()
     const params = useParams<{ locale?: string }>()
     const [promotionDiscount, setPromotionDiscount] = useState<CheckoutDiscountValue | null>(null)
@@ -103,135 +107,139 @@ export function CheckoutSummary({ content, sessionToken, subscriptionConfig, tax
     const formattedTaxAmount = formatEuroCurrency(taxAmount, locale)
 
     return (
-        <div className="flex-1 h-max pl-3">
-            <div className="mb-6">
-                <p className="tracking-wide text-brand">{content.eyebrow}</p>
-                <h2 className="mt-4 text-2xl text-white">{content.heading}</h2>
-                <p className="mt-2 max-w-md text-sm leading-6 text-secondary">{content.description}</p>
-            </div>
-
-            {isCustomPlan && (deployment || customerType || aiTokensParam || workflowExecutionsParam) && (
-                <div className="flex flex-col gap-2">
-                    <span className="text-sm text-secondary">{content.configurationLabel}</span>
-                    <div className="flex flex-wrap items-center gap-1.5 mb-4">
-                        {deployment && (
-                            <SummaryBadge
-                                icon={getIcon(deployment === "cloud" ? content.deploymentIcons.cloud : content.deploymentIcons.selfHosted, 16)}
-                                tone={content.deploymentIconColor}
-                                value={<span className="capitalize">{deployment.replaceAll("_", " ").replaceAll("-", " ")}</span>}
-                            />
-                        )}
-                        {customerType && (
-                            <SummaryBadge
-                                icon={getIcon(customerType === "b2c" ? content.customerTypeIcons.b2c : content.customerTypeIcons.b2b, 16)}
-                                tone={content.customerTypeIconColor}
-                                value={<span className="uppercase">{customerType}</span>}
-                            />
-                        )}
-                        {aiTokensParam && (
-                            <SummaryBadge
-                                icon={getIcon(content.aiTokensIcon, 16)}
-                                tone={content.aiTokensIconColor}
-                                value={
-                                    <span>
-                                        {formatCompactNumber(aiTokens)} {monthlyPeriodSuffix}
-                                    </span>
-                                }
-                            />
-                        )}
-                        {workflowExecutionsParam && (
-                            <SummaryBadge
-                                icon={getIcon(content.workflowExecutionsIcon, 16)}
-                                tone={content.workflowExecutionsIconColor}
-                                value={
-                                    <span>
-                                        {formatCompactNumber(workflowExecutions)} {monthlyPeriodSuffix}
-                                    </span>
-                                }
-                            />
-                        )}
-                    </div>
-                </div>
-            )}
-
-            <div className="mt-4 mb-2 rounded-2xl border border-white/10 bg-white/2 p-4">
-                <div className="-mx-4 flex items-center justify-between gap-3 border-b border-white/10 px-4 pb-3">
-                    <div>
-                        <p className="text-sm text-white">{content.pricing.label}</p>
-                        <p className="mt-1 text-sm text-tertiary">{content.pricing.description}</p>
-                    </div>
+        <div className="flex h-full flex-1 flex-col justify-between pl-3">
+            <div>
+                <div className="mb-6">
+                    <p className="tracking-wide text-brand">{content.eyebrow}</p>
+                    <h2 className="mt-4 text-2xl text-white">{content.heading}</h2>
+                    <p className="mt-2 max-w-md text-sm leading-6 text-secondary">{content.description}</p>
                 </div>
 
-                <div className="space-y-2 pt-4">
-                    <div className="flex items-start justify-between gap-4 text-sm">
-                        <span className="text-secondary">{content.pricing.planLabel}</span>
-                        <span className="shrink-0 text-white">{planTitle}</span>
-                    </div>
-
-                    {isCustomPlan && (
-                        <>
-                            <div className="flex items-start justify-between gap-4 text-sm">
-                                <span className="text-secondary">{content.pricing.baseLabel}</span>
-                                <span className="shrink-0 tabular-nums text-white">{formattedBasePrice}</span>
-                            </div>
-
-                            <div className="flex items-start justify-between gap-4 text-sm">
-                                <span className="text-secondary">{content.pricing.workflowExecutionsLabel}</span>
-                                <span className="shrink-0 tabular-nums text-white">{formattedWorkflowExecutionsPrice}</span>
-                            </div>
-                        </>
-                    )}
-
-                    {selectedAdditionalFeatures.length > 0 && (
-                        <div className="flex items-start justify-between gap-4 text-sm">
-                            <div className="flex min-w-0 flex-wrap items-center gap-1.5">
-                                <span className="text-secondary">{content.pricing.additionalFeaturesLabel}</span>
+                {isCustomPlan && (deployment || customerType || aiTokensParam || workflowExecutionsParam) && (
+                    <div className="flex flex-col gap-2">
+                        <span className="text-sm text-secondary">{content.configurationLabel}</span>
+                        <div className="flex flex-wrap items-center gap-1.5 mb-4">
+                            {deployment && (
                                 <SummaryBadge
-                                    icon={getIcon(content.additionalFeaturesIcon, 16)}
-                                    tone={content.additionalFeaturesIconColor}
-                                    value={selectedAdditionalFeatures.map((feature) => feature.title).join(", ")}
+                                    icon={getIcon(deployment === "cloud" ? content.deploymentIcons.cloud : content.deploymentIcons.selfHosted, 16)}
+                                    tone={content.deploymentIconColor}
+                                    value={<span className="capitalize">{deployment.replaceAll("_", " ").replaceAll("-", " ")}</span>}
                                 />
+                            )}
+                            {customerType && (
+                                <SummaryBadge
+                                    icon={getIcon(customerType === "b2c" ? content.customerTypeIcons.b2c : content.customerTypeIcons.b2b, 16)}
+                                    tone={content.customerTypeIconColor}
+                                    value={<span className="uppercase">{customerType}</span>}
+                                />
+                            )}
+                            {aiTokensParam && (
+                                <SummaryBadge
+                                    icon={getIcon(content.aiTokensIcon, 16)}
+                                    tone={content.aiTokensIconColor}
+                                    value={
+                                        <span>
+                                            {formatCompactNumber(aiTokens)} {monthlyPeriodSuffix}
+                                        </span>
+                                    }
+                                />
+                            )}
+                            {workflowExecutionsParam && (
+                                <SummaryBadge
+                                    icon={getIcon(content.workflowExecutionsIcon, 16)}
+                                    tone={content.workflowExecutionsIconColor}
+                                    value={
+                                        <span>
+                                            {formatCompactNumber(workflowExecutions)} {monthlyPeriodSuffix}
+                                        </span>
+                                    }
+                                />
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                <div className="mt-4 mb-2 rounded-2xl border border-white/10 bg-white/2 p-4">
+                    <div className="-mx-4 flex items-center justify-between gap-3 border-b border-white/10 px-4 pb-3">
+                        <div>
+                            <p className="text-sm text-white">{content.pricing.label}</p>
+                            <p className="mt-1 text-sm text-tertiary">{content.pricing.description}</p>
+                        </div>
+                    </div>
+
+                    <div className="space-y-2 pt-4">
+                        <div className="flex items-start justify-between gap-4 text-sm">
+                            <span className="text-secondary">{content.pricing.planLabel}</span>
+                            <span className="shrink-0 text-white">{planTitle}</span>
+                        </div>
+
+                        {isCustomPlan && (
+                            <>
+                                <div className="flex items-start justify-between gap-4 text-sm">
+                                    <span className="text-secondary">{content.pricing.baseLabel}</span>
+                                    <span className="shrink-0 tabular-nums text-white">{formattedBasePrice}</span>
+                                </div>
+
+                                <div className="flex items-start justify-between gap-4 text-sm">
+                                    <span className="text-secondary">{content.pricing.workflowExecutionsLabel}</span>
+                                    <span className="shrink-0 tabular-nums text-white">{formattedWorkflowExecutionsPrice}</span>
+                                </div>
+                            </>
+                        )}
+
+                        {selectedAdditionalFeatures.length > 0 && (
+                            <div className="flex items-start justify-between gap-4 text-sm">
+                                <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                                    <span className="text-secondary">{content.pricing.additionalFeaturesLabel}</span>
+                                    <SummaryBadge
+                                        icon={getIcon(content.additionalFeaturesIcon, 16)}
+                                        tone={content.additionalFeaturesIconColor}
+                                        value={selectedAdditionalFeatures.map((feature) => feature.title).join(", ")}
+                                    />
+                                </div>
+                                <span className="shrink-0 tabular-nums text-white">{formattedAdditionalFeaturesPrice}</span>
                             </div>
-                            <span className="shrink-0 tabular-nums text-white">{formattedAdditionalFeaturesPrice}</span>
-                        </div>
-                    )}
+                        )}
 
-                    {paymentPeriodDiscountLabel && paymentPeriodDiscountAmount > 0 && (
-                        <div className="flex items-center justify-between gap-4 text-sm">
-                            <span className="text-secondary">
-                                {paymentPeriodDiscountLabel} (-{formatDiscountBadge(paymentPeriodDiscountPercentage, locale)})
-                            </span>
-                            <span className="tabular-nums text-white">-{formattedPaymentPeriodDiscountAmount}</span>
-                        </div>
-                    )}
+                        {paymentPeriodDiscountLabel && paymentPeriodDiscountAmount > 0 && (
+                            <div className="flex items-center justify-between gap-4 text-sm">
+                                <span className="text-secondary">
+                                    {paymentPeriodDiscountLabel} (-{formatDiscountBadge(paymentPeriodDiscountPercentage, locale)})
+                                </span>
+                                <span className="tabular-nums text-white">-{formattedPaymentPeriodDiscountAmount}</span>
+                            </div>
+                        )}
 
-                    {taxQuote && (
-                        <div className="flex items-center justify-between gap-4 text-sm">
-                            <span className="text-secondary">
-                                {content.pricing.taxLabel} ({formatDiscountBadge(taxPercentage, locale)})
-                            </span>
-                            <span className="tabular-nums text-white">{formattedTaxAmount}</span>
-                        </div>
-                    )}
+                        {taxQuote && (
+                            <div className="flex items-center justify-between gap-4 text-sm">
+                                <span className="text-secondary">
+                                    {content.pricing.taxLabel} ({formatDiscountBadge(taxPercentage, locale)})
+                                </span>
+                                <span className="tabular-nums text-white">{formattedTaxAmount}</span>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="-mx-4 mt-4 flex items-center justify-between gap-4 border-t border-white/10 px-4 pt-4 text-sm">
+                        <span className="text-secondary">{content.pricing.totalLabel}</span>
+                        <span className="tabular-nums text-brand text-lg">
+                            {formattedTotalPrice} <span className="text-tertiary text-sm">{periodSuffix}</span>
+                        </span>
+                    </div>
                 </div>
 
-                <div className="-mx-4 mt-4 flex items-center justify-between gap-4 border-t border-white/10 px-4 pt-4 text-sm">
-                    <span className="text-secondary">{content.pricing.totalLabel}</span>
-                    <span className="tabular-nums text-brand text-lg">
-                        {formattedTotalPrice} <span className="text-tertiary text-sm">{periodSuffix}</span>
-                    </span>
-                </div>
+                <CheckoutDiscount
+                    appliedAmount={promotionDiscountAmount > 0 ? formattedDiscountAmount : null}
+                    buttonLabel={content.pricing.discountButtonLabel}
+                    inputPlaceholder={content.pricing.discountInputPlaceholder}
+                    onApplied={setPromotionDiscount}
+                    promptLabel={content.pricing.discountPromptLabel}
+                    removeLabel={content.pricing.discountRemoveLabel}
+                    sessionToken={sessionToken}
+                />
             </div>
 
-            <CheckoutDiscount
-                appliedAmount={promotionDiscountAmount > 0 ? formattedDiscountAmount : null}
-                buttonLabel={content.pricing.discountButtonLabel}
-                inputPlaceholder={content.pricing.discountInputPlaceholder}
-                onApplied={setPromotionDiscount}
-                promptLabel={content.pricing.discountPromptLabel}
-                removeLabel={content.pricing.discountRemoveLabel}
-                sessionToken={sessionToken}
-            />
+            <CheckoutLegalFooter currentYear={currentYear} footer={footer ?? null} locale={locale} />
         </div>
     )
 }
