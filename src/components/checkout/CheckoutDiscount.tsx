@@ -164,7 +164,7 @@ export function CheckoutDiscount({ appliedAmount, buttonLabel, inputPlaceholder,
     }
 
     return (
-        <div className="mx-4 space-y-2 pt-2">
+        <div className="space-y-2 pt-2">
             <button
                 type="button"
                 aria-expanded={isEditing}
@@ -172,7 +172,7 @@ export function CheckoutDiscount({ appliedAmount, buttonLabel, inputPlaceholder,
                     setIsEditing((currentValue) => !currentValue)
                     setErrorMessage(null)
                 }}
-                className="text-left text-sm text-tertiary transition-colors hover:text-brand hover:underline underline-offset-2"
+                className=" ml-4 text-left text-sm text-tertiary transition-colors hover:text-brand hover:underline underline-offset-2"
             >
                 {promptLabel}
             </button>
