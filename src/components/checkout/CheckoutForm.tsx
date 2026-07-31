@@ -2,6 +2,7 @@
 
 import { useCraterSession } from "@/components/checkout/CraterSessionProvider"
 import { CountryPicker } from "@/components/checkout/CountryPicker"
+import { useCheckoutStage } from "@/components/checkout/CheckoutStepper"
 import { Card } from "@/components/ui/Card"
 import type { CheckoutData, SubscriptionConfigData } from "@/lib/cms"
 import { normalizeCountryCode, resolveCraterCustomerType } from "@/lib/checkout/craterCustomer"
@@ -49,6 +50,7 @@ async function readCheckoutError(response: Response, fallback: string) {
 
 export function CheckoutForm({ content, locale, subscriptionConfig }: { content?: CheckoutFormContent | null; locale: AppLocale; subscriptionConfig?: SubscriptionConfigData | null }) {
     const searchParams = useSearchParams()
+    const { setStage } = useCheckoutStage()
     const [isLoading, setIsLoading] = useState(false)
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
     const { error: sessionError, isLoading: isSessionLoading, token: sessionToken } = useCraterSession()
@@ -98,6 +100,7 @@ export function CheckoutForm({ content, locale, subscriptionConfig }: { content?
 
             setIsLoading(true)
             setErrorMessage(null)
+            setStage("payment")
 
             void (async () => {
                 try {
@@ -165,6 +168,7 @@ export function CheckoutForm({ content, locale, subscriptionConfig }: { content?
                     console.error("Failed to start Crater checkout:", error)
                     setErrorMessage(error instanceof Error ? error.message : content?.paymentErrorFallback || "Checkout failed.")
                     setIsLoading(false)
+                    setStage("billingAddress")
                 }
             })()
         },

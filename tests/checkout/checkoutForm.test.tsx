@@ -26,6 +26,11 @@ mock.module("@/components/checkout/CraterSessionProvider", {
         }),
     },
 })
+mock.module("@/components/checkout/CheckoutStepper", {
+    namedExports: {
+        useCheckoutStage: () => ({ stage: "billingAddress", setStage: () => {} }),
+    },
+})
 mock.module("@/components/checkout/CountryPicker", {
     namedExports: {
         CountryPicker: ({
