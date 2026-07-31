@@ -15,15 +15,18 @@ import {
 const paymentPeriod = {
     description: "Choose how often to pay.",
     label: "Payment period",
+    monthlyColor: "brand",
     monthlyPeriodSuffix: "per month",
     monthlyText: "Monthly",
+    quarterlyColor: "aqua",
     quarterlyDiscount: 0.1,
     quarterlyPeriodSuffix: "per quarter",
     quarterlyText: "Quarterly",
+    yearlyColor: "magenta",
     yearlyDiscount: 0.2,
     yearlyPeriodSuffix: "per year",
     yearlyText: "Yearly",
-}
+} as const
 
 test("clamps usage values to configured range", () => {
     const range = { min: 100, max: 1_000, step: 100 }
@@ -127,6 +130,49 @@ test("preserves the regular fixed-plan price for period discount summaries", () 
 
     assert.equal(result.pricing.totalBeforeDiscount, 30)
     assert.equal(result.pricing.totalPrice, 27)
+})
+
+test("forces the custom plan when a b2b customer requests a pro or max checkout via the URL", () => {
+    const config = {
+        additionalFeatures: [],
+        aiTokenPriceFactor: 0.001,
+        aiTokens: {
+            b2b: { min: 100, max: 1_000, step: 100 },
+            b2c: { min: 10, max: 100, step: 10 },
+        },
+        defaults: {
+            aiTokens: { b2b: 100, b2c: 10 },
+            customerType: "b2c",
+            paymentPeriod: "monthly",
+            workflowExecutions: { b2b: 20, b2c: 10 },
+        },
+        packages: {
+            custom: { title: "Custom" },
+            pro: { prices: { monthly: 10, quarterly: 27, yearly: 96 }, title: "Pro" },
+        },
+        paymentPeriod,
+        workflowExecutionPriceFactor: 0.01,
+        workflowExecutions: {
+            b2b: { min: 20, max: 200, step: 10 },
+            b2c: { min: 10, max: 100, step: 10 },
+        },
+    } as never
+
+    const result = resolveCheckoutPricing({
+        additionalFeatureIds: [],
+        aiTokensParam: null,
+        customerTypeParam: "b2b",
+        fallbackPeriodSuffix: "/mo",
+        paymentPeriodParam: "monthly",
+        planParam: "pro",
+        subscriptionConfig: config,
+        workflowExecutionsParam: null,
+    })
+
+    assert.equal(result.plan, "custom")
+    assert.equal(result.isCustomPlan, true)
+    assert.equal(result.workflowExecutions, 20)
+    assert.equal(result.aiTokens, 100)
 })
 
 test("clamps manipulated custom-plan usage parameters before calculating the price", () => {

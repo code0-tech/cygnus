@@ -8,6 +8,12 @@ const subscriptionConfig = {
         b2b: { min: 100_000, max: 1_000_000, step: 100_000 },
         b2c: { min: 10_000, max: 100_000, step: 10_000 },
     },
+    defaults: {
+        aiTokens: { b2b: 200_000, b2c: 20_000 },
+        customerType: "b2c",
+        paymentPeriod: "monthly",
+        workflowExecutions: { b2b: 1_000, b2c: 100 },
+    },
     workflowExecutions: {
         b2b: { min: 200, max: 10_000, step: 100 },
         b2c: { min: 10, max: 1_000, step: 10 },
@@ -122,6 +128,61 @@ test("checkout requires exactly one regular plan or custom checkout configuratio
     assert.deepEqual(await combinedResponse.json(), {
         error: "Provide either plan or customCheckoutConfigurationId.",
     })
+})
+
+test("forces the custom plan for b2b customers requesting pro or max, even sent directly to the API", async () => {
+    const graphQLServer = await createGraphQLTestServer([
+        {
+            data: {
+                checkoutCreateSession: {
+                    errors: [],
+                    session: {
+                        expiresAt: 1_800_000_000,
+                        id: "cs_b2b_downgrade",
+                        url: "https://checkout.stripe.com/b2b-downgrade",
+                    },
+                },
+            },
+        },
+    ])
+    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
+    const previousAppUrl = process.env.NEXT_PUBLIC_APP_URL
+    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
+    process.env.NEXT_PUBLIC_APP_URL = "https://code0.example"
+
+    try {
+        const response = await POST(
+            new Request("https://example.com/api/crater/checkout/session", {
+                method: "POST",
+                headers: {
+                    authorization: "Session b2b-token",
+                    "content-type": "application/json",
+                },
+                body: JSON.stringify({
+                    plan: "pro",
+                    customerType: "b2b",
+                    deploymentType: "self_hosted",
+                    paymentPeriod: "monthly",
+                }),
+            })
+        )
+
+        assert.equal(response.status, 200)
+        assert.deepEqual(graphQLServer.requests[0].body.variables, {
+            input: {
+                cancelUrl: "https://code0.example/checkout",
+                deploymentType: "self_hosted",
+                plan: "custom",
+                successUrl: "https://code0.example/checkout/success",
+            },
+        })
+    } finally {
+        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
+        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
+        if (previousAppUrl === undefined) delete process.env.NEXT_PUBLIC_APP_URL
+        else process.env.NEXT_PUBLIC_APP_URL = previousAppUrl
+        await graphQLServer.close()
+    }
 })
 
 test("creates regular and custom checkout sessions with the expected Crater inputs", async () => {

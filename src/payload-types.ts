@@ -2992,6 +2992,9 @@ export interface SubscriptionConfig {
     monthlyPeriodSuffix?: string | null;
     quarterlyPeriodSuffix?: string | null;
     yearlyPeriodSuffix?: string | null;
+    monthlyColor?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
+    quarterlyColor?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
+    yearlyColor?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
     quarterlyDiscount?: number | null;
     yearlyDiscount?: number | null;
   };
@@ -3529,6 +3532,9 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
         monthlyPeriodSuffix?: T;
         quarterlyPeriodSuffix?: T;
         yearlyPeriodSuffix?: T;
+        monthlyColor?: T;
+        quarterlyColor?: T;
+        yearlyColor?: T;
         quarterlyDiscount?: T;
         yearlyDiscount?: T;
       };

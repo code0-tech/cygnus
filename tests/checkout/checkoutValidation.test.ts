@@ -8,6 +8,12 @@ const subscriptionConfig = {
         b2b: { min: 100_000, max: 1_000_000, step: 100_000 },
         b2c: { min: 10_000, max: 100_000, step: 10_000 },
     },
+    defaults: {
+        aiTokens: { b2b: 200_000, b2c: 20_000 },
+        customerType: "b2c",
+        paymentPeriod: "monthly",
+        workflowExecutions: { b2b: 1_000, b2c: 100 },
+    },
     workflowExecutions: {
         b2b: { min: 200, max: 10_000, step: 100 },
         b2c: { min: 10, max: 1_000, step: 10 },
@@ -86,6 +92,44 @@ test("rejects invalid customer types, periods, and numeric formats", () => {
         {
             valid: false,
             details: ["paymentPeriod must be monthly, quarterly, or yearly.", "customerType must be b2b or b2c for a custom checkout."],
+        }
+    )
+})
+
+test("downgrades pro/max to custom for b2b customers and fills in default usage values", () => {
+    const normalizedSelection = normalizeCheckoutSelection(
+        {
+            customerType: "b2b",
+            paymentPeriod: "yearly",
+            plan: "pro",
+        },
+        subscriptionConfig
+    )
+
+    assert.deepEqual(normalizedSelection, {
+        customerType: "b2b",
+        paymentPeriod: "yearly",
+        plan: "custom",
+        aiTokens: "200000",
+        workflowExecutions: "1000",
+    })
+    assert.deepEqual(validateCheckoutSelection(normalizedSelection, subscriptionConfig), { valid: true })
+})
+
+test("leaves pro/max untouched for b2c customers", () => {
+    assert.deepEqual(
+        normalizeCheckoutSelection(
+            {
+                customerType: "b2c",
+                paymentPeriod: "monthly",
+                plan: "max",
+            },
+            subscriptionConfig
+        ),
+        {
+            customerType: "b2c",
+            paymentPeriod: "monthly",
+            plan: "max",
         }
     )
 })

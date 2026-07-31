@@ -460,6 +460,9 @@ export const SubscriptionCollection: GlobalConfig = {
                 { name: "monthlyPeriodSuffix", type: "text", required: false, localized: true, defaultValue: "per month" },
                 { name: "quarterlyPeriodSuffix", type: "text", required: false, localized: true, defaultValue: "per quarter" },
                 { name: "yearlyPeriodSuffix", type: "text", required: false, localized: true, defaultValue: "per year" },
+                { ...colorField, name: "monthlyColor", defaultValue: "brand" },
+                { ...colorField, name: "quarterlyColor", defaultValue: "aqua" },
+                { ...colorField, name: "yearlyColor", defaultValue: "magenta" },
                 {
                     name: "quarterlyDiscount",
                     label: "Quarterly Discount",
