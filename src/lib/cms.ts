@@ -258,18 +258,6 @@ export interface SubscriptionConfiguratorBlockData {
         heading: string
         description: string
     }
-    featureOverview: {
-        title: string
-        description: string
-        icon: string
-        id?: string | null
-    }[]
-    buttons: {
-        label: string
-        url: string
-        variant?: "none" | "normal" | "outlined" | "filled" | null
-        id?: string | null
-    }[]
 }
 
 export type SubscriptionConfiguratorContent = SubscriptionConfigData & SubscriptionConfiguratorBlockData

@@ -126,37 +126,13 @@ const pageBlockRenderers: Partial<Record<PageBlock["blockType"], BlockRenderer>>
         if (!config) return null
 
         const content = block as Extract<PageBlock, { blockType: "subscriptionConfigurator" }>
-        const featureOverview: SubscriptionConfiguratorBlockData["featureOverview"] =
-            content.featureOverview?.map((item) => ({
-                id: item.id,
-                title: item.title?.trim() || "",
-                description: item.description?.trim() || "",
-                icon: item.icon?.trim() || "tabler:IconCube",
-            })) ?? []
         const blockContent: SubscriptionConfiguratorBlockData = {
             pageIntro: {
                 heading: content.pageIntro?.heading?.trim() || "",
                 description: content.pageIntro?.description?.trim() || "",
             },
-            featureOverview,
-            buttons:
-                content.buttons?.flatMap((button) => {
-                    const label = button.label?.trim()
-                    const url = button.url?.trim()
-                    return label && url
-                        ? [
-                              {
-                                  id: button.id,
-                                  label,
-                                  url,
-                                  variant: button.variant,
-                              },
-                          ]
-                        : []
-                }) ?? [],
         }
         const icons: SubscriptionIcons = {
-            featureOverview: featureOverview.map((item, index) => getIcon(item.icon, 20, `feature-overview-${index}-${item.icon}`)),
             deployment: {
                 selfHosted: getIcon(config.deployment.selfHosted.icon?.trim() || "tabler:IconServer", 20),
                 cloud: getIcon(config.deployment.cloud.icon?.trim() || "tabler:IconCloud", 20),

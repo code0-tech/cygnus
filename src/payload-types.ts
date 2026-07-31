@@ -1110,22 +1110,6 @@ export interface Page {
               heading?: string | null;
               description?: string | null;
             };
-            featureOverview?:
-              | {
-                  title?: string | null;
-                  description?: string | null;
-                  icon: string;
-                  id?: string | null;
-                }[]
-              | null;
-            buttons?:
-              | {
-                  label: string;
-                  url: string;
-                  variant?: ('none' | 'normal' | 'outlined' | 'filled') | null;
-                  id?: string | null;
-                }[]
-              | null;
             id?: string | null;
             blockName?: string | null;
             blockType: 'subscriptionConfigurator';
@@ -2379,22 +2363,6 @@ export interface PagesSelect<T extends boolean = true> {
                 | {
                     heading?: T;
                     description?: T;
-                  };
-              featureOverview?:
-                | T
-                | {
-                    title?: T;
-                    description?: T;
-                    icon?: T;
-                    id?: T;
-                  };
-              buttons?:
-                | T
-                | {
-                    label?: T;
-                    url?: T;
-                    variant?: T;
-                    id?: T;
                   };
               id?: T;
               blockName?: T;

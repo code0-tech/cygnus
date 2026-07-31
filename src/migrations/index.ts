@@ -89,6 +89,7 @@ import * as migration_20260730_161006_checkout_country_empty_label from './20260
 import * as migration_20260730_162523_checkout_discount_toggle_labels from './20260730_162523_checkout_discount_toggle_labels';
 import * as migration_20260731_112410_subscription_configurator_plan_options from './20260731_112410_subscription_configurator_plan_options';
 import * as migration_20260731_113312_subscription_configurator_wizard_navigation from './20260731_113312_subscription_configurator_wizard_navigation';
+import * as migration_20260731_120926_remove_subscription_configurator_features_buttons from './20260731_120926_remove_subscription_configurator_features_buttons';
 
 export const migrations = [
   {
@@ -544,6 +545,11 @@ export const migrations = [
   {
     up: migration_20260731_113312_subscription_configurator_wizard_navigation.up,
     down: migration_20260731_113312_subscription_configurator_wizard_navigation.down,
-    name: '20260731_113312_subscription_configurator_wizard_navigation'
+    name: '20260731_113312_subscription_configurator_wizard_navigation',
+  },
+  {
+    up: migration_20260731_120926_remove_subscription_configurator_features_buttons.up,
+    down: migration_20260731_120926_remove_subscription_configurator_features_buttons.down,
+    name: '20260731_120926_remove_subscription_configurator_features_buttons'
   },
 ];
