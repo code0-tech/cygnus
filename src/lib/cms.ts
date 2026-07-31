@@ -86,6 +86,10 @@ export interface SubscriptionConfigData {
     id: number
     title: string
     optionsPanelHeading: string
+    configuratorNavigation: {
+        backLabel: string
+        nextLabel: string
+    }
     defaults: {
         deployment: "self_hosted" | "cloud"
         customerType: "b2b" | "b2c"
@@ -113,6 +117,25 @@ export interface SubscriptionConfigData {
             description: string
             icon: string
             color: "brand" | "pink" | "yellow" | "aqua" | "blue" | "lime" | "magenta"
+        }
+    }
+    plan: {
+        title: string
+        description: string
+        pro: {
+            title: string
+            description: string
+            icon: string
+        }
+        max: {
+            title: string
+            description: string
+            icon: string
+        }
+        custom: {
+            title: string
+            description: string
+            icon: string
         }
     }
     customerType: {

@@ -161,6 +161,11 @@ const pageBlockRenderers: Partial<Record<PageBlock["blockType"], BlockRenderer>>
                 selfHosted: getIcon(config.deployment.selfHosted.icon?.trim() || "tabler:IconServer", 20),
                 cloud: getIcon(config.deployment.cloud.icon?.trim() || "tabler:IconCloud", 20),
             },
+            plan: {
+                pro: getIcon(config.plan.pro.icon?.trim() || "tabler:IconSparkles", 20),
+                max: getIcon(config.plan.max.icon?.trim() || "tabler:IconRocket", 20),
+                custom: getIcon(config.plan.custom.icon?.trim() || "tabler:IconSettings", 20),
+            },
             customerType: {
                 b2b: getIcon(config.customerType.b2b.icon?.trim() || "tabler:IconBriefcase2", 20),
                 b2c: getIcon(config.customerType.b2c.icon?.trim() || "tabler:IconBuildingStore", 20),

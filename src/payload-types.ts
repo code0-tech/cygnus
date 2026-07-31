@@ -2891,6 +2891,10 @@ export interface SubscriptionConfig {
   id: number;
   title?: string | null;
   optionsPanelHeading?: string | null;
+  configuratorNavigation?: {
+    backLabel?: string | null;
+    nextLabel?: string | null;
+  };
   defaults?: {
     deployment?: ('self_hosted' | 'cloud') | null;
     customerType?: ('b2b' | 'b2c') | null;
@@ -2918,6 +2922,25 @@ export interface SubscriptionConfig {
       description?: string | null;
       icon: string;
       color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
+    };
+  };
+  plan: {
+    title?: string | null;
+    description?: string | null;
+    pro: {
+      title?: string | null;
+      description?: string | null;
+      icon: string;
+    };
+    max: {
+      title?: string | null;
+      description?: string | null;
+      icon: string;
+    };
+    custom: {
+      title?: string | null;
+      description?: string | null;
+      icon: string;
     };
   };
   customerType: {
@@ -3357,6 +3380,12 @@ export interface CookieBannerSelect<T extends boolean = true> {
 export interface SubscriptionConfigSelect<T extends boolean = true> {
   title?: T;
   optionsPanelHeading?: T;
+  configuratorNavigation?:
+    | T
+    | {
+        backLabel?: T;
+        nextLabel?: T;
+      };
   defaults?:
     | T
     | {
@@ -3396,6 +3425,33 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
               description?: T;
               icon?: T;
               color?: T;
+            };
+      };
+  plan?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        pro?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              icon?: T;
+            };
+        max?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              icon?: T;
+            };
+        custom?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              icon?: T;
             };
       };
   customerType?:

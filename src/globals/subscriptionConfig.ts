@@ -63,6 +63,19 @@ export const SubscriptionCollection: GlobalConfig = {
             defaultValue: "Build the subscription shape",
         },
         {
+            name: "configuratorNavigation",
+            label: "Configurator Navigation",
+            type: "group",
+            defaultValue: {
+                backLabel: "Back",
+                nextLabel: "Next",
+            },
+            fields: [
+                { name: "backLabel", type: "text", required: false, localized: true, defaultValue: "Back" },
+                { name: "nextLabel", type: "text", required: false, localized: true, defaultValue: "Next" },
+            ],
+        },
+        {
             name: "defaults",
             label: "Configurator Defaults",
             type: "group",
@@ -194,6 +207,75 @@ export const SubscriptionCollection: GlobalConfig = {
                         },
                         { ...iconField, defaultValue: "cloud" },
                         { ...colorField, defaultValue: "aqua" },
+                    ],
+                },
+            ],
+        },
+        {
+            name: "plan",
+            label: "Plan",
+            type: "group",
+            fields: [
+                {
+                    name: "title",
+                    type: "text",
+                    required: false,
+                    localized: true,
+                    defaultValue: "Plan",
+                },
+                {
+                    name: "description",
+                    type: "textarea",
+                    required: false,
+                    localized: true,
+                    defaultValue: "Choose the plan that best matches your requirements.",
+                },
+                {
+                    name: "pro",
+                    label: "Pro",
+                    type: "group",
+                    fields: [
+                        { name: "title", type: "text", required: false, localized: true, defaultValue: "Pro" },
+                        {
+                            name: "description",
+                            type: "textarea",
+                            required: false,
+                            localized: true,
+                            defaultValue: "A ready-to-use plan for individuals and smaller teams.",
+                        },
+                        { ...iconField, defaultValue: "sparkles" },
+                    ],
+                },
+                {
+                    name: "max",
+                    label: "Max",
+                    type: "group",
+                    fields: [
+                        { name: "title", type: "text", required: false, localized: true, defaultValue: "Max" },
+                        {
+                            name: "description",
+                            type: "textarea",
+                            required: false,
+                            localized: true,
+                            defaultValue: "A ready-to-use plan for organizations with higher requirements.",
+                        },
+                        { ...iconField, defaultValue: "rocket" },
+                    ],
+                },
+                {
+                    name: "custom",
+                    label: "Custom",
+                    type: "group",
+                    fields: [
+                        { name: "title", type: "text", required: false, localized: true, defaultValue: "Custom" },
+                        {
+                            name: "description",
+                            type: "textarea",
+                            required: false,
+                            localized: true,
+                            defaultValue: "Configure usage and additional features for an individual setup.",
+                        },
+                        { ...iconField, defaultValue: "settings" },
                     ],
                 },
             ],
