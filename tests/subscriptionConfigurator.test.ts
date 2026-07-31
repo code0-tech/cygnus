@@ -104,12 +104,16 @@ test("builds checkout search params only with usage and features for the custom 
 })
 
 test("builds the custom-plan wizard in the requested order", () => {
-    assert.deepEqual(getSubscriptionConfiguratorSteps("custom", true), ["customerType", "plan", "deployment", "aiTokens", "workflowExecutions", "additionalFeatures", "paymentPeriod"])
+    assert.deepEqual(getSubscriptionConfiguratorSteps("b2c", "custom", true), ["customerType", "plan", "deployment", "aiTokens", "workflowExecutions", "additionalFeatures", "paymentPeriod"])
 })
 
 test("skips custom usage steps for fixed plans", () => {
-    assert.deepEqual(getSubscriptionConfiguratorSteps("pro", true), ["customerType", "plan", "deployment", "paymentPeriod"])
-    assert.deepEqual(getSubscriptionConfiguratorSteps("max", false), ["customerType", "plan", "deployment", "paymentPeriod"])
+    assert.deepEqual(getSubscriptionConfiguratorSteps("b2c", "pro", true), ["customerType", "plan", "deployment", "paymentPeriod"])
+    assert.deepEqual(getSubscriptionConfiguratorSteps("b2c", "max", false), ["customerType", "plan", "deployment", "paymentPeriod"])
+})
+
+test("skips the plan step entirely for b2b customers, who are always on the custom plan", () => {
+    assert.deepEqual(getSubscriptionConfiguratorSteps("b2b", "custom", true), ["customerType", "deployment", "aiTokens", "workflowExecutions", "additionalFeatures", "paymentPeriod"])
 })
 
 test("restricts B2B customers to the custom plan", () => {
