@@ -101,7 +101,7 @@ export function CheckoutSummary({ content, sessionToken, subscriptionConfig, tax
                 <p className="mt-2 max-w-md text-sm leading-6 text-secondary">{content.description}</p>
             </div>
 
-            <div className="mt-5 rounded-2xl border border-white/10 bg-white/2 p-4">
+            <div className="mt-4 mb-2 rounded-2xl border border-white/10 bg-white/2 p-4">
                 <div className="-mx-4 flex items-center justify-between gap-3 border-b border-white/10 px-4 pb-3">
                     <div>
                         <p className="text-sm text-white">{content.pricing.label}</p>
@@ -194,16 +194,6 @@ export function CheckoutSummary({ content, sessionToken, subscriptionConfig, tax
                         </div>
                     )}
 
-                    <CheckoutDiscount
-                        appliedAmount={promotionDiscountAmount > 0 ? formattedDiscountAmount : null}
-                        buttonLabel={content.pricing.discountButtonLabel}
-                        inputPlaceholder={content.pricing.discountInputPlaceholder}
-                        onApplied={setPromotionDiscount}
-                        promptLabel={content.pricing.discountPromptLabel}
-                        removeLabel={content.pricing.discountRemoveLabel}
-                        sessionToken={sessionToken}
-                    />
-
                     {taxQuote && (
                         <div className="flex items-center justify-between gap-4 text-sm">
                             <span className="text-secondary">
@@ -221,6 +211,16 @@ export function CheckoutSummary({ content, sessionToken, subscriptionConfig, tax
                     </span>
                 </div>
             </div>
+
+            <CheckoutDiscount
+                appliedAmount={promotionDiscountAmount > 0 ? formattedDiscountAmount : null}
+                buttonLabel={content.pricing.discountButtonLabel}
+                inputPlaceholder={content.pricing.discountInputPlaceholder}
+                onApplied={setPromotionDiscount}
+                promptLabel={content.pricing.discountPromptLabel}
+                removeLabel={content.pricing.discountRemoveLabel}
+                sessionToken={sessionToken}
+            />
         </div>
     )
 }

@@ -164,7 +164,7 @@ export function CheckoutDiscount({ appliedAmount, buttonLabel, inputPlaceholder,
     }
 
     return (
-        <div className="space-y-2 pt-2">
+        <div className="mx-4 space-y-2 pt-2">
             <button
                 type="button"
                 aria-expanded={isEditing}
