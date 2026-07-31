@@ -1,26 +1,36 @@
 "use client"
 
+import { WorkflowCalculatorDialog } from "@/components/checkout/WorkflowCalculatorDialog"
+import { HapticButtonLink } from "@/components/ui/HapticButtonLink"
+import { Slider } from "@/components/ui/Slider"
+import { StableBadge } from "@/components/ui/StableBadge"
+import { useDesktopPinnedPosition } from "@/hooks/useDesktopPinnedPosition"
 import type { SubscriptionConfiguratorContent } from "@/lib/cms"
 import { formatEuroCurrency } from "@/lib/formatters"
 import type { AppLocale } from "@/lib/i18n"
-import { calculateSubscriptionPrice, clampToRange, formatDiscountBadge, getPaymentPeriodDiscount, getPaymentPeriodMonths, getPaymentPeriodSuffix, type PaymentPeriod, type UsageRange } from "@/lib/subscriptionCalculator"
-import { useDesktopPinnedPosition } from "@/hooks/useDesktopPinnedPosition"
+import {
+    calculateSubscriptionPrice,
+    clampToRange,
+    formatDiscountBadge,
+    getPaymentPeriodDiscount,
+    getPaymentPeriodMonths,
+    getPaymentPeriodSuffix,
+    type PaymentPeriod,
+} from "@/lib/subscriptionCalculator"
+import { getPlanForCustomerType, getSubscriptionConfiguratorSteps, type SubscriptionConfiguratorPlan, type SubscriptionConfiguratorStep } from "@/lib/subscriptionConfigurator"
 import { cn } from "@/lib/utils"
-import { BuyMenu } from "@/components/checkout/BuyMenu"
-import { WorkflowCalculatorDialog } from "@/components/checkout/WorkflowCalculatorDialog"
-import { Slider } from "@/components/ui/Slider"
-import { Switch, type SwitchOption } from "@/components/ui/Switch"
-import { HapticButtonLink } from "@/components/ui/HapticButtonLink"
-import { IconCheck } from "@tabler/icons-react"
+import NumberFlow from "@number-flow/react"
+import { IconCalendarMonth, IconCheck } from "@tabler/icons-react"
 import type { CSSProperties, ReactNode } from "react"
 import { useState } from "react"
-import { LinkButton } from "../ui/LinkButton"
 import { Card } from "../ui/Card"
+import { LinkButton } from "../ui/LinkButton"
 
 type DeploymentMode = "self_hosted" | "cloud"
 type CustomerType = "b2b" | "b2c"
 type OptionAccent = "aqua" | "yellow" | "pink" | "blue" | "brand" | "lime" | "magenta"
 type SubscriptionSelection = {
+    plan: SubscriptionConfiguratorPlan
     deployment: DeploymentMode
     customerType: CustomerType
     paymentPeriod: PaymentPeriod
@@ -32,6 +42,11 @@ export interface SubscriptionIcons {
     deployment: {
         selfHosted: ReactNode
         cloud: ReactNode
+    }
+    plan: {
+        pro: ReactNode
+        max: ReactNode
+        custom: ReactNode
     }
     customerType: {
         b2b: ReactNode
@@ -70,6 +85,7 @@ interface OptionCardProps {
     icon: ReactNode
     disabled?: boolean
     accent?: OptionAccent
+    badge?: string
 }
 
 interface FeatureRowProps {
@@ -88,12 +104,12 @@ interface AdditionalFeatureCardProps {
 }
 
 const paymentPeriodOptions = [
-    { value: "monthly", textKey: "monthlyText" },
-    { value: "quarterly", textKey: "quarterlyText" },
-    { value: "yearly", textKey: "yearlyText" },
+    { value: "monthly", textKey: "monthlyText", suffixKey: "monthlyPeriodSuffix", accent: "brand" },
+    { value: "quarterly", textKey: "quarterlyText", suffixKey: "quarterlyPeriodSuffix", accent: "aqua" },
+    { value: "yearly", textKey: "yearlyText", suffixKey: "yearlyPeriodSuffix", accent: "magenta" },
 ] as const
 
-function OptionCard({ title, description, active, onClick, icon, disabled = false, accent = "aqua" }: OptionCardProps) {
+function OptionCard({ title, description, active, onClick, icon, disabled = false, accent = "aqua", badge }: OptionCardProps) {
     return (
         <button
             type="button"
@@ -122,6 +138,11 @@ function OptionCard({ title, description, active, onClick, icon, disabled = fals
                     <p className="text-base text-white" style={active ? ACTIVE_ACCENT_ICON_STYLE : undefined}>
                         {title}
                     </p>
+                    {badge && (
+                        <StableBadge border className="ml-auto shrink-0 border-brand/10! bg-brand/10! px-2! py-0.5! text-brand!">
+                            {badge}
+                        </StableBadge>
+                    )}
                 </div>
                 <p className="text-sm text-secondary">{description}</p>
             </div>
@@ -190,12 +211,14 @@ export function SubscriptionConfiguratorSection({ locale, content, icons }: { lo
     const defaultAiTokens = defaultSelection.aiTokens[defaultSelection.customerType]
 
     const [selection, setSelection] = useState<SubscriptionSelection>({
+        plan: "custom",
         deployment: defaultDeployment,
         customerType: defaultSelection.customerType,
         paymentPeriod: defaultSelection.paymentPeriod,
         workflowExecutions: clampToRange(defaultWorkflowExecutions, defaultWorkflowExecutionRange),
         aiTokens: clampToRange(defaultAiTokens, defaultAiTokenRange),
     })
+    const [currentStep, setCurrentStep] = useState<SubscriptionConfiguratorStep>("customerType")
     const workflowExecutionRange = workflowExecutions[selection.customerType]
     const aiTokenRange = aiTokens[selection.customerType]
     const [selectedFeatures, setSelectedFeatures] = useState<Set<number>>(new Set())
@@ -204,7 +227,7 @@ export function SubscriptionConfiguratorSection({ locale, content, icons }: { lo
     const additionalFeaturesPrice = Array.from(selectedFeatures).reduce((acc, idx) => acc + (content.additionalFeatures?.[idx]?.price ?? 0), 0)
     const paymentPeriodDiscount = getPaymentPeriodDiscount(selection.paymentPeriod, content.paymentPeriod)
     const paymentPeriodSuffix = getPaymentPeriodSuffix(selection.paymentPeriod, content.paymentPeriod)
-    const { totalPrice } = calculateSubscriptionPrice({
+    const { totalPrice: customPlanPrice } = calculateSubscriptionPrice({
         additionalFeaturesPrice,
         aiTokenPriceFactor: content.aiTokenPriceFactor,
         aiTokens: selection.aiTokens,
@@ -213,27 +236,29 @@ export function SubscriptionConfiguratorSection({ locale, content, icons }: { lo
         workflowExecutionPriceFactor: content.workflowExecutionPriceFactor,
         workflowExecutions: selection.workflowExecutions,
     })
-    const paymentPeriodSwitchOptions: SwitchOption<PaymentPeriod>[] = paymentPeriodOptions.map((option) => {
-        const discount = getPaymentPeriodDiscount(option.value, content.paymentPeriod)
-
-        return {
-            value: option.value,
-            label: content.paymentPeriod[option.textKey],
-            badge: discount > 0 ? `-${formatDiscountBadge(discount, locale)}` : null,
-        }
-    })
+    const totalPrice = selection.plan === "custom" ? customPlanPrice : content.packages[selection.plan].prices[selection.paymentPeriod]
+    const configuratorSteps = getSubscriptionConfiguratorSteps(selection.plan, Boolean(content.additionalFeatures?.length))
+    const currentStepIndex = Math.max(0, configuratorSteps.indexOf(currentStep))
+    const resolvedCurrentStep = configuratorSteps[currentStepIndex]
+    const isFirstStep = currentStepIndex === 0
+    const isLastStep = currentStepIndex === configuratorSteps.length - 1
+    const goToPreviousStep = () => setCurrentStep(configuratorSteps[Math.max(0, currentStepIndex - 1)])
+    const goToNextStep = () => setCurrentStep(configuratorSteps[Math.min(configuratorSteps.length - 1, currentStepIndex + 1)])
 
     const subscribeHref = (() => {
         const searchParams = new URLSearchParams({
-            plan: "custom",
+            plan: selection.plan,
             deploymentType: selection.deployment,
             customerType: selection.customerType,
             paymentPeriod: selection.paymentPeriod,
-            workflowExecutions: String(selection.workflowExecutions),
-            aiTokens: String(selection.aiTokens),
         })
 
-        if (selectedFeatures.size > 0 && content.additionalFeatures) {
+        if (selection.plan === "custom") {
+            searchParams.set("workflowExecutions", String(selection.workflowExecutions))
+            searchParams.set("aiTokens", String(selection.aiTokens))
+        }
+
+        if (selection.plan === "custom" && selectedFeatures.size > 0 && content.additionalFeatures) {
             const featureIds = Array.from(selectedFeatures)
                 .map((idx) => content.additionalFeatures![idx]?.id ?? String(idx))
                 .join(",")
@@ -245,8 +270,8 @@ export function SubscriptionConfiguratorSection({ locale, content, icons }: { lo
 
     return (
         <>
-            <div className="grid gap-8 lg:grid-cols-5">
-                <section ref={desktopWrapperRef} className="relative min-w-0 lg:col-span-2">
+            <div className="grid gap-8 lg:grid-cols-2">
+                <section ref={desktopWrapperRef} className="relative min-w-0 lg:col-span-1">
                     <div ref={desktopContainerRef} className="relative z-10 flex min-w-0 flex-col gap-12">
                         <div className="max-w-2xl">
                             <h1 className="mt-4 max-w-xl text-balance text-3xl font-semibold text-white lg:text-4xl">{content.pageIntro.heading}</h1>
@@ -276,139 +301,179 @@ export function SubscriptionConfiguratorSection({ locale, content, icons }: { lo
                     </div>
                 </section>
 
-                <Card size="lg" variant="light" className="lg:col-span-3 min-w-0">
+                <Card size="lg" variant="light" className="lg:col-span-1 min-w-0">
                     <div className="relative z-10 flex flex-col gap-6">
                         <h2 className="text-2xl font-semibold text-white lg:text-3xl">{content.optionsPanelHeading}</h2>
 
-                        <Switch
-                            label={content.paymentPeriod.label}
-                            description={content.paymentPeriod.description}
-                            options={paymentPeriodSwitchOptions}
-                            value={selection.paymentPeriod}
-                            onChange={(paymentPeriod) => setSelection((current) => ({ ...current, paymentPeriod }))}
-                        />
+                        {resolvedCurrentStep === "customerType" && (
+                            <div className="space-y-2">
+                                <div>
+                                    <p className="text-white">{content.customerType.label}</p>
+                                    <p className="text-sm text-secondary">{content.customerType.description}</p>
+                                </div>
+                                <div className="grid gap-3">
+                                    <OptionCard
+                                        title={content.customerType.b2b.title}
+                                        description={content.customerType.b2b.description}
+                                        icon={icons.customerType.b2b}
+                                        accent={content.customerType.b2b.color}
+                                        active={selection.customerType === "b2b"}
+                                        onClick={() =>
+                                            setSelection((current) => ({
+                                                ...current,
+                                                plan: getPlanForCustomerType("b2b", current.plan),
+                                                customerType: "b2b",
+                                                workflowExecutions: clampToRange(current.workflowExecutions, workflowExecutions.b2b),
+                                                aiTokens: clampToRange(current.aiTokens, aiTokens.b2b),
+                                            }))
+                                        }
+                                    />
+                                    <OptionCard
+                                        title={content.customerType.b2c.title}
+                                        description={content.customerType.b2c.description}
+                                        icon={icons.customerType.b2c}
+                                        accent={content.customerType.b2c.color}
+                                        active={selection.customerType === "b2c"}
+                                        onClick={() =>
+                                            setSelection((current) => ({
+                                                ...current,
+                                                customerType: "b2c",
+                                                workflowExecutions: clampToRange(current.workflowExecutions, workflowExecutions.b2c),
+                                                aiTokens: clampToRange(current.aiTokens, aiTokens.b2c),
+                                            }))
+                                        }
+                                    />
+                                </div>
+                            </div>
+                        )}
 
-                        <div className="space-y-2">
-                            <div>
-                                <p className="text-white">{content.deployment.label}</p>
-                                <p className="text-sm text-secondary">{content.deployment.description}</p>
+                        {resolvedCurrentStep === "plan" && (
+                            <div className="space-y-2">
+                                <div>
+                                    <p className="text-white">{content.plan.title}</p>
+                                    <p className="text-sm text-secondary">{content.plan.description}</p>
+                                </div>
+                                <div className="grid gap-3">
+                                    {selection.customerType === "b2c" && (
+                                        <>
+                                            <OptionCard
+                                                title={content.plan.pro.title}
+                                                description={content.plan.pro.description}
+                                                icon={icons.plan.pro}
+                                                accent="brand"
+                                                active={selection.plan === "pro"}
+                                                onClick={() => setSelection((current) => ({ ...current, plan: "pro" }))}
+                                            />
+                                            <OptionCard
+                                                title={content.plan.max.title}
+                                                description={content.plan.max.description}
+                                                icon={icons.plan.max}
+                                                accent="magenta"
+                                                active={selection.plan === "max"}
+                                                onClick={() => setSelection((current) => ({ ...current, plan: "max" }))}
+                                            />
+                                        </>
+                                    )}
+                                    <OptionCard
+                                        title={content.plan.custom.title}
+                                        description={content.plan.custom.description}
+                                        icon={icons.plan.custom}
+                                        accent="aqua"
+                                        active={selection.plan === "custom"}
+                                        onClick={() => setSelection((current) => ({ ...current, plan: "custom" }))}
+                                    />
+                                </div>
                             </div>
-                            <div className="grid gap-3 md:grid-cols-2">
-                                <OptionCard
-                                    title={content.deployment.selfHosted.title}
-                                    description={content.deployment.selfHosted.description}
-                                    icon={icons.deployment.selfHosted}
-                                    accent={content.deployment.selfHosted.color}
-                                    active={selection.deployment === "self_hosted"}
-                                    onClick={() => setSelection((current) => ({ ...current, deployment: "self_hosted" }))}
-                                />
-                                <OptionCard
-                                    title={content.deployment.cloud.title}
-                                    description={content.deployment.cloud.description}
-                                    icon={icons.deployment.cloud}
-                                    accent={content.deployment.cloud.color}
-                                    active={selection.deployment === "cloud"}
-                                    onClick={() => setSelection((current) => ({ ...current, deployment: "cloud" }))}
-                                />
-                            </div>
-                        </div>
+                        )}
 
-                        <div className="space-y-2">
-                            <div>
-                                <p className="text-white">{content.customerType.label}</p>
-                                <p className="text-sm text-secondary">{content.customerType.description}</p>
+                        {resolvedCurrentStep === "deployment" && (
+                            <div className="space-y-2">
+                                <div>
+                                    <p className="text-white">{content.deployment.label}</p>
+                                    <p className="text-sm text-secondary">{content.deployment.description}</p>
+                                </div>
+                                <div className="grid gap-3">
+                                    <OptionCard
+                                        title={content.deployment.selfHosted.title}
+                                        description={content.deployment.selfHosted.description}
+                                        icon={icons.deployment.selfHosted}
+                                        accent={content.deployment.selfHosted.color}
+                                        active={selection.deployment === "self_hosted"}
+                                        onClick={() => setSelection((current) => ({ ...current, deployment: "self_hosted" }))}
+                                    />
+                                    <OptionCard
+                                        title={content.deployment.cloud.title}
+                                        description={content.deployment.cloud.description}
+                                        icon={icons.deployment.cloud}
+                                        accent={content.deployment.cloud.color}
+                                        active={selection.deployment === "cloud"}
+                                        onClick={() => setSelection((current) => ({ ...current, deployment: "cloud" }))}
+                                    />
+                                </div>
                             </div>
-                            <div className="grid gap-3 md:grid-cols-2">
-                                <OptionCard
-                                    title={content.customerType.b2b.title}
-                                    description={content.customerType.b2b.description}
-                                    icon={icons.customerType.b2b}
-                                    accent={content.customerType.b2b.color}
-                                    active={selection.customerType === "b2b"}
-                                    onClick={() =>
-                                        setSelection((current) => ({
-                                            ...current,
-                                            customerType: "b2b",
-                                            workflowExecutions: clampToRange(current.workflowExecutions, workflowExecutions.b2b),
-                                            aiTokens: clampToRange(current.aiTokens, aiTokens.b2b),
-                                        }))
-                                    }
-                                />
-                                <OptionCard
-                                    title={content.customerType.b2c.title}
-                                    description={content.customerType.b2c.description}
-                                    icon={icons.customerType.b2c}
-                                    accent={content.customerType.b2c.color}
-                                    active={selection.customerType === "b2c"}
-                                    onClick={() =>
-                                        setSelection((current) => ({
-                                            ...current,
-                                            customerType: "b2c",
-                                            workflowExecutions: clampToRange(current.workflowExecutions, workflowExecutions.b2c),
-                                            aiTokens: clampToRange(current.aiTokens, aiTokens.b2c),
-                                        }))
-                                    }
-                                />
-                            </div>
-                        </div>
+                        )}
 
-                        <div className="rounded-2xl border border-white/10 p-3">
-                            <div className="flex flex-col items-start justify-between">
-                                <p className="text-white">{workflowExecutions.title}</p>
-                                <p className="text-sm text-secondary">{workflowExecutions.description}</p>
-                            </div>
-                            <Slider
-                                min={workflowExecutionRange.min}
-                                max={workflowExecutionRange.max}
-                                step={workflowExecutionRange.step}
-                                value={selection.workflowExecutions}
-                                onChange={(workflowExecutionsValue) => setSelection((current) => ({ ...current, workflowExecutions: workflowExecutionsValue }))}
-                                ariaLabel={workflowExecutions.title}
-                                className="mt-4"
-                                valueLabelSuffix={workflowExecutions.suffix}
-                                centerLabelSuffix={paymentPeriodSuffix}
-                            />
-                            <div className="flex items-center w-full justify-between gap-4 mt-2">
-                                <WorkflowCalculatorDialog
-                                    locale={locale}
-                                    content={content.workflowCalculator}
-                                    businessTypeIcons={icons.workflowBusinessTypes}
-                                    value={selection.workflowExecutions}
+                        {resolvedCurrentStep === "workflowExecutions" && (
+                            <div className="space-y-2">
+                                <div>
+                                    <p className="text-white">{workflowExecutions.title}</p>
+                                    <p className="text-sm text-secondary">{workflowExecutions.description}</p>
+                                </div>
+                                <Slider
                                     min={workflowExecutionRange.min}
                                     max={workflowExecutionRange.max}
                                     step={workflowExecutionRange.step}
-                                    suffix={workflowExecutions.suffix}
+                                    value={selection.workflowExecutions}
+                                    onChange={(workflowExecutionsValue) => setSelection((current) => ({ ...current, workflowExecutions: workflowExecutionsValue }))}
+                                    ariaLabel={workflowExecutions.title}
+                                    className="mt-4"
+                                    valueLabelSuffix={workflowExecutions.suffix}
                                     centerLabelSuffix={paymentPeriodSuffix}
-                                    onApply={(workflowExecutionsValue) => setSelection((current) => ({ ...current, workflowExecutions: workflowExecutionsValue }))}
                                 />
-                                <div className="mt-2 flex flex-wrap items-center justify-end gap-2">
-                                    <p className="text-sm font-medium text-tertiary">{content.contactSales.prompt}</p>
-                                    <LinkButton href={content.contactSales.href} className="border-b-0 text-secondary" showArrow={false}>
-                                        {content.contactSales.label}
-                                    </LinkButton>
+                                <div className="flex items-center w-full justify-between gap-4 mt-2">
+                                    <WorkflowCalculatorDialog
+                                        locale={locale}
+                                        content={content.workflowCalculator}
+                                        businessTypeIcons={icons.workflowBusinessTypes}
+                                        value={selection.workflowExecutions}
+                                        min={workflowExecutionRange.min}
+                                        max={workflowExecutionRange.max}
+                                        step={workflowExecutionRange.step}
+                                        suffix={workflowExecutions.suffix}
+                                        centerLabelSuffix={paymentPeriodSuffix}
+                                        onApply={(workflowExecutionsValue) => setSelection((current) => ({ ...current, workflowExecutions: workflowExecutionsValue }))}
+                                    />
+                                    <div className="mt-2 flex flex-wrap items-center justify-end gap-2">
+                                        <p className="text-sm font-medium text-tertiary">{content.contactSales.prompt}</p>
+                                        <LinkButton href={content.contactSales.href} className="border-b-0 text-secondary" showArrow={false}>
+                                            {content.contactSales.label}
+                                        </LinkButton>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        )}
 
-                        <div className="rounded-2xl border border-white/10 p-3">
-                            <div className="flex flex-col items-start justify-between">
-                                <p className="text-white">{aiTokens.title}</p>
-                                <p className="text-sm text-secondary">{aiTokens.description}</p>
+                        {resolvedCurrentStep === "aiTokens" && (
+                            <div className="space-y-2">
+                                <div>
+                                    <p className="text-white">{aiTokens.title}</p>
+                                    <p className="text-sm text-secondary">{aiTokens.description}</p>
+                                </div>
+                                <Slider
+                                    min={aiTokenRange.min}
+                                    max={aiTokenRange.max}
+                                    step={aiTokenRange.step}
+                                    value={selection.aiTokens}
+                                    onChange={(aiTokensValue) => setSelection((current) => ({ ...current, aiTokens: aiTokensValue }))}
+                                    ariaLabel={aiTokens.title}
+                                    className="mt-4"
+                                    valueLabelSuffix={aiTokens.suffix}
+                                    centerLabelSuffix={paymentPeriodSuffix}
+                                />
                             </div>
-                            <Slider
-                                min={aiTokenRange.min}
-                                max={aiTokenRange.max}
-                                step={aiTokenRange.step}
-                                value={selection.aiTokens}
-                                onChange={(aiTokensValue) => setSelection((current) => ({ ...current, aiTokens: aiTokensValue }))}
-                                ariaLabel={aiTokens.title}
-                                className="mt-4"
-                                valueLabelSuffix={aiTokens.suffix}
-                                centerLabelSuffix={paymentPeriodSuffix}
-                            />
-                        </div>
+                        )}
 
-                        {content.additionalFeatures && content.additionalFeatures.length > 0 && (
+                        {resolvedCurrentStep === "additionalFeatures" && content.additionalFeatures && content.additionalFeatures.length > 0 && (
                             <div className="space-y-3">
                                 <p className="text-base text-secondary">{content.additionalFeaturesLabel ?? "Additional Features"}</p>
                                 <div className="grid gap-3">
@@ -439,10 +504,74 @@ export function SubscriptionConfiguratorSection({ locale, content, icons }: { lo
                                 </div>
                             </div>
                         )}
+
+                        {resolvedCurrentStep === "paymentPeriod" && (
+                            <div className="space-y-2">
+                                <div>
+                                    <p className="text-white">{content.paymentPeriod.label}</p>
+                                    <p className="text-sm text-secondary">{content.paymentPeriod.description}</p>
+                                </div>
+                                <div className="grid gap-3">
+                                    {paymentPeriodOptions.map((option) => {
+                                        const discount = getPaymentPeriodDiscount(option.value, content.paymentPeriod)
+
+                                        return (
+                                            <OptionCard
+                                                key={option.value}
+                                                title={content.paymentPeriod[option.textKey]}
+                                                description={content.paymentPeriod[option.suffixKey]}
+                                                icon={<IconCalendarMonth size={18} />}
+                                                accent={option.accent}
+                                                badge={discount > 0 ? `-${formatDiscountBadge(discount, locale)}` : undefined}
+                                                active={selection.paymentPeriod === option.value}
+                                                onClick={() => setSelection((current) => ({ ...current, paymentPeriod: option.value }))}
+                                            />
+                                        )
+                                    })}
+                                </div>
+                            </div>
+                        )}
+
+                        <div>
+                            {isLastStep && (
+                                <div className="mb-3 flex min-w-0 items-baseline justify-end gap-2 text-right">
+                                    <span className="text-xs font-semibold tracking-wide text-tertiary">{content.price.heading}</span>
+                                    <NumberFlow
+                                        value={totalPrice}
+                                        locales={locale === "de" ? "de-DE" : "en-US"}
+                                        format={{ style: "currency", currency: "EUR", trailingZeroDisplay: "stripIfInteger" }}
+                                        className="text-xl font-semibold text-brand"
+                                    />
+                                    <span className="max-w-28 truncate text-xs text-tertiary">{paymentPeriodSuffix}</span>
+                                </div>
+                            )}
+                            <div className="flex items-center justify-between gap-3">
+                                <div className="flex items-center gap-1.5" aria-hidden="true">
+                                    {configuratorSteps.map((step, index) => (
+                                        <span key={step} className={cn("h-1.5 rounded-full transition-all", index === currentStepIndex ? "w-6 bg-brand" : "w-1.5 bg-white/15")} />
+                                    ))}
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    {!isFirstStep && (
+                                        <button type="button" onClick={goToPreviousStep} className="rounded-xl px-4 py-2 text-sm text-secondary transition-colors hover:bg-white/5 hover:text-white">
+                                            {content.configuratorNavigation?.backLabel || (locale === "de" ? "Zurück" : "Back")}
+                                        </button>
+                                    )}
+                                    {!isLastStep ? (
+                                        <button type="button" onClick={goToNextStep} className="rounded-xl bg-white/80 px-5 py-2 text-sm font-medium text-primary transition-colors hover:bg-white">
+                                            {content.configuratorNavigation?.nextLabel || (locale === "de" ? "Weiter" : "Next")}
+                                        </button>
+                                    ) : (
+                                        <HapticButtonLink href={subscribeHref} variant="filled" className="h-9! bg-white/80! font-semibold! text-primary! hover:bg-white!">
+                                            {content.subscribe.label}
+                                        </HapticButtonLink>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </Card>
             </div>
-            <BuyMenu price={totalPrice} priceHeading={content.price.heading} priceCaption={content.price.caption} subscribeHref={subscribeHref} subscribeLabel={content.subscribe.label} />
         </>
     )
 }
