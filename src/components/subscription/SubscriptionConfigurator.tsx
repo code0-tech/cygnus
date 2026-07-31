@@ -72,7 +72,7 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
         workflowExecutions: selection.workflowExecutions,
     })
     const totalPrice = selection.plan === "custom" ? customPlanPrice : content.packages[selection.plan].prices[selection.paymentPeriod]
-    const configuratorSteps = getSubscriptionConfiguratorSteps(selection.plan, Boolean(content.additionalFeatures?.length))
+    const configuratorSteps = getSubscriptionConfiguratorSteps(selection.customerType, selection.plan, Boolean(content.additionalFeatures?.length))
     const currentStepIndex = Math.max(0, configuratorSteps.indexOf(currentStep))
     const resolvedCurrentStep = configuratorSteps[currentStepIndex]
     const isFirstStep = currentStepIndex === 0

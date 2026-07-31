@@ -17,10 +17,10 @@ export type SubscriptionSelection = {
     aiTokens: number
 }
 
-export function getSubscriptionConfiguratorSteps(plan: SubscriptionConfiguratorPlan, hasAdditionalFeatures: boolean): SubscriptionConfiguratorStep[] {
+export function getSubscriptionConfiguratorSteps(customerType: SubscriptionCustomerType, plan: SubscriptionConfiguratorPlan, hasAdditionalFeatures: boolean): SubscriptionConfiguratorStep[] {
     return [
         "customerType",
-        "plan",
+        ...(customerType === "b2b" ? [] : (["plan"] as SubscriptionConfiguratorStep[])),
         "deployment",
         ...(plan === "custom" ? (["aiTokens", "workflowExecutions", ...(hasAdditionalFeatures ? ["additionalFeatures"] : [])] as SubscriptionConfiguratorStep[]) : []),
         "paymentPeriod",
