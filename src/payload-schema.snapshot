@@ -2471,6 +2471,10 @@ export const checkout = pgTable('checkout', {
 
 export const checkout_locales = pgTable('checkout_locales', {
   navigation_backLabel: varchar('navigation_back_label').notNull().default("Back"),
+  stepper_configurationLabel: varchar('stepper_configuration_label').notNull().default("Configuration"),
+  stepper_billingAddressLabel: varchar('stepper_billing_address_label').notNull().default("Billing Address"),
+  stepper_paymentLabel: varchar('stepper_payment_label').notNull().default("Payment"),
+  stepper_successLabel: varchar('stepper_success_label').notNull().default("Success"),
   summary_eyebrow: varchar('summary_eyebrow').notNull().default("Order Summary"),
   summary_heading: varchar('summary_heading').notNull().default("Review your configuration"),
   summary_description: varchar('summary_description').notNull().default("This checkout reflects the subscription shape you configured, including runtime and optional add-ons."),

@@ -273,6 +273,12 @@ export interface CheckoutData {
     navigation: {
         backLabel: string
     }
+    stepper: {
+        configurationLabel: string
+        billingAddressLabel: string
+        paymentLabel: string
+        successLabel: string
+    }
     summary: {
         eyebrow: string
         heading: string

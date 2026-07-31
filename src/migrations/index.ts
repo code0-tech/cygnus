@@ -91,6 +91,7 @@ import * as migration_20260731_112410_subscription_configurator_plan_options fro
 import * as migration_20260731_113312_subscription_configurator_wizard_navigation from './20260731_113312_subscription_configurator_wizard_navigation';
 import * as migration_20260731_120926_remove_subscription_configurator_features_buttons from './20260731_120926_remove_subscription_configurator_features_buttons';
 import * as migration_20260731_125552_subscription_configurator_payment_period_colors from './20260731_125552_subscription_configurator_payment_period_colors';
+import * as migration_20260731_183338_checkout_stepper_labels from './20260731_183338_checkout_stepper_labels';
 
 export const migrations = [
   {
@@ -556,6 +557,11 @@ export const migrations = [
   {
     up: migration_20260731_125552_subscription_configurator_payment_period_colors.up,
     down: migration_20260731_125552_subscription_configurator_payment_period_colors.down,
-    name: '20260731_125552_subscription_configurator_payment_period_colors'
+    name: '20260731_125552_subscription_configurator_payment_period_colors',
+  },
+  {
+    up: migration_20260731_183338_checkout_stepper_labels.up,
+    down: migration_20260731_183338_checkout_stepper_labels.down,
+    name: '20260731_183338_checkout_stepper_labels'
   },
 ];
