@@ -2478,6 +2478,7 @@ export const checkout_locales = pgTable('checkout_locales', {
   summary_eyebrow: varchar('summary_eyebrow').notNull().default("Order Summary"),
   summary_heading: varchar('summary_heading').notNull().default("Review your configuration"),
   summary_description: varchar('summary_description').notNull().default("This checkout reflects the subscription shape you configured, including runtime and optional add-ons."),
+  summary_configurationLabel: varchar('summary_configuration_label').notNull().default("Your configuration"),
   summary_deploymentLabel: varchar('summary_deployment_label').notNull().default("Deployment"),
   summary_customerTypeLabel: varchar('summary_customer_type_label').notNull().default("Customer Type"),
   summary_aiTokensLabel: varchar('summary_ai_tokens_label').notNull().default("AI Tokens"),
