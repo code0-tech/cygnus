@@ -7,7 +7,7 @@ export type { SubscriptionIcons } from "@/components/subscription/SubscriptionCo
 
 export function SubscriptionConfiguratorSection({ locale, content, icons }: { locale: AppLocale; content: SubscriptionConfiguratorContent; icons: SubscriptionIcons }) {
     return (
-        <div className="grid gap-8 lg:grid-cols-2">
+        <div className="grid gap-8 lg:grid-cols-5">
             <SubscriptionContent content={content} />
             <SubscriptionConfigurator locale={locale} content={content} icons={icons} />
         </div>

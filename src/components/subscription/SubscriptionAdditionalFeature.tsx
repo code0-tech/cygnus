@@ -1,4 +1,5 @@
 import { getSubscriptionOptionAccentStyle, SUBSCRIPTION_OPTION_ACTIVE_GLOW_STYLE, SUBSCRIPTION_OPTION_ACTIVE_ICON_STYLE } from "@/components/subscription/SubscriptionOptionCard"
+import { FormattedText, hasHighlightedText } from "@/components/ui/FormattedText"
 import { cn } from "@/lib/utils"
 import { IconCheck } from "@tabler/icons-react"
 import type { ReactNode } from "react"
@@ -37,7 +38,9 @@ export function SubscriptionAdditionalFeature({ title, description, active, onCl
                             {icon}
                         </div>
                     </div>
-                    <p className="text-base font-semibold text-white">{title}</p>
+                    <p className={cn("text-base font-semibold", hasHighlightedText(title) ? "text-secondary" : "text-white")}>
+                        <FormattedText text={title} />
+                    </p>
                 </div>
                 <p className="text-sm leading-6 text-secondary">{description}</p>
                 <div className="flex items-center justify-between gap-2">

@@ -11,7 +11,7 @@ export function SubscriptionContent({ content }: SubscriptionContentProps) {
     const { wrapperRef, containerRef } = useDesktopPinnedPosition<HTMLElement, HTMLDivElement>(96)
 
     return (
-        <section ref={wrapperRef} className="relative min-w-0 lg:col-span-1">
+        <section ref={wrapperRef} className="relative min-w-0 lg:col-span-3">
             <div ref={containerRef} className="relative z-10 flex min-w-0 flex-col gap-12">
                 <div className="max-w-2xl">
                     <h1 className="mt-4 max-w-xl text-balance text-3xl font-semibold text-white lg:text-4xl">{content.pageIntro.heading}</h1>
