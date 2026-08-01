@@ -1,4 +1,4 @@
-import { FooterSection } from "@/components/sections/FooterSection"
+import { CheckoutLegalFooter } from "@/components/checkout/CheckoutLegalFooter"
 import { getCheckoutContent, getFooter } from "@/lib/cms"
 import { isSupportedLocale } from "@/lib/i18n"
 import { LinkButton } from "@/components/ui/LinkButton"
@@ -17,9 +17,9 @@ export default async function CheckoutSuccessPage({ params }: { params: Promise<
     const currentYear = new Date().getUTCFullYear()
 
     return (
-        <>
-            <div className="min-h-[75dvh] flex items-center justify-center">
-                <Card className="mx-auto max-w-2xl rounded-3xl p-8! text-center">
+        <div className="flex min-h-full flex-col gap-8">
+            <div className="flex flex-1 items-center justify-center">
+                <Card variant={"light"} className="mx-auto max-w-2xl rounded-3xl p-8! text-center">
                     <div className="relative z-10 space-y-4">
                         <h1 className="text-3xl font-semibold text-white">{heading}</h1>
                         <p className="text-secondary">{description}</p>
@@ -31,7 +31,7 @@ export default async function CheckoutSuccessPage({ params }: { params: Promise<
                     </div>
                 </Card>
             </div>
-            <FooterSection locale={locale} footer={footer} currentYear={currentYear} />
-        </>
+            <CheckoutLegalFooter className="shrink-0 justify-center pb-2" locale={locale} footer={footer} currentYear={currentYear} />
+        </div>
     )
 }

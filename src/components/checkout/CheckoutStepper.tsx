@@ -48,12 +48,12 @@ export function CheckoutStepper({ content }: { content?: CheckoutStepperContent 
 
                 return (
                     <li key={step} className="flex items-center">
-                        {index > 0 && <span aria-hidden="true" className={cn("mx-2 h-px w-4 sm:w-8", isCompleted ? "bg-brand/60" : "bg-white/10")} />}
+                        {index > 0 && <span aria-hidden="true" className={cn("mx-2 h-px w-4 sm:w-8", isCompleted ? "bg-white/60" : "bg-white/10")} />}
                         <div className="flex items-center gap-1.5">
                             <div
                                 className={cn(
                                     "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[10px] font-semibold transition-colors duration-200",
-                                    isCompleted ? "border-brand bg-brand text-primary" : isCurrent ? "border-brand text-brand" : "border-white/15 text-tertiary"
+                                    isCompleted ? "border-white bg-white text-primary" : isCurrent ? "border-white text-white bg-white/10" : "border-white/20 text-tertiary"
                                 )}
                             >
                                 {isCompleted ? <IconCheck size={12} stroke={3} /> : index + 1}
