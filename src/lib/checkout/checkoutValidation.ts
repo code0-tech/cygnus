@@ -11,7 +11,7 @@ export type CheckoutSelection = {
 
 type CheckoutValidationResult = { valid: true } | { details: string[]; valid: false }
 
-const PAYMENT_PERIODS = new Set<PaymentPeriod>(["monthly", "quarterly", "yearly"])
+const PAYMENT_PERIODS = new Set<PaymentPeriod>(["weekly", "monthly", "quarterly", "yearly"])
 
 function clampUsageValue(rawValue: string | undefined, range: UsageRange) {
     if (!rawValue || !/^\d+$/.test(rawValue)) return rawValue
@@ -25,9 +25,12 @@ function clampUsageValue(rawValue: string | undefined, range: UsageRange) {
 export function normalizeCheckoutSelection(selection: CheckoutSelection, subscriptionConfig: SubscriptionConfigData): CheckoutSelection {
     const isFixedPlanRestrictedToBusiness = (selection.plan === "pro" || selection.plan === "max") && selection.customerType === "b2b"
     const plan = isFixedPlanRestrictedToBusiness ? "custom" : selection.plan
+    const isWeeklyRestrictedToBusiness = selection.paymentPeriod === "weekly" && selection.customerType === "b2b"
+    const isQuarterlyRestrictedToConsumer = selection.paymentPeriod === "quarterly" && selection.customerType === "b2c"
+    const paymentPeriod = isWeeklyRestrictedToBusiness || isQuarterlyRestrictedToConsumer ? "monthly" : selection.paymentPeriod
 
     if (plan !== "custom" || (selection.customerType !== "b2b" && selection.customerType !== "b2c")) {
-        return { ...selection, plan }
+        return { ...selection, plan, paymentPeriod }
     }
 
     const customerType = selection.customerType
@@ -36,6 +39,7 @@ export function normalizeCheckoutSelection(selection: CheckoutSelection, subscri
         return {
             ...selection,
             plan,
+            paymentPeriod,
             aiTokens: clampUsageValue(String(subscriptionConfig.defaults.aiTokens[customerType]), subscriptionConfig.aiTokens[customerType]),
             workflowExecutions: clampUsageValue(String(subscriptionConfig.defaults.workflowExecutions[customerType]), subscriptionConfig.workflowExecutions[customerType]),
         }
@@ -44,6 +48,7 @@ export function normalizeCheckoutSelection(selection: CheckoutSelection, subscri
     return {
         ...selection,
         plan,
+        paymentPeriod,
         aiTokens: clampUsageValue(selection.aiTokens, subscriptionConfig.aiTokens[customerType]),
         workflowExecutions: clampUsageValue(selection.workflowExecutions, subscriptionConfig.workflowExecutions[customerType]),
     }
@@ -74,7 +79,7 @@ export function validateCheckoutSelection(selection: CheckoutSelection, subscrip
     const details: string[] = []
 
     if (!selection.paymentPeriod || !PAYMENT_PERIODS.has(selection.paymentPeriod as PaymentPeriod)) {
-        details.push("paymentPeriod must be monthly, quarterly, or yearly.")
+        details.push("paymentPeriod must be weekly, monthly, quarterly, or yearly.")
     }
 
     if (selection.plan === "custom") {

@@ -15,6 +15,9 @@ import {
 const paymentPeriod = {
     description: "Choose how often to pay.",
     label: "Payment period",
+    weeklyColor: "lime",
+    weeklyPeriodSuffix: "per week",
+    weeklyText: "Weekly",
     monthlyColor: "brand",
     monthlyPeriodSuffix: "per month",
     monthlyText: "Monthly",
@@ -37,14 +40,17 @@ test("clamps usage values to configured range", () => {
 })
 
 test("resolves payment period discounts and suffixes", () => {
+    assert.equal(getPaymentPeriodDiscount("weekly", paymentPeriod), 0)
     assert.equal(getPaymentPeriodDiscount("monthly", paymentPeriod), 0)
     assert.equal(getPaymentPeriodDiscount("quarterly", paymentPeriod), 0.1)
     assert.equal(getPaymentPeriodDiscount("yearly", paymentPeriod), 0.2)
 
+    assert.equal(getPaymentPeriodSuffix("weekly", paymentPeriod), "per week")
     assert.equal(getPaymentPeriodSuffix("monthly", paymentPeriod), "per month")
     assert.equal(getPaymentPeriodSuffix("quarterly", paymentPeriod), "per quarter")
     assert.equal(getPaymentPeriodSuffix("yearly", paymentPeriod), "per year")
 
+    assert.equal(getPaymentPeriodMonths("weekly"), 1 / 4.345)
     assert.equal(getPaymentPeriodMonths("monthly"), 1)
     assert.equal(getPaymentPeriodMonths("quarterly"), 3)
     assert.equal(getPaymentPeriodMonths("yearly"), 12)
@@ -143,7 +149,7 @@ test("forces the custom plan when a b2b customer requests a pro or max checkout 
         defaults: {
             aiTokens: { b2b: 100, b2c: 10 },
             customerType: "b2c",
-            paymentPeriod: "monthly",
+            paymentPeriod: { b2b: "monthly", b2c: "monthly" },
             workflowExecutions: { b2b: 20, b2c: 10 },
         },
         packages: {
@@ -175,6 +181,56 @@ test("forces the custom plan when a b2b customer requests a pro or max checkout 
     assert.equal(result.aiTokens, 100)
 })
 
+test("downgrades weekly to monthly for b2b and quarterly to monthly for b2c in the checkout price display", () => {
+    const config = {
+        additionalFeatures: [],
+        aiTokenPriceFactor: 0.001,
+        aiTokens: {
+            b2b: { min: 100, max: 1_000, step: 100 },
+            b2c: { min: 10, max: 100, step: 10 },
+        },
+        defaults: {
+            aiTokens: { b2b: 100, b2c: 10 },
+            customerType: "b2c",
+            paymentPeriod: { b2b: "monthly", b2c: "monthly" },
+            workflowExecutions: { b2b: 20, b2c: 10 },
+        },
+        packages: {
+            custom: { title: "Custom" },
+        },
+        paymentPeriod,
+        workflowExecutionPriceFactor: 0.01,
+        workflowExecutions: {
+            b2b: { min: 20, max: 200, step: 10 },
+            b2c: { min: 10, max: 100, step: 10 },
+        },
+    } as never
+
+    const b2bWeekly = resolveCheckoutPricing({
+        additionalFeatureIds: [],
+        aiTokensParam: null,
+        customerTypeParam: "b2b",
+        fallbackPeriodSuffix: "/mo",
+        paymentPeriodParam: "weekly",
+        planParam: "custom",
+        subscriptionConfig: config,
+        workflowExecutionsParam: null,
+    })
+    const b2cQuarterly = resolveCheckoutPricing({
+        additionalFeatureIds: [],
+        aiTokensParam: null,
+        customerTypeParam: "b2c",
+        fallbackPeriodSuffix: "/mo",
+        paymentPeriodParam: "quarterly",
+        planParam: "custom",
+        subscriptionConfig: config,
+        workflowExecutionsParam: null,
+    })
+
+    assert.equal(b2bWeekly.paymentPeriod, "monthly")
+    assert.equal(b2cQuarterly.paymentPeriod, "monthly")
+})
+
 test("clamps manipulated custom-plan usage parameters before calculating the price", () => {
     const config = {
         additionalFeatures: [],
@@ -186,7 +242,7 @@ test("clamps manipulated custom-plan usage parameters before calculating the pri
         defaults: {
             aiTokens: { b2b: 100, b2c: 10 },
             customerType: "b2b",
-            paymentPeriod: "monthly",
+            paymentPeriod: { b2b: "monthly", b2c: "monthly" },
             workflowExecutions: { b2b: 20, b2c: 10 },
         },
         packages: {

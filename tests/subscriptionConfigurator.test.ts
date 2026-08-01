@@ -3,6 +3,7 @@ import test from "node:test"
 import type { SubscriptionConfiguratorContent } from "../src/lib/cms"
 import {
     buildSubscriptionSelectionSearchParams,
+    getPaymentPeriodForCustomerType,
     getPlanForCustomerType,
     getSubscriptionConfiguratorSteps,
     parseSelectedAdditionalFeatureIndexes,
@@ -14,7 +15,7 @@ const content = {
     defaults: {
         deployment: "self_hosted",
         customerType: "b2c",
-        paymentPeriod: "monthly",
+        paymentPeriod: { b2b: "monthly", b2c: "monthly" },
         workflowExecutions: { b2b: 200, b2c: 10 },
         aiTokens: { b2b: 100_000, b2c: 10_000 },
     },
@@ -76,7 +77,7 @@ test("clamps usage values restored from the URL to the customer type's range", (
 })
 
 test("ignores malformed or unknown URL values", () => {
-    const searchParams = new URLSearchParams({ plan: "enterprise", customerType: "consumer", paymentPeriod: "weekly", workflowExecutions: "abc" })
+    const searchParams = new URLSearchParams({ plan: "enterprise", customerType: "consumer", paymentPeriod: "biannual", workflowExecutions: "abc" })
     assert.deepEqual(parseSubscriptionSelectionFromSearchParams(searchParams, content), {
         plan: "custom",
         deployment: "self_hosted",
@@ -85,6 +86,24 @@ test("ignores malformed or unknown URL values", () => {
         workflowExecutions: 10,
         aiTokens: 10_000,
     })
+})
+
+test("restores a weekly payment period for b2c customers from the URL", () => {
+    const searchParams = new URLSearchParams({ customerType: "b2c", paymentPeriod: "weekly" })
+    assert.equal(parseSubscriptionSelectionFromSearchParams(searchParams, content).paymentPeriod, "weekly")
+})
+
+test("downgrades weekly to monthly for b2b and quarterly to monthly for b2c", () => {
+    const b2bWeeklySearchParams = new URLSearchParams({ customerType: "b2b", paymentPeriod: "weekly" })
+    assert.equal(parseSubscriptionSelectionFromSearchParams(b2bWeeklySearchParams, content).paymentPeriod, "monthly")
+
+    const b2cQuarterlySearchParams = new URLSearchParams({ customerType: "b2c", paymentPeriod: "quarterly" })
+    assert.equal(parseSubscriptionSelectionFromSearchParams(b2cQuarterlySearchParams, content).paymentPeriod, "monthly")
+
+    assert.equal(getPaymentPeriodForCustomerType("b2b", "weekly"), "monthly")
+    assert.equal(getPaymentPeriodForCustomerType("b2c", "quarterly"), "monthly")
+    assert.equal(getPaymentPeriodForCustomerType("b2b", "quarterly"), "quarterly")
+    assert.equal(getPaymentPeriodForCustomerType("b2c", "weekly"), "weekly")
 })
 
 test("resolves selected additional features by id, falling back to index", () => {

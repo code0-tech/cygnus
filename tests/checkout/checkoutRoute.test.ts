@@ -11,7 +11,7 @@ const subscriptionConfig = {
     defaults: {
         aiTokens: { b2b: 200_000, b2c: 20_000 },
         customerType: "b2c",
-        paymentPeriod: "monthly",
+        paymentPeriod: { b2b: "monthly", b2c: "monthly" },
         workflowExecutions: { b2b: 1_000, b2c: 100 },
     },
     workflowExecutions: {

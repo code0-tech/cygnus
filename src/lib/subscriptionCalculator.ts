@@ -1,8 +1,10 @@
 import type { SubscriptionConfigData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 
-export type PaymentPeriod = "monthly" | "quarterly" | "yearly"
+export type PaymentPeriod = "weekly" | "monthly" | "quarterly" | "yearly"
 type SubscriptionPlan = "custom" | "pro" | "max"
+
+const AVERAGE_WEEKS_PER_MONTH = 4.345
 
 export type UsageRange = {
     min: number
@@ -53,12 +55,14 @@ export function getPaymentPeriodDiscount(period: PaymentPeriod, paymentPeriod: S
 }
 
 export function getPaymentPeriodMonths(period: PaymentPeriod) {
+    if (period === "weekly") return 1 / AVERAGE_WEEKS_PER_MONTH
     if (period === "quarterly") return 3
     if (period === "yearly") return 12
     return 1
 }
 
 export function getPaymentPeriodSuffix(period: PaymentPeriod, paymentPeriod: SubscriptionConfigData["paymentPeriod"]) {
+    if (period === "weekly") return paymentPeriod.weeklyPeriodSuffix
     if (period === "quarterly") return paymentPeriod.quarterlyPeriodSuffix
     if (period === "yearly") return paymentPeriod.yearlyPeriodSuffix
     return paymentPeriod.monthlyPeriodSuffix
@@ -124,8 +128,12 @@ export function resolveCheckoutPricing({
     const customerType = customerTypeParam === "b2b" || customerTypeParam === "b2c" ? customerTypeParam : (subscriptionConfig?.defaults?.customerType ?? "b2b")
     const requestedPlan: SubscriptionPlan = planParam === "pro" || planParam === "max" ? planParam : "custom"
     const plan: SubscriptionPlan = customerTypeParam === "b2b" ? "custom" : requestedPlan
+    const requestedPaymentPeriod: PaymentPeriod =
+        paymentPeriodParam === "weekly" || paymentPeriodParam === "quarterly" || paymentPeriodParam === "yearly" || paymentPeriodParam === "monthly"
+            ? paymentPeriodParam
+            : (subscriptionConfig?.defaults.paymentPeriod[customerType] ?? "monthly")
     const paymentPeriod: PaymentPeriod =
-        paymentPeriodParam === "quarterly" || paymentPeriodParam === "yearly" || paymentPeriodParam === "monthly" ? paymentPeriodParam : (subscriptionConfig?.defaults.paymentPeriod ?? "monthly")
+        (customerType === "b2b" && requestedPaymentPeriod === "weekly") || (customerType === "b2c" && requestedPaymentPeriod === "quarterly") ? "monthly" : requestedPaymentPeriod
     const periodSuffix = subscriptionConfig ? getPaymentPeriodSuffix(paymentPeriod, subscriptionConfig.paymentPeriod) : fallbackPeriodSuffix
     const planTitle = subscriptionConfig?.packages[plan].title || plan.charAt(0).toUpperCase() + plan.slice(1)
 

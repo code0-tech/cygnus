@@ -11,7 +11,7 @@ const subscriptionConfig = {
     defaults: {
         aiTokens: { b2b: 200_000, b2c: 20_000 },
         customerType: "b2c",
-        paymentPeriod: "monthly",
+        paymentPeriod: { b2b: "monthly", b2c: "monthly" },
         workflowExecutions: { b2b: 1_000, b2c: 100 },
     },
     workflowExecutions: {
@@ -83,7 +83,7 @@ test("rejects invalid customer types, periods, and numeric formats", () => {
             {
                 aiTokens: "1e6",
                 customerType: "enterprise",
-                paymentPeriod: "weekly",
+                paymentPeriod: "biannual",
                 plan: "custom",
                 workflowExecutions: "200.5",
             },
@@ -91,9 +91,19 @@ test("rejects invalid customer types, periods, and numeric formats", () => {
         ),
         {
             valid: false,
-            details: ["paymentPeriod must be monthly, quarterly, or yearly.", "customerType must be b2b or b2c for a custom checkout."],
+            details: ["paymentPeriod must be weekly, monthly, quarterly, or yearly.", "customerType must be b2b or b2c for a custom checkout."],
         }
     )
+})
+
+test("downgrades weekly to monthly for b2b customers and quarterly to monthly for b2c customers", () => {
+    assert.equal(normalizeCheckoutSelection({ customerType: "b2b", paymentPeriod: "weekly", plan: "custom" }, subscriptionConfig).paymentPeriod, "monthly")
+    assert.equal(normalizeCheckoutSelection({ customerType: "b2c", paymentPeriod: "quarterly", plan: "custom" }, subscriptionConfig).paymentPeriod, "monthly")
+})
+
+test("leaves weekly for b2c and quarterly for b2b customers untouched", () => {
+    assert.equal(normalizeCheckoutSelection({ customerType: "b2c", paymentPeriod: "weekly", plan: "custom" }, subscriptionConfig).paymentPeriod, "weekly")
+    assert.equal(normalizeCheckoutSelection({ customerType: "b2b", paymentPeriod: "quarterly", plan: "custom" }, subscriptionConfig).paymentPeriod, "quarterly")
 })
 
 test("downgrades pro/max to custom for b2b customers and fills in default usage values", () => {

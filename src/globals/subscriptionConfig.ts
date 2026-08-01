@@ -37,6 +37,7 @@ const usageRangeFields = (defaults: { min: number; max: number; step: number }):
 ]
 
 const packagePriceFields = (): Field[] => [
+    { name: "weekly", label: "Weekly", type: "number", required: false, defaultValue: 0, min: 0 },
     { name: "monthly", label: "Monthly", type: "number", required: false, defaultValue: 0, min: 0 },
     { name: "quarterly", label: "Quarterly", type: "number", required: false, defaultValue: 0, min: 0 },
     { name: "yearly", label: "Yearly", type: "number", required: false, defaultValue: 0, min: 0 },
@@ -102,13 +103,33 @@ export const SubscriptionCollection: GlobalConfig = {
                 },
                 {
                     name: "paymentPeriod",
-                    type: "select",
-                    required: false,
-                    defaultValue: "monthly",
-                    options: [
-                        { label: "Monthly", value: "monthly" },
-                        { label: "Quarterly", value: "quarterly" },
-                        { label: "Yearly", value: "yearly" },
+                    label: "Payment Period",
+                    type: "group",
+                    fields: [
+                        {
+                            name: "b2b",
+                            label: "B2B",
+                            type: "select",
+                            required: false,
+                            defaultValue: "monthly",
+                            options: [
+                                { label: "Monthly", value: "monthly" },
+                                { label: "Quarterly", value: "quarterly" },
+                                { label: "Yearly", value: "yearly" },
+                            ],
+                        },
+                        {
+                            name: "b2c",
+                            label: "B2C",
+                            type: "select",
+                            required: false,
+                            defaultValue: "monthly",
+                            options: [
+                                { label: "Weekly", value: "weekly" },
+                                { label: "Monthly", value: "monthly" },
+                                { label: "Yearly", value: "yearly" },
+                            ],
+                        },
                     ],
                 },
                 {
@@ -454,12 +475,15 @@ export const SubscriptionCollection: GlobalConfig = {
                     localized: true,
                     defaultValue: "Choose how often you want to be billed.",
                 },
+                { name: "weeklyText", type: "text", required: false, localized: true, defaultValue: "Weekly" },
                 { name: "monthlyText", type: "text", required: false, localized: true, defaultValue: "Monthly" },
                 { name: "quarterlyText", type: "text", required: false, localized: true, defaultValue: "Quarterly" },
                 { name: "yearlyText", type: "text", required: false, localized: true, defaultValue: "Yearly" },
+                { name: "weeklyPeriodSuffix", type: "text", required: false, localized: true, defaultValue: "per week" },
                 { name: "monthlyPeriodSuffix", type: "text", required: false, localized: true, defaultValue: "per month" },
                 { name: "quarterlyPeriodSuffix", type: "text", required: false, localized: true, defaultValue: "per quarter" },
                 { name: "yearlyPeriodSuffix", type: "text", required: false, localized: true, defaultValue: "per year" },
+                { ...colorField, name: "weeklyColor", defaultValue: "lime" },
                 { ...colorField, name: "monthlyColor", defaultValue: "brand" },
                 { ...colorField, name: "quarterlyColor", defaultValue: "aqua" },
                 { ...colorField, name: "yearlyColor", defaultValue: "magenta" },
