@@ -31,6 +31,12 @@ export function getPlanForCustomerType(customerType: "b2b" | "b2c", currentPlan:
     return customerType === "b2b" ? "custom" : currentPlan
 }
 
+export function getPaymentPeriodForCustomerType(customerType: SubscriptionCustomerType, currentPeriod: PaymentPeriod): PaymentPeriod {
+    if (customerType === "b2b" && currentPeriod === "weekly") return "monthly"
+    if (customerType === "b2c" && currentPeriod === "quarterly") return "monthly"
+    return currentPeriod
+}
+
 function parsePlan(value: string | null): SubscriptionConfiguratorPlan | null {
     return value === "pro" || value === "max" || value === "custom" ? value : null
 }
@@ -44,7 +50,7 @@ function parseCustomerType(value: string | null): SubscriptionCustomerType | nul
 }
 
 function parsePaymentPeriod(value: string | null): PaymentPeriod | null {
-    return value === "monthly" || value === "quarterly" || value === "yearly" ? value : null
+    return value === "weekly" || value === "monthly" || value === "quarterly" || value === "yearly" ? value : null
 }
 
 function parseUsageValue(value: string | null): number | null {
@@ -58,7 +64,7 @@ export function parseSubscriptionSelectionFromSearchParams(searchParams: URLSear
     const customerType = parseCustomerType(searchParams.get("customerType")) ?? defaults.customerType
     const plan = getPlanForCustomerType(customerType, parsePlan(searchParams.get("plan")) ?? "custom")
     const deployment = parseDeployment(searchParams.get("deploymentType")) ?? (defaults.deployment === "cloud" ? "cloud" : "self_hosted")
-    const paymentPeriod = parsePaymentPeriod(searchParams.get("paymentPeriod")) ?? defaults.paymentPeriod
+    const paymentPeriod = getPaymentPeriodForCustomerType(customerType, parsePaymentPeriod(searchParams.get("paymentPeriod")) ?? defaults.paymentPeriod[customerType])
 
     return {
         plan,

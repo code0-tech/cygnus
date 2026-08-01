@@ -101,7 +101,10 @@ export interface SubscriptionConfigData {
     defaults: {
         deployment: "self_hosted" | "cloud"
         customerType: "b2b" | "b2c"
-        paymentPeriod: "monthly" | "quarterly" | "yearly"
+        paymentPeriod: {
+            b2b: "monthly" | "quarterly" | "yearly"
+            b2c: "weekly" | "monthly" | "yearly"
+        }
         workflowExecutions: {
             b2b: number
             b2c: number
@@ -167,6 +170,7 @@ export interface SubscriptionConfigData {
             title: string
             description: string
             prices: {
+                weekly: number
                 monthly: number
                 quarterly: number
                 yearly: number
@@ -176,6 +180,7 @@ export interface SubscriptionConfigData {
             title: string
             description: string
             prices: {
+                weekly: number
                 monthly: number
                 quarterly: number
                 yearly: number
@@ -189,12 +194,15 @@ export interface SubscriptionConfigData {
     paymentPeriod: {
         label: string
         description: string
+        weeklyText: string
         monthlyText: string
         quarterlyText: string
         yearlyText: string
+        weeklyPeriodSuffix: string
         monthlyPeriodSuffix: string
         quarterlyPeriodSuffix: string
         yearlyPeriodSuffix: string
+        weeklyColor: "brand" | "pink" | "yellow" | "aqua" | "blue" | "lime" | "magenta"
         monthlyColor: "brand" | "pink" | "yellow" | "aqua" | "blue" | "lime" | "magenta"
         quarterlyColor: "brand" | "pink" | "yellow" | "aqua" | "blue" | "lime" | "magenta"
         yearlyColor: "brand" | "pink" | "yellow" | "aqua" | "blue" | "lime" | "magenta"

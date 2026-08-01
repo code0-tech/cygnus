@@ -11,6 +11,7 @@ import type { AppLocale } from "@/lib/i18n"
 import { calculateSubscriptionPrice, clampToRange, formatDiscountBadge, getPaymentPeriodDiscount, getPaymentPeriodMonths, getPaymentPeriodSuffix } from "@/lib/subscriptionCalculator"
 import {
     buildSubscriptionSelectionSearchParams,
+    getPaymentPeriodForCustomerType,
     getPlanForCustomerType,
     getSubscriptionConfiguratorSteps,
     parseSelectedAdditionalFeatureIndexes,
@@ -45,7 +46,8 @@ export interface SubscriptionIcons {
     additionalFeatures: ReactNode[]
 }
 
-const paymentPeriodOptions = ["monthly", "quarterly", "yearly"] as const
+const B2B_PAYMENT_PERIOD_OPTIONS = ["monthly", "quarterly", "yearly"] as const
+const B2C_PAYMENT_PERIOD_OPTIONS = ["weekly", "monthly", "yearly"] as const
 
 export function SubscriptionConfigurator({ locale, content, icons }: { locale: AppLocale; content: SubscriptionConfiguratorContent; icons: SubscriptionIcons }) {
     const workflowExecutions = content.workflowExecutions
@@ -60,6 +62,7 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
     const aiTokenRange = aiTokens[selection.customerType]
     const [selectedFeatures, setSelectedFeatures] = useState<Set<number>>(() => parseSelectedAdditionalFeatureIndexes(searchParams, content.additionalFeatures))
     const additionalFeaturesPrice = Array.from(selectedFeatures).reduce((acc, idx) => acc + (content.additionalFeatures?.[idx]?.price ?? 0), 0)
+    const paymentPeriodOptions = selection.customerType === "b2b" ? B2B_PAYMENT_PERIOD_OPTIONS : B2C_PAYMENT_PERIOD_OPTIONS
     const paymentPeriodDiscount = getPaymentPeriodDiscount(selection.paymentPeriod, content.paymentPeriod)
     const paymentPeriodSuffix = getPaymentPeriodSuffix(selection.paymentPeriod, content.paymentPeriod)
     const { totalPrice: customPlanPrice } = calculateSubscriptionPrice({
@@ -111,6 +114,7 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
                                         ...current,
                                         plan: getPlanForCustomerType("b2b", current.plan),
                                         customerType: "b2b",
+                                        paymentPeriod: getPaymentPeriodForCustomerType("b2b", current.paymentPeriod),
                                         workflowExecutions: clampToRange(current.workflowExecutions, workflowExecutions.b2b),
                                         aiTokens: clampToRange(current.aiTokens, aiTokens.b2b),
                                     }))
@@ -126,6 +130,7 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
                                     setSelection((current) => ({
                                         ...current,
                                         customerType: "b2c",
+                                        paymentPeriod: getPaymentPeriodForCustomerType("b2c", current.paymentPeriod),
                                         workflowExecutions: clampToRange(current.workflowExecutions, workflowExecutions.b2c),
                                         aiTokens: clampToRange(current.aiTokens, aiTokens.b2c),
                                     }))

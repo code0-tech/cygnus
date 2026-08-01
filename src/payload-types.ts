@@ -2883,7 +2883,10 @@ export interface SubscriptionConfig {
   defaults?: {
     deployment?: ('self_hosted' | 'cloud') | null;
     customerType?: ('b2b' | 'b2c') | null;
-    paymentPeriod?: ('monthly' | 'quarterly' | 'yearly') | null;
+    paymentPeriod?: {
+      b2b?: ('monthly' | 'quarterly' | 'yearly') | null;
+      b2c?: ('weekly' | 'monthly' | 'yearly') | null;
+    };
     workflowExecutions?: {
       b2b?: number | null;
       b2c?: number | null;
@@ -2964,6 +2967,7 @@ export interface SubscriptionConfig {
       title?: string | null;
       description?: string | null;
       prices?: {
+        weekly?: number | null;
         monthly?: number | null;
         quarterly?: number | null;
         yearly?: number | null;
@@ -2973,6 +2977,7 @@ export interface SubscriptionConfig {
       title?: string | null;
       description?: string | null;
       prices?: {
+        weekly?: number | null;
         monthly?: number | null;
         quarterly?: number | null;
         yearly?: number | null;
@@ -2986,12 +2991,15 @@ export interface SubscriptionConfig {
   paymentPeriod?: {
     label?: string | null;
     description?: string | null;
+    weeklyText?: string | null;
     monthlyText?: string | null;
     quarterlyText?: string | null;
     yearlyText?: string | null;
+    weeklyPeriodSuffix?: string | null;
     monthlyPeriodSuffix?: string | null;
     quarterlyPeriodSuffix?: string | null;
     yearlyPeriodSuffix?: string | null;
+    weeklyColor?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
     monthlyColor?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
     quarterlyColor?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
     yearlyColor?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
@@ -3386,7 +3394,12 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
     | {
         deployment?: T;
         customerType?: T;
-        paymentPeriod?: T;
+        paymentPeriod?:
+          | T
+          | {
+              b2b?: T;
+              b2c?: T;
+            };
         workflowExecutions?:
           | T
           | {
@@ -3503,6 +3516,7 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
               prices?:
                 | T
                 | {
+                    weekly?: T;
                     monthly?: T;
                     quarterly?: T;
                     yearly?: T;
@@ -3516,6 +3530,7 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
               prices?:
                 | T
                 | {
+                    weekly?: T;
                     monthly?: T;
                     quarterly?: T;
                     yearly?: T;
@@ -3533,12 +3548,15 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
     | {
         label?: T;
         description?: T;
+        weeklyText?: T;
         monthlyText?: T;
         quarterlyText?: T;
         yearlyText?: T;
+        weeklyPeriodSuffix?: T;
         monthlyPeriodSuffix?: T;
         quarterlyPeriodSuffix?: T;
         yearlyPeriodSuffix?: T;
+        weeklyColor?: T;
         monthlyColor?: T;
         quarterlyColor?: T;
         yearlyColor?: T;
