@@ -2887,14 +2887,6 @@ export interface SubscriptionConfig {
       b2b?: ('monthly' | 'quarterly' | 'yearly') | null;
       b2c?: ('weekly' | 'monthly' | 'yearly') | null;
     };
-    workflowExecutions?: {
-      b2b?: number | null;
-      b2c?: number | null;
-    };
-    aiTokens?: {
-      b2b?: number | null;
-      b2c?: number | null;
-    };
   };
   deployment: {
     label?: string | null;
@@ -3010,11 +3002,13 @@ export interface SubscriptionConfig {
     title?: string | null;
     description?: string | null;
     b2b?: {
+      default?: number | null;
       step?: number | null;
       min?: number | null;
       max?: number | null;
     };
     b2c?: {
+      default?: number | null;
       step?: number | null;
       min?: number | null;
       max?: number | null;
@@ -3050,11 +3044,13 @@ export interface SubscriptionConfig {
     title?: string | null;
     description?: string | null;
     b2b?: {
+      default?: number | null;
       step?: number | null;
       min?: number | null;
       max?: number | null;
     };
     b2c?: {
+      default?: number | null;
       step?: number | null;
       min?: number | null;
       max?: number | null;
@@ -3400,18 +3396,6 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
               b2b?: T;
               b2c?: T;
             };
-        workflowExecutions?:
-          | T
-          | {
-              b2b?: T;
-              b2c?: T;
-            };
-        aiTokens?:
-          | T
-          | {
-              b2b?: T;
-              b2c?: T;
-            };
       };
   deployment?:
     | T
@@ -3571,6 +3555,7 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
         b2b?:
           | T
           | {
+              default?: T;
               step?: T;
               min?: T;
               max?: T;
@@ -3578,6 +3563,7 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
         b2c?:
           | T
           | {
+              default?: T;
               step?: T;
               min?: T;
               max?: T;
@@ -3619,6 +3605,7 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
         b2b?:
           | T
           | {
+              default?: T;
               step?: T;
               min?: T;
               max?: T;
@@ -3626,6 +3613,7 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
         b2c?:
           | T
           | {
+              default?: T;
               step?: T;
               min?: T;
               max?: T;

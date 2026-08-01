@@ -40,8 +40,8 @@ export function normalizeCheckoutSelection(selection: CheckoutSelection, subscri
             ...selection,
             plan,
             paymentPeriod,
-            aiTokens: clampUsageValue(String(subscriptionConfig.defaults.aiTokens[customerType]), subscriptionConfig.aiTokens[customerType]),
-            workflowExecutions: clampUsageValue(String(subscriptionConfig.defaults.workflowExecutions[customerType]), subscriptionConfig.workflowExecutions[customerType]),
+            aiTokens: clampUsageValue(String(subscriptionConfig.aiTokens[customerType].default), subscriptionConfig.aiTokens[customerType]),
+            workflowExecutions: clampUsageValue(String(subscriptionConfig.workflowExecutions[customerType].default), subscriptionConfig.workflowExecutions[customerType]),
         }
     }
 

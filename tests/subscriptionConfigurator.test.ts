@@ -16,16 +16,14 @@ const content = {
         deployment: "self_hosted",
         customerType: "b2c",
         paymentPeriod: { b2b: "monthly", b2c: "monthly" },
-        workflowExecutions: { b2b: 200, b2c: 10 },
-        aiTokens: { b2b: 100_000, b2c: 10_000 },
     },
     workflowExecutions: {
-        b2b: { min: 200, max: 10_000, step: 100 },
-        b2c: { min: 10, max: 1_000, step: 10 },
+        b2b: { default: 200, min: 200, max: 10_000, step: 100 },
+        b2c: { default: 10, min: 10, max: 1_000, step: 10 },
     },
     aiTokens: {
-        b2b: { min: 100_000, max: 1_000_000, step: 100_000 },
-        b2c: { min: 10_000, max: 100_000, step: 10_000 },
+        b2b: { default: 100_000, min: 100_000, max: 1_000_000, step: 100_000 },
+        b2c: { default: 10_000, min: 10_000, max: 100_000, step: 10_000 },
     },
     additionalFeatures: [
         { id: "sso", title: "SSO", description: "", icon: "", price: 10 },
@@ -42,6 +40,14 @@ test("falls back to content defaults when the URL has no selection", () => {
         workflowExecutions: 10,
         aiTokens: 10_000,
     })
+})
+
+test("writes the resolved usage defaults back into the search params on a fresh page load", () => {
+    const selection = parseSubscriptionSelectionFromSearchParams(new URLSearchParams(), content)
+    const params = buildSubscriptionSelectionSearchParams(selection, [])
+
+    assert.equal(params.get("workflowExecutions"), "10")
+    assert.equal(params.get("aiTokens"), "10000")
 })
 
 test("restores a full selection from the URL", () => {

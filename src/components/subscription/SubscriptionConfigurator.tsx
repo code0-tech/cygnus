@@ -8,7 +8,7 @@ import { Slider } from "@/components/ui/Slider"
 import type { SubscriptionConfiguratorContent } from "@/lib/cms"
 import { formatEuroCurrency } from "@/lib/formatters"
 import type { AppLocale } from "@/lib/i18n"
-import { calculateSubscriptionPrice, clampToRange, formatDiscountBadge, getPaymentPeriodDiscount, getPaymentPeriodMonths, getPaymentPeriodSuffix } from "@/lib/subscriptionCalculator"
+import { calculateSubscriptionPrice, formatDiscountBadge, getPaymentPeriodDiscount, getPaymentPeriodMonths, getPaymentPeriodSuffix } from "@/lib/subscriptionCalculator"
 import {
     buildSubscriptionSelectionSearchParams,
     getPaymentPeriodForCustomerType,
@@ -115,8 +115,8 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
                                         plan: getPlanForCustomerType("b2b", current.plan),
                                         customerType: "b2b",
                                         paymentPeriod: getPaymentPeriodForCustomerType("b2b", current.paymentPeriod),
-                                        workflowExecutions: clampToRange(current.workflowExecutions, workflowExecutions.b2b),
-                                        aiTokens: clampToRange(current.aiTokens, aiTokens.b2b),
+                                        workflowExecutions: workflowExecutions.b2b.default,
+                                        aiTokens: aiTokens.b2b.default,
                                     }))
                                 }
                             />
@@ -131,8 +131,8 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
                                         ...current,
                                         customerType: "b2c",
                                         paymentPeriod: getPaymentPeriodForCustomerType("b2c", current.paymentPeriod),
-                                        workflowExecutions: clampToRange(current.workflowExecutions, workflowExecutions.b2c),
-                                        aiTokens: clampToRange(current.aiTokens, aiTokens.b2c),
+                                        workflowExecutions: workflowExecutions.b2c.default,
+                                        aiTokens: aiTokens.b2c.default,
                                     }))
                                 }
                             />

@@ -71,8 +71,8 @@ export function parseSubscriptionSelectionFromSearchParams(searchParams: URLSear
         deployment,
         customerType,
         paymentPeriod,
-        workflowExecutions: clampToRange(parseUsageValue(searchParams.get("workflowExecutions")) ?? defaults.workflowExecutions[customerType], content.workflowExecutions[customerType]),
-        aiTokens: clampToRange(parseUsageValue(searchParams.get("aiTokens")) ?? defaults.aiTokens[customerType], content.aiTokens[customerType]),
+        workflowExecutions: clampToRange(parseUsageValue(searchParams.get("workflowExecutions")) ?? content.workflowExecutions[customerType].default, content.workflowExecutions[customerType]),
+        aiTokens: clampToRange(parseUsageValue(searchParams.get("aiTokens")) ?? content.aiTokens[customerType].default, content.aiTokens[customerType]),
     }
 }
 

@@ -5,18 +5,16 @@ import { normalizeCheckoutSelection, validateCheckoutSelection } from "@/lib/che
 
 const subscriptionConfig = {
     aiTokens: {
-        b2b: { min: 100_000, max: 1_000_000, step: 100_000 },
-        b2c: { min: 10_000, max: 100_000, step: 10_000 },
+        b2b: { default: 200_000, min: 100_000, max: 1_000_000, step: 100_000 },
+        b2c: { default: 20_000, min: 10_000, max: 100_000, step: 10_000 },
     },
     defaults: {
-        aiTokens: { b2b: 200_000, b2c: 20_000 },
         customerType: "b2c",
         paymentPeriod: { b2b: "monthly", b2c: "monthly" },
-        workflowExecutions: { b2b: 1_000, b2c: 100 },
     },
     workflowExecutions: {
-        b2b: { min: 200, max: 10_000, step: 100 },
-        b2c: { min: 10, max: 1_000, step: 10 },
+        b2b: { default: 1_000, min: 200, max: 10_000, step: 100 },
+        b2c: { default: 100, min: 10, max: 1_000, step: 10 },
     },
 } as SubscriptionConfigData
 
