@@ -5,9 +5,9 @@ import {
     buildSubscriptionSelectionSearchParams,
     getPaymentPeriodForCustomerType,
     getPlanForCustomerType,
-    getSubscriptionConfiguratorSteps,
-    parseSelectedAdditionalFeatureIndexes,
     parseSubscriptionSelectionFromSearchParams,
+    reduceSubscriptionSelection,
+    resolveSubscriptionSelection,
     type SubscriptionSelection,
 } from "../src/lib/subscriptionConfigurator"
 
@@ -39,6 +39,7 @@ test("falls back to content defaults when the URL has no selection", () => {
         paymentPeriod: "monthly",
         workflowExecutions: 10,
         aiTokens: 10_000,
+        additionalFeatureIds: [],
     })
 })
 
@@ -67,6 +68,7 @@ test("restores a full selection from the URL", () => {
         paymentPeriod: "yearly",
         workflowExecutions: 500,
         aiTokens: 200_000,
+        additionalFeatureIds: [],
     })
 })
 
@@ -91,6 +93,7 @@ test("ignores malformed or unknown URL values", () => {
         paymentPeriod: "monthly",
         workflowExecutions: 10,
         aiTokens: 10_000,
+        additionalFeatureIds: [],
     })
 })
 
@@ -112,33 +115,49 @@ test("downgrades weekly to monthly for b2b and quarterly to monthly for b2c", ()
     assert.equal(getPaymentPeriodForCustomerType("b2c", "weekly"), "weekly")
 })
 
-test("resolves selected additional features by id, falling back to index", () => {
-    assert.deepEqual(parseSelectedAdditionalFeatureIndexes(new URLSearchParams({ additionalFeatures: "sso,1" }), content.additionalFeatures), new Set([0, 1]))
-    assert.deepEqual(parseSelectedAdditionalFeatureIndexes(new URLSearchParams(), content.additionalFeatures), new Set())
+test("resolves additional features only by stable id", () => {
+    assert.deepEqual(resolveSubscriptionSelection(new URLSearchParams({ additionalFeatures: "sso,1" }), content).selection.additionalFeatureIds, ["sso"])
 })
 
 test("builds checkout search params only with usage and features for the custom plan", () => {
-    const customSelection: SubscriptionSelection = { plan: "custom", deployment: "cloud", customerType: "b2b", paymentPeriod: "yearly", workflowExecutions: 500, aiTokens: 200_000 }
+    const customSelection: SubscriptionSelection = {
+        plan: "custom",
+        deployment: "cloud",
+        customerType: "b2b",
+        paymentPeriod: "yearly",
+        workflowExecutions: 500,
+        aiTokens: 200_000,
+        additionalFeatureIds: ["sso"],
+    }
     assert.equal(
-        buildSubscriptionSelectionSearchParams(customSelection, ["sso"]).toString(),
+        buildSubscriptionSelectionSearchParams(customSelection).toString(),
         "plan=custom&deploymentType=cloud&customerType=b2b&paymentPeriod=yearly&workflowExecutions=500&aiTokens=200000&additionalFeatures=sso"
     )
 
-    const fixedSelection: SubscriptionSelection = { plan: "pro", deployment: "self_hosted", customerType: "b2c", paymentPeriod: "monthly", workflowExecutions: 10, aiTokens: 10_000 }
+    const fixedSelection: SubscriptionSelection = {
+        plan: "pro",
+        deployment: "self_hosted",
+        customerType: "b2c",
+        paymentPeriod: "monthly",
+        workflowExecutions: 10,
+        aiTokens: 10_000,
+        additionalFeatureIds: [],
+    }
     assert.equal(buildSubscriptionSelectionSearchParams(fixedSelection, []).toString(), "plan=pro&deploymentType=self_hosted&customerType=b2c&paymentPeriod=monthly")
 })
 
-test("builds the custom-plan wizard in the requested order", () => {
-    assert.deepEqual(getSubscriptionConfiguratorSteps("b2c", "custom", true), ["customerType", "plan", "deployment", "aiTokens", "workflowExecutions", "additionalFeatures", "paymentPeriod"])
+test("snaps manipulated usage to the configured step", () => {
+    const result = resolveSubscriptionSelection(new URLSearchParams({ customerType: "b2b", workflowExecutions: "251", aiTokens: "150000" }), content)
+    assert.equal(result.selection.workflowExecutions, 300)
+    assert.equal(result.selection.aiTokens, 200_000)
+    assert.equal(result.issues.length, 2)
 })
 
-test("skips custom usage steps for fixed plans", () => {
-    assert.deepEqual(getSubscriptionConfiguratorSteps("b2c", "pro", true), ["customerType", "plan", "deployment", "paymentPeriod"])
-    assert.deepEqual(getSubscriptionConfiguratorSteps("b2c", "max", false), ["customerType", "plan", "deployment", "paymentPeriod"])
-})
-
-test("skips the plan step entirely for b2b customers, who are always on the custom plan", () => {
-    assert.deepEqual(getSubscriptionConfiguratorSteps("b2b", "custom", true), ["customerType", "deployment", "aiTokens", "workflowExecutions", "additionalFeatures", "paymentPeriod"])
+test("applies dependent customer-type rules through the reducer", () => {
+    const initial = resolveSubscriptionSelection(new URLSearchParams({ customerType: "b2c", plan: "pro", paymentPeriod: "weekly" }), content).selection
+    const next = reduceSubscriptionSelection(initial, { type: "customerTypeChanged", value: "b2b" }, content)
+    assert.equal(next.plan, "custom")
+    assert.equal(next.paymentPeriod, "monthly")
 })
 
 test("restricts B2B customers to the custom plan", () => {

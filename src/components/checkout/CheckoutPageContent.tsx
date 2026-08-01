@@ -50,7 +50,7 @@ export function CheckoutPageContent({ currentYear, footer, form, locale, subscri
                                             <IconX aria-hidden="true" size={18} />
                                         </DrawerClose>
                                     </div>
-                                    <CheckoutForm content={form} locale={locale} mobileSteps showHeading={false} subscriptionConfig={subscriptionConfig} />
+                                    <CheckoutForm content={form} locale={locale} mobileSteps showHeading={false} />
                                 </DrawerContent>
                                 <CheckoutLegalFooter
                                     className="shrink-0 border-t border-white/10 bg-primary px-4 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-6"
@@ -65,7 +65,7 @@ export function CheckoutPageContent({ currentYear, footer, form, locale, subscri
             )}
 
             <div className="hidden flex-1 lg:flex">
-                <CheckoutForm content={form} locale={locale} subscriptionConfig={subscriptionConfig} />
+                <CheckoutForm content={form} locale={locale} />
             </div>
         </div>
     )

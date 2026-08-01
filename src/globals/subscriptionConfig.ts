@@ -65,19 +65,6 @@ export const SubscriptionCollection: GlobalConfig = {
             defaultValue: "Build the subscription shape",
         },
         {
-            name: "configuratorNavigation",
-            label: "Configurator Navigation",
-            type: "group",
-            defaultValue: {
-                backLabel: "Back",
-                nextLabel: "Next",
-            },
-            fields: [
-                { name: "backLabel", type: "text", required: false, localized: true, defaultValue: "Back" },
-                { name: "nextLabel", type: "text", required: false, localized: true, defaultValue: "Next" },
-            ],
-        },
-        {
             name: "defaults",
             label: "Configurator Defaults",
             type: "group",
@@ -283,51 +270,6 @@ export const SubscriptionCollection: GlobalConfig = {
                         },
                         { ...iconField, defaultValue: "building-store" },
                         { ...colorField, defaultValue: "pink" },
-                    ],
-                },
-            ],
-        },
-        {
-            name: "subscriptionTier",
-            type: "group",
-            fields: [
-                {
-                    name: "label",
-                    type: "text",
-                    required: false,
-                    localized: true,
-                    defaultValue: "Subscription tier",
-                },
-                {
-                    name: "pro",
-                    type: "group",
-                    fields: [
-                        { name: "title", type: "text", required: false, localized: true, defaultValue: "PRO" },
-                        {
-                            name: "description",
-                            type: "textarea",
-                            required: false,
-                            localized: true,
-                            defaultValue: "Single-owner setup for advanced personal or expert workflows.",
-                        },
-                        { ...iconField, defaultValue: "sparkles" },
-                        { ...colorField, defaultValue: "brand" },
-                    ],
-                },
-                {
-                    name: "team",
-                    type: "group",
-                    fields: [
-                        { name: "title", type: "text", required: false, localized: true, defaultValue: "TEAM" },
-                        {
-                            name: "description",
-                            type: "textarea",
-                            required: false,
-                            localized: true,
-                            defaultValue: "Shared workspace model with seat-based team access.",
-                        },
-                        { ...iconField, defaultValue: "users-group" },
-                        { ...colorField, defaultValue: "aqua" },
                     ],
                 },
             ],

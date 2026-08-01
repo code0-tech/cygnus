@@ -1,19 +1,18 @@
 import type { SubscriptionConfigData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
+import type { SubscriptionCatalog } from "@/lib/subscriptionCatalog"
+import { resolveSubscriptionSelection, type SubscriptionSelection } from "@/lib/subscriptionConfigurator"
 
 export type PaymentPeriod = "weekly" | "monthly" | "quarterly" | "yearly"
 type SubscriptionPlan = "custom" | "pro" | "max"
 
 const AVERAGE_WEEKS_PER_MONTH = 4.345
+const PAYMENT_PERIODS = new Set<PaymentPeriod>(["weekly", "monthly", "quarterly", "yearly"])
 
 export type UsageRange = {
     min: number
     max: number
     step: number
-}
-
-export function clampToRange(value: number, range: UsageRange) {
-    return Math.min(Math.max(value, range.min), range.max)
 }
 
 export function formatDiscountBadge(discount: number, locale: AppLocale) {
@@ -68,35 +67,44 @@ export function getPaymentPeriodSuffix(period: PaymentPeriod, paymentPeriod: Sub
     return paymentPeriod.monthlyPeriodSuffix
 }
 
-export function calculateSubscriptionPrice({
-    additionalFeaturesPrice = 0,
-    aiTokenPriceFactor,
-    aiTokens,
-    billingPeriodMonths = 1,
-    discount = 0,
-    workflowExecutionPriceFactor,
-    workflowExecutions,
-}: {
-    additionalFeaturesPrice?: number
-    aiTokenPriceFactor: number
-    aiTokens: number
-    billingPeriodMonths?: number
-    discount?: number
-    workflowExecutionPriceFactor: number
-    workflowExecutions: number
-}) {
-    const periodMonths = Number.isFinite(billingPeriodMonths) && billingPeriodMonths > 0 ? billingPeriodMonths : 1
-    const workflowExecutionPrice = workflowExecutionPriceFactor * workflowExecutions * periodMonths
-    const aiTokenPrice = aiTokenPriceFactor * aiTokens * periodMonths
-    const recurringAdditionalFeaturesPrice = additionalFeaturesPrice * periodMonths
-    const totalBeforeDiscount = workflowExecutionPrice + aiTokenPrice + recurringAdditionalFeaturesPrice
+const toCents = (amount: number) => Math.round(amount * 100)
+const fromCents = (amount: number) => amount / 100
 
-    return {
-        aiTokenPrice,
-        totalBeforeDiscount,
-        totalPrice: totalBeforeDiscount * (1 - discount),
-        workflowExecutionPrice,
+export type SubscriptionQuote = {
+    currency: "EUR"
+    items: { id: string; type: "plan" | "aiTokens" | "workflowExecutions" | "additionalFeature"; amount: number }[]
+    subtotal: number
+    periodDiscount: number
+    total: number
+}
+
+export function calculateSubscriptionQuote(selection: SubscriptionSelection, config: SubscriptionCatalog): SubscriptionQuote {
+    const months = getPaymentPeriodMonths(selection.paymentPeriod)
+
+    if (selection.plan !== "custom") {
+        const total = toCents(config.packages[selection.plan].prices[selection.paymentPeriod])
+        const regularTotal = toCents(config.packages[selection.plan].prices.monthly * months)
+        const subtotal = Math.max(total, regularTotal)
+        return {
+            currency: "EUR",
+            items: [{ id: selection.plan, type: "plan", amount: subtotal }],
+            subtotal,
+            periodDiscount: subtotal - total,
+            total,
+        }
     }
+
+    const items: SubscriptionQuote["items"] = [
+        { id: "aiTokens", type: "aiTokens", amount: toCents(config.aiTokenPriceFactor * selection.aiTokens * months) },
+        { id: "workflowExecutions", type: "workflowExecutions", amount: toCents(config.workflowExecutionPriceFactor * selection.workflowExecutions * months) },
+        ...(config.additionalFeatures ?? [])
+            .filter((feature) => Boolean(feature.id && selection.additionalFeatureIds.includes(feature.id)))
+            .map((feature) => ({ id: feature.id!, type: "additionalFeature" as const, amount: toCents(feature.price * months) })),
+    ]
+    const subtotal = items.reduce((sum, item) => sum + item.amount, 0)
+    const discountRate = getPaymentPeriodDiscount(selection.paymentPeriod, config.paymentPeriod)
+    const periodDiscount = Math.round(subtotal * discountRate)
+    return { currency: "EUR", items, subtotal, periodDiscount, total: subtotal - periodDiscount }
 }
 
 function parseNumber(value: string | null, fallback: number) {
@@ -125,77 +133,56 @@ export function resolveCheckoutPricing({
     subscriptionConfig?: SubscriptionConfigData | null
     workflowExecutionsParam: string | null
 }) {
-    const customerType = customerTypeParam === "b2b" || customerTypeParam === "b2c" ? customerTypeParam : (subscriptionConfig?.defaults?.customerType ?? "b2b")
-    const requestedPlan: SubscriptionPlan = planParam === "pro" || planParam === "max" ? planParam : "custom"
-    const plan: SubscriptionPlan = customerTypeParam === "b2b" ? "custom" : requestedPlan
-    const requestedPaymentPeriod: PaymentPeriod =
-        paymentPeriodParam === "weekly" || paymentPeriodParam === "quarterly" || paymentPeriodParam === "yearly" || paymentPeriodParam === "monthly"
-            ? paymentPeriodParam
-            : (subscriptionConfig?.defaults.paymentPeriod[customerType] ?? "monthly")
-    const paymentPeriod: PaymentPeriod =
-        (customerType === "b2b" && requestedPaymentPeriod === "weekly") || (customerType === "b2c" && requestedPaymentPeriod === "quarterly") ? "monthly" : requestedPaymentPeriod
-    const periodSuffix = subscriptionConfig ? getPaymentPeriodSuffix(paymentPeriod, subscriptionConfig.paymentPeriod) : fallbackPeriodSuffix
-    const planTitle = subscriptionConfig?.packages[plan].title || plan.charAt(0).toUpperCase() + plan.slice(1)
-
-    if (plan !== "custom") {
-        const planPrice = subscriptionConfig?.packages[plan].prices[paymentPeriod] ?? 0
-        const periodMonths = getPaymentPeriodMonths(paymentPeriod)
-        const regularPrice = (subscriptionConfig?.packages[plan].prices.monthly ?? planPrice) * periodMonths
-
+    if (!subscriptionConfig) {
+        const plan: SubscriptionPlan = planParam === "pro" || planParam === "max" ? planParam : "custom"
+        const paymentPeriod: PaymentPeriod = PAYMENT_PERIODS.has(paymentPeriodParam as PaymentPeriod) ? (paymentPeriodParam as PaymentPeriod) : "monthly"
         return {
             additionalFeaturesPrice: 0,
-            aiTokens: 0,
-            isCustomPlan: false,
+            aiTokens: parseNumber(aiTokensParam, 0),
+            isCustomPlan: plan === "custom",
             paymentPeriod,
-            periodSuffix,
+            periodSuffix: fallbackPeriodSuffix,
             plan,
-            planPrice,
-            planTitle,
-            pricing: {
-                aiTokenPrice: 0,
-                totalBeforeDiscount: Math.max(planPrice, regularPrice),
-                totalPrice: planPrice,
-                workflowExecutionPrice: 0,
-            },
+            planPrice: plan === "custom" ? null : 0,
+            planTitle: plan.charAt(0).toUpperCase() + plan.slice(1),
+            pricing: { aiTokenPrice: 0, totalBeforeDiscount: 0, totalPrice: 0, workflowExecutionPrice: 0 },
             selectedAdditionalFeatures: [],
-            workflowExecutions: 0,
+            workflowExecutions: parseNumber(workflowExecutionsParam, 0),
         }
     }
 
-    const selectedAdditionalFeatures = additionalFeatureIds.flatMap((selectedFeatureId) => {
-        const matchingFeature = subscriptionConfig?.additionalFeatures?.find((feature, index) => String(feature.id ?? index) === selectedFeatureId)
-        return matchingFeature ? [matchingFeature] : []
-    })
-    const monthlyAdditionalFeaturesPrice = selectedAdditionalFeatures.reduce((total, feature) => total + feature.price, 0)
-    const periodMonths = getPaymentPeriodMonths(paymentPeriod)
-    const additionalFeaturesPrice = monthlyAdditionalFeaturesPrice * periodMonths
-    const defaultWorkflowExecutions = subscriptionConfig?.workflowExecutions[customerType].default ?? 200
-    const defaultAiTokens = subscriptionConfig?.aiTokens[customerType].default ?? 0
-    const workflowExecutions = subscriptionConfig
-        ? clampToRange(parseNumber(workflowExecutionsParam, defaultWorkflowExecutions), subscriptionConfig.workflowExecutions[customerType])
-        : parseNumber(workflowExecutionsParam, defaultWorkflowExecutions)
-    const aiTokens = subscriptionConfig ? clampToRange(parseNumber(aiTokensParam, defaultAiTokens), subscriptionConfig.aiTokens[customerType]) : parseNumber(aiTokensParam, defaultAiTokens)
-    const discount = subscriptionConfig ? getPaymentPeriodDiscount(paymentPeriod, subscriptionConfig.paymentPeriod) : 0
-    const pricing = calculateSubscriptionPrice({
-        additionalFeaturesPrice: monthlyAdditionalFeaturesPrice,
-        aiTokenPriceFactor: subscriptionConfig?.aiTokenPriceFactor ?? 0,
-        aiTokens,
-        billingPeriodMonths: periodMonths,
-        discount,
-        workflowExecutionPriceFactor: subscriptionConfig?.workflowExecutionPriceFactor ?? 0,
-        workflowExecutions,
-    })
+    const { selection } = resolveSubscriptionSelection(
+        {
+            additionalFeatures: additionalFeatureIds.join(","),
+            aiTokens: aiTokensParam,
+            customerType: customerTypeParam,
+            paymentPeriod: paymentPeriodParam,
+            plan: planParam,
+            workflowExecutions: workflowExecutionsParam,
+        },
+        subscriptionConfig
+    )
+    const quote = calculateSubscriptionQuote(selection, subscriptionConfig)
+    const itemAmount = (type: SubscriptionQuote["items"][number]["type"]) => fromCents(quote.items.find((item) => item.type === type)?.amount ?? 0)
+    const selectedAdditionalFeatures = (subscriptionConfig.additionalFeatures ?? []).filter((feature) => Boolean(feature.id && selection.additionalFeatureIds.includes(feature.id)))
+    const additionalFeaturesPrice = fromCents(quote.items.filter((item) => item.type === "additionalFeature").reduce((sum, item) => sum + item.amount, 0))
+    const pricing = {
+        aiTokenPrice: itemAmount("aiTokens"),
+        totalBeforeDiscount: fromCents(quote.subtotal),
+        totalPrice: fromCents(quote.total),
+        workflowExecutionPrice: itemAmount("workflowExecutions"),
+    }
     return {
         additionalFeaturesPrice,
-        aiTokens,
-        isCustomPlan: true,
-        paymentPeriod,
-        periodSuffix,
-        plan,
-        planPrice: null,
-        planTitle,
+        aiTokens: selection.plan === "custom" ? selection.aiTokens : 0,
+        isCustomPlan: selection.plan === "custom",
+        paymentPeriod: selection.paymentPeriod,
+        periodSuffix: getPaymentPeriodSuffix(selection.paymentPeriod, subscriptionConfig.paymentPeriod),
+        plan: selection.plan,
+        planPrice: selection.plan === "custom" ? null : fromCents(quote.total),
+        planTitle: subscriptionConfig.packages[selection.plan].title,
         pricing,
         selectedAdditionalFeatures,
-        workflowExecutions,
+        workflowExecutions: selection.plan === "custom" ? selection.workflowExecutions : 0,
     }
 }

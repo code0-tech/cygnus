@@ -1,7 +1,7 @@
 import assert from "node:assert/strict"
 import test, { afterEach, mock } from "node:test"
 import React from "react"
-import type { CheckoutData, SubscriptionConfigData } from "@/lib/cms"
+import type { CheckoutData } from "@/lib/cms"
 import { installDomTestEnvironment } from "./domTestEnvironment"
 
 const domWindow = installDomTestEnvironment()
@@ -33,17 +33,7 @@ mock.module("@/components/checkout/CheckoutStepper", {
 })
 mock.module("@/components/checkout/CountryPicker", {
     namedExports: {
-        CountryPicker: ({
-            errorMessage,
-            label,
-            onValueChange,
-            value,
-        }: {
-            errorMessage?: string | null
-            label: string
-            onValueChange: (value: string) => void
-            value: string
-        }) => (
+        CountryPicker: ({ errorMessage, label, onValueChange, value }: { errorMessage?: string | null; label: string; onValueChange: (value: string) => void; value: string }) => (
             <label>
                 <span>{label}</span>
                 <input aria-label={label} value={value} onChange={(event) => onValueChange(event.currentTarget.value.toUpperCase())} />
@@ -106,17 +96,6 @@ const content = {
     taxIdValueLabel: "Tax ID",
     taxIdValuePlaceholder: "DE123",
 } as CheckoutData["form"]
-
-const subscriptionConfig = {
-    aiTokens: {
-        b2b: { min: 100_000, max: 1_000_000, step: 100_000 },
-        b2c: { min: 10_000, max: 100_000, step: 10_000 },
-    },
-    workflowExecutions: {
-        b2b: { min: 200, max: 10_000, step: 100 },
-        b2c: { min: 10, max: 1_000, step: 10 },
-    },
-} as SubscriptionConfigData
 
 function TestInput({
     formValidation,
@@ -196,7 +175,7 @@ test("disables checkout until all required billing fields are valid", async () =
         return new Response()
     }) as typeof fetch
 
-    render(<CheckoutForm content={content} locale="en" subscriptionConfig={subscriptionConfig} />)
+    render(<CheckoutForm content={content} locale="en" />)
 
     assert.equal((screen.getByRole("button", { name: "Continue to payment" }) as HTMLButtonElement).disabled, true)
     assert.equal(requests.length, 0)
@@ -205,7 +184,7 @@ test("disables checkout until all required billing fields are valid", async () =
 test("shows the mobile checkout fields as progressive steps", async () => {
     const user = userEvent.setup()
 
-    render(<CheckoutForm content={content} locale="en" mobileSteps subscriptionConfig={subscriptionConfig} />)
+    render(<CheckoutForm content={content} locale="en" mobileSteps />)
 
     const contactStep = screen.getByRole("button", { name: /Contact details/ })
     const addressStep = screen.getByRole("button", { name: /Address/ })
@@ -221,14 +200,13 @@ test("shows the mobile checkout fields as progressive steps", async () => {
     assert.equal(contactStep.getAttribute("aria-expanded"), "false")
     assert.equal(addressStep.getAttribute("aria-expanded"), "true")
     assert.equal((addressStep as HTMLButtonElement).disabled, false)
-
 })
 
 test("shows tax fields as the final mobile step for business customers", async () => {
     checkoutSearchParams.set("customerType", "b2b")
     const user = userEvent.setup()
 
-    render(<CheckoutForm content={content} locale="en" mobileSteps subscriptionConfig={subscriptionConfig} />)
+    render(<CheckoutForm content={content} locale="en" mobileSteps />)
 
     await user.type(screen.getByRole("textbox", { name: "Name" }), "Code0 GmbH")
     await user.type(screen.getByRole("textbox", { name: "Email" }), "billing@code0.tech")
@@ -266,7 +244,7 @@ test("creates the customer, sends the checkout selection, and redirects to the r
     }) as typeof fetch
     const user = userEvent.setup()
 
-    render(<CheckoutForm content={content} locale="en" subscriptionConfig={subscriptionConfig} />)
+    render(<CheckoutForm content={content} locale="en" />)
 
     await user.type(screen.getByRole("textbox", { name: "Name" }), "Ada Lovelace")
     await user.type(screen.getByRole("textbox", { name: "Email" }), "ada@example.com")
