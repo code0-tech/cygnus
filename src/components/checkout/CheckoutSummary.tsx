@@ -107,7 +107,7 @@ export function CheckoutSummary({ content, currentYear, footer, sessionToken, su
     const formattedTaxAmount = formatEuroCurrency(taxAmount, locale)
 
     return (
-        <div className="flex h-full flex-1 flex-col justify-between pl-3">
+        <div className="flex h-full flex-1 flex-col justify-between">
             <div>
                 <div className="mb-6">
                     <p className="tracking-wide text-brand">{content.eyebrow}</p>
@@ -239,7 +239,7 @@ export function CheckoutSummary({ content, currentYear, footer, sessionToken, su
                 />
             </div>
 
-            <CheckoutLegalFooter currentYear={currentYear} footer={footer ?? null} locale={locale} />
+            <CheckoutLegalFooter className="hidden lg:flex" currentYear={currentYear} footer={footer ?? null} locale={locale} />
         </div>
     )
 }

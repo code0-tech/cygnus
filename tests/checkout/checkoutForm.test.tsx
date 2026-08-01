@@ -73,6 +73,7 @@ afterEach(() => {
     cleanup()
     globalThis.fetch = originalFetch
     domWindow.location.assign = originalAssign
+    checkoutSearchParams.set("customerType", "b2c")
 })
 
 const content = {
@@ -199,6 +200,49 @@ test("disables checkout until all required billing fields are valid", async () =
 
     assert.equal((screen.getByRole("button", { name: "Continue to payment" }) as HTMLButtonElement).disabled, true)
     assert.equal(requests.length, 0)
+})
+
+test("shows the mobile checkout fields as progressive steps", async () => {
+    const user = userEvent.setup()
+
+    render(<CheckoutForm content={content} locale="en" mobileSteps subscriptionConfig={subscriptionConfig} />)
+
+    const contactStep = screen.getByRole("button", { name: /Contact details/ })
+    const addressStep = screen.getByRole("button", { name: /Address/ })
+
+    assert.equal(contactStep.getAttribute("aria-expanded"), "true")
+    assert.equal((addressStep as HTMLButtonElement).disabled, true)
+    assert.equal(screen.queryByRole("button", { name: /Tax details/ }), null)
+
+    await user.type(screen.getByRole("textbox", { name: "Name" }), "Ada Lovelace")
+    await user.type(screen.getByRole("textbox", { name: "Email" }), "ada@example.com")
+    await user.click(screen.getByRole("button", { name: "Continue" }))
+
+    assert.equal(contactStep.getAttribute("aria-expanded"), "false")
+    assert.equal(addressStep.getAttribute("aria-expanded"), "true")
+    assert.equal((addressStep as HTMLButtonElement).disabled, false)
+
+})
+
+test("shows tax fields as the final mobile step for business customers", async () => {
+    checkoutSearchParams.set("customerType", "b2b")
+    const user = userEvent.setup()
+
+    render(<CheckoutForm content={content} locale="en" mobileSteps subscriptionConfig={subscriptionConfig} />)
+
+    await user.type(screen.getByRole("textbox", { name: "Name" }), "Code0 GmbH")
+    await user.type(screen.getByRole("textbox", { name: "Email" }), "billing@code0.tech")
+    await user.click(screen.getByRole("button", { name: "Continue" }))
+
+    await user.type(screen.getByRole("textbox", { name: "Address" }), "Example Street 1")
+    await user.type(screen.getByRole("textbox", { name: "Postal code" }), "10115")
+    await user.type(screen.getByRole("textbox", { name: "City" }), "Berlin")
+    await user.type(screen.getByRole("textbox", { name: "Country" }), "de")
+    await user.click(screen.getByRole("button", { name: "Continue" }))
+
+    assert.equal(screen.getByRole("button", { name: /Tax details/ }).getAttribute("aria-expanded"), "true")
+    assert.ok(screen.getByRole("textbox", { name: "Tax ID type" }))
+    assert.ok(screen.getByRole("textbox", { name: "Tax ID" }))
 })
 
 test("creates the customer, sends the checkout selection, and redirects to the returned URL", async () => {

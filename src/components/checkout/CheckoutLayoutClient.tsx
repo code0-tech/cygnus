@@ -20,7 +20,7 @@ export function CheckoutLayoutClient({ children, stepperContent }: { children: R
                     </div>
                 </div>
                 <CraterSessionProvider>
-                    <LandingContainer className="min-h-0 flex-1 overflow-y-auto py-[8vh]">{children}</LandingContainer>
+                    <LandingContainer className="min-h-0 flex-1 overflow-y-auto my-8">{children}</LandingContainer>
                 </CraterSessionProvider>
             </div>
         </CheckoutStageProvider>
