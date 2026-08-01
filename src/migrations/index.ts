@@ -94,6 +94,7 @@ import * as migration_20260731_125552_subscription_configurator_payment_period_c
 import * as migration_20260731_183338_checkout_stepper_labels from './20260731_183338_checkout_stepper_labels';
 import * as migration_20260731_191239_checkout_summary_configuration_label from './20260731_191239_checkout_summary_configuration_label';
 import * as migration_20260801_063501_subscription_configurator_weekly_payment_period from './20260801_063501_subscription_configurator_weekly_payment_period';
+import * as migration_20260801_070112_subscription_configurator_usage_range_defaults from './20260801_070112_subscription_configurator_usage_range_defaults';
 
 export const migrations = [
   {
@@ -574,6 +575,11 @@ export const migrations = [
   {
     up: migration_20260801_063501_subscription_configurator_weekly_payment_period.up,
     down: migration_20260801_063501_subscription_configurator_weekly_payment_period.down,
-    name: '20260801_063501_subscription_configurator_weekly_payment_period'
+    name: '20260801_063501_subscription_configurator_weekly_payment_period',
+  },
+  {
+    up: migration_20260801_070112_subscription_configurator_usage_range_defaults.up,
+    down: migration_20260801_070112_subscription_configurator_usage_range_defaults.down,
+    name: '20260801_070112_subscription_configurator_usage_range_defaults'
   },
 ];

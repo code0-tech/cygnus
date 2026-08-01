@@ -53,6 +53,7 @@ export type ActionItem = Pick<Action, "id" | "identifier" | "module" | "tags" | 
 type ActionDetailItem = ActionItem
 
 interface SubscriptionUsageRange {
+    default: number
     step: number
     min: number
     max: number
@@ -96,14 +97,6 @@ export interface SubscriptionConfigData {
         paymentPeriod: {
             b2b: "monthly" | "quarterly" | "yearly"
             b2c: "weekly" | "monthly" | "yearly"
-        }
-        workflowExecutions: {
-            b2b: number
-            b2c: number
-        }
-        aiTokens: {
-            b2b: number
-            b2c: number
         }
     }
     deployment: {

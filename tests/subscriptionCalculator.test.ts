@@ -143,14 +143,12 @@ test("forces the custom plan when a b2b customer requests a pro or max checkout 
         additionalFeatures: [],
         aiTokenPriceFactor: 0.001,
         aiTokens: {
-            b2b: { min: 100, max: 1_000, step: 100 },
-            b2c: { min: 10, max: 100, step: 10 },
+            b2b: { default: 100, min: 100, max: 1_000, step: 100 },
+            b2c: { default: 10, min: 10, max: 100, step: 10 },
         },
         defaults: {
-            aiTokens: { b2b: 100, b2c: 10 },
             customerType: "b2c",
             paymentPeriod: { b2b: "monthly", b2c: "monthly" },
-            workflowExecutions: { b2b: 20, b2c: 10 },
         },
         packages: {
             custom: { title: "Custom" },
@@ -159,8 +157,8 @@ test("forces the custom plan when a b2b customer requests a pro or max checkout 
         paymentPeriod,
         workflowExecutionPriceFactor: 0.01,
         workflowExecutions: {
-            b2b: { min: 20, max: 200, step: 10 },
-            b2c: { min: 10, max: 100, step: 10 },
+            b2b: { default: 20, min: 20, max: 200, step: 10 },
+            b2c: { default: 10, min: 10, max: 100, step: 10 },
         },
     } as never
 
@@ -186,14 +184,12 @@ test("downgrades weekly to monthly for b2b and quarterly to monthly for b2c in t
         additionalFeatures: [],
         aiTokenPriceFactor: 0.001,
         aiTokens: {
-            b2b: { min: 100, max: 1_000, step: 100 },
-            b2c: { min: 10, max: 100, step: 10 },
+            b2b: { default: 100, min: 100, max: 1_000, step: 100 },
+            b2c: { default: 10, min: 10, max: 100, step: 10 },
         },
         defaults: {
-            aiTokens: { b2b: 100, b2c: 10 },
             customerType: "b2c",
             paymentPeriod: { b2b: "monthly", b2c: "monthly" },
-            workflowExecutions: { b2b: 20, b2c: 10 },
         },
         packages: {
             custom: { title: "Custom" },
@@ -201,8 +197,8 @@ test("downgrades weekly to monthly for b2b and quarterly to monthly for b2c in t
         paymentPeriod,
         workflowExecutionPriceFactor: 0.01,
         workflowExecutions: {
-            b2b: { min: 20, max: 200, step: 10 },
-            b2c: { min: 10, max: 100, step: 10 },
+            b2b: { default: 20, min: 20, max: 200, step: 10 },
+            b2c: { default: 10, min: 10, max: 100, step: 10 },
         },
     } as never
 
@@ -236,14 +232,12 @@ test("clamps manipulated custom-plan usage parameters before calculating the pri
         additionalFeatures: [],
         aiTokenPriceFactor: 0.001,
         aiTokens: {
-            b2b: { min: 100, max: 1_000, step: 100 },
-            b2c: { min: 10, max: 100, step: 10 },
+            b2b: { default: 100, min: 100, max: 1_000, step: 100 },
+            b2c: { default: 10, min: 10, max: 100, step: 10 },
         },
         defaults: {
-            aiTokens: { b2b: 100, b2c: 10 },
             customerType: "b2b",
             paymentPeriod: { b2b: "monthly", b2c: "monthly" },
-            workflowExecutions: { b2b: 20, b2c: 10 },
         },
         packages: {
             custom: {
@@ -253,8 +247,8 @@ test("clamps manipulated custom-plan usage parameters before calculating the pri
         paymentPeriod,
         workflowExecutionPriceFactor: 0.01,
         workflowExecutions: {
-            b2b: { min: 20, max: 200, step: 10 },
-            b2c: { min: 10, max: 100, step: 10 },
+            b2b: { default: 20, min: 20, max: 200, step: 10 },
+            b2c: { default: 10, min: 10, max: 100, step: 10 },
         },
     } as never
 

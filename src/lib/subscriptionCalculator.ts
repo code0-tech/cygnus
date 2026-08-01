@@ -169,8 +169,8 @@ export function resolveCheckoutPricing({
     const monthlyAdditionalFeaturesPrice = selectedAdditionalFeatures.reduce((total, feature) => total + feature.price, 0)
     const periodMonths = getPaymentPeriodMonths(paymentPeriod)
     const additionalFeaturesPrice = monthlyAdditionalFeaturesPrice * periodMonths
-    const defaultWorkflowExecutions = subscriptionConfig?.defaults.workflowExecutions[customerType] ?? 200
-    const defaultAiTokens = subscriptionConfig?.defaults.aiTokens[customerType] ?? 0
+    const defaultWorkflowExecutions = subscriptionConfig?.workflowExecutions[customerType].default ?? 200
+    const defaultAiTokens = subscriptionConfig?.aiTokens[customerType].default ?? 0
     const workflowExecutions = subscriptionConfig
         ? clampToRange(parseNumber(workflowExecutionsParam, defaultWorkflowExecutions), subscriptionConfig.workflowExecutions[customerType])
         : parseNumber(workflowExecutionsParam, defaultWorkflowExecutions)
