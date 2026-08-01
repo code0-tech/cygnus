@@ -77,7 +77,7 @@ test("opens, applies, and removes a discount code", async () => {
         />
     )
 
-    const promptButton = screen.getByRole("button", { name: "Have a discount?" })
+    const promptButton = screen.getAllByRole("button", { name: "Have a discount?" }).at(-1)!
     await user.click(promptButton)
     assert.ok(screen.getByPlaceholderText("Discount code"))
     await user.click(promptButton)
@@ -98,7 +98,30 @@ test("opens, applies, and removes a discount code", async () => {
     await waitFor(() => assert.equal(appliedValues.at(-1), null))
     assert.deepEqual(requestedCodes, ["SAVE10"])
     assert.equal(replacedUrls.at(-1), "/en/checkout")
-    assert.ok(screen.getByRole("button", { name: "Have a discount?" }))
+    assert.equal(screen.getAllByRole("button", { name: "Have a discount?" }).length, 2)
+})
+
+test("opens the discount input in a dialog on mobile", async () => {
+    globalThis.fetch = (async (_input, init) => {
+        const body = JSON.parse(String(init?.body))
+        return discountResponse(body.code, 10)
+    }) as typeof fetch
+    const user = userEvent.setup()
+
+    render(<CheckoutDiscount buttonLabel="Apply" inputPlaceholder="Discount code" promptLabel="Have a discount?" removeLabel="Remove" sessionToken="session-token" />)
+
+    const mobilePrompt = screen.getAllByRole("button", { name: "Have a discount?" })[0]
+    await user.click(mobilePrompt)
+
+    const dialog = screen.getByRole("dialog", { name: "Have a discount?" })
+    const input = screen.getByPlaceholderText("Discount code")
+    assert.ok(dialog.contains(input))
+
+    await user.type(input, "SAVE10")
+    await user.click(screen.getByRole("button", { name: "Apply" }))
+
+    await waitFor(() => assert.equal(screen.queryByRole("dialog", { name: "Have a discount?" }), null))
+    assert.ok(screen.getByText("SAVE10"))
 })
 
 test("validates and applies a promotion code already present in the URL", async () => {

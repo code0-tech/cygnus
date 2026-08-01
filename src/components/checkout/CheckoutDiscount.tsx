@@ -2,7 +2,9 @@
 
 import { Button } from "@code0-tech/pictor"
 import { useCraterSession } from "@/components/checkout/CraterSessionProvider"
+import { Dialog } from "@base-ui/react/dialog"
 import type { CheckoutDiscount as CraterCheckoutDiscount } from "@code0-tech/crater-graphql-types"
+import { IconX } from "@tabler/icons-react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useCallback, useEffect, useRef, useState } from "react"
 
@@ -33,6 +35,7 @@ export function CheckoutDiscount({ appliedAmount, buttonLabel, inputPlaceholder,
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
     const [isApplying, setIsApplying] = useState(false)
     const [isEditing, setIsEditing] = useState(Boolean(searchParams.get("promotionCode")))
+    const [isMobileDialogOpen, setIsMobileDialogOpen] = useState(false)
     const authorizationToken = sessionToken ?? contextSessionToken
     const validationRequestRef = useRef(0)
     const automaticallyValidatedCodeRef = useRef<string | null>(null)
@@ -87,6 +90,7 @@ export function CheckoutDiscount({ appliedAmount, buttonLabel, inputPlaceholder,
                 setCode((currentCode) => (currentCode.trim() === normalizedCode ? discount.code : currentCode))
                 setAppliedCode(discount.code)
                 setIsEditing(false)
+                setIsMobileDialogOpen(false)
                 onApplied?.(discount)
             } catch (error) {
                 if (requestId !== validationRequestRef.current) return
@@ -163,51 +167,84 @@ export function CheckoutDiscount({ appliedAmount, buttonLabel, inputPlaceholder,
         )
     }
 
-    return (
-        <div className="flex flex-col space-y-2 pt-2">
-            <button
-                type="button"
-                aria-expanded={isEditing}
-                onClick={() => {
-                    setIsEditing((currentValue) => !currentValue)
-                    setErrorMessage(null)
-                }}
-                className="pr-4 text-right text-sm text-tertiary transition-colors hover:text-brand hover:underline underline-offset-2"
-            >
-                {promptLabel}
-            </button>
-
-            {isEditing && (
-                <form onSubmit={handleSubmit} className="space-y-2">
-                    <div className="flex items-start gap-2">
-                        <input
-                            aria-label={inputPlaceholder}
-                            autoComplete="off"
-                            className="h-10 w-full min-w-0 flex-1 rounded-xl border border-white/10 bg-white/5 px-4 text-sm text-white outline-none transition-colors placeholder:text-tertiary hover:bg-white/8 focus:border-brand/40 focus:bg-white/8"
-                            maxLength={128}
-                            onChange={(event) => {
-                                setCode(event.currentTarget.value)
-                                setErrorMessage(null)
-                            }}
-                            placeholder={inputPlaceholder}
-                            value={code}
-                        />
-                        <Button
-                            type="submit"
-                            variant="normal"
-                            disabled={isApplying || code.trim() === (appliedCode ?? "")}
-                            className="h-10! shrink-0 px-5! whitespace-nowrap bg-white/80! hover:bg-white! ring-1! ring-white/20! text-sm! text-primary!"
-                        >
-                            {buttonLabel}
-                        </Button>
-                    </div>
-                    {errorMessage && (
-                        <p className="text-error text-xs" role="alert">
-                            {errorMessage}
-                        </p>
-                    )}
-                </form>
+    const discountForm = (
+        <form onSubmit={handleSubmit} className="space-y-2">
+            <div className="flex items-start gap-2">
+                <input
+                    aria-label={inputPlaceholder}
+                    autoComplete="off"
+                    className="h-10 w-full min-w-0 flex-1 rounded-xl border border-white/10 bg-white/5 px-4 text-sm text-white outline-none transition-colors placeholder:text-tertiary hover:bg-white/8 focus:border-brand/40 focus:bg-white/8"
+                    maxLength={128}
+                    onChange={(event) => {
+                        setCode(event.currentTarget.value)
+                        setErrorMessage(null)
+                    }}
+                    placeholder={inputPlaceholder}
+                    value={code}
+                />
+                <Button
+                    type="submit"
+                    variant="normal"
+                    disabled={isApplying || code.trim() === (appliedCode ?? "")}
+                    className="h-10! shrink-0 px-5! whitespace-nowrap bg-white/80! hover:bg-white! ring-1! ring-white/20! text-sm! text-primary!"
+                >
+                    {buttonLabel}
+                </Button>
+            </div>
+            {errorMessage && (
+                <p className="text-error text-xs" role="alert">
+                    {errorMessage}
+                </p>
             )}
-        </div>
+        </form>
+    )
+
+    return (
+        <>
+            <Dialog.Root
+                open={isMobileDialogOpen}
+                onOpenChange={(open) => {
+                    setIsMobileDialogOpen(open)
+                    if (open) setErrorMessage(null)
+                }}
+            >
+                <Dialog.Trigger className="ml-auto block pr-4 text-right text-sm text-tertiary transition-colors hover:text-brand hover:underline underline-offset-2 lg:hidden">
+                    {promptLabel}
+                </Dialog.Trigger>
+                <Dialog.Portal>
+                    <Dialog.Backdrop className="fixed inset-0 z-60 bg-black/65 backdrop-blur-sm transition-opacity duration-200 data-ending-style:opacity-0 data-starting-style:opacity-0 lg:hidden" />
+                    <Dialog.Viewport className="fixed inset-0 z-60 flex items-center justify-center p-4 lg:hidden">
+                        <Dialog.Popup className="w-full max-w-sm rounded-2xl border border-white/10 bg-primary p-5 text-white shadow-2xl outline-none transition-[opacity,transform] duration-200 data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0">
+                            <div className="mb-5 flex items-center justify-between gap-4">
+                                <Dialog.Title className="text-lg font-medium text-white">{promptLabel}</Dialog.Title>
+                                <Dialog.Close
+                                    aria-label="Close"
+                                    className="inline-flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-xl text-secondary outline-none transition-colors hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-white/30"
+                                >
+                                    <IconX aria-hidden="true" size={18} />
+                                </Dialog.Close>
+                            </div>
+                            {discountForm}
+                        </Dialog.Popup>
+                    </Dialog.Viewport>
+                </Dialog.Portal>
+            </Dialog.Root>
+
+            <div className="hidden w-full flex-col items-end space-y-2 pt-2 lg:flex">
+                <button
+                    type="button"
+                    aria-expanded={isEditing}
+                    onClick={() => {
+                        setIsEditing((currentValue) => !currentValue)
+                        setErrorMessage(null)
+                    }}
+                    className="pr-4 text-right text-sm text-tertiary transition-colors hover:text-brand hover:underline underline-offset-2"
+                >
+                    {promptLabel}
+                </button>
+
+                {isEditing && discountForm}
+            </div>
+        </>
     )
 }
