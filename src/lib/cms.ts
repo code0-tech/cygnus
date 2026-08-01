@@ -109,7 +109,6 @@ export interface SubscriptionConfigData {
     }
     deployment: {
         label: string
-        description: string
         selfHosted: {
             title: string
             description: string
@@ -125,7 +124,6 @@ export interface SubscriptionConfigData {
     }
     plan: {
         title: string
-        description: string
         pro: {
             title: string
             description: string
@@ -144,7 +142,6 @@ export interface SubscriptionConfigData {
     }
     customerType: {
         label: string
-        description: string
         b2b: {
             title: string
             description: string
@@ -186,7 +183,6 @@ export interface SubscriptionConfigData {
     }
     paymentPeriod: {
         label: string
-        description: string
         weeklyText: string
         monthlyText: string
         quarterlyText: string
@@ -204,7 +200,6 @@ export interface SubscriptionConfigData {
     }
     workflowExecutions: {
         title: string
-        description: string
         b2b: SubscriptionUsageRange
         b2c: SubscriptionUsageRange
         suffix: string
@@ -234,7 +229,6 @@ export interface SubscriptionConfigData {
     workflowExecutionPriceFactor: number
     aiTokens: {
         title: string
-        description: string
         b2b: SubscriptionUsageRange
         b2c: SubscriptionUsageRange
         suffix: string

@@ -144,13 +144,6 @@ export const SubscriptionCollection: GlobalConfig = {
                     type: "text",
                     required: false,
                     localized: true,
-                    defaultValue: "Deployment",
-                },
-                {
-                    name: "description",
-                    type: "textarea",
-                    required: false,
-                    localized: true,
                     defaultValue: "Choose where your code0 instance will run.",
                 },
                 {
@@ -195,13 +188,6 @@ export const SubscriptionCollection: GlobalConfig = {
                 {
                     name: "title",
                     type: "text",
-                    required: false,
-                    localized: true,
-                    defaultValue: "Plan",
-                },
-                {
-                    name: "description",
-                    type: "textarea",
                     required: false,
                     localized: true,
                     defaultValue: "Choose the plan that best matches your requirements.",
@@ -263,13 +249,6 @@ export const SubscriptionCollection: GlobalConfig = {
                 {
                     name: "label",
                     type: "text",
-                    required: false,
-                    localized: true,
-                    defaultValue: "Customer Type",
-                },
-                {
-                    name: "description",
-                    type: "textarea",
                     required: false,
                     localized: true,
                     defaultValue: "Choose the customer model that best matches your use case.",
@@ -422,10 +401,9 @@ export const SubscriptionCollection: GlobalConfig = {
             label: "Payment Period",
             type: "group",
             fields: [
-                { name: "label", type: "text", required: false, localized: true, defaultValue: "Payment period" },
                 {
-                    name: "description",
-                    type: "textarea",
+                    name: "label",
+                    type: "text",
                     required: false,
                     localized: true,
                     defaultValue: "Choose how often you want to be billed.",
@@ -466,10 +444,9 @@ export const SubscriptionCollection: GlobalConfig = {
             name: "workflowExecutions",
             type: "group",
             fields: [
-                { name: "title", type: "text", required: false, localized: true, defaultValue: "Workflow Executions" },
                 {
-                    name: "description",
-                    type: "textarea",
+                    name: "title",
+                    type: "text",
                     required: false,
                     localized: true,
                     defaultValue: "How many workflow executions do you expect per month?",
@@ -556,8 +533,7 @@ export const SubscriptionCollection: GlobalConfig = {
             label: "AI Tokens",
             type: "group",
             fields: [
-                { name: "title", type: "text", required: false, localized: true, defaultValue: "AI Tokens" },
-                { name: "description", type: "textarea", required: false, localized: true, defaultValue: "How many AI tokens do you expect to consume per month?" },
+                { name: "title", type: "text", required: false, localized: true, defaultValue: "How many AI tokens do you expect to consume per month?" },
                 {
                     name: "b2b",
                     label: "B2B",

@@ -1,4 +1,5 @@
 import { StableBadge } from "@/components/ui/StableBadge"
+import { FormattedText, hasHighlightedText } from "@/components/ui/FormattedText"
 import { cn } from "@/lib/utils"
 import type { CSSProperties, ReactNode } from "react"
 
@@ -65,8 +66,8 @@ export function SubscriptionOptionCard({ title, description, active, onClick, ic
                             {icon}
                         </div>
                     </div>
-                    <p className="text-base text-white" style={active ? SUBSCRIPTION_OPTION_ACTIVE_ICON_STYLE : undefined}>
-                        {title}
+                    <p className={cn("text-base", hasHighlightedText(title) ? "text-secondary" : "text-white")} style={active ? SUBSCRIPTION_OPTION_ACTIVE_ICON_STYLE : undefined}>
+                        <FormattedText text={title} />
                     </p>
                     {badge && (
                         <StableBadge border className="ml-auto shrink-0 border-brand/10! bg-brand/10! px-2! py-0.5! text-brand!">
