@@ -96,6 +96,7 @@ import * as migration_20260731_191239_checkout_summary_configuration_label from 
 import * as migration_20260801_063501_subscription_configurator_weekly_payment_period from './20260801_063501_subscription_configurator_weekly_payment_period';
 import * as migration_20260801_070112_subscription_configurator_usage_range_defaults from './20260801_070112_subscription_configurator_usage_range_defaults';
 import * as migration_20260801_191302_subscription_option_category_titles from './20260801_191302_subscription_option_category_titles';
+import * as migration_20260801_193034_remove_legacy_subscription_configurator_fields from './20260801_193034_remove_legacy_subscription_configurator_fields';
 
 export const migrations = [
   {
@@ -586,6 +587,11 @@ export const migrations = [
   {
     up: migration_20260801_191302_subscription_option_category_titles.up,
     down: migration_20260801_191302_subscription_option_category_titles.down,
-    name: '20260801_191302_subscription_option_category_titles'
+    name: '20260801_191302_subscription_option_category_titles',
+  },
+  {
+    up: migration_20260801_193034_remove_legacy_subscription_configurator_fields.up,
+    down: migration_20260801_193034_remove_legacy_subscription_configurator_fields.down,
+    name: '20260801_193034_remove_legacy_subscription_configurator_fields'
   },
 ];

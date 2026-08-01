@@ -3,8 +3,7 @@ import test from "node:test"
 import {
     calculateExclusiveTaxRate,
     calculatePromotionDiscountAmount,
-    calculateSubscriptionPrice,
-    clampToRange,
+    calculateSubscriptionQuote,
     formatDiscountBadge,
     getPaymentPeriodDiscount,
     getPaymentPeriodMonths,
@@ -30,14 +29,6 @@ const paymentPeriod = {
     yearlyPeriodSuffix: "per year",
     yearlyText: "Yearly",
 } as const
-
-test("clamps usage values to configured range", () => {
-    const range = { min: 100, max: 1_000, step: 100 }
-
-    assert.equal(clampToRange(50, range), 100)
-    assert.equal(clampToRange(500, range), 500)
-    assert.equal(clampToRange(2_000, range), 1_000)
-})
 
 test("resolves payment period discounts and suffixes", () => {
     assert.equal(getPaymentPeriodDiscount("weekly", paymentPeriod), 0)
@@ -73,47 +64,37 @@ test("calculates Crater promotion discounts", () => {
     assert.equal(calculatePromotionDiscountAmount(100, null), 0)
 })
 
-test("calculates subscription totals before and after discount", () => {
-    assert.deepEqual(
-        calculateSubscriptionPrice({
-            additionalFeaturesPrice: 25,
-            aiTokenPriceFactor: 0.00001,
-            aiTokens: 1_000_000,
-            discount: 0.2,
-            workflowExecutionPriceFactor: 0.01,
-            workflowExecutions: 1_000,
-        }),
+test("builds a cent-based custom subscription quote", () => {
+    const quote = calculateSubscriptionQuote(
         {
-            aiTokenPrice: 10,
-            totalBeforeDiscount: 45,
-            totalPrice: 36,
-            workflowExecutionPrice: 10,
+            additionalFeatureIds: ["support"],
+            aiTokens: 1_000_000,
+            customerType: "b2b",
+            deployment: "self_hosted",
+            paymentPeriod: "yearly",
+            plan: "custom",
+            workflowExecutions: 1_000,
+        },
+        {
+            additionalFeatures: [{ id: "support", title: "Support", description: "", icon: "", price: 25 }],
+            aiTokenPriceFactor: 0.00001,
+            aiTokens: {} as never,
+            defaults: {} as never,
+            packages: {} as never,
+            paymentPeriod,
+            workflowExecutionPriceFactor: 0.01,
+            workflowExecutions: {} as never,
         }
     )
-})
 
-test("scales monthly custom-plan prices to the selected billing period before applying its discount", () => {
-    assert.deepEqual(
-        calculateSubscriptionPrice({
-            additionalFeaturesPrice: 25,
-            aiTokenPriceFactor: 0.00001,
-            aiTokens: 1_000_000,
-            billingPeriodMonths: 12,
-            discount: 0.2,
-            workflowExecutionPriceFactor: 0.01,
-            workflowExecutions: 1_000,
-        }),
-        {
-            aiTokenPrice: 120,
-            totalBeforeDiscount: 540,
-            totalPrice: 432,
-            workflowExecutionPrice: 120,
-        }
-    )
+    assert.equal(quote.subtotal, 54_000)
+    assert.equal(quote.periodDiscount, 10_800)
+    assert.equal(quote.total, 43_200)
 })
 
 test("preserves the regular fixed-plan price for period discount summaries", () => {
     const config = {
+        defaults: { customerType: "b2c", deployment: "self_hosted", paymentPeriod: { b2b: "monthly", b2c: "monthly" } },
         paymentPeriod,
         packages: {
             pro: {
@@ -127,15 +108,15 @@ test("preserves the regular fixed-plan price for period discount summaries", () 
         additionalFeatureIds: [],
         aiTokensParam: null,
         customerTypeParam: null,
-        fallbackPeriodSuffix: "/qtr",
-        paymentPeriodParam: "quarterly",
+        fallbackPeriodSuffix: "/year",
+        paymentPeriodParam: "yearly",
         planParam: "pro",
         subscriptionConfig: config,
         workflowExecutionsParam: null,
     })
 
-    assert.equal(result.pricing.totalBeforeDiscount, 30)
-    assert.equal(result.pricing.totalPrice, 27)
+    assert.equal(result.pricing.totalBeforeDiscount, 120)
+    assert.equal(result.pricing.totalPrice, 96)
 })
 
 test("forces the custom plan when a b2b customer requests a pro or max checkout via the URL", () => {

@@ -77,8 +77,6 @@ export const enum_subscription_config_deployment_self_hosted_color = pgEnum('enu
 export const enum_subscription_config_deployment_cloud_color = pgEnum('enum_subscription_config_deployment_cloud_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
 export const enum_subscription_config_customer_type_b2b_color = pgEnum('enum_subscription_config_customer_type_b2b_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
 export const enum_subscription_config_customer_type_b2c_color = pgEnum('enum_subscription_config_customer_type_b2c_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
-export const enum_subscription_config_subscription_tier_pro_color = pgEnum('enum_subscription_config_subscription_tier_pro_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
-export const enum_subscription_config_subscription_tier_team_color = pgEnum('enum_subscription_config_subscription_tier_team_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
 export const enum_subscription_config_payment_period_weekly_color = pgEnum('enum_subscription_config_payment_period_weekly_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
 export const enum_subscription_config_payment_period_monthly_color = pgEnum('enum_subscription_config_payment_period_monthly_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
 export const enum_subscription_config_payment_period_quarterly_color = pgEnum('enum_subscription_config_payment_period_quarterly_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
@@ -2329,10 +2327,6 @@ export const subscription_config = pgTable('subscription_config', {
   customerType_b2b_color: enum_subscription_config_customer_type_b2b_color('customer_type_b2b_color').default("blue"),
   customerType_b2c_icon: varchar('customer_type_b2c_icon').notNull().default("building-store"),
   customerType_b2c_color: enum_subscription_config_customer_type_b2c_color('customer_type_b2c_color').default("pink"),
-  subscriptionTier_pro_icon: varchar('subscription_tier_pro_icon').notNull().default("sparkles"),
-  subscriptionTier_pro_color: enum_subscription_config_subscription_tier_pro_color('subscription_tier_pro_color').default("brand"),
-  subscriptionTier_team_icon: varchar('subscription_tier_team_icon').notNull().default("users-group"),
-  subscriptionTier_team_color: enum_subscription_config_subscription_tier_team_color('subscription_tier_team_color').default("aqua"),
   packages_pro_prices_weekly: numeric('packages_pro_prices_weekly', {mode: 'number'}).default(0),
   packages_pro_prices_monthly: numeric('packages_pro_prices_monthly', {mode: 'number'}).default(0),
   packages_pro_prices_quarterly: numeric('packages_pro_prices_quarterly', {mode: 'number'}).default(0),
@@ -2375,8 +2369,6 @@ export const subscription_config = pgTable('subscription_config', {
 
 export const subscription_config_locales = pgTable('subscription_config_locales', {
   optionsPanelHeading: varchar('options_panel_heading').default("Build the subscription shape"),
-  configuratorNavigation_backLabel: varchar('configurator_navigation_back_label').default("Back"),
-  configuratorNavigation_nextLabel: varchar('configurator_navigation_next_label').default("Next"),
   deployment_label: varchar('deployment_label').default("Choose where your code0 instance will run."),
   deployment_selfHosted_title: varchar('deployment_self_hosted_title').default("Self-hosted"),
   deployment_selfHosted_description: varchar('deployment_self_hosted_description').default("Deploy on your own infrastructure with full operational control."),
@@ -2394,11 +2386,6 @@ export const subscription_config_locales = pgTable('subscription_config_locales'
   customerType_b2b_description: varchar('customer_type_b2b_description').default("Organization purchase flow with tailored commercial handling."),
   customerType_b2c_title: varchar('customer_type_b2c_title').default("B2C"),
   customerType_b2c_description: varchar('customer_type_b2c_description').default("Standardized subscription flow with directly selectable plans."),
-  subscriptionTier_label: varchar('subscription_tier_label').default("Subscription tier"),
-  subscriptionTier_pro_title: varchar('subscription_tier_pro_title').default("PRO"),
-  subscriptionTier_pro_description: varchar('subscription_tier_pro_description').default("Single-owner setup for advanced personal or expert workflows."),
-  subscriptionTier_team_title: varchar('subscription_tier_team_title').default("TEAM"),
-  subscriptionTier_team_description: varchar('subscription_tier_team_description').default("Shared workspace model with seat-based team access."),
   packages_pro_title: varchar('packages_pro_title').default("Pro"),
   packages_pro_description: varchar('packages_pro_description').default("For individuals and smaller teams."),
   packages_max_title: varchar('packages_max_title').default("Max"),
@@ -3974,8 +3961,6 @@ type DatabaseSchema = {
   enum_subscription_config_deployment_cloud_color: typeof enum_subscription_config_deployment_cloud_color
   enum_subscription_config_customer_type_b2b_color: typeof enum_subscription_config_customer_type_b2b_color
   enum_subscription_config_customer_type_b2c_color: typeof enum_subscription_config_customer_type_b2c_color
-  enum_subscription_config_subscription_tier_pro_color: typeof enum_subscription_config_subscription_tier_pro_color
-  enum_subscription_config_subscription_tier_team_color: typeof enum_subscription_config_subscription_tier_team_color
   enum_subscription_config_payment_period_weekly_color: typeof enum_subscription_config_payment_period_weekly_color
   enum_subscription_config_payment_period_monthly_color: typeof enum_subscription_config_payment_period_monthly_color
   enum_subscription_config_payment_period_quarterly_color: typeof enum_subscription_config_payment_period_quarterly_color

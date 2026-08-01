@@ -8,13 +8,13 @@ import { Slider } from "@/components/ui/Slider"
 import type { SubscriptionConfiguratorContent } from "@/lib/cms"
 import { formatEuroCurrency } from "@/lib/formatters"
 import type { AppLocale } from "@/lib/i18n"
-import { calculateSubscriptionPrice, formatDiscountBadge, getPaymentPeriodDiscount, getPaymentPeriodMonths, getPaymentPeriodSuffix } from "@/lib/subscriptionCalculator"
+import { getSubscriptionCatalog } from "@/lib/subscriptionCatalog"
+import { calculateSubscriptionQuote, formatDiscountBadge, getPaymentPeriodDiscount, getPaymentPeriodSuffix } from "@/lib/subscriptionCalculator"
 import {
     buildSubscriptionSelectionSearchParams,
-    getPaymentPeriodForCustomerType,
-    getPlanForCustomerType,
-    parseSelectedAdditionalFeatureIndexes,
     parseSubscriptionSelectionFromSearchParams,
+    reduceSubscriptionSelection,
+    type SubscriptionSelectionAction,
     type SubscriptionSelection,
 } from "@/lib/subscriptionConfigurator"
 import NumberFlow from "@number-flow/react"
@@ -49,6 +49,7 @@ const B2C_PAYMENT_PERIOD_OPTIONS = ["weekly", "monthly", "yearly"] as const
 export function SubscriptionConfigurator({ locale, content, icons }: { locale: AppLocale; content: SubscriptionConfiguratorContent; icons: SubscriptionIcons }) {
     const workflowExecutions = content.workflowExecutions
     const aiTokens = content.aiTokens
+    const catalog = getSubscriptionCatalog(content)
     const router = useRouter()
     const pathname = usePathname()
     const searchParams = useSearchParams()
@@ -56,23 +57,12 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
     const [selection, setSelection] = useState<SubscriptionSelection>(() => parseSubscriptionSelectionFromSearchParams(searchParams, content))
     const workflowExecutionRange = workflowExecutions[selection.customerType]
     const aiTokenRange = aiTokens[selection.customerType]
-    const [selectedFeatures, setSelectedFeatures] = useState<Set<number>>(() => parseSelectedAdditionalFeatureIndexes(searchParams, content.additionalFeatures))
-    const additionalFeaturesPrice = Array.from(selectedFeatures).reduce((acc, idx) => acc + (content.additionalFeatures?.[idx]?.price ?? 0), 0)
+    const dispatch = (action: SubscriptionSelectionAction) => setSelection((current) => reduceSubscriptionSelection(current, action, catalog))
+    const selectedFeatureIds = new Set(selection.additionalFeatureIds)
     const paymentPeriodOptions = selection.customerType === "b2b" ? B2B_PAYMENT_PERIOD_OPTIONS : B2C_PAYMENT_PERIOD_OPTIONS
-    const paymentPeriodDiscount = getPaymentPeriodDiscount(selection.paymentPeriod, content.paymentPeriod)
     const paymentPeriodSuffix = getPaymentPeriodSuffix(selection.paymentPeriod, content.paymentPeriod)
-    const { totalPrice: customPlanPrice } = calculateSubscriptionPrice({
-        additionalFeaturesPrice,
-        aiTokenPriceFactor: content.aiTokenPriceFactor,
-        aiTokens: selection.aiTokens,
-        billingPeriodMonths: getPaymentPeriodMonths(selection.paymentPeriod),
-        discount: paymentPeriodDiscount,
-        workflowExecutionPriceFactor: content.workflowExecutionPriceFactor,
-        workflowExecutions: selection.workflowExecutions,
-    })
-    const totalPrice = selection.plan === "custom" ? customPlanPrice : content.packages[selection.plan].prices[selection.paymentPeriod]
-    const additionalFeatureIds = Array.from(selectedFeatures).map((idx) => content.additionalFeatures?.[idx]?.id ?? String(idx))
-    const selectionSearchParamsString = buildSubscriptionSelectionSearchParams(selection, additionalFeatureIds).toString()
+    const totalPrice = calculateSubscriptionQuote(selection, catalog).total / 100
+    const selectionSearchParamsString = buildSubscriptionSelectionSearchParams(selection).toString()
     const subscribeHref = `${content.subscribe.baseUrl}?${selectionSearchParamsString}`
 
     useEffect(() => {
@@ -95,16 +85,7 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
                             icon={icons.customerType.b2b}
                             accent={content.customerType.b2b.color}
                             active={selection.customerType === "b2b"}
-                            onClick={() =>
-                                setSelection((current) => ({
-                                    ...current,
-                                    plan: getPlanForCustomerType("b2b", current.plan),
-                                    customerType: "b2b",
-                                    paymentPeriod: getPaymentPeriodForCustomerType("b2b", current.paymentPeriod),
-                                    workflowExecutions: workflowExecutions.b2b.default,
-                                    aiTokens: aiTokens.b2b.default,
-                                }))
-                            }
+                            onClick={() => dispatch({ type: "customerTypeChanged", value: "b2b" })}
                         />
                         <SubscriptionOptionCard
                             title={content.customerType.b2c.title}
@@ -112,15 +93,7 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
                             icon={icons.customerType.b2c}
                             accent={content.customerType.b2c.color}
                             active={selection.customerType === "b2c"}
-                            onClick={() =>
-                                setSelection((current) => ({
-                                    ...current,
-                                    customerType: "b2c",
-                                    paymentPeriod: getPaymentPeriodForCustomerType("b2c", current.paymentPeriod),
-                                    workflowExecutions: workflowExecutions.b2c.default,
-                                    aiTokens: aiTokens.b2c.default,
-                                }))
-                            }
+                            onClick={() => dispatch({ type: "customerTypeChanged", value: "b2c" })}
                         />
                     </div>
                 </div>
@@ -139,7 +112,7 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
                                         icon={icons.plan.pro}
                                         accent="brand"
                                         active={selection.plan === "pro"}
-                                        onClick={() => setSelection((current) => ({ ...current, plan: "pro" }))}
+                                        onClick={() => dispatch({ type: "planChanged", value: "pro" })}
                                     />
                                     <SubscriptionOptionCard
                                         title={content.plan.max.title}
@@ -147,7 +120,7 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
                                         icon={icons.plan.max}
                                         accent="magenta"
                                         active={selection.plan === "max"}
-                                        onClick={() => setSelection((current) => ({ ...current, plan: "max" }))}
+                                        onClick={() => dispatch({ type: "planChanged", value: "max" })}
                                     />
                                 </>
                             )}
@@ -157,7 +130,7 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
                                 icon={icons.plan.custom}
                                 accent="aqua"
                                 active={selection.plan === "custom"}
-                                onClick={() => setSelection((current) => ({ ...current, plan: "custom" }))}
+                                onClick={() => dispatch({ type: "planChanged", value: "custom" })}
                             />
                         </div>
                     </div>
@@ -174,7 +147,7 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
                             icon={icons.deployment.selfHosted}
                             accent={content.deployment.selfHosted.color}
                             active={selection.deployment === "self_hosted"}
-                            onClick={() => setSelection((current) => ({ ...current, deployment: "self_hosted" }))}
+                            onClick={() => dispatch({ type: "deploymentChanged", value: "self_hosted" })}
                         />
                         <SubscriptionOptionCard
                             title={content.deployment.cloud.title}
@@ -182,7 +155,7 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
                             icon={icons.deployment.cloud}
                             accent={content.deployment.cloud.color}
                             active={selection.deployment === "cloud"}
-                            onClick={() => setSelection((current) => ({ ...current, deployment: "cloud" }))}
+                            onClick={() => dispatch({ type: "deploymentChanged", value: "cloud" })}
                         />
                     </div>
                 </div>
@@ -197,7 +170,7 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
                             max={aiTokenRange.max}
                             step={aiTokenRange.step}
                             value={selection.aiTokens}
-                            onChange={(aiTokensValue) => setSelection((current) => ({ ...current, aiTokens: aiTokensValue }))}
+                            onChange={(aiTokensValue) => dispatch({ type: "aiTokensChanged", value: aiTokensValue })}
                             ariaLabel={aiTokens.title}
                             className="mt-4"
                             valueLabelSuffix={aiTokens.suffix}
@@ -216,7 +189,7 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
                             max={workflowExecutionRange.max}
                             step={workflowExecutionRange.step}
                             value={selection.workflowExecutions}
-                            onChange={(workflowExecutionsValue) => setSelection((current) => ({ ...current, workflowExecutions: workflowExecutionsValue }))}
+                            onChange={(workflowExecutionsValue) => dispatch({ type: "workflowExecutionsChanged", value: workflowExecutionsValue })}
                             ariaLabel={workflowExecutions.title}
                             className="mt-4"
                             valueLabelSuffix={workflowExecutions.suffix}
@@ -233,7 +206,7 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
                                 step={workflowExecutionRange.step}
                                 suffix={workflowExecutions.suffix}
                                 centerLabelSuffix={paymentPeriodSuffix}
-                                onApply={(workflowExecutionsValue) => setSelection((current) => ({ ...current, workflowExecutions: workflowExecutionsValue }))}
+                                onApply={(workflowExecutionsValue) => dispatch({ type: "workflowExecutionsChanged", value: workflowExecutionsValue })}
                             />
                             <div className="mt-2 flex flex-wrap items-center justify-end gap-2">
                                 <p className="text-sm font-medium text-tertiary">{content.contactSales.prompt}</p>
@@ -258,18 +231,8 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
                                         description={feature.description}
                                         icon={icons.additionalFeatures[index]}
                                         formattedPrice={`+${formattedFeaturePrice}/mo`}
-                                        active={selectedFeatures.has(index)}
-                                        onClick={() => {
-                                            setSelectedFeatures((prev) => {
-                                                const next = new Set(prev)
-                                                if (next.has(index)) {
-                                                    next.delete(index)
-                                                } else {
-                                                    next.add(index)
-                                                }
-                                                return next
-                                            })
-                                        }}
+                                        active={Boolean(feature.id && selectedFeatureIds.has(feature.id))}
+                                        onClick={feature.id ? () => dispatch({ type: "additionalFeatureToggled", id: feature.id! }) : undefined}
                                     />
                                 )
                             })}
@@ -294,7 +257,7 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
                                     accent={content.paymentPeriod[`${period}Color`]}
                                     badge={discount > 0 ? `-${formatDiscountBadge(discount, locale)}` : undefined}
                                     active={selection.paymentPeriod === period}
-                                    onClick={() => setSelection((current) => ({ ...current, paymentPeriod: period }))}
+                                    onClick={() => dispatch({ type: "paymentPeriodChanged", value: period })}
                                 />
                             )
                         })}

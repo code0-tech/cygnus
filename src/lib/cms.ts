@@ -87,10 +87,6 @@ export interface SubscriptionConfigData {
     id: number
     title: string
     optionsPanelHeading: string
-    configuratorNavigation: {
-        backLabel: string
-        nextLabel: string
-    }
     defaults: {
         deployment: "self_hosted" | "cloud"
         customerType: "b2b" | "b2c"

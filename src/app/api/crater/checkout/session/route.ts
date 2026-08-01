@@ -1,6 +1,6 @@
 import { createApolloClient } from "@/lib/apolloClient"
-import { normalizeCheckoutSelection, validateCheckoutSelection } from "@/lib/checkout/checkoutValidation"
 import { craterJson, craterMutationErrorResponse, craterTransportErrorResponse, optionalString, readJsonObject, requireCraterSession, type JsonObject } from "@/lib/checkout/craterApi"
+import { resolveSubscriptionSelection } from "@/lib/subscriptionConfigurator"
 import { resolveSiteUrl } from "@/lib/siteConfig"
 import type { Mutation, MutationCheckoutCreateSessionArgs, Scalars } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
@@ -49,6 +49,7 @@ export async function POST(request: Request) {
         const paymentPeriod = optionalString(requestData.paymentPeriod)
         const workflowExecutions = optionalString(requestData.workflowExecutions)
         const aiTokens = optionalString(requestData.aiTokens)
+        const additionalFeatures = optionalString(requestData.additionalFeatures)
         let craterCustomCheckoutConfigurationId: Scalars["CustomCheckoutConfigurationID"]["input"] | undefined
 
         if (Boolean(plan) === Boolean(customCheckoutConfigurationId)) {
@@ -71,7 +72,7 @@ export async function POST(request: Request) {
             return craterJson({ error: "namespaceId is only allowed for cloud deployments." }, 400)
         }
 
-        let normalizedPlan = plan
+        let normalizedPlan = plan ?? undefined
 
         if (!customCheckoutConfigurationId) {
             const { getSubscriptionConfig } = await import("@/lib/cms")
@@ -81,29 +82,30 @@ export async function POST(request: Request) {
                 return craterJson({ error: "Subscription configuration is unavailable." }, 503)
             }
 
-            const normalizedSelection = normalizeCheckoutSelection(
+            const resolvedSelection = resolveSubscriptionSelection(
                 {
                     plan,
+                    deploymentType,
                     customerType,
                     paymentPeriod,
                     workflowExecutions,
                     aiTokens,
+                    additionalFeatures,
                 },
                 subscriptionConfig
             )
-            const validation = validateCheckoutSelection(normalizedSelection, subscriptionConfig)
 
-            if (!validation.valid) {
+            if (resolvedSelection.issues.length) {
                 return craterJson(
                     {
                         error: "The checkout configuration is invalid.",
-                        details: validation.details,
+                        details: resolvedSelection.issues.map((issue) => issue.message),
                     },
                     400
                 )
             }
 
-            normalizedPlan = normalizedSelection.plan
+            normalizedPlan = resolvedSelection.selection.plan
         }
 
         const siteUrl = resolveSiteUrl()

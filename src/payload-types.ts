@@ -2859,10 +2859,6 @@ export interface SubscriptionConfig {
   id: number;
   title?: string | null;
   optionsPanelHeading?: string | null;
-  configuratorNavigation?: {
-    backLabel?: string | null;
-    nextLabel?: string | null;
-  };
   defaults?: {
     deployment?: ('self_hosted' | 'cloud') | null;
     customerType?: ('b2b' | 'b2c') | null;
@@ -2913,21 +2909,6 @@ export interface SubscriptionConfig {
       color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
     };
     b2c: {
-      title?: string | null;
-      description?: string | null;
-      icon: string;
-      color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
-    };
-  };
-  subscriptionTier: {
-    label?: string | null;
-    pro: {
-      title?: string | null;
-      description?: string | null;
-      icon: string;
-      color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
-    };
-    team: {
       title?: string | null;
       description?: string | null;
       icon: string;
@@ -3356,12 +3337,6 @@ export interface CookieBannerSelect<T extends boolean = true> {
 export interface SubscriptionConfigSelect<T extends boolean = true> {
   title?: T;
   optionsPanelHeading?: T;
-  configuratorNavigation?:
-    | T
-    | {
-        backLabel?: T;
-        nextLabel?: T;
-      };
   defaults?:
     | T
     | {
@@ -3434,27 +3409,6 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
               color?: T;
             };
         b2c?:
-          | T
-          | {
-              title?: T;
-              description?: T;
-              icon?: T;
-              color?: T;
-            };
-      };
-  subscriptionTier?:
-    | T
-    | {
-        label?: T;
-        pro?:
-          | T
-          | {
-              title?: T;
-              description?: T;
-              icon?: T;
-              color?: T;
-            };
-        team?:
           | T
           | {
               title?: T;
