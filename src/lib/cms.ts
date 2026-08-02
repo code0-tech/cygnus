@@ -101,12 +101,14 @@ export interface SubscriptionConfigData {
             title: string
             description: string
             icon: string
+            image?: number | Media | null
             color: "brand" | "pink" | "yellow" | "aqua" | "blue" | "lime" | "magenta"
         }
         cloud: {
             title: string
             description: string
             icon: string
+            image?: number | Media | null
             color: "brand" | "pink" | "yellow" | "aqua" | "blue" | "lime" | "magenta"
         }
     }
@@ -116,16 +118,19 @@ export interface SubscriptionConfigData {
             title: string
             description: string
             icon: string
+            image?: number | Media | null
         }
         max: {
             title: string
             description: string
             icon: string
+            image?: number | Media | null
         }
         custom: {
             title: string
             description: string
             icon: string
+            image?: number | Media | null
         }
     }
     customerType: {
@@ -134,12 +139,14 @@ export interface SubscriptionConfigData {
             title: string
             description: string
             icon: string
+            image?: number | Media | null
             color: "brand" | "pink" | "yellow" | "aqua" | "blue" | "lime" | "magenta"
         }
         b2c: {
             title: string
             description: string
             icon: string
+            image?: number | Media | null
             color: "brand" | "pink" | "yellow" | "aqua" | "blue" | "lime" | "magenta"
         }
     }
@@ -451,7 +458,7 @@ async function cmsFindSlugs(operation: string, locale: AppLocale, collection: st
         fallbackLocale: DEFAULT_LOCALE,
         pagination: false,
         limit: 1000,
-        depth: 0,
+        depth: 1,
         select: { slug: true },
     })
     const slugs: string[] = []
@@ -718,7 +725,7 @@ const getSubscriptionConfigCached = cache(async (locale: AppLocale): Promise<Sub
         slug: "subscriptionConfig",
         locale,
         fallbackLocale: DEFAULT_LOCALE,
-        depth: 0,
+        depth: 1,
     })
 })
 

@@ -2318,15 +2318,36 @@ export const subscription_config = pgTable('subscription_config', {
   defaults_paymentPeriod_b2c: enum_subscription_config_defaults_payment_period_b2c('defaults_payment_period_b2c').default("monthly"),
   deployment_selfHosted_icon: varchar('deployment_self_hosted_icon').notNull().default("server"),
   deployment_selfHosted_color: enum_subscription_config_deployment_self_hosted_color('deployment_self_hosted_color').default("yellow"),
+  deployment_selfHosted_image: integer('deployment_self_hosted_image_id').references(() => media.id, {
+      onDelete: 'set null'
+  }),
   deployment_cloud_icon: varchar('deployment_cloud_icon').notNull().default("cloud"),
   deployment_cloud_color: enum_subscription_config_deployment_cloud_color('deployment_cloud_color').default("aqua"),
+  deployment_cloud_image: integer('deployment_cloud_image_id').references(() => media.id, {
+      onDelete: 'set null'
+  }),
   plan_pro_icon: varchar('plan_pro_icon').notNull().default("sparkles"),
+  plan_pro_image: integer('plan_pro_image_id').references(() => media.id, {
+      onDelete: 'set null'
+  }),
   plan_max_icon: varchar('plan_max_icon').notNull().default("rocket"),
+  plan_max_image: integer('plan_max_image_id').references(() => media.id, {
+      onDelete: 'set null'
+  }),
   plan_custom_icon: varchar('plan_custom_icon').notNull().default("settings"),
+  plan_custom_image: integer('plan_custom_image_id').references(() => media.id, {
+      onDelete: 'set null'
+  }),
   customerType_b2b_icon: varchar('customer_type_b2b_icon').notNull().default("briefcase-2"),
   customerType_b2b_color: enum_subscription_config_customer_type_b2b_color('customer_type_b2b_color').default("blue"),
+  customerType_b2b_image: integer('customer_type_b2b_image_id').references(() => media.id, {
+      onDelete: 'set null'
+  }),
   customerType_b2c_icon: varchar('customer_type_b2c_icon').notNull().default("building-store"),
   customerType_b2c_color: enum_subscription_config_customer_type_b2c_color('customer_type_b2c_color').default("pink"),
+  customerType_b2c_image: integer('customer_type_b2c_image_id').references(() => media.id, {
+      onDelete: 'set null'
+  }),
   packages_pro_prices_weekly: numeric('packages_pro_prices_weekly', {mode: 'number'}).default(0),
   packages_pro_prices_monthly: numeric('packages_pro_prices_monthly', {mode: 'number'}).default(0),
   packages_pro_prices_quarterly: numeric('packages_pro_prices_quarterly', {mode: 'number'}).default(0),
@@ -2363,7 +2384,9 @@ export const subscription_config = pgTable('subscription_config', {
   subscribe_baseUrl: varchar('subscribe_base_url').default(""),
   updatedAt: timestamp('updated_at', {mode: 'string',withTimezone: true,precision: 3}),
   createdAt: timestamp('created_at', {mode: 'string',withTimezone: true,precision: 3}),
-}
+}, (columns) => [
+    index('subscription_config_deployment_self_hosted_deployment_se_idx').on(columns.deployment_selfHosted_image), index('subscription_config_deployment_cloud_deployment_cloud_im_idx').on(columns.deployment_cloud_image), index('subscription_config_plan_pro_plan_pro_image_idx').on(columns.plan_pro_image), index('subscription_config_plan_max_plan_max_image_idx').on(columns.plan_max_image), index('subscription_config_plan_custom_plan_custom_image_idx').on(columns.plan_custom_image), index('subscription_config_customer_type_b2b_customer_type_b2b__idx').on(columns.customerType_b2b_image), index('subscription_config_customer_type_b2c_customer_type_b2c__idx').on(columns.customerType_b2c_image),
+]
 )
 
 
@@ -3855,8 +3878,50 @@ export const relations_subscription_config_locales = relations(subscription_conf
     relationName: '_locales',
     }),
       }))
-export const relations_subscription_config = relations(subscription_config, ({ many }) => ({
-  workflowCalculator_businessTypes: many(subscription_config_workflow_calculator_business_types, {
+export const relations_subscription_config = relations(subscription_config, ({ one, many }) => ({
+  deployment_selfHosted_image: one(media, {
+
+    fields: [subscription_config.deployment_selfHosted_image],
+    references: [media.id],
+    relationName: 'deployment_selfHosted_image',
+    }),
+    deployment_cloud_image: one(media, {
+
+    fields: [subscription_config.deployment_cloud_image],
+    references: [media.id],
+    relationName: 'deployment_cloud_image',
+    }),
+    plan_pro_image: one(media, {
+
+    fields: [subscription_config.plan_pro_image],
+    references: [media.id],
+    relationName: 'plan_pro_image',
+    }),
+    plan_max_image: one(media, {
+
+    fields: [subscription_config.plan_max_image],
+    references: [media.id],
+    relationName: 'plan_max_image',
+    }),
+    plan_custom_image: one(media, {
+
+    fields: [subscription_config.plan_custom_image],
+    references: [media.id],
+    relationName: 'plan_custom_image',
+    }),
+    customerType_b2b_image: one(media, {
+
+    fields: [subscription_config.customerType_b2b_image],
+    references: [media.id],
+    relationName: 'customerType_b2b_image',
+    }),
+    customerType_b2c_image: one(media, {
+
+    fields: [subscription_config.customerType_b2c_image],
+    references: [media.id],
+    relationName: 'customerType_b2c_image',
+    }),
+    workflowCalculator_businessTypes: many(subscription_config_workflow_calculator_business_types, {
             relationName: 'workflowCalculator_businessTypes',
     }),
     additionalFeatures: many(subscription_config_additional_features, {
@@ -4214,4 +4279,4 @@ declare module '@payloadcms/db-postgres' {
     schema: DatabaseSchema
   }
 }
-    
+

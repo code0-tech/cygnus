@@ -2874,12 +2874,14 @@ export interface SubscriptionConfig {
       description?: string | null;
       icon: string;
       color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
+      image?: (number | null) | Media;
     };
     cloud: {
       title?: string | null;
       description?: string | null;
       icon: string;
       color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
+      image?: (number | null) | Media;
     };
   };
   plan: {
@@ -2888,16 +2890,19 @@ export interface SubscriptionConfig {
       title?: string | null;
       description?: string | null;
       icon: string;
+      image?: (number | null) | Media;
     };
     max: {
       title?: string | null;
       description?: string | null;
       icon: string;
+      image?: (number | null) | Media;
     };
     custom: {
       title?: string | null;
       description?: string | null;
       icon: string;
+      image?: (number | null) | Media;
     };
   };
   customerType: {
@@ -2907,12 +2912,14 @@ export interface SubscriptionConfig {
       description?: string | null;
       icon: string;
       color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
+      image?: (number | null) | Media;
     };
     b2c: {
       title?: string | null;
       description?: string | null;
       icon: string;
       color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
+      image?: (number | null) | Media;
     };
   };
   packages?: {
@@ -3360,6 +3367,7 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
               description?: T;
               icon?: T;
               color?: T;
+              image?: T;
             };
         cloud?:
           | T
@@ -3368,6 +3376,7 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
               description?: T;
               icon?: T;
               color?: T;
+              image?: T;
             };
       };
   plan?:
@@ -3380,6 +3389,7 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
               title?: T;
               description?: T;
               icon?: T;
+              image?: T;
             };
         max?:
           | T
@@ -3387,6 +3397,7 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
               title?: T;
               description?: T;
               icon?: T;
+              image?: T;
             };
         custom?:
           | T
@@ -3394,6 +3405,7 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
               title?: T;
               description?: T;
               icon?: T;
+              image?: T;
             };
       };
   customerType?:
@@ -3407,6 +3419,7 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
               description?: T;
               icon?: T;
               color?: T;
+              image?: T;
             };
         b2c?:
           | T
@@ -3415,6 +3428,7 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
               description?: T;
               icon?: T;
               color?: T;
+              image?: T;
             };
       };
   packages?:
