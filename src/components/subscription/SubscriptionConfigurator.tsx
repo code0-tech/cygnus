@@ -80,10 +80,12 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
     const [showStepIndicator, setShowStepIndicator] = useState(false)
     const workflowExecutionRange = workflowExecutions[selection.customerType]
     const aiTokenRange = aiTokens[selection.customerType]
+    const pendingScrollStepKeyRef = useRef<string | null>(null)
     const dispatch = (action: SubscriptionSelectionAction) => setSelection((current) => reduceSubscriptionSelection(current, action, catalog))
-    const selectOption = (action: SubscriptionSelectionAction, imageKey: SubscriptionOptionImageKey) => {
+    const selectOption = (action: SubscriptionSelectionAction, imageKey: SubscriptionOptionImageKey, stepKey: string) => {
         dispatch(action)
         onActiveImageChangeAction?.(imageKey)
+        pendingScrollStepKeyRef.current = stepKey
     }
     const selectedFeatureIds = new Set(selection.additionalFeatureIds)
     const paymentPeriodOptions = selection.customerType === "b2b" ? B2B_PAYMENT_PERIOD_OPTIONS : B2C_PAYMENT_PERIOD_OPTIONS
@@ -104,6 +106,18 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
     useEffect(() => {
         router.replace(`${pathname}?${selectionSearchParamsString}`, { scroll: false })
     }, [pathname, router, selectionSearchParamsString])
+
+    useEffect(() => {
+        const stepKey = pendingScrollStepKeyRef.current
+        pendingScrollStepKeyRef.current = null
+        if (!stepKey) return
+
+        const currentStep = configuratorRef.current?.querySelector<HTMLElement>(`[data-subscription-step="${stepKey}"]`)
+        const nextStep = currentStep?.nextElementSibling
+        if (nextStep instanceof HTMLElement && nextStep.hasAttribute("data-subscription-step")) {
+            nextStep.scrollIntoView({ behavior: "smooth", block: "start" })
+        }
+    }, [selection])
 
     useEffect(() => {
         const configurator = configuratorRef.current
@@ -150,9 +164,9 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
     }, [])
 
     return (
-        <div ref={configuratorRef} className="relative z-10 flex min-w-0 flex-col gap-8 lg:col-span-2 lg:pt-8">
+        <div ref={configuratorRef} className="relative z-10 flex min-w-0 flex-col gap-8 lg:col-span-2 lg:pt-[120px]">
             <div className="space-y-48">
-                <div className="space-y-2" data-subscription-step>
+                <div className="space-y-8 scroll-mt-48" data-subscription-step="customerType">
                     <SubscriptionOptionCategoryLabel label={content.customerType.label} />
                     <div className="grid gap-3">
                         <SubscriptionOptionCard
@@ -161,7 +175,7 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                             icon={icons.customerType.b2b}
                             accent={content.customerType.b2b.color}
                             active={selection.customerType === "b2b"}
-                            onClick={() => selectOption({ type: "customerTypeChanged", value: "b2b" }, "b2b")}
+                            onClick={() => selectOption({ type: "customerTypeChanged", value: "b2b" }, "b2b", "customerType")}
                         />
                         <SubscriptionOptionCard
                             title={content.customerType.b2c.title}
@@ -169,13 +183,13 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                             icon={icons.customerType.b2c}
                             accent={content.customerType.b2c.color}
                             active={selection.customerType === "b2c"}
-                            onClick={() => selectOption({ type: "customerTypeChanged", value: "b2c" }, "b2c")}
+                            onClick={() => selectOption({ type: "customerTypeChanged", value: "b2c" }, "b2c", "customerType")}
                         />
                     </div>
                 </div>
 
                 {selection.customerType === "b2c" && (
-                    <div className="space-y-2" data-subscription-step>
+                    <div className="space-y-8 scroll-mt-48" data-subscription-step="plan">
                         <SubscriptionOptionCategoryLabel label={content.plan.title} />
                         <div className="grid gap-3">
                             <SubscriptionOptionCard
@@ -184,7 +198,7 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                                 icon={icons.plan.pro}
                                 accent="brand"
                                 active={selection.plan === "pro"}
-                                onClick={() => selectOption({ type: "planChanged", value: "pro" }, "pro")}
+                                onClick={() => selectOption({ type: "planChanged", value: "pro" }, "pro", "plan")}
                             />
                             <SubscriptionOptionCard
                                 title={content.plan.max.title}
@@ -192,7 +206,7 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                                 icon={icons.plan.max}
                                 accent="magenta"
                                 active={selection.plan === "max"}
-                                onClick={() => selectOption({ type: "planChanged", value: "max" }, "max")}
+                                onClick={() => selectOption({ type: "planChanged", value: "max" }, "max", "plan")}
                             />
                             <SubscriptionOptionCard
                                 title={content.plan.custom.title}
@@ -200,13 +214,13 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                                 icon={icons.plan.custom}
                                 accent="aqua"
                                 active={selection.plan === "custom"}
-                                onClick={() => selectOption({ type: "planChanged", value: "custom" }, "custom")}
+                                onClick={() => selectOption({ type: "planChanged", value: "custom" }, "custom", "plan")}
                             />
                         </div>
                     </div>
                 )}
 
-                <div className="space-y-2" data-subscription-step>
+                <div className="space-y-8 scroll-mt-48" data-subscription-step="deployment">
                     <SubscriptionOptionCategoryLabel label={content.deployment.label} />
                     <div className="grid gap-3">
                         <SubscriptionOptionCard
@@ -215,7 +229,7 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                             icon={icons.deployment.selfHosted}
                             accent={content.deployment.selfHosted.color}
                             active={selection.deployment === "self_hosted"}
-                            onClick={() => selectOption({ type: "deploymentChanged", value: "self_hosted" }, "selfHosted")}
+                            onClick={() => selectOption({ type: "deploymentChanged", value: "self_hosted" }, "selfHosted", "deployment")}
                         />
                         <SubscriptionOptionCard
                             title={content.deployment.cloud.title}
@@ -223,13 +237,13 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                             icon={icons.deployment.cloud}
                             accent={content.deployment.cloud.color}
                             active={selection.deployment === "cloud"}
-                            onClick={() => selectOption({ type: "deploymentChanged", value: "cloud" }, "cloud")}
+                            onClick={() => selectOption({ type: "deploymentChanged", value: "cloud" }, "cloud", "deployment")}
                         />
                     </div>
                 </div>
 
                 {selection.plan === "custom" && (
-                    <div className="space-y-2" data-subscription-step>
+                    <div className="space-y-8 scroll-mt-48" data-subscription-step="aiTokens">
                         <SubscriptionOptionCategoryLabel label={aiTokens.title} />
                         <Slider
                             min={aiTokenRange.min}
@@ -246,7 +260,7 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                 )}
 
                 {selection.plan === "custom" && (
-                    <div className="space-y-2" data-subscription-step>
+                    <div className="space-y-8 scroll-mt-48" data-subscription-step="workflowExecutions">
                         <SubscriptionOptionCategoryLabel label={workflowExecutions.title} />
                         <Slider
                             min={workflowExecutionRange.min}
@@ -283,7 +297,7 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                 )}
 
                 {selection.plan === "custom" && content.additionalFeatures && content.additionalFeatures.length > 0 && (
-                    <div className="space-y-3" data-subscription-step>
+                    <div className="space-y-8 scroll-mt-48" data-subscription-step="additionalFeatures">
                         <SubscriptionOptionCategoryLabel label={content.additionalFeaturesLabel ?? "Additional Features"} />
                         <div className="grid gap-3">
                             {content.additionalFeatures.map((feature, index) => {
@@ -304,7 +318,7 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                     </div>
                 )}
 
-                <div className="space-y-2" data-subscription-step>
+                <div className="space-y-8 scroll-mt-48" data-subscription-step="paymentPeriod">
                     <SubscriptionOptionCategoryLabel label={content.paymentPeriod.label} />
                     <div className="grid gap-3">
                         {paymentPeriodOptions.map((period) => {
