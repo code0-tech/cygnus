@@ -205,6 +205,7 @@ export interface SubscriptionConfigData {
         monthlyColor: "brand" | "pink" | "yellow" | "aqua" | "blue" | "lime" | "magenta"
         quarterlyColor: "brand" | "pink" | "yellow" | "aqua" | "blue" | "lime" | "magenta"
         yearlyColor: "brand" | "pink" | "yellow" | "aqua" | "blue" | "lime" | "magenta"
+        monthlyDiscount: number
         quarterlyDiscount: number
         yearlyDiscount: number
     }
@@ -238,6 +239,7 @@ export interface SubscriptionConfigData {
         }[]
     }
     workflowExecutionPriceFactor: number
+    workflowExecutionWeeklyPriceFactor: number
     aiTokens: {
         title: string
         description?: string | null
@@ -246,6 +248,7 @@ export interface SubscriptionConfigData {
         suffix: string
     }
     aiTokenPriceFactor: number
+    aiTokenWeeklyPriceFactor: number
     contactSales: {
         prompt: string
         label: string
@@ -267,6 +270,7 @@ export interface SubscriptionConfigData {
               title: string
               description: string
               price: number
+              weeklyPrice: number
               id?: string | null
           }[]
         | null

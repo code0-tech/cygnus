@@ -328,7 +328,7 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                     <SubscriptionOptionCategoryLabel label={content.paymentPeriod.label} description={content.paymentPeriod.description} />
                     <div className="grid gap-3">
                         {paymentPeriodOptions.map((period) => {
-                            const discount = getPaymentPeriodDiscount(period, content.paymentPeriod)
+                            const discount = getPaymentPeriodDiscount(period, content.paymentPeriod, selection.customerType)
 
                             return (
                                 <SubscriptionOptionCard

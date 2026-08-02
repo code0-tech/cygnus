@@ -1,7 +1,7 @@
 import type { SubscriptionConfigData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import type { SubscriptionCatalog } from "@/lib/subscriptionCatalog"
-import { resolveSubscriptionSelection, type SubscriptionSelection } from "@/lib/subscriptionConfigurator"
+import { resolveSubscriptionSelection, type SubscriptionCustomerType, type SubscriptionSelection } from "@/lib/subscriptionConfigurator"
 
 export type PaymentPeriod = "weekly" | "monthly" | "quarterly" | "yearly"
 type SubscriptionPlan = "custom" | "pro" | "max"
@@ -47,9 +47,11 @@ export function calculatePromotionDiscountAmount(
     return 0
 }
 
-export function getPaymentPeriodDiscount(period: PaymentPeriod, paymentPeriod: SubscriptionConfigData["paymentPeriod"]) {
+export function getPaymentPeriodDiscount(period: PaymentPeriod, paymentPeriod: SubscriptionConfigData["paymentPeriod"], customerType: SubscriptionCustomerType) {
     if (period === "quarterly") return paymentPeriod.quarterlyDiscount
     if (period === "yearly") return paymentPeriod.yearlyDiscount
+    // B2C bills weekly as the base rate, so monthly is a discount off the weekly-equivalent price instead of the other way around.
+    if (period === "monthly" && customerType === "b2c") return paymentPeriod.monthlyDiscount
     return 0
 }
 
@@ -98,15 +100,24 @@ export function calculateSubscriptionQuote(selection: SubscriptionSelection, con
         }
     }
 
+    const isWeekly = selection.paymentPeriod === "weekly"
     const items: SubscriptionQuote["items"] = [
-        { id: "aiTokens", type: "aiTokens", amount: toCents(config.aiTokenPriceFactor * selection.aiTokens * months) },
-        { id: "workflowExecutions", type: "workflowExecutions", amount: toCents(config.workflowExecutionPriceFactor * selection.workflowExecutions * months) },
+        {
+            id: "aiTokens",
+            type: "aiTokens",
+            amount: toCents(isWeekly ? config.aiTokenWeeklyPriceFactor * selection.aiTokens : config.aiTokenPriceFactor * selection.aiTokens * months),
+        },
+        {
+            id: "workflowExecutions",
+            type: "workflowExecutions",
+            amount: toCents(isWeekly ? config.workflowExecutionWeeklyPriceFactor * selection.workflowExecutions : config.workflowExecutionPriceFactor * selection.workflowExecutions * months),
+        },
         ...(config.additionalFeatures ?? [])
             .filter((feature) => Boolean(feature.id && selection.additionalFeatureIds.includes(feature.id)))
-            .map((feature) => ({ id: feature.id!, type: "additionalFeature" as const, amount: toCents(feature.price * months) })),
+            .map((feature) => ({ id: feature.id!, type: "additionalFeature" as const, amount: toCents(isWeekly ? feature.weeklyPrice : feature.price * months) })),
     ]
     const subtotal = items.reduce((sum, item) => sum + item.amount, 0)
-    const discountRate = getPaymentPeriodDiscount(selection.paymentPeriod, config.paymentPeriod)
+    const discountRate = getPaymentPeriodDiscount(selection.paymentPeriod, config.paymentPeriod, selection.customerType)
     const periodDiscount = Math.round(subtotal * discountRate)
     return { currency: "EUR", items, subtotal, periodDiscount, total: subtotal - periodDiscount }
 }
