@@ -44,7 +44,7 @@ export function SubscriptionOptionCard({ title, description, active, onClick, ic
             disabled={disabled}
             style={getSubscriptionOptionAccentStyle(accent, active)}
             className={cn(
-                "relative overflow-hidden rounded-2xl border p-3 text-left transition-all duration-300",
+                "relative overflow-hidden rounded-2xl border p-4 text-left transition-all duration-300",
                 disabled ? "cursor-not-allowed border-white/10 opacity-45" : "border-white/10 hover:bg-light"
             )}
         >
@@ -65,16 +65,16 @@ export function SubscriptionOptionCard({ title, description, active, onClick, ic
                             {icon}
                         </div>
                     </div>
-                    <p className="text-base text-white" style={active ? SUBSCRIPTION_OPTION_ACTIVE_ICON_STYLE : undefined}>
+                    <p className="text-xl text-white" style={active ? SUBSCRIPTION_OPTION_ACTIVE_ICON_STYLE : undefined}>
                         {title}
                     </p>
                     {badge && (
-                        <StableBadge border className="ml-auto shrink-0 border-brand/10! bg-brand/10! px-2! py-0.5! text-brand!">
+                        <StableBadge border className="ml-auto shrink-0 border-brand/10! bg-brand/10! px-2! py-0.5! text-brand! text-base!">
                             {badge}
                         </StableBadge>
                     )}
                 </div>
-                <p className="text-sm text-secondary">{description}</p>
+                <p className="text-base text-secondary">{description}</p>
             </div>
         </button>
     )
