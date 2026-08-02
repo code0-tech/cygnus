@@ -141,6 +141,7 @@ export const SubscriptionCollection: GlobalConfig = {
                     localized: true,
                     defaultValue: "Choose where your code0 instance will run.",
                 },
+                { name: "description", type: "textarea", required: false, localized: true },
                 {
                     name: "selfHosted",
                     type: "group",
@@ -189,6 +190,7 @@ export const SubscriptionCollection: GlobalConfig = {
                     localized: true,
                     defaultValue: "Choose the plan that best matches your requirements.",
                 },
+                { name: "description", type: "textarea", required: false, localized: true },
                 {
                     name: "pro",
                     label: "Pro",
@@ -253,6 +255,7 @@ export const SubscriptionCollection: GlobalConfig = {
                     localized: true,
                     defaultValue: "Choose the customer model that best matches your use case.",
                 },
+                { name: "description", type: "textarea", required: false, localized: true },
                 {
                     name: "b2b",
                     type: "group",
@@ -365,6 +368,7 @@ export const SubscriptionCollection: GlobalConfig = {
                     localized: true,
                     defaultValue: "Choose how often you want to be billed.",
                 },
+                { name: "description", type: "textarea", required: false, localized: true },
                 { name: "weeklyText", type: "text", required: false, localized: true, defaultValue: "Weekly" },
                 { name: "monthlyText", type: "text", required: false, localized: true, defaultValue: "Monthly" },
                 { name: "quarterlyText", type: "text", required: false, localized: true, defaultValue: "Quarterly" },
@@ -408,6 +412,7 @@ export const SubscriptionCollection: GlobalConfig = {
                     localized: true,
                     defaultValue: "How many workflow executions do you expect per month?",
                 },
+                { name: "description", type: "textarea", required: false, localized: true },
                 {
                     name: "b2b",
                     label: "B2B",
@@ -491,6 +496,7 @@ export const SubscriptionCollection: GlobalConfig = {
             type: "group",
             fields: [
                 { name: "title", type: "text", required: false, localized: true, defaultValue: "How many AI tokens do you expect to consume per month?" },
+                { name: "description", type: "textarea", required: false, localized: true },
                 {
                     name: "b2b",
                     label: "B2B",
@@ -545,6 +551,14 @@ export const SubscriptionCollection: GlobalConfig = {
             localized: true,
             admin: {
                 description: "Optional section heading shown above the additional features list.",
+            },
+        },
+        {
+            name: "additionalFeaturesDescription",
+            type: "textarea",
+            localized: true,
+            admin: {
+                description: "Optional description shown below the additional features heading.",
             },
         },
         {
