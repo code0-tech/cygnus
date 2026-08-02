@@ -2962,6 +2962,18 @@ export interface SubscriptionConfig {
     monthlyPeriodSuffix?: string | null;
     quarterlyPeriodSuffix?: string | null;
     yearlyPeriodSuffix?: string | null;
+    /**
+     * Shown next to the price when weekly billing is selected.
+     */
+    weeklyPaidLabel?: string | null;
+    /**
+     * Shown next to the price when quarterly billing is selected.
+     */
+    quarterlyPaidLabel?: string | null;
+    /**
+     * Shown next to the price when yearly billing is selected.
+     */
+    yearlyPaidLabel?: string | null;
     weeklyColor?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
     monthlyColor?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
     quarterlyColor?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
@@ -3495,6 +3507,9 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
         monthlyPeriodSuffix?: T;
         quarterlyPeriodSuffix?: T;
         yearlyPeriodSuffix?: T;
+        weeklyPaidLabel?: T;
+        quarterlyPaidLabel?: T;
+        yearlyPaidLabel?: T;
         weeklyColor?: T;
         monthlyColor?: T;
         quarterlyColor?: T;

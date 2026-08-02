@@ -190,6 +190,9 @@ export interface SubscriptionConfigData {
         monthlyPeriodSuffix: string
         quarterlyPeriodSuffix: string
         yearlyPeriodSuffix: string
+        weeklyPaidLabel: string
+        quarterlyPaidLabel: string
+        yearlyPaidLabel: string
         weeklyColor: "brand" | "pink" | "yellow" | "aqua" | "blue" | "lime" | "magenta"
         monthlyColor: "brand" | "pink" | "yellow" | "aqua" | "blue" | "lime" | "magenta"
         quarterlyColor: "brand" | "pink" | "yellow" | "aqua" | "blue" | "lime" | "magenta"

@@ -11,7 +11,7 @@ export default async function CheckoutPage({ params }: { params: Promise<{ local
     const currentYear = new Date().getUTCFullYear()
 
     return (
-        <div className="flex flex-col gap-8">
+        <div className="flex min-h-full flex-col gap-8">
             <CheckoutPageContent currentYear={currentYear} footer={footer} form={checkoutContent?.form} locale={locale} subscriptionConfig={subscriptionConfig} summary={checkoutContent?.summary} />
         </div>
     )
