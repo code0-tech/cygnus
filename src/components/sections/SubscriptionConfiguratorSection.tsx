@@ -17,7 +17,7 @@ export function SubscriptionConfiguratorSection({ locale, content, icons }: { lo
     })
 
     return (
-        <div className="grid gap-8 lg:grid-cols-5">
+        <div className="grid gap-16 lg:grid-cols-5">
             <SubscriptionContent activeImageKey={activeImageKey} content={content} />
             <SubscriptionConfigurator locale={locale} content={content} icons={icons} onActiveImageChangeAction={setActiveImageKey} />
         </div>

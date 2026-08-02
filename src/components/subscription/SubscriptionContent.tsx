@@ -14,7 +14,7 @@ interface SubscriptionContentProps {
 }
 
 export function SubscriptionContent({ activeImageKey, content }: SubscriptionContentProps) {
-    const { wrapperRef, containerRef } = useDesktopPinnedPosition<HTMLElement, HTMLDivElement>(96)
+    const { wrapperRef, containerRef } = useDesktopPinnedPosition<HTMLElement, HTMLDivElement>(96, "center")
     const options = {
         b2b: content.customerType.b2b,
         b2c: content.customerType.b2c,
@@ -30,10 +30,10 @@ export function SubscriptionContent({ activeImageKey, content }: SubscriptionCon
 
     return (
         <section ref={wrapperRef} className="relative min-w-0 lg:col-span-3">
-            <div ref={containerRef} className="relative z-10 flex min-w-0 flex-col gap-8">
+            <div ref={containerRef} className="relative z-10 flex min-w-0 flex-col gap-4">
                 <div className="max-w-2xl">
-                    <h1 className="mt-4 text-balance text-3xl font-semibold text-white lg:text-4xl">{content.pageIntro.heading}</h1>
-                    <p className="mt-4 text-base leading-7 text-secondary lg:text-lg">{content.pageIntro.description}</p>
+                    <h1 className="text-balance text-xl font-semibold text-white lg:text-2xl">{content.pageIntro.heading}</h1>
+                    <p className="text-base leading-7 text-secondary lg:text-lg">{content.pageIntro.description}</p>
                 </div>
 
                 <div className="relative aspect-video w-full overflow-hidden rounded-3xl border border-white/10 bg-white/3">

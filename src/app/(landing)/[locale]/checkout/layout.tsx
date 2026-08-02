@@ -14,12 +14,5 @@ export default async function CheckoutLayout({ children, params }: CheckoutLayou
     if (!isSupportedLocale(locale)) notFound()
 
     const checkoutContent = await getCheckoutContent(locale)
-    return (
-        <>
-            <CheckoutLayoutClient stepperContent={checkoutContent?.stepper}>{children}</CheckoutLayoutClient>
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 z-50 flex justify-center" aria-hidden="true">
-                <div className="h-16 w-full bg-blue/20 blur-3xl" />
-            </div>
-        </>
-    )
+    return <CheckoutLayoutClient stepperContent={checkoutContent?.stepper}>{children}</CheckoutLayoutClient>
 }
