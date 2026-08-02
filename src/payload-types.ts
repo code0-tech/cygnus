@@ -2978,6 +2978,10 @@ export interface SubscriptionConfig {
     monthlyColor?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
     quarterlyColor?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
     yearlyColor?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
+    /**
+     * B2C only: discount off the weekly base price when monthly billing is selected.
+     */
+    monthlyDiscount?: number | null;
     quarterlyDiscount?: number | null;
     yearlyDiscount?: number | null;
   };
@@ -3022,7 +3026,14 @@ export interface SubscriptionConfig {
         }[]
       | null;
   };
+  /**
+   * Monthly price factor, used for monthly/quarterly/yearly billing.
+   */
   workflowExecutionPriceFactor?: number | null;
+  /**
+   * Used directly for weekly billing instead of being calculated from the monthly factor.
+   */
+  workflowExecutionWeeklyPriceFactor?: number | null;
   aiTokens?: {
     title?: string | null;
     description?: string | null;
@@ -3040,7 +3051,14 @@ export interface SubscriptionConfig {
     };
     suffix?: string | null;
   };
+  /**
+   * Monthly price factor, used for monthly/quarterly/yearly billing.
+   */
   aiTokenPriceFactor?: number | null;
+  /**
+   * Used directly for weekly billing instead of being calculated from the monthly factor.
+   */
+  aiTokenWeeklyPriceFactor?: number | null;
   contactSales?: {
     prompt?: string | null;
     label?: string | null;
@@ -3074,6 +3092,10 @@ export interface SubscriptionConfig {
          * Monthly price in EUR.
          */
         price?: number | null;
+        /**
+         * Weekly price in EUR, used directly for weekly billing instead of being calculated from the monthly price.
+         */
+        weeklyPrice?: number | null;
         id?: string | null;
       }[]
     | null;
@@ -3514,6 +3536,7 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
         monthlyColor?: T;
         quarterlyColor?: T;
         yearlyColor?: T;
+        monthlyDiscount?: T;
         quarterlyDiscount?: T;
         yearlyDiscount?: T;
       };
@@ -3567,6 +3590,7 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
             };
       };
   workflowExecutionPriceFactor?: T;
+  workflowExecutionWeeklyPriceFactor?: T;
   aiTokens?:
     | T
     | {
@@ -3591,6 +3615,7 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
         suffix?: T;
       };
   aiTokenPriceFactor?: T;
+  aiTokenWeeklyPriceFactor?: T;
   contactSales?:
     | T
     | {
@@ -3619,6 +3644,7 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
         description?: T;
         icon?: T;
         price?: T;
+        weeklyPrice?: T;
         id?: T;
       };
   updatedAt?: T;

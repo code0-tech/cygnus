@@ -100,6 +100,7 @@ import * as migration_20260801_193034_remove_legacy_subscription_configurator_fi
 import * as migration_20260802_060057_subscription_option_images from './20260802_060057_subscription_option_images';
 import * as migration_20260802_143935_subscription_configurator_category_descriptions from './20260802_143935_subscription_configurator_category_descriptions';
 import * as migration_20260802_190201_subscription_configurator_paid_labels from './20260802_190201_subscription_configurator_paid_labels';
+import * as migration_20260802_200739_subscription_configurator_weekly_price_factors from './20260802_200739_subscription_configurator_weekly_price_factors';
 
 export const migrations = [
   {
@@ -610,6 +611,11 @@ export const migrations = [
   {
     up: migration_20260802_190201_subscription_configurator_paid_labels.up,
     down: migration_20260802_190201_subscription_configurator_paid_labels.down,
-    name: '20260802_190201_subscription_configurator_paid_labels'
+    name: '20260802_190201_subscription_configurator_paid_labels',
+  },
+  {
+    up: migration_20260802_200739_subscription_configurator_weekly_price_factors.up,
+    down: migration_20260802_200739_subscription_configurator_weekly_price_factors.down,
+    name: '20260802_200739_subscription_configurator_weekly_price_factors'
   },
 ];

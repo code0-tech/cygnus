@@ -20,6 +20,7 @@ const paymentPeriod = {
     weeklyPeriodSuffix: "per week",
     weeklyText: "Weekly",
     monthlyColor: "brand",
+    monthlyDiscount: 0.05,
     monthlyPeriodSuffix: "per month",
     monthlyText: "Monthly",
     quarterlyColor: "aqua",
@@ -35,10 +36,11 @@ const paymentPeriod = {
 } as const
 
 test("resolves payment period discounts and suffixes", () => {
-    assert.equal(getPaymentPeriodDiscount("weekly", paymentPeriod), 0)
-    assert.equal(getPaymentPeriodDiscount("monthly", paymentPeriod), 0)
-    assert.equal(getPaymentPeriodDiscount("quarterly", paymentPeriod), 0.1)
-    assert.equal(getPaymentPeriodDiscount("yearly", paymentPeriod), 0.2)
+    assert.equal(getPaymentPeriodDiscount("weekly", paymentPeriod, "b2c"), 0)
+    assert.equal(getPaymentPeriodDiscount("monthly", paymentPeriod, "b2b"), 0)
+    assert.equal(getPaymentPeriodDiscount("monthly", paymentPeriod, "b2c"), 0.05)
+    assert.equal(getPaymentPeriodDiscount("quarterly", paymentPeriod, "b2b"), 0.1)
+    assert.equal(getPaymentPeriodDiscount("yearly", paymentPeriod, "b2c"), 0.2)
 
     assert.equal(getPaymentPeriodSuffix("weekly", paymentPeriod), "per week")
     assert.equal(getPaymentPeriodSuffix("monthly", paymentPeriod), "per month")
@@ -87,13 +89,15 @@ test("builds a cent-based custom subscription quote", () => {
             workflowExecutions: 1_000,
         },
         {
-            additionalFeatures: [{ id: "support", title: "Support", description: "", icon: "", price: 25 }],
+            additionalFeatures: [{ id: "support", title: "Support", description: "", icon: "", price: 25, weeklyPrice: 5 }],
             aiTokenPriceFactor: 0.00001,
+            aiTokenWeeklyPriceFactor: 0.000002,
             aiTokens: {} as never,
             defaults: {} as never,
             packages: {} as never,
             paymentPeriod,
             workflowExecutionPriceFactor: 0.01,
+            workflowExecutionWeeklyPriceFactor: 0.002,
             workflowExecutions: {} as never,
         }
     )
@@ -101,6 +105,42 @@ test("builds a cent-based custom subscription quote", () => {
     assert.equal(quote.subtotal, 54_000)
     assert.equal(quote.periodDiscount, 10_800)
     assert.equal(quote.total, 43_200)
+})
+
+test("uses the explicit weekly price factors directly and applies the b2c monthly discount against them", () => {
+    const catalog = {
+        additionalFeatures: [{ id: "support", title: "Support", description: "", icon: "", price: 25, weeklyPrice: 5 }],
+        aiTokenPriceFactor: 0.00001,
+        aiTokenWeeklyPriceFactor: 0.000002,
+        aiTokens: {} as never,
+        defaults: {} as never,
+        packages: {} as never,
+        paymentPeriod,
+        workflowExecutionPriceFactor: 0.01,
+        workflowExecutionWeeklyPriceFactor: 0.002,
+        workflowExecutions: {} as never,
+    }
+    const selectionBase = {
+        additionalFeatureIds: ["support"] as string[],
+        aiTokens: 1_000_000,
+        deployment: "self_hosted",
+        plan: "custom",
+        workflowExecutions: 1_000,
+    } as const
+
+    const b2cMonthly = calculateSubscriptionQuote({ ...selectionBase, customerType: "b2c", paymentPeriod: "monthly" }, catalog)
+    assert.equal(b2cMonthly.subtotal, 4_500)
+    assert.equal(b2cMonthly.periodDiscount, 225)
+    assert.equal(b2cMonthly.total, 4_275)
+
+    const b2bMonthly = calculateSubscriptionQuote({ ...selectionBase, customerType: "b2b", paymentPeriod: "monthly" }, catalog)
+    assert.equal(b2bMonthly.periodDiscount, 0)
+    assert.equal(b2bMonthly.total, 4_500)
+
+    const b2cWeekly = calculateSubscriptionQuote({ ...selectionBase, customerType: "b2c", paymentPeriod: "weekly" }, catalog)
+    assert.equal(b2cWeekly.subtotal, 900)
+    assert.equal(b2cWeekly.periodDiscount, 0)
+    assert.equal(b2cWeekly.total, 900)
 })
 
 test("preserves the regular fixed-plan price for period discount summaries", () => {
