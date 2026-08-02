@@ -5,6 +5,7 @@ import {
     calculatePromotionDiscountAmount,
     calculateSubscriptionQuote,
     formatDiscountBadge,
+    getMonthlyEquivalentAmount,
     getPaymentPeriodDiscount,
     getPaymentPeriodMonths,
     getPaymentPeriodSuffix,
@@ -45,6 +46,13 @@ test("resolves payment period discounts and suffixes", () => {
     assert.equal(getPaymentPeriodMonths("monthly"), 1)
     assert.equal(getPaymentPeriodMonths("quarterly"), 3)
     assert.equal(getPaymentPeriodMonths("yearly"), 12)
+})
+
+test("normalizes subscription amounts to a comparable monthly amount", () => {
+    assert.equal(getMonthlyEquivalentAmount(1_000, "weekly"), 4_345)
+    assert.equal(getMonthlyEquivalentAmount(3_000, "monthly"), 3_000)
+    assert.equal(getMonthlyEquivalentAmount(8_100, "quarterly"), 2_700)
+    assert.equal(getMonthlyEquivalentAmount(28_800, "yearly"), 2_400)
 })
 
 test("formats discount badges by locale", () => {

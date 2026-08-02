@@ -60,6 +60,10 @@ export function getPaymentPeriodMonths(period: PaymentPeriod) {
     return 1
 }
 
+export function getMonthlyEquivalentAmount(amount: number, period: PaymentPeriod) {
+    return Math.round(amount / getPaymentPeriodMonths(period))
+}
+
 export function getPaymentPeriodSuffix(period: PaymentPeriod, paymentPeriod: SubscriptionConfigData["paymentPeriod"]) {
     if (period === "weekly") return paymentPeriod.weeklyPeriodSuffix
     if (period === "quarterly") return paymentPeriod.quarterlyPeriodSuffix
