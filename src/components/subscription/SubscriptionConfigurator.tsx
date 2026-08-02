@@ -96,7 +96,10 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
     const monthlyPeriodSuffix = getPaymentPeriodSuffix("monthly", content.paymentPeriod)
     const monthlyPrice = getMonthlyEquivalentAmount(calculateSubscriptionQuote(selection, catalog).total, selection.paymentPeriod) / 100
     const selectionSearchParamsString = buildSubscriptionSelectionSearchParams(selection).toString()
-    const subscribeHref = `${content.subscribe.baseUrl}?${selectionSearchParamsString}`
+    const configurationUrl = `${pathname}?${selectionSearchParamsString}`
+    const subscribeSearchParams = new URLSearchParams(selectionSearchParamsString)
+    subscribeSearchParams.set("configurationUrl", configurationUrl)
+    const subscribeHref = `${content.subscribe.baseUrl}?${subscribeSearchParams.toString()}`
     const configuratorSteps = [
         content.customerType.label,
         ...(selection.customerType === "b2c" ? [content.plan.title] : []),
@@ -353,6 +356,7 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                         className="text-2xl font-semibold text-brand"
                     />
                     <span className="max-w-28 truncate text-base text-tertiary">{monthlyPeriodSuffix}</span>
+                    {selection.paymentPeriod !== "monthly" && <span className="max-w-28 -ml-1 truncate text-base text-tertiary">({content.paymentPeriod[`${selection.paymentPeriod}PaidLabel`]})</span>}
                 </div>
                 <HapticButtonLink href={subscribeHref} variant="filled" className="h-10! w-full! bg-white/80! font-semibold! text-primary! hover:bg-white!">
                     {content.subscribe.label}
