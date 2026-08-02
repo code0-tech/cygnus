@@ -20,7 +20,6 @@ interface CheckoutFormProps {
     content?: CheckoutFormContent | null
     locale: AppLocale
     mobileSteps?: boolean
-    showHeading?: boolean
 }
 
 interface MobileCheckoutStepProps {
@@ -37,7 +36,7 @@ function MobileCheckoutStep({ canOpen, children, complete, number, onOpen, open,
     const contentId = `checkout-form-step-${number}`
 
     return (
-        <section className={cn("overflow-hidden rounded-2xl border transition-colors", open ? "border-white/15 bg-white/5" : "border-white/10 bg-white/2")}>
+        <section className={cn("overflow-hidden rounded-2xl border transition-colors", open ? "border-white/10" : "border-white/10 bg-white/2")}>
             <button
                 type="button"
                 aria-controls={contentId}
@@ -49,7 +48,7 @@ function MobileCheckoutStep({ canOpen, children, complete, number, onOpen, open,
                 <span
                     className={cn(
                         "flex size-6 shrink-0 items-center justify-center rounded-full border text-xs font-medium transition-colors",
-                        complete ? "border-brand bg-brand text-primary" : open ? "border-brand text-brand" : "border-white/15 text-tertiary"
+                        complete ? "border-white bg-white text-primary" : open ? "border-white text-white" : "border-white/10 text-tertiary"
                     )}
                 >
                     {complete ? <IconCheck aria-hidden="true" size={14} stroke={3} /> : number}
@@ -71,7 +70,7 @@ function MobileCheckoutStep({ canOpen, children, complete, number, onOpen, open,
     )
 }
 
-export function CheckoutForm({ content, locale, mobileSteps = false, showHeading = true }: CheckoutFormProps) {
+export function CheckoutForm({ content, locale, mobileSteps = false }: CheckoutFormProps) {
     const searchParams = useSearchParams()
     const { setStage } = useCheckoutStage()
     const [isLoading, setIsLoading] = useState(false)
@@ -183,8 +182,6 @@ export function CheckoutForm({ content, locale, mobileSteps = false, showHeading
     if (mobileSteps) {
         return (
             <div className="flex min-h-0 flex-1 flex-col">
-                {showHeading && <h2 className="mb-6 text-2xl text-white">{content.billingHeading}</h2>}
-
                 <div className="min-h-0 flex-1 overflow-y-auto pb-3">
                     <div className="space-y-3">
                         <MobileCheckoutStep canOpen complete={isContactComplete} number={1} onOpen={() => setMobileStep(0)} open={mobileStep === 0} title={mobileLabels.contact}>
@@ -240,8 +237,6 @@ export function CheckoutForm({ content, locale, mobileSteps = false, showHeading
     return (
         <div className="h-max! flex-1! flex flex-col">
             <div className="flex-1 space-y-6">
-                {showHeading && <h2 className="text-2xl text-white">{content.billingHeading}</h2>}
-
                 {contactFields}
                 {addressFields}
                 {hasTaxStep && taxFields}

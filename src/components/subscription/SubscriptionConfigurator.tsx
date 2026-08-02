@@ -373,8 +373,8 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                         aria-label={step.replaceAll("**", "")}
                         onClick={() => configuratorRef.current?.querySelectorAll<HTMLElement>("[data-subscription-step]").item(index)?.scrollIntoView({ behavior: "smooth", block: "center" })}
                         className={cn(
-                            "block rounded-full transition-all duration-200 hover:bg-white/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
-                            index === activeStepIndex ? "h-4 w-1.5 bg-white/80" : "size-1.5 bg-white/20"
+                            "block rounded-full transition-all duration-200 hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
+                            index === activeStepIndex ? "h-6 w-2 bg-white" : "size-2 bg-tertiary"
                         )}
                     />
                 ))}

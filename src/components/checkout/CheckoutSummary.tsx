@@ -10,6 +10,7 @@ import type { Footer } from "@/payload-types"
 import type { CheckoutTaxQuote } from "@code0-tech/crater-graphql-types"
 import { useParams, useSearchParams } from "next/navigation"
 import { useState, type ReactNode } from "react"
+import { Card } from "../ui/Card"
 
 type CheckoutTaxQuoteValue = {
     [Key in "amountTotal" | "currency" | "taxAmountExclusive"]-?: NonNullable<CheckoutTaxQuote[Key]>
@@ -159,7 +160,7 @@ export function CheckoutSummary({ content, currentYear, footer, sessionToken, su
                     </div>
                 )}
 
-                <div className="mt-4 mb-2 rounded-2xl border border-white/10 bg-white/2 p-4">
+                <Card variant="light" className="mt-4 mb-2">
                     <div className="-mx-4 flex items-center justify-between gap-3 border-b border-white/10 px-4 pb-3">
                         <div>
                             <p className="text-sm text-white">{content.pricing.label}</p>
@@ -226,7 +227,7 @@ export function CheckoutSummary({ content, currentYear, footer, sessionToken, su
                             {formattedTotalPrice} <span className="text-tertiary text-sm">{periodSuffix}</span>
                         </span>
                     </div>
-                </div>
+                </Card>
 
                 <CheckoutDiscount
                     appliedAmount={promotionDiscountAmount > 0 ? formattedDiscountAmount : null}

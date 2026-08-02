@@ -48,7 +48,7 @@ export function CheckoutStepper({ content }: { content?: CheckoutStepperContent 
 
                 return (
                     <li key={step} className="flex items-center">
-                        {index > 0 && <span aria-hidden="true" className={cn("mx-2 h-px w-4 sm:w-8", isCompleted ? "bg-white/60" : "bg-white/10")} />}
+                        {index > 0 && <span aria-hidden="true" className={cn("mx-2 h-px lg:w-7 xl:w-15", isCompleted ? "bg-white/60" : "bg-white/10")} />}
                         <div className="flex items-center gap-1.5">
                             <div
                                 className={cn(
