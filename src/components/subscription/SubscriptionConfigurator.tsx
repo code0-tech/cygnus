@@ -43,10 +43,19 @@ export interface SubscriptionIcons {
     additionalFeatures: ReactNode[]
 }
 
+export type SubscriptionOptionImageKey = "b2b" | "b2c" | "pro" | "max" | "custom" | "selfHosted" | "cloud"
+
 const B2B_PAYMENT_PERIOD_OPTIONS = ["monthly", "quarterly", "yearly"] as const
 const B2C_PAYMENT_PERIOD_OPTIONS = ["weekly", "monthly", "yearly"] as const
 
-export function SubscriptionConfigurator({ locale, content, icons }: { locale: AppLocale; content: SubscriptionConfiguratorContent; icons: SubscriptionIcons }) {
+interface SubscriptionConfiguratorProps {
+    locale: AppLocale
+    content: SubscriptionConfiguratorContent
+    icons: SubscriptionIcons
+    onActiveImageChangeAction?: (key: SubscriptionOptionImageKey) => void
+}
+
+export function SubscriptionConfigurator({ locale, content, icons, onActiveImageChangeAction }: SubscriptionConfiguratorProps) {
     const workflowExecutions = content.workflowExecutions
     const aiTokens = content.aiTokens
     const catalog = getSubscriptionCatalog(content)
@@ -58,6 +67,10 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
     const workflowExecutionRange = workflowExecutions[selection.customerType]
     const aiTokenRange = aiTokens[selection.customerType]
     const dispatch = (action: SubscriptionSelectionAction) => setSelection((current) => reduceSubscriptionSelection(current, action, catalog))
+    const selectOption = (action: SubscriptionSelectionAction, imageKey: SubscriptionOptionImageKey) => {
+        dispatch(action)
+        onActiveImageChangeAction?.(imageKey)
+    }
     const selectedFeatureIds = new Set(selection.additionalFeatureIds)
     const paymentPeriodOptions = selection.customerType === "b2b" ? B2B_PAYMENT_PERIOD_OPTIONS : B2C_PAYMENT_PERIOD_OPTIONS
     const paymentPeriodSuffix = getPaymentPeriodSuffix(selection.paymentPeriod, content.paymentPeriod)
@@ -85,7 +98,7 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
                             icon={icons.customerType.b2b}
                             accent={content.customerType.b2b.color}
                             active={selection.customerType === "b2b"}
-                            onClick={() => dispatch({ type: "customerTypeChanged", value: "b2b" })}
+                            onClick={() => selectOption({ type: "customerTypeChanged", value: "b2b" }, "b2b")}
                         />
                         <SubscriptionOptionCard
                             title={content.customerType.b2c.title}
@@ -93,7 +106,7 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
                             icon={icons.customerType.b2c}
                             accent={content.customerType.b2c.color}
                             active={selection.customerType === "b2c"}
-                            onClick={() => dispatch({ type: "customerTypeChanged", value: "b2c" })}
+                            onClick={() => selectOption({ type: "customerTypeChanged", value: "b2c" }, "b2c")}
                         />
                     </div>
                 </div>
@@ -112,7 +125,7 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
                                         icon={icons.plan.pro}
                                         accent="brand"
                                         active={selection.plan === "pro"}
-                                        onClick={() => dispatch({ type: "planChanged", value: "pro" })}
+                                        onClick={() => selectOption({ type: "planChanged", value: "pro" }, "pro")}
                                     />
                                     <SubscriptionOptionCard
                                         title={content.plan.max.title}
@@ -120,7 +133,7 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
                                         icon={icons.plan.max}
                                         accent="magenta"
                                         active={selection.plan === "max"}
-                                        onClick={() => dispatch({ type: "planChanged", value: "max" })}
+                                        onClick={() => selectOption({ type: "planChanged", value: "max" }, "max")}
                                     />
                                 </>
                             )}
@@ -130,7 +143,7 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
                                 icon={icons.plan.custom}
                                 accent="aqua"
                                 active={selection.plan === "custom"}
-                                onClick={() => dispatch({ type: "planChanged", value: "custom" })}
+                                onClick={() => selectOption({ type: "planChanged", value: "custom" }, "custom")}
                             />
                         </div>
                     </div>
@@ -147,7 +160,7 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
                             icon={icons.deployment.selfHosted}
                             accent={content.deployment.selfHosted.color}
                             active={selection.deployment === "self_hosted"}
-                            onClick={() => dispatch({ type: "deploymentChanged", value: "self_hosted" })}
+                            onClick={() => selectOption({ type: "deploymentChanged", value: "self_hosted" }, "selfHosted")}
                         />
                         <SubscriptionOptionCard
                             title={content.deployment.cloud.title}
@@ -155,7 +168,7 @@ export function SubscriptionConfigurator({ locale, content, icons }: { locale: A
                             icon={icons.deployment.cloud}
                             accent={content.deployment.cloud.color}
                             active={selection.deployment === "cloud"}
-                            onClick={() => dispatch({ type: "deploymentChanged", value: "cloud" })}
+                            onClick={() => selectOption({ type: "deploymentChanged", value: "cloud" }, "cloud")}
                         />
                     </div>
                 </div>

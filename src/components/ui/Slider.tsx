@@ -25,15 +25,15 @@ function formatSliderLabel(value: number, suffix?: string, trailingSuffix = "") 
 }
 
 function getDefaultLines() {
-    if (typeof window === "undefined") return 72
-    if (window.matchMedia("(min-width: 1280px)").matches) return 72
-    if (window.matchMedia("(min-width: 768px)").matches) return 56
+    if (typeof window === "undefined") return 56
+    if (window.matchMedia("(min-width: 1280px)").matches) return 56
+    if (window.matchMedia("(min-width: 768px)").matches) return 48
     return 36
 }
 
 export function Slider({ min, max, step = 1, value, onChange, className, lines, minLabel, maxLabel, centerLabel, ariaLabel, valueLabelSuffix, centerLabelSuffix = "" }: SliderProps) {
     const trackRef = useRef<HTMLDivElement>(null)
-    const [responsiveLines, setResponsiveLines] = useState(lines ?? 72)
+    const [responsiveLines, setResponsiveLines] = useState(lines ?? 56)
     const resolvedLines = lines ?? responsiveLines
     const clampedValue = Math.min(max, Math.max(min, value))
     const progress = ((clampedValue - min) / (max - min)) * 100

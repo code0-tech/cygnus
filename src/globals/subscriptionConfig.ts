@@ -30,6 +30,14 @@ const colorField = {
     defaultValue: "aqua",
 } as const
 
+const optionImageField = (): Field => ({
+    name: "image",
+    label: "Image",
+    type: "upload",
+    relationTo: "media",
+    required: false,
+})
+
 const usageRangeFields = (defaults: { default: number; min: number; max: number; step: number }): Field[] => [
     { name: "default", label: "Default (shown when the slider opens)", type: "number", required: false, defaultValue: defaults.default },
     { name: "step", type: "number", required: false, defaultValue: defaults.step },
@@ -147,6 +155,7 @@ export const SubscriptionCollection: GlobalConfig = {
                         },
                         { ...iconField, defaultValue: "server" },
                         { ...colorField, defaultValue: "yellow" },
+                        optionImageField(),
                     ],
                 },
                 {
@@ -163,6 +172,7 @@ export const SubscriptionCollection: GlobalConfig = {
                         },
                         { ...iconField, defaultValue: "cloud" },
                         { ...colorField, defaultValue: "aqua" },
+                        optionImageField(),
                     ],
                 },
             ],
@@ -193,6 +203,7 @@ export const SubscriptionCollection: GlobalConfig = {
                             defaultValue: "A ready-to-use plan for individuals and smaller teams.",
                         },
                         { ...iconField, defaultValue: "sparkles" },
+                        optionImageField(),
                     ],
                 },
                 {
@@ -209,6 +220,7 @@ export const SubscriptionCollection: GlobalConfig = {
                             defaultValue: "A ready-to-use plan for organizations with higher requirements.",
                         },
                         { ...iconField, defaultValue: "rocket" },
+                        optionImageField(),
                     ],
                 },
                 {
@@ -225,6 +237,7 @@ export const SubscriptionCollection: GlobalConfig = {
                             defaultValue: "Configure usage and additional features for an individual setup.",
                         },
                         { ...iconField, defaultValue: "settings" },
+                        optionImageField(),
                     ],
                 },
             ],
@@ -254,6 +267,7 @@ export const SubscriptionCollection: GlobalConfig = {
                         },
                         { ...iconField, defaultValue: "briefcase-2" },
                         { ...colorField, defaultValue: "blue" },
+                        optionImageField(),
                     ],
                 },
                 {
@@ -270,6 +284,7 @@ export const SubscriptionCollection: GlobalConfig = {
                         },
                         { ...iconField, defaultValue: "building-store" },
                         { ...colorField, defaultValue: "pink" },
+                        optionImageField(),
                     ],
                 },
             ],
