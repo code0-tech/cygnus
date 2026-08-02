@@ -49,11 +49,14 @@ export type SubscriptionOptionImageKey = "b2b" | "b2c" | "pro" | "max" | "custom
 const B2B_PAYMENT_PERIOD_OPTIONS = ["monthly", "quarterly", "yearly"] as const
 const B2C_PAYMENT_PERIOD_OPTIONS = ["weekly", "monthly", "yearly"] as const
 
-function SubscriptionOptionCategoryLabel({ label }: { label: string }) {
+function SubscriptionOptionCategoryLabel({ label, description }: { label: string; description?: string | null }) {
     return (
-        <p className={cn("text-2xl font-semibold", hasHighlightedText(label) ? "text-secondary" : "text-white")}>
-            <FormattedText text={label} />
-        </p>
+        <div>
+            <p className={cn("text-2xl font-semibold", hasHighlightedText(label) ? "text-secondary" : "text-white")}>
+                <FormattedText text={label} />
+            </p>
+            {description && <p className="mt-2 text-base text-tertiary">{description}</p>}
+        </div>
     )
 }
 
@@ -164,10 +167,10 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
     }, [])
 
     return (
-        <div ref={configuratorRef} className="relative z-10 flex min-w-0 flex-col gap-8 lg:col-span-2 lg:pt-[120px]">
+        <div ref={configuratorRef} className="relative z-10 flex min-w-0 flex-col gap-8 lg:col-span-2 lg:pt-30">
             <div className="space-y-48">
                 <div className="space-y-8 scroll-mt-48" data-subscription-step="customerType">
-                    <SubscriptionOptionCategoryLabel label={content.customerType.label} />
+                    <SubscriptionOptionCategoryLabel label={content.customerType.label} description={content.customerType.description} />
                     <div className="grid gap-3">
                         <SubscriptionOptionCard
                             title={content.customerType.b2b.title}
@@ -190,7 +193,7 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
 
                 {selection.customerType === "b2c" && (
                     <div className="space-y-8 scroll-mt-48" data-subscription-step="plan">
-                        <SubscriptionOptionCategoryLabel label={content.plan.title} />
+                        <SubscriptionOptionCategoryLabel label={content.plan.title} description={content.plan.description} />
                         <div className="grid gap-3">
                             <SubscriptionOptionCard
                                 title={content.plan.pro.title}
@@ -221,7 +224,7 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                 )}
 
                 <div className="space-y-8 scroll-mt-48" data-subscription-step="deployment">
-                    <SubscriptionOptionCategoryLabel label={content.deployment.label} />
+                    <SubscriptionOptionCategoryLabel label={content.deployment.label} description={content.deployment.description} />
                     <div className="grid gap-3">
                         <SubscriptionOptionCard
                             title={content.deployment.selfHosted.title}
@@ -244,7 +247,7 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
 
                 {selection.plan === "custom" && (
                     <div className="space-y-8 scroll-mt-48" data-subscription-step="aiTokens">
-                        <SubscriptionOptionCategoryLabel label={aiTokens.title} />
+                        <SubscriptionOptionCategoryLabel label={aiTokens.title} description={aiTokens.description} />
                         <Slider
                             min={aiTokenRange.min}
                             max={aiTokenRange.max}
@@ -261,7 +264,7 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
 
                 {selection.plan === "custom" && (
                     <div className="space-y-8 scroll-mt-48" data-subscription-step="workflowExecutions">
-                        <SubscriptionOptionCategoryLabel label={workflowExecutions.title} />
+                        <SubscriptionOptionCategoryLabel label={workflowExecutions.title} description={workflowExecutions.description} />
                         <Slider
                             min={workflowExecutionRange.min}
                             max={workflowExecutionRange.max}
@@ -298,7 +301,7 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
 
                 {selection.plan === "custom" && content.additionalFeatures && content.additionalFeatures.length > 0 && (
                     <div className="space-y-8 scroll-mt-48" data-subscription-step="additionalFeatures">
-                        <SubscriptionOptionCategoryLabel label={content.additionalFeaturesLabel ?? "Additional Features"} />
+                        <SubscriptionOptionCategoryLabel label={content.additionalFeaturesLabel ?? "Additional Features"} description={content.additionalFeaturesDescription} />
                         <div className="grid gap-3">
                             {content.additionalFeatures.map((feature, index) => {
                                 const formattedFeaturePrice = formatEuroCurrency(feature.price, locale)
@@ -319,7 +322,7 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                 )}
 
                 <div className="space-y-8 scroll-mt-48" data-subscription-step="paymentPeriod">
-                    <SubscriptionOptionCategoryLabel label={content.paymentPeriod.label} />
+                    <SubscriptionOptionCategoryLabel label={content.paymentPeriod.label} description={content.paymentPeriod.description} />
                     <div className="grid gap-3">
                         {paymentPeriodOptions.map((period) => {
                             const discount = getPaymentPeriodDiscount(period, content.paymentPeriod)
@@ -380,7 +383,7 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
             <div
                 aria-hidden="true"
                 className={cn(
-                    "pointer-events-none fixed inset-x-0 bottom-0 z-40 h-28 bg-linear-to-t from-primary/95 via-primary/50 to-transparent backdrop-blur-[2px] [mask-image:linear-gradient(to_top,black_0%,black_30%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_top,black_0%,black_30%,transparent_100%)] transition-opacity duration-200",
+                    "pointer-events-none fixed inset-x-0 bottom-0 z-40 h-56 bg-linear-to-t from-primary via-primary/50 to-transparent backdrop-blur-[2px] mask-[linear-gradient(to_top,black_0%,black_30%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_top,black_0%,black_30%,transparent_100%)] transition-opacity duration-200",
                     showBottomBlur ? "opacity-100" : "opacity-0"
                 )}
             />

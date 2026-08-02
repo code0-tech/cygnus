@@ -98,6 +98,7 @@ import * as migration_20260801_070112_subscription_configurator_usage_range_defa
 import * as migration_20260801_191302_subscription_option_category_titles from './20260801_191302_subscription_option_category_titles';
 import * as migration_20260801_193034_remove_legacy_subscription_configurator_fields from './20260801_193034_remove_legacy_subscription_configurator_fields';
 import * as migration_20260802_060057_subscription_option_images from './20260802_060057_subscription_option_images';
+import * as migration_20260802_143935_subscription_configurator_category_descriptions from './20260802_143935_subscription_configurator_category_descriptions';
 
 export const migrations = [
   {
@@ -598,6 +599,11 @@ export const migrations = [
   {
     up: migration_20260802_060057_subscription_option_images.up,
     down: migration_20260802_060057_subscription_option_images.down,
-    name: '20260802_060057_subscription_option_images'
+    name: '20260802_060057_subscription_option_images',
+  },
+  {
+    up: migration_20260802_143935_subscription_configurator_category_descriptions.up,
+    down: migration_20260802_143935_subscription_configurator_category_descriptions.down,
+    name: '20260802_143935_subscription_configurator_category_descriptions'
   },
 ];

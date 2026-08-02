@@ -2869,6 +2869,7 @@ export interface SubscriptionConfig {
   };
   deployment: {
     label?: string | null;
+    description?: string | null;
     selfHosted: {
       title?: string | null;
       description?: string | null;
@@ -2886,6 +2887,7 @@ export interface SubscriptionConfig {
   };
   plan: {
     title?: string | null;
+    description?: string | null;
     pro: {
       title?: string | null;
       description?: string | null;
@@ -2907,6 +2909,7 @@ export interface SubscriptionConfig {
   };
   customerType: {
     label?: string | null;
+    description?: string | null;
     b2b: {
       title?: string | null;
       description?: string | null;
@@ -2950,6 +2953,7 @@ export interface SubscriptionConfig {
   };
   paymentPeriod?: {
     label?: string | null;
+    description?: string | null;
     weeklyText?: string | null;
     monthlyText?: string | null;
     quarterlyText?: string | null;
@@ -2967,6 +2971,7 @@ export interface SubscriptionConfig {
   };
   workflowExecutions?: {
     title?: string | null;
+    description?: string | null;
     b2b?: {
       default?: number | null;
       step?: number | null;
@@ -3008,6 +3013,7 @@ export interface SubscriptionConfig {
   workflowExecutionPriceFactor?: number | null;
   aiTokens?: {
     title?: string | null;
+    description?: string | null;
     b2b?: {
       default?: number | null;
       step?: number | null;
@@ -3040,6 +3046,10 @@ export interface SubscriptionConfig {
    * Optional section heading shown above the additional features list.
    */
   additionalFeaturesLabel?: string | null;
+  /**
+   * Optional description shown below the additional features heading.
+   */
+  additionalFeaturesDescription?: string | null;
   /**
    * Leave empty to hide the section entirely.
    */
@@ -3360,6 +3370,7 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
     | T
     | {
         label?: T;
+        description?: T;
         selfHosted?:
           | T
           | {
@@ -3383,6 +3394,7 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
     | T
     | {
         title?: T;
+        description?: T;
         pro?:
           | T
           | {
@@ -3412,6 +3424,7 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
     | T
     | {
         label?: T;
+        description?: T;
         b2b?:
           | T
           | {
@@ -3473,6 +3486,7 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
     | T
     | {
         label?: T;
+        description?: T;
         weeklyText?: T;
         monthlyText?: T;
         quarterlyText?: T;
@@ -3492,6 +3506,7 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
     | T
     | {
         title?: T;
+        description?: T;
         b2b?:
           | T
           | {
@@ -3541,6 +3556,7 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
     | T
     | {
         title?: T;
+        description?: T;
         b2b?:
           | T
           | {
@@ -3580,6 +3596,7 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
         caption?: T;
       };
   additionalFeaturesLabel?: T;
+  additionalFeaturesDescription?: T;
   additionalFeatures?:
     | T
     | {
