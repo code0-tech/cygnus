@@ -10,7 +10,14 @@ import type { SubscriptionConfiguratorContent } from "@/lib/cms"
 import { formatEuroCurrency } from "@/lib/formatters"
 import type { AppLocale } from "@/lib/i18n"
 import { getSubscriptionCatalog } from "@/lib/subscriptionCatalog"
-import { calculateSubscriptionQuote, formatDiscountBadge, getMonthlyEquivalentAmount, getPaymentPeriodDiscount, getPaymentPeriodSuffix } from "@/lib/subscriptionCalculator"
+import {
+    calculateSubscriptionQuote,
+    formatDiscountBadge,
+    getMonthlyEquivalentAmount,
+    getPaymentPeriodAmount,
+    getPaymentPeriodDiscount,
+    getPaymentPeriodSuffix,
+} from "@/lib/subscriptionCalculator"
 import { cn } from "@/lib/utils"
 import {
     buildSubscriptionSelectionSearchParams,
@@ -94,7 +101,9 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
     const paymentPeriodOptions = selection.customerType === "b2b" ? B2B_PAYMENT_PERIOD_OPTIONS : B2C_PAYMENT_PERIOD_OPTIONS
     const paymentPeriodSuffix = getPaymentPeriodSuffix(selection.paymentPeriod, content.paymentPeriod)
     const monthlyPeriodSuffix = getPaymentPeriodSuffix("monthly", content.paymentPeriod)
-    const monthlyPrice = getMonthlyEquivalentAmount(calculateSubscriptionQuote(selection, catalog).total, selection.paymentPeriod) / 100
+    const quote = calculateSubscriptionQuote(selection, catalog)
+    const monthlyPrice = getMonthlyEquivalentAmount(quote.total, selection.paymentPeriod) / 100
+    const paymentPeriodPrice = getPaymentPeriodAmount(monthlyPrice, selection.paymentPeriod)
     const selectionSearchParamsString = buildSubscriptionSelectionSearchParams(selection).toString()
     const configurationUrl = `${pathname}?${selectionSearchParamsString}`
     const subscribeSearchParams = new URLSearchParams(selectionSearchParamsString)
@@ -348,15 +357,28 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
             </div>
 
             <div ref={configuratorEndRef}>
-                <div className="mb-3 flex min-w-0 items-baseline justify-end gap-2 text-right">
-                    <NumberFlow
-                        value={monthlyPrice}
-                        locales={locale === "de" ? "de-DE" : "en-US"}
-                        format={{ style: "currency", currency: "EUR", trailingZeroDisplay: "stripIfInteger" }}
-                        className="text-2xl font-semibold text-brand"
-                    />
-                    <span className="max-w-28 truncate text-base text-tertiary">{monthlyPeriodSuffix}</span>
-                    {selection.paymentPeriod !== "monthly" && <span className="max-w-28 -ml-1 truncate text-base text-tertiary">({content.paymentPeriod[`${selection.paymentPeriod}PaidLabel`]})</span>}
+                <div className="mb-3 flex min-w-0 flex-col items-end text-right">
+                    <div className="flex h-5 min-w-0 items-baseline justify-end gap-2 text-sm text-tertiary">
+                        {selection.paymentPeriod !== "monthly" && (
+                            <>
+                                <NumberFlow
+                                    value={paymentPeriodPrice}
+                                    locales={locale === "de" ? "de-DE" : "en-US"}
+                                    format={{ style: "currency", currency: "EUR", trailingZeroDisplay: "stripIfInteger" }}
+                                />
+                                <span className="max-w-36 truncate">({content.paymentPeriod[`${selection.paymentPeriod}PaidLabel`]})</span>
+                            </>
+                        )}
+                    </div>
+                    <div className="flex min-w-0 items-baseline justify-end gap-2">
+                        <NumberFlow
+                            value={monthlyPrice}
+                            locales={locale === "de" ? "de-DE" : "en-US"}
+                            format={{ style: "currency", currency: "EUR", trailingZeroDisplay: "stripIfInteger" }}
+                            className="text-2xl font-semibold text-brand"
+                        />
+                        <span className="max-w-28 truncate text-base text-tertiary">{monthlyPeriodSuffix}</span>
+                    </div>
                 </div>
                 <HapticButtonLink href={subscribeHref} variant="filled" className="h-10! w-full! bg-white/80! font-semibold! text-primary! hover:bg-white!">
                     {content.subscribe.label}
