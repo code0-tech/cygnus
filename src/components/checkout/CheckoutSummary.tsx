@@ -4,7 +4,14 @@ import { CheckoutDiscount, type CheckoutDiscountValue } from "@/components/check
 import { getIcon } from "@/components/ui/IconRenderer"
 import type { CheckoutData, CheckoutSummaryIconColor, SubscriptionConfigData } from "@/lib/cms"
 import { formatCompactNumber, formatEuroCurrency } from "@/lib/formatters"
-import { calculateExclusiveTaxRate, calculatePromotionDiscountAmount, formatDiscountBadge, resolveCheckoutPricing } from "@/lib/subscriptionCalculator"
+import {
+    calculateExclusiveTaxRate,
+    calculatePromotionDiscountAmount,
+    formatDiscountBadge,
+    getMonthlyEquivalentAmount,
+    getPaymentPeriodAmount,
+    resolveCheckoutPricing,
+} from "@/lib/subscriptionCalculator"
 import type { CheckoutTaxQuote } from "@code0-tech/crater-graphql-types"
 import { useParams, useSearchParams } from "next/navigation"
 import { useState, type ReactNode } from "react"
@@ -90,16 +97,22 @@ export function CheckoutSummary({ content, sessionToken, subscriptionConfig, tax
     const paymentPeriodDiscountAmount = Math.max(0, pricing.totalBeforeDiscount - pricing.totalPrice)
     const paymentPeriodDiscountPercentage = pricing.totalBeforeDiscount > 0 ? paymentPeriodDiscountAmount / pricing.totalBeforeDiscount : 0
     const paymentPeriodDiscountLabel = paymentPeriod === "quarterly" ? content.pricing.quarterlyDiscountLabel : paymentPeriod === "yearly" ? content.pricing.yearlyDiscountLabel : null
-    const promotionDiscountAmount = calculatePromotionDiscountAmount(pricing.totalPrice, promotionDiscount)
-    const discountedPrice = Math.max(0, pricing.totalPrice - promotionDiscountAmount)
+    const monthlyTotalPrice = getMonthlyEquivalentAmount(Math.round(pricing.totalPrice * 100), paymentPeriod) / 100
+    const paymentPeriodTotalPrice = getPaymentPeriodAmount(monthlyTotalPrice, paymentPeriod)
+    const toPaymentPeriodPrice = (price: number) => {
+        const monthlyPrice = getMonthlyEquivalentAmount(Math.round(price * 100), paymentPeriod) / 100
+        return getPaymentPeriodAmount(monthlyPrice, paymentPeriod)
+    }
+    const promotionDiscountAmount = calculatePromotionDiscountAmount(paymentPeriodTotalPrice, promotionDiscount)
+    const discountedPrice = Math.max(0, paymentPeriodTotalPrice - promotionDiscountAmount)
     const taxAmount = taxQuote ? taxQuote.taxAmountExclusive / 100 : 0
     const taxPercentage = taxQuote ? calculateExclusiveTaxRate(taxQuote.amountTotal, taxQuote.taxAmountExclusive) : 0
     const totalPrice = taxQuote ? Math.max(0, taxQuote.amountTotal / 100 - promotionDiscountAmount) : discountedPrice
     const formattedTotalPrice = formatEuroCurrency(totalPrice, locale)
-    const formattedBasePrice = formatEuroCurrency(pricing.aiTokenPrice, locale)
-    const formattedWorkflowExecutionsPrice = formatEuroCurrency(pricing.workflowExecutionPrice, locale)
-    const formattedAdditionalFeaturesPrice = formatEuroCurrency(additionalFeaturesPrice, locale)
-    const formattedPaymentPeriodDiscountAmount = formatEuroCurrency(paymentPeriodDiscountAmount, locale)
+    const formattedBasePrice = formatEuroCurrency(toPaymentPeriodPrice(pricing.aiTokenPrice), locale)
+    const formattedWorkflowExecutionsPrice = formatEuroCurrency(toPaymentPeriodPrice(pricing.workflowExecutionPrice), locale)
+    const formattedAdditionalFeaturesPrice = formatEuroCurrency(toPaymentPeriodPrice(additionalFeaturesPrice), locale)
+    const formattedPaymentPeriodDiscountAmount = formatEuroCurrency(toPaymentPeriodPrice(paymentPeriodDiscountAmount), locale)
     const formattedDiscountAmount = formatEuroCurrency(promotionDiscountAmount, locale)
     const formattedTaxAmount = formatEuroCurrency(taxAmount, locale)
 

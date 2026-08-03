@@ -6,7 +6,7 @@ import { resolveSubscriptionSelection, type SubscriptionCustomerType, type Subsc
 export type PaymentPeriod = "weekly" | "monthly" | "quarterly" | "yearly"
 type SubscriptionPlan = "custom" | "pro" | "max"
 
-const AVERAGE_WEEKS_PER_MONTH = 4.345
+const AVERAGE_WEEKS_PER_MONTH = 4.35
 const PAYMENT_PERIODS = new Set<PaymentPeriod>(["weekly", "monthly", "quarterly", "yearly"])
 
 export type UsageRange = {
@@ -56,7 +56,7 @@ export function getPaymentPeriodDiscount(period: PaymentPeriod, paymentPeriod: S
 }
 
 export function getPaymentPeriodMonths(period: PaymentPeriod) {
-    if (period === "weekly") return 1 / AVERAGE_WEEKS_PER_MONTH
+    if (period === "weekly") return 1
     if (period === "quarterly") return 3
     if (period === "yearly") return 12
     return 1
@@ -64,6 +64,11 @@ export function getPaymentPeriodMonths(period: PaymentPeriod) {
 
 export function getMonthlyEquivalentAmount(amount: number, period: PaymentPeriod) {
     return Math.round(amount / getPaymentPeriodMonths(period))
+}
+
+export function getPaymentPeriodAmount(monthlyAmount: number, period: PaymentPeriod) {
+    const multiplier = period === "weekly" ? 1 / AVERAGE_WEEKS_PER_MONTH : period === "quarterly" ? 3 : period === "yearly" ? 12 : 1
+    return Math.round(monthlyAmount * multiplier * 100) / 100
 }
 
 export function getPaymentPeriodSuffix(period: PaymentPeriod, paymentPeriod: SubscriptionConfigData["paymentPeriod"]) {
