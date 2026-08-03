@@ -168,7 +168,7 @@ export function CheckoutDiscount({ appliedAmount, buttonLabel, inputPlaceholder,
     }
 
     const discountForm = (
-        <form onSubmit={handleSubmit} className="space-y-2">
+        <form onSubmit={handleSubmit} className="w-full space-y-2">
             <div className="flex items-start gap-2">
                 <input
                     aria-label={inputPlaceholder}
