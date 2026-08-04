@@ -135,9 +135,9 @@ test("forces the custom plan for b2b customers requesting pro or max, even sent 
                 checkoutCreateSession: {
                     errors: [],
                     session: {
+                        clientSecret: "cs_b2b_downgrade_secret_test",
                         expiresAt: 1_800_000_000,
                         id: "cs_b2b_downgrade",
-                        url: "https://checkout.stripe.com/b2b-downgrade",
                     },
                 },
             },
@@ -168,10 +168,9 @@ test("forces the custom plan for b2b customers requesting pro or max, even sent 
         assert.equal(response.status, 200)
         assert.deepEqual(graphQLServer.requests[0].body.variables, {
             input: {
-                cancelUrl: "https://code0.example/checkout",
                 deploymentType: "self_hosted",
                 plan: "custom",
-                successUrl: "https://code0.example/checkout/success",
+                returnUrl: "https://code0.example/checkout/success?session_id={CHECKOUT_SESSION_ID}",
             },
         })
     } finally {
@@ -190,9 +189,9 @@ test("creates regular and custom checkout sessions with the expected Crater inpu
                 checkoutCreateSession: {
                     errors: [],
                     session: {
+                        clientSecret: "cs_regular_secret_test",
                         expiresAt: 1_800_000_000,
                         id: "cs_regular",
-                        url: "https://checkout.stripe.com/regular",
                     },
                 },
             },
@@ -202,9 +201,9 @@ test("creates regular and custom checkout sessions with the expected Crater inpu
                 checkoutCreateSession: {
                     errors: [],
                     session: {
+                        clientSecret: "cs_custom_secret_test",
                         expiresAt: 1_800_000_001,
                         id: "cs_custom",
-                        url: "https://checkout.stripe.com/custom",
                     },
                 },
             },
@@ -246,28 +245,26 @@ test("creates regular and custom checkout sessions with the expected Crater inpu
 
         assert.equal(regularResponse.status, 200)
         assert.deepEqual(await regularResponse.json(), {
+            clientSecret: "cs_regular_secret_test",
             expiresAt: 1_800_000_000,
             id: "cs_regular",
-            url: "https://checkout.stripe.com/regular",
         })
         assert.equal(customResponse.status, 200)
 
         assert.equal(graphQLServer.requests[0].authorization, "Session regular-token")
         assert.deepEqual(graphQLServer.requests[0].body.variables, {
             input: {
-                cancelUrl: "https://code0.example/checkout",
                 deploymentType: "self_hosted",
                 plan: "pro",
                 promotionCode: "SAVE10",
-                successUrl: "https://code0.example/checkout/success",
+                returnUrl: "https://code0.example/checkout/success?session_id={CHECKOUT_SESSION_ID}",
             },
         })
         assert.equal(graphQLServer.requests[1].authorization, "Session custom-token")
         assert.deepEqual(graphQLServer.requests[1].body.variables, {
             input: {
-                cancelUrl: "https://code0.example/checkout",
                 customCheckoutConfigurationId: "gid://crater/CustomCheckoutConfiguration/4",
-                successUrl: "https://code0.example/checkout/success",
+                returnUrl: "https://code0.example/checkout/success?session_id={CHECKOUT_SESSION_ID}",
             },
         })
     } finally {
