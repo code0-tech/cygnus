@@ -22,17 +22,13 @@ async function readCheckoutError(response: Response, fallback: string) {
     }
 }
 
-export async function createCheckoutSession({
+async function createCheckoutCustomer({
     values,
     customerType,
-    locale,
-    searchParams,
     sessionToken,
 }: {
     values: BillingDetails
     customerType: CraterCustomerType
-    locale: AppLocale
-    searchParams: URLSearchParams
     sessionToken: string
 }) {
     const authorization = `Session ${sessionToken}`
@@ -48,7 +44,10 @@ export async function createCheckoutSession({
         }),
     })
     if (!customerResponse.ok) throw new Error(await readCheckoutError(customerResponse, "Failed to create the billing customer."))
+}
 
+export async function createCheckoutSession({ locale, searchParams, sessionToken }: { locale: AppLocale; searchParams: URLSearchParams; sessionToken: string }) {
+    const authorization = `Session ${sessionToken}`
     const checkoutResponse = await fetch("/api/crater/checkout/session", {
         method: "POST",
         headers: { Authorization: authorization, "Content-Type": "application/json" },
@@ -65,4 +64,21 @@ export async function createCheckoutSession({
         expiresAt: "expiresAt" in checkout && typeof checkout.expiresAt === "number" ? checkout.expiresAt : null,
         id: "id" in checkout && typeof checkout.id === "string" ? checkout.id : null,
     } satisfies CheckoutSessionData
+}
+
+export async function prepareCheckoutSession({
+    values,
+    customerType,
+    locale,
+    searchParams,
+    sessionToken,
+}: {
+    values: BillingDetails
+    customerType: CraterCustomerType
+    locale: AppLocale
+    searchParams: URLSearchParams
+    sessionToken: string
+}) {
+    await createCheckoutCustomer({ values, customerType, sessionToken })
+    return createCheckoutSession({ locale, searchParams, sessionToken })
 }
