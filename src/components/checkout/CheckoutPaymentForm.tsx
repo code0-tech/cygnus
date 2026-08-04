@@ -2,6 +2,7 @@
 
 import type { CheckoutData } from "@/lib/cms"
 import type { CheckoutSessionData } from "@/lib/checkout/checkoutSubmission"
+import { useCheckoutStage } from "@/components/checkout/CheckoutStepper"
 import { Button } from "@code0-tech/pictor"
 import { BillingAddressElement, CheckoutElementsProvider, PaymentElement, useCheckoutElements } from "@stripe/react-stripe-js/checkout"
 import { loadStripe, type StripeCheckoutElementsSdkOptions } from "@stripe/stripe-js"
@@ -20,8 +21,9 @@ interface CheckoutPaymentFormProps {
     session: CheckoutSessionData
 }
 
-function CheckoutPaymentFields({ content, onBack }: Pick<CheckoutPaymentFormProps, "content" | "onBack">) {
+function CheckoutPaymentFields({ content, onAddressComplete, onBack }: Pick<CheckoutPaymentFormProps, "content" | "onBack"> & { onAddressComplete: (complete: boolean) => void }) {
     const checkoutState = useCheckoutElements()
+    const [isAddressComplete, setIsAddressComplete] = useState(false)
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
     const [isConfirming, setIsConfirming] = useState(false)
 
@@ -31,10 +33,15 @@ function CheckoutPaymentFields({ content, onBack }: Pick<CheckoutPaymentFormProp
 
         setIsConfirming(true)
         setErrorMessage(null)
-        const result = await checkoutState.checkout.confirm({ redirect: "always" })
+        try {
+            const result = await checkoutState.checkout.confirm({ redirect: "always" })
 
-        if (result.type === "error") {
-            setErrorMessage(result.error.message)
+            if (result.type === "error") {
+                setErrorMessage(result.error.message)
+                setIsConfirming(false)
+            }
+        } catch (error) {
+            setErrorMessage(error instanceof Error ? error.message : content.paymentErrorFallback)
             setIsConfirming(false)
         }
     }
@@ -58,8 +65,20 @@ function CheckoutPaymentFields({ content, onBack }: Pick<CheckoutPaymentFormProp
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
-            <BillingAddressElement options={{ fields: { phone: "auto" } }} />
-            <PaymentElement />
+            <BillingAddressElement
+                options={{ fields: { phone: "auto" } }}
+                onChange={(event) => {
+                    setIsAddressComplete(event.complete)
+                    onAddressComplete(event.complete)
+                }}
+            />
+
+            {isAddressComplete && (
+                <div className="space-y-4">
+                    <h2 className="text-lg font-medium text-white">{content.paymentHeading}</h2>
+                    <PaymentElement />
+                </div>
+            )}
 
             {errorMessage && (
                 <p className="text-sm text-error" role="alert">
@@ -71,7 +90,7 @@ function CheckoutPaymentFields({ content, onBack }: Pick<CheckoutPaymentFormProp
                 <Button
                     type="submit"
                     variant="normal"
-                    disabled={isConfirming}
+                    disabled={!isAddressComplete || isConfirming}
                     className="h-10! w-full! whitespace-nowrap bg-white/80! px-8! text-sm! text-primary! ring-1! ring-white/20! hover:bg-white!"
                 >
                     {isConfirming ? content.processingLabel : content.payNowLabel}
@@ -85,6 +104,7 @@ function CheckoutPaymentFields({ content, onBack }: Pick<CheckoutPaymentFormProp
 }
 
 export function CheckoutPaymentForm({ content, email, onBack, phone, session }: CheckoutPaymentFormProps) {
+    const { setStage } = useCheckoutStage()
     const options = useMemo<StripeCheckoutElementsSdkOptions>(
         () => ({
             clientSecret: session.clientSecret,
@@ -103,7 +123,7 @@ export function CheckoutPaymentForm({ content, email, onBack, phone, session }: 
 
     return (
         <CheckoutElementsProvider key={session.clientSecret} stripe={stripePromise} options={options}>
-            <CheckoutPaymentFields content={content} onBack={onBack} />
+            <CheckoutPaymentFields content={content} onAddressComplete={(complete) => setStage(complete ? "payment" : "billingAddress")} onBack={onBack} />
         </CheckoutElementsProvider>
     )
 }

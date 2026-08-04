@@ -12,7 +12,10 @@ const checkoutSearchParams = new URLSearchParams({
     plan: "pro",
 })
 let checkoutProviderOptions: { clientSecret?: string } | null = null
+let billingAddressOnChange: ((event: { complete: boolean }) => void) | null = null
+let checkoutStages: string[] = []
 let stripeConfirmCalls = 0
+let stripeConfirmErrorMessage: string | null = null
 
 process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY = "pk_test_example"
 
@@ -32,7 +35,7 @@ mock.module("@/components/checkout/CraterSessionProvider", {
 })
 mock.module("@/components/checkout/CheckoutStepper", {
     namedExports: {
-        useCheckoutStage: () => ({ stage: "billingAddress", setStage: () => {} }),
+        useCheckoutStage: () => ({ stage: "billingAddress", setStage: (stage: string) => checkoutStages.push(stage) }),
     },
 })
 mock.module("@code0-tech/pictor", {
@@ -51,7 +54,10 @@ mock.module("@stripe/stripe-js", {
 })
 mock.module("@stripe/react-stripe-js/checkout", {
     namedExports: {
-        BillingAddressElement: () => <div data-testid="stripe-billing-address">Billing address</div>,
+        BillingAddressElement: ({ onChange }: { onChange: (event: { complete: boolean }) => void }) => {
+            billingAddressOnChange = onChange
+            return <div data-testid="stripe-billing-address">Billing address</div>
+        },
         CheckoutElementsProvider: ({ children, options }: { children: React.ReactNode; options: { clientSecret: string } }) => {
             checkoutProviderOptions = options
             return <>{children}</>
@@ -62,6 +68,7 @@ mock.module("@stripe/react-stripe-js/checkout", {
             checkout: {
                 confirm: async () => {
                     stripeConfirmCalls += 1
+                    if (stripeConfirmErrorMessage) return { type: "error", error: { message: stripeConfirmErrorMessage } }
                     return { type: "success", session: {} }
                 },
             },
@@ -69,7 +76,7 @@ mock.module("@stripe/react-stripe-js/checkout", {
     },
 })
 
-const { cleanup, render, screen, waitFor } = await import("@testing-library/react")
+const { act, cleanup, render, screen, waitFor } = await import("@testing-library/react")
 const userEvent = (await import("@testing-library/user-event")).default
 const { CheckoutForm } = await import("../../src/components/checkout/CheckoutForm")
 
@@ -79,7 +86,10 @@ afterEach(() => {
     globalThis.fetch = originalFetch
     checkoutSearchParams.set("customerType", "b2c")
     checkoutProviderOptions = null
+    billingAddressOnChange = null
+    checkoutStages = []
     stripeConfirmCalls = 0
+    stripeConfirmErrorMessage = null
 })
 
 const content = {
@@ -275,8 +285,22 @@ test("creates the customer without an address and mounts Stripe checkout element
     })
     assert.equal(checkoutProviderOptions?.clientSecret, "cs_test_secret")
     assert.ok(screen.getByTestId("stripe-billing-address"))
-    assert.ok(screen.getByTestId("stripe-payment"))
+    assert.equal(screen.queryByTestId("stripe-payment"), null)
+    assert.equal(checkoutStages.includes("payment"), false)
 
+    act(() => billingAddressOnChange?.({ complete: true }))
+
+    assert.ok(screen.getByTestId("stripe-payment"))
+    assert.equal(checkoutStages.at(-1), "payment")
+
+    act(() => billingAddressOnChange?.({ complete: false }))
+    assert.equal(screen.queryByTestId("stripe-payment"), null)
+    assert.equal(checkoutStages.at(-1), "billingAddress")
+
+    act(() => billingAddressOnChange?.({ complete: true }))
+
+    stripeConfirmErrorMessage = "Your payment could not be confirmed."
     await user.click(screen.getByRole("button", { name: "Pay now" }))
     await waitFor(() => assert.equal(stripeConfirmCalls, 1))
+    assert.ok(screen.getByText("Your payment could not be confirmed."))
 })
