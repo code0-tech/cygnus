@@ -98,7 +98,7 @@ export function CheckoutForm({ content, locale, mobileSteps = false }: CheckoutF
                         throw new Error(sessionError ?? "A Crater session is required.")
                     }
 
-                    const session = await createCheckoutSession({ values, customerType, searchParams: new URLSearchParams(searchParams.toString()), sessionToken })
+                    const session = await createCheckoutSession({ values, customerType, locale, searchParams: new URLSearchParams(searchParams.toString()), sessionToken })
                     setCheckoutSession(session)
                     setIsLoading(false)
                 } catch (error) {

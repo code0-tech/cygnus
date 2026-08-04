@@ -280,6 +280,7 @@ test("creates the customer without an address and mounts Stripe checkout element
     assert.deepEqual(JSON.parse(String(requests[1].init?.body)), {
         customerType: "b2c",
         deploymentType: "self_hosted",
+        locale: "en",
         paymentPeriod: "monthly",
         plan: "pro",
     })
