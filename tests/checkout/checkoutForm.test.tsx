@@ -223,10 +223,8 @@ test("shows tax fields as the final mobile step for business customers", async (
     assert.ok(screen.getByRole("textbox", { name: "Tax ID" }))
 })
 
-test("creates the customer, sends the checkout selection, and redirects to the returned URL", async () => {
+test("creates the customer without an address and stores the returned checkout session", async () => {
     const requests: Array<{ init?: RequestInit; url: string }> = []
-    const assignedUrls: string[] = []
-    domWindow.location.assign = (url) => assignedUrls.push(String(url))
     globalThis.fetch = (async (input, init) => {
         requests.push({ init, url: String(input) })
 
@@ -237,7 +235,7 @@ test("creates the customer, sends the checkout selection, and redirects to the r
             })
         }
 
-        return new Response(JSON.stringify({ url: "https://checkout.stripe.com/session" }), {
+        return new Response(JSON.stringify({ clientSecret: "cs_test_secret", expiresAt: 1_800_000_000, id: "cs_test" }), {
             status: 200,
             headers: { "content-type": "application/json" },
         })
@@ -265,14 +263,6 @@ test("creates the customer, sends the checkout selection, and redirects to the r
         name: "Ada Lovelace",
         email: "ada@example.com",
         phone: "",
-        address: {
-            line1: "Example Street 1",
-            line2: "",
-            city: "Berlin",
-            state: "",
-            postalCode: "10115",
-            country: "DE",
-        },
     })
     assert.deepEqual(JSON.parse(String(requests[1].init?.body)), {
         customerType: "b2c",
@@ -280,5 +270,5 @@ test("creates the customer, sends the checkout selection, and redirects to the r
         paymentPeriod: "monthly",
         plan: "pro",
     })
-    assert.deepEqual(assignedUrls, ["https://checkout.stripe.com/session"])
+    assert.ok(screen.getByText("Processing"))
 })
