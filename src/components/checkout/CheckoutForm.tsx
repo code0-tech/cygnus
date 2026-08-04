@@ -1,6 +1,7 @@
 "use client"
 
 import { useCraterSession } from "@/components/checkout/CraterSessionProvider"
+import { CheckoutPaymentForm } from "@/components/checkout/CheckoutPaymentForm"
 import { useCheckoutStage } from "@/components/checkout/CheckoutStepper"
 import type { CheckoutData } from "@/lib/cms"
 import { createBillingDetailsValidation, createEmptyBillingDetails, getBillingStepStatus, type BillingDetails } from "@/lib/checkout/billingDetails"
@@ -10,14 +11,10 @@ import type { AppLocale } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
 import { Button, EmailInput, TextInput, useForm } from "@code0-tech/pictor"
 import { IconCheck, IconChevronDown } from "@tabler/icons-react"
-import { BillingAddressElement, CheckoutElementsProvider, PaymentElement, useCheckoutElements } from "@stripe/react-stripe-js/checkout"
-import { loadStripe, type StripeCheckoutElementsSdkOptions } from "@stripe/stripe-js"
 import { useSearchParams } from "next/navigation"
 import { useMemo, useState, type ReactNode } from "react"
 
 type CheckoutFormContent = CheckoutData["form"]
-const stripePublicKey = process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY
-const stripePromise = stripePublicKey ? loadStripe(stripePublicKey) : null
 
 interface CheckoutFormProps {
     content?: CheckoutFormContent | null
@@ -73,70 +70,6 @@ function MobileCheckoutStep({ canOpen, children, complete, number, onOpen, open,
     )
 }
 
-function StripePaymentForm({ content, onBack }: { content: CheckoutFormContent; onBack: () => void }) {
-    const checkoutState = useCheckoutElements()
-    const [errorMessage, setErrorMessage] = useState<string | null>(null)
-    const [isConfirming, setIsConfirming] = useState(false)
-
-    const handleSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
-        event.preventDefault()
-        if (checkoutState.type !== "success" || isConfirming) return
-
-        setIsConfirming(true)
-        setErrorMessage(null)
-        const result = await checkoutState.checkout.confirm({ redirect: "always" })
-
-        if (result.type === "error") {
-            setErrorMessage(result.error.message)
-            setIsConfirming(false)
-        }
-    }
-
-    if (checkoutState.type === "loading") {
-        return <div className="flex min-h-40 items-center justify-center text-sm text-secondary">{content.processingLabel}</div>
-    }
-
-    if (checkoutState.type === "error") {
-        return (
-            <div className="space-y-4">
-                <p className="text-sm text-error" role="alert">
-                    {checkoutState.error.message}
-                </p>
-                <Button type="button" variant="normal" onClick={onBack} className="h-10! w-full! text-sm!">
-                    {content.backToBillingLabel}
-                </Button>
-            </div>
-        )
-    }
-
-    return (
-        <form onSubmit={handleSubmit} className="space-y-6">
-            <BillingAddressElement options={{ fields: { phone: "auto" } }} />
-            <PaymentElement />
-
-            {errorMessage && (
-                <p className="text-sm text-error" role="alert">
-                    {errorMessage}
-                </p>
-            )}
-
-            <div className="space-y-3">
-                <Button
-                    type="submit"
-                    variant="normal"
-                    disabled={isConfirming}
-                    className="h-10! w-full! whitespace-nowrap bg-white/80! px-8! text-sm! text-primary! ring-1! ring-white/20! hover:bg-white!"
-                >
-                    {isConfirming ? content.processingLabel : content.payNowLabel}
-                </Button>
-                <Button type="button" variant="normal" disabled={isConfirming} onClick={onBack} className="h-10! w-full! text-sm!">
-                    {content.backToBillingLabel}
-                </Button>
-            </div>
-        </form>
-    )
-}
-
 export function CheckoutForm({ content, locale, mobileSteps = false }: CheckoutFormProps) {
     const searchParams = useSearchParams()
     const { setStage } = useCheckoutStage()
@@ -179,38 +112,20 @@ export function CheckoutForm({ content, locale, mobileSteps = false }: CheckoutF
         },
     })
 
-    const stripeOptions = useMemo<StripeCheckoutElementsSdkOptions | null>(
-        () =>
-            checkoutSession
-                ? {
-                      clientSecret: checkoutSession.clientSecret,
-                      defaultValues: {
-                          email: values.email.trim(),
-                          phoneNumber: values.phone.trim() || undefined,
-                      },
-                      elementsOptions: { appearance: { theme: "night" } },
-                  }
-                : null,
-        [checkoutSession, values.email, values.phone]
-    )
-
     if (!content) return null
 
-    if (checkoutSession && stripeOptions) {
-        if (!stripePromise) {
-            return <p className="text-sm text-error">Stripe is not configured.</p>
-        }
-
+    if (checkoutSession) {
         return (
-            <CheckoutElementsProvider key={checkoutSession.clientSecret} stripe={stripePromise} options={stripeOptions}>
-                <StripePaymentForm
-                    content={content}
-                    onBack={() => {
-                        setCheckoutSession(null)
-                        setStage("billingAddress")
-                    }}
-                />
-            </CheckoutElementsProvider>
+            <CheckoutPaymentForm
+                content={content}
+                email={values.email}
+                phone={values.phone}
+                session={checkoutSession}
+                onBack={() => {
+                    setCheckoutSession(null)
+                    setStage("billingAddress")
+                }}
+            />
         )
     }
 
