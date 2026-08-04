@@ -6,13 +6,13 @@ import { useCheckoutStage } from "@/components/checkout/CheckoutStepper"
 import type { CheckoutData } from "@/lib/cms"
 import { createBillingDetailsValidation, createEmptyBillingDetails, getBillingStepStatus, type BillingDetails } from "@/lib/checkout/billingDetails"
 import { resolveCraterCustomerType } from "@/lib/checkout/craterCustomer"
-import { createCheckoutSession, type CheckoutSessionData } from "@/lib/checkout/checkoutSubmission"
+import { createCheckoutSession, prepareCheckoutSession, type CheckoutSessionData } from "@/lib/checkout/checkoutSubmission"
 import type { AppLocale } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
 import { Button, EmailInput, TextInput, useForm } from "@code0-tech/pictor"
 import { IconCheck, IconChevronDown } from "@tabler/icons-react"
 import { useSearchParams } from "next/navigation"
-import { useMemo, useState, type ReactNode } from "react"
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react"
 
 type CheckoutFormContent = CheckoutData["form"]
 
@@ -76,11 +76,16 @@ export function CheckoutForm({ content, locale, mobileSteps = false }: CheckoutF
     const [isLoading, setIsLoading] = useState(false)
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
     const [checkoutSession, setCheckoutSession] = useState<CheckoutSessionData | null>(null)
+    const [checkoutSessionPromotionCode, setCheckoutSessionPromotionCode] = useState<string | null | undefined>(undefined)
+    const [isRefreshingSession, setIsRefreshingSession] = useState(false)
     const [mobileStep, setMobileStep] = useState(0)
+    const sessionRefreshRequestRef = useRef(0)
     const { error: sessionError, isLoading: isSessionLoading, token: sessionToken } = useCraterSession()
     const customerType = resolveCraterCustomerType(searchParams.get("customerType"))
     const initialValues = useMemo(createEmptyBillingDetails, [])
     const validation = useMemo(() => createBillingDetailsValidation(customerType, false), [customerType])
+    const searchParamsString = searchParams.toString()
+    const promotionCode = searchParams.get("promotionCode")?.trim() || null
 
     const [inputs, validate, values] = useForm({
         useInitialValidation: false,
@@ -98,8 +103,10 @@ export function CheckoutForm({ content, locale, mobileSteps = false }: CheckoutF
                         throw new Error(sessionError ?? "A Crater session is required.")
                     }
 
-                    const session = await createCheckoutSession({ values, customerType, locale, searchParams: new URLSearchParams(searchParams.toString()), sessionToken })
+                    const checkoutSearchParams = new URLSearchParams(searchParamsString)
+                    const session = await prepareCheckoutSession({ values, customerType, locale, searchParams: checkoutSearchParams, sessionToken })
                     setCheckoutSession(session)
+                    setCheckoutSessionPromotionCode(checkoutSearchParams.get("promotionCode")?.trim() || null)
                     setIsLoading(false)
                 } catch (error) {
                     console.error("Failed to start Crater checkout:", error)
@@ -111,7 +118,38 @@ export function CheckoutForm({ content, locale, mobileSteps = false }: CheckoutF
         },
     })
 
+    useEffect(() => {
+        if (checkoutSessionPromotionCode === undefined || checkoutSessionPromotionCode === promotionCode || !sessionToken) return
+
+        const requestId = ++sessionRefreshRequestRef.current
+        const checkoutSearchParams = new URLSearchParams(searchParamsString)
+        setCheckoutSession(null)
+        setIsRefreshingSession(true)
+        setErrorMessage(null)
+        setStage("billingAddress")
+
+        void createCheckoutSession({ locale, searchParams: checkoutSearchParams, sessionToken })
+            .then((session) => {
+                if (requestId !== sessionRefreshRequestRef.current) return
+                setCheckoutSession(session)
+                setCheckoutSessionPromotionCode(promotionCode)
+            })
+            .catch((error) => {
+                if (requestId !== sessionRefreshRequestRef.current) return
+                console.error("Failed to refresh Crater checkout after discount change:", error)
+                setCheckoutSessionPromotionCode(undefined)
+                setErrorMessage(error instanceof Error ? error.message : content?.paymentErrorFallback || "Checkout failed.")
+            })
+            .finally(() => {
+                if (requestId === sessionRefreshRequestRef.current) setIsRefreshingSession(false)
+            })
+    }, [checkoutSessionPromotionCode, content?.paymentErrorFallback, locale, promotionCode, searchParamsString, sessionToken, setStage])
+
     if (!content) return null
+
+    if (isRefreshingSession) {
+        return <div className="flex min-h-40 items-center justify-center text-sm text-secondary">{content.processingLabel}</div>
+    }
 
     if (checkoutSession) {
         return (
@@ -121,7 +159,10 @@ export function CheckoutForm({ content, locale, mobileSteps = false }: CheckoutF
                 phone={values.phone}
                 session={checkoutSession}
                 onBack={() => {
+                    sessionRefreshRequestRef.current += 1
                     setCheckoutSession(null)
+                    setCheckoutSessionPromotionCode(undefined)
+                    setIsRefreshingSession(false)
                     setStage("billingAddress")
                 }}
             />
