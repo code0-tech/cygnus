@@ -76,6 +76,24 @@ test("checkout requires a deployment type for regular plans", async () => {
     })
 })
 
+test("checkout rejects unsupported return locales", async () => {
+    const response = await POST(
+        new Request("https://example.com/api/crater/checkout/session", {
+            method: "POST",
+            headers: {
+                authorization: "Session c_ust_example",
+                "content-type": "application/json",
+            },
+            body: JSON.stringify({ deploymentType: "self_hosted", locale: "fr", plan: "pro" }),
+        })
+    )
+
+    assert.equal(response.status, 400)
+    assert.deepEqual(await response.json(), {
+        error: "locale must be a supported locale.",
+    })
+})
+
 test("checkout rejects malformed custom checkout configuration ids", async () => {
     const response = await POST(
         new Request("https://example.com/api/crater/checkout/session", {
@@ -170,7 +188,7 @@ test("forces the custom plan for b2b customers requesting pro or max, even sent 
             input: {
                 deploymentType: "self_hosted",
                 plan: "custom",
-                returnUrl: "https://code0.example/checkout/success?session_id={CHECKOUT_SESSION_ID}",
+                returnUrl: "https://code0.example/en/checkout/success?session_id={CHECKOUT_SESSION_ID}",
             },
         })
     } finally {
@@ -227,6 +245,7 @@ test("creates regular and custom checkout sessions with the expected Crater inpu
                     deploymentType: "self_hosted",
                     paymentPeriod: "monthly",
                     promotionCode: "SAVE10",
+                    locale: "de",
                 }),
             })
         )
@@ -257,14 +276,14 @@ test("creates regular and custom checkout sessions with the expected Crater inpu
                 deploymentType: "self_hosted",
                 plan: "pro",
                 promotionCode: "SAVE10",
-                returnUrl: "https://code0.example/checkout/success?session_id={CHECKOUT_SESSION_ID}",
+                returnUrl: "https://code0.example/de/checkout/success?session_id={CHECKOUT_SESSION_ID}",
             },
         })
         assert.equal(graphQLServer.requests[1].authorization, "Session custom-token")
         assert.deepEqual(graphQLServer.requests[1].body.variables, {
             input: {
                 customCheckoutConfigurationId: "gid://crater/CustomCheckoutConfiguration/4",
-                returnUrl: "https://code0.example/checkout/success?session_id={CHECKOUT_SESSION_ID}",
+                returnUrl: "https://code0.example/en/checkout/success?session_id={CHECKOUT_SESSION_ID}",
             },
         })
     } finally {

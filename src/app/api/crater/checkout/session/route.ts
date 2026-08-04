@@ -2,6 +2,7 @@ import { createApolloClient } from "@/lib/apolloClient"
 import { craterJson, craterMutationErrorResponse, craterTransportErrorResponse, optionalString, readJsonObject, requireCraterSession, type JsonObject } from "@/lib/checkout/craterApi"
 import { resolveSubscriptionSelection } from "@/lib/subscriptionConfigurator"
 import { resolveSiteUrl } from "@/lib/siteConfig"
+import { DEFAULT_LOCALE, isSupportedLocale } from "@/lib/i18n"
 import type { Mutation, MutationCheckoutCreateSessionArgs, Scalars } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 
@@ -45,12 +46,19 @@ export async function POST(request: Request) {
         const deploymentType = optionalString(requestData.deploymentType)
         const namespaceId = optionalString(requestData.namespaceId)
         const promotionCode = optionalString(requestData.promotionCode)
+        const requestedLocale = optionalString(requestData.locale)
         const customerType = optionalString(requestData.customerType)
         const paymentPeriod = optionalString(requestData.paymentPeriod)
         const workflowExecutions = optionalString(requestData.workflowExecutions)
         const aiTokens = optionalString(requestData.aiTokens)
         const additionalFeatures = optionalString(requestData.additionalFeatures)
         let craterCustomCheckoutConfigurationId: Scalars["CustomCheckoutConfigurationID"]["input"] | undefined
+
+        if (requestedLocale && !isSupportedLocale(requestedLocale)) {
+            return craterJson({ error: "locale must be a supported locale." }, 400)
+        }
+
+        const locale = requestedLocale ?? DEFAULT_LOCALE
 
         if (Boolean(plan) === Boolean(customCheckoutConfigurationId)) {
             return craterJson({ error: "Provide either plan or customCheckoutConfigurationId." }, 400)
@@ -110,7 +118,7 @@ export async function POST(request: Request) {
 
         const siteUrl = resolveSiteUrl()
         const input: MutationCheckoutCreateSessionArgs["input"] = {
-            returnUrl: `${new URL("/checkout/success", siteUrl).toString()}?session_id={CHECKOUT_SESSION_ID}`,
+            returnUrl: `${new URL(`/${locale}/checkout/success`, siteUrl).toString()}?session_id={CHECKOUT_SESSION_ID}`,
             ...(craterCustomCheckoutConfigurationId
                 ? { customCheckoutConfigurationId: craterCustomCheckoutConfigurationId }
                 : {

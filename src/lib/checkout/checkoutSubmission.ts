@@ -1,5 +1,6 @@
 import type { BillingDetails } from "@/lib/checkout/billingDetails"
 import type { CraterCustomerType } from "@/lib/checkout/craterCustomer"
+import type { AppLocale } from "@/lib/i18n"
 
 type CheckoutErrorBody = { details?: unknown; error?: unknown; errorCode?: unknown }
 
@@ -24,11 +25,13 @@ async function readCheckoutError(response: Response, fallback: string) {
 export async function createCheckoutSession({
     values,
     customerType,
+    locale,
     searchParams,
     sessionToken,
 }: {
     values: BillingDetails
     customerType: CraterCustomerType
+    locale: AppLocale
     searchParams: URLSearchParams
     sessionToken: string
 }) {
@@ -49,7 +52,7 @@ export async function createCheckoutSession({
     const checkoutResponse = await fetch("/api/crater/checkout/session", {
         method: "POST",
         headers: { Authorization: authorization, "Content-Type": "application/json" },
-        body: JSON.stringify(Object.fromEntries(searchParams.entries())),
+        body: JSON.stringify({ ...Object.fromEntries(searchParams.entries()), locale }),
     })
     if (!checkoutResponse.ok) throw new Error(await readCheckoutError(checkoutResponse, "Failed to create a Crater checkout session."))
     const checkout: unknown = await checkoutResponse.json()
