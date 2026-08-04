@@ -3172,6 +3172,9 @@ export interface Checkout {
     payNowLabel: string;
     processingLabel: string;
     paymentErrorFallback: string;
+    mobileContactLabel: string;
+    mobileNextLabel: string;
+    mobileTaxLabel: string;
     nameLabel: string;
     namePlaceholder: string;
     emailLabel: string;
@@ -3734,6 +3737,9 @@ export interface CheckoutSelect<T extends boolean = true> {
         payNowLabel?: T;
         processingLabel?: T;
         paymentErrorFallback?: T;
+        mobileContactLabel?: T;
+        mobileNextLabel?: T;
+        mobileTaxLabel?: T;
         nameLabel?: T;
         namePlaceholder?: T;
         emailLabel?: T;

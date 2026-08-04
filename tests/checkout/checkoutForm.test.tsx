@@ -4,13 +4,17 @@ import React from "react"
 import type { CheckoutData } from "@/lib/cms"
 import { installDomTestEnvironment } from "./domTestEnvironment"
 
-const domWindow = installDomTestEnvironment()
+installDomTestEnvironment()
 const checkoutSearchParams = new URLSearchParams({
     customerType: "b2c",
     deploymentType: "self_hosted",
     paymentPeriod: "monthly",
     plan: "pro",
 })
+let checkoutProviderOptions: { clientSecret?: string } | null = null
+let stripeConfirmCalls = 0
+
+process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY = "pk_test_example"
 
 mock.module("next/navigation", {
     namedExports: {
@@ -31,17 +35,6 @@ mock.module("@/components/checkout/CheckoutStepper", {
         useCheckoutStage: () => ({ stage: "billingAddress", setStage: () => {} }),
     },
 })
-mock.module("@/components/checkout/CountryPicker", {
-    namedExports: {
-        CountryPicker: ({ errorMessage, label, onValueChange, value }: { errorMessage?: string | null; label: string; onValueChange: (value: string) => void; value: string }) => (
-            <label>
-                <span>{label}</span>
-                <input aria-label={label} value={value} onChange={(event) => onValueChange(event.currentTarget.value.toUpperCase())} />
-                {errorMessage && <span>{errorMessage}</span>}
-            </label>
-        ),
-    },
-})
 mock.module("@code0-tech/pictor", {
     namedExports: {
         Button: ({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button {...props}>{children}</button>,
@@ -51,19 +44,42 @@ mock.module("@code0-tech/pictor", {
         useForm: useTestForm,
     },
 })
+mock.module("@stripe/stripe-js", {
+    namedExports: {
+        loadStripe: () => Promise.resolve({}),
+    },
+})
+mock.module("@stripe/react-stripe-js/checkout", {
+    namedExports: {
+        BillingAddressElement: () => <div data-testid="stripe-billing-address">Billing address</div>,
+        CheckoutElementsProvider: ({ children, options }: { children: React.ReactNode; options: { clientSecret: string } }) => {
+            checkoutProviderOptions = options
+            return <>{children}</>
+        },
+        PaymentElement: () => <div data-testid="stripe-payment">Payment details</div>,
+        useCheckoutElements: () => ({
+            type: "success",
+            checkout: {
+                confirm: async () => {
+                    stripeConfirmCalls += 1
+                    return { type: "success", session: {} }
+                },
+            },
+        }),
+    },
+})
 
 const { cleanup, render, screen, waitFor } = await import("@testing-library/react")
 const userEvent = (await import("@testing-library/user-event")).default
 const { CheckoutForm } = await import("../../src/components/checkout/CheckoutForm")
 
 const originalFetch = globalThis.fetch
-const originalAssign = domWindow.location.assign
-
 afterEach(() => {
     cleanup()
     globalThis.fetch = originalFetch
-    domWindow.location.assign = originalAssign
     checkoutSearchParams.set("customerType", "b2c")
+    checkoutProviderOptions = null
+    stripeConfirmCalls = 0
 })
 
 const content = {
@@ -74,6 +90,9 @@ const content = {
     payNowLabel: "Pay now",
     processingLabel: "Processing",
     paymentErrorFallback: "Checkout failed",
+    mobileContactLabel: "Contact details",
+    mobileNextLabel: "Continue",
+    mobileTaxLabel: "Tax details",
     nameLabel: "Name",
     namePlaceholder: "Your name",
     emailLabel: "Email",
@@ -181,25 +200,19 @@ test("disables checkout until all required billing fields are valid", async () =
     assert.equal(requests.length, 0)
 })
 
-test("shows the mobile checkout fields as progressive steps", async () => {
+test("shows contact details as the personal mobile billing step", async () => {
     const user = userEvent.setup()
 
     render(<CheckoutForm content={content} locale="en" mobileSteps />)
 
     const contactStep = screen.getByRole("button", { name: /Contact details/ })
-    const addressStep = screen.getByRole("button", { name: /Address/ })
-
     assert.equal(contactStep.getAttribute("aria-expanded"), "true")
-    assert.equal((addressStep as HTMLButtonElement).disabled, true)
+    assert.equal(screen.queryByRole("button", { name: /Address/ }), null)
     assert.equal(screen.queryByRole("button", { name: /Tax details/ }), null)
 
     await user.type(screen.getByRole("textbox", { name: "Name" }), "Ada Lovelace")
     await user.type(screen.getByRole("textbox", { name: "Email" }), "ada@example.com")
-    await user.click(screen.getByRole("button", { name: "Continue" }))
-
-    assert.equal(contactStep.getAttribute("aria-expanded"), "false")
-    assert.equal(addressStep.getAttribute("aria-expanded"), "true")
-    assert.equal((addressStep as HTMLButtonElement).disabled, false)
+    assert.equal((screen.getByRole("button", { name: "Continue to payment" }) as HTMLButtonElement).disabled, false)
 })
 
 test("shows tax fields as the final mobile step for business customers", async () => {
@@ -212,18 +225,12 @@ test("shows tax fields as the final mobile step for business customers", async (
     await user.type(screen.getByRole("textbox", { name: "Email" }), "billing@code0.tech")
     await user.click(screen.getByRole("button", { name: "Continue" }))
 
-    await user.type(screen.getByRole("textbox", { name: "Address" }), "Example Street 1")
-    await user.type(screen.getByRole("textbox", { name: "Postal code" }), "10115")
-    await user.type(screen.getByRole("textbox", { name: "City" }), "Berlin")
-    await user.type(screen.getByRole("textbox", { name: "Country" }), "de")
-    await user.click(screen.getByRole("button", { name: "Continue" }))
-
     assert.equal(screen.getByRole("button", { name: /Tax details/ }).getAttribute("aria-expanded"), "true")
     assert.ok(screen.getByRole("textbox", { name: "Tax ID type" }))
     assert.ok(screen.getByRole("textbox", { name: "Tax ID" }))
 })
 
-test("creates the customer without an address and stores the returned checkout session", async () => {
+test("creates the customer without an address and mounts Stripe checkout elements", async () => {
     const requests: Array<{ init?: RequestInit; url: string }> = []
     globalThis.fetch = (async (input, init) => {
         requests.push({ init, url: String(input) })
@@ -246,10 +253,6 @@ test("creates the customer without an address and stores the returned checkout s
 
     await user.type(screen.getByRole("textbox", { name: "Name" }), "Ada Lovelace")
     await user.type(screen.getByRole("textbox", { name: "Email" }), "ada@example.com")
-    await user.type(screen.getByRole("textbox", { name: "Address" }), "Example Street 1")
-    await user.type(screen.getByRole("textbox", { name: "Postal code" }), "10115")
-    await user.type(screen.getByRole("textbox", { name: "City" }), "Berlin")
-    await user.type(screen.getByRole("textbox", { name: "Country" }), "de")
     await user.click(screen.getByRole("button", { name: "Continue to payment" }))
 
     await waitFor(() => assert.equal(requests.length, 2))
@@ -270,5 +273,10 @@ test("creates the customer without an address and stores the returned checkout s
         paymentPeriod: "monthly",
         plan: "pro",
     })
-    assert.ok(screen.getByText("Processing"))
+    assert.equal(checkoutProviderOptions?.clientSecret, "cs_test_secret")
+    assert.ok(screen.getByTestId("stripe-billing-address"))
+    assert.ok(screen.getByTestId("stripe-payment"))
+
+    await user.click(screen.getByRole("button", { name: "Pay now" }))
+    await waitFor(() => assert.equal(stripeConfirmCalls, 1))
 })
