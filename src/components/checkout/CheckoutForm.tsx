@@ -101,7 +101,6 @@ export function CheckoutForm({ content, locale, mobileSteps = false }: CheckoutF
                     const session = await createCheckoutSession({ values, customerType, searchParams: new URLSearchParams(searchParams.toString()), sessionToken })
                     setCheckoutSession(session)
                     setIsLoading(false)
-                    setStage("payment")
                 } catch (error) {
                     console.error("Failed to start Crater checkout:", error)
                     setErrorMessage(error instanceof Error ? error.message : content?.paymentErrorFallback || "Checkout failed.")
