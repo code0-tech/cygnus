@@ -1,7 +1,13 @@
 import type { BillingDetails } from "@/lib/checkout/billingDetails"
-import { normalizeCountryCode, type CraterCustomerType } from "@/lib/checkout/craterCustomer"
+import type { CraterCustomerType } from "@/lib/checkout/craterCustomer"
 
 type CheckoutErrorBody = { details?: unknown; error?: unknown; errorCode?: unknown }
+
+export interface CheckoutSessionData {
+    clientSecret: string
+    expiresAt: number | null
+    id: string | null
+}
 
 async function readCheckoutError(response: Response, fallback: string) {
     try {
@@ -15,7 +21,7 @@ async function readCheckoutError(response: Response, fallback: string) {
     }
 }
 
-export async function createCheckoutRedirect({
+export async function createCheckoutSession({
     values,
     customerType,
     searchParams,
@@ -35,14 +41,6 @@ export async function createCheckoutRedirect({
             name: values.name.trim(),
             email: values.email.trim(),
             phone: values.phone.trim(),
-            address: {
-                line1: values.line1.trim(),
-                line2: values.line2.trim(),
-                city: values.city.trim(),
-                state: values.state.trim(),
-                postalCode: values.postalCode.trim(),
-                country: normalizeCountryCode(values.country),
-            },
             ...(customerType === "business" ? { taxIdType: values.taxIdType.trim(), taxIdValue: values.taxIdValue.trim() } : {}),
         }),
     })
@@ -55,6 +53,13 @@ export async function createCheckoutRedirect({
     })
     if (!checkoutResponse.ok) throw new Error(await readCheckoutError(checkoutResponse, "Failed to create a Crater checkout session."))
     const checkout: unknown = await checkoutResponse.json()
-    if (!checkout || typeof checkout !== "object" || !("url" in checkout) || typeof checkout.url !== "string") throw new Error("Crater returned no checkout redirect URL.")
-    return checkout.url
+    if (!checkout || typeof checkout !== "object" || !("clientSecret" in checkout) || typeof checkout.clientSecret !== "string" || !checkout.clientSecret) {
+        throw new Error("Crater returned no checkout client secret.")
+    }
+
+    return {
+        clientSecret: checkout.clientSecret,
+        expiresAt: "expiresAt" in checkout && typeof checkout.expiresAt === "number" ? checkout.expiresAt : null,
+        id: "id" in checkout && typeof checkout.id === "string" ? checkout.id : null,
+    } satisfies CheckoutSessionData
 }

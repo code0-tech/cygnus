@@ -6,7 +6,7 @@ import { useCheckoutStage } from "@/components/checkout/CheckoutStepper"
 import type { CheckoutData } from "@/lib/cms"
 import { createBillingDetailsValidation, createEmptyBillingDetails, getBillingStepStatus, type BillingDetails } from "@/lib/checkout/billingDetails"
 import { resolveCraterCustomerType } from "@/lib/checkout/craterCustomer"
-import { createCheckoutRedirect } from "@/lib/checkout/checkoutSubmission"
+import { createCheckoutSession, type CheckoutSessionData } from "@/lib/checkout/checkoutSubmission"
 import type { AppLocale } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
 import { Button, EmailInput, TextInput, useForm } from "@code0-tech/pictor"
@@ -75,6 +75,7 @@ export function CheckoutForm({ content, locale, mobileSteps = false }: CheckoutF
     const { setStage } = useCheckoutStage()
     const [isLoading, setIsLoading] = useState(false)
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
+    const [checkoutSession, setCheckoutSession] = useState<CheckoutSessionData | null>(null)
     const [mobileStep, setMobileStep] = useState(0)
     const { error: sessionError, isLoading: isSessionLoading, token: sessionToken } = useCraterSession()
     const customerType = resolveCraterCustomerType(searchParams.get("customerType"))
@@ -90,7 +91,6 @@ export function CheckoutForm({ content, locale, mobileSteps = false }: CheckoutF
 
             setIsLoading(true)
             setErrorMessage(null)
-            setStage("payment")
 
             void (async () => {
                 try {
@@ -98,8 +98,10 @@ export function CheckoutForm({ content, locale, mobileSteps = false }: CheckoutF
                         throw new Error(sessionError ?? "A Crater session is required.")
                     }
 
-                    const checkoutUrl = await createCheckoutRedirect({ values, customerType, searchParams: new URLSearchParams(searchParams.toString()), sessionToken })
-                    window.location.assign(checkoutUrl)
+                    const session = await createCheckoutSession({ values, customerType, searchParams: new URLSearchParams(searchParams.toString()), sessionToken })
+                    setCheckoutSession(session)
+                    setIsLoading(false)
+                    setStage("payment")
                 } catch (error) {
                     console.error("Failed to start Crater checkout:", error)
                     setErrorMessage(error instanceof Error ? error.message : content?.paymentErrorFallback || "Checkout failed.")
@@ -111,6 +113,10 @@ export function CheckoutForm({ content, locale, mobileSteps = false }: CheckoutF
     })
 
     if (!content) return null
+
+    if (checkoutSession) {
+        return <div className="flex min-h-40 items-center justify-center text-sm text-secondary">{content.processingLabel}</div>
+    }
 
     const countryInputProps = inputs.getInputProps("country")
     const billingStatus = getBillingStepStatus(values, customerType)
