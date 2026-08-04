@@ -16,6 +16,7 @@ let billingAddressOnChange: ((event: { complete: boolean }) => void) | null = nu
 let checkoutStages: string[] = []
 let stripeConfirmCalls = 0
 let stripeConfirmErrorMessage: string | null = null
+let stripeConfirmOptions: unknown[] = []
 const setCheckoutStage = (stage: string) => checkoutStages.push(stage)
 
 process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY = "pk_test_example"
@@ -67,8 +68,9 @@ mock.module("@stripe/react-stripe-js/checkout", {
         useCheckoutElements: () => ({
             type: "success",
             checkout: {
-                confirm: async () => {
+                confirm: async (options: unknown) => {
                     stripeConfirmCalls += 1
+                    stripeConfirmOptions.push(options)
                     if (stripeConfirmErrorMessage) return { type: "error", error: { message: stripeConfirmErrorMessage } }
                     return { type: "success", session: {} }
                 },
@@ -92,6 +94,7 @@ afterEach(() => {
     checkoutStages = []
     stripeConfirmCalls = 0
     stripeConfirmErrorMessage = null
+    stripeConfirmOptions = []
 })
 
 const content = {
@@ -306,6 +309,83 @@ test("creates the customer without an address and mounts Stripe checkout element
     await user.click(screen.getByRole("button", { name: "Pay now" }))
     await waitFor(() => assert.equal(stripeConfirmCalls, 1))
     assert.ok(screen.getByText("Your payment could not be confirmed."))
+
+    stripeConfirmErrorMessage = null
+    await user.click(screen.getByRole("button", { name: "Pay now" }))
+    await waitFor(() => assert.equal(stripeConfirmCalls, 2))
+    assert.deepEqual(stripeConfirmOptions, [{ redirect: "always" }, { redirect: "always" }])
+})
+
+test("submits B2B tax details before creating the checkout session", async () => {
+    checkoutSearchParams.set("customerType", "b2b")
+    const requests: Array<{ init?: RequestInit; url: string }> = []
+    globalThis.fetch = (async (input, init) => {
+        requests.push({ init, url: String(input) })
+        return new Response(
+            JSON.stringify(
+                String(input) === "/api/crater/customer"
+                    ? { id: "gid://crater/Customer/2" }
+                    : { clientSecret: "cs_test_business_secret", expiresAt: 1_800_000_000, id: "cs_test_business" }
+            ),
+            { status: String(input) === "/api/crater/customer" ? 201 : 200, headers: { "content-type": "application/json" } }
+        )
+    }) as typeof fetch
+    const user = userEvent.setup()
+
+    render(<CheckoutForm content={content} locale="en" />)
+    await user.type(screen.getByRole("textbox", { name: "Name" }), "Code0 GmbH")
+    await user.type(screen.getByRole("textbox", { name: "Email" }), "billing@code0.tech")
+    await user.type(screen.getByRole("textbox", { name: "Tax ID type" }), "eu_vat")
+    await user.type(screen.getByRole("textbox", { name: "Tax ID" }), "DE123456789")
+    await user.click(screen.getByRole("button", { name: "Continue to payment" }))
+
+    await waitFor(() => assert.equal(requests.length, 2))
+    assert.deepEqual(JSON.parse(String(requests[0].init?.body)), {
+        customerType: "business",
+        email: "billing@code0.tech",
+        name: "Code0 GmbH",
+        phone: "",
+        taxIdType: "eu_vat",
+        taxIdValue: "DE123456789",
+    })
+})
+
+test("shows customer creation failures and keeps the contact form available", async () => {
+    globalThis.fetch = (async () =>
+        new Response(JSON.stringify({ error: "Crater rejected the customer." }), {
+            status: 422,
+            headers: { "content-type": "application/json" },
+        })) as typeof fetch
+    const user = userEvent.setup()
+
+    render(<CheckoutForm content={content} locale="en" />)
+    await user.type(screen.getByRole("textbox", { name: "Name" }), "Ada Lovelace")
+    await user.type(screen.getByRole("textbox", { name: "Email" }), "ada@example.com")
+    await user.click(screen.getByRole("button", { name: "Continue to payment" }))
+
+    assert.ok(await screen.findByText("Crater rejected the customer."))
+    assert.ok(screen.getByRole("textbox", { name: "Email" }))
+})
+
+test("starts from contact details again after the checkout form remounts", async () => {
+    const user = userEvent.setup()
+    globalThis.fetch = (async (input) =>
+        new Response(JSON.stringify(String(input) === "/api/crater/customer" ? { id: "gid://crater/Customer/1" } : { clientSecret: "cs_test_reload_secret", id: "cs_test_reload" }), {
+            status: String(input) === "/api/crater/customer" ? 201 : 200,
+            headers: { "content-type": "application/json" },
+        })) as typeof fetch
+    const firstRender = render(<CheckoutForm content={content} locale="en" />)
+
+    await user.type(screen.getByRole("textbox", { name: "Name" }), "Ada Lovelace")
+    await user.type(screen.getByRole("textbox", { name: "Email" }), "ada@example.com")
+    await user.click(screen.getByRole("button", { name: "Continue to payment" }))
+    assert.ok(await screen.findByTestId("stripe-billing-address"))
+
+    firstRender.unmount()
+    render(<CheckoutForm content={content} locale="en" />)
+
+    assert.ok(screen.getByRole("textbox", { name: "Email" }))
+    assert.equal(screen.queryByTestId("stripe-billing-address"), null)
 })
 
 test("recreates only the checkout session when the promotion code changes or is removed", async () => {
