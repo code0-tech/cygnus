@@ -20,6 +20,7 @@
         "typecheck": "tsc --noEmit",
         "knip": "node --import tsx ./node_modules/knip/bin/knip.js",
         "test": "node --experimental-test-module-mocks --import tsx --test tests/*.test.ts tests/checkout/*.test.ts tests/checkout/*.test.tsx",
+        "test:checkout": "node --experimental-test-module-mocks --import tsx --test tests/checkout/*.test.ts tests/checkout/*.test.tsx",
         "generate": "payload generate:types"
     },
     "dependencies": {
