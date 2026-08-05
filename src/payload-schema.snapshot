@@ -2477,6 +2477,7 @@ export const subscription_config_locales = pgTable('subscription_config_locales'
 export const checkout = pgTable('checkout', {
   id: serial('id').primaryKey(),
   title: varchar('title').notNull().default("Checkout Content"),
+  login_loginUrl: varchar('login_login_url').notNull().default("https://app.code0.tech/login"),
   summary_deploymentIcons_cloud: varchar('summary_deployment_icons_cloud').notNull().default("tabler:IconCloud"),
   summary_deploymentIcons_selfHosted: varchar('summary_deployment_icons_self_hosted').notNull().default("tabler:IconServer"),
   summary_deploymentIconColor: enum_checkout_summary_deployment_icon_color('summary_deployment_icon_color').notNull().default("aqua"),
@@ -2501,6 +2502,10 @@ export const checkout_locales = pgTable('checkout_locales', {
   stepper_billingAddressLabel: varchar('stepper_billing_address_label').notNull().default("Billing Address"),
   stepper_paymentLabel: varchar('stepper_payment_label').notNull().default("Payment"),
   stepper_successLabel: varchar('stepper_success_label').notNull().default("Success"),
+  login_heading: varchar('login_heading').notNull().default("How would you like to continue?"),
+  login_description: varchar('login_description').notNull().default("Sign in to use your CodeZero account or continue to checkout as a guest."),
+  login_loginLabel: varchar('login_login_label').notNull().default("Sign in"),
+  login_guestLabel: varchar('login_guest_label').notNull().default("Continue as guest"),
   summary_eyebrow: varchar('summary_eyebrow').notNull().default("Order Summary"),
   summary_heading: varchar('summary_heading').notNull().default("Review your configuration"),
   summary_description: varchar('summary_description').notNull().default("This checkout reflects the subscription shape you configured, including runtime and optional add-ons."),

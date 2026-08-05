@@ -8,7 +8,7 @@ import { FormattedText, hasHighlightedText } from "@/components/ui/FormattedText
 import { Slider } from "@/components/ui/Slider"
 import type { SubscriptionConfiguratorContent } from "@/lib/cms"
 import { formatEuroCurrency } from "@/lib/formatters"
-import type { AppLocale } from "@/lib/i18n"
+import { localizeHref, type AppLocale } from "@/lib/i18n"
 import { getSubscriptionCatalog } from "@/lib/subscriptionCatalog"
 import {
     calculateSubscriptionQuote,
@@ -108,7 +108,9 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
     const configurationUrl = `${pathname}?${selectionSearchParamsString}`
     const subscribeSearchParams = new URLSearchParams(selectionSearchParamsString)
     subscribeSearchParams.set("configurationUrl", configurationUrl)
-    const subscribeHref = `${content.subscribe.baseUrl}?${subscribeSearchParams.toString()}`
+    const checkoutBaseUrl = localizeHref(content.subscribe.baseUrl.trim() || "/checkout", locale)
+    const checkoutLoginUrl = checkoutBaseUrl.endsWith("/login") ? checkoutBaseUrl : `${checkoutBaseUrl.replace(/\/$/, "")}/login`
+    const subscribeHref = `${checkoutLoginUrl}?${subscribeSearchParams.toString()}`
     const configuratorSteps = [
         content.customerType.label,
         ...(selection.customerType === "b2c" ? [content.plan.title] : []),

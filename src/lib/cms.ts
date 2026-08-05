@@ -291,6 +291,13 @@ export interface CheckoutData {
         paymentLabel: string
         successLabel: string
     }
+    login: {
+        heading: string
+        description: string
+        loginLabel: string
+        guestLabel: string
+        loginUrl: string
+    }
     summary: {
         eyebrow: string
         heading: string

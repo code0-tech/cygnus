@@ -102,6 +102,8 @@ import * as migration_20260802_143935_subscription_configurator_category_descrip
 import * as migration_20260802_190201_subscription_configurator_paid_labels from './20260802_190201_subscription_configurator_paid_labels';
 import * as migration_20260802_200739_subscription_configurator_weekly_price_factors from './20260802_200739_subscription_configurator_weekly_price_factors';
 import * as migration_20260804_194543_add_checkout_mobile_labels from './20260804_194543_add_checkout_mobile_labels';
+import * as migration_20260805_031008_checkout_login_page from './20260805_031008_checkout_login_page';
+import * as migration_20260805_035510_remove_checkout_login_eyebrow from './20260805_035510_remove_checkout_login_eyebrow';
 
 export const migrations = [
   {
@@ -622,6 +624,16 @@ export const migrations = [
   {
     up: migration_20260804_194543_add_checkout_mobile_labels.up,
     down: migration_20260804_194543_add_checkout_mobile_labels.down,
-    name: '20260804_194543_add_checkout_mobile_labels'
+    name: '20260804_194543_add_checkout_mobile_labels',
+  },
+  {
+    up: migration_20260805_031008_checkout_login_page.up,
+    down: migration_20260805_031008_checkout_login_page.down,
+    name: '20260805_031008_checkout_login_page',
+  },
+  {
+    up: migration_20260805_035510_remove_checkout_login_eyebrow.up,
+    down: migration_20260805_035510_remove_checkout_login_eyebrow.down,
+    name: '20260805_035510_remove_checkout_login_eyebrow'
   },
 ];

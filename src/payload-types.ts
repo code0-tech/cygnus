@@ -3118,6 +3118,16 @@ export interface Checkout {
     paymentLabel: string;
     successLabel: string;
   };
+  login: {
+    heading: string;
+    description: string;
+    loginLabel: string;
+    guestLabel: string;
+    /**
+     * The checkout URL is appended in the redirectUrl query parameter.
+     */
+    loginUrl: string;
+  };
   summary: {
     eyebrow: string;
     heading: string;
@@ -3672,6 +3682,15 @@ export interface CheckoutSelect<T extends boolean = true> {
         billingAddressLabel?: T;
         paymentLabel?: T;
         successLabel?: T;
+      };
+  login?:
+    | T
+    | {
+        heading?: T;
+        description?: T;
+        loginLabel?: T;
+        guestLabel?: T;
+        loginUrl?: T;
       };
   summary?:
     | T

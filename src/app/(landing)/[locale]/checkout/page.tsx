@@ -1,7 +1,10 @@
 import { CheckoutPageContent } from "@/components/checkout/CheckoutPageContent"
 import { getCheckoutContent, getFooter, getSubscriptionConfig } from "@/lib/cms"
 import { isSupportedLocale } from "@/lib/i18n"
+import type { Metadata } from "next"
 import { notFound } from "next/navigation"
+
+export const metadata: Metadata = { title: "Checkout" }
 
 export default async function CheckoutPage({ params }: { params: Promise<{ locale: string }> }) {
     const { locale } = await params
