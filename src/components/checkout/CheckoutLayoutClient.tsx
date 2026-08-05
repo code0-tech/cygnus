@@ -6,25 +6,30 @@ import { CheckoutStageProvider, CheckoutStepper, type CheckoutStepperContent } f
 import { Container } from "@code0-tech/pictor"
 import Image from "next/image"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import type { ReactNode } from "react"
 
 export function CheckoutLayoutClient({ children, stepperContent }: { children: ReactNode; stepperContent?: CheckoutStepperContent | null }) {
+    const pathname = usePathname()
+    const isLoginPage = pathname?.endsWith("/checkout/login") ?? false
+    const pageContent = <LandingContainer className="min-h-0 flex-1 overflow-y-auto my-8">{children}</LandingContainer>
+
     return (
         <CheckoutStageProvider>
             <div className="flex h-screen flex-col overflow-hidden">
-                <div className="border-b border-white/10 bg-primary/50 py-3 backdrop-blur-sm">
-                    <Container className="flex items-center justify-between">
-                        <Link href="/" className="inline-flex shrink-0">
-                            <Image src="/code0_text_logo_white.png" alt="code0" width={100} height={100} className="h-8 w-32" loading="eager" />
-                        </Link>
-                        <div className="hidden lg:block">
-                            <CheckoutStepper content={stepperContent} />
-                        </div>
-                    </Container>
-                </div>
-                <CraterSessionProvider>
-                    <LandingContainer className="min-h-0 flex-1 overflow-y-auto my-8">{children}</LandingContainer>
-                </CraterSessionProvider>
+                {!isLoginPage && (
+                    <div className="border-b border-white/10 bg-primary/50 py-3 backdrop-blur-sm">
+                        <Container className="flex items-center justify-between">
+                            <Link href="/" className="inline-flex shrink-0">
+                                <Image src="/code0_text_logo_white.png" alt="code0" width={100} height={100} className="h-8 w-32" loading="eager" />
+                            </Link>
+                            <div className="hidden lg:block">
+                                <CheckoutStepper content={stepperContent} />
+                            </div>
+                        </Container>
+                    </div>
+                )}
+                {isLoginPage ? pageContent : <CraterSessionProvider>{pageContent}</CraterSessionProvider>}
             </div>
         </CheckoutStageProvider>
     )

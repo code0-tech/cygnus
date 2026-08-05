@@ -5,6 +5,9 @@ import { LinkButton } from "@/components/ui/LinkButton"
 import { notFound } from "next/navigation"
 import { Card } from "@/components/ui/Card"
 import { parseCheckoutSessionId } from "@/lib/checkout/checkoutReturn"
+import type { Metadata } from "next"
+
+export const metadata: Metadata = { title: "Success" }
 
 interface CheckoutSuccessPageProps {
     params: Promise<{ locale: string }>

@@ -60,6 +60,31 @@ export const Checkout: GlobalConfig = {
             ],
         },
         {
+            name: "login",
+            label: "Checkout Login",
+            type: "group",
+            fields: [
+                { name: "heading", type: "text", required: true, localized: true, defaultValue: "How would you like to continue?" },
+                {
+                    name: "description",
+                    type: "textarea",
+                    required: true,
+                    localized: true,
+                    defaultValue: "Sign in to use your CodeZero account or continue to checkout as a guest.",
+                },
+                { name: "loginLabel", type: "text", required: true, localized: true, defaultValue: "Sign in" },
+                { name: "guestLabel", type: "text", required: true, localized: true, defaultValue: "Continue as guest" },
+                {
+                    name: "loginUrl",
+                    label: "Main App Login URL",
+                    type: "text",
+                    required: true,
+                    defaultValue: "https://app.code0.tech/login",
+                    admin: { description: "The checkout URL is appended in the redirectUrl query parameter." },
+                },
+            ],
+        },
+        {
             name: "summary",
             type: "group",
             fields: [
