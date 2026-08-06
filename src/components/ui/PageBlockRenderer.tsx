@@ -32,13 +32,14 @@ import { SmallPricingSection } from "../sections/SmallPricingSection"
 import { ContactSection } from "../sections/ContactSection"
 import { CompareApplicationSection } from "../sections/CompareApplicationSection"
 import { getIcon } from "@/components/ui/IconRenderer"
-import type { ActionItem, SubscriptionConfigData, SubscriptionConfiguratorBlockData } from "@/lib/cms"
+import type { ActionItem, PaginatedActionsResult, SubscriptionConfigData, SubscriptionConfiguratorBlockData } from "@/lib/cms"
 
 type PageBlock = NonNullable<Page["layout"]>[number]
 
 interface PageBlocksRendererProps {
     blocks?: PageBlock[] | null
     actions?: ActionItem[]
+    paginatedActions?: PaginatedActionsResult
     cardRowChildren?: ReactNode
     ctaFloating?: boolean
     locale?: AppLocale
@@ -48,7 +49,10 @@ interface PageBlocksRendererProps {
     subscriptionConfig?: SubscriptionConfigData | null
 }
 
-type PageBlockRenderOptions = Pick<PageBlocksRendererProps, "actions" | "cardRowChildren" | "ctaFloating" | "locale" | "action" | "actionModuleJson" | "actionReferences" | "subscriptionConfig">
+type PageBlockRenderOptions = Pick<
+    PageBlocksRendererProps,
+    "actions" | "paginatedActions" | "cardRowChildren" | "ctaFloating" | "locale" | "action" | "actionModuleJson" | "actionReferences" | "subscriptionConfig"
+>
 type BlockRenderer = (block: PageBlock, options: PageBlockRenderOptions) => ReactNode
 
 const pageBlockRenderers: Partial<Record<PageBlock["blockType"], BlockRenderer>> = {
@@ -120,7 +124,13 @@ const pageBlockRenderers: Partial<Record<PageBlock["blockType"], BlockRenderer>>
             />
         )
     },
-    actionList: (block, options) => <ActionListSection actions={options.actions ?? []} locale={options.locale ?? "en"} content={block as Extract<PageBlock, { blockType: "actionList" }>} />,
+    actionList: (block, options) => (
+        <ActionListSection
+            initialResult={options.paginatedActions ?? { actions: options.actions ?? [], hasNextPage: false, nextPage: null, totalDocs: options.actions?.length ?? 0 }}
+            locale={options.locale ?? "en"}
+            content={block as Extract<PageBlock, { blockType: "actionList" }>}
+        />
+    ),
     subscriptionConfigurator: (block, options) => {
         const config = options.subscriptionConfig
         if (!config) return null
@@ -196,10 +206,10 @@ function renderPageBlock(block: PageBlock, options: PageBlockRenderOptions) {
     return renderer ? renderer(block, options) : null
 }
 
-export function PageBlocks({ blocks, actions, cardRowChildren, ctaFloating = false, locale, action, actionModuleJson, actionReferences, subscriptionConfig }: PageBlocksRendererProps) {
+export function PageBlocks({ blocks, actions, paginatedActions, cardRowChildren, ctaFloating = false, locale, action, actionModuleJson, actionReferences, subscriptionConfig }: PageBlocksRendererProps) {
     const renderableBlocks =
         blocks?.flatMap((block) => {
-            const element = renderPageBlock(block, { actions, cardRowChildren, ctaFloating, locale, action, actionModuleJson, actionReferences, subscriptionConfig })
+            const element = renderPageBlock(block, { actions, paginatedActions, cardRowChildren, ctaFloating, locale, action, actionModuleJson, actionReferences, subscriptionConfig })
             return element ? [{ block, element }] : []
         }) ?? []
 

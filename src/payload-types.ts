@@ -840,6 +840,7 @@ export interface Page {
             searchPlaceholder: string;
             sortNewestLabel: string;
             sortOldestLabel: string;
+            loadMoreLabel: string;
             noActionsFoundLabel: string;
             allCategoriesLabel: string;
             categoryLabels: {
@@ -2092,6 +2093,7 @@ export interface PagesSelect<T extends boolean = true> {
               searchPlaceholder?: T;
               sortNewestLabel?: T;
               sortOldestLabel?: T;
+              loadMoreLabel?: T;
               noActionsFoundLabel?: T;
               allCategoriesLabel?: T;
               categoryLabels?:

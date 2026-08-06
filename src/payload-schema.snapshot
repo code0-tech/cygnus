@@ -792,6 +792,7 @@ export const pages_blocks_action_list = pgTable('pages_blocks_action_list', {
   searchPlaceholder: varchar('search_placeholder').notNull().default("Search actions"),
   sortNewestLabel: varchar('sort_newest_label').notNull().default("Newest"),
   sortOldestLabel: varchar('sort_oldest_label').notNull().default("Oldest"),
+  loadMoreLabel: varchar('load_more_label').notNull().default("Load more"),
   noActionsFoundLabel: varchar('no_actions_found_label').notNull().default("No actions found for your search."),
   allCategoriesLabel: varchar('all_categories_label').notNull().default("All Categories"),
   categoryLabels_ai: varchar('category_labels_ai').notNull().default("AI"),

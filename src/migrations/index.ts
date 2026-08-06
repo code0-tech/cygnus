@@ -78,6 +78,7 @@ import * as migration_20260729_113121_pricing_popular_pill_color from './2026072
 import * as migration_20260729_114646_pricing_whats_included_text from './20260729_114646_pricing_whats_included_text';
 import * as migration_20260729_115704_pricing_card_title_color from './20260729_115704_pricing_card_title_color';
 import * as migration_20260729_120627_pricing_highlighted_card_color from './20260729_120627_pricing_highlighted_card_color';
+import * as migration_20260806_122846_action_list_load_more_label from './20260806_122846_action_list_load_more_label';
 
 export const migrations = [
   {
@@ -479,5 +480,10 @@ export const migrations = [
     up: migration_20260729_120627_pricing_highlighted_card_color.up,
     down: migration_20260729_120627_pricing_highlighted_card_color.down,
     name: '20260729_120627_pricing_highlighted_card_color',
+  },
+  {
+    up: migration_20260806_122846_action_list_load_more_label.up,
+    down: migration_20260806_122846_action_list_load_more_label.down,
+    name: '20260806_122846_action_list_load_more_label'
   },
 ];

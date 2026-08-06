@@ -50,6 +50,14 @@ export type ActionItem = Pick<Action, "id" | "identifier" | "module" | "tags" | 
     documentation?: string | null
     references?: Array<number | ActionItem> | null
 }
+export type ActionTag = NonNullable<Action["tags"]>[number]
+export type ActionSortOrder = "newest" | "oldest"
+export interface PaginatedActionsResult {
+    actions: ActionItem[]
+    hasNextPage: boolean
+    nextPage: number | null
+    totalDocs: number
+}
 type ActionDetailItem = ActionItem
 
 interface SubscriptionUsageRange {
@@ -454,11 +462,11 @@ async function enrichAction(action: Action): Promise<ActionItem> {
     }
 }
 
-async function enrichActions(actions: Action[]): Promise<ActionItem[]> {
+async function enrichActions(actions: Action[], sortByTitle = true): Promise<ActionItem[]> {
     const enrichedActions = await Promise.all(actions.map((action) => enrichAction(action)))
     const enrichedActionsById = new Map(enrichedActions.map((action) => [action.id, action]))
 
-    return enrichedActions
+    const resolvedActions = enrichedActions
         .map((action) => ({
             ...action,
             references:
@@ -466,7 +474,8 @@ async function enrichActions(actions: Action[]): Promise<ActionItem[]> {
                     ?.map((reference) => enrichedActionsById.get(typeof reference === "number" ? reference : reference.id))
                     .filter((reference): reference is ActionItem => Boolean(reference)) ?? null,
         }))
-        .sort((a, b) => a.title.localeCompare(b.title))
+
+    return sortByTitle ? resolvedActions.sort((a, b) => a.title.localeCompare(b.title)) : resolvedActions
 }
 
 const getActionsCached = cache(async (locale: AppLocale): Promise<ActionItem[]> => {
@@ -488,6 +497,67 @@ const getActionsCached = cache(async (locale: AppLocale): Promise<ActionItem[]> 
 
     return enrichActions(actions)
 })
+
+const getPaginatedActionsCached = cache(
+    async (locale: AppLocale, page: number, limit: number, search: string, tag: ActionTag | null, sortOrder: ActionSortOrder): Promise<PaginatedActionsResult> => {
+        const normalizedSearch = search.trim().toLowerCase()
+
+        if (normalizedSearch) {
+            const matchingActions = (await getActionsCached(locale))
+                .filter((action) => {
+                    const searchable = [action.title, action.shortDescription, action.description, ...(action.tags ?? [])].filter(Boolean).join(" ").toLowerCase()
+                    return searchable.includes(normalizedSearch) && (!tag || action.tags?.includes(tag))
+                })
+                .toSorted((left, right) => {
+                    const difference = new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
+                    return sortOrder === "newest" ? difference : -difference
+                })
+            const offset = (page - 1) * limit
+            const actions = matchingActions.slice(offset, offset + limit)
+            const nextPage = offset + actions.length < matchingActions.length ? page + 1 : null
+
+            return {
+                actions,
+                hasNextPage: nextPage !== null,
+                nextPage,
+                totalDocs: matchingActions.length,
+            }
+        }
+
+        return withCmsFallback(
+            `getPaginatedActions(${locale}, ${page}, ${limit}, ${tag ?? "all"}, ${sortOrder})`,
+            { actions: [], hasNextPage: false, nextPage: null, totalDocs: 0 },
+            async () => {
+                const payload = await getPayloadClient()
+                const result = await payload.find({
+                    collection: "actions",
+                    locale,
+                    fallbackLocale: DEFAULT_LOCALE,
+                    sort: sortOrder === "newest" ? "-createdAt" : "createdAt",
+                    page,
+                    limit,
+                    pagination: true,
+                    depth: 1,
+                    where: tag ? { tags: { contains: tag } } : undefined,
+                    select: {
+                        module: true,
+                        identifier: true,
+                        tags: true,
+                        references: true,
+                        createdAt: true,
+                    },
+                })
+
+                return {
+                    actions: await enrichActions(result.docs as Action[], false),
+                    hasNextPage: result.hasNextPage,
+                    nextPage: result.nextPage ?? null,
+                    totalDocs: result.totalDocs,
+                }
+            }
+        )
+    }
+)
 
 const getJobBySlugCached = cache(async (slug: string, locale: AppLocale): Promise<JobDetailItem | null> => {
     return cmsFindOne(`getJobBySlug(${slug}, ${locale})`, null, {
@@ -630,6 +700,13 @@ export async function getJobs(locale: AppLocale = DEFAULT_LOCALE): Promise<JobIt
 
 export async function getActions(locale: AppLocale = DEFAULT_LOCALE): Promise<ActionItem[]> {
     return getActionsCached(locale)
+}
+
+export async function getPaginatedActions(
+    locale: AppLocale = DEFAULT_LOCALE,
+    options?: { page?: number; limit?: number; search?: string; tag?: ActionTag | null; sortOrder?: ActionSortOrder }
+): Promise<PaginatedActionsResult> {
+    return getPaginatedActionsCached(locale, options?.page ?? 1, options?.limit ?? 18, options?.search ?? "", options?.tag ?? null, options?.sortOrder ?? "newest")
 }
 
 export async function getActionBySlug(slug: string, locale: AppLocale = DEFAULT_LOCALE): Promise<ActionDetailItem | null> {

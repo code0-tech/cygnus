@@ -13,6 +13,7 @@ export const ActionListBlock: Block = {
         { name: "searchPlaceholder", type: "text", required: true, localized: true, defaultValue: "Search actions" },
         { name: "sortNewestLabel", type: "text", required: true, localized: true, defaultValue: "Newest" },
         { name: "sortOldestLabel", type: "text", required: true, localized: true, defaultValue: "Oldest" },
+        { name: "loadMoreLabel", type: "text", required: true, localized: true, defaultValue: "Load more" },
         { name: "noActionsFoundLabel", type: "text", required: true, localized: true, defaultValue: "No actions found for your search." },
         {
             type: "collapsible",
