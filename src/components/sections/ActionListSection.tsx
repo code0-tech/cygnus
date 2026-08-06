@@ -6,7 +6,6 @@ import { cn } from "@/lib/utils"
 import { Button, Menu, MenuContent, MenuItem, MenuTrigger, TextInput } from "@code0-tech/pictor"
 import { IconChevronDown, IconSearch } from "@tabler/icons-react"
 import { Section } from "@/components/ui/Section"
-import { Switch, type SwitchOption } from "@/components/ui/Switch"
 import type { ChangeEvent } from "react"
 import { useMemo, useState } from "react"
 
@@ -65,10 +64,11 @@ export function ActionListSection({ actions, locale, content }: { actions: Actio
     const allCategoriesLabel = content.allCategoriesLabel || "All Categories"
     const selectedCategory = CATEGORY_LABEL_KEYS.find(({ tag }) => tag === selectedTag)
     const selectedCategoryLabel = selectedCategory ? content.categoryLabels?.[selectedCategory.label] || selectedCategory.tag : allCategoriesLabel
-    const sortOptions: SwitchOption<SortOrder>[] = [
+    const sortOptions: Array<{ value: SortOrder; label: string }> = [
         { value: "newest", label: content.sortNewestLabel },
         { value: "oldest", label: content.sortOldestLabel },
     ]
+    const selectedSortLabel = sortOptions.find(({ value }) => value === sortOrder)?.label ?? content.sortNewestLabel
     const filteredActions = useMemo(() => {
         const term = search.trim().toLowerCase()
         return actions
@@ -104,7 +104,24 @@ export function ActionListSection({ actions, locale, content }: { actions: Actio
                             className="w-full! text-white!"
                         />
                     </div>
-                    <Switch value={sortOrder} options={sortOptions} onChange={setSortOrder} className="w-auto shrink-0 [&>div]:h-10.5 [&>div>button]:py-0" fitContent />
+                    <Menu modal={false}>
+                        <MenuTrigger asChild>
+                            <Button className="w-36! shrink-0 justify-between gap-2!">
+                                {selectedSortLabel}
+                                <IconChevronDown size={16} />
+                            </Button>
+                        </MenuTrigger>
+                        <MenuContent
+                            align="end"
+                            className="w-(--radix-dropdown-menu-trigger-width) [&_.scroll-area]:w-full! [&_.scroll-area__viewport>div]:block! [&_.scroll-area__viewport>div]:w-full! [&_.scroll-area__viewport>div>div]:w-full!"
+                        >
+                            {sortOptions.map(({ value, label }) => (
+                                <MenuItem key={value} onClick={() => setSortOrder(value)} className="w-full">
+                                    {label}
+                                </MenuItem>
+                            ))}
+                        </MenuContent>
+                    </Menu>
                 </div>
             </div>
             <div className="grid items-start gap-6 md:grid-cols-[13rem_minmax(0,1fr)]">
