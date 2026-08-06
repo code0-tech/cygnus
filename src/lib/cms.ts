@@ -295,6 +295,8 @@ export interface CheckoutData {
         heading: string
         description: string
         loginLabel: string
+        guestHeading: string
+        guestDescription: string
         guestLabel: string
         loginUrl: string
     }
