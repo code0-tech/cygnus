@@ -3139,6 +3139,8 @@ export interface Checkout {
     heading: string;
     description: string;
     loginLabel: string;
+    guestHeading: string;
+    guestDescription: string;
     guestLabel: string;
     /**
      * The checkout URL is appended in the redirectUrl query parameter.
@@ -3706,6 +3708,8 @@ export interface CheckoutSelect<T extends boolean = true> {
         heading?: T;
         description?: T;
         loginLabel?: T;
+        guestHeading?: T;
+        guestDescription?: T;
         guestLabel?: T;
         loginUrl?: T;
       };

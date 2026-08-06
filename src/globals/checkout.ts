@@ -64,15 +64,24 @@ export const Checkout: GlobalConfig = {
             label: "Checkout Login",
             type: "group",
             fields: [
-                { name: "heading", type: "text", required: true, localized: true, defaultValue: "How would you like to continue?" },
+                { name: "heading", label: "Login Heading", type: "text", required: true, localized: true, defaultValue: "Sign in to CodeZero" },
                 {
                     name: "description",
+                    label: "Login Description",
                     type: "textarea",
                     required: true,
                     localized: true,
-                    defaultValue: "Sign in to use your CodeZero account or continue to checkout as a guest.",
+                    defaultValue: "Use your CodeZero account to continue with your configured subscription.",
                 },
                 { name: "loginLabel", type: "text", required: true, localized: true, defaultValue: "Sign in" },
+                { name: "guestHeading", type: "text", required: true, localized: true, defaultValue: "Continue as a guest" },
+                {
+                    name: "guestDescription",
+                    type: "textarea",
+                    required: true,
+                    localized: true,
+                    defaultValue: "Complete your subscription checkout without signing in.",
+                },
                 { name: "guestLabel", type: "text", required: true, localized: true, defaultValue: "Continue as guest" },
                 {
                     name: "loginUrl",
