@@ -29,7 +29,7 @@
         "@c15t/scripts": "^2.1.0",
         "@code0-tech/pictor": "^0.14.0",
         "@icons-pack/react-simple-icons": "^13.13.0",
-        "@mvriu5/payload-ai": "^1.6.3",
+        "@mvriu5/payload-ai": "^1.6.4",
         "@mvriu5/payload-color-picker": "^1.0.2",
         "@mvriu5/payload-icon-picker": "^1.1.1",
         "@mvriu5/payload-portable-plugin": "^0.8.5",
