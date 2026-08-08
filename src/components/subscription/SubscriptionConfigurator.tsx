@@ -10,14 +10,7 @@ import type { SubscriptionConfiguratorContent } from "@/lib/cms"
 import { formatEuroCurrency } from "@/lib/formatters"
 import { localizeHref, type AppLocale } from "@/lib/i18n"
 import { getSubscriptionCatalog } from "@/lib/subscriptionCatalog"
-import {
-    calculateSubscriptionQuote,
-    formatDiscountBadge,
-    getMonthlyEquivalentAmount,
-    getPaymentPeriodAmount,
-    getPaymentPeriodDiscount,
-    getPaymentPeriodSuffix,
-} from "@/lib/subscriptionCalculator"
+import { calculateSubscriptionQuote, formatDiscountBadge, getMonthlyEquivalentAmount, getPaymentPeriodAmount, getPaymentPeriodDiscount, getPaymentPeriodSuffix } from "@/lib/subscriptionCalculator"
 import { cn } from "@/lib/utils"
 import {
     buildSubscriptionSelectionSearchParams,
@@ -272,6 +265,8 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                             className="rounded-2xl border border-white/10 p-4"
                             valueLabelSuffix={aiTokens.suffix}
                             centerLabelSuffix={paymentPeriodSuffix}
+                            variant="gradient"
+                            shape="cone-incline"
                         />
                     </div>
                 )}
@@ -289,6 +284,8 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                             className="rounded-2xl border border-white/10 p-4"
                             valueLabelSuffix={workflowExecutions.suffix}
                             centerLabelSuffix={paymentPeriodSuffix}
+                            variant="gradient"
+                            shape="cone-incline"
                         />
                         <div className="flex w-full items-center justify-between gap-4">
                             <WorkflowCalculatorDialog

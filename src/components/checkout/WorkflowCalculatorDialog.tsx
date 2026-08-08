@@ -168,6 +168,8 @@ export function WorkflowCalculatorDialog({ locale, content, businessTypeIcons, v
                                 valueLabelSuffix={unit}
                                 centerLabelSuffix={centerLabelSuffix}
                                 lines={40}
+                                variant="gradient"
+                                shape="cone-incline"
                             />
                         </div>
                     </div>
