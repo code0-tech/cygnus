@@ -26,9 +26,6 @@ export default async function CheckoutSuccessPage({ params, searchParams }: Chec
     const backToHomepageLabel = checkoutContent?.success.backToHomepageLabel ?? "Return to homepage"
     const currentYear = new Date().getUTCFullYear()
 
-    // This page is only a return confirmation. Subscription and license state
-    // remains exclusively driven by Crater's verified Stripe webhooks.
-
     return (
         <div className="flex min-h-full flex-col gap-8">
             <div className="flex flex-1 items-center justify-center">
