@@ -89,7 +89,7 @@ export const Checkout: GlobalConfig = {
                     type: "text",
                     required: true,
                     defaultValue: "https://app.code0.tech/login",
-                    admin: { description: "The checkout URL is appended in the redirectUrl query parameter." },
+                    admin: { description: "The checkout URL is appended in the callbackUrl query parameter." },
                 },
             ],
         },

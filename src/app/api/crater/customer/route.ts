@@ -32,6 +32,22 @@ const CUSTOMER_FIELDS = gql`
     }
 `
 
+const ERROR_FIELDS = gql`
+    fragment ErrorFields on Error {
+        errorCode
+        details {
+            __typename
+            ... on ActiveModelError {
+                attribute
+                type
+            }
+            ... on MessageError {
+                message
+            }
+        }
+    }
+`
+
 const CUSTOMERS_CREATE: TypedDocumentNode<CustomersCreateData, MutationCustomersCreateArgs> = gql`
     mutation CustomersCreate($input: CustomersCreateInput!) {
         customersCreate(input: $input) {
@@ -39,11 +55,12 @@ const CUSTOMERS_CREATE: TypedDocumentNode<CustomersCreateData, MutationCustomers
                 ...CustomerFields
             }
             errors {
-                errorCode
+                ...ErrorFields
             }
         }
     }
     ${CUSTOMER_FIELDS}
+    ${ERROR_FIELDS}
 `
 
 const CUSTOMERS_UPDATE: TypedDocumentNode<CustomersUpdateData, MutationCustomersUpdateArgs> = gql`
@@ -53,11 +70,12 @@ const CUSTOMERS_UPDATE: TypedDocumentNode<CustomersUpdateData, MutationCustomers
                 ...CustomerFields
             }
             errors {
-                errorCode
+                ...ErrorFields
             }
         }
     }
     ${CUSTOMER_FIELDS}
+    ${ERROR_FIELDS}
 `
 
 export async function POST(request: Request) {

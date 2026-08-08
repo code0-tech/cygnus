@@ -1,5 +1,18 @@
 export type CheckoutSearchParams = Record<string, string | string[] | undefined>
 
+export const SAGITTARIUS_TOKEN_QUERY_PARAM = "token"
+
+export function readSagittariusToken(searchParams: Pick<URLSearchParams, "get">): string | undefined {
+    const token = searchParams.get(SAGITTARIUS_TOKEN_QUERY_PARAM)?.trim()
+    return token || undefined
+}
+
+export function removeSagittariusToken(url: URL): URL {
+    const sanitizedUrl = new URL(url)
+    sanitizedUrl.searchParams.delete(SAGITTARIUS_TOKEN_QUERY_PARAM)
+    return sanitizedUrl
+}
+
 export function createCheckoutQuery(searchParams: CheckoutSearchParams): string {
     const query = new URLSearchParams()
 
@@ -16,6 +29,6 @@ export function createCheckoutQuery(searchParams: CheckoutSearchParams): string 
 
 export function createMainAppLoginUrl(loginUrl: string, checkoutUrl: string): string {
     const url = new URL(loginUrl)
-    url.searchParams.set("redirectUrl", checkoutUrl)
+    url.searchParams.set("callbackUrl", checkoutUrl)
     return url.toString()
 }
