@@ -72,6 +72,7 @@ export function WorkflowCalculatorDialog({ locale, content, businessTypeIcons, v
     const [businessTypeMenuOpen, setBusinessTypeMenuOpen] = useState(false)
     const [selectedBusinessTypeIndex, setSelectedBusinessTypeIndex] = useState(0)
     const [runsPerDay, setRunsPerDay] = useState(value)
+    const [runsPerDayPreview, setRunsPerDayPreview] = useState(value)
     const selectedBusinessType = content.businessTypes[selectedBusinessTypeIndex] ?? content.businessTypes[0]
     const rawEstimate = runsPerDay * (selectedBusinessType?.conversion_rate ?? 1)
     const estimatedExecutions = Math.max(0, Math.round(rawEstimate))
@@ -82,6 +83,7 @@ export function WorkflowCalculatorDialog({ locale, content, businessTypeIcons, v
 
     useEffect(() => {
         setRunsPerDay(value)
+        setRunsPerDayPreview(value)
     }, [value])
 
     return (
@@ -162,8 +164,9 @@ export function WorkflowCalculatorDialog({ locale, content, businessTypeIcons, v
                                 min={min}
                                 max={max}
                                 step={step}
-                                value={runsPerDay}
-                                onChange={setRunsPerDay}
+                                value={runsPerDayPreview}
+                                onChange={setRunsPerDayPreview}
+                                onValueCommit={setRunsPerDay}
                                 ariaLabel={unitLabel}
                                 valueLabelSuffix={unit}
                                 centerLabelSuffix={centerLabelSuffix}

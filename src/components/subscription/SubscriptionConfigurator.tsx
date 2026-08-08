@@ -78,6 +78,8 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
     const configuratorEndRef = useRef<HTMLDivElement>(null)
 
     const [selection, setSelection] = useState<SubscriptionSelection>(() => parseSubscriptionSelectionFromSearchParams(searchParams, content))
+    const [aiTokensPreview, setAiTokensPreview] = useState(selection.aiTokens)
+    const [workflowExecutionsPreview, setWorkflowExecutionsPreview] = useState(selection.workflowExecutions)
     const [activeStepIndex, setActiveStepIndex] = useState(0)
     const [showBottomBlur, setShowBottomBlur] = useState(false)
     const [showStepIndicator, setShowStepIndicator] = useState(false)
@@ -116,6 +118,14 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
     useEffect(() => {
         router.replace(`${pathname}?${selectionSearchParamsString}`, { scroll: false })
     }, [pathname, router, selectionSearchParamsString])
+
+    useEffect(() => {
+        setAiTokensPreview(selection.aiTokens)
+    }, [selection.aiTokens])
+
+    useEffect(() => {
+        setWorkflowExecutionsPreview(selection.workflowExecutions)
+    }, [selection.workflowExecutions])
 
     useEffect(() => {
         const stepKey = pendingScrollStepKeyRef.current
@@ -259,8 +269,9 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                             min={aiTokenRange.min}
                             max={aiTokenRange.max}
                             step={aiTokenRange.step}
-                            value={selection.aiTokens}
-                            onChange={(aiTokensValue) => dispatch({ type: "aiTokensChanged", value: aiTokensValue })}
+                            value={aiTokensPreview}
+                            onChange={setAiTokensPreview}
+                            onValueCommit={(aiTokensValue) => dispatch({ type: "aiTokensChanged", value: aiTokensValue })}
                             ariaLabel={aiTokens.title}
                             className="rounded-2xl border border-white/10 p-4"
                             valueLabelSuffix={aiTokens.suffix}
@@ -278,8 +289,9 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                             min={workflowExecutionRange.min}
                             max={workflowExecutionRange.max}
                             step={workflowExecutionRange.step}
-                            value={selection.workflowExecutions}
-                            onChange={(workflowExecutionsValue) => dispatch({ type: "workflowExecutionsChanged", value: workflowExecutionsValue })}
+                            value={workflowExecutionsPreview}
+                            onChange={setWorkflowExecutionsPreview}
+                            onValueCommit={(workflowExecutionsValue) => dispatch({ type: "workflowExecutionsChanged", value: workflowExecutionsValue })}
                             ariaLabel={workflowExecutions.title}
                             className="rounded-2xl border border-white/10 p-4"
                             valueLabelSuffix={workflowExecutions.suffix}

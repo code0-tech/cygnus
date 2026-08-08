@@ -35,6 +35,7 @@ type SliderProps = {
     inactiveColor?: string
     shape?: "default" | "cone-incline" | "cone-decline"
     showMajorLines?: boolean
+    majorLines?: number[]
     animationSpeed?: number
 }
 
@@ -78,11 +79,15 @@ export function Slider({
     inactiveColor = "rgba(255,255,255,0.18)",
     shape = "default",
     showMajorLines = true,
+    majorLines,
     animationSpeed = 240,
 }: SliderProps) {
     const trackRef = useRef<HTMLDivElement>(null)
     const pointerStartXRef = useRef(0)
     const didDragRef = useRef(false)
+    const stretchOriginRef = useRef<"left center" | "right center">("left center")
+    const pointerPositionRef = useRef<number | null>(null)
+    const stickyMajorLineRef = useRef<number | null>(null)
     const commitStartValueRef = useRef(value)
     const pendingValueRef = useRef(value)
     const [responsiveLines, setResponsiveLines] = useState(lines ?? 56)
@@ -102,11 +107,18 @@ export function Slider({
     const springVelocityRef = useRef(0)
     const [animatedPosition, setAnimatedPosition] = useState(activePosition)
     const [isDragging, setIsDragging] = useState(false)
+    const [overscrollStretch, setOverscrollStretch] = useState(0)
     const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
     const shouldAnimate = !isDragging && !prefersReducedMotion
     const visiblePosition = shouldAnimate ? animatedPosition : activePosition
     const sizeStyles = SLIDER_SIZE_STYLES[size] ?? SLIDER_SIZE_STYLES.md
-    const majorLines = useMemo(() => new Set([0, Math.round((lineCount - 1) / 4), Math.round((lineCount - 1) / 2), Math.round(((lineCount - 1) * 3) / 4), lineCount - 1]), [lineCount])
+    const resolvedMajorLines = useMemo(() => {
+        const defaultMajorLines = [0, Math.round((lineCount - 1) / 4), Math.round((lineCount - 1) / 2), Math.round(((lineCount - 1) * 3) / 4), lineCount - 1]
+        const lineIndexes = majorLines ?? defaultMajorLines
+
+        return Array.from(new Set(lineIndexes.filter(Number.isFinite).map((line) => Math.min(lineCount - 1, Math.max(0, Math.round(line)))))).sort((first, second) => first - second)
+    }, [lineCount, majorLines])
+    const majorLineIndexes = useMemo(() => new Set(resolvedMajorLines), [resolvedMajorLines])
     const resolvedMinLabel = minLabel ?? formatSliderLabel(resolvedMin, valueLabelSuffix)
     const resolvedCenterLabel = centerLabel ?? formatSliderLabel(clampedValue, valueLabelSuffix, centerLabelSuffix)
     const resolvedMaxLabel = maxLabel ?? formatSliderLabel(resolvedMax, valueLabelSuffix)
@@ -217,15 +229,61 @@ export function Slider({
     )
 
     const updateFromPointer = useCallback(
-        (clientX: number) => {
+        (clientX: number, applyMajorLineStickiness = false) => {
             const track = trackRef.current
             if (!track) return
 
             const bounds = track.getBoundingClientRect()
             if (bounds.width <= 0) return
-            updateValue(resolvedMin + ((clientX - bounds.left) / bounds.width) * range)
+            const overflow = clientX < bounds.left ? clientX - bounds.left : clientX > bounds.right ? clientX - bounds.right : 0
+            const resistedOverflow = Math.sign(overflow) * (1 - Math.exp(-Math.abs(overflow) / 56))
+
+            if (overflow < 0) stretchOriginRef.current = "right center"
+            if (overflow > 0) stretchOriginRef.current = "left center"
+            setOverscrollStretch(prefersReducedMotion ? 0 : resistedOverflow)
+
+            const rawPosition = Math.min(lineCount - 1, Math.max(0, ((clientX - bounds.left) / bounds.width) * (lineCount - 1)))
+            const previousPosition = pointerPositionRef.current
+            let nextPosition = rawPosition
+            let releasedStickyLine = false
+
+            if (applyMajorLineStickiness && showMajorLines) {
+                const stickyLine = stickyMajorLineRef.current
+
+                if (stickyLine !== null) {
+                    if (Math.abs(rawPosition - stickyLine) <= 0.9) {
+                        nextPosition = stickyLine
+                    } else {
+                        stickyMajorLineRef.current = null
+                        releasedStickyLine = true
+                    }
+                }
+
+                if (stickyMajorLineRef.current === null && !releasedStickyLine) {
+                    const crossedLine =
+                        previousPosition === null
+                            ? undefined
+                            : resolvedMajorLines
+                                  .filter((line) => (previousPosition - line) * (rawPosition - line) <= 0)
+                                  .sort((first, second) => Math.abs(first - previousPosition) - Math.abs(second - previousPosition))[0]
+                    const nearbyLine = resolvedMajorLines.reduce<number | undefined>((nearestLine, line) => {
+                        if (Math.abs(rawPosition - line) > 0.3) return nearestLine
+                        if (nearestLine === undefined || Math.abs(rawPosition - line) < Math.abs(rawPosition - nearestLine)) return line
+                        return nearestLine
+                    }, undefined)
+                    const capturedLine = crossedLine ?? nearbyLine
+
+                    if (capturedLine !== undefined) {
+                        stickyMajorLineRef.current = capturedLine
+                        nextPosition = capturedLine
+                    }
+                }
+            }
+
+            pointerPositionRef.current = rawPosition
+            updateValue(resolvedMin + (nextPosition / (lineCount - 1)) * range)
         },
-        [range, resolvedMin, updateValue]
+        [lineCount, prefersReducedMotion, range, resolvedMajorLines, resolvedMin, showMajorLines, updateValue]
     )
 
     return (
@@ -241,13 +299,16 @@ export function Slider({
                 aria-valuenow={clampedValue}
                 aria-valuetext={resolvedCenterLabel}
                 aria-disabled={disabled || undefined}
-                className={cn("flex touch-none items-center gap-1 select-none outline-none", sizeStyles.track, disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer active:cursor-grabbing")}
+                className={cn("flex touch-none items-center select-none outline-none", sizeStyles.track, disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer active:cursor-grabbing")}
                 tabIndex={disabled ? -1 : 0}
                 onPointerDown={(event) => {
                     if (disabled) return
                     event.preventDefault()
+                    event.currentTarget.focus({ preventScroll: true })
                     pointerStartXRef.current = event.clientX
                     didDragRef.current = false
+                    pointerPositionRef.current = null
+                    stickyMajorLineRef.current = null
                     commitStartValueRef.current = clampedValue
                     pendingValueRef.current = clampedValue
                     event.currentTarget.setPointerCapture(event.pointerId)
@@ -259,14 +320,17 @@ export function Slider({
 
                     didDragRef.current = true
                     setIsDragging(true)
-                    updateFromPointer(event.clientX)
+                    updateFromPointer(event.clientX, true)
                 }}
                 onPointerUp={(event) => {
                     if (disabled || !event.currentTarget.hasPointerCapture(event.pointerId)) return
 
                     const committedValue = pendingValueRef.current
                     if (didDragRef.current) syncAnimatedPosition(committedValue)
+                    setOverscrollStretch(0)
                     setIsDragging(false)
+                    pointerPositionRef.current = null
+                    stickyMajorLineRef.current = null
                     event.currentTarget.releasePointerCapture(event.pointerId)
                     if (committedValue !== commitStartValueRef.current) onValueCommit?.(committedValue)
                 }}
@@ -274,7 +338,10 @@ export function Slider({
                     if (!event.currentTarget.hasPointerCapture(event.pointerId)) return
 
                     syncAnimatedPosition(pendingValueRef.current)
+                    setOverscrollStretch(0)
                     setIsDragging(false)
+                    pointerPositionRef.current = null
+                    stickyMajorLineRef.current = null
                     event.currentTarget.releasePointerCapture(event.pointerId)
                 }}
                 onKeyDown={(event) => {
@@ -298,49 +365,62 @@ export function Slider({
                 }}
                 onDragStart={(event) => event.preventDefault()}
             >
-                {Array.from({ length: lineCount }, (_, index) => {
-                    const distanceFromValue = Math.abs(index - visiblePosition)
-                    const waveStrength = Math.exp(-(distanceFromValue ** 2) / (2 * 1.15 ** 2))
-                    const scale = 1 + waveStrength * 0.5
-                    const activation = Math.min(1, Math.max(0, visiblePosition - index + 1))
-                    const lineProgress = index / (lineCount - 1)
-                    const coneProgress = shape === "cone-decline" ? 1 - lineProgress : lineProgress
-                    const baseHeight = shape === "default" ? sizeStyles.baseHeight : sizeStyles.coneMinHeight + coneProgress * sizeStyles.coneHeightRange
-                    const isMajorLine = showMajorLines && majorLines.has(index)
-                    const lineHeight = isMajorLine ? (shape === "default" ? sizeStyles.majorHeight : Math.min(baseHeight + 4, sizeStyles.coneMajorMax)) : baseHeight
+                <div
+                    aria-hidden="true"
+                    className={cn(
+                        "flex w-full transform-gpu items-center gap-1 transition-transform motion-reduce:transition-none",
+                        overscrollStretch === 0 ? "duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]" : "duration-75 ease-out"
+                    )}
+                    style={{
+                        transform: `scaleX(${1 + Math.abs(overscrollStretch) * 0.02})`,
+                        transformOrigin: stretchOriginRef.current,
+                    }}
+                >
+                    {Array.from({ length: lineCount }, (_, index) => {
+                        const distanceFromValue = Math.abs(index - visiblePosition)
+                        const waveStrength = Math.exp(-(distanceFromValue ** 2) / (2 * 1.15 ** 2))
+                        const scale = 1 + waveStrength * 0.5
+                        const activation = Math.min(1, Math.max(0, visiblePosition - index + 1))
+                        const lineProgress = index / (lineCount - 1)
+                        const edgeInfluence = overscrollStretch > 0 ? lineProgress ** 2 : (1 - lineProgress) ** 2
+                        const edgeScale = overscrollStretch > 0 ? 1 + Math.abs(overscrollStretch) * edgeInfluence * 0.14 : 1 - Math.abs(overscrollStretch) * edgeInfluence * 0.08
+                        const coneProgress = shape === "cone-decline" ? 1 - lineProgress : lineProgress
+                        const baseHeight = shape === "default" ? sizeStyles.baseHeight : sizeStyles.coneMinHeight + coneProgress * sizeStyles.coneHeightRange
+                        const isMajorLine = showMajorLines && majorLineIndexes.has(index)
+                        const lineHeight = isMajorLine ? (shape === "default" ? sizeStyles.majorHeight : Math.min(baseHeight + 4, sizeStyles.coneMajorMax)) : baseHeight
 
-                    return (
-                        <span
-                            key={index}
-                            aria-hidden="true"
-                            className="relative flex-1 origin-center overflow-hidden rounded-full transition-[opacity,transform] duration-75 ease-out motion-reduce:transition-none"
-                            style={{
-                                height: `${lineHeight}px`,
-                                backgroundColor: inactiveColor,
-                                opacity: 0.4 + activation * 0.6,
-                                transform: `scaleY(${scale})`,
-                                transitionDuration: shouldAnimate ? undefined : "0ms",
-                                transitionProperty: shouldAnimate ? undefined : "none",
-                            }}
-                        >
+                        return (
                             <span
-                                className="absolute inset-0 rounded-[inherit] transition-opacity duration-75 ease-out motion-reduce:transition-none"
+                                key={index}
+                                className="relative flex-1 origin-center overflow-hidden rounded-full transition-[opacity,transform] duration-75 ease-out motion-reduce:transition-none"
                                 style={{
-                                    opacity: activation,
+                                    height: `${lineHeight}px`,
+                                    backgroundColor: inactiveColor,
+                                    opacity: 0.4 + activation * 0.6,
+                                    transform: `scaleY(${scale * edgeScale})`,
                                     transitionDuration: shouldAnimate ? undefined : "0ms",
-                                    backgroundColor: variant === "default" ? activeColor : undefined,
-                                    ...(variant === "gradient"
-                                        ? {
-                                              backgroundImage: "linear-gradient(to right, #ff6b6b, #ffb86b, #72f896)",
-                                              backgroundPosition: `${lineProgress * 100}% center`,
-                                              backgroundSize: `${lineCount * 100}% 100%`,
-                                          }
-                                        : {}),
+                                    transitionProperty: shouldAnimate ? undefined : "none",
                                 }}
-                            />
-                        </span>
-                    )
-                })}
+                            >
+                                <span
+                                    className="absolute inset-0 rounded-[inherit] transition-opacity duration-75 ease-out motion-reduce:transition-none"
+                                    style={{
+                                        opacity: activation,
+                                        transitionDuration: shouldAnimate ? undefined : "0ms",
+                                        backgroundColor: variant === "default" ? activeColor : undefined,
+                                        ...(variant === "gradient"
+                                            ? {
+                                                  backgroundImage: "linear-gradient(to right, #ff6b6b, #ffb86b, #72f896)",
+                                                  backgroundPosition: `${lineProgress * 100}% center`,
+                                                  backgroundSize: `${lineCount * 100}% 100%`,
+                                              }
+                                            : {}),
+                                    }}
+                                />
+                            </span>
+                        )
+                    })}
+                </div>
             </div>
 
             <div className={cn("mt-2 grid grid-cols-3 text-tertiary", sizeStyles.label)}>
