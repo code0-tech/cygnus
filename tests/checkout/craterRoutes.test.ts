@@ -77,6 +77,56 @@ test("business customer creation requires tax ID fields", async () => {
     })
 })
 
+test("customer creation surfaces Crater validation details", async () => {
+    const graphQLServer = await createGraphQLTestServer([
+        {
+            data: {
+                customersCreate: {
+                    customer: null,
+                    errors: [
+                        {
+                            errorCode: "INVALID_CUSTOMER",
+                            details: [
+                                { __typename: "ActiveModelError", attribute: "email", type: "invalid" },
+                                { __typename: "MessageError", message: "Stripe rejected the customer." },
+                            ],
+                        },
+                    ],
+                },
+            },
+        },
+    ])
+    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
+    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
+
+    try {
+        const response = await createOrGetCustomer(
+            new Request("https://example.com/api/crater/customer", {
+                method: "POST",
+                headers: sessionHeaders,
+                body: JSON.stringify({
+                    customerType: "personal",
+                    email: "person@example.com",
+                    name: "Example Person",
+                }),
+            })
+        )
+
+        assert.equal(response.status, 422)
+        assert.deepEqual(await response.json(), {
+            error: "Crater could not create the customer.",
+            errorCode: "INVALID_CUSTOMER",
+            details: ["email: invalid", "Stripe rejected the customer."],
+        })
+        assert.match(graphQLServer.requests[0].body.query ?? "", /\.\.\. on ActiveModelError/)
+        assert.match(graphQLServer.requests[0].body.query ?? "", /\.\.\. on MessageError/)
+    } finally {
+        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
+        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
+        await graphQLServer.close()
+    }
+})
+
 test("customer updates require a valid Crater customer id", async () => {
     const response = await updateCustomer(
         new Request("https://example.com/api/crater/customer", {

@@ -3143,7 +3143,7 @@ export interface Checkout {
     guestDescription: string;
     guestLabel: string;
     /**
-     * The checkout URL is appended in the redirectUrl query parameter.
+     * The checkout URL is appended in the callbackUrl query parameter.
      */
     loginUrl: string;
   };
