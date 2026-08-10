@@ -15,10 +15,16 @@ let checkoutProviderOptions: { clientSecret?: string; defaultValues?: unknown; e
 let billingAddressOnChange: ((event: { complete: boolean }) => void) | null = null
 let billingAddressOptions: unknown = null
 let checkoutStages: string[] = []
+let checkoutStage = "billingAddress"
+const checkoutStageListeners = new Set<() => void>()
 let stripeConfirmCalls = 0
 let stripeConfirmErrorMessage: string | null = null
 let stripeConfirmOptions: unknown[] = []
-const setCheckoutStage = (stage: string) => checkoutStages.push(stage)
+const setCheckoutStage = (stage: string) => {
+    checkoutStage = stage
+    checkoutStages.push(stage)
+    checkoutStageListeners.forEach((listener) => listener())
+}
 
 process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY = "pk_test_example"
 
@@ -38,7 +44,17 @@ mock.module("@/components/checkout/CraterSessionProvider", {
 })
 mock.module("@/components/checkout/CheckoutStepper", {
     namedExports: {
-        useCheckoutStage: () => ({ stage: "billingAddress", setStage: setCheckoutStage }),
+        useCheckoutStage: () => ({
+            stage: React.useSyncExternalStore(
+                (listener) => {
+                    checkoutStageListeners.add(listener)
+                    return () => checkoutStageListeners.delete(listener)
+                },
+                () => checkoutStage,
+                () => checkoutStage
+            ),
+            setStage: setCheckoutStage,
+        }),
     },
 })
 mock.module("@code0-tech/pictor", {
@@ -87,9 +103,10 @@ mock.module("@stripe/react-stripe-js/checkout", {
     },
 })
 
-const { act, cleanup, render, screen, waitFor } = await import("@testing-library/react")
+const { act, cleanup, render, screen, waitFor, within } = await import("@testing-library/react")
 const userEvent = (await import("@testing-library/user-event")).default
 const { CheckoutForm } = await import("../../src/components/checkout/CheckoutForm")
+const { CheckoutFormProvider } = await import("../../src/components/checkout/CheckoutFormProvider")
 
 const originalFetch = globalThis.fetch
 afterEach(() => {
@@ -101,6 +118,7 @@ afterEach(() => {
     billingAddressOnChange = null
     billingAddressOptions = null
     checkoutStages = []
+    checkoutStage = "billingAddress"
     stripeConfirmCalls = 0
     stripeConfirmErrorMessage = null
     stripeConfirmOptions = []
@@ -222,6 +240,29 @@ test("disables checkout until all required billing fields are valid", async () =
 
     assert.equal((screen.getByRole("button", { name: "Continue to payment" }) as HTMLButtonElement).disabled, true)
     assert.equal(requests.length, 0)
+})
+
+test("shares entered billing details between responsive checkout forms", async () => {
+    const user = userEvent.setup()
+
+    render(
+        <CheckoutFormProvider content={content} locale="en">
+            <div data-testid="desktop-checkout">
+                <CheckoutForm />
+            </div>
+            <div data-testid="mobile-checkout">
+                <CheckoutForm mobileSteps />
+            </div>
+        </CheckoutFormProvider>
+    )
+
+    const desktopCheckout = within(screen.getByTestId("desktop-checkout"))
+    const mobileCheckout = within(screen.getByTestId("mobile-checkout"))
+    await user.type(desktopCheckout.getByRole("textbox", { name: "Name" }), "Ada Lovelace")
+    await user.type(desktopCheckout.getByRole("textbox", { name: "Email" }), "ada@example.com")
+
+    assert.equal((mobileCheckout.getByRole("textbox", { name: "Name" }) as HTMLInputElement).value, "Ada Lovelace")
+    assert.equal((mobileCheckout.getByRole("textbox", { name: "Email" }) as HTMLInputElement).value, "ada@example.com")
 })
 
 test("shows contact details as the personal mobile billing step", async () => {

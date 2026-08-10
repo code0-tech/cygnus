@@ -1,26 +1,14 @@
 "use client"
 
-import { useCraterSession } from "@/components/checkout/CraterSessionProvider"
 import { CheckoutPaymentForm } from "@/components/checkout/CheckoutPaymentForm"
-import { useCheckoutStage } from "@/components/checkout/CheckoutStepper"
+import { CheckoutFormProvider, useCheckoutFormState } from "@/components/checkout/CheckoutFormProvider"
 import type { CheckoutData } from "@/lib/cms"
-import { createBillingDetailsValidation, createEmptyBillingDetails, getBillingStepStatus, type BillingDetails } from "@/lib/checkout/billingDetails"
-import { resolveCraterCustomerType } from "@/lib/checkout/craterCustomer"
-import { createCheckoutSession, prepareCheckoutSession, type CheckoutSessionData } from "@/lib/checkout/checkoutSubmission"
+import { getBillingStepStatus } from "@/lib/checkout/billingDetails"
 import type { AppLocale } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
-import { Button, EmailInput, TextInput, useForm } from "@code0-tech/pictor"
+import { Button, EmailInput, TextInput } from "@code0-tech/pictor"
 import { IconCheck, IconChevronDown } from "@tabler/icons-react"
-import { useSearchParams } from "next/navigation"
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react"
-
-type CheckoutFormContent = CheckoutData["form"]
-
-interface CheckoutFormProps {
-    content?: CheckoutFormContent | null
-    locale: AppLocale
-    mobileSteps?: boolean
-}
+import type { ReactNode } from "react"
 
 interface MobileCheckoutStepProps {
     canOpen: boolean
@@ -70,82 +58,26 @@ function MobileCheckoutStep({ canOpen, children, complete, number, onOpen, open,
     )
 }
 
-export function CheckoutForm({ content, locale, mobileSteps = false }: CheckoutFormProps) {
-    const searchParams = useSearchParams()
-    const { setStage } = useCheckoutStage()
-    const [isLoading, setIsLoading] = useState(false)
-    const [errorMessage, setErrorMessage] = useState<string | null>(null)
-    const [checkoutSession, setCheckoutSession] = useState<CheckoutSessionData | null>(null)
-    const [checkoutSessionPromotionCode, setCheckoutSessionPromotionCode] = useState<string | null | undefined>(undefined)
-    const [isRefreshingSession, setIsRefreshingSession] = useState(false)
-    const [mobileStep, setMobileStep] = useState(0)
-    const sessionRefreshRequestRef = useRef(0)
-    const { error: sessionError, isLoading: isSessionLoading, token: sessionToken } = useCraterSession()
-    const customerType = resolveCraterCustomerType(searchParams.get("customerType"))
-    const initialValues = useMemo(createEmptyBillingDetails, [])
-    const validation = useMemo(() => createBillingDetailsValidation(customerType, false), [customerType])
-    const searchParamsString = searchParams.toString()
-    const promotionCode = searchParams.get("promotionCode")?.trim() || null
-
-    const [inputs, validate, values] = useForm({
-        useInitialValidation: false,
-        initialValues,
-        validate: validation,
-        onSubmit: (values: BillingDetails) => {
-            if (isLoading) return
-
-            setIsLoading(true)
-            setErrorMessage(null)
-
-            void (async () => {
-                try {
-                    if (!sessionToken) {
-                        throw new Error(sessionError ?? "A Crater session is required.")
-                    }
-
-                    const checkoutSearchParams = new URLSearchParams(searchParamsString)
-                    const session = await prepareCheckoutSession({ values, customerType, locale, searchParams: checkoutSearchParams, sessionToken })
-                    setCheckoutSession(session)
-                    setCheckoutSessionPromotionCode(checkoutSearchParams.get("promotionCode")?.trim() || null)
-                    setIsLoading(false)
-                } catch (error) {
-                    console.error("Failed to start Crater checkout:", error)
-                    setErrorMessage(error instanceof Error ? error.message : content?.paymentErrorFallback || "Checkout failed.")
-                    setIsLoading(false)
-                    setStage("billingAddress")
-                }
-            })()
-        },
-    })
-
-    useEffect(() => {
-        if (checkoutSessionPromotionCode === undefined || checkoutSessionPromotionCode === promotionCode || !sessionToken) return
-
-        const requestId = ++sessionRefreshRequestRef.current
-        const checkoutSearchParams = new URLSearchParams(searchParamsString)
-        setCheckoutSession(null)
-        setIsRefreshingSession(true)
-        setErrorMessage(null)
-        setStage("billingAddress")
-
-        void createCheckoutSession({ locale, searchParams: checkoutSearchParams, sessionToken })
-            .then((session) => {
-                if (requestId !== sessionRefreshRequestRef.current) return
-                setCheckoutSession(session)
-                setCheckoutSessionPromotionCode(promotionCode)
-            })
-            .catch((error) => {
-                if (requestId !== sessionRefreshRequestRef.current) return
-                console.error("Failed to refresh Crater checkout after discount change:", error)
-                setCheckoutSessionPromotionCode(undefined)
-                setErrorMessage(error instanceof Error ? error.message : content?.paymentErrorFallback || "Checkout failed.")
-            })
-            .finally(() => {
-                if (requestId === sessionRefreshRequestRef.current) setIsRefreshingSession(false)
-            })
-    }, [checkoutSessionPromotionCode, content?.paymentErrorFallback, locale, promotionCode, searchParamsString, sessionToken, setStage])
-
-    if (!content) return null
+function CheckoutFormContent({ mobileSteps = false }: { mobileSteps?: boolean }) {
+    const {
+        checkoutSession,
+        content,
+        customerType,
+        errorMessage,
+        inputs,
+        isLoading,
+        isRefreshingSession,
+        isSessionLoading,
+        isStripeAddressComplete,
+        mobileStep,
+        resetCheckout,
+        sessionError,
+        sessionToken,
+        setIsStripeAddressComplete,
+        setMobileStep,
+        validate,
+        values,
+    } = useCheckoutFormState()
 
     if (isRefreshingSession) {
         return <div className="flex min-h-40 items-center justify-center text-sm text-secondary">{content.processingLabel}</div>
@@ -156,13 +88,9 @@ export function CheckoutForm({ content, locale, mobileSteps = false }: CheckoutF
             <CheckoutPaymentForm
                 content={content}
                 session={checkoutSession}
-                onBack={() => {
-                    sessionRefreshRequestRef.current += 1
-                    setCheckoutSession(null)
-                    setCheckoutSessionPromotionCode(undefined)
-                    setIsRefreshingSession(false)
-                    setStage("billingAddress")
-                }}
+                isAddressComplete={isStripeAddressComplete}
+                onAddressComplete={setIsStripeAddressComplete}
+                onBack={resetCheckout}
             />
         )
     }
@@ -176,17 +104,17 @@ export function CheckoutForm({ content, locale, mobileSteps = false }: CheckoutF
     const contactFields = (
         <fieldset className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="sm:col-span-2">
-                <TextInput maxLength={256} title={content.nameLabel} placeholder={content.namePlaceholder} className="w-full!" {...inputs.getInputProps("name")} />
+                <TextInput maxLength={256} title={content.nameLabel} placeholder={content.namePlaceholder} className="w-full!" {...inputs.getInputProps("name")} value={values.name} />
             </div>
-            <EmailInput maxLength={512} title={content.emailLabel} placeholder={content.emailPlaceholder} className="w-full!" {...inputs.getInputProps("email")} />
-            <TextInput maxLength={50} title={content.phoneLabel} placeholder={content.phonePlaceholder} className="w-full!" {...inputs.getInputProps("phone")} />
+            <EmailInput maxLength={512} title={content.emailLabel} placeholder={content.emailPlaceholder} className="w-full!" {...inputs.getInputProps("email")} value={values.email} />
+            <TextInput maxLength={50} title={content.phoneLabel} placeholder={content.phonePlaceholder} className="w-full!" {...inputs.getInputProps("phone")} value={values.phone} />
         </fieldset>
     )
 
     const taxFields = (
         <fieldset className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <TextInput maxLength={50} title={content.taxIdTypeLabel} placeholder={content.taxIdTypePlaceholder} className="w-full!" {...inputs.getInputProps("taxIdType")} />
-            <TextInput maxLength={100} title={content.taxIdValueLabel} placeholder={content.taxIdValuePlaceholder} className="w-full!" {...inputs.getInputProps("taxIdValue")} />
+            <TextInput maxLength={50} title={content.taxIdTypeLabel} placeholder={content.taxIdTypePlaceholder} className="w-full!" {...inputs.getInputProps("taxIdType")} value={values.taxIdType} />
+            <TextInput maxLength={100} title={content.taxIdValueLabel} placeholder={content.taxIdValuePlaceholder} className="w-full!" {...inputs.getInputProps("taxIdValue")} value={values.taxIdValue} />
         </fieldset>
     )
 
@@ -256,5 +184,22 @@ export function CheckoutForm({ content, locale, mobileSteps = false }: CheckoutF
                 {submitButton}
             </div>
         </div>
+    )
+}
+
+interface CheckoutFormProps {
+    content?: CheckoutData["form"] | null
+    locale?: AppLocale
+    mobileSteps?: boolean
+}
+
+export function CheckoutForm({ content, locale, mobileSteps = false }: CheckoutFormProps) {
+    const form = <CheckoutFormContent mobileSteps={mobileSteps} />
+    return content && locale ? (
+        <CheckoutFormProvider content={content} locale={locale}>
+            {form}
+        </CheckoutFormProvider>
+    ) : (
+        form
     )
 }

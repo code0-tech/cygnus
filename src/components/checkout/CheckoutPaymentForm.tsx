@@ -14,79 +14,108 @@ const stripePublicKey = process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY
 const stripePromise = stripePublicKey ? loadStripe(stripePublicKey) : null
 const stripeAppearance = {
     theme: "night",
+    labels: "above",
     variables: {
         colorPrimary: "#72f896",
-        colorBackground: "#1b1928",
+        colorBackground: "#201e2c",
         colorText: "#ffffff",
-        colorTextSecondary: "#b8b3c2",
-        colorTextPlaceholder: "#817d8b",
+        colorTextSecondary: "rgba(255, 255, 255, 0.5)",
+        colorTextPlaceholder: "rgba(255, 255, 255, 0.35)",
         colorDanger: "#ef5b68",
         fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif",
-        fontSizeBase: "16px",
+        fontSizeBase: "13px",
         fontWeightNormal: "400",
-        fontWeightMedium: "500",
+        fontWeightMedium: "400",
         spacingUnit: "4px",
         gridRowSpacing: "16px",
-        borderRadius: "12px",
-        inputBoxShadow: "none",
-        inputFocusBoxShadow: "0 0 0 1px #72f896",
-        inputFocusColorBorder: "#72f896",
-        labelColorText: "#b8b3c2",
-        labelFontSize: "14px",
-        labelFontWeight: "500",
+        borderRadius: "16px",
+        inputBoxShadow: "inset 0 1px 1px rgba(255, 255, 255, 0.1)",
+        inputFocusBoxShadow: "inset 0 1px 1px rgba(255, 255, 255, 0.1)",
+        inputFocusColorBorder: "transparent",
+        labelColorText: "rgba(255, 255, 255, 0.5)",
+        labelFontSize: "11px",
+        labelFontWeight: "400",
+        labelSpacing: "7px",
     },
     rules: {
         ".Input": {
-            backgroundColor: "#1b1928",
-            border: "1px solid rgba(255, 255, 255, 0.1)",
-            boxShadow: "none",
-            padding: "12px 14px",
+            backgroundColor: "#201e2c",
+            border: "none",
+            boxShadow: "inset 0 1px 1px rgba(255, 255, 255, 0.1)",
+            padding: "11px",
+            letterSpacing: "-0.5px",
         },
         ".Input:hover": {
-            borderColor: "rgba(255, 255, 255, 0.2)",
+            backgroundColor: "rgba(191, 191, 191, 0.15)",
+        },
+        ".Input:focus": {
+            backgroundColor: "rgba(191, 191, 191, 0.2)",
+            border: "none",
+            boxShadow: "inset 0 1px 1px rgba(255, 255, 255, 0.1)",
         },
         ".Input--invalid": {
-            borderColor: "#ef5b68",
-            boxShadow: "0 0 0 1px #ef5b68",
+            backgroundColor: "#1c0516",
+            border: "none",
+            boxShadow: "inset 0 1px 1px rgba(217, 4, 41, 0.1)",
+        },
+        ".Label": {
+            color: "rgba(255, 255, 255, 0.5)",
+            fontSize: "11px",
+            fontWeight: "400",
+            letterSpacing: "-0.5px",
+            textTransform: "uppercase",
         },
         ".Tab": {
-            backgroundColor: "#1b1928",
-            border: "1px solid rgba(255, 255, 255, 0.1)",
-            boxShadow: "none",
+            backgroundColor: "#070514",
+            border: "none",
+            boxShadow: "inset 0 1px 1px rgba(255, 255, 255, 0.1)",
         },
         ".Tab:hover": {
-            borderColor: "rgba(255, 255, 255, 0.2)",
+            backgroundColor: "#191825",
         },
         ".Tab--selected": {
-            borderColor: "#72f896",
-            boxShadow: "0 0 0 1px #72f896",
+            backgroundColor: "#201e2c",
+            border: "none",
+            boxShadow: "inset 0 1px 1px rgba(255, 255, 255, 0.1)",
+        },
+        ".AccordionItem": {
+            backgroundColor: "#070514",
+            border: "none",
+            boxShadow: "inset 0 1px 1px rgba(255, 255, 255, 0.1)",
+        },
+        ".AccordionItem:hover": {
+            backgroundColor: "#191825",
+        },
+        ".AccordionItem--selected": {
+            backgroundColor: "#191825",
+            border: "none",
+            boxShadow: "inset 0 1px 1px rgba(255, 255, 255, 0.1)",
         },
     },
 } satisfies NonNullable<NonNullable<StripeCheckoutElementsSdkOptions["elementsOptions"]>["appearance"]>
 
 interface CheckoutPaymentFormProps {
     content: CheckoutFormContent
+    isAddressComplete: boolean
+    onAddressComplete: (complete: boolean) => void
     onBack: () => void
     session: CheckoutSessionData
 }
 
-function CheckoutPaymentFields({ content, onAddressComplete, onBack }: Pick<CheckoutPaymentFormProps, "content" | "onBack"> & { onAddressComplete: (complete: boolean) => void }) {
+function CheckoutPaymentFields({ content, isAddressComplete, onAddressComplete, onBack }: Omit<CheckoutPaymentFormProps, "session">) {
     const checkoutState = useCheckoutElements()
-    const [isAddressComplete, setIsAddressComplete] = useState(false)
-    const [activeStep, setActiveStep] = useState<"billingAddress" | "payment">("billingAddress")
+    const { stage: activeStep, setStage } = useCheckoutStage()
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
     const [isConfirming, setIsConfirming] = useState(false)
 
     const showBillingAddress = () => {
-        setActiveStep("billingAddress")
+        setStage("billingAddress")
         setErrorMessage(null)
-        onAddressComplete(false)
     }
 
     const showPayment = () => {
         if (!isAddressComplete) return
-        setActiveStep("payment")
-        onAddressComplete(true)
+        setStage("payment")
     }
 
     const handleSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
@@ -126,12 +155,11 @@ function CheckoutPaymentFields({ content, onAddressComplete, onBack }: Pick<Chec
     }
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="w-full space-y-6">
             {activeStep === "billingAddress" ? (
                 <>
-                    <section className="rounded-2xl border border-white/5 bg-white/[0.025] p-4 sm:p-5">
-                        <h2 className="mb-4 text-base font-medium text-white">{content.billingHeading}</h2>
-                        <BillingAddressElement onChange={(event) => setIsAddressComplete(event.complete)} />
+                    <section className="w-full space-y-4">
+                        <BillingAddressElement onChange={(event) => onAddressComplete(event.complete)} />
                     </section>
 
                     <div className="space-y-3">
@@ -156,9 +184,8 @@ function CheckoutPaymentFields({ content, onAddressComplete, onBack }: Pick<Chec
                 </>
             ) : (
                 <>
-                    <section className="space-y-4 rounded-2xl border border-white/5 bg-white/[0.025] p-4 sm:p-5">
-                    <h2 className="text-base font-medium text-white">{content.paymentHeading}</h2>
-                    <PaymentElement />
+                    <section className="w-full space-y-4">
+                        <PaymentElement />
                     </section>
 
                     {errorMessage && (
@@ -192,8 +219,7 @@ function CheckoutPaymentFields({ content, onAddressComplete, onBack }: Pick<Chec
     )
 }
 
-export function CheckoutPaymentForm({ content, onBack, session }: CheckoutPaymentFormProps) {
-    const { setStage } = useCheckoutStage()
+export function CheckoutPaymentForm({ content, isAddressComplete, onAddressComplete, onBack, session }: CheckoutPaymentFormProps) {
     const options = useMemo<StripeCheckoutElementsSdkOptions>(
         () => ({
             clientSecret: session.clientSecret,
@@ -208,7 +234,7 @@ export function CheckoutPaymentForm({ content, onBack, session }: CheckoutPaymen
 
     return (
         <CheckoutElementsProvider key={session.clientSecret} stripe={stripePromise} options={options}>
-            <CheckoutPaymentFields content={content} onAddressComplete={(complete) => setStage(complete ? "payment" : "billingAddress")} onBack={onBack} />
+            <CheckoutPaymentFields content={content} isAddressComplete={isAddressComplete} onAddressComplete={onAddressComplete} onBack={onBack} />
         </CheckoutElementsProvider>
     )
 }
