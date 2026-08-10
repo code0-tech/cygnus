@@ -4,7 +4,7 @@ import type { CheckoutData } from "@/lib/cms"
 import type { CheckoutSessionData } from "@/lib/checkout/checkoutSubmission"
 import { useCheckoutStage } from "@/components/checkout/CheckoutStepper"
 import { Button } from "@code0-tech/pictor"
-import { BillingAddressElement, CheckoutElementsProvider, PaymentElement, useCheckoutElements } from "@stripe/react-stripe-js/checkout"
+import { BillingAddressElement, CheckoutElementsProvider, ContactDetailsElement, PaymentElement, useCheckoutElements } from "@stripe/react-stripe-js/checkout"
 import { loadStripe, type StripeCheckoutElementsSdkOptions } from "@stripe/stripe-js"
 import { useMemo, useState } from "react"
 
@@ -97,12 +97,13 @@ const stripeAppearance = {
 interface CheckoutPaymentFormProps {
     content: CheckoutFormContent
     isAddressComplete: boolean
+    isContactComplete: boolean
     onAddressComplete: (complete: boolean) => void
-    onBack: () => void
+    onContactComplete: (complete: boolean) => void
     session: CheckoutSessionData
 }
 
-function CheckoutPaymentFields({ content, isAddressComplete, onAddressComplete, onBack }: Omit<CheckoutPaymentFormProps, "session">) {
+function CheckoutPaymentFields({ content, isAddressComplete, isContactComplete, onAddressComplete, onContactComplete }: Omit<CheckoutPaymentFormProps, "session">) {
     const checkoutState = useCheckoutElements()
     const { stage: activeStep, setStage } = useCheckoutStage()
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -114,7 +115,7 @@ function CheckoutPaymentFields({ content, isAddressComplete, onAddressComplete, 
     }
 
     const showPayment = () => {
-        if (!isAddressComplete) return
+        if (!isAddressComplete || !isContactComplete) return
         setStage("payment")
     }
 
@@ -142,16 +143,7 @@ function CheckoutPaymentFields({ content, isAddressComplete, onAddressComplete, 
     }
 
     if (checkoutState.type === "error") {
-        return (
-            <div className="space-y-4">
-                <p className="text-sm text-error" role="alert">
-                    {checkoutState.error.message}
-                </p>
-                <Button type="button" variant="normal" onClick={onBack} className="h-10! w-full! text-sm!">
-                    {content.backToBillingLabel}
-                </Button>
-            </div>
-        )
+        return <p className="text-sm text-error" role="alert">{checkoutState.error.message}</p>
     }
 
     return (
@@ -159,26 +151,19 @@ function CheckoutPaymentFields({ content, isAddressComplete, onAddressComplete, 
             {activeStep === "billingAddress" ? (
                 <>
                     <section className="w-full space-y-4">
-                        <BillingAddressElement onChange={(event) => onAddressComplete(event.complete)} />
+                        <ContactDetailsElement onChange={(event) => onContactComplete(event.complete)} />
+                        <BillingAddressElement options={{ display: { name: "full" } }} onChange={(event) => onAddressComplete(event.complete)} />
                     </section>
 
                     <div className="space-y-3">
                         <Button
                             type="button"
                             variant="normal"
-                            disabled={!isAddressComplete}
+                            disabled={!isAddressComplete || !isContactComplete}
                             onClick={showPayment}
                             className="h-10! w-full! whitespace-nowrap bg-white/80! px-8! text-sm! text-primary! ring-1! ring-white/20! hover:bg-white!"
                         >
                             {content.continueLabel}
-                        </Button>
-                        <Button
-                            type="button"
-                            variant="normal"
-                            onClick={onBack}
-                            className="h-10! w-full! border-white/10! bg-white/[0.03]! text-sm! text-secondary! hover:bg-white/[0.06]! hover:text-white!"
-                        >
-                            {content.backToBillingLabel}
                         </Button>
                     </div>
                 </>
@@ -219,7 +204,7 @@ function CheckoutPaymentFields({ content, isAddressComplete, onAddressComplete, 
     )
 }
 
-export function CheckoutPaymentForm({ content, isAddressComplete, onAddressComplete, onBack, session }: CheckoutPaymentFormProps) {
+export function CheckoutPaymentForm({ content, isAddressComplete, isContactComplete, onAddressComplete, onContactComplete, session }: CheckoutPaymentFormProps) {
     const options = useMemo<StripeCheckoutElementsSdkOptions>(
         () => ({
             clientSecret: session.clientSecret,
@@ -234,7 +219,13 @@ export function CheckoutPaymentForm({ content, isAddressComplete, onAddressCompl
 
     return (
         <CheckoutElementsProvider key={session.clientSecret} stripe={stripePromise} options={options}>
-            <CheckoutPaymentFields content={content} isAddressComplete={isAddressComplete} onAddressComplete={onAddressComplete} onBack={onBack} />
+            <CheckoutPaymentFields
+                content={content}
+                isAddressComplete={isAddressComplete}
+                isContactComplete={isContactComplete}
+                onAddressComplete={onAddressComplete}
+                onContactComplete={onContactComplete}
+            />
         </CheckoutElementsProvider>
     )
 }

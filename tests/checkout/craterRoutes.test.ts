@@ -58,23 +58,54 @@ test("customer creation requires a Crater session", async () => {
     assert.equal(response.status, 403)
 })
 
-test("business customer creation requires tax ID fields", async () => {
+test("business customer creation allows omitted contact and tax fields", async () => {
+    const graphQLServer = await createGraphQLTestServer([
+        {
+            data: {
+                customersCreate: {
+                    errors: [],
+                    customer: {
+                        id: "gid://crater/Customer/1",
+                        customerType: "business",
+                        email: null,
+                        name: null,
+                    },
+                },
+            },
+        },
+    ])
+    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
+    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
+
+    try {
+        const response = await createOrGetCustomer(
+            new Request("https://example.com/api/crater/customer", {
+                method: "POST",
+                headers: sessionHeaders,
+                body: JSON.stringify({ customerType: "business" }),
+            })
+        )
+
+        assert.equal(response.status, 201)
+        assert.deepEqual(graphQLServer.requests[0].body.variables, { input: { customerType: "business" } })
+    } finally {
+        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
+        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
+        await graphQLServer.close()
+    }
+})
+
+test("customer creation rejects incomplete tax ID fields", async () => {
     const response = await createOrGetCustomer(
         new Request("https://example.com/api/crater/customer", {
             method: "POST",
             headers: sessionHeaders,
-            body: JSON.stringify({
-                customerType: "business",
-                email: "company@example.com",
-                name: "Example Company",
-            }),
+            body: JSON.stringify({ customerType: "business", taxIdType: "eu_vat" }),
         })
     )
 
     assert.equal(response.status, 400)
-    assert.deepEqual(await response.json(), {
-        error: "taxIdType and taxIdValue are required for business customers.",
-    })
+    assert.deepEqual(await response.json(), { error: "taxIdType and taxIdValue must be provided together." })
 })
 
 test("customer creation surfaces Crater validation details", async () => {

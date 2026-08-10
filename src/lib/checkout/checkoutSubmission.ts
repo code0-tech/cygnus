@@ -1,4 +1,3 @@
-import type { BillingDetails } from "@/lib/checkout/billingDetails"
 import type { CraterCustomerType } from "@/lib/checkout/craterCustomer"
 import type { AppLocale } from "@/lib/i18n"
 
@@ -23,11 +22,9 @@ async function readCheckoutError(response: Response, fallback: string) {
 }
 
 async function createCheckoutCustomer({
-    values,
     customerType,
     sessionToken,
 }: {
-    values: BillingDetails
     customerType: CraterCustomerType
     sessionToken: string
 }) {
@@ -35,13 +32,7 @@ async function createCheckoutCustomer({
     const customerResponse = await fetch("/api/crater/customer", {
         method: "POST",
         headers: { Authorization: authorization, "Content-Type": "application/json" },
-        body: JSON.stringify({
-            customerType,
-            name: values.name.trim(),
-            email: values.email.trim(),
-            phone: values.phone.trim(),
-            ...(customerType === "business" ? { taxIdType: values.taxIdType.trim(), taxIdValue: values.taxIdValue.trim() } : {}),
-        }),
+        body: JSON.stringify({ customerType }),
     })
     if (!customerResponse.ok) throw new Error(await readCheckoutError(customerResponse, "Failed to create the billing customer."))
 }
@@ -67,18 +58,16 @@ export async function createCheckoutSession({ locale, searchParams, sessionToken
 }
 
 export async function prepareCheckoutSession({
-    values,
     customerType,
     locale,
     searchParams,
     sessionToken,
 }: {
-    values: BillingDetails
     customerType: CraterCustomerType
     locale: AppLocale
     searchParams: URLSearchParams
     sessionToken: string
 }) {
-    await createCheckoutCustomer({ values, customerType, sessionToken })
+    await createCheckoutCustomer({ customerType, sessionToken })
     return createCheckoutSession({ locale, searchParams, sessionToken })
 }
