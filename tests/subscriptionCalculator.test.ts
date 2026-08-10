@@ -219,7 +219,7 @@ test("forces the custom plan when a b2b customer requests a pro or max checkout 
     assert.equal(result.aiTokens, 100)
 })
 
-test("downgrades weekly to monthly for b2b and quarterly to monthly for b2c in the checkout price display", () => {
+test("normalizes custom weekly and preserves custom quarterly in the checkout price display", () => {
     const config = {
         additionalFeatures: [],
         aiTokenPriceFactor: 0.001,
@@ -264,7 +264,7 @@ test("downgrades weekly to monthly for b2b and quarterly to monthly for b2c in t
     })
 
     assert.equal(b2bWeekly.paymentPeriod, "monthly")
-    assert.equal(b2cQuarterly.paymentPeriod, "monthly")
+    assert.equal(b2cQuarterly.paymentPeriod, "quarterly")
 })
 
 test("clamps manipulated custom-plan usage parameters before calculating the price", () => {
