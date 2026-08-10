@@ -1,9 +1,10 @@
 import { createApolloClient } from "@/lib/apolloClient"
 import { craterJson, craterMutationErrorResponse, craterTransportErrorResponse, optionalString, readJsonObject, requireCraterSession, type JsonObject } from "@/lib/checkout/craterApi"
-import { resolveSubscriptionSelection } from "@/lib/subscriptionConfigurator"
+import { parseCraterPaymentPeriod, toCraterPaymentPeriod, type CheckoutCreateSessionVariables } from "@/lib/checkout/craterCheckoutSchema"
+import { resolveSubscriptionSelection, type SubscriptionSelection } from "@/lib/subscriptionConfigurator"
 import { resolveSiteUrl } from "@/lib/siteConfig"
 import { DEFAULT_LOCALE, isSupportedLocale } from "@/lib/i18n"
-import type { Mutation, MutationCheckoutCreateSessionArgs, Scalars } from "@code0-tech/crater-graphql-types"
+import type { Mutation, Scalars } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 
 export const runtime = "nodejs"
@@ -14,7 +15,7 @@ function isCustomCheckoutConfigurationId(value: string): value is Scalars["Custo
     return /^gid:\/\/crater\/CustomCheckoutConfiguration\/\d+$/.test(value)
 }
 
-const CHECKOUT_CREATE_SESSION: TypedDocumentNode<CheckoutCreateSessionData, MutationCheckoutCreateSessionArgs> = gql`
+const CHECKOUT_CREATE_SESSION: TypedDocumentNode<CheckoutCreateSessionData, CheckoutCreateSessionVariables> = gql`
     mutation CheckoutCreateSession($input: CheckoutCreateSessionInput!) {
         checkoutCreateSession(input: $input) {
             session {
@@ -53,6 +54,7 @@ export async function POST(request: Request) {
         const aiTokens = optionalString(requestData.aiTokens)
         const additionalFeatures = optionalString(requestData.additionalFeatures)
         let craterCustomCheckoutConfigurationId: Scalars["CustomCheckoutConfigurationID"]["input"] | undefined
+        let normalizedSelection: SubscriptionSelection | undefined
 
         if (requestedLocale && !isSupportedLocale(requestedLocale)) {
             return craterJson({ error: "locale must be a supported locale." }, 400)
@@ -113,18 +115,31 @@ export async function POST(request: Request) {
                 )
             }
 
-            normalizedPlan = resolvedSelection.selection.plan
+            normalizedSelection = resolvedSelection.selection
+            normalizedPlan = normalizedSelection.plan
         }
 
         const siteUrl = resolveSiteUrl()
-        const input: MutationCheckoutCreateSessionArgs["input"] = {
+        const customConfigurationPaymentPeriod = parseCraterPaymentPeriod(paymentPeriod)
+        if (customCheckoutConfigurationId && paymentPeriod && !customConfigurationPaymentPeriod) {
+            return craterJson({ error: "paymentPeriod must be weekly, monthly, quarterly, or yearly." }, 400)
+        }
+
+        const input: CheckoutCreateSessionVariables["input"] = {
             returnUrl: `${new URL(`/${locale}/checkout/success`, siteUrl).toString()}?session_id={CHECKOUT_SESSION_ID}`,
+            paymentPeriod: normalizedSelection ? toCraterPaymentPeriod(normalizedSelection.paymentPeriod) : (customConfigurationPaymentPeriod ?? "MONTHLY"),
             ...(craterCustomCheckoutConfigurationId
                 ? { customCheckoutConfigurationId: craterCustomCheckoutConfigurationId }
                 : {
                       plan: normalizedPlan,
                       deploymentType,
                       ...(namespaceId ? { namespaceId } : {}),
+                      ...(normalizedSelection?.plan === "custom"
+                          ? {
+                                aiTokens: normalizedSelection.aiTokens,
+                                workflowExecutions: normalizedSelection.workflowExecutions,
+                            }
+                          : {}),
                   }),
             ...(promotionCode ? { promotionCode } : {}),
         }

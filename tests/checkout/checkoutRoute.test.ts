@@ -186,9 +186,12 @@ test("forces the custom plan for b2b customers requesting pro or max, even sent 
         assert.equal(response.status, 200)
         assert.deepEqual(graphQLServer.requests[0].body.variables, {
             input: {
+                aiTokens: 200_000,
                 deploymentType: "self_hosted",
+                paymentPeriod: "MONTHLY",
                 plan: "custom",
                 returnUrl: "https://code0.example/en/checkout/success?session_id={CHECKOUT_SESSION_ID}",
+                workflowExecutions: 1_000,
             },
         })
     } finally {
@@ -222,6 +225,18 @@ test("creates regular and custom checkout sessions with the expected Crater inpu
                         clientSecret: "cs_custom_secret_test",
                         expiresAt: 1_800_000_001,
                         id: "cs_custom",
+                    },
+                },
+            },
+        },
+        {
+            data: {
+                checkoutCreateSession: {
+                    errors: [],
+                    session: {
+                        clientSecret: "cs_dynamic_custom_secret_test",
+                        expiresAt: 1_800_000_002,
+                        id: "cs_dynamic_custom",
                     },
                 },
             },
@@ -261,6 +276,24 @@ test("creates regular and custom checkout sessions with the expected Crater inpu
                 }),
             })
         )
+        const dynamicCustomResponse = await POST(
+            new Request("https://example.com/api/crater/checkout/session", {
+                method: "POST",
+                headers: {
+                    authorization: "Session dynamic-custom-token",
+                    "content-type": "application/json",
+                },
+                body: JSON.stringify({
+                    plan: "custom",
+                    customerType: "b2c",
+                    deploymentType: "cloud",
+                    namespaceId: "namespace-7",
+                    paymentPeriod: "quarterly",
+                    aiTokens: "30000",
+                    workflowExecutions: "200",
+                }),
+            })
+        )
 
         assert.equal(regularResponse.status, 200)
         assert.deepEqual(await regularResponse.json(), {
@@ -269,11 +302,13 @@ test("creates regular and custom checkout sessions with the expected Crater inpu
             id: "cs_regular",
         })
         assert.equal(customResponse.status, 200)
+        assert.equal(dynamicCustomResponse.status, 200)
 
         assert.equal(graphQLServer.requests[0].authorization, "Session regular-token")
         assert.deepEqual(graphQLServer.requests[0].body.variables, {
             input: {
                 deploymentType: "self_hosted",
+                paymentPeriod: "MONTHLY",
                 plan: "pro",
                 promotionCode: "SAVE10",
                 returnUrl: "https://code0.example/de/checkout/success?session_id={CHECKOUT_SESSION_ID}",
@@ -283,7 +318,20 @@ test("creates regular and custom checkout sessions with the expected Crater inpu
         assert.deepEqual(graphQLServer.requests[1].body.variables, {
             input: {
                 customCheckoutConfigurationId: "gid://crater/CustomCheckoutConfiguration/4",
+                paymentPeriod: "MONTHLY",
                 returnUrl: "https://code0.example/en/checkout/success?session_id={CHECKOUT_SESSION_ID}",
+            },
+        })
+        assert.equal(graphQLServer.requests[2].authorization, "Session dynamic-custom-token")
+        assert.deepEqual(graphQLServer.requests[2].body.variables, {
+            input: {
+                aiTokens: 30_000,
+                deploymentType: "cloud",
+                namespaceId: "namespace-7",
+                paymentPeriod: "QUARTERLY",
+                plan: "custom",
+                returnUrl: "https://code0.example/en/checkout/success?session_id={CHECKOUT_SESSION_ID}",
+                workflowExecutions: 200,
             },
         })
     } finally {

@@ -11,8 +11,9 @@ const checkoutSearchParams = new URLSearchParams({
     paymentPeriod: "monthly",
     plan: "pro",
 })
-let checkoutProviderOptions: { clientSecret?: string } | null = null
+let checkoutProviderOptions: { clientSecret?: string; defaultValues?: unknown } | null = null
 let billingAddressOnChange: ((event: { complete: boolean }) => void) | null = null
+let billingAddressOptions: unknown = null
 let checkoutStages: string[] = []
 let stripeConfirmCalls = 0
 let stripeConfirmErrorMessage: string | null = null
@@ -56,11 +57,12 @@ mock.module("@stripe/stripe-js", {
 })
 mock.module("@stripe/react-stripe-js/checkout", {
     namedExports: {
-        BillingAddressElement: ({ onChange }: { onChange: (event: { complete: boolean }) => void }) => {
+        BillingAddressElement: ({ onChange, options }: { onChange: (event: { complete: boolean }) => void; options?: unknown }) => {
             billingAddressOnChange = onChange
+            billingAddressOptions = options
             return <div data-testid="stripe-billing-address">Billing address</div>
         },
-        CheckoutElementsProvider: ({ children, options }: { children: React.ReactNode; options: { clientSecret: string } }) => {
+        CheckoutElementsProvider: ({ children, options }: { children: React.ReactNode; options: { clientSecret: string; defaultValues?: unknown } }) => {
             checkoutProviderOptions = options
             return <>{children}</>
         },
@@ -91,6 +93,7 @@ afterEach(() => {
     checkoutSearchParams.delete("promotionCode")
     checkoutProviderOptions = null
     billingAddressOnChange = null
+    billingAddressOptions = null
     checkoutStages = []
     stripeConfirmCalls = 0
     stripeConfirmErrorMessage = null
@@ -290,6 +293,8 @@ test("creates the customer without an address and mounts Stripe checkout element
         plan: "pro",
     })
     assert.equal(checkoutProviderOptions?.clientSecret, "cs_test_secret")
+    assert.equal(checkoutProviderOptions?.defaultValues, undefined)
+    assert.equal(billingAddressOptions, undefined)
     assert.ok(screen.getByTestId("stripe-billing-address"))
     assert.equal(screen.queryByTestId("stripe-payment"), null)
     assert.equal(checkoutStages.includes("payment"), false)

@@ -155,8 +155,6 @@ export function CheckoutForm({ content, locale, mobileSteps = false }: CheckoutF
         return (
             <CheckoutPaymentForm
                 content={content}
-                email={values.email}
-                phone={values.phone}
                 session={checkoutSession}
                 onBack={() => {
                     sessionRefreshRequestRef.current += 1
