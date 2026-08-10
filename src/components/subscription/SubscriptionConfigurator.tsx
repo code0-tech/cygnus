@@ -14,8 +14,10 @@ import { calculateSubscriptionQuote, formatDiscountBadge, getMonthlyEquivalentAm
 import { cn } from "@/lib/utils"
 import {
     buildSubscriptionSelectionSearchParams,
+    CUSTOM_PAYMENT_PERIOD_OPTIONS,
     parseSubscriptionSelectionFromSearchParams,
     reduceSubscriptionSelection,
+    STANDARD_PAYMENT_PERIOD_OPTIONS,
     type SubscriptionSelectionAction,
     type SubscriptionSelection,
 } from "@/lib/subscriptionConfigurator"
@@ -45,9 +47,6 @@ export interface SubscriptionIcons {
 }
 
 export type SubscriptionOptionImageKey = "b2b" | "b2c" | "pro" | "max" | "custom" | "selfHosted" | "cloud"
-
-const B2B_PAYMENT_PERIOD_OPTIONS = ["monthly", "quarterly", "yearly"] as const
-const B2C_PAYMENT_PERIOD_OPTIONS = ["weekly", "monthly", "yearly"] as const
 
 function SubscriptionOptionCategoryLabel({ label, description }: { label: string; description?: string | null }) {
     return (
@@ -93,7 +92,7 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
         pendingScrollStepKeyRef.current = stepKey
     }
     const selectedFeatureIds = new Set(selection.additionalFeatureIds)
-    const paymentPeriodOptions = selection.customerType === "b2b" ? B2B_PAYMENT_PERIOD_OPTIONS : B2C_PAYMENT_PERIOD_OPTIONS
+    const paymentPeriodOptions = selection.plan === "custom" ? CUSTOM_PAYMENT_PERIOD_OPTIONS : STANDARD_PAYMENT_PERIOD_OPTIONS
     const paymentPeriodSuffix = getPaymentPeriodSuffix(selection.paymentPeriod, content.paymentPeriod)
     const monthlyPeriodSuffix = getPaymentPeriodSuffix("monthly", content.paymentPeriod)
     const quote = calculateSubscriptionQuote(selection, catalog)
