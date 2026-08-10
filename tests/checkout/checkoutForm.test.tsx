@@ -11,7 +11,7 @@ const checkoutSearchParams = new URLSearchParams({
     paymentPeriod: "monthly",
     plan: "pro",
 })
-let checkoutProviderOptions: { clientSecret?: string; defaultValues?: unknown } | null = null
+let checkoutProviderOptions: { clientSecret?: string; defaultValues?: unknown; elementsOptions?: { appearance?: { theme?: string; variables?: Record<string, string> } } } | null = null
 let billingAddressOnChange: ((event: { complete: boolean }) => void) | null = null
 let billingAddressOptions: unknown = null
 let checkoutStages: string[] = []
@@ -62,7 +62,13 @@ mock.module("@stripe/react-stripe-js/checkout", {
             billingAddressOptions = options
             return <div data-testid="stripe-billing-address">Billing address</div>
         },
-        CheckoutElementsProvider: ({ children, options }: { children: React.ReactNode; options: { clientSecret: string; defaultValues?: unknown } }) => {
+        CheckoutElementsProvider: ({
+            children,
+            options,
+        }: {
+            children: React.ReactNode
+            options: { clientSecret: string; defaultValues?: unknown; elementsOptions?: { appearance?: { theme?: string; variables?: Record<string, string> } } }
+        }) => {
             checkoutProviderOptions = options
             return <>{children}</>
         },
@@ -294,6 +300,8 @@ test("creates the customer without an address and mounts Stripe checkout element
     })
     assert.equal(checkoutProviderOptions?.clientSecret, "cs_test_secret")
     assert.equal(checkoutProviderOptions?.defaultValues, undefined)
+    assert.equal(checkoutProviderOptions?.elementsOptions?.appearance?.theme, "night")
+    assert.equal(checkoutProviderOptions?.elementsOptions?.appearance?.variables?.colorPrimary, "#72f896")
     assert.equal(billingAddressOptions, undefined)
     assert.ok(screen.getByTestId("stripe-billing-address"))
     assert.equal(screen.queryByTestId("stripe-payment"), null)
@@ -301,14 +309,25 @@ test("creates the customer without an address and mounts Stripe checkout element
 
     act(() => billingAddressOnChange?.({ complete: true }))
 
+    assert.equal(screen.queryByTestId("stripe-payment"), null)
+    assert.equal(checkoutStages.includes("payment"), false)
+    await user.click(screen.getByRole("button", { name: "Continue to payment" }))
+
     assert.ok(screen.getByTestId("stripe-payment"))
+    assert.equal(screen.queryByTestId("stripe-billing-address"), null)
     assert.equal(checkoutStages.at(-1), "payment")
 
-    act(() => billingAddressOnChange?.({ complete: false }))
+    await user.click(screen.getByRole("button", { name: content.backToBillingLabel }))
+    assert.ok(screen.getByTestId("stripe-billing-address"))
     assert.equal(screen.queryByTestId("stripe-payment"), null)
     assert.equal(checkoutStages.at(-1), "billingAddress")
 
+    act(() => billingAddressOnChange?.({ complete: false }))
+    assert.equal(screen.queryByTestId("stripe-payment"), null)
+    assert.equal((screen.getByRole("button", { name: "Continue to payment" }) as HTMLButtonElement).disabled, true)
+
     act(() => billingAddressOnChange?.({ complete: true }))
+    await user.click(screen.getByRole("button", { name: "Continue to payment" }))
 
     stripeConfirmErrorMessage = "Your payment could not be confirmed."
     await user.click(screen.getByRole("button", { name: "Pay now" }))
