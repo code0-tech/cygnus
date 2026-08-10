@@ -15,9 +15,7 @@ const stripePromise = stripePublicKey ? loadStripe(stripePublicKey) : null
 
 interface CheckoutPaymentFormProps {
     content: CheckoutFormContent
-    email: string
     onBack: () => void
-    phone: string
     session: CheckoutSessionData
 }
 
@@ -66,7 +64,6 @@ function CheckoutPaymentFields({ content, onAddressComplete, onBack }: Pick<Chec
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
             <BillingAddressElement
-                options={{ fields: { phone: "auto" } }}
                 onChange={(event) => {
                     setIsAddressComplete(event.complete)
                     onAddressComplete(event.complete)
@@ -103,18 +100,14 @@ function CheckoutPaymentFields({ content, onAddressComplete, onBack }: Pick<Chec
     )
 }
 
-export function CheckoutPaymentForm({ content, email, onBack, phone, session }: CheckoutPaymentFormProps) {
+export function CheckoutPaymentForm({ content, onBack, session }: CheckoutPaymentFormProps) {
     const { setStage } = useCheckoutStage()
     const options = useMemo<StripeCheckoutElementsSdkOptions>(
         () => ({
             clientSecret: session.clientSecret,
-            defaultValues: {
-                email: email.trim(),
-                phoneNumber: phone.trim() || undefined,
-            },
             elementsOptions: { appearance: { theme: "night" } },
         }),
-        [email, phone, session.clientSecret]
+        [session.clientSecret]
     )
 
     if (!stripePromise) {

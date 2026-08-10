@@ -79,6 +79,9 @@ A `CheckoutSession` returns:
 Additional checkout features include:
 
 - previewing the tax Stripe would calculate for a plan
+- selecting weekly, monthly, or yearly billing for Pro and Max
+- selecting monthly, quarterly, or yearly billing for dynamic custom checkouts
+- quantity-based AI Token and Workflow Execution line items for dynamic custom checkouts
 - validating Stripe promotion codes
 - supporting the `self_hosted` and `cloud` deployment types
 - optionally linking a cloud checkout to a Sagittarius namespace ID
@@ -86,7 +89,9 @@ Additional checkout features include:
 - required billing-address collection
 - automatic Stripe Tax
 - automatic synchronization of the customer's name and address back to Stripe
-- attaching the Crater customer ID, deployment type, customer type, and optional namespace ID to the Stripe subscription metadata
+- attaching the plan, payment period, custom quantities, Crater customer ID, deployment type, customer type, and optional namespace ID to the Stripe subscription metadata
+
+Stripe Price IDs are resolved exclusively on the server from `checkout.prices`. Pro and Max resolve one Price from the plan and payment period. Dynamic custom checkouts additionally use the authenticated customer's type to select B2B or B2C component Prices. This dynamic `plan: custom` flow is separate from `CustomCheckoutConfiguration`.
 
 Monetary amounts are transferred as integers in the smallest currency unit.
 
@@ -225,22 +230,24 @@ For `customersCreate`, only `customerType` is mandatory in the GraphQL schema. O
 
 | Mutation                             | Key arguments                                                                                 | Result                                                    |
 | ------------------------------------ | --------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
-| `checkoutCalculateTax`               | `plan: String!`                                                                               | `CheckoutTaxQuote`                                        |
+| `checkoutCalculateTax`               | `plan!`, `paymentPeriod!`, and optional custom quantities                                      | `CheckoutTaxQuote`                                        |
 | `checkoutValidateDiscount`           | `code: String!`                                                                               | `CheckoutDiscount`                                        |
-| `checkoutCreateSession`              | `returnUrl!` and either a regular plan or custom configuration                                | Embedded `CheckoutSession` with a frontend `clientSecret` |
+| `checkoutCreateSession`              | `paymentPeriod!`, `returnUrl!`, and either a plan or custom configuration                      | Embedded `CheckoutSession` with a frontend `clientSecret` |
 | `customCheckoutConfigurationsCreate` | `customerId!`, `deploymentType!`, `stripePriceId!`, optional entitlements and expiration time | `CustomCheckoutConfiguration`                             |
 
 For `checkoutCreateSession`:
 
 - The request must include `Authorization: Session <crater-session-token>`; the mutation is not anonymously accessible.
 - The authenticated user must be associated with a customer. Crater uses that user's first customer; if none exists, the mutation returns `INVALID_CHECKOUT_SESSION`.
-- A regular checkout uses `plan` and, where applicable, `deploymentType`, `namespaceId`, and `promotionCode`.
+- A regular checkout uses `plan`, `paymentPeriod`, and, where applicable, `deploymentType`, `namespaceId`, and `promotionCode`.
+- `plan: custom` accepts positive `aiTokens` and `workflowExecutions`; at least one quantity is required and the authenticated customer's stored type selects B2B or B2C Prices.
+- Each custom quantity must be a positive integer of at most `10000000`.
 - A custom checkout uses `customCheckoutConfigurationId`; `plan` and `deploymentType` are then ignored.
 - `namespaceId` is only relevant to cloud deployments.
 - `returnUrl` must have an origin listed in `checkout.allowed_return_origins`.
 - Stripe receives `ui_mode: elements`; the frontend initializes the custom checkout UI with the returned `clientSecret`.
 - Stripe collects the billing address, updates the customer's address and name, and calculates tax automatically.
-- The resulting Stripe subscription metadata contains `crater_customer_id`, `deployment_type`, `customer_type`, and, when supplied, `namespace_id`.
+- The resulting Stripe subscription metadata also contains `plan`, `payment_period`, and dynamic custom quantities when applicable.
 
 #### Licenses
 
@@ -265,6 +272,7 @@ Documented error codes:
 
 | Code                                    | Meaning                                                             |
 | --------------------------------------- | ------------------------------------------------------------------- |
+| `INVALID_CHECKOUT_SELECTION`            | The selected plan, payment period, quantity, or Price is invalid    |
 | `INVALID_CHECKOUT_SESSION`              | The checkout session could not be created                           |
 | `INVALID_CUSTOMER`                      | The customer is invalid                                             |
 | `INVALID_CUSTOM_CHECKOUT_CONFIGURATION` | The custom checkout configuration is invalid                        |

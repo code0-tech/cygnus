@@ -1,13 +1,15 @@
 import { createApolloClient } from "@/lib/apolloClient"
-import { craterJson, craterMutationErrorResponse, craterTransportErrorResponse, optionalString, readJsonObject, requireCraterSession } from "@/lib/checkout/craterApi"
-import type { Mutation, MutationCheckoutCalculateTaxArgs } from "@code0-tech/crater-graphql-types"
+import { craterJson, craterMutationErrorResponse, craterTransportErrorResponse, optionalString, readJsonObject, requireCraterSession, type JsonObject } from "@/lib/checkout/craterApi"
+import { toCraterPaymentPeriod, type CheckoutCalculateTaxVariables } from "@/lib/checkout/craterCheckoutSchema"
+import { resolveSubscriptionSelection } from "@/lib/subscriptionConfigurator"
+import type { Mutation } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 
 export const runtime = "nodejs"
 
 type CheckoutCalculateTaxData = Pick<Mutation, "checkoutCalculateTax">
 
-const CHECKOUT_CALCULATE_TAX: TypedDocumentNode<CheckoutCalculateTaxData, MutationCheckoutCalculateTaxArgs> = gql`
+const CHECKOUT_CALCULATE_TAX: TypedDocumentNode<CheckoutCalculateTaxData, CheckoutCalculateTaxVariables> = gql`
     mutation CheckoutCalculateTax($input: CheckoutCalculateTaxInput!) {
         checkoutCalculateTax(input: $input) {
             taxQuote {
@@ -27,16 +29,53 @@ export async function POST(request: Request) {
     if (session.response) return session.response
 
     const body = await readJsonObject(request)
-    const plan = optionalString(body?.plan)
+    const requestData = body?.metadata && typeof body.metadata === "object" && !Array.isArray(body.metadata) ? (body.metadata as JsonObject) : body
+    const plan = optionalString(requestData?.plan)
 
     if (!body || !plan) {
         return craterJson({ error: "plan is required." }, 400)
     }
 
     try {
+        const { getSubscriptionConfig } = await import("@/lib/cms")
+        const subscriptionConfig = await getSubscriptionConfig()
+        if (!subscriptionConfig) return craterJson({ error: "Subscription configuration is unavailable." }, 503)
+
+        const resolvedSelection = resolveSubscriptionSelection(
+            {
+                plan,
+                customerType: optionalString(requestData?.customerType),
+                paymentPeriod: optionalString(requestData?.paymentPeriod),
+                workflowExecutions: optionalString(requestData?.workflowExecutions),
+                aiTokens: optionalString(requestData?.aiTokens),
+            },
+            subscriptionConfig
+        )
+
+        if (resolvedSelection.issues.length) {
+            return craterJson(
+                {
+                    error: "The checkout configuration is invalid.",
+                    details: resolvedSelection.issues.map((issue) => issue.message),
+                },
+                400
+            )
+        }
+
+        const { selection } = resolvedSelection
+        const input: CheckoutCalculateTaxVariables["input"] = {
+            plan: selection.plan,
+            paymentPeriod: toCraterPaymentPeriod(selection.paymentPeriod),
+            ...(selection.plan === "custom"
+                ? {
+                      aiTokens: selection.aiTokens,
+                      workflowExecutions: selection.workflowExecutions,
+                  }
+                : {}),
+        }
         const result = await createApolloClient(session.token).mutate({
             mutation: CHECKOUT_CALCULATE_TAX,
-            variables: { input: { plan } },
+            variables: { input },
         })
         const payload = result.data?.checkoutCalculateTax
 
