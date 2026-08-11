@@ -3,6 +3,7 @@
 import { CheckoutDiscount, type CheckoutDiscountValue } from "@/components/checkout/CheckoutDiscount"
 import { getIcon } from "@/components/ui/IconRenderer"
 import type { CheckoutData, CheckoutSummaryIconColor, SubscriptionConfigData } from "@/lib/cms"
+import type { CheckoutTaxQuoteData } from "@/lib/checkout/checkoutSubmission"
 import { formatCompactNumber, formatEuroCurrency } from "@/lib/formatters"
 import {
     calculateExclusiveTaxRate,
@@ -10,21 +11,16 @@ import {
     formatDiscountBadge,
     resolveCheckoutPricing,
 } from "@/lib/subscriptionCalculator"
-import type { CheckoutTaxQuote } from "@code0-tech/crater-graphql-types"
 import type { SubscriptionPriceCatalog } from "@/lib/subscriptionPrices"
 import { useParams, useSearchParams } from "next/navigation"
 import { useState, type ReactNode } from "react"
 import { Card } from "../ui/Card"
 
-type CheckoutTaxQuoteValue = {
-    [Key in "amountTotal" | "currency" | "taxAmountExclusive"]-?: NonNullable<CheckoutTaxQuote[Key]>
-}
-
 interface CheckoutSummaryProps {
     content?: CheckoutData["summary"] | null
     subscriptionConfig?: SubscriptionConfigData | null
     subscriptionPrices: SubscriptionPriceCatalog
-    taxQuote?: CheckoutTaxQuoteValue | null
+    taxQuote?: CheckoutTaxQuoteData | null
 }
 
 interface SummaryBadgeProps {
@@ -100,9 +96,9 @@ export function CheckoutSummary({ content, subscriptionConfig, subscriptionPrice
     const paymentPeriodTotalPrice = pricing.totalPrice
     const promotionDiscountAmount = calculatePromotionDiscountAmount(paymentPeriodTotalPrice, promotionDiscount)
     const discountedPrice = Math.max(0, paymentPeriodTotalPrice - promotionDiscountAmount)
-    const taxAmount = taxQuote ? taxQuote.taxAmountExclusive / 100 : 0
     const taxPercentage = taxQuote ? calculateExclusiveTaxRate(taxQuote.amountTotal, taxQuote.taxAmountExclusive) : 0
-    const totalPrice = taxQuote ? Math.max(0, taxQuote.amountTotal / 100 - promotionDiscountAmount) : discountedPrice
+    const taxAmount = taxQuote ? Math.round(discountedPrice * taxPercentage * 100) / 100 : 0
+    const totalPrice = discountedPrice + taxAmount
     const formattedTotalPrice = formatEuroCurrency(totalPrice, locale)
     const formattedBasePrice = formatEuroCurrency(pricing.aiTokenPrice, locale)
     const formattedWorkflowExecutionsPrice = formatEuroCurrency(pricing.workflowExecutionPrice, locale)

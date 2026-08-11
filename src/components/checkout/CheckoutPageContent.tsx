@@ -1,7 +1,7 @@
 "use client"
 
 import { CheckoutForm } from "@/components/checkout/CheckoutForm"
-import { CheckoutFormProvider } from "@/components/checkout/CheckoutFormProvider"
+import { CheckoutFormProvider, useCheckoutFormState } from "@/components/checkout/CheckoutFormProvider"
 import { CheckoutLegalFooter } from "@/components/checkout/CheckoutLegalFooter"
 import { CheckoutSummary } from "@/components/checkout/CheckoutSummary"
 import { Drawer, DrawerBackdrop, DrawerContent, DrawerHandle, DrawerPopup, DrawerPortal, DrawerTrigger, DrawerViewport } from "@/components/ui/Drawer"
@@ -11,7 +11,7 @@ import type { AppLocale } from "@/lib/i18n"
 import type { SubscriptionPriceCatalog } from "@/lib/subscriptionPrices"
 import type { Footer } from "@/payload-types"
 import { IconArrowRight } from "@tabler/icons-react"
-import { useEffect, useState } from "react"
+import { useEffect, useState, type ComponentProps } from "react"
 
 interface CheckoutPageContentProps {
     currentYear: number
@@ -21,6 +21,11 @@ interface CheckoutPageContentProps {
     subscriptionConfig?: SubscriptionConfigData | null
     subscriptionPrices: SubscriptionPriceCatalog
     summary?: CheckoutData["summary"] | null
+}
+
+function CheckoutSummaryWithTax(props: Omit<ComponentProps<typeof CheckoutSummary>, "taxQuote">) {
+    const { taxQuote } = useCheckoutFormState()
+    return <CheckoutSummary {...props} taxQuote={taxQuote} />
 }
 
 export function CheckoutPageContent({ currentYear, footer, form, locale, subscriptionConfig, subscriptionPrices, summary }: CheckoutPageContentProps) {
@@ -40,16 +45,12 @@ export function CheckoutPageContent({ currentYear, footer, form, locale, subscri
         return () => desktopQuery.removeEventListener("change", handleLayoutChange)
     }, [])
 
-    // TODO: Re-enable the Crater tax quote once custom plans are mapped to
-    // Stripe prices and checkoutCalculateTax supports the selected plan.
-
     return (
         <div className="flex flex-1 flex-col">
             <div className="flex w-full flex-col gap-8 lg:flex-row lg:gap-16">
-                <CheckoutSummary content={summary} subscriptionConfig={subscriptionConfig} subscriptionPrices={subscriptionPrices} />
-
-                {form && (
+                {form ? (
                     <CheckoutFormProvider content={form} locale={locale}>
+                        <CheckoutSummaryWithTax content={summary} subscriptionConfig={subscriptionConfig} subscriptionPrices={subscriptionPrices} />
                         {!isDesktop ? (
                             <Drawer side="bottom" open={mobileCheckoutOpen} onOpenChange={setMobileCheckoutOpen}>
                                 <DrawerTrigger className="inline-flex h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-white/90 px-6 text-sm font-medium text-primary outline-none transition-colors hover:bg-white focus-visible:ring-2 focus-visible:ring-white/40 lg:hidden">
@@ -80,6 +81,8 @@ export function CheckoutPageContent({ currentYear, footer, form, locale, subscri
                             </div>
                         )}
                     </CheckoutFormProvider>
+                ) : (
+                    <CheckoutSummary content={summary} subscriptionConfig={subscriptionConfig} subscriptionPrices={subscriptionPrices} />
                 )}
             </div>
 
