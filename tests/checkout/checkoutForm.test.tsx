@@ -274,6 +274,13 @@ test("creates the customer and checkout session on mount before collecting Strip
             })
         }
 
+        if (String(input) === "/api/crater/checkout/tax") {
+            return new Response(JSON.stringify({ amountTotal: 11_900, currency: "eur", taxAmountExclusive: 1_900 }), {
+                status: 200,
+                headers: { "content-type": "application/json" },
+            })
+        }
+
         return new Response(JSON.stringify({ clientSecret: "cs_test_secret", expiresAt: 1_800_000_000, id: "cs_test" }), {
             status: 200,
             headers: { "content-type": "application/json" },
@@ -283,10 +290,10 @@ test("creates the customer and checkout session on mount before collecting Strip
     render(<CheckoutForm content={content} locale="en" />)
     assert.ok(screen.getByTestId("checkout-form-skeleton"))
 
-    await waitFor(() => assert.equal(requests.length, 2))
+    await waitFor(() => assert.equal(requests.length, 3))
     assert.deepEqual(
         requests.map((request) => request.url),
-        ["/api/crater/customer", "/api/crater/checkout/session"]
+        ["/api/crater/customer", "/api/crater/checkout/session", "/api/crater/checkout/tax"]
     )
     assert.equal(new Headers(requests[0].init?.headers).get("authorization"), null)
     assert.equal(requests[0].init?.credentials, "same-origin")
@@ -355,20 +362,23 @@ test("creates a business customer and updates optional tax details before paymen
     checkoutSearchParams.set("customerType", "b2b")
     const requests: Array<{ init?: RequestInit; url: string }> = []
     globalThis.fetch = (async (input, init) => {
-        requests.push({ init, url: String(input) })
+        const url = String(input)
+        requests.push({ init, url })
         return new Response(
             JSON.stringify(
-                String(input) === "/api/crater/customer"
+                url === "/api/crater/customer"
                     ? { id: "gid://crater/Customer/2" }
+                    : url === "/api/crater/checkout/tax"
+                      ? { amountTotal: 11_900, currency: "eur", taxAmountExclusive: 1_900 }
                     : { clientSecret: "cs_test_business_secret", expiresAt: 1_800_000_000, id: "cs_test_business" }
             ),
-            { status: String(input) === "/api/crater/customer" ? 201 : 200, headers: { "content-type": "application/json" } }
+            { status: url === "/api/crater/customer" ? 201 : 200, headers: { "content-type": "application/json" } }
         )
     }) as typeof fetch
     const user = userEvent.setup()
     render(<CheckoutForm content={content} locale="en" />)
 
-    await waitFor(() => assert.equal(requests.length, 2))
+    await waitFor(() => assert.equal(requests.length, 3))
     assert.deepEqual(JSON.parse(String(requests[0].init?.body)), { customerType: "business" })
     assert.ok(screen.getByTestId("stripe-contact-details"))
     assert.ok(screen.getByTestId("stripe-billing-address"))
@@ -419,6 +429,13 @@ test("recreates only the checkout session when the promotion code changes or is 
             })
         }
 
+        if (url === "/api/crater/checkout/tax") {
+            return new Response(JSON.stringify({ amountTotal: 11_900, currency: "eur", taxAmountExclusive: 1_900 }), {
+                status: 200,
+                headers: { "content-type": "application/json" },
+            })
+        }
+
         checkoutSessionCount += 1
         return new Response(JSON.stringify({ clientSecret: `cs_test_secret_${checkoutSessionCount}`, expiresAt: 1_800_000_000, id: `cs_test_${checkoutSessionCount}` }), {
             status: 200,
@@ -426,15 +443,15 @@ test("recreates only the checkout session when the promotion code changes or is 
         })
     }) as typeof fetch
     const view = render(<CheckoutForm content={content} locale="en" />)
-    await waitFor(() => assert.equal(requests.length, 2))
+    await waitFor(() => assert.equal(requests.length, 3))
 
     checkoutSearchParams.set("promotionCode", "SAVE10")
     view.rerender(<CheckoutForm content={content} locale="en" />)
 
-    await waitFor(() => assert.equal(requests.length, 3))
+    await waitFor(() => assert.equal(requests.length, 4))
     assert.equal(requests.filter((request) => request.url === "/api/crater/customer").length, 1)
     assert.equal(requests.filter((request) => request.url === "/api/crater/checkout/session").length, 2)
-    assert.deepEqual(JSON.parse(String(requests[2].init?.body)), {
+    assert.deepEqual(JSON.parse(String(requests[3].init?.body)), {
         customerType: "b2c",
         deploymentType: "self_hosted",
         locale: "en",
@@ -447,9 +464,9 @@ test("recreates only the checkout session when the promotion code changes or is 
     checkoutSearchParams.delete("promotionCode")
     view.rerender(<CheckoutForm content={content} locale="en" />)
 
-    await waitFor(() => assert.equal(requests.length, 4))
+    await waitFor(() => assert.equal(requests.length, 5))
     assert.equal(requests.filter((request) => request.url === "/api/crater/customer").length, 1)
-    assert.deepEqual(JSON.parse(String(requests[3].init?.body)), {
+    assert.deepEqual(JSON.parse(String(requests[4].init?.body)), {
         customerType: "b2c",
         deploymentType: "self_hosted",
         locale: "en",

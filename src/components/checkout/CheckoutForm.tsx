@@ -21,6 +21,7 @@ function CheckoutFormContent() {
         setStripeEmail,
         setStripeTaxIdType,
         setStripeTaxIdValue,
+        setTaxQuote,
         stripeBillingAddress,
         stripeEmail,
         stripeTaxIdType,
@@ -38,6 +39,7 @@ function CheckoutFormContent() {
                 onEmailChange={setStripeEmail}
                 onTaxIdTypeChange={setStripeTaxIdType}
                 onTaxIdValueChange={setStripeTaxIdValue}
+                onTaxQuoteChange={setTaxQuote}
                 session={checkoutSession}
                 taxIdType={stripeTaxIdType}
                 taxIdValue={stripeTaxIdValue}

@@ -1,11 +1,11 @@
 "use client"
 
 import type { CheckoutData } from "@/lib/cms"
-import type { CheckoutSessionData } from "@/lib/checkout/checkoutSubmission"
+import type { CheckoutSessionData, CheckoutTaxQuoteData } from "@/lib/checkout/checkoutSubmission"
 import { useCheckoutStage } from "@/components/checkout/CheckoutStepper"
 import { Button, TextInput } from "@code0-tech/pictor"
 import { BillingAddressElement, CheckoutElementsProvider, ContactDetailsElement, PaymentElement, useCheckoutElements } from "@stripe/react-stripe-js/checkout"
-import { loadStripe, type StripeCheckoutContact, type StripeCheckoutElementsSdkOptions, type StripeCheckoutTaxIdType } from "@stripe/stripe-js"
+import { loadStripe, type StripeCheckoutContact, type StripeCheckoutElementsSdkOptions, type StripeCheckoutSession, type StripeCheckoutTaxIdType } from "@stripe/stripe-js"
 import { useMemo, useRef, useState } from "react"
 
 type CheckoutFormContent = CheckoutData["form"]
@@ -103,9 +103,20 @@ interface CheckoutPaymentFormProps {
     onEmailChange: (email: string | null) => void
     onTaxIdTypeChange: (type: string) => void
     onTaxIdValueChange: (value: string) => void
+    onTaxQuoteChange: (taxQuote: CheckoutTaxQuoteData | null) => void
     session: CheckoutSessionData
     taxIdType: string
     taxIdValue: string
+}
+
+function getTaxQuoteFromSession(session: StripeCheckoutSession): CheckoutTaxQuoteData | null {
+    if (session.tax?.status !== "ready" || !session.total?.total || !session.total.taxExclusive) return null
+
+    return {
+        amountTotal: session.total.total.minorUnitsAmount,
+        currency: session.currency,
+        taxAmountExclusive: session.total.taxExclusive.minorUnitsAmount,
+    }
 }
 
 export function CheckoutPaymentFormSkeleton({ label }: { label: string }) {
@@ -147,6 +158,7 @@ function CheckoutPaymentFields({
     onEmailChange,
     onTaxIdTypeChange,
     onTaxIdValueChange,
+    onTaxQuoteChange,
     taxIdType,
     taxIdValue,
 }: Omit<CheckoutPaymentFormProps, "session">) {
@@ -172,6 +184,7 @@ function CheckoutPaymentFields({
                 setErrorMessage(billingResult.error.message)
                 return
             }
+            let updatedSession = billingResult.session
 
             if (!checkoutState.checkout.email) {
                 const emailResult = await checkoutState.checkout.updateEmail(email)
@@ -179,6 +192,7 @@ function CheckoutPaymentFields({
                     setErrorMessage(emailResult.error.message)
                     return
                 }
+                updatedSession = emailResult.session
             }
 
             const normalizedTaxIdType = taxIdType.trim()
@@ -200,8 +214,10 @@ function CheckoutPaymentFields({
                     setErrorMessage(taxIdResult.error.message)
                     return
                 }
+                updatedSession = taxIdResult.session
             }
 
+            onTaxQuoteChange(getTaxQuoteFromSession(updatedSession))
             setStage("payment")
         } catch (error) {
             setErrorMessage(error instanceof Error ? error.message : content.paymentErrorFallback)
@@ -332,6 +348,7 @@ export function CheckoutPaymentForm({
     onEmailChange,
     onTaxIdTypeChange,
     onTaxIdValueChange,
+    onTaxQuoteChange,
     session,
     taxIdType,
     taxIdValue,
@@ -375,6 +392,7 @@ export function CheckoutPaymentForm({
                 onEmailChange={onEmailChange}
                 onTaxIdTypeChange={onTaxIdTypeChange}
                 onTaxIdValueChange={onTaxIdValueChange}
+                onTaxQuoteChange={onTaxQuoteChange}
                 taxIdType={taxIdType}
                 taxIdValue={taxIdValue}
             />

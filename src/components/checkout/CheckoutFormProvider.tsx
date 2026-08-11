@@ -4,7 +4,7 @@ import { useCraterSession } from "@/components/checkout/CraterSessionProvider"
 import { useCheckoutStage } from "@/components/checkout/CheckoutStepper"
 import type { CheckoutData } from "@/lib/cms"
 import { resolveCraterCustomerType } from "@/lib/checkout/craterCustomer"
-import { createCheckoutSession, prepareCheckoutSession, type CheckoutSessionData } from "@/lib/checkout/checkoutSubmission"
+import { calculateCheckoutTax, createCheckoutSession, prepareCheckoutSession, type CheckoutSessionData, type CheckoutTaxQuoteData } from "@/lib/checkout/checkoutSubmission"
 import type { AppLocale } from "@/lib/i18n"
 import type { StripeCheckoutContact } from "@stripe/stripe-js"
 import { useSearchParams } from "next/navigation"
@@ -18,6 +18,7 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, locale: AppLoc
     const [isLoading, setIsLoading] = useState(false)
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
     const [checkoutSession, setCheckoutSession] = useState<CheckoutSessionData | null>(null)
+    const [taxQuote, setTaxQuote] = useState<CheckoutTaxQuoteData | null>(null)
     const [checkoutSessionPromotionCode, setCheckoutSessionPromotionCode] = useState<string | null | undefined>(undefined)
     const [isRefreshingSession, setIsRefreshingSession] = useState(false)
     const [stripeBillingAddress, setStripeBillingAddress] = useState<StripeCheckoutContact | null>(null)
@@ -35,7 +36,9 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, locale: AppLoc
     useEffect(() => {
         if (!authenticated) return
 
-        const preparationKey = String(preparationAttempt)
+        const preparationSearchParams = new URLSearchParams(searchParamsString)
+        preparationSearchParams.delete("promotionCode")
+        const preparationKey = `${preparationSearchParams.toString()}:${preparationAttempt}`
         if (preparedSessionKeyRef.current === preparationKey) return
         preparedSessionKeyRef.current = preparationKey
         const requestId = ++sessionRefreshRequestRef.current
@@ -44,6 +47,7 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, locale: AppLoc
         setIsLoading(true)
         setErrorMessage(null)
         setCheckoutSession(null)
+        setTaxQuote(null)
         setStripeBillingAddress(null)
         setStripeEmail(null)
         setStripeTaxIdType("")
@@ -55,6 +59,15 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, locale: AppLoc
                 if (requestId !== sessionRefreshRequestRef.current) return
                 setCheckoutSession(session)
                 setCheckoutSessionPromotionCode(checkoutSearchParams.get("promotionCode")?.trim() || null)
+                void calculateCheckoutTax({ searchParams: checkoutSearchParams })
+                    .then((quote) => {
+                        if (requestId === sessionRefreshRequestRef.current) setTaxQuote(quote)
+                    })
+                    .catch((error) => {
+                        if (requestId !== sessionRefreshRequestRef.current) return
+                        console.warn("Could not load the non-binding checkout tax preview:", error)
+                        setTaxQuote(null)
+                    })
             })
             .catch((error) => {
                 if (requestId !== sessionRefreshRequestRef.current) return
@@ -72,6 +85,7 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, locale: AppLoc
         const requestId = ++sessionRefreshRequestRef.current
         const checkoutSearchParams = new URLSearchParams(searchParamsString)
         setCheckoutSession(null)
+        setTaxQuote(null)
         setIsRefreshingSession(true)
         setErrorMessage(null)
         setStripeBillingAddress(null)
@@ -116,10 +130,12 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, locale: AppLoc
         setStripeEmail,
         setStripeTaxIdType,
         setStripeTaxIdValue,
+        setTaxQuote,
         stripeBillingAddress,
         stripeEmail,
         stripeTaxIdType,
         stripeTaxIdValue,
+        taxQuote,
     }
 }
 
