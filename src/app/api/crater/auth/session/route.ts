@@ -1,5 +1,6 @@
 import { createApolloClient } from "@/lib/apolloClient"
 import { craterJson, craterMutationErrorResponse, craterTransportErrorResponse, requireCraterSession } from "@/lib/checkout/craterApi"
+import { clearCraterSessionCookie } from "@/lib/checkout/craterSession"
 import type { Mutation, MutationEchoArgs } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 
@@ -41,4 +42,8 @@ export async function GET(request: Request) {
         console.error("Crater session status error:", error)
         return craterJson({ error: "Could not validate Crater session." }, 502)
     }
+}
+
+export async function DELETE() {
+    return clearCraterSessionCookie(craterJson({ authenticated: false }))
 }
