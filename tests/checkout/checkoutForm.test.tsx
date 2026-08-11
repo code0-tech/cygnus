@@ -281,6 +281,7 @@ test("creates the customer and checkout session on mount before collecting Strip
     }) as typeof fetch
     const user = userEvent.setup()
     render(<CheckoutForm content={content} locale="en" />)
+    assert.ok(screen.getByTestId("checkout-form-skeleton"))
 
     await waitFor(() => assert.equal(requests.length, 2))
     assert.deepEqual(
