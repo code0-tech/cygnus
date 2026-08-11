@@ -215,6 +215,8 @@ export function CheckoutSummary({ content, sessionToken, subscriptionConfig, sub
                         </div>
                     )}
 
+                    <div id="checkout-applied-discount" className="empty:hidden" aria-live="polite" />
+
                     {taxQuote && (
                         <div className="flex items-center justify-between gap-4 text-sm">
                             <span className="text-secondary">
@@ -235,6 +237,7 @@ export function CheckoutSummary({ content, sessionToken, subscriptionConfig, sub
 
             <CheckoutDiscount
                 appliedAmount={promotionDiscountAmount > 0 ? formattedDiscountAmount : null}
+                appliedContainerId="checkout-applied-discount"
                 buttonLabel={content.pricing.discountButtonLabel}
                 inputPlaceholder={content.pricing.discountInputPlaceholder}
                 onApplied={setPromotionDiscount}
