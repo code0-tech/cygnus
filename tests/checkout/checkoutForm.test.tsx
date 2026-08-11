@@ -170,6 +170,20 @@ const content = {
     payNowLabel: "Pay now",
     processingLabel: "Processing",
     paymentErrorFallback: "Checkout failed",
+    errors: {
+        sessionUnavailable: "Session unavailable",
+        customerCreation: "Customer creation failed",
+        customerTypeMismatch: "Customer type mismatch",
+        checkoutSession: "Checkout session failed",
+        checkoutSessionExpired: "Checkout session expired",
+        billingAddressUpdate: "Billing address update failed",
+        emailUpdate: "Email update failed",
+        taxIdUpdate: "Tax ID update failed",
+        taxIdIncomplete: "Tax ID fields must be provided together",
+        paymentConfirmation: "Payment confirmation failed",
+        discountSessionRequired: "Discount session required",
+        discountValidation: "Discount validation failed",
+    },
     mobileContactLabel: "Contact details",
     mobileNextLabel: "Continue",
     mobileTaxLabel: "Tax details",
@@ -355,7 +369,8 @@ test("creates the customer and checkout session on mount before collecting Strip
     stripeConfirmErrorMessage = "Your payment could not be confirmed."
     await user.click(screen.getByRole("button", { name: "Pay now" }))
     await waitFor(() => assert.equal(stripeConfirmCalls, 1))
-    assert.ok(screen.getByText("Your payment could not be confirmed."))
+    assert.ok(screen.getByText(content.errors.paymentConfirmation))
+    assert.equal(screen.queryByText("Your payment could not be confirmed."), null)
 
     stripeConfirmErrorMessage = null
     await user.click(screen.getByRole("button", { name: "Pay now" }))
@@ -490,7 +505,8 @@ test("shows automatic customer creation failures and allows retrying", async () 
     const user = userEvent.setup()
 
     render(<CheckoutForm content={content} locale="en" />)
-    assert.ok(await screen.findByText("Crater rejected the customer."))
+    assert.ok(await screen.findByText(content.errors.customerCreation))
+    assert.equal(screen.queryByText("Crater rejected the customer."), null)
     assert.equal(requestCount, 1)
     await user.click(screen.getByRole("button", { name: "Continue to payment" }))
     await waitFor(() => assert.equal(requestCount, 2))

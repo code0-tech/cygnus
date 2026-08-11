@@ -2,6 +2,18 @@ import type { CraterCustomerType } from "@/lib/checkout/craterCustomer"
 import type { AppLocale } from "@/lib/i18n"
 
 type CheckoutErrorBody = { details?: unknown; error?: unknown; errorCode?: unknown }
+export type CheckoutSubmissionErrorKind = "customer" | "session" | "tax"
+
+export class CheckoutSubmissionError extends Error {
+    constructor(
+        readonly kind: CheckoutSubmissionErrorKind,
+        readonly errorCode: string | null,
+        message: string
+    ) {
+        super(message)
+        this.name = "CheckoutSubmissionError"
+    }
+}
 
 export interface CheckoutSessionData {
     clientSecret: string
@@ -21,10 +33,15 @@ async function readCheckoutError(response: Response, fallback: string) {
         const error = typeof body.error === "string" ? body.error : fallback
         const errorCode = typeof body.errorCode === "string" ? body.errorCode : null
         const details = Array.isArray(body.details) ? body.details.filter((detail): detail is string => typeof detail === "string") : []
-        return [error, ...(errorCode ? [`(${errorCode})`] : []), ...details].join(" ")
+        return { errorCode, message: [error, ...(errorCode ? [`(${errorCode})`] : []), ...details].join(" ") }
     } catch {
-        return fallback
+        return { errorCode: null, message: fallback }
     }
+}
+
+async function createCheckoutSubmissionError(response: Response, fallback: string, kind: CheckoutSubmissionErrorKind) {
+    const error = await readCheckoutError(response, fallback)
+    return new CheckoutSubmissionError(kind, error.errorCode, error.message)
 }
 
 async function createCheckoutCustomer({
@@ -38,7 +55,7 @@ async function createCheckoutCustomer({
         body: JSON.stringify({ customerType }),
         credentials: "same-origin",
     })
-    if (!customerResponse.ok) throw new Error(await readCheckoutError(customerResponse, "Failed to create the billing customer."))
+    if (!customerResponse.ok) throw await createCheckoutSubmissionError(customerResponse, "Failed to create the billing customer.", "customer")
 }
 
 export async function createCheckoutSession({ locale, searchParams }: { locale: AppLocale; searchParams: URLSearchParams }) {
@@ -48,10 +65,10 @@ export async function createCheckoutSession({ locale, searchParams }: { locale: 
         body: JSON.stringify({ ...Object.fromEntries(searchParams.entries()), locale }),
         credentials: "same-origin",
     })
-    if (!checkoutResponse.ok) throw new Error(await readCheckoutError(checkoutResponse, "Failed to create a Crater checkout session."))
+    if (!checkoutResponse.ok) throw await createCheckoutSubmissionError(checkoutResponse, "Failed to create a Crater checkout session.", "session")
     const checkout: unknown = await checkoutResponse.json()
     if (!checkout || typeof checkout !== "object" || !("clientSecret" in checkout) || typeof checkout.clientSecret !== "string" || !checkout.clientSecret) {
-        throw new Error("Crater returned no checkout client secret.")
+        throw new CheckoutSubmissionError("session", null, "Crater returned no checkout client secret.")
     }
 
     return {
@@ -68,7 +85,7 @@ export async function calculateCheckoutTax({ searchParams }: { searchParams: URL
         body: JSON.stringify(Object.fromEntries(searchParams.entries())),
         credentials: "same-origin",
     })
-    if (!taxResponse.ok) throw new Error(await readCheckoutError(taxResponse, "Failed to calculate checkout tax."))
+    if (!taxResponse.ok) throw await createCheckoutSubmissionError(taxResponse, "Failed to calculate checkout tax.", "tax")
 
     const taxQuote: unknown = await taxResponse.json()
     if (
@@ -81,7 +98,7 @@ export async function calculateCheckoutTax({ searchParams }: { searchParams: URL
         !("taxAmountExclusive" in taxQuote) ||
         typeof taxQuote.taxAmountExclusive !== "number"
     ) {
-        throw new Error("Crater returned an invalid tax quote.")
+        throw new CheckoutSubmissionError("tax", null, "Crater returned an invalid tax quote.")
     }
 
     return {

@@ -18,6 +18,7 @@ import { Card } from "../ui/Card"
 
 interface CheckoutSummaryProps {
     content?: CheckoutData["summary"] | null
+    errors?: CheckoutData["form"]["errors"] | null
     subscriptionConfig?: SubscriptionConfigData | null
     subscriptionPrices: SubscriptionPriceCatalog
     taxQuote?: CheckoutTaxQuoteData | null
@@ -59,7 +60,7 @@ function SummaryBadge({ icon, value, tone = "neutral" }: SummaryBadgeProps) {
     )
 }
 
-export function CheckoutSummary({ content, subscriptionConfig, subscriptionPrices, taxQuote }: CheckoutSummaryProps) {
+export function CheckoutSummary({ content, errors, subscriptionConfig, subscriptionPrices, taxQuote }: CheckoutSummaryProps) {
     const searchParams = useSearchParams()
     const params = useParams<{ locale?: string }>()
     const [promotionDiscount, setPromotionDiscount] = useState<CheckoutDiscountValue | null>(null)
@@ -230,15 +231,19 @@ export function CheckoutSummary({ content, subscriptionConfig, subscriptionPrice
                 </div>
             </Card>
 
-            <CheckoutDiscount
-                appliedAmount={promotionDiscountAmount > 0 ? formattedDiscountAmount : null}
-                appliedContainerId="checkout-applied-discount"
-                buttonLabel={content.pricing.discountButtonLabel}
-                inputPlaceholder={content.pricing.discountInputPlaceholder}
-                onApplied={setPromotionDiscount}
-                promptLabel={content.pricing.discountPromptLabel}
-                removeLabel={content.pricing.discountRemoveLabel}
-            />
+            {errors && (
+                <CheckoutDiscount
+                    appliedAmount={promotionDiscountAmount > 0 ? formattedDiscountAmount : null}
+                    appliedContainerId="checkout-applied-discount"
+                    buttonLabel={content.pricing.discountButtonLabel}
+                    discountSessionRequiredError={errors.discountSessionRequired}
+                    discountValidationError={errors.discountValidation}
+                    inputPlaceholder={content.pricing.discountInputPlaceholder}
+                    onApplied={setPromotionDiscount}
+                    promptLabel={content.pricing.discountPromptLabel}
+                    removeLabel={content.pricing.discountRemoveLabel}
+                />
+            )}
         </div>
     )
 }

@@ -105,6 +105,7 @@ import * as migration_20260804_194543_add_checkout_mobile_labels from './2026080
 import * as migration_20260805_031008_checkout_login_page from './20260805_031008_checkout_login_page';
 import * as migration_20260805_035510_remove_checkout_login_eyebrow from './20260805_035510_remove_checkout_login_eyebrow';
 import * as migration_20260806_094637_split_checkout_login_sections from './20260806_094637_split_checkout_login_sections';
+import * as migration_20260811_145502_checkout_error_messages from './20260811_145502_checkout_error_messages';
 
 export const migrations = [
   {
@@ -640,6 +641,11 @@ export const migrations = [
   {
     up: migration_20260806_094637_split_checkout_login_sections.up,
     down: migration_20260806_094637_split_checkout_login_sections.down,
-    name: '20260806_094637_split_checkout_login_sections'
+    name: '20260806_094637_split_checkout_login_sections',
+  },
+  {
+    up: migration_20260811_145502_checkout_error_messages.up,
+    down: migration_20260811_145502_checkout_error_messages.down,
+    name: '20260811_145502_checkout_error_messages'
   },
 ];

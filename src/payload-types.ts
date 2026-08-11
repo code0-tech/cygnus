@@ -3184,6 +3184,20 @@ export interface Checkout {
     payNowLabel: string;
     processingLabel: string;
     paymentErrorFallback: string;
+    errors: {
+      sessionUnavailable: string;
+      customerCreation: string;
+      customerTypeMismatch: string;
+      checkoutSession: string;
+      checkoutSessionExpired: string;
+      billingAddressUpdate: string;
+      emailUpdate: string;
+      taxIdUpdate: string;
+      taxIdIncomplete: string;
+      paymentConfirmation: string;
+      discountSessionRequired: string;
+      discountValidation: string;
+    };
     mobileContactLabel: string;
     mobileNextLabel: string;
     mobileTaxLabel: string;
@@ -3760,6 +3774,22 @@ export interface CheckoutSelect<T extends boolean = true> {
         payNowLabel?: T;
         processingLabel?: T;
         paymentErrorFallback?: T;
+        errors?:
+          | T
+          | {
+              sessionUnavailable?: T;
+              customerCreation?: T;
+              customerTypeMismatch?: T;
+              checkoutSession?: T;
+              checkoutSessionExpired?: T;
+              billingAddressUpdate?: T;
+              emailUpdate?: T;
+              taxIdUpdate?: T;
+              taxIdIncomplete?: T;
+              paymentConfirmation?: T;
+              discountSessionRequired?: T;
+              discountValidation?: T;
+            };
         mobileContactLabel?: T;
         mobileNextLabel?: T;
         mobileTaxLabel?: T;

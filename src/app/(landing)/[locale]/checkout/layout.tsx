@@ -14,5 +14,5 @@ export default async function CheckoutLayout({ children, params }: CheckoutLayou
     if (!isSupportedLocale(locale)) notFound()
 
     const checkoutContent = await getCheckoutContent(locale)
-    return <CheckoutLayoutClient stepperContent={checkoutContent?.stepper}>{children}</CheckoutLayoutClient>
+    return <CheckoutLayoutClient formContent={checkoutContent?.form} stepperContent={checkoutContent?.stepper}>{children}</CheckoutLayoutClient>
 }

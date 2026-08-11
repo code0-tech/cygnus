@@ -4,7 +4,7 @@ import { useCraterSession } from "@/components/checkout/CraterSessionProvider"
 import { useCheckoutStage } from "@/components/checkout/CheckoutStepper"
 import type { CheckoutData } from "@/lib/cms"
 import { resolveCraterCustomerType } from "@/lib/checkout/craterCustomer"
-import { calculateCheckoutTax, createCheckoutSession, prepareCheckoutSession, type CheckoutSessionData, type CheckoutTaxQuoteData } from "@/lib/checkout/checkoutSubmission"
+import { calculateCheckoutTax, CheckoutSubmissionError, createCheckoutSession, prepareCheckoutSession, type CheckoutSessionData, type CheckoutTaxQuoteData } from "@/lib/checkout/checkoutSubmission"
 import type { AppLocale } from "@/lib/i18n"
 import type { StripeCheckoutContact } from "@stripe/stripe-js"
 import { useSearchParams } from "next/navigation"
@@ -13,6 +13,12 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState, ty
 type CheckoutFormContent = CheckoutData["form"]
 const CHECKOUT_SESSION_REFRESH_LEAD_MS = 60_000
 const MAX_BROWSER_TIMEOUT_MS = 2_147_000_000
+
+function getPreparationErrorMessage(error: unknown, content: CheckoutFormContent) {
+    if (!(error instanceof CheckoutSubmissionError)) return content.paymentErrorFallback
+    if (error.errorCode === "CUSTOMER_TYPE_MISMATCH") return content.errors.customerTypeMismatch
+    return error.kind === "customer" ? content.errors.customerCreation : content.errors.checkoutSession
+}
 
 function useCreateCheckoutFormState(content: CheckoutFormContent, locale: AppLocale) {
     const searchParams = useSearchParams()
@@ -66,7 +72,7 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, locale: AppLoc
                 if (requestId !== sessionRefreshRequestRef.current) return
                 console.error("Failed to refresh the Crater checkout session:", error)
                 setCheckoutSessionPromotionCode(undefined)
-                setErrorMessage(error instanceof Error ? error.message : content.paymentErrorFallback || "Checkout failed.")
+                setErrorMessage(content.errors.checkoutSession)
             })
             .finally(() => {
                 checkoutRefreshPromiseRef.current = null
@@ -75,7 +81,7 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, locale: AppLoc
 
         checkoutRefreshPromiseRef.current = request
         return request
-    }, [content.paymentErrorFallback, locale, promotionCode, searchParamsString, setStage])
+    }, [content.errors.checkoutSession, locale, promotionCode, searchParamsString, setStage])
 
     const refreshExpiredCheckoutSession = useCallback(() => {
         if (expiredRefreshAttemptsRef.current >= 1) return Promise.resolve()
@@ -127,12 +133,12 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, locale: AppLoc
             .catch((error) => {
                 if (requestId !== sessionRefreshRequestRef.current) return
                 console.error("Failed to start Crater checkout:", error)
-                setErrorMessage(error instanceof Error ? error.message : content.paymentErrorFallback || "Checkout failed.")
+                setErrorMessage(getPreparationErrorMessage(error, content))
             })
             .finally(() => {
                 if (requestId === sessionRefreshRequestRef.current) setIsLoading(false)
             })
-    }, [authenticated, content.paymentErrorFallback, customerType, locale, preparationAttempt, searchParamsString, setStage])
+    }, [authenticated, content, customerType, locale, preparationAttempt, searchParamsString, setStage])
 
     useEffect(() => {
         if (checkoutSessionPromotionCode === undefined || checkoutSessionPromotionCode === promotionCode || !authenticated) return

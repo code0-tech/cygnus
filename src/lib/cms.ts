@@ -354,6 +354,20 @@ export interface CheckoutData {
         payNowLabel: string
         processingLabel: string
         paymentErrorFallback: string
+        errors: {
+            sessionUnavailable: string
+            customerCreation: string
+            customerTypeMismatch: string
+            checkoutSession: string
+            checkoutSessionExpired: string
+            billingAddressUpdate: string
+            emailUpdate: string
+            taxIdUpdate: string
+            taxIdIncomplete: string
+            paymentConfirmation: string
+            discountSessionRequired: string
+            discountValidation: string
+        }
         mobileContactLabel: string
         mobileNextLabel: string
         mobileTaxLabel: string

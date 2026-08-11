@@ -32,6 +32,10 @@ const { CheckoutDiscount } = await import("../../src/components/checkout/Checkou
 type CheckoutDiscountValue = import("../../src/components/checkout/CheckoutDiscount").CheckoutDiscountValue
 
 const originalFetch = globalThis.fetch
+const discountErrorProps = {
+    discountSessionRequiredError: "A checkout session is required.",
+    discountValidationError: "The discount code could not be validated.",
+}
 
 afterEach(() => {
     cleanup()
@@ -70,6 +74,7 @@ test("opens, applies, and removes a discount code", async () => {
         <>
             <div id="applied-discount" data-testid="applied-discount" />
             <CheckoutDiscount
+                {...discountErrorProps}
                 appliedContainerId="applied-discount"
                 buttonLabel="Apply"
                 inputPlaceholder="Discount code"
@@ -113,7 +118,7 @@ test("opens the discount input in a dialog on mobile", async () => {
     }) as typeof fetch
     const user = userEvent.setup()
 
-    render(<CheckoutDiscount authenticated buttonLabel="Apply" inputPlaceholder="Discount code" promptLabel="Have a discount?" removeLabel="Remove" />)
+    render(<CheckoutDiscount {...discountErrorProps} authenticated buttonLabel="Apply" inputPlaceholder="Discount code" promptLabel="Have a discount?" removeLabel="Remove" />)
 
     const mobilePrompt = screen.getAllByRole("button", { name: "Have a discount?" })[0]
     await user.click(mobilePrompt)
@@ -136,6 +141,7 @@ test("validates and applies a promotion code already present in the URL", async 
 
     render(
         <CheckoutDiscount
+            {...discountErrorProps}
             buttonLabel="Apply"
             inputPlaceholder="Discount code"
             promptLabel="Have a discount?"
@@ -149,4 +155,32 @@ test("validates and applies a promotion code already present in the URL", async 
     assert.ok(screen.getByText("WELCOME"))
     assert.ok(screen.getByRole("button", { name: "(Remove)" }))
     assert.equal(replacedUrls.at(-1), "/en/checkout?plan=pro&promotionCode=WELCOME")
+})
+
+test("shows the configured CMS error instead of the Crater discount error", async () => {
+    globalThis.fetch = (async () =>
+        new Response(JSON.stringify({ error: "Raw Crater discount error", details: ["Raw validation detail"] }), {
+            status: 422,
+            headers: { "content-type": "application/json" },
+        })) as typeof fetch
+    const user = userEvent.setup()
+
+    render(
+        <CheckoutDiscount
+            {...discountErrorProps}
+            authenticated
+            buttonLabel="Apply"
+            inputPlaceholder="Discount code"
+            promptLabel="Have a discount?"
+            removeLabel="Remove"
+        />
+    )
+
+    await user.click(screen.getAllByRole("button", { name: "Have a discount?" }).at(-1)!)
+    await user.type(screen.getByPlaceholderText("Discount code"), "INVALID")
+    await user.click(screen.getByRole("button", { name: "Apply" }))
+
+    assert.ok(await screen.findByText(discountErrorProps.discountValidationError))
+    assert.equal(screen.queryByText("Raw Crater discount error"), null)
+    assert.equal(screen.queryByText("Raw validation detail"), null)
 })
