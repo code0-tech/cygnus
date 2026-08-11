@@ -4,7 +4,7 @@ import { PATCH as updateCustomer, POST as createOrGetCustomer } from "../../src/
 import { POST as validateDiscount } from "../../src/app/api/crater/checkout/discount/route"
 import { POST as calculateTax } from "../../src/app/api/crater/checkout/tax/route"
 import { POST as createSession } from "../../src/app/api/crater/login/route"
-import { GET as getSessionStatus } from "../../src/app/api/crater/auth/session/route"
+import { DELETE as deleteSession, GET as getSessionStatus } from "../../src/app/api/crater/auth/session/route"
 import { createGraphQLTestServer } from "./graphqlTestServer"
 
 const sessionHeaders = {
@@ -57,6 +57,15 @@ test("customer creation requires a Crater session", async () => {
     )
 
     assert.equal(response.status, 403)
+})
+
+test("logout clears the persisted Crater session cookie", async () => {
+    const response = await deleteSession()
+
+    assert.equal(response.status, 200)
+    assert.deepEqual(await response.json(), { authenticated: false })
+    assert.match(response.headers.get("set-cookie") ?? "", /crater_session=;/)
+    assert.match(response.headers.get("set-cookie") ?? "", /Max-Age=0/i)
 })
 
 test("business customer creation allows omitted contact and tax fields", async () => {
