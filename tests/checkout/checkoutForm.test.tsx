@@ -25,6 +25,7 @@ let checkoutStage = "billingAddress"
 const checkoutStageListeners = new Set<() => void>()
 let stripeConfirmCalls = 0
 let stripeConfirmErrorMessage: string | null = null
+let stripeCheckoutLoadErrorMessage: string | null = null
 let stripeConfirmOptions: unknown[] = []
 let stripeBillingAddressUpdates: unknown[] = []
 let stripeEmailUpdates: unknown[] = []
@@ -105,9 +106,12 @@ mock.module("@stripe/react-stripe-js/checkout", {
             paymentElementOptions = options
             return <div data-testid="stripe-payment">Payment details</div>
         },
-        useCheckoutElements: () => ({
-            type: "success",
-            checkout: {
+        useCheckoutElements: () =>
+            stripeCheckoutLoadErrorMessage
+                ? { type: "error", error: { message: stripeCheckoutLoadErrorMessage } }
+                : {
+                      type: "success",
+                      checkout: {
                 email: null,
                 confirm: async (options: unknown) => {
                     stripeConfirmCalls += 1
@@ -127,8 +131,8 @@ mock.module("@stripe/react-stripe-js/checkout", {
                     stripeTaxIdUpdates.push(taxIdInfo)
                     return { type: "success", session: {} }
                 },
-            },
-        }),
+                      },
+                  },
     },
 })
 
@@ -151,6 +155,7 @@ afterEach(() => {
     checkoutStage = "billingAddress"
     stripeConfirmCalls = 0
     stripeConfirmErrorMessage = null
+    stripeCheckoutLoadErrorMessage = null
     stripeConfirmOptions = []
     stripeBillingAddressUpdates = []
     stripeEmailUpdates = []
@@ -358,6 +363,82 @@ test("creates the customer and checkout session on mount before collecting Strip
     assert.deepEqual(stripeConfirmOptions, [{ redirect: "always" }, { redirect: "always" }])
 })
 
+test("replaces a checkout session shortly before it expires", async () => {
+    const requests: string[] = []
+    let checkoutSessionCount = 0
+    globalThis.fetch = (async (input) => {
+        const url = String(input)
+        requests.push(url)
+
+        if (url === "/api/crater/customer") {
+            return new Response(JSON.stringify({ id: "gid://crater/Customer/1" }), {
+                status: 201,
+                headers: { "content-type": "application/json" },
+            })
+        }
+
+        if (url === "/api/crater/checkout/tax") {
+            return new Response(JSON.stringify({ amountTotal: 11_900, currency: "eur", taxAmountExclusive: 1_900 }), {
+                status: 200,
+                headers: { "content-type": "application/json" },
+            })
+        }
+
+        checkoutSessionCount += 1
+        return new Response(
+            JSON.stringify({
+                clientSecret: `cs_expiry_${checkoutSessionCount}`,
+                expiresAt: checkoutSessionCount === 1 ? Math.floor(Date.now() / 1_000) : 1_800_000_000,
+                id: `cs_expiry_${checkoutSessionCount}`,
+            }),
+            { status: 200, headers: { "content-type": "application/json" } }
+        )
+    }) as typeof fetch
+
+    render(<CheckoutForm content={content} locale="en" />)
+
+    await waitFor(() => assert.equal(requests.filter((url) => url === "/api/crater/checkout/session").length, 2))
+    await waitFor(() => assert.equal(checkoutProviderOptions?.clientSecret, "cs_expiry_2"))
+    assert.equal(requests.filter((url) => url === "/api/crater/customer").length, 1)
+})
+
+test("replaces an inactive Stripe checkout session only once", async () => {
+    stripeCheckoutLoadErrorMessage = "The Checkout Session is no longer active."
+    const requests: string[] = []
+    let checkoutSessionCount = 0
+    globalThis.fetch = (async (input) => {
+        const url = String(input)
+        requests.push(url)
+
+        if (url === "/api/crater/customer") {
+            return new Response(JSON.stringify({ id: "gid://crater/Customer/1" }), {
+                status: 201,
+                headers: { "content-type": "application/json" },
+            })
+        }
+
+        if (url === "/api/crater/checkout/tax") {
+            return new Response(JSON.stringify({ amountTotal: 11_900, currency: "eur", taxAmountExclusive: 1_900 }), {
+                status: 200,
+                headers: { "content-type": "application/json" },
+            })
+        }
+
+        checkoutSessionCount += 1
+        return new Response(JSON.stringify({ clientSecret: `cs_inactive_${checkoutSessionCount}`, expiresAt: 1_800_000_000, id: `cs_inactive_${checkoutSessionCount}` }), {
+            status: 200,
+            headers: { "content-type": "application/json" },
+        })
+    }) as typeof fetch
+
+    render(<CheckoutForm content={content} locale="en" />)
+
+    await waitFor(() => assert.equal(requests.filter((url) => url === "/api/crater/checkout/session").length, 2))
+    await new Promise((resolve) => setTimeout(resolve, 25))
+    assert.equal(requests.filter((url) => url === "/api/crater/checkout/session").length, 2)
+    assert.equal(requests.filter((url) => url === "/api/crater/customer").length, 1)
+})
+
 test("creates a business customer and updates optional tax details before payment", async () => {
     checkoutSearchParams.set("customerType", "b2b")
     const requests: Array<{ init?: RequestInit; url: string }> = []
@@ -448,10 +529,10 @@ test("recreates only the checkout session when the promotion code changes or is 
     checkoutSearchParams.set("promotionCode", "SAVE10")
     view.rerender(<CheckoutForm content={content} locale="en" />)
 
-    await waitFor(() => assert.equal(requests.length, 4))
+    await waitFor(() => assert.equal(requests.filter((request) => request.url === "/api/crater/checkout/session").length, 2))
     assert.equal(requests.filter((request) => request.url === "/api/crater/customer").length, 1)
     assert.equal(requests.filter((request) => request.url === "/api/crater/checkout/session").length, 2)
-    assert.deepEqual(JSON.parse(String(requests[3].init?.body)), {
+    assert.deepEqual(JSON.parse(String(requests.filter((request) => request.url === "/api/crater/checkout/session").at(-1)?.init?.body)), {
         customerType: "b2c",
         deploymentType: "self_hosted",
         locale: "en",
@@ -464,9 +545,9 @@ test("recreates only the checkout session when the promotion code changes or is 
     checkoutSearchParams.delete("promotionCode")
     view.rerender(<CheckoutForm content={content} locale="en" />)
 
-    await waitFor(() => assert.equal(requests.length, 5))
+    await waitFor(() => assert.equal(requests.filter((request) => request.url === "/api/crater/checkout/session").length, 3))
     assert.equal(requests.filter((request) => request.url === "/api/crater/customer").length, 1)
-    assert.deepEqual(JSON.parse(String(requests[4].init?.body)), {
+    assert.deepEqual(JSON.parse(String(requests.filter((request) => request.url === "/api/crater/checkout/session").at(-1)?.init?.body)), {
         customerType: "b2c",
         deploymentType: "self_hosted",
         locale: "en",

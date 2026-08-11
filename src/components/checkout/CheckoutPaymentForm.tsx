@@ -6,7 +6,7 @@ import { useCheckoutStage } from "@/components/checkout/CheckoutStepper"
 import { Button, TextInput } from "@code0-tech/pictor"
 import { BillingAddressElement, CheckoutElementsProvider, ContactDetailsElement, PaymentElement, useCheckoutElements } from "@stripe/react-stripe-js/checkout"
 import { loadStripe, type StripeCheckoutContact, type StripeCheckoutElementsSdkOptions, type StripeCheckoutSession, type StripeCheckoutTaxIdType } from "@stripe/stripe-js"
-import { useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 
 type CheckoutFormContent = CheckoutData["form"]
 
@@ -104,9 +104,20 @@ interface CheckoutPaymentFormProps {
     onTaxIdTypeChange: (type: string) => void
     onTaxIdValueChange: (value: string) => void
     onTaxQuoteChange: (taxQuote: CheckoutTaxQuoteData | null) => void
+    onPaymentConfirmationChange: (confirming: boolean) => void
+    onSessionExpired: () => Promise<void>
+    onSessionReady: () => void
     session: CheckoutSessionData
     taxIdType: string
     taxIdValue: string
+}
+
+function isInactiveCheckoutSessionError(message: string) {
+    const normalizedMessage = message.toLowerCase()
+    return (
+        normalizedMessage.includes("checkout session") &&
+        (normalizedMessage.includes("expired") || normalizedMessage.includes("no longer active") || normalizedMessage.includes("not active"))
+    ) || normalizedMessage.includes("checkout-sitzung ist nicht mehr aktiv") || normalizedMessage.includes("checkout-sitzung ist abgelaufen")
 }
 
 function getTaxQuoteFromSession(session: StripeCheckoutSession): CheckoutTaxQuoteData | null {
@@ -159,6 +170,9 @@ function CheckoutPaymentFields({
     onTaxIdTypeChange,
     onTaxIdValueChange,
     onTaxQuoteChange,
+    onPaymentConfirmationChange,
+    onSessionExpired,
+    onSessionReady,
     taxIdType,
     taxIdValue,
 }: Omit<CheckoutPaymentFormProps, "session">) {
@@ -167,6 +181,16 @@ function CheckoutPaymentFields({
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
     const [isUpdatingBilling, setIsUpdatingBilling] = useState(false)
     const [isConfirming, setIsConfirming] = useState(false)
+    const checkoutErrorMessage = checkoutState.type === "error" ? checkoutState.error.message : null
+
+    useEffect(() => {
+        if (checkoutState.type === "success") {
+            onSessionReady()
+            return
+        }
+
+        if (checkoutErrorMessage && isInactiveCheckoutSessionError(checkoutErrorMessage)) void onSessionExpired()
+    }, [checkoutErrorMessage, checkoutState.type, onSessionExpired, onSessionReady])
 
     const showBillingAddress = () => {
         setStage("billingAddress")
@@ -231,18 +255,30 @@ function CheckoutPaymentFields({
         if (checkoutState.type !== "success" || isConfirming) return
 
         setIsConfirming(true)
+        onPaymentConfirmationChange(true)
         setErrorMessage(null)
         try {
             if (!billingAddress) throw new Error("A billing address is required.")
             const result = await checkoutState.checkout.confirm({ redirect: "always" })
 
             if (result.type === "error") {
-                setErrorMessage(result.error.message)
                 setIsConfirming(false)
+                onPaymentConfirmationChange(false)
+                if (isInactiveCheckoutSessionError(result.error.message)) {
+                    await onSessionExpired()
+                    return
+                }
+                setErrorMessage(result.error.message)
             }
         } catch (error) {
-            setErrorMessage(error instanceof Error ? error.message : content.paymentErrorFallback)
+            const message = error instanceof Error ? error.message : content.paymentErrorFallback
             setIsConfirming(false)
+            onPaymentConfirmationChange(false)
+            if (isInactiveCheckoutSessionError(message)) {
+                await onSessionExpired()
+                return
+            }
+            setErrorMessage(message)
         }
     }
 
@@ -251,7 +287,10 @@ function CheckoutPaymentFields({
     }
 
     if (checkoutState.type === "error") {
-        return <p className="text-sm text-error" role="alert">{checkoutState.error.message}</p>
+        const message = isInactiveCheckoutSessionError(checkoutState.error.message)
+            ? "The checkout session expired. A new session is being created."
+            : checkoutState.error.message
+        return <p className="text-sm text-error" role="alert">{message}</p>
     }
 
     return (
@@ -349,6 +388,9 @@ export function CheckoutPaymentForm({
     onTaxIdTypeChange,
     onTaxIdValueChange,
     onTaxQuoteChange,
+    onPaymentConfirmationChange,
+    onSessionExpired,
+    onSessionReady,
     session,
     taxIdType,
     taxIdValue,
@@ -393,6 +435,9 @@ export function CheckoutPaymentForm({
                 onTaxIdTypeChange={onTaxIdTypeChange}
                 onTaxIdValueChange={onTaxIdValueChange}
                 onTaxQuoteChange={onTaxQuoteChange}
+                onPaymentConfirmationChange={onPaymentConfirmationChange}
+                onSessionExpired={onSessionExpired}
+                onSessionReady={onSessionReady}
                 taxIdType={taxIdType}
                 taxIdValue={taxIdValue}
             />
