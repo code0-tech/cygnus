@@ -6,6 +6,7 @@ import type { CheckoutData } from "@/lib/cms"
 import { resolveCraterCustomerType } from "@/lib/checkout/craterCustomer"
 import { createCheckoutSession, prepareCheckoutSession, type CheckoutSessionData } from "@/lib/checkout/checkoutSubmission"
 import type { AppLocale } from "@/lib/i18n"
+import type { StripeCheckoutContact } from "@stripe/stripe-js"
 import { useSearchParams } from "next/navigation"
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react"
 
@@ -19,8 +20,10 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, locale: AppLoc
     const [checkoutSession, setCheckoutSession] = useState<CheckoutSessionData | null>(null)
     const [checkoutSessionPromotionCode, setCheckoutSessionPromotionCode] = useState<string | null | undefined>(undefined)
     const [isRefreshingSession, setIsRefreshingSession] = useState(false)
-    const [isStripeAddressComplete, setIsStripeAddressComplete] = useState(false)
-    const [isStripeContactComplete, setIsStripeContactComplete] = useState(false)
+    const [stripeBillingAddress, setStripeBillingAddress] = useState<StripeCheckoutContact | null>(null)
+    const [stripeEmail, setStripeEmail] = useState<string | null>(null)
+    const [stripeTaxIdType, setStripeTaxIdType] = useState("")
+    const [stripeTaxIdValue, setStripeTaxIdValue] = useState("")
     const [preparationAttempt, setPreparationAttempt] = useState(0)
     const preparedSessionKeyRef = useRef<string | null>(null)
     const sessionRefreshRequestRef = useRef(0)
@@ -41,8 +44,10 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, locale: AppLoc
         setIsLoading(true)
         setErrorMessage(null)
         setCheckoutSession(null)
-        setIsStripeAddressComplete(false)
-        setIsStripeContactComplete(false)
+        setStripeBillingAddress(null)
+        setStripeEmail(null)
+        setStripeTaxIdType("")
+        setStripeTaxIdValue("")
         setStage("billingAddress")
 
         void prepareCheckoutSession({ customerType, locale, searchParams: checkoutSearchParams, sessionToken })
@@ -69,8 +74,10 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, locale: AppLoc
         setCheckoutSession(null)
         setIsRefreshingSession(true)
         setErrorMessage(null)
-        setIsStripeAddressComplete(false)
-        setIsStripeContactComplete(false)
+        setStripeBillingAddress(null)
+        setStripeEmail(null)
+        setStripeTaxIdType("")
+        setStripeTaxIdValue("")
         setStage("billingAddress")
 
         void createCheckoutSession({ locale, searchParams: checkoutSearchParams, sessionToken })
@@ -98,16 +105,21 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, locale: AppLoc
     return {
         checkoutSession,
         content,
+        customerType,
         errorMessage,
         isLoading,
         isRefreshingSession,
         isSessionLoading,
-        isStripeAddressComplete,
-        isStripeContactComplete,
         retryPreparation,
         sessionError,
-        setIsStripeAddressComplete,
-        setIsStripeContactComplete,
+        setStripeBillingAddress,
+        setStripeEmail,
+        setStripeTaxIdType,
+        setStripeTaxIdValue,
+        stripeBillingAddress,
+        stripeEmail,
+        stripeTaxIdType,
+        stripeTaxIdValue,
     }
 }
 

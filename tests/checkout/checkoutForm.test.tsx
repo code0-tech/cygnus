@@ -12,15 +12,23 @@ const checkoutSearchParams = new URLSearchParams({
     plan: "pro",
 })
 let checkoutProviderOptions: { clientSecret?: string; defaultValues?: unknown; elementsOptions?: { appearance?: { theme?: string; variables?: Record<string, string> } } } | null = null
-let billingAddressOnChange: ((event: { complete: boolean }) => void) | null = null
-let contactDetailsOnChange: ((event: { complete: boolean }) => void) | null = null
+const stripeBillingAddress = {
+    name: "Ada Lovelace",
+    address: { city: "Berlin", country: "DE", line1: "Teststraße 1", line2: null, postal_code: "10115", state: "Berlin" },
+}
+let billingAddressOnChange: ((event: { complete: boolean; value: typeof stripeBillingAddress }) => void) | null = null
+let contactDetailsOnChange: ((event: { complete: boolean; value: { email: string } }) => void) | null = null
 let billingAddressOptions: unknown = null
+let paymentElementOptions: unknown = null
 let checkoutStages: string[] = []
 let checkoutStage = "billingAddress"
 const checkoutStageListeners = new Set<() => void>()
 let stripeConfirmCalls = 0
 let stripeConfirmErrorMessage: string | null = null
 let stripeConfirmOptions: unknown[] = []
+let stripeBillingAddressUpdates: unknown[] = []
+let stripeEmailUpdates: unknown[] = []
+let stripeTaxIdUpdates: unknown[] = []
 const setCheckoutStage = (stage: string) => {
     checkoutStage = stage
     checkoutStages.push(stage)
@@ -74,7 +82,7 @@ mock.module("@stripe/stripe-js", {
 })
 mock.module("@stripe/react-stripe-js/checkout", {
     namedExports: {
-        BillingAddressElement: ({ onChange, options }: { onChange: (event: { complete: boolean }) => void; options?: unknown }) => {
+        BillingAddressElement: ({ onChange, options }: { onChange: (event: { complete: boolean; value: typeof stripeBillingAddress }) => void; options?: unknown }) => {
             billingAddressOnChange = onChange
             billingAddressOptions = options
             return <div data-testid="stripe-billing-address">Billing address</div>
@@ -89,18 +97,34 @@ mock.module("@stripe/react-stripe-js/checkout", {
             checkoutProviderOptions = options
             return <>{children}</>
         },
-        ContactDetailsElement: ({ onChange }: { onChange: (event: { complete: boolean }) => void }) => {
+        ContactDetailsElement: ({ onChange }: { onChange: (event: { complete: boolean; value: { email: string } }) => void }) => {
             contactDetailsOnChange = onChange
             return <div data-testid="stripe-contact-details">Contact details</div>
         },
-        PaymentElement: () => <div data-testid="stripe-payment">Payment details</div>,
+        PaymentElement: ({ options }: { options?: unknown }) => {
+            paymentElementOptions = options
+            return <div data-testid="stripe-payment">Payment details</div>
+        },
         useCheckoutElements: () => ({
             type: "success",
             checkout: {
+                email: null,
                 confirm: async (options: unknown) => {
                     stripeConfirmCalls += 1
                     stripeConfirmOptions.push(options)
                     if (stripeConfirmErrorMessage) return { type: "error", error: { message: stripeConfirmErrorMessage } }
+                    return { type: "success", session: {} }
+                },
+                updateBillingAddress: async (address: unknown) => {
+                    stripeBillingAddressUpdates.push(address)
+                    return { type: "success", session: {} }
+                },
+                updateEmail: async (email: unknown) => {
+                    stripeEmailUpdates.push(email)
+                    return { type: "success", session: {} }
+                },
+                updateTaxIdInfo: async (taxIdInfo: unknown) => {
+                    stripeTaxIdUpdates.push(taxIdInfo)
                     return { type: "success", session: {} }
                 },
             },
@@ -122,11 +146,15 @@ afterEach(() => {
     billingAddressOnChange = null
     contactDetailsOnChange = null
     billingAddressOptions = null
+    paymentElementOptions = null
     checkoutStages = []
     checkoutStage = "billingAddress"
     stripeConfirmCalls = 0
     stripeConfirmErrorMessage = null
     stripeConfirmOptions = []
+    stripeBillingAddressUpdates = []
+    stripeEmailUpdates = []
+    stripeTaxIdUpdates = []
 })
 
 const content = {
@@ -275,18 +303,23 @@ test("creates the customer and checkout session on mount before collecting Strip
     assert.deepEqual(billingAddressOptions, { display: { name: "full" } })
     assert.ok(screen.getByTestId("stripe-contact-details"))
     assert.ok(screen.getByTestId("stripe-billing-address"))
+    assert.equal(screen.queryByRole("textbox", { name: "Tax ID type" }), null)
+    assert.equal(screen.queryByRole("textbox", { name: "Tax ID" }), null)
     assert.equal(screen.queryByTestId("stripe-payment"), null)
     assert.equal(checkoutStages.includes("payment"), false)
     assert.equal((screen.getByRole("button", { name: "Continue to payment" }) as HTMLButtonElement).disabled, true)
 
-    act(() => billingAddressOnChange?.({ complete: true }))
+    act(() => billingAddressOnChange?.({ complete: true, value: stripeBillingAddress }))
     assert.equal((screen.getByRole("button", { name: "Continue to payment" }) as HTMLButtonElement).disabled, true)
-    act(() => contactDetailsOnChange?.({ complete: true }))
+    act(() => contactDetailsOnChange?.({ complete: true, value: { email: "ada@example.com" } }))
     assert.equal(screen.queryByTestId("stripe-payment"), null)
     assert.equal(checkoutStages.includes("payment"), false)
     await user.click(screen.getByRole("button", { name: "Continue to payment" }))
 
-    assert.ok(screen.getByTestId("stripe-payment"))
+    assert.ok(await screen.findByTestId("stripe-payment"))
+    assert.deepEqual(paymentElementOptions, { fields: { billingDetails: { name: "never", address: "never" } } })
+    assert.deepEqual(stripeBillingAddressUpdates, [stripeBillingAddress])
+    assert.deepEqual(stripeEmailUpdates, ["ada@example.com"])
     assert.equal(screen.queryByTestId("stripe-contact-details"), null)
     assert.equal(screen.queryByTestId("stripe-billing-address"), null)
     assert.equal(checkoutStages.at(-1), "payment")
@@ -297,11 +330,11 @@ test("creates the customer and checkout session on mount before collecting Strip
     assert.equal(screen.queryByTestId("stripe-payment"), null)
     assert.equal(checkoutStages.at(-1), "billingAddress")
 
-    act(() => billingAddressOnChange?.({ complete: false }))
+    act(() => billingAddressOnChange?.({ complete: false, value: stripeBillingAddress }))
     assert.equal(screen.queryByTestId("stripe-payment"), null)
     assert.equal((screen.getByRole("button", { name: "Continue to payment" }) as HTMLButtonElement).disabled, true)
 
-    act(() => billingAddressOnChange?.({ complete: true }))
+    act(() => billingAddressOnChange?.({ complete: true, value: stripeBillingAddress }))
     await user.click(screen.getByRole("button", { name: "Continue to payment" }))
 
     stripeConfirmErrorMessage = "Your payment could not be confirmed."
@@ -315,7 +348,7 @@ test("creates the customer and checkout session on mount before collecting Strip
     assert.deepEqual(stripeConfirmOptions, [{ redirect: "always" }, { redirect: "always" }])
 })
 
-test("creates a business customer without contact or tax fields", async () => {
+test("creates a business customer and updates optional tax details before payment", async () => {
     checkoutSearchParams.set("customerType", "b2b")
     const requests: Array<{ init?: RequestInit; url: string }> = []
     globalThis.fetch = (async (input, init) => {
@@ -329,12 +362,26 @@ test("creates a business customer without contact or tax fields", async () => {
             { status: String(input) === "/api/crater/customer" ? 201 : 200, headers: { "content-type": "application/json" } }
         )
     }) as typeof fetch
+    const user = userEvent.setup()
     render(<CheckoutForm content={content} locale="en" />)
 
     await waitFor(() => assert.equal(requests.length, 2))
     assert.deepEqual(JSON.parse(String(requests[0].init?.body)), { customerType: "business" })
     assert.ok(screen.getByTestId("stripe-contact-details"))
     assert.ok(screen.getByTestId("stripe-billing-address"))
+    await user.type(screen.getByRole("textbox", { name: "Tax ID type" }), "eu_vat")
+    await user.type(screen.getByRole("textbox", { name: "Tax ID" }), "DE123456789")
+    act(() => billingAddressOnChange?.({ complete: true, value: stripeBillingAddress }))
+    act(() => contactDetailsOnChange?.({ complete: true, value: { email: "billing@example.com" } }))
+    await user.click(screen.getByRole("button", { name: "Continue to payment" }))
+
+    assert.ok(await screen.findByTestId("stripe-payment"))
+    assert.deepEqual(stripeTaxIdUpdates, [
+        {
+            businessName: "Ada Lovelace",
+            taxId: { type: "eu_vat", value: "DE123456789" },
+        },
+    ])
 })
 
 test("shows automatic customer creation failures and allows retrying", async () => {

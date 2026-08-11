@@ -3,9 +3,9 @@
 import type { CheckoutData } from "@/lib/cms"
 import type { CheckoutSessionData } from "@/lib/checkout/checkoutSubmission"
 import { useCheckoutStage } from "@/components/checkout/CheckoutStepper"
-import { Button } from "@code0-tech/pictor"
+import { Button, TextInput } from "@code0-tech/pictor"
 import { BillingAddressElement, CheckoutElementsProvider, ContactDetailsElement, PaymentElement, useCheckoutElements } from "@stripe/react-stripe-js/checkout"
-import { loadStripe, type StripeCheckoutElementsSdkOptions } from "@stripe/stripe-js"
+import { loadStripe, type StripeCheckoutContact, type StripeCheckoutElementsSdkOptions, type StripeCheckoutTaxIdType } from "@stripe/stripe-js"
 import { useMemo, useState } from "react"
 
 type CheckoutFormContent = CheckoutData["form"]
@@ -95,18 +95,35 @@ const stripeAppearance = {
 } satisfies NonNullable<NonNullable<StripeCheckoutElementsSdkOptions["elementsOptions"]>["appearance"]>
 
 interface CheckoutPaymentFormProps {
+    billingAddress: StripeCheckoutContact | null
+    collectTaxId: boolean
     content: CheckoutFormContent
-    isAddressComplete: boolean
-    isContactComplete: boolean
-    onAddressComplete: (complete: boolean) => void
-    onContactComplete: (complete: boolean) => void
+    email: string | null
+    onAddressChange: (address: StripeCheckoutContact | null) => void
+    onEmailChange: (email: string | null) => void
+    onTaxIdTypeChange: (type: string) => void
+    onTaxIdValueChange: (value: string) => void
     session: CheckoutSessionData
+    taxIdType: string
+    taxIdValue: string
 }
 
-function CheckoutPaymentFields({ content, isAddressComplete, isContactComplete, onAddressComplete, onContactComplete }: Omit<CheckoutPaymentFormProps, "session">) {
+function CheckoutPaymentFields({
+    billingAddress,
+    collectTaxId,
+    content,
+    email,
+    onAddressChange,
+    onEmailChange,
+    onTaxIdTypeChange,
+    onTaxIdValueChange,
+    taxIdType,
+    taxIdValue,
+}: Omit<CheckoutPaymentFormProps, "session">) {
     const checkoutState = useCheckoutElements()
     const { stage: activeStep, setStage } = useCheckoutStage()
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
+    const [isUpdatingBilling, setIsUpdatingBilling] = useState(false)
     const [isConfirming, setIsConfirming] = useState(false)
 
     const showBillingAddress = () => {
@@ -114,9 +131,53 @@ function CheckoutPaymentFields({ content, isAddressComplete, isContactComplete, 
         setErrorMessage(null)
     }
 
-    const showPayment = () => {
-        if (!isAddressComplete || !isContactComplete) return
-        setStage("payment")
+    const showPayment = async () => {
+        if (!billingAddress || !email || checkoutState.type !== "success" || isUpdatingBilling) return
+
+        setIsUpdatingBilling(true)
+        setErrorMessage(null)
+        try {
+            const billingResult = await checkoutState.checkout.updateBillingAddress(billingAddress)
+            if (billingResult.type === "error") {
+                setErrorMessage(billingResult.error.message)
+                return
+            }
+
+            if (!checkoutState.checkout.email) {
+                const emailResult = await checkoutState.checkout.updateEmail(email)
+                if (emailResult.type === "error") {
+                    setErrorMessage(emailResult.error.message)
+                    return
+                }
+            }
+
+            const normalizedTaxIdType = taxIdType.trim()
+            const normalizedTaxIdValue = taxIdValue.trim()
+            if (collectTaxId && Boolean(normalizedTaxIdType) !== Boolean(normalizedTaxIdValue)) {
+                setErrorMessage("Tax ID type and Tax ID must be provided together.")
+                return
+            }
+
+            if (collectTaxId && normalizedTaxIdType && normalizedTaxIdValue) {
+                const taxIdResult = await checkoutState.checkout.updateTaxIdInfo({
+                    businessName: billingAddress.name?.trim() || "",
+                    taxId: {
+                        type: normalizedTaxIdType as StripeCheckoutTaxIdType,
+                        value: normalizedTaxIdValue,
+                    },
+                })
+                if (taxIdResult.type === "error") {
+                    setErrorMessage(taxIdResult.error.message)
+                    return
+                }
+            }
+
+            setStage("payment")
+        } catch (error) {
+            setErrorMessage(error instanceof Error ? error.message : content.paymentErrorFallback)
+        } finally {
+            setIsUpdatingBilling(false)
+        }
     }
 
     const handleSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
@@ -126,6 +187,7 @@ function CheckoutPaymentFields({ content, isAddressComplete, isContactComplete, 
         setIsConfirming(true)
         setErrorMessage(null)
         try {
+            if (!billingAddress) throw new Error("A billing address is required.")
             const result = await checkoutState.checkout.confirm({ redirect: "always" })
 
             if (result.type === "error") {
@@ -151,26 +213,53 @@ function CheckoutPaymentFields({ content, isAddressComplete, isContactComplete, 
             {activeStep === "billingAddress" ? (
                 <>
                     <section className="w-full space-y-4">
-                        <ContactDetailsElement onChange={(event) => onContactComplete(event.complete)} />
-                        <BillingAddressElement options={{ display: { name: "full" } }} onChange={(event) => onAddressComplete(event.complete)} />
+                        <ContactDetailsElement onChange={(event) => onEmailChange(event.complete ? event.value.email : null)} />
+                        <BillingAddressElement
+                            options={{ display: { name: "full" } }}
+                            onChange={(event) => onAddressChange(event.complete ? { name: event.value.name, address: event.value.address } : null)}
+                        />
+                        {collectTaxId && (
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                <TextInput
+                                    title={content.taxIdTypeLabel}
+                                    placeholder={content.taxIdTypePlaceholder}
+                                    value={taxIdType}
+                                    onChange={(event) => onTaxIdTypeChange(event.currentTarget.value)}
+                                    className="w-full!"
+                                />
+                                <TextInput
+                                    title={content.taxIdValueLabel}
+                                    placeholder={content.taxIdValuePlaceholder}
+                                    value={taxIdValue}
+                                    onChange={(event) => onTaxIdValueChange(event.currentTarget.value)}
+                                    className="w-full!"
+                                />
+                            </div>
+                        )}
                     </section>
+
+                    {errorMessage && (
+                        <p className="rounded-xl border border-error/20 bg-error/10 px-4 py-3 text-sm text-error" role="alert">
+                            {errorMessage}
+                        </p>
+                    )}
 
                     <div className="space-y-3">
                         <Button
                             type="button"
                             variant="normal"
-                            disabled={!isAddressComplete || !isContactComplete}
-                            onClick={showPayment}
+                            disabled={!billingAddress || !email || isUpdatingBilling}
+                            onClick={() => void showPayment()}
                             className="h-10! w-full! whitespace-nowrap bg-white/80! px-8! text-sm! text-primary! ring-1! ring-white/20! hover:bg-white!"
                         >
-                            {content.continueLabel}
+                            {isUpdatingBilling ? content.processingLabel : content.continueLabel}
                         </Button>
                     </div>
                 </>
             ) : (
                 <>
                     <section className="w-full space-y-4">
-                        <PaymentElement />
+                        <PaymentElement options={{ fields: { billingDetails: { name: "never", address: "never" } } }} />
                     </section>
 
                     {errorMessage && (
@@ -204,7 +293,19 @@ function CheckoutPaymentFields({ content, isAddressComplete, isContactComplete, 
     )
 }
 
-export function CheckoutPaymentForm({ content, isAddressComplete, isContactComplete, onAddressComplete, onContactComplete, session }: CheckoutPaymentFormProps) {
+export function CheckoutPaymentForm({
+    billingAddress,
+    collectTaxId,
+    content,
+    email,
+    onAddressChange,
+    onEmailChange,
+    onTaxIdTypeChange,
+    onTaxIdValueChange,
+    session,
+    taxIdType,
+    taxIdValue,
+}: CheckoutPaymentFormProps) {
     const options = useMemo<StripeCheckoutElementsSdkOptions>(
         () => ({
             clientSecret: session.clientSecret,
@@ -220,11 +321,16 @@ export function CheckoutPaymentForm({ content, isAddressComplete, isContactCompl
     return (
         <CheckoutElementsProvider key={session.clientSecret} stripe={stripePromise} options={options}>
             <CheckoutPaymentFields
+                billingAddress={billingAddress}
+                collectTaxId={collectTaxId}
                 content={content}
-                isAddressComplete={isAddressComplete}
-                isContactComplete={isContactComplete}
-                onAddressComplete={onAddressComplete}
-                onContactComplete={onContactComplete}
+                email={email}
+                onAddressChange={onAddressChange}
+                onEmailChange={onEmailChange}
+                onTaxIdTypeChange={onTaxIdTypeChange}
+                onTaxIdValueChange={onTaxIdValueChange}
+                taxIdType={taxIdType}
+                taxIdValue={taxIdValue}
             />
         </CheckoutElementsProvider>
     )

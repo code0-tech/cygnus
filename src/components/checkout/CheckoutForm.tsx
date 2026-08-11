@@ -10,27 +10,37 @@ function CheckoutFormContent() {
     const {
         checkoutSession,
         content,
+        customerType,
         errorMessage,
         isLoading,
         isRefreshingSession,
         isSessionLoading,
-        isStripeAddressComplete,
-        isStripeContactComplete,
         retryPreparation,
         sessionError,
-        setIsStripeAddressComplete,
-        setIsStripeContactComplete,
+        setStripeBillingAddress,
+        setStripeEmail,
+        setStripeTaxIdType,
+        setStripeTaxIdValue,
+        stripeBillingAddress,
+        stripeEmail,
+        stripeTaxIdType,
+        stripeTaxIdValue,
     } = useCheckoutFormState()
 
     if (checkoutSession) {
         return (
             <CheckoutPaymentForm
+                billingAddress={stripeBillingAddress}
+                collectTaxId={customerType === "business"}
                 content={content}
+                email={stripeEmail}
+                onAddressChange={setStripeBillingAddress}
+                onEmailChange={setStripeEmail}
+                onTaxIdTypeChange={setStripeTaxIdType}
+                onTaxIdValueChange={setStripeTaxIdValue}
                 session={checkoutSession}
-                isAddressComplete={isStripeAddressComplete}
-                isContactComplete={isStripeContactComplete}
-                onAddressComplete={setIsStripeAddressComplete}
-                onContactComplete={setIsStripeContactComplete}
+                taxIdType={stripeTaxIdType}
+                taxIdValue={stripeTaxIdValue}
             />
         )
     }
