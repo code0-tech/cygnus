@@ -6,12 +6,12 @@ import { useCheckoutStage } from "@/components/checkout/CheckoutStepper"
 import { Button, TextInput } from "@code0-tech/pictor"
 import { BillingAddressElement, CheckoutElementsProvider, ContactDetailsElement, PaymentElement, useCheckoutElements } from "@stripe/react-stripe-js/checkout"
 import { loadStripe, type StripeCheckoutContact, type StripeCheckoutElementsSdkOptions, type StripeCheckoutTaxIdType } from "@stripe/stripe-js"
-import { useMemo, useState } from "react"
+import { useMemo, useRef, useState } from "react"
 
 type CheckoutFormContent = CheckoutData["form"]
 
 const stripePublicKey = process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY
-const stripePromise = stripePublicKey ? loadStripe(stripePublicKey) : null
+const stripePromise = stripePublicKey ? loadStripe(stripePublicKey, { locale: "en" }) : null
 const stripeAppearance = {
     theme: "night",
     labels: "above",
@@ -336,9 +336,25 @@ export function CheckoutPaymentForm({
     taxIdType,
     taxIdValue,
 }: CheckoutPaymentFormProps) {
+    const defaultValuesRef = useRef<{
+        clientSecret: string
+        values: NonNullable<StripeCheckoutElementsSdkOptions["defaultValues"]>
+    } | null>(null)
+
+    if (defaultValuesRef.current?.clientSecret !== session.clientSecret) {
+        defaultValuesRef.current = {
+            clientSecret: session.clientSecret,
+            values: {
+                ...(billingAddress ? { billingAddress } : {}),
+                ...(email ? { email } : {}),
+            },
+        }
+    }
+
     const options = useMemo<StripeCheckoutElementsSdkOptions>(
         () => ({
             clientSecret: session.clientSecret,
+            ...(Object.keys(defaultValuesRef.current?.values ?? {}).length ? { defaultValues: defaultValuesRef.current?.values } : {}),
             elementsOptions: { appearance: stripeAppearance },
         }),
         [session.clientSecret]

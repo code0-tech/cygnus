@@ -17,6 +17,7 @@ export type CheckoutDiscountValue = Omit<CheckoutDiscountFields, "code" | "durat
 }
 
 interface CheckoutDiscountProps {
+    authenticated?: boolean
     appliedContainerId?: string
     appliedAmount?: string | null
     buttonLabel: string
@@ -24,11 +25,10 @@ interface CheckoutDiscountProps {
     onApplied?: (discount: CheckoutDiscountValue | null) => void
     promptLabel: string
     removeLabel: string
-    sessionToken?: string | null
 }
 
-export function CheckoutDiscount({ appliedAmount, appliedContainerId, buttonLabel, inputPlaceholder, onApplied, promptLabel, removeLabel, sessionToken }: CheckoutDiscountProps) {
-    const { token: contextSessionToken } = useCraterSession()
+export function CheckoutDiscount({ appliedAmount, appliedContainerId, authenticated, buttonLabel, inputPlaceholder, onApplied, promptLabel, removeLabel }: CheckoutDiscountProps) {
+    const { authenticated: contextAuthenticated } = useCraterSession()
     const pathname = usePathname()
     const router = useRouter()
     const searchParams = useSearchParams()
@@ -38,7 +38,7 @@ export function CheckoutDiscount({ appliedAmount, appliedContainerId, buttonLabe
     const [isApplying, setIsApplying] = useState(false)
     const [isEditing, setIsEditing] = useState(Boolean(searchParams.get("promotionCode")))
     const [isMobileDialogOpen, setIsMobileDialogOpen] = useState(false)
-    const authorizationToken = sessionToken ?? contextSessionToken
+    const isAuthenticated = authenticated ?? contextAuthenticated
     const validationRequestRef = useRef(0)
     const automaticallyValidatedCodeRef = useRef<string | null>(null)
 
@@ -60,7 +60,7 @@ export function CheckoutDiscount({ appliedAmount, appliedContainerId, buttonLabe
 
     const validateDiscount = useCallback(
         async (normalizedCode: string) => {
-            if (!authorizationToken) {
+            if (!isAuthenticated) {
                 setErrorMessage("A Crater session is required to validate a discount.")
                 return
             }
@@ -72,11 +72,9 @@ export function CheckoutDiscount({ appliedAmount, appliedContainerId, buttonLabe
             try {
                 const response = await fetch("/api/crater/checkout/discount", {
                     method: "POST",
-                    headers: {
-                        authorization: `Session ${authorizationToken}`,
-                        "content-type": "application/json",
-                    },
+                    headers: { "content-type": "application/json" },
                     body: JSON.stringify({ code: normalizedCode }),
+                    credentials: "same-origin",
                 })
                 const result = await response.json()
 
@@ -107,20 +105,20 @@ export function CheckoutDiscount({ appliedAmount, appliedContainerId, buttonLabe
                 }
             }
         },
-        [authorizationToken, onApplied, replacePromotionCode]
+        [isAuthenticated, onApplied, replacePromotionCode]
     )
 
     useEffect(() => {
         const promotionCode = searchParams.get("promotionCode")?.trim()
 
-        if (!authorizationToken || !promotionCode || appliedCode === promotionCode || automaticallyValidatedCodeRef.current === promotionCode) {
+        if (!isAuthenticated || !promotionCode || appliedCode === promotionCode || automaticallyValidatedCodeRef.current === promotionCode) {
             return
         }
 
         automaticallyValidatedCodeRef.current = promotionCode
         setCode(promotionCode)
         void validateDiscount(promotionCode)
-    }, [appliedCode, authorizationToken, searchParams, validateDiscount])
+    }, [appliedCode, isAuthenticated, searchParams, validateDiscount])
 
     const applyEmptyDiscount = () => {
         validationRequestRef.current += 1

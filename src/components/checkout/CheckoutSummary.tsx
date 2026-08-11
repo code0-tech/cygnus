@@ -22,7 +22,6 @@ type CheckoutTaxQuoteValue = {
 
 interface CheckoutSummaryProps {
     content?: CheckoutData["summary"] | null
-    sessionToken?: string | null
     subscriptionConfig?: SubscriptionConfigData | null
     subscriptionPrices: SubscriptionPriceCatalog
     taxQuote?: CheckoutTaxQuoteValue | null
@@ -64,7 +63,7 @@ function SummaryBadge({ icon, value, tone = "neutral" }: SummaryBadgeProps) {
     )
 }
 
-export function CheckoutSummary({ content, sessionToken, subscriptionConfig, subscriptionPrices, taxQuote }: CheckoutSummaryProps) {
+export function CheckoutSummary({ content, subscriptionConfig, subscriptionPrices, taxQuote }: CheckoutSummaryProps) {
     const searchParams = useSearchParams()
     const params = useParams<{ locale?: string }>()
     const [promotionDiscount, setPromotionDiscount] = useState<CheckoutDiscountValue | null>(null)
@@ -243,7 +242,6 @@ export function CheckoutSummary({ content, sessionToken, subscriptionConfig, sub
                 onApplied={setPromotionDiscount}
                 promptLabel={content.pricing.discountPromptLabel}
                 removeLabel={content.pricing.discountRemoveLabel}
-                sessionToken={sessionToken}
             />
         </div>
     )

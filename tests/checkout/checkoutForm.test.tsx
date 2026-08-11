@@ -45,9 +45,9 @@ mock.module("next/navigation", {
 mock.module("@/components/checkout/CraterSessionProvider", {
     namedExports: {
         useCraterSession: () => ({
+            authenticated: true,
             error: null,
             isLoading: false,
-            token: "crater-session-token",
         }),
     },
 })
@@ -288,7 +288,9 @@ test("creates the customer and checkout session on mount before collecting Strip
         requests.map((request) => request.url),
         ["/api/crater/customer", "/api/crater/checkout/session"]
     )
-    assert.equal(new Headers(requests[0].init?.headers).get("authorization"), "Session crater-session-token")
+    assert.equal(new Headers(requests[0].init?.headers).get("authorization"), null)
+    assert.equal(requests[0].init?.credentials, "same-origin")
+    assert.equal(requests[1].init?.credentials, "same-origin")
     assert.deepEqual(JSON.parse(String(requests[0].init?.body)), { customerType: "personal" })
     assert.deepEqual(JSON.parse(String(requests[1].init?.body)), {
         customerType: "b2c",

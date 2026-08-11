@@ -23,26 +23,24 @@ async function readCheckoutError(response: Response, fallback: string) {
 
 async function createCheckoutCustomer({
     customerType,
-    sessionToken,
 }: {
     customerType: CraterCustomerType
-    sessionToken: string
 }) {
-    const authorization = `Session ${sessionToken}`
     const customerResponse = await fetch("/api/crater/customer", {
         method: "POST",
-        headers: { Authorization: authorization, "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ customerType }),
+        credentials: "same-origin",
     })
     if (!customerResponse.ok) throw new Error(await readCheckoutError(customerResponse, "Failed to create the billing customer."))
 }
 
-export async function createCheckoutSession({ locale, searchParams, sessionToken }: { locale: AppLocale; searchParams: URLSearchParams; sessionToken: string }) {
-    const authorization = `Session ${sessionToken}`
+export async function createCheckoutSession({ locale, searchParams }: { locale: AppLocale; searchParams: URLSearchParams }) {
     const checkoutResponse = await fetch("/api/crater/checkout/session", {
         method: "POST",
-        headers: { Authorization: authorization, "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...Object.fromEntries(searchParams.entries()), locale }),
+        credentials: "same-origin",
     })
     if (!checkoutResponse.ok) throw new Error(await readCheckoutError(checkoutResponse, "Failed to create a Crater checkout session."))
     const checkout: unknown = await checkoutResponse.json()
@@ -61,13 +59,11 @@ export async function prepareCheckoutSession({
     customerType,
     locale,
     searchParams,
-    sessionToken,
 }: {
     customerType: CraterCustomerType
     locale: AppLocale
     searchParams: URLSearchParams
-    sessionToken: string
 }) {
-    await createCheckoutCustomer({ customerType, sessionToken })
-    return createCheckoutSession({ locale, searchParams, sessionToken })
+    await createCheckoutCustomer({ customerType })
+    return createCheckoutSession({ locale, searchParams })
 }

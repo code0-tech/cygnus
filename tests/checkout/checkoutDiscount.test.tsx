@@ -75,7 +75,7 @@ test("opens, applies, and removes a discount code", async () => {
                 inputPlaceholder="Discount code"
                 promptLabel="Have a discount?"
                 removeLabel="Remove"
-                sessionToken="session-token"
+                authenticated
                 onApplied={(discount) => appliedValues.push(discount)}
             />
         </>
@@ -113,7 +113,7 @@ test("opens the discount input in a dialog on mobile", async () => {
     }) as typeof fetch
     const user = userEvent.setup()
 
-    render(<CheckoutDiscount buttonLabel="Apply" inputPlaceholder="Discount code" promptLabel="Have a discount?" removeLabel="Remove" sessionToken="session-token" />)
+    render(<CheckoutDiscount authenticated buttonLabel="Apply" inputPlaceholder="Discount code" promptLabel="Have a discount?" removeLabel="Remove" />)
 
     const mobilePrompt = screen.getAllByRole("button", { name: "Have a discount?" })[0]
     await user.click(mobilePrompt)
@@ -140,7 +140,7 @@ test("validates and applies a promotion code already present in the URL", async 
             inputPlaceholder="Discount code"
             promptLabel="Have a discount?"
             removeLabel="Remove"
-            sessionToken="session-token"
+            authenticated
             onApplied={(discount) => appliedValues.push(discount)}
         />
     )

@@ -4,6 +4,7 @@ import { PATCH as updateCustomer, POST as createOrGetCustomer } from "../../src/
 import { POST as validateDiscount } from "../../src/app/api/crater/checkout/discount/route"
 import { POST as calculateTax } from "../../src/app/api/crater/checkout/tax/route"
 import { POST as createSession } from "../../src/app/api/crater/login/route"
+import { GET as getSessionStatus } from "../../src/app/api/crater/auth/session/route"
 import { createGraphQLTestServer } from "./graphqlTestServer"
 
 const sessionHeaders = {
@@ -81,12 +82,16 @@ test("business customer creation allows omitted contact and tax fields", async (
         const response = await createOrGetCustomer(
             new Request("https://example.com/api/crater/customer", {
                 method: "POST",
-                headers: sessionHeaders,
+                headers: {
+                    cookie: "crater_session=c_ust_example",
+                    "content-type": "application/json",
+                },
                 body: JSON.stringify({ customerType: "business" }),
             })
         )
 
         assert.equal(response.status, 201)
+        assert.equal(graphQLServer.requests[0].authorization, "Session c_ust_example")
         assert.deepEqual(graphQLServer.requests[0].body.variables, { input: { customerType: "business" } })
     } finally {
         if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
@@ -264,6 +269,9 @@ test("maps login, customer creation, and customer updates to Crater GraphQL inpu
             })
         )
         assert.equal(loginResponse.status, 200)
+        assert.deepEqual(await loginResponse.json(), { authenticated: true })
+        assert.match(loginResponse.headers.get("set-cookie") ?? "", /crater_session=crater-session-token/)
+        assert.match(loginResponse.headers.get("set-cookie") ?? "", /HttpOnly/i)
 
         const createResponse = await createOrGetCustomer(
             new Request("https://example.com/api/crater/customer", {
@@ -338,4 +346,48 @@ test("maps login, customer creation, and customer updates to Crater GraphQL inpu
         else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
         await graphQLServer.close()
     }
+})
+
+test("validates a persisted Crater session cookie", async () => {
+    const graphQLServer = await createGraphQLTestServer([
+        {
+            data: {
+                echo: {
+                    errors: [],
+                    message: "session-status",
+                },
+            },
+        },
+    ])
+    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
+    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
+
+    try {
+        const response = await getSessionStatus(
+            new Request("https://example.com/api/crater/auth/session", {
+                headers: { cookie: "crater_session=persisted-token" },
+            })
+        )
+
+        assert.equal(response.status, 200)
+        assert.deepEqual(await response.json(), { authenticated: true })
+        assert.equal(graphQLServer.requests[0].authorization, "Session persisted-token")
+        assert.equal(graphQLServer.requests[0].body.operationName, "CraterSessionStatus")
+    } finally {
+        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
+        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
+        await graphQLServer.close()
+    }
+})
+
+test("clears a malformed Crater session cookie", async () => {
+    const response = await getSessionStatus(
+        new Request("https://example.com/api/crater/auth/session", {
+            headers: { cookie: "crater_session=token%20with%20spaces" },
+        })
+    )
+
+    assert.equal(response.status, 401)
+    assert.match(response.headers.get("set-cookie") ?? "", /crater_session=;/)
+    assert.match(response.headers.get("set-cookie") ?? "", /Max-Age=0/i)
 })
