@@ -27,15 +27,15 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, locale: AppLoc
     const [preparationAttempt, setPreparationAttempt] = useState(0)
     const preparedSessionKeyRef = useRef<string | null>(null)
     const sessionRefreshRequestRef = useRef(0)
-    const { error: sessionError, isLoading: isSessionLoading, token: sessionToken } = useCraterSession()
+    const { authenticated, error: sessionError, isLoading: isSessionLoading } = useCraterSession()
     const customerType = resolveCraterCustomerType(searchParams.get("customerType"))
     const searchParamsString = searchParams.toString()
     const promotionCode = searchParams.get("promotionCode")?.trim() || null
 
     useEffect(() => {
-        if (!sessionToken) return
+        if (!authenticated) return
 
-        const preparationKey = `${sessionToken}:${preparationAttempt}`
+        const preparationKey = String(preparationAttempt)
         if (preparedSessionKeyRef.current === preparationKey) return
         preparedSessionKeyRef.current = preparationKey
         const requestId = ++sessionRefreshRequestRef.current
@@ -50,7 +50,7 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, locale: AppLoc
         setStripeTaxIdValue("")
         setStage("billingAddress")
 
-        void prepareCheckoutSession({ customerType, locale, searchParams: checkoutSearchParams, sessionToken })
+        void prepareCheckoutSession({ customerType, locale, searchParams: checkoutSearchParams })
             .then((session) => {
                 if (requestId !== sessionRefreshRequestRef.current) return
                 setCheckoutSession(session)
@@ -64,10 +64,10 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, locale: AppLoc
             .finally(() => {
                 if (requestId === sessionRefreshRequestRef.current) setIsLoading(false)
             })
-    }, [content.paymentErrorFallback, customerType, locale, preparationAttempt, searchParamsString, sessionToken, setStage])
+    }, [authenticated, content.paymentErrorFallback, customerType, locale, preparationAttempt, searchParamsString, setStage])
 
     useEffect(() => {
-        if (checkoutSessionPromotionCode === undefined || checkoutSessionPromotionCode === promotionCode || !sessionToken) return
+        if (checkoutSessionPromotionCode === undefined || checkoutSessionPromotionCode === promotionCode || !authenticated) return
 
         const requestId = ++sessionRefreshRequestRef.current
         const checkoutSearchParams = new URLSearchParams(searchParamsString)
@@ -80,7 +80,7 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, locale: AppLoc
         setStripeTaxIdValue("")
         setStage("billingAddress")
 
-        void createCheckoutSession({ locale, searchParams: checkoutSearchParams, sessionToken })
+        void createCheckoutSession({ locale, searchParams: checkoutSearchParams })
             .then((session) => {
                 if (requestId !== sessionRefreshRequestRef.current) return
                 setCheckoutSession(session)
@@ -95,7 +95,7 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, locale: AppLoc
             .finally(() => {
                 if (requestId === sessionRefreshRequestRef.current) setIsRefreshingSession(false)
             })
-    }, [checkoutSessionPromotionCode, content.paymentErrorFallback, locale, promotionCode, searchParamsString, sessionToken, setStage])
+    }, [authenticated, checkoutSessionPromotionCode, content.paymentErrorFallback, locale, promotionCode, searchParamsString, setStage])
 
     const retryPreparation = useCallback(() => {
         preparedSessionKeyRef.current = null

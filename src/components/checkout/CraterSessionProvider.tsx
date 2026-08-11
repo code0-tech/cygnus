@@ -4,25 +4,25 @@ import { readSagittariusToken, removeSagittariusToken } from "@/lib/checkout/che
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react"
 
 interface CraterSessionContextValue {
+    authenticated: boolean
     error: string | null
     isLoading: boolean
-    token: string | null
 }
 
 const CraterSessionContext = createContext<CraterSessionContextValue>({
+    authenticated: false,
     error: null,
     isLoading: true,
-    token: null,
 })
 
 export function CraterSessionProvider({ children }: { children: ReactNode }) {
-    const loginRequestRef = useRef<Promise<string> | null>(null)
+    const sessionRequestRef = useRef<Promise<void> | null>(null)
     const sagittariusTokenRef = useRef<string | undefined>(undefined)
     const hasReadSagittariusTokenRef = useRef(false)
     const [session, setSession] = useState<CraterSessionContextValue>({
+        authenticated: false,
         error: null,
         isLoading: true,
-        token: null,
     })
 
     useEffect(() => {
@@ -39,41 +39,55 @@ export function CraterSessionProvider({ children }: { children: ReactNode }) {
             }
         }
 
+        const readError = async (response: Response, fallback: string) => {
+            const body: unknown = await response.json().catch(() => null)
+            return body && typeof body === "object" && "error" in body && typeof body.error === "string" ? body.error : fallback
+        }
+
+        const createSession = async (sagittariusToken?: string) => {
+            const response = await fetch("/api/crater/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(sagittariusToken ? { sagittariusToken } : {}),
+                credentials: "same-origin",
+                referrerPolicy: "no-referrer",
+            })
+            if (!response.ok) throw new Error(await readError(response, "Failed to create a Crater session."))
+        }
+
+        const restoreOrCreateSession = async () => {
+            if (sagittariusTokenRef.current) {
+                await createSession(sagittariusTokenRef.current)
+                return
+            }
+
+            const statusResponse = await fetch("/api/crater/auth/session", {
+                credentials: "same-origin",
+                cache: "no-store",
+            })
+            if (statusResponse.ok) return
+            if (statusResponse.status !== 401 && statusResponse.status !== 403) {
+                throw new Error(await readError(statusResponse, "Failed to validate the Crater session."))
+            }
+
+            await createSession()
+        }
+
         const login = async () => {
             try {
-                if (!loginRequestRef.current) {
-                    loginRequestRef.current = (async () => {
-                        const response = await fetch("/api/crater/login", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify(sagittariusTokenRef.current ? { sagittariusToken: sagittariusTokenRef.current } : {}),
-                            referrerPolicy: "no-referrer",
-                        })
-                        const body: unknown = await response.json()
+                sessionRequestRef.current ??= restoreOrCreateSession()
 
-                        if (!response.ok) {
-                            const message = body && typeof body === "object" && "error" in body && typeof body.error === "string" ? body.error : "Failed to create a Crater session."
-                            throw new Error(message)
-                        }
-
-                        const token = body && typeof body === "object" && "token" in body && typeof body.token === "string" ? body.token : null
-                        if (!token) throw new Error("Crater returned no session token.")
-
-                        return token
-                    })()
-                }
-
-                const token = await loginRequestRef.current
+                await sessionRequestRef.current
                 if (!active) return
 
-                setSession({ error: null, isLoading: false, token })
+                setSession({ authenticated: true, error: null, isLoading: false })
             } catch (error) {
                 if (!active) return
 
                 setSession({
+                    authenticated: false,
                     error: error instanceof Error ? error.message : "Failed to create a Crater session.",
                     isLoading: false,
-                    token: null,
                 })
             }
         }

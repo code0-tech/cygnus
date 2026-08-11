@@ -1,4 +1,4 @@
-import { readCraterSessionAuthorization } from "@/lib/checkout/craterSession"
+import { clearCraterSessionCookie, readCraterSessionAuthorization } from "@/lib/checkout/craterSession"
 import type { Error } from "@code0-tech/crater-graphql-types"
 import { ServerError } from "@apollo/client/errors"
 import { NextResponse } from "next/server"
@@ -59,7 +59,7 @@ export function requireCraterSession(request: Request): { response: NextResponse
 
     if (authorization.status === "invalid") {
         return {
-            response: craterJson({ error: "Crater session authorization is invalid." }, 401),
+            response: clearCraterSessionCookie(craterJson({ error: "Crater session authorization is invalid." }, 401)),
         }
     }
 
@@ -100,10 +100,11 @@ export function craterTransportErrorResponse(error: unknown) {
         return null
     }
 
-    return craterJson(
+    const response = craterJson(
         {
             error: error.statusCode === 401 ? "The Crater session is invalid or expired." : "The Crater session is not allowed to perform this operation.",
         },
         error.statusCode
     )
+    return error.statusCode === 401 ? clearCraterSessionCookie(response) : response
 }

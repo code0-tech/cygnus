@@ -1,0 +1,64 @@
+import assert from "node:assert/strict"
+import test, { afterEach } from "node:test"
+import React from "react"
+import { installDomTestEnvironment } from "./domTestEnvironment"
+
+installDomTestEnvironment()
+
+const { cleanup, render, screen } = await import("@testing-library/react")
+const { CraterSessionProvider, useCraterSession } = await import("../../src/components/checkout/CraterSessionProvider")
+const originalFetch = globalThis.fetch
+
+function SessionState() {
+    const session = useCraterSession()
+    return <span>{session.isLoading ? "loading" : session.authenticated ? "authenticated" : session.error}</span>
+}
+
+afterEach(() => {
+    cleanup()
+    globalThis.fetch = originalFetch
+    window.history.replaceState({}, "", "/en/checkout")
+})
+
+test("restores a Crater session from its HttpOnly cookie after reload", async () => {
+    const requests: Array<{ method: string; url: string }> = []
+    globalThis.fetch = (async (input, init) => {
+        requests.push({ method: init?.method ?? "GET", url: String(input) })
+        return new Response(JSON.stringify({ authenticated: true }), { status: 200, headers: { "content-type": "application/json" } })
+    }) as typeof fetch
+
+    render(
+        <CraterSessionProvider>
+            <SessionState />
+        </CraterSessionProvider>
+    )
+
+    assert.ok(await screen.findByText("authenticated"))
+    assert.deepEqual(requests, [{ method: "GET", url: "/api/crater/auth/session" }])
+})
+
+test("exchanges a Sagittarius token for the session cookie and sanitizes the URL", async () => {
+    window.history.replaceState({}, "", "/en/checkout?plan=pro&token=sagittarius-token")
+    const requests: Array<{ body: string | null; method: string; url: string }> = []
+    globalThis.fetch = (async (input, init) => {
+        requests.push({ body: typeof init?.body === "string" ? init.body : null, method: init?.method ?? "GET", url: String(input) })
+        return new Response(JSON.stringify({ authenticated: true }), { status: 200, headers: { "content-type": "application/json" } })
+    }) as typeof fetch
+
+    render(
+        <CraterSessionProvider>
+            <SessionState />
+        </CraterSessionProvider>
+    )
+
+    assert.ok(await screen.findByText("authenticated"))
+    assert.deepEqual(requests, [
+        {
+            body: JSON.stringify({ sagittariusToken: "sagittarius-token" }),
+            method: "POST",
+            url: "/api/crater/login",
+        },
+    ])
+    assert.equal(window.location.pathname, "/en/checkout")
+    assert.equal(window.location.search, "?plan=pro")
+})

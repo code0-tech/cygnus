@@ -205,6 +205,10 @@ Authentication behavior:
 - The session token is returned by `usersLogin` only when the new `UserSession` is created.
 - The Sagittarius login token and the resulting Crater session token are distinct credentials with different header schemes.
 
+### Browser session persistence
+
+The checkout exchanges the short-lived Sagittarius token through its server-side `/api/crater/login` route. That route stores the resulting Crater session token in an `HttpOnly`, `SameSite=Lax` cookie scoped to `/api/crater`; it does not expose the Crater token to client-side JavaScript. Browser requests use the cookie automatically, while the server forwards `Authorization: Session <crater-session-token>` to Crater. On reload, `/api/crater/auth/session` validates the persisted session with Crater. Invalid or expired session responses clear the cookie.
+
 ### Mutations
 
 Almost all mutations optionally accept `clientMutationId` and return it so the client can correlate the response with its request. Mutation payloads also contain a non-null `errors: [Error!]!` field.

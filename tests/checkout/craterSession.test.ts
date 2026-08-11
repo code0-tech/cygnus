@@ -15,6 +15,20 @@ test("reads a Crater session token from the Session authorization scheme", () =>
     })
 })
 
+test("prefers the HttpOnly Crater session cookie", () => {
+    const request = new Request("https://example.com", {
+        headers: {
+            authorization: "Session header-token",
+            cookie: "other=value; crater_session=cookie-token",
+        },
+    })
+
+    assert.deepEqual(readCraterSessionAuthorization(request), {
+        status: "authenticated",
+        token: "cookie-token",
+    })
+})
+
 test("reports a missing authorization header", () => {
     const request = new Request("https://example.com")
 

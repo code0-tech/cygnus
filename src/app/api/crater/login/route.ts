@@ -1,5 +1,6 @@
 import { createApolloClient } from "@/lib/apolloClient"
 import { craterJson, craterMutationErrorResponse, optionalString, readJsonObject } from "@/lib/checkout/craterApi"
+import { setCraterSessionCookie } from "@/lib/checkout/craterSession"
 import type { Mutation, MutationUsersLoginArgs } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 
@@ -56,7 +57,7 @@ export async function POST(request: Request) {
             throw new Error("Crater returned no user session token.")
         }
 
-        return craterJson(payload.userSession)
+        return setCraterSessionCookie(craterJson({ authenticated: true }), payload.userSession.token)
     } catch (error) {
         console.error("Crater user login error:", error)
         return craterJson({ error: "Could not create Crater session." }, 502)
