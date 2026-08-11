@@ -67,14 +67,18 @@ test("opens, applies, and removes a discount code", async () => {
     const user = userEvent.setup()
 
     render(
-        <CheckoutDiscount
-            buttonLabel="Apply"
-            inputPlaceholder="Discount code"
-            promptLabel="Have a discount?"
-            removeLabel="Remove"
-            sessionToken="session-token"
-            onApplied={(discount) => appliedValues.push(discount)}
-        />
+        <>
+            <div id="applied-discount" data-testid="applied-discount" />
+            <CheckoutDiscount
+                appliedContainerId="applied-discount"
+                buttonLabel="Apply"
+                inputPlaceholder="Discount code"
+                promptLabel="Have a discount?"
+                removeLabel="Remove"
+                sessionToken="session-token"
+                onApplied={(discount) => appliedValues.push(discount)}
+            />
+        </>
     )
 
     const promptButton = screen.getAllByRole("button", { name: "Have a discount?" }).at(-1)!
@@ -93,6 +97,7 @@ test("opens, applies, and removes a discount code", async () => {
     assert.deepEqual(requestedCodes, ["SAVE10"])
     assert.equal(replacedUrls.at(-1), "/en/checkout?promotionCode=SAVE10")
     assert.ok(screen.getByText("SAVE10"))
+    assert.ok(screen.getByTestId("applied-discount").contains(screen.getByText("SAVE10")))
 
     await user.click(screen.getByRole("button", { name: "(Remove)" }))
     await waitFor(() => assert.equal(appliedValues.at(-1), null))

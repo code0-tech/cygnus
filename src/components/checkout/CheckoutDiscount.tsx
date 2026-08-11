@@ -6,6 +6,7 @@ import { Dialog } from "@base-ui/react/dialog"
 import type { CheckoutDiscount as CraterCheckoutDiscount } from "@code0-tech/crater-graphql-types"
 import { IconX } from "@tabler/icons-react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
+import { createPortal } from "react-dom"
 import { useCallback, useEffect, useRef, useState } from "react"
 
 type CheckoutDiscountFields = Required<Pick<CraterCheckoutDiscount, "amountOff" | "code" | "currency" | "duration" | "percentOff">>
@@ -16,6 +17,7 @@ export type CheckoutDiscountValue = Omit<CheckoutDiscountFields, "code" | "durat
 }
 
 interface CheckoutDiscountProps {
+    appliedContainerId?: string
     appliedAmount?: string | null
     buttonLabel: string
     inputPlaceholder: string
@@ -25,7 +27,7 @@ interface CheckoutDiscountProps {
     sessionToken?: string | null
 }
 
-export function CheckoutDiscount({ appliedAmount, buttonLabel, inputPlaceholder, onApplied, promptLabel, removeLabel, sessionToken }: CheckoutDiscountProps) {
+export function CheckoutDiscount({ appliedAmount, appliedContainerId, buttonLabel, inputPlaceholder, onApplied, promptLabel, removeLabel, sessionToken }: CheckoutDiscountProps) {
     const { token: contextSessionToken } = useCraterSession()
     const pathname = usePathname()
     const router = useRouter()
@@ -154,7 +156,7 @@ export function CheckoutDiscount({ appliedAmount, buttonLabel, inputPlaceholder,
     }
 
     if (appliedCode) {
-        return (
+        const appliedDiscount = (
             <div className="flex min-w-0 items-center justify-between gap-4 text-sm">
                 <div className="flex min-w-0 items-center gap-1">
                     <span className="min-w-0 truncate text-secondary">{appliedCode}</span>
@@ -165,6 +167,8 @@ export function CheckoutDiscount({ appliedAmount, buttonLabel, inputPlaceholder,
                 {appliedAmount && <span className="shrink-0 tabular-nums text-white">-{appliedAmount}</span>}
             </div>
         )
+        const appliedContainer = appliedContainerId ? document.getElementById(appliedContainerId) : null
+        return appliedContainer ? createPortal(appliedDiscount, appliedContainer) : appliedDiscount
     }
 
     const discountForm = (
