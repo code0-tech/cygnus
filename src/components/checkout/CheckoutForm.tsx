@@ -15,6 +15,8 @@ function CheckoutFormContent() {
         isLoading,
         isRefreshingSession,
         isSessionLoading,
+        markCheckoutSessionReady,
+        refreshExpiredCheckoutSession,
         retryPreparation,
         sessionError,
         setStripeBillingAddress,
@@ -22,6 +24,7 @@ function CheckoutFormContent() {
         setStripeTaxIdType,
         setStripeTaxIdValue,
         setTaxQuote,
+        setIsConfirmingPayment,
         stripeBillingAddress,
         stripeEmail,
         stripeTaxIdType,
@@ -40,6 +43,9 @@ function CheckoutFormContent() {
                 onTaxIdTypeChange={setStripeTaxIdType}
                 onTaxIdValueChange={setStripeTaxIdValue}
                 onTaxQuoteChange={setTaxQuote}
+                onPaymentConfirmationChange={setIsConfirmingPayment}
+                onSessionExpired={refreshExpiredCheckoutSession}
+                onSessionReady={markCheckoutSessionReady}
                 session={checkoutSession}
                 taxIdType={stripeTaxIdType}
                 taxIdValue={stripeTaxIdValue}

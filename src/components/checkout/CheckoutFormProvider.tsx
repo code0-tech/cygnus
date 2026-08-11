@@ -11,6 +11,8 @@ import { useSearchParams } from "next/navigation"
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react"
 
 type CheckoutFormContent = CheckoutData["form"]
+const CHECKOUT_SESSION_REFRESH_LEAD_MS = 60_000
+const MAX_BROWSER_TIMEOUT_MS = 2_147_000_000
 
 function useCreateCheckoutFormState(content: CheckoutFormContent, locale: AppLocale) {
     const searchParams = useSearchParams()
@@ -21,6 +23,7 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, locale: AppLoc
     const [taxQuote, setTaxQuote] = useState<CheckoutTaxQuoteData | null>(null)
     const [checkoutSessionPromotionCode, setCheckoutSessionPromotionCode] = useState<string | null | undefined>(undefined)
     const [isRefreshingSession, setIsRefreshingSession] = useState(false)
+    const [isConfirmingPayment, setIsConfirmingPayment] = useState(false)
     const [stripeBillingAddress, setStripeBillingAddress] = useState<StripeCheckoutContact | null>(null)
     const [stripeEmail, setStripeEmail] = useState<string | null>(null)
     const [stripeTaxIdType, setStripeTaxIdType] = useState("")
@@ -28,10 +31,61 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, locale: AppLoc
     const [preparationAttempt, setPreparationAttempt] = useState(0)
     const preparedSessionKeyRef = useRef<string | null>(null)
     const sessionRefreshRequestRef = useRef(0)
+    const checkoutRefreshPromiseRef = useRef<Promise<void> | null>(null)
+    const expiredRefreshAttemptsRef = useRef(0)
     const { authenticated, error: sessionError, isLoading: isSessionLoading } = useCraterSession()
     const customerType = resolveCraterCustomerType(searchParams.get("customerType"))
     const searchParamsString = searchParams.toString()
     const promotionCode = searchParams.get("promotionCode")?.trim() || null
+
+    const refreshCheckoutSession = useCallback(() => {
+        if (checkoutRefreshPromiseRef.current) return checkoutRefreshPromiseRef.current
+
+        const requestId = ++sessionRefreshRequestRef.current
+        const checkoutSearchParams = new URLSearchParams(searchParamsString)
+        setCheckoutSession(null)
+        setTaxQuote(null)
+        setIsRefreshingSession(true)
+        setErrorMessage(null)
+        setStage("billingAddress")
+
+        const request = createCheckoutSession({ locale, searchParams: checkoutSearchParams })
+            .then((session) => {
+                if (requestId !== sessionRefreshRequestRef.current) return
+                setCheckoutSession(session)
+                setCheckoutSessionPromotionCode(promotionCode)
+                void calculateCheckoutTax({ searchParams: checkoutSearchParams })
+                    .then((quote) => {
+                        if (requestId === sessionRefreshRequestRef.current) setTaxQuote(quote)
+                    })
+                    .catch(() => {
+                        if (requestId === sessionRefreshRequestRef.current) setTaxQuote(null)
+                    })
+            })
+            .catch((error) => {
+                if (requestId !== sessionRefreshRequestRef.current) return
+                console.error("Failed to refresh the Crater checkout session:", error)
+                setCheckoutSessionPromotionCode(undefined)
+                setErrorMessage(error instanceof Error ? error.message : content.paymentErrorFallback || "Checkout failed.")
+            })
+            .finally(() => {
+                checkoutRefreshPromiseRef.current = null
+                if (requestId === sessionRefreshRequestRef.current) setIsRefreshingSession(false)
+            })
+
+        checkoutRefreshPromiseRef.current = request
+        return request
+    }, [content.paymentErrorFallback, locale, promotionCode, searchParamsString, setStage])
+
+    const refreshExpiredCheckoutSession = useCallback(() => {
+        if (expiredRefreshAttemptsRef.current >= 1) return Promise.resolve()
+        expiredRefreshAttemptsRef.current += 1
+        return refreshCheckoutSession()
+    }, [refreshCheckoutSession])
+
+    const markCheckoutSessionReady = useCallback(() => {
+        expiredRefreshAttemptsRef.current = 0
+    }, [])
 
     useEffect(() => {
         if (!authenticated) return
@@ -58,6 +112,7 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, locale: AppLoc
             .then((session) => {
                 if (requestId !== sessionRefreshRequestRef.current) return
                 setCheckoutSession(session)
+                expiredRefreshAttemptsRef.current = 0
                 setCheckoutSessionPromotionCode(checkoutSearchParams.get("promotionCode")?.trim() || null)
                 void calculateCheckoutTax({ searchParams: checkoutSearchParams })
                     .then((quote) => {
@@ -82,34 +137,16 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, locale: AppLoc
     useEffect(() => {
         if (checkoutSessionPromotionCode === undefined || checkoutSessionPromotionCode === promotionCode || !authenticated) return
 
-        const requestId = ++sessionRefreshRequestRef.current
-        const checkoutSearchParams = new URLSearchParams(searchParamsString)
-        setCheckoutSession(null)
-        setTaxQuote(null)
-        setIsRefreshingSession(true)
-        setErrorMessage(null)
-        setStripeBillingAddress(null)
-        setStripeEmail(null)
-        setStripeTaxIdType("")
-        setStripeTaxIdValue("")
-        setStage("billingAddress")
+        void refreshCheckoutSession()
+    }, [authenticated, checkoutSessionPromotionCode, promotionCode, refreshCheckoutSession])
 
-        void createCheckoutSession({ locale, searchParams: checkoutSearchParams })
-            .then((session) => {
-                if (requestId !== sessionRefreshRequestRef.current) return
-                setCheckoutSession(session)
-                setCheckoutSessionPromotionCode(promotionCode)
-            })
-            .catch((error) => {
-                if (requestId !== sessionRefreshRequestRef.current) return
-                console.error("Failed to refresh Crater checkout after discount change:", error)
-                setCheckoutSessionPromotionCode(undefined)
-                setErrorMessage(error instanceof Error ? error.message : content.paymentErrorFallback || "Checkout failed.")
-            })
-            .finally(() => {
-                if (requestId === sessionRefreshRequestRef.current) setIsRefreshingSession(false)
-            })
-    }, [authenticated, checkoutSessionPromotionCode, content.paymentErrorFallback, locale, promotionCode, searchParamsString, setStage])
+    useEffect(() => {
+        if (!checkoutSession?.expiresAt || isConfirmingPayment) return
+
+        const refreshDelay = Math.min(MAX_BROWSER_TIMEOUT_MS, Math.max(0, checkoutSession.expiresAt * 1_000 - Date.now() - CHECKOUT_SESSION_REFRESH_LEAD_MS))
+        const timer = window.setTimeout(() => void refreshCheckoutSession(), refreshDelay)
+        return () => window.clearTimeout(timer)
+    }, [checkoutSession, isConfirmingPayment, refreshCheckoutSession])
 
     const retryPreparation = useCallback(() => {
         preparedSessionKeyRef.current = null
@@ -122,15 +159,19 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, locale: AppLoc
         customerType,
         errorMessage,
         isLoading,
+        isConfirmingPayment,
         isRefreshingSession,
         isSessionLoading,
         retryPreparation,
+        markCheckoutSessionReady,
+        refreshExpiredCheckoutSession,
         sessionError,
         setStripeBillingAddress,
         setStripeEmail,
         setStripeTaxIdType,
         setStripeTaxIdValue,
         setTaxQuote,
+        setIsConfirmingPayment,
         stripeBillingAddress,
         stripeEmail,
         stripeTaxIdType,
