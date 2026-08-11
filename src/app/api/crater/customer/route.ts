@@ -122,6 +122,17 @@ export async function POST(request: Request) {
         if (errorResponse) return errorResponse
         if (!payload.customer) throw new Error("Crater returned no customer.")
 
+        if (payload.customer.customerType !== customerType) {
+            return craterJson(
+                {
+                    error: "The existing customer type does not match the requested checkout customer type.",
+                    errorCode: "CUSTOMER_TYPE_MISMATCH",
+                    details: [],
+                },
+                409
+            )
+        }
+
         return craterJson(payload.customer, 201)
     } catch (error) {
         const transportResponse = craterTransportErrorResponse(error)

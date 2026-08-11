@@ -100,6 +100,47 @@ test("business customer creation allows omitted contact and tax fields", async (
     }
 })
 
+test("customer creation rejects an existing customer with a different type", async () => {
+    const graphQLServer = await createGraphQLTestServer([
+        {
+            data: {
+                customersCreate: {
+                    errors: [],
+                    customer: {
+                        id: "gid://crater/Customer/1",
+                        customerType: "personal",
+                        email: null,
+                        name: null,
+                    },
+                },
+            },
+        },
+    ])
+    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
+    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
+
+    try {
+        const response = await createOrGetCustomer(
+            new Request("https://example.com/api/crater/customer", {
+                method: "POST",
+                headers: sessionHeaders,
+                body: JSON.stringify({ customerType: "business" }),
+            })
+        )
+
+        assert.equal(response.status, 409)
+        assert.deepEqual(await response.json(), {
+            error: "The existing customer type does not match the requested checkout customer type.",
+            errorCode: "CUSTOMER_TYPE_MISMATCH",
+            details: [],
+        })
+    } finally {
+        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
+        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
+        await graphQLServer.close()
+    }
+})
+
 test("customer creation rejects incomplete tax ID fields", async () => {
     const response = await createOrGetCustomer(
         new Request("https://example.com/api/crater/customer", {
