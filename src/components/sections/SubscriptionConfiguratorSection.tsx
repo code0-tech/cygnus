@@ -4,12 +4,23 @@ import { SubscriptionConfigurator, type SubscriptionIcons, type SubscriptionOpti
 import { SubscriptionContent } from "@/components/subscription/SubscriptionContent"
 import type { SubscriptionConfiguratorContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
+import type { SubscriptionPriceCatalog } from "@/lib/subscriptionPrices"
 import { useSearchParams } from "next/navigation"
 import { useState } from "react"
 
 export type { SubscriptionIcons } from "@/components/subscription/SubscriptionConfigurator"
 
-export function SubscriptionConfiguratorSection({ locale, content, icons }: { locale: AppLocale; content: SubscriptionConfiguratorContent; icons: SubscriptionIcons }) {
+export function SubscriptionConfiguratorSection({
+    locale,
+    content,
+    icons,
+    subscriptionPrices,
+}: {
+    locale: AppLocale
+    content: SubscriptionConfiguratorContent
+    icons: SubscriptionIcons
+    subscriptionPrices: SubscriptionPriceCatalog
+}) {
     const searchParams = useSearchParams()
     const [activeImageKey, setActiveImageKey] = useState<SubscriptionOptionImageKey>(() => {
         const customerType = searchParams.get("customerType")
@@ -19,7 +30,7 @@ export function SubscriptionConfiguratorSection({ locale, content, icons }: { lo
     return (
         <div className="grid gap-16 lg:grid-cols-5">
             <SubscriptionContent activeImageKey={activeImageKey} content={content} />
-            <SubscriptionConfigurator locale={locale} content={content} icons={icons} onActiveImageChangeAction={setActiveImageKey} />
+            <SubscriptionConfigurator locale={locale} content={content} icons={icons} subscriptionPrices={subscriptionPrices} onActiveImageChangeAction={setActiveImageKey} />
         </div>
     )
 }

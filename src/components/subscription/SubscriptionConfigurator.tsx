@@ -10,7 +10,8 @@ import type { SubscriptionConfiguratorContent } from "@/lib/cms"
 import { formatEuroCurrency } from "@/lib/formatters"
 import { localizeHref, type AppLocale } from "@/lib/i18n"
 import { getSubscriptionCatalog } from "@/lib/subscriptionCatalog"
-import { calculateSubscriptionQuote, formatDiscountBadge, getMonthlyEquivalentAmount, getPaymentPeriodAmount, getPaymentPeriodDiscount, getPaymentPeriodSuffix } from "@/lib/subscriptionCalculator"
+import { calculateSubscriptionQuote, formatDiscountBadge, getMonthlyEquivalentAmount, getPaymentPeriodAmount, getPaymentPeriodSuffix, getSubscriptionQuoteDiscountRate } from "@/lib/subscriptionCalculator"
+import type { SubscriptionPriceCatalog } from "@/lib/subscriptionPrices"
 import { cn } from "@/lib/utils"
 import {
     buildSubscriptionSelectionSearchParams,
@@ -64,12 +65,13 @@ interface SubscriptionConfiguratorProps {
     content: SubscriptionConfiguratorContent
     icons: SubscriptionIcons
     onActiveImageChangeAction?: (key: SubscriptionOptionImageKey) => void
+    subscriptionPrices: SubscriptionPriceCatalog
 }
 
-export function SubscriptionConfigurator({ locale, content, icons, onActiveImageChangeAction }: SubscriptionConfiguratorProps) {
+export function SubscriptionConfigurator({ locale, content, icons, onActiveImageChangeAction, subscriptionPrices }: SubscriptionConfiguratorProps) {
     const workflowExecutions = content.workflowExecutions
     const aiTokens = content.aiTokens
-    const catalog = getSubscriptionCatalog(content)
+    const catalog = getSubscriptionCatalog(content, subscriptionPrices)
     const router = useRouter()
     const pathname = usePathname()
     const searchParams = useSearchParams()
@@ -347,7 +349,7 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                     <SubscriptionOptionCategoryLabel label={content.paymentPeriod.label} description={content.paymentPeriod.description} />
                     <div className="grid gap-3">
                         {paymentPeriodOptions.map((period) => {
-                            const discount = getPaymentPeriodDiscount(period, content.paymentPeriod, selection.customerType)
+                            const discount = getSubscriptionQuoteDiscountRate({ ...selection, paymentPeriod: period }, catalog)
 
                             return (
                                 <SubscriptionOptionCard

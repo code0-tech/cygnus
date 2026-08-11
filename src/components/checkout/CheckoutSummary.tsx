@@ -8,11 +8,10 @@ import {
     calculateExclusiveTaxRate,
     calculatePromotionDiscountAmount,
     formatDiscountBadge,
-    getMonthlyEquivalentAmount,
-    getPaymentPeriodAmount,
     resolveCheckoutPricing,
 } from "@/lib/subscriptionCalculator"
 import type { CheckoutTaxQuote } from "@code0-tech/crater-graphql-types"
+import type { SubscriptionPriceCatalog } from "@/lib/subscriptionPrices"
 import { useParams, useSearchParams } from "next/navigation"
 import { useState, type ReactNode } from "react"
 import { Card } from "../ui/Card"
@@ -25,6 +24,7 @@ interface CheckoutSummaryProps {
     content?: CheckoutData["summary"] | null
     sessionToken?: string | null
     subscriptionConfig?: SubscriptionConfigData | null
+    subscriptionPrices: SubscriptionPriceCatalog
     taxQuote?: CheckoutTaxQuoteValue | null
 }
 
@@ -64,7 +64,7 @@ function SummaryBadge({ icon, value, tone = "neutral" }: SummaryBadgeProps) {
     )
 }
 
-export function CheckoutSummary({ content, sessionToken, subscriptionConfig, taxQuote }: CheckoutSummaryProps) {
+export function CheckoutSummary({ content, sessionToken, subscriptionConfig, subscriptionPrices, taxQuote }: CheckoutSummaryProps) {
     const searchParams = useSearchParams()
     const params = useParams<{ locale?: string }>()
     const [promotionDiscount, setPromotionDiscount] = useState<CheckoutDiscountValue | null>(null)
@@ -90,6 +90,7 @@ export function CheckoutSummary({ content, sessionToken, subscriptionConfig, tax
         paymentPeriodParam,
         planParam,
         subscriptionConfig,
+        subscriptionPrices,
         workflowExecutionsParam,
     })
     const locale = params?.locale === "de" ? "de" : "en"
@@ -97,22 +98,17 @@ export function CheckoutSummary({ content, sessionToken, subscriptionConfig, tax
     const paymentPeriodDiscountAmount = Math.max(0, pricing.totalBeforeDiscount - pricing.totalPrice)
     const paymentPeriodDiscountPercentage = pricing.totalBeforeDiscount > 0 ? paymentPeriodDiscountAmount / pricing.totalBeforeDiscount : 0
     const paymentPeriodDiscountLabel = paymentPeriod === "quarterly" ? content.pricing.quarterlyDiscountLabel : paymentPeriod === "yearly" ? content.pricing.yearlyDiscountLabel : null
-    const monthlyTotalPrice = getMonthlyEquivalentAmount(Math.round(pricing.totalPrice * 100), paymentPeriod) / 100
-    const paymentPeriodTotalPrice = getPaymentPeriodAmount(monthlyTotalPrice, paymentPeriod)
-    const toPaymentPeriodPrice = (price: number) => {
-        const monthlyPrice = getMonthlyEquivalentAmount(Math.round(price * 100), paymentPeriod) / 100
-        return getPaymentPeriodAmount(monthlyPrice, paymentPeriod)
-    }
+    const paymentPeriodTotalPrice = pricing.totalPrice
     const promotionDiscountAmount = calculatePromotionDiscountAmount(paymentPeriodTotalPrice, promotionDiscount)
     const discountedPrice = Math.max(0, paymentPeriodTotalPrice - promotionDiscountAmount)
     const taxAmount = taxQuote ? taxQuote.taxAmountExclusive / 100 : 0
     const taxPercentage = taxQuote ? calculateExclusiveTaxRate(taxQuote.amountTotal, taxQuote.taxAmountExclusive) : 0
     const totalPrice = taxQuote ? Math.max(0, taxQuote.amountTotal / 100 - promotionDiscountAmount) : discountedPrice
     const formattedTotalPrice = formatEuroCurrency(totalPrice, locale)
-    const formattedBasePrice = formatEuroCurrency(toPaymentPeriodPrice(pricing.aiTokenPrice), locale)
-    const formattedWorkflowExecutionsPrice = formatEuroCurrency(toPaymentPeriodPrice(pricing.workflowExecutionPrice), locale)
-    const formattedAdditionalFeaturesPrice = formatEuroCurrency(toPaymentPeriodPrice(additionalFeaturesPrice), locale)
-    const formattedPaymentPeriodDiscountAmount = formatEuroCurrency(toPaymentPeriodPrice(paymentPeriodDiscountAmount), locale)
+    const formattedBasePrice = formatEuroCurrency(pricing.aiTokenPrice, locale)
+    const formattedWorkflowExecutionsPrice = formatEuroCurrency(pricing.workflowExecutionPrice, locale)
+    const formattedAdditionalFeaturesPrice = formatEuroCurrency(additionalFeaturesPrice, locale)
+    const formattedPaymentPeriodDiscountAmount = formatEuroCurrency(paymentPeriodDiscountAmount, locale)
     const formattedDiscountAmount = formatEuroCurrency(promotionDiscountAmount, locale)
     const formattedTaxAmount = formatEuroCurrency(taxAmount, locale)
 

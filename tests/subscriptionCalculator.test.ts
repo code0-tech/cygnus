@@ -12,6 +12,39 @@ import {
     getPaymentPeriodSuffix,
     resolveCheckoutPricing,
 } from "@/lib/subscriptionCalculator"
+import { SUBSCRIPTION_PRICE_LOOKUP_KEYS, type SubscriptionPriceCatalog, type SubscriptionPriceLookupKey } from "@/lib/subscriptionPrices"
+
+const stripeAmounts: Partial<Record<SubscriptionPriceLookupKey, string>> = {
+    pro_weekly: "500",
+    pro_monthly: "1500",
+    pro_yearly: "15000",
+    max_weekly: "1000",
+    max_monthly: "3000",
+    max_yearly: "30000",
+}
+
+function createSubscriptionPrices(overrides: Partial<Record<SubscriptionPriceLookupKey, string>> = {}): SubscriptionPriceCatalog {
+    return Object.fromEntries(
+        SUBSCRIPTION_PRICE_LOOKUP_KEYS.map((lookupKey) => {
+            const unitAmountDecimal = overrides[lookupKey] ?? stripeAmounts[lookupKey] ?? (lookupKey.startsWith("ai_token") ? "0.001" : "1")
+            const period = lookupKey.split("_").at(-1)
+            return [
+                lookupKey,
+                {
+                    currency: "eur",
+                    id: `price_${lookupKey}`,
+                    interval: period === "weekly" ? "week" : period === "yearly" ? "year" : "month",
+                    intervalCount: period === "quarterly" ? 3 : 1,
+                    lookupKey,
+                    productName: lookupKey,
+                    unitAmountDecimal,
+                },
+            ]
+        })
+    ) as SubscriptionPriceCatalog
+}
+
+const subscriptionPrices = createSubscriptionPrices()
 
 const paymentPeriod = {
     description: "Choose how often to pay.",
@@ -55,7 +88,7 @@ test("resolves payment period discounts and suffixes", () => {
 })
 
 test("normalizes subscription amounts to a comparable monthly amount", () => {
-    assert.equal(getMonthlyEquivalentAmount(1_000, "weekly"), 1_000)
+    assert.equal(getMonthlyEquivalentAmount(1_000, "weekly"), 4_350)
     assert.equal(getMonthlyEquivalentAmount(3_000, "monthly"), 3_000)
     assert.equal(getMonthlyEquivalentAmount(8_100, "quarterly"), 2_700)
     assert.equal(getMonthlyEquivalentAmount(28_800, "yearly"), 2_400)
@@ -98,35 +131,29 @@ test("builds a cent-based custom subscription quote", () => {
         },
         {
             additionalFeatures: [{ id: "support", title: "Support", description: "", icon: "", price: 25, weeklyPrice: 5 }],
-            aiTokenPriceFactor: 0.00001,
-            aiTokenWeeklyPriceFactor: 0.000002,
             aiTokens: {} as never,
             defaults: {} as never,
             packages: {} as never,
             paymentPeriod,
-            workflowExecutionPriceFactor: 0.01,
-            workflowExecutionWeeklyPriceFactor: 0.002,
             workflowExecutions: {} as never,
+            subscriptionPrices,
         }
     )
 
     assert.equal(quote.subtotal, 54_000)
-    assert.equal(quote.periodDiscount, 10_800)
-    assert.equal(quote.total, 43_200)
+    assert.equal(quote.periodDiscount, 22_000)
+    assert.equal(quote.total, 32_000)
 })
 
-test("uses the explicit weekly price factors directly and applies the b2c monthly discount against them", () => {
+test("uses Stripe component prices instead of CMS price factors", () => {
     const catalog = {
         additionalFeatures: [{ id: "support", title: "Support", description: "", icon: "", price: 25, weeklyPrice: 5 }],
-        aiTokenPriceFactor: 0.00001,
-        aiTokenWeeklyPriceFactor: 0.000002,
         aiTokens: {} as never,
         defaults: {} as never,
         packages: {} as never,
         paymentPeriod,
-        workflowExecutionPriceFactor: 0.01,
-        workflowExecutionWeeklyPriceFactor: 0.002,
         workflowExecutions: {} as never,
+        subscriptionPrices,
     }
     const selectionBase = {
         additionalFeatureIds: ["support"] as string[],
@@ -138,17 +165,13 @@ test("uses the explicit weekly price factors directly and applies the b2c monthl
 
     const b2cMonthly = calculateSubscriptionQuote({ ...selectionBase, customerType: "b2c", paymentPeriod: "monthly" }, catalog)
     assert.equal(b2cMonthly.subtotal, 4_500)
-    assert.equal(b2cMonthly.periodDiscount, 225)
-    assert.equal(b2cMonthly.total, 4_275)
+    assert.equal(b2cMonthly.periodDiscount, 0)
+    assert.equal(b2cMonthly.total, 4_500)
 
     const b2bMonthly = calculateSubscriptionQuote({ ...selectionBase, customerType: "b2b", paymentPeriod: "monthly" }, catalog)
     assert.equal(b2bMonthly.periodDiscount, 0)
     assert.equal(b2bMonthly.total, 4_500)
 
-    const b2cWeekly = calculateSubscriptionQuote({ ...selectionBase, customerType: "b2c", paymentPeriod: "weekly" }, catalog)
-    assert.equal(b2cWeekly.subtotal, 900)
-    assert.equal(b2cWeekly.periodDiscount, 0)
-    assert.equal(b2cWeekly.total, 900)
 })
 
 test("preserves the regular fixed-plan price for period discount summaries", () => {
@@ -171,11 +194,12 @@ test("preserves the regular fixed-plan price for period discount summaries", () 
         paymentPeriodParam: "yearly",
         planParam: "pro",
         subscriptionConfig: config,
+        subscriptionPrices,
         workflowExecutionsParam: null,
     })
 
-    assert.equal(result.pricing.totalBeforeDiscount, 120)
-    assert.equal(result.pricing.totalPrice, 96)
+    assert.equal(result.pricing.totalBeforeDiscount, 180)
+    assert.equal(result.pricing.totalPrice, 150)
 })
 
 test("forces the custom plan when a b2b customer requests a pro or max checkout via the URL", () => {
@@ -210,6 +234,7 @@ test("forces the custom plan when a b2b customer requests a pro or max checkout 
         paymentPeriodParam: "monthly",
         planParam: "pro",
         subscriptionConfig: config,
+        subscriptionPrices,
         workflowExecutionsParam: null,
     })
 
@@ -250,6 +275,7 @@ test("normalizes custom weekly and preserves custom quarterly in the checkout pr
         paymentPeriodParam: "weekly",
         planParam: "custom",
         subscriptionConfig: config,
+        subscriptionPrices,
         workflowExecutionsParam: null,
     })
     const b2cQuarterly = resolveCheckoutPricing({
@@ -260,6 +286,7 @@ test("normalizes custom weekly and preserves custom quarterly in the checkout pr
         paymentPeriodParam: "quarterly",
         planParam: "custom",
         subscriptionConfig: config,
+        subscriptionPrices,
         workflowExecutionsParam: null,
     })
 
@@ -300,12 +327,13 @@ test("clamps manipulated custom-plan usage parameters before calculating the pri
         paymentPeriodParam: "monthly",
         planParam: "custom",
         subscriptionConfig: config,
+        subscriptionPrices,
         workflowExecutionsParam: "999999",
     })
 
     assert.equal(result.aiTokens, 100)
     assert.equal(result.workflowExecutions, 200)
-    assert.equal(result.pricing.aiTokenPrice, 0.1)
+    assert.equal(result.pricing.aiTokenPrice, 0)
     assert.equal(result.pricing.workflowExecutionPrice, 2)
-    assert.equal(result.pricing.totalPrice, 2.1)
+    assert.equal(result.pricing.totalPrice, 2)
 })

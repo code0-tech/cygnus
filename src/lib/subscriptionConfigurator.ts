@@ -1,6 +1,6 @@
 import type { SubscriptionConfiguratorContent } from "@/lib/cms"
 import type { PaymentPeriod, UsageRange } from "@/lib/subscriptionCalculator"
-import type { SubscriptionCatalog } from "@/lib/subscriptionCatalog"
+import type { SubscriptionSelectionCatalog } from "@/lib/subscriptionCatalog"
 
 export type SubscriptionConfiguratorPlan = "pro" | "max" | "custom"
 type SubscriptionDeploymentMode = "self_hosted" | "cloud"
@@ -72,7 +72,7 @@ function parseUsage(raw: string | null | undefined, range: UsageRange & { defaul
     return normalizeUsageValue(parsed, range)
 }
 
-export function resolveSubscriptionSelection(raw: RawSubscriptionSelection | URLSearchParams, config: SubscriptionCatalog) {
+export function resolveSubscriptionSelection(raw: RawSubscriptionSelection | URLSearchParams, config: SubscriptionSelectionCatalog) {
     const issues: SubscriptionSelectionIssue[] = []
     const rawCustomerType = rawValue(raw, "customerType")
     const customerType = CUSTOMER_TYPES.has(rawCustomerType as SubscriptionCustomerType) ? (rawCustomerType as SubscriptionCustomerType) : (config.defaults?.customerType ?? "b2c")
@@ -107,7 +107,7 @@ export function resolveSubscriptionSelection(raw: RawSubscriptionSelection | URL
     return { selection: { plan, deployment, customerType, paymentPeriod, workflowExecutions, aiTokens, additionalFeatureIds }, issues }
 }
 
-export function reduceSubscriptionSelection(selection: SubscriptionSelection, action: SubscriptionSelectionAction, config: SubscriptionCatalog): SubscriptionSelection {
+export function reduceSubscriptionSelection(selection: SubscriptionSelection, action: SubscriptionSelectionAction, config: SubscriptionSelectionCatalog): SubscriptionSelection {
     if (action.type === "additionalFeatureToggled") {
         const selected = new Set(selection.additionalFeatureIds)
         selected.has(action.id) ? selected.delete(action.id) : selected.add(action.id)
