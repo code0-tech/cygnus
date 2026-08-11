@@ -62,3 +62,21 @@ test("exchanges a Sagittarius token for the session cookie and sanitizes the URL
     assert.equal(window.location.pathname, "/en/checkout")
     assert.equal(window.location.search, "?plan=pro")
 })
+
+test("shows the configured CMS error instead of the Crater session error", async () => {
+    globalThis.fetch = (async (input) => {
+        if (String(input) === "/api/crater/auth/session") {
+            return new Response(JSON.stringify({ error: "Raw Crater session error" }), { status: 500, headers: { "content-type": "application/json" } })
+        }
+        throw new Error("Unexpected request")
+    }) as typeof fetch
+
+    render(
+        <CraterSessionProvider errorMessage="Configured session error">
+            <SessionState />
+        </CraterSessionProvider>
+    )
+
+    assert.ok(await screen.findByText("Configured session error"))
+    assert.equal(screen.queryByText("Raw Crater session error"), null)
+})

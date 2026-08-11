@@ -205,7 +205,7 @@ function CheckoutPaymentFields({
         try {
             const billingResult = await checkoutState.checkout.updateBillingAddress(billingAddress)
             if (billingResult.type === "error") {
-                setErrorMessage(billingResult.error.message)
+                setErrorMessage(content.errors.billingAddressUpdate)
                 return
             }
             let updatedSession = billingResult.session
@@ -213,7 +213,7 @@ function CheckoutPaymentFields({
             if (!checkoutState.checkout.email) {
                 const emailResult = await checkoutState.checkout.updateEmail(email)
                 if (emailResult.type === "error") {
-                    setErrorMessage(emailResult.error.message)
+                    setErrorMessage(content.errors.emailUpdate)
                     return
                 }
                 updatedSession = emailResult.session
@@ -222,7 +222,7 @@ function CheckoutPaymentFields({
             const normalizedTaxIdType = taxIdType.trim()
             const normalizedTaxIdValue = taxIdValue.trim()
             if (collectTaxId && Boolean(normalizedTaxIdType) !== Boolean(normalizedTaxIdValue)) {
-                setErrorMessage("Tax ID type and Tax ID must be provided together.")
+                setErrorMessage(content.errors.taxIdIncomplete)
                 return
             }
 
@@ -235,7 +235,7 @@ function CheckoutPaymentFields({
                     },
                 })
                 if (taxIdResult.type === "error") {
-                    setErrorMessage(taxIdResult.error.message)
+                    setErrorMessage(content.errors.taxIdUpdate)
                     return
                 }
                 updatedSession = taxIdResult.session
@@ -244,7 +244,8 @@ function CheckoutPaymentFields({
             onTaxQuoteChange(getTaxQuoteFromSession(updatedSession))
             setStage("payment")
         } catch (error) {
-            setErrorMessage(error instanceof Error ? error.message : content.paymentErrorFallback)
+            console.error("Failed to update Stripe checkout billing details:", error)
+            setErrorMessage(content.paymentErrorFallback)
         } finally {
             setIsUpdatingBilling(false)
         }
@@ -258,7 +259,12 @@ function CheckoutPaymentFields({
         onPaymentConfirmationChange(true)
         setErrorMessage(null)
         try {
-            if (!billingAddress) throw new Error("A billing address is required.")
+            if (!billingAddress) {
+                setIsConfirming(false)
+                onPaymentConfirmationChange(false)
+                setErrorMessage(content.errors.billingAddressUpdate)
+                return
+            }
             const result = await checkoutState.checkout.confirm({ redirect: "always" })
 
             if (result.type === "error") {
@@ -268,17 +274,18 @@ function CheckoutPaymentFields({
                     await onSessionExpired()
                     return
                 }
-                setErrorMessage(result.error.message)
+                setErrorMessage(content.errors.paymentConfirmation)
             }
         } catch (error) {
-            const message = error instanceof Error ? error.message : content.paymentErrorFallback
+            const message = error instanceof Error ? error.message : ""
             setIsConfirming(false)
             onPaymentConfirmationChange(false)
             if (isInactiveCheckoutSessionError(message)) {
                 await onSessionExpired()
                 return
             }
-            setErrorMessage(message)
+            console.error("Failed to confirm the Stripe checkout payment:", error)
+            setErrorMessage(content.errors.paymentConfirmation)
         }
     }
 
@@ -288,8 +295,8 @@ function CheckoutPaymentFields({
 
     if (checkoutState.type === "error") {
         const message = isInactiveCheckoutSessionError(checkoutState.error.message)
-            ? "The checkout session expired. A new session is being created."
-            : checkoutState.error.message
+            ? content.errors.checkoutSessionExpired
+            : content.errors.checkoutSession
         return <p className="text-sm text-error" role="alert">{message}</p>
     }
 

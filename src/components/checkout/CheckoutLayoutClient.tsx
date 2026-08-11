@@ -8,8 +8,9 @@ import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import type { ReactNode } from "react"
+import type { CheckoutData } from "@/lib/cms"
 
-export function CheckoutLayoutClient({ children, stepperContent }: { children: ReactNode; stepperContent?: CheckoutStepperContent | null }) {
+export function CheckoutLayoutClient({ children, formContent, stepperContent }: { children: ReactNode; formContent?: CheckoutData["form"] | null; stepperContent?: CheckoutStepperContent | null }) {
     const pathname = usePathname()
     const isLoginPage = pathname?.endsWith("/checkout/login") ?? false
     const pageContent = <LandingContainer className="min-h-0 flex-1 overflow-y-auto my-8">{children}</LandingContainer>
@@ -29,7 +30,7 @@ export function CheckoutLayoutClient({ children, stepperContent }: { children: R
                         </Container>
                     </div>
                 )}
-                {isLoginPage ? pageContent : <CraterSessionProvider>{pageContent}</CraterSessionProvider>}
+                {isLoginPage ? pageContent : <CraterSessionProvider errorMessage={formContent?.errors.sessionUnavailable ?? formContent?.paymentErrorFallback}>{pageContent}</CraterSessionProvider>}
             </div>
         </CheckoutStageProvider>
     )

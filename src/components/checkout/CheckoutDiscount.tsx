@@ -21,13 +21,15 @@ interface CheckoutDiscountProps {
     appliedContainerId?: string
     appliedAmount?: string | null
     buttonLabel: string
+    discountSessionRequiredError: string
+    discountValidationError: string
     inputPlaceholder: string
     onApplied?: (discount: CheckoutDiscountValue | null) => void
     promptLabel: string
     removeLabel: string
 }
 
-export function CheckoutDiscount({ appliedAmount, appliedContainerId, authenticated, buttonLabel, inputPlaceholder, onApplied, promptLabel, removeLabel }: CheckoutDiscountProps) {
+export function CheckoutDiscount({ appliedAmount, appliedContainerId, authenticated, buttonLabel, discountSessionRequiredError, discountValidationError, inputPlaceholder, onApplied, promptLabel, removeLabel }: CheckoutDiscountProps) {
     const { authenticated: contextAuthenticated } = useCraterSession()
     const pathname = usePathname()
     const router = useRouter()
@@ -61,7 +63,7 @@ export function CheckoutDiscount({ appliedAmount, appliedContainerId, authentica
     const validateDiscount = useCallback(
         async (normalizedCode: string) => {
             if (!isAuthenticated) {
-                setErrorMessage("A Crater session is required to validate a discount.")
+                setErrorMessage(discountSessionRequiredError)
                 return
             }
 
@@ -80,7 +82,8 @@ export function CheckoutDiscount({ appliedAmount, appliedContainerId, authentica
 
                 if (!response.ok) {
                     const details = Array.isArray(result.details) ? result.details.filter((detail: unknown) => typeof detail === "string").join(" ") : ""
-                    throw new Error(details || result.error || "Could not validate the discount.")
+                    console.error("Crater discount validation failed:", details || result.error)
+                    throw new Error("Discount validation failed")
                 }
 
                 if (requestId !== validationRequestRef.current) return
@@ -98,14 +101,15 @@ export function CheckoutDiscount({ appliedAmount, appliedContainerId, authentica
                 replacePromotionCode(null)
                 setAppliedCode(null)
                 onApplied?.(null)
-                setErrorMessage(error instanceof Error ? error.message : "Could not validate the discount.")
+                console.error("Failed to validate the checkout discount:", error)
+                setErrorMessage(discountValidationError)
             } finally {
                 if (requestId === validationRequestRef.current) {
                     setIsApplying(false)
                 }
             }
         },
-        [isAuthenticated, onApplied, replacePromotionCode]
+        [discountSessionRequiredError, discountValidationError, isAuthenticated, onApplied, replacePromotionCode]
     )
 
     useEffect(() => {

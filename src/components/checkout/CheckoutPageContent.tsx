@@ -50,7 +50,7 @@ export function CheckoutPageContent({ currentYear, footer, form, locale, subscri
             <div className="flex w-full flex-col gap-8 lg:flex-row lg:gap-16">
                 {form ? (
                     <CheckoutFormProvider content={form} locale={locale}>
-                        <CheckoutSummaryWithTax content={summary} subscriptionConfig={subscriptionConfig} subscriptionPrices={subscriptionPrices} />
+                        <CheckoutSummaryWithTax content={summary} errors={form.errors} subscriptionConfig={subscriptionConfig} subscriptionPrices={subscriptionPrices} />
                         {!isDesktop ? (
                             <Drawer side="bottom" open={mobileCheckoutOpen} onOpenChange={setMobileCheckoutOpen}>
                                 <DrawerTrigger className="inline-flex h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-white/90 px-6 text-sm font-medium text-primary outline-none transition-colors hover:bg-white focus-visible:ring-2 focus-visible:ring-white/40 lg:hidden">

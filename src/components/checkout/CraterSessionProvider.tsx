@@ -15,7 +15,7 @@ const CraterSessionContext = createContext<CraterSessionContextValue>({
     isLoading: true,
 })
 
-export function CraterSessionProvider({ children }: { children: ReactNode }) {
+export function CraterSessionProvider({ children, errorMessage = "An unexpected error occurred." }: { children: ReactNode; errorMessage?: string }) {
     const sessionRequestRef = useRef<Promise<void> | null>(null)
     const sagittariusTokenRef = useRef<string | undefined>(undefined)
     const hasReadSagittariusTokenRef = useRef(false)
@@ -84,9 +84,11 @@ export function CraterSessionProvider({ children }: { children: ReactNode }) {
             } catch (error) {
                 if (!active) return
 
+                console.error("Failed to authenticate the Crater checkout session:", error)
+
                 setSession({
                     authenticated: false,
-                    error: error instanceof Error ? error.message : "Failed to create a Crater session.",
+                    error: errorMessage,
                     isLoading: false,
                 })
             }
@@ -96,7 +98,7 @@ export function CraterSessionProvider({ children }: { children: ReactNode }) {
         return () => {
             active = false
         }
-    }, [])
+    }, [errorMessage])
 
     return <CraterSessionContext.Provider value={session}>{children}</CraterSessionContext.Provider>
 }
