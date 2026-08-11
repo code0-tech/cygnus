@@ -108,6 +108,36 @@ interface CheckoutPaymentFormProps {
     taxIdValue: string
 }
 
+export function CheckoutPaymentFormSkeleton({ label }: { label: string }) {
+    const fieldWidths = ["w-16", "w-24", "w-20", "w-14", "w-20"]
+
+    return (
+        <div
+            role="status"
+            aria-label={label}
+            data-testid="checkout-form-skeleton"
+            className="w-full animate-pulse space-y-4 motion-reduce:animate-none"
+        >
+            <span className="sr-only">{label}</span>
+            {fieldWidths.slice(0, 3).map((labelWidth, index) => (
+                <div key={index}>
+                    <div className={`mb-2 h-2.5 rounded-full bg-white/10 ${labelWidth}`} />
+                    <div className="h-10 w-full rounded-2xl bg-white/[0.07] shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)]" />
+                </div>
+            ))}
+            <div className="grid grid-cols-2 gap-4">
+                {fieldWidths.slice(3).map((labelWidth, index) => (
+                    <div key={index}>
+                        <div className={`mb-2 h-2.5 rounded-full bg-white/10 ${labelWidth}`} />
+                        <div className="h-10 w-full rounded-2xl bg-white/[0.07] shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)]" />
+                    </div>
+                ))}
+            </div>
+            <div className="h-10 w-full rounded-2xl bg-white/10" />
+        </div>
+    )
+}
+
 function CheckoutPaymentFields({
     billingAddress,
     collectTaxId,
@@ -201,7 +231,7 @@ function CheckoutPaymentFields({
     }
 
     if (checkoutState.type === "loading") {
-        return <div className="flex min-h-40 items-center justify-center text-sm text-secondary">{content.processingLabel}</div>
+        return <CheckoutPaymentFormSkeleton label={content.processingLabel} />
     }
 
     if (checkoutState.type === "error") {

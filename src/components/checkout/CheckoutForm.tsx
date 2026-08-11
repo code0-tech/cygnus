@@ -1,7 +1,7 @@
 "use client"
 
 import { CheckoutFormProvider, useCheckoutFormState } from "@/components/checkout/CheckoutFormProvider"
-import { CheckoutPaymentForm } from "@/components/checkout/CheckoutPaymentForm"
+import { CheckoutPaymentForm, CheckoutPaymentFormSkeleton } from "@/components/checkout/CheckoutPaymentForm"
 import type { CheckoutData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { Button } from "@code0-tech/pictor"
@@ -60,10 +60,10 @@ function CheckoutFormContent() {
     }
 
     if (isLoading || isRefreshingSession || isSessionLoading) {
-        return <div className="flex min-h-40 items-center justify-center text-sm text-secondary">{content.processingLabel}</div>
+        return <CheckoutPaymentFormSkeleton label={content.processingLabel} />
     }
 
-    return <div className="flex min-h-40 items-center justify-center text-sm text-secondary">{content.processingLabel}</div>
+    return <CheckoutPaymentFormSkeleton label={content.processingLabel} />
 }
 
 interface CheckoutFormProps {
