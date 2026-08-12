@@ -421,6 +421,11 @@ export interface LicenseContent {
         invoices: string
         paymentProfiles: string
         customers: string
+        emptyCustomers: string
+        recentLicenses: string
+        customerLabel: string
+        emailLabel: string
+        lastEditedLabel: string
     }
 }
 

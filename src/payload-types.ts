@@ -3266,6 +3266,11 @@ export interface License {
     invoices: string;
     paymentProfiles: string;
     customers: string;
+    emptyCustomers: string;
+    recentLicenses: string;
+    customerLabel: string;
+    emailLabel: string;
+    lastEditedLabel: string;
   };
   updatedAt?: string | null;
   createdAt?: string | null;
@@ -3870,6 +3875,11 @@ export interface LicensesSelect<T extends boolean = true> {
         invoices?: T;
         paymentProfiles?: T;
         customers?: T;
+        emptyCustomers?: T;
+        recentLicenses?: T;
+        customerLabel?: T;
+        emailLabel?: T;
+        lastEditedLabel?: T;
       };
   updatedAt?: T;
   createdAt?: T;
