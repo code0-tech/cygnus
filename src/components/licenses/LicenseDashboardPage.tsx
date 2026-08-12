@@ -4,22 +4,16 @@ import type { License } from "@/components/licenses/LicenseSidebar"
 import type { LicenseContent } from "@/lib/cms"
 import { AppLocale } from "@/lib/i18n"
 import { Card, DataTable, DataTableColumn, DataTableHeader, DataTableHeaderColumn, Flex, Spacing, Text } from "@code0-tech/pictor"
+import type { Customer } from "@code0-tech/crater-graphql-types"
 import { IconChevronRight, IconCreditCard, IconFileInvoice, IconKey, IconReceipt } from "@tabler/icons-react"
 import Link from "next/link"
 import type { ReactNode } from "react"
 
 interface LicenseDashboardPageProps {
     content: LicenseContent
-    customers?: LicenseCustomer[]
+    customers?: Customer[]
     locale: AppLocale
     licenses?: License[]
-}
-
-export interface LicenseCustomer {
-    email?: string
-    id: string
-    licenseCount: number
-    name: string
 }
 
 function Metric({ icon, label, value }: { icon: ReactNode; label: string; value: number }) {
@@ -99,12 +93,16 @@ export function LicenseDashboardPage({ content, customers = [], locale, licenses
                         {(customer) => (
                             <>
                                 <DataTableColumn>
-                                    <Link href={`/${locale}/licenses/customer/${encodeURIComponent(customer.id)}`} className="font-medium text-white hover:text-brand">
-                                        {customer.name}
-                                    </Link>
+                                    {customer.id ? (
+                                        <Link href={`/${locale}/licenses/customer/${encodeURIComponent(customer.id)}`} className="font-medium text-white hover:text-brand">
+                                            {customer.name || customer.email || customer.id}
+                                        </Link>
+                                    ) : (
+                                        <Text size="sm" fw={500}>{customer.name || customer.email || "—"}</Text>
+                                    )}
                                 </DataTableColumn>
                                 <DataTableColumn><Text size="sm" hierarchy="tertiary">{customer.email || "—"}</Text></DataTableColumn>
-                                <DataTableColumn>{customer.licenseCount}</DataTableColumn>
+                                <DataTableColumn>{customer.id ? licenses.filter((license) => license.customerId === customer.id).length : 0}</DataTableColumn>
                             </>
                         )}
                     </DataTable>
