@@ -15,6 +15,10 @@ function isCustomCheckoutConfigurationId(value: string): value is Scalars["Custo
     return /^gid:\/\/crater\/CustomCheckoutConfiguration\/\d+$/.test(value)
 }
 
+function isCustomerId(value: string): value is Scalars["CustomerID"]["input"] {
+    return /^gid:\/\/crater\/Customer\/\d+$/.test(value)
+}
+
 const CHECKOUT_CREATE_SESSION: TypedDocumentNode<CheckoutCreateSessionData, MutationCheckoutCreateSessionArgs> = gql`
     mutation CheckoutCreateSession($input: CheckoutCreateSessionInput!) {
         checkoutCreateSession(input: $input) {
@@ -43,6 +47,7 @@ export async function POST(request: Request) {
 
         const requestData = body.metadata && typeof body.metadata === "object" && !Array.isArray(body.metadata) ? (body.metadata as JsonObject) : body
         const plan = optionalString(requestData.plan)
+        const customerId = optionalString(requestData.customerId)
         const customCheckoutConfigurationId = optionalString(requestData.customCheckoutConfigurationId)
         const deploymentType = optionalString(requestData.deploymentType)
         const namespaceId = optionalString(requestData.namespaceId)
@@ -119,6 +124,10 @@ export async function POST(request: Request) {
             normalizedPlan = normalizedSelection.plan
         }
 
+        if (!customerId || !isCustomerId(customerId)) {
+            return craterJson({ error: "customerId must be a valid Crater global ID." }, 400)
+        }
+
         const siteUrl = resolveSiteUrl()
         const customConfigurationPaymentPeriod = parseCraterPaymentPeriod(paymentPeriod)
         if (customCheckoutConfigurationId && paymentPeriod && !customConfigurationPaymentPeriod) {
@@ -126,6 +135,7 @@ export async function POST(request: Request) {
         }
 
         const input: MutationCheckoutCreateSessionArgs["input"] = {
+            customerId,
             returnUrl: `${new URL(`/${locale}/checkout/success`, siteUrl).toString()}?session_id={CHECKOUT_SESSION_ID}`,
             paymentPeriod: normalizedSelection ? toCraterPaymentPeriod(normalizedSelection.paymentPeriod) : (customConfigurationPaymentPeriod ?? DEFAULT_CRATER_PAYMENT_PERIOD),
             ...(craterCustomCheckoutConfigurationId

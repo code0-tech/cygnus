@@ -1,6 +1,6 @@
 import assert from "node:assert/strict"
 import test from "node:test"
-import { PATCH as updateCustomer, POST as createOrGetCustomer } from "../../src/app/api/crater/customer/route"
+import { GET as listCustomers, PATCH as updateCustomer, POST as createOrGetCustomer } from "../../src/app/api/crater/customer/route"
 import { POST as validateDiscount } from "../../src/app/api/crater/checkout/discount/route"
 import { POST as calculateTax } from "../../src/app/api/crater/checkout/tax/route"
 import { POST as createSession } from "../../src/app/api/crater/login/route"
@@ -59,6 +59,63 @@ test("customer creation requires a Crater session", async () => {
     )
 
     assert.equal(response.status, 403)
+})
+
+test("lists the authenticated user's checkout customers", async () => {
+    const graphQLServer = await createGraphQLTestServer([
+        {
+            data: {
+                currentUser: {
+                    customers: {
+                        nodes: [
+                            {
+                                address: null,
+                                createdAt: "2026-08-12T12:00:00Z",
+                                customerType: "personal",
+                                email: "ada@example.com",
+                                id: "gid://crater/Customer/1",
+                                name: "Ada Lovelace",
+                                phone: null,
+                                updatedAt: "2026-08-12T12:00:00Z",
+                            },
+                        ],
+                    },
+                },
+            },
+        },
+    ])
+    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
+    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
+
+    try {
+        const response = await listCustomers(
+            new Request("https://example.com/api/crater/customer", {
+                headers: { authorization: "Session customer-list-token" },
+            })
+        )
+
+        assert.equal(response.status, 200)
+        assert.deepEqual(await response.json(), {
+            customers: [
+                {
+                    address: null,
+                    createdAt: "2026-08-12T12:00:00Z",
+                    customerType: "personal",
+                    email: "ada@example.com",
+                    id: "gid://crater/Customer/1",
+                    name: "Ada Lovelace",
+                    phone: null,
+                    updatedAt: "2026-08-12T12:00:00Z",
+                },
+            ],
+        })
+        assert.equal(graphQLServer.requests[0].authorization, "Session customer-list-token")
+        assert.equal(graphQLServer.requests[0].body.operationName, "CheckoutCustomers")
+    } finally {
+        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
+        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
+        await graphQLServer.close()
+    }
 })
 
 test("logout clears the persisted Crater session cookie", async () => {

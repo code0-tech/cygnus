@@ -353,11 +353,15 @@ export interface CheckoutData {
         backToBillingLabel: string
         payNowLabel: string
         processingLabel: string
+        customerSelectLabel: string
+        newCustomerLabel: string
+        customerFallbackLabel: string
         paymentErrorFallback: string
         errors: {
             sessionUnavailable: string
             customerCreation: string
             customerTypeMismatch: string
+            checkoutCustomer: string
             checkoutSession: string
             checkoutSessionExpired: string
             billingAddressUpdate: string
