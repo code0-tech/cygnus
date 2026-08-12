@@ -1,4 +1,4 @@
-import { LicenseDashboardPage } from "@/components/licenses/LicenseDashboardPage"
+import { LicenseDashboardPage } from "@/components/licenses/pages/LicenseDashboardPage"
 import { getLicenseContent } from "@/lib/cms"
 import { isSupportedLocale } from "@/lib/i18n"
 import { notFound } from "next/navigation"
