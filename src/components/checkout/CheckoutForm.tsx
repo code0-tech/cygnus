@@ -48,6 +48,7 @@ function CheckoutFormContent() {
         stripeTaxIdType,
         stripeTaxIdValue,
     } = useCheckoutFormState()
+    const selectedCustomer = customers.find((customer) => customer.id === selectedCustomerId)
 
     let checkoutContent
 
@@ -97,36 +98,33 @@ function CheckoutFormContent() {
                 ((isLoading || isRefreshingSession || isSessionLoading) && hasExistingCustomers !== false ? (
                     <CheckoutCustomerSelectSkeleton />
                 ) : hasExistingCustomers && selectedCustomerId && customers.length > 0 ? (
-                    <SelectInput
-                        title={content.customerSelectLabel}
-                        value={selectedCustomerId}
-                        onValueChange={(value) => void selectCheckoutCustomer(value === NEW_CUSTOMER_VALUE ? null : value)}
-                        right={<IconChevronDown aria-hidden="true" size={16} />}
-                        rightType="icon"
-                    >
-                        <SelectTrigger className="w-full!">
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectPortal>
-                            <SelectContent position="popper" className="z-100 w-(--radix-select-trigger-width)!">
-                                <SelectViewport>
-                                    {customers.map((customer) => (
-                                        <SelectItem key={customer.id} value={customer.id}>
-                                            <SelectItemText>{customer.name || customer.email || content.newCustomerLabel}</SelectItemText>
+                    <div className="[&_.input__label]:leading-none [&_.input-wrapper]:mt-1">
+                        <SelectInput title={content.customerSelectLabel} value={selectedCustomerId} onValueChange={(value) => void selectCheckoutCustomer(value === NEW_CUSTOMER_VALUE ? null : value)}>
+                            <SelectTrigger className="flex w-full! items-center gap-2 text-left! text-sm! h-9!">
+                                <SelectValue>{selectedCustomer?.name || selectedCustomer?.email || content.newCustomerLabel}</SelectValue>
+                                <IconChevronDown aria-hidden="true" className="ml-auto shrink-0 mr-2" size={16} />
+                            </SelectTrigger>
+                            <SelectPortal>
+                                <SelectContent position="popper" className="z-100 w-(--radix-select-trigger-width)!">
+                                    <SelectViewport>
+                                        {customers.map((customer) => (
+                                            <SelectItem key={customer.id} value={customer.id}>
+                                                <SelectItemText>{customer.name || customer.email || content.newCustomerLabel}</SelectItemText>
+                                            </SelectItem>
+                                        ))}
+                                        <SelectItem value={NEW_CUSTOMER_VALUE}>
+                                            <SelectItemText>
+                                                <span className="flex items-center gap-2 text-brand">
+                                                    <IconPlus aria-hidden="true" size={15} />
+                                                    {content.newCustomerLabel}
+                                                </span>
+                                            </SelectItemText>
                                         </SelectItem>
-                                    ))}
-                                    <SelectItem value={NEW_CUSTOMER_VALUE}>
-                                        <SelectItemText>
-                                            <span className="flex items-center gap-2 text-brand">
-                                                <IconPlus aria-hidden="true" size={15} />
-                                                {content.newCustomerLabel}
-                                            </span>
-                                        </SelectItemText>
-                                    </SelectItem>
-                                </SelectViewport>
-                            </SelectContent>
-                        </SelectPortal>
-                    </SelectInput>
+                                    </SelectViewport>
+                                </SelectContent>
+                            </SelectPortal>
+                        </SelectInput>
+                    </div>
                 ) : null)}
             {checkoutContent}
         </div>
