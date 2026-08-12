@@ -10,8 +10,11 @@ import { useState } from "react"
 import { AppLocale } from "@/lib/i18n"
 
 export interface License {
+    customerId?: string
+    customerName?: string
     id: string
     name: string
+    updatedAt?: string
 }
 
 interface LicenseSidebarProps {

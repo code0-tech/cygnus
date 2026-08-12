@@ -3,15 +3,23 @@
 import type { License } from "@/components/licenses/LicenseSidebar"
 import type { LicenseContent } from "@/lib/cms"
 import { AppLocale } from "@/lib/i18n"
-import { Card, Col, Flex, Row, Spacing, Text } from "@code0-tech/pictor"
-import { IconCreditCard, IconFileInvoice, IconKey, IconReceipt } from "@tabler/icons-react"
+import { Card, DataTable, DataTableColumn, DataTableHeader, DataTableHeaderColumn, Flex, Spacing, Text } from "@code0-tech/pictor"
+import { IconChevronRight, IconCreditCard, IconFileInvoice, IconKey, IconReceipt } from "@tabler/icons-react"
 import Link from "next/link"
 import type { ReactNode } from "react"
 
 interface LicenseDashboardPageProps {
     content: LicenseContent
+    customers?: LicenseCustomer[]
     locale: AppLocale
     licenses?: License[]
+}
+
+export interface LicenseCustomer {
+    email?: string
+    id: string
+    licenseCount: number
+    name: string
 }
 
 function Metric({ icon, label, value }: { icon: ReactNode; label: string; value: number }) {
@@ -30,10 +38,17 @@ function Metric({ icon, label, value }: { icon: ReactNode; label: string; value:
     )
 }
 
-export function LicenseDashboardPage({ content, locale, licenses = [] }: LicenseDashboardPageProps) {
+export function LicenseDashboardPage({ content, customers = [], locale, licenses = [] }: LicenseDashboardPageProps) {
+    const dateFormatter = new Intl.DateTimeFormat(locale, {
+        dateStyle: "medium",
+        timeZone: "UTC",
+    })
+    const recentlyEditedLicenses = licenses
+        .toSorted((left, right) => Date.parse(right.updatedAt ?? "") - Date.parse(left.updatedAt ?? ""))
+        .slice(0, 5)
     const metrics = [
         { icon: <IconKey aria-hidden="true" size={14} />, label: content.licenses, value: licenses.length },
-        { icon: <IconReceipt aria-hidden="true" size={14} />, label: content.dashboard.customers, value: 0 },
+        { icon: <IconReceipt aria-hidden="true" size={14} />, label: content.dashboard.customers, value: customers.length },
         { icon: <IconCreditCard aria-hidden="true" size={14} />, label: content.dashboard.paymentProfiles, value: 0 },
         { icon: <IconFileInvoice aria-hidden="true" size={14} />, label: content.dashboard.invoices, value: 0 },
     ]
@@ -63,63 +78,81 @@ export function LicenseDashboardPage({ content, locale, licenses = [] }: License
 
             <Spacing spacing="xl" />
 
-            <section aria-labelledby="licenses-heading">
+            <section aria-labelledby="customers-heading">
                 <Flex align="center" style={{ gap: "0.5rem" }}>
-                    <Text id="licenses-heading" hierarchy="secondary" size="lg">
-                        {content.licenses}
+                    <Text id="customers-heading" hierarchy="secondary" size="lg">
+                        {content.dashboard.customers}
                     </Text>
                     <span className="inline-flex w-fit items-center rounded-full bg-[#191825] px-[0.35rem] py-[0.1167rem] text-[0.7rem] font-normal tracking-[-0.5px] text-white/75 shadow-[inset_0_1px_1px_rgba(191,191,191,0.1)]">
-                        {licenses.length}
+                        {customers.length}
                     </span>
                 </Flex>
+                <Spacing spacing="md" />
+
+                <Card color="secondary">
+                    <DataTable data={customers} emptyComponent={<DataTableColumn colSpan={3}><Text size="sm" hierarchy="tertiary">{content.dashboard.emptyCustomers}</Text></DataTableColumn>}>
+                        <DataTableHeader>
+                            <DataTableHeaderColumn>{content.dashboard.customerLabel}</DataTableHeaderColumn>
+                            <DataTableHeaderColumn>{content.dashboard.emailLabel}</DataTableHeaderColumn>
+                            <DataTableHeaderColumn>{content.licenses}</DataTableHeaderColumn>
+                        </DataTableHeader>
+                        {(customer) => (
+                            <>
+                                <DataTableColumn>
+                                    <Link href={`/${locale}/licenses/customer/${encodeURIComponent(customer.id)}`} className="font-medium text-white hover:text-brand">
+                                        {customer.name}
+                                    </Link>
+                                </DataTableColumn>
+                                <DataTableColumn><Text size="sm" hierarchy="tertiary">{customer.email || "—"}</Text></DataTableColumn>
+                                <DataTableColumn>{customer.licenseCount}</DataTableColumn>
+                            </>
+                        )}
+                    </DataTable>
+                </Card>
+            </section>
+
+            <Spacing spacing="xl" />
+
+            <section aria-labelledby="recent-licenses-heading">
+                <Text id="recent-licenses-heading" hierarchy="secondary" size="lg">
+                    {content.dashboard.recentLicenses}
+                </Text>
                 <Spacing spacing="xs" />
                 <Text size="md" hierarchy="tertiary" maw="50%">
                     {content.dashboard.description}
                 </Text>
                 <Spacing spacing="md" />
 
-                <Row>
-                    {licenses.map((license) => (
-                        <Col key={license.id} xs={6} mb={1}>
-                            <Link href={`/${locale}/licenses/customer/${encodeURIComponent(license.id)}`} prefetch style={{ display: "contents" }}>
-                                <Card color="secondary" clickable h="100%">
-                                    <Flex style={{ flexDirection: "column", gap: "1.25rem" }}>
-                                        <Flex align="center" style={{ gap: "0.85rem" }}>
-                                            <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-brand/10 text-brand">
-                                                <IconKey aria-hidden="true" size={16} />
-                                            </span>
-                                            <Text size="md" hierarchy="primary" fw={500}>
-                                                {license.name}
-                                            </Text>
-                                        </Flex>
-                                        <Flex align="center" style={{ gap: "0.4rem" }}>
-                                            <IconKey aria-hidden="true" size={15} />
-                                            <Text size="sm" hierarchy="tertiary">
-                                                {content.licenses}
-                                            </Text>
-                                        </Flex>
+                <Card color="secondary">
+                    <DataTable data={recentlyEditedLicenses} emptyComponent={<DataTableColumn colSpan={3}><Text size="sm" hierarchy="tertiary">{content.emptyLicenses}</Text></DataTableColumn>}>
+                        <DataTableHeader>
+                            <DataTableHeaderColumn>{content.licenses}</DataTableHeaderColumn>
+                            <DataTableHeaderColumn>{content.dashboard.customerLabel}</DataTableHeaderColumn>
+                            <DataTableHeaderColumn>{content.dashboard.lastEditedLabel}</DataTableHeaderColumn>
+                        </DataTableHeader>
+                        {(license) => (
+                            <>
+                                <DataTableColumn>
+                                    <Flex align="center" style={{ gap: "0.6rem" }}>
+                                        <IconKey aria-hidden="true" className="text-brand" size={15} />
+                                        <Text size="sm" fw={500}>{license.name}</Text>
                                     </Flex>
-                                </Card>
-                            </Link>
-                        </Col>
-                    ))}
-
-                    {licenses.length === 0 && (
-                        <Col xs={6} mb={1} mih="100px">
-                            <Card dashed color="secondary" h="100%">
-                                <Flex align="center" justify="center" h="100%" style={{ flexDirection: "column", gap: "0.4rem", textAlign: "center" }}>
-                                    <IconKey aria-hidden="true" size={18} />
-                                    <Text size="md" hierarchy="tertiary">
-                                        {content.emptyLicenses}
-                                    </Text>
-                                    <Text size="sm" hierarchy="tertiary">
-                                        {content.dashboard.emptyDescription}
-                                    </Text>
-                                </Flex>
-                            </Card>
-                        </Col>
-                    )}
-                </Row>
+                                </DataTableColumn>
+                                <DataTableColumn><Text size="sm" hierarchy="tertiary">{license.customerName || "—"}</Text></DataTableColumn>
+                                <DataTableColumn>
+                                    <Flex align="center" justify="flex-end" style={{ gap: "0.5rem" }}>
+                                        <Text size="sm" hierarchy="tertiary">{license.updatedAt ? dateFormatter.format(new Date(license.updatedAt)) : "—"}</Text>
+                                        {license.customerId && (
+                                            <Link href={`/${locale}/licenses/customer/${encodeURIComponent(license.customerId)}/license/${encodeURIComponent(license.id)}`} aria-label={license.name} className="text-tertiary hover:text-white">
+                                                <IconChevronRight aria-hidden="true" size={15} />
+                                            </Link>
+                                        )}
+                                    </Flex>
+                                </DataTableColumn>
+                            </>
+                        )}
+                    </DataTable>
+                </Card>
             </section>
         </>
     )

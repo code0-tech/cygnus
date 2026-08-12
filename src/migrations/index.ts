@@ -106,6 +106,7 @@ import * as migration_20260805_031008_checkout_login_page from './20260805_03100
 import * as migration_20260805_035510_remove_checkout_login_eyebrow from './20260805_035510_remove_checkout_login_eyebrow';
 import * as migration_20260806_094637_split_checkout_login_sections from './20260806_094637_split_checkout_login_sections';
 import * as migration_20260811_145502_checkout_error_messages from './20260811_145502_checkout_error_messages';
+import * as migration_20260812_090020_license_dashboard_tables from './20260812_090020_license_dashboard_tables';
 import * as migration_20260812_085100_licenses_content_fields from './20260812_085100_licenses_content_fields';
 
 export const migrations = [
@@ -647,11 +648,16 @@ export const migrations = [
   {
     up: migration_20260811_145502_checkout_error_messages.up,
     down: migration_20260811_145502_checkout_error_messages.down,
-    name: '20260811_145502_checkout_error_messages'
+    name: '20260811_145502_checkout_error_messages',
   },
   {
     up: migration_20260812_085100_licenses_content_fields.up,
     down: migration_20260812_085100_licenses_content_fields.down,
     name: '20260812_085100_licenses_content_fields'
+  },
+  {
+    up: migration_20260812_090020_license_dashboard_tables.up,
+    down: migration_20260812_090020_license_dashboard_tables.down,
+    name: '20260812_090020_license_dashboard_tables',
   },
 ];
