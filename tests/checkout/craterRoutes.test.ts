@@ -5,6 +5,7 @@ import { POST as validateDiscount } from "../../src/app/api/crater/checkout/disc
 import { POST as calculateTax } from "../../src/app/api/crater/checkout/tax/route"
 import { POST as createSession } from "../../src/app/api/crater/login/route"
 import { DELETE as deleteSession, GET as getSessionStatus } from "../../src/app/api/crater/auth/session/route"
+import { GET as getLicenseDashboard } from "../../src/app/api/crater/licenses/route"
 import { createGraphQLTestServer } from "./graphqlTestServer"
 
 const sessionHeaders = {
@@ -440,4 +441,123 @@ test("clears a malformed Crater session cookie", async () => {
     assert.equal(response.status, 401)
     assert.match(response.headers.get("set-cookie") ?? "", /crater_session=;/)
     assert.match(response.headers.get("set-cookie") ?? "", /Max-Age=0/i)
+})
+
+test("license dashboard requires a Crater session", async () => {
+    const response = await getLicenseDashboard(new Request("https://example.com/api/crater/licenses"))
+
+    assert.equal(response.status, 403)
+    assert.equal(response.headers.get("cache-control"), "no-store")
+})
+
+test("license dashboard does not accept cookie-only access", async () => {
+    const response = await getLicenseDashboard(
+        new Request("https://example.com/api/crater/licenses", {
+            headers: { cookie: "crater_session=persisted-token" },
+        })
+    )
+
+    assert.equal(response.status, 403)
+})
+
+test("license dashboard maps the current user's customers and recent licenses", async () => {
+    const graphQLServer = await createGraphQLTestServer([
+        {
+            data: {
+                currentUser: {
+                    customers: {
+                        nodes: [
+                            {
+                                id: "gid://crater/Customer/7",
+                                customerType: "business",
+                                email: "billing@example.com",
+                                name: "Example GmbH",
+                                updatedAt: "2026-08-10T10:00:00Z",
+                                licenses: {
+                                    count: 2,
+                                    nodes: [
+                                        {
+                                            id: "gid://crater/License/1",
+                                            status: "active",
+                                            plan: "pro",
+                                            deploymentType: "cloud",
+                                            namespaceId: "namespace-1",
+                                            updatedAt: "2026-08-10T10:00:00Z",
+                                        },
+                                        {
+                                            id: "gid://crater/License/2",
+                                            status: "active",
+                                            plan: "custom_plan",
+                                            deploymentType: "self_hosted",
+                                            namespaceId: null,
+                                            updatedAt: "2026-08-12T10:00:00Z",
+                                        },
+                                    ],
+                                },
+                            },
+                        ],
+                    },
+                },
+            },
+        },
+    ])
+    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
+    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
+
+    try {
+        const response = await getLicenseDashboard(
+            new Request("https://example.com/api/crater/licenses", {
+                headers: {
+                    authorization: "Session url-session-token",
+                    cookie: "crater_session=stale-cookie-token",
+                },
+            })
+        )
+
+        assert.equal(response.status, 200)
+        assert.equal(graphQLServer.requests[0].authorization, "Session url-session-token")
+        assert.match(response.headers.get("set-cookie") ?? "", /crater_session=url-session-token/)
+        assert.equal(graphQLServer.requests[0].body.operationName, "LicenseDashboard")
+        assert.match(graphQLServer.requests[0].body.query ?? "", /customers\(first: 100\)/)
+        assert.match(graphQLServer.requests[0].body.query ?? "", /licenses\(first: 100\)/)
+        assert.deepEqual(await response.json(), {
+            customers: [
+                {
+                    id: "gid://crater/Customer/7",
+                    customerType: "business",
+                    email: "billing@example.com",
+                    name: "Example GmbH",
+                    updatedAt: "2026-08-10T10:00:00Z",
+                    licenseCount: 2,
+                },
+            ],
+            licenses: [
+                {
+                    customerId: "gid://crater/Customer/7",
+                    customerName: "Example GmbH",
+                    id: "gid://crater/License/2",
+                    name: "Custom Plan",
+                    deploymentType: "self_hosted",
+                    plan: "custom_plan",
+                    status: "active",
+                    updatedAt: "2026-08-12T10:00:00Z",
+                },
+                {
+                    customerId: "gid://crater/Customer/7",
+                    customerName: "Example GmbH",
+                    id: "gid://crater/License/1",
+                    name: "Pro",
+                    deploymentType: "cloud",
+                    namespaceId: "namespace-1",
+                    plan: "pro",
+                    status: "active",
+                    updatedAt: "2026-08-10T10:00:00Z",
+                },
+            ],
+        })
+    } finally {
+        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
+        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
+        await graphQLServer.close()
+    }
 })

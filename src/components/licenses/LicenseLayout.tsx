@@ -1,6 +1,7 @@
 "use client"
 
-import { LicenseSidebar, type License } from "@/components/licenses/LicenseSidebar"
+import { LicenseDataProvider, useLicenseData } from "@/components/licenses/LicenseDataProvider"
+import { LicenseSidebar } from "@/components/licenses/LicenseSidebar"
 import type { LicenseContent } from "@/lib/cms"
 import { AppLocale } from "@/lib/i18n"
 import { FullScreen, ScrollArea, ScrollAreaScrollbar, ScrollAreaThumb, ScrollAreaViewport } from "@code0-tech/pictor"
@@ -10,10 +11,11 @@ interface LicenseLayoutProps {
     children: ReactNode
     content: LicenseContent
     locale: AppLocale
-    licenses?: License[]
 }
 
-export function LicenseLayout({ children, content, locale, licenses = [] }: LicenseLayoutProps) {
+function LicenseLayoutContent({ children, content, locale }: LicenseLayoutProps) {
+    const { licenses } = useLicenseData()
+
     return (
         <FullScreen className="h-dvh! min-h-0! overflow-hidden! bg-light! p-4! text-white">
             <div className="grid h-full min-h-0 grid-cols-1 lg:grid-cols-[18rem_minmax(0,1fr)]">
@@ -31,5 +33,13 @@ export function LicenseLayout({ children, content, locale, licenses = [] }: Lice
                 </main>
             </div>
         </FullScreen>
+    )
+}
+
+export function LicenseLayout(props: LicenseLayoutProps) {
+    return (
+        <LicenseDataProvider redirectUrl={props.content.redirectUrl}>
+            <LicenseLayoutContent {...props} />
+        </LicenseDataProvider>
     )
 }

@@ -403,6 +403,7 @@ export interface CheckoutData {
 export interface LicenseContent {
     licenses: string
     emptyLicenses: string
+    redirectUrl: string
     sidebar: {
         logout: string
         loggingOut: string

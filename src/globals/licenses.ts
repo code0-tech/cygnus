@@ -27,6 +27,25 @@ export const Licenses: GlobalConfig = {
             defaultValue: localizedDefault("No licenses yet", "Noch keine Lizenzen"),
         },
         {
+            name: "redirectUrl",
+            type: "text",
+            required: true,
+            defaultValue: "http://localhost:3001",
+            validate: (value: unknown) => {
+                if (typeof value !== "string") return "Enter a valid HTTP(S) URL."
+
+                try {
+                    const url = new URL(value)
+                    return url.protocol === "http:" || url.protocol === "https:" ? true : "Enter a valid HTTP(S) URL."
+                } catch {
+                    return "Enter a valid HTTP(S) URL."
+                }
+            },
+            admin: {
+                description: "Sculptor URL used when no valid Crater session token was supplied.",
+            },
+        },
+        {
             name: "sidebar",
             type: "group",
             fields: [

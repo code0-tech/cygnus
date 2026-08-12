@@ -3239,6 +3239,10 @@ export interface License {
   id: number;
   licenses: string;
   emptyLicenses: string;
+  /**
+   * Sculptor URL used when no valid Crater session token was supplied.
+   */
+  redirectUrl: string;
   sidebar: {
     logout: string;
     loggingOut: string;
@@ -3844,6 +3848,7 @@ export interface CheckoutSelect<T extends boolean = true> {
 export interface LicensesSelect<T extends boolean = true> {
   licenses?: T;
   emptyLicenses?: T;
+  redirectUrl?: T;
   sidebar?:
     | T
     | {

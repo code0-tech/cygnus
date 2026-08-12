@@ -48,8 +48,8 @@ export function readOptionalAddress(value: unknown) {
     }
 }
 
-export function requireCraterSession(request: Request): { response: NextResponse; token?: never } | { response?: never; token: string } {
-    const authorization = readCraterSessionAuthorization(request)
+export function requireCraterSession(request: Request, authorizationHeaderOnly = false): { response: NextResponse; token?: never } | { response?: never; token: string } {
+    const authorization = readCraterSessionAuthorization(request, authorizationHeaderOnly)
 
     if (authorization.status === "missing") {
         return {

@@ -2595,6 +2595,7 @@ export const checkout_locales = pgTable('checkout_locales', {
 
 export const licenses = pgTable('licenses', {
   id: serial('id').primaryKey(),
+  redirectUrl: varchar('redirect_url').notNull().default("http://localhost:3001"),
   updatedAt: timestamp('updated_at', {mode: 'string',withTimezone: true,precision: 3}),
   createdAt: timestamp('created_at', {mode: 'string',withTimezone: true,precision: 3}),
 }
