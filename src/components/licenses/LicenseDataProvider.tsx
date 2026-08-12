@@ -2,7 +2,7 @@
 
 import { EMPTY_LICENSE_DASHBOARD_DATA, type LicenseDashboardData } from "@/lib/licenses/licenseTypes"
 import { readCraterSessionToken, removeCraterSessionToken } from "@/lib/checkout/craterSession"
-import { createContext, type ReactNode, useContext, useEffect, useState } from "react"
+import { createContext, type ReactNode, useContext, useEffect, useRef, useState } from "react"
 
 interface LicenseDataContextValue extends LicenseDashboardData {
     isLoading: boolean
@@ -11,20 +11,24 @@ interface LicenseDataContextValue extends LicenseDashboardData {
 const LicenseDataContext = createContext<LicenseDataContextValue | null>(null)
 
 export function LicenseDataProvider({ children, redirectUrl }: { children: ReactNode; redirectUrl: string }) {
+    const sessionTokenRef = useRef<string | null>(null)
     const [data, setData] = useState<LicenseDashboardData>(EMPTY_LICENSE_DASHBOARD_DATA)
     const [isLoading, setIsLoading] = useState(true)
 
     useEffect(() => {
         const controller = new AbortController()
         const currentUrl = new URL(window.location.href)
-        const sessionToken = readCraterSessionToken(currentUrl)
+        const sessionToken = sessionTokenRef.current ?? readCraterSessionToken(currentUrl)
 
         if (!sessionToken) {
             window.location.replace(redirectUrl)
             return () => controller.abort()
         }
 
-        window.history.replaceState(window.history.state, "", removeCraterSessionToken(currentUrl).toString())
+        sessionTokenRef.current = sessionToken
+        if (currentUrl.searchParams.has("token")) {
+            window.history.replaceState(window.history.state, "", removeCraterSessionToken(currentUrl).toString())
+        }
 
         void fetch("/api/crater/licenses", {
             cache: "no-store",

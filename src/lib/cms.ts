@@ -396,6 +396,7 @@ export interface CheckoutData {
     success: {
         heading: string
         description: string
+        licenseDashboardLabel: string
         backToHomepageLabel: string
     }
 }

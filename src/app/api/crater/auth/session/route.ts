@@ -1,20 +1,17 @@
 import { createApolloClient } from "@/lib/apolloClient"
-import { craterJson, craterMutationErrorResponse, craterTransportErrorResponse, requireCraterSession } from "@/lib/checkout/craterApi"
+import { craterJson, craterTransportErrorResponse, requireCraterSession } from "@/lib/checkout/craterApi"
 import { clearCraterSessionCookie } from "@/lib/checkout/craterSession"
-import type { Mutation, MutationEchoArgs } from "@code0-tech/crater-graphql-types"
+import type { Query } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 
 export const runtime = "nodejs"
 
-type SessionStatusData = Pick<Mutation, "echo">
+type SessionStatusData = Pick<Query, "currentUser">
 
-const SESSION_STATUS: TypedDocumentNode<SessionStatusData, MutationEchoArgs> = gql`
-    mutation CraterSessionStatus($input: EchoInput!) {
-        echo(input: $input) {
-            message
-            errors {
-                errorCode
-            }
+const SESSION_STATUS: TypedDocumentNode<SessionStatusData, Record<string, never>> = gql`
+    query CraterSessionStatus {
+        currentUser {
+            id
         }
     }
 `
@@ -24,15 +21,13 @@ export async function GET(request: Request) {
     if (session.response) return session.response
 
     try {
-        const result = await createApolloClient(session.token).mutate({
-            mutation: SESSION_STATUS,
-            variables: { input: { message: "session-status" } },
+        const result = await createApolloClient(session.token).query({
+            query: SESSION_STATUS,
+            fetchPolicy: "no-cache",
         })
-        const payload = result.data?.echo
-        if (!payload) throw new Error("Crater returned no session status payload.")
-
-        const errorResponse = craterMutationErrorResponse(payload.errors, "Crater could not validate the user session.")
-        if (errorResponse) return errorResponse
+        if (!result.data?.currentUser?.id) {
+            return clearCraterSessionCookie(craterJson({ error: "The Crater session is invalid or expired." }, 401))
+        }
 
         return craterJson({ authenticated: true })
     } catch (error) {

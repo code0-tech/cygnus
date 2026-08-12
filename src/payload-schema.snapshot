@@ -2579,6 +2579,7 @@ export const checkout_locales = pgTable('checkout_locales', {
   form_taxIdValuePlaceholder: varchar('form_tax_id_value_placeholder').notNull().default("DE123456789"),
   success_heading: varchar('success_heading').notNull().default("Payment submitted"),
   success_description: varchar('success_description').notNull().default("Stripe has received your payment confirmation. You can close this page or return to the site."),
+  success_licenseDashboardLabel: varchar('success_license_dashboard_label').notNull().default("Open license dashboard"),
   success_backToHomepageLabel: varchar('success_back_to_homepage_label').notNull().default("Return to homepage"),
   id: serial('id').primaryKey(),
   _locale: enum__locales('_locale').notNull(),

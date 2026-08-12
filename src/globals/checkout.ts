@@ -236,6 +236,7 @@ export const Checkout: GlobalConfig = {
                     localized: true,
                     defaultValue: "Stripe has received your payment confirmation. You can close this page or return to the site.",
                 },
+                { name: "licenseDashboardLabel", type: "text", required: true, localized: true, defaultValue: "Open license dashboard" },
                 { name: "backToHomepageLabel", type: "text", required: true, localized: true, defaultValue: "Return to homepage" },
             ],
         },
