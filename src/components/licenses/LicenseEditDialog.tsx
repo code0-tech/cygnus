@@ -3,6 +3,7 @@
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
 import type { LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
+import { decodeLicenseRouteId } from "@/lib/licenses/licenseRoute"
 import { Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogOverlay, DialogPortal, DialogTitle, TextInput } from "@code0-tech/pictor"
 import { IconX } from "@tabler/icons-react"
 import { useRouter } from "next/navigation"
@@ -28,11 +29,13 @@ async function responseError(response: Response, fallback: string) {
 export function LicenseEditDialog({ content, customerId, licenseId, locale }: LicenseEditDialogProps) {
     const router = useRouter()
     const { licenses, updateLicense } = useLicenseData()
-    const license = licenses.find((candidate) => candidate.id === licenseId && candidate.customerId === customerId)
+    const resolvedCustomerId = decodeLicenseRouteId(customerId)
+    const resolvedLicenseId = decodeLicenseRouteId(licenseId)
+    const license = licenses.find((candidate) => candidate.id === resolvedLicenseId && candidate.customerId === resolvedCustomerId)
     const [namespaceId, setNamespaceId] = useState("")
     const [error, setError] = useState<string | null>(null)
     const [isSaving, setIsSaving] = useState(false)
-    const close = () => router.replace(`/${locale}/licenses/customer/${encodeURIComponent(customerId)}/license/${encodeURIComponent(licenseId)}`)
+    const close = () => router.replace(`/${locale}/licenses/customer/${encodeURIComponent(resolvedCustomerId)}/license/${encodeURIComponent(resolvedLicenseId)}`)
 
     useEffect(() => {
         if (license?.namespaceId) setNamespaceId(license.namespaceId)

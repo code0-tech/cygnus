@@ -1,9 +1,16 @@
 "use client"
 
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
+import {
+    LicenseDataTable as DataTable,
+    LicenseDataTableColumn as DataTableColumn,
+    LicenseDataTableHeader as DataTableHeader,
+    LicenseDataTableHeaderColumn as DataTableHeaderColumn,
+} from "@/components/licenses/LicenseDataTable"
 import type { LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
-import { Button, Card, DataTable, DataTableColumn, DataTableHeader, DataTableHeaderColumn, Spacing, Text } from "@code0-tech/pictor"
+import { decodeLicenseRouteId } from "@/lib/licenses/licenseRoute"
+import { Button, Card, Spacing, Text } from "@code0-tech/pictor"
 import { useRouter } from "next/navigation"
 import { Fragment } from "react"
 
@@ -17,7 +24,9 @@ interface LicenseDetailPageProps {
 export function LicenseDetailPage({ content, customerId, licenseId, locale }: LicenseDetailPageProps) {
     const router = useRouter()
     const { isLoading, licenses } = useLicenseData()
-    const license = licenses.find((candidate) => candidate.id === licenseId && candidate.customerId === customerId)
+    const resolvedCustomerId = decodeLicenseRouteId(customerId)
+    const resolvedLicenseId = decodeLicenseRouteId(licenseId)
+    const license = licenses.find((candidate) => candidate.id === resolvedLicenseId && candidate.customerId === resolvedCustomerId)
     const licenseRows = license ? [license] : []
     const dateFormatter = new Intl.DateTimeFormat(locale, {
         dateStyle: "medium",
@@ -35,6 +44,7 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale }: Li
                 <DataTable
                     data={licenseRows}
                     loading={isLoading}
+                    rowKey={(row) => row.id}
                     emptyComponent={
                         <DataTableColumn colSpan={5}>
                             <Text size="sm" hierarchy="tertiary">
@@ -78,11 +88,7 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale }: Li
                                         type="button"
                                         variant="normal"
                                         paddingSize="xs"
-                                        onClick={() =>
-                                            router.push(
-                                                `/${locale}/licenses/customer/${encodeURIComponent(row.customerId)}/license/${encodeURIComponent(row.id)}/edit`
-                                            )
-                                        }
+                                        onClick={() => router.push(`/${locale}/licenses/customer/${encodeURIComponent(row.customerId)}/license/${encodeURIComponent(row.id)}/edit`)}
                                         className="text-sm!"
                                     >
                                         {content.dashboard.editLabel}
