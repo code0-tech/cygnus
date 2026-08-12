@@ -1,4 +1,4 @@
-import { LicenseEditDialog } from "@/components/licenses/LicenseEditDialog"
+import { LicenseEditDialog } from "@/components/licenses/dialog/LicenseEditDialog"
 import { getLicenseContent } from "@/lib/cms"
 import { isSupportedLocale } from "@/lib/i18n"
 import { notFound } from "next/navigation"

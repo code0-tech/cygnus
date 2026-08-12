@@ -1,4 +1,4 @@
-import { CustomerEditDialog } from "@/components/licenses/CustomerEditDialog"
+import { CustomerEditDialog } from "@/components/licenses/dialog/CustomerEditDialog"
 import { getLicenseContent } from "@/lib/cms"
 import { isSupportedLocale } from "@/lib/i18n"
 import { notFound } from "next/navigation"
