@@ -27,8 +27,9 @@ export function createCheckoutQuery(searchParams: CheckoutSearchParams): string 
     return query.toString()
 }
 
-export function createMainAppLoginUrl(loginUrl: string, checkoutUrl: string): string {
+export function createMainAppLoginUrl(loginUrl: string, checkoutUrl: string, cancelUrl: string): string {
     const url = new URL(loginUrl)
     url.searchParams.set("callbackUrl", checkoutUrl)
+    url.searchParams.set("cancelUrl", cancelUrl)
     return url.toString()
 }

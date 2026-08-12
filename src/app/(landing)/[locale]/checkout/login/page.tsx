@@ -23,8 +23,23 @@ export default async function CheckoutLoginPage({ params, searchParams }: Checko
 
     const query = createCheckoutQuery(resolvedSearchParams)
     const guestHref = `/${locale}/checkout${query ? `?${query}` : ""}`
-    const checkoutUrl = new URL(guestHref, resolveSiteUrl()).toString()
-    const loginHref = createMainAppLoginUrl(content.login.loginUrl, checkoutUrl)
+    const siteUrl = resolveSiteUrl()
+    const checkoutUrl = new URL(guestHref, siteUrl).toString()
+    const configurationUrlParam = resolvedSearchParams.configurationUrl
+    const configurationUrlValue = Array.isArray(configurationUrlParam) ? configurationUrlParam[0] : configurationUrlParam
+    const fallbackConfigurationUrl = new URL(`/${locale}/subscription`, siteUrl)
+    let cancelUrl = fallbackConfigurationUrl.toString()
+
+    if (configurationUrlValue) {
+        try {
+            const requestedConfigurationUrl = new URL(configurationUrlValue, siteUrl)
+            if (requestedConfigurationUrl.origin === siteUrl.origin) cancelUrl = requestedConfigurationUrl.toString()
+        } catch {
+            // Keep the localized subscription page as the safe cancellation target.
+        }
+    }
+
+    const loginHref = createMainAppLoginUrl(content.login.loginUrl, checkoutUrl, cancelUrl)
 
     return (
         <div className="flex min-h-full flex-col">

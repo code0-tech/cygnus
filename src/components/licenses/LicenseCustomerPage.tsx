@@ -11,7 +11,6 @@ import type { LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { decodeLicenseRouteId } from "@/lib/licenses/licenseRoute"
 import { Button, Card, Flex, Spacing, Text } from "@code0-tech/pictor"
-import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Fragment } from "react"
 
@@ -31,11 +30,14 @@ export function LicenseCustomerPage({ content, customerId, locale }: LicenseCust
         dateStyle: "medium",
         timeZone: "UTC",
     })
-    const customerName = customer?.name || customer?.email || content.dashboard.customerLabel
     const customerDetails = customer
         ? [
               { label: content.editor.nameLabel, value: customer.name || "—" },
               { label: content.dashboard.emailLabel, value: customer.email || "—" },
+              {
+                  label: content.dashboard.customerLabel,
+                  value: customer.customerType ? `${customer.customerType.charAt(0).toUpperCase()}${customer.customerType.slice(1).replaceAll("_", " ")}` : "—",
+              },
               { label: content.licenses, value: String(customer.licenseCount) },
               {
                   label: content.dashboard.lastEditedLabel,
@@ -50,13 +52,8 @@ export function LicenseCustomerPage({ content, customerId, locale }: LicenseCust
                 <Flex align="center" justify="space-between" style={{ gap: "1rem" }}>
                     <div className="min-w-0">
                         <Text id="customer-heading" hierarchy="secondary" size="lg">
-                            {customerName}
+                            {content.dashboard.customerLabel}
                         </Text>
-                        {customer?.customerType ? (
-                            <Text hierarchy="tertiary" size="sm" className="mt-1 capitalize">
-                                {customer.customerType.replaceAll("_", " ")}
-                            </Text>
-                        ) : null}
                     </div>
                     {customer ? (
                         <Button
@@ -74,7 +71,7 @@ export function LicenseCustomerPage({ content, customerId, locale }: LicenseCust
 
                 <Card color="secondary">
                     {customer ? (
-                        <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
+                        <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-5">
                             {customerDetails.map((detail) => (
                                 <div key={detail.label} className="min-w-0">
                                     <Text size="sm" hierarchy="tertiary">
@@ -114,9 +111,10 @@ export function LicenseCustomerPage({ content, customerId, locale }: LicenseCust
                     <DataTable
                         data={customerLicenses}
                         loading={isLoading}
+                        onRowClick={(license) => router.push(`/${locale}/licenses/customer/${encodeURIComponent(resolvedCustomerId)}/license/${encodeURIComponent(license.id)}`)}
                         rowKey={(license) => license.id}
                         emptyComponent={
-                            <DataTableColumn colSpan={5}>
+                            <DataTableColumn colSpan={4}>
                                 <Text size="sm" hierarchy="tertiary">
                                     {content.emptyLicenses}
                                 </Text>
@@ -128,17 +126,13 @@ export function LicenseCustomerPage({ content, customerId, locale }: LicenseCust
                             <DataTableHeaderColumn>{content.dashboard.statusLabel}</DataTableHeaderColumn>
                             <DataTableHeaderColumn>{content.dashboard.deploymentLabel}</DataTableHeaderColumn>
                             <DataTableHeaderColumn>{content.dashboard.lastEditedLabel}</DataTableHeaderColumn>
-                            <DataTableHeaderColumn />
                         </DataTableHeader>
                         {(license) => (
                             <Fragment key={license.id}>
                                 <DataTableColumn>
-                                    <Link
-                                        href={`/${locale}/licenses/customer/${encodeURIComponent(resolvedCustomerId)}/license/${encodeURIComponent(license.id)}`}
-                                        className="font-medium text-white hover:text-brand"
-                                    >
+                                    <Text size="sm" fw={500}>
                                         {license.name}
-                                    </Link>
+                                    </Text>
                                 </DataTableColumn>
                                 <DataTableColumn>
                                     <Text size="sm" hierarchy="tertiary" className="capitalize">
@@ -154,19 +148,6 @@ export function LicenseCustomerPage({ content, customerId, locale }: LicenseCust
                                     <Text size="sm" hierarchy="tertiary">
                                         {license.updatedAt ? dateFormatter.format(new Date(license.updatedAt)) : "—"}
                                     </Text>
-                                </DataTableColumn>
-                                <DataTableColumn>
-                                    <div className="flex justify-end">
-                                        <Button
-                                            type="button"
-                                            variant="normal"
-                                            paddingSize="xs"
-                                            onClick={() => router.push(`/${locale}/licenses/customer/${encodeURIComponent(resolvedCustomerId)}/license/${encodeURIComponent(license.id)}/edit`)}
-                                            className="text-sm!"
-                                        >
-                                            {content.dashboard.editLabel}
-                                        </Button>
-                                    </div>
                                 </DataTableColumn>
                             </Fragment>
                         )}
