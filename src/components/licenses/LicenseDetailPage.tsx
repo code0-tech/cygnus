@@ -1,18 +1,11 @@
 "use client"
 
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
-import {
-    LicenseDataTable as DataTable,
-    LicenseDataTableColumn as DataTableColumn,
-    LicenseDataTableHeader as DataTableHeader,
-    LicenseDataTableHeaderColumn as DataTableHeaderColumn,
-} from "@/components/licenses/LicenseDataTable"
 import type { LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { decodeLicenseRouteId } from "@/lib/licenses/licenseRoute"
-import { Button, Card, Spacing, Text } from "@code0-tech/pictor"
+import { Button, Card, Flex, Spacing, Text } from "@code0-tech/pictor"
 import { useRouter } from "next/navigation"
-import { Fragment } from "react"
 
 interface LicenseDetailPageProps {
     content: LicenseContent
@@ -27,77 +20,65 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale }: Li
     const resolvedCustomerId = decodeLicenseRouteId(customerId)
     const resolvedLicenseId = decodeLicenseRouteId(licenseId)
     const license = licenses.find((candidate) => candidate.id === resolvedLicenseId && candidate.customerId === resolvedCustomerId)
-    const licenseRows = license ? [license] : []
     const dateFormatter = new Intl.DateTimeFormat(locale, {
         dateStyle: "medium",
         timeZone: "UTC",
     })
+    const licenseDetails = license
+        ? [
+              { label: content.dashboard.statusLabel, value: license.status?.replaceAll("_", " ") || "—" },
+              { label: content.dashboard.deploymentLabel, value: license.deploymentType?.replaceAll("_", " ") || "—" },
+              { label: content.licenses, value: license.plan?.replaceAll("_", " ") || license.name },
+              { label: content.editor.namespaceLabel, value: license.namespaceId || "—" },
+              {
+                  label: content.dashboard.lastEditedLabel,
+                  value: license.updatedAt ? dateFormatter.format(new Date(license.updatedAt)) : "—",
+              },
+          ]
+        : []
 
     return (
         <section aria-labelledby="license-heading">
-            <Text id="license-heading" hierarchy="secondary" size="lg">
-                {license?.name || content.licenses}
-            </Text>
+            <Flex align="center" justify="space-between" style={{ gap: "1rem" }}>
+                <Text id="license-heading" hierarchy="secondary" size="lg">
+                    {locale === "de" ? "Lizenz" : "License"}
+                </Text>
+                {license ? (
+                    <Button
+                        type="button"
+                        variant="normal"
+                        paddingSize="xs"
+                        onClick={() => router.push(`/${locale}/licenses/customer/${encodeURIComponent(license.customerId)}/license/${encodeURIComponent(license.id)}/edit`)}
+                        className="shrink-0 text-sm!"
+                    >
+                        {content.dashboard.editLabel}
+                    </Button>
+                ) : null}
+            </Flex>
             <Spacing spacing="md" />
 
             <Card color="secondary">
-                <DataTable
-                    data={licenseRows}
-                    loading={isLoading}
-                    rowKey={(row) => row.id}
-                    emptyComponent={
-                        <DataTableColumn colSpan={5}>
-                            <Text size="sm" hierarchy="tertiary">
-                                {content.emptyLicenses}
-                            </Text>
-                        </DataTableColumn>
-                    }
-                >
-                    <DataTableHeader>
-                        <DataTableHeaderColumn>{content.licenses}</DataTableHeaderColumn>
-                        <DataTableHeaderColumn>{content.dashboard.statusLabel}</DataTableHeaderColumn>
-                        <DataTableHeaderColumn>{content.dashboard.deploymentLabel}</DataTableHeaderColumn>
-                        <DataTableHeaderColumn>{content.dashboard.lastEditedLabel}</DataTableHeaderColumn>
-                        <DataTableHeaderColumn />
-                    </DataTableHeader>
-                    {(row) => (
-                        <Fragment key={row.id}>
-                            <DataTableColumn>
-                                <Text size="sm" fw={500}>
-                                    {row.name}
-                                </Text>
-                            </DataTableColumn>
-                            <DataTableColumn>
+                {license ? (
+                    <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-5">
+                        {licenseDetails.map((detail) => (
+                            <div key={detail.label} className="min-w-0">
                                 <Text size="sm" hierarchy="tertiary">
-                                    {row.status || "—"}
+                                    {detail.label}
                                 </Text>
-                            </DataTableColumn>
-                            <DataTableColumn>
-                                <Text size="sm" hierarchy="tertiary">
-                                    {row.deploymentType?.replaceAll("_", " ") || "—"}
+                                <Spacing spacing="xxs" />
+                                <Text size="sm" fw={500} className="break-words capitalize">
+                                    {detail.value}
                                 </Text>
-                            </DataTableColumn>
-                            <DataTableColumn>
-                                <Text size="sm" hierarchy="tertiary">
-                                    {row.updatedAt ? dateFormatter.format(new Date(row.updatedAt)) : "—"}
-                                </Text>
-                            </DataTableColumn>
-                            <DataTableColumn>
-                                <div className="flex justify-end">
-                                    <Button
-                                        type="button"
-                                        variant="normal"
-                                        paddingSize="xs"
-                                        onClick={() => router.push(`/${locale}/licenses/customer/${encodeURIComponent(row.customerId)}/license/${encodeURIComponent(row.id)}/edit`)}
-                                        className="text-sm!"
-                                    >
-                                        {content.dashboard.editLabel}
-                                    </Button>
-                                </div>
-                            </DataTableColumn>
-                        </Fragment>
-                    )}
-                </DataTable>
+                            </div>
+                        ))}
+                    </div>
+                ) : isLoading ? (
+                    <div className="h-14 animate-pulse rounded-xl bg-white/[0.04] motion-reduce:animate-none" />
+                ) : (
+                    <Text size="sm" hierarchy="tertiary">
+                        {content.emptyLicenses}
+                    </Text>
+                )}
             </Card>
         </section>
     )
