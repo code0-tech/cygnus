@@ -4,24 +4,21 @@ import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
 import type { LicenseContent } from "@/lib/cms"
 import { AppLocale } from "@/lib/i18n"
 import { Card, DataTable, DataTableColumn, DataTableHeader, DataTableHeaderColumn, Flex, Spacing, Text } from "@code0-tech/pictor"
-import { IconChevronRight, IconCreditCard, IconFileInvoice, IconKey, IconReceipt } from "@tabler/icons-react"
+import { IconChevronRight, IconKey } from "@tabler/icons-react"
 import Link from "next/link"
-import type { ReactNode } from "react"
+import { Fragment } from "react"
 
 interface LicenseDashboardPageProps {
     content: LicenseContent
     locale: AppLocale
 }
 
-function Metric({ icon, label, value }: { icon: ReactNode; label: string; value: number }) {
+function Metric({ label, value }: { label: string; value: number }) {
     return (
         <Flex style={{ flex: 1, minWidth: 0, flexDirection: "column", gap: "0.7rem" }}>
-            <Flex align="center" justify="space-between" style={{ gap: "0.5rem" }}>
-                <Text size="sm" hierarchy="tertiary">
-                    {label}
-                </Text>
-                <span className="text-tertiary">{icon}</span>
-            </Flex>
+            <Text size="sm" hierarchy="tertiary">
+                {label}
+            </Text>
             <Text fz={3} fw={600} style={{ lineHeight: 0.9 }}>
                 {value}
             </Text>
@@ -39,10 +36,10 @@ export function LicenseDashboardPage({ content, locale }: LicenseDashboardPagePr
         .toSorted((left, right) => Date.parse(right.updatedAt ?? "") - Date.parse(left.updatedAt ?? ""))
         .slice(0, 5)
     const metrics = [
-        { icon: <IconKey aria-hidden="true" size={14} />, label: content.licenses, value: customers.reduce((total, customer) => total + customer.licenseCount, 0) },
-        { icon: <IconReceipt aria-hidden="true" size={14} />, label: content.dashboard.customers, value: customers.length },
-        { icon: <IconCreditCard aria-hidden="true" size={14} />, label: content.dashboard.paymentProfiles, value: 0 },
-        { icon: <IconFileInvoice aria-hidden="true" size={14} />, label: content.dashboard.invoices, value: 0 },
+        { label: content.licenses, value: customers.reduce((total, customer) => total + customer.licenseCount, 0) },
+        { label: content.dashboard.customers, value: customers.length },
+        { label: content.dashboard.paymentProfiles, value: 0 },
+        { label: content.dashboard.invoices, value: 0 },
     ]
 
     return (
@@ -89,7 +86,7 @@ export function LicenseDashboardPage({ content, locale }: LicenseDashboardPagePr
                             <DataTableHeaderColumn>{content.licenses}</DataTableHeaderColumn>
                         </DataTableHeader>
                         {(customer) => (
-                            <>
+                            <Fragment key={customer.id}>
                                 <DataTableColumn>
                                     {customer.id ? (
                                         <Link href={`/${locale}/licenses/customer/${encodeURIComponent(customer.id)}`} className="font-medium text-white hover:text-brand">
@@ -101,7 +98,7 @@ export function LicenseDashboardPage({ content, locale }: LicenseDashboardPagePr
                                 </DataTableColumn>
                                 <DataTableColumn><Text size="sm" hierarchy="tertiary">{customer.email || "—"}</Text></DataTableColumn>
                                 <DataTableColumn>{customer.licenseCount}</DataTableColumn>
-                            </>
+                            </Fragment>
                         )}
                     </DataTable>
                 </Card>
@@ -127,7 +124,7 @@ export function LicenseDashboardPage({ content, locale }: LicenseDashboardPagePr
                             <DataTableHeaderColumn>{content.dashboard.lastEditedLabel}</DataTableHeaderColumn>
                         </DataTableHeader>
                         {(license) => (
-                            <>
+                            <Fragment key={license.id}>
                                 <DataTableColumn>
                                     <Flex align="center" style={{ gap: "0.6rem" }}>
                                         <IconKey aria-hidden="true" className="text-brand" size={15} />
@@ -145,7 +142,7 @@ export function LicenseDashboardPage({ content, locale }: LicenseDashboardPagePr
                                         )}
                                     </Flex>
                                 </DataTableColumn>
-                            </>
+                            </Fragment>
                         )}
                     </DataTable>
                 </Card>

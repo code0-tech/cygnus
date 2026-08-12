@@ -5,19 +5,17 @@ import type { LicenseContent } from "@/lib/cms"
 import { IconChevronRight, IconKey, IconLogout, IconStack2 } from "@tabler/icons-react"
 import Image from "next/image"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { AppLocale } from "@/lib/i18n"
 import type { LicenseDashboardLicense } from "@/lib/licenses/licenseTypes"
 
 interface LicenseSidebarProps {
-    content: Pick<LicenseContent, "emptyLicenses" | "licenses" | "sidebar">
+    content: Pick<LicenseContent, "emptyLicenses" | "licenses" | "redirectUrl" | "sidebar">
     locale: AppLocale
     licenses: LicenseDashboardLicense[]
 }
 
 export function LicenseSidebar({ content, locale, licenses }: LicenseSidebarProps) {
-    const router = useRouter()
     const [isLoggingOut, setIsLoggingOut] = useState(false)
 
     const logout = async () => {
@@ -27,8 +25,7 @@ export function LicenseSidebar({ content, locale, licenses }: LicenseSidebarProp
         try {
             await fetch("/api/crater/auth/session", { method: "DELETE", credentials: "same-origin" })
         } finally {
-            router.replace(`/${locale}`)
-            router.refresh()
+            window.location.replace(content.redirectUrl)
         }
     }
 
@@ -70,7 +67,7 @@ export function LicenseSidebar({ content, locale, licenses }: LicenseSidebarProp
                             ))}
                         </ul>
                     ) : (
-                        <div className="flex items-center gap-3 rounded-xl border border-dashed border-white/10 px-3 py-3 text-tertiary">
+                        <div className="flex items-center gap-2 rounded-xl border border-dashed border-white/10 p-2 text-tertiary">
                             <IconKey aria-hidden="true" size={16} />
                             <span className="text-xs">{content.emptyLicenses}</span>
                         </div>
