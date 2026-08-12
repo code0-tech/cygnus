@@ -1,11 +1,19 @@
 "use client"
 
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
+import {
+    LicenseDataTable as DataTable,
+    LicenseDataTableColumn as DataTableColumn,
+    LicenseDataTableHeader as DataTableHeader,
+    LicenseDataTableHeaderColumn as DataTableHeaderColumn,
+} from "@/components/licenses/LicenseDataTable"
 import type { LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
-import { Button, Card, DataTable, DataTableColumn, DataTableHeader, DataTableHeaderColumn, Spacing, Text } from "@code0-tech/pictor"
-import { Fragment } from "react"
+import { decodeLicenseRouteId } from "@/lib/licenses/licenseRoute"
+import { Button, Card, Flex, Spacing, Text } from "@code0-tech/pictor"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { Fragment } from "react"
 
 interface LicenseCustomerPageProps {
     content: LicenseContent
@@ -15,65 +23,156 @@ interface LicenseCustomerPageProps {
 
 export function LicenseCustomerPage({ content, customerId, locale }: LicenseCustomerPageProps) {
     const router = useRouter()
-    const { customers, isLoading } = useLicenseData()
-    const customer = customers.find((candidate) => candidate.id === customerId)
-    const customerRows = customer ? [customer] : []
+    const { customers, isLoading, licenses } = useLicenseData()
+    const resolvedCustomerId = decodeLicenseRouteId(customerId)
+    const customer = customers.find((candidate) => candidate.id === resolvedCustomerId)
+    const customerLicenses = licenses.filter((license) => license.customerId === resolvedCustomerId)
+    const dateFormatter = new Intl.DateTimeFormat(locale, {
+        dateStyle: "medium",
+        timeZone: "UTC",
+    })
+    const customerName = customer?.name || customer?.email || content.dashboard.customerLabel
+    const customerDetails = customer
+        ? [
+              { label: content.editor.nameLabel, value: customer.name || "—" },
+              { label: content.dashboard.emailLabel, value: customer.email || "—" },
+              { label: content.licenses, value: String(customer.licenseCount) },
+              {
+                  label: content.dashboard.lastEditedLabel,
+                  value: customer.updatedAt ? dateFormatter.format(new Date(customer.updatedAt)) : "—",
+              },
+          ]
+        : []
 
     return (
-        <section aria-labelledby="customer-heading">
-            <Text id="customer-heading" hierarchy="secondary" size="lg">
-                {customer?.name || customer?.email || content.dashboard.customerLabel}
-            </Text>
-            <Spacing spacing="md" />
-
-            <Card color="secondary">
-                <DataTable
-                    data={customerRows}
-                    loading={isLoading}
-                    emptyComponent={
-                        <DataTableColumn colSpan={4}>
-                            <Text size="sm" hierarchy="tertiary">
-                                {content.dashboard.emptyCustomers}
+        <div>
+            <section aria-labelledby="customer-heading">
+                <Flex align="center" justify="space-between" style={{ gap: "1rem" }}>
+                    <div className="min-w-0">
+                        <Text id="customer-heading" hierarchy="secondary" size="lg">
+                            {customerName}
+                        </Text>
+                        {customer?.customerType ? (
+                            <Text hierarchy="tertiary" size="sm" className="mt-1 capitalize">
+                                {customer.customerType.replaceAll("_", " ")}
                             </Text>
-                        </DataTableColumn>
-                    }
-                >
-                    <DataTableHeader>
-                        <DataTableHeaderColumn>{content.dashboard.customerLabel}</DataTableHeaderColumn>
-                        <DataTableHeaderColumn>{content.dashboard.emailLabel}</DataTableHeaderColumn>
-                        <DataTableHeaderColumn>{content.licenses}</DataTableHeaderColumn>
-                        <DataTableHeaderColumn />
-                    </DataTableHeader>
-                    {(row) => (
-                        <Fragment key={row.id}>
-                            <DataTableColumn>
-                                <Text size="sm" fw={500}>
-                                    {row.name || row.email || row.id}
-                                </Text>
-                            </DataTableColumn>
-                            <DataTableColumn>
-                                <Text size="sm" hierarchy="tertiary">
-                                    {row.email || "—"}
-                                </Text>
-                            </DataTableColumn>
-                            <DataTableColumn>{row.licenseCount}</DataTableColumn>
-                            <DataTableColumn>
-                                <div className="flex justify-end">
-                                    <Button
-                                        type="button"
-                                        variant="normal"
-                                        paddingSize="xs"
-                                        onClick={() => router.push(`/${locale}/licenses/customer/${encodeURIComponent(row.id)}/edit`)}
-                                        className="text-sm!"
-                                    >
-                                        {content.dashboard.editLabel}
-                                    </Button>
+                        ) : null}
+                    </div>
+                    {customer ? (
+                        <Button
+                            type="button"
+                            variant="normal"
+                            paddingSize="xs"
+                            onClick={() => router.push(`/${locale}/licenses/customer/${encodeURIComponent(customer.id)}/edit`)}
+                            className="shrink-0 text-sm!"
+                        >
+                            {content.dashboard.editLabel}
+                        </Button>
+                    ) : null}
+                </Flex>
+                <Spacing spacing="md" />
+
+                <Card color="secondary">
+                    {customer ? (
+                        <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
+                            {customerDetails.map((detail) => (
+                                <div key={detail.label} className="min-w-0">
+                                    <Text size="sm" hierarchy="tertiary">
+                                        {detail.label}
+                                    </Text>
+                                    <Spacing spacing="xxs" />
+                                    <Text size="sm" fw={500} className="break-words">
+                                        {detail.value}
+                                    </Text>
                                 </div>
-                            </DataTableColumn>
-                        </Fragment>
+                            ))}
+                        </div>
+                    ) : isLoading ? (
+                        <div className="h-14 animate-pulse rounded-xl bg-white/[0.04] motion-reduce:animate-none" />
+                    ) : (
+                        <Text size="sm" hierarchy="tertiary">
+                            {content.dashboard.emptyCustomers}
+                        </Text>
                     )}
-                </DataTable>
-            </Card>
-        </section>
+                </Card>
+            </section>
+
+            <Spacing spacing="xl" />
+
+            <section aria-labelledby="customer-licenses-heading">
+                <Flex align="center" style={{ gap: "0.5rem" }}>
+                    <Text id="customer-licenses-heading" hierarchy="secondary" size="lg">
+                        {content.licenses}
+                    </Text>
+                    <span className="inline-flex w-fit items-center rounded-full bg-[#191825] px-[0.35rem] py-[0.1167rem] text-[0.7rem] font-normal tracking-[-0.5px] text-white/75 shadow-[inset_0_1px_1px_rgba(191,191,191,0.1)]">
+                        {customerLicenses.length}
+                    </span>
+                </Flex>
+                <Spacing spacing="md" />
+
+                <Card color="secondary">
+                    <DataTable
+                        data={customerLicenses}
+                        loading={isLoading}
+                        rowKey={(license) => license.id}
+                        emptyComponent={
+                            <DataTableColumn colSpan={5}>
+                                <Text size="sm" hierarchy="tertiary">
+                                    {content.emptyLicenses}
+                                </Text>
+                            </DataTableColumn>
+                        }
+                    >
+                        <DataTableHeader>
+                            <DataTableHeaderColumn>{content.licenses}</DataTableHeaderColumn>
+                            <DataTableHeaderColumn>{content.dashboard.statusLabel}</DataTableHeaderColumn>
+                            <DataTableHeaderColumn>{content.dashboard.deploymentLabel}</DataTableHeaderColumn>
+                            <DataTableHeaderColumn>{content.dashboard.lastEditedLabel}</DataTableHeaderColumn>
+                            <DataTableHeaderColumn />
+                        </DataTableHeader>
+                        {(license) => (
+                            <Fragment key={license.id}>
+                                <DataTableColumn>
+                                    <Link
+                                        href={`/${locale}/licenses/customer/${encodeURIComponent(resolvedCustomerId)}/license/${encodeURIComponent(license.id)}`}
+                                        className="font-medium text-white hover:text-brand"
+                                    >
+                                        {license.name}
+                                    </Link>
+                                </DataTableColumn>
+                                <DataTableColumn>
+                                    <Text size="sm" hierarchy="tertiary" className="capitalize">
+                                        {license.status?.replaceAll("_", " ") || "—"}
+                                    </Text>
+                                </DataTableColumn>
+                                <DataTableColumn>
+                                    <Text size="sm" hierarchy="tertiary" className="capitalize">
+                                        {license.deploymentType?.replaceAll("_", " ") || "—"}
+                                    </Text>
+                                </DataTableColumn>
+                                <DataTableColumn>
+                                    <Text size="sm" hierarchy="tertiary">
+                                        {license.updatedAt ? dateFormatter.format(new Date(license.updatedAt)) : "—"}
+                                    </Text>
+                                </DataTableColumn>
+                                <DataTableColumn>
+                                    <div className="flex justify-end">
+                                        <Button
+                                            type="button"
+                                            variant="normal"
+                                            paddingSize="xs"
+                                            onClick={() => router.push(`/${locale}/licenses/customer/${encodeURIComponent(resolvedCustomerId)}/license/${encodeURIComponent(license.id)}/edit`)}
+                                            className="text-sm!"
+                                        >
+                                            {content.dashboard.editLabel}
+                                        </Button>
+                                    </div>
+                                </DataTableColumn>
+                            </Fragment>
+                        )}
+                    </DataTable>
+                </Card>
+            </section>
+        </div>
     )
 }

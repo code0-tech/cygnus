@@ -15,12 +15,12 @@ interface LicenseLayoutProps {
 }
 
 function LicenseLayoutContent({ children, content, locale }: LicenseLayoutProps) {
-    const { licenses } = useLicenseData()
+    const { isLoading, licenses } = useLicenseData()
 
     return (
         <FullScreen className="h-dvh! min-h-0! overflow-hidden! bg-light! p-4! text-white">
             <div className="grid h-full min-h-0 grid-cols-1 lg:grid-cols-[18rem_minmax(0,1fr)]">
-                <LicenseSidebar content={content} locale={locale} licenses={licenses} />
+                <LicenseSidebar content={content} isLoading={isLoading} locale={locale} licenses={licenses} />
 
                 <main className="h-full min-h-0 min-w-0 overflow-hidden rounded-2xl bg-primary">
                     <ScrollArea h="100%" type="scroll">
