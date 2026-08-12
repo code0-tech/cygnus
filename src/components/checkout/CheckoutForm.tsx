@@ -27,6 +27,7 @@ function CheckoutFormContent() {
         customers,
         customerType,
         errorMessage,
+        hasExistingCustomers,
         isLoading,
         isRefreshingSession,
         isSessionLoading,
@@ -93,9 +94,9 @@ function CheckoutFormContent() {
     return (
         <div className="w-full space-y-6">
             {stage === "billingAddress" &&
-                (isLoading || isRefreshingSession || isSessionLoading ? (
+                ((isLoading || isRefreshingSession || isSessionLoading) && hasExistingCustomers !== false ? (
                     <CheckoutCustomerSelectSkeleton />
-                ) : selectedCustomerId && customers.length > 0 ? (
+                ) : hasExistingCustomers && selectedCustomerId && customers.length > 0 ? (
                     <SelectInput
                         title={content.customerSelectLabel}
                         value={selectedCustomerId}

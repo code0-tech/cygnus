@@ -37,6 +37,7 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, locale: AppLoc
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
     const [checkoutSession, setCheckoutSession] = useState<CheckoutSessionData | null>(null)
     const [customers, setCustomers] = useState<CheckoutCustomerData[]>([])
+    const [hasExistingCustomers, setHasExistingCustomers] = useState<boolean | null>(null)
     const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null)
     const [taxQuote, setTaxQuote] = useState<CheckoutTaxQuoteData | null>(null)
     const [checkoutSessionPromotionCode, setCheckoutSessionPromotionCode] = useState<string | null | undefined>(undefined)
@@ -120,6 +121,7 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, locale: AppLoc
         setIsLoading(true)
         setErrorMessage(null)
         setCheckoutSession(null)
+        setHasExistingCustomers(null)
         setTaxQuote(null)
         setStripeBillingAddress(null)
         setStripeEmail(null)
@@ -132,6 +134,7 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, locale: AppLoc
                 const availableCustomers = await getCheckoutCustomers()
                 if (requestId !== sessionRefreshRequestRef.current) return
                 const matchingCustomers = availableCustomers.filter((candidate) => candidate.customerType === customerType)
+                setHasExistingCustomers(matchingCustomers.length > 0)
                 const customer = matchingCustomers[0] ?? (await createCheckoutCustomer({ customerType, reuseExisting: false }))
                 if (requestId !== sessionRefreshRequestRef.current) return
                 const preparedCustomers = matchingCustomers.some((candidate) => candidate.id === customer.id) ? matchingCustomers : [...matchingCustomers, customer]
@@ -235,6 +238,7 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, locale: AppLoc
         customers,
         customerType,
         errorMessage,
+        hasExistingCustomers,
         isLoading,
         isConfirmingPayment,
         isRefreshingSession,
