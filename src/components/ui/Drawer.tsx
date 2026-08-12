@@ -31,10 +31,6 @@ function DrawerPortal(props: ComponentPropsWithRef<typeof DrawerPrimitive.Portal
     return <DrawerPrimitive.Portal data-slot="drawer-portal" {...props} />
 }
 
-function DrawerClose(props: ComponentPropsWithRef<typeof DrawerPrimitive.Close>) {
-    return <DrawerPrimitive.Close data-slot="drawer-close" {...props} />
-}
-
 function DrawerBackdrop({ className, ...props }: ComponentPropsWithRef<typeof DrawerPrimitive.Backdrop>) {
     return (
         <DrawerPrimitive.Backdrop
@@ -88,61 +84,17 @@ function DrawerContent({ className, ...props }: ComponentPropsWithRef<typeof Dra
     return <DrawerPrimitive.Content data-slot="drawer-content" className={cn("min-h-0 overflow-y-auto p-6", className)} {...props} />
 }
 
-function DrawerHeader({ className, ...props }: ComponentPropsWithRef<"div">) {
-    return <div data-slot="drawer-header" className={cn("flex flex-col gap-1.5", className)} {...props} />
-}
-
-function DrawerFooter({ className, ...props }: ComponentPropsWithRef<"div">) {
-    return <div data-slot="drawer-footer" className={cn("mt-auto flex flex-col-reverse gap-2 pt-6 sm:flex-row sm:justify-end", className)} {...props} />
-}
-
-function DrawerTitle({ className, ...props }: ComponentPropsWithRef<typeof DrawerPrimitive.Title>) {
-    return <DrawerPrimitive.Title data-slot="drawer-title" className={cn("text-lg font-medium text-white", className)} {...props} />
-}
-
-function DrawerDescription({ className, ...props }: ComponentPropsWithRef<typeof DrawerPrimitive.Description>) {
-    return <DrawerPrimitive.Description data-slot="drawer-description" className={cn("text-sm leading-6 text-secondary", className)} {...props} />
-}
-
 function DrawerHandle({ className, ...props }: ComponentPropsWithRef<"div">) {
     return <div data-slot="drawer-handle" aria-hidden="true" className={cn("mx-auto my-3 h-1.5 w-12 shrink-0 rounded-full bg-white/20", className)} {...props} />
 }
 
-function DrawerPanel({ backdropClassName, viewportClassName, children }: { backdropClassName?: string; viewportClassName?: string; children: React.ReactNode }) {
-    return (
-        <DrawerPortal>
-            <DrawerBackdrop className={backdropClassName} />
-            <DrawerViewport className={viewportClassName}>{children}</DrawerViewport>
-        </DrawerPortal>
-    )
-}
-
-const DrawerProvider = DrawerPrimitive.Provider
-const DrawerIndent = DrawerPrimitive.Indent
-const DrawerIndentBackground = DrawerPrimitive.IndentBackground
-const DrawerSwipeArea = DrawerPrimitive.SwipeArea
-const DrawerVirtualKeyboardProvider = DrawerPrimitive.VirtualKeyboardProvider
-
 export {
     Drawer,
     DrawerBackdrop,
-    DrawerClose,
     DrawerContent,
-    DrawerDescription,
-    DrawerFooter,
     DrawerHandle,
-    DrawerHeader,
-    DrawerIndent,
-    DrawerIndentBackground,
-    DrawerPanel,
     DrawerPopup,
     DrawerPortal,
-    DrawerProvider,
-    DrawerSwipeArea,
-    DrawerTitle,
     DrawerTrigger,
     DrawerViewport,
-    DrawerVirtualKeyboardProvider,
 }
-
-export type { DrawerSide }

@@ -14,9 +14,9 @@ export type CraterSessionAuthorization =
 
 const CRATER_SESSION_AUTHORIZATION_PATTERN = /^Session ([^\s]+)$/
 const CRATER_SESSION_TOKEN_PATTERN = /^[^\s]+$/
-export const CRATER_SESSION_TOKEN_QUERY_PARAM = "token"
-export const CRATER_SESSION_COOKIE_NAME = "crater_session"
-export const CRATER_SESSION_COOKIE_PATH = "/api/crater"
+const CRATER_SESSION_TOKEN_QUERY_PARAM = "token"
+const CRATER_SESSION_COOKIE_NAME = "crater_session"
+const CRATER_SESSION_COOKIE_PATH = "/api/crater"
 
 function readCookie(request: Request, name: string) {
     const cookieHeader = request.headers.get("cookie")

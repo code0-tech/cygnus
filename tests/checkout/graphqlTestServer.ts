@@ -1,7 +1,7 @@
 import { createServer } from "node:http"
 import type { AddressInfo } from "node:net"
 
-export interface CapturedGraphQLRequest {
+interface CapturedGraphQLRequest {
     authorization: string | undefined
     body: {
         operationName?: string
