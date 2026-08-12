@@ -5,7 +5,7 @@ import { POST as validateDiscount } from "../../src/app/api/crater/checkout/disc
 import { POST as calculateTax } from "../../src/app/api/crater/checkout/tax/route"
 import { POST as createSession } from "../../src/app/api/crater/login/route"
 import { DELETE as deleteSession, GET as getSessionStatus } from "../../src/app/api/crater/auth/session/route"
-import { GET as getLicenseDashboard } from "../../src/app/api/crater/licenses/route"
+import { GET as getLicenseDashboard, PATCH as linkLicenseNamespace } from "../../src/app/api/crater/licenses/route"
 import { GET as accessLicenseDashboard } from "../../src/app/api/crater/licenses/access/route"
 import { createGraphQLTestServer } from "./graphqlTestServer"
 
@@ -589,6 +589,53 @@ test("license dashboard maps the current user's customers and recent licenses", 
                     updatedAt: "2026-08-10T10:00:00Z",
                 },
             ],
+        })
+    } finally {
+        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
+        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
+        await graphQLServer.close()
+    }
+})
+
+test("links a cloud license to a namespace", async () => {
+    const graphQLServer = await createGraphQLTestServer([
+        {
+            data: {
+                licensesLinkNamespace: {
+                    errors: [],
+                    license: {
+                        deploymentType: "cloud",
+                        id: "gid://crater/License/9",
+                        namespaceId: "namespace-9",
+                        updatedAt: "2026-08-12T11:00:00Z",
+                    },
+                },
+            },
+        },
+    ])
+    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
+    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
+
+    try {
+        const response = await linkLicenseNamespace(
+            new Request("https://example.com/api/crater/licenses", {
+                method: "PATCH",
+                headers: sessionHeaders,
+                body: JSON.stringify({ id: "gid://crater/License/9", namespaceId: "namespace-9" }),
+            })
+        )
+
+        assert.equal(response.status, 200)
+        assert.equal(graphQLServer.requests[0].authorization, "Session c_ust_example")
+        assert.equal(graphQLServer.requests[0].body.operationName, "LicensesLinkNamespace")
+        assert.deepEqual(graphQLServer.requests[0].body.variables, {
+            input: { id: "gid://crater/License/9", namespaceId: "namespace-9" },
+        })
+        assert.deepEqual(await response.json(), {
+            deploymentType: "cloud",
+            id: "gid://crater/License/9",
+            namespaceId: "namespace-9",
+            updatedAt: "2026-08-12T11:00:00Z",
         })
     } finally {
         if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL

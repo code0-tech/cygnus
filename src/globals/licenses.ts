@@ -162,5 +162,56 @@ export const Licenses: GlobalConfig = {
                 },
             ],
         },
+        {
+            name: "editor",
+            type: "group",
+            fields: [
+                { name: "customerTitle", type: "text", required: true, localized: true, defaultValue: localizedDefault("Edit customer", "Kunden bearbeiten") },
+                {
+                    name: "customerDescription",
+                    type: "textarea",
+                    required: true,
+                    localized: true,
+                    defaultValue: localizedDefault("Update the customer's contact details.", "Aktualisiere die Kontaktdaten des Kunden."),
+                },
+                { name: "licenseTitle", type: "text", required: true, localized: true, defaultValue: localizedDefault("Edit license", "Lizenz bearbeiten") },
+                {
+                    name: "licenseDescription",
+                    type: "textarea",
+                    required: true,
+                    localized: true,
+                    defaultValue: localizedDefault("Link this cloud license to a namespace.", "Verknüpfe diese Cloud-Lizenz mit einem Namespace."),
+                },
+                { name: "nameLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Name", "Name") },
+                { name: "namespaceLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Namespace ID", "Namespace-ID") },
+                { name: "saveLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Save", "Speichern") },
+                { name: "cancelLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Cancel", "Abbrechen") },
+                { name: "closeLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Close", "Schließen") },
+                {
+                    name: "customerError",
+                    type: "text",
+                    required: true,
+                    localized: true,
+                    defaultValue: localizedDefault("The customer could not be updated.", "Der Kunde konnte nicht aktualisiert werden."),
+                },
+                {
+                    name: "licenseError",
+                    type: "text",
+                    required: true,
+                    localized: true,
+                    defaultValue: localizedDefault("The license could not be updated.", "Die Lizenz konnte nicht aktualisiert werden."),
+                },
+                {
+                    name: "selfHostedDescription",
+                    type: "text",
+                    required: true,
+                    localized: true,
+                    defaultValue: localizedDefault(
+                        "Self-hosted licenses have no editable namespace.",
+                        "Self-hosted-Lizenzen besitzen keinen bearbeitbaren Namespace."
+                    ),
+                },
+            ],
+        },
     ],
 }

@@ -424,6 +424,20 @@ export interface LicenseContent {
         statusLabel: string
         deploymentLabel: string
     }
+    editor: {
+        customerTitle: string
+        customerDescription: string
+        licenseTitle: string
+        licenseDescription: string
+        nameLabel: string
+        namespaceLabel: string
+        saveLabel: string
+        cancelLabel: string
+        closeLabel: string
+        customerError: string
+        licenseError: string
+        selfHostedDescription: string
+    }
 }
 
 function isMissingPayloadTablesError(error: unknown): boolean {

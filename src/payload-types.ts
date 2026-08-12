@@ -3263,6 +3263,20 @@ export interface License {
     statusLabel: string;
     deploymentLabel: string;
   };
+  editor: {
+    customerTitle: string;
+    customerDescription: string;
+    licenseTitle: string;
+    licenseDescription: string;
+    nameLabel: string;
+    namespaceLabel: string;
+    saveLabel: string;
+    cancelLabel: string;
+    closeLabel: string;
+    customerError: string;
+    licenseError: string;
+    selfHostedDescription: string;
+  };
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -3876,6 +3890,22 @@ export interface LicensesSelect<T extends boolean = true> {
         editLabel?: T;
         statusLabel?: T;
         deploymentLabel?: T;
+      };
+  editor?:
+    | T
+    | {
+        customerTitle?: T;
+        customerDescription?: T;
+        licenseTitle?: T;
+        licenseDescription?: T;
+        nameLabel?: T;
+        namespaceLabel?: T;
+        saveLabel?: T;
+        cancelLabel?: T;
+        closeLabel?: T;
+        customerError?: T;
+        licenseError?: T;
+        selfHostedDescription?: T;
       };
   updatedAt?: T;
   createdAt?: T;

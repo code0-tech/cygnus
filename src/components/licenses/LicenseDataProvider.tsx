@@ -6,6 +6,8 @@ import { createContext, type ReactNode, useContext, useEffect, useRef, useState 
 
 interface LicenseDataContextValue extends LicenseDashboardData {
     isLoading: boolean
+    updateCustomer: (id: string, values: { email?: string; name?: string }) => void
+    updateLicense: (id: string, values: { namespaceId?: string; updatedAt?: string }) => void
 }
 
 const LicenseDataContext = createContext<LicenseDataContextValue | null>(null)
@@ -14,6 +16,23 @@ export function LicenseDataProvider({ children, redirectUrl }: { children: React
     const sessionTokenRef = useRef<string | null>(null)
     const [data, setData] = useState<LicenseDashboardData>(EMPTY_LICENSE_DASHBOARD_DATA)
     const [isLoading, setIsLoading] = useState(true)
+
+    const updateCustomer: LicenseDataContextValue["updateCustomer"] = (id, values) => {
+        setData((current) => ({
+            ...current,
+            customers: current.customers.map((customer) => (customer.id === id ? { ...customer, ...values } : customer)),
+            licenses: current.licenses.map((license) =>
+                license.customerId === id ? { ...license, customerName: values.name || values.email || license.customerName } : license
+            ),
+        }))
+    }
+
+    const updateLicense: LicenseDataContextValue["updateLicense"] = (id, values) => {
+        setData((current) => ({
+            ...current,
+            licenses: current.licenses.map((license) => (license.id === id ? { ...license, ...values } : license)),
+        }))
+    }
 
     useEffect(() => {
         const controller = new AbortController()
@@ -60,7 +79,7 @@ export function LicenseDataProvider({ children, redirectUrl }: { children: React
         return () => controller.abort()
     }, [redirectUrl])
 
-    return <LicenseDataContext.Provider value={{ ...data, isLoading }}>{children}</LicenseDataContext.Provider>
+    return <LicenseDataContext.Provider value={{ ...data, isLoading, updateCustomer, updateLicense }}>{children}</LicenseDataContext.Provider>
 }
 
 export function useLicenseData() {
