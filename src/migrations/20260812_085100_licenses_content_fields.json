@@ -16820,13 +16820,6 @@
           "primaryKey": true,
           "notNull": true
         },
-        "title": {
-          "name": "title",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'License Collection'"
-        },
         "updated_at": {
           "name": "updated_at",
           "type": "timestamp(3) with time zone",
@@ -16852,29 +16845,59 @@
       "name": "licenses_locales",
       "schema": "",
       "columns": {
-        "cards_licenses": {
-          "name": "cards_licenses",
+        "licenses": {
+          "name": "licenses",
           "type": "varchar",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
-        "cards_subscriptions": {
-          "name": "cards_subscriptions",
+        "empty_licenses": {
+          "name": "empty_licenses",
           "type": "varchar",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
-        "cards_payment_profiles": {
-          "name": "cards_payment_profiles",
+        "sidebar_logout": {
+          "name": "sidebar_logout",
           "type": "varchar",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
-        "cards_invoices": {
-          "name": "cards_invoices",
+        "sidebar_logging_out": {
+          "name": "sidebar_logging_out",
           "type": "varchar",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
+        },
+        "dashboard_description": {
+          "name": "dashboard_description",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dashboard_empty_description": {
+          "name": "dashboard_empty_description",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dashboard_invoices": {
+          "name": "dashboard_invoices",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dashboard_payment_profiles": {
+          "name": "dashboard_payment_profiles",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dashboard_customers": {
+          "name": "dashboard_customers",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
         },
         "id": {
           "name": "id",
@@ -17987,6 +18010,6 @@
     "tables": {},
     "columns": {}
   },
-  "id": "9539ef47-e54d-441b-9093-e648c8d7182a",
-  "prevId": "00000000-0000-0000-0000-000000000000"
+  "id": "c677079d-a446-4eb1-9342-dfc232182ff3",
+  "prevId": "9539ef47-e54d-441b-9093-e648c8d7182a"
 }
