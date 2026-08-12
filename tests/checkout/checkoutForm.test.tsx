@@ -356,8 +356,8 @@ test("creates the customer and checkout session on mount before collecting Strip
     assert.equal(checkoutProviderOptions?.elementsOptions?.appearance?.variables?.colorPrimary, "#72f896")
     assert.deepEqual(billingAddressOptions, { display: { name: "full" } })
     assert.equal(screen.queryByTestId("checkout-customer-select-skeleton"), null)
-    assert.ok(screen.getByText(content.customerSelectLabel))
-    assert.equal(screen.getAllByText(content.newCustomerLabel).length, 2)
+    assert.equal(screen.queryByText(content.customerSelectLabel), null)
+    assert.equal(screen.queryByText(content.newCustomerLabel), null)
     assert.ok(screen.getByTestId("stripe-contact-details"))
     assert.ok(screen.getByTestId("stripe-billing-address"))
     assert.equal(screen.queryByRole("textbox", { name: "Tax ID type" }), null)
@@ -447,13 +447,18 @@ test("recreates the checkout session for a selected or newly created customer", 
     }) as typeof fetch
 
     render(<CheckoutForm content={content} locale="en" />)
+    assert.ok(screen.getByTestId("checkout-customer-select-skeleton"))
     await waitFor(() => assert.equal(checkoutProviderOptions?.clientSecret, "cs_customer_1"))
+    assert.equal(screen.queryByTestId("checkout-customer-select-skeleton"), null)
+    assert.ok(screen.getByText(content.customerSelectLabel))
+    assert.equal(screen.getAllByText(content.newCustomerLabel).length, 1)
 
     act(() => customerSelectOnValueChange?.("gid://crater/Customer/2"))
     await waitFor(() => assert.equal(checkoutProviderOptions?.clientSecret, "cs_customer_2"))
 
     act(() => customerSelectOnValueChange?.("new"))
     await waitFor(() => assert.equal(checkoutProviderOptions?.clientSecret, "cs_customer_3"))
+    assert.equal(screen.getAllByText(content.newCustomerLabel).length, 2)
 
     const sessionBodies = requests.filter((request) => request.url === "/api/crater/checkout/session").map((request) => JSON.parse(String(request.init?.body)) as { customerId: string })
     assert.deepEqual(
