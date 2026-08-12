@@ -400,21 +400,19 @@ export interface CheckoutData {
     }
 }
 
-const LICENSE_CARD_HEADINGS_FALLBACK = {
-    licenses: "Licenses",
-    subscriptions: "Subscriptions",
-    paymentProfiles: "Payment Profiles",
-    invoices: "Invoices",
-} as const
-
-export interface LicenseData {
-    id: number
-    title: string
-    cards: {
-        licenses: string
-        subscriptions: string
-        paymentProfiles: string
+export interface LicenseContent {
+    licenses: string
+    emptyLicenses: string
+    sidebar: {
+        logout: string
+        loggingOut: string
+    }
+    dashboard: {
+        description: string
+        emptyDescription: string
         invoices: string
+        paymentProfiles: string
+        customers: string
     }
 }
 
@@ -778,26 +776,13 @@ const getCheckoutContentCached = cache(async (locale: AppLocale): Promise<Checko
     })
 })
 
-const getLicenseCollectionCached = cache(async (locale: AppLocale): Promise<LicenseData | null> => {
-    const licenseCollection = await cmsFindGlobal<LicenseData>(`getLicenses(${locale})`, null, {
+const getLicenseContentCached = cache(async (locale: AppLocale): Promise<LicenseContent | null> => {
+    return cmsFindGlobal(`getLicenses(${locale})`, null, {
         slug: "licenses",
         locale,
         fallbackLocale: DEFAULT_LOCALE,
         depth: 0,
     })
-
-    if (!licenseCollection) return null
-
-    return {
-        id: licenseCollection.id ?? 0,
-        title: licenseCollection.title?.trim() || "Licenses",
-        cards: {
-            licenses: licenseCollection.cards?.licenses?.trim() || LICENSE_CARD_HEADINGS_FALLBACK.licenses,
-            subscriptions: licenseCollection.cards?.subscriptions?.trim() || LICENSE_CARD_HEADINGS_FALLBACK.subscriptions,
-            paymentProfiles: licenseCollection.cards?.paymentProfiles?.trim() || LICENSE_CARD_HEADINGS_FALLBACK.paymentProfiles,
-            invoices: licenseCollection.cards?.invoices?.trim() || LICENSE_CARD_HEADINGS_FALLBACK.invoices,
-        },
-    }
 })
 
 export async function getLandingPage(slug = "main", locale: AppLocale = DEFAULT_LOCALE): Promise<Page | null> {
@@ -872,6 +857,7 @@ export async function getCheckoutContent(locale: AppLocale = DEFAULT_LOCALE): Pr
     return getCheckoutContentCached(locale)
 }
 
-export async function getLicenseContent(locale: AppLocale = DEFAULT_LOCALE): Promise<LicenseData | null> {
-    return getLicenseCollectionCached(locale)
+export async function getLicenseContent(locale: AppLocale = DEFAULT_LOCALE): Promise<LicenseContent | null> {
+    return getLicenseContentCached(locale)
 }
+

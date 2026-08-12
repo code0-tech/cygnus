@@ -7,8 +7,8 @@ export default async function LicensesPage({ params }: { params: Promise<{ local
     const { locale } = await params
     if (!isSupportedLocale(locale)) notFound()
 
-    const licenses = await getLicenseContent(locale)
-    if (!licenses) notFound()
+    const content = await getLicenseContent(locale)
+    if (!content) notFound()
 
-    return <LicenseDashboardPage content={licenses} locale={locale} />
+    return <LicenseDashboardPage content={content} locale={locale} />
 }

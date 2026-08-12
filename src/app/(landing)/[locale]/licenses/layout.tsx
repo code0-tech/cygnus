@@ -1,4 +1,5 @@
 import { LicenseLayout } from "@/components/licenses/LicenseLayout"
+import { getLicenseContent } from "@/lib/cms"
 import { isSupportedLocale } from "@/lib/i18n"
 import { notFound } from "next/navigation"
 import type { ReactNode } from "react"
@@ -12,5 +13,8 @@ export default async function LicensesLayout({ children, params }: LicensesLayou
     const { locale } = await params
     if (!isSupportedLocale(locale)) notFound()
 
-    return <LicenseLayout locale={locale}>{children}</LicenseLayout>
+    const content = await getLicenseContent(locale)
+    if (!content) notFound()
+
+    return <LicenseLayout content={content} locale={locale}>{children}</LicenseLayout>
 }

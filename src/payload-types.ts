@@ -3237,12 +3237,18 @@ export interface Checkout {
  */
 export interface License {
   id: number;
-  title: string;
-  cards?: {
-    licenses?: string | null;
-    subscriptions?: string | null;
-    paymentProfiles?: string | null;
-    invoices?: string | null;
+  licenses: string;
+  emptyLicenses: string;
+  sidebar: {
+    logout: string;
+    loggingOut: string;
+  };
+  dashboard: {
+    description: string;
+    emptyDescription: string;
+    invoices: string;
+    paymentProfiles: string;
+    customers: string;
   };
   updatedAt?: string | null;
   createdAt?: string | null;
@@ -3831,14 +3837,22 @@ export interface CheckoutSelect<T extends boolean = true> {
  * via the `definition` "licenses_select".
  */
 export interface LicensesSelect<T extends boolean = true> {
-  title?: T;
-  cards?:
+  licenses?: T;
+  emptyLicenses?: T;
+  sidebar?:
     | T
     | {
-        licenses?: T;
-        subscriptions?: T;
-        paymentProfiles?: T;
+        logout?: T;
+        loggingOut?: T;
+      };
+  dashboard?:
+    | T
+    | {
+        description?: T;
+        emptyDescription?: T;
         invoices?: T;
+        paymentProfiles?: T;
+        customers?: T;
       };
   updatedAt?: T;
   createdAt?: T;

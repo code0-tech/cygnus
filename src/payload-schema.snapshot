@@ -2595,7 +2595,6 @@ export const checkout_locales = pgTable('checkout_locales', {
 
 export const licenses = pgTable('licenses', {
   id: serial('id').primaryKey(),
-  title: varchar('title').notNull().default("License Collection"),
   updatedAt: timestamp('updated_at', {mode: 'string',withTimezone: true,precision: 3}),
   createdAt: timestamp('created_at', {mode: 'string',withTimezone: true,precision: 3}),
 }
@@ -2603,10 +2602,15 @@ export const licenses = pgTable('licenses', {
 
 
 export const licenses_locales = pgTable('licenses_locales', {
-  cards_licenses: varchar('cards_licenses'),
-  cards_subscriptions: varchar('cards_subscriptions'),
-  cards_paymentProfiles: varchar('cards_payment_profiles'),
-  cards_invoices: varchar('cards_invoices'),
+  licenses: varchar('licenses').notNull(),
+  emptyLicenses: varchar('empty_licenses').notNull(),
+  sidebar_logout: varchar('sidebar_logout').notNull(),
+  sidebar_loggingOut: varchar('sidebar_logging_out').notNull(),
+  dashboard_description: varchar('dashboard_description').notNull(),
+  dashboard_emptyDescription: varchar('dashboard_empty_description').notNull(),
+  dashboard_invoices: varchar('dashboard_invoices').notNull(),
+  dashboard_paymentProfiles: varchar('dashboard_payment_profiles').notNull(),
+  dashboard_customers: varchar('dashboard_customers').notNull(),
   id: serial('id').primaryKey(),
   _locale: enum__locales('_locale').notNull(),
   _parentID: integer('_parent_id').notNull(),
@@ -3916,43 +3920,43 @@ export const relations_subscription_config_locales = relations(subscription_conf
       }))
 export const relations_subscription_config = relations(subscription_config, ({ one, many }) => ({
   deployment_selfHosted_image: one(media, {
-
+    
     fields: [subscription_config.deployment_selfHosted_image],
     references: [media.id],
     relationName: 'deployment_selfHosted_image',
     }),
     deployment_cloud_image: one(media, {
-
+    
     fields: [subscription_config.deployment_cloud_image],
     references: [media.id],
     relationName: 'deployment_cloud_image',
     }),
     plan_pro_image: one(media, {
-
+    
     fields: [subscription_config.plan_pro_image],
     references: [media.id],
     relationName: 'plan_pro_image',
     }),
     plan_max_image: one(media, {
-
+    
     fields: [subscription_config.plan_max_image],
     references: [media.id],
     relationName: 'plan_max_image',
     }),
     plan_custom_image: one(media, {
-
+    
     fields: [subscription_config.plan_custom_image],
     references: [media.id],
     relationName: 'plan_custom_image',
     }),
     customerType_b2b_image: one(media, {
-
+    
     fields: [subscription_config.customerType_b2b_image],
     references: [media.id],
     relationName: 'customerType_b2b_image',
     }),
     customerType_b2c_image: one(media, {
-
+    
     fields: [subscription_config.customerType_b2c_image],
     references: [media.id],
     relationName: 'customerType_b2c_image',
@@ -4308,10 +4312,11 @@ type DatabaseSchema = {
   relations_licenses_locales: typeof relations_licenses_locales
   relations_licenses: typeof relations_licenses
 }
-
+    
 
 declare module '@payloadcms/db-postgres' {
   export interface GeneratedDatabaseSchema {
     schema: DatabaseSchema
   }
 }
+    
