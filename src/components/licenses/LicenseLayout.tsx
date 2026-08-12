@@ -1,20 +1,23 @@
 "use client"
 
-import { LicenseSidebar, type LicenseProject } from "@/components/licenses/LicenseSidebar"
+import { LicenseSidebar, type License } from "@/components/licenses/LicenseSidebar"
+import type { LicenseContent } from "@/lib/cms"
+import { AppLocale } from "@/lib/i18n"
 import { FullScreen, ScrollArea, ScrollAreaScrollbar, ScrollAreaThumb, ScrollAreaViewport } from "@code0-tech/pictor"
 import type { ReactNode } from "react"
 
 interface LicenseLayoutProps {
     children: ReactNode
-    locale: "de" | "en"
-    projects?: LicenseProject[]
+    content: LicenseContent
+    locale: AppLocale
+    licenses?: License[]
 }
 
-export function LicenseLayout({ children, locale, projects = [] }: LicenseLayoutProps) {
+export function LicenseLayout({ children, content, locale, licenses = [] }: LicenseLayoutProps) {
     return (
         <FullScreen className="h-dvh! min-h-0! overflow-hidden! bg-light! p-4! text-white">
             <div className="grid h-full min-h-0 grid-cols-1 lg:grid-cols-[18rem_minmax(0,1fr)]">
-                <LicenseSidebar locale={locale} projects={projects} />
+                <LicenseSidebar content={content} locale={locale} licenses={licenses} />
 
                 <main className="h-full min-h-0 min-w-0 overflow-hidden rounded-2xl bg-primary">
                     <ScrollArea h="100%" type="scroll">
