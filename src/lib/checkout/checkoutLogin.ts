@@ -1,6 +1,6 @@
 export type CheckoutSearchParams = Record<string, string | string[] | undefined>
 
-export const SAGITTARIUS_TOKEN_QUERY_PARAM = "token"
+const SAGITTARIUS_TOKEN_QUERY_PARAM = "token"
 
 export function readSagittariusToken(searchParams: Pick<URLSearchParams, "get">): string | undefined {
     const token = searchParams.get(SAGITTARIUS_TOKEN_QUERY_PARAM)?.trim()

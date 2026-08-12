@@ -12,7 +12,7 @@ export interface CountryOption {
     value: string
 }
 
-export function normalizeCountrySearchValue(value: string): string {
+function normalizeCountrySearchValue(value: string): string {
     return value
         .normalize("NFKD")
         .replace(/\p{M}/gu, "")
