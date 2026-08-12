@@ -2,6 +2,7 @@
 
 import { EMPTY_LICENSE_DASHBOARD_DATA, type LicenseDashboardData } from "@/lib/licenses/licenseTypes"
 import { readCraterSessionToken, removeCraterSessionToken } from "@/lib/checkout/craterSession"
+import type { AppLocale } from "@/lib/i18n"
 import { createContext, type ReactNode, useContext, useEffect, useRef, useState } from "react"
 
 interface LicenseDataContextValue extends LicenseDashboardData {
@@ -12,7 +13,7 @@ interface LicenseDataContextValue extends LicenseDashboardData {
 
 const LicenseDataContext = createContext<LicenseDataContextValue | null>(null)
 
-export function LicenseDataProvider({ children, redirectUrl }: { children: ReactNode; redirectUrl: string }) {
+export function LicenseDataProvider({ children, locale, redirectUrl }: { children: ReactNode; locale: AppLocale; redirectUrl: string }) {
     const sessionTokenRef = useRef<string | null>(null)
     const [data, setData] = useState<LicenseDashboardData>(EMPTY_LICENSE_DASHBOARD_DATA)
     const [isLoading, setIsLoading] = useState(true)
@@ -40,14 +41,12 @@ export function LicenseDataProvider({ children, redirectUrl }: { children: React
         const sessionToken = sessionTokenRef.current ?? readCraterSessionToken(currentUrl)
 
         if (!sessionToken) {
-            window.location.replace(redirectUrl)
+            window.location.replace(`/api/crater/licenses/access?locale=${encodeURIComponent(locale)}`)
             return () => controller.abort()
         }
 
         sessionTokenRef.current = sessionToken
-        if (currentUrl.searchParams.has("token")) {
-            window.history.replaceState(window.history.state, "", removeCraterSessionToken(currentUrl).toString())
-        }
+        const shouldRemoveToken = currentUrl.searchParams.has("token")
 
         void fetch("/api/crater/licenses", {
             cache: "no-store",
@@ -66,7 +65,11 @@ export function LicenseDataProvider({ children, redirectUrl }: { children: React
                 return (await response.json()) as LicenseDashboardData
             })
             .then((nextData) => {
-                if (nextData) setData(nextData)
+                if (!nextData) return
+                setData(nextData)
+                if (shouldRemoveToken) {
+                    window.history.replaceState(window.history.state, "", removeCraterSessionToken(currentUrl).toString())
+                }
             })
             .catch((error: unknown) => {
                 if (error instanceof DOMException && error.name === "AbortError") return
@@ -77,7 +80,7 @@ export function LicenseDataProvider({ children, redirectUrl }: { children: React
             })
 
         return () => controller.abort()
-    }, [redirectUrl])
+    }, [locale, redirectUrl])
 
     return <LicenseDataContext.Provider value={{ ...data, isLoading, updateCustomer, updateLicense }}>{children}</LicenseDataContext.Provider>
 }

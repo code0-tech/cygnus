@@ -10,6 +10,15 @@ import { IconChevronDown, IconPlus } from "@tabler/icons-react"
 
 const NEW_CUSTOMER_VALUE = "new"
 
+function CheckoutCustomerSelectSkeleton() {
+    return (
+        <div aria-hidden="true" data-testid="checkout-customer-select-skeleton" className="w-full animate-pulse motion-reduce:animate-none">
+            <div className="mb-2 h-2.5 w-24 rounded-full bg-white/10" />
+            <div className="h-10 w-full rounded-2xl bg-white/[0.07] shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)]" />
+        </div>
+    )
+}
+
 function CheckoutFormContent() {
     const { stage } = useCheckoutStage()
     const {
@@ -65,15 +74,15 @@ function CheckoutFormContent() {
         const resolvedError = errorMessage ?? sessionError
         if (resolvedError) {
             checkoutContent = (
-            <div className="space-y-4">
-                <p className="text-sm text-error" role="alert">
-                    {resolvedError}
-                </p>
-                <Button type="button" variant="normal" onClick={retryPreparation} className="h-10! w-full! text-sm!">
-                    {content.continueLabel}
-                </Button>
-            </div>
-        )
+                <div className="space-y-4">
+                    <p className="text-sm text-error" role="alert">
+                        {resolvedError}
+                    </p>
+                    <Button type="button" variant="normal" onClick={retryPreparation} className="h-10! w-full! text-sm!">
+                        {content.continueLabel}
+                    </Button>
+                </div>
+            )
         } else if (isLoading || isRefreshingSession || isSessionLoading) {
             checkoutContent = <CheckoutPaymentFormSkeleton label={content.processingLabel} />
         } else {
@@ -83,39 +92,41 @@ function CheckoutFormContent() {
 
     return (
         <div className="w-full space-y-6">
-            {stage === "billingAddress" && selectedCustomerId && customers.length > 0 && (
-                <SelectInput
-                    title={content.customerSelectLabel}
-                    value={selectedCustomerId}
-                    disabled={isLoading || isRefreshingSession || isSessionLoading}
-                    onValueChange={(value) => void selectCheckoutCustomer(value === NEW_CUSTOMER_VALUE ? null : value)}
-                    right={<IconChevronDown aria-hidden="true" size={16} />}
-                    rightType="icon"
-                >
-                    <SelectTrigger className="w-full!">
-                        <SelectValue />
-                    </SelectTrigger>
-                    <SelectPortal>
-                        <SelectContent position="popper" className="z-100 w-(--radix-select-trigger-width)!">
-                            <SelectViewport>
-                                {customers.map((customer, index) => (
-                                    <SelectItem key={customer.id} value={customer.id}>
-                                        <SelectItemText>{customer.name || customer.email || `${content.customerFallbackLabel} ${index + 1}`}</SelectItemText>
+            {stage === "billingAddress" &&
+                (isLoading || isRefreshingSession || isSessionLoading ? (
+                    <CheckoutCustomerSelectSkeleton />
+                ) : selectedCustomerId && customers.length > 0 ? (
+                    <SelectInput
+                        title={content.customerSelectLabel}
+                        value={selectedCustomerId}
+                        onValueChange={(value) => void selectCheckoutCustomer(value === NEW_CUSTOMER_VALUE ? null : value)}
+                        right={<IconChevronDown aria-hidden="true" size={16} />}
+                        rightType="icon"
+                    >
+                        <SelectTrigger className="w-full!">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectPortal>
+                            <SelectContent position="popper" className="z-100 w-(--radix-select-trigger-width)!">
+                                <SelectViewport>
+                                    {customers.map((customer) => (
+                                        <SelectItem key={customer.id} value={customer.id}>
+                                            <SelectItemText>{customer.name || customer.email || content.newCustomerLabel}</SelectItemText>
+                                        </SelectItem>
+                                    ))}
+                                    <SelectItem value={NEW_CUSTOMER_VALUE}>
+                                        <SelectItemText>
+                                            <span className="flex items-center gap-2 text-brand">
+                                                <IconPlus aria-hidden="true" size={15} />
+                                                {content.newCustomerLabel}
+                                            </span>
+                                        </SelectItemText>
                                     </SelectItem>
-                                ))}
-                                <SelectItem value={NEW_CUSTOMER_VALUE}>
-                                    <SelectItemText>
-                                        <span className="flex items-center gap-2 text-brand">
-                                            <IconPlus aria-hidden="true" size={15} />
-                                            {content.newCustomerLabel}
-                                        </span>
-                                    </SelectItemText>
-                                </SelectItem>
-                            </SelectViewport>
-                        </SelectContent>
-                    </SelectPortal>
-                </SelectInput>
-            )}
+                                </SelectViewport>
+                            </SelectContent>
+                        </SelectPortal>
+                    </SelectInput>
+                ) : null)}
             {checkoutContent}
         </div>
     )

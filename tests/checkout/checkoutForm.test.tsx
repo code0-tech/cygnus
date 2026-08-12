@@ -75,7 +75,12 @@ mock.module("@code0-tech/pictor", {
         TextInput: TestInput,
         SelectInput: ({ children, onValueChange, title }: { children: React.ReactNode; onValueChange?: (value: string) => void; title?: React.ReactNode }) => {
             customerSelectOnValueChange = onValueChange ?? null
-            return <div><span>{title}</span>{children}</div>
+            return (
+                <div>
+                    <span>{title}</span>
+                    {children}
+                </div>
+            )
         },
         SelectTrigger: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
         SelectValue: () => null,
@@ -124,25 +129,25 @@ mock.module("@stripe/react-stripe-js/checkout", {
                 : {
                       type: "success",
                       checkout: {
-                email: null,
-                confirm: async (options: unknown) => {
-                    stripeConfirmCalls += 1
-                    stripeConfirmOptions.push(options)
-                    if (stripeConfirmErrorMessage) return { type: "error", error: { message: stripeConfirmErrorMessage } }
-                    return { type: "success", session: {} }
-                },
-                updateBillingAddress: async (address: unknown) => {
-                    stripeBillingAddressUpdates.push(address)
-                    return { type: "success", session: {} }
-                },
-                updateEmail: async (email: unknown) => {
-                    stripeEmailUpdates.push(email)
-                    return { type: "success", session: {} }
-                },
-                updateTaxIdInfo: async (taxIdInfo: unknown) => {
-                    stripeTaxIdUpdates.push(taxIdInfo)
-                    return { type: "success", session: {} }
-                },
+                          email: null,
+                          confirm: async (options: unknown) => {
+                              stripeConfirmCalls += 1
+                              stripeConfirmOptions.push(options)
+                              if (stripeConfirmErrorMessage) return { type: "error", error: { message: stripeConfirmErrorMessage } }
+                              return { type: "success", session: {} }
+                          },
+                          updateBillingAddress: async (address: unknown) => {
+                              stripeBillingAddressUpdates.push(address)
+                              return { type: "success", session: {} }
+                          },
+                          updateEmail: async (email: unknown) => {
+                              stripeEmailUpdates.push(email)
+                              return { type: "success", session: {} }
+                          },
+                          updateTaxIdInfo: async (taxIdInfo: unknown) => {
+                              stripeTaxIdUpdates.push(taxIdInfo)
+                              return { type: "success", session: {} }
+                          },
                       },
                   },
     },
@@ -326,6 +331,7 @@ test("creates the customer and checkout session on mount before collecting Strip
     const user = userEvent.setup()
     render(<CheckoutForm content={content} locale="en" />)
     assert.ok(screen.getByTestId("checkout-form-skeleton"))
+    assert.ok(screen.getByTestId("checkout-customer-select-skeleton"))
 
     await waitFor(() => assert.equal(requests.length, 4))
     assert.deepEqual(
@@ -335,7 +341,7 @@ test("creates the customer and checkout session on mount before collecting Strip
     assert.equal(new Headers(requests[0].init?.headers).get("authorization"), null)
     assert.equal(requests[0].init?.credentials, "same-origin")
     assert.equal(requests[2].init?.credentials, "same-origin")
-    assert.deepEqual(JSON.parse(String(requests[1].init?.body)), { customerType: "personal" })
+    assert.deepEqual(JSON.parse(String(requests[1].init?.body)), { customerType: "personal", reuseExisting: false })
     assert.deepEqual(JSON.parse(String(requests[2].init?.body)), {
         customerId: "gid://crater/Customer/1",
         customerType: "b2c",
@@ -349,8 +355,9 @@ test("creates the customer and checkout session on mount before collecting Strip
     assert.equal(checkoutProviderOptions?.elementsOptions?.appearance?.theme, "night")
     assert.equal(checkoutProviderOptions?.elementsOptions?.appearance?.variables?.colorPrimary, "#72f896")
     assert.deepEqual(billingAddressOptions, { display: { name: "full" } })
+    assert.equal(screen.queryByTestId("checkout-customer-select-skeleton"), null)
     assert.ok(screen.getByText(content.customerSelectLabel))
-    assert.ok(screen.getByText(content.newCustomerLabel))
+    assert.equal(screen.getAllByText(content.newCustomerLabel).length, 2)
     assert.ok(screen.getByTestId("stripe-contact-details"))
     assert.ok(screen.getByTestId("stripe-billing-address"))
     assert.equal(screen.queryByRole("textbox", { name: "Tax ID type" }), null)
@@ -448,11 +455,14 @@ test("recreates the checkout session for a selected or newly created customer", 
     act(() => customerSelectOnValueChange?.("new"))
     await waitFor(() => assert.equal(checkoutProviderOptions?.clientSecret, "cs_customer_3"))
 
-    const sessionBodies = requests
-        .filter((request) => request.url === "/api/crater/checkout/session")
-        .map((request) => JSON.parse(String(request.init?.body)) as { customerId: string })
-    assert.deepEqual(sessionBodies.map((body) => body.customerId), ["gid://crater/Customer/1", "gid://crater/Customer/2", "gid://crater/Customer/3"])
-    assert.equal(requests.filter((request) => request.url === "/api/crater/customer" && request.init?.method === "POST").length, 1)
+    const sessionBodies = requests.filter((request) => request.url === "/api/crater/checkout/session").map((request) => JSON.parse(String(request.init?.body)) as { customerId: string })
+    assert.deepEqual(
+        sessionBodies.map((body) => body.customerId),
+        ["gid://crater/Customer/1", "gid://crater/Customer/2", "gid://crater/Customer/3"]
+    )
+    const customerCreationRequests = requests.filter((request) => request.url === "/api/crater/customer" && request.init?.method === "POST")
+    assert.equal(customerCreationRequests.length, 1)
+    assert.deepEqual(JSON.parse(String(customerCreationRequests[0].init?.body)), { customerType: "personal", reuseExisting: false })
 })
 
 test("replaces a checkout session shortly before it expires", async () => {
@@ -543,7 +553,7 @@ test("creates a business customer and updates optional tax details before paymen
                     ? { customers: [{ customerType: "business", email: "billing@example.com", id: "gid://crater/Customer/2", name: "Code0 GmbH" }] }
                     : url === "/api/crater/checkout/tax"
                       ? { amountTotal: 11_900, currency: "eur", taxAmountExclusive: 1_900 }
-                    : { clientSecret: "cs_test_business_secret", expiresAt: 1_800_000_000, id: "cs_test_business" }
+                      : { clientSecret: "cs_test_business_secret", expiresAt: 1_800_000_000, id: "cs_test_business" }
             ),
             { status: 200, headers: { "content-type": "application/json" } }
         )

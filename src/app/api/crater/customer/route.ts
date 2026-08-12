@@ -126,10 +126,11 @@ export async function POST(request: Request) {
     const phone = optionalString(body?.phone)
     const taxIdType = optionalString(body?.taxIdType)
     const taxIdValue = optionalString(body?.taxIdValue)
+    const reuseExisting = body?.reuseExisting
     const address = readOptionalAddress(body?.address)
 
-    if (!body || (customerType !== "business" && customerType !== "personal") || address === null) {
-        return craterJson({ error: "customerType is required; address must be valid when provided." }, 400)
+    if (!body || (customerType !== "business" && customerType !== "personal") || address === null || (reuseExisting !== undefined && typeof reuseExisting !== "boolean")) {
+        return craterJson({ error: "customerType is required; address and reuseExisting must be valid when provided." }, 400)
     }
 
     if (Boolean(taxIdType) !== Boolean(taxIdValue)) {
@@ -146,6 +147,7 @@ export async function POST(request: Request) {
                     ...(email ? { email } : {}),
                     ...(name ? { name } : {}),
                     ...(phone ? { phone } : {}),
+                    ...(typeof reuseExisting === "boolean" ? { reuseExisting } : {}),
                     ...(taxIdType ? { taxIdType } : {}),
                     ...(taxIdValue ? { taxIdValue } : {}),
                 },

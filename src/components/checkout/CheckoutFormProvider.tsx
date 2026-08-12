@@ -132,7 +132,7 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, locale: AppLoc
                 const availableCustomers = await getCheckoutCustomers()
                 if (requestId !== sessionRefreshRequestRef.current) return
                 const matchingCustomers = availableCustomers.filter((candidate) => candidate.customerType === customerType)
-                const customer = matchingCustomers[0] ?? (await createCheckoutCustomer({ customerType }))
+                const customer = matchingCustomers[0] ?? (await createCheckoutCustomer({ customerType, reuseExisting: false }))
                 if (requestId !== sessionRefreshRequestRef.current) return
                 const preparedCustomers = matchingCustomers.some((candidate) => candidate.id === customer.id) ? matchingCustomers : [...matchingCustomers, customer]
                 setCustomers(preparedCustomers)
@@ -179,9 +179,7 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, locale: AppLoc
             setStage("billingAddress")
 
             try {
-                const customer = customerId
-                    ? customers.find((candidate) => candidate.id === customerId)
-                    : await createCheckoutCustomer({ customerType })
+                const customer = customerId ? customers.find((candidate) => candidate.id === customerId) : await createCheckoutCustomer({ customerType, reuseExisting: false })
                 if (!customer) throw new CheckoutSubmissionError("customer", "INVALID_CHECKOUT_CUSTOMER", "The selected customer is unavailable.")
 
                 if (!customers.some((candidate) => candidate.id === customer.id)) {
