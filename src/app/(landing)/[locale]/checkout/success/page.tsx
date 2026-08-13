@@ -6,6 +6,9 @@ import { notFound } from "next/navigation"
 import { Card } from "@/components/ui/Card"
 import { parseCheckoutSessionId } from "@/lib/checkout/checkoutReturn"
 import type { Metadata } from "next"
+import { FilledButtonLink } from "@/components/ui/FilledButtonLink"
+import Link from "next/link"
+import { Button } from "@code0-tech/pictor"
 
 export const metadata: Metadata = { title: "Success" }
 
@@ -29,8 +32,10 @@ export default async function CheckoutSuccessPage({ params, searchParams }: Chec
                     <div className="relative z-10 space-y-4">
                         <h1 className="text-3xl font-semibold text-white">{checkoutContent?.success.heading}</h1>
                         <p className="text-secondary">{checkoutContent?.success.description}</p>
-                        <div className="flex flex-wrap justify-center gap-5">
-                            <LinkButton href={`/api/crater/licenses/access?locale=${locale}`}>{checkoutContent?.success.licenseDashboardLabel}</LinkButton>
+                        <div className="flex flex-col items-center justify-center gap-2">
+                            <FilledButtonLink href={`/api/crater/licenses/access?locale=${locale}`} target={"_blank"} rel={"noreferrer"}>
+                                {checkoutContent?.success.licenseDashboardLabel}
+                            </FilledButtonLink>
                             <LinkButton href={`/${locale}`} showArrow={false} className="border-b-0">
                                 {checkoutContent?.success.backToHomepageLabel}
                             </LinkButton>

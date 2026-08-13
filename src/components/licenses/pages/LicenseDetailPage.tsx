@@ -1,6 +1,7 @@
 "use client"
 
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
+import { LicensePlanIcon } from "@/components/licenses/LicensePlanIcon"
 import type { LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { decodeLicenseRouteId } from "@/lib/licenses/licenseRoute"
@@ -28,7 +29,7 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale }: Li
         ? [
               { label: content.dashboard.statusLabel, value: license.status?.replaceAll("_", " ") || "—" },
               { label: content.dashboard.deploymentLabel, value: license.deploymentType?.replaceAll("_", " ") || "—" },
-              { label: content.licenses, value: license.plan?.replaceAll("_", " ") || license.name },
+              { label: content.licenses, value: license.plan?.replaceAll("_", " ") || license.name, showPlanIcon: true },
               { label: content.editor.namespaceLabel, value: license.namespaceId || "—" },
               {
                   label: content.dashboard.lastEditedLabel,
@@ -66,14 +67,17 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale }: Li
                                     {detail.label}
                                 </Text>
                                 <Spacing spacing="xxs" />
-                                <Text size="sm" fw={500} className="break-words capitalize">
-                                    {detail.value}
-                                </Text>
+                                <Flex align="center" style={{ gap: "0.25rem" }}>
+                                    {"showPlanIcon" in detail ? <LicensePlanIcon className="shrink-0 text-brand" plan={license.plan} size={16} /> : null}
+                                    <Text size="sm" fw={500} className="`wrap-break-word capitalize">
+                                        {detail.value}
+                                    </Text>
+                                </Flex>
                             </div>
                         ))}
                     </div>
                 ) : isLoading ? (
-                    <div className="h-14 animate-pulse rounded-xl bg-white/[0.04] motion-reduce:animate-none" />
+                    <div className="h-14 animate-pulse rounded-xl bg-white/5 motion-reduce:animate-none" />
                 ) : (
                     <Text size="sm" hierarchy="tertiary">
                         {content.emptyLicenses}

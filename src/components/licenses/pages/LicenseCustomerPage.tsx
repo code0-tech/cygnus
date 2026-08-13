@@ -1,6 +1,7 @@
 "use client"
 
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
+import { LicensePlanIcon } from "@/components/licenses/LicensePlanIcon"
 import {
     LicenseDataTable as DataTable,
     LicenseDataTableColumn as DataTableColumn,
@@ -18,6 +19,21 @@ interface LicenseCustomerPageProps {
     content: LicenseContent
     customerId: string
     locale: AppLocale
+}
+
+function getStatusColor(status?: string) {
+    switch (status) {
+        case "active":
+        case "paid":
+            return "bg-brand"
+        case "payment_failed":
+            return "bg-error"
+        case "canceled":
+        case "expired":
+            return "bg-tertiary"
+        default:
+            return "bg-warning"
+    }
 }
 
 export function LicenseCustomerPage({ content, customerId, locale }: LicenseCustomerPageProps) {
@@ -39,10 +55,6 @@ export function LicenseCustomerPage({ content, customerId, locale }: LicenseCust
                   value: customer.customerType ? `${customer.customerType.charAt(0).toUpperCase()}${customer.customerType.slice(1).replaceAll("_", " ")}` : "—",
               },
               { label: content.licenses, value: String(customer.licenseCount) },
-              {
-                  label: content.dashboard.lastEditedLabel,
-                  value: customer.updatedAt ? dateFormatter.format(new Date(customer.updatedAt)) : "—",
-              },
           ]
         : []
 
@@ -71,7 +83,7 @@ export function LicenseCustomerPage({ content, customerId, locale }: LicenseCust
 
                 <Card color="secondary">
                     {customer ? (
-                        <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-5">
+                        <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
                             {customerDetails.map((detail) => (
                                 <div key={detail.label} className="min-w-0">
                                     <Text size="sm" hierarchy="tertiary">
@@ -130,14 +142,20 @@ export function LicenseCustomerPage({ content, customerId, locale }: LicenseCust
                         {(license) => (
                             <Fragment key={license.id}>
                                 <DataTableColumn>
-                                    <Text size="sm" fw={500}>
-                                        {license.name}
-                                    </Text>
+                                    <Flex align="center" style={{ gap: "0.6rem" }}>
+                                        <LicensePlanIcon className="shrink-0 text-brand" plan={license.plan} size={16} />
+                                        <Text size="sm" fw={500}>
+                                            {license.name}
+                                        </Text>
+                                    </Flex>
                                 </DataTableColumn>
                                 <DataTableColumn>
-                                    <Text size="sm" hierarchy="tertiary" className="capitalize">
-                                        {license.status?.replaceAll("_", " ") || "—"}
-                                    </Text>
+                                    <Flex align="center" style={{ gap: "0.5rem" }}>
+                                        <span aria-hidden="true" className={`size-1.5 shrink-0 rounded-full ${getStatusColor(license.status)}`} />
+                                        <Text size="sm" hierarchy="tertiary" className="capitalize">
+                                            {license.status?.replaceAll("_", " ") || "—"}
+                                        </Text>
+                                    </Flex>
                                 </DataTableColumn>
                                 <DataTableColumn>
                                     <Text size="sm" hierarchy="tertiary" className="capitalize">
