@@ -7,7 +7,7 @@ import { AppLocale } from "@/lib/i18n"
 import type { LicenseDashboardLicense } from "@/lib/licenses/licenseTypes"
 import { formatLicenseDisplayValue } from "@/lib/licenses/licenseDisplayValues"
 import { Button, Flex, Text } from "@code0-tech/pictor"
-import { IconArrowAutofitLeftFilled, IconKey, IconLayoutDashboard } from "@tabler/icons-react"
+import { IconArrowAutofitLeftFilled, IconKey, IconLayoutDashboard, IconRefresh } from "@tabler/icons-react"
 import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -16,8 +16,10 @@ import { useState } from "react"
 interface LicenseSidebarProps {
     content: Pick<LicenseContent, "emptyLicenses" | "licenses" | "redirectUrl" | "sidebar" | "values">
     isLoading: boolean
+    isRefreshing: boolean
     locale: AppLocale
     licenses: LicenseDashboardLicense[]
+    onRefresh: () => void
 }
 
 function getShortLicenseId(id: string) {
@@ -45,7 +47,7 @@ function LicenseSidebarSkeleton() {
     )
 }
 
-export function LicenseSidebar({ content, isLoading, locale, licenses }: LicenseSidebarProps) {
+export function LicenseSidebar({ content, isLoading, isRefreshing, locale, licenses, onRefresh }: LicenseSidebarProps) {
     const pathname = usePathname()
     const [isLoggingOut, setIsLoggingOut] = useState(false)
     const dashboardHref = `/${locale}/licenses`
@@ -86,13 +88,27 @@ export function LicenseSidebar({ content, isLoading, locale, licenses }: License
                     <Text hierarchy="tertiary" className="text-xs! font-medium! tracking-wide!">
                         {content.licenses}
                     </Text>
-                    {isLoading ? (
-                        <span aria-hidden="true" className="h-5 w-6 animate-pulse rounded-full bg-white/10 motion-reduce:animate-none" />
-                    ) : (
-                        <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-[#191825] px-1.5 py-[0.1167rem] text-[0.65rem] font-normal tracking-[-0.5px] text-white/75 shadow-[inset_0_1px_1px_rgba(191,191,191,0.1)]">
-                            {licenses.length}
-                        </span>
-                    )}
+                    <Flex align="center" style={{ gap: "0.25rem" }}>
+                        <Button
+                            type="button"
+                            variant="none"
+                            paddingSize="xs"
+                            disabled={isLoading || isRefreshing}
+                            onClick={onRefresh}
+                            aria-label={isRefreshing ? content.sidebar.refreshing : content.sidebar.refresh}
+                            title={isRefreshing ? content.sidebar.refreshing : content.sidebar.refresh}
+                            className="size-7! p-0! text-tertiary! hover:text-white!"
+                        >
+                            <IconRefresh aria-hidden="true" className={isRefreshing ? "animate-spin motion-reduce:animate-none" : undefined} size={14} />
+                        </Button>
+                        {isLoading ? (
+                            <span aria-hidden="true" className="h-5 w-6 animate-pulse rounded-full bg-white/10 motion-reduce:animate-none" />
+                        ) : (
+                            <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-[#191825] px-1.5 py-[0.1167rem] text-[0.65rem] font-normal tracking-[-0.5px] text-white/75 shadow-[inset_0_1px_1px_rgba(191,191,191,0.1)]">
+                                {licenses.length}
+                            </span>
+                        )}
+                    </Flex>
                 </Flex>
 
                 <nav aria-label={content.licenses}>

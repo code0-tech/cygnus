@@ -851,6 +851,109 @@ test("license dashboard maps the current user's customers and recent licenses", 
     }
 })
 
+test("license detail loads lightweight navigation before fetching only the selected license", async () => {
+    const graphQLServer = await createGraphQLTestServer([
+        {
+            data: {
+                currentUser: {
+                    customers: {
+                        edges: [
+                            {
+                                cursor: "customer-7",
+                                node: {
+                                    id: "gid://crater/Customer/7",
+                                    customerType: "personal",
+                                    email: "first@example.com",
+                                    name: "First",
+                                    licenses: {
+                                        count: 1,
+                                        edges: [{ cursor: "license-7", node: { id: "gid://crater/License/7", plan: "pro", updatedAt: "2026-08-10T10:00:00Z" } }],
+                                    },
+                                },
+                            },
+                            {
+                                cursor: "customer-8",
+                                node: {
+                                    id: "gid://crater/Customer/8",
+                                    customerType: "business",
+                                    email: "second@example.com",
+                                    name: "Second",
+                                    licenses: {
+                                        count: 2,
+                                        edges: [
+                                            { cursor: "license-8a", node: { id: "gid://crater/License/8", plan: "pro", updatedAt: "2026-08-11T10:00:00Z" } },
+                                            { cursor: "license-8b", node: { id: "gid://crater/License/9", plan: "custom", updatedAt: "2026-08-12T10:00:00Z" } },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+            },
+        },
+        {
+            data: {
+                currentUser: {
+                    customers: {
+                        nodes: [
+                            {
+                                id: "gid://crater/Customer/8",
+                                customerType: "business",
+                                email: "second@example.com",
+                                name: "Second",
+                                licenses: {
+                                    count: 2,
+                                    nodes: [
+                                        {
+                                            aiTokens: 500000000,
+                                            deploymentType: "self_hosted",
+                                            id: "gid://crater/License/9",
+                                            paymentPeriod: "MONTHLY",
+                                            plan: "custom",
+                                            status: "paid",
+                                            updatedAt: "2026-08-12T10:00:00Z",
+                                            workflowExecutions: 250000,
+                                        },
+                                    ],
+                                },
+                            },
+                        ],
+                    },
+                },
+            },
+        },
+    ])
+    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
+    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
+
+    try {
+        const response = await getLicenseDashboard(
+            new Request(
+                "https://example.com/api/crater/licenses?view=license&customerId=gid%3A%2F%2Fcrater%2FCustomer%2F8&licenseId=gid%3A%2F%2Fcrater%2FLicense%2F9",
+                { headers: sessionHeaders }
+            )
+        )
+        const body = await response.json()
+
+        assert.equal(response.status, 200)
+        assert.equal(graphQLServer.requests[0].body.operationName, "LicenseNavigation")
+        assert.equal(graphQLServer.requests[1].body.operationName, "LicenseDetail")
+        assert.deepEqual(graphQLServer.requests[1].body.variables, { customerAfter: "customer-7", licenseAfter: "license-8a" })
+        assert.deepEqual(body.customers.map((customer: { id: string }) => customer.id), ["gid://crater/Customer/8"])
+        assert.deepEqual(body.licenses.map((license: { id: string }) => license.id), ["gid://crater/License/9"])
+        assert.deepEqual(
+            body.navigationLicenses.map((license: { id: string }) => license.id),
+            ["gid://crater/License/9", "gid://crater/License/8", "gid://crater/License/7"]
+        )
+        assert.doesNotMatch(graphQLServer.requests[0].body.query ?? "", /aiTokens/)
+    } finally {
+        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
+        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
+        await graphQLServer.close()
+    }
+})
+
 test("links a cloud license to a namespace", async () => {
     const graphQLServer = await createGraphQLTestServer([
         {

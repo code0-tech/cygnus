@@ -2,16 +2,21 @@ import { createApolloClient } from "@/lib/apolloClient"
 import { craterJson, craterMutationErrorResponse, craterTransportErrorResponse, optionalString, readJsonObject, requireCraterSession } from "@/lib/checkout/craterApi"
 import { setCraterSessionCookie } from "@/lib/checkout/craterSession"
 import type { LicenseDashboardCustomer, LicenseDashboardData, LicenseDashboardLicense } from "@/lib/licenses/licenseTypes"
-import type { Mutation, MutationLicensesLinkNamespaceArgs, Query, Scalars } from "@code0-tech/crater-graphql-types"
+import type { Customer, License, Mutation, MutationLicensesLinkNamespaceArgs, Query, Scalars, User } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 
 export const runtime = "nodejs"
 
 type LicenseDashboardQuery = Pick<Query, "currentUser">
+type LicenseDetailVariables = { customerAfter?: string | null; licenseAfter?: string | null }
 type LinkLicenseNamespaceData = Pick<Mutation, "licensesLinkNamespace">
 
 function isLicenseId(value: string): value is Scalars["LicenseID"]["input"] {
     return /^gid:\/\/crater\/License\/\d+$/.test(value)
+}
+
+function isCustomerId(value: string): value is Scalars["CustomerID"]["input"] {
+    return /^gid:\/\/crater\/Customer\/\d+$/.test(value)
 }
 
 const LICENSE_DASHBOARD: TypedDocumentNode<LicenseDashboardQuery, Record<string, never>> = gql`
@@ -34,6 +39,99 @@ const LICENSE_DASHBOARD: TypedDocumentNode<LicenseDashboardQuery, Record<string,
                             deploymentType
                             namespaceId
                             paymentPeriod
+                            updatedAt
+                            workflowExecutions
+                        }
+                    }
+                }
+            }
+        }
+    }
+`
+
+const LICENSE_NAVIGATION: TypedDocumentNode<LicenseDashboardQuery, Record<string, never>> = gql`
+    query LicenseNavigation {
+        currentUser {
+            customers(first: 100) {
+                edges {
+                    cursor
+                    node {
+                        id
+                        customerType
+                        name
+                        email
+                        updatedAt
+                        licenses(first: 100) {
+                            count
+                            edges {
+                                cursor
+                                node {
+                                    deploymentType
+                                    id
+                                    namespaceId
+                                    plan
+                                    status
+                                    updatedAt
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+`
+
+const LICENSE_CUSTOMER_DETAIL: TypedDocumentNode<LicenseDashboardQuery, LicenseDetailVariables> = gql`
+    query LicenseCustomerDetail($customerAfter: String) {
+        currentUser {
+            customers(after: $customerAfter, first: 1) {
+                nodes {
+                    id
+                    customerType
+                    name
+                    email
+                    updatedAt
+                    licenses(first: 100) {
+                        count
+                        nodes {
+                            aiTokens
+                            deploymentType
+                            id
+                            namespaceId
+                            paymentPeriod
+                            plan
+                            status
+                            updatedAt
+                            workflowExecutions
+                        }
+                    }
+                }
+            }
+        }
+    }
+`
+
+const LICENSE_DETAIL: TypedDocumentNode<LicenseDashboardQuery, LicenseDetailVariables> = gql`
+    query LicenseDetail($customerAfter: String, $licenseAfter: String) {
+        currentUser {
+            customers(after: $customerAfter, first: 1) {
+                nodes {
+                    id
+                    customerType
+                    name
+                    email
+                    updatedAt
+                    licenses(after: $licenseAfter, first: 1) {
+                        count
+                        nodes {
+                            aiTokens
+                            deploymentType
+                            id
+                            namespaceId
+                            paymentPeriod
+                            plan
+                            status
                             updatedAt
                             workflowExecutions
                         }
@@ -84,63 +182,127 @@ function licenseName(plan: string | null | undefined, id: string) {
         .join(" ")
 }
 
+function mapCustomer(customer: Customer): LicenseDashboardCustomer | null {
+    if (!customer.id) return null
+
+    return {
+        id: customer.id,
+        ...(customer.customerType ? { customerType: customer.customerType } : {}),
+        ...(customer.email ? { email: customer.email } : {}),
+        ...(customer.name ? { name: customer.name } : {}),
+        ...(customer.updatedAt ? { updatedAt: customer.updatedAt } : {}),
+        licenseCount: customer.licenses?.count ?? 0,
+    }
+}
+
+function mapLicense(license: License, customer: Customer): LicenseDashboardLicense | null {
+    if (!customer.id || !license.id) return null
+
+    return {
+        ...(typeof license.aiTokens === "number" ? { aiTokens: license.aiTokens } : {}),
+        customerId: customer.id,
+        customerName: displayName(customer.name, customer.email, customer.id),
+        ...(customer.customerType ? { customerType: customer.customerType } : {}),
+        id: license.id,
+        name: licenseName(license.plan, license.id),
+        ...(license.deploymentType ? { deploymentType: license.deploymentType } : {}),
+        ...(license.namespaceId ? { namespaceId: license.namespaceId } : {}),
+        ...(license.paymentPeriod ? { paymentPeriod: license.paymentPeriod } : {}),
+        ...(license.plan ? { plan: license.plan } : {}),
+        ...(license.status ? { status: license.status } : {}),
+        ...(license.updatedAt ? { updatedAt: license.updatedAt } : {}),
+        ...(typeof license.workflowExecutions === "number" ? { workflowExecutions: license.workflowExecutions } : {}),
+    }
+}
+
+function mapUserData(currentUser: User): LicenseDashboardData {
+    const customers: LicenseDashboardCustomer[] = []
+    const licenses: LicenseDashboardLicense[] = []
+
+    for (const customer of currentUser.customers?.nodes ?? []) {
+        if (!customer) continue
+        const mappedCustomer = mapCustomer(customer)
+        if (mappedCustomer) customers.push(mappedCustomer)
+
+        for (const license of customer.licenses?.nodes ?? []) {
+            if (!license) continue
+            const mappedLicense = mapLicense(license, customer)
+            if (mappedLicense) licenses.push(mappedLicense)
+        }
+    }
+
+    licenses.sort((left, right) => Date.parse(right.updatedAt ?? "") - Date.parse(left.updatedAt ?? ""))
+    return { customers, licenses }
+}
+
 export async function GET(request: Request) {
     const session = requireCraterSession(request, true)
     if (session.response) return session.response
 
+    const requestUrl = new URL(request.url)
+    const view = requestUrl.searchParams.get("view") ?? "dashboard"
+    const customerId = requestUrl.searchParams.get("customerId") ?? ""
+    const licenseId = requestUrl.searchParams.get("licenseId") ?? ""
+
+    if (!(["dashboard", "customer", "license"] as const).includes(view as "dashboard" | "customer" | "license")) {
+        return craterJson({ error: "view must be dashboard, customer, or license." }, 400)
+    }
+    if (view !== "dashboard" && !isCustomerId(customerId)) return craterJson({ error: "A valid Crater customer id is required." }, 400)
+    if (view === "license" && !isLicenseId(licenseId)) return craterJson({ error: "A valid Crater license id is required." }, 400)
+
     try {
-        const result = await createApolloClient(session.token).query({
-            query: LICENSE_DASHBOARD,
+        const client = createApolloClient(session.token)
+
+        if (view === "dashboard") {
+            const result = await client.query({ query: LICENSE_DASHBOARD, fetchPolicy: "no-cache" })
+            const currentUser = result.data?.currentUser
+            if (!currentUser) return craterJson({ error: "The Crater session has no authenticated user." }, 401)
+
+            return setCraterSessionCookie(craterJson(mapUserData(currentUser)), session.token)
+        }
+
+        const navigationResult = await client.query({ query: LICENSE_NAVIGATION, fetchPolicy: "no-cache" })
+        const currentUser = navigationResult.data?.currentUser
+        if (!currentUser) return craterJson({ error: "The Crater session has no authenticated user." }, 401)
+
+        const customerEdges = currentUser.customers?.edges ?? []
+        const customerIndex = customerEdges.findIndex((edge) => edge?.node?.id === customerId)
+        if (customerIndex < 0) return craterJson({ error: "The requested customer was not found." }, 404)
+
+        const customerEdge = customerEdges[customerIndex]
+        const customerAfter = customerIndex > 0 ? customerEdges[customerIndex - 1]?.cursor ?? null : null
+        const navigationLicenses = customerEdges.flatMap((edge) => {
+            const customer = edge?.node
+            if (!customer) return []
+            return (customer.licenses?.edges ?? []).flatMap((licenseEdge) => {
+                if (!licenseEdge?.node) return []
+                const mappedLicense = mapLicense(licenseEdge.node, customer)
+                return mappedLicense ? [mappedLicense] : []
+            })
+        })
+        navigationLicenses.sort((left, right) => Date.parse(right.updatedAt ?? "") - Date.parse(left.updatedAt ?? ""))
+
+        let licenseAfter: string | null = null
+        if (view === "license") {
+            const licenseEdges = customerEdge?.node?.licenses?.edges ?? []
+            const licenseIndex = licenseEdges.findIndex((edge) => edge?.node?.id === licenseId)
+            if (licenseIndex < 0) return craterJson({ error: "The requested license was not found." }, 404)
+            licenseAfter = licenseIndex > 0 ? licenseEdges[licenseIndex - 1]?.cursor ?? null : null
+        }
+
+        const detailResult = await client.query({
+            query: view === "customer" ? LICENSE_CUSTOMER_DETAIL : LICENSE_DETAIL,
+            variables: { customerAfter, ...(view === "license" ? { licenseAfter } : {}) },
             fetchPolicy: "no-cache",
         })
-        const currentUser = result.data?.currentUser
+        const detailUser = detailResult.data?.currentUser
+        if (!detailUser) return craterJson({ error: "The Crater session has no authenticated user." }, 401)
 
-        if (!currentUser) {
-            return craterJson({ error: "The Crater session has no authenticated user." }, 401)
-        }
+        const detailData = mapUserData(detailUser)
+        if (detailData.customers[0]?.id !== customerId) return craterJson({ error: "The requested customer was not found." }, 404)
+        if (view === "license" && detailData.licenses[0]?.id !== licenseId) return craterJson({ error: "The requested license was not found." }, 404)
 
-        const customers: LicenseDashboardCustomer[] = []
-        const licenses: LicenseDashboardLicense[] = []
-
-        for (const customer of currentUser.customers?.nodes ?? []) {
-            if (!customer?.id) continue
-
-            const customerId = customer.id
-            const customerName = displayName(customer.name, customer.email, customerId)
-
-            customers.push({
-                id: customerId,
-                ...(customer.customerType ? { customerType: customer.customerType } : {}),
-                ...(customer.email ? { email: customer.email } : {}),
-                ...(customer.name ? { name: customer.name } : {}),
-                ...(customer.updatedAt ? { updatedAt: customer.updatedAt } : {}),
-                licenseCount: customer.licenses?.count ?? 0,
-            })
-
-            for (const license of customer.licenses?.nodes ?? []) {
-                if (!license?.id) continue
-
-                licenses.push({
-                    ...(typeof license.aiTokens === "number" ? { aiTokens: license.aiTokens } : {}),
-                    customerId,
-                    customerName,
-                    ...(customer.customerType ? { customerType: customer.customerType } : {}),
-                    id: license.id,
-                    name: licenseName(license.plan, license.id),
-                    ...(license.deploymentType ? { deploymentType: license.deploymentType } : {}),
-                    ...(license.namespaceId ? { namespaceId: license.namespaceId } : {}),
-                    ...(license.paymentPeriod ? { paymentPeriod: license.paymentPeriod } : {}),
-                    ...(license.plan ? { plan: license.plan } : {}),
-                    ...(license.status ? { status: license.status } : {}),
-                    ...(license.updatedAt ? { updatedAt: license.updatedAt } : {}),
-                    ...(typeof license.workflowExecutions === "number" ? { workflowExecutions: license.workflowExecutions } : {}),
-                })
-            }
-        }
-
-        licenses.sort((left, right) => Date.parse(right.updatedAt ?? "") - Date.parse(left.updatedAt ?? ""))
-
-        return setCraterSessionCookie(craterJson({ customers, licenses } satisfies LicenseDashboardData), session.token)
+        return setCraterSessionCookie(craterJson({ ...detailData, navigationLicenses } satisfies LicenseDashboardData), session.token)
     } catch (error) {
         const transportResponse = craterTransportErrorResponse(error)
         if (transportResponse) return transportResponse

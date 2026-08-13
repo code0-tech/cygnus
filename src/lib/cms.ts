@@ -418,6 +418,8 @@ export interface LicenseContent {
         dashboard: string
         logout: string
         loggingOut: string
+        refresh: string
+        refreshing: string
     }
     dashboard: {
         customers: string

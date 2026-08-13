@@ -3257,6 +3257,8 @@ export interface License {
     dashboard: string;
     logout: string;
     loggingOut: string;
+    refresh: string;
+    refreshing: string;
   };
   dashboard: {
     customers: string;
@@ -3926,6 +3928,8 @@ export interface LicensesSelect<T extends boolean = true> {
         dashboard?: T;
         logout?: T;
         loggingOut?: T;
+        refresh?: T;
+        refreshing?: T;
       };
   dashboard?:
     | T

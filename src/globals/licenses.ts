@@ -77,6 +77,20 @@ export const Licenses: GlobalConfig = {
                     localized: true,
                     defaultValue: localizedDefault("Logging out…", "Wird abgemeldet …"),
                 },
+                {
+                    name: "refresh",
+                    type: "text",
+                    required: true,
+                    localized: true,
+                    defaultValue: localizedDefault("Refresh licenses", "Lizenzen aktualisieren"),
+                },
+                {
+                    name: "refreshing",
+                    type: "text",
+                    required: true,
+                    localized: true,
+                    defaultValue: localizedDefault("Refreshing licenses…", "Lizenzen werden aktualisiert …"),
+                },
             ],
         },
         {

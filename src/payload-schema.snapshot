@@ -2618,6 +2618,8 @@ export const licenses_locales = pgTable('licenses_locales', {
   sidebar_dashboard: varchar('sidebar_dashboard').notNull(),
   sidebar_logout: varchar('sidebar_logout').notNull(),
   sidebar_loggingOut: varchar('sidebar_logging_out').notNull(),
+  sidebar_refresh: varchar('sidebar_refresh').notNull(),
+  sidebar_refreshing: varchar('sidebar_refreshing').notNull(),
   dashboard_customers: varchar('dashboard_customers').notNull(),
   dashboard_emptyCustomers: varchar('dashboard_empty_customers').notNull(),
   dashboard_recentLicenses: varchar('dashboard_recent_licenses').notNull(),

@@ -26,6 +26,7 @@ export interface LicenseDashboardLicense {
 export interface LicenseDashboardData {
     customers: LicenseDashboardCustomer[]
     licenses: LicenseDashboardLicense[]
+    navigationLicenses?: LicenseDashboardLicense[]
 }
 
 export const EMPTY_LICENSE_DASHBOARD_DATA: LicenseDashboardData = {
