@@ -181,6 +181,7 @@ function CheckoutPaymentFields({
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
     const [isUpdatingBilling, setIsUpdatingBilling] = useState(false)
     const [isConfirming, setIsConfirming] = useState(false)
+    const [isPaymentElementReady, setIsPaymentElementReady] = useState(false)
     const checkoutErrorMessage = checkoutState.type === "error" ? checkoutState.error.message : null
 
     useEffect(() => {
@@ -242,6 +243,7 @@ function CheckoutPaymentFields({
             }
 
             onTaxQuoteChange(getTaxQuoteFromSession(updatedSession))
+            setIsPaymentElementReady(false)
             setStage("payment")
         } catch (error) {
             console.error("Failed to update Stripe checkout billing details:", error)
@@ -253,7 +255,7 @@ function CheckoutPaymentFields({
 
     const handleSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
         event.preventDefault()
-        if (checkoutState.type !== "success" || isConfirming) return
+        if (checkoutState.type !== "success" || isConfirming || !isPaymentElementReady) return
 
         setIsConfirming(true)
         onPaymentConfirmationChange(true)
@@ -351,7 +353,11 @@ function CheckoutPaymentFields({
             ) : (
                 <>
                     <section className="w-full space-y-4">
-                        <PaymentElement options={{ fields: { billingDetails: { name: "never", address: "never" } } }} />
+                        <PaymentElement
+                            options={{ fields: { billingDetails: { name: "never", address: "never" } } }}
+                            onLoaderStart={() => setIsPaymentElementReady(false)}
+                            onReady={() => setIsPaymentElementReady(true)}
+                        />
                     </section>
 
                     {errorMessage && (
@@ -364,7 +370,7 @@ function CheckoutPaymentFields({
                         <Button
                             type="submit"
                             variant="normal"
-                            disabled={isConfirming}
+                            disabled={isConfirming || !isPaymentElementReady}
                             className="h-10! w-full! whitespace-nowrap bg-white/80! px-8! text-sm! text-primary! ring-1! ring-white/20! hover:bg-white!"
                         >
                             {isConfirming ? content.processingLabel : content.payNowLabel}

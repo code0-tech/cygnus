@@ -20,6 +20,7 @@ let billingAddressOnChange: ((event: { complete: boolean; value: typeof stripeBi
 let contactDetailsOnChange: ((event: { complete: boolean; value: { email: string } }) => void) | null = null
 let billingAddressOptions: unknown = null
 let paymentElementOptions: unknown = null
+let paymentElementOnReady: (() => void) | null = null
 let checkoutStages: string[] = []
 let checkoutStage = "billingAddress"
 const checkoutStageListeners = new Set<() => void>()
@@ -119,8 +120,9 @@ mock.module("@stripe/react-stripe-js/checkout", {
             contactDetailsOnChange = onChange
             return <div data-testid="stripe-contact-details">Contact details</div>
         },
-        PaymentElement: ({ options }: { options?: unknown }) => {
+        PaymentElement: ({ onReady, options }: { onReady?: () => void; options?: unknown }) => {
             paymentElementOptions = options
+            paymentElementOnReady = onReady ?? null
             return <div data-testid="stripe-payment">Payment details</div>
         },
         useCheckoutElements: () =>
@@ -168,6 +170,7 @@ afterEach(() => {
     contactDetailsOnChange = null
     billingAddressOptions = null
     paymentElementOptions = null
+    paymentElementOnReady = null
     checkoutStages = []
     checkoutStage = "billingAddress"
     stripeConfirmCalls = 0
@@ -378,6 +381,9 @@ test("creates the customer and checkout session on mount before collecting Strip
 
     assert.ok(await screen.findByTestId("stripe-payment"))
     assert.deepEqual(paymentElementOptions, { fields: { billingDetails: { name: "never", address: "never" } } })
+    assert.equal((screen.getByRole("button", { name: "Pay now" }) as HTMLButtonElement).disabled, true)
+    act(() => paymentElementOnReady?.())
+    assert.equal((screen.getByRole("button", { name: "Pay now" }) as HTMLButtonElement).disabled, false)
     assert.deepEqual(stripeBillingAddressUpdates, [stripeBillingAddress])
     assert.deepEqual(stripeEmailUpdates, ["ada@example.com"])
     assert.equal(screen.queryByTestId("stripe-contact-details"), null)
@@ -396,6 +402,8 @@ test("creates the customer and checkout session on mount before collecting Strip
 
     act(() => billingAddressOnChange?.({ complete: true, value: stripeBillingAddress }))
     await user.click(screen.getByRole("button", { name: "Continue to payment" }))
+    assert.equal((screen.getByRole("button", { name: "Pay now" }) as HTMLButtonElement).disabled, true)
+    act(() => paymentElementOnReady?.())
 
     stripeConfirmErrorMessage = "Your payment could not be confirmed."
     await user.click(screen.getByRole("button", { name: "Pay now" }))
