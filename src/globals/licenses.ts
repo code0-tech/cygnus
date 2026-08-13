@@ -70,34 +70,6 @@ export const Licenses: GlobalConfig = {
             type: "group",
             fields: [
                 {
-                    name: "description",
-                    type: "textarea",
-                    required: true,
-                    localized: true,
-                    defaultValue: localizedDefault("Manage your licenses.", "Verwalte deine Lizenzen."),
-                },
-                {
-                    name: "emptyDescription",
-                    type: "textarea",
-                    required: true,
-                    localized: true,
-                    defaultValue: localizedDefault("Licenses will appear here as soon as they are available.", "Sobald eine Lizenz vorhanden ist, erscheint sie hier."),
-                },
-                {
-                    name: "invoices",
-                    type: "text",
-                    required: true,
-                    localized: true,
-                    defaultValue: localizedDefault("Invoices", "Rechnungen"),
-                },
-                {
-                    name: "paymentProfiles",
-                    type: "text",
-                    required: true,
-                    localized: true,
-                    defaultValue: localizedDefault("Payment Profiles", "Zahlungsprofile"),
-                },
-                {
                     name: "customers",
                     type: "text",
                     required: true,
