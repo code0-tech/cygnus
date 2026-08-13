@@ -13,6 +13,7 @@ import { Card, Flex, Spacing, Text } from "@code0-tech/pictor"
 import { IconKey } from "@tabler/icons-react"
 import { useRouter } from "next/navigation"
 import { Fragment } from "react"
+import { LicensePlanIcon } from "../LicensePlanIcon"
 
 interface LicenseDashboardPageProps {
     content: LicenseContent
@@ -114,7 +115,7 @@ export function LicenseDashboardPage({ content, locale }: LicenseDashboardPagePr
                             <Fragment key={license.id}>
                                 <DataTableColumn>
                                     <Flex align="center" style={{ gap: "0.6rem" }}>
-                                        <IconKey aria-hidden="true" className="text-brand" size={15} />
+                                        <LicensePlanIcon plan={license.plan} className="text-brand" size={15} />
                                         <Text size="sm" fw={500}>
                                             {license.name}
                                         </Text>
