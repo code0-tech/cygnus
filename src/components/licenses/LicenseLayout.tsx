@@ -4,7 +4,7 @@ import { LicenseDataProvider, useLicenseData } from "@/components/licenses/Licen
 import { LicenseSidebar } from "@/components/licenses/LicenseSidebar"
 import type { LicenseContent } from "@/lib/cms"
 import { AppLocale } from "@/lib/i18n"
-import { FullScreen, ScrollArea, ScrollAreaScrollbar, ScrollAreaThumb, ScrollAreaViewport } from "@code0-tech/pictor"
+import { Button, Card, Flex, FullScreen, ScrollArea, ScrollAreaScrollbar, ScrollAreaThumb, ScrollAreaViewport, Text } from "@code0-tech/pictor"
 import type { ReactNode } from "react"
 
 interface LicenseLayoutProps {
@@ -15,7 +15,7 @@ interface LicenseLayoutProps {
 }
 
 function LicenseLayoutContent({ children, content, locale }: LicenseLayoutProps) {
-    const { isLoading, licenses } = useLicenseData()
+    const { error, isLoading, licenses, reload } = useLicenseData()
 
     return (
         <FullScreen className="h-dvh! min-h-0! overflow-hidden! bg-light! p-4! text-white">
@@ -25,7 +25,22 @@ function LicenseLayoutContent({ children, content, locale }: LicenseLayoutProps)
                 <main className="h-full min-h-0 min-w-0 overflow-hidden rounded-2xl bg-primary">
                     <ScrollArea h="100%" type="scroll">
                         <ScrollAreaViewport>
-                            <div style={{ maxWidth: "52rem", margin: "0 auto", padding: "4rem 1rem" }}>{children}</div>
+                            <div style={{ maxWidth: "52rem", margin: "0 auto", padding: "4rem 1rem" }}>
+                                {error ? (
+                                    <Card color="secondary">
+                                        <Flex align="center" justify="space-between" style={{ gap: "1rem" }}>
+                                            <Text size="sm" hierarchy="secondary">
+                                                {error}
+                                            </Text>
+                                            <Button type="button" variant="normal" paddingSize="xs" onClick={reload}>
+                                                {content.errors.retry}
+                                            </Button>
+                                        </Flex>
+                                    </Card>
+                                ) : (
+                                    children
+                                )}
+                            </div>
                         </ScrollAreaViewport>
                         <ScrollAreaScrollbar orientation="vertical">
                             <ScrollAreaThumb />
@@ -39,7 +54,7 @@ function LicenseLayoutContent({ children, content, locale }: LicenseLayoutProps)
 
 export function LicenseLayout(props: LicenseLayoutProps) {
     return (
-        <LicenseDataProvider locale={props.locale} redirectUrl={props.content.redirectUrl}>
+        <LicenseDataProvider loadError={props.content.errors.dashboardLoad} locale={props.locale} redirectUrl={props.content.redirectUrl}>
             <LicenseLayoutContent {...props} />
             {props.modal}
         </LicenseDataProvider>

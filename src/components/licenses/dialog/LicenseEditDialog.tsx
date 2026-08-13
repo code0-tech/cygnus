@@ -16,16 +16,6 @@ interface LicenseEditDialogProps {
     locale: AppLocale
 }
 
-async function responseError(response: Response, fallback: string) {
-    try {
-        const body: unknown = await response.json()
-        if (body && typeof body === "object" && "error" in body && typeof body.error === "string") return body.error
-    } catch {
-        // Use the localized fallback when the response is not JSON.
-    }
-    return fallback
-}
-
 export function LicenseEditDialog({ content, customerId, licenseId, locale }: LicenseEditDialogProps) {
     const router = useRouter()
     const { licenses, updateLicense } = useLicenseData()
@@ -54,7 +44,7 @@ export function LicenseEditDialog({ content, customerId, licenseId, locale }: Li
                 headers: { "content-type": "application/json" },
                 body: JSON.stringify({ id: license.id, namespaceId: namespaceId.trim() }),
             })
-            if (!response.ok) throw new Error(await responseError(response, content.editor.licenseError))
+            if (!response.ok) throw new Error(content.editor.licenseError)
             const updated: unknown = await response.json()
             const updatedAt = updated && typeof updated === "object" && "updatedAt" in updated && typeof updated.updatedAt === "string" ? updated.updatedAt : undefined
 
