@@ -65,6 +65,7 @@
         "sass": "^1.101.3",
         "sharp": "^0.35.3",
         "shiki": "^4.3.1",
+        "stripe": "^22.4.0",
         "tailwind-merge": "^3.6.0",
         "web-haptics": "^0.0.6"
     },
