@@ -3253,10 +3253,6 @@ export interface License {
     loggingOut: string;
   };
   dashboard: {
-    description: string;
-    emptyDescription: string;
-    invoices: string;
-    paymentProfiles: string;
     customers: string;
     emptyCustomers: string;
     recentLicenses: string;
@@ -3885,10 +3881,6 @@ export interface LicensesSelect<T extends boolean = true> {
   dashboard?:
     | T
     | {
-        description?: T;
-        emptyDescription?: T;
-        invoices?: T;
-        paymentProfiles?: T;
         customers?: T;
         emptyCustomers?: T;
         recentLicenses?: T;

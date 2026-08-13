@@ -114,6 +114,7 @@ import * as migration_20260812_110910_license_customer_edit_label from './202608
 import * as migration_20260812_111357_license_detail_labels from './20260812_111357_license_detail_labels';
 import * as migration_20260812_112328_license_edit_dialogs from './20260812_112328_license_edit_dialogs';
 import * as migration_20260812_132026_checkout_customer_selection from './20260812_132026_checkout_customer_selection';
+import * as migration_20260813_054459_remove_unused_license_fields from './20260813_054459_remove_unused_license_fields';
 
 export const migrations = [
   {
@@ -694,6 +695,11 @@ export const migrations = [
   {
     up: migration_20260812_132026_checkout_customer_selection.up,
     down: migration_20260812_132026_checkout_customer_selection.down,
-    name: '20260812_132026_checkout_customer_selection'
+    name: '20260812_132026_checkout_customer_selection',
+  },
+  {
+    up: migration_20260813_054459_remove_unused_license_fields.up,
+    down: migration_20260813_054459_remove_unused_license_fields.down,
+    name: '20260813_054459_remove_unused_license_fields'
   },
 ];

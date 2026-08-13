@@ -414,10 +414,6 @@ export interface LicenseContent {
         loggingOut: string
     }
     dashboard: {
-        description: string
-        emptyDescription: string
-        invoices: string
-        paymentProfiles: string
         customers: string
         emptyCustomers: string
         recentLicenses: string
@@ -888,4 +884,3 @@ export async function getCheckoutContent(locale: AppLocale = DEFAULT_LOCALE): Pr
 export async function getLicenseContent(locale: AppLocale = DEFAULT_LOCALE): Promise<LicenseContent | null> {
     return getLicenseContentCached(locale)
 }
-
