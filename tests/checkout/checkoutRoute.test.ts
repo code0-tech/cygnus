@@ -24,6 +24,8 @@ mock.module("@/lib/cms", {
     },
 })
 
+mock.method(Date, "now", () => 1_800_000_000_000)
+
 const { POST } = await import("../../src/app/api/crater/checkout/session/route")
 
 test("checkout rejects requests without a Crater session", async () => {
@@ -192,7 +194,7 @@ test("forces the custom plan for b2b customers requesting pro or max, even sent 
                 deploymentType: "self_hosted",
                 paymentPeriod: "MONTHLY",
                 plan: "custom",
-                returnUrl: "https://code0.example/en/checkout/success?session_id={CHECKOUT_SESSION_ID}",
+                returnUrl: "https://code0.example/en/checkout/success?session_id={CHECKOUT_SESSION_ID}&customer_id=gid%3A%2F%2Fcrater%2FCustomer%2F1&checkout_started_at=1800000000000",
                 workflowExecutions: 1_000,
             },
         })
@@ -317,7 +319,7 @@ test("creates regular and custom checkout sessions with the expected Crater inpu
                 paymentPeriod: "MONTHLY",
                 plan: "pro",
                 promotionCode: "SAVE10",
-                returnUrl: "https://code0.example/de/checkout/success?session_id={CHECKOUT_SESSION_ID}",
+                returnUrl: "https://code0.example/de/checkout/success?session_id={CHECKOUT_SESSION_ID}&customer_id=gid%3A%2F%2Fcrater%2FCustomer%2F1&checkout_started_at=1800000000000",
             },
         })
         assert.equal(graphQLServer.requests[1].authorization, "Session custom-token")
@@ -326,7 +328,7 @@ test("creates regular and custom checkout sessions with the expected Crater inpu
                 customerId: "gid://crater/Customer/2",
                 customCheckoutConfigurationId: "gid://crater/CustomCheckoutConfiguration/4",
                 paymentPeriod: "MONTHLY",
-                returnUrl: "https://code0.example/en/checkout/success?session_id={CHECKOUT_SESSION_ID}",
+                returnUrl: "https://code0.example/en/checkout/success?session_id={CHECKOUT_SESSION_ID}&customer_id=gid%3A%2F%2Fcrater%2FCustomer%2F2&checkout_started_at=1800000000000",
             },
         })
         assert.equal(graphQLServer.requests[2].authorization, "Session dynamic-custom-token")
@@ -338,7 +340,7 @@ test("creates regular and custom checkout sessions with the expected Crater inpu
                 namespaceId: "namespace-7",
                 paymentPeriod: "QUARTERLY",
                 plan: "custom",
-                returnUrl: "https://code0.example/en/checkout/success?session_id={CHECKOUT_SESSION_ID}",
+                returnUrl: "https://code0.example/en/checkout/success?session_id={CHECKOUT_SESSION_ID}&customer_id=gid%3A%2F%2Fcrater%2FCustomer%2F3&checkout_started_at=1800000000000",
                 workflowExecutions: 200,
             },
         })

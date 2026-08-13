@@ -136,7 +136,7 @@ export async function POST(request: Request) {
 
         const input: MutationCheckoutCreateSessionArgs["input"] = {
             customerId,
-            returnUrl: `${new URL(`/${locale}/checkout/success`, siteUrl).toString()}?session_id={CHECKOUT_SESSION_ID}`,
+            returnUrl: `${new URL(`/${locale}/checkout/success`, siteUrl).toString()}?session_id={CHECKOUT_SESSION_ID}&customer_id=${encodeURIComponent(customerId)}&checkout_started_at=${Date.now()}`,
             paymentPeriod: normalizedSelection ? toCraterPaymentPeriod(normalizedSelection.paymentPeriod) : (customConfigurationPaymentPeriod ?? DEFAULT_CRATER_PAYMENT_PERIOD),
             ...(craterCustomCheckoutConfigurationId
                 ? { customCheckoutConfigurationId: craterCustomCheckoutConfigurationId }

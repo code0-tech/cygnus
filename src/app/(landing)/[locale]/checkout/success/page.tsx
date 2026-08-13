@@ -6,16 +6,14 @@ import { notFound } from "next/navigation"
 import { Card } from "@/components/ui/Card"
 import { parseCheckoutSessionId } from "@/lib/checkout/checkoutReturn"
 import type { Metadata } from "next"
-import { FilledButtonLink } from "@/components/ui/FilledButtonLink"
-import Link from "next/link"
-import { Button } from "@code0-tech/pictor"
 import { CheckoutDraftCleanup } from "@/components/checkout/CheckoutDraftCleanup"
+import { CheckoutSuccessStatus } from "@/components/checkout/CheckoutSuccessStatus"
 
 export const metadata: Metadata = { title: "Success" }
 
 interface CheckoutSuccessPageProps {
     params: Promise<{ locale: string }>
-    searchParams: Promise<{ session_id?: string | string[] }>
+    searchParams: Promise<{ checkout_started_at?: string | string[]; customer_id?: string | string[]; session_id?: string | string[] }>
 }
 
 export default async function CheckoutSuccessPage({ params, searchParams }: CheckoutSuccessPageProps) {
@@ -25,6 +23,9 @@ export default async function CheckoutSuccessPage({ params, searchParams }: Chec
 
     const [checkoutContent, footer] = await Promise.all([getCheckoutContent(locale), getFooter(locale)])
     const currentYear = new Date().getUTCFullYear()
+    const customerId = typeof query.customer_id === "string" && /^gid:\/\/crater\/Customer\/\d+$/.test(query.customer_id) ? query.customer_id : null
+    const parsedStartedAt = typeof query.checkout_started_at === "string" ? Number(query.checkout_started_at) : Number.NaN
+    const startedAt = Number.isSafeInteger(parsedStartedAt) && parsedStartedAt > 0 ? parsedStartedAt : null
 
     return (
         <div className="flex min-h-full flex-col gap-8">
@@ -35,9 +36,7 @@ export default async function CheckoutSuccessPage({ params, searchParams }: Chec
                         <h1 className="text-3xl font-semibold text-white">{checkoutContent?.success.heading}</h1>
                         <p className="text-secondary">{checkoutContent?.success.description}</p>
                         <div className="flex flex-col items-center justify-center gap-2">
-                            <FilledButtonLink href={`/api/crater/licenses/access?locale=${locale}`} target={"_blank"} rel={"noreferrer"}>
-                                {checkoutContent?.success.licenseDashboardLabel}
-                            </FilledButtonLink>
+                            {checkoutContent?.success ? <CheckoutSuccessStatus content={checkoutContent.success} customerId={customerId} locale={locale} startedAt={startedAt} /> : null}
                             <LinkButton href={`/${locale}`} showArrow={false} className="border-b-0">
                                 {checkoutContent?.success.backToHomepageLabel}
                             </LinkButton>

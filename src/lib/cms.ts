@@ -401,6 +401,10 @@ export interface CheckoutData {
         heading: string
         description: string
         licenseDashboardLabel: string
+        licensePendingLabel: string
+        licenseReadyLabel: string
+        licenseStatusError: string
+        licenseStatusRetryLabel: string
         backToHomepageLabel: string
     }
 }
