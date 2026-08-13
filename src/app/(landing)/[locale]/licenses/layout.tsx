@@ -2,7 +2,12 @@ import { LicenseLayout } from "@/components/licenses/LicenseLayout"
 import { getLicenseContent } from "@/lib/cms"
 import { isSupportedLocale } from "@/lib/i18n"
 import { notFound } from "next/navigation"
+import type { Metadata } from "next"
 import type { ReactNode } from "react"
+
+export const metadata: Metadata = {
+    title: { absolute: "CodeZero | License Dashboard" },
+}
 
 interface LicensesLayoutProps {
     children: ReactNode
