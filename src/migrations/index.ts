@@ -115,6 +115,9 @@ import * as migration_20260812_111357_license_detail_labels from './20260812_111
 import * as migration_20260812_112328_license_edit_dialogs from './20260812_112328_license_edit_dialogs';
 import * as migration_20260812_132026_checkout_customer_selection from './20260812_132026_checkout_customer_selection';
 import * as migration_20260813_054459_remove_unused_license_fields from './20260813_054459_remove_unused_license_fields';
+import * as migration_20260813_070321_license_dashboard_type_columns from './20260813_070321_license_dashboard_type_columns';
+import * as migration_20260813_070833_license_entitlement_labels from './20260813_070833_license_entitlement_labels';
+import * as migration_20260813_072557_license_sidebar_dashboard from './20260813_072557_license_sidebar_dashboard';
 
 export const migrations = [
   {
@@ -700,6 +703,21 @@ export const migrations = [
   {
     up: migration_20260813_054459_remove_unused_license_fields.up,
     down: migration_20260813_054459_remove_unused_license_fields.down,
-    name: '20260813_054459_remove_unused_license_fields'
+    name: '20260813_054459_remove_unused_license_fields',
+  },
+  {
+    up: migration_20260813_070321_license_dashboard_type_columns.up,
+    down: migration_20260813_070321_license_dashboard_type_columns.down,
+    name: '20260813_070321_license_dashboard_type_columns',
+  },
+  {
+    up: migration_20260813_070833_license_entitlement_labels.up,
+    down: migration_20260813_070833_license_entitlement_labels.down,
+    name: '20260813_070833_license_entitlement_labels',
+  },
+  {
+    up: migration_20260813_072557_license_sidebar_dashboard.up,
+    down: migration_20260813_072557_license_sidebar_dashboard.down,
+    name: '20260813_072557_license_sidebar_dashboard'
   },
 ];

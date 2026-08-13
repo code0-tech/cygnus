@@ -27,12 +27,15 @@ const LICENSE_DASHBOARD: TypedDocumentNode<LicenseDashboardQuery, Record<string,
                     licenses(first: 100) {
                         count
                         nodes {
+                            aiTokens
                             id
                             status
                             plan
                             deploymentType
                             namespaceId
+                            paymentPeriod
                             updatedAt
+                            workflowExecutions
                         }
                     }
                 }
@@ -118,15 +121,19 @@ export async function GET(request: Request) {
                 if (!license?.id) continue
 
                 licenses.push({
+                    ...(typeof license.aiTokens === "number" ? { aiTokens: license.aiTokens } : {}),
                     customerId,
                     customerName,
+                    ...(customer.customerType ? { customerType: customer.customerType } : {}),
                     id: license.id,
                     name: licenseName(license.plan, license.id),
                     ...(license.deploymentType ? { deploymentType: license.deploymentType } : {}),
                     ...(license.namespaceId ? { namespaceId: license.namespaceId } : {}),
+                    ...(license.paymentPeriod ? { paymentPeriod: license.paymentPeriod } : {}),
                     ...(license.plan ? { plan: license.plan } : {}),
                     ...(license.status ? { status: license.status } : {}),
                     ...(license.updatedAt ? { updatedAt: license.updatedAt } : {}),
+                    ...(typeof license.workflowExecutions === "number" ? { workflowExecutions: license.workflowExecutions } : {}),
                 })
             }
         }

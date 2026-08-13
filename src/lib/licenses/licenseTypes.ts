@@ -8,15 +8,19 @@ export interface LicenseDashboardCustomer {
 }
 
 export interface LicenseDashboardLicense {
+    aiTokens?: number
     customerId: string
     customerName: string
+    customerType?: string
     deploymentType?: string
     id: string
     name: string
     namespaceId?: string
+    paymentPeriod?: string
     plan?: string
     status?: string
     updatedAt?: string
+    workflowExecutions?: number
 }
 
 export interface LicenseDashboardData {

@@ -3249,6 +3249,7 @@ export interface License {
    */
   redirectUrl: string;
   sidebar: {
+    dashboard: string;
     logout: string;
     loggingOut: string;
   };
@@ -3257,11 +3258,15 @@ export interface License {
     emptyCustomers: string;
     recentLicenses: string;
     customerLabel: string;
+    typeLabel: string;
     emailLabel: string;
     lastEditedLabel: string;
     editLabel: string;
     statusLabel: string;
     deploymentLabel: string;
+    paymentPeriodLabel: string;
+    workflowExecutionsLabel: string;
+    aiTokensLabel: string;
   };
   editor: {
     customerTitle: string;
@@ -3875,6 +3880,7 @@ export interface LicensesSelect<T extends boolean = true> {
   sidebar?:
     | T
     | {
+        dashboard?: T;
         logout?: T;
         loggingOut?: T;
       };
@@ -3885,11 +3891,15 @@ export interface LicensesSelect<T extends boolean = true> {
         emptyCustomers?: T;
         recentLicenses?: T;
         customerLabel?: T;
+        typeLabel?: T;
         emailLabel?: T;
         lastEditedLabel?: T;
         editLabel?: T;
         statusLabel?: T;
         deploymentLabel?: T;
+        paymentPeriodLabel?: T;
+        workflowExecutionsLabel?: T;
+        aiTokensLabel?: T;
       };
   editor?:
     | T
