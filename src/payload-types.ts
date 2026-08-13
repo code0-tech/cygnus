@@ -3248,6 +3248,10 @@ export interface Checkout {
     heading: string;
     description: string;
     licenseDashboardLabel: string;
+    licensePendingLabel: string;
+    licenseReadyLabel: string;
+    licenseStatusError: string;
+    licenseStatusRetryLabel: string;
     backToHomepageLabel: string;
   };
   updatedAt?: string | null;
@@ -3880,6 +3884,10 @@ export interface CheckoutSelect<T extends boolean = true> {
         heading?: T;
         description?: T;
         licenseDashboardLabel?: T;
+        licensePendingLabel?: T;
+        licenseReadyLabel?: T;
+        licenseStatusError?: T;
+        licenseStatusRetryLabel?: T;
         backToHomepageLabel?: T;
       };
   updatedAt?: T;

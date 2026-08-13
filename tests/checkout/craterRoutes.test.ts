@@ -7,6 +7,7 @@ import { POST as createSession } from "../../src/app/api/crater/login/route"
 import { DELETE as deleteSession, GET as getSessionStatus } from "../../src/app/api/crater/auth/session/route"
 import { GET as getLicenseDashboard, PATCH as linkLicenseNamespace } from "../../src/app/api/crater/licenses/route"
 import { GET as accessLicenseDashboard } from "../../src/app/api/crater/licenses/access/route"
+import { GET as getCheckoutLicenseStatus } from "../../src/app/api/crater/checkout/status/route"
 import { createGraphQLTestServer } from "./graphqlTestServer"
 
 const sessionHeaders = {
@@ -59,6 +60,71 @@ test("customer creation requires a Crater session", async () => {
     )
 
     assert.equal(response.status, 403)
+})
+
+test("checkout license status requires a Crater session", async () => {
+    const response = await getCheckoutLicenseStatus(
+        new Request(
+            "https://example.com/api/crater/checkout/status?customerId=gid%3A%2F%2Fcrater%2FCustomer%2F1&startedAt=1786528800000"
+        )
+    )
+
+    assert.equal(response.status, 403)
+    assert.equal(response.headers.get("cache-control"), "no-store")
+})
+
+test("checkout license status becomes ready after Crater creates the license", async () => {
+    const customerId = "gid://crater/Customer/1"
+    const startedAt = Date.parse("2026-08-12T10:00:00Z")
+    const graphQLServer = await createGraphQLTestServer([
+        {
+            data: {
+                currentUser: {
+                    customers: {
+                        nodes: [
+                            {
+                                id: customerId,
+                                licenses: { nodes: [{ createdAt: "2026-08-12T09:59:59Z", id: "gid://crater/License/1" }] },
+                            },
+                        ],
+                    },
+                },
+            },
+        },
+        {
+            data: {
+                currentUser: {
+                    customers: {
+                        nodes: [
+                            {
+                                id: customerId,
+                                licenses: { nodes: [{ createdAt: "2026-08-12T10:00:01Z", id: "gid://crater/License/2" }] },
+                            },
+                        ],
+                    },
+                },
+            },
+        },
+    ])
+    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
+    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
+
+    try {
+        const requestUrl = `https://example.com/api/crater/checkout/status?customerId=${encodeURIComponent(customerId)}&startedAt=${startedAt}`
+        const pendingResponse = await getCheckoutLicenseStatus(new Request(requestUrl, { headers: sessionHeaders }))
+        const readyResponse = await getCheckoutLicenseStatus(new Request(requestUrl, { headers: sessionHeaders }))
+
+        assert.equal(pendingResponse.status, 200)
+        assert.deepEqual(await pendingResponse.json(), { ready: false })
+        assert.equal(readyResponse.status, 200)
+        assert.deepEqual(await readyResponse.json(), { ready: true })
+        assert.equal(graphQLServer.requests[0].body.operationName, "CheckoutLicenseStatus")
+        assert.match(graphQLServer.requests[0].body.query ?? "", /createdAt/)
+    } finally {
+        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
+        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
+        await graphQLServer.close()
+    }
 })
 
 test("lists the authenticated user's checkout customers", async () => {
