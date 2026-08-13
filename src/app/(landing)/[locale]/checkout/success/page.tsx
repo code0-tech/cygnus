@@ -9,6 +9,7 @@ import type { Metadata } from "next"
 import { FilledButtonLink } from "@/components/ui/FilledButtonLink"
 import Link from "next/link"
 import { Button } from "@code0-tech/pictor"
+import { CheckoutDraftCleanup } from "@/components/checkout/CheckoutDraftCleanup"
 
 export const metadata: Metadata = { title: "Success" }
 
@@ -27,6 +28,7 @@ export default async function CheckoutSuccessPage({ params, searchParams }: Chec
 
     return (
         <div className="flex min-h-full flex-col gap-8">
+            <CheckoutDraftCleanup />
             <div className="flex flex-1 items-center justify-center">
                 <Card variant={"light"} className="mx-auto max-w-2xl rounded-3xl p-8! text-center">
                     <div className="relative z-10 space-y-4">
