@@ -5,6 +5,7 @@ import { LicenseStatusDot } from "@/components/licenses/LicenseStatusDot"
 import type { LicenseContent } from "@/lib/cms"
 import { AppLocale } from "@/lib/i18n"
 import type { LicenseDashboardLicense } from "@/lib/licenses/licenseTypes"
+import { formatLicenseDisplayValue } from "@/lib/licenses/licenseDisplayValues"
 import { Button, Flex, Text } from "@code0-tech/pictor"
 import { IconArrowAutofitLeftFilled, IconKey, IconLayoutDashboard } from "@tabler/icons-react"
 import Image from "next/image"
@@ -13,20 +14,10 @@ import { usePathname } from "next/navigation"
 import { useState } from "react"
 
 interface LicenseSidebarProps {
-    content: Pick<LicenseContent, "emptyLicenses" | "licenses" | "redirectUrl" | "sidebar">
+    content: Pick<LicenseContent, "emptyLicenses" | "licenses" | "redirectUrl" | "sidebar" | "values">
     isLoading: boolean
     locale: AppLocale
     licenses: LicenseDashboardLicense[]
-}
-
-function formatLicenseValue(value?: string) {
-    if (!value) return undefined
-
-    return value
-        .replaceAll("_", " ")
-        .split(" ")
-        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-        .join(" ")
 }
 
 function getShortLicenseId(id: string) {
@@ -110,8 +101,8 @@ export function LicenseSidebar({ content, isLoading, locale, licenses }: License
                     ) : licenses.length > 0 ? (
                         <ul className="space-y-1.5">
                             {licenses.map((license) => {
-                                const deployment = formatLicenseValue(license.deploymentType)
-                                const status = formatLicenseValue(license.status)
+                                const deployment = formatLicenseDisplayValue(license.deploymentType, "deploymentType", content.values)
+                                const status = formatLicenseDisplayValue(license.status, "status", content.values)
                                 const identifier = license.namespaceId?.trim() || getShortLicenseId(license.id)
                                 const licenseHref = `/${locale}/licenses/customer/${encodeURIComponent(license.customerId)}/license/${encodeURIComponent(license.id)}`
                                 const licenseIsActive = pathname === licenseHref || pathname?.startsWith(`${licenseHref}/`)
@@ -136,7 +127,7 @@ export function LicenseSidebar({ content, isLoading, locale, licenses }: License
                                             </span>
                                             <span className="min-w-0 flex-1">
                                                 <span className="flex min-w-0 items-center gap-1.5">
-                                                    <span className="truncate text-sm font-medium text-white">{license.name}</span>
+                                                    <span className="truncate text-sm font-medium text-white">{formatLicenseDisplayValue(license.plan, "plan", content.values)}</span>
                                                     {deployment ? <span className="shrink-0 text-xs text-tertiary">| {deployment}</span> : null}
                                                 </span>
                                                 <span className="block truncate text-xs text-tertiary">

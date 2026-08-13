@@ -6,17 +6,22 @@ import type { AppLocale } from "@/lib/i18n"
 import { createContext, type ReactNode, useContext, useEffect, useRef, useState } from "react"
 
 interface LicenseDataContextValue extends LicenseDashboardData {
+    error: string | null
     isLoading: boolean
+    reload: () => void
     updateCustomer: (id: string, values: { email?: string; name?: string }) => void
     updateLicense: (id: string, values: { namespaceId?: string; updatedAt?: string }) => void
 }
 
 const LicenseDataContext = createContext<LicenseDataContextValue | null>(null)
 
-export function LicenseDataProvider({ children, locale, redirectUrl }: { children: ReactNode; locale: AppLocale; redirectUrl: string }) {
+export function LicenseDataProvider({ children, loadError, locale, redirectUrl }: { children: ReactNode; loadError: string; locale: AppLocale; redirectUrl: string }) {
     const sessionTokenRef = useRef<string | null>(null)
     const [data, setData] = useState<LicenseDashboardData>(EMPTY_LICENSE_DASHBOARD_DATA)
     const [isLoading, setIsLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
+    const [reloadKey, setReloadKey] = useState(0)
+    const reload = () => setReloadKey((current) => current + 1)
 
     const updateCustomer: LicenseDataContextValue["updateCustomer"] = (id, values) => {
         setData((current) => ({
@@ -37,6 +42,8 @@ export function LicenseDataProvider({ children, locale, redirectUrl }: { childre
 
     useEffect(() => {
         const controller = new AbortController()
+        setError(null)
+        setIsLoading(true)
         const currentUrl = new URL(window.location.href)
         const sessionToken = sessionTokenRef.current ?? readCraterSessionToken(currentUrl)
 
@@ -65,7 +72,7 @@ export function LicenseDataProvider({ children, locale, redirectUrl }: { childre
                     window.location.replace(redirectUrl)
                     return null
                 }
-                if (!response.ok) throw new Error(`Could not load the license dashboard (${response.status}).`)
+                if (!response.ok) throw new Error(loadError)
                 return (await response.json()) as LicenseDashboardData
             })
             .then((nextData) => {
@@ -77,16 +84,17 @@ export function LicenseDataProvider({ children, locale, redirectUrl }: { childre
             })
             .catch((error: unknown) => {
                 if (error instanceof DOMException && error.name === "AbortError") return
-                console.error("Failed to load the license dashboard:", error)
+                console.error(loadError, error)
+                setError(loadError)
             })
             .finally(() => {
                 if (!controller.signal.aborted) setIsLoading(false)
             })
 
         return () => controller.abort()
-    }, [locale, redirectUrl])
+    }, [loadError, locale, redirectUrl, reloadKey])
 
-    return <LicenseDataContext.Provider value={{ ...data, isLoading, updateCustomer, updateLicense }}>{children}</LicenseDataContext.Provider>
+    return <LicenseDataContext.Provider value={{ ...data, error, isLoading, reload, updateCustomer, updateLicense }}>{children}</LicenseDataContext.Provider>
 }
 
 export function useLicenseData() {

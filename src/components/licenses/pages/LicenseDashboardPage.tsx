@@ -9,6 +9,7 @@ import {
 } from "@/components/licenses/LicenseDataTable"
 import type { LicenseContent } from "@/lib/cms"
 import { AppLocale } from "@/lib/i18n"
+import { formatLicenseDisplayValue } from "@/lib/licenses/licenseDisplayValues"
 import { Card, Flex, Spacing, Text } from "@code0-tech/pictor"
 import { IconKey } from "@tabler/icons-react"
 import { useRouter } from "next/navigation"
@@ -18,15 +19,6 @@ import { LicensePlanIcon } from "../LicensePlanIcon"
 interface LicenseDashboardPageProps {
     content: LicenseContent
     locale: AppLocale
-}
-
-function formatType(value: string | undefined) {
-    if (!value) return "—"
-
-    return value
-        .split(/[_-]+/)
-        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-        .join(" ")
 }
 
 export function LicenseDashboardPage({ content, locale }: LicenseDashboardPageProps) {
@@ -85,7 +77,7 @@ export function LicenseDashboardPage({ content, locale }: LicenseDashboardPagePr
                                 </DataTableColumn>
                                 <DataTableColumn>
                                     <Text size="sm" hierarchy="tertiary">
-                                        {formatType(customer.customerType)}
+                                        {formatLicenseDisplayValue(customer.customerType, "customerType", content.values)}
                                     </Text>
                                 </DataTableColumn>
                                 <DataTableColumn>
@@ -135,7 +127,7 @@ export function LicenseDashboardPage({ content, locale }: LicenseDashboardPagePr
                                     <Flex align="center" style={{ gap: "0.6rem" }}>
                                         <LicensePlanIcon plan={license.plan} className="text-brand" size={15} />
                                         <Text size="sm" fw={500}>
-                                            {license.name}
+                                            {formatLicenseDisplayValue(license.plan, "plan", content.values)}
                                         </Text>
                                     </Flex>
                                 </DataTableColumn>
@@ -146,12 +138,12 @@ export function LicenseDashboardPage({ content, locale }: LicenseDashboardPagePr
                                 </DataTableColumn>
                                 <DataTableColumn>
                                     <Text size="sm" hierarchy="tertiary">
-                                        {formatType(license.customerType ?? customerTypes.get(license.customerId))}
+                                        {formatLicenseDisplayValue(license.customerType ?? customerTypes.get(license.customerId), "customerType", content.values)}
                                     </Text>
                                 </DataTableColumn>
                                 <DataTableColumn>
                                     <Text size="sm" hierarchy="tertiary">
-                                        {formatType(license.deploymentType)}
+                                        {formatLicenseDisplayValue(license.deploymentType, "deploymentType", content.values)}
                                     </Text>
                                 </DataTableColumn>
                                 <DataTableColumn>

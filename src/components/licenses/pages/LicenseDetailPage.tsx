@@ -7,6 +7,7 @@ import type { LicenseContent } from "@/lib/cms"
 import { formatCompactNumber } from "@/lib/formatters"
 import type { AppLocale } from "@/lib/i18n"
 import { decodeLicenseRouteId } from "@/lib/licenses/licenseRoute"
+import { formatLicenseDisplayValue } from "@/lib/licenses/licenseDisplayValues"
 import { Button, Card, Flex, Spacing, Text } from "@code0-tech/pictor"
 import { useRouter } from "next/navigation"
 
@@ -30,11 +31,14 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale }: Li
     })
     const licenseDetails = license
         ? [
-              { label: content.dashboard.statusLabel, value: license.status?.replaceAll("_", " ") || "—", showStatusDot: true },
-              { label: content.dashboard.typeLabel, value: customer?.customerType?.replaceAll("_", " ") || license.customerType?.replaceAll("_", " ") || "—" },
-              { label: content.dashboard.deploymentLabel, value: license.deploymentType?.replaceAll("_", " ") || "—" },
-              { label: content.licenses, value: license.plan?.replaceAll("_", " ") || license.name, showPlanIcon: true },
-              { label: content.dashboard.paymentPeriodLabel, value: license.paymentPeriod?.replaceAll("_", " ") || "—" },
+              { label: content.dashboard.statusLabel, value: formatLicenseDisplayValue(license.status, "status", content.values), showStatusDot: true },
+              {
+                  label: content.dashboard.typeLabel,
+                  value: formatLicenseDisplayValue(customer?.customerType ?? license.customerType, "customerType", content.values),
+              },
+              { label: content.dashboard.deploymentLabel, value: formatLicenseDisplayValue(license.deploymentType, "deploymentType", content.values) },
+              { label: content.licenses, value: formatLicenseDisplayValue(license.plan, "plan", content.values), showPlanIcon: true },
+              { label: content.dashboard.paymentPeriodLabel, value: formatLicenseDisplayValue(license.paymentPeriod, "paymentPeriod", content.values) },
               ...(license.plan?.toLowerCase() === "custom"
                   ? [
                         { label: content.dashboard.workflowExecutionsLabel, value: license.workflowExecutions === undefined ? "—" : formatCompactNumber(license.workflowExecutions) },
@@ -53,7 +57,7 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale }: Li
         <section aria-labelledby="license-heading">
             <Flex align="center" justify="space-between" style={{ gap: "1rem" }}>
                 <Text id="license-heading" hierarchy="secondary" size="lg">
-                    {locale === "de" ? "Lizenz" : "License"}
+                    {content.license}
                 </Text>
                 {isLoading || license ? (
                     <Button
@@ -85,7 +89,7 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale }: Li
                                 <Flex align="center" style={{ gap: "0.25rem" }}>
                                     {"showStatusDot" in detail ? <LicenseStatusDot aria-hidden="true" status={license.status} /> : null}
                                     {"showPlanIcon" in detail ? <LicensePlanIcon className="shrink-0 text-brand" plan={license.plan} size={16} /> : null}
-                                    <Text size="sm" fw={500} className="wrap-break-word capitalize">
+                                    <Text size="sm" fw={500} className="wrap-break-word">
                                         {detail.value}
                                     </Text>
                                 </Flex>

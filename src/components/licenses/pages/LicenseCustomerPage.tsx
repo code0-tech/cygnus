@@ -12,6 +12,7 @@ import {
 import type { LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { decodeLicenseRouteId } from "@/lib/licenses/licenseRoute"
+import { formatLicenseDisplayValue } from "@/lib/licenses/licenseDisplayValues"
 import { Button, Card, Flex, Spacing, Text } from "@code0-tech/pictor"
 import { useRouter } from "next/navigation"
 import { Fragment } from "react"
@@ -38,7 +39,7 @@ export function LicenseCustomerPage({ content, customerId, locale }: LicenseCust
               { label: content.dashboard.emailLabel, value: customer.email || "—" },
               {
                   label: content.dashboard.customerLabel,
-                  value: customer.customerType ? `${customer.customerType.charAt(0).toUpperCase()}${customer.customerType.slice(1).replaceAll("_", " ")}` : "—",
+                  value: formatLicenseDisplayValue(customer.customerType, "customerType", content.values),
               },
               { label: content.licenses, value: String(customer.licenseCount) },
           ]
@@ -147,21 +148,21 @@ export function LicenseCustomerPage({ content, customerId, locale }: LicenseCust
                                     <Flex align="center" style={{ gap: "0.6rem" }}>
                                         <LicensePlanIcon className="shrink-0 text-brand" plan={license.plan} size={16} />
                                         <Text size="sm" fw={500}>
-                                            {license.name}
+                                            {formatLicenseDisplayValue(license.plan, "plan", content.values)}
                                         </Text>
                                     </Flex>
                                 </DataTableColumn>
                                 <DataTableColumn>
                                     <Flex align="center" style={{ gap: "0.5rem" }}>
                                         <LicenseStatusDot aria-hidden="true" status={license.status} />
-                                        <Text size="sm" hierarchy="tertiary" className="capitalize">
-                                            {license.status?.replaceAll("_", " ") || "—"}
+                                        <Text size="sm" hierarchy="tertiary">
+                                            {formatLicenseDisplayValue(license.status, "status", content.values)}
                                         </Text>
                                     </Flex>
                                 </DataTableColumn>
                                 <DataTableColumn>
-                                    <Text size="sm" hierarchy="tertiary" className="capitalize">
-                                        {license.deploymentType?.replaceAll("_", " ") || "—"}
+                                    <Text size="sm" hierarchy="tertiary">
+                                        {formatLicenseDisplayValue(license.deploymentType, "deploymentType", content.values)}
                                     </Text>
                                 </DataTableColumn>
                                 <DataTableColumn>

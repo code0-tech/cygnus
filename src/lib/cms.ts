@@ -410,6 +410,7 @@ export interface CheckoutData {
 }
 
 export interface LicenseContent {
+    license: string
     licenses: string
     emptyLicenses: string
     redirectUrl: string
@@ -432,6 +433,18 @@ export interface LicenseContent {
         paymentPeriodLabel: string
         workflowExecutionsLabel: string
         aiTokensLabel: string
+    }
+    values: {
+        customerTypes: { personal: string; business: string }
+        deploymentTypes: { cloud: string; selfHosted: string }
+        paymentPeriods: { weekly: string; monthly: string; quarterly: string; yearly: string }
+        statuses: { active: string; paid: string; paymentFailed: string; canceled: string; expired: string }
+        plans: { pro: string; max: string; custom: string }
+        unknown: string
+    }
+    errors: {
+        dashboardLoad: string
+        retry: string
     }
     editor: {
         customerTitle: string

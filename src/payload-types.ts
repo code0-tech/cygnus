@@ -3247,6 +3247,7 @@ export interface Checkout {
 export interface License {
   id: number;
   licenses: string;
+  license: string;
   emptyLicenses: string;
   /**
    * Sculptor URL used when no valid Crater session token was supplied.
@@ -3271,6 +3272,39 @@ export interface License {
     paymentPeriodLabel: string;
     workflowExecutionsLabel: string;
     aiTokensLabel: string;
+  };
+  values: {
+    customerTypes: {
+      personal: string;
+      business: string;
+    };
+    deploymentTypes: {
+      cloud: string;
+      selfHosted: string;
+    };
+    paymentPeriods: {
+      weekly: string;
+      monthly: string;
+      quarterly: string;
+      yearly: string;
+    };
+    statuses: {
+      active: string;
+      paid: string;
+      paymentFailed: string;
+      canceled: string;
+      expired: string;
+    };
+    plans: {
+      pro: string;
+      max: string;
+      custom: string;
+    };
+    unknown: string;
+  };
+  errors: {
+    dashboardLoad: string;
+    retry: string;
   };
   editor: {
     customerTitle: string;
@@ -3883,6 +3917,7 @@ export interface CheckoutSelect<T extends boolean = true> {
  */
 export interface LicensesSelect<T extends boolean = true> {
   licenses?: T;
+  license?: T;
   emptyLicenses?: T;
   redirectUrl?: T;
   sidebar?:
@@ -3908,6 +3943,53 @@ export interface LicensesSelect<T extends boolean = true> {
         paymentPeriodLabel?: T;
         workflowExecutionsLabel?: T;
         aiTokensLabel?: T;
+      };
+  values?:
+    | T
+    | {
+        customerTypes?:
+          | T
+          | {
+              personal?: T;
+              business?: T;
+            };
+        deploymentTypes?:
+          | T
+          | {
+              cloud?: T;
+              selfHosted?: T;
+            };
+        paymentPeriods?:
+          | T
+          | {
+              weekly?: T;
+              monthly?: T;
+              quarterly?: T;
+              yearly?: T;
+            };
+        statuses?:
+          | T
+          | {
+              active?: T;
+              paid?: T;
+              paymentFailed?: T;
+              canceled?: T;
+              expired?: T;
+            };
+        plans?:
+          | T
+          | {
+              pro?: T;
+              max?: T;
+              custom?: T;
+            };
+        unknown?: T;
+      };
+  errors?:
+    | T
+    | {
+        dashboardLoad?: T;
+        retry?: T;
       };
   editor?:
     | T

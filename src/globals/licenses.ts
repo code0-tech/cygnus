@@ -20,6 +20,13 @@ export const Licenses: GlobalConfig = {
             defaultValue: localizedDefault("Licenses", "Lizenzen"),
         },
         {
+            name: "license",
+            type: "text",
+            required: true,
+            localized: true,
+            defaultValue: localizedDefault("License", "Lizenz"),
+        },
+        {
             name: "emptyLicenses",
             type: "text",
             required: true,
@@ -167,6 +174,73 @@ export const Licenses: GlobalConfig = {
                     localized: true,
                     defaultValue: localizedDefault("AI tokens", "KI-Tokens"),
                 },
+            ],
+        },
+        {
+            name: "values",
+            type: "group",
+            fields: [
+                {
+                    name: "customerTypes",
+                    type: "group",
+                    fields: [
+                        { name: "personal", type: "text", required: true, localized: true, defaultValue: localizedDefault("Personal", "Privat") },
+                        { name: "business", type: "text", required: true, localized: true, defaultValue: localizedDefault("Business", "Geschäftlich") },
+                    ],
+                },
+                {
+                    name: "deploymentTypes",
+                    type: "group",
+                    fields: [
+                        { name: "cloud", type: "text", required: true, localized: true, defaultValue: localizedDefault("Cloud", "Cloud") },
+                        { name: "selfHosted", type: "text", required: true, localized: true, defaultValue: localizedDefault("Self-hosted", "Self-hosted") },
+                    ],
+                },
+                {
+                    name: "paymentPeriods",
+                    type: "group",
+                    fields: [
+                        { name: "weekly", type: "text", required: true, localized: true, defaultValue: localizedDefault("Weekly", "Wöchentlich") },
+                        { name: "monthly", type: "text", required: true, localized: true, defaultValue: localizedDefault("Monthly", "Monatlich") },
+                        { name: "quarterly", type: "text", required: true, localized: true, defaultValue: localizedDefault("Quarterly", "Vierteljährlich") },
+                        { name: "yearly", type: "text", required: true, localized: true, defaultValue: localizedDefault("Yearly", "Jährlich") },
+                    ],
+                },
+                {
+                    name: "statuses",
+                    type: "group",
+                    fields: [
+                        { name: "active", type: "text", required: true, localized: true, defaultValue: localizedDefault("Active", "Aktiv") },
+                        { name: "paid", type: "text", required: true, localized: true, defaultValue: localizedDefault("Paid", "Bezahlt") },
+                        { name: "paymentFailed", type: "text", required: true, localized: true, defaultValue: localizedDefault("Payment failed", "Zahlung fehlgeschlagen") },
+                        { name: "canceled", type: "text", required: true, localized: true, defaultValue: localizedDefault("Canceled", "Gekündigt") },
+                        { name: "expired", type: "text", required: true, localized: true, defaultValue: localizedDefault("Expired", "Abgelaufen") },
+                    ],
+                },
+                {
+                    name: "plans",
+                    type: "group",
+                    fields: [
+                        { name: "pro", type: "text", required: true, localized: true, defaultValue: localizedDefault("Pro", "Pro") },
+                        { name: "max", type: "text", required: true, localized: true, defaultValue: localizedDefault("Max", "Max") },
+                        { name: "custom", type: "text", required: true, localized: true, defaultValue: localizedDefault("Custom", "Individuell") },
+                    ],
+                },
+                { name: "unknown", type: "text", required: true, localized: true, defaultValue: localizedDefault("Unknown", "Unbekannt") },
+            ],
+        },
+        {
+            name: "errors",
+            type: "group",
+            fields: [
+                {
+                    name: "dashboardLoad",
+                    type: "text",
+                    required: true,
+                    localized: true,
+                    defaultValue: localizedDefault("The license dashboard could not be loaded.", "Das Lizenz-Dashboard konnte nicht geladen werden."),
+                },
+                { name: "retry", type: "text", required: true, localized: true, defaultValue: localizedDefault("Try again", "Erneut versuchen") },
             ],
         },
         {

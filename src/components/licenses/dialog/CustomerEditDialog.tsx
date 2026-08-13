@@ -15,16 +15,6 @@ interface CustomerEditDialogProps {
     locale: AppLocale
 }
 
-async function responseError(response: Response, fallback: string) {
-    try {
-        const body: unknown = await response.json()
-        if (body && typeof body === "object" && "error" in body && typeof body.error === "string") return body.error
-    } catch {
-        // Use the localized fallback when the response is not JSON.
-    }
-    return fallback
-}
-
 export function CustomerEditDialog({ content, customerId, locale }: CustomerEditDialogProps) {
     const router = useRouter()
     const { customers, updateCustomer } = useLicenseData()
@@ -55,7 +45,7 @@ export function CustomerEditDialog({ content, customerId, locale }: CustomerEdit
                 headers: { "content-type": "application/json" },
                 body: JSON.stringify({ id: customer.id, ...(name.trim() ? { name: name.trim() } : {}), ...(email.trim() ? { email: email.trim() } : {}) }),
             })
-            if (!response.ok) throw new Error(await responseError(response, content.editor.customerError))
+            if (!response.ok) throw new Error(content.editor.customerError)
 
             updateCustomer(customer.id, { ...(name.trim() ? { name: name.trim() } : {}), ...(email.trim() ? { email: email.trim() } : {}) })
             close()
