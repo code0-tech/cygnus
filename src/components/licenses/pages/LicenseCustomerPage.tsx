@@ -1,6 +1,7 @@
 "use client"
 
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
+import { LicenseStatusDot } from "@/components/licenses/LicenseStatusDot"
 import { LicensePlanIcon } from "@/components/licenses/LicensePlanIcon"
 import {
     LicenseDataTable as DataTable,
@@ -19,21 +20,6 @@ interface LicenseCustomerPageProps {
     content: LicenseContent
     customerId: string
     locale: AppLocale
-}
-
-function getStatusColor(status?: string) {
-    switch (status) {
-        case "active":
-        case "paid":
-            return "bg-brand"
-        case "payment_failed":
-            return "bg-error"
-        case "canceled":
-        case "expired":
-            return "bg-tertiary"
-        default:
-            return "bg-warning"
-    }
 }
 
 export function LicenseCustomerPage({ content, customerId, locale }: LicenseCustomerPageProps) {
@@ -67,12 +53,16 @@ export function LicenseCustomerPage({ content, customerId, locale }: LicenseCust
                             {content.dashboard.customerLabel}
                         </Text>
                     </div>
-                    {customer ? (
+                    {isLoading || customer ? (
                         <Button
                             type="button"
                             variant="normal"
                             paddingSize="xs"
-                            onClick={() => router.push(`/${locale}/licenses/customer/${encodeURIComponent(customer.id)}/edit`)}
+                            disabled={isLoading || !customer}
+                            onClick={() => {
+                                if (!customer) return
+                                router.push(`/${locale}/licenses/customer/${encodeURIComponent(customer.id)}/edit`)
+                            }}
                             className="shrink-0 text-sm!"
                         >
                             {content.dashboard.editLabel}
@@ -97,7 +87,15 @@ export function LicenseCustomerPage({ content, customerId, locale }: LicenseCust
                             ))}
                         </div>
                     ) : isLoading ? (
-                        <div className="h-14 animate-pulse rounded-xl bg-white/[0.04] motion-reduce:animate-none" />
+                        <div aria-hidden="true" className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
+                            {Array.from({ length: 4 }, (_, index) => (
+                                <div key={index} className="min-w-0 animate-pulse motion-reduce:animate-none">
+                                    <div className={index % 2 === 0 ? "h-3 w-16 rounded-full bg-white/10" : "h-3 w-20 rounded-full bg-white/10"} />
+                                    <Spacing spacing="xxs" />
+                                    <div className={index === 1 ? "h-4 w-32 rounded-full bg-white/10" : "h-4 w-20 rounded-full bg-white/10"} />
+                                </div>
+                            ))}
+                        </div>
                     ) : (
                         <Text size="sm" hierarchy="tertiary">
                             {content.dashboard.emptyCustomers}
@@ -113,13 +111,17 @@ export function LicenseCustomerPage({ content, customerId, locale }: LicenseCust
                     <Text id="customer-licenses-heading" hierarchy="secondary" size="lg">
                         {content.licenses}
                     </Text>
-                    <span className="inline-flex w-fit items-center rounded-full bg-[#191825] px-[0.35rem] py-[0.1167rem] text-[0.7rem] font-normal tracking-[-0.5px] text-white/75 shadow-[inset_0_1px_1px_rgba(191,191,191,0.1)]">
-                        {customerLicenses.length}
-                    </span>
+                    {isLoading ? (
+                        <span aria-hidden="true" className="h-5 w-6 animate-pulse rounded-full bg-white/10 motion-reduce:animate-none" />
+                    ) : (
+                        <span className="inline-flex w-fit items-center rounded-full bg-[#191825] px-[0.35rem] py-[0.1167rem] text-[0.7rem] font-normal tracking-[-0.5px] text-white/75 shadow-[inset_0_1px_1px_rgba(191,191,191,0.1)]">
+                            {customerLicenses.length}
+                        </span>
+                    )}
                 </Flex>
                 <Spacing spacing="md" />
 
-                <Card color="secondary">
+                <Card color="secondary" className="pt-2!">
                     <DataTable
                         data={customerLicenses}
                         loading={isLoading}
@@ -151,7 +153,7 @@ export function LicenseCustomerPage({ content, customerId, locale }: LicenseCust
                                 </DataTableColumn>
                                 <DataTableColumn>
                                     <Flex align="center" style={{ gap: "0.5rem" }}>
-                                        <span aria-hidden="true" className={`size-1.5 shrink-0 rounded-full ${getStatusColor(license.status)}`} />
+                                        <LicenseStatusDot aria-hidden="true" status={license.status} />
                                         <Text size="sm" hierarchy="tertiary" className="capitalize">
                                             {license.status?.replaceAll("_", " ") || "—"}
                                         </Text>

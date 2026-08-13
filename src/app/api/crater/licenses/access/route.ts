@@ -10,6 +10,19 @@ function noStoreRedirect(url: URL) {
     return response
 }
 
+function resolveLicenseReturnUrl(requestUrl: URL, locale: string) {
+    const fallbackUrl = new URL(`/${locale}/licenses`, requestUrl.origin)
+    const returnPath = requestUrl.searchParams.get("returnPath")
+    if (!returnPath?.startsWith("/")) return fallbackUrl
+
+    const returnUrl = new URL(returnPath, requestUrl.origin)
+    const licenseRoot = `/${locale}/licenses`
+    if (returnUrl.origin !== requestUrl.origin || (returnUrl.pathname !== licenseRoot && !returnUrl.pathname.startsWith(`${licenseRoot}/`))) return fallbackUrl
+
+    returnUrl.searchParams.delete("token")
+    return returnUrl
+}
+
 export async function GET(request: Request) {
     const requestUrl = new URL(request.url)
     const locale = requestUrl.searchParams.get("locale")
@@ -20,9 +33,9 @@ export async function GET(request: Request) {
     const session = readCraterSessionAuthorization(request)
 
     if (session.status === "authenticated") {
-        const dashboardUrl = new URL(`/${locale}/licenses`, requestUrl.origin)
-        dashboardUrl.searchParams.set("token", session.token)
-        return noStoreRedirect(dashboardUrl)
+        const returnUrl = resolveLicenseReturnUrl(requestUrl, locale)
+        returnUrl.searchParams.set("token", session.token)
+        return noStoreRedirect(returnUrl)
     }
 
     const { getLicenseContent } = await import("@/lib/cms")

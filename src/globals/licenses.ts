@@ -50,6 +50,13 @@ export const Licenses: GlobalConfig = {
             type: "group",
             fields: [
                 {
+                    name: "dashboard",
+                    type: "text",
+                    required: true,
+                    localized: true,
+                    defaultValue: localizedDefault("Dashboard", "Dashboard"),
+                },
+                {
                     name: "logout",
                     type: "text",
                     required: true,
@@ -98,6 +105,13 @@ export const Licenses: GlobalConfig = {
                     defaultValue: localizedDefault("Customer", "Kunde"),
                 },
                 {
+                    name: "typeLabel",
+                    type: "text",
+                    required: true,
+                    localized: true,
+                    defaultValue: localizedDefault("Type", "Typ"),
+                },
+                {
                     name: "emailLabel",
                     type: "text",
                     required: true,
@@ -131,6 +145,27 @@ export const Licenses: GlobalConfig = {
                     required: true,
                     localized: true,
                     defaultValue: localizedDefault("Deployment", "Bereitstellung"),
+                },
+                {
+                    name: "paymentPeriodLabel",
+                    type: "text",
+                    required: true,
+                    localized: true,
+                    defaultValue: localizedDefault("Payment period", "Zahlungsintervall"),
+                },
+                {
+                    name: "workflowExecutionsLabel",
+                    type: "text",
+                    required: true,
+                    localized: true,
+                    defaultValue: localizedDefault("Workflow executions", "Workflow-Ausführungen"),
+                },
+                {
+                    name: "aiTokensLabel",
+                    type: "text",
+                    required: true,
+                    localized: true,
+                    defaultValue: localizedDefault("AI tokens", "KI-Tokens"),
                 },
             ],
         },

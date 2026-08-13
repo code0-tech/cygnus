@@ -418,6 +418,7 @@ export interface LicenseContent {
     emptyLicenses: string
     redirectUrl: string
     sidebar: {
+        dashboard: string
         logout: string
         loggingOut: string
     }
@@ -426,11 +427,15 @@ export interface LicenseContent {
         emptyCustomers: string
         recentLicenses: string
         customerLabel: string
+        typeLabel: string
         emailLabel: string
         lastEditedLabel: string
         editLabel: string
         statusLabel: string
         deploymentLabel: string
+        paymentPeriodLabel: string
+        workflowExecutionsLabel: string
+        aiTokensLabel: string
     }
     editor: {
         customerTitle: string

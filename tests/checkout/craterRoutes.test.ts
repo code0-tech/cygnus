@@ -636,6 +636,29 @@ test("license dashboard access forwards the persisted session through the entry 
     assert.equal(response.headers.get("cache-control"), "no-store")
 })
 
+test("license dashboard access restores the requested license detail path", async () => {
+    const returnPath = "/en/licenses/customer/gid%3A%2F%2Fcrater%2FCustomer%2F35/license/gid%3A%2F%2Fcrater%2FLicense%2F3"
+    const response = await accessLicenseDashboard(
+        new Request(`https://code0.example/api/crater/licenses/access?locale=en&returnPath=${encodeURIComponent(returnPath)}`, {
+            headers: { cookie: "crater_session=persisted-token" },
+        })
+    )
+
+    assert.equal(response.status, 307)
+    assert.equal(response.headers.get("location"), `https://code0.example${returnPath}?token=persisted-token`)
+})
+
+test("license dashboard access rejects return paths outside the localized dashboard", async () => {
+    const response = await accessLicenseDashboard(
+        new Request("https://code0.example/api/crater/licenses/access?locale=en&returnPath=https%3A%2F%2Fevil.example%2Fphishing", {
+            headers: { cookie: "crater_session=persisted-token" },
+        })
+    )
+
+    assert.equal(response.status, 307)
+    assert.equal(response.headers.get("location"), "https://code0.example/en/licenses?token=persisted-token")
+})
+
 test("license dashboard does not accept cookie-only access", async () => {
     const response = await getLicenseDashboard(
         new Request("https://example.com/api/crater/licenses", {
@@ -663,20 +686,26 @@ test("license dashboard maps the current user's customers and recent licenses", 
                                     count: 2,
                                     nodes: [
                                         {
+                                            aiTokens: 500000000,
                                             id: "gid://crater/License/1",
                                             status: "active",
                                             plan: "pro",
                                             deploymentType: "cloud",
                                             namespaceId: "namespace-1",
+                                            paymentPeriod: "YEARLY",
                                             updatedAt: "2026-08-10T10:00:00Z",
+                                            workflowExecutions: 250000,
                                         },
                                         {
+                                            aiTokens: 100000000,
                                             id: "gid://crater/License/2",
                                             status: "active",
                                             plan: "custom_plan",
                                             deploymentType: "self_hosted",
                                             namespaceId: null,
+                                            paymentPeriod: "MONTHLY",
                                             updatedAt: "2026-08-12T10:00:00Z",
+                                            workflowExecutions: 100000,
                                         },
                                     ],
                                 },
@@ -719,25 +748,33 @@ test("license dashboard maps the current user's customers and recent licenses", 
             ],
             licenses: [
                 {
+                    aiTokens: 100000000,
                     customerId: "gid://crater/Customer/7",
                     customerName: "Example GmbH",
+                    customerType: "business",
                     id: "gid://crater/License/2",
                     name: "Custom Plan",
                     deploymentType: "self_hosted",
+                    paymentPeriod: "MONTHLY",
                     plan: "custom_plan",
                     status: "active",
                     updatedAt: "2026-08-12T10:00:00Z",
+                    workflowExecutions: 100000,
                 },
                 {
+                    aiTokens: 500000000,
                     customerId: "gid://crater/Customer/7",
                     customerName: "Example GmbH",
+                    customerType: "business",
                     id: "gid://crater/License/1",
                     name: "Pro",
                     deploymentType: "cloud",
                     namespaceId: "namespace-1",
+                    paymentPeriod: "YEARLY",
                     plan: "pro",
                     status: "active",
                     updatedAt: "2026-08-10T10:00:00Z",
+                    workflowExecutions: 250000,
                 },
             ],
         })

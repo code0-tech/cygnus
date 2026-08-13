@@ -20,6 +20,15 @@ interface LicenseDashboardPageProps {
     locale: AppLocale
 }
 
+function formatType(value: string | undefined) {
+    if (!value) return "—"
+
+    return value
+        .split(/[_-]+/)
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join(" ")
+}
+
 export function LicenseDashboardPage({ content, locale }: LicenseDashboardPageProps) {
     const router = useRouter()
     const { customers, isLoading, licenses } = useLicenseData()
@@ -27,6 +36,7 @@ export function LicenseDashboardPage({ content, locale }: LicenseDashboardPagePr
         dateStyle: "medium",
         timeZone: "UTC",
     })
+    const customerTypes = new Map(customers.map((customer) => [customer.id, customer.customerType]))
     const recentlyEditedLicenses = licenses.toSorted((left, right) => Date.parse(right.updatedAt ?? "") - Date.parse(left.updatedAt ?? "")).slice(0, 5)
 
     return (
@@ -46,14 +56,14 @@ export function LicenseDashboardPage({ content, locale }: LicenseDashboardPagePr
                 </Flex>
                 <Spacing spacing="md" />
 
-                <Card color="secondary">
+                <Card color="secondary" className="pt-2!">
                     <DataTable
                         data={customers}
                         loading={isLoading}
                         onRowClick={(customer) => router.push(`/${locale}/licenses/customer/${encodeURIComponent(customer.id)}`)}
                         rowKey={(customer) => customer.id}
                         emptyComponent={
-                            <DataTableColumn colSpan={3}>
+                            <DataTableColumn colSpan={4}>
                                 <Text size="sm" hierarchy="tertiary">
                                     {content.dashboard.emptyCustomers}
                                 </Text>
@@ -62,6 +72,7 @@ export function LicenseDashboardPage({ content, locale }: LicenseDashboardPagePr
                     >
                         <DataTableHeader>
                             <DataTableHeaderColumn>{content.dashboard.customerLabel}</DataTableHeaderColumn>
+                            <DataTableHeaderColumn>{content.dashboard.typeLabel}</DataTableHeaderColumn>
                             <DataTableHeaderColumn>{content.dashboard.emailLabel}</DataTableHeaderColumn>
                             <DataTableHeaderColumn>{content.licenses}</DataTableHeaderColumn>
                         </DataTableHeader>
@@ -70,6 +81,11 @@ export function LicenseDashboardPage({ content, locale }: LicenseDashboardPagePr
                                 <DataTableColumn>
                                     <Text size="sm" fw={500}>
                                         {customer.name || customer.email || customer.id}
+                                    </Text>
+                                </DataTableColumn>
+                                <DataTableColumn>
+                                    <Text size="sm" hierarchy="tertiary">
+                                        {formatType(customer.customerType)}
                                     </Text>
                                 </DataTableColumn>
                                 <DataTableColumn>
@@ -92,14 +108,14 @@ export function LicenseDashboardPage({ content, locale }: LicenseDashboardPagePr
                 </Text>
                 <Spacing spacing="md" />
 
-                <Card color="secondary">
+                <Card color="secondary" className="pt-2!">
                     <DataTable
                         data={recentlyEditedLicenses}
                         loading={isLoading}
                         onRowClick={(license) => router.push(`/${locale}/licenses/customer/${encodeURIComponent(license.customerId)}/license/${encodeURIComponent(license.id)}`)}
                         rowKey={(license) => license.id}
                         emptyComponent={
-                            <DataTableColumn colSpan={3}>
+                            <DataTableColumn colSpan={5}>
                                 <Text size="sm" hierarchy="tertiary">
                                     {content.emptyLicenses}
                                 </Text>
@@ -109,6 +125,8 @@ export function LicenseDashboardPage({ content, locale }: LicenseDashboardPagePr
                         <DataTableHeader>
                             <DataTableHeaderColumn>{content.licenses}</DataTableHeaderColumn>
                             <DataTableHeaderColumn>{content.dashboard.customerLabel}</DataTableHeaderColumn>
+                            <DataTableHeaderColumn>{content.dashboard.typeLabel}</DataTableHeaderColumn>
+                            <DataTableHeaderColumn>{content.dashboard.deploymentLabel}</DataTableHeaderColumn>
                             <DataTableHeaderColumn>{content.dashboard.lastEditedLabel}</DataTableHeaderColumn>
                         </DataTableHeader>
                         {(license) => (
@@ -124,6 +142,16 @@ export function LicenseDashboardPage({ content, locale }: LicenseDashboardPagePr
                                 <DataTableColumn>
                                     <Text size="sm" hierarchy="tertiary">
                                         {license.customerName || "—"}
+                                    </Text>
+                                </DataTableColumn>
+                                <DataTableColumn>
+                                    <Text size="sm" hierarchy="tertiary">
+                                        {formatType(license.customerType ?? customerTypes.get(license.customerId))}
+                                    </Text>
+                                </DataTableColumn>
+                                <DataTableColumn>
+                                    <Text size="sm" hierarchy="tertiary">
+                                        {formatType(license.deploymentType)}
                                     </Text>
                                 </DataTableColumn>
                                 <DataTableColumn>

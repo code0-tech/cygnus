@@ -41,7 +41,11 @@ export function LicenseDataProvider({ children, locale, redirectUrl }: { childre
         const sessionToken = sessionTokenRef.current ?? readCraterSessionToken(currentUrl)
 
         if (!sessionToken) {
-            window.location.replace(`/api/crater/licenses/access?locale=${encodeURIComponent(locale)}`)
+            const accessUrl = new URL("/api/crater/licenses/access", currentUrl.origin)
+            const returnUrl = removeCraterSessionToken(currentUrl)
+            accessUrl.searchParams.set("locale", locale)
+            accessUrl.searchParams.set("returnPath", `${returnUrl.pathname}${returnUrl.search}${returnUrl.hash}`)
+            window.location.replace(accessUrl)
             return () => controller.abort()
         }
 
