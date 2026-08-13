@@ -78,9 +78,11 @@ export function LicenseEditDialog({ content, customerId, licenseId, locale }: Li
                         <DialogTitle className="font-normal! text-white!">{content.editor.licenseTitle}</DialogTitle>
                         <DialogDescription className="text-sm! text-secondary!">{content.editor.licenseDescription}</DialogDescription>
                     </DialogHeader>
-                    <Button type="button" variant="none" onClick={close} aria-label={content.editor.closeLabel} className="absolute right-4 top-4 size-9! p-0! text-secondary! hover:text-white!">
-                        <IconX size={18} />
-                    </Button>
+                    <div className="absolute right-4 top-4 z-10">
+                        <Button type="button" variant="none" onClick={close} aria-label={content.editor.closeLabel} className="size-9! p-0! text-secondary! hover:text-white!">
+                            <IconX size={18} />
+                        </Button>
+                    </div>
                     <form onSubmit={save} className="space-y-4 pt-6">
                         {license && !isCloud ? (
                             <p className="text-sm text-secondary">{content.editor.selfHostedDescription}</p>
