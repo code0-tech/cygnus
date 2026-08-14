@@ -39,7 +39,9 @@ export default async function CheckoutLoginPage({ params, searchParams }: Checko
         }
     }
 
-    const loginHref = createMainAppLoginUrl(content.login.loginUrl, checkoutUrl, cancelUrl)
+    const deploymentTypeParam = resolvedSearchParams.deploymentType
+    const deploymentType = Array.isArray(deploymentTypeParam) ? deploymentTypeParam[0] : deploymentTypeParam
+    const loginHref = createMainAppLoginUrl(content.login.loginUrl, checkoutUrl, cancelUrl, deploymentType === "cloud")
 
     return (
         <div className="flex min-h-full flex-col">

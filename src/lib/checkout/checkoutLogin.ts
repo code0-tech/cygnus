@@ -27,9 +27,10 @@ export function createCheckoutQuery(searchParams: CheckoutSearchParams): string 
     return query.toString()
 }
 
-export function createMainAppLoginUrl(loginUrl: string, checkoutUrl: string, cancelUrl: string): string {
+export function createMainAppLoginUrl(loginUrl: string, checkoutUrl: string, cancelUrl: string, selectNamespace = false): string {
     const url = new URL(loginUrl)
     url.searchParams.set("callbackUrl", checkoutUrl)
     url.searchParams.set("cancelUrl", cancelUrl)
+    if (selectNamespace) url.searchParams.set("selectNamespace", "true")
     return url.toString()
 }
