@@ -2,6 +2,7 @@
 
 import { LicensePlanIcon } from "@/components/licenses/LicensePlanIcon"
 import { LicenseStatusDot } from "@/components/licenses/LicenseStatusDot"
+import { ButtonLoader } from "@/components/ui/Loader"
 import type { LicenseContent } from "@/lib/cms"
 import { AppLocale } from "@/lib/i18n"
 import type { LicenseDashboardLicense } from "@/lib/licenses/licenseTypes"
@@ -48,7 +49,7 @@ function LicenseSidebarSkeleton() {
         <ul aria-hidden="true" className="space-y-1.5">
             {Array.from({ length: 3 }, (_, index) => (
                 <li key={index} className="flex animate-pulse items-center gap-3 rounded-xl px-2 py-2 motion-reduce:animate-none">
-                    <span className="size-[18px] shrink-0 rounded bg-white/10" />
+                    <span className="size-4.5 shrink-0 rounded bg-white/10" />
                     <span className="min-w-0 flex-1">
                         <span className="flex h-5 items-center">
                             <span className={index === 1 ? "block h-3 w-24 rounded-full bg-white/10" : "block h-3 w-32 rounded-full bg-white/10"} />
@@ -158,12 +159,24 @@ export function LicenseSidebar({ content, isLoading, isRefreshing, locale, licen
 
                             <MenuSeparator />
                             <MenuItem disabled={isLoading || isRefreshing} onSelect={onRefresh} className="w-full! justify-start! text-left!">
-                                <IconRefresh aria-hidden="true" className={isRefreshing ? "animate-spin motion-reduce:animate-none" : undefined} size={16} />
-                                <span>{isRefreshing ? content.sidebar.refreshing : content.sidebar.refresh}</span>
+                                {isRefreshing ? (
+                                    <ButtonLoader label={content.sidebar.refreshing} />
+                                ) : (
+                                    <>
+                                        <IconRefresh aria-hidden="true" size={16} />
+                                        <span>{content.sidebar.refresh}</span>
+                                    </>
+                                )}
                             </MenuItem>
                             <MenuItem disabled={isLoggingOut} onSelect={() => void logout()} className="w-full! justify-start! text-left!">
-                                <IconArrowAutofitLeftFilled aria-hidden="true" size={16} />
-                                <span>{isLoggingOut ? content.sidebar.loggingOut : content.sidebar.logout}</span>
+                                {isLoggingOut ? (
+                                    <ButtonLoader label={content.sidebar.loggingOut} />
+                                ) : (
+                                    <>
+                                        <IconArrowAutofitLeftFilled aria-hidden="true" size={16} />
+                                        <span>{content.sidebar.logout}</span>
+                                    </>
+                                )}
                             </MenuItem>
                         </MenuContent>
                     </MenuPortal>
@@ -204,7 +217,7 @@ export function LicenseSidebar({ content, isLoading, isRefreshing, locale, licen
                                 title={isRefreshing ? content.sidebar.refreshing : content.sidebar.refresh}
                                 className="size-7! p-0! text-tertiary! hover:text-white!"
                             >
-                                <IconRefresh aria-hidden="true" className={isRefreshing ? "animate-spin motion-reduce:animate-none" : undefined} size={14} />
+                                {isRefreshing ? <ButtonLoader label={content.sidebar.refreshing} /> : <IconRefresh aria-hidden="true" size={14} />}
                             </Button>
                             {isLoading ? (
                                 <span aria-hidden="true" className="h-5 w-6 animate-pulse rounded-full bg-white/10 motion-reduce:animate-none" />
@@ -284,8 +297,14 @@ export function LicenseSidebar({ content, isLoading, isRefreshing, locale, licen
                     onClick={() => void logout()}
                     className="mt-6 w-full! justify-start! gap-2! rounded-xl! text-secondary! hover:bg-white/7! hover:text-white! lg:mt-auto"
                 >
-                    <IconArrowAutofitLeftFilled aria-hidden="true" size={17} />
-                    {isLoggingOut ? content.sidebar.loggingOut : content.sidebar.logout}
+                    {isLoggingOut ? (
+                        <ButtonLoader label={content.sidebar.loggingOut} />
+                    ) : (
+                        <>
+                            <IconArrowAutofitLeftFilled aria-hidden="true" size={17} />
+                            {content.sidebar.logout}
+                        </>
+                    )}
                 </Button>
             </aside>
         </div>

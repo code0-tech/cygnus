@@ -3,6 +3,7 @@
 import type { CheckoutData } from "@/lib/cms"
 import type { CheckoutSessionData, CheckoutTaxQuoteData } from "@/lib/checkout/checkoutSubmission"
 import { useCheckoutStage } from "@/components/checkout/CheckoutStepper"
+import { ButtonLoader } from "@/components/ui/Loader"
 import { Button } from "@code0-tech/pictor"
 import { IconAlertTriangle } from "@tabler/icons-react"
 import { BillingAddressElement, CheckoutElementsProvider, ContactDetailsElement, PaymentElement, TaxIdElement, useCheckoutElements } from "@stripe/react-stripe-js/checkout"
@@ -253,39 +254,42 @@ function CheckoutPaymentFields({
         setErrorMessage(null)
     }
 
-    const updateCheckoutBilling = useCallback(async (moveToPayment: boolean) => {
-        if (!billingAddress || !email || checkoutState.type !== "success" || isUpdatingBilling) return
+    const updateCheckoutBilling = useCallback(
+        async (moveToPayment: boolean) => {
+            if (!billingAddress || !email || checkoutState.type !== "success" || isUpdatingBilling) return
 
-        setIsUpdatingBilling(true)
-        setErrorMessage(null)
-        try {
-            const billingResult = await checkoutState.checkout.updateBillingAddress(billingAddress)
-            if (billingResult.type === "error") {
-                setErrorMessage(content.errors.billingAddressUpdate)
-                return
-            }
-            let updatedSession = billingResult.session
-
-            if (!checkoutState.checkout.email) {
-                const emailResult = await checkoutState.checkout.updateEmail(email)
-                if (emailResult.type === "error") {
-                    setErrorMessage(content.errors.emailUpdate)
+            setIsUpdatingBilling(true)
+            setErrorMessage(null)
+            try {
+                const billingResult = await checkoutState.checkout.updateBillingAddress(billingAddress)
+                if (billingResult.type === "error") {
+                    setErrorMessage(content.errors.billingAddressUpdate)
                     return
                 }
-                updatedSession = emailResult.session
-            }
+                let updatedSession = billingResult.session
 
-            onTaxQuoteChange(getTaxQuoteFromSession(updatedSession))
-            restoredBillingRef.current = true
-            setIsPaymentElementReady(false)
-            if (moveToPayment) setStage("payment")
-        } catch (error) {
-            console.error("Failed to update Stripe checkout billing details:", error)
-            setErrorMessage(content.paymentErrorFallback)
-        } finally {
-            setIsUpdatingBilling(false)
-        }
-    }, [billingAddress, checkoutState, content.errors.billingAddressUpdate, content.errors.emailUpdate, content.paymentErrorFallback, email, isUpdatingBilling, onTaxQuoteChange, setStage])
+                if (!checkoutState.checkout.email) {
+                    const emailResult = await checkoutState.checkout.updateEmail(email)
+                    if (emailResult.type === "error") {
+                        setErrorMessage(content.errors.emailUpdate)
+                        return
+                    }
+                    updatedSession = emailResult.session
+                }
+
+                onTaxQuoteChange(getTaxQuoteFromSession(updatedSession))
+                restoredBillingRef.current = true
+                setIsPaymentElementReady(false)
+                if (moveToPayment) setStage("payment")
+            } catch (error) {
+                console.error("Failed to update Stripe checkout billing details:", error)
+                setErrorMessage(content.paymentErrorFallback)
+            } finally {
+                setIsUpdatingBilling(false)
+            }
+        },
+        [billingAddress, checkoutState, content.errors.billingAddressUpdate, content.errors.emailUpdate, content.paymentErrorFallback, email, isUpdatingBilling, onTaxQuoteChange, setStage]
+    )
 
     const showPayment = () => updateCheckoutBilling(true)
 
@@ -370,7 +374,7 @@ function CheckoutPaymentFields({
                             onClick={() => void showPayment()}
                             className="h-10! w-full! whitespace-nowrap bg-white/80! px-8! text-sm! text-primary! ring-1! ring-white/20! hover:bg-white!"
                         >
-                            {isUpdatingBilling ? content.processingLabel : content.continueLabel}
+                            {isUpdatingBilling ? <ButtonLoader label={content.processingLabel} /> : content.continueLabel}
                         </Button>
                     </div>
                 </>
@@ -397,14 +401,14 @@ function CheckoutPaymentFields({
                             disabled={isConfirming || isUpdatingBilling || !isPaymentElementReady}
                             className="h-10! w-full! whitespace-nowrap bg-white/80! px-8! text-sm! text-primary! ring-1! ring-white/20! hover:bg-white!"
                         >
-                            {isConfirming ? content.processingLabel : content.payNowLabel}
+                            {isConfirming ? <ButtonLoader label={content.processingLabel} /> : content.payNowLabel}
                         </Button>
                         <Button
                             type="button"
                             variant="normal"
                             disabled={isConfirming}
                             onClick={showBillingAddress}
-                            className="h-10! w-full! border-white/10! bg-white/[0.03]! text-sm! text-secondary! hover:bg-white/[0.06]! hover:text-white!"
+                            className="h-10! w-full! border-white/10! bg-white/3! text-sm! text-secondary! hover:bg-white/6! hover:text-white!"
                         >
                             {content.backToBillingLabel}
                         </Button>

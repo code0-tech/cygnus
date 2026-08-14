@@ -2,6 +2,7 @@
 
 import { Button, TextInput } from "@code0-tech/pictor"
 import { useCraterSession } from "@/components/checkout/CraterSessionProvider"
+import { ButtonLoader } from "@/components/ui/Loader"
 import { Dialog } from "@base-ui/react/dialog"
 import type { CheckoutDiscount as CraterCheckoutDiscount } from "@code0-tech/crater-graphql-types"
 import { IconX } from "@tabler/icons-react"
@@ -29,7 +30,18 @@ interface CheckoutDiscountProps {
     removeLabel: string
 }
 
-export function CheckoutDiscount({ appliedAmount, appliedContainerId, authenticated, buttonLabel, discountSessionRequiredError, discountValidationError, inputPlaceholder, onApplied, promptLabel, removeLabel }: CheckoutDiscountProps) {
+export function CheckoutDiscount({
+    appliedAmount,
+    appliedContainerId,
+    authenticated,
+    buttonLabel,
+    discountSessionRequiredError,
+    discountValidationError,
+    inputPlaceholder,
+    onApplied,
+    promptLabel,
+    removeLabel,
+}: CheckoutDiscountProps) {
     const { authenticated: contextAuthenticated } = useCraterSession()
     const pathname = usePathname()
     const searchParams = useSearchParams()
@@ -194,7 +206,7 @@ export function CheckoutDiscount({ appliedAmount, appliedContainerId, authentica
                     disabled={isApplying || code.trim() === (appliedCode ?? "")}
                     className="h-10! shrink-0 px-5! whitespace-nowrap bg-white/80! hover:bg-white! ring-1! ring-white/20! text-sm! text-primary!"
                 >
-                    {buttonLabel}
+                    {isApplying ? <ButtonLoader label={buttonLabel} /> : buttonLabel}
                 </Button>
             </div>
             {errorMessage && (

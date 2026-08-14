@@ -21,7 +21,7 @@ export function LicenseDataTable<T>({ children, className, data, emptyComponent,
     const columnCount = Math.max(1, Children.count(header?.props.children))
 
     return (
-        <ScrollArea type="always" className="w-full min-w-0 max-w-full overflow-hidden [contain:inline-size]" style={{ width: "100%", maxWidth: "100%" }}>
+        <ScrollArea type="always" className="w-full min-w-0 max-w-full overflow-hidden contain-[inline-size]" style={{ width: "100%", maxWidth: "100%" }}>
             <ScrollAreaViewport className="w-full max-w-full">
                 <table {...props} className={cn("w-full border-separate border-spacing-0", className)} style={{ minWidth: `${Math.max(28, columnCount * 7)}rem`, ...style }}>
                     {tableContent}
@@ -54,7 +54,7 @@ export function LicenseDataTable<T>({ children, className, data, emptyComponent,
                                                 }
                                               : undefined
                                       }
-                                      className={`transition-colors hover:bg-white/5 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand ${onRowClick ? "cursor-pointer" : ""}`}
+                                      className={`transition-colors hover:bg-white/5 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand ${onRowClick ? "cursor-pointer" : ""}`}
                                   >
                                       {rowRenderer?.(item, index)}
                                   </tr>
