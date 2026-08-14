@@ -5,3 +5,10 @@ export function decodeLicenseRouteId(value: string) {
         return value
     }
 }
+
+export function getNamespaceDisplayId(value?: string) {
+    if (!value) return undefined
+
+    const normalizedValue = value.trim().replace(/\/+$/, "")
+    return normalizedValue.split("/").at(-1) || normalizedValue
+}
