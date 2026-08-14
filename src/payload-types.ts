@@ -3345,9 +3345,18 @@ export interface License {
   editor: {
     customerTitle: string;
     customerDescription: string;
+    contactHeading: string;
+    billingAddressHeading: string;
     licenseTitle: string;
     licenseDescription: string;
     nameLabel: string;
+    phoneLabel: string;
+    addressLine1Label: string;
+    addressLine2Label: string;
+    cityLabel: string;
+    stateLabel: string;
+    postalCodeLabel: string;
+    countryLabel: string;
     namespaceLabel: string;
     saveLabel: string;
     cancelLabel: string;
@@ -4055,9 +4064,18 @@ export interface LicensesSelect<T extends boolean = true> {
     | {
         customerTitle?: T;
         customerDescription?: T;
+        contactHeading?: T;
+        billingAddressHeading?: T;
         licenseTitle?: T;
         licenseDescription?: T;
         nameLabel?: T;
+        phoneLabel?: T;
+        addressLine1Label?: T;
+        addressLine2Label?: T;
+        cityLabel?: T;
+        stateLabel?: T;
+        postalCodeLabel?: T;
+        countryLabel?: T;
         namespaceLabel?: T;
         saveLabel?: T;
         cancelLabel?: T;

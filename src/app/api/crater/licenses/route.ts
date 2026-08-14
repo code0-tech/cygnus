@@ -87,10 +87,19 @@ const LICENSE_CUSTOMER_DETAIL: TypedDocumentNode<LicenseDashboardQuery, LicenseD
         currentUser {
             customers(after: $customerAfter, first: 1) {
                 nodes {
+                    address {
+                        city
+                        country
+                        line1
+                        line2
+                        postalCode
+                        state
+                    }
                     id
                     customerType
                     name
                     email
+                    phone
                     updatedAt
                     licenses(first: 100) {
                         count
@@ -199,9 +208,22 @@ function mapCustomer(customer: Customer): LicenseDashboardCustomer | null {
 
     return {
         id: customer.id,
+        ...(customer.address
+            ? {
+                  address: {
+                      ...(customer.address.city ? { city: customer.address.city } : {}),
+                      ...(customer.address.country ? { country: customer.address.country } : {}),
+                      ...(customer.address.line1 ? { line1: customer.address.line1 } : {}),
+                      ...(customer.address.line2 ? { line2: customer.address.line2 } : {}),
+                      ...(customer.address.postalCode ? { postalCode: customer.address.postalCode } : {}),
+                      ...(customer.address.state ? { state: customer.address.state } : {}),
+                  },
+              }
+            : {}),
         ...(customer.customerType ? { customerType: customer.customerType } : {}),
         ...(customer.email ? { email: customer.email } : {}),
         ...(customer.name ? { name: customer.name } : {}),
+        ...(customer.phone ? { phone: customer.phone } : {}),
         ...(customer.updatedAt ? { updatedAt: customer.updatedAt } : {}),
         licenseCount: customer.licenses?.count ?? 0,
     }
