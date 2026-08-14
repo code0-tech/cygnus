@@ -16,6 +16,11 @@ mock.module("next/navigation", {
 mock.module("@code0-tech/pictor", {
     namedExports: {
         Button: ({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button {...props}>{children}</button>,
+        TextInput: (props: React.InputHTMLAttributes<HTMLInputElement>) => (
+            <div className="input">
+                <input {...props} />
+            </div>
+        ),
     },
 })
 
@@ -88,6 +93,7 @@ test("opens, applies, and removes a discount code", async () => {
 
     const input = screen.getByPlaceholderText("Discount code")
     const applyButton = screen.getByRole("button", { name: "Apply" })
+    assert.ok(input.closest(".input"))
 
     await user.type(input, "SAVE10")
     await user.click(applyButton)
