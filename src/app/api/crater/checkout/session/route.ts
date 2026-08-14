@@ -50,7 +50,7 @@ export async function POST(request: Request) {
         const customerId = optionalString(requestData.customerId)
         const customCheckoutConfigurationId = optionalString(requestData.customCheckoutConfigurationId)
         const deploymentType = optionalString(requestData.deploymentType)
-        const namespaceId = optionalString(requestData.namespaceId)
+        const namespaceId = optionalString(requestData.namespaceId) ?? optionalString(requestData.namespace)
         const promotionCode = optionalString(requestData.promotionCode)
         const requestedLocale = optionalString(requestData.locale)
         const customerType = optionalString(requestData.customerType)

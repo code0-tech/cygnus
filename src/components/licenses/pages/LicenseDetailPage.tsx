@@ -6,7 +6,7 @@ import { LicenseStatusDot } from "@/components/licenses/LicenseStatusDot"
 import type { LicenseContent } from "@/lib/cms"
 import { formatCompactNumber } from "@/lib/formatters"
 import type { AppLocale } from "@/lib/i18n"
-import { decodeLicenseRouteId } from "@/lib/licenses/licenseRoute"
+import { decodeLicenseRouteId, getNamespaceDisplayId } from "@/lib/licenses/licenseRoute"
 import { formatLicenseDisplayValue } from "@/lib/licenses/licenseDisplayValues"
 import { Button, Card, Flex, Spacing, Text } from "@code0-tech/pictor"
 import { useRouter } from "next/navigation"
@@ -45,7 +45,7 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale }: Li
                         { label: content.dashboard.aiTokensLabel, value: license.aiTokens === undefined ? "—" : formatCompactNumber(license.aiTokens) },
                     ]
                   : []),
-              { label: content.editor.namespaceLabel, value: license.namespaceId || "—" },
+              { label: content.editor.namespaceLabel, value: getNamespaceDisplayId(license.namespaceId) || "—" },
               {
                   label: content.dashboard.lastEditedLabel,
                   value: license.updatedAt ? dateFormatter.format(new Date(license.updatedAt)) : "—",

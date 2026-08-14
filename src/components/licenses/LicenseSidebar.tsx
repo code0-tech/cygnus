@@ -6,6 +6,7 @@ import type { LicenseContent } from "@/lib/cms"
 import { AppLocale } from "@/lib/i18n"
 import type { LicenseDashboardLicense } from "@/lib/licenses/licenseTypes"
 import { formatLicenseDisplayValue } from "@/lib/licenses/licenseDisplayValues"
+import { getNamespaceDisplayId } from "@/lib/licenses/licenseRoute"
 import { Button, Flex, Text } from "@code0-tech/pictor"
 import { IconArrowAutofitLeftFilled, IconKey, IconLayoutDashboard, IconRefresh } from "@tabler/icons-react"
 import Image from "next/image"
@@ -119,7 +120,7 @@ export function LicenseSidebar({ content, isLoading, isRefreshing, locale, licen
                             {licenses.map((license) => {
                                 const deployment = formatLicenseDisplayValue(license.deploymentType, "deploymentType", content.values)
                                 const status = formatLicenseDisplayValue(license.status, "status", content.values)
-                                const identifier = license.namespaceId?.trim() || getShortLicenseId(license.id)
+                                const identifier = getNamespaceDisplayId(license.namespaceId) || getShortLicenseId(license.id)
                                 const licenseHref = `/${locale}/licenses/customer/${encodeURIComponent(license.customerId)}/license/${encodeURIComponent(license.id)}`
                                 const licenseIsActive = pathname === licenseHref || pathname?.startsWith(`${licenseHref}/`)
 
