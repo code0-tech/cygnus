@@ -372,8 +372,30 @@ test("creates the customer and checkout session on mount before collecting Strip
     assert.equal(checkoutProviderOptions?.defaultValues, undefined)
     assert.equal(checkoutProviderOptions?.elementsOptions?.appearance?.theme, "night")
     assert.equal(checkoutProviderOptions?.elementsOptions?.appearance?.variables?.colorPrimary, "#72f896")
+    assert.equal(checkoutProviderOptions?.elementsOptions?.appearance?.variables?.focusBoxShadow, "none")
+    assert.equal(checkoutProviderOptions?.elementsOptions?.appearance?.variables?.focusOutline, "none")
+    assert.equal(checkoutProviderOptions?.elementsOptions?.appearance?.variables?.inputFocusBoxShadow, "none")
     assert.equal(checkoutProviderOptions?.elementsOptions?.appearance?.rules?.[".Dropdown"]?.backgroundColor, "#191825")
     assert.equal(checkoutProviderOptions?.elementsOptions?.appearance?.rules?.[".DropdownItem--highlight"]?.backgroundColor, "#201e2c")
+    assert.equal(checkoutProviderOptions?.elementsOptions?.appearance?.rules?.[".Input"]?.backgroundColor, "#272532")
+    assert.equal(checkoutProviderOptions?.elementsOptions?.appearance?.rules?.[".Input:focus"]?.outline, "none")
+    assert.equal(checkoutProviderOptions?.elementsOptions?.appearance?.rules?.[".Input:focus"]?.boxShadow, "none")
+    assert.equal(
+        checkoutProviderOptions?.elementsOptions?.appearance?.rules?.[".Input:focus"]?.backgroundColor,
+        checkoutProviderOptions?.elementsOptions?.appearance?.rules?.[".Input:hover"]?.backgroundColor
+    )
+    assert.equal(checkoutProviderOptions?.elementsOptions?.appearance?.rules?.[".Tab:focus"]?.outline, "none")
+    assert.equal(checkoutProviderOptions?.elementsOptions?.appearance?.rules?.[".Tab"]?.backgroundColor, "#191825")
+    assert.equal(checkoutProviderOptions?.elementsOptions?.appearance?.rules?.[".Tab:focus"]?.backgroundColor, "#2b2938")
+    assert.equal(checkoutProviderOptions?.elementsOptions?.appearance?.rules?.[".AccordionItem:focus-visible"]?.outline, "none")
+    assert.equal(checkoutProviderOptions?.elementsOptions?.appearance?.rules?.[".AccordionItem"]?.backgroundColor, "#191825")
+    assert.equal(checkoutProviderOptions?.elementsOptions?.appearance?.rules?.[".AccordionItem:focus-visible"]?.backgroundColor, "#2b2938")
+    assert.equal(checkoutProviderOptions?.elementsOptions?.appearance?.rules?.[".AccordionItem--selected"]?.backgroundColor, "#201e2c")
+    assert.equal(
+        checkoutProviderOptions?.elementsOptions?.appearance?.rules?.[".AccordionItem--selected"]?.backgroundColor,
+        checkoutProviderOptions?.elementsOptions?.appearance?.rules?.[".AccordionItem:hover"]?.backgroundColor
+    )
+    assert.equal(checkoutProviderOptions?.elementsOptions?.appearance?.rules?.[".AccordionItem--selected"]?.boxShadow, "none")
     assert.deepEqual(billingAddressOptions, { display: { name: "full" } })
     assert.equal(screen.queryByTestId("checkout-customer-select-skeleton"), null)
     assert.equal(screen.queryByText(content.customerSelectLabel), null)
