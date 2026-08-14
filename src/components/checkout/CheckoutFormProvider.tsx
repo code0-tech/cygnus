@@ -46,8 +46,6 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, locale: AppLoc
     const [isConfirmingPayment, setIsConfirmingPayment] = useState(false)
     const [stripeBillingAddress, setStripeBillingAddress] = useState<StripeCheckoutContact | null>(null)
     const [stripeEmail, setStripeEmail] = useState<string | null>(null)
-    const [stripeTaxIdType, setStripeTaxIdType] = useState("")
-    const [stripeTaxIdValue, setStripeTaxIdValue] = useState("")
     const [stripeSessionError, setStripeSessionError] = useState<string | null>(null)
     const [preparationAttempt, setPreparationAttempt] = useState(0)
     const preparedSessionKeyRef = useRef<string | null>(null)
@@ -128,8 +126,6 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, locale: AppLoc
         setTaxQuote(null)
         setStripeBillingAddress(null)
         setStripeEmail(null)
-        setStripeTaxIdType("")
-        setStripeTaxIdValue("")
         setStripeSessionError(null)
         setStage("billingAddress")
 
@@ -178,8 +174,6 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, locale: AppLoc
             setTaxQuote(null)
             setStripeBillingAddress(null)
             setStripeEmail(null)
-            setStripeTaxIdType("")
-            setStripeTaxIdValue("")
             setIsRefreshingSession(true)
             setErrorMessage(null)
             setStripeSessionError(null)
@@ -254,15 +248,11 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, locale: AppLoc
         sessionError,
         setStripeBillingAddress,
         setStripeEmail,
-        setStripeTaxIdType,
-        setStripeTaxIdValue,
         setStripeSessionError,
         setTaxQuote,
         setIsConfirmingPayment,
         stripeBillingAddress,
         stripeEmail,
-        stripeTaxIdType,
-        stripeTaxIdValue,
         stripeSessionError,
         taxQuote,
     }

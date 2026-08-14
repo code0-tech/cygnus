@@ -11,7 +11,11 @@ const checkoutSearchParams = new URLSearchParams({
     paymentPeriod: "monthly",
     plan: "pro",
 })
-let checkoutProviderOptions: { clientSecret?: string; defaultValues?: unknown; elementsOptions?: { appearance?: { theme?: string; variables?: Record<string, string> } } } | null = null
+let checkoutProviderOptions: {
+    clientSecret?: string
+    defaultValues?: unknown
+    elementsOptions?: { appearance?: { rules?: Record<string, Record<string, string>>; theme?: string; variables?: Record<string, string> } }
+} | null = null
 const stripeBillingAddress = {
     name: "Ada Lovelace",
     address: { city: "Berlin", country: "DE", line1: "Teststraße 1", line2: null, postal_code: "10115", state: "Berlin" },
@@ -21,6 +25,8 @@ let contactDetailsOnChange: ((event: { complete: boolean; value: { email: string
 let billingAddressOptions: unknown = null
 let paymentElementOptions: unknown = null
 let paymentElementOnReady: (() => void) | null = null
+let taxIdElementOptions: unknown = null
+let stripeLoadOptions: unknown = null
 let checkoutStages: string[] = []
 let checkoutStage = "billingAddress"
 const checkoutStageListeners = new Set<() => void>()
@@ -30,7 +36,6 @@ let stripeCheckoutLoadErrorMessage: string | null = null
 let stripeConfirmOptions: unknown[] = []
 let stripeBillingAddressUpdates: unknown[] = []
 let stripeEmailUpdates: unknown[] = []
-let stripeTaxIdUpdates: unknown[] = []
 let customerSelectOnValueChange: ((value: string) => void) | null = null
 const setCheckoutStage = (stage: string) => {
     checkoutStage = stage
@@ -96,7 +101,10 @@ mock.module("@code0-tech/pictor", {
 })
 mock.module("@stripe/stripe-js", {
     namedExports: {
-        loadStripe: () => Promise.resolve({}),
+        loadStripe: (_publishableKey: string, options: unknown) => {
+            stripeLoadOptions = options
+            return Promise.resolve({})
+        },
     },
 })
 mock.module("@stripe/react-stripe-js/checkout", {
@@ -111,7 +119,11 @@ mock.module("@stripe/react-stripe-js/checkout", {
             options,
         }: {
             children: React.ReactNode
-            options: { clientSecret: string; defaultValues?: unknown; elementsOptions?: { appearance?: { theme?: string; variables?: Record<string, string> } } }
+            options: {
+                clientSecret: string
+                defaultValues?: unknown
+                elementsOptions?: { appearance?: { rules?: Record<string, Record<string, string>>; theme?: string; variables?: Record<string, string> } }
+            }
         }) => {
             checkoutProviderOptions = options
             return <>{children}</>
@@ -124,6 +136,10 @@ mock.module("@stripe/react-stripe-js/checkout", {
             paymentElementOptions = options
             paymentElementOnReady = onReady ?? null
             return <div data-testid="stripe-payment">Payment details</div>
+        },
+        TaxIdElement: ({ options }: { options: unknown }) => {
+            taxIdElementOptions = options
+            return <div data-testid="stripe-tax-id">Tax ID</div>
         },
         useCheckoutElements: () =>
             stripeCheckoutLoadErrorMessage
@@ -144,10 +160,6 @@ mock.module("@stripe/react-stripe-js/checkout", {
                           },
                           updateEmail: async (email: unknown) => {
                               stripeEmailUpdates.push(email)
-                              return { type: "success", session: {} }
-                          },
-                          updateTaxIdInfo: async (taxIdInfo: unknown) => {
-                              stripeTaxIdUpdates.push(taxIdInfo)
                               return { type: "success", session: {} }
                           },
                       },
@@ -171,6 +183,7 @@ afterEach(() => {
     billingAddressOptions = null
     paymentElementOptions = null
     paymentElementOnReady = null
+    taxIdElementOptions = null
     checkoutStages = []
     checkoutStage = "billingAddress"
     stripeConfirmCalls = 0
@@ -179,7 +192,6 @@ afterEach(() => {
     stripeConfirmOptions = []
     stripeBillingAddressUpdates = []
     stripeEmailUpdates = []
-    stripeTaxIdUpdates = []
     customerSelectOnValueChange = null
 })
 
@@ -360,14 +372,15 @@ test("creates the customer and checkout session on mount before collecting Strip
     assert.equal(checkoutProviderOptions?.defaultValues, undefined)
     assert.equal(checkoutProviderOptions?.elementsOptions?.appearance?.theme, "night")
     assert.equal(checkoutProviderOptions?.elementsOptions?.appearance?.variables?.colorPrimary, "#72f896")
+    assert.equal(checkoutProviderOptions?.elementsOptions?.appearance?.rules?.[".Dropdown"]?.backgroundColor, "#191825")
+    assert.equal(checkoutProviderOptions?.elementsOptions?.appearance?.rules?.[".DropdownItem--highlight"]?.backgroundColor, "#201e2c")
     assert.deepEqual(billingAddressOptions, { display: { name: "full" } })
     assert.equal(screen.queryByTestId("checkout-customer-select-skeleton"), null)
     assert.equal(screen.queryByText(content.customerSelectLabel), null)
     assert.equal(screen.queryByText(content.newCustomerLabel), null)
     assert.ok(screen.getByTestId("stripe-contact-details"))
     assert.ok(screen.getByTestId("stripe-billing-address"))
-    assert.equal(screen.queryByRole("textbox", { name: "Tax ID type" }), null)
-    assert.equal(screen.queryByRole("textbox", { name: "Tax ID" }), null)
+    assert.equal(screen.queryByTestId("stripe-tax-id"), null)
     assert.equal(screen.queryByTestId("stripe-payment"), null)
     assert.equal(checkoutStages.includes("payment"), false)
     assert.equal((screen.getByRole("button", { name: "Continue to payment" }) as HTMLButtonElement).disabled, true)
@@ -586,7 +599,7 @@ test("shows only the configured error when Stripe cannot load the checkout sessi
     assert.equal(screen.queryByRole("button"), null)
 })
 
-test("creates a business customer and updates optional tax details before payment", async () => {
+test("renders Stripe's Tax ID Element for a business customer", async () => {
     checkoutSearchParams.set("customerType", "b2b")
     const requests: Array<{ init?: RequestInit; url: string }> = []
     globalThis.fetch = (async (input, init) => {
@@ -617,19 +630,14 @@ test("creates a business customer and updates optional tax details before paymen
     })
     assert.ok(screen.getByTestId("stripe-contact-details"))
     assert.ok(screen.getByTestId("stripe-billing-address"))
-    await user.type(screen.getByRole("textbox", { name: "Tax ID type" }), "eu_vat")
-    await user.type(screen.getByRole("textbox", { name: "Tax ID" }), "DE123456789")
+    assert.ok(screen.getByTestId("stripe-tax-id"))
+    assert.deepEqual(taxIdElementOptions, { fields: { businessName: "never" }, visibility: "auto" })
+    assert.deepEqual(stripeLoadOptions, { betas: ["custom_checkout_tax_id_1"], locale: "en" })
     act(() => billingAddressOnChange?.({ complete: true, value: stripeBillingAddress }))
     act(() => contactDetailsOnChange?.({ complete: true, value: { email: "billing@example.com" } }))
     await user.click(screen.getByRole("button", { name: "Continue to payment" }))
 
     assert.ok(await screen.findByTestId("stripe-payment"))
-    assert.deepEqual(stripeTaxIdUpdates, [
-        {
-            businessName: "Ada Lovelace",
-            taxId: { type: "eu_vat", value: "DE123456789" },
-        },
-    ])
 })
 
 test("shows only the configured error when automatic customer creation fails", async () => {
