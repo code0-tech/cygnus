@@ -560,6 +560,32 @@ test("replaces an inactive Stripe checkout session only once", async () => {
     assert.equal(requests.filter((url) => url === "/api/crater/customer").length, 1)
 })
 
+test("shows only the configured error when Stripe cannot load the checkout session", async () => {
+    stripeCheckoutLoadErrorMessage = "The Checkout Session could not be loaded."
+    globalThis.fetch = (async (input) => {
+        const url = String(input)
+        return new Response(
+            JSON.stringify(
+                url === "/api/crater/customer"
+                    ? { customers: [{ customerType: "personal", email: "ada@example.com", id: "gid://crater/Customer/1", name: "Ada Lovelace" }] }
+                    : url === "/api/crater/checkout/tax"
+                      ? { amountTotal: 11_900, currency: "eur", taxAmountExclusive: 1_900 }
+                      : { clientSecret: "cs_load_error", expiresAt: 1_800_000_000, id: "cs_load_error" }
+            ),
+            { status: 200, headers: { "content-type": "application/json" } }
+        )
+    }) as typeof fetch
+
+    render(<CheckoutForm content={content} locale="en" />)
+
+    assert.ok(await screen.findByText(content.errors.checkoutSession))
+    assert.equal(screen.queryByText(content.customerSelectLabel), null)
+    assert.equal(screen.queryByTestId("stripe-contact-details"), null)
+    assert.equal(screen.queryByTestId("stripe-billing-address"), null)
+    assert.equal(screen.queryByTestId("checkout-form-skeleton"), null)
+    assert.equal(screen.queryByRole("button"), null)
+})
+
 test("creates a business customer and updates optional tax details before payment", async () => {
     checkoutSearchParams.set("customerType", "b2b")
     const requests: Array<{ init?: RequestInit; url: string }> = []
@@ -606,7 +632,7 @@ test("creates a business customer and updates optional tax details before paymen
     ])
 })
 
-test("shows automatic customer creation failures and allows retrying", async () => {
+test("shows only the configured error when automatic customer creation fails", async () => {
     let requestCount = 0
     globalThis.fetch = (async () => {
         requestCount += 1
@@ -615,14 +641,14 @@ test("shows automatic customer creation failures and allows retrying", async () 
             headers: { "content-type": "application/json" },
         })
     }) as typeof fetch
-    const user = userEvent.setup()
-
     render(<CheckoutForm content={content} locale="en" />)
     assert.ok(await screen.findByText(content.errors.customerCreation))
     assert.equal(screen.queryByText("Crater rejected the customer."), null)
     assert.equal(requestCount, 1)
-    await user.click(screen.getByRole("button", { name: "Continue to payment" }))
-    await waitFor(() => assert.equal(requestCount, 2))
+    assert.equal(screen.queryByTestId("checkout-form-skeleton"), null)
+    assert.equal(screen.queryByTestId("checkout-customer-select-skeleton"), null)
+    assert.equal(screen.queryByText(content.customerSelectLabel), null)
+    assert.equal(screen.queryByRole("button"), null)
 })
 
 test("recreates only the checkout session when the promotion code changes or is removed", async () => {

@@ -4,6 +4,7 @@ import type { CheckoutData } from "@/lib/cms"
 import type { CheckoutSessionData, CheckoutTaxQuoteData } from "@/lib/checkout/checkoutSubmission"
 import { useCheckoutStage } from "@/components/checkout/CheckoutStepper"
 import { Button, TextInput } from "@code0-tech/pictor"
+import { IconAlertTriangle } from "@tabler/icons-react"
 import { BillingAddressElement, CheckoutElementsProvider, ContactDetailsElement, PaymentElement, useCheckoutElements } from "@stripe/react-stripe-js/checkout"
 import { loadStripe, type StripeCheckoutContact, type StripeCheckoutElementsSdkOptions, type StripeCheckoutSession, type StripeCheckoutTaxIdType } from "@stripe/stripe-js"
 import { useEffect, useMemo, useRef, useState } from "react"
@@ -106,18 +107,35 @@ interface CheckoutPaymentFormProps {
     onTaxQuoteChange: (taxQuote: CheckoutTaxQuoteData | null) => void
     onPaymentConfirmationChange: (confirming: boolean) => void
     onSessionExpired: () => Promise<void>
+    onSessionLoadErrorChange: (error: string | null) => void
     onSessionReady: () => void
     session: CheckoutSessionData
     taxIdType: string
     taxIdValue: string
 }
 
+export function CheckoutErrorState({ message }: { message: string }) {
+    return (
+        <div
+            role="alert"
+            aria-live="assertive"
+            className="flex w-full items-center gap-2 rounded-2xl border border-error/30 bg-error/10 p-4 text-error shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_12px_32px_rgba(0,0,0,0.18)]"
+        >
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-error/15 ring-1 ring-error/20">
+                <IconAlertTriangle aria-hidden="true" size={21} stroke={1.8} />
+            </span>
+            <p className="min-w-0 text-base font-medium leading-6 text-error">{message}</p>
+        </div>
+    )
+}
+
 function isInactiveCheckoutSessionError(message: string) {
     const normalizedMessage = message.toLowerCase()
     return (
-        normalizedMessage.includes("checkout session") &&
-        (normalizedMessage.includes("expired") || normalizedMessage.includes("no longer active") || normalizedMessage.includes("not active"))
-    ) || normalizedMessage.includes("checkout-sitzung ist nicht mehr aktiv") || normalizedMessage.includes("checkout-sitzung ist abgelaufen")
+        (normalizedMessage.includes("checkout session") && (normalizedMessage.includes("expired") || normalizedMessage.includes("no longer active") || normalizedMessage.includes("not active"))) ||
+        normalizedMessage.includes("checkout-sitzung ist nicht mehr aktiv") ||
+        normalizedMessage.includes("checkout-sitzung ist abgelaufen")
+    )
 }
 
 function getTaxQuoteFromSession(session: StripeCheckoutSession): CheckoutTaxQuoteData | null {
@@ -134,12 +152,7 @@ export function CheckoutPaymentFormSkeleton({ label }: { label: string }) {
     const fieldWidths = ["w-16", "w-24", "w-20", "w-14", "w-20"]
 
     return (
-        <div
-            role="status"
-            aria-label={label}
-            data-testid="checkout-form-skeleton"
-            className="w-full animate-pulse space-y-4 motion-reduce:animate-none"
-        >
+        <div role="status" aria-label={label} data-testid="checkout-form-skeleton" className="w-full animate-pulse space-y-4 motion-reduce:animate-none">
             <span className="sr-only">{label}</span>
             {fieldWidths.slice(0, 3).map((labelWidth, index) => (
                 <div key={index}>
@@ -172,6 +185,7 @@ function CheckoutPaymentFields({
     onTaxQuoteChange,
     onPaymentConfirmationChange,
     onSessionExpired,
+    onSessionLoadErrorChange,
     onSessionReady,
     taxIdType,
     taxIdValue,
@@ -186,12 +200,20 @@ function CheckoutPaymentFields({
 
     useEffect(() => {
         if (checkoutState.type === "success") {
+            onSessionLoadErrorChange(null)
             onSessionReady()
             return
         }
 
-        if (checkoutErrorMessage && isInactiveCheckoutSessionError(checkoutErrorMessage)) void onSessionExpired()
-    }, [checkoutErrorMessage, checkoutState.type, onSessionExpired, onSessionReady])
+        if (!checkoutErrorMessage) return
+        if (isInactiveCheckoutSessionError(checkoutErrorMessage)) {
+            onSessionLoadErrorChange(null)
+            void onSessionExpired()
+            return
+        }
+
+        onSessionLoadErrorChange(content.errors.checkoutSession)
+    }, [checkoutErrorMessage, checkoutState.type, content.errors.checkoutSession, onSessionExpired, onSessionLoadErrorChange, onSessionReady])
 
     const showBillingAddress = () => {
         setStage("billingAddress")
@@ -296,10 +318,8 @@ function CheckoutPaymentFields({
     }
 
     if (checkoutState.type === "error") {
-        const message = isInactiveCheckoutSessionError(checkoutState.error.message)
-            ? content.errors.checkoutSessionExpired
-            : content.errors.checkoutSession
-        return <p className="text-sm text-error" role="alert">{message}</p>
+        const message = isInactiveCheckoutSessionError(checkoutState.error.message) ? content.errors.checkoutSessionExpired : content.errors.checkoutSession
+        return <CheckoutErrorState message={message} />
     }
 
     return (
@@ -403,6 +423,7 @@ export function CheckoutPaymentForm({
     onTaxQuoteChange,
     onPaymentConfirmationChange,
     onSessionExpired,
+    onSessionLoadErrorChange,
     onSessionReady,
     session,
     taxIdType,
@@ -433,7 +454,7 @@ export function CheckoutPaymentForm({
     )
 
     if (!stripePromise) {
-        return <p className="text-sm text-error">Stripe is not configured.</p>
+        return <CheckoutErrorState message="Stripe is not configured." />
     }
 
     return (
@@ -450,6 +471,7 @@ export function CheckoutPaymentForm({
                 onTaxQuoteChange={onTaxQuoteChange}
                 onPaymentConfirmationChange={onPaymentConfirmationChange}
                 onSessionExpired={onSessionExpired}
+                onSessionLoadErrorChange={onSessionLoadErrorChange}
                 onSessionReady={onSessionReady}
                 taxIdType={taxIdType}
                 taxIdValue={taxIdValue}

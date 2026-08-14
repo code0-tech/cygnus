@@ -1,11 +1,11 @@
 "use client"
 
 import { CheckoutFormProvider, useCheckoutFormState } from "@/components/checkout/CheckoutFormProvider"
-import { CheckoutPaymentForm, CheckoutPaymentFormSkeleton } from "@/components/checkout/CheckoutPaymentForm"
+import { CheckoutErrorState, CheckoutPaymentForm, CheckoutPaymentFormSkeleton } from "@/components/checkout/CheckoutPaymentForm"
 import { useCheckoutStage } from "@/components/checkout/CheckoutStepper"
 import type { CheckoutData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
-import { Button, SelectContent, SelectInput, SelectItem, SelectItemText, SelectPortal, SelectTrigger, SelectValue, SelectViewport } from "@code0-tech/pictor"
+import { SelectContent, SelectInput, SelectItem, SelectItemText, SelectPortal, SelectTrigger, SelectValue, SelectViewport } from "@code0-tech/pictor"
 import { IconChevronDown, IconPlus } from "@tabler/icons-react"
 
 const NEW_CUSTOMER_VALUE = "new"
@@ -33,7 +33,6 @@ function CheckoutFormContent() {
         isSessionLoading,
         markCheckoutSessionReady,
         refreshExpiredCheckoutSession,
-        retryPreparation,
         selectedCustomerId,
         selectCheckoutCustomer,
         sessionError,
@@ -41,14 +40,21 @@ function CheckoutFormContent() {
         setStripeEmail,
         setStripeTaxIdType,
         setStripeTaxIdValue,
+        setStripeSessionError,
         setTaxQuote,
         setIsConfirmingPayment,
         stripeBillingAddress,
         stripeEmail,
         stripeTaxIdType,
         stripeTaxIdValue,
+        stripeSessionError,
     } = useCheckoutFormState()
     const selectedCustomer = customers.find((customer) => customer.id === selectedCustomerId)
+    const resolvedError = errorMessage ?? sessionError ?? stripeSessionError
+
+    if (resolvedError) {
+        return <CheckoutErrorState message={resolvedError} />
+    }
 
     let checkoutContent
 
@@ -66,6 +72,7 @@ function CheckoutFormContent() {
                 onTaxQuoteChange={setTaxQuote}
                 onPaymentConfirmationChange={setIsConfirmingPayment}
                 onSessionExpired={refreshExpiredCheckoutSession}
+                onSessionLoadErrorChange={setStripeSessionError}
                 onSessionReady={markCheckoutSessionReady}
                 session={checkoutSession}
                 taxIdType={stripeTaxIdType}
@@ -73,19 +80,7 @@ function CheckoutFormContent() {
             />
         )
     } else {
-        const resolvedError = errorMessage ?? sessionError
-        if (resolvedError) {
-            checkoutContent = (
-                <div className="space-y-4">
-                    <p className="text-sm text-error" role="alert">
-                        {resolvedError}
-                    </p>
-                    <Button type="button" variant="normal" onClick={retryPreparation} className="h-10! w-full! text-sm!">
-                        {content.continueLabel}
-                    </Button>
-                </div>
-            )
-        } else if (isLoading || isRefreshingSession || isSessionLoading) {
+        if (isLoading || isRefreshingSession || isSessionLoading) {
             checkoutContent = <CheckoutPaymentFormSkeleton label={content.processingLabel} />
         } else {
             checkoutContent = <CheckoutPaymentFormSkeleton label={content.processingLabel} />

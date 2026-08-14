@@ -3,10 +3,8 @@
 import { CheckoutForm } from "@/components/checkout/CheckoutForm"
 import { CheckoutFormProvider, useCheckoutFormState } from "@/components/checkout/CheckoutFormProvider"
 import { CheckoutLegalFooter } from "@/components/checkout/CheckoutLegalFooter"
-import { CheckoutPaymentFormSkeleton } from "@/components/checkout/CheckoutPaymentForm"
 import { CheckoutSummary } from "@/components/checkout/CheckoutSummary"
-import { Drawer, DrawerBackdrop, DrawerContent, DrawerHandle, DrawerPopup, DrawerPortal, DrawerTrigger, DrawerViewport } from "@/components/ui/Drawer"
-import { useMediaQuery } from "@/hooks/useMediaQuery"
+import { cn } from "@/lib/utils"
 import type { CheckoutData, SubscriptionConfigData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import type { SubscriptionPriceCatalog } from "@/lib/subscriptionPrices"
@@ -31,7 +29,6 @@ function CheckoutSummaryWithTax(props: Omit<ComponentProps<typeof CheckoutSummar
 
 export function CheckoutPageContent({ currentYear, footer, form, locale, subscriptionConfig, subscriptionPrices, summary }: CheckoutPageContentProps) {
     const [mobileCheckoutOpen, setMobileCheckoutOpen] = useState(false)
-    const isDesktop = useMediaQuery("(min-width: 64rem)")
 
     useEffect(() => {
         const desktopQuery = window.matchMedia("(min-width: 64rem)")
@@ -46,53 +43,70 @@ export function CheckoutPageContent({ currentYear, footer, form, locale, subscri
         return () => desktopQuery.removeEventListener("change", handleLayoutChange)
     }, [])
 
+    useEffect(() => {
+        if (!mobileCheckoutOpen) return
+
+        const closeOnEscape = (event: KeyboardEvent) => {
+            if (event.key === "Escape") setMobileCheckoutOpen(false)
+        }
+
+        window.addEventListener("keydown", closeOnEscape)
+        return () => window.removeEventListener("keydown", closeOnEscape)
+    }, [mobileCheckoutOpen])
+
     return (
         <div className="flex flex-1 flex-col">
             <div className="flex w-full flex-col gap-8 lg:flex-row lg:gap-16">
                 {form ? (
                     <CheckoutFormProvider content={form} locale={locale}>
                         <CheckoutSummaryWithTax content={summary} errors={form.errors} subscriptionConfig={subscriptionConfig} subscriptionPrices={subscriptionPrices} />
-                        {!isDesktop ? (
-                            <>
-                                <Drawer side="bottom" open={mobileCheckoutOpen} onOpenChange={setMobileCheckoutOpen}>
-                                    <DrawerTrigger className="inline-flex h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-white/90 px-6 text-sm font-medium text-primary outline-none transition-colors hover:bg-white focus-visible:ring-2 focus-visible:ring-white/40 lg:hidden">
-                                        {form.continueLabel}
-                                        <IconArrowRight aria-hidden="true" size={17} />
-                                    </DrawerTrigger>
-                                    <DrawerPortal keepMounted>
-                                        <DrawerBackdrop className="lg:hidden" />
-                                        <DrawerViewport className="lg:hidden">
-                                            <DrawerPopup className="max-h-[92dvh]">
-                                                <DrawerHandle />
-                                                <DrawerContent className="flex flex-1 flex-col overflow-hidden px-4 pt-1 pb-0 sm:px-6">
-                                                    <CheckoutForm mobileSteps />
-                                                </DrawerContent>
-                                                <CheckoutLegalFooter
-                                                    className="shrink-0 border-t border-white/10 bg-primary px-4 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-6"
-                                                    currentYear={currentYear}
-                                                    footer={footer ?? null}
-                                                    locale={locale}
-                                                />
-                                            </DrawerPopup>
-                                        </DrawerViewport>
-                                    </DrawerPortal>
-                                </Drawer>
-                                <div className="hidden min-w-0 flex-[1.25] lg:flex">
-                                    <CheckoutPaymentFormSkeleton label={form.processingLabel} />
+                        <button
+                            type="button"
+                            onClick={() => setMobileCheckoutOpen(true)}
+                            className="inline-flex h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-white/90 px-6 text-sm font-medium text-primary outline-none transition-colors hover:bg-white focus-visible:ring-2 focus-visible:ring-white/40 lg:hidden"
+                        >
+                            {form.continueLabel}
+                            <IconArrowRight aria-hidden="true" size={17} />
+                        </button>
+                        <div
+                            className={cn(
+                                "min-w-0 flex-[1.25] lg:relative lg:flex",
+                                "max-lg:fixed max-lg:inset-0 max-lg:z-50 max-lg:flex max-lg:items-end max-lg:justify-center",
+                                mobileCheckoutOpen ? "max-lg:visible" : "max-lg:pointer-events-none max-lg:invisible"
+                            )}
+                        >
+                            <button
+                                type="button"
+                                aria-label={form.backToBillingLabel}
+                                onClick={() => setMobileCheckoutOpen(false)}
+                                className={cn(
+                                    "fixed inset-0 bg-black/65 backdrop-blur-sm transition-opacity duration-300 lg:hidden",
+                                    mobileCheckoutOpen ? "opacity-100" : "opacity-0"
+                                )}
+                            />
+                            <div
+                                role={mobileCheckoutOpen ? "dialog" : undefined}
+                                aria-modal={mobileCheckoutOpen || undefined}
+                                aria-label={form.continueLabel}
+                                className={cn(
+                                    "pointer-events-auto relative flex max-h-[92dvh] w-full min-h-0 flex-col overflow-hidden rounded-t-2xl border-t border-white/10 bg-primary text-white shadow-2xl transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none",
+                                    "lg:max-h-none lg:flex-1 lg:translate-y-0 lg:rounded-none lg:border-0 lg:bg-transparent lg:shadow-none",
+                                    mobileCheckoutOpen ? "translate-y-0" : "translate-y-full"
+                                )}
+                            >
+                                <div aria-hidden="true" className="mx-auto my-3 h-1.5 w-12 shrink-0 rounded-full bg-white/20 lg:hidden" />
+                                <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pt-1 pb-0 sm:px-6 lg:overflow-visible lg:p-0">
+                                    <CheckoutForm />
                                 </div>
-                            </>
-                        ) : (
-                            <div className="flex min-w-0 flex-[1.25]">
-                                <CheckoutForm />
                             </div>
-                        )}
+                        </div>
                     </CheckoutFormProvider>
                 ) : (
                     <CheckoutSummary content={summary} subscriptionConfig={subscriptionConfig} subscriptionPrices={subscriptionPrices} />
                 )}
             </div>
 
-            <CheckoutLegalFooter className="mt-auto hidden justify-center pt-8 lg:flex" currentYear={currentYear} footer={footer ?? null} locale={locale} />
+            <CheckoutLegalFooter className="mt-auto justify-center pt-8" currentYear={currentYear} footer={footer ?? null} locale={locale} />
         </div>
     )
 }
