@@ -232,6 +232,17 @@ export const Licenses: GlobalConfig = {
                     ],
                 },
                 {
+                    name: "invoiceStatuses",
+                    type: "group",
+                    fields: [
+                        { name: "draft", type: "text", required: true, localized: true, defaultValue: localizedDefault("Draft", "Entwurf") },
+                        { name: "open", type: "text", required: true, localized: true, defaultValue: localizedDefault("Open", "Offen") },
+                        { name: "paid", type: "text", required: true, localized: true, defaultValue: localizedDefault("Paid", "Bezahlt") },
+                        { name: "uncollectible", type: "text", required: true, localized: true, defaultValue: localizedDefault("Uncollectible", "Uneinbringlich") },
+                        { name: "void", type: "text", required: true, localized: true, defaultValue: localizedDefault("Void", "Storniert") },
+                    ],
+                },
+                {
                     name: "plans",
                     type: "group",
                     fields: [
@@ -241,6 +252,20 @@ export const Licenses: GlobalConfig = {
                     ],
                 },
                 { name: "unknown", type: "text", required: true, localized: true, defaultValue: localizedDefault("Unknown", "Unbekannt") },
+            ],
+        },
+        {
+            name: "invoices",
+            type: "group",
+            fields: [
+                { name: "title", type: "text", required: true, localized: true, defaultValue: localizedDefault("Invoices", "Rechnungen") },
+                { name: "empty", type: "text", required: true, localized: true, defaultValue: localizedDefault("No invoices yet", "Noch keine Rechnungen") },
+                { name: "numberLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Invoice", "Rechnung") },
+                { name: "periodLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Billing period", "Abrechnungszeitraum") },
+                { name: "amountLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Total", "Gesamt") },
+                { name: "statusLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Payment status", "Zahlungsstatus") },
+                { name: "downloadLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Download", "Herunterladen") },
+                { name: "unavailableLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Not available", "Nicht verfügbar") },
             ],
         },
         {
@@ -301,10 +326,7 @@ export const Licenses: GlobalConfig = {
                     type: "text",
                     required: true,
                     localized: true,
-                    defaultValue: localizedDefault(
-                        "Self-hosted licenses have no editable namespace.",
-                        "Self-hosted-Lizenzen besitzen keinen bearbeitbaren Namespace."
-                    ),
+                    defaultValue: localizedDefault("Self-hosted licenses have no editable namespace.", "Self-hosted-Lizenzen besitzen keinen bearbeitbaren Namespace."),
                 },
             ],
         },

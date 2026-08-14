@@ -8,6 +8,7 @@ const labels = {
     deploymentTypes: { cloud: "Cloud", selfHosted: "Eigenbetrieb" },
     paymentPeriods: { weekly: "Wöchentlich", monthly: "Monatlich", quarterly: "Vierteljährlich", yearly: "Jährlich" },
     statuses: { active: "Aktiv", paid: "Bezahlt", paymentFailed: "Zahlung fehlgeschlagen", canceled: "Gekündigt", expired: "Abgelaufen" },
+    invoiceStatuses: { draft: "Entwurf", open: "Offen", paid: "Bezahlt", uncollectible: "Uneinbringlich", void: "Storniert" },
     plans: { pro: "Pro", max: "Max", custom: "Individuell" },
     unknown: "Unbekannt",
 } satisfies LicenseContent["values"]
@@ -18,6 +19,7 @@ test("formats Crater license values with CMS labels", () => {
     assert.equal(formatLicenseDisplayValue("MONTHLY", "paymentPeriod", labels), "Monatlich")
     assert.equal(formatLicenseDisplayValue("payment_failed", "status", labels), "Zahlung fehlgeschlagen")
     assert.equal(formatLicenseDisplayValue("custom", "plan", labels), "Individuell")
+    assert.equal(formatLicenseDisplayValue("uncollectible", "invoiceStatus", labels), "Uneinbringlich")
 })
 
 test("uses the CMS fallback for missing or unknown values", () => {

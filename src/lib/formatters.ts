@@ -27,6 +27,15 @@ export function formatEuroCurrency(value: number, locale: string) {
     return euroCurrencyFormatters[getFormatterLocale(locale)].format(value)
 }
 
+export function formatMinorCurrency(value: number, currency: string, locale: string) {
+    const formatter = new Intl.NumberFormat(locale === "de" ? "de-DE" : "en-US", {
+        style: "currency",
+        currency: currency.toUpperCase(),
+    })
+    const fractionDigits = formatter.resolvedOptions().maximumFractionDigits ?? 2
+    return formatter.format(value / 10 ** fractionDigits)
+}
+
 export function formatCompactNumber(value: number) {
     const absoluteValue = Math.abs(value)
     const compactUnits = [

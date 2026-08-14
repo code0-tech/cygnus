@@ -1,6 +1,6 @@
 import type { LicenseContent } from "@/lib/cms"
 
-type LicenseValueCategory = "customerType" | "deploymentType" | "paymentPeriod" | "plan" | "status"
+type LicenseValueCategory = "customerType" | "deploymentType" | "invoiceStatus" | "paymentPeriod" | "plan" | "status"
 
 function normalize(value: string | null | undefined) {
     return value?.trim().toLowerCase().replaceAll("-", "_")
@@ -20,6 +20,13 @@ export function formatLicenseDisplayValue(value: string | null | undefined, cate
         deploymentType: {
             cloud: labels.deploymentTypes.cloud,
             self_hosted: labels.deploymentTypes.selfHosted,
+        },
+        invoiceStatus: {
+            draft: labels.invoiceStatuses.draft,
+            open: labels.invoiceStatuses.open,
+            paid: labels.invoiceStatuses.paid,
+            uncollectible: labels.invoiceStatuses.uncollectible,
+            void: labels.invoiceStatuses.void,
         },
         paymentPeriod: {
             weekly: labels.paymentPeriods.weekly,

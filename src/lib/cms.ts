@@ -441,8 +441,19 @@ export interface LicenseContent {
         deploymentTypes: { cloud: string; selfHosted: string }
         paymentPeriods: { weekly: string; monthly: string; quarterly: string; yearly: string }
         statuses: { active: string; paid: string; paymentFailed: string; canceled: string; expired: string }
+        invoiceStatuses: { draft: string; open: string; paid: string; uncollectible: string; void: string }
         plans: { pro: string; max: string; custom: string }
         unknown: string
+    }
+    invoices: {
+        title: string
+        empty: string
+        numberLabel: string
+        periodLabel: string
+        amountLabel: string
+        statusLabel: string
+        downloadLabel: string
+        unavailableLabel: string
     }
     errors: {
         dashboardLoad: string

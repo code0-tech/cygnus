@@ -3297,12 +3297,29 @@ export interface License {
       canceled: string;
       expired: string;
     };
+    invoiceStatuses: {
+      draft: string;
+      open: string;
+      paid: string;
+      uncollectible: string;
+      void: string;
+    };
     plans: {
       pro: string;
       max: string;
       custom: string;
     };
     unknown: string;
+  };
+  invoices: {
+    title: string;
+    empty: string;
+    numberLabel: string;
+    periodLabel: string;
+    amountLabel: string;
+    statusLabel: string;
+    downloadLabel: string;
+    unavailableLabel: string;
   };
   errors: {
     dashboardLoad: string;
@@ -3980,6 +3997,15 @@ export interface LicensesSelect<T extends boolean = true> {
               canceled?: T;
               expired?: T;
             };
+        invoiceStatuses?:
+          | T
+          | {
+              draft?: T;
+              open?: T;
+              paid?: T;
+              uncollectible?: T;
+              void?: T;
+            };
         plans?:
           | T
           | {
@@ -3988,6 +4014,18 @@ export interface LicensesSelect<T extends boolean = true> {
               custom?: T;
             };
         unknown?: T;
+      };
+  invoices?:
+    | T
+    | {
+        title?: T;
+        empty?: T;
+        numberLabel?: T;
+        periodLabel?: T;
+        amountLabel?: T;
+        statusLabel?: T;
+        downloadLabel?: T;
+        unavailableLabel?: T;
       };
   errors?:
     | T
