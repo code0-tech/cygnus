@@ -4,7 +4,7 @@ import type { CheckoutData } from "@/lib/cms"
 import type { CheckoutSessionData, CheckoutTaxQuoteData } from "@/lib/checkout/checkoutSubmission"
 import { useCheckoutStage } from "@/components/checkout/CheckoutStepper"
 import { ButtonLoader } from "@/components/ui/Loader"
-import { Button } from "@code0-tech/pictor"
+import { Button, EmailInput } from "@code0-tech/pictor"
 import { IconAlertTriangle } from "@tabler/icons-react"
 import { BillingAddressElement, CheckoutElementsProvider, ContactDetailsElement, PaymentElement, TaxIdElement, useCheckoutElements } from "@stripe/react-stripe-js/checkout"
 import { loadStripe, type StripeCheckoutContact, type StripeCheckoutElementsSdkOptions, type StripeCheckoutSession } from "@stripe/stripe-js"
@@ -237,6 +237,7 @@ function CheckoutPaymentFields({
     const [isAddressElementReady, setIsAddressElementReady] = useState(false)
     const [isTaxIdElementReady, setIsTaxIdElementReady] = useState(!collectTaxId)
     const checkoutErrorMessage = checkoutState.type === "error" ? checkoutState.error.message : null
+    const checkoutEmail = checkoutState.type === "success" ? checkoutState.checkout.email : null
     const restoredBillingRef = useRef(false)
     const markContactElementLoading = useCallback(() => setIsContactElementReady(false), [])
     const markAddressElementLoading = useCallback(() => setIsAddressElementReady(false), [])
@@ -264,6 +265,12 @@ function CheckoutPaymentFields({
     useEffect(() => {
         if (checkoutState.type === "success" && isContactElementReady && isAddressElementReady && isTaxIdElementReady) onSessionReady()
     }, [checkoutState.type, isAddressElementReady, isContactElementReady, isTaxIdElementReady, onSessionReady])
+
+    useEffect(() => {
+        if (!checkoutEmail) return
+        onEmailChange(checkoutEmail)
+        setIsContactElementReady(true)
+    }, [checkoutEmail, onEmailChange])
 
     const showBillingAddress = () => {
         setStage("billingAddress")
@@ -369,11 +376,15 @@ function CheckoutPaymentFields({
             {activeStep === "billingAddress" ? (
                 <>
                     <section className="w-full space-y-4">
-                        <ContactDetailsElement
-                            onChange={(event) => onEmailChange(event.complete ? event.value.email : null)}
-                            onLoaderStart={markContactElementLoading}
-                            onReady={markContactElementReady}
-                        />
+                        {checkoutEmail ? (
+                            <EmailInput title={content.emailLabel} value={checkoutEmail} disabled className="w-full! bg-[#17151e]! hover:bg-[#17151e]!" />
+                        ) : (
+                            <ContactDetailsElement
+                                onChange={(event) => onEmailChange(event.complete ? event.value.email : null)}
+                                onLoaderStart={markContactElementLoading}
+                                onReady={markContactElementReady}
+                            />
+                        )}
                         <BillingAddressElement
                             options={{ display: { name: "full" } }}
                             onChange={(event) => onAddressChange(event.complete ? { name: event.value.name, address: event.value.address } : null)}
