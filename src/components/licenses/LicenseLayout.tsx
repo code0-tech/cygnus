@@ -19,13 +19,13 @@ function LicenseLayoutContent({ children, content, locale }: LicenseLayoutProps)
 
     return (
         <FullScreen className="h-dvh! min-h-0! overflow-hidden! bg-light! p-4! text-white">
-            <div className="grid h-full min-h-0 grid-cols-1 lg:grid-cols-[18rem_minmax(0,1fr)]">
+            <div className="grid h-full min-h-0 grid-cols-1 grid-rows-[auto_minmax(0,1fr)] lg:grid-cols-[18rem_minmax(0,1fr)] lg:grid-rows-1">
                 <LicenseSidebar content={content} isLoading={isSidebarLoading} isRefreshing={isRefreshing} locale={locale} licenses={sidebarLicenses} onRefresh={reload} />
 
-                <main className="h-full min-h-0 min-w-0 overflow-hidden rounded-2xl bg-primary">
+                <main className="h-full min-h-0 w-[calc(100vw-2rem)] min-w-0 overflow-hidden rounded-2xl bg-primary lg:w-auto">
                     <ScrollArea h="100%" type="scroll">
                         <ScrollAreaViewport>
-                            <div style={{ maxWidth: "52rem", margin: "0 auto", padding: "4rem 1rem" }}>
+                            <div className="mx-auto box-border w-full min-w-0 max-w-[52rem] px-4 py-10 sm:py-16">
                                 {error ? (
                                     <Card color="secondary">
                                         <Flex align="center" justify="space-between" style={{ gap: "1rem" }}>
