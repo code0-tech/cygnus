@@ -69,6 +69,15 @@
 }
 
 @layer components {
+    .input:has(.input__control:disabled),
+    .input:has(.input__control[aria-disabled="true"]),
+    .input-wrapper:has(.input-wrapper__control:disabled),
+    .input-wrapper:has(.input-wrapper__control[aria-disabled="true"]) {
+        cursor: not-allowed;
+        background: #17151e !important;
+        box-shadow: none !important;
+    }
+
     .card-bottom-fade {
         pointer-events: none;
         position: absolute;
