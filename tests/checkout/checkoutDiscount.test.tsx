@@ -6,17 +6,10 @@ import { installDomTestEnvironment } from "./domTestEnvironment"
 installDomTestEnvironment()
 
 let currentSearchParams = new URLSearchParams()
-const replacedUrls: string[] = []
 
 mock.module("next/navigation", {
     namedExports: {
         usePathname: () => "/en/checkout",
-        useRouter: () => ({
-            replace: (url: string) => {
-                replacedUrls.push(url)
-                currentSearchParams = new URLSearchParams(url.split("?")[1] ?? "")
-            },
-        }),
         useSearchParams: () => currentSearchParams,
     },
 })
@@ -40,7 +33,7 @@ const discountErrorProps = {
 afterEach(() => {
     cleanup()
     currentSearchParams = new URLSearchParams()
-    replacedUrls.length = 0
+    window.history.replaceState(null, "", "/en/checkout")
     globalThis.fetch = originalFetch
 })
 
@@ -100,14 +93,14 @@ test("opens, applies, and removes a discount code", async () => {
     await user.click(applyButton)
     await waitFor(() => assert.equal(appliedValues.at(-1)?.code, "SAVE10"))
     assert.deepEqual(requestedCodes, ["SAVE10"])
-    assert.equal(replacedUrls.at(-1), "/en/checkout?promotionCode=SAVE10")
+    assert.equal(window.location.pathname + window.location.search, "/en/checkout?promotionCode=SAVE10")
     assert.ok(screen.getByText("SAVE10"))
     assert.ok(screen.getByTestId("applied-discount").contains(screen.getByText("SAVE10")))
 
     await user.click(screen.getByRole("button", { name: "(Remove)" }))
     await waitFor(() => assert.equal(appliedValues.at(-1), null))
     assert.deepEqual(requestedCodes, ["SAVE10"])
-    assert.equal(replacedUrls.at(-1), "/en/checkout")
+    assert.equal(window.location.pathname + window.location.search, "/en/checkout")
     assert.equal(screen.getAllByRole("button", { name: "Have a discount?" }).length, 2)
 })
 
@@ -136,6 +129,7 @@ test("opens the discount input in a dialog on mobile", async () => {
 
 test("validates and applies a promotion code already present in the URL", async () => {
     currentSearchParams = new URLSearchParams("plan=pro&promotionCode=WELCOME")
+    window.history.replaceState(null, "", "/en/checkout?plan=pro&promotionCode=WELCOME")
     globalThis.fetch = (async () => discountResponse("WELCOME", 15)) as typeof fetch
     const appliedValues: Array<CheckoutDiscountValue | null> = []
 
@@ -154,7 +148,7 @@ test("validates and applies a promotion code already present in the URL", async 
     await waitFor(() => assert.equal(appliedValues.at(-1)?.code, "WELCOME"))
     assert.ok(screen.getByText("WELCOME"))
     assert.ok(screen.getByRole("button", { name: "(Remove)" }))
-    assert.equal(replacedUrls.at(-1), "/en/checkout?plan=pro&promotionCode=WELCOME")
+    assert.equal(window.location.pathname + window.location.search, "/en/checkout?plan=pro&promotionCode=WELCOME")
 })
 
 test("shows the configured CMS error instead of the Crater discount error", async () => {
