@@ -38,15 +38,11 @@ function CheckoutFormContent() {
         sessionError,
         setStripeBillingAddress,
         setStripeEmail,
-        setStripeTaxIdType,
-        setStripeTaxIdValue,
         setStripeSessionError,
         setTaxQuote,
         setIsConfirmingPayment,
         stripeBillingAddress,
         stripeEmail,
-        stripeTaxIdType,
-        stripeTaxIdValue,
         stripeSessionError,
     } = useCheckoutFormState()
     const selectedCustomer = customers.find((customer) => customer.id === selectedCustomerId)
@@ -67,16 +63,12 @@ function CheckoutFormContent() {
                 email={stripeEmail}
                 onAddressChange={setStripeBillingAddress}
                 onEmailChange={setStripeEmail}
-                onTaxIdTypeChange={setStripeTaxIdType}
-                onTaxIdValueChange={setStripeTaxIdValue}
                 onTaxQuoteChange={setTaxQuote}
                 onPaymentConfirmationChange={setIsConfirmingPayment}
                 onSessionExpired={refreshExpiredCheckoutSession}
                 onSessionLoadErrorChange={setStripeSessionError}
                 onSessionReady={markCheckoutSessionReady}
                 session={checkoutSession}
-                taxIdType={stripeTaxIdType}
-                taxIdValue={stripeTaxIdValue}
             />
         )
     } else {

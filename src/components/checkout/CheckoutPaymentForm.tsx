@@ -3,16 +3,16 @@
 import type { CheckoutData } from "@/lib/cms"
 import type { CheckoutSessionData, CheckoutTaxQuoteData } from "@/lib/checkout/checkoutSubmission"
 import { useCheckoutStage } from "@/components/checkout/CheckoutStepper"
-import { Button, TextInput } from "@code0-tech/pictor"
+import { Button } from "@code0-tech/pictor"
 import { IconAlertTriangle } from "@tabler/icons-react"
-import { BillingAddressElement, CheckoutElementsProvider, ContactDetailsElement, PaymentElement, useCheckoutElements } from "@stripe/react-stripe-js/checkout"
-import { loadStripe, type StripeCheckoutContact, type StripeCheckoutElementsSdkOptions, type StripeCheckoutSession, type StripeCheckoutTaxIdType } from "@stripe/stripe-js"
+import { BillingAddressElement, CheckoutElementsProvider, ContactDetailsElement, PaymentElement, TaxIdElement, useCheckoutElements } from "@stripe/react-stripe-js/checkout"
+import { loadStripe, type StripeCheckoutContact, type StripeCheckoutElementsSdkOptions, type StripeCheckoutSession } from "@stripe/stripe-js"
 import { useEffect, useMemo, useRef, useState } from "react"
 
 type CheckoutFormContent = CheckoutData["form"]
 
 const stripePublicKey = process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY
-const stripePromise = stripePublicKey ? loadStripe(stripePublicKey, { locale: "en" }) : null
+const stripePromise = stripePublicKey ? loadStripe(stripePublicKey, { betas: ["custom_checkout_tax_id_1"], locale: "en" }) : null
 const stripeAppearance = {
     theme: "night",
     labels: "above",
@@ -59,6 +59,28 @@ const stripeAppearance = {
             border: "none",
             boxShadow: "inset 0 1px 1px rgba(217, 4, 41, 0.1)",
         },
+        ".Dropdown": {
+            backgroundColor: "#191825",
+            border: "none",
+            borderRadius: "16px",
+            boxShadow: "inset 0 1px 1px rgba(255, 255, 255, 0.1), 0 12px 32px rgba(0, 0, 0, 0.35)",
+        },
+        ".DropdownItem": {
+            backgroundColor: "transparent",
+            borderRadius: "10px",
+            color: "rgba(255, 255, 255, 0.75)",
+            fontSize: "13px",
+            margin: "4px",
+            padding: "10px 12px",
+        },
+        ".DropdownItem--highlight": {
+            backgroundColor: "#201e2c",
+            color: "#ffffff",
+        },
+        ".DropdownItem:active": {
+            backgroundColor: "rgba(191, 191, 191, 0.2)",
+            color: "#ffffff",
+        },
         ".Label": {
             color: "rgba(255, 255, 255, 0.5)",
             fontSize: "11px",
@@ -102,16 +124,12 @@ interface CheckoutPaymentFormProps {
     email: string | null
     onAddressChange: (address: StripeCheckoutContact | null) => void
     onEmailChange: (email: string | null) => void
-    onTaxIdTypeChange: (type: string) => void
-    onTaxIdValueChange: (value: string) => void
     onTaxQuoteChange: (taxQuote: CheckoutTaxQuoteData | null) => void
     onPaymentConfirmationChange: (confirming: boolean) => void
     onSessionExpired: () => Promise<void>
     onSessionLoadErrorChange: (error: string | null) => void
     onSessionReady: () => void
     session: CheckoutSessionData
-    taxIdType: string
-    taxIdValue: string
 }
 
 export function CheckoutErrorState({ message }: { message: string }) {
@@ -180,15 +198,11 @@ function CheckoutPaymentFields({
     email,
     onAddressChange,
     onEmailChange,
-    onTaxIdTypeChange,
-    onTaxIdValueChange,
     onTaxQuoteChange,
     onPaymentConfirmationChange,
     onSessionExpired,
     onSessionLoadErrorChange,
     onSessionReady,
-    taxIdType,
-    taxIdValue,
 }: Omit<CheckoutPaymentFormProps, "session">) {
     const checkoutState = useCheckoutElements()
     const { stage: activeStep, setStage } = useCheckoutStage()
@@ -240,28 +254,6 @@ function CheckoutPaymentFields({
                     return
                 }
                 updatedSession = emailResult.session
-            }
-
-            const normalizedTaxIdType = taxIdType.trim()
-            const normalizedTaxIdValue = taxIdValue.trim()
-            if (collectTaxId && Boolean(normalizedTaxIdType) !== Boolean(normalizedTaxIdValue)) {
-                setErrorMessage(content.errors.taxIdIncomplete)
-                return
-            }
-
-            if (collectTaxId && normalizedTaxIdType && normalizedTaxIdValue) {
-                const taxIdResult = await checkoutState.checkout.updateTaxIdInfo({
-                    businessName: billingAddress.name?.trim() || "",
-                    taxId: {
-                        type: normalizedTaxIdType as StripeCheckoutTaxIdType,
-                        value: normalizedTaxIdValue,
-                    },
-                })
-                if (taxIdResult.type === "error") {
-                    setErrorMessage(content.errors.taxIdUpdate)
-                    return
-                }
-                updatedSession = taxIdResult.session
             }
 
             onTaxQuoteChange(getTaxQuoteFromSession(updatedSession))
@@ -332,24 +324,7 @@ function CheckoutPaymentFields({
                             options={{ display: { name: "full" } }}
                             onChange={(event) => onAddressChange(event.complete ? { name: event.value.name, address: event.value.address } : null)}
                         />
-                        {collectTaxId && (
-                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                <TextInput
-                                    title={content.taxIdTypeLabel}
-                                    placeholder={content.taxIdTypePlaceholder}
-                                    value={taxIdType}
-                                    onChange={(event) => onTaxIdTypeChange(event.currentTarget.value)}
-                                    className="w-full!"
-                                />
-                                <TextInput
-                                    title={content.taxIdValueLabel}
-                                    placeholder={content.taxIdValuePlaceholder}
-                                    value={taxIdValue}
-                                    onChange={(event) => onTaxIdValueChange(event.currentTarget.value)}
-                                    className="w-full!"
-                                />
-                            </div>
-                        )}
+                        {collectTaxId && <TaxIdElement options={{ fields: { businessName: "never" }, visibility: "auto" }} />}
                     </section>
 
                     {errorMessage && (
@@ -418,16 +393,12 @@ export function CheckoutPaymentForm({
     email,
     onAddressChange,
     onEmailChange,
-    onTaxIdTypeChange,
-    onTaxIdValueChange,
     onTaxQuoteChange,
     onPaymentConfirmationChange,
     onSessionExpired,
     onSessionLoadErrorChange,
     onSessionReady,
     session,
-    taxIdType,
-    taxIdValue,
 }: CheckoutPaymentFormProps) {
     const defaultValuesRef = useRef<{
         clientSecret: string
@@ -466,15 +437,11 @@ export function CheckoutPaymentForm({
                 email={email}
                 onAddressChange={onAddressChange}
                 onEmailChange={onEmailChange}
-                onTaxIdTypeChange={onTaxIdTypeChange}
-                onTaxIdValueChange={onTaxIdValueChange}
                 onTaxQuoteChange={onTaxQuoteChange}
                 onPaymentConfirmationChange={onPaymentConfirmationChange}
                 onSessionExpired={onSessionExpired}
                 onSessionLoadErrorChange={onSessionLoadErrorChange}
                 onSessionReady={onSessionReady}
-                taxIdType={taxIdType}
-                taxIdValue={taxIdValue}
             />
         </CheckoutElementsProvider>
     )
