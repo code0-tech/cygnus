@@ -8,7 +8,7 @@ import { Button } from "@code0-tech/pictor"
 import { IconAlertTriangle } from "@tabler/icons-react"
 import { BillingAddressElement, CheckoutElementsProvider, ContactDetailsElement, PaymentElement, TaxIdElement, useCheckoutElements } from "@stripe/react-stripe-js/checkout"
 import { loadStripe, type StripeCheckoutContact, type StripeCheckoutElementsSdkOptions, type StripeCheckoutSession } from "@stripe/stripe-js"
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react"
 
 type CheckoutFormContent = CheckoutData["form"]
 
@@ -140,6 +140,8 @@ interface CheckoutPaymentFormProps {
     billingAddress: StripeCheckoutContact | null
     collectTaxId: boolean
     content: CheckoutFormContent
+    customerSelect: ReactNode
+    customerSelectSkeleton: ReactNode
     email: string | null
     onAddressChange: (address: StripeCheckoutContact | null) => void
     onEmailChange: (email: string | null) => void
@@ -214,6 +216,8 @@ function CheckoutPaymentFields({
     billingAddress,
     collectTaxId,
     content,
+    customerSelect,
+    customerSelectSkeleton,
     email,
     onAddressChange,
     onEmailChange,
@@ -229,13 +233,21 @@ function CheckoutPaymentFields({
     const [isUpdatingBilling, setIsUpdatingBilling] = useState(false)
     const [isConfirming, setIsConfirming] = useState(false)
     const [isPaymentElementReady, setIsPaymentElementReady] = useState(false)
+    const [isContactElementReady, setIsContactElementReady] = useState(false)
+    const [isAddressElementReady, setIsAddressElementReady] = useState(false)
+    const [isTaxIdElementReady, setIsTaxIdElementReady] = useState(!collectTaxId)
     const checkoutErrorMessage = checkoutState.type === "error" ? checkoutState.error.message : null
     const restoredBillingRef = useRef(false)
+    const markContactElementLoading = useCallback(() => setIsContactElementReady(false), [])
+    const markAddressElementLoading = useCallback(() => setIsAddressElementReady(false), [])
+    const markTaxIdElementLoading = useCallback(() => setIsTaxIdElementReady(false), [])
+    const markContactElementReady = useCallback(() => setIsContactElementReady(true), [])
+    const markAddressElementReady = useCallback(() => setIsAddressElementReady(true), [])
+    const markTaxIdElementReady = useCallback(() => setIsTaxIdElementReady(true), [])
 
     useEffect(() => {
         if (checkoutState.type === "success") {
             onSessionLoadErrorChange(null)
-            onSessionReady()
             return
         }
 
@@ -247,7 +259,11 @@ function CheckoutPaymentFields({
         }
 
         onSessionLoadErrorChange(content.errors.checkoutSession)
-    }, [checkoutErrorMessage, checkoutState.type, content.errors.checkoutSession, onSessionExpired, onSessionLoadErrorChange, onSessionReady])
+    }, [checkoutErrorMessage, checkoutState.type, content.errors.checkoutSession, onSessionExpired, onSessionLoadErrorChange])
+
+    useEffect(() => {
+        if (checkoutState.type === "success" && isContactElementReady && isAddressElementReady && isTaxIdElementReady) onSessionReady()
+    }, [checkoutState.type, isAddressElementReady, isContactElementReady, isTaxIdElementReady, onSessionReady])
 
     const showBillingAddress = () => {
         setStage("billingAddress")
@@ -349,15 +365,22 @@ function CheckoutPaymentFields({
 
     return (
         <form onSubmit={handleSubmit} className="w-full space-y-6">
+            {activeStep === "billingAddress" && customerSelect ? (isContactElementReady && isAddressElementReady && isTaxIdElementReady ? customerSelect : customerSelectSkeleton) : null}
             {activeStep === "billingAddress" ? (
                 <>
                     <section className="w-full space-y-4">
-                        <ContactDetailsElement onChange={(event) => onEmailChange(event.complete ? event.value.email : null)} />
+                        <ContactDetailsElement
+                            onChange={(event) => onEmailChange(event.complete ? event.value.email : null)}
+                            onLoaderStart={markContactElementLoading}
+                            onReady={markContactElementReady}
+                        />
                         <BillingAddressElement
                             options={{ display: { name: "full" } }}
                             onChange={(event) => onAddressChange(event.complete ? { name: event.value.name, address: event.value.address } : null)}
+                            onLoaderStart={markAddressElementLoading}
+                            onReady={markAddressElementReady}
                         />
-                        {collectTaxId && <TaxIdElement options={{ fields: { businessName: "never" }, visibility: "auto" }} />}
+                        {collectTaxId && <TaxIdElement options={{ fields: { businessName: "never" }, visibility: "auto" }} onLoaderStart={markTaxIdElementLoading} onReady={markTaxIdElementReady} />}
                     </section>
 
                     {errorMessage && (
@@ -423,6 +446,8 @@ export function CheckoutPaymentForm({
     billingAddress,
     collectTaxId,
     content,
+    customerSelect,
+    customerSelectSkeleton,
     email,
     onAddressChange,
     onEmailChange,
@@ -468,6 +493,8 @@ export function CheckoutPaymentForm({
                 billingAddress={billingAddress}
                 collectTaxId={collectTaxId}
                 content={content}
+                customerSelect={customerSelect}
+                customerSelectSkeleton={customerSelectSkeleton}
                 email={email}
                 onAddressChange={onAddressChange}
                 onEmailChange={onEmailChange}

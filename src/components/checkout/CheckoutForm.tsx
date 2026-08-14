@@ -47,76 +47,67 @@ function CheckoutFormContent() {
     } = useCheckoutFormState()
     const selectedCustomer = customers.find((customer) => customer.id === selectedCustomerId)
     const resolvedError = errorMessage ?? sessionError ?? stripeSessionError
+    const customerSelect =
+        stage === "billingAddress" && hasExistingCustomers && selectedCustomerId && customers.length > 0 ? (
+            <div className="[&_.input__label]:leading-none [&_.input-wrapper]:mt-1">
+                <SelectInput
+                    title={content.customerSelectLabel}
+                    value={selectedCustomer ? selectedCustomerId : NEW_CUSTOMER_VALUE}
+                    onValueChange={(value) => void selectCheckoutCustomer(value === NEW_CUSTOMER_VALUE ? null : value)}
+                >
+                    <SelectTrigger className="flex h-9! w-full! items-center gap-2 text-left! text-sm! outline-none! ring-0! focus:outline-none! focus:ring-0! focus-visible:outline-none! focus-visible:ring-0!">
+                        <SelectValue>{selectedCustomer?.name || selectedCustomer?.email || content.newCustomerLabel}</SelectValue>
+                        <IconChevronDown aria-hidden="true" className="ml-auto mr-2 shrink-0" size={16} />
+                    </SelectTrigger>
+                    <SelectPortal>
+                        <SelectContent position="popper" className="z-100 w-(--radix-select-trigger-width)!">
+                            <SelectViewport>
+                                {customers.map((customer) => (
+                                    <SelectItem key={customer.id} value={customer.id}>
+                                        <SelectItemText>{customer.name || customer.email || content.newCustomerLabel}</SelectItemText>
+                                    </SelectItem>
+                                ))}
+                                <SelectItem value={NEW_CUSTOMER_VALUE}>
+                                    <SelectItemText>
+                                        <span className="flex items-center gap-2 text-brand">
+                                            <IconPlus aria-hidden="true" size={15} />
+                                            {content.newCustomerLabel}
+                                        </span>
+                                    </SelectItemText>
+                                </SelectItem>
+                            </SelectViewport>
+                        </SelectContent>
+                    </SelectPortal>
+                </SelectInput>
+            </div>
+        ) : null
 
-    if (resolvedError) {
-        return <CheckoutErrorState message={resolvedError} />
-    }
+    if (resolvedError) return <CheckoutErrorState message={resolvedError} />
 
-    let checkoutContent
-
-    if (checkoutSession) {
-        checkoutContent = (
-            <CheckoutPaymentForm
-                billingAddress={stripeBillingAddress}
-                collectTaxId={customerType === "business"}
-                content={content}
-                email={stripeEmail}
-                onAddressChange={setStripeBillingAddress}
-                onEmailChange={setStripeEmail}
-                onTaxQuoteChange={setTaxQuote}
-                onPaymentConfirmationChange={setIsConfirmingPayment}
-                onSessionExpired={refreshExpiredCheckoutSession}
-                onSessionLoadErrorChange={setStripeSessionError}
-                onSessionReady={markCheckoutSessionReady}
-                session={checkoutSession}
-            />
-        )
-    } else {
-        if (isLoading || isRefreshingSession || isSessionLoading) {
-            checkoutContent = <CheckoutPaymentFormSkeleton label={content.processingLabel} />
-        } else {
-            checkoutContent = <CheckoutPaymentFormSkeleton label={content.processingLabel} />
-        }
-    }
+    const checkoutContent = checkoutSession ? (
+        <CheckoutPaymentForm
+            billingAddress={stripeBillingAddress}
+            collectTaxId={customerType === "business"}
+            content={content}
+            customerSelect={customerSelect}
+            customerSelectSkeleton={customerSelect ? <CheckoutCustomerSelectSkeleton /> : null}
+            email={stripeEmail}
+            onAddressChange={setStripeBillingAddress}
+            onEmailChange={setStripeEmail}
+            onTaxQuoteChange={setTaxQuote}
+            onPaymentConfirmationChange={setIsConfirmingPayment}
+            onSessionExpired={refreshExpiredCheckoutSession}
+            onSessionLoadErrorChange={setStripeSessionError}
+            onSessionReady={markCheckoutSessionReady}
+            session={checkoutSession}
+        />
+    ) : (
+        <CheckoutPaymentFormSkeleton label={content.processingLabel} />
+    )
 
     return (
-        <div className="w-full space-y-6">
-            {stage === "billingAddress" &&
-                ((isLoading || isRefreshingSession || isSessionLoading) && hasExistingCustomers !== false ? (
-                    <CheckoutCustomerSelectSkeleton />
-                ) : hasExistingCustomers && selectedCustomerId && customers.length > 0 ? (
-                    <div className="[&_.input__label]:leading-none [&_.input-wrapper]:mt-1">
-                        <SelectInput
-                            title={content.customerSelectLabel}
-                            value={selectedCustomer ? selectedCustomerId : NEW_CUSTOMER_VALUE}
-                            onValueChange={(value) => void selectCheckoutCustomer(value === NEW_CUSTOMER_VALUE ? null : value)}
-                        >
-                            <SelectTrigger className="flex h-9! w-full! items-center gap-2 text-left! text-sm! outline-none! ring-0! focus:outline-none! focus:ring-0! focus-visible:outline-none! focus-visible:ring-0!">
-                                <SelectValue>{selectedCustomer?.name || selectedCustomer?.email || content.newCustomerLabel}</SelectValue>
-                                <IconChevronDown aria-hidden="true" className="ml-auto shrink-0 mr-2" size={16} />
-                            </SelectTrigger>
-                            <SelectPortal>
-                                <SelectContent position="popper" className="z-100 w-(--radix-select-trigger-width)!">
-                                    <SelectViewport>
-                                        {customers.map((customer) => (
-                                            <SelectItem key={customer.id} value={customer.id}>
-                                                <SelectItemText>{customer.name || customer.email || content.newCustomerLabel}</SelectItemText>
-                                            </SelectItem>
-                                        ))}
-                                        <SelectItem value={NEW_CUSTOMER_VALUE}>
-                                            <SelectItemText>
-                                                <span className="flex items-center gap-2 text-brand">
-                                                    <IconPlus aria-hidden="true" size={15} />
-                                                    {content.newCustomerLabel}
-                                                </span>
-                                            </SelectItemText>
-                                        </SelectItem>
-                                    </SelectViewport>
-                                </SelectContent>
-                            </SelectPortal>
-                        </SelectInput>
-                    </div>
-                ) : null)}
+        <div className="w-full space-y-4">
+            {!checkoutSession && stage === "billingAddress" && (isLoading || isRefreshingSession || isSessionLoading) && hasExistingCustomers !== false ? <CheckoutCustomerSelectSkeleton /> : null}
             {checkoutContent}
         </div>
     )

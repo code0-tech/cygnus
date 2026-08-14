@@ -21,7 +21,9 @@ const stripeBillingAddress = {
     address: { city: "Berlin", country: "DE", line1: "Teststraße 1", line2: null, postal_code: "10115", state: "Berlin" },
 }
 let billingAddressOnChange: ((event: { complete: boolean; value: typeof stripeBillingAddress }) => void) | null = null
+let billingAddressOnReady: (() => void) | null = null
 let contactDetailsOnChange: ((event: { complete: boolean; value: { email: string } }) => void) | null = null
+let contactDetailsOnReady: (() => void) | null = null
 let billingAddressOptions: unknown = null
 let paymentElementOptions: unknown = null
 let paymentElementOnReady: (() => void) | null = null
@@ -109,8 +111,9 @@ mock.module("@stripe/stripe-js", {
 })
 mock.module("@stripe/react-stripe-js/checkout", {
     namedExports: {
-        BillingAddressElement: ({ onChange, options }: { onChange: (event: { complete: boolean; value: typeof stripeBillingAddress }) => void; options?: unknown }) => {
+        BillingAddressElement: ({ onChange, onReady, options }: { onChange: (event: { complete: boolean; value: typeof stripeBillingAddress }) => void; onReady?: () => void; options?: unknown }) => {
             billingAddressOnChange = onChange
+            billingAddressOnReady = onReady ?? null
             billingAddressOptions = options
             return <div data-testid="stripe-billing-address">Billing address</div>
         },
@@ -128,8 +131,9 @@ mock.module("@stripe/react-stripe-js/checkout", {
             checkoutProviderOptions = options
             return <>{children}</>
         },
-        ContactDetailsElement: ({ onChange }: { onChange: (event: { complete: boolean; value: { email: string } }) => void }) => {
+        ContactDetailsElement: ({ onChange, onReady }: { onChange: (event: { complete: boolean; value: { email: string } }) => void; onReady?: () => void }) => {
             contactDetailsOnChange = onChange
+            contactDetailsOnReady = onReady ?? null
             return <div data-testid="stripe-contact-details">Contact details</div>
         },
         PaymentElement: ({ onReady, options }: { onReady?: () => void; options?: unknown }) => {
@@ -495,15 +499,29 @@ test("recreates the checkout session for a selected or newly created customer", 
     render(<CheckoutForm content={content} locale="en" />)
     assert.ok(screen.getByTestId("checkout-customer-select-skeleton"))
     await waitFor(() => assert.equal(checkoutProviderOptions?.clientSecret, "cs_customer_1"))
-    assert.equal(screen.queryByTestId("checkout-customer-select-skeleton"), null)
+    act(() => {
+        contactDetailsOnReady?.()
+        billingAddressOnReady?.()
+    })
+    await waitFor(() => assert.equal(screen.queryByTestId("checkout-customer-select-skeleton"), null))
     assert.ok(screen.getByText(content.customerSelectLabel))
     assert.equal(screen.getAllByText(content.newCustomerLabel).length, 1)
 
     act(() => customerSelectOnValueChange?.("gid://crater/Customer/2"))
     await waitFor(() => assert.equal(checkoutProviderOptions?.clientSecret, "cs_customer_2"))
+    act(() => {
+        contactDetailsOnReady?.()
+        billingAddressOnReady?.()
+    })
+    await waitFor(() => assert.equal(screen.queryByTestId("checkout-customer-select-skeleton"), null))
 
     act(() => customerSelectOnValueChange?.("new"))
     await waitFor(() => assert.equal(checkoutProviderOptions?.clientSecret, "cs_customer_3"))
+    act(() => {
+        contactDetailsOnReady?.()
+        billingAddressOnReady?.()
+    })
+    await waitFor(() => assert.equal(screen.queryByTestId("checkout-customer-select-skeleton"), null))
     assert.equal(screen.getAllByText(content.newCustomerLabel).length, 1)
 
     const sessionBodies = requests.filter((request) => request.url === "/api/crater/checkout/session").map((request) => JSON.parse(String(request.init?.body)) as { customerId: string })
