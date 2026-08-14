@@ -1,5 +1,6 @@
 "use client"
 
+import { ButtonLoader } from "@/components/ui/Loader"
 import type { LicenseContent } from "@/lib/cms"
 import { Button, Text } from "@code0-tech/pictor"
 import { Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js"
@@ -102,13 +103,17 @@ function PaymentMethodSetupForm({ content, onCancel, onSuccess, returnPath }: Om
     return (
         <div className="space-y-4">
             <PaymentElement onLoaderStart={() => setIsReady(false)} onReady={() => setIsReady(true)} />
-            {error ? <p role="alert" className="text-sm text-error">{error}</p> : null}
+            {error ? (
+                <p role="alert" className="text-sm text-error">
+                    {error}
+                </p>
+            ) : null}
             <div className="flex flex-wrap justify-end gap-3">
                 <Button type="button" variant="none" disabled={isConfirming} onClick={onCancel}>
                     {content.cancelLabel}
                 </Button>
                 <Button type="button" variant="filled" disabled={!stripe || !elements || !isReady || isConfirming} onClick={() => void confirm()}>
-                    {isConfirming ? content.savingPaymentMethodLabel : content.savePaymentMethodLabel}
+                    {isConfirming ? <ButtonLoader label={content.savingPaymentMethodLabel} /> : content.savePaymentMethodLabel}
                 </Button>
             </div>
         </div>
@@ -120,7 +125,11 @@ export function PaymentMethodSetupElement({ clientSecret, content, onCancel, onS
     const options = useMemo<StripeElementsOptions>(() => ({ appearance, clientSecret }), [clientSecret])
 
     if (!stripeRef.current) {
-        return <p role="alert" className="text-sm text-error">{content.paymentMethodSetupError}</p>
+        return (
+            <p role="alert" className="text-sm text-error">
+                {content.paymentMethodSetupError}
+            </p>
+        )
     }
 
     return (

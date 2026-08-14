@@ -1,6 +1,7 @@
 "use client"
 
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
+import { ButtonLoader } from "@/components/ui/Loader"
 import type { LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { decodeLicenseRouteId } from "@/lib/licenses/licenseRoute"
@@ -90,7 +91,7 @@ export function LicenseEditDialog({ content, customerId, licenseId, locale }: Li
                             </Button>
                             {(!license || isCloud) && (
                                 <Button type="submit" variant="filled" disabled={!license || !namespaceId.trim() || isSaving}>
-                                    {content.editor.saveLabel}
+                                    {isSaving ? <ButtonLoader label={content.editor.saveLabel} /> : content.editor.saveLabel}
                                 </Button>
                             )}
                         </DialogFooter>

@@ -81,7 +81,7 @@ export function LicenseCustomerPage({ content, customerId, locale }: LicenseCust
                                         {detail.label}
                                     </Text>
                                     <Spacing spacing="xxs" />
-                                    <Text size="sm" fw={500} className="break-words">
+                                    <Text size="sm" fw={500} className="`wrap-break-word">
                                         {detail.value}
                                     </Text>
                                 </div>

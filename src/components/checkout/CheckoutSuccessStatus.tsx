@@ -2,6 +2,7 @@
 
 import type { CheckoutData } from "@/lib/cms"
 import { FilledButtonLink } from "@/components/ui/FilledButtonLink"
+import { ButtonLoader } from "@/components/ui/Loader"
 import { Button } from "@code0-tech/pictor"
 import { useCallback, useEffect, useRef, useState } from "react"
 
@@ -14,25 +15,28 @@ export function CheckoutSuccessStatus({ content, customerId, locale, startedAt }
     const [attempt, setAttempt] = useState(0)
     const timeoutRef = useRef<number | null>(null)
 
-    const checkStatus = useCallback(async (signal: AbortSignal) => {
-        if (!customerId || !startedAt) return
+    const checkStatus = useCallback(
+        async (signal: AbortSignal) => {
+            if (!customerId || !startedAt) return
 
-        const statusUrl = new URL("/api/crater/checkout/status", window.location.origin)
-        statusUrl.searchParams.set("customerId", customerId)
-        statusUrl.searchParams.set("startedAt", String(startedAt))
-        const response = await fetch(statusUrl, { cache: "no-store", credentials: "same-origin", signal })
-        if (!response.ok) throw new Error("Could not check the checkout license status.")
-        const body: unknown = await response.json()
-        const ready = Boolean(body && typeof body === "object" && "ready" in body && body.ready === true)
+            const statusUrl = new URL("/api/crater/checkout/status", window.location.origin)
+            statusUrl.searchParams.set("customerId", customerId)
+            statusUrl.searchParams.set("startedAt", String(startedAt))
+            const response = await fetch(statusUrl, { cache: "no-store", credentials: "same-origin", signal })
+            if (!response.ok) throw new Error("Could not check the checkout license status.")
+            const body: unknown = await response.json()
+            const ready = Boolean(body && typeof body === "object" && "ready" in body && body.ready === true)
 
-        if (ready) {
-            setStatus("ready")
-            return
-        }
+            if (ready) {
+                setStatus("ready")
+                return
+            }
 
-        setStatus("pending")
-        timeoutRef.current = window.setTimeout(() => setAttempt((current) => current + 1), POLL_INTERVAL_MS)
-    }, [customerId, startedAt])
+            setStatus("pending")
+            timeoutRef.current = window.setTimeout(() => setAttempt((current) => current + 1), POLL_INTERVAL_MS)
+        },
+        [customerId, startedAt]
+    )
 
     useEffect(() => {
         if (status === "ready") return
@@ -71,8 +75,7 @@ export function CheckoutSuccessStatus({ content, customerId, locale, startedAt }
                 </Button>
             ) : (
                 <Button type="button" variant="normal" disabled>
-                    <span aria-hidden="true" className="size-2 animate-pulse rounded-full bg-brand motion-reduce:animate-none" />
-                    {content.licenseDashboardLabel}
+                    <ButtonLoader label={content.licensePendingLabel} />
                 </Button>
             )}
         </div>

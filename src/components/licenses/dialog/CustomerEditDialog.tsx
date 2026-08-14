@@ -2,6 +2,7 @@
 
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
 import { PaymentMethodSetupDialog } from "@/components/licenses/dialog/PaymentMethodSetupDialog"
+import { ButtonLoader } from "@/components/ui/Loader"
 import type { LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { decodeLicenseRouteId } from "@/lib/licenses/licenseRoute"
@@ -247,7 +248,7 @@ export function CustomerEditDialog({ content, customerId, locale }: CustomerEdit
                                         {content.editor.cancelLabel}
                                     </Button>
                                     <Button form="customer-details-form" type="submit" variant="filled" disabled={!customer || isSaving}>
-                                        {content.editor.saveLabel}
+                                        {isSaving ? <ButtonLoader label={content.editor.saveLabel} /> : content.editor.saveLabel}
                                     </Button>
                                 </DialogFooter>
                             </div>
