@@ -30,8 +30,10 @@ const stripeAppearance = {
         spacingUnit: "4px",
         gridRowSpacing: "16px",
         borderRadius: "16px",
+        focusBoxShadow: "none",
+        focusOutline: "none",
         inputBoxShadow: "inset 0 1px 1px rgba(255, 255, 255, 0.1)",
-        inputFocusBoxShadow: "inset 0 1px 1px rgba(255, 255, 255, 0.1)",
+        inputFocusBoxShadow: "none",
         inputFocusColorBorder: "transparent",
         labelColorText: "rgba(255, 255, 255, 0.5)",
         labelFontSize: "11px",
@@ -40,7 +42,7 @@ const stripeAppearance = {
     },
     rules: {
         ".Input": {
-            backgroundColor: "#201e2c",
+            backgroundColor: "#272532",
             border: "none",
             boxShadow: "inset 0 1px 1px rgba(255, 255, 255, 0.1)",
             padding: "11px",
@@ -50,9 +52,10 @@ const stripeAppearance = {
             backgroundColor: "rgba(191, 191, 191, 0.15)",
         },
         ".Input:focus": {
-            backgroundColor: "rgba(191, 191, 191, 0.2)",
+            backgroundColor: "rgba(191, 191, 191, 0.15)",
             border: "none",
-            boxShadow: "inset 0 1px 1px rgba(255, 255, 255, 0.1)",
+            boxShadow: "none",
+            outline: "none",
         },
         ".Input--invalid": {
             backgroundColor: "#1c0516",
@@ -81,6 +84,11 @@ const stripeAppearance = {
             backgroundColor: "rgba(191, 191, 191, 0.2)",
             color: "#ffffff",
         },
+        ".DropdownItem:focus": {
+            backgroundColor: "#201e2c",
+            color: "#ffffff",
+            outline: "none",
+        },
         ".Label": {
             color: "rgba(255, 255, 255, 0.5)",
             fontSize: "11px",
@@ -89,30 +97,40 @@ const stripeAppearance = {
             textTransform: "uppercase",
         },
         ".Tab": {
-            backgroundColor: "#070514",
+            backgroundColor: "#191825",
             border: "none",
             boxShadow: "inset 0 1px 1px rgba(255, 255, 255, 0.1)",
         },
         ".Tab:hover": {
-            backgroundColor: "#191825",
+            backgroundColor: "#201e2c",
         },
         ".Tab--selected": {
             backgroundColor: "#201e2c",
             border: "none",
-            boxShadow: "inset 0 1px 1px rgba(255, 255, 255, 0.1)",
+            boxShadow: "none",
+        },
+        ".Tab:focus": {
+            backgroundColor: "#2b2938",
+            boxShadow: "none",
+            outline: "none",
         },
         ".AccordionItem": {
-            backgroundColor: "#070514",
+            backgroundColor: "#191825",
             border: "none",
             boxShadow: "inset 0 1px 1px rgba(255, 255, 255, 0.1)",
         },
         ".AccordionItem:hover": {
-            backgroundColor: "#191825",
+            backgroundColor: "#201e2c",
         },
         ".AccordionItem--selected": {
-            backgroundColor: "#191825",
+            backgroundColor: "#201e2c",
             border: "none",
-            boxShadow: "inset 0 1px 1px rgba(255, 255, 255, 0.1)",
+            boxShadow: "none",
+        },
+        ".AccordionItem:focus-visible": {
+            backgroundColor: "#2b2938",
+            boxShadow: "none",
+            outline: "none",
         },
     },
 } satisfies NonNullable<NonNullable<StripeCheckoutElementsSdkOptions["elementsOptions"]>["appearance"]>
