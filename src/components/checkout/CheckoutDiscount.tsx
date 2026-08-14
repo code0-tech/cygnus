@@ -5,7 +5,7 @@ import { useCraterSession } from "@/components/checkout/CraterSessionProvider"
 import { Dialog } from "@base-ui/react/dialog"
 import type { CheckoutDiscount as CraterCheckoutDiscount } from "@code0-tech/crater-graphql-types"
 import { IconX } from "@tabler/icons-react"
-import { usePathname, useRouter, useSearchParams } from "next/navigation"
+import { usePathname, useSearchParams } from "next/navigation"
 import { createPortal } from "react-dom"
 import { useCallback, useEffect, useRef, useState } from "react"
 
@@ -32,7 +32,6 @@ interface CheckoutDiscountProps {
 export function CheckoutDiscount({ appliedAmount, appliedContainerId, authenticated, buttonLabel, discountSessionRequiredError, discountValidationError, inputPlaceholder, onApplied, promptLabel, removeLabel }: CheckoutDiscountProps) {
     const { authenticated: contextAuthenticated } = useCraterSession()
     const pathname = usePathname()
-    const router = useRouter()
     const searchParams = useSearchParams()
     const [code, setCode] = useState(searchParams.get("promotionCode") ?? "")
     const [appliedCode, setAppliedCode] = useState<string | null>(null)
@@ -55,9 +54,9 @@ export function CheckoutDiscount({ appliedAmount, appliedContainerId, authentica
             }
 
             const query = nextSearchParams.toString()
-            router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false })
+            window.history.replaceState(window.history.state, "", query ? `${pathname}?${query}` : pathname)
         },
-        [pathname, router, searchParams]
+        [pathname, searchParams]
     )
 
     const validateDiscount = useCallback(

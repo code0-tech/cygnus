@@ -7,7 +7,7 @@ import { Button } from "@code0-tech/pictor"
 import { IconAlertTriangle } from "@tabler/icons-react"
 import { BillingAddressElement, CheckoutElementsProvider, ContactDetailsElement, PaymentElement, TaxIdElement, useCheckoutElements } from "@stripe/react-stripe-js/checkout"
 import { loadStripe, type StripeCheckoutContact, type StripeCheckoutElementsSdkOptions, type StripeCheckoutSession } from "@stripe/stripe-js"
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 type CheckoutFormContent = CheckoutData["form"]
 
@@ -211,6 +211,7 @@ function CheckoutPaymentFields({
     const [isConfirming, setIsConfirming] = useState(false)
     const [isPaymentElementReady, setIsPaymentElementReady] = useState(false)
     const checkoutErrorMessage = checkoutState.type === "error" ? checkoutState.error.message : null
+    const restoredBillingRef = useRef(false)
 
     useEffect(() => {
         if (checkoutState.type === "success") {
@@ -234,7 +235,7 @@ function CheckoutPaymentFields({
         setErrorMessage(null)
     }
 
-    const showPayment = async () => {
+    const updateCheckoutBilling = useCallback(async (moveToPayment: boolean) => {
         if (!billingAddress || !email || checkoutState.type !== "success" || isUpdatingBilling) return
 
         setIsUpdatingBilling(true)
@@ -257,15 +258,25 @@ function CheckoutPaymentFields({
             }
 
             onTaxQuoteChange(getTaxQuoteFromSession(updatedSession))
+            restoredBillingRef.current = true
             setIsPaymentElementReady(false)
-            setStage("payment")
+            if (moveToPayment) setStage("payment")
         } catch (error) {
             console.error("Failed to update Stripe checkout billing details:", error)
             setErrorMessage(content.paymentErrorFallback)
         } finally {
             setIsUpdatingBilling(false)
         }
-    }
+    }, [billingAddress, checkoutState, content.errors.billingAddressUpdate, content.errors.emailUpdate, content.paymentErrorFallback, email, isUpdatingBilling, onTaxQuoteChange, setStage])
+
+    const showPayment = () => updateCheckoutBilling(true)
+
+    useEffect(() => {
+        if (activeStep !== "payment" || checkoutState.type !== "success" || !billingAddress || !email || restoredBillingRef.current) return
+
+        restoredBillingRef.current = true
+        void updateCheckoutBilling(false)
+    }, [activeStep, billingAddress, checkoutState.type, email, updateCheckoutBilling])
 
     const handleSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
         event.preventDefault()
@@ -365,7 +376,7 @@ function CheckoutPaymentFields({
                         <Button
                             type="submit"
                             variant="normal"
-                            disabled={isConfirming || !isPaymentElementReady}
+                            disabled={isConfirming || isUpdatingBilling || !isPaymentElementReady}
                             className="h-10! w-full! whitespace-nowrap bg-white/80! px-8! text-sm! text-primary! ring-1! ring-white/20! hover:bg-white!"
                         >
                             {isConfirming ? content.processingLabel : content.payNowLabel}

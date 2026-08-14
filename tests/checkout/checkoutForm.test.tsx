@@ -689,6 +689,7 @@ test("recreates only the checkout session when the promotion code changes or is 
     const view = render(<CheckoutForm content={content} locale="en" />)
     await waitFor(() => assert.equal(requests.length, 3))
 
+    act(() => setCheckoutStage("payment"))
     checkoutSearchParams.set("promotionCode", "SAVE10")
     view.rerender(<CheckoutForm content={content} locale="en" />)
 
@@ -705,6 +706,7 @@ test("recreates only the checkout session when the promotion code changes or is 
         promotionCode: "SAVE10",
     })
     await waitFor(() => assert.equal(checkoutProviderOptions?.clientSecret, "cs_test_secret_2"))
+    assert.equal(checkoutStage, "payment")
 
     checkoutSearchParams.delete("promotionCode")
     view.rerender(<CheckoutForm content={content} locale="en" />)

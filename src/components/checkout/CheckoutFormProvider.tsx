@@ -68,7 +68,6 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, locale: AppLoc
         setIsRefreshingSession(true)
         setErrorMessage(null)
         setStripeSessionError(null)
-        setStage("billingAddress")
 
         const request = createCheckoutSession({ customerId: selectedCustomerId, locale, searchParams: checkoutSearchParams })
             .then((session) => {
@@ -96,7 +95,7 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, locale: AppLoc
 
         checkoutRefreshPromiseRef.current = request
         return request
-    }, [content.errors.checkoutSession, locale, promotionCode, searchParamsString, selectedCustomerId, setStage])
+    }, [content.errors.checkoutSession, locale, promotionCode, searchParamsString, selectedCustomerId])
 
     const refreshExpiredCheckoutSession = useCallback(() => {
         if (expiredRefreshAttemptsRef.current >= 1) return Promise.resolve()
