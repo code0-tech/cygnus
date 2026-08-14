@@ -429,6 +429,7 @@ export function CheckoutPaymentForm({
     onSessionReady,
     session,
 }: CheckoutPaymentFormProps) {
+    const stripeRef = useRef(stripePromise)
     const defaultValuesRef = useRef<{
         clientSecret: string
         values: NonNullable<StripeCheckoutElementsSdkOptions["defaultValues"]>
@@ -453,12 +454,12 @@ export function CheckoutPaymentForm({
         [session.clientSecret]
     )
 
-    if (!stripePromise) {
+    if (!stripeRef.current) {
         return <CheckoutErrorState message="Stripe is not configured." />
     }
 
     return (
-        <CheckoutElementsProvider key={session.clientSecret} stripe={stripePromise} options={options}>
+        <CheckoutElementsProvider key={session.clientSecret} stripe={stripeRef.current} options={options}>
             <CheckoutPaymentFields
                 billingAddress={billingAddress}
                 collectTaxId={collectTaxId}
