@@ -1,6 +1,6 @@
 "use client"
 
-import { EMPTY_LICENSE_DASHBOARD_DATA, type LicenseDashboardData, type LicenseDashboardLicense } from "@/lib/licenses/licenseTypes"
+import { EMPTY_LICENSE_DASHBOARD_DATA, type LicenseDashboardCustomerAddress, type LicenseDashboardData, type LicenseDashboardLicense } from "@/lib/licenses/licenseTypes"
 import { readCraterSessionToken, removeCraterSessionToken } from "@/lib/checkout/craterSession"
 import type { AppLocale } from "@/lib/i18n"
 import { decodeLicenseRouteId } from "@/lib/licenses/licenseRoute"
@@ -16,7 +16,7 @@ interface LicenseDataContextValue extends LicenseDashboardData {
     isSidebarLoading: boolean
     reload: () => void
     sidebarLicenses: LicenseDashboardLicense[]
-    updateCustomer: (id: string, values: { email?: string; name?: string }) => void
+    updateCustomer: (id: string, values: { address?: LicenseDashboardCustomerAddress; email?: string; name?: string; phone?: string }) => void
     updateLicense: (id: string, values: { namespaceId?: string; updatedAt?: string }) => void
 }
 
@@ -38,12 +38,8 @@ export function LicenseDataProvider({ children, loadError, locale, redirectUrl }
         setData((current) => ({
             ...current,
             customers: current.customers.map((customer) => (customer.id === id ? { ...customer, ...values } : customer)),
-            licenses: current.licenses.map((license) =>
-                license.customerId === id ? { ...license, customerName: values.name || values.email || license.customerName } : license
-            ),
-            navigationLicenses: current.navigationLicenses?.map((license) =>
-                license.customerId === id ? { ...license, customerName: values.name || values.email || license.customerName } : license
-            ),
+            licenses: current.licenses.map((license) => (license.customerId === id ? { ...license, customerName: values.name || values.email || id } : license)),
+            navigationLicenses: current.navigationLicenses?.map((license) => (license.customerId === id ? { ...license, customerName: values.name || values.email || id } : license)),
         }))
     }
 

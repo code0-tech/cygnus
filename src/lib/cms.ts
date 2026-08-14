@@ -462,9 +462,18 @@ export interface LicenseContent {
     editor: {
         customerTitle: string
         customerDescription: string
+        contactHeading: string
+        billingAddressHeading: string
         licenseTitle: string
         licenseDescription: string
         nameLabel: string
+        phoneLabel: string
+        addressLine1Label: string
+        addressLine2Label: string
+        cityLabel: string
+        stateLabel: string
+        postalCodeLabel: string
+        countryLabel: string
         namespaceLabel: string
         saveLabel: string
         cancelLabel: string

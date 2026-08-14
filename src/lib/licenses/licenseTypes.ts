@@ -1,9 +1,20 @@
+export interface LicenseDashboardCustomerAddress {
+    city?: string
+    country?: string
+    line1?: string
+    line2?: string
+    postalCode?: string
+    state?: string
+}
+
 export interface LicenseDashboardCustomer {
+    address?: LicenseDashboardCustomerAddress
     customerType?: string
     email?: string
     id: string
     licenseCount: number
     name?: string
+    phone?: string
     updatedAt?: string
 }
 

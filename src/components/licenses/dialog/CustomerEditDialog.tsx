@@ -4,7 +4,7 @@ import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
 import type { LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { decodeLicenseRouteId } from "@/lib/licenses/licenseRoute"
-import { Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogOverlay, DialogPortal, DialogTitle, EmailInput, TextInput } from "@code0-tech/pictor"
+import { Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogOverlay, DialogPortal, DialogTitle, EmailInput, Text, TextInput } from "@code0-tech/pictor"
 import { IconX } from "@tabler/icons-react"
 import { useRouter } from "next/navigation"
 import { type SyntheticEvent, useEffect, useState } from "react"
@@ -22,6 +22,13 @@ export function CustomerEditDialog({ content, customerId, locale }: CustomerEdit
     const customer = customers.find((candidate) => candidate.id === resolvedCustomerId)
     const [name, setName] = useState("")
     const [email, setEmail] = useState("")
+    const [phone, setPhone] = useState("")
+    const [line1, setLine1] = useState("")
+    const [line2, setLine2] = useState("")
+    const [city, setCity] = useState("")
+    const [state, setState] = useState("")
+    const [postalCode, setPostalCode] = useState("")
+    const [country, setCountry] = useState("")
     const [error, setError] = useState<string | null>(null)
     const [isSaving, setIsSaving] = useState(false)
     const close = () => router.replace(`/${locale}/licenses/customer/${encodeURIComponent(resolvedCustomerId)}`)
@@ -30,11 +37,18 @@ export function CustomerEditDialog({ content, customerId, locale }: CustomerEdit
         if (!customer) return
         setName(customer.name ?? "")
         setEmail(customer.email ?? "")
+        setPhone(customer.phone ?? "")
+        setLine1(customer.address?.line1 ?? "")
+        setLine2(customer.address?.line2 ?? "")
+        setCity(customer.address?.city ?? "")
+        setState(customer.address?.state ?? "")
+        setPostalCode(customer.address?.postalCode ?? "")
+        setCountry(customer.address?.country ?? "")
     }, [customer])
 
     const save = async (event: SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
         event.preventDefault()
-        if (!customer || isSaving || (!name.trim() && !email.trim())) return
+        if (!customer || isSaving) return
         setIsSaving(true)
         setError(null)
 
@@ -43,11 +57,36 @@ export function CustomerEditDialog({ content, customerId, locale }: CustomerEdit
                 method: "PATCH",
                 credentials: "same-origin",
                 headers: { "content-type": "application/json" },
-                body: JSON.stringify({ id: customer.id, ...(name.trim() ? { name: name.trim() } : {}), ...(email.trim() ? { email: email.trim() } : {}) }),
+                body: JSON.stringify({
+                    id: customer.id,
+                    name: name.trim() || null,
+                    email: email.trim() || null,
+                    phone: phone.trim() || null,
+                    address: {
+                        line1: line1.trim() || null,
+                        line2: line2.trim() || null,
+                        city: city.trim() || null,
+                        state: state.trim() || null,
+                        postalCode: postalCode.trim() || null,
+                        country: country.trim().toUpperCase() || null,
+                    },
+                }),
             })
             if (!response.ok) throw new Error(content.editor.customerError)
 
-            updateCustomer(customer.id, { ...(name.trim() ? { name: name.trim() } : {}), ...(email.trim() ? { email: email.trim() } : {}) })
+            updateCustomer(customer.id, {
+                address: {
+                    city: city.trim() || undefined,
+                    country: country.trim().toUpperCase() || undefined,
+                    line1: line1.trim() || undefined,
+                    line2: line2.trim() || undefined,
+                    postalCode: postalCode.trim() || undefined,
+                    state: state.trim() || undefined,
+                },
+                email: email.trim() || undefined,
+                name: name.trim() || undefined,
+                phone: phone.trim() || undefined,
+            })
             close()
         } catch (saveError) {
             setError(saveError instanceof Error ? saveError.message : content.editor.customerError)
@@ -60,7 +99,7 @@ export function CustomerEditDialog({ content, customerId, locale }: CustomerEdit
         <Dialog open onOpenChange={(open) => !open && close()}>
             <DialogPortal>
                 <DialogOverlay className="backdrop-blur-sm" />
-                <DialogContent className="max-h-[calc(100dvh-2rem)]! w-[calc(100vw-2rem)]! max-w-xl! overflow-y-auto border border-white/5 bg-primary! p-4! sm:p-6!">
+                <DialogContent className="max-h-[calc(100dvh-2rem)]! w-[calc(100vw-2rem)]! max-w-2xl! overflow-y-auto border border-white/5 bg-primary! p-4! sm:p-6!">
                     <DialogHeader className="pr-10 text-left!">
                         <DialogTitle className="font-normal! text-white!">{content.editor.customerTitle}</DialogTitle>
                         <DialogDescription className="text-sm! text-secondary!">{content.editor.customerDescription}</DialogDescription>
@@ -70,9 +109,93 @@ export function CustomerEditDialog({ content, customerId, locale }: CustomerEdit
                             <IconX size={18} />
                         </Button>
                     </div>
-                    <form onSubmit={save} className="space-y-4 pt-6">
-                        <TextInput label={content.editor.nameLabel} value={name} onChange={(event) => setName(event.currentTarget.value)} className="w-full!" />
-                        <EmailInput label={content.dashboard.emailLabel} value={email} onChange={(event) => setEmail(event.currentTarget.value)} className="w-full!" />
+                    <form onSubmit={save} className="space-y-6 pt-6">
+                        <fieldset className="space-y-4">
+                            <legend>
+                                <Text size="sm" fw={500} hierarchy="secondary">
+                                    {content.editor.contactHeading}
+                                </Text>
+                            </legend>
+                            <div className="grid gap-4 sm:grid-cols-2">
+                                <TextInput title={content.editor.nameLabel} name="name" autoComplete="name" value={name} onChange={(event) => setName(event.currentTarget.value)} className="w-full!" />
+                                <EmailInput
+                                    title={content.dashboard.emailLabel}
+                                    name="email"
+                                    autoComplete="email"
+                                    value={email}
+                                    onChange={(event) => setEmail(event.currentTarget.value)}
+                                    className="w-full!"
+                                />
+                                <TextInput
+                                    title={content.editor.phoneLabel}
+                                    name="phone"
+                                    autoComplete="tel"
+                                    value={phone}
+                                    onChange={(event) => setPhone(event.currentTarget.value)}
+                                    className="w-full! sm:col-span-2"
+                                />
+                            </div>
+                        </fieldset>
+
+                        <fieldset className="space-y-4">
+                            <legend>
+                                <Text size="sm" fw={500} hierarchy="secondary">
+                                    {content.editor.billingAddressHeading}
+                                </Text>
+                            </legend>
+                            <div className="grid gap-4 sm:grid-cols-2">
+                                <TextInput
+                                    title={content.editor.addressLine1Label}
+                                    name="address-line1"
+                                    autoComplete="address-line1"
+                                    value={line1}
+                                    onChange={(event) => setLine1(event.currentTarget.value)}
+                                    className="w-full! sm:col-span-2"
+                                />
+                                <TextInput
+                                    title={content.editor.addressLine2Label}
+                                    name="address-line2"
+                                    autoComplete="address-line2"
+                                    value={line2}
+                                    onChange={(event) => setLine2(event.currentTarget.value)}
+                                    className="w-full! sm:col-span-2"
+                                />
+                                <TextInput
+                                    title={content.editor.postalCodeLabel}
+                                    name="postal-code"
+                                    autoComplete="postal-code"
+                                    value={postalCode}
+                                    onChange={(event) => setPostalCode(event.currentTarget.value)}
+                                    className="w-full!"
+                                />
+                                <TextInput
+                                    title={content.editor.cityLabel}
+                                    name="address-level2"
+                                    autoComplete="address-level2"
+                                    value={city}
+                                    onChange={(event) => setCity(event.currentTarget.value)}
+                                    className="w-full!"
+                                />
+                                <TextInput
+                                    title={content.editor.stateLabel}
+                                    name="address-level1"
+                                    autoComplete="address-level1"
+                                    value={state}
+                                    onChange={(event) => setState(event.currentTarget.value)}
+                                    className="w-full!"
+                                />
+                                <TextInput
+                                    title={content.editor.countryLabel}
+                                    name="country"
+                                    autoComplete="country"
+                                    maxLength={2}
+                                    pattern="[A-Za-z]{2}"
+                                    value={country}
+                                    onChange={(event) => setCountry(event.currentTarget.value)}
+                                    className="w-full! uppercase"
+                                />
+                            </div>
+                        </fieldset>
                         {error && (
                             <p role="alert" className="text-sm text-error">
                                 {error}
@@ -82,7 +205,7 @@ export function CustomerEditDialog({ content, customerId, locale }: CustomerEdit
                             <Button type="button" variant="none" onClick={close}>
                                 {content.editor.cancelLabel}
                             </Button>
-                            <Button type="submit" variant="filled" disabled={!customer || isSaving || (!name.trim() && !email.trim())}>
+                            <Button type="submit" variant="filled" disabled={!customer || isSaving}>
                                 {content.editor.saveLabel}
                             </Button>
                         </DialogFooter>

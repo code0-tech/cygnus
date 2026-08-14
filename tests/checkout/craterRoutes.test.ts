@@ -510,10 +510,19 @@ test("maps login, customer creation, and customer updates to Crater GraphQL inpu
                 customersUpdate: {
                     errors: [],
                     customer: {
+                        address: {
+                            city: "Hamburg",
+                            country: "DE",
+                            line1: "Speicherstadt 1",
+                            line2: null,
+                            postalCode: "20457",
+                            state: null,
+                        },
                         id: "gid://crater/Customer/7",
                         customerType: "business",
                         email: "new@example.com",
                         name: "Updated GmbH",
+                        phone: null,
                     },
                 },
             },
@@ -562,9 +571,14 @@ test("maps login, customer creation, and customer updates to Crater GraphQL inpu
                     id: "gid://crater/Customer/7",
                     email: "new@example.com",
                     name: "Updated GmbH",
+                    phone: null,
                     address: {
                         city: "Hamburg",
                         country: "DE",
+                        line1: "Speicherstadt 1",
+                        line2: null,
+                        postalCode: "20457",
+                        state: null,
                     },
                 }),
             })
@@ -600,9 +614,14 @@ test("maps login, customer creation, and customer updates to Crater GraphQL inpu
                 id: "gid://crater/Customer/7",
                 email: "new@example.com",
                 name: "Updated GmbH",
+                phone: null,
                 address: {
                     city: "Hamburg",
                     country: "DE",
+                    line1: "Speicherstadt 1",
+                    line2: null,
+                    postalCode: "20457",
+                    state: null,
                 },
             },
         })

@@ -1,6 +1,6 @@
 import { createApolloClient } from "@/lib/apolloClient"
 import { craterJson, craterMutationErrorResponse, craterTransportErrorResponse, optionalString, readJsonObject, readOptionalAddress, requireCraterSession } from "@/lib/checkout/craterApi"
-import type { Mutation, MutationCustomersCreateArgs, MutationCustomersUpdateArgs, Query, Scalars } from "@code0-tech/crater-graphql-types"
+import type { CustomerAddressInput, Mutation, MutationCustomersCreateArgs, MutationCustomersUpdateArgs, Query, Scalars } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 
 export const runtime = "nodejs"
@@ -11,6 +11,31 @@ type CustomersQueryData = Pick<Query, "currentUser">
 
 function isCustomerId(value: string): value is Scalars["CustomerID"]["input"] {
     return /^gid:\/\/crater\/Customer\/\d+$/.test(value)
+}
+
+const INVALID_UPDATE_VALUE = Symbol("invalid-update-value")
+
+function nullableString(value: unknown) {
+    if (value === undefined) return undefined
+    if (value === null) return null
+    if (typeof value !== "string") return INVALID_UPDATE_VALUE
+    return value.trim() || null
+}
+
+function readUpdateAddress(value: unknown): CustomerAddressInput | undefined | typeof INVALID_UPDATE_VALUE {
+    if (value === undefined) return undefined
+    if (!value || typeof value !== "object" || Array.isArray(value)) return INVALID_UPDATE_VALUE
+
+    const source = value as Record<string, unknown>
+    const address: CustomerAddressInput = {}
+
+    for (const field of ["city", "country", "line1", "line2", "postalCode", "state"] as const) {
+        const nextValue = nullableString(source[field])
+        if (nextValue === INVALID_UPDATE_VALUE) return INVALID_UPDATE_VALUE
+        if (nextValue !== undefined) address[field] = nextValue
+    }
+
+    return address
 }
 
 const CUSTOMER_FIELDS = gql`
@@ -203,16 +228,16 @@ export async function PATCH(request: Request) {
 
     const body = await readJsonObject(request)
     const id = optionalString(body?.id)
-    const email = optionalString(body?.email)
-    const name = optionalString(body?.name)
-    const phone = optionalString(body?.phone)
-    const address = readOptionalAddress(body?.address)
+    const email = nullableString(body?.email)
+    const name = nullableString(body?.name)
+    const phone = nullableString(body?.phone)
+    const address = readUpdateAddress(body?.address)
 
-    if (!body || !id || !isCustomerId(id) || address === null) {
+    if (!body || !id || !isCustomerId(id) || email === INVALID_UPDATE_VALUE || name === INVALID_UPDATE_VALUE || phone === INVALID_UPDATE_VALUE || address === INVALID_UPDATE_VALUE) {
         return craterJson({ error: "A valid Crater customer id is required and address must be valid when provided." }, 400)
     }
 
-    if (!email && !name && !phone && !address) {
+    if (email === undefined && name === undefined && phone === undefined && address === undefined) {
         return craterJson({ error: "Provide at least one customer field to update." }, 400)
     }
 
@@ -222,10 +247,10 @@ export async function PATCH(request: Request) {
             variables: {
                 input: {
                     id,
-                    ...(address ? { address } : {}),
-                    ...(email ? { email } : {}),
-                    ...(name ? { name } : {}),
-                    ...(phone ? { phone } : {}),
+                    ...(address !== undefined ? { address } : {}),
+                    ...(email !== undefined ? { email } : {}),
+                    ...(name !== undefined ? { name } : {}),
+                    ...(phone !== undefined ? { phone } : {}),
                 },
             },
         })
