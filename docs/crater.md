@@ -211,43 +211,64 @@ Monetary amounts are transferred as integers in the smallest currency unit.
 
 A configuration is no longer available after it has been consumed or has expired. Customer, deployment type, and Stripe price ID are required when creating one.
 
-### The customer billing portal
+### Updating the payment method
 
-`customerBillingPortalCreateSession` returns a short-lived, Stripe-hosted URL through which a user changes the default payment method of one of their own customers. It exists so that Crater never has to touch payment data at all:
+`customerPaymentMethodSetupCreate` creates a Stripe SetupIntent and returns its client secret, so the frontend can collect a new payment method with Stripe Elements and have it become the customer's default for future invoices. The checkout stays untouched; this is the path for changing the payment method of a customer that already exists.
 
-- Crater implements no handling of card numbers, expiry dates, CVCs, or bank details, renders no payment method form of its own, and uses neither the Sources API nor any other way of accepting payment credentials. The customer enters everything on Stripe's own page.
-- The mutation returns the portal URL and nothing else. The portal session is never written to the database, and payment data never reaches a Crater model, a GraphQL field, or a log line.
-- The URL is itself a credential: it authenticates whoever opens it as that Stripe customer. It is short-lived, must not be stored or shared, and is never logged.
+Crater never handles payment data:
 
-The session is created server-side against the customer's `stripe_customer_id` and opens Stripe's `payment_method_update` flow directly, so the user lands on the payment method form rather than on the portal home page. The payment method Stripe stores becomes the customer's `invoice_settings.default_payment_method` and is used for subsequent invoices.
+- No card numbers, expiry dates, CVCs, or bank details pass through Crater. There is no payment form of our own, and neither the Sources API, the Tokens API, nor the Cards API is used anywhere. The details go from the browser straight to Stripe.
+- The mutation returns the client secret and nothing else. Neither the SetupIntent nor the secret is written to the database, and neither appears in a log line. The secret is a credential and belongs in memory on the client only.
+- The resulting payment method exists solely in Stripe. Crater stores a pointer to nothing; the current default is read from Stripe when it is needed.
 
-Two return URLs are sent, and both are the same checked URL:
+The SetupIntent is created server-side with the customer's `stripe_customer_id`, `usage: off_session` — the point is charging later invoices without the customer present — and `automatic_payment_methods`, so Stripe offers whatever is enabled in the Dashboard. `payment_method_types` is deliberately never set: adding a payment method is a Dashboard setting, not a deployment.
 
-- the top level `return_url`, which is the "back to our site" link the portal shows at any time
-- `flow_data.after_completion.redirect.return_url`, where Stripe sends the user once the payment method was updated
+Its metadata carries the contract both sides of the flow agree on, defined once in `CustomerPaymentMethodSetup::Metadata`:
+
+| Key                  | Value                                                                                    |
+| -------------------- | ---------------------------------------------------------------------------------------- |
+| `purpose`            | `default_payment_method`, which tells our own SetupIntents from those other flows create |
+| `crater_customer_id` | the internal ID of the Crater customer the payment method is for                         |
 
 Access is the existing membership rule and nothing else:
 
 - The request needs an active Crater `UserSession`; like every mutation except `usersLogin`, an anonymous request is answered with HTTP `403 Forbidden` before the resolver runs.
-- The customer is loaded through `CustomerPolicy`, so the authenticated user must be linked to it through `CustomerUser`. `GlobalPolicy` additionally grants `use_billing_portal` to any authenticated user; being an admin grants nothing extra.
-- A customer that does not exist, one belonging to somebody else, and a draft are all answered with `INVALID_BILLING_PORTAL_CUSTOMER` and an identical message, so the response never reveals which of the three it was. A draft has no billing relationship to manage yet, and a customer without a `stripe_customer_id` is refused the same way.
-- Stripe failures surface as `INVALID_BILLING_PORTAL_SESSION` with a fixed message. Stripe IDs, API keys, personal data, and Stripe responses never appear in an error. Logging is limited to the internal customer ID and the error class.
+- The customer is loaded through `CustomerPolicy`, so the authenticated user must be linked to it through `CustomerUser`. `GlobalPolicy` additionally grants `use_payment_method_setup` to any authenticated user; being an admin grants nothing extra.
+- A customer that does not exist, one belonging to somebody else, a draft, and one without a `stripe_customer_id` are all answered with `INVALID_PAYMENT_METHOD_SETUP_CUSTOMER` and an identical message, so the response never reveals which of the four it was. A draft has no billing relationship yet.
+- Stripe failures surface as `INVALID_PAYMENT_METHOD_SETUP_SESSION` with a fixed message. Stripe IDs, API keys, personal data, and Stripe responses never appear in an error. Logging is limited to the internal customer ID and the error class.
 
-The portal must be configured in the Stripe Dashboard to let customers update payment methods; otherwise Stripe rejects the session and Crater answers with `INVALID_BILLING_PORTAL_SESSION`. The restricted key Crater uses needs write access to the billing portal session resource and nothing beyond it. This flow does not touch Stripe Tax: automatic tax calculation and tax registrations are unchanged.
+This flow does not touch Stripe Tax: automatic tax calculation and tax registrations are unchanged.
+
+#### Promoting the payment method
+
+Confirming the SetupIntent in the browser attaches the payment method to the Stripe customer, but it does not make it the default. That happens in the verified `setup_intent.succeeded` webhook, which runs through the same `ProcessedWebhookEvent` ledger as every other event and is therefore processed exactly once per Stripe event ID.
+
+`Webhooks::HandleSetupIntentSucceededService` treats the metadata as a client-visible claim rather than as proof, and checks it before changing anything:
+
+- A SetupIntent whose `purpose` is not `default_payment_method` is not ours. It is ignored and the event is marked processed; other flows create SetupIntents on the same account.
+- The named `crater_customer_id` must resolve to a Crater customer, and that customer's `stripe_customer_id` must be the Stripe customer the SetupIntent was created for. A mismatch is refused and logged; the customer the metadata names is never changed on the strength of the metadata alone.
+- The SetupIntent must carry a payment method.
+- Only then is the payment method written to the Stripe customer's `invoice_settings.default_payment_method`. Nothing about it is stored in Crater.
+
+Anything inconsistent leaves the event unprocessed, so it stays visible in the ledger instead of being silently accepted, and a Stripe redelivery can run it again. A redelivered event that was already processed is ignored, and setting the same default twice is a no-op in Stripe, so duplicates have no side effects either way. Logging is limited to the internal customer ID and the error class; client secrets and payment method data are never logged.
 
 #### The client flow
 
-1. Call `customerBillingPortalCreateSession` with the `customerId` and a `returnUrl`.
-2. Open the returned `session.url` — a full page navigation or a new tab, not an iframe; Stripe refuses to be framed.
-3. The user updates the payment method on Stripe's page and is redirected to the checked `returnUrl`.
-4. Reload the customer data after the redirect. Crater stores no payment method, so the current state comes from Stripe; a returning user is not proof that anything changed, since the portal can also be left through the top level return link.
+1. Call `customerPaymentMethodSetupCreate` with the `customerId` and read `session.clientSecret`.
+2. Hand the client secret to Stripe Elements.
+3. Render the Payment Element.
+4. Confirm with `stripe.confirmSetup()`.
+5. Pass a `return_url` to `confirmSetup`, so payment methods that authenticate off-site can come back. This URL goes from the browser to Stripe directly and is never sent through Crater, so there is no server-side allowlist for it — restrict it in the frontend.
+6. Do not treat the success state as proof that the payment method is the default. `confirmSetup` resolving only means Stripe accepted the setup; the default is set by the `setup_intent.succeeded` webhook, which arrives separately and may lag.
+7. Reload the customer data after returning, and read the current state from Stripe rather than from the confirmation result.
 
 ```graphql
-mutation CustomerBillingPortalCreateSession($input: CustomerBillingPortalCreateSessionInput!) {
-    customerBillingPortalCreateSession(input: $input) {
+mutation CustomerPaymentMethodSetupCreate($input: CustomerPaymentMethodSetupCreateInput!) {
+    customerPaymentMethodSetupCreate(input: $input) {
         session {
-            url
+            clientSecret
         }
+        clientMutationId
         errors {
             errorCode
             details {
@@ -265,11 +286,27 @@ mutation CustomerBillingPortalCreateSession($input: CustomerBillingPortalCreateS
 }
 ```
 
-#### Return URLs
+```ts
+const { data } = await client.mutate({
+    mutation: CustomerPaymentMethodSetupCreate,
+    variables: { input: { customerId } },
+})
 
-Both Stripe flows that leave the page use one validator, `Crater::ReturnUrl`. It accepts only absolute `http` or `https` URLs whose origin is allowlisted; anything relative, scheme-less, or pointing at another origin is rejected before Stripe is called, so no request can make Stripe redirect a user to a host we do not control. Nothing unchecked is ever passed on to Stripe.
+const clientSecret = data.customerPaymentMethodSetupCreate.session.clientSecret
 
-The allowlist is configured per scope. `billing_portal.allowed_return_origins` restricts the portal; left empty it shares `checkout.allowed_return_origins`, because both flows lead back to the same frontend.
+const elements = stripe.elements({ clientSecret })
+elements.create("payment").mount("#payment-element")
+
+// The return URL is a client-side concern; Crater never sees it.
+const { error } = await stripe.confirmSetup({
+    elements,
+    confirmParams: { return_url: "https://app.crater.code0.tech/billing/done" },
+})
+```
+
+#### Checkout return URLs
+
+The checkout is the only flow whose return URL passes through Crater. `Crater::ReturnUrl` accepts only absolute `http` or `https` URLs whose origin appears in `checkout.allowed_return_origins`; anything relative, scheme-less, or pointing at another origin is rejected before Stripe is called, so no request can make Stripe redirect a user to a host we do not control.
 
 ### Subscriptions, invoices, and licenses
 
@@ -328,12 +365,13 @@ This allows Crater to track Stripe webhook processing and handle events idempote
 
 Only these event types are requested from Stripe and accepted by the webhook endpoint; anything else is answered with `200 OK` and discarded without a ledger entry.
 
-| Event                           | Handler                                           | Effect                                                                                                                                                  |
-| ------------------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `checkout.session.completed`    | `Webhooks::HandleCheckoutSessionCompletedService` | Upserts the subscription projection, syncs contact details, address, and tax ID back to the customer, and activates a draft customer. Grants no access. |
-| `invoice.paid`                  | `Webhooks::HandleInvoicePaidService`              | Records the invoice locally and appends a `paid` license snapshot. This is the only event that grants paid access.                                      |
-| `invoice.payment_failed`        | `Webhooks::HandleInvoicePaymentFailedService`     | Records the invoice locally and appends a `payment_failed` snapshot that carries the previous `end_date` and grace period forward.                      |
-| `customer.subscription.deleted` | `Webhooks::HandleSubscriptionDeletedService`      | Sets the local Stripe status to `canceled` and appends a `canceled` snapshot.                                                                           |
+| Event                           | Handler                                           | Effect                                                                                                                                                                   |
+| ------------------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `checkout.session.completed`    | `Webhooks::HandleCheckoutSessionCompletedService` | Upserts the subscription projection, syncs contact details, address, and tax ID back to the customer, and activates a draft customer. Grants no access.                  |
+| `invoice.paid`                  | `Webhooks::HandleInvoicePaidService`              | Records the invoice locally and appends a `paid` license snapshot. This is the only event that grants paid access.                                                       |
+| `invoice.payment_failed`        | `Webhooks::HandleInvoicePaymentFailedService`     | Records the invoice locally and appends a `payment_failed` snapshot that carries the previous `end_date` and grace period forward.                                       |
+| `customer.subscription.deleted` | `Webhooks::HandleSubscriptionDeletedService`      | Sets the local Stripe status to `canceled` and appends a `canceled` snapshot.                                                                                            |
+| `setup_intent.succeeded`        | `Webhooks::HandleSetupIntentSucceededService`     | Promotes the collected payment method to the Stripe customer's `invoice_settings.default_payment_method`. Stores nothing locally and touches no license or subscription. |
 
 #### From checkout to license
 
@@ -536,12 +574,12 @@ Almost all mutations optionally accept `clientMutationId` and return it so the c
 
 #### Customers
 
-| Mutation                             | Key arguments                                                                                           | Result                                                                  |
-| ------------------------------------ | ------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| `customersCreate`                    | `customerType!`, optional `draft`, `checkoutKey`, `reuseExisting`, contact details, address, and tax ID | Created or resolved `Customer`                                          |
-| `customersUpdate`                    | `id!`, optional contact details and address                                                             | Updated `Customer`                                                      |
-| `customersDelete`                    | `id!`                                                                                                   | Deleted `Customer`                                                      |
-| `customerBillingPortalCreateSession` | `customerId!`, `returnUrl!`                                                                             | Short-lived Stripe billing portal `url` for updating the payment method |
+| Mutation                           | Key arguments                                                                                           | Result                                                                        |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `customersCreate`                  | `customerType!`, optional `draft`, `checkoutKey`, `reuseExisting`, contact details, address, and tax ID | Created or resolved `Customer`                                                |
+| `customersUpdate`                  | `id!`, optional contact details and address                                                             | Updated `Customer`                                                            |
+| `customersDelete`                  | `id!`                                                                                                   | Deleted `Customer`                                                            |
+| `customerPaymentMethodSetupCreate` | `customerId!`                                                                                           | Stripe SetupIntent `clientSecret` for collecting a new default payment method |
 
 For `customersCreate`, only `customerType` is mandatory in the GraphQL schema. Other fields that are required by the domain are checked through model validations. The full signature of the draft-related arguments is:
 
@@ -617,26 +655,26 @@ A GraphQL error object consists of:
 
 Documented error codes:
 
-| Code                                    | Meaning                                                                                                          |
-| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `CUSTOMER_TYPE_MISMATCH`                | The selected customer's type does not match the selected checkout                                                |
-| `INVALID_BILLING_PORTAL_CUSTOMER`       | The selected customer does not exist, is not accessible to the current user, or has no billing account to manage |
-| `INVALID_BILLING_PORTAL_SESSION`        | The billing portal session could not be created                                                                  |
-| `INVALID_CHECKOUT_CUSTOMER`             | The selected customer does not exist or is not accessible to the current user                                    |
-| `INVALID_CHECKOUT_SESSION`              | The checkout session could not be created                                                                        |
-| `INVALID_CHECKOUT_SELECTION`            | The selected plan, payment period, quantity, or configured Price combination is invalid                          |
-| `INVALID_CUSTOMER`                      | The customer is invalid                                                                                          |
-| `INVALID_CUSTOM_CHECKOUT_CONFIGURATION` | The custom checkout configuration is invalid                                                                     |
-| `INVALID_DISCOUNT_CODE`                 | The discount code is invalid or inactive                                                                         |
-| `INVALID_INVOICE`                       | The invoice is invalid                                                                                           |
-| `INVALID_LICENSE`                       | The license is invalid                                                                                           |
-| `INVALID_SAGITTARIUS_TOKEN`             | The Sagittarius token cannot be used to log in                                                                   |
-| `INVALID_SUBSCRIPTION`                  | The subscription is invalid                                                                                      |
-| `INVALID_TAX_CALCULATION`               | Stripe rejected the tax calculation                                                                              |
-| `INVALID_USER`                          | The local user derived from Sagittarius is invalid                                                               |
-| `MISSING_PERMISSION`                    | The user does not have the required permission                                                                   |
-| `SAGITTARIUS_UNAVAILABLE`               | Sagittarius could not be reached or returned an unexpected response                                              |
-| `UNABLE_TO_LIST_PRICES`                 | Active recurring Stripe prices could not be retrieved                                                            |
+| Code                                    | Meaning                                                                                                                               |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `CUSTOMER_TYPE_MISMATCH`                | The selected customer's type does not match the selected checkout                                                                     |
+| `INVALID_CHECKOUT_CUSTOMER`             | The selected customer does not exist or is not accessible to the current user                                                         |
+| `INVALID_CHECKOUT_SESSION`              | The checkout session could not be created                                                                                             |
+| `INVALID_CHECKOUT_SELECTION`            | The selected plan, payment period, quantity, or configured Price combination is invalid                                               |
+| `INVALID_CUSTOMER`                      | The customer is invalid                                                                                                               |
+| `INVALID_CUSTOM_CHECKOUT_CONFIGURATION` | The custom checkout configuration is invalid                                                                                          |
+| `INVALID_DISCOUNT_CODE`                 | The discount code is invalid or inactive                                                                                              |
+| `INVALID_INVOICE`                       | The invoice is invalid                                                                                                                |
+| `INVALID_LICENSE`                       | The license is invalid                                                                                                                |
+| `INVALID_PAYMENT_METHOD_SETUP_CUSTOMER` | The selected customer does not exist, is not accessible to the current user, or has no billing account to set a payment method up for |
+| `INVALID_PAYMENT_METHOD_SETUP_SESSION`  | The payment method setup could not be created                                                                                         |
+| `INVALID_SAGITTARIUS_TOKEN`             | The Sagittarius token cannot be used to log in                                                                                        |
+| `INVALID_SUBSCRIPTION`                  | The subscription is invalid                                                                                                           |
+| `INVALID_TAX_CALCULATION`               | Stripe rejected the tax calculation                                                                                                   |
+| `INVALID_USER`                          | The local user derived from Sagittarius is invalid                                                                                    |
+| `MISSING_PERMISSION`                    | The user does not have the required permission                                                                                        |
+| `SAGITTARIUS_UNAVAILABLE`               | Sagittarius could not be reached or returned an unexpected response                                                                   |
+| `UNABLE_TO_LIST_PRICES`                 | Active recurring Stripe prices could not be retrieved                                                                                 |
 
 ## Types and conventions
 
@@ -666,6 +704,6 @@ Documented error codes:
 12. The verified `invoice.paid` webhook records the invoice against its subscription and appends the first `paid` license, which is the moment paid access begins. A failed renewal appends a `payment_failed` snapshot without shortening the current entitlement, and `customer.subscription.deleted` cancels the subscription and appends a `canceled` snapshot. Automatic invoice-email delivery remains to be implemented.
 13. The dashboard reads the billing history of a license from that local projection through `License.invoices`.
 14. Once the relevant subscription and license data exists, a self-hosted license can be exported while a cloud license can be linked to a Sagittarius namespace.
-15. To change the payment method of an active customer later, the client calls `customerBillingPortalCreateSession`, opens the returned Stripe URL, and reloads the customer data after Stripe redirects back to the checked return URL.
+15. To change the payment method of an active customer later, the client calls `customerPaymentMethodSetupCreate`, confirms the returned SetupIntent with Stripe Elements, and reloads the customer data afterwards. The verified `setup_intent.succeeded` webhook is what makes the collected payment method the default, so the confirmation itself is not proof that it already is.
 
 If the user abandons the checkout at any point between steps 6 and 11, the customer simply stays a draft: it never appears anywhere, and `Customers::CleanupDraftsJob` removes it and its Stripe Customer once `checkout.draft_retention_hours` have passed.
