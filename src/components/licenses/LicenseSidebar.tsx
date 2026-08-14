@@ -7,7 +7,7 @@ import { AppLocale } from "@/lib/i18n"
 import type { LicenseDashboardLicense } from "@/lib/licenses/licenseTypes"
 import { formatLicenseDisplayValue } from "@/lib/licenses/licenseDisplayValues"
 import { getNamespaceDisplayId } from "@/lib/licenses/licenseRoute"
-import { Button, Flex, Text } from "@code0-tech/pictor"
+import { Button, Flex, ScrollArea, ScrollAreaScrollbar, ScrollAreaThumb, ScrollAreaViewport, Text } from "@code0-tech/pictor"
 import { IconArrowAutofitLeftFilled, IconKey, IconLayoutDashboard, IconRefresh } from "@tabler/icons-react"
 import Image from "next/image"
 import Link from "next/link"
@@ -84,7 +84,7 @@ export function LicenseSidebar({ content, isLoading, isRefreshing, locale, licen
                 </Link>
             </nav>
 
-            <div className="mt-6 min-h-0 flex-1 lg:overflow-y-auto">
+            <div className="mt-6 flex min-h-0 flex-1 flex-col">
                 <Flex align="center" justify="space-between" className="mb-3 px-2">
                     <Text hierarchy="tertiary" className="text-xs! font-medium! tracking-wide!">
                         {content.licenses}
@@ -112,7 +112,9 @@ export function LicenseSidebar({ content, isLoading, isRefreshing, locale, licen
                     </Flex>
                 </Flex>
 
-                <nav aria-label={content.licenses}>
+                <ScrollArea type="auto" className="min-h-0 flex-1">
+                    <ScrollAreaViewport className="h-full pr-2">
+                    <nav aria-label={content.licenses}>
                     {isLoading ? (
                         <LicenseSidebarSkeleton />
                     ) : licenses.length > 0 ? (
@@ -162,7 +164,12 @@ export function LicenseSidebar({ content, isLoading, isRefreshing, locale, licen
                             <span className="text-xs">{content.emptyLicenses}</span>
                         </div>
                     )}
-                </nav>
+                    </nav>
+                    </ScrollAreaViewport>
+                    <ScrollAreaScrollbar orientation="vertical">
+                        <ScrollAreaThumb />
+                    </ScrollAreaScrollbar>
+                </ScrollArea>
             </div>
 
             <Button
