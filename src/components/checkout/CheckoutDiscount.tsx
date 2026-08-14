@@ -1,6 +1,6 @@
 "use client"
 
-import { Button } from "@code0-tech/pictor"
+import { Button, TextInput } from "@code0-tech/pictor"
 import { useCraterSession } from "@/components/checkout/CraterSessionProvider"
 import { Dialog } from "@base-ui/react/dialog"
 import type { CheckoutDiscount as CraterCheckoutDiscount } from "@code0-tech/crater-graphql-types"
@@ -175,18 +175,19 @@ export function CheckoutDiscount({ appliedAmount, appliedContainerId, authentica
     const discountForm = (
         <form onSubmit={handleSubmit} className="w-full space-y-2">
             <div className="flex items-start gap-2">
-                <input
-                    aria-label={inputPlaceholder}
-                    autoComplete="off"
-                    className="h-10 w-full min-w-0 flex-1 rounded-xl border border-white/10 bg-white/5 px-4 text-sm text-white outline-none transition-colors placeholder:text-tertiary hover:bg-white/8 focus:border-brand/40 focus:bg-white/8"
-                    maxLength={128}
-                    onChange={(event) => {
-                        setCode(event.currentTarget.value)
-                        setErrorMessage(null)
-                    }}
-                    placeholder={inputPlaceholder}
-                    value={code}
-                />
+                <div className="min-w-0 flex-1">
+                    <TextInput
+                        aria-label={inputPlaceholder}
+                        autoComplete="off"
+                        maxLength={128}
+                        onChange={(event) => {
+                            setCode(event.currentTarget.value)
+                            setErrorMessage(null)
+                        }}
+                        placeholder={inputPlaceholder}
+                        value={code}
+                    />
+                </div>
                 <Button
                     type="submit"
                     variant="normal"
