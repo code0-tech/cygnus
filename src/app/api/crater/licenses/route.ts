@@ -1,8 +1,8 @@
 import { createApolloClient } from "@/lib/apolloClient"
 import { craterJson, craterMutationErrorResponse, craterTransportErrorResponse, optionalString, readJsonObject, requireCraterSession } from "@/lib/checkout/craterApi"
 import { setCraterSessionCookie } from "@/lib/checkout/craterSession"
-import type { LicenseDashboardCustomer, LicenseDashboardData, LicenseDashboardLicense } from "@/lib/licenses/licenseTypes"
-import type { Customer, License, Mutation, MutationLicensesLinkNamespaceArgs, Query, Scalars, User } from "@code0-tech/crater-graphql-types"
+import type { LicenseDashboardCustomer, LicenseDashboardData, LicenseDashboardInvoice, LicenseDashboardLicense } from "@/lib/licenses/licenseTypes"
+import type { Customer, Invoice, License, Mutation, MutationLicensesLinkNamespaceArgs, Query, Scalars, User } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 
 export const runtime = "nodejs"
@@ -134,6 +134,18 @@ const LICENSE_DETAIL: TypedDocumentNode<LicenseDashboardQuery, LicenseDetailVari
                             status
                             updatedAt
                             workflowExecutions
+                            invoices(first: 100) {
+                                nodes {
+                                    billingPeriodEnd
+                                    billingPeriodStart
+                                    currency
+                                    id
+                                    invoiceNumber
+                                    status
+                                    stripePdfUrl
+                                    total
+                                }
+                            }
                         }
                     }
                 }
@@ -195,6 +207,21 @@ function mapCustomer(customer: Customer): LicenseDashboardCustomer | null {
     }
 }
 
+function mapInvoice(invoice: Invoice): LicenseDashboardInvoice | null {
+    if (!invoice.id) return null
+
+    return {
+        id: invoice.id,
+        ...(invoice.billingPeriodEnd ? { billingPeriodEnd: invoice.billingPeriodEnd } : {}),
+        ...(invoice.billingPeriodStart ? { billingPeriodStart: invoice.billingPeriodStart } : {}),
+        ...(invoice.currency ? { currency: invoice.currency } : {}),
+        ...(invoice.invoiceNumber ? { invoiceNumber: invoice.invoiceNumber } : {}),
+        ...(invoice.status ? { status: invoice.status } : {}),
+        ...(invoice.stripePdfUrl ? { stripePdfUrl: invoice.stripePdfUrl } : {}),
+        ...(typeof invoice.total === "number" ? { total: invoice.total } : {}),
+    }
+}
+
 function mapLicense(license: License, customer: Customer): LicenseDashboardLicense | null {
     if (!customer.id || !license.id) return null
 
@@ -204,6 +231,9 @@ function mapLicense(license: License, customer: Customer): LicenseDashboardLicen
         customerName: displayName(customer.name, customer.email, customer.id),
         ...(customer.customerType ? { customerType: customer.customerType } : {}),
         id: license.id,
+        ...(license.invoices?.nodes
+            ? { invoices: license.invoices.nodes.flatMap((invoice) => (invoice ? [mapInvoice(invoice)].filter((mapped): mapped is LicenseDashboardInvoice => mapped !== null) : [])) }
+            : {}),
         name: licenseName(license.plan, license.id),
         ...(license.deploymentType ? { deploymentType: license.deploymentType } : {}),
         ...(license.namespaceId ? { namespaceId: license.namespaceId } : {}),
@@ -270,7 +300,7 @@ export async function GET(request: Request) {
         if (customerIndex < 0) return craterJson({ error: "The requested customer was not found." }, 404)
 
         const customerEdge = customerEdges[customerIndex]
-        const customerAfter = customerIndex > 0 ? customerEdges[customerIndex - 1]?.cursor ?? null : null
+        const customerAfter = customerIndex > 0 ? (customerEdges[customerIndex - 1]?.cursor ?? null) : null
         const navigationLicenses = customerEdges.flatMap((edge) => {
             const customer = edge?.node
             if (!customer) return []
@@ -287,7 +317,7 @@ export async function GET(request: Request) {
             const licenseEdges = customerEdge?.node?.licenses?.edges ?? []
             const licenseIndex = licenseEdges.findIndex((edge) => edge?.node?.id === licenseId)
             if (licenseIndex < 0) return craterJson({ error: "The requested license was not found." }, 404)
-            licenseAfter = licenseIndex > 0 ? licenseEdges[licenseIndex - 1]?.cursor ?? null : null
+            licenseAfter = licenseIndex > 0 ? (licenseEdges[licenseIndex - 1]?.cursor ?? null) : null
         }
 
         const detailResult = await client.query({

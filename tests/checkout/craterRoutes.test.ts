@@ -63,11 +63,7 @@ test("customer creation requires a Crater session", async () => {
 })
 
 test("checkout license status requires a Crater session", async () => {
-    const response = await getCheckoutLicenseStatus(
-        new Request(
-            "https://example.com/api/crater/checkout/status?customerId=gid%3A%2F%2Fcrater%2FCustomer%2F1&startedAt=1786528800000"
-        )
-    )
+    const response = await getCheckoutLicenseStatus(new Request("https://example.com/api/crater/checkout/status?customerId=gid%3A%2F%2Fcrater%2FCustomer%2F1&startedAt=1786528800000"))
 
     assert.equal(response.status, 403)
     assert.equal(response.headers.get("cache-control"), "no-store")
@@ -914,6 +910,20 @@ test("license detail loads lightweight navigation before fetching only the selec
                                             status: "paid",
                                             updatedAt: "2026-08-12T10:00:00Z",
                                             workflowExecutions: 250000,
+                                            invoices: {
+                                                nodes: [
+                                                    {
+                                                        billingPeriodEnd: "2026-09-01T00:00:00Z",
+                                                        billingPeriodStart: "2026-08-01T00:00:00Z",
+                                                        currency: "eur",
+                                                        id: "gid://crater/Invoice/12",
+                                                        invoiceNumber: "INV-0012",
+                                                        status: "paid",
+                                                        stripePdfUrl: "https://pay.stripe.com/invoice/example/pdf",
+                                                        total: 13500,
+                                                    },
+                                                ],
+                                            },
                                         },
                                     ],
                                 },
@@ -929,10 +939,7 @@ test("license detail loads lightweight navigation before fetching only the selec
 
     try {
         const response = await getLicenseDashboard(
-            new Request(
-                "https://example.com/api/crater/licenses?view=license&customerId=gid%3A%2F%2Fcrater%2FCustomer%2F8&licenseId=gid%3A%2F%2Fcrater%2FLicense%2F9",
-                { headers: sessionHeaders }
-            )
+            new Request("https://example.com/api/crater/licenses?view=license&customerId=gid%3A%2F%2Fcrater%2FCustomer%2F8&licenseId=gid%3A%2F%2Fcrater%2FLicense%2F9", { headers: sessionHeaders })
         )
         const body = await response.json()
 
@@ -940,8 +947,27 @@ test("license detail loads lightweight navigation before fetching only the selec
         assert.equal(graphQLServer.requests[0].body.operationName, "LicenseNavigation")
         assert.equal(graphQLServer.requests[1].body.operationName, "LicenseDetail")
         assert.deepEqual(graphQLServer.requests[1].body.variables, { customerAfter: "customer-7", licenseAfter: "license-8a" })
-        assert.deepEqual(body.customers.map((customer: { id: string }) => customer.id), ["gid://crater/Customer/8"])
-        assert.deepEqual(body.licenses.map((license: { id: string }) => license.id), ["gid://crater/License/9"])
+        assert.deepEqual(
+            body.customers.map((customer: { id: string }) => customer.id),
+            ["gid://crater/Customer/8"]
+        )
+        assert.deepEqual(
+            body.licenses.map((license: { id: string }) => license.id),
+            ["gid://crater/License/9"]
+        )
+        assert.deepEqual(body.licenses[0].invoices, [
+            {
+                billingPeriodEnd: "2026-09-01T00:00:00Z",
+                billingPeriodStart: "2026-08-01T00:00:00Z",
+                currency: "eur",
+                id: "gid://crater/Invoice/12",
+                invoiceNumber: "INV-0012",
+                status: "paid",
+                stripePdfUrl: "https://pay.stripe.com/invoice/example/pdf",
+                total: 13500,
+            },
+        ])
+        assert.match(graphQLServer.requests[1].body.query ?? "", /invoices\(first: 100\)/)
         assert.deepEqual(
             body.navigationLicenses.map((license: { id: string }) => license.id),
             ["gid://crater/License/9", "gid://crater/License/8", "gid://crater/License/7"]
