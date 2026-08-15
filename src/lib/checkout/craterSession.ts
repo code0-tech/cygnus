@@ -14,7 +14,6 @@ export type CraterSessionAuthorization =
 
 const CRATER_SESSION_AUTHORIZATION_PATTERN = /^Session ([^\s]+)$/
 const CRATER_SESSION_TOKEN_PATTERN = /^[^\s]+$/
-const CRATER_SESSION_TOKEN_QUERY_PARAM = "token"
 const CRATER_SESSION_COOKIE_NAME = "crater_session"
 const CRATER_SESSION_COOKIE_PATH = "/api/crater"
 
@@ -33,17 +32,6 @@ function readCookie(request: Request, name: string) {
     }
 
     return null
-}
-
-export function readCraterSessionToken(url: URL): string | undefined {
-    const token = url.searchParams.get(CRATER_SESSION_TOKEN_QUERY_PARAM)?.trim()
-    return token && CRATER_SESSION_TOKEN_PATTERN.test(token) ? token : undefined
-}
-
-export function removeCraterSessionToken(url: URL): URL {
-    const sanitizedUrl = new URL(url)
-    sanitizedUrl.searchParams.delete(CRATER_SESSION_TOKEN_QUERY_PARAM)
-    return sanitizedUrl
 }
 
 export function readCraterSessionAuthorization(request: Request, authorizationHeaderOnly = false): CraterSessionAuthorization {

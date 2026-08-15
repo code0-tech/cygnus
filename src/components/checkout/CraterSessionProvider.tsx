@@ -1,6 +1,5 @@
 "use client"
 
-import { readSagittariusToken, removeSagittariusToken } from "@/lib/checkout/checkoutLogin"
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react"
 
 interface CraterSessionContextValue {
@@ -17,8 +16,6 @@ const CraterSessionContext = createContext<CraterSessionContextValue>({
 
 export function CraterSessionProvider({ children, errorMessage = "An unexpected error occurred." }: { children: ReactNode; errorMessage?: string }) {
     const sessionRequestRef = useRef<Promise<void> | null>(null)
-    const sagittariusTokenRef = useRef<string | undefined>(undefined)
-    const hasReadSagittariusTokenRef = useRef(false)
     const [session, setSession] = useState<CraterSessionContextValue>({
         authenticated: false,
         error: null,
@@ -28,14 +25,13 @@ export function CraterSessionProvider({ children, errorMessage = "An unexpected 
     useEffect(() => {
         let active = true
 
-        if (!hasReadSagittariusTokenRef.current) {
-            const currentUrl = new URL(window.location.href)
-            sagittariusTokenRef.current = readSagittariusToken(currentUrl.searchParams)
-            hasReadSagittariusTokenRef.current = true
-
-            if (sagittariusTokenRef.current) {
-                const sanitizedUrl = removeSagittariusToken(currentUrl)
-                window.history.replaceState(window.history.state, "", `${sanitizedUrl.pathname}${sanitizedUrl.search}${sanitizedUrl.hash}`)
+        const currentUrl = new URL(window.location.href)
+        if (currentUrl.searchParams.get("authError") === "session") {
+            currentUrl.searchParams.delete("authError")
+            window.history.replaceState(window.history.state, "", `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`)
+            setSession({ authenticated: false, error: errorMessage, isLoading: false })
+            return () => {
+                active = false
             }
         }
 
@@ -44,11 +40,11 @@ export function CraterSessionProvider({ children, errorMessage = "An unexpected 
             return body && typeof body === "object" && "error" in body && typeof body.error === "string" ? body.error : fallback
         }
 
-        const createSession = async (sagittariusToken?: string) => {
+        const createSession = async () => {
             const response = await fetch("/api/crater/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(sagittariusToken ? { sagittariusToken } : {}),
+                body: JSON.stringify({}),
                 credentials: "same-origin",
                 referrerPolicy: "no-referrer",
             })
@@ -56,11 +52,6 @@ export function CraterSessionProvider({ children, errorMessage = "An unexpected 
         }
 
         const restoreOrCreateSession = async () => {
-            if (sagittariusTokenRef.current) {
-                await createSession(sagittariusTokenRef.current)
-                return
-            }
-
             const statusResponse = await fetch("/api/crater/auth/session", {
                 credentials: "same-origin",
                 cache: "no-store",

@@ -1,22 +1,10 @@
 export type CheckoutSearchParams = Record<string, string | string[] | undefined>
 
-const SAGITTARIUS_TOKEN_QUERY_PARAM = "token"
-
-export function readSagittariusToken(searchParams: Pick<URLSearchParams, "get">): string | undefined {
-    const token = searchParams.get(SAGITTARIUS_TOKEN_QUERY_PARAM)?.trim()
-    return token || undefined
-}
-
-export function removeSagittariusToken(url: URL): URL {
-    const sanitizedUrl = new URL(url)
-    sanitizedUrl.searchParams.delete(SAGITTARIUS_TOKEN_QUERY_PARAM)
-    return sanitizedUrl
-}
-
 export function createCheckoutQuery(searchParams: CheckoutSearchParams): string {
     const query = new URLSearchParams()
 
     for (const [key, value] of Object.entries(searchParams)) {
+        if (key === "token" || key === "authError") continue
         if (Array.isArray(value)) {
             value.forEach((item) => query.append(key, item))
         } else if (value !== undefined) {
@@ -27,9 +15,15 @@ export function createCheckoutQuery(searchParams: CheckoutSearchParams): string 
     return query.toString()
 }
 
-export function createMainAppLoginUrl(loginUrl: string, checkoutUrl: string, cancelUrl: string, selectNamespace = false): string {
+export function createCraterLoginCallbackUrl(siteUrl: URL, checkoutPath: string) {
+    const callbackUrl = new URL("/api/crater/auth/callback", siteUrl)
+    callbackUrl.searchParams.set("returnPath", checkoutPath)
+    return callbackUrl.toString()
+}
+
+export function createMainAppLoginUrl(loginUrl: string, callbackUrl: string, cancelUrl: string, selectNamespace = false): string {
     const url = new URL(loginUrl)
-    url.searchParams.set("callbackUrl", checkoutUrl)
+    url.searchParams.set("callbackUrl", callbackUrl)
     url.searchParams.set("cancelUrl", cancelUrl)
     if (selectNamespace) url.searchParams.set("selectNamespace", "true")
     return url.toString()

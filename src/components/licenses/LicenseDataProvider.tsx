@@ -1,8 +1,6 @@
 "use client"
 
 import { EMPTY_LICENSE_DASHBOARD_DATA, type LicenseDashboardCustomerAddress, type LicenseDashboardData, type LicenseDashboardLicense } from "@/lib/licenses/licenseTypes"
-import { readCraterSessionToken, removeCraterSessionToken } from "@/lib/checkout/craterSession"
-import type { AppLocale } from "@/lib/i18n"
 import { decodeLicenseRouteId } from "@/lib/licenses/licenseRoute"
 import { usePathname } from "next/navigation"
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useRef, useState } from "react"
@@ -22,9 +20,8 @@ interface LicenseDataContextValue extends LicenseDashboardData {
 
 const LicenseDataContext = createContext<LicenseDataContextValue | null>(null)
 
-export function LicenseDataProvider({ children, loadError, locale, redirectUrl }: { children: ReactNode; loadError: string; locale: AppLocale; redirectUrl: string }) {
+export function LicenseDataProvider({ children, loadError, redirectUrl }: { children: ReactNode; loadError: string; redirectUrl: string }) {
     const pathname = usePathname()
-    const sessionTokenRef = useRef<string | null>(null)
     const loadedPathRef = useRef<string | null>(null)
     const [data, setData] = useState<LicenseDashboardData>(EMPTY_LICENSE_DASHBOARD_DATA)
     const [hasLoadedOnce, setHasLoadedOnce] = useState(false)
@@ -58,27 +55,15 @@ export function LicenseDataProvider({ children, loadError, locale, redirectUrl }
         if (isInitialPathLoad) setIsLoading(true)
         else setIsRefreshing(true)
         const currentUrl = new URL(window.location.href)
-        const sessionToken = sessionTokenRef.current ?? readCraterSessionToken(currentUrl)
 
-        if (currentUrl.searchParams.has("setup_intent") || currentUrl.searchParams.has("setup_intent_client_secret") || currentUrl.searchParams.has("redirect_status")) {
+        if (currentUrl.searchParams.has("token") || currentUrl.searchParams.has("setup_intent") || currentUrl.searchParams.has("setup_intent_client_secret") || currentUrl.searchParams.has("redirect_status")) {
             const sanitizedUrl = new URL(currentUrl)
+            sanitizedUrl.searchParams.delete("token")
             sanitizedUrl.searchParams.delete("setup_intent")
             sanitizedUrl.searchParams.delete("setup_intent_client_secret")
             sanitizedUrl.searchParams.delete("redirect_status")
             window.history.replaceState(window.history.state, "", sanitizedUrl.toString())
         }
-
-        if (!sessionToken) {
-            const accessUrl = new URL("/api/crater/licenses/access", currentUrl.origin)
-            const returnUrl = removeCraterSessionToken(currentUrl)
-            accessUrl.searchParams.set("locale", locale)
-            accessUrl.searchParams.set("returnPath", `${returnUrl.pathname}${returnUrl.search}${returnUrl.hash}`)
-            window.location.replace(accessUrl)
-            return () => controller.abort()
-        }
-
-        sessionTokenRef.current = sessionToken
-        const shouldRemoveToken = currentUrl.searchParams.has("token")
 
         const dataUrl = new URL("/api/crater/licenses", currentUrl.origin)
         const pathSegments = pathname.split("/").filter(Boolean)
@@ -96,9 +81,6 @@ export function LicenseDataProvider({ children, loadError, locale, redirectUrl }
         void fetch(dataUrl, {
             cache: "no-store",
             credentials: "same-origin",
-            headers: {
-                authorization: `Session ${sessionToken}`,
-            },
             signal: controller.signal,
         })
             .then(async (response) => {
@@ -114,9 +96,6 @@ export function LicenseDataProvider({ children, loadError, locale, redirectUrl }
                 setData(nextData)
                 setHasLoadedOnce(true)
                 loadedPathRef.current = pathname
-                if (shouldRemoveToken) {
-                    window.history.replaceState(window.history.state, "", removeCraterSessionToken(currentUrl).toString())
-                }
             })
             .catch((error: unknown) => {
                 if (error instanceof DOMException && error.name === "AbortError") return
@@ -131,7 +110,7 @@ export function LicenseDataProvider({ children, loadError, locale, redirectUrl }
             })
 
         return () => controller.abort()
-    }, [loadError, locale, pathname, redirectUrl, reloadKey])
+    }, [loadError, pathname, redirectUrl, reloadKey])
 
     useEffect(() => {
         const refreshWhenVisible = () => {
