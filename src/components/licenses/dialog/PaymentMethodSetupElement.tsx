@@ -5,7 +5,7 @@ import type { LicenseContent } from "@/lib/cms"
 import { Button, Text } from "@code0-tech/pictor"
 import { Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js"
 import { loadStripe, type Appearance, type StripeElementsOptions } from "@stripe/stripe-js"
-import { useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 
 const stripePublicKey = process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY
 const stripePromise = stripePublicKey ? loadStripe(stripePublicKey) : null
@@ -52,18 +52,121 @@ const appearance = {
 interface PaymentMethodSetupElementProps {
     clientSecret: string
     content: LicenseContent["editor"]
+    customerId: string
     onCancel: () => void
     onSuccess: () => void
+    retryLabel: string
     returnPath: string
 }
 
-function PaymentMethodSetupForm({ content, onCancel, onSuccess, returnPath }: Omit<PaymentMethodSetupElementProps, "clientSecret">) {
+interface PaymentMethodSetupPendingStatusProps {
+    content: LicenseContent["editor"]
+    customerId: string
+    onCancel: () => void
+    onSuccess: () => void
+    retryLabel: string
+    setupIntentId: string
+}
+
+export function PaymentMethodSetupPendingStatus({ content, customerId, onCancel, onSuccess, retryLabel, setupIntentId }: PaymentMethodSetupPendingStatusProps) {
+    const [isComplete, setIsComplete] = useState(false)
+    const [error, setError] = useState<string | null>(null)
+    const [retryKey, setRetryKey] = useState(0)
+
+    useEffect(() => {
+        const controller = new AbortController()
+        let timeout: ReturnType<typeof setTimeout> | undefined
+
+        const checkStatus = async () => {
+            try {
+                const statusUrl = new URL("/api/crater/customer/payment-method-setup", window.location.origin)
+                statusUrl.searchParams.set("customerId", customerId)
+                statusUrl.searchParams.set("setupIntentId", setupIntentId)
+                const response = await fetch(statusUrl, {
+                    cache: "no-store",
+                    credentials: "same-origin",
+                    signal: controller.signal,
+                })
+                const result: unknown = await response.json()
+
+                if (!response.ok || !result || typeof result !== "object" || !("status" in result)) throw new Error("Invalid payment method setup status response.")
+                if (result.status === "ready") {
+                    setIsComplete(true)
+                    onSuccess()
+                    return
+                }
+                if (result.status === "failed") {
+                    setError(content.paymentMethodSetupError)
+                    return
+                }
+                if (result.status !== "pending") throw new Error("Invalid payment method setup status.")
+
+                timeout = setTimeout(() => void checkStatus(), 1_250)
+            } catch (statusError) {
+                if (statusError instanceof DOMException && statusError.name === "AbortError") return
+                setError(content.paymentMethodSetupError)
+            }
+        }
+
+        void checkStatus()
+        return () => {
+            controller.abort()
+            if (timeout) clearTimeout(timeout)
+        }
+    }, [content.paymentMethodSetupError, customerId, onSuccess, retryKey, setupIntentId])
+
+    if (isComplete) {
+        return (
+            <div className="space-y-3">
+                <Text role="status" size="sm" className="text-brand!">
+                    {content.paymentMethodSuccess}
+                </Text>
+                <Button type="button" variant="normal" onClick={onCancel}>
+                    {content.closeLabel}
+                </Button>
+            </div>
+        )
+    }
+
+    return (
+        <div className="space-y-3">
+            {error ? (
+                <p role="alert" className="text-sm text-error">
+                    {error}
+                </p>
+            ) : (
+                <div role="status">
+                    <ButtonLoader label={content.savingPaymentMethodLabel} />
+                </div>
+            )}
+            <div className="flex flex-wrap justify-end gap-3">
+                <Button type="button" variant="none" onClick={onCancel}>
+                    {content.closeLabel}
+                </Button>
+                {error ? (
+                    <Button
+                        type="button"
+                        variant="normal"
+                        onClick={() => {
+                            setError(null)
+                            setRetryKey((current) => current + 1)
+                        }}
+                    >
+                        {retryLabel}
+                    </Button>
+                ) : null}
+            </div>
+        </div>
+    )
+}
+
+function PaymentMethodSetupForm({ content, customerId, onCancel, onSuccess, retryLabel, returnPath }: Omit<PaymentMethodSetupElementProps, "clientSecret">) {
     const stripe = useStripe()
     const elements = useElements()
     const [isReady, setIsReady] = useState(false)
     const [isConfirming, setIsConfirming] = useState(false)
     const [error, setError] = useState<string | null>(null)
-    const [isComplete, setIsComplete] = useState(false)
+    const [setupIntentId, setSetupIntentId] = useState<string | null>(null)
 
     const confirm = async () => {
         if (!stripe || !elements || !isReady || isConfirming) return
@@ -82,23 +185,18 @@ function PaymentMethodSetupForm({ content, onCancel, onSuccess, returnPath }: Om
             return
         }
 
-        setIsComplete(true)
+        if (!result.setupIntent?.id) {
+            setError(content.paymentMethodSetupError)
+            setIsConfirming(false)
+            return
+        }
+
+        setSetupIntentId(result.setupIntent.id)
         setIsConfirming(false)
-        onSuccess()
     }
 
-    if (isComplete) {
-        return (
-            <div className="space-y-3">
-                <Text size="sm" className="text-brand!">
-                    {content.paymentMethodSuccess}
-                </Text>
-                <Button type="button" variant="normal" onClick={onCancel}>
-                    {content.closeLabel}
-                </Button>
-            </div>
-        )
-    }
+    if (setupIntentId)
+        return <PaymentMethodSetupPendingStatus content={content} customerId={customerId} onCancel={onCancel} onSuccess={onSuccess} retryLabel={retryLabel} setupIntentId={setupIntentId} />
 
     return (
         <div className="space-y-4">
@@ -120,7 +218,7 @@ function PaymentMethodSetupForm({ content, onCancel, onSuccess, returnPath }: Om
     )
 }
 
-export function PaymentMethodSetupElement({ clientSecret, content, onCancel, onSuccess, returnPath }: PaymentMethodSetupElementProps) {
+export function PaymentMethodSetupElement({ clientSecret, content, customerId, onCancel, onSuccess, retryLabel, returnPath }: PaymentMethodSetupElementProps) {
     const stripeRef = useRef(stripePromise)
     const options = useMemo<StripeElementsOptions>(() => ({ appearance, clientSecret }), [clientSecret])
 
@@ -134,7 +232,7 @@ export function PaymentMethodSetupElement({ clientSecret, content, onCancel, onS
 
     return (
         <Elements key={clientSecret} stripe={stripeRef.current} options={options}>
-            <PaymentMethodSetupForm content={content} onCancel={onCancel} onSuccess={onSuccess} returnPath={returnPath} />
+            <PaymentMethodSetupForm content={content} customerId={customerId} onCancel={onCancel} onSuccess={onSuccess} retryLabel={retryLabel} returnPath={returnPath} />
         </Elements>
     )
 }

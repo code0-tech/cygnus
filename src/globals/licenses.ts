@@ -317,8 +317,8 @@ export const Licenses: GlobalConfig = {
                     required: true,
                     localized: true,
                     defaultValue: localizedDefault(
-                        "The payment method was accepted and will become the default shortly.",
-                        "Die Zahlungsmethode wurde akzeptiert und wird in Kürze als Standard verwendet."
+                        "The payment method is now the default for future invoices.",
+                        "Die Zahlungsmethode ist jetzt der Standard für zukünftige Rechnungen."
                     ),
                 },
                 { name: "licenseTitle", type: "text", required: true, localized: true, defaultValue: localizedDefault("Edit license", "Lizenz bearbeiten") },
