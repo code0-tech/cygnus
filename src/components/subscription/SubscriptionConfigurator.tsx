@@ -30,7 +30,7 @@ import {
 } from "@/lib/subscriptionConfigurator"
 import NumberFlow from "@number-flow/react"
 import { IconCalendarMonth } from "@tabler/icons-react"
-import { usePathname, useRouter, useSearchParams } from "next/navigation"
+import { usePathname, useSearchParams } from "next/navigation"
 import type { ReactNode } from "react"
 import { useEffect, useRef, useState } from "react"
 import { LinkButton } from "../ui/LinkButton"
@@ -77,7 +77,6 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
     const workflowExecutions = content.workflowExecutions
     const aiTokens = content.aiTokens
     const catalog = getSubscriptionCatalog(content, subscriptionPrices)
-    const router = useRouter()
     const pathname = usePathname()
     const searchParams = useSearchParams()
     const configuratorRef = useRef<HTMLDivElement>(null)
@@ -120,8 +119,11 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
     ]
 
     useEffect(() => {
-        router.replace(`${pathname}?${selectionSearchParamsString}`, { scroll: false })
-    }, [pathname, router, selectionSearchParamsString])
+        const nextUrl = `${pathname}?${selectionSearchParamsString}`
+        if (`${window.location.pathname}${window.location.search}` === nextUrl) return
+
+        window.history.replaceState(window.history.state, "", nextUrl)
+    }, [pathname, selectionSearchParamsString])
 
     useEffect(() => {
         setAiTokensPreview(selection.aiTokens)
