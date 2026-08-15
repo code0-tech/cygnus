@@ -34,7 +34,6 @@ export async function GET(request: Request) {
 
     if (session.status === "authenticated") {
         const returnUrl = resolveLicenseReturnUrl(requestUrl, locale)
-        returnUrl.searchParams.set("token", session.token)
         return noStoreRedirect(returnUrl)
     }
 

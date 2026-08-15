@@ -288,7 +288,7 @@ function mapUserData(currentUser: User): LicenseDashboardData {
 }
 
 export async function GET(request: Request) {
-    const session = requireCraterSession(request, true)
+    const session = requireCraterSession(request)
     if (session.response) return session.response
 
     const requestUrl = new URL(request.url)

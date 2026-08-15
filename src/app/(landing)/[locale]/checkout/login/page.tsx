@@ -1,7 +1,7 @@
 import { CheckoutLogin } from "@/components/checkout/CheckoutLogin"
 import { CheckoutLegalFooter } from "@/components/checkout/CheckoutLegalFooter"
 import { getCheckoutContent, getFooter } from "@/lib/cms"
-import { createCheckoutQuery, createMainAppLoginUrl, type CheckoutSearchParams } from "@/lib/checkout/checkoutLogin"
+import { createCheckoutQuery, createCraterLoginCallbackUrl, createMainAppLoginUrl, type CheckoutSearchParams } from "@/lib/checkout/checkoutLogin"
 import { isSupportedLocale } from "@/lib/i18n"
 import { resolveSiteUrl } from "@/lib/siteConfig"
 import type { Metadata } from "next"
@@ -24,7 +24,7 @@ export default async function CheckoutLoginPage({ params, searchParams }: Checko
     const query = createCheckoutQuery(resolvedSearchParams)
     const guestHref = `/${locale}/checkout${query ? `?${query}` : ""}`
     const siteUrl = resolveSiteUrl()
-    const checkoutUrl = new URL(guestHref, siteUrl).toString()
+    const callbackUrl = createCraterLoginCallbackUrl(siteUrl, guestHref)
     const configurationUrlParam = resolvedSearchParams.configurationUrl
     const configurationUrlValue = Array.isArray(configurationUrlParam) ? configurationUrlParam[0] : configurationUrlParam
     const fallbackConfigurationUrl = new URL(`/${locale}/subscription`, siteUrl)
@@ -41,7 +41,7 @@ export default async function CheckoutLoginPage({ params, searchParams }: Checko
 
     const deploymentTypeParam = resolvedSearchParams.deploymentType
     const deploymentType = Array.isArray(deploymentTypeParam) ? deploymentTypeParam[0] : deploymentTypeParam
-    const loginHref = createMainAppLoginUrl(content.login.loginUrl, checkoutUrl, cancelUrl, deploymentType === "cloud")
+    const loginHref = createMainAppLoginUrl(content.login.loginUrl, callbackUrl, cancelUrl, deploymentType === "cloud")
 
     return (
         <div className="flex min-h-full flex-col">

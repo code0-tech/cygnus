@@ -6,6 +6,7 @@ import { POST as validateDiscount } from "../../src/app/api/crater/checkout/disc
 import { POST as calculateTax } from "../../src/app/api/crater/checkout/tax/route"
 import { POST as createSession } from "../../src/app/api/crater/login/route"
 import { DELETE as deleteSession, GET as getSessionStatus } from "../../src/app/api/crater/auth/session/route"
+import { GET as completeCraterLogin } from "../../src/app/api/crater/auth/callback/route"
 import { GET as getLicenseDashboard, PATCH as linkLicenseNamespace } from "../../src/app/api/crater/licenses/route"
 import { GET as accessLicenseDashboard } from "../../src/app/api/crater/licenses/access/route"
 import { GET as getCheckoutLicenseStatus } from "../../src/app/api/crater/checkout/status/route"
@@ -43,6 +44,59 @@ test("Crater login requires a Sagittarius token", async () => {
             process.env.CRATER_SAGITTARIUS_TOKEN = configuredToken
         }
     }
+})
+
+test("server-side login callback exchanges Sagittarius for an HttpOnly Crater cookie", async () => {
+    const graphQLServer = await createGraphQLTestServer([
+        {
+            data: {
+                usersLogin: {
+                    errors: [],
+                    userSession: {
+                        active: true,
+                        createdAt: "2026-08-15T10:00:00Z",
+                        id: "gid://crater/UserSession/1",
+                        token: "crater-callback-session",
+                        updatedAt: "2026-08-15T10:00:00Z",
+                    },
+                },
+            },
+        },
+    ])
+    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
+    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
+
+    try {
+        const returnPath = "/de/checkout?plan=pro&deploymentType=self_hosted"
+        const response = await completeCraterLogin(
+            new Request(`https://code0.example/api/crater/auth/callback?returnPath=${encodeURIComponent(returnPath)}&token=sagittarius-secret`)
+        )
+
+        assert.equal(response.status, 307)
+        assert.equal(response.headers.get("location"), `https://code0.example${returnPath}`)
+        assert.equal(response.headers.get("cache-control"), "no-store")
+        assert.equal(response.headers.get("referrer-policy"), "no-referrer")
+        assert.match(response.headers.get("set-cookie") ?? "", /crater_session=crater-callback-session/)
+        assert.match(response.headers.get("set-cookie") ?? "", /HttpOnly/i)
+        assert.doesNotMatch(response.headers.get("location") ?? "", /sagittarius-secret|[?&]token=/)
+        assert.deepEqual(graphQLServer.requests[0].body.variables, {
+            input: { sagittariusToken: "sagittarius-secret" },
+        })
+    } finally {
+        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
+        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
+        await graphQLServer.close()
+    }
+})
+
+test("server-side login callback rejects external return paths and never forwards the token", async () => {
+    const response = await completeCraterLogin(
+        new Request("https://code0.example/api/crater/auth/callback?returnPath=https%3A%2F%2Fevil.example%2Fcollect&token=sagittarius-secret")
+    )
+
+    assert.equal(response.status, 307)
+    assert.equal(response.headers.get("location"), "https://code0.example/?authError=session")
+    assert.doesNotMatch(response.headers.get("location") ?? "", /token=/)
 })
 
 test("customer creation requires a Crater session", async () => {
@@ -967,7 +1021,7 @@ test("license dashboard requires a Crater session", async () => {
     assert.equal(response.headers.get("cache-control"), "no-store")
 })
 
-test("license dashboard access forwards the persisted session through the entry URL", async () => {
+test("license dashboard access redirects without exposing the persisted session", async () => {
     const response = await accessLicenseDashboard(
         new Request("https://code0.example/api/crater/licenses/access?locale=de", {
             headers: { cookie: "crater_session=persisted-token" },
@@ -975,7 +1029,7 @@ test("license dashboard access forwards the persisted session through the entry 
     )
 
     assert.equal(response.status, 307)
-    assert.equal(response.headers.get("location"), "https://code0.example/de/licenses?token=persisted-token")
+    assert.equal(response.headers.get("location"), "https://code0.example/de/licenses")
     assert.equal(response.headers.get("cache-control"), "no-store")
 })
 
@@ -988,7 +1042,7 @@ test("license dashboard access restores the requested license detail path", asyn
     )
 
     assert.equal(response.status, 307)
-    assert.equal(response.headers.get("location"), `https://code0.example${returnPath}?token=persisted-token`)
+    assert.equal(response.headers.get("location"), `https://code0.example${returnPath}`)
 })
 
 test("license dashboard access rejects return paths outside the localized dashboard", async () => {
@@ -999,20 +1053,22 @@ test("license dashboard access rejects return paths outside the localized dashbo
     )
 
     assert.equal(response.status, 307)
-    assert.equal(response.headers.get("location"), "https://code0.example/en/licenses?token=persisted-token")
+    assert.equal(response.headers.get("location"), "https://code0.example/en/licenses")
 })
 
-test("license dashboard does not accept cookie-only access", async () => {
-    const response = await getLicenseDashboard(
-        new Request("https://example.com/api/crater/licenses", {
+test("license dashboard access removes token parameters from its return path", async () => {
+    const returnPath = "/en/licenses?token=must-not-survive&view=all"
+    const response = await accessLicenseDashboard(
+        new Request(`https://code0.example/api/crater/licenses/access?locale=en&returnPath=${encodeURIComponent(returnPath)}`, {
             headers: { cookie: "crater_session=persisted-token" },
         })
     )
 
-    assert.equal(response.status, 403)
+    assert.equal(response.status, 307)
+    assert.equal(response.headers.get("location"), "https://code0.example/en/licenses?view=all")
 })
 
-test("license dashboard maps the current user's customers and recent licenses", async () => {
+test("license dashboard loads from the HttpOnly Crater session cookie", async () => {
     const graphQLServer = await createGraphQLTestServer([
         {
             data: {
@@ -1065,16 +1121,13 @@ test("license dashboard maps the current user's customers and recent licenses", 
     try {
         const response = await getLicenseDashboard(
             new Request("https://example.com/api/crater/licenses", {
-                headers: {
-                    authorization: "Session url-session-token",
-                    cookie: "crater_session=stale-cookie-token",
-                },
+                headers: { cookie: "crater_session=persisted-token" },
             })
         )
 
         assert.equal(response.status, 200)
-        assert.equal(graphQLServer.requests[0].authorization, "Session url-session-token")
-        assert.match(response.headers.get("set-cookie") ?? "", /crater_session=url-session-token/)
+        assert.equal(graphQLServer.requests[0].authorization, "Session persisted-token")
+        assert.match(response.headers.get("set-cookie") ?? "", /crater_session=persisted-token/)
         assert.equal(graphQLServer.requests[0].body.operationName, "LicenseDashboard")
         assert.match(graphQLServer.requests[0].body.query ?? "", /customers\(first: 100\)/)
         assert.match(graphQLServer.requests[0].body.query ?? "", /licenses\(first: 100\)/)

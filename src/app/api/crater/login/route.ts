@@ -1,30 +1,8 @@
-import { createApolloClient } from "@/lib/apolloClient"
-import { CRATER_ERROR_FIELDS, craterJson, craterMutationErrorResponse, optionalString, readJsonObject } from "@/lib/checkout/craterApi"
+import { craterJson, craterMutationErrorResponse, optionalString, readJsonObject } from "@/lib/checkout/craterApi"
+import { createCraterUserSession } from "@/lib/checkout/craterLogin"
 import { setCraterSessionCookie } from "@/lib/checkout/craterSession"
-import type { Mutation, MutationUsersLoginArgs } from "@code0-tech/crater-graphql-types"
-import { gql, type TypedDocumentNode } from "@apollo/client"
 
 export const runtime = "nodejs"
-
-type UsersLoginData = Pick<Mutation, "usersLogin">
-
-const USERS_LOGIN: TypedDocumentNode<UsersLoginData, MutationUsersLoginArgs> = gql`
-    ${CRATER_ERROR_FIELDS}
-    mutation UsersLogin($input: UsersLoginInput!) {
-        usersLogin(input: $input) {
-            userSession {
-                active
-                createdAt
-                id
-                token
-                updatedAt
-            }
-            errors {
-                ...CraterErrorFields
-            }
-        }
-    }
-`
 
 export async function POST(request: Request) {
     const body = await readJsonObject(request)
@@ -36,20 +14,7 @@ export async function POST(request: Request) {
     }
 
     try {
-        const result = await createApolloClient().mutate({
-            mutation: USERS_LOGIN,
-            variables: {
-                input: {
-                    sagittariusToken,
-                    ...(clientMutationId ? { clientMutationId } : {}),
-                },
-            },
-        })
-        const payload = result.data?.usersLogin
-
-        if (!payload) {
-            throw new Error("Crater returned no login payload.")
-        }
+        const payload = await createCraterUserSession(sagittariusToken, clientMutationId)
 
         const errorResponse = craterMutationErrorResponse(payload.errors, "Crater could not create a user session.")
         if (errorResponse) return errorResponse

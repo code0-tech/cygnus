@@ -54,7 +54,7 @@ function LicenseLayoutContent({ children, content, locale }: LicenseLayoutProps)
 
 export function LicenseLayout(props: LicenseLayoutProps) {
     return (
-        <LicenseDataProvider loadError={props.content.errors.dashboardLoad} locale={props.locale} redirectUrl={props.content.redirectUrl}>
+        <LicenseDataProvider loadError={props.content.errors.dashboardLoad} redirectUrl={props.content.redirectUrl}>
             <LicenseLayoutContent {...props} />
             {props.modal}
         </LicenseDataProvider>

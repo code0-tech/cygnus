@@ -37,28 +37,22 @@ test("restores a Crater session from its HttpOnly cookie after reload", async ()
     assert.deepEqual(requests, [{ method: "GET", url: "/api/crater/auth/session" }])
 })
 
-test("exchanges a Sagittarius token for the session cookie and sanitizes the URL", async () => {
-    window.history.replaceState({}, "", "/en/checkout?plan=pro&token=sagittarius-token")
-    const requests: Array<{ body: string | null; method: string; url: string }> = []
-    globalThis.fetch = (async (input, init) => {
-        requests.push({ body: typeof init?.body === "string" ? init.body : null, method: init?.method ?? "GET", url: String(input) })
-        return new Response(JSON.stringify({ authenticated: true }), { status: 200, headers: { "content-type": "application/json" } })
+test("shows a safe error after a failed server-side login callback", async () => {
+    window.history.replaceState({}, "", "/en/checkout?plan=pro&authError=session")
+    const requests: string[] = []
+    globalThis.fetch = (async (input) => {
+        requests.push(String(input))
+        throw new Error("Unexpected request")
     }) as typeof fetch
 
     render(
-        <CraterSessionProvider>
+        <CraterSessionProvider errorMessage="Configured session error">
             <SessionState />
         </CraterSessionProvider>
     )
 
-    assert.ok(await screen.findByText("authenticated"))
-    assert.deepEqual(requests, [
-        {
-            body: JSON.stringify({ sagittariusToken: "sagittarius-token" }),
-            method: "POST",
-            url: "/api/crater/login",
-        },
-    ])
+    assert.ok(await screen.findByText("Configured session error"))
+    assert.deepEqual(requests, [])
     assert.equal(window.location.pathname, "/en/checkout")
     assert.equal(window.location.search, "?plan=pro")
 })

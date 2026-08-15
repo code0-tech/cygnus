@@ -1,6 +1,6 @@
 import assert from "node:assert/strict"
 import test from "node:test"
-import { readCraterSessionAuthorization, readCraterSessionToken, removeCraterSessionToken } from "@/lib/checkout/craterSession"
+import { readCraterSessionAuthorization } from "@/lib/checkout/craterSession"
 
 test("reads a Crater session token from the Session authorization scheme", () => {
     const request = new Request("https://example.com", {
@@ -72,17 +72,4 @@ test("can require the URL-provided authorization header instead of the session c
     assert.deepEqual(readCraterSessionAuthorization(new Request("https://example.com", { headers: { cookie: "crater_session=cookie-token" } }), true), {
         status: "missing",
     })
-})
-
-test("reads and removes a Crater session token from a URL", () => {
-    const url = new URL("https://example.com/en/licenses?token=crater-session-token&customer=7")
-
-    assert.equal(readCraterSessionToken(url), "crater-session-token")
-    assert.equal(removeCraterSessionToken(url).toString(), "https://example.com/en/licenses?customer=7")
-    assert.equal(url.searchParams.get("token"), "crater-session-token")
-})
-
-test("rejects an empty or malformed Crater session token from a URL", () => {
-    assert.equal(readCraterSessionToken(new URL("https://example.com/en/licenses?token=%20")), undefined)
-    assert.equal(readCraterSessionToken(new URL("https://example.com/en/licenses?token=invalid%20token")), undefined)
 })
