@@ -25,10 +25,6 @@ const content = {
         b2b: { default: 100_000, min: 100_000, max: 1_000_000, step: 100_000 },
         b2c: { default: 10_000, min: 10_000, max: 100_000, step: 10_000 },
     },
-    additionalFeatures: [
-        { id: "sso", title: "SSO", description: "", icon: "", price: 10 },
-        { title: "Support", description: "", icon: "", price: 5 },
-    ],
 } as SubscriptionConfiguratorContent
 
 test("falls back to content defaults when the URL has no selection", () => {
@@ -39,13 +35,12 @@ test("falls back to content defaults when the URL has no selection", () => {
         paymentPeriod: "monthly",
         workflowExecutions: 10,
         aiTokens: 10_000,
-        additionalFeatureIds: [],
     })
 })
 
 test("writes the resolved usage defaults back into the search params on a fresh page load", () => {
     const selection = parseSubscriptionSelectionFromSearchParams(new URLSearchParams(), content)
-    const params = buildSubscriptionSelectionSearchParams(selection, [])
+    const params = buildSubscriptionSelectionSearchParams(selection)
 
     assert.equal(params.get("workflowExecutions"), "10")
     assert.equal(params.get("aiTokens"), "10000")
@@ -68,7 +63,6 @@ test("restores a full selection from the URL", () => {
         paymentPeriod: "yearly",
         workflowExecutions: 500,
         aiTokens: 200_000,
-        additionalFeatureIds: [],
     })
 })
 
@@ -93,7 +87,6 @@ test("ignores malformed or unknown URL values", () => {
         paymentPeriod: "monthly",
         workflowExecutions: 10,
         aiTokens: 10_000,
-        additionalFeatureIds: [],
     })
 })
 
@@ -115,11 +108,7 @@ test("normalizes payment periods according to the selected plan", () => {
     assert.equal(getPaymentPeriodForPlan("max", "weekly"), "weekly")
 })
 
-test("resolves additional features only by stable id", () => {
-    assert.deepEqual(resolveSubscriptionSelection(new URLSearchParams({ additionalFeatures: "sso,1" }), content).selection.additionalFeatureIds, ["sso"])
-})
-
-test("builds checkout search params only with usage and features for the custom plan", () => {
+test("builds checkout search params with usage only for the custom plan", () => {
     const customSelection: SubscriptionSelection = {
         plan: "custom",
         deployment: "cloud",
@@ -127,12 +116,8 @@ test("builds checkout search params only with usage and features for the custom 
         paymentPeriod: "yearly",
         workflowExecutions: 500,
         aiTokens: 200_000,
-        additionalFeatureIds: ["sso"],
     }
-    assert.equal(
-        buildSubscriptionSelectionSearchParams(customSelection).toString(),
-        "plan=custom&deploymentType=cloud&customerType=b2b&paymentPeriod=yearly&workflowExecutions=500&aiTokens=200000&additionalFeatures=sso"
-    )
+    assert.equal(buildSubscriptionSelectionSearchParams(customSelection).toString(), "plan=custom&deploymentType=cloud&customerType=b2b&paymentPeriod=yearly&workflowExecutions=500&aiTokens=200000")
 
     const fixedSelection: SubscriptionSelection = {
         plan: "pro",
@@ -141,9 +126,8 @@ test("builds checkout search params only with usage and features for the custom 
         paymentPeriod: "monthly",
         workflowExecutions: 10,
         aiTokens: 10_000,
-        additionalFeatureIds: [],
     }
-    assert.equal(buildSubscriptionSelectionSearchParams(fixedSelection, []).toString(), "plan=pro&deploymentType=self_hosted&customerType=b2c&paymentPeriod=monthly")
+    assert.equal(buildSubscriptionSelectionSearchParams(fixedSelection).toString(), "plan=pro&deploymentType=self_hosted&customerType=b2c&paymentPeriod=monthly")
 })
 
 test("snaps manipulated usage to the configured step", () => {

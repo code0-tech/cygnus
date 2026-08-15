@@ -162,7 +162,6 @@ const pageBlockRenderers: Partial<Record<PageBlock["blockType"], BlockRenderer>>
             workflowBusinessTypes: (config.workflowCalculator.businessTypes.length ? config.workflowCalculator.businessTypes : [{ icon: "tabler:IconBuilding" }]).map((businessType, index) =>
                 getIcon(businessType.icon?.trim() || "tabler:IconBuilding", 18, `workflow-business-type-${index}-${businessType.icon}`)
             ),
-            additionalFeatures: (config.additionalFeatures ?? []).map((feature, index) => getIcon(feature.icon?.trim() || "tabler:IconCube", 20, feature.id ?? `additional-feature-${index}`)),
         }
 
         return <SubscriptionConfiguratorSection locale={options.locale ?? "en"} content={{ ...config, ...blockContent }} icons={icons} subscriptionPrices={subscriptionPrices} />

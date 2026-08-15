@@ -13,12 +13,9 @@ export type SubscriptionSelection = {
     paymentPeriod: PaymentPeriod
     workflowExecutions: number
     aiTokens: number
-    additionalFeatureIds: string[]
 }
 
-export type RawSubscriptionSelection = Partial<
-    Record<"plan" | "deploymentType" | "deployment" | "customerType" | "paymentPeriod" | "workflowExecutions" | "aiTokens" | "additionalFeatures", string | null | undefined>
->
+export type RawSubscriptionSelection = Partial<Record<"plan" | "deploymentType" | "deployment" | "customerType" | "paymentPeriod" | "workflowExecutions" | "aiTokens", string | null | undefined>>
 
 export type SubscriptionSelectionIssue = {
     field: keyof RawSubscriptionSelection
@@ -32,7 +29,6 @@ export type SubscriptionSelectionAction =
     | { type: "paymentPeriodChanged"; value: PaymentPeriod }
     | { type: "workflowExecutionsChanged"; value: number }
     | { type: "aiTokensChanged"; value: number }
-    | { type: "additionalFeatureToggled"; id: string }
 
 const PLANS = new Set<SubscriptionConfiguratorPlan>(["pro", "max", "custom"])
 const DEPLOYMENTS = new Set<SubscriptionDeploymentMode>(["self_hosted", "cloud"])
@@ -92,28 +88,14 @@ export function resolveSubscriptionSelection(raw: RawSubscriptionSelection | URL
     if (rawPeriod && rawPeriod !== requestedPeriod) issues.push({ field: "paymentPeriod", message: "paymentPeriod must be weekly, monthly, quarterly, or yearly." })
     const paymentPeriod = getPaymentPeriodForPlan(plan, requestedPeriod)
 
-    const availableFeatures = new Set((config.additionalFeatures ?? []).flatMap((feature) => (feature.id ? [feature.id] : [])))
-    const requestedFeatures = (rawValue(raw, "additionalFeatures") ?? "")
-        .split(",")
-        .map((id) => id.trim())
-        .filter(Boolean)
-    const additionalFeatureIds = plan === "custom" ? [...new Set(requestedFeatures.filter((id) => availableFeatures.has(id)))] : []
-    if (requestedFeatures.some((id) => !availableFeatures.has(id))) issues.push({ field: "additionalFeatures", message: "additionalFeatures contains an unknown feature id." })
-
     const usageIssues = plan === "custom" && (!rawCustomerType || CUSTOMER_TYPES.has(rawCustomerType as SubscriptionCustomerType)) ? issues : []
     const workflowExecutions = plan === "custom" ? parseUsage(rawValue(raw, "workflowExecutions"), config.workflowExecutions[customerType], "workflowExecutions", usageIssues) : 0
     const aiTokens = plan === "custom" ? parseUsage(rawValue(raw, "aiTokens"), config.aiTokens[customerType], "aiTokens", usageIssues) : 0
 
-    return { selection: { plan, deployment, customerType, paymentPeriod, workflowExecutions, aiTokens, additionalFeatureIds }, issues }
+    return { selection: { plan, deployment, customerType, paymentPeriod, workflowExecutions, aiTokens }, issues }
 }
 
 export function reduceSubscriptionSelection(selection: SubscriptionSelection, action: SubscriptionSelectionAction, config: SubscriptionSelectionCatalog): SubscriptionSelection {
-    if (action.type === "additionalFeatureToggled") {
-        const selected = new Set(selection.additionalFeatureIds)
-        selected.has(action.id) ? selected.delete(action.id) : selected.add(action.id)
-        return { ...selection, additionalFeatureIds: [...selected] }
-    }
-
     const next = { ...selection }
     if (action.type === "customerTypeChanged") {
         next.customerType = action.value
@@ -124,12 +106,10 @@ export function reduceSubscriptionSelection(selection: SubscriptionSelection, ac
     } else if (action.type === "planChanged") {
         next.plan = getPlanForCustomerType(next.customerType, action.value)
         next.paymentPeriod = getPaymentPeriodForPlan(next.plan, next.paymentPeriod)
-    }
-    else if (action.type === "deploymentChanged") next.deployment = action.value
+    } else if (action.type === "deploymentChanged") next.deployment = action.value
     else if (action.type === "paymentPeriodChanged") next.paymentPeriod = getPaymentPeriodForPlan(next.plan, action.value)
     else if (action.type === "workflowExecutionsChanged") next.workflowExecutions = normalizeUsageValue(action.value, config.workflowExecutions[next.customerType])
     else if (action.type === "aiTokensChanged") next.aiTokens = normalizeUsageValue(action.value, config.aiTokens[next.customerType])
-    if (next.plan !== "custom") next.additionalFeatureIds = []
     return next
 }
 
@@ -137,12 +117,11 @@ export function parseSubscriptionSelectionFromSearchParams(searchParams: URLSear
     return resolveSubscriptionSelection(searchParams, content).selection
 }
 
-export function buildSubscriptionSelectionSearchParams(selection: SubscriptionSelection, featureIds = selection.additionalFeatureIds) {
+export function buildSubscriptionSelectionSearchParams(selection: SubscriptionSelection) {
     const params = new URLSearchParams({ plan: selection.plan, deploymentType: selection.deployment, customerType: selection.customerType, paymentPeriod: selection.paymentPeriod })
     if (selection.plan === "custom") {
         params.set("workflowExecutions", String(selection.workflowExecutions))
         params.set("aiTokens", String(selection.aiTokens))
-        if (featureIds.length) params.set("additionalFeatures", featureIds.join(","))
     }
     return params
 }

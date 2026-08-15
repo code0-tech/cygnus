@@ -91,7 +91,6 @@ export const enum_checkout_summary_deployment_icon_color = pgEnum('enum_checkout
 export const enum_checkout_summary_customer_type_icon_color = pgEnum('enum_checkout_summary_customer_type_icon_color', ['neutral', 'brand', 'aqua', 'blue', 'pink', 'yellow', 'lime', 'magenta'])
 export const enum_checkout_summary_ai_tokens_icon_color = pgEnum('enum_checkout_summary_ai_tokens_icon_color', ['neutral', 'brand', 'aqua', 'blue', 'pink', 'yellow', 'lime', 'magenta'])
 export const enum_checkout_summary_workflow_executions_icon_color = pgEnum('enum_checkout_summary_workflow_executions_icon_color', ['neutral', 'brand', 'aqua', 'blue', 'pink', 'yellow', 'lime', 'magenta'])
-export const enum_checkout_summary_additional_features_icon_color = pgEnum('enum_checkout_summary_additional_features_icon_color', ['neutral', 'brand', 'aqua', 'blue', 'pink', 'yellow', 'lime', 'magenta'])
 
 export const users_sessions = pgTable('users_sessions', {
   _order: integer('_order').notNull(),
@@ -2266,39 +2265,6 @@ export const subscription_config_workflow_calculator_business_types_locales = pg
 )
 
 
-export const subscription_config_additional_features = pgTable('subscription_config_additional_features', {
-  _order: integer('_order').notNull(),
-  _parentID: integer('_parent_id').notNull(),
-  id: varchar('id').primaryKey(),
-  icon: varchar('icon').notNull(),
-  price: numeric('price', {mode: 'number'}).default(0),
-  weeklyPrice: numeric('weekly_price', {mode: 'number'}).default(0),
-}, (columns) => [
-    index('subscription_config_additional_features_order_idx').on(columns._order), index('subscription_config_additional_features_parent_id_idx').on(columns._parentID), foreignKey({
-      columns: [columns['_parentID']],
-      foreignColumns: [subscription_config.id],
-      name: 'subscription_config_additional_features_parent_id_fk'
-    }).onDelete('cascade'),
-]
-)
-
-
-export const subscription_config_additional_features_locales = pgTable('subscription_config_additional_features_locales', {
-  title: varchar('title'),
-  description: varchar('description'),
-  id: serial('id').primaryKey(),
-  _locale: enum__locales('_locale').notNull(),
-  _parentID: varchar('_parent_id').notNull(),
-}, (columns) => [
-    uniqueIndex('subscription_config_additional_features_locales_locale_paren').on(columns._locale, columns._parentID), foreignKey({
-      columns: [columns['_parentID']],
-      foreignColumns: [subscription_config_additional_features.id],
-      name: 'subscription_config_additional_features_locales_parent_id_fk'
-    }).onDelete('cascade'),
-]
-)
-
-
 export const subscription_config = pgTable('subscription_config', {
   id: serial('id').primaryKey(),
   title: varchar('title').default("Subscription Config"),
@@ -2398,7 +2364,7 @@ export const subscription_config_locales = pgTable('subscription_config_locales'
   plan_max_title: varchar('plan_max_title').default("Max"),
   plan_max_description: varchar('plan_max_description').default("A ready-to-use plan for organizations with higher requirements."),
   plan_custom_title: varchar('plan_custom_title').default("Custom"),
-  plan_custom_description: varchar('plan_custom_description').default("Configure usage and additional features for an individual setup."),
+  plan_custom_description: varchar('plan_custom_description').default("Configure usage for an individual setup."),
   customerType_label: varchar('customer_type_label').default("Choose the customer model that best matches your use case."),
   customerType_description: varchar('customer_type_description'),
   customerType_b2b_title: varchar('customer_type_b2b_title').default("B2B"),
@@ -2448,8 +2414,6 @@ export const subscription_config_locales = pgTable('subscription_config_locales'
   subscribe_label: varchar('subscribe_label').default("Buy now"),
   price_heading: varchar('price_heading').default("Price"),
   price_caption: varchar('price_caption').default("per month"),
-  additionalFeaturesLabel: varchar('additional_features_label'),
-  additionalFeaturesDescription: varchar('additional_features_description'),
   id: serial('id').primaryKey(),
   _locale: enum__locales('_locale').notNull(),
   _parentID: integer('_parent_id').notNull(),
@@ -2477,8 +2441,6 @@ export const checkout = pgTable('checkout', {
   summary_aiTokensIconColor: enum_checkout_summary_ai_tokens_icon_color('summary_ai_tokens_icon_color').notNull().default("magenta"),
   summary_workflowExecutionsIcon: varchar('summary_workflow_executions_icon').notNull().default("tabler:IconBolt"),
   summary_workflowExecutionsIconColor: enum_checkout_summary_workflow_executions_icon_color('summary_workflow_executions_icon_color').notNull().default("brand"),
-  summary_additionalFeaturesIcon: varchar('summary_additional_features_icon').notNull().default("tabler:IconSparkles"),
-  summary_additionalFeaturesIconColor: enum_checkout_summary_additional_features_icon_color('summary_additional_features_icon_color').notNull().default("yellow"),
   updatedAt: timestamp('updated_at', {mode: 'string',withTimezone: true,precision: 3}),
   createdAt: timestamp('created_at', {mode: 'string',withTimezone: true,precision: 3}),
 }
@@ -2499,20 +2461,17 @@ export const checkout_locales = pgTable('checkout_locales', {
   login_guestLabel: varchar('login_guest_label').notNull().default("Continue as guest"),
   summary_eyebrow: varchar('summary_eyebrow').notNull().default("Order Summary"),
   summary_heading: varchar('summary_heading').notNull().default("Review your configuration"),
-  summary_description: varchar('summary_description').notNull().default("This checkout reflects the subscription shape you configured, including runtime and optional add-ons."),
+  summary_description: varchar('summary_description').notNull().default("This checkout reflects the subscription shape you configured, including runtime."),
   summary_configurationLabel: varchar('summary_configuration_label').notNull().default("Your configuration"),
   summary_deploymentLabel: varchar('summary_deployment_label').notNull().default("Deployment"),
   summary_customerTypeLabel: varchar('summary_customer_type_label').notNull().default("Customer Type"),
   summary_aiTokensLabel: varchar('summary_ai_tokens_label').notNull().default("AI Tokens"),
   summary_workflowExecutionsLabel: varchar('summary_workflow_executions_label').notNull().default("Workflow Executions"),
-  summary_additionalFeaturesLabel: varchar('summary_additional_features_label').notNull().default("Additional Features"),
-  summary_additionalFeaturesDescription: varchar('summary_additional_features_description').notNull().default("Selected add-ons that extend the base subscription."),
   summary_pricing_label: varchar('summary_pricing_label').notNull().default("Pricing"),
   summary_pricing_description: varchar('summary_pricing_description').notNull().default("Monthly breakdown based on your current setup."),
   summary_pricing_planLabel: varchar('summary_pricing_plan_label').notNull().default("Plan"),
   summary_pricing_baseLabel: varchar('summary_pricing_base_label').notNull().default("AI Tokens"),
   summary_pricing_workflowExecutionsLabel: varchar('summary_pricing_workflow_executions_label').notNull().default("Workflow Executions"),
-  summary_pricing_additionalFeaturesLabel: varchar('summary_pricing_additional_features_label').notNull().default("Additional Features"),
   summary_pricing_quarterlyDiscountLabel: varchar('summary_pricing_quarterly_discount_label').notNull().default("Quarterly discount"),
   summary_pricing_yearlyDiscountLabel: varchar('summary_pricing_yearly_discount_label').notNull().default("Yearly discount"),
   summary_pricing_discountLabel: varchar('summary_pricing_discount_label').notNull().default("Discount"),
@@ -3941,25 +3900,6 @@ export const relations_subscription_config_workflow_calculator_business_types = 
             relationName: '_locales',
     }),
       }))
-export const relations_subscription_config_additional_features_locales = relations(subscription_config_additional_features_locales, ({ one }) => ({
-  _parentID: one(subscription_config_additional_features, {
-    
-    fields: [subscription_config_additional_features_locales._parentID],
-    references: [subscription_config_additional_features.id],
-    relationName: '_locales',
-    }),
-      }))
-export const relations_subscription_config_additional_features = relations(subscription_config_additional_features, ({ one, many }) => ({
-  _parentID: one(subscription_config, {
-    
-    fields: [subscription_config_additional_features._parentID],
-    references: [subscription_config.id],
-    relationName: 'additionalFeatures',
-    }),
-    _locales: many(subscription_config_additional_features_locales, {
-            relationName: '_locales',
-    }),
-      }))
 export const relations_subscription_config_locales = relations(subscription_config_locales, ({ one }) => ({
   _parentID: one(subscription_config, {
     
@@ -4013,9 +3953,6 @@ export const relations_subscription_config = relations(subscription_config, ({ o
     }),
     workflowCalculator_businessTypes: many(subscription_config_workflow_calculator_business_types, {
             relationName: 'workflowCalculator_businessTypes',
-    }),
-    additionalFeatures: many(subscription_config_additional_features, {
-            relationName: 'additionalFeatures',
     }),
     _locales: many(subscription_config_locales, {
             relationName: '_locales',
@@ -4130,7 +4067,6 @@ type DatabaseSchema = {
   enum_checkout_summary_customer_type_icon_color: typeof enum_checkout_summary_customer_type_icon_color
   enum_checkout_summary_ai_tokens_icon_color: typeof enum_checkout_summary_ai_tokens_icon_color
   enum_checkout_summary_workflow_executions_icon_color: typeof enum_checkout_summary_workflow_executions_icon_color
-  enum_checkout_summary_additional_features_icon_color: typeof enum_checkout_summary_additional_features_icon_color
   users_sessions: typeof users_sessions
   users: typeof users
   media: typeof media
@@ -4239,8 +4175,6 @@ type DatabaseSchema = {
   cookie_banner_locales: typeof cookie_banner_locales
   subscription_config_workflow_calculator_business_types: typeof subscription_config_workflow_calculator_business_types
   subscription_config_workflow_calculator_business_types_locales: typeof subscription_config_workflow_calculator_business_types_locales
-  subscription_config_additional_features: typeof subscription_config_additional_features
-  subscription_config_additional_features_locales: typeof subscription_config_additional_features_locales
   subscription_config: typeof subscription_config
   subscription_config_locales: typeof subscription_config_locales
   checkout: typeof checkout
@@ -4355,8 +4289,6 @@ type DatabaseSchema = {
   relations_cookie_banner: typeof relations_cookie_banner
   relations_subscription_config_workflow_calculator_business_types_locales: typeof relations_subscription_config_workflow_calculator_business_types_locales
   relations_subscription_config_workflow_calculator_business_types: typeof relations_subscription_config_workflow_calculator_business_types
-  relations_subscription_config_additional_features_locales: typeof relations_subscription_config_additional_features_locales
-  relations_subscription_config_additional_features: typeof relations_subscription_config_additional_features
   relations_subscription_config_locales: typeof relations_subscription_config_locales
   relations_subscription_config: typeof relations_subscription_config
   relations_checkout_locales: typeof relations_checkout_locales

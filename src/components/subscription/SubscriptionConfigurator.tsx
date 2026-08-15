@@ -1,7 +1,6 @@
 "use client"
 
 import { WorkflowCalculatorDialog } from "@/components/checkout/WorkflowCalculatorDialog"
-import { SubscriptionAdditionalFeature } from "@/components/subscription/SubscriptionAdditionalFeature"
 import { SubscriptionOptionCard } from "@/components/subscription/SubscriptionOptionCard"
 import { HapticButtonLink } from "@/components/ui/HapticButtonLink"
 import { FormattedText, hasHighlightedText } from "@/components/ui/FormattedText"
@@ -10,7 +9,14 @@ import type { SubscriptionConfiguratorContent } from "@/lib/cms"
 import { formatEuroCurrency } from "@/lib/formatters"
 import { localizeHref, type AppLocale } from "@/lib/i18n"
 import { getSubscriptionCatalog } from "@/lib/subscriptionCatalog"
-import { calculateSubscriptionQuote, formatDiscountBadge, getMonthlyEquivalentAmount, getPaymentPeriodAmount, getPaymentPeriodSuffix, getSubscriptionQuoteDiscountRate } from "@/lib/subscriptionCalculator"
+import {
+    calculateSubscriptionQuote,
+    formatDiscountBadge,
+    getMonthlyEquivalentAmount,
+    getPaymentPeriodAmount,
+    getPaymentPeriodSuffix,
+    getSubscriptionQuoteDiscountRate,
+} from "@/lib/subscriptionCalculator"
 import type { SubscriptionPriceCatalog } from "@/lib/subscriptionPrices"
 import { cn } from "@/lib/utils"
 import {
@@ -44,7 +50,6 @@ export interface SubscriptionIcons {
         b2c: ReactNode
     }
     workflowBusinessTypes: ReactNode[]
-    additionalFeatures: ReactNode[]
 }
 
 export type SubscriptionOptionImageKey = "b2b" | "b2c" | "pro" | "max" | "custom" | "selfHosted" | "cloud"
@@ -93,7 +98,6 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
         onActiveImageChangeAction?.(imageKey)
         pendingScrollStepKeyRef.current = stepKey
     }
-    const selectedFeatureIds = new Set(selection.additionalFeatureIds)
     const paymentPeriodOptions = selection.plan === "custom" ? CUSTOM_PAYMENT_PERIOD_OPTIONS : STANDARD_PAYMENT_PERIOD_OPTIONS
     const paymentPeriodSuffix = getPaymentPeriodSuffix(selection.paymentPeriod, content.paymentPeriod)
     const monthlyPeriodSuffix = getPaymentPeriodSuffix("monthly", content.paymentPeriod)
@@ -112,7 +116,6 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
         ...(selection.customerType === "b2c" ? [content.plan.title] : []),
         content.deployment.label,
         ...(selection.plan === "custom" ? [aiTokens.title, workflowExecutions.title] : []),
-        ...(selection.plan === "custom" && content.additionalFeatures?.length ? [content.additionalFeaturesLabel ?? "Additional Features"] : []),
         content.paymentPeriod.label,
     ]
 
@@ -319,28 +322,6 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                                     {content.contactSales.label}
                                 </LinkButton>
                             </div>
-                        </div>
-                    </div>
-                )}
-
-                {selection.plan === "custom" && content.additionalFeatures && content.additionalFeatures.length > 0 && (
-                    <div className="space-y-8 scroll-mt-48" data-subscription-step="additionalFeatures">
-                        <SubscriptionOptionCategoryLabel label={content.additionalFeaturesLabel ?? "Additional Features"} description={content.additionalFeaturesDescription} />
-                        <div className="grid gap-3">
-                            {content.additionalFeatures.map((feature, index) => {
-                                const formattedFeaturePrice = formatEuroCurrency(feature.price, locale)
-                                return (
-                                    <SubscriptionAdditionalFeature
-                                        key={feature.id ?? `feature-${index}`}
-                                        title={feature.title}
-                                        description={feature.description}
-                                        icon={icons.additionalFeatures[index]}
-                                        formattedPrice={`+${formattedFeaturePrice}/mo`}
-                                        active={Boolean(feature.id && selectedFeatureIds.has(feature.id))}
-                                        onClick={feature.id ? () => dispatch({ type: "additionalFeatureToggled", id: feature.id! }) : undefined}
-                                    />
-                                )
-                            })}
                         </div>
                     </div>
                 )}

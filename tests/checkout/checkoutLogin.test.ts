@@ -3,9 +3,9 @@ import test from "node:test"
 import { createCheckoutQuery, createMainAppLoginUrl, readSagittariusToken, removeSagittariusToken } from "../../src/lib/checkout/checkoutLogin"
 
 test("preserves the subscription configuration for guest checkout", () => {
-    const query = createCheckoutQuery({ plan: "custom", additionalFeature: ["one", "two"], empty: undefined })
+    const query = createCheckoutQuery({ plan: "custom", tag: ["one", "two"], empty: undefined })
 
-    assert.equal(query, "plan=custom&additionalFeature=one&additionalFeature=two")
+    assert.equal(query, "plan=custom&tag=one&tag=two")
 })
 
 test("appends the absolute checkout and cancellation URLs to the configured login URL", () => {

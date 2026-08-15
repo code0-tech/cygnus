@@ -1,15 +1,7 @@
 import type { SubscriptionConfigData } from "@/lib/cms"
 import type { SubscriptionPriceCatalog } from "@/lib/subscriptionPrices"
 
-export type SubscriptionSelectionCatalog = Pick<
-    SubscriptionConfigData,
-    | "defaults"
-    | "packages"
-    | "paymentPeriod"
-    | "workflowExecutions"
-    | "aiTokens"
-    | "additionalFeatures"
->
+export type SubscriptionSelectionCatalog = Pick<SubscriptionConfigData, "defaults" | "packages" | "paymentPeriod" | "workflowExecutions" | "aiTokens">
 
 export type SubscriptionCatalog = SubscriptionSelectionCatalog & {
     subscriptionPrices: SubscriptionPriceCatalog
@@ -22,7 +14,6 @@ export function getSubscriptionCatalog(config: SubscriptionConfigData, subscript
         paymentPeriod: config.paymentPeriod,
         workflowExecutions: config.workflowExecutions,
         aiTokens: config.aiTokens,
-        additionalFeatures: config.additionalFeatures,
         subscriptionPrices,
     }
 }
