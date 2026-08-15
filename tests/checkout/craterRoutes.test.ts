@@ -186,42 +186,43 @@ test("surfaces Crater payment method setup domain errors", async () => {
     }
 })
 
-test("checkout license status requires a Crater session", async () => {
-    const response = await getCheckoutLicenseStatus(new Request("https://example.com/api/crater/checkout/status?customerId=gid%3A%2F%2Fcrater%2FCustomer%2F1&startedAt=1786528800000"))
+test("checkout completion status requires a Crater session", async () => {
+    const response = await getCheckoutLicenseStatus(new Request("https://example.com/api/crater/checkout/status?sessionId=cs_test_example"))
 
     assert.equal(response.status, 403)
     assert.equal(response.headers.get("cache-control"), "no-store")
 })
 
-test("checkout license status becomes ready after Crater creates the license", async () => {
+test("checkout completion status requires a valid Stripe Checkout Session id", async () => {
+    const response = await getCheckoutLicenseStatus(
+        new Request("https://example.com/api/crater/checkout/status?sessionId=invalid", {
+            headers: sessionHeaders,
+        })
+    )
+
+    assert.equal(response.status, 400)
+    assert.deepEqual(await response.json(), { error: "A valid checkout session is required." })
+})
+
+test("checkout completion status is bound to Crater's server-resolved customer, payment, and license", async () => {
     const customerId = "gid://crater/Customer/1"
-    const startedAt = Date.parse("2026-08-12T10:00:00Z")
+    const sessionId = "cs_test_checkout123"
     const graphQLServer = await createGraphQLTestServer([
         {
             data: {
-                currentUser: {
-                    customers: {
-                        nodes: [
-                            {
-                                id: customerId,
-                                licenses: { nodes: [{ createdAt: "2026-08-12T09:59:59Z", id: "gid://crater/License/1" }] },
-                            },
-                        ],
-                    },
+                checkoutCompletionStatus: {
+                    state: "PAYMENT_PENDING",
+                    customerId,
+                    licenseId: null,
                 },
             },
         },
         {
             data: {
-                currentUser: {
-                    customers: {
-                        nodes: [
-                            {
-                                id: customerId,
-                                licenses: { nodes: [{ createdAt: "2026-08-12T10:00:01Z", id: "gid://crater/License/2" }] },
-                            },
-                        ],
-                    },
+                checkoutCompletionStatus: {
+                    state: "READY",
+                    customerId,
+                    licenseId: "gid://crater/License/2",
                 },
             },
         },
@@ -230,16 +231,84 @@ test("checkout license status becomes ready after Crater creates the license", a
     process.env.CRATER_GRAPHQL_URL = graphQLServer.url
 
     try {
-        const requestUrl = `https://example.com/api/crater/checkout/status?customerId=${encodeURIComponent(customerId)}&startedAt=${startedAt}`
+        const requestUrl = `https://example.com/api/crater/checkout/status?sessionId=${sessionId}`
         const pendingResponse = await getCheckoutLicenseStatus(new Request(requestUrl, { headers: sessionHeaders }))
         const readyResponse = await getCheckoutLicenseStatus(new Request(requestUrl, { headers: sessionHeaders }))
 
         assert.equal(pendingResponse.status, 200)
-        assert.deepEqual(await pendingResponse.json(), { ready: false })
+        assert.deepEqual(await pendingResponse.json(), { state: "PAYMENT_PENDING", customerId, licenseId: null })
         assert.equal(readyResponse.status, 200)
-        assert.deepEqual(await readyResponse.json(), { ready: true })
-        assert.equal(graphQLServer.requests[0].body.operationName, "CheckoutLicenseStatus")
-        assert.match(graphQLServer.requests[0].body.query ?? "", /createdAt/)
+        assert.deepEqual(await readyResponse.json(), { state: "READY", customerId, licenseId: "gid://crater/License/2" })
+        assert.equal(graphQLServer.requests[0].body.operationName, "CheckoutCompletionStatus")
+        assert.deepEqual(graphQLServer.requests[0].body.variables, { sessionId })
+        assert.match(graphQLServer.requests[0].body.query ?? "", /checkoutCompletionStatus\(sessionId: \$sessionId\)/)
+        assert.doesNotMatch(graphQLServer.requests[0].body.query ?? "", /currentUser|createdAt/)
+    } finally {
+        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
+        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
+        await graphQLServer.close()
+    }
+})
+
+test("checkout completion status does not expose foreign or inconsistent sessions", async () => {
+    const graphQLServer = await createGraphQLTestServer([
+        {
+            errors: [
+                {
+                    message: "Invalid checkout status session",
+                    extensions: { errorCode: "INVALID_CHECKOUT_STATUS_SESSION" },
+                },
+            ],
+        },
+    ])
+    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
+    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
+
+    try {
+        const response = await getCheckoutLicenseStatus(
+            new Request("https://example.com/api/crater/checkout/status?sessionId=cs_test_foreign123", {
+                headers: sessionHeaders,
+            })
+        )
+
+        assert.equal(response.status, 404)
+        assert.deepEqual(await response.json(), {
+            error: "The checkout session could not be verified.",
+            errorCode: "INVALID_CHECKOUT_STATUS_SESSION",
+        })
+    } finally {
+        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
+        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
+        await graphQLServer.close()
+    }
+})
+
+test("checkout completion status marks temporary Crater status failures as retryable", async () => {
+    const graphQLServer = await createGraphQLTestServer([
+        {
+            errors: [
+                {
+                    message: "Stripe unavailable",
+                    extensions: { errorCode: "CHECKOUT_STATUS_UNAVAILABLE" },
+                },
+            ],
+        },
+    ])
+    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
+    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
+
+    try {
+        const response = await getCheckoutLicenseStatus(
+            new Request("https://example.com/api/crater/checkout/status?sessionId=cs_test_unavailable123", {
+                headers: sessionHeaders,
+            })
+        )
+
+        assert.equal(response.status, 503)
+        assert.deepEqual(await response.json(), {
+            error: "The checkout status is temporarily unavailable.",
+            errorCode: "CHECKOUT_STATUS_UNAVAILABLE",
+        })
     } finally {
         if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
         else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl

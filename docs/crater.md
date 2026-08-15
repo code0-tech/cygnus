@@ -211,6 +211,76 @@ Monetary amounts are transferred as integers in the smallest currency unit.
 
 A configuration is no longer available after it has been consumed or has expired. Customer, deployment type, and Stripe price ID are required when creating one.
 
+### The checkout completion status
+
+`checkoutCompletionStatus(sessionId: String!)` answers the one question a client has after sending a user into the checkout: did this produce access yet? It exists so that no client -- Cygnus included -- has to guess that from a Stripe redirect, a timestamp, or a customer id it happens to hold.
+
+**A completed Stripe session is not access.** `session.status = complete` only means the user finished the form and Stripe accepted the subscription. Paid access still begins exclusively where it always did: at the verified `invoice.paid` webhook, which appends the `paid` license snapshot. The query never grants, advances, or anticipates that -- it only reports whether it has happened.
+
+#### The states
+
+| State                 | Meaning                                                                                                                                                                                                                                                                |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CHECKOUT_PENDING`    | The Stripe session is `open`; the user has not finished the checkout.                                                                                                                                                                                                  |
+| `PAYMENT_PENDING`     | The session is `complete` but `payment_status` is `unpaid`.                                                                                                                                                                                                            |
+| `FULFILLMENT_PENDING` | Stripe considers the session settled (`paid` or `no_payment_required`), but Crater has no `paid` license for its subscription yet. **This is not access.** It is also the state while the `checkout.session.completed` or `invoice.paid` webhooks are still in flight. |
+| `READY`               | A `paid` license exists for exactly the subscription this session created. `licenseId` names it.                                                                                                                                                                       |
+| `FAILED`              | The session `expired` without completing and can no longer lead to access.                                                                                                                                                                                             |
+
+`no_payment_required` is deliberately not treated as paid. A hundred-percent discount still has to produce an `invoice.paid` and a `paid` license before the answer becomes `READY`.
+
+#### What the client may contribute
+
+Only the Stripe Checkout Session ID. There is no `customerId` argument, no timestamp, and no state the client could influence:
+
+- `customerId` in the response is what Crater resolved server-side, never what the caller claimed.
+- `licenseId` is set in `READY` only, and is `null` in every other state.
+- No Stripe customer, subscription, or invoice IDs are returned.
+- GraphQL responses carry `Cache-Control: no-store`, so no proxy or browser holds a stale answer.
+
+#### What is verified before an answer is given
+
+The query needs an active `UserSession`; an anonymous request is refused. Beyond that, every one of these must hold, and any single failure produces one identical `INVALID_CHECKOUT_STATUS_SESSION` error:
+
+- The ID looks like a Stripe Checkout Session ID. A malformed one is refused without calling Stripe at all.
+- The session exists, and `mode` is `subscription`.
+- `status` is `open`, `complete`, or `expired`.
+- The session names a Stripe customer.
+- A `complete` session names a subscription, and `session.customer` equals `subscription.customer`.
+- `subscription.metadata.crater_customer_id` is present, numeric, and names an existing Crater customer.
+- That customer's `stripe_customer_id` is the session's Stripe customer.
+- That customer is linked to the authenticated user through `CustomerUser`, checked with the same `CustomerPolicy` used everywhere else. Being an admin grants nothing extra.
+- The remaining metadata Crater wrote is internally consistent and agrees with what Crater knows: `customer_type` matches the resolved customer, `deployment_type` is a known one, a `namespace_id` only appears for cloud, `plan` and `payment_period` appear together and form an available combination, custom quantities appear only for the custom plan, and a negotiated `CustomCheckoutConfiguration` carries no plan at all. Where the local `Subscription` already exists, its deployment type, plan, and payment period must equal the metadata's.
+
+Because a session that does not exist, one belonging to somebody else, and one that contradicts itself are answered identically, the response never reveals which of the three it was.
+
+#### How `READY` is bound to exactly one subscription
+
+The local subscription is resolved solely through the Stripe subscription ID of the session, against the unique `index_subscriptions_on_stripe_subscription_id`, and must belong to the resolved customer. `READY` requires a `paid` license of **that** subscription:
+
+- A paid license of another subscription, even of the same customer, never produces `READY`.
+- A paid license of another customer never produces `READY`.
+- No timestamp heuristic and no "any recent license" lookup is involved.
+- A missing local subscription or a missing license is `FULFILLMENT_PENDING`, which is the normal state while webhooks are still in flight.
+
+Licenses stay append-only, and the query writes nothing. Polling it repeatedly is free of side effects and adds no shadow state: it reads the same `Subscription` and `License` projection the dashboard reads. No new metadata key and no migration were needed -- `crater_customer_id` already identifies Crater's own sessions, and the unique index on `stripe_subscription_id` already provides the exact binding.
+
+Stripe outages are distinguished from domain errors: an unreachable Stripe surfaces as `CHECKOUT_STATUS_UNAVAILABLE`, which a client may retry, while everything above is `INVALID_CHECKOUT_STATUS_SESSION`, which it must not. Both are GraphQL execution errors carrying the code in `extensions.errorCode`. Logging is limited to the Stripe session ID and the error class.
+
+#### The client flow
+
+```graphql
+query CheckoutCompletionStatus($sessionId: String!) {
+    checkoutCompletionStatus(sessionId: $sessionId) {
+        state
+        customerId
+        licenseId
+    }
+}
+```
+
+Poll while the state is `CHECKOUT_PENDING`, `PAYMENT_PENDING`, or `FULFILLMENT_PENDING`; stop on `READY` and on `FAILED`. Treat only `READY` as access, and use its `licenseId` to load the license. `FULFILLMENT_PENDING` is expected for a short while after a successful checkout and is not an error.
+
 ### Updating the payment method
 
 `customerPaymentMethodSetupCreate` creates a Stripe SetupIntent and returns its client secret, so the frontend can collect a new payment method with Stripe Elements and have it become the customer's default for future invoices. The checkout stays untouched; this is the path for changing the payment method of a customer that already exists.
@@ -414,11 +484,12 @@ Retries for a missing subscription are limited. If the subscription is still una
 
 All queries start at the root `Query` type. The currently documented query fields are:
 
-| Query                | Argument           | Return type         | Purpose                                                                                                |
-| -------------------- | ------------------ | ------------------- | ------------------------------------------------------------------------------------------------------ |
-| `currentUser`        | none               | `User`              | Returns the user authenticated by the current Crater session, or `null` when the request is anonymous. |
-| `echo`               | `message: String!` | `String!`           | Verifies read access to the API and returns the supplied message.                                      |
-| `subscriptionPrices` | none               | `[CheckoutPrice!]!` | Returns active recurring Stripe prices and can be queried anonymously.                                 |
+| Query                      | Argument             | Return type                 | Purpose                                                                                                         |
+| -------------------------- | -------------------- | --------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `currentUser`              | none                 | `User`                      | Returns the user authenticated by the current Crater session, or `null` when the request is anonymous.          |
+| `echo`                     | `message: String!`   | `String!`                   | Verifies read access to the API and returns the supplied message.                                               |
+| `subscriptionPrices`       | none                 | `[CheckoutPrice!]!`         | Returns active recurring Stripe prices and can be queried anonymously.                                          |
+| `checkoutCompletionStatus` | `sessionId: String!` | `CheckoutCompletionStatus!` | Reports how far one Stripe Checkout Session has progressed towards licensed access. Requires an active session. |
 
 #### License dashboard
 
