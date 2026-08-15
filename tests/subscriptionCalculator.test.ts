@@ -15,12 +15,18 @@ import {
 import { SUBSCRIPTION_PRICE_LOOKUP_KEYS, type SubscriptionPriceCatalog, type SubscriptionPriceLookupKey } from "@/lib/subscriptionPrices"
 
 const stripeAmounts: Partial<Record<SubscriptionPriceLookupKey, string>> = {
-    pro_weekly: "500",
-    pro_monthly: "1500",
-    pro_yearly: "15000",
-    max_weekly: "1000",
-    max_monthly: "3000",
-    max_yearly: "30000",
+    pro_b2b_monthly: "1500",
+    pro_b2b_quarterly: "4050",
+    pro_b2b_yearly: "15000",
+    pro_b2c_weekly: "500",
+    pro_b2c_monthly: "1500",
+    pro_b2c_yearly: "15000",
+    max_b2b_monthly: "3000",
+    max_b2b_quarterly: "8100",
+    max_b2b_yearly: "30000",
+    max_b2c_weekly: "1000",
+    max_b2c_monthly: "3000",
+    max_b2c_yearly: "30000",
 }
 
 function createSubscriptionPrices(overrides: Partial<Record<SubscriptionPriceLookupKey, string>> = {}): SubscriptionPriceCatalog {
@@ -196,7 +202,7 @@ test("preserves the regular fixed-plan price for period discount summaries", () 
     assert.equal(result.pricing.totalPrice, 150)
 })
 
-test("forces the custom plan when a b2b customer requests a pro or max checkout via the URL", () => {
+test("prices a fixed plan from the b2b prices for a b2b customer", () => {
     const config = {
         aiTokenPriceFactor: 0.001,
         aiTokens: {
@@ -219,24 +225,27 @@ test("forces the custom plan when a b2b customer requests a pro or max checkout 
         },
     } as never
 
-    const result = resolveCheckoutPricing({
+    const quarterly = resolveCheckoutPricing({
         aiTokensParam: null,
         customerTypeParam: "b2b",
         fallbackPeriodSuffix: "/mo",
-        paymentPeriodParam: "monthly",
+        paymentPeriodParam: "quarterly",
         planParam: "pro",
         subscriptionConfig: config,
         subscriptionPrices,
         workflowExecutionsParam: null,
     })
 
-    assert.equal(result.plan, "custom")
-    assert.equal(result.isCustomPlan, true)
-    assert.equal(result.workflowExecutions, 20)
-    assert.equal(result.aiTokens, 100)
+    assert.equal(quarterly.plan, "pro")
+    assert.equal(quarterly.isCustomPlan, false)
+    assert.equal(quarterly.paymentPeriod, "quarterly")
+    assert.equal(quarterly.pricing.totalPrice, 40.5)
+    assert.equal(quarterly.pricing.totalBeforeDiscount, 45)
+    assert.equal(quarterly.aiTokens, 0)
+    assert.equal(quarterly.workflowExecutions, 0)
 })
 
-test("normalizes custom weekly and preserves custom quarterly in the checkout price display", () => {
+test("normalizes payment periods the customer type is not billed in for the checkout price display", () => {
     const config = {
         aiTokenPriceFactor: 0.001,
         aiTokens: {
@@ -278,9 +287,20 @@ test("normalizes custom weekly and preserves custom quarterly in the checkout pr
         subscriptionPrices,
         workflowExecutionsParam: null,
     })
+    const b2cWeekly = resolveCheckoutPricing({
+        aiTokensParam: null,
+        customerTypeParam: "b2c",
+        fallbackPeriodSuffix: "/mo",
+        paymentPeriodParam: "weekly",
+        planParam: "custom",
+        subscriptionConfig: config,
+        subscriptionPrices,
+        workflowExecutionsParam: null,
+    })
 
     assert.equal(b2bWeekly.paymentPeriod, "monthly")
-    assert.equal(b2cQuarterly.paymentPeriod, "quarterly")
+    assert.equal(b2cQuarterly.paymentPeriod, "monthly")
+    assert.equal(b2cWeekly.paymentPeriod, "weekly")
 })
 
 test("clamps manipulated custom-plan usage parameters before calculating the price", () => {

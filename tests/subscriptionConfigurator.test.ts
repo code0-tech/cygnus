@@ -3,8 +3,8 @@ import test from "node:test"
 import type { SubscriptionConfiguratorContent } from "../src/lib/cms"
 import {
     buildSubscriptionSelectionSearchParams,
-    getPaymentPeriodForPlan,
-    getPlanForCustomerType,
+    getPaymentPeriodForCustomerType,
+    getPaymentPeriodOptions,
     parseSubscriptionSelectionFromSearchParams,
     reduceSubscriptionSelection,
     resolveSubscriptionSelection,
@@ -66,9 +66,9 @@ test("restores a full selection from the URL", () => {
     })
 })
 
-test("forces the custom plan for b2b customers even if the URL requests a fixed plan", () => {
+test("keeps a fixed plan for b2b customers", () => {
     const searchParams = new URLSearchParams({ plan: "pro", customerType: "b2b" })
-    assert.equal(parseSubscriptionSelectionFromSearchParams(searchParams, content).plan, "custom")
+    assert.equal(parseSubscriptionSelectionFromSearchParams(searchParams, content).plan, "pro")
 })
 
 test("clamps usage values restored from the URL to the customer type's range", () => {
@@ -90,22 +90,31 @@ test("ignores malformed or unknown URL values", () => {
     })
 })
 
-test("restores a weekly payment period for a standard b2c plan from the URL", () => {
-    const searchParams = new URLSearchParams({ customerType: "b2c", plan: "pro", paymentPeriod: "weekly" })
-    assert.equal(parseSubscriptionSelectionFromSearchParams(searchParams, content).paymentPeriod, "weekly")
+test("restores a weekly payment period for any b2c plan from the URL", () => {
+    const customSearchParams = new URLSearchParams({ customerType: "b2c", plan: "custom", paymentPeriod: "weekly" })
+    assert.equal(parseSubscriptionSelectionFromSearchParams(customSearchParams, content).paymentPeriod, "weekly")
+
+    const fixedSearchParams = new URLSearchParams({ customerType: "b2c", plan: "pro", paymentPeriod: "weekly" })
+    assert.equal(parseSubscriptionSelectionFromSearchParams(fixedSearchParams, content).paymentPeriod, "weekly")
 })
 
-test("normalizes payment periods according to the selected plan", () => {
-    const customWeeklySearchParams = new URLSearchParams({ customerType: "b2c", plan: "custom", paymentPeriod: "weekly" })
-    assert.equal(parseSubscriptionSelectionFromSearchParams(customWeeklySearchParams, content).paymentPeriod, "monthly")
+test("normalizes payment periods according to the customer type, not the plan", () => {
+    const b2cQuarterlySearchParams = new URLSearchParams({ customerType: "b2c", plan: "custom", paymentPeriod: "quarterly" })
+    assert.equal(parseSubscriptionSelectionFromSearchParams(b2cQuarterlySearchParams, content).paymentPeriod, "monthly")
 
-    const standardQuarterlySearchParams = new URLSearchParams({ customerType: "b2c", plan: "max", paymentPeriod: "quarterly" })
-    assert.equal(parseSubscriptionSelectionFromSearchParams(standardQuarterlySearchParams, content).paymentPeriod, "monthly")
+    const b2bWeeklySearchParams = new URLSearchParams({ customerType: "b2b", plan: "max", paymentPeriod: "weekly" })
+    assert.equal(parseSubscriptionSelectionFromSearchParams(b2bWeeklySearchParams, content).paymentPeriod, "monthly")
 
-    assert.equal(getPaymentPeriodForPlan("custom", "weekly"), "monthly")
-    assert.equal(getPaymentPeriodForPlan("custom", "quarterly"), "quarterly")
-    assert.equal(getPaymentPeriodForPlan("pro", "quarterly"), "monthly")
-    assert.equal(getPaymentPeriodForPlan("max", "weekly"), "weekly")
+    const b2bQuarterlySearchParams = new URLSearchParams({ customerType: "b2b", plan: "pro", paymentPeriod: "quarterly" })
+    assert.equal(parseSubscriptionSelectionFromSearchParams(b2bQuarterlySearchParams, content).paymentPeriod, "quarterly")
+
+    assert.equal(getPaymentPeriodForCustomerType("b2b", "weekly"), "monthly")
+    assert.equal(getPaymentPeriodForCustomerType("b2b", "quarterly"), "quarterly")
+    assert.equal(getPaymentPeriodForCustomerType("b2c", "quarterly"), "monthly")
+    assert.equal(getPaymentPeriodForCustomerType("b2c", "weekly"), "weekly")
+
+    assert.deepEqual([...getPaymentPeriodOptions("b2b")], ["monthly", "quarterly", "yearly"])
+    assert.deepEqual([...getPaymentPeriodOptions("b2c")], ["weekly", "monthly", "yearly"])
 })
 
 test("builds checkout search params with usage only for the custom plan", () => {
@@ -140,24 +149,29 @@ test("snaps manipulated usage to the configured step", () => {
 test("applies dependent customer-type rules through the reducer", () => {
     const initial = resolveSubscriptionSelection(new URLSearchParams({ customerType: "b2c", plan: "pro", paymentPeriod: "weekly" }), content).selection
     const next = reduceSubscriptionSelection(initial, { type: "customerTypeChanged", value: "b2b" }, content)
-    assert.equal(next.plan, "custom")
+    assert.equal(next.plan, "pro")
     assert.equal(next.paymentPeriod, "monthly")
+    assert.equal(next.workflowExecutions, 200)
+    assert.equal(next.aiTokens, 100_000)
+
+    const backToB2c = reduceSubscriptionSelection({ ...next, paymentPeriod: "quarterly" }, { type: "customerTypeChanged", value: "b2c" }, content)
+    assert.equal(backToB2c.paymentPeriod, "monthly")
 })
 
-test("normalizes the payment period when switching between standard and custom plans", () => {
-    const standardWeekly = resolveSubscriptionSelection(new URLSearchParams({ customerType: "b2c", plan: "pro", paymentPeriod: "weekly" }), content).selection
-    const custom = reduceSubscriptionSelection(standardWeekly, { type: "planChanged", value: "custom" }, content)
+test("keeps the payment period when switching between plans of the same customer type", () => {
+    const b2cWeekly = resolveSubscriptionSelection(new URLSearchParams({ customerType: "b2c", plan: "pro", paymentPeriod: "weekly" }), content).selection
+    const custom = reduceSubscriptionSelection(b2cWeekly, { type: "planChanged", value: "custom" }, content)
     assert.equal(custom.plan, "custom")
-    assert.equal(custom.paymentPeriod, "monthly")
+    assert.equal(custom.paymentPeriod, "weekly")
 
-    const customQuarterly = resolveSubscriptionSelection(new URLSearchParams({ customerType: "b2c", plan: "custom", paymentPeriod: "quarterly" }), content).selection
-    const standard = reduceSubscriptionSelection(customQuarterly, { type: "planChanged", value: "max" }, content)
-    assert.equal(standard.plan, "max")
-    assert.equal(standard.paymentPeriod, "monthly")
+    const b2bQuarterly = resolveSubscriptionSelection(new URLSearchParams({ customerType: "b2b", plan: "custom", paymentPeriod: "quarterly" }), content).selection
+    const max = reduceSubscriptionSelection(b2bQuarterly, { type: "planChanged", value: "max" }, content)
+    assert.equal(max.plan, "max")
+    assert.equal(max.paymentPeriod, "quarterly")
 })
 
-test("restricts B2B customers to the custom plan", () => {
-    assert.equal(getPlanForCustomerType("b2b", "pro"), "custom")
-    assert.equal(getPlanForCustomerType("b2b", "max"), "custom")
-    assert.equal(getPlanForCustomerType("b2c", "max"), "max")
+test("rejects a payment period the customer type is not billed in through the reducer", () => {
+    const b2b = resolveSubscriptionSelection(new URLSearchParams({ customerType: "b2b", plan: "pro" }), content).selection
+    assert.equal(reduceSubscriptionSelection(b2b, { type: "paymentPeriodChanged", value: "weekly" }, content).paymentPeriod, "monthly")
+    assert.equal(reduceSubscriptionSelection(b2b, { type: "paymentPeriodChanged", value: "quarterly" }, content).paymentPeriod, "quarterly")
 })

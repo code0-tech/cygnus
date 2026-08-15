@@ -208,16 +208,28 @@ test("checkout forwards documented Crater domain error details", async () => {
     }
 })
 
-test("forces the custom plan for b2b customers requesting pro or max, even sent directly to the API", async () => {
+test("prices a b2b fixed plan in the periods b2b is billed in, even sent directly to the API", async () => {
     const graphQLServer = await createGraphQLTestServer([
         {
             data: {
                 checkoutCreateSession: {
                     errors: [],
                     session: {
-                        clientSecret: "cs_b2b_downgrade_secret_test",
+                        clientSecret: "cs_b2b_quarterly_secret_test",
                         expiresAt: 1_800_000_000,
-                        id: "cs_b2b_downgrade",
+                        id: "cs_b2b_quarterly",
+                    },
+                },
+            },
+        },
+        {
+            data: {
+                checkoutCreateSession: {
+                    errors: [],
+                    session: {
+                        clientSecret: "cs_b2b_weekly_secret_test",
+                        expiresAt: 1_800_000_001,
+                        id: "cs_b2b_weekly",
                     },
                 },
             },
@@ -241,21 +253,45 @@ test("forces the custom plan for b2b customers requesting pro or max, even sent 
                     plan: "pro",
                     customerType: "b2b",
                     deploymentType: "self_hosted",
-                    paymentPeriod: "monthly",
+                    paymentPeriod: "quarterly",
+                }),
+            })
+        )
+        const weeklyResponse = await POST(
+            new Request("https://example.com/api/crater/checkout/session", {
+                method: "POST",
+                headers: {
+                    authorization: "Session b2b-token",
+                    "content-type": "application/json",
+                },
+                body: JSON.stringify({
+                    customerId: "gid://crater/Customer/1",
+                    plan: "max",
+                    customerType: "b2b",
+                    deploymentType: "self_hosted",
+                    paymentPeriod: "weekly",
                 }),
             })
         )
 
         assert.equal(response.status, 200)
+        assert.equal(weeklyResponse.status, 200)
         assert.deepEqual(graphQLServer.requests[0].body.variables, {
             input: {
-                aiTokens: 200_000,
+                customerId: "gid://crater/Customer/1",
+                deploymentType: "self_hosted",
+                paymentPeriod: "QUARTERLY",
+                plan: "pro",
+                returnUrl: "https://code0.example/en/checkout/success?session_id={CHECKOUT_SESSION_ID}",
+            },
+        })
+        assert.deepEqual(graphQLServer.requests[1].body.variables, {
+            input: {
                 customerId: "gid://crater/Customer/1",
                 deploymentType: "self_hosted",
                 paymentPeriod: "MONTHLY",
-                plan: "custom",
+                plan: "max",
                 returnUrl: "https://code0.example/en/checkout/success?session_id={CHECKOUT_SESSION_ID}",
-                workflowExecutions: 1_000,
             },
         })
     } finally {
@@ -355,7 +391,7 @@ test("creates regular and custom checkout sessions with the expected Crater inpu
                     customerType: "b2c",
                     deploymentType: "cloud",
                     namespace: "gid://sagittarius/Namespace/1",
-                    paymentPeriod: "quarterly",
+                    paymentPeriod: "weekly",
                     aiTokens: "30000",
                     workflowExecutions: "200",
                     additionalFeatures: ["priority-support"],
@@ -400,7 +436,7 @@ test("creates regular and custom checkout sessions with the expected Crater inpu
                 customerId: "gid://crater/Customer/3",
                 deploymentType: "cloud",
                 namespaceId: "gid://sagittarius/Namespace/1",
-                paymentPeriod: "QUARTERLY",
+                paymentPeriod: "WEEKLY",
                 plan: "custom",
                 returnUrl: "https://code0.example/en/checkout/success?session_id={CHECKOUT_SESSION_ID}",
                 workflowExecutions: 200,

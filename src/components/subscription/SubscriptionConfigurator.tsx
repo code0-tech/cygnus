@@ -21,10 +21,9 @@ import type { SubscriptionPriceCatalog } from "@/lib/subscriptionPrices"
 import { cn } from "@/lib/utils"
 import {
     buildSubscriptionSelectionSearchParams,
-    CUSTOM_PAYMENT_PERIOD_OPTIONS,
+    getPaymentPeriodOptions,
     parseSubscriptionSelectionFromSearchParams,
     reduceSubscriptionSelection,
-    STANDARD_PAYMENT_PERIOD_OPTIONS,
     type SubscriptionSelectionAction,
     type SubscriptionSelection,
 } from "@/lib/subscriptionConfigurator"
@@ -97,7 +96,7 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
         onActiveImageChangeAction?.(imageKey)
         pendingScrollStepKeyRef.current = stepKey
     }
-    const paymentPeriodOptions = selection.plan === "custom" ? CUSTOM_PAYMENT_PERIOD_OPTIONS : STANDARD_PAYMENT_PERIOD_OPTIONS
+    const paymentPeriodOptions = getPaymentPeriodOptions(selection.customerType)
     const paymentPeriodSuffix = getPaymentPeriodSuffix(selection.paymentPeriod, content.paymentPeriod)
     const monthlyPeriodSuffix = getPaymentPeriodSuffix("monthly", content.paymentPeriod)
     const quote = calculateSubscriptionQuote(selection, catalog)
@@ -112,7 +111,7 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
     const subscribeHref = `${checkoutLoginUrl}?${subscribeSearchParams.toString()}`
     const configuratorSteps = [
         content.customerType.label,
-        ...(selection.customerType === "b2c" ? [content.plan.title] : []),
+        content.plan.title,
         content.deployment.label,
         ...(selection.plan === "custom" ? [aiTokens.title, workflowExecutions.title] : []),
         content.paymentPeriod.label,
@@ -214,37 +213,35 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                     </div>
                 </div>
 
-                {selection.customerType === "b2c" && (
-                    <div className="space-y-8 scroll-mt-48" data-subscription-step="plan">
-                        <SubscriptionOptionCategoryLabel label={content.plan.title} description={content.plan.description} />
-                        <div className="grid gap-3">
-                            <SubscriptionOptionCard
-                                title={content.plan.pro.title}
-                                description={content.plan.pro.description}
-                                icon={icons.plan.pro}
-                                accent="brand"
-                                active={selection.plan === "pro"}
-                                onClick={() => selectOption({ type: "planChanged", value: "pro" }, "pro", "plan")}
-                            />
-                            <SubscriptionOptionCard
-                                title={content.plan.max.title}
-                                description={content.plan.max.description}
-                                icon={icons.plan.max}
-                                accent="magenta"
-                                active={selection.plan === "max"}
-                                onClick={() => selectOption({ type: "planChanged", value: "max" }, "max", "plan")}
-                            />
-                            <SubscriptionOptionCard
-                                title={content.plan.custom.title}
-                                description={content.plan.custom.description}
-                                icon={icons.plan.custom}
-                                accent="aqua"
-                                active={selection.plan === "custom"}
-                                onClick={() => selectOption({ type: "planChanged", value: "custom" }, "custom", "plan")}
-                            />
-                        </div>
+                <div className="space-y-8 scroll-mt-48" data-subscription-step="plan">
+                    <SubscriptionOptionCategoryLabel label={content.plan.title} description={content.plan.description} />
+                    <div className="grid gap-3">
+                        <SubscriptionOptionCard
+                            title={content.plan.pro.title}
+                            description={content.plan.pro.description}
+                            icon={icons.plan.pro}
+                            accent="brand"
+                            active={selection.plan === "pro"}
+                            onClick={() => selectOption({ type: "planChanged", value: "pro" }, "pro", "plan")}
+                        />
+                        <SubscriptionOptionCard
+                            title={content.plan.max.title}
+                            description={content.plan.max.description}
+                            icon={icons.plan.max}
+                            accent="magenta"
+                            active={selection.plan === "max"}
+                            onClick={() => selectOption({ type: "planChanged", value: "max" }, "max", "plan")}
+                        />
+                        <SubscriptionOptionCard
+                            title={content.plan.custom.title}
+                            description={content.plan.custom.description}
+                            icon={icons.plan.custom}
+                            accent="aqua"
+                            active={selection.plan === "custom"}
+                            onClick={() => selectOption({ type: "planChanged", value: "custom" }, "custom", "plan")}
+                        />
                     </div>
-                )}
+                </div>
 
                 <div className="space-y-8 scroll-mt-48" data-subscription-step="deployment">
                     <SubscriptionOptionCategoryLabel label={content.deployment.label} description={content.deployment.description} />

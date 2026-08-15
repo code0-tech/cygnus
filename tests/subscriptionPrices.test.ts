@@ -24,18 +24,20 @@ test("normalizes the complete Crater subscription price list by lookup key", () 
 
     assert.deepEqual(Object.keys(catalog), [...SUBSCRIPTION_PRICE_LOOKUP_KEYS])
     assert.equal(catalog.ai_token_b2b_quarterly.intervalCount, 3)
-    assert.equal(catalog.pro_yearly.interval, "year")
+    assert.equal(catalog.pro_b2b_quarterly.intervalCount, 3)
+    assert.equal(catalog.pro_b2c_weekly.interval, "week")
+    assert.equal(catalog.max_b2c_yearly.interval, "year")
 })
 
 test("rejects missing and duplicate required subscription prices", () => {
     const prices = createPrices()
-    assert.throws(() => normalizeSubscriptionPrices(prices.slice(1)), /pro_weekly/)
+    assert.throws(() => normalizeSubscriptionPrices(prices.slice(1)), /pro_b2b_monthly/)
     assert.throws(() => normalizeSubscriptionPrices([...prices, prices[0]]), /more than once/)
 })
 
 test("rejects a lookup key assigned to the wrong recurring interval", () => {
     const prices = createPrices()
-    prices[0] = { ...prices[0], interval: "month" }
+    prices[0] = { ...prices[0], interval: "year" }
 
     assert.throws(() => normalizeSubscriptionPrices(prices), /unexpected recurring interval/)
 })
