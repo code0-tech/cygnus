@@ -1,5 +1,5 @@
 import { createApolloClient } from "@/lib/apolloClient"
-import { craterJson, craterMutationErrorResponse, optionalString, readJsonObject } from "@/lib/checkout/craterApi"
+import { CRATER_ERROR_FIELDS, craterJson, craterMutationErrorResponse, optionalString, readJsonObject } from "@/lib/checkout/craterApi"
 import { setCraterSessionCookie } from "@/lib/checkout/craterSession"
 import type { Mutation, MutationUsersLoginArgs } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
@@ -9,6 +9,7 @@ export const runtime = "nodejs"
 type UsersLoginData = Pick<Mutation, "usersLogin">
 
 const USERS_LOGIN: TypedDocumentNode<UsersLoginData, MutationUsersLoginArgs> = gql`
+    ${CRATER_ERROR_FIELDS}
     mutation UsersLogin($input: UsersLoginInput!) {
         usersLogin(input: $input) {
             userSession {
@@ -19,7 +20,7 @@ const USERS_LOGIN: TypedDocumentNode<UsersLoginData, MutationUsersLoginArgs> = g
                 updatedAt
             }
             errors {
-                errorCode
+                ...CraterErrorFields
             }
         }
     }

@@ -1,5 +1,5 @@
 import { createApolloClient } from "@/lib/apolloClient"
-import { craterJson, craterMutationErrorResponse, craterTransportErrorResponse, optionalString, readJsonObject, requireCraterSession } from "@/lib/checkout/craterApi"
+import { CRATER_ERROR_FIELDS, craterJson, craterMutationErrorResponse, craterTransportErrorResponse, optionalString, readJsonObject, requireCraterSession } from "@/lib/checkout/craterApi"
 import type { Mutation, MutationCheckoutValidateDiscountArgs } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 
@@ -8,6 +8,7 @@ export const runtime = "nodejs"
 type CheckoutValidateDiscountData = Pick<Mutation, "checkoutValidateDiscount">
 
 const CHECKOUT_VALIDATE_DISCOUNT: TypedDocumentNode<CheckoutValidateDiscountData, MutationCheckoutValidateDiscountArgs> = gql`
+    ${CRATER_ERROR_FIELDS}
     mutation CheckoutValidateDiscount($input: CheckoutValidateDiscountInput!) {
         checkoutValidateDiscount(input: $input) {
             discount {
@@ -18,7 +19,7 @@ const CHECKOUT_VALIDATE_DISCOUNT: TypedDocumentNode<CheckoutValidateDiscountData
                 percentOff
             }
             errors {
-                errorCode
+                ...CraterErrorFields
             }
         }
     }

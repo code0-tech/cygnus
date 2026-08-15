@@ -148,6 +148,66 @@ test("checkout requires exactly one regular plan or custom checkout configuratio
     })
 })
 
+test("checkout forwards documented Crater domain error details", async () => {
+    const graphQLServer = await createGraphQLTestServer([
+        {
+            data: {
+                checkoutCreateSession: {
+                    errors: [
+                        {
+                            errorCode: "INVALID_CHECKOUT_SELECTION",
+                            details: [
+                                { __typename: "ActiveModelError", attribute: "plan", type: "invalid" },
+                                { __typename: "MessageError", message: "The selected price is unavailable." },
+                            ],
+                        },
+                    ],
+                    session: null,
+                },
+            },
+        },
+    ])
+    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
+    const previousAppUrl = process.env.NEXT_PUBLIC_APP_URL
+    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
+    process.env.NEXT_PUBLIC_APP_URL = "https://code0.example"
+
+    try {
+        const response = await POST(
+            new Request("https://example.com/api/crater/checkout/session", {
+                method: "POST",
+                headers: {
+                    authorization: "Session c_ust_example",
+                    "content-type": "application/json",
+                },
+                body: JSON.stringify({
+                    customerId: "gid://crater/Customer/1",
+                    customerType: "b2c",
+                    deploymentType: "self_hosted",
+                    paymentPeriod: "monthly",
+                    plan: "pro",
+                }),
+            })
+        )
+
+        assert.equal(response.status, 422)
+        assert.deepEqual(await response.json(), {
+            error: "Crater could not create the checkout session.",
+            errorCode: "INVALID_CHECKOUT_SELECTION",
+            details: ["plan: invalid", "The selected price is unavailable."],
+        })
+        assert.match(graphQLServer.requests[0].body.query ?? "", /fragment CraterErrorFields on Error/)
+        assert.match(graphQLServer.requests[0].body.query ?? "", /\.\.\. on ActiveModelError/)
+        assert.match(graphQLServer.requests[0].body.query ?? "", /\.\.\. on MessageError/)
+    } finally {
+        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
+        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
+        if (previousAppUrl === undefined) delete process.env.NEXT_PUBLIC_APP_URL
+        else process.env.NEXT_PUBLIC_APP_URL = previousAppUrl
+        await graphQLServer.close()
+    }
+})
+
 test("forces the custom plan for b2b customers requesting pro or max, even sent directly to the API", async () => {
     const graphQLServer = await createGraphQLTestServer([
         {
