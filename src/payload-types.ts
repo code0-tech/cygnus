@@ -3310,6 +3310,10 @@ export interface License {
     dashboardLoad: string;
     retry: string;
   };
+  pagination: {
+    loadMoreLabel: string;
+    loadingLabel: string;
+  };
   editor: {
     customerTitle: string;
     customerDescription: string;
@@ -4017,6 +4021,12 @@ export interface LicensesSelect<T extends boolean = true> {
     | {
         dashboardLoad?: T;
         retry?: T;
+      };
+  pagination?:
+    | T
+    | {
+        loadMoreLabel?: T;
+        loadingLabel?: T;
       };
   editor?:
     | T

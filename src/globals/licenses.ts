@@ -283,6 +283,14 @@ export const Licenses: GlobalConfig = {
             ],
         },
         {
+            name: "pagination",
+            type: "group",
+            fields: [
+                { name: "loadMoreLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Load more", "Mehr laden") },
+                { name: "loadingLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Loading…", "Wird geladen …") },
+            ],
+        },
+        {
             name: "editor",
             type: "group",
             fields: [

@@ -8,6 +8,9 @@ export const runtime = "nodejs"
 type CustomersCreateData = Pick<Mutation, "customersCreate">
 type CustomersUpdateData = Pick<Mutation, "customersUpdate">
 type CustomersQueryData = Pick<Query, "currentUser">
+type CustomersQueryVariables = { after?: string | null }
+
+const CUSTOMER_PAGE_SIZE = 50
 
 function isCustomerId(value: string): value is Scalars["CustomerID"]["input"] {
     return /^gid:\/\/crater\/Customer\/\d+$/.test(value)
@@ -105,12 +108,16 @@ const CUSTOMERS_UPDATE: TypedDocumentNode<CustomersUpdateData, MutationCustomers
     ${ERROR_FIELDS}
 `
 
-const CUSTOMERS: TypedDocumentNode<CustomersQueryData, Record<string, never>> = gql`
-    query CheckoutCustomers {
+const CUSTOMERS: TypedDocumentNode<CustomersQueryData, CustomersQueryVariables> = gql`
+    query CheckoutCustomers($after: String) {
         currentUser {
-            customers(first: 100) {
+            customers(after: $after, first: ${CUSTOMER_PAGE_SIZE}) {
                 nodes {
                     ...CustomerFields
+                }
+                pageInfo {
+                    endCursor
+                    hasNextPage
                 }
             }
         }
@@ -122,16 +129,27 @@ export async function GET(request: Request) {
     const session = requireCraterSession(request)
     if (session.response) return session.response
 
+    const after = new URL(request.url).searchParams.get("after")?.trim() || undefined
+    if (after && after.length > 2_048) return craterJson({ error: "The customer cursor is invalid." }, 400)
+
     try {
         const result = await createApolloClient(session.token).query({
             query: CUSTOMERS,
+            variables: { ...(after ? { after } : {}) },
             fetchPolicy: "no-cache",
         })
         const currentUser = result.data?.currentUser
 
         if (!currentUser) return craterJson({ error: "The Crater session has no authenticated user." }, 401)
 
-        return craterJson({ customers: (currentUser.customers?.nodes ?? []).filter((customer) => Boolean(customer?.id)) })
+        const pageInfo = currentUser.customers?.pageInfo
+        return craterJson({
+            customers: (currentUser.customers?.nodes ?? []).filter((customer) => Boolean(customer?.id)),
+            pageInfo: {
+                endCursor: pageInfo?.endCursor ?? null,
+                hasNextPage: pageInfo?.hasNextPage === true,
+            },
+        })
     } catch (error) {
         const transportResponse = craterTransportErrorResponse(error)
         if (transportResponse) return transportResponse

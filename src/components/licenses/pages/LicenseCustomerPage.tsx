@@ -16,6 +16,7 @@ import { formatLicenseDisplayValue } from "@/lib/licenses/licenseDisplayValues"
 import { Button, Card, Flex, Spacing, Text } from "@code0-tech/pictor"
 import { useRouter } from "next/navigation"
 import { Fragment } from "react"
+import { LicenseLoadMoreButton } from "@/components/licenses/LicenseLoadMoreButton"
 
 interface LicenseCustomerPageProps {
     content: LicenseContent
@@ -25,7 +26,7 @@ interface LicenseCustomerPageProps {
 
 export function LicenseCustomerPage({ content, customerId, locale }: LicenseCustomerPageProps) {
     const router = useRouter()
-    const { customers, isLoading, licenses } = useLicenseData()
+    const { customers, isLoading, licenses, loadMore, loadingMore, pagination } = useLicenseData()
     const resolvedCustomerId = decodeLicenseRouteId(customerId)
     const customer = customers.find((candidate) => candidate.id === resolvedCustomerId)
     const customerLicenses = licenses.filter((license) => license.customerId === resolvedCustomerId)
@@ -116,7 +117,7 @@ export function LicenseCustomerPage({ content, customerId, locale }: LicenseCust
                         <span aria-hidden="true" className="h-5 w-6 animate-pulse rounded-full bg-white/10 motion-reduce:animate-none" />
                     ) : (
                         <span className="inline-flex w-fit items-center rounded-full bg-[#191825] px-[0.35rem] py-[0.1167rem] text-[0.7rem] font-normal tracking-[-0.5px] text-white/75 shadow-[inset_0_1px_1px_rgba(191,191,191,0.1)]">
-                            {customerLicenses.length}
+                            {customer?.licenseCount ?? customerLicenses.length}
                         </span>
                     )}
                 </Flex>
@@ -174,6 +175,9 @@ export function LicenseCustomerPage({ content, customerId, locale }: LicenseCust
                         )}
                     </DataTable>
                 </Card>
+                {pagination?.licenses?.hasNextPage ? (
+                    <LicenseLoadMoreButton loading={loadingMore === "licenses"} labels={content.pagination} onClick={() => void loadMore("licenses")} />
+                ) : null}
             </section>
         </div>
     )

@@ -2613,6 +2613,8 @@ export const licenses_locales = pgTable('licenses_locales', {
   invoices_unavailableLabel: varchar('invoices_unavailable_label').notNull(),
   errors_dashboardLoad: varchar('errors_dashboard_load').notNull(),
   errors_retry: varchar('errors_retry').notNull(),
+  pagination_loadMoreLabel: varchar('pagination_load_more_label').notNull(),
+  pagination_loadingLabel: varchar('pagination_loading_label').notNull(),
   editor_customerTitle: varchar('editor_customer_title').notNull(),
   editor_customerDescription: varchar('editor_customer_description').notNull(),
   editor_contactHeading: varchar('editor_contact_heading').notNull(),

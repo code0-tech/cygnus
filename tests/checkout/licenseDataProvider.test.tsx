@@ -11,7 +11,7 @@ mock.module("next/navigation", {
     },
 })
 
-const { act, cleanup, render, screen, waitFor } = await import("@testing-library/react")
+const { act, cleanup, fireEvent, render, screen, waitFor } = await import("@testing-library/react")
 const { LicenseDataProvider, useLicenseData } = await import("../../src/components/licenses/LicenseDataProvider")
 const originalFetch = globalThis.fetch
 const originalDateNow = Date.now
@@ -19,6 +19,20 @@ const originalDateNow = Date.now
 function LicenseState() {
     const { isLoading } = useLicenseData()
     return <span>{isLoading ? "loading" : "loaded"}</span>
+}
+
+function PaginatedLicenseState() {
+    const { customers, loadMore, loadingMore, pagination } = useLicenseData()
+    return (
+        <div>
+            <span>{customers.map((customer) => customer.id).join(",")}</span>
+            {pagination?.customers?.hasNextPage ? (
+                <button type="button" disabled={loadingMore === "customers"} onClick={() => void loadMore("customers")}>
+                    More
+                </button>
+            ) : null}
+        </div>
+    )
 }
 
 afterEach(() => {
@@ -78,4 +92,32 @@ test("refreshes on focus only after the dashboard data is stale", async () => {
     await act(() => window.dispatchEvent(new Event("focus")))
     await new Promise((resolve) => setTimeout(resolve, 10))
     assert.equal(requests.length, 2)
+})
+
+test("loads and merges the next customer cursor page", async () => {
+    const requests: string[] = []
+    globalThis.fetch = (async (input) => {
+        requests.push(String(input))
+        const secondPage = requests.length > 1
+        return new Response(
+            JSON.stringify({
+                customers: [{ id: `gid://crater/Customer/${secondPage ? 2 : 1}`, licenseCount: 0 }],
+                licenses: [],
+                pagination: { customers: { endCursor: secondPage ? null : "customer-page-1", hasNextPage: !secondPage } },
+            }),
+            { status: 200, headers: { "content-type": "application/json" } }
+        )
+    }) as typeof fetch
+
+    render(
+        <LicenseDataProvider loadError="Could not load licenses." redirectUrl="https://app.example/login">
+            <PaginatedLicenseState />
+        </LicenseDataProvider>
+    )
+
+    assert.ok(await screen.findByText("gid://crater/Customer/1"))
+    fireEvent.click(screen.getByRole("button", { name: "More" }))
+    assert.ok(await screen.findByText("gid://crater/Customer/1,gid://crater/Customer/2"))
+    assert.equal(requests[1], "https://code0.example/api/crater/licenses?customerAfter=customer-page-1")
+    assert.equal(screen.queryByRole("button", { name: "More" }), null)
 })

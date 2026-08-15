@@ -417,9 +417,47 @@ test("lists the authenticated user's checkout customers", async () => {
                     updatedAt: "2026-08-12T12:00:00Z",
                 },
             ],
+            pageInfo: { endCursor: null, hasNextPage: false },
         })
         assert.equal(graphQLServer.requests[0].authorization, "Session customer-list-token")
         assert.equal(graphQLServer.requests[0].body.operationName, "CheckoutCustomers")
+        assert.match(graphQLServer.requests[0].body.query ?? "", /customers\(after: \$after, first: 50\)/)
+    } finally {
+        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
+        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
+        await graphQLServer.close()
+    }
+})
+
+test("paginates checkout customers with Crater's cursor", async () => {
+    const graphQLServer = await createGraphQLTestServer([
+        {
+            data: {
+                currentUser: {
+                    customers: {
+                        nodes: [{ customerType: "business", id: "gid://crater/Customer/51" }],
+                        pageInfo: { endCursor: "customer-100", hasNextPage: true },
+                    },
+                },
+            },
+        },
+    ])
+    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
+    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
+
+    try {
+        const response = await listCustomers(
+            new Request("https://example.com/api/crater/customer?after=customer-50", {
+                headers: sessionHeaders,
+            })
+        )
+
+        assert.equal(response.status, 200)
+        assert.deepEqual(graphQLServer.requests[0].body.variables, { after: "customer-50" })
+        assert.deepEqual(await response.json(), {
+            customers: [{ customerType: "business", id: "gid://crater/Customer/51" }],
+            pageInfo: { endCursor: "customer-100", hasNextPage: true },
+        })
     } finally {
         if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
         else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
@@ -1129,8 +1167,8 @@ test("license dashboard loads from the HttpOnly Crater session cookie", async ()
         assert.equal(graphQLServer.requests[0].authorization, "Session persisted-token")
         assert.match(response.headers.get("set-cookie") ?? "", /crater_session=persisted-token/)
         assert.equal(graphQLServer.requests[0].body.operationName, "LicenseDashboard")
-        assert.match(graphQLServer.requests[0].body.query ?? "", /customers\(first: 100\)/)
-        assert.match(graphQLServer.requests[0].body.query ?? "", /licenses\(first: 100\)/)
+        assert.match(graphQLServer.requests[0].body.query ?? "", /customers\(after: \$customerAfter, first: 25\)/)
+        assert.match(graphQLServer.requests[0].body.query ?? "", /licenses\(first: 5\)/)
         assert.deepEqual(await response.json(), {
             customers: [
                 {
@@ -1173,6 +1211,7 @@ test("license dashboard loads from the HttpOnly Crater session cookie", async ()
                     workflowExecutions: 250000,
                 },
             ],
+            pagination: { customers: { endCursor: null, hasNextPage: false } },
         })
     } finally {
         if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
@@ -1181,7 +1220,7 @@ test("license dashboard loads from the HttpOnly Crater session cookie", async ()
     }
 })
 
-test("license detail loads lightweight navigation before fetching only the selected license", async () => {
+test("license detail loads lightweight navigation and forwards the invoice cursor", async () => {
     const graphQLServer = await createGraphQLTestServer([
         {
             data: {
@@ -1215,6 +1254,29 @@ test("license detail loads lightweight navigation before fetching only the selec
                                             { cursor: "license-8b", node: { id: "gid://crater/License/9", plan: "custom", updatedAt: "2026-08-12T10:00:00Z" } },
                                         ],
                                     },
+                                },
+                            },
+                        ],
+                    },
+                },
+            },
+        },
+        {
+            data: {
+                currentUser: {
+                    customers: {
+                        nodes: [
+                            {
+                                id: "gid://crater/Customer/8",
+                                customerType: "business",
+                                email: "second@example.com",
+                                name: "Second",
+                                licenses: {
+                                    edges: [
+                                        { cursor: "license-8a", node: { id: "gid://crater/License/8", plan: "pro", updatedAt: "2026-08-11T10:00:00Z" } },
+                                        { cursor: "license-8b", node: { id: "gid://crater/License/9", plan: "custom", updatedAt: "2026-08-12T10:00:00Z" } },
+                                    ],
+                                    pageInfo: { endCursor: "license-8b", hasNextPage: false },
                                 },
                             },
                         ],
@@ -1273,14 +1335,18 @@ test("license detail loads lightweight navigation before fetching only the selec
 
     try {
         const response = await getLicenseDashboard(
-            new Request("https://example.com/api/crater/licenses?view=license&customerId=gid%3A%2F%2Fcrater%2FCustomer%2F8&licenseId=gid%3A%2F%2Fcrater%2FLicense%2F9", { headers: sessionHeaders })
+            new Request(
+                "https://example.com/api/crater/licenses?view=license&customerId=gid%3A%2F%2Fcrater%2FCustomer%2F8&licenseId=gid%3A%2F%2Fcrater%2FLicense%2F9&invoiceAfter=invoice-25",
+                { headers: sessionHeaders }
+            )
         )
         const body = await response.json()
 
         assert.equal(response.status, 200)
-        assert.equal(graphQLServer.requests[0].body.operationName, "LicenseNavigation")
-        assert.equal(graphQLServer.requests[1].body.operationName, "LicenseDetail")
-        assert.deepEqual(graphQLServer.requests[1].body.variables, { customerAfter: "customer-7", licenseAfter: "license-8a" })
+        assert.equal(graphQLServer.requests[0].body.operationName, "CustomerNavigationPage")
+        assert.equal(graphQLServer.requests[1].body.operationName, "LicenseNavigationPage")
+        assert.equal(graphQLServer.requests[2].body.operationName, "LicenseDetail")
+        assert.deepEqual(graphQLServer.requests[2].body.variables, { customerAfter: "customer-7", licenseAfter: "license-8a", invoiceAfter: "invoice-25" })
         assert.deepEqual(
             body.customers.map((customer: { id: string }) => customer.id),
             ["gid://crater/Customer/8"]
@@ -1301,12 +1367,134 @@ test("license detail loads lightweight navigation before fetching only the selec
                 total: 13500,
             },
         ])
-        assert.match(graphQLServer.requests[1].body.query ?? "", /invoices\(first: 100\)/)
+        assert.match(graphQLServer.requests[2].body.query ?? "", /invoices\(after: \$invoiceAfter, first: 25\)/)
         assert.deepEqual(
             body.navigationLicenses.map((license: { id: string }) => license.id),
             ["gid://crater/License/9", "gid://crater/License/8", "gid://crater/License/7"]
         )
         assert.doesNotMatch(graphQLServer.requests[0].body.query ?? "", /aiTokens/)
+    } finally {
+        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
+        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
+        await graphQLServer.close()
+    }
+})
+
+test("paginates licenses on a customer detail page", async () => {
+    const graphQLServer = await createGraphQLTestServer([
+        {
+            data: {
+                currentUser: {
+                    customers: {
+                        edges: [{ cursor: "customer-1", node: { id: "gid://crater/Customer/1", customerType: "personal", licenses: { edges: [] } } }],
+                        pageInfo: { endCursor: "customer-1", hasNextPage: false },
+                    },
+                },
+            },
+        },
+        {
+            data: {
+                currentUser: {
+                    customers: {
+                        nodes: [
+                            {
+                                customerType: "personal",
+                                id: "gid://crater/Customer/1",
+                                licenses: {
+                                    count: 51,
+                                    nodes: [{ id: "gid://crater/License/26", plan: "pro" }],
+                                    pageInfo: { endCursor: "license-50", hasNextPage: true },
+                                },
+                            },
+                        ],
+                    },
+                },
+            },
+        },
+    ])
+    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
+    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
+
+    try {
+        const response = await getLicenseDashboard(
+            new Request(
+                "https://example.com/api/crater/licenses?view=customer&customerId=gid%3A%2F%2Fcrater%2FCustomer%2F1&licenseAfter=license-25",
+                { headers: sessionHeaders }
+            )
+        )
+
+        assert.equal(response.status, 200)
+        assert.deepEqual(graphQLServer.requests[1].body.variables, { licenseAfter: "license-25" })
+        const body = await response.json()
+        assert.deepEqual(body.pagination, { licenses: { endCursor: "license-50", hasNextPage: true, totalCount: 51 } })
+        assert.deepEqual(
+            body.licenses.map((license: { id: string }) => license.id),
+            ["gid://crater/License/26"]
+        )
+    } finally {
+        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
+        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
+        await graphQLServer.close()
+    }
+})
+
+test("finds a license customer beyond the first Crater cursor page", async () => {
+    const graphQLServer = await createGraphQLTestServer([
+        {
+            data: {
+                currentUser: {
+                    customers: {
+                        edges: [{ cursor: "customer-25", node: { id: "gid://crater/Customer/25", licenses: { edges: [] } } }],
+                        pageInfo: { endCursor: "customer-25", hasNextPage: true },
+                    },
+                },
+            },
+        },
+        {
+            data: {
+                currentUser: {
+                    customers: {
+                        edges: [{ cursor: "customer-26", node: { id: "gid://crater/Customer/26", customerType: "business", licenses: { edges: [] } } }],
+                        pageInfo: { endCursor: "customer-26", hasNextPage: false },
+                    },
+                },
+            },
+        },
+        {
+            data: {
+                currentUser: {
+                    customers: {
+                        nodes: [
+                            {
+                                customerType: "business",
+                                id: "gid://crater/Customer/26",
+                                licenses: { count: 0, nodes: [], pageInfo: { endCursor: null, hasNextPage: false } },
+                            },
+                        ],
+                    },
+                },
+            },
+        },
+    ])
+    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
+    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
+
+    try {
+        const response = await getLicenseDashboard(
+            new Request("https://example.com/api/crater/licenses?view=customer&customerId=gid%3A%2F%2Fcrater%2FCustomer%2F26", { headers: sessionHeaders })
+        )
+
+        assert.equal(response.status, 200)
+        assert.equal(graphQLServer.requests[0].body.operationName, "CustomerNavigationPage")
+        assert.deepEqual(graphQLServer.requests[1].body.variables, { customerAfter: "customer-25" })
+        assert.equal(graphQLServer.requests[2].body.operationName, "LicenseCustomerDetail")
+        assert.deepEqual(graphQLServer.requests[2].body.variables, { customerAfter: "customer-25" })
+        assert.deepEqual(await response.json(), {
+            customers: [{ customerType: "business", id: "gid://crater/Customer/26", licenseCount: 0 }],
+            licenses: [],
+            navigationLicenses: [],
+            pagination: { licenses: { endCursor: null, hasNextPage: false, totalCount: 0 } },
+        })
     } finally {
         if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
         else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
