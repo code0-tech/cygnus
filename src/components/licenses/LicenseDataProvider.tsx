@@ -5,7 +5,7 @@ import { decodeLicenseRouteId } from "@/lib/licenses/licenseRoute"
 import { usePathname } from "next/navigation"
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useRef, useState } from "react"
 
-const AUTO_REFRESH_INTERVAL_MS = 30_000
+const FOCUS_REFRESH_STALE_MS = 5 * 60_000
 
 interface LicenseDataContextValue extends LicenseDashboardData {
     error: string | null
@@ -23,13 +23,24 @@ const LicenseDataContext = createContext<LicenseDataContextValue | null>(null)
 export function LicenseDataProvider({ children, loadError, redirectUrl }: { children: ReactNode; loadError: string; redirectUrl: string }) {
     const pathname = usePathname()
     const loadedPathRef = useRef<string | null>(null)
+    const lastRequestStartedAtRef = useRef(0)
+    const requestIdRef = useRef(0)
+    const requestInFlightRef = useRef(false)
+    const queuedReloadRef = useRef(false)
     const [data, setData] = useState<LicenseDashboardData>(EMPTY_LICENSE_DASHBOARD_DATA)
     const [hasLoadedOnce, setHasLoadedOnce] = useState(false)
     const [isLoading, setIsLoading] = useState(true)
     const [isRefreshing, setIsRefreshing] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [reloadKey, setReloadKey] = useState(0)
-    const reload = useCallback(() => setReloadKey((current) => current + 1), [])
+    const reload = useCallback(() => {
+        if (requestInFlightRef.current) {
+            queuedReloadRef.current = true
+            return
+        }
+
+        setReloadKey((current) => current + 1)
+    }, [])
 
     const updateCustomer: LicenseDataContextValue["updateCustomer"] = (id, values) => {
         setData((current) => ({
@@ -50,6 +61,9 @@ export function LicenseDataProvider({ children, loadError, redirectUrl }: { chil
 
     useEffect(() => {
         const controller = new AbortController()
+        const requestId = ++requestIdRef.current
+        requestInFlightRef.current = true
+        lastRequestStartedAtRef.current = Date.now()
         const isInitialPathLoad = loadedPathRef.current !== pathname
         setError(null)
         if (isInitialPathLoad) setIsLoading(true)
@@ -103,9 +117,16 @@ export function LicenseDataProvider({ children, loadError, redirectUrl }: { chil
                 setError(loadError)
             })
             .finally(() => {
-                if (!controller.signal.aborted) {
-                    setIsLoading(false)
-                    setIsRefreshing(false)
+                if (requestId !== requestIdRef.current) return
+
+                requestInFlightRef.current = false
+                if (controller.signal.aborted) return
+
+                setIsLoading(false)
+                setIsRefreshing(false)
+                if (queuedReloadRef.current) {
+                    queuedReloadRef.current = false
+                    setReloadKey((current) => current + 1)
                 }
             })
 
@@ -113,17 +134,16 @@ export function LicenseDataProvider({ children, loadError, redirectUrl }: { chil
     }, [loadError, pathname, redirectUrl, reloadKey])
 
     useEffect(() => {
-        const refreshWhenVisible = () => {
-            if (document.visibilityState === "visible") reload()
+        const refreshWhenStale = () => {
+            if (document.visibilityState !== "visible" || Date.now() - lastRequestStartedAtRef.current < FOCUS_REFRESH_STALE_MS) return
+            reload()
         }
-        const interval = window.setInterval(refreshWhenVisible, AUTO_REFRESH_INTERVAL_MS)
-        window.addEventListener("focus", refreshWhenVisible)
-        document.addEventListener("visibilitychange", refreshWhenVisible)
+        window.addEventListener("focus", refreshWhenStale)
+        document.addEventListener("visibilitychange", refreshWhenStale)
 
         return () => {
-            window.clearInterval(interval)
-            window.removeEventListener("focus", refreshWhenVisible)
-            document.removeEventListener("visibilitychange", refreshWhenVisible)
+            window.removeEventListener("focus", refreshWhenStale)
+            document.removeEventListener("visibilitychange", refreshWhenStale)
         }
     }, [reload])
 
