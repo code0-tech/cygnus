@@ -15,6 +15,7 @@ import { IconKey } from "@tabler/icons-react"
 import { useRouter } from "next/navigation"
 import { Fragment } from "react"
 import { LicensePlanIcon } from "../LicensePlanIcon"
+import { LicenseLoadMoreButton } from "../LicenseLoadMoreButton"
 
 interface LicenseDashboardPageProps {
     content: LicenseContent
@@ -23,7 +24,7 @@ interface LicenseDashboardPageProps {
 
 export function LicenseDashboardPage({ content, locale }: LicenseDashboardPageProps) {
     const router = useRouter()
-    const { customers, isLoading, licenses } = useLicenseData()
+    const { customers, isLoading, licenses, loadMore, loadingMore, pagination } = useLicenseData()
     const dateFormatter = new Intl.DateTimeFormat(locale, {
         dateStyle: "medium",
         timeZone: "UTC",
@@ -42,7 +43,7 @@ export function LicenseDashboardPage({ content, locale }: LicenseDashboardPagePr
                         <span aria-hidden="true" className="h-5 w-6 animate-pulse rounded-full bg-white/10 motion-reduce:animate-none" />
                     ) : (
                         <span className="inline-flex w-fit items-center rounded-full bg-[#191825] px-[0.35rem] py-[0.1167rem] text-[0.7rem] font-normal tracking-[-0.5px] text-white/75 shadow-[inset_0_1px_1px_rgba(191,191,191,0.1)]">
-                            {customers.length}
+                            {pagination?.customers?.totalCount ?? customers.length}
                         </span>
                     )}
                 </Flex>
@@ -90,6 +91,9 @@ export function LicenseDashboardPage({ content, locale }: LicenseDashboardPagePr
                         )}
                     </DataTable>
                 </Card>
+                {pagination?.customers?.hasNextPage ? (
+                    <LicenseLoadMoreButton loading={loadingMore === "customers"} labels={content.pagination} onClick={() => void loadMore("customers")} />
+                ) : null}
             </section>
 
             <Spacing spacing="xl" />

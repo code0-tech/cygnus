@@ -442,6 +442,10 @@ export interface LicenseContent {
         dashboardLoad: string
         retry: string
     }
+    pagination: {
+        loadMoreLabel: string
+        loadingLabel: string
+    }
     editor: {
         customerTitle: string
         customerDescription: string

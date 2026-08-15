@@ -126,6 +126,7 @@ import * as migration_20260814_133037_license_customer_billing_fields from './20
 import * as migration_20260814_160500_license_payment_method_setup_fields from './20260814_160500_license_payment_method_setup_fields';
 import * as migration_20260815_090000_remove_additional_features from './20260815_090000_remove_additional_features';
 import * as migration_20260815_100000_payment_method_ready_copy from './20260815_100000_payment_method_ready_copy';
+import * as migration_20260815_110000_license_pagination_labels from './20260815_110000_license_pagination_labels';
 
 export const migrations = [
   {
@@ -767,5 +768,10 @@ export const migrations = [
     up: migration_20260815_100000_payment_method_ready_copy.up,
     down: migration_20260815_100000_payment_method_ready_copy.down,
     name: '20260815_100000_payment_method_ready_copy',
+  },
+  {
+    up: migration_20260815_110000_license_pagination_labels.up,
+    down: migration_20260815_110000_license_pagination_labels.down,
+    name: '20260815_110000_license_pagination_labels',
   },
 ];

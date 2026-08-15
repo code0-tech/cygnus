@@ -46,10 +46,21 @@ export interface LicenseDashboardLicense {
     workflowExecutions?: number
 }
 
+interface LicenseDashboardPageInfo {
+    endCursor: string | null
+    hasNextPage: boolean
+    totalCount?: number
+}
+
 export interface LicenseDashboardData {
     customers: LicenseDashboardCustomer[]
     licenses: LicenseDashboardLicense[]
     navigationLicenses?: LicenseDashboardLicense[]
+    pagination?: {
+        customers?: LicenseDashboardPageInfo
+        invoices?: LicenseDashboardPageInfo
+        licenses?: LicenseDashboardPageInfo
+    }
 }
 
 export const EMPTY_LICENSE_DASHBOARD_DATA: LicenseDashboardData = {

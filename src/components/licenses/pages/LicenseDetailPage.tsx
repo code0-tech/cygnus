@@ -18,6 +18,7 @@ import { formatLicenseDisplayValue } from "@/lib/licenses/licenseDisplayValues"
 import { Button, Card, Flex, Spacing, Text } from "@code0-tech/pictor"
 import { useRouter } from "next/navigation"
 import { Fragment } from "react"
+import { LicenseLoadMoreButton } from "@/components/licenses/LicenseLoadMoreButton"
 
 interface LicenseDetailPageProps {
     content: LicenseContent
@@ -28,7 +29,7 @@ interface LicenseDetailPageProps {
 
 export function LicenseDetailPage({ content, customerId, licenseId, locale }: LicenseDetailPageProps) {
     const router = useRouter()
-    const { customers, isLoading, licenses } = useLicenseData()
+    const { customers, isLoading, licenses, loadMore, loadingMore, pagination } = useLicenseData()
     const resolvedCustomerId = decodeLicenseRouteId(customerId)
     const resolvedLicenseId = decodeLicenseRouteId(licenseId)
     const license = licenses.find((candidate) => candidate.id === resolvedLicenseId && candidate.customerId === resolvedCustomerId)
@@ -205,6 +206,9 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale }: Li
                         )}
                     </DataTable>
                 </Card>
+                {pagination?.invoices?.hasNextPage ? (
+                    <LicenseLoadMoreButton loading={loadingMore === "invoices"} labels={content.pagination} onClick={() => void loadMore("invoices")} />
+                ) : null}
             </section>
         </div>
     )

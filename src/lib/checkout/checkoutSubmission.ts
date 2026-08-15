@@ -63,12 +63,31 @@ function parseCheckoutCustomer(value: unknown): CheckoutCustomerData | null {
 }
 
 export async function getCheckoutCustomers() {
-    const response = await fetch("/api/crater/customer", { credentials: "same-origin" })
-    if (!response.ok) throw await createCheckoutSubmissionError(response, "Failed to load billing customers.", "customer")
-    const body: unknown = await response.json()
-    const values = body && typeof body === "object" && "customers" in body && Array.isArray(body.customers) ? body.customers : null
-    if (!values) throw new CheckoutSubmissionError("customer", null, "Crater returned no customer list.")
-    return values.map(parseCheckoutCustomer).filter((customer): customer is CheckoutCustomerData => customer !== null)
+    const customers: CheckoutCustomerData[] = []
+    const seenCursors = new Set<string>()
+    let after: string | null = null
+
+    do {
+        const url = new URL("/api/crater/customer", window.location.origin)
+        if (after) url.searchParams.set("after", after)
+        const response = await fetch(`${url.pathname}${url.search}`, { credentials: "same-origin" })
+        if (!response.ok) throw await createCheckoutSubmissionError(response, "Failed to load billing customers.", "customer")
+        const body: unknown = await response.json()
+        const source = body && typeof body === "object" ? (body as Record<string, unknown>) : null
+        const values = source && Array.isArray(source.customers) ? source.customers : null
+        if (!values) throw new CheckoutSubmissionError("customer", null, "Crater returned no customer list.")
+        customers.push(...values.map(parseCheckoutCustomer).filter((customer): customer is CheckoutCustomerData => customer !== null))
+
+        const pageInfo = source?.pageInfo && typeof source.pageInfo === "object" ? source.pageInfo : null
+        const hasNextPage = Boolean(pageInfo && "hasNextPage" in pageInfo && pageInfo.hasNextPage === true)
+        const endCursor = pageInfo && "endCursor" in pageInfo && typeof pageInfo.endCursor === "string" ? pageInfo.endCursor : null
+        if (!hasNextPage) break
+        if (!endCursor || seenCursors.has(endCursor)) throw new CheckoutSubmissionError("customer", null, "Crater returned an invalid customer cursor.")
+        seenCursors.add(endCursor)
+        after = endCursor
+    } while (after)
+
+    return customers
 }
 
 export async function createCheckoutCustomer({ checkoutKey, customerType }: { checkoutKey: string; customerType: CraterCustomerType }) {

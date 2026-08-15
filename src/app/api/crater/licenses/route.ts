@@ -8,8 +8,12 @@ import { gql, type TypedDocumentNode } from "@apollo/client"
 export const runtime = "nodejs"
 
 type LicenseDashboardQuery = Pick<Query, "currentUser">
-type LicenseDetailVariables = { customerAfter?: string | null; licenseAfter?: string | null }
+type CustomerPageVariables = { customerAfter?: string | null }
+type LicenseDetailVariables = { customerAfter?: string | null; invoiceAfter?: string | null; licenseAfter?: string | null }
 type LinkLicenseNamespaceData = Pick<Mutation, "licensesLinkNamespace">
+
+const PAGE_SIZE = 25
+const RECENT_LICENSES_PER_CUSTOMER = 5
 
 function isLicenseId(value: string): value is Scalars["LicenseID"]["input"] {
     return /^gid:\/\/crater\/License\/\d+$/.test(value)
@@ -19,17 +23,18 @@ function isCustomerId(value: string): value is Scalars["CustomerID"]["input"] {
     return /^gid:\/\/crater\/Customer\/\d+$/.test(value)
 }
 
-const LICENSE_DASHBOARD: TypedDocumentNode<LicenseDashboardQuery, Record<string, never>> = gql`
-    query LicenseDashboard {
+const LICENSE_DASHBOARD: TypedDocumentNode<LicenseDashboardQuery, CustomerPageVariables> = gql`
+    query LicenseDashboard($customerAfter: String) {
         currentUser {
-            customers(first: 100) {
+            customers(after: $customerAfter, first: ${PAGE_SIZE}) {
+                count
                 nodes {
                     id
                     customerType
                     name
                     email
                     updatedAt
-                    licenses(first: 100) {
+                    licenses(first: ${RECENT_LICENSES_PER_CUSTOMER}) {
                         count
                         nodes {
                             aiTokens
@@ -44,15 +49,19 @@ const LICENSE_DASHBOARD: TypedDocumentNode<LicenseDashboardQuery, Record<string,
                         }
                     }
                 }
+                pageInfo {
+                    endCursor
+                    hasNextPage
+                }
             }
         }
     }
 `
 
-const LICENSE_NAVIGATION: TypedDocumentNode<LicenseDashboardQuery, Record<string, never>> = gql`
-    query LicenseNavigation {
+const CUSTOMER_NAVIGATION_PAGE: TypedDocumentNode<LicenseDashboardQuery, CustomerPageVariables> = gql`
+    query CustomerNavigationPage($customerAfter: String) {
         currentUser {
-            customers(first: 100) {
+            customers(after: $customerAfter, first: ${PAGE_SIZE}) {
                 edges {
                     cursor
                     node {
@@ -61,7 +70,7 @@ const LICENSE_NAVIGATION: TypedDocumentNode<LicenseDashboardQuery, Record<string
                         name
                         email
                         updatedAt
-                        licenses(first: 100) {
+                        licenses(first: ${RECENT_LICENSES_PER_CUSTOMER}) {
                             count
                             edges {
                                 cursor
@@ -77,13 +86,50 @@ const LICENSE_NAVIGATION: TypedDocumentNode<LicenseDashboardQuery, Record<string
                         }
                     }
                 }
+                pageInfo {
+                    endCursor
+                    hasNextPage
+                }
+            }
+        }
+    }
+`
+
+const LICENSE_NAVIGATION_PAGE: TypedDocumentNode<LicenseDashboardQuery, LicenseDetailVariables> = gql`
+    query LicenseNavigationPage($customerAfter: String, $licenseAfter: String) {
+        currentUser {
+            customers(after: $customerAfter, first: 1) {
+                nodes {
+                    id
+                    customerType
+                    name
+                    email
+                    updatedAt
+                    licenses(after: $licenseAfter, first: ${PAGE_SIZE}) {
+                        edges {
+                            cursor
+                            node {
+                                deploymentType
+                                id
+                                namespaceId
+                                plan
+                                status
+                                updatedAt
+                            }
+                        }
+                        pageInfo {
+                            endCursor
+                            hasNextPage
+                        }
+                    }
+                }
             }
         }
     }
 `
 
 const LICENSE_CUSTOMER_DETAIL: TypedDocumentNode<LicenseDashboardQuery, LicenseDetailVariables> = gql`
-    query LicenseCustomerDetail($customerAfter: String) {
+    query LicenseCustomerDetail($customerAfter: String, $licenseAfter: String) {
         currentUser {
             customers(after: $customerAfter, first: 1) {
                 nodes {
@@ -101,7 +147,7 @@ const LICENSE_CUSTOMER_DETAIL: TypedDocumentNode<LicenseDashboardQuery, LicenseD
                     email
                     phone
                     updatedAt
-                    licenses(first: 100) {
+                    licenses(after: $licenseAfter, first: ${PAGE_SIZE}) {
                         count
                         nodes {
                             aiTokens
@@ -114,6 +160,10 @@ const LICENSE_CUSTOMER_DETAIL: TypedDocumentNode<LicenseDashboardQuery, LicenseD
                             updatedAt
                             workflowExecutions
                         }
+                        pageInfo {
+                            endCursor
+                            hasNextPage
+                        }
                     }
                 }
             }
@@ -122,7 +172,7 @@ const LICENSE_CUSTOMER_DETAIL: TypedDocumentNode<LicenseDashboardQuery, LicenseD
 `
 
 const LICENSE_DETAIL: TypedDocumentNode<LicenseDashboardQuery, LicenseDetailVariables> = gql`
-    query LicenseDetail($customerAfter: String, $licenseAfter: String) {
+    query LicenseDetail($customerAfter: String, $licenseAfter: String, $invoiceAfter: String) {
         currentUser {
             customers(after: $customerAfter, first: 1) {
                 nodes {
@@ -143,7 +193,8 @@ const LICENSE_DETAIL: TypedDocumentNode<LicenseDashboardQuery, LicenseDetailVari
                             status
                             updatedAt
                             workflowExecutions
-                            invoices(first: 100) {
+                            invoices(after: $invoiceAfter, first: ${PAGE_SIZE}) {
+                                count
                                 nodes {
                                     billingPeriodEnd
                                     billingPeriodStart
@@ -153,6 +204,10 @@ const LICENSE_DETAIL: TypedDocumentNode<LicenseDashboardQuery, LicenseDetailVari
                                     status
                                     stripePdfUrl
                                     total
+                                }
+                                pageInfo {
+                                    endCursor
+                                    hasNextPage
                                 }
                             }
                         }
@@ -287,6 +342,100 @@ function mapUserData(currentUser: User): LicenseDashboardData {
     return { customers, licenses }
 }
 
+function mapPageInfo(pageInfo: { endCursor?: string | null; hasNextPage?: boolean | null } | null | undefined, totalCount?: number | null) {
+    return {
+        endCursor: pageInfo?.endCursor ?? null,
+        hasNextPage: pageInfo?.hasNextPage === true,
+        ...(typeof totalCount === "number" ? { totalCount } : {}),
+    }
+}
+
+function readCursor(requestUrl: URL, name: string) {
+    const value = requestUrl.searchParams.get(name)?.trim()
+    if (!value) return null
+    return value.length <= 2_048 ? value : undefined
+}
+
+function appendNavigationLicenses(target: LicenseDashboardLicense[], customer: Customer) {
+    for (const license of customer.licenses?.edges ?? []) {
+        if (!license?.node) continue
+        const mappedLicense = mapLicense(license.node, customer)
+        if (mappedLicense && !target.some((candidate) => candidate.id === mappedLicense.id)) target.push(mappedLicense)
+    }
+}
+
+async function findCustomerCursor(client: ReturnType<typeof createApolloClient>, customerId: string) {
+    const seenCursors = new Set<string>()
+    const navigationLicenses: LicenseDashboardLicense[] = []
+    let customerAfter: string | null = null
+
+    while (true) {
+        const result = await client.query({
+            query: CUSTOMER_NAVIGATION_PAGE,
+            variables: { ...(customerAfter ? { customerAfter } : {}) },
+            fetchPolicy: "no-cache",
+        })
+        const currentUser = result.data?.currentUser
+        if (!currentUser) return { status: "unauthenticated" as const }
+
+        const connection = currentUser.customers
+        const edges = connection?.edges ?? []
+        for (let index = 0; index < edges.length; index += 1) {
+            const edge = edges[index]
+            const customer = edge?.node
+            if (!customer) continue
+            appendNavigationLicenses(navigationLicenses, customer)
+            if (customer.id === customerId) {
+                return {
+                    status: "found" as const,
+                    customerAfter: index > 0 ? (edges[index - 1]?.cursor ?? null) : customerAfter,
+                    navigationLicenses,
+                }
+            }
+        }
+
+        const pageInfo = mapPageInfo(connection?.pageInfo)
+        if (!pageInfo.hasNextPage) return { status: "missing" as const }
+        if (!pageInfo.endCursor || seenCursors.has(pageInfo.endCursor)) throw new Error("Crater returned an invalid customer pagination cursor.")
+        seenCursors.add(pageInfo.endCursor)
+        customerAfter = pageInfo.endCursor
+    }
+}
+
+async function findLicenseCursor(client: ReturnType<typeof createApolloClient>, customerAfter: string | null, customerId: string, licenseId: string) {
+    const seenCursors = new Set<string>()
+    const navigationLicenses: LicenseDashboardLicense[] = []
+    let licenseAfter: string | null = null
+
+    while (true) {
+        const result = await client.query({
+            query: LICENSE_NAVIGATION_PAGE,
+            variables: { ...(customerAfter ? { customerAfter } : {}), ...(licenseAfter ? { licenseAfter } : {}) },
+            fetchPolicy: "no-cache",
+        })
+        const customer = result.data?.currentUser?.customers?.nodes?.[0]
+        if (!customer) return { status: "missing" as const }
+        if (customer.id !== customerId) return { status: "missing" as const }
+
+        const edges = customer.licenses?.edges ?? []
+        appendNavigationLicenses(navigationLicenses, customer)
+        const licenseIndex = edges.findIndex((edge) => edge?.node?.id === licenseId)
+        if (licenseIndex >= 0) {
+            return {
+                status: "found" as const,
+                licenseAfter: licenseIndex > 0 ? (edges[licenseIndex - 1]?.cursor ?? null) : licenseAfter,
+                navigationLicenses,
+            }
+        }
+
+        const pageInfo = mapPageInfo(customer.licenses?.pageInfo)
+        if (!pageInfo.hasNextPage) return { status: "missing" as const }
+        if (!pageInfo.endCursor || seenCursors.has(pageInfo.endCursor)) throw new Error("Crater returned an invalid license pagination cursor.")
+        seenCursors.add(pageInfo.endCursor)
+        licenseAfter = pageInfo.endCursor
+    }
+}
+
 export async function GET(request: Request) {
     const session = requireCraterSession(request)
     if (session.response) return session.response
@@ -295,56 +444,60 @@ export async function GET(request: Request) {
     const view = requestUrl.searchParams.get("view") ?? "dashboard"
     const customerId = requestUrl.searchParams.get("customerId") ?? ""
     const licenseId = requestUrl.searchParams.get("licenseId") ?? ""
+    const customerAfter = readCursor(requestUrl, "customerAfter")
+    const licenseAfter = readCursor(requestUrl, "licenseAfter")
+    const invoiceAfter = readCursor(requestUrl, "invoiceAfter")
 
     if (!(["dashboard", "customer", "license"] as const).includes(view as "dashboard" | "customer" | "license")) {
         return craterJson({ error: "view must be dashboard, customer, or license." }, 400)
     }
     if (view !== "dashboard" && !isCustomerId(customerId)) return craterJson({ error: "A valid Crater customer id is required." }, 400)
     if (view === "license" && !isLicenseId(licenseId)) return craterJson({ error: "A valid Crater license id is required." }, 400)
+    if (customerAfter === undefined || licenseAfter === undefined || invoiceAfter === undefined) return craterJson({ error: "The pagination cursor is invalid." }, 400)
 
     try {
         const client = createApolloClient(session.token)
 
         if (view === "dashboard") {
-            const result = await client.query({ query: LICENSE_DASHBOARD, fetchPolicy: "no-cache" })
+            const result = await client.query({
+                query: LICENSE_DASHBOARD,
+                variables: { ...(customerAfter ? { customerAfter } : {}) },
+                fetchPolicy: "no-cache",
+            })
             const currentUser = result.data?.currentUser
             if (!currentUser) return craterJson({ error: "The Crater session has no authenticated user." }, 401)
 
-            return setCraterSessionCookie(craterJson(mapUserData(currentUser)), session.token)
+            return setCraterSessionCookie(
+                craterJson({
+                    ...mapUserData(currentUser),
+                    pagination: { customers: mapPageInfo(currentUser.customers?.pageInfo, currentUser.customers?.count) },
+                } satisfies LicenseDashboardData),
+                session.token
+            )
         }
 
-        const navigationResult = await client.query({ query: LICENSE_NAVIGATION, fetchPolicy: "no-cache" })
-        const currentUser = navigationResult.data?.currentUser
-        if (!currentUser) return craterJson({ error: "The Crater session has no authenticated user." }, 401)
+        const customerLookup = await findCustomerCursor(client, customerId)
+        if (customerLookup.status === "unauthenticated") return craterJson({ error: "The Crater session has no authenticated user." }, 401)
+        if (customerLookup.status === "missing") return craterJson({ error: "The requested customer was not found." }, 404)
 
-        const customerEdges = currentUser.customers?.edges ?? []
-        const customerIndex = customerEdges.findIndex((edge) => edge?.node?.id === customerId)
-        if (customerIndex < 0) return craterJson({ error: "The requested customer was not found." }, 404)
-
-        const customerEdge = customerEdges[customerIndex]
-        const customerAfter = customerIndex > 0 ? (customerEdges[customerIndex - 1]?.cursor ?? null) : null
-        const navigationLicenses = customerEdges.flatMap((edge) => {
-            const customer = edge?.node
-            if (!customer) return []
-            return (customer.licenses?.edges ?? []).flatMap((licenseEdge) => {
-                if (!licenseEdge?.node) return []
-                const mappedLicense = mapLicense(licenseEdge.node, customer)
-                return mappedLicense ? [mappedLicense] : []
-            })
-        })
-        navigationLicenses.sort((left, right) => Date.parse(right.updatedAt ?? "") - Date.parse(left.updatedAt ?? ""))
-
-        let licenseAfter: string | null = null
+        let targetLicenseAfter: string | null = licenseAfter
+        let navigationLicenses = customerLookup.navigationLicenses
         if (view === "license") {
-            const licenseEdges = customerEdge?.node?.licenses?.edges ?? []
-            const licenseIndex = licenseEdges.findIndex((edge) => edge?.node?.id === licenseId)
-            if (licenseIndex < 0) return craterJson({ error: "The requested license was not found." }, 404)
-            licenseAfter = licenseIndex > 0 ? (licenseEdges[licenseIndex - 1]?.cursor ?? null) : null
+            const licenseLookup = await findLicenseCursor(client, customerLookup.customerAfter, customerId, licenseId)
+            if (licenseLookup.status === "missing") return craterJson({ error: "The requested license was not found." }, 404)
+            targetLicenseAfter = licenseLookup.licenseAfter
+            navigationLicenses = [...navigationLicenses, ...licenseLookup.navigationLicenses.filter((license) => !navigationLicenses.some((candidate) => candidate.id === license.id))]
         }
+        navigationLicenses.sort((left, right) => Date.parse(right.updatedAt ?? "") - Date.parse(left.updatedAt ?? ""))
 
         const detailResult = await client.query({
             query: view === "customer" ? LICENSE_CUSTOMER_DETAIL : LICENSE_DETAIL,
-            variables: { customerAfter, ...(view === "license" ? { licenseAfter } : {}) },
+            variables: {
+                ...(customerLookup.customerAfter ? { customerAfter: customerLookup.customerAfter } : {}),
+                ...(view === "customer" && licenseAfter ? { licenseAfter } : {}),
+                ...(view === "license" && targetLicenseAfter ? { licenseAfter: targetLicenseAfter } : {}),
+                ...(view === "license" && invoiceAfter ? { invoiceAfter } : {}),
+            },
             fetchPolicy: "no-cache",
         })
         const detailUser = detailResult.data?.currentUser
@@ -354,7 +507,19 @@ export async function GET(request: Request) {
         if (detailData.customers[0]?.id !== customerId) return craterJson({ error: "The requested customer was not found." }, 404)
         if (view === "license" && detailData.licenses[0]?.id !== licenseId) return craterJson({ error: "The requested license was not found." }, 404)
 
-        return setCraterSessionCookie(craterJson({ ...detailData, navigationLicenses } satisfies LicenseDashboardData), session.token)
+        for (const license of detailData.licenses) {
+            if (!navigationLicenses.some((candidate) => candidate.id === license.id)) navigationLicenses.push(license)
+        }
+        navigationLicenses.sort((left, right) => Date.parse(right.updatedAt ?? "") - Date.parse(left.updatedAt ?? ""))
+
+        const detailCustomer = detailUser.customers?.nodes?.[0]
+        const detailLicense = detailCustomer?.licenses?.nodes?.[0]
+        const pagination =
+            view === "customer"
+                ? { licenses: mapPageInfo(detailCustomer?.licenses?.pageInfo, detailCustomer?.licenses?.count) }
+                : { invoices: mapPageInfo(detailLicense?.invoices?.pageInfo, detailLicense?.invoices?.count) }
+
+        return setCraterSessionCookie(craterJson({ ...detailData, navigationLicenses, pagination } satisfies LicenseDashboardData), session.token)
     } catch (error) {
         const transportResponse = craterTransportErrorResponse(error)
         if (transportResponse) return transportResponse
