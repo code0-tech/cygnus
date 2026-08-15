@@ -11,9 +11,10 @@ mock.module("next/navigation", {
     },
 })
 
-const { cleanup, render, screen } = await import("@testing-library/react")
+const { act, cleanup, render, screen, waitFor } = await import("@testing-library/react")
 const { LicenseDataProvider, useLicenseData } = await import("../../src/components/licenses/LicenseDataProvider")
 const originalFetch = globalThis.fetch
+const originalDateNow = Date.now
 
 function LicenseState() {
     const { isLoading } = useLicenseData()
@@ -23,6 +24,7 @@ function LicenseState() {
 afterEach(() => {
     cleanup()
     globalThis.fetch = originalFetch
+    Date.now = originalDateNow
     window.history.replaceState({}, "", "/en/licenses?token=legacy-secret")
 })
 
@@ -45,4 +47,35 @@ test("loads licenses through the HttpOnly cookie without exposing a session toke
     assert.equal(requests[0].headers, undefined)
     assert.equal(requests[0].url, "https://code0.example/api/crater/licenses")
     assert.equal(window.location.search, "")
+})
+
+test("refreshes on focus only after the dashboard data is stale", async () => {
+    let now = 1_000_000
+    Date.now = () => now
+    const requests: string[] = []
+    globalThis.fetch = (async (input) => {
+        requests.push(String(input))
+        return new Response(JSON.stringify({ customers: [], licenses: [] }), { status: 200, headers: { "content-type": "application/json" } })
+    }) as typeof fetch
+
+    render(
+        <LicenseDataProvider loadError="Could not load licenses." redirectUrl="https://app.example/login">
+            <LicenseState />
+        </LicenseDataProvider>
+    )
+
+    assert.ok(await screen.findByText("loaded"))
+    assert.equal(requests.length, 1)
+
+    now += 5 * 60_000 - 1
+    await act(() => window.dispatchEvent(new Event("focus")))
+    assert.equal(requests.length, 1)
+
+    now += 1
+    await act(() => window.dispatchEvent(new Event("focus")))
+    await waitFor(() => assert.equal(requests.length, 2))
+
+    await act(() => window.dispatchEvent(new Event("focus")))
+    await new Promise((resolve) => setTimeout(resolve, 10))
+    assert.equal(requests.length, 2)
 })

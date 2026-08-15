@@ -3,6 +3,7 @@
 import { FilledButtonLink } from "@/components/ui/FilledButtonLink"
 import { ButtonLoader } from "@/components/ui/Loader"
 import { clearCheckoutDraftKeys } from "@/lib/checkout/checkoutDraft"
+import { getCheckoutStatusPollDelay, hasCheckoutStatusPollingExpired } from "@/lib/checkout/checkoutStatusPolling"
 import type { CheckoutData } from "@/lib/cms"
 import type { CheckoutCompletionState } from "@code0-tech/crater-graphql-types"
 import { Button } from "@code0-tech/pictor"
@@ -16,7 +17,7 @@ type StatusResponse = {
     licenseId: string | null
 }
 
-const POLL_INTERVAL_MS = 2_000
+const REQUEST_TIMEOUT_MS = 10_000
 const VALID_STATES = new Set<string>(["CHECKOUT_PENDING", "PAYMENT_PENDING", "FULFILLMENT_PENDING", "READY", "FAILED"])
 const SETTLED_STATES = new Set<string>(["FULFILLMENT_PENDING", "READY"])
 
@@ -34,14 +35,41 @@ export function CheckoutSuccessStatus({ content, locale, sessionId }: { content:
     const [status, setStatus] = useState<CheckoutStatus>("LOADING")
     const [completion, setCompletion] = useState<StatusResponse | null>(null)
     const [attempt, setAttempt] = useState(0)
-    const timeoutRef = useRef<number | null>(null)
+    const pollAttemptRef = useRef(0)
+    const pollingStartedAtRef = useRef(Date.now())
+    const pollTimeoutRef = useRef<number | null>(null)
 
     const checkStatus = useCallback(
         async (signal: AbortSignal) => {
             const statusUrl = new URL("/api/crater/checkout/status", window.location.origin)
             statusUrl.searchParams.set("sessionId", sessionId)
-            const response = await fetch(statusUrl, { cache: "no-store", credentials: "same-origin", signal })
-            const body: unknown = await response.json().catch(() => null)
+            const requestController = new AbortController()
+            let timedOut = false
+            const abortRequest = () => requestController.abort()
+            if (signal.aborted) abortRequest()
+            else signal.addEventListener("abort", abortRequest, { once: true })
+            const requestTimeout = window.setTimeout(() => {
+                timedOut = true
+                abortRequest()
+            }, REQUEST_TIMEOUT_MS)
+
+            let response: Response
+            let body: unknown
+            try {
+                response = await fetch(statusUrl, { cache: "no-store", credentials: "same-origin", signal: requestController.signal })
+                try {
+                    body = await response.json()
+                } catch (error) {
+                    if (timedOut) throw error
+                    body = null
+                }
+            } catch (error) {
+                if (timedOut) throw new Error("The checkout status request timed out.")
+                throw error
+            } finally {
+                window.clearTimeout(requestTimeout)
+                signal.removeEventListener("abort", abortRequest)
+            }
 
             if (!response.ok) {
                 const errorCode = body && typeof body === "object" && "errorCode" in body ? body.errorCode : undefined
@@ -60,7 +88,14 @@ export function CheckoutSuccessStatus({ content, locale, sessionId }: { content:
             if (SETTLED_STATES.has(nextCompletion.state)) clearCheckoutDraftKeys()
 
             if (nextCompletion.state === "CHECKOUT_PENDING" || nextCompletion.state === "PAYMENT_PENDING" || nextCompletion.state === "FULFILLMENT_PENDING") {
-                timeoutRef.current = window.setTimeout(() => setAttempt((current) => current + 1), POLL_INTERVAL_MS)
+                if (hasCheckoutStatusPollingExpired(pollingStartedAtRef.current, Date.now())) {
+                    setStatus("ERROR")
+                    return
+                }
+
+                const delay = getCheckoutStatusPollDelay(pollAttemptRef.current)
+                pollAttemptRef.current += 1
+                pollTimeoutRef.current = window.setTimeout(() => setAttempt((current) => current + 1), delay)
             }
         },
         [sessionId]
@@ -77,7 +112,7 @@ export function CheckoutSuccessStatus({ content, locale, sessionId }: { content:
 
         return () => {
             controller.abort()
-            if (timeoutRef.current !== null) window.clearTimeout(timeoutRef.current)
+            if (pollTimeoutRef.current !== null) window.clearTimeout(pollTimeoutRef.current)
         }
     }, [attempt, checkStatus])
 
@@ -111,6 +146,8 @@ export function CheckoutSuccessStatus({ content, locale, sessionId }: { content:
                     type="button"
                     variant="normal"
                     onClick={() => {
+                        pollingStartedAtRef.current = Date.now()
+                        pollAttemptRef.current = 0
                         setStatus("LOADING")
                         setAttempt((current) => current + 1)
                     }}
