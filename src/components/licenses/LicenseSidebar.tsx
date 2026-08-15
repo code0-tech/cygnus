@@ -76,9 +76,15 @@ export function LicenseSidebar({ content, isLoading, isRefreshing, locale, licen
         setIsLoggingOut(true)
 
         try {
-            await fetch("/api/crater/auth/session", { method: "DELETE", credentials: "same-origin" })
-        } finally {
+            const response = await fetch("/api/crater/auth/session", { method: "DELETE", credentials: "same-origin" })
+            if (!response.ok) {
+                setIsLoggingOut(false)
+                return
+            }
+
             window.location.replace(content.redirectUrl)
+        } catch {
+            setIsLoggingOut(false)
         }
     }
 

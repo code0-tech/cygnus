@@ -144,7 +144,8 @@ Customers::CleanupDraftsService.new(retention: 1.hour).execute
 A `UserSession` contains:
 
 - a global session ID
-- an `active` status
+- an `active` status, which is derived rather than stored
+- an `expiresAt` time
 - the associated user
 - timestamps
 - a session token, which is only returned when the session is created
@@ -154,11 +155,87 @@ Login is now integrated with Sagittarius:
 1. An authenticated Sagittarius client obtains a dedicated Crater login token through the Sagittarius `usersCreateCraterToken` mutation.
 2. The client passes that value to Crater's anonymous `usersLogin` mutation as `sagittariusToken`.
 3. Crater calls Sagittarius's `/graphql` endpoint with `Authorization: Crater-Login <token>` and resolves `currentUser { id }`.
-4. Crater finds or creates its local user by the returned Sagittarius ID and creates a fresh `UserSession`.
+4. Crater finds or creates its local user by the returned Sagittarius ID and creates a fresh `UserSession` with a server-set expiry.
 
 A blank or rejected token returns `INVALID_SAGITTARIUS_TOKEN`. Connectivity problems, unexpected HTTP responses, or GraphQL errors from Sagittarius return `SAGITTARIUS_UNAVAILABLE`. Failure to persist the local user returns `INVALID_USER`.
 
 Session lists follow the GraphQL connection model with `nodes`, `edges`, cursors, a total count, and `pageInfo`.
+
+#### The session lifecycle
+
+A session is usable while it is **neither revoked nor expired**. There is no stored `active` flag: a flag cannot express an expiry that passes on its own, and would drift out of sync with it. `UserSession#active?` and the `UserSession.active` scope both derive the answer from two columns:
+
+| Column       | Meaning                                                                                |
+| ------------ | -------------------------------------------------------------------------------------- |
+| `expires_at` | Not null. Set by the server when the session is created; a client cannot influence it. |
+| `revoked_at` | Set by `usersLogout`. Null while the session has not been revoked.                     |
+
+`session.lifetime_hours` (default `168`, seven days) is the absolute lifetime a new session receives. There is no refresh, no sliding window, and no rotation, so this value is the only bound on how long a stolen token remains useful; seven days keeps re-authentication through Sagittarius infrequent without leaving a token valid for months. Shortening it takes effect for newly created sessions only.
+
+Authentication resolves a token through `UserSession.active.find_by(token: ...)`, so **a revoked, an expired, and an entirely unknown token all resolve to nothing** and produce the identical HTTP `401 Unauthorized`. Nothing in the response distinguishes them, so no request can probe whether a session exists.
+
+Tokens are stored with deterministic Active Record encryption (`TokenAttr`), never as plain text, which is what allows the lookup above without keeping the raw value in the database. The token is returned exactly once, by `usersLogin`, and appears in no other response, no error detail, and no log line.
+
+#### Logging out
+
+`usersLogout` revokes the session the request is authenticated with:
+
+- It takes **no arguments** beyond `clientMutationId`. The session is read from the `Authorization` header, so there is no identifier a caller could supply and therefore no way to revoke somebody else's session -- or another one of their own.
+- The payload carries **no session object, no session ID, and no token**, only `errors` and `clientMutationId`. An empty `errors` list is the confirmation.
+- From the next request on, the same token is rejected exactly like an unknown one. A second logout with it returns `401`.
+- Other sessions of the same user stay active; logging out of one device does not log out the others.
+- Revoking is idempotent at the model level and never moves an existing `revoked_at`.
+- An anonymous request is answered with HTTP `403 Forbidden` before the resolver runs, like every mutation except `usersLogin`. A revoked or expired token is answered with `401`.
+- Reaching the resolver without a session authentication returns `MISSING_PERMISSION` in the payload `errors`.
+
+```graphql
+mutation UsersLogout($input: UsersLogoutInput!) {
+    usersLogout(input: $input) {
+        clientMutationId
+        errors {
+            errorCode
+            details {
+                __typename
+                ... on ActiveModelError {
+                    attribute
+                    type
+                }
+                ... on MessageError {
+                    message
+                }
+            }
+        }
+    }
+}
+```
+
+#### Cleaning up sessions
+
+`Users::CleanupSessionsService` deletes sessions that can no longer authenticate anything:
+
+- A session is removed once it has been **revoked or expired for longer than `session.retention_hours`** (default `720`, thirty days). The retention keeps a short audit trail before the row disappears.
+- Because the cutoff always lies in the past, a still usable session -- not revoked, expiring in the future -- can never match, whatever the retention is set to. That holds even for a retention of zero.
+- Deletion runs in batches of `session.cleanup_batch_size` (default `1000`), so a large backlog cannot hold one long transaction or lock open.
+- Running it repeatedly is safe; it simply finds less to do.
+- Logging is limited to the number deleted and the retention. Tokens, users, and session IDs are never logged.
+
+`Users::CleanupSessionsJob` runs the service through GoodJob's cron support in `config/application.rb`, hourly at minute 42:
+
+```ruby
+cleanup_user_sessions: {
+  cron: '42 * * * *',
+  class: 'Users::CleanupSessionsJob',
+  description: 'Removes revoked and expired user sessions once the retention has passed',
+}
+```
+
+It can also be triggered by hand:
+
+```ruby
+Users::CleanupSessionsJob.perform_later                        # through the queue
+Users::CleanupSessionsService.new.execute                      # inline, for example from a console
+Users::CleanupSessionsService.new(retention: 7.days, batch_size: 500).execute
+```
 
 ### Checkout and Stripe
 
@@ -628,8 +705,9 @@ Authentication behavior:
 - `usersLogin` is the only mutation that can be executed anonymously, and it must be the only top-level selection in that GraphQL operation.
 - All other mutations, including `checkoutCreateSession`, require an active Crater `UserSession`.
 - A protected mutation without an `Authorization` header returns HTTP `403 Forbidden`.
-- An unknown authentication scheme or an invalid or inactive session token returns HTTP `401 Unauthorized`.
-- The session token is returned by `usersLogin` only when the new `UserSession` is created.
+- An unknown authentication scheme returns HTTP `401 Unauthorized`, as does any token that does not resolve to a usable session. Revoked, expired, and entirely unknown tokens are answered identically, so the response never reveals whether a session exists.
+- Every session carries a server-set `expiresAt`; see [the session lifecycle](#the-session-lifecycle).
+- The session token is returned by `usersLogin` only when the new `UserSession` is created. `usersLogout` revokes it and returns neither the token nor the session ID.
 - The Sagittarius login token and the resulting Crater session token are distinct credentials with different header schemes.
 
 ### Mutations
@@ -638,10 +716,11 @@ Almost all mutations optionally accept `clientMutationId` and return it so the c
 
 #### Authentication and access
 
-| Mutation     | Key arguments                                                                           | Result                                                           |
-| ------------ | --------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| `usersLogin` | `sagittariusToken: String!`, obtained from Sagittarius through `usersCreateCraterToken` | Newly created `UserSession` and its Crater session token         |
-| `echo`       | Optional message                                                                        | Returned message; verifies mutation access without changing data |
+| Mutation      | Key arguments                                                                           | Result                                                                                          |
+| ------------- | --------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `usersLogin`  | `sagittariusToken: String!`, obtained from Sagittarius through `usersCreateCraterToken` | Newly created `UserSession` and its Crater session token                                        |
+| `usersLogout` | none                                                                                    | Revokes the session of the `Authorization` header; returns only `errors` and `clientMutationId` |
+| `echo`        | Optional message                                                                        | Returned message; verifies mutation access without changing data                                |
 
 #### Customers
 

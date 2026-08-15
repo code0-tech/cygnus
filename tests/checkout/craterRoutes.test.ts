@@ -465,13 +465,66 @@ test("paginates checkout customers with Crater's cursor", async () => {
     }
 })
 
-test("logout clears the persisted Crater session cookie", async () => {
-    const response = await deleteSession()
+test("logout revokes the Crater session before clearing its persisted cookie", async () => {
+    const graphQLServer = await createGraphQLTestServer([{ data: { usersLogout: { errors: [] } } }])
+    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
+    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
 
-    assert.equal(response.status, 200)
-    assert.deepEqual(await response.json(), { authenticated: false })
-    assert.match(response.headers.get("set-cookie") ?? "", /crater_session=;/)
-    assert.match(response.headers.get("set-cookie") ?? "", /Max-Age=0/i)
+    try {
+        const response = await deleteSession(
+            new Request("https://example.com/api/crater/auth/session", {
+                method: "DELETE",
+                headers: { cookie: "crater_session=c_ust_example" },
+            })
+        )
+
+        assert.equal(response.status, 200)
+        assert.deepEqual(await response.json(), { authenticated: false })
+        assert.match(response.headers.get("set-cookie") ?? "", /crater_session=;/)
+        assert.match(response.headers.get("set-cookie") ?? "", /Max-Age=0/i)
+        assert.equal(graphQLServer.requests[0].authorization, "Session c_ust_example")
+        assert.deepEqual(graphQLServer.requests[0].body.variables, { input: {} })
+        assert.match(graphQLServer.requests[0].body.query ?? "", /usersLogout/)
+    } finally {
+        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
+        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
+        await graphQLServer.close()
+    }
+})
+
+test("logout keeps the local session available for retry when Crater rejects revocation", async () => {
+    const graphQLServer = await createGraphQLTestServer([
+        {
+            data: {
+                usersLogout: {
+                    errors: [{ errorCode: "MISSING_PERMISSION", details: [{ __typename: "MessageError", message: "Logout denied" }] }],
+                },
+            },
+        },
+    ])
+    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
+    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
+
+    try {
+        const response = await deleteSession(
+            new Request("https://example.com/api/crater/auth/session", {
+                method: "DELETE",
+                headers: { cookie: "crater_session=c_ust_example" },
+            })
+        )
+
+        assert.equal(response.status, 422)
+        assert.deepEqual(await response.json(), {
+            error: "Crater could not revoke the user session.",
+            errorCode: "MISSING_PERMISSION",
+            details: ["Logout denied"],
+        })
+        assert.equal(response.headers.get("set-cookie"), null)
+    } finally {
+        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
+        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
+        await graphQLServer.close()
+    }
 })
 
 test("business customer creation allows omitted contact and tax fields", async () => {
