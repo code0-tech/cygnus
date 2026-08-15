@@ -1,9 +1,26 @@
 import { clearCraterSessionCookie, readCraterSessionAuthorization } from "@/lib/checkout/craterSession"
 import type { Error } from "@code0-tech/crater-graphql-types"
+import { gql } from "@apollo/client"
 import { ServerError } from "@apollo/client/errors"
 import { NextResponse } from "next/server"
 
 export type JsonObject = Record<string, unknown>
+
+export const CRATER_ERROR_FIELDS = gql`
+    fragment CraterErrorFields on Error {
+        errorCode
+        details {
+            __typename
+            ... on ActiveModelError {
+                attribute
+                type
+            }
+            ... on MessageError {
+                message
+            }
+        }
+    }
+`
 
 export function craterJson(body: unknown, status = 200) {
     return NextResponse.json(body, {

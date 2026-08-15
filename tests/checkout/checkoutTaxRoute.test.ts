@@ -87,3 +87,48 @@ test("maps standard and custom tax selections to the current Crater inputs", asy
         await graphQLServer.close()
     }
 })
+
+test("tax calculation forwards documented Crater domain error details", async () => {
+    const graphQLServer = await createGraphQLTestServer([
+        {
+            data: {
+                checkoutCalculateTax: {
+                    errors: [
+                        {
+                            errorCode: "INVALID_TAX_CALCULATION",
+                            details: [{ __typename: "MessageError", message: "The tax location is incomplete." }],
+                        },
+                    ],
+                    taxQuote: null,
+                },
+            },
+        },
+    ])
+    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
+    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
+
+    try {
+        const response = await POST(
+            new Request("https://example.com/api/crater/checkout/tax", {
+                method: "POST",
+                headers: {
+                    authorization: "Session c_ust_example",
+                    "content-type": "application/json",
+                },
+                body: JSON.stringify({ plan: "max", customerType: "b2c", paymentPeriod: "monthly" }),
+            })
+        )
+
+        assert.equal(response.status, 422)
+        assert.deepEqual(await response.json(), {
+            error: "Crater could not calculate tax.",
+            errorCode: "INVALID_TAX_CALCULATION",
+            details: ["The tax location is incomplete."],
+        })
+        assert.match(graphQLServer.requests[0].body.query ?? "", /fragment CraterErrorFields on Error/)
+    } finally {
+        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
+        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
+        await graphQLServer.close()
+    }
+})

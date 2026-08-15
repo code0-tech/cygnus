@@ -1,5 +1,5 @@
 import { createApolloClient } from "@/lib/apolloClient"
-import { craterJson, craterMutationErrorResponse, craterTransportErrorResponse, optionalString, readJsonObject, requireCraterSession, type JsonObject } from "@/lib/checkout/craterApi"
+import { CRATER_ERROR_FIELDS, craterJson, craterMutationErrorResponse, craterTransportErrorResponse, optionalString, readJsonObject, requireCraterSession, type JsonObject } from "@/lib/checkout/craterApi"
 import { DEFAULT_CRATER_PAYMENT_PERIOD, parseCraterPaymentPeriod, toCraterPaymentPeriod } from "@/lib/checkout/craterCheckout"
 import { resolveSubscriptionSelection, type SubscriptionSelection } from "@/lib/subscriptionConfigurator"
 import { resolveSiteUrl } from "@/lib/siteConfig"
@@ -20,6 +20,7 @@ function isCustomerId(value: string): value is Scalars["CustomerID"]["input"] {
 }
 
 const CHECKOUT_CREATE_SESSION: TypedDocumentNode<CheckoutCreateSessionData, MutationCheckoutCreateSessionArgs> = gql`
+    ${CRATER_ERROR_FIELDS}
     mutation CheckoutCreateSession($input: CheckoutCreateSessionInput!) {
         checkoutCreateSession(input: $input) {
             session {
@@ -28,7 +29,7 @@ const CHECKOUT_CREATE_SESSION: TypedDocumentNode<CheckoutCreateSessionData, Muta
                 id
             }
             errors {
-                errorCode
+                ...CraterErrorFields
             }
         }
     }

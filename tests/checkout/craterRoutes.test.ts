@@ -600,6 +600,75 @@ test("discount validation requires a code", async () => {
     })
 })
 
+test("login and discount validation forward documented Crater domain error details", async () => {
+    const graphQLServer = await createGraphQLTestServer([
+        {
+            data: {
+                usersLogin: {
+                    errors: [
+                        {
+                            errorCode: "INVALID_SAGITTARIUS_TOKEN",
+                            details: [{ __typename: "MessageError", message: "The Sagittarius token was rejected." }],
+                        },
+                    ],
+                    userSession: null,
+                },
+            },
+        },
+        {
+            data: {
+                checkoutValidateDiscount: {
+                    discount: null,
+                    errors: [
+                        {
+                            errorCode: "INVALID_DISCOUNT_CODE",
+                            details: [{ __typename: "ActiveModelError", attribute: "code", type: "inactive" }],
+                        },
+                    ],
+                },
+            },
+        },
+    ])
+    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
+    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
+
+    try {
+        const loginResponse = await createSession(
+            new Request("https://example.com/api/crater/login", {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ sagittariusToken: "invalid-sagittarius-token" }),
+            })
+        )
+        const discountResponse = await validateDiscount(
+            new Request("https://example.com/api/crater/checkout/discount", {
+                method: "POST",
+                headers: sessionHeaders,
+                body: JSON.stringify({ code: "EXPIRED" }),
+            })
+        )
+
+        assert.equal(loginResponse.status, 422)
+        assert.deepEqual(await loginResponse.json(), {
+            error: "Crater could not create a user session.",
+            errorCode: "INVALID_SAGITTARIUS_TOKEN",
+            details: ["The Sagittarius token was rejected."],
+        })
+        assert.equal(discountResponse.status, 422)
+        assert.deepEqual(await discountResponse.json(), {
+            error: "Crater could not validate the discount.",
+            errorCode: "INVALID_DISCOUNT_CODE",
+            details: ["code: inactive"],
+        })
+        assert.match(graphQLServer.requests[0].body.query ?? "", /fragment CraterErrorFields on Error/)
+        assert.match(graphQLServer.requests[1].body.query ?? "", /fragment CraterErrorFields on Error/)
+    } finally {
+        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
+        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
+        await graphQLServer.close()
+    }
+})
+
 test("maps login, customer creation, and customer updates to Crater GraphQL inputs", async () => {
     const graphQLServer = await createGraphQLTestServer([
         {

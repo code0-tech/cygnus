@@ -1,5 +1,5 @@
 import { createApolloClient } from "@/lib/apolloClient"
-import { craterJson, craterMutationErrorResponse, craterTransportErrorResponse, optionalString, readJsonObject, requireCraterSession, type JsonObject } from "@/lib/checkout/craterApi"
+import { CRATER_ERROR_FIELDS, craterJson, craterMutationErrorResponse, craterTransportErrorResponse, optionalString, readJsonObject, requireCraterSession, type JsonObject } from "@/lib/checkout/craterApi"
 import { toCraterPaymentPeriod } from "@/lib/checkout/craterCheckout"
 import { resolveSubscriptionSelection } from "@/lib/subscriptionConfigurator"
 import type { Mutation, MutationCheckoutCalculateTaxArgs } from "@code0-tech/crater-graphql-types"
@@ -10,6 +10,7 @@ export const runtime = "nodejs"
 type CheckoutCalculateTaxData = Pick<Mutation, "checkoutCalculateTax">
 
 const CHECKOUT_CALCULATE_TAX: TypedDocumentNode<CheckoutCalculateTaxData, MutationCheckoutCalculateTaxArgs> = gql`
+    ${CRATER_ERROR_FIELDS}
     mutation CheckoutCalculateTax($input: CheckoutCalculateTaxInput!) {
         checkoutCalculateTax(input: $input) {
             taxQuote {
@@ -18,7 +19,7 @@ const CHECKOUT_CALCULATE_TAX: TypedDocumentNode<CheckoutCalculateTaxData, Mutati
                 taxAmountExclusive
             }
             errors {
-                errorCode
+                ...CraterErrorFields
             }
         }
     }
