@@ -121,7 +121,6 @@ test("calculates Crater promotion discounts", () => {
 test("builds a cent-based custom subscription quote", () => {
     const quote = calculateSubscriptionQuote(
         {
-            additionalFeatureIds: ["support"],
             aiTokens: 1_000_000,
             customerType: "b2b",
             deployment: "self_hosted",
@@ -130,7 +129,6 @@ test("builds a cent-based custom subscription quote", () => {
             workflowExecutions: 1_000,
         },
         {
-            additionalFeatures: [{ id: "support", title: "Support", description: "", icon: "", price: 25, weeklyPrice: 5 }],
             aiTokens: {} as never,
             defaults: {} as never,
             packages: {} as never,
@@ -140,14 +138,13 @@ test("builds a cent-based custom subscription quote", () => {
         }
     )
 
-    assert.equal(quote.subtotal, 54_000)
+    assert.equal(quote.subtotal, 24_000)
     assert.equal(quote.periodDiscount, 22_000)
-    assert.equal(quote.total, 32_000)
+    assert.equal(quote.total, 2_000)
 })
 
 test("uses Stripe component prices instead of CMS price factors", () => {
     const catalog = {
-        additionalFeatures: [{ id: "support", title: "Support", description: "", icon: "", price: 25, weeklyPrice: 5 }],
         aiTokens: {} as never,
         defaults: {} as never,
         packages: {} as never,
@@ -156,7 +153,6 @@ test("uses Stripe component prices instead of CMS price factors", () => {
         subscriptionPrices,
     }
     const selectionBase = {
-        additionalFeatureIds: ["support"] as string[],
         aiTokens: 1_000_000,
         deployment: "self_hosted",
         plan: "custom",
@@ -164,14 +160,13 @@ test("uses Stripe component prices instead of CMS price factors", () => {
     } as const
 
     const b2cMonthly = calculateSubscriptionQuote({ ...selectionBase, customerType: "b2c", paymentPeriod: "monthly" }, catalog)
-    assert.equal(b2cMonthly.subtotal, 4_500)
+    assert.equal(b2cMonthly.subtotal, 2_000)
     assert.equal(b2cMonthly.periodDiscount, 0)
-    assert.equal(b2cMonthly.total, 4_500)
+    assert.equal(b2cMonthly.total, 2_000)
 
     const b2bMonthly = calculateSubscriptionQuote({ ...selectionBase, customerType: "b2b", paymentPeriod: "monthly" }, catalog)
     assert.equal(b2bMonthly.periodDiscount, 0)
-    assert.equal(b2bMonthly.total, 4_500)
-
+    assert.equal(b2bMonthly.total, 2_000)
 })
 
 test("preserves the regular fixed-plan price for period discount summaries", () => {
@@ -187,7 +182,6 @@ test("preserves the regular fixed-plan price for period discount summaries", () 
     } as never
 
     const result = resolveCheckoutPricing({
-        additionalFeatureIds: [],
         aiTokensParam: null,
         customerTypeParam: null,
         fallbackPeriodSuffix: "/year",
@@ -204,7 +198,6 @@ test("preserves the regular fixed-plan price for period discount summaries", () 
 
 test("forces the custom plan when a b2b customer requests a pro or max checkout via the URL", () => {
     const config = {
-        additionalFeatures: [],
         aiTokenPriceFactor: 0.001,
         aiTokens: {
             b2b: { default: 100, min: 100, max: 1_000, step: 100 },
@@ -227,7 +220,6 @@ test("forces the custom plan when a b2b customer requests a pro or max checkout 
     } as never
 
     const result = resolveCheckoutPricing({
-        additionalFeatureIds: [],
         aiTokensParam: null,
         customerTypeParam: "b2b",
         fallbackPeriodSuffix: "/mo",
@@ -246,7 +238,6 @@ test("forces the custom plan when a b2b customer requests a pro or max checkout 
 
 test("normalizes custom weekly and preserves custom quarterly in the checkout price display", () => {
     const config = {
-        additionalFeatures: [],
         aiTokenPriceFactor: 0.001,
         aiTokens: {
             b2b: { default: 100, min: 100, max: 1_000, step: 100 },
@@ -268,7 +259,6 @@ test("normalizes custom weekly and preserves custom quarterly in the checkout pr
     } as never
 
     const b2bWeekly = resolveCheckoutPricing({
-        additionalFeatureIds: [],
         aiTokensParam: null,
         customerTypeParam: "b2b",
         fallbackPeriodSuffix: "/mo",
@@ -279,7 +269,6 @@ test("normalizes custom weekly and preserves custom quarterly in the checkout pr
         workflowExecutionsParam: null,
     })
     const b2cQuarterly = resolveCheckoutPricing({
-        additionalFeatureIds: [],
         aiTokensParam: null,
         customerTypeParam: "b2c",
         fallbackPeriodSuffix: "/mo",
@@ -296,7 +285,6 @@ test("normalizes custom weekly and preserves custom quarterly in the checkout pr
 
 test("clamps manipulated custom-plan usage parameters before calculating the price", () => {
     const config = {
-        additionalFeatures: [],
         aiTokenPriceFactor: 0.001,
         aiTokens: {
             b2b: { default: 100, min: 100, max: 1_000, step: 100 },
@@ -320,7 +308,6 @@ test("clamps manipulated custom-plan usage parameters before calculating the pri
     } as never
 
     const result = resolveCheckoutPricing({
-        additionalFeatureIds: [],
         aiTokensParam: "1",
         customerTypeParam: "b2b",
         fallbackPeriodSuffix: "/mo",

@@ -5,12 +5,7 @@ import { getIcon } from "@/components/ui/IconRenderer"
 import type { CheckoutData, CheckoutSummaryIconColor, SubscriptionConfigData } from "@/lib/cms"
 import type { CheckoutTaxQuoteData } from "@/lib/checkout/checkoutSubmission"
 import { formatCompactNumber, formatEuroCurrency } from "@/lib/formatters"
-import {
-    calculateExclusiveTaxRate,
-    calculatePromotionDiscountAmount,
-    formatDiscountBadge,
-    resolveCheckoutPricing,
-} from "@/lib/subscriptionCalculator"
+import { calculateExclusiveTaxRate, calculatePromotionDiscountAmount, formatDiscountBadge, resolveCheckoutPricing } from "@/lib/subscriptionCalculator"
 import type { SubscriptionPriceCatalog } from "@/lib/subscriptionPrices"
 import { useParams, useSearchParams } from "next/navigation"
 import { useState, type ReactNode } from "react"
@@ -72,14 +67,7 @@ export function CheckoutSummary({ content, errors, subscriptionConfig, subscript
     const paymentPeriodParam = searchParams.get("paymentPeriod")
     const workflowExecutionsParam = searchParams.get("workflowExecutions")
     const aiTokensParam = searchParams.get("aiTokens")
-    const additionalFeaturesParam = searchParams.get("additionalFeatures")
-    const selectedAdditionalFeatureIds =
-        additionalFeaturesParam
-            ?.split(",")
-            .map((feature) => feature.trim())
-            .filter((feature) => feature.length > 0) ?? []
-    const { additionalFeaturesPrice, aiTokens, isCustomPlan, paymentPeriod, periodSuffix, planTitle, pricing, selectedAdditionalFeatures, workflowExecutions } = resolveCheckoutPricing({
-        additionalFeatureIds: selectedAdditionalFeatureIds,
+    const { aiTokens, isCustomPlan, paymentPeriod, periodSuffix, planTitle, pricing, workflowExecutions } = resolveCheckoutPricing({
         aiTokensParam,
         customerTypeParam: customerType,
         fallbackPeriodSuffix: content.pricing.perMonthSuffix,
@@ -103,7 +91,6 @@ export function CheckoutSummary({ content, errors, subscriptionConfig, subscript
     const formattedTotalPrice = formatEuroCurrency(totalPrice, locale)
     const formattedBasePrice = formatEuroCurrency(pricing.aiTokenPrice, locale)
     const formattedWorkflowExecutionsPrice = formatEuroCurrency(pricing.workflowExecutionPrice, locale)
-    const formattedAdditionalFeaturesPrice = formatEuroCurrency(additionalFeaturesPrice, locale)
     const formattedPaymentPeriodDiscountAmount = formatEuroCurrency(paymentPeriodDiscountAmount, locale)
     const formattedDiscountAmount = formatEuroCurrency(promotionDiscountAmount, locale)
     const formattedTaxAmount = formatEuroCurrency(taxAmount, locale)
@@ -186,20 +173,6 @@ export function CheckoutSummary({ content, errors, subscriptionConfig, subscript
                                 <span className="shrink-0 tabular-nums text-white">{formattedWorkflowExecutionsPrice}</span>
                             </div>
                         </>
-                    )}
-
-                    {selectedAdditionalFeatures.length > 0 && (
-                        <div className="flex items-start justify-between gap-4 text-sm">
-                            <div className="flex min-w-0 flex-wrap items-center gap-1.5">
-                                <span className="text-secondary">{content.pricing.additionalFeaturesLabel}</span>
-                                <SummaryBadge
-                                    icon={getIcon(content.additionalFeaturesIcon, 16)}
-                                    tone={content.additionalFeaturesIconColor}
-                                    value={selectedAdditionalFeatures.map((feature) => feature.title).join(", ")}
-                                />
-                            </div>
-                            <span className="shrink-0 tabular-nums text-white">{formattedAdditionalFeaturesPrice}</span>
-                        </div>
                     )}
 
                     {paymentPeriodDiscountLabel && paymentPeriodDiscountAmount > 0 && (

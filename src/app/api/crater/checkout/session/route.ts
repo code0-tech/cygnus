@@ -57,7 +57,6 @@ export async function POST(request: Request) {
         const paymentPeriod = optionalString(requestData.paymentPeriod)
         const workflowExecutions = optionalString(requestData.workflowExecutions)
         const aiTokens = optionalString(requestData.aiTokens)
-        const additionalFeatures = optionalString(requestData.additionalFeatures)
         let craterCustomCheckoutConfigurationId: Scalars["CustomCheckoutConfigurationID"]["input"] | undefined
         let normalizedSelection: SubscriptionSelection | undefined
 
@@ -105,7 +104,6 @@ export async function POST(request: Request) {
                     paymentPeriod,
                     workflowExecutions,
                     aiTokens,
-                    additionalFeatures,
                 },
                 subscriptionConfig
             )

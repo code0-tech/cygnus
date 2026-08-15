@@ -3072,33 +3072,6 @@ export interface SubscriptionConfig {
     heading?: string | null;
     caption?: string | null;
   };
-  /**
-   * Optional section heading shown above the additional features list.
-   */
-  additionalFeaturesLabel?: string | null;
-  /**
-   * Optional description shown below the additional features heading.
-   */
-  additionalFeaturesDescription?: string | null;
-  /**
-   * Leave empty to hide the section entirely.
-   */
-  additionalFeatures?:
-    | {
-        title?: string | null;
-        description?: string | null;
-        icon: string;
-        /**
-         * Monthly price in EUR.
-         */
-        price?: number | null;
-        /**
-         * Weekly price in EUR, used directly for weekly billing instead of being calculated from the monthly price.
-         */
-        weeklyPrice?: number | null;
-        id?: string | null;
-      }[]
-    | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -3153,17 +3126,12 @@ export interface Checkout {
     workflowExecutionsLabel: string;
     workflowExecutionsIcon: string;
     workflowExecutionsIconColor: 'neutral' | 'brand' | 'aqua' | 'blue' | 'pink' | 'yellow' | 'lime' | 'magenta';
-    additionalFeaturesLabel: string;
-    additionalFeaturesIcon: string;
-    additionalFeaturesIconColor: 'neutral' | 'brand' | 'aqua' | 'blue' | 'pink' | 'yellow' | 'lime' | 'magenta';
-    additionalFeaturesDescription: string;
     pricing: {
       label: string;
       description: string;
       planLabel: string;
       baseLabel: string;
       workflowExecutionsLabel: string;
-      additionalFeaturesLabel: string;
       quarterlyDiscountLabel: string;
       yearlyDiscountLabel: string;
       discountLabel: string;
@@ -3776,18 +3744,6 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
         heading?: T;
         caption?: T;
       };
-  additionalFeaturesLabel?: T;
-  additionalFeaturesDescription?: T;
-  additionalFeatures?:
-    | T
-    | {
-        title?: T;
-        description?: T;
-        icon?: T;
-        price?: T;
-        weeklyPrice?: T;
-        id?: T;
-      };
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
@@ -3851,10 +3807,6 @@ export interface CheckoutSelect<T extends boolean = true> {
         workflowExecutionsLabel?: T;
         workflowExecutionsIcon?: T;
         workflowExecutionsIconColor?: T;
-        additionalFeaturesLabel?: T;
-        additionalFeaturesIcon?: T;
-        additionalFeaturesIconColor?: T;
-        additionalFeaturesDescription?: T;
         pricing?:
           | T
           | {
@@ -3863,7 +3815,6 @@ export interface CheckoutSelect<T extends boolean = true> {
               planLabel?: T;
               baseLabel?: T;
               workflowExecutionsLabel?: T;
-              additionalFeaturesLabel?: T;
               quarterlyDiscountLabel?: T;
               yearlyDiscountLabel?: T;
               discountLabel?: T;

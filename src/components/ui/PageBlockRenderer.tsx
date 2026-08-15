@@ -50,7 +50,10 @@ interface PageBlocksRendererProps {
     subscriptionPrices?: SubscriptionPriceCatalog | null
 }
 
-type PageBlockRenderOptions = Pick<PageBlocksRendererProps, "actions" | "cardRowChildren" | "ctaFloating" | "locale" | "action" | "actionModuleJson" | "actionReferences" | "subscriptionConfig" | "subscriptionPrices">
+type PageBlockRenderOptions = Pick<
+    PageBlocksRendererProps,
+    "actions" | "cardRowChildren" | "ctaFloating" | "locale" | "action" | "actionModuleJson" | "actionReferences" | "subscriptionConfig" | "subscriptionPrices"
+>
 type BlockRenderer = (block: PageBlock, options: PageBlockRenderOptions) => ReactNode
 
 const pageBlockRenderers: Partial<Record<PageBlock["blockType"], BlockRenderer>> = {
@@ -152,7 +155,6 @@ const pageBlockRenderers: Partial<Record<PageBlock["blockType"], BlockRenderer>>
             workflowBusinessTypes: (config.workflowCalculator.businessTypes.length ? config.workflowCalculator.businessTypes : [{ icon: "tabler:IconBuilding" }]).map((businessType, index) =>
                 getIcon(businessType.icon?.trim() || "tabler:IconBuilding", 18, `workflow-business-type-${index}-${businessType.icon}`)
             ),
-            additionalFeatures: (config.additionalFeatures ?? []).map((feature, index) => getIcon(feature.icon?.trim() || "tabler:IconCube", 20, feature.id ?? `additional-feature-${index}`)),
         }
 
         return <SubscriptionConfiguratorSection locale={options.locale ?? "en"} content={{ ...config, ...blockContent }} icons={icons} subscriptionPrices={subscriptionPrices} />
@@ -178,7 +180,18 @@ function renderPageBlock(block: PageBlock, options: PageBlockRenderOptions) {
     return renderer ? renderer(block, options) : null
 }
 
-export function PageBlocks({ blocks, actions, cardRowChildren, ctaFloating = false, locale, action, actionModuleJson, actionReferences, subscriptionConfig, subscriptionPrices }: PageBlocksRendererProps) {
+export function PageBlocks({
+    blocks,
+    actions,
+    cardRowChildren,
+    ctaFloating = false,
+    locale,
+    action,
+    actionModuleJson,
+    actionReferences,
+    subscriptionConfig,
+    subscriptionPrices,
+}: PageBlocksRendererProps) {
     const renderableBlocks =
         blocks?.flatMap((block) => {
             const element = renderPageBlock(block, { actions, cardRowChildren, ctaFloating, locale, action, actionModuleJson, actionReferences, subscriptionConfig, subscriptionPrices })

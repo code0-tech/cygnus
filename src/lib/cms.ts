@@ -254,18 +254,6 @@ export interface SubscriptionConfigData {
         heading: string
         caption: string
     }
-    additionalFeaturesLabel?: string | null
-    additionalFeaturesDescription?: string | null
-    additionalFeatures?:
-        | {
-              icon: string
-              title: string
-              description: string
-              price: number
-              weeklyPrice: number
-              id?: string | null
-          }[]
-        | null
 }
 
 export interface SubscriptionConfiguratorBlockData {
@@ -323,17 +311,12 @@ export interface CheckoutData {
         workflowExecutionsLabel: string
         workflowExecutionsIcon: string
         workflowExecutionsIconColor: CheckoutSummaryIconColor
-        additionalFeaturesLabel: string
-        additionalFeaturesIcon: string
-        additionalFeaturesIconColor: CheckoutSummaryIconColor
-        additionalFeaturesDescription: string
         pricing: {
             label: string
             description: string
             planLabel: string
             baseLabel: string
             workflowExecutionsLabel: string
-            additionalFeaturesLabel: string
             quarterlyDiscountLabel: string
             yearlyDiscountLabel: string
             discountLabel: string

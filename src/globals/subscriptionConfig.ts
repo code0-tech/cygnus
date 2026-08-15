@@ -236,7 +236,7 @@ export const SubscriptionCollection: GlobalConfig = {
                             type: "textarea",
                             required: false,
                             localized: true,
-                            defaultValue: "Configure usage and additional features for an individual setup.",
+                            defaultValue: "Configure usage for an individual setup.",
                         },
                         { ...iconField, defaultValue: "settings" },
                         optionImageField(),
@@ -600,43 +600,6 @@ export const SubscriptionCollection: GlobalConfig = {
             fields: [
                 { name: "heading", type: "text", required: false, localized: true, defaultValue: "Price" },
                 { name: "caption", type: "text", required: false, localized: true, defaultValue: "per month" },
-            ],
-        },
-        {
-            name: "additionalFeaturesLabel",
-            type: "text",
-            localized: true,
-            admin: {
-                description: "Optional section heading shown above the additional features list.",
-            },
-        },
-        {
-            name: "additionalFeaturesDescription",
-            type: "textarea",
-            localized: true,
-            admin: {
-                description: "Optional description shown below the additional features heading.",
-            },
-        },
-        {
-            name: "additionalFeatures",
-            type: "array",
-            admin: {
-                description: "Leave empty to hide the section entirely.",
-            },
-            fields: [
-                { name: "title", type: "text", required: false, localized: true },
-                { name: "description", type: "textarea", required: false, localized: true },
-                iconField,
-                { name: "price", type: "number", required: false, defaultValue: 0, admin: { description: "Monthly price in EUR." } },
-                {
-                    name: "weeklyPrice",
-                    label: "Weekly Price",
-                    type: "number",
-                    required: false,
-                    defaultValue: 0,
-                    admin: { description: "Weekly price in EUR, used directly for weekly billing instead of being calculated from the monthly price." },
-                },
             ],
         },
     ],

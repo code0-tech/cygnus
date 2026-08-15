@@ -2,17 +2,17 @@ import { StableBadge } from "@/components/ui/StableBadge"
 import { cn } from "@/lib/utils"
 import type { CSSProperties, ReactNode } from "react"
 
-export type SubscriptionOptionAccent = "aqua" | "yellow" | "pink" | "blue" | "brand" | "lime" | "magenta"
+type SubscriptionOptionAccent = "aqua" | "yellow" | "pink" | "blue" | "brand" | "lime" | "magenta"
 
-export const SUBSCRIPTION_OPTION_ACTIVE_GLOW_STYLE: CSSProperties = {
+const SUBSCRIPTION_OPTION_ACTIVE_GLOW_STYLE: CSSProperties = {
     background: "radial-gradient(circle at top right, color-mix(in oklab, var(--option-accent) 16%, transparent), transparent 38%)",
 }
 
-export const SUBSCRIPTION_OPTION_ACTIVE_ICON_STYLE: CSSProperties = {
+const SUBSCRIPTION_OPTION_ACTIVE_ICON_STYLE: CSSProperties = {
     color: "var(--option-accent)",
 }
 
-export function getSubscriptionOptionAccentStyle(accent: SubscriptionOptionAccent, active: boolean): CSSProperties {
+function getSubscriptionOptionAccentStyle(accent: SubscriptionOptionAccent, active: boolean): CSSProperties {
     const accentColor = `var(--bg-${accent})`
 
     return {
