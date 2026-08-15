@@ -358,6 +358,8 @@ test("creates regular and custom checkout sessions with the expected Crater inpu
                     paymentPeriod: "quarterly",
                     aiTokens: "30000",
                     workflowExecutions: "200",
+                    additionalFeatures: ["priority-support"],
+                    features: ["must-not-reach-crater"],
                 }),
             })
         )
