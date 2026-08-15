@@ -25,7 +25,7 @@
     "dependencies": {
         "@base-ui/react": "^1.7.0",
         "@c15t/nextjs": "^2.1.0",
-        "@c15t/react": "^2.1.0",
+        "@c15t/react": "^2.2.0",
         "@c15t/scripts": "^2.1.0",
         "@code0-tech/pictor": "^0.15.0",
         "@icons-pack/react-simple-icons": "^13.13.0",
