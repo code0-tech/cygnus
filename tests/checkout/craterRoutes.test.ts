@@ -89,6 +89,41 @@ test("server-side login callback exchanges Sagittarius for an HttpOnly Crater co
     }
 })
 
+test("server-side login callback logs why Crater rejected the login without leaking it to the user", async () => {
+    const graphQLServer = await createGraphQLTestServer([
+        {
+            data: {
+                usersLogin: {
+                    errors: [{ errorCode: "INVALID_SAGITTARIUS_TOKEN", details: [{ __typename: "MessageError", message: "The token was rejected." }] }],
+                    userSession: null,
+                },
+            },
+        },
+    ])
+    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
+    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
+    const originalConsoleError = console.error
+    const loggedArguments: unknown[][] = []
+    console.error = (...args: unknown[]) => {
+        loggedArguments.push(args)
+    }
+
+    try {
+        const response = await completeCraterLogin(new Request("https://code0.example/api/crater/auth/callback?returnPath=%2Fde%2Fcheckout&token=sagittarius-secret"))
+
+        assert.equal(response.status, 307)
+        assert.equal(response.headers.get("location"), "https://code0.example/de/checkout?authError=session")
+        assert.equal(response.headers.get("set-cookie"), null)
+        assert.doesNotMatch(response.headers.get("location") ?? "", /INVALID_SAGITTARIUS_TOKEN|sagittarius-secret/)
+        assert.deepEqual(loggedArguments, [["Crater rejected the server-side login callback:", "INVALID_SAGITTARIUS_TOKEN: The token was rejected."]])
+    } finally {
+        console.error = originalConsoleError
+        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
+        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
+        await graphQLServer.close()
+    }
+})
+
 test("server-side login callback rejects external return paths and never forwards the token", async () => {
     const response = await completeCraterLogin(
         new Request("https://code0.example/api/crater/auth/callback?returnPath=https%3A%2F%2Fevil.example%2Fcollect&token=sagittarius-secret")

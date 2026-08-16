@@ -282,7 +282,7 @@ test("prices a b2b fixed plan in the periods b2b is billed in, even sent directl
                 deploymentType: "self_hosted",
                 paymentPeriod: "QUARTERLY",
                 plan: "pro",
-                returnUrl: "https://code0.example/en/checkout/success?session_id={CHECKOUT_SESSION_ID}",
+                returnUrl: "https://code0.example/en/checkout/success?plan=pro&customerType=b2b&paymentPeriod=quarterly&session_id={CHECKOUT_SESSION_ID}",
             },
         })
         assert.deepEqual(graphQLServer.requests[1].body.variables, {
@@ -291,7 +291,7 @@ test("prices a b2b fixed plan in the periods b2b is billed in, even sent directl
                 deploymentType: "self_hosted",
                 paymentPeriod: "MONTHLY",
                 plan: "max",
-                returnUrl: "https://code0.example/en/checkout/success?session_id={CHECKOUT_SESSION_ID}",
+                returnUrl: "https://code0.example/en/checkout/success?plan=max&customerType=b2b&paymentPeriod=monthly&session_id={CHECKOUT_SESSION_ID}",
             },
         })
     } finally {
@@ -417,7 +417,7 @@ test("creates regular and custom checkout sessions with the expected Crater inpu
                 paymentPeriod: "MONTHLY",
                 plan: "pro",
                 promotionCode: "SAVE10",
-                returnUrl: "https://code0.example/de/checkout/success?session_id={CHECKOUT_SESSION_ID}",
+                returnUrl: "https://code0.example/de/checkout/success?plan=pro&customerType=b2c&paymentPeriod=monthly&session_id={CHECKOUT_SESSION_ID}",
             },
         })
         assert.equal(graphQLServer.requests[1].authorization, "Session custom-token")
@@ -438,7 +438,8 @@ test("creates regular and custom checkout sessions with the expected Crater inpu
                 namespaceId: "gid://sagittarius/Namespace/1",
                 paymentPeriod: "WEEKLY",
                 plan: "custom",
-                returnUrl: "https://code0.example/en/checkout/success?session_id={CHECKOUT_SESSION_ID}",
+                returnUrl:
+                    "https://code0.example/en/checkout/success?plan=custom&customerType=b2c&paymentPeriod=weekly&aiTokens=30000&workflowExecutions=200&session_id={CHECKOUT_SESSION_ID}",
                 workflowExecutions: 200,
             },
         })

@@ -28,7 +28,17 @@ const content: CheckoutData["success"] = {
     licenseReadyLabel: "License ready",
     licenseStatusError: "Could not confirm the license.",
     licenseStatusRetryLabel: "Try again",
+    receiptHint: "Stripe sends the receipt to your email address.",
+    failedHeading: "Payment failed",
+    failedDescription: "Stripe could not process your payment.",
+    invalidHeading: "Checkout link is no longer valid",
+    invalidDescription: "The link has expired or belongs to another account.",
+    checkoutRetryLabel: "Back to checkout",
     backToHomepageLabel: "Back to homepage",
+}
+
+function respondWith(body: unknown, status = 200) {
+    globalThis.fetch = (async () => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } })) as typeof fetch
 }
 
 afterEach(() => {
@@ -59,4 +69,47 @@ test("stops checkout success polling after the configured time limit", async () 
     assert.ok(await screen.findByRole("button", { name: content.licenseStatusRetryLabel }))
     assert.equal(requests, 1)
     assert.equal(screen.queryByText(content.licensePendingLabel), null)
+    assert.ok(screen.getByText(content.licenseStatusError))
+})
+
+test("explains a declined payment and offers a way back into the checkout", async () => {
+    respondWith({ state: "FAILED", customerId: "gid://crater/Customer/1", licenseId: null })
+
+    render(<CheckoutSuccessStatus content={content} locale="en" sessionId="cs_test" />)
+
+    assert.ok(await screen.findByText(content.failedHeading))
+    assert.ok(screen.getByText(content.failedDescription))
+    assert.equal(screen.getByRole("link", { name: content.checkoutRetryLabel }).getAttribute("href"), "/en/checkout")
+    assert.equal(screen.queryByText(content.heading), null)
+    assert.equal(screen.queryByText(content.receiptHint), null)
+})
+
+test("explains a checkout session that cannot be verified", async () => {
+    respondWith({ error: "The checkout session could not be verified.", errorCode: "INVALID_CHECKOUT_STATUS_SESSION" }, 404)
+
+    render(<CheckoutSuccessStatus content={content} locale="de" sessionId="cs_test" />)
+
+    assert.ok(await screen.findByText(content.invalidHeading))
+    assert.ok(screen.getByText(content.invalidDescription))
+    assert.equal(screen.getByRole("link", { name: content.checkoutRetryLabel }).getAttribute("href"), "/de/checkout")
+})
+
+test("shows the order summary and the receipt hint once the payment is confirmed", async () => {
+    respondWith({ state: "FULFILLMENT_PENDING", customerId: "gid://crater/Customer/1", licenseId: null })
+    const summary = {
+        title: "Your configuration",
+        rows: [
+            { id: "plan", label: "Plan", value: "Custom" },
+            { id: "paymentPeriod", label: "Payment period", value: "Yearly" },
+            { id: "aiTokens", label: "AI Tokens", value: "1M" },
+        ],
+    }
+
+    render(<CheckoutSuccessStatus content={content} locale="en" sessionId="cs_test" summary={summary} />)
+
+    assert.ok(await screen.findByText(content.heading))
+    assert.ok(screen.getByText(summary.title))
+    assert.ok(screen.getByText("Yearly"))
+    assert.ok(screen.getByText("1M"))
+    assert.ok(screen.getByText(content.receiptHint))
 })

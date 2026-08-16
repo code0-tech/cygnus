@@ -1,3 +1,4 @@
+import { describeCraterError } from "@/lib/checkout/craterApi"
 import { createCraterUserSession } from "@/lib/checkout/craterLogin"
 import { setCraterSessionCookie } from "@/lib/checkout/craterSession"
 import { isSupportedLocale } from "@/lib/i18n"
@@ -44,6 +45,8 @@ export async function GET(request: Request) {
     try {
         const payload = await createCraterUserSession(sagittariusToken)
         if (payload.errors?.length || !payload.userSession?.token) {
+            const failure = describeCraterError(payload.errors)
+            console.error("Crater rejected the server-side login callback:", failure ? [failure.errorCode, ...failure.details].join(": ") : "Crater returned no user session token.")
             returnUrl.searchParams.set("authError", "session")
             return noStoreRedirect(returnUrl)
         }

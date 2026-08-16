@@ -83,7 +83,8 @@ export function requireCraterSession(request: Request, authorizationHeaderOnly =
     return { token: authorization.token }
 }
 
-export function craterMutationErrorResponse(errors: Error[] | null | undefined, message: string) {
+// Carries no token and no customer data, so it is safe to log as well as to return.
+export function describeCraterError(errors: Error[] | null | undefined) {
     const error = errors?.[0]
     if (!error) return null
 
@@ -102,14 +103,14 @@ export function craterMutationErrorResponse(errors: Error[] | null | undefined, 
             })
             .filter(Boolean) ?? []
 
-    return craterJson(
-        {
-            error: message,
-            errorCode: error.errorCode ?? "UNKNOWN",
-            details,
-        },
-        422
-    )
+    return { errorCode: error.errorCode ?? "UNKNOWN", details }
+}
+
+export function craterMutationErrorResponse(errors: Error[] | null | undefined, message: string) {
+    const described = describeCraterError(errors)
+    if (!described) return null
+
+    return craterJson({ error: message, ...described }, 422)
 }
 
 export function craterTransportErrorResponse(error: unknown) {

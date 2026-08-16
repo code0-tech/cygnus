@@ -3220,6 +3220,15 @@ export interface Checkout {
     licenseReadyLabel: string;
     licenseStatusError: string;
     licenseStatusRetryLabel: string;
+    /**
+     * Shown once the payment is confirmed. The exact amount is on the Stripe receipt, not on this page.
+     */
+    receiptHint: string;
+    failedHeading: string;
+    failedDescription: string;
+    invalidHeading: string;
+    invalidDescription: string;
+    checkoutRetryLabel: string;
     backToHomepageLabel: string;
   };
   updatedAt?: string | null;
@@ -3913,6 +3922,12 @@ export interface CheckoutSelect<T extends boolean = true> {
         licenseReadyLabel?: T;
         licenseStatusError?: T;
         licenseStatusRetryLabel?: T;
+        receiptHint?: T;
+        failedHeading?: T;
+        failedDescription?: T;
+        invalidHeading?: T;
+        invalidDescription?: T;
+        checkoutRetryLabel?: T;
         backToHomepageLabel?: T;
       };
   updatedAt?: T;

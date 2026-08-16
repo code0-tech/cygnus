@@ -1,7 +1,9 @@
 "use client"
 
 import { FilledButtonLink } from "@/components/ui/FilledButtonLink"
+import { LinkButton } from "@/components/ui/LinkButton"
 import { ButtonLoader } from "@/components/ui/Loader"
+import type { CheckoutSuccessSummary } from "@/lib/checkout/checkoutSuccessSummary"
 import { clearCheckoutDraftKeys } from "@/lib/checkout/checkoutDraft"
 import { getCheckoutStatusPollDelay, hasCheckoutStatusPollingExpired } from "@/lib/checkout/checkoutStatusPolling"
 import type { CheckoutData } from "@/lib/cms"
@@ -15,6 +17,13 @@ type StatusResponse = {
     state: CheckoutCompletionState
     customerId: string
     licenseId: string | null
+}
+
+interface CheckoutSuccessStatusProps {
+    content: SuccessContent
+    locale: string
+    sessionId: string
+    summary?: CheckoutSuccessSummary | null
 }
 
 const REQUEST_TIMEOUT_MS = 10_000
@@ -31,7 +40,7 @@ function parseStatusResponse(value: unknown): StatusResponse | null {
     return response as StatusResponse
 }
 
-export function CheckoutSuccessStatus({ content, locale, sessionId }: { content: SuccessContent; locale: string; sessionId: string }) {
+export function CheckoutSuccessStatus({ content, locale, sessionId, summary }: CheckoutSuccessStatusProps) {
     const [status, setStatus] = useState<CheckoutStatus>("LOADING")
     const [completion, setCompletion] = useState<StatusResponse | null>(null)
     const [attempt, setAttempt] = useState(0)
@@ -118,25 +127,32 @@ export function CheckoutSuccessStatus({ content, locale, sessionId }: { content:
 
     const fulfillmentConfirmed = status === "FULFILLMENT_PENDING" || status === "READY"
     const statusFailed = status === "FAILED" || status === "INVALID"
+    const heading = status === "FAILED" ? content.failedHeading : status === "INVALID" ? content.invalidHeading : fulfillmentConfirmed ? content.heading : null
+    const description = status === "FAILED" ? content.failedDescription : status === "INVALID" ? content.invalidDescription : fulfillmentConfirmed ? content.description : null
     const licenseReturnPath =
-        status === "READY" && completion?.licenseId
-            ? `/${locale}/licenses/customer/${encodeURIComponent(completion.customerId)}/license/${encodeURIComponent(completion.licenseId)}`
-            : null
-    const licenseAccessUrl = licenseReturnPath
-        ? `/api/crater/licenses/access?locale=${encodeURIComponent(locale)}&returnPath=${encodeURIComponent(licenseReturnPath)}`
-        : null
+        status === "READY" && completion?.licenseId ? `/${locale}/licenses/customer/${encodeURIComponent(completion.customerId)}/license/${encodeURIComponent(completion.licenseId)}` : null
+    const licenseAccessUrl = licenseReturnPath ? `/api/crater/licenses/access?locale=${encodeURIComponent(locale)}&returnPath=${encodeURIComponent(licenseReturnPath)}` : null
 
     return (
         <div className="flex flex-col items-center justify-center gap-3">
-            {fulfillmentConfirmed ? (
-                <>
-                    <h1 className="text-3xl font-semibold text-white">{content.heading}</h1>
-                    <p className="text-secondary">{content.description}</p>
-                </>
-            ) : null}
-            <p aria-live="polite" className="text-sm text-secondary">
-                {status === "READY" ? content.licenseReadyLabel : status === "ERROR" || statusFailed ? content.licenseStatusError : content.licensePendingLabel}
-            </p>
+            {heading && <h1 className="text-3xl font-semibold text-white">{heading}</h1>}
+            {description && <p className="text-secondary">{description}</p>}
+            {fulfillmentConfirmed && summary && summary.rows.length > 0 && (
+                <div className="my-2 w-full max-w-sm space-y-2 rounded-2xl border border-white/10 p-4 text-left text-sm">
+                    <p className="text-secondary">{summary.title}</p>
+                    <dl className="space-y-2">
+                        {summary.rows.map((row) => (
+                            <div key={row.id} className="flex items-start justify-between gap-4">
+                                <dt className="text-tertiary">{row.label}</dt>
+                                <dd className="shrink-0 text-white">{row.value}</dd>
+                            </div>
+                        ))}
+                    </dl>
+                </div>
+            )}
+            {fulfillmentConfirmed && <p className="text-sm text-tertiary">{content.receiptHint}</p>}
+            {status === "ERROR" && <p className="text-secondary">{content.licenseStatusError}</p>}
+            {status === "READY" && <p className="text-sm text-tertiary">{content.licenseReadyLabel}</p>}
             {status === "READY" && licenseAccessUrl ? (
                 <FilledButtonLink href={licenseAccessUrl} target="_blank" rel="noreferrer">
                     {content.licenseDashboardLabel}
@@ -154,7 +170,11 @@ export function CheckoutSuccessStatus({ content, locale, sessionId }: { content:
                 >
                     {content.licenseStatusRetryLabel}
                 </Button>
-            ) : statusFailed ? null : (
+            ) : statusFailed ? (
+                <LinkButton href={`/${locale}/checkout`} showArrow={false} className="border-b-0">
+                    {content.checkoutRetryLabel}
+                </LinkButton>
+            ) : (
                 <Button type="button" variant="normal" disabled>
                     <ButtonLoader label={content.licensePendingLabel} />
                 </Button>
