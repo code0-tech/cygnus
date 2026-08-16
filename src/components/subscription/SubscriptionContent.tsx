@@ -30,7 +30,7 @@ export function SubscriptionContent({ activeImageKey, content }: SubscriptionCon
 
     return (
         <section ref={wrapperRef} className="relative min-w-0 lg:col-span-3">
-            <div ref={containerRef} className="relative z-10 flex min-w-0 flex-col gap-8">
+            <div ref={containerRef} className="relative z-10 flex min-w-0 flex-col gap-8 lg:invisible">
                 <div className="max-w-2xl">
                     <h1 className="text-balance text-xl lg:text-2xl text-white">{content.pageIntro.heading}</h1>
                     <p className="mt-2 text-sm leading-6 text-secondary">{content.pageIntro.description}</p>
