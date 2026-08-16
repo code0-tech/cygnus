@@ -388,6 +388,12 @@ export interface CheckoutData {
         licenseReadyLabel: string
         licenseStatusError: string
         licenseStatusRetryLabel: string
+        receiptHint: string
+        failedHeading: string
+        failedDescription: string
+        invalidHeading: string
+        invalidDescription: string
+        checkoutRetryLabel: string
         backToHomepageLabel: string
     }
 }

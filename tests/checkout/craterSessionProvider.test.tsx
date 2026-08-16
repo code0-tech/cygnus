@@ -8,6 +8,7 @@ installDomTestEnvironment()
 const { cleanup, render, screen } = await import("@testing-library/react")
 const { CraterSessionProvider, useCraterSession } = await import("../../src/components/checkout/CraterSessionProvider")
 const originalFetch = globalThis.fetch
+const originalConsoleError = console.error
 
 function SessionState() {
     const session = useCraterSession()
@@ -17,6 +18,7 @@ function SessionState() {
 afterEach(() => {
     cleanup()
     globalThis.fetch = originalFetch
+    console.error = originalConsoleError
     window.history.replaceState({}, "", "/en/checkout")
 })
 
@@ -73,4 +75,62 @@ test("shows the configured CMS error instead of the Crater session error", async
 
     assert.ok(await screen.findByText("Configured session error"))
     assert.equal(screen.queryByText("Raw Crater session error"), null)
+})
+
+test("logs Crater's error code for a rejected login without showing it to the user", async () => {
+    const loggedArguments: unknown[][] = []
+    console.error = (...args: unknown[]) => {
+        loggedArguments.push(args)
+    }
+    globalThis.fetch = (async (input, init) => {
+        if (String(input) === "/api/crater/auth/session") {
+            return new Response(JSON.stringify({ error: "Crater session authorization is required." }), { status: 403, headers: { "content-type": "application/json" } })
+        }
+        if (String(input) === "/api/crater/login" && init?.method === "POST") {
+            return new Response(JSON.stringify({ error: "Crater could not create a user session.", errorCode: "INVALID_SAGITTARIUS_TOKEN", details: [] }), {
+                status: 422,
+                headers: { "content-type": "application/json" },
+            })
+        }
+        throw new Error("Unexpected request")
+    }) as typeof fetch
+
+    render(
+        <CraterSessionProvider errorMessage="Configured session error">
+            <SessionState />
+        </CraterSessionProvider>
+    )
+
+    assert.ok(await screen.findByText("Configured session error"))
+    const loggedError = loggedArguments.at(-1)?.at(-1)
+    assert.ok(loggedError instanceof Error)
+    assert.equal(loggedError.message, "Crater could not create a user session. (INVALID_SAGITTARIUS_TOKEN)")
+    assert.equal(screen.queryByText(/INVALID_SAGITTARIUS_TOKEN/), null)
+})
+
+test("appends Crater's validation details to the logged error", async () => {
+    const loggedArguments: unknown[][] = []
+    console.error = (...args: unknown[]) => {
+        loggedArguments.push(args)
+    }
+    globalThis.fetch = (async (input) => {
+        if (String(input) === "/api/crater/auth/session") {
+            return new Response(JSON.stringify({ error: "Could not validate Crater session.", errorCode: "INVALID_USER", details: ["sagittarius_id: blank", "user unavailable"] }), {
+                status: 502,
+                headers: { "content-type": "application/json" },
+            })
+        }
+        throw new Error("Unexpected request")
+    }) as typeof fetch
+
+    render(
+        <CraterSessionProvider errorMessage="Configured session error">
+            <SessionState />
+        </CraterSessionProvider>
+    )
+
+    assert.ok(await screen.findByText("Configured session error"))
+    const loggedError = loggedArguments.at(-1)?.at(-1)
+    assert.ok(loggedError instanceof Error)
+    assert.equal(loggedError.message, "Could not validate Crater session. (INVALID_USER: sagittarius_id: blank, user unavailable)")
 })

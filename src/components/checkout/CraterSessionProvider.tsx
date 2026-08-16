@@ -35,9 +35,19 @@ export function CraterSessionProvider({ children, errorMessage = "An unexpected 
             }
         }
 
+        // Only ever reaches console.error; the user always sees the configured CMS message. Crater's errorCode is the
+        // one field that says why a login failed, so dropping it would leave the console with nothing actionable.
         const readError = async (response: Response, fallback: string) => {
             const body: unknown = await response.json().catch(() => null)
-            return body && typeof body === "object" && "error" in body && typeof body.error === "string" ? body.error : fallback
+            if (!body || typeof body !== "object") return fallback
+
+            const payload = body as Record<string, unknown>
+            const message = typeof payload.error === "string" ? payload.error : fallback
+            const errorCode = typeof payload.errorCode === "string" ? payload.errorCode : null
+            const details = Array.isArray(payload.details) ? payload.details.filter((detail): detail is string => typeof detail === "string") : []
+            const diagnostics = [errorCode, details.join(", ")].filter(Boolean)
+
+            return diagnostics.length ? `${message} (${diagnostics.join(": ")})` : message
         }
 
         const createSession = async () => {

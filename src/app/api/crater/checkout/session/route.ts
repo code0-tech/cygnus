@@ -128,6 +128,18 @@ export async function POST(request: Request) {
         }
 
         const siteUrl = resolveSiteUrl()
+        const returnUrl = new URL(`/${locale}/checkout/success`, siteUrl)
+        // The success page renders what was bought from these parameters. Stripe substitutes the session id placeholder,
+        // which must stay unencoded, so it is appended after everything the URL builder escapes.
+        if (normalizedSelection) {
+            returnUrl.searchParams.set("plan", normalizedSelection.plan)
+            returnUrl.searchParams.set("customerType", normalizedSelection.customerType)
+            returnUrl.searchParams.set("paymentPeriod", normalizedSelection.paymentPeriod)
+            if (normalizedSelection.plan === "custom") {
+                returnUrl.searchParams.set("aiTokens", String(normalizedSelection.aiTokens))
+                returnUrl.searchParams.set("workflowExecutions", String(normalizedSelection.workflowExecutions))
+            }
+        }
         const customConfigurationPaymentPeriod = parseCraterPaymentPeriod(paymentPeriod)
         if (customCheckoutConfigurationId && paymentPeriod && !customConfigurationPaymentPeriod) {
             return craterJson({ error: "paymentPeriod must be weekly, monthly, quarterly, or yearly." }, 400)
@@ -135,7 +147,7 @@ export async function POST(request: Request) {
 
         const input: MutationCheckoutCreateSessionArgs["input"] = {
             customerId,
-            returnUrl: `${new URL(`/${locale}/checkout/success`, siteUrl).toString()}?session_id={CHECKOUT_SESSION_ID}`,
+            returnUrl: `${returnUrl.toString()}${returnUrl.search ? "&" : "?"}session_id={CHECKOUT_SESSION_ID}`,
             paymentPeriod: normalizedSelection ? toCraterPaymentPeriod(normalizedSelection.paymentPeriod) : (customConfigurationPaymentPeriod ?? DEFAULT_CRATER_PAYMENT_PERIOD),
             ...(craterCustomCheckoutConfigurationId
                 ? { customCheckoutConfigurationId: craterCustomCheckoutConfigurationId }

@@ -1,0 +1,36 @@
+"use client"
+
+import { LandingContainer } from "@/components/ui/LandingContainer"
+import { CraterSessionProvider } from "@/components/checkout/CraterSessionProvider"
+import { CheckoutStepper, type CheckoutStepperContent } from "@/components/checkout/CheckoutStepper"
+import { Container } from "@code0-tech/pictor"
+import Image from "next/image"
+import Link from "next/link"
+import type { ReactNode } from "react"
+import type { CheckoutData } from "@/lib/cms"
+
+interface CheckoutSessionLayoutClientProps {
+    children: ReactNode
+    formContent?: CheckoutData["form"] | null
+    stepperContent?: CheckoutStepperContent | null
+}
+
+export function CheckoutSessionLayoutClient({ children, formContent, stepperContent }: CheckoutSessionLayoutClientProps) {
+    return (
+        <>
+            <div className="border-b border-white/10 bg-primary/50 py-3 backdrop-blur-sm">
+                <Container className="flex items-center justify-between">
+                    <Link href="/" className="inline-flex shrink-0">
+                        <Image src="/code0_text_logo_white.png" alt="code0" width={100} height={100} className="h-8 w-32" loading="eager" />
+                    </Link>
+                    <div className="hidden lg:block">
+                        <CheckoutStepper content={stepperContent} />
+                    </div>
+                </Container>
+            </div>
+            <CraterSessionProvider errorMessage={formContent?.errors.sessionUnavailable ?? formContent?.paymentErrorFallback}>
+                <LandingContainer className="min-h-0 flex-1 overflow-y-auto my-8">{children}</LandingContainer>
+            </CraterSessionProvider>
+        </>
+    )
+}
