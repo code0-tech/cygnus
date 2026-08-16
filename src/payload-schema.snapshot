@@ -2377,6 +2377,7 @@ export const subscription_config_locales = pgTable('subscription_config_locales'
   packages_max_description: varchar('packages_max_description').default("For organizations with higher requirements."),
   packages_custom_title: varchar('packages_custom_title').default("Custom"),
   packages_custom_description: varchar('packages_custom_description').default("A tailored package for individual requirements."),
+  paymentPeriod_title: varchar('payment_period_title').default("Payment Period"),
   paymentPeriod_label: varchar('payment_period_label').default("Choose how often you want to be billed."),
   paymentPeriod_description: varchar('payment_period_description'),
   paymentPeriod_weeklyText: varchar('payment_period_weekly_text').default("Weekly"),

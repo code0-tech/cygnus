@@ -1,0 +1,39 @@
+import type { CheckoutSummaryIconColor } from "@/lib/cms"
+import type { ReactNode } from "react"
+
+export interface SummaryBadgeProps {
+    icon: ReactNode
+    value: ReactNode
+    tone?: CheckoutSummaryIconColor
+}
+
+const ICON_TONE_CLASS_NAME: Record<CheckoutSummaryIconColor, string> = {
+    neutral: "text-white",
+    brand: "text-brand",
+    aqua: "text-aqua",
+    blue: "text-blue",
+    pink: "text-pink",
+    yellow: "text-yellow",
+    lime: "text-lime",
+    magenta: "text-magenta",
+}
+
+const CONTAINER_TONE_CLASS_NAME: Record<CheckoutSummaryIconColor, string> = {
+    neutral: "border-white/10 bg-white/5",
+    brand: "border-brand/10 bg-brand/5",
+    aqua: "border-aqua/10 bg-aqua/5",
+    blue: "border-blue/10 bg-blue/5",
+    pink: "border-pink/10 bg-pink/5",
+    yellow: "border-yellow/10 bg-yellow/5",
+    lime: "border-lime/10 bg-lime/5",
+    magenta: "border-magenta/10 bg-magenta/5",
+}
+
+export function SummaryBadge({ icon, value, tone = "neutral" }: SummaryBadgeProps) {
+    return (
+        <span className={`inline-flex min-w-0 max-w-full items-center gap-1.5 rounded-xl border pl-2 pr-3 py-1 text-sm ${CONTAINER_TONE_CLASS_NAME[tone]}`}>
+            <span className={`inline-flex shrink-0 ${ICON_TONE_CLASS_NAME[tone]}`}>{icon}</span>
+            <span className="min-w-0 truncate font-medium text-white">{value}</span>
+        </span>
+    )
+}

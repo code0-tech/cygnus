@@ -1,14 +1,16 @@
 "use client"
 
-import { FilledButtonLink } from "@/components/ui/FilledButtonLink"
+import { SummaryBadge } from "@/components/checkout/CheckoutSummaryBadge"
+import { getIcon } from "@/components/ui/IconRenderer"
 import { LinkButton } from "@/components/ui/LinkButton"
 import { ButtonLoader } from "@/components/ui/Loader"
-import type { CheckoutSuccessSummary } from "@/lib/checkout/checkoutSuccessSummary"
 import { clearCheckoutDraftKeys } from "@/lib/checkout/checkoutDraft"
 import { getCheckoutStatusPollDelay, hasCheckoutStatusPollingExpired } from "@/lib/checkout/checkoutStatusPolling"
+import type { CheckoutSuccessSummary } from "@/lib/checkout/checkoutSuccessSummary"
 import type { CheckoutData } from "@/lib/cms"
 import type { CheckoutCompletionState } from "@code0-tech/crater-graphql-types"
 import { Button } from "@code0-tech/pictor"
+import Link from "next/link"
 import { useCallback, useEffect, useRef, useState } from "react"
 
 type SuccessContent = CheckoutData["success"]
@@ -134,29 +136,27 @@ export function CheckoutSuccessStatus({ content, locale, sessionId, summary }: C
     const licenseAccessUrl = licenseReturnPath ? `/api/crater/licenses/access?locale=${encodeURIComponent(locale)}&returnPath=${encodeURIComponent(licenseReturnPath)}` : null
 
     return (
-        <div className="flex flex-col items-center justify-center gap-3">
+        <div className="flex flex-col items-center justify-center gap-2">
             {heading && <h1 className="text-3xl font-semibold text-white">{heading}</h1>}
-            {description && <p className="text-secondary">{description}</p>}
+            {description && <p className="text-secondary max-w-md">{description}</p>}
             {fulfillmentConfirmed && summary && summary.rows.length > 0 && (
-                <div className="my-2 w-full max-w-sm space-y-2 rounded-2xl border border-white/10 p-4 text-left text-sm">
-                    <p className="text-secondary">{summary.title}</p>
-                    <dl className="space-y-2">
+                <div className="my-4 flex flex-col items-center gap-2">
+                    <span className="text-sm text-white">{summary.title}</span>
+                    <div className="flex flex-wrap items-center justify-center gap-1.5 max-w-sm">
                         {summary.rows.map((row) => (
-                            <div key={row.id} className="flex items-start justify-between gap-4">
-                                <dt className="text-tertiary">{row.label}</dt>
-                                <dd className="shrink-0 text-white">{row.value}</dd>
-                            </div>
+                            <SummaryBadge key={row.id} icon={getIcon(row.icon, 16)} tone={row.tone} value={row.value} />
                         ))}
-                    </dl>
+                    </div>
                 </div>
             )}
-            {fulfillmentConfirmed && <p className="text-sm text-tertiary">{content.receiptHint}</p>}
+            {fulfillmentConfirmed && <p className="text-sm text-tertiary mb-4">{content.receiptHint}</p>}
             {status === "ERROR" && <p className="text-secondary">{content.licenseStatusError}</p>}
-            {status === "READY" && <p className="text-sm text-tertiary">{content.licenseReadyLabel}</p>}
             {status === "READY" && licenseAccessUrl ? (
-                <FilledButtonLink href={licenseAccessUrl} target="_blank" rel="noreferrer">
-                    {content.licenseDashboardLabel}
-                </FilledButtonLink>
+                <Link href={licenseAccessUrl} target="_blank" rel="noreferrer">
+                    <Button variant="filled" className="bg-white/80! hover:bg-white! text-primary! text-base!">
+                        {content.licenseDashboardLabel}
+                    </Button>
+                </Link>
             ) : status === "ERROR" ? (
                 <Button
                     type="button"

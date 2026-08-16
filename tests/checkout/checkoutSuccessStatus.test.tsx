@@ -14,6 +14,12 @@ mock.module("@code0-tech/pictor", {
 mock.module("next/link", {
     defaultExport: ({ children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => <a {...props}>{children}</a>,
 })
+// The real getIcon pulls in @mvriu5/payload-icon-picker, which imports a .css file Node's test runner cannot load.
+mock.module("@/components/ui/IconRenderer", {
+    namedExports: {
+        getIcon: (icon: string | null | undefined) => <span data-icon={icon ?? undefined} />,
+    },
+})
 
 const { cleanup, render, screen } = await import("@testing-library/react")
 const { CheckoutSuccessStatus } = await import("../../src/components/checkout/CheckoutSuccessStatus")
@@ -99,9 +105,9 @@ test("shows the order summary and the receipt hint once the payment is confirmed
     const summary = {
         title: "Your configuration",
         rows: [
-            { id: "plan", label: "Plan", value: "Custom" },
-            { id: "paymentPeriod", label: "Payment period", value: "Yearly" },
-            { id: "aiTokens", label: "AI Tokens", value: "1M" },
+            { id: "plan", label: "Plan", value: "Custom", icon: "tabler:IconSettings", tone: "aqua" as const },
+            { id: "paymentPeriod", label: "Payment period", value: "Yearly", icon: "tabler:IconCalendarMonth", tone: "magenta" as const },
+            { id: "aiTokens", label: "AI Tokens", value: "1M", icon: "tabler:IconBrain", tone: "magenta" as const },
         ],
     }
 

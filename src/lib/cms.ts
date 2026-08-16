@@ -188,6 +188,7 @@ export interface SubscriptionConfigData {
         }
     }
     paymentPeriod: {
+        title: string
         label: string
         description?: string | null
         weeklyText: string

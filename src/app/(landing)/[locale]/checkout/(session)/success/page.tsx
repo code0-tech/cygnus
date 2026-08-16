@@ -1,10 +1,8 @@
 import { CheckoutLegalFooter } from "@/components/checkout/CheckoutLegalFooter"
 import { CheckoutSuccessStatus } from "@/components/checkout/CheckoutSuccessStatus"
-import { Card } from "@/components/ui/Card"
-import { LinkButton } from "@/components/ui/LinkButton"
-import { getCheckoutContent, getFooter, getSubscriptionConfig } from "@/lib/cms"
 import { parseCheckoutSessionId } from "@/lib/checkout/checkoutReturn"
 import { buildCheckoutSuccessSummary } from "@/lib/checkout/checkoutSuccessSummary"
+import { getCheckoutContent, getFooter, getSubscriptionConfig } from "@/lib/cms"
 import { isSupportedLocale } from "@/lib/i18n"
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
@@ -38,14 +36,11 @@ export default async function CheckoutSuccessPage({ params, searchParams }: Chec
     return (
         <div className="flex min-h-full flex-col gap-8">
             <div className="flex flex-1 items-center justify-center">
-                <Card variant={"light"} className="mx-auto max-w-2xl rounded-3xl p-8! text-center">
+                <div className="flex flex-col gap-4 max-w-2xl text-center">
                     <div className="relative z-10 space-y-4">
                         {checkoutContent?.success ? <CheckoutSuccessStatus content={checkoutContent.success} locale={locale} sessionId={checkoutSessionId} summary={summary} /> : null}
-                        <LinkButton href={`/${locale}`} showArrow={false} className="border-b-0">
-                            {checkoutContent?.success.backToHomepageLabel}
-                        </LinkButton>
                     </div>
-                </Card>
+                </div>
             </div>
             <CheckoutLegalFooter className="shrink-0 justify-center pb-2" locale={locale} footer={footer} currentYear={currentYear} />
         </div>
