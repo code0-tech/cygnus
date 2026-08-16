@@ -4,6 +4,7 @@ import { CheckoutForm } from "@/components/checkout/CheckoutForm"
 import { CheckoutFormProvider, useCheckoutFormState } from "@/components/checkout/CheckoutFormProvider"
 import { CheckoutLegalFooter } from "@/components/checkout/CheckoutLegalFooter"
 import { CheckoutSummary } from "@/components/checkout/CheckoutSummary"
+import { useCheckoutStage } from "@/components/checkout/CheckoutStepper"
 import { cn } from "@/lib/utils"
 import type { CheckoutData, ErrorsContent, SubscriptionConfigData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
@@ -30,6 +31,7 @@ function CheckoutSummaryWithTax(props: Omit<ComponentProps<typeof CheckoutSummar
 
 export function CheckoutPageContent({ currentYear, errors, footer, form, locale, subscriptionConfig, subscriptionPrices, summary }: CheckoutPageContentProps) {
     const [mobileCheckoutOpen, setMobileCheckoutOpen] = useState(false)
+    const { hasError } = useCheckoutStage()
 
     useEffect(() => {
         const desktopQuery = window.matchMedia("(min-width: 64rem)")
@@ -60,7 +62,7 @@ export function CheckoutPageContent({ currentYear, errors, footer, form, locale,
             <div className="flex w-full flex-col gap-8 lg:flex-row lg:gap-16">
                 {form && errors ? (
                     <CheckoutFormProvider content={form} errors={errors} locale={locale}>
-                        <CheckoutSummaryWithTax content={summary} errors={errors} subscriptionConfig={subscriptionConfig} subscriptionPrices={subscriptionPrices} />
+                        {!hasError && <CheckoutSummaryWithTax content={summary} errors={errors} subscriptionConfig={subscriptionConfig} subscriptionPrices={subscriptionPrices} />}
                         <button
                             type="button"
                             onClick={() => setMobileCheckoutOpen(true)}
