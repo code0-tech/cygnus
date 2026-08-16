@@ -484,6 +484,40 @@ export interface LicenseContent {
         licenseError: string
         selfHostedDescription: string
     }
+    subscriptionPreview: {
+        totalLabel: string
+        prorationLabel: string
+        immediateNote: string
+        scheduledNote: string
+        loadingLabel: string
+        error: string
+    }
+    billing: {
+        title: string
+        description: string
+        periodLabel: string
+        currentPeriodEndLabel: string
+        pendingChangeLabel: string
+        updateError: string
+    }
+    cancel: {
+        title: string
+        description: string
+        confirmLabel: string
+        pendingHeading: string
+        pendingDescription: string
+        cancelAtLabel: string
+        resumeLabel: string
+        cancelError: string
+        resumeError: string
+    }
+    upgrade: {
+        title: string
+        description: string
+        planLabel: string
+        increaseOnlyNote: string
+        updateError: string
+    }
 }
 
 function isMissingPayloadTablesError(error: unknown): boolean {

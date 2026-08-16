@@ -1,8 +1,8 @@
 import { createApolloClient } from "@/lib/apolloClient"
 import { craterJson, craterMutationErrorResponse, craterTransportErrorResponse, optionalString, readJsonObject, requireCraterSession } from "@/lib/checkout/craterApi"
 import { setCraterSessionCookie } from "@/lib/checkout/craterSession"
-import type { LicenseDashboardCustomer, LicenseDashboardData, LicenseDashboardInvoice, LicenseDashboardLicense } from "@/lib/licenses/licenseTypes"
-import type { Customer, Invoice, License, Mutation, MutationLicensesLinkNamespaceArgs, Query, Scalars, User } from "@code0-tech/crater-graphql-types"
+import type { LicenseDashboardCustomer, LicenseDashboardData, LicenseDashboardInvoice, LicenseDashboardLicense, LicenseDashboardPendingUpdate } from "@/lib/licenses/licenseTypes"
+import type { Customer, Invoice, License, Mutation, MutationLicensesLinkNamespaceArgs, Query, Scalars, Subscription, SubscriptionPendingUpdate, User } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 
 export const runtime = "nodejs"
@@ -46,6 +46,20 @@ const LICENSE_DASHBOARD: TypedDocumentNode<LicenseDashboardQuery, CustomerPageVa
                             paymentPeriod
                             updatedAt
                             workflowExecutions
+                            subscription {
+                                id
+                                status
+                                cancelAt
+                                canceledAt
+                                currentPeriodEnd
+                                pendingUpdate {
+                                    plan
+                                    paymentPeriod
+                                    aiTokens
+                                    workflowExecutions
+                                    effectiveAt
+                                }
+                            }
                         }
                     }
                 }
@@ -159,6 +173,20 @@ const LICENSE_CUSTOMER_DETAIL: TypedDocumentNode<LicenseDashboardQuery, LicenseD
                             status
                             updatedAt
                             workflowExecutions
+                            subscription {
+                                id
+                                status
+                                cancelAt
+                                canceledAt
+                                currentPeriodEnd
+                                pendingUpdate {
+                                    plan
+                                    paymentPeriod
+                                    aiTokens
+                                    workflowExecutions
+                                    effectiveAt
+                                }
+                            }
                         }
                         pageInfo {
                             endCursor
@@ -193,6 +221,20 @@ const LICENSE_DETAIL: TypedDocumentNode<LicenseDashboardQuery, LicenseDetailVari
                             status
                             updatedAt
                             workflowExecutions
+                            subscription {
+                                id
+                                status
+                                cancelAt
+                                canceledAt
+                                currentPeriodEnd
+                                pendingUpdate {
+                                    plan
+                                    paymentPeriod
+                                    aiTokens
+                                    workflowExecutions
+                                    effectiveAt
+                                }
+                            }
                             invoices(after: $invoiceAfter, first: ${PAGE_SIZE}) {
                                 count
                                 nodes {
@@ -299,6 +341,31 @@ function mapInvoice(invoice: Invoice): LicenseDashboardInvoice | null {
     }
 }
 
+function mapPendingUpdate(pendingUpdate: SubscriptionPendingUpdate | null | undefined): LicenseDashboardPendingUpdate | undefined {
+    if (!pendingUpdate) return undefined
+
+    return {
+        ...(pendingUpdate.plan ? { plan: pendingUpdate.plan } : {}),
+        ...(pendingUpdate.paymentPeriod ? { paymentPeriod: pendingUpdate.paymentPeriod } : {}),
+        ...(typeof pendingUpdate.aiTokens === "number" ? { aiTokens: pendingUpdate.aiTokens } : {}),
+        ...(typeof pendingUpdate.workflowExecutions === "number" ? { workflowExecutions: pendingUpdate.workflowExecutions } : {}),
+        ...(pendingUpdate.effectiveAt ? { effectiveAt: pendingUpdate.effectiveAt } : {}),
+    }
+}
+
+function mapSubscriptionFields(subscription: Subscription | null | undefined): Partial<LicenseDashboardLicense> {
+    if (!subscription?.id) return {}
+
+    return {
+        subscriptionId: subscription.id,
+        ...(subscription.status ? { subscriptionStatus: subscription.status } : {}),
+        ...(subscription.cancelAt ? { cancelAt: subscription.cancelAt } : {}),
+        ...(subscription.canceledAt ? { canceledAt: subscription.canceledAt } : {}),
+        ...(subscription.currentPeriodEnd ? { currentPeriodEnd: subscription.currentPeriodEnd } : {}),
+        ...(mapPendingUpdate(subscription.pendingUpdate) ? { pendingUpdate: mapPendingUpdate(subscription.pendingUpdate) } : {}),
+    }
+}
+
 function mapLicense(license: License, customer: Customer): LicenseDashboardLicense | null {
     if (!customer.id || !license.id) return null
 
@@ -319,6 +386,7 @@ function mapLicense(license: License, customer: Customer): LicenseDashboardLicen
         ...(license.status ? { status: license.status } : {}),
         ...(license.updatedAt ? { updatedAt: license.updatedAt } : {}),
         ...(typeof license.workflowExecutions === "number" ? { workflowExecutions: license.workflowExecutions } : {}),
+        ...mapSubscriptionFields(license.subscription),
     }
 }
 

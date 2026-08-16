@@ -3341,6 +3341,43 @@ export interface License {
     licenseError: string;
     selfHostedDescription: string;
   };
+  /**
+   * Shared between the billing and upgrade dialogs, both of which preview a change through subscriptionsPreviewUpdate before applying it.
+   */
+  subscriptionPreview: {
+    totalLabel: string;
+    prorationLabel: string;
+    immediateNote: string;
+    scheduledNote: string;
+    loadingLabel: string;
+    error: string;
+  };
+  billing: {
+    title: string;
+    description: string;
+    periodLabel: string;
+    currentPeriodEndLabel: string;
+    pendingChangeLabel: string;
+    updateError: string;
+  };
+  cancel: {
+    title: string;
+    description: string;
+    confirmLabel: string;
+    pendingHeading: string;
+    pendingDescription: string;
+    cancelAtLabel: string;
+    resumeLabel: string;
+    cancelError: string;
+    resumeError: string;
+  };
+  upgrade: {
+    title: string;
+    description: string;
+    planLabel: string;
+    increaseOnlyNote: string;
+    updateError: string;
+  };
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -4063,6 +4100,48 @@ export interface LicensesSelect<T extends boolean = true> {
         paymentMethodSetupError?: T;
         licenseError?: T;
         selfHostedDescription?: T;
+      };
+  subscriptionPreview?:
+    | T
+    | {
+        totalLabel?: T;
+        prorationLabel?: T;
+        immediateNote?: T;
+        scheduledNote?: T;
+        loadingLabel?: T;
+        error?: T;
+      };
+  billing?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        periodLabel?: T;
+        currentPeriodEndLabel?: T;
+        pendingChangeLabel?: T;
+        updateError?: T;
+      };
+  cancel?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        confirmLabel?: T;
+        pendingHeading?: T;
+        pendingDescription?: T;
+        cancelAtLabel?: T;
+        resumeLabel?: T;
+        cancelError?: T;
+        resumeError?: T;
+      };
+  upgrade?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        planLabel?: T;
+        increaseOnlyNote?: T;
+        updateError?: T;
       };
   updatedAt?: T;
   createdAt?: T;

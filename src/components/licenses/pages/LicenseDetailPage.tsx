@@ -79,19 +79,52 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale }: Li
                         {content.license}
                     </Text>
                     {isLoading || license ? (
-                        <Button
-                            type="button"
-                            variant="normal"
-                            paddingSize="xs"
-                            disabled={isLoading || !license}
-                            onClick={() => {
-                                if (!license) return
-                                router.push(`/${locale}/licenses/customer/${encodeURIComponent(license.customerId)}/license/${encodeURIComponent(license.id)}/edit`)
-                            }}
-                            className="shrink-0 text-sm!"
-                        >
-                            {content.dashboard.editLabel}
-                        </Button>
+                        <Flex align="center" style={{ gap: "0.5rem" }} className="flex-wrap justify-end">
+                            {license?.subscriptionId && (
+                                <>
+                                    <Button
+                                        type="button"
+                                        variant="normal"
+                                        paddingSize="xs"
+                                        onClick={() => router.push(`/${locale}/licenses/customer/${encodeURIComponent(license.customerId)}/license/${encodeURIComponent(license.id)}/billing`)}
+                                        className="shrink-0 text-sm!"
+                                    >
+                                        {content.billing.title}
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="normal"
+                                        paddingSize="xs"
+                                        onClick={() => router.push(`/${locale}/licenses/customer/${encodeURIComponent(license.customerId)}/license/${encodeURIComponent(license.id)}/upgrade`)}
+                                        className="shrink-0 text-sm!"
+                                    >
+                                        {content.upgrade.title}
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="normal"
+                                        paddingSize="xs"
+                                        onClick={() => router.push(`/${locale}/licenses/customer/${encodeURIComponent(license.customerId)}/license/${encodeURIComponent(license.id)}/cancel`)}
+                                        className="shrink-0 text-sm!"
+                                    >
+                                        {content.cancel.confirmLabel}
+                                    </Button>
+                                </>
+                            )}
+                            <Button
+                                type="button"
+                                variant="normal"
+                                paddingSize="xs"
+                                disabled={isLoading || !license}
+                                onClick={() => {
+                                    if (!license) return
+                                    router.push(`/${locale}/licenses/customer/${encodeURIComponent(license.customerId)}/license/${encodeURIComponent(license.id)}/edit`)
+                                }}
+                                className="shrink-0 text-sm!"
+                            >
+                                {content.dashboard.editLabel}
+                            </Button>
+                        </Flex>
                     ) : null}
                 </Flex>
                 <Spacing spacing="md" />
