@@ -128,6 +128,7 @@ import * as migration_20260815_090000_remove_additional_features from './2026081
 import * as migration_20260815_100000_payment_method_ready_copy from './20260815_100000_payment_method_ready_copy';
 import * as migration_20260815_110000_license_pagination_labels from './20260815_110000_license_pagination_labels';
 import * as migration_20260816_090000_checkout_success_states from './20260816_090000_checkout_success_states';
+import * as migration_20260817_090000_payment_period_title from './20260817_090000_payment_period_title';
 
 export const migrations = [
   {
@@ -779,5 +780,10 @@ export const migrations = [
     up: migration_20260816_090000_checkout_success_states.up,
     down: migration_20260816_090000_checkout_success_states.down,
     name: '20260816_090000_checkout_success_states',
+  },
+  {
+    up: migration_20260817_090000_payment_period_title.up,
+    down: migration_20260817_090000_payment_period_title.down,
+    name: '20260817_090000_payment_period_title',
   },
 ];

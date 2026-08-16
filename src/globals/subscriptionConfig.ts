@@ -362,6 +362,14 @@ export const SubscriptionCollection: GlobalConfig = {
             type: "group",
             fields: [
                 {
+                    name: "title",
+                    type: "text",
+                    required: false,
+                    localized: true,
+                    defaultValue: "Payment Period",
+                    admin: { description: "Short noun label, e.g. for the checkout success summary. Not the configurator heading -- that is `label` below." },
+                },
+                {
                     name: "label",
                     type: "text",
                     required: false,

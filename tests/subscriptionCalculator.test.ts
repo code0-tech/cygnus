@@ -55,6 +55,7 @@ const subscriptionPrices = createSubscriptionPrices()
 const paymentPeriod = {
     description: "Choose how often to pay.",
     label: "Payment period",
+    title: "Payment period",
     weeklyColor: "lime",
     weeklyPaidLabel: "paid weekly",
     weeklyPeriodSuffix: "per week",

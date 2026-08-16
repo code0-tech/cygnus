@@ -2952,6 +2952,10 @@ export interface SubscriptionConfig {
     };
   };
   paymentPeriod?: {
+    /**
+     * Short noun label, e.g. for the checkout success summary. Not the configurator heading -- that is `label` below.
+     */
+    title?: string | null;
     label?: string | null;
     description?: string | null;
     weeklyText?: string | null;
@@ -3641,6 +3645,7 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
   paymentPeriod?:
     | T
     | {
+        title?: T;
         label?: T;
         description?: T;
         weeklyText?: T;
