@@ -1,7 +1,7 @@
 import assert from "node:assert/strict"
 import test, { afterEach, mock } from "node:test"
 import React from "react"
-import type { CheckoutData } from "@/lib/cms"
+import type { CheckoutData, ErrorsContent } from "@/lib/cms"
 import { installDomTestEnvironment } from "./domTestEnvironment"
 
 installDomTestEnvironment()
@@ -199,6 +199,23 @@ afterEach(() => {
     customerSelectOnValueChange = null
 })
 
+const errors = {
+    sessionUnavailable: "Session unavailable",
+    customerCreation: "Customer creation failed",
+    customerTypeMismatch: "Customer type mismatch",
+    checkoutCustomer: "Invalid checkout customer",
+    checkoutSession: "Checkout session failed",
+    checkoutSessionExpired: "Checkout session expired",
+    billingAddressUpdate: "Billing address update failed",
+    emailUpdate: "Email update failed",
+    taxIdUpdate: "Tax ID update failed",
+    taxIdIncomplete: "Tax ID fields must be provided together",
+    paymentConfirmation: "Payment confirmation failed",
+    discountSessionRequired: "Discount session required",
+    discountValidation: "Discount validation failed",
+    paymentFallback: "Checkout failed",
+} as ErrorsContent
+
 const content = {
     billingHeading: "Billing information",
     paymentHeading: "Payment",
@@ -209,22 +226,6 @@ const content = {
     customerSelectLabel: "Billing customer",
     newCustomerLabel: "Create new customer",
     customerFallbackLabel: "Customer",
-    paymentErrorFallback: "Checkout failed",
-    errors: {
-        sessionUnavailable: "Session unavailable",
-        customerCreation: "Customer creation failed",
-        customerTypeMismatch: "Customer type mismatch",
-        checkoutCustomer: "Invalid checkout customer",
-        checkoutSession: "Checkout session failed",
-        checkoutSessionExpired: "Checkout session expired",
-        billingAddressUpdate: "Billing address update failed",
-        emailUpdate: "Email update failed",
-        taxIdUpdate: "Tax ID update failed",
-        taxIdIncomplete: "Tax ID fields must be provided together",
-        paymentConfirmation: "Payment confirmation failed",
-        discountSessionRequired: "Discount session required",
-        discountValidation: "Discount validation failed",
-    },
     mobileContactLabel: "Contact details",
     mobileNextLabel: "Continue",
     mobileTaxLabel: "Tax details",
@@ -348,7 +349,7 @@ test("creates the customer and checkout session on mount before collecting Strip
         })
     }) as typeof fetch
     const user = userEvent.setup()
-    render(<CheckoutForm content={content} locale="en" />)
+    render(<CheckoutForm content={content} errors={errors} locale="en" />)
     assert.ok(screen.getByTestId("checkout-form-skeleton"))
     assert.ok(screen.getByTestId("checkout-customer-select-skeleton"))
 
@@ -447,7 +448,7 @@ test("creates the customer and checkout session on mount before collecting Strip
     stripeConfirmErrorMessage = "Your payment could not be confirmed."
     await user.click(screen.getByRole("button", { name: "Pay now" }))
     await waitFor(() => assert.equal(stripeConfirmCalls, 1))
-    assert.ok(screen.getByText(content.errors.paymentConfirmation))
+    assert.ok(screen.getByText(errors.paymentConfirmation))
     assert.equal(screen.queryByText("Your payment could not be confirmed."), null)
 
     stripeConfirmErrorMessage = null
@@ -496,7 +497,7 @@ test("recreates the checkout session for a selected or newly created customer", 
         })
     }) as typeof fetch
 
-    render(<CheckoutForm content={content} locale="en" />)
+    render(<CheckoutForm content={content} errors={errors} locale="en" />)
     assert.ok(screen.getByTestId("checkout-customer-select-skeleton"))
     await waitFor(() => assert.equal(checkoutProviderOptions?.clientSecret, "cs_customer_1"))
     act(() => {
@@ -569,7 +570,7 @@ test("replaces a checkout session shortly before it expires", async () => {
         )
     }) as typeof fetch
 
-    render(<CheckoutForm content={content} locale="en" />)
+    render(<CheckoutForm content={content} errors={errors} locale="en" />)
 
     await waitFor(() => assert.equal(requests.filter((url) => url === "/api/crater/checkout/session").length, 2))
     await waitFor(() => assert.equal(checkoutProviderOptions?.clientSecret, "cs_expiry_2"))
@@ -605,7 +606,7 @@ test("replaces an inactive Stripe checkout session only once", async () => {
         })
     }) as typeof fetch
 
-    render(<CheckoutForm content={content} locale="en" />)
+    render(<CheckoutForm content={content} errors={errors} locale="en" />)
 
     await waitFor(() => assert.equal(requests.filter((url) => url === "/api/crater/checkout/session").length, 2))
     await new Promise((resolve) => setTimeout(resolve, 25))
@@ -629,9 +630,9 @@ test("shows only the configured error when Stripe cannot load the checkout sessi
         )
     }) as typeof fetch
 
-    render(<CheckoutForm content={content} locale="en" />)
+    render(<CheckoutForm content={content} errors={errors} locale="en" />)
 
-    assert.ok(await screen.findByText(content.errors.checkoutSession))
+    assert.ok(await screen.findByText(errors.checkoutSession))
     assert.equal(screen.queryByText(content.customerSelectLabel), null)
     assert.equal(screen.queryByTestId("stripe-contact-details"), null)
     assert.equal(screen.queryByTestId("stripe-billing-address"), null)
@@ -657,7 +658,7 @@ test("renders Stripe's Tax ID Element for a business customer", async () => {
         )
     }) as typeof fetch
     const user = userEvent.setup()
-    render(<CheckoutForm content={content} locale="en" />)
+    render(<CheckoutForm content={content} errors={errors} locale="en" />)
 
     await waitFor(() => assert.equal(requests.length, 3))
     assert.deepEqual(JSON.parse(String(requests[1].init?.body)), {
@@ -689,8 +690,8 @@ test("shows only the configured error when automatic customer creation fails", a
             headers: { "content-type": "application/json" },
         })
     }) as typeof fetch
-    render(<CheckoutForm content={content} locale="en" />)
-    assert.ok(await screen.findByText(content.errors.customerCreation))
+    render(<CheckoutForm content={content} errors={errors} locale="en" />)
+    assert.ok(await screen.findByText(errors.customerCreation))
     assert.equal(screen.queryByText("Crater rejected the customer."), null)
     assert.equal(requestCount, 1)
     assert.equal(screen.queryByTestId("checkout-form-skeleton"), null)
@@ -726,12 +727,12 @@ test("recreates only the checkout session when the promotion code changes or is 
             headers: { "content-type": "application/json" },
         })
     }) as typeof fetch
-    const view = render(<CheckoutForm content={content} locale="en" />)
+    const view = render(<CheckoutForm content={content} errors={errors} locale="en" />)
     await waitFor(() => assert.equal(requests.length, 3))
 
     act(() => setCheckoutStage("payment"))
     checkoutSearchParams.set("promotionCode", "SAVE10")
-    view.rerender(<CheckoutForm content={content} locale="en" />)
+    view.rerender(<CheckoutForm content={content} errors={errors} locale="en" />)
 
     await waitFor(() => assert.equal(requests.filter((request) => request.url === "/api/crater/checkout/session").length, 2))
     assert.equal(requests.filter((request) => request.url === "/api/crater/customer").length, 1)
@@ -749,7 +750,7 @@ test("recreates only the checkout session when the promotion code changes or is 
     assert.equal(checkoutStage, "payment")
 
     checkoutSearchParams.delete("promotionCode")
-    view.rerender(<CheckoutForm content={content} locale="en" />)
+    view.rerender(<CheckoutForm content={content} errors={errors} locale="en" />)
 
     await waitFor(() => assert.equal(requests.filter((request) => request.url === "/api/crater/checkout/session").length, 3))
     assert.equal(requests.filter((request) => request.url === "/api/crater/customer").length, 1)

@@ -1,6 +1,6 @@
 "use client"
 
-import type { CheckoutData } from "@/lib/cms"
+import type { CheckoutData, ErrorsContent } from "@/lib/cms"
 import type { CheckoutSessionData, CheckoutTaxQuoteData } from "@/lib/checkout/checkoutSubmission"
 import { useCheckoutStage } from "@/components/checkout/CheckoutStepper"
 import { ButtonLoader } from "@/components/ui/Loader"
@@ -140,6 +140,7 @@ interface CheckoutPaymentFormProps {
     billingAddress: StripeCheckoutContact | null
     collectTaxId: boolean
     content: CheckoutFormContent
+    errors: ErrorsContent
     customerSelect: ReactNode
     customerSelectSkeleton: ReactNode
     email: string | null
@@ -216,6 +217,7 @@ function CheckoutPaymentFields({
     billingAddress,
     collectTaxId,
     content,
+    errors,
     customerSelect,
     customerSelectSkeleton,
     email,
@@ -259,8 +261,8 @@ function CheckoutPaymentFields({
             return
         }
 
-        onSessionLoadErrorChange(content.errors.checkoutSession)
-    }, [checkoutErrorMessage, checkoutState.type, content.errors.checkoutSession, onSessionExpired, onSessionLoadErrorChange])
+        onSessionLoadErrorChange(errors.checkoutSession)
+    }, [checkoutErrorMessage, checkoutState.type, errors.checkoutSession, onSessionExpired, onSessionLoadErrorChange])
 
     useEffect(() => {
         if (checkoutState.type === "success" && isContactElementReady && isAddressElementReady && isTaxIdElementReady) onSessionReady()
@@ -286,7 +288,7 @@ function CheckoutPaymentFields({
             try {
                 const billingResult = await checkoutState.checkout.updateBillingAddress(billingAddress)
                 if (billingResult.type === "error") {
-                    setErrorMessage(content.errors.billingAddressUpdate)
+                    setErrorMessage(errors.billingAddressUpdate)
                     return
                 }
                 let updatedSession = billingResult.session
@@ -294,7 +296,7 @@ function CheckoutPaymentFields({
                 if (!checkoutState.checkout.email) {
                     const emailResult = await checkoutState.checkout.updateEmail(email)
                     if (emailResult.type === "error") {
-                        setErrorMessage(content.errors.emailUpdate)
+                        setErrorMessage(errors.emailUpdate)
                         return
                     }
                     updatedSession = emailResult.session
@@ -306,12 +308,12 @@ function CheckoutPaymentFields({
                 if (moveToPayment) setStage("payment")
             } catch (error) {
                 console.error("Failed to update Stripe checkout billing details:", error)
-                setErrorMessage(content.paymentErrorFallback)
+                setErrorMessage(errors.paymentFallback)
             } finally {
                 setIsUpdatingBilling(false)
             }
         },
-        [billingAddress, checkoutState, content.errors.billingAddressUpdate, content.errors.emailUpdate, content.paymentErrorFallback, email, isUpdatingBilling, onTaxQuoteChange, setStage]
+        [billingAddress, checkoutState, errors.billingAddressUpdate, errors.emailUpdate, errors.paymentFallback, email, isUpdatingBilling, onTaxQuoteChange, setStage]
     )
 
     const showPayment = () => updateCheckoutBilling(true)
@@ -334,7 +336,7 @@ function CheckoutPaymentFields({
             if (!billingAddress) {
                 setIsConfirming(false)
                 onPaymentConfirmationChange(false)
-                setErrorMessage(content.errors.billingAddressUpdate)
+                setErrorMessage(errors.billingAddressUpdate)
                 return
             }
             const result = await checkoutState.checkout.confirm({ redirect: "always" })
@@ -346,7 +348,7 @@ function CheckoutPaymentFields({
                     await onSessionExpired()
                     return
                 }
-                setErrorMessage(content.errors.paymentConfirmation)
+                setErrorMessage(errors.paymentConfirmation)
             }
         } catch (error) {
             const message = error instanceof Error ? error.message : ""
@@ -357,7 +359,7 @@ function CheckoutPaymentFields({
                 return
             }
             console.error("Failed to confirm the Stripe checkout payment:", error)
-            setErrorMessage(content.errors.paymentConfirmation)
+            setErrorMessage(errors.paymentConfirmation)
         }
     }
 
@@ -366,7 +368,7 @@ function CheckoutPaymentFields({
     }
 
     if (checkoutState.type === "error") {
-        const message = isInactiveCheckoutSessionError(checkoutState.error.message) ? content.errors.checkoutSessionExpired : content.errors.checkoutSession
+        const message = isInactiveCheckoutSessionError(checkoutState.error.message) ? errors.checkoutSessionExpired : errors.checkoutSession
         return <CheckoutErrorState message={message} />
     }
 
@@ -457,6 +459,7 @@ export function CheckoutPaymentForm({
     billingAddress,
     collectTaxId,
     content,
+    errors,
     customerSelect,
     customerSelectSkeleton,
     email,
@@ -504,6 +507,7 @@ export function CheckoutPaymentForm({
                 billingAddress={billingAddress}
                 collectTaxId={collectTaxId}
                 content={content}
+                errors={errors}
                 customerSelect={customerSelect}
                 customerSelectSkeleton={customerSelectSkeleton}
                 email={email}

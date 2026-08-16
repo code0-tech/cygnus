@@ -23,6 +23,7 @@ type StatusResponse = {
 
 interface CheckoutSuccessStatusProps {
     content: SuccessContent
+    errorMessage: string
     locale: string
     sessionId: string
     summary?: CheckoutSuccessSummary | null
@@ -42,7 +43,7 @@ function parseStatusResponse(value: unknown): StatusResponse | null {
     return response as StatusResponse
 }
 
-export function CheckoutSuccessStatus({ content, locale, sessionId, summary }: CheckoutSuccessStatusProps) {
+export function CheckoutSuccessStatus({ content, errorMessage, locale, sessionId, summary }: CheckoutSuccessStatusProps) {
     const [status, setStatus] = useState<CheckoutStatus>("LOADING")
     const [completion, setCompletion] = useState<StatusResponse | null>(null)
     const [attempt, setAttempt] = useState(0)
@@ -150,7 +151,7 @@ export function CheckoutSuccessStatus({ content, locale, sessionId, summary }: C
                 </div>
             )}
             {fulfillmentConfirmed && <p className="text-sm text-tertiary mb-4">{content.receiptHint}</p>}
-            {status === "ERROR" && <p className="text-secondary">{content.licenseStatusError}</p>}
+            {status === "ERROR" && <p className="text-secondary">{errorMessage}</p>}
             {status === "READY" && licenseAccessUrl ? (
                 <Link href={licenseAccessUrl} target="_blank" rel="noreferrer">
                     <Button variant="filled" className="bg-white/80! hover:bg-white! text-primary! text-base!">

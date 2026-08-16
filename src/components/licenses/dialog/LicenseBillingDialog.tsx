@@ -3,7 +3,7 @@
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
 import { Switch } from "@/components/ui/Switch"
 import { ButtonLoader } from "@/components/ui/Loader"
-import type { LicenseContent, SubscriptionConfigData } from "@/lib/cms"
+import type { ErrorsContent, LicenseContent, SubscriptionConfigData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { formatMinorCurrency } from "@/lib/formatters"
 import { decodeLicenseRouteId } from "@/lib/licenses/licenseRoute"
@@ -27,12 +27,13 @@ interface SubscriptionUpdatePreview {
 interface LicenseBillingDialogProps {
     content: LicenseContent
     customerId: string
+    errors: ErrorsContent
     licenseId: string
     locale: AppLocale
     subscriptionConfig: SubscriptionConfigData
 }
 
-export function LicenseBillingDialog({ content, customerId, licenseId, locale, subscriptionConfig }: LicenseBillingDialogProps) {
+export function LicenseBillingDialog({ content, customerId, errors, licenseId, locale, subscriptionConfig }: LicenseBillingDialogProps) {
     const router = useRouter()
     const { licenses, updateLicense } = useLicenseData()
     const resolvedCustomerId = decodeLicenseRouteId(customerId)
@@ -71,14 +72,14 @@ export function LicenseBillingDialog({ content, customerId, licenseId, locale, s
             body: JSON.stringify({ id: license.subscriptionId, paymentPeriod: period }),
         })
             .then(async (response) => {
-                if (!response.ok) throw new Error(content.subscriptionPreview.error)
+                if (!response.ok) throw new Error(errors.subscriptionPreview)
                 return (await response.json()) as SubscriptionUpdatePreview
             })
             .then((nextPreview) => {
                 if (active) setPreview(nextPreview)
             })
             .catch(() => {
-                if (active) setPreviewError(content.subscriptionPreview.error)
+                if (active) setPreviewError(errors.subscriptionPreview)
             })
             .finally(() => {
                 if (active) setIsLoadingPreview(false)
@@ -87,7 +88,7 @@ export function LicenseBillingDialog({ content, customerId, licenseId, locale, s
         return () => {
             active = false
         }
-    }, [content.subscriptionPreview.error, hasChange, license?.subscriptionId, period])
+    }, [errors.subscriptionPreview, hasChange, license?.subscriptionId, period])
 
     const save = async () => {
         if (!license?.subscriptionId || !hasChange || isSaving) return
@@ -101,9 +102,9 @@ export function LicenseBillingDialog({ content, customerId, licenseId, locale, s
                 headers: { "content-type": "application/json" },
                 body: JSON.stringify({ id: license.subscriptionId, paymentPeriod: period }),
             })
-            if (!response.ok) throw new Error(content.billing.updateError)
+            if (!response.ok) throw new Error(errors.billingUpdate)
             const updated: unknown = await response.json()
-            if (!updated || typeof updated !== "object") throw new Error(content.billing.updateError)
+            if (!updated || typeof updated !== "object") throw new Error(errors.billingUpdate)
 
             const subscription = updated as {
                 paymentPeriod?: string
@@ -117,7 +118,7 @@ export function LicenseBillingDialog({ content, customerId, licenseId, locale, s
             })
             close()
         } catch (error) {
-            setSaveError(error instanceof Error ? error.message : content.billing.updateError)
+            setSaveError(error instanceof Error ? error.message : errors.billingUpdate)
         } finally {
             setIsSaving(false)
         }

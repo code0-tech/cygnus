@@ -1,7 +1,7 @@
 "use client"
 
 import { PaymentMethodSetupElement, PaymentMethodSetupPendingStatus } from "@/components/licenses/dialog/PaymentMethodSetupElement"
-import type { LicenseContent } from "@/lib/cms"
+import type { ErrorsContent, LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogOverlay, DialogPortal, DialogTitle, Text } from "@code0-tech/pictor"
 import { IconX } from "@tabler/icons-react"
@@ -11,11 +11,12 @@ interface PaymentMethodSetupDialogProps {
     content: LicenseContent
     customerId: string
     disabled?: boolean
+    errors: ErrorsContent
     locale: AppLocale
     onSuccess: () => void
 }
 
-export function PaymentMethodSetupDialog({ content, customerId, disabled = false, locale, onSuccess }: PaymentMethodSetupDialogProps) {
+export function PaymentMethodSetupDialog({ content, customerId, disabled = false, errors, locale, onSuccess }: PaymentMethodSetupDialogProps) {
     const requestStartedRef = useRef(false)
     const [open, setOpen] = useState(false)
     const [clientSecret, setClientSecret] = useState<string | null>(null)
@@ -58,7 +59,7 @@ export function PaymentMethodSetupDialog({ content, customerId, disabled = false
             .then(async (response) => {
                 const result: unknown = await response.json()
                 if (!response.ok || !result || typeof result !== "object" || !("clientSecret" in result) || typeof result.clientSecret !== "string") {
-                    throw new Error(content.editor.paymentMethodSetupError)
+                    throw new Error(errors.paymentMethodUpdate)
                 }
                 return result.clientSecret
             })
@@ -66,7 +67,7 @@ export function PaymentMethodSetupDialog({ content, customerId, disabled = false
                 if (active) setClientSecret(nextClientSecret)
             })
             .catch(() => {
-                if (active) setError(content.editor.paymentMethodSetupError)
+                if (active) setError(errors.paymentMethodUpdate)
             })
             .finally(() => {
                 if (active) setIsLoading(false)
@@ -75,7 +76,7 @@ export function PaymentMethodSetupDialog({ content, customerId, disabled = false
         return () => {
             active = false
         }
-    }, [content.editor.paymentMethodSetupError, customerId, open, pendingSetupIntentId])
+    }, [customerId, errors.paymentMethodUpdate, open, pendingSetupIntentId])
 
     return (
         <>
@@ -113,9 +114,10 @@ export function PaymentMethodSetupDialog({ content, customerId, disabled = false
                                 <PaymentMethodSetupPendingStatus
                                     content={content.editor}
                                     customerId={customerId}
+                                    errorMessage={errors.paymentMethodUpdate}
                                     onCancel={close}
                                     onSuccess={onSuccess}
-                                    retryLabel={content.errors.retry}
+                                    retryLabel={errors.retry}
                                     setupIntentId={pendingSetupIntentId}
                                 />
                             ) : clientSecret ? (
@@ -123,9 +125,10 @@ export function PaymentMethodSetupDialog({ content, customerId, disabled = false
                                     clientSecret={clientSecret}
                                     content={content.editor}
                                     customerId={customerId}
+                                    errorMessage={errors.paymentMethodUpdate}
                                     onCancel={close}
                                     onSuccess={onSuccess}
-                                    retryLabel={content.errors.retry}
+                                    retryLabel={errors.retry}
                                     returnPath={`/${locale}/licenses/customer/${encodeURIComponent(customerId)}/edit`}
                                 />
                             ) : null}

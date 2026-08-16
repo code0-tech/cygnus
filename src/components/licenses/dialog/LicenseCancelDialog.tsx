@@ -2,7 +2,7 @@
 
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
 import { ButtonLoader } from "@/components/ui/Loader"
-import type { LicenseContent } from "@/lib/cms"
+import type { ErrorsContent, LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { decodeLicenseRouteId } from "@/lib/licenses/licenseRoute"
 import { Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogOverlay, DialogPortal, DialogTitle } from "@code0-tech/pictor"
@@ -13,11 +13,12 @@ import { useState } from "react"
 interface LicenseCancelDialogProps {
     content: LicenseContent
     customerId: string
+    errors: ErrorsContent
     licenseId: string
     locale: AppLocale
 }
 
-export function LicenseCancelDialog({ content, customerId, licenseId, locale }: LicenseCancelDialogProps) {
+export function LicenseCancelDialog({ content, customerId, errors, licenseId, locale }: LicenseCancelDialogProps) {
     const router = useRouter()
     const { licenses, updateLicense } = useLicenseData()
     const resolvedCustomerId = decodeLicenseRouteId(customerId)
@@ -41,7 +42,7 @@ export function LicenseCancelDialog({ content, customerId, licenseId, locale }: 
                 headers: { "content-type": "application/json" },
                 body: JSON.stringify({ id: license.subscriptionId }),
             })
-            if (!response.ok) throw new Error(content.cancel.cancelError)
+            if (!response.ok) throw new Error(errors.subscriptionCancel)
             const updated: unknown = await response.json()
             const subscription = updated && typeof updated === "object" ? (updated as { cancelAt?: string; updatedAt?: string }) : {}
 
@@ -51,7 +52,7 @@ export function LicenseCancelDialog({ content, customerId, licenseId, locale }: 
             })
             close()
         } catch (cancelError) {
-            setError(cancelError instanceof Error ? cancelError.message : content.cancel.cancelError)
+            setError(cancelError instanceof Error ? cancelError.message : errors.subscriptionCancel)
         } finally {
             setIsSubmitting(false)
         }
@@ -69,14 +70,14 @@ export function LicenseCancelDialog({ content, customerId, licenseId, locale }: 
                 headers: { "content-type": "application/json" },
                 body: JSON.stringify({ id: license.subscriptionId }),
             })
-            if (!response.ok) throw new Error(content.cancel.resumeError)
+            if (!response.ok) throw new Error(errors.subscriptionResume)
             const updated: unknown = await response.json()
             const subscription = updated && typeof updated === "object" ? (updated as { updatedAt?: string }) : {}
 
             updateLicense(license.id, { cancelAt: null, canceledAt: null, ...(subscription.updatedAt ? { updatedAt: subscription.updatedAt } : {}) })
             close()
         } catch (resumeError) {
-            setError(resumeError instanceof Error ? resumeError.message : content.cancel.resumeError)
+            setError(resumeError instanceof Error ? resumeError.message : errors.subscriptionResume)
         } finally {
             setIsSubmitting(false)
         }

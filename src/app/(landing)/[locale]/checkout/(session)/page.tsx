@@ -1,5 +1,5 @@
 import { CheckoutPageContent } from "@/components/checkout/CheckoutPageContent"
-import { getCheckoutContent, getFooter, getSubscriptionConfig } from "@/lib/cms"
+import { getCheckoutContent, getErrorsContent, getFooter, getSubscriptionConfig } from "@/lib/cms"
 import { getCraterSubscriptionPrices } from "@/lib/craterSubscriptionPrices"
 import { isSupportedLocale } from "@/lib/i18n"
 import type { Metadata } from "next"
@@ -11,11 +11,12 @@ export default async function CheckoutPage({ params }: { params: Promise<{ local
     const { locale } = await params
     if (!isSupportedLocale(locale)) notFound()
 
-    const [checkoutContent, subscriptionConfig, subscriptionPrices, footer] = await Promise.all([
+    const [checkoutContent, subscriptionConfig, subscriptionPrices, footer, errors] = await Promise.all([
         getCheckoutContent(locale),
         getSubscriptionConfig(locale),
         getCraterSubscriptionPrices(),
         getFooter(locale),
+        getErrorsContent(locale),
     ])
     const currentYear = new Date().getUTCFullYear()
 
@@ -23,6 +24,7 @@ export default async function CheckoutPage({ params }: { params: Promise<{ local
         <div className="flex min-h-full flex-col gap-8">
             <CheckoutPageContent
                 currentYear={currentYear}
+                errors={errors}
                 footer={footer}
                 form={checkoutContent?.form}
                 locale={locale}

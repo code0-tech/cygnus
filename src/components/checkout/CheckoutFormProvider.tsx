@@ -2,7 +2,7 @@
 
 import { useCraterSession } from "@/components/checkout/CraterSessionProvider"
 import { useCheckoutStage } from "@/components/checkout/CheckoutStepper"
-import type { CheckoutData } from "@/lib/cms"
+import type { CheckoutData, ErrorsContent } from "@/lib/cms"
 import { resolveCraterCustomerType } from "@/lib/checkout/craterCustomer"
 import { getOrCreateCheckoutDraftKey } from "@/lib/checkout/checkoutDraft"
 import {
@@ -24,14 +24,14 @@ type CheckoutFormContent = CheckoutData["form"]
 const CHECKOUT_SESSION_REFRESH_LEAD_MS = 60_000
 const MAX_BROWSER_TIMEOUT_MS = 2_147_000_000
 
-function getPreparationErrorMessage(error: unknown, content: CheckoutFormContent) {
-    if (!(error instanceof CheckoutSubmissionError)) return content.paymentErrorFallback
-    if (error.errorCode === "CUSTOMER_TYPE_MISMATCH") return content.errors.customerTypeMismatch
-    if (error.errorCode === "INVALID_CHECKOUT_CUSTOMER") return content.errors.checkoutCustomer
-    return error.kind === "customer" ? content.errors.customerCreation : content.errors.checkoutSession
+function getPreparationErrorMessage(error: unknown, errors: ErrorsContent) {
+    if (!(error instanceof CheckoutSubmissionError)) return errors.paymentFallback
+    if (error.errorCode === "CUSTOMER_TYPE_MISMATCH") return errors.customerTypeMismatch
+    if (error.errorCode === "INVALID_CHECKOUT_CUSTOMER") return errors.checkoutCustomer
+    return error.kind === "customer" ? errors.customerCreation : errors.checkoutSession
 }
 
-function useCreateCheckoutFormState(content: CheckoutFormContent, locale: AppLocale) {
+function useCreateCheckoutFormState(content: CheckoutFormContent, errors: ErrorsContent, locale: AppLocale) {
     const searchParams = useSearchParams()
     const { setStage } = useCheckoutStage()
     const [isLoading, setIsLoading] = useState(false)
@@ -86,7 +86,7 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, locale: AppLoc
                 if (requestId !== sessionRefreshRequestRef.current) return
                 console.error("Failed to refresh the Crater checkout session:", error)
                 setCheckoutSessionPromotionCode(undefined)
-                setErrorMessage(content.errors.checkoutSession)
+                setErrorMessage(errors.checkoutSession)
             })
             .finally(() => {
                 checkoutRefreshPromiseRef.current = null
@@ -95,7 +95,7 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, locale: AppLoc
 
         checkoutRefreshPromiseRef.current = request
         return request
-    }, [content.errors.checkoutSession, locale, promotionCode, searchParamsString, selectedCustomerId])
+    }, [errors.checkoutSession, locale, promotionCode, searchParamsString, selectedCustomerId])
 
     const refreshExpiredCheckoutSession = useCallback(() => {
         if (expiredRefreshAttemptsRef.current >= 1) return Promise.resolve()
@@ -156,12 +156,12 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, locale: AppLoc
             } catch (error) {
                 if (requestId !== sessionRefreshRequestRef.current) return
                 console.error("Failed to start Crater checkout:", error)
-                setErrorMessage(getPreparationErrorMessage(error, content))
+                setErrorMessage(getPreparationErrorMessage(error, errors))
             } finally {
                 if (requestId === sessionRefreshRequestRef.current) setIsLoading(false)
             }
         })()
-    }, [authenticated, content, customerType, locale, preparationAttempt, searchParamsString, setStage])
+    }, [authenticated, content, customerType, errors, locale, preparationAttempt, searchParamsString, setStage])
 
     const selectCheckoutCustomer = useCallback(
         async (customerId: string | null) => {
@@ -201,12 +201,12 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, locale: AppLoc
             } catch (error) {
                 if (requestId !== sessionRefreshRequestRef.current) return
                 console.error("Failed to select the Crater checkout customer:", error)
-                setErrorMessage(getPreparationErrorMessage(error, content))
+                setErrorMessage(getPreparationErrorMessage(error, errors))
             } finally {
                 if (requestId === sessionRefreshRequestRef.current) setIsRefreshingSession(false)
             }
         },
-        [content, customerType, customers, isLoading, isRefreshingSession, locale, promotionCode, searchParamsString, setStage]
+        [content, customerType, customers, errors, isLoading, isRefreshingSession, locale, promotionCode, searchParamsString, setStage]
     )
 
     useEffect(() => {
@@ -234,6 +234,7 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, locale: AppLoc
         customers,
         customerType,
         errorMessage,
+        errors,
         hasExistingCustomers,
         isLoading,
         isConfirmingPayment,
@@ -261,8 +262,18 @@ type CheckoutFormState = ReturnType<typeof useCreateCheckoutFormState>
 
 const CheckoutFormContext = createContext<CheckoutFormState | null>(null)
 
-export function CheckoutFormProvider({ children, content, locale }: { children: ReactNode; content: CheckoutFormContent; locale: AppLocale }) {
-    const state = useCreateCheckoutFormState(content, locale)
+export function CheckoutFormProvider({
+    children,
+    content,
+    errors,
+    locale,
+}: {
+    children: ReactNode
+    content: CheckoutFormContent
+    errors: ErrorsContent
+    locale: AppLocale
+}) {
+    const state = useCreateCheckoutFormState(content, errors, locale)
     return <CheckoutFormContext.Provider value={state}>{children}</CheckoutFormContext.Provider>
 }
 

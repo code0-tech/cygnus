@@ -10,6 +10,7 @@ import { Actions } from "./collections/actions"
 import { Blog } from "./collections/blog"
 import { Checkout } from "./globals/checkout"
 import { CookieBanner } from "./globals/cookieBanner"
+import { Errors } from "./globals/errors"
 import { Footer } from "./globals/footer"
 import { Jobs } from "./collections/jobs"
 import { Licenses } from "./globals/licenses"
@@ -73,7 +74,7 @@ export default buildConfig({
         defaultLocale: "en",
     },
     collections: [Users, Media, Pages, Actions, Jobs, Blog, TeamMembers],
-    globals: [Navigation, Footer, CookieBanner, SubscriptionCollection, Checkout, Licenses],
+    globals: [Navigation, Footer, CookieBanner, SubscriptionCollection, Checkout, Licenses, Errors],
     jobs: {
         autoRun: [
             {

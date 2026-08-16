@@ -1,5 +1,5 @@
 import { CheckoutSessionLayoutClient } from "@/components/checkout/CheckoutSessionLayoutClient"
-import { getCheckoutContent } from "@/lib/cms"
+import { getCheckoutContent, getErrorsContent } from "@/lib/cms"
 import { isSupportedLocale } from "@/lib/i18n"
 import type { ReactNode } from "react"
 import { notFound } from "next/navigation"
@@ -13,9 +13,9 @@ export default async function CheckoutSessionLayout({ children, params }: Checko
     const { locale } = await params
     if (!isSupportedLocale(locale)) notFound()
 
-    const checkoutContent = await getCheckoutContent(locale)
+    const [checkoutContent, errors] = await Promise.all([getCheckoutContent(locale), getErrorsContent(locale)])
     return (
-        <CheckoutSessionLayoutClient formContent={checkoutContent?.form} stepperContent={checkoutContent?.stepper}>
+        <CheckoutSessionLayoutClient errors={errors} stepperContent={checkoutContent?.stepper}>
             {children}
         </CheckoutSessionLayoutClient>
     )

@@ -3,7 +3,7 @@
 import { CheckoutDiscount, type CheckoutDiscountValue } from "@/components/checkout/CheckoutDiscount"
 import { SummaryBadge } from "@/components/checkout/CheckoutSummaryBadge"
 import { getIcon } from "@/components/ui/IconRenderer"
-import type { CheckoutData, SubscriptionConfigData } from "@/lib/cms"
+import type { CheckoutData, ErrorsContent, SubscriptionConfigData } from "@/lib/cms"
 import type { CheckoutTaxQuoteData } from "@/lib/checkout/checkoutSubmission"
 import { formatCompactNumber, formatEuroCurrency } from "@/lib/formatters"
 import { calculateExclusiveTaxRate, calculatePromotionDiscountAmount, formatDiscountBadge, resolveCheckoutPricing } from "@/lib/subscriptionCalculator"
@@ -14,7 +14,7 @@ import { Card } from "../ui/Card"
 
 interface CheckoutSummaryProps {
     content?: CheckoutData["summary"] | null
-    errors?: CheckoutData["form"]["errors"] | null
+    errors?: ErrorsContent | null
     subscriptionConfig?: SubscriptionConfigData | null
     subscriptionPrices: SubscriptionPriceCatalog
     taxQuote?: CheckoutTaxQuoteData | null

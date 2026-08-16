@@ -53,6 +53,7 @@ interface PaymentMethodSetupElementProps {
     clientSecret: string
     content: LicenseContent["editor"]
     customerId: string
+    errorMessage: string
     onCancel: () => void
     onSuccess: () => void
     retryLabel: string
@@ -62,13 +63,14 @@ interface PaymentMethodSetupElementProps {
 interface PaymentMethodSetupPendingStatusProps {
     content: LicenseContent["editor"]
     customerId: string
+    errorMessage: string
     onCancel: () => void
     onSuccess: () => void
     retryLabel: string
     setupIntentId: string
 }
 
-export function PaymentMethodSetupPendingStatus({ content, customerId, onCancel, onSuccess, retryLabel, setupIntentId }: PaymentMethodSetupPendingStatusProps) {
+export function PaymentMethodSetupPendingStatus({ content, customerId, errorMessage, onCancel, onSuccess, retryLabel, setupIntentId }: PaymentMethodSetupPendingStatusProps) {
     const [isComplete, setIsComplete] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [retryKey, setRetryKey] = useState(0)
@@ -96,7 +98,7 @@ export function PaymentMethodSetupPendingStatus({ content, customerId, onCancel,
                     return
                 }
                 if (result.status === "failed") {
-                    setError(content.paymentMethodSetupError)
+                    setError(errorMessage)
                     return
                 }
                 if (result.status !== "pending") throw new Error("Invalid payment method setup status.")
@@ -104,7 +106,7 @@ export function PaymentMethodSetupPendingStatus({ content, customerId, onCancel,
                 timeout = setTimeout(() => void checkStatus(), 1_250)
             } catch (statusError) {
                 if (statusError instanceof DOMException && statusError.name === "AbortError") return
-                setError(content.paymentMethodSetupError)
+                setError(errorMessage)
             }
         }
 
@@ -113,7 +115,7 @@ export function PaymentMethodSetupPendingStatus({ content, customerId, onCancel,
             controller.abort()
             if (timeout) clearTimeout(timeout)
         }
-    }, [content.paymentMethodSetupError, customerId, onSuccess, retryKey, setupIntentId])
+    }, [customerId, errorMessage, onSuccess, retryKey, setupIntentId])
 
     if (isComplete) {
         return (
@@ -160,7 +162,7 @@ export function PaymentMethodSetupPendingStatus({ content, customerId, onCancel,
     )
 }
 
-function PaymentMethodSetupForm({ content, customerId, onCancel, onSuccess, retryLabel, returnPath }: Omit<PaymentMethodSetupElementProps, "clientSecret">) {
+function PaymentMethodSetupForm({ content, customerId, errorMessage, onCancel, onSuccess, retryLabel, returnPath }: Omit<PaymentMethodSetupElementProps, "clientSecret">) {
     const stripe = useStripe()
     const elements = useElements()
     const [isReady, setIsReady] = useState(false)
@@ -180,13 +182,13 @@ function PaymentMethodSetupForm({ content, customerId, onCancel, onSuccess, retr
         })
 
         if (result.error) {
-            setError(content.paymentMethodSetupError)
+            setError(errorMessage)
             setIsConfirming(false)
             return
         }
 
         if (!result.setupIntent?.id) {
-            setError(content.paymentMethodSetupError)
+            setError(errorMessage)
             setIsConfirming(false)
             return
         }
@@ -196,7 +198,17 @@ function PaymentMethodSetupForm({ content, customerId, onCancel, onSuccess, retr
     }
 
     if (setupIntentId)
-        return <PaymentMethodSetupPendingStatus content={content} customerId={customerId} onCancel={onCancel} onSuccess={onSuccess} retryLabel={retryLabel} setupIntentId={setupIntentId} />
+        return (
+            <PaymentMethodSetupPendingStatus
+                content={content}
+                customerId={customerId}
+                errorMessage={errorMessage}
+                onCancel={onCancel}
+                onSuccess={onSuccess}
+                retryLabel={retryLabel}
+                setupIntentId={setupIntentId}
+            />
+        )
 
     return (
         <div className="space-y-4">
@@ -218,21 +230,21 @@ function PaymentMethodSetupForm({ content, customerId, onCancel, onSuccess, retr
     )
 }
 
-export function PaymentMethodSetupElement({ clientSecret, content, customerId, onCancel, onSuccess, retryLabel, returnPath }: PaymentMethodSetupElementProps) {
+export function PaymentMethodSetupElement({ clientSecret, content, customerId, errorMessage, onCancel, onSuccess, retryLabel, returnPath }: PaymentMethodSetupElementProps) {
     const stripeRef = useRef(stripePromise)
     const options = useMemo<StripeElementsOptions>(() => ({ appearance, clientSecret }), [clientSecret])
 
     if (!stripeRef.current) {
         return (
             <p role="alert" className="text-sm text-error">
-                {content.paymentMethodSetupError}
+                {errorMessage}
             </p>
         )
     }
 
     return (
         <Elements key={clientSecret} stripe={stripeRef.current} options={options}>
-            <PaymentMethodSetupForm content={content} customerId={customerId} onCancel={onCancel} onSuccess={onSuccess} retryLabel={retryLabel} returnPath={returnPath} />
+            <PaymentMethodSetupForm content={content} customerId={customerId} errorMessage={errorMessage} onCancel={onCancel} onSuccess={onSuccess} retryLabel={retryLabel} returnPath={returnPath} />
         </Elements>
     )
 }

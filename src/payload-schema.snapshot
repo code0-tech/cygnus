@@ -2492,20 +2492,6 @@ export const checkout_locales = pgTable('checkout_locales', {
   form_customerSelectLabel: varchar('form_customer_select_label').notNull().default("Billing customer"),
   form_newCustomerLabel: varchar('form_new_customer_label').notNull().default("Create new customer"),
   form_customerFallbackLabel: varchar('form_customer_fallback_label').notNull().default("Customer"),
-  form_paymentErrorFallback: varchar('form_payment_error_fallback').notNull().default("An unexpected error occurred."),
-  form_errors_sessionUnavailable: varchar('form_errors_session_unavailable').notNull().default("Your checkout session could not be authenticated. Please try again."),
-  form_errors_customerCreation: varchar('form_errors_customer_creation').notNull().default("Your billing customer could not be prepared. Please try again."),
-  form_errors_customerTypeMismatch: varchar('form_errors_customer_type_mismatch').notNull().default("Your existing customer type does not match this checkout configuration."),
-  form_errors_checkoutCustomer: varchar('form_errors_checkout_customer').notNull().default("The selected billing customer cannot be used for this checkout."),
-  form_errors_checkoutSession: varchar('form_errors_checkout_session').notNull().default("The checkout session could not be created. Please try again."),
-  form_errors_checkoutSessionExpired: varchar('form_errors_checkout_session_expired').notNull().default("The checkout session expired. A new session is being created."),
-  form_errors_billingAddressUpdate: varchar('form_errors_billing_address_update').notNull().default("The billing address could not be saved. Please check your details."),
-  form_errors_emailUpdate: varchar('form_errors_email_update').notNull().default("The email address could not be saved. Please check your details."),
-  form_errors_taxIdUpdate: varchar('form_errors_tax_id_update').notNull().default("The tax ID could not be saved. Please check your details."),
-  form_errors_taxIdIncomplete: varchar('form_errors_tax_id_incomplete').notNull().default("Tax ID type and Tax ID must be provided together."),
-  form_errors_paymentConfirmation: varchar('form_errors_payment_confirmation').notNull().default("The payment could not be confirmed. Please check your payment details."),
-  form_errors_discountSessionRequired: varchar('form_errors_discount_session_required').notNull().default("A checkout session is required to validate a discount."),
-  form_errors_discountValidation: varchar('form_errors_discount_validation').notNull().default("The discount code could not be validated."),
   form_mobileContactLabel: varchar('form_mobile_contact_label').notNull().default("Contact details"),
   form_mobileNextLabel: varchar('form_mobile_next_label').notNull().default("Continue"),
   form_mobileTaxLabel: varchar('form_mobile_tax_label').notNull().default("Tax details"),
@@ -2535,7 +2521,6 @@ export const checkout_locales = pgTable('checkout_locales', {
   success_licenseDashboardLabel: varchar('success_license_dashboard_label').notNull().default("Open license dashboard"),
   success_licensePendingLabel: varchar('success_license_pending_label').notNull().default("Your license is being prepared…"),
   success_licenseReadyLabel: varchar('success_license_ready_label').notNull().default("Your license is ready."),
-  success_licenseStatusError: varchar('success_license_status_error').notNull().default("We could not check whether your license is ready."),
   success_licenseStatusRetryLabel: varchar('success_license_status_retry_label').notNull().default("Try again"),
   success_receiptHint: varchar('success_receipt_hint').notNull().default("Stripe sends the receipt to your email address."),
   success_failedHeading: varchar('success_failed_heading').notNull().default("Payment failed"),
@@ -2579,6 +2564,7 @@ export const licenses_locales = pgTable('licenses_locales', {
   dashboard_emptyCustomers: varchar('dashboard_empty_customers').notNull(),
   dashboard_recentLicenses: varchar('dashboard_recent_licenses').notNull(),
   dashboard_customerLabel: varchar('dashboard_customer_label').notNull(),
+  dashboard_nameLabel: varchar('dashboard_name_label').notNull(),
   dashboard_typeLabel: varchar('dashboard_type_label').notNull(),
   dashboard_emailLabel: varchar('dashboard_email_label').notNull(),
   dashboard_lastEditedLabel: varchar('dashboard_last_edited_label').notNull(),
@@ -2618,14 +2604,11 @@ export const licenses_locales = pgTable('licenses_locales', {
   invoices_statusLabel: varchar('invoices_status_label').notNull(),
   invoices_downloadLabel: varchar('invoices_download_label').notNull(),
   invoices_unavailableLabel: varchar('invoices_unavailable_label').notNull(),
-  errors_dashboardLoad: varchar('errors_dashboard_load').notNull(),
-  errors_retry: varchar('errors_retry').notNull(),
   pagination_loadMoreLabel: varchar('pagination_load_more_label').notNull(),
   pagination_loadingLabel: varchar('pagination_loading_label').notNull(),
   editor_customerTitle: varchar('editor_customer_title').notNull(),
   editor_customerDescription: varchar('editor_customer_description').notNull(),
   editor_contactHeading: varchar('editor_contact_heading').notNull(),
-  editor_billingAddressHeading: varchar('editor_billing_address_heading').notNull(),
   editor_paymentMethodHeading: varchar('editor_payment_method_heading').notNull(),
   editor_paymentMethodDescription: varchar('editor_payment_method_description').notNull(),
   editor_changePaymentMethodLabel: varchar('editor_change_payment_method_label').notNull(),
@@ -2635,34 +2618,21 @@ export const licenses_locales = pgTable('licenses_locales', {
   editor_paymentMethodSuccess: varchar('editor_payment_method_success').notNull(),
   editor_licenseTitle: varchar('editor_license_title').notNull(),
   editor_licenseDescription: varchar('editor_license_description').notNull(),
-  editor_nameLabel: varchar('editor_name_label').notNull(),
-  editor_phoneLabel: varchar('editor_phone_label').notNull(),
-  editor_addressLine1Label: varchar('editor_address_line1_label').notNull(),
-  editor_addressLine2Label: varchar('editor_address_line2_label').notNull(),
-  editor_cityLabel: varchar('editor_city_label').notNull(),
-  editor_stateLabel: varchar('editor_state_label').notNull(),
-  editor_postalCodeLabel: varchar('editor_postal_code_label').notNull(),
-  editor_countryLabel: varchar('editor_country_label').notNull(),
   editor_namespaceLabel: varchar('editor_namespace_label').notNull(),
   editor_saveLabel: varchar('editor_save_label').notNull(),
   editor_cancelLabel: varchar('editor_cancel_label').notNull(),
   editor_closeLabel: varchar('editor_close_label').notNull(),
-  editor_customerError: varchar('editor_customer_error').notNull(),
-  editor_paymentMethodSetupError: varchar('editor_payment_method_setup_error').notNull(),
-  editor_licenseError: varchar('editor_license_error').notNull(),
   editor_selfHostedDescription: varchar('editor_self_hosted_description').notNull(),
   subscriptionPreview_totalLabel: varchar('subscription_preview_total_label').notNull(),
   subscriptionPreview_prorationLabel: varchar('subscription_preview_proration_label').notNull(),
   subscriptionPreview_immediateNote: varchar('subscription_preview_immediate_note').notNull(),
   subscriptionPreview_scheduledNote: varchar('subscription_preview_scheduled_note').notNull(),
   subscriptionPreview_loadingLabel: varchar('subscription_preview_loading_label').notNull(),
-  subscriptionPreview_error: varchar('subscription_preview_error').notNull(),
   billing_title: varchar('billing_title').notNull(),
   billing_description: varchar('billing_description').notNull(),
   billing_periodLabel: varchar('billing_period_label').notNull(),
   billing_currentPeriodEndLabel: varchar('billing_current_period_end_label').notNull(),
   billing_pendingChangeLabel: varchar('billing_pending_change_label').notNull(),
-  billing_updateError: varchar('billing_update_error').notNull(),
   cancel_title: varchar('cancel_title').notNull(),
   cancel_description: varchar('cancel_description').notNull(),
   cancel_confirmLabel: varchar('cancel_confirm_label').notNull(),
@@ -2670,13 +2640,10 @@ export const licenses_locales = pgTable('licenses_locales', {
   cancel_pendingDescription: varchar('cancel_pending_description').notNull(),
   cancel_cancelAtLabel: varchar('cancel_cancel_at_label').notNull(),
   cancel_resumeLabel: varchar('cancel_resume_label').notNull(),
-  cancel_cancelError: varchar('cancel_cancel_error').notNull(),
-  cancel_resumeError: varchar('cancel_resume_error').notNull(),
   upgrade_title: varchar('upgrade_title').notNull(),
   upgrade_description: varchar('upgrade_description').notNull(),
   upgrade_planLabel: varchar('upgrade_plan_label').notNull(),
   upgrade_increaseOnlyNote: varchar('upgrade_increase_only_note').notNull(),
-  upgrade_updateError: varchar('upgrade_update_error').notNull(),
   id: serial('id').primaryKey(),
   _locale: enum__locales('_locale').notNull(),
   _parentID: integer('_parent_id').notNull(),
@@ -2685,6 +2652,53 @@ export const licenses_locales = pgTable('licenses_locales', {
       columns: [columns['_parentID']],
       foreignColumns: [licenses.id],
       name: 'licenses_locales_parent_id_fk'
+    }).onDelete('cascade'),
+]
+)
+
+
+export const errors = pgTable('errors', {
+  id: serial('id').primaryKey(),
+  updatedAt: timestamp('updated_at', {mode: 'string',withTimezone: true,precision: 3}),
+  createdAt: timestamp('created_at', {mode: 'string',withTimezone: true,precision: 3}),
+}
+)
+
+
+export const errors_locales = pgTable('errors_locales', {
+  dashboardLoad: varchar('dashboard_load').notNull(),
+  retry: varchar('retry').notNull(),
+  customerUpdate: varchar('customer_update').notNull(),
+  paymentMethodUpdate: varchar('payment_method_update').notNull(),
+  licenseUpdate: varchar('license_update').notNull(),
+  subscriptionPreview: varchar('subscription_preview').notNull(),
+  billingUpdate: varchar('billing_update').notNull(),
+  subscriptionCancel: varchar('subscription_cancel').notNull(),
+  subscriptionResume: varchar('subscription_resume').notNull(),
+  planUpgrade: varchar('plan_upgrade').notNull(),
+  paymentFallback: varchar('payment_fallback').notNull(),
+  sessionUnavailable: varchar('session_unavailable').notNull(),
+  customerCreation: varchar('customer_creation').notNull(),
+  customerTypeMismatch: varchar('customer_type_mismatch').notNull(),
+  checkoutCustomer: varchar('checkout_customer').notNull(),
+  checkoutSession: varchar('checkout_session').notNull(),
+  checkoutSessionExpired: varchar('checkout_session_expired').notNull(),
+  billingAddressUpdate: varchar('billing_address_update').notNull(),
+  emailUpdate: varchar('email_update').notNull(),
+  taxIdUpdate: varchar('tax_id_update').notNull(),
+  taxIdIncomplete: varchar('tax_id_incomplete').notNull(),
+  paymentConfirmation: varchar('payment_confirmation').notNull(),
+  discountSessionRequired: varchar('discount_session_required').notNull(),
+  discountValidation: varchar('discount_validation').notNull(),
+  checkoutLicenseStatus: varchar('checkout_license_status').notNull(),
+  id: serial('id').primaryKey(),
+  _locale: enum__locales('_locale').notNull(),
+  _parentID: integer('_parent_id').notNull(),
+}, (columns) => [
+    uniqueIndex('errors_locales_locale_parent_id_unique').on(columns._locale, columns._parentID), foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [errors.id],
+      name: 'errors_locales_parent_id_fk'
     }).onDelete('cascade'),
 ]
 )
@@ -4019,6 +4033,19 @@ export const relations_licenses = relations(licenses, ({ many }) => ({
             relationName: '_locales',
     }),
       }))
+export const relations_errors_locales = relations(errors_locales, ({ one }) => ({
+  _parentID: one(errors, {
+    
+    fields: [errors_locales._parentID],
+    references: [errors.id],
+    relationName: '_locales',
+    }),
+      }))
+export const relations_errors = relations(errors, ({ many }) => ({
+  _locales: many(errors_locales, {
+            relationName: '_locales',
+    }),
+      }))
 
 type DatabaseSchema = {
   enum__locales: typeof enum__locales
@@ -4216,6 +4243,8 @@ type DatabaseSchema = {
   checkout_locales: typeof checkout_locales
   licenses: typeof licenses
   licenses_locales: typeof licenses_locales
+  errors: typeof errors
+  errors_locales: typeof errors_locales
   relations_users_sessions: typeof relations_users_sessions
   relations_users: typeof relations_users
   relations_media: typeof relations_media
@@ -4330,6 +4359,8 @@ type DatabaseSchema = {
   relations_checkout: typeof relations_checkout
   relations_licenses_locales: typeof relations_licenses_locales
   relations_licenses: typeof relations_licenses
+  relations_errors_locales: typeof relations_errors_locales
+  relations_errors: typeof relations_errors
 }
     
 
