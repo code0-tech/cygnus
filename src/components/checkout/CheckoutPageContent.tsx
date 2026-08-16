@@ -5,7 +5,7 @@ import { CheckoutFormProvider, useCheckoutFormState } from "@/components/checkou
 import { CheckoutLegalFooter } from "@/components/checkout/CheckoutLegalFooter"
 import { CheckoutSummary } from "@/components/checkout/CheckoutSummary"
 import { cn } from "@/lib/utils"
-import type { CheckoutData, SubscriptionConfigData } from "@/lib/cms"
+import type { CheckoutData, ErrorsContent, SubscriptionConfigData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import type { SubscriptionPriceCatalog } from "@/lib/subscriptionPrices"
 import type { Footer } from "@/payload-types"
@@ -14,6 +14,7 @@ import { useEffect, useState, type ComponentProps } from "react"
 
 interface CheckoutPageContentProps {
     currentYear: number
+    errors?: ErrorsContent | null
     footer?: Footer | null
     form?: CheckoutData["form"] | null
     locale: AppLocale
@@ -27,7 +28,7 @@ function CheckoutSummaryWithTax(props: Omit<ComponentProps<typeof CheckoutSummar
     return <CheckoutSummary {...props} taxQuote={taxQuote} />
 }
 
-export function CheckoutPageContent({ currentYear, footer, form, locale, subscriptionConfig, subscriptionPrices, summary }: CheckoutPageContentProps) {
+export function CheckoutPageContent({ currentYear, errors, footer, form, locale, subscriptionConfig, subscriptionPrices, summary }: CheckoutPageContentProps) {
     const [mobileCheckoutOpen, setMobileCheckoutOpen] = useState(false)
 
     useEffect(() => {
@@ -57,9 +58,9 @@ export function CheckoutPageContent({ currentYear, footer, form, locale, subscri
     return (
         <div className="flex flex-1 flex-col">
             <div className="flex w-full flex-col gap-8 lg:flex-row lg:gap-16">
-                {form ? (
-                    <CheckoutFormProvider content={form} locale={locale}>
-                        <CheckoutSummaryWithTax content={summary} errors={form.errors} subscriptionConfig={subscriptionConfig} subscriptionPrices={subscriptionPrices} />
+                {form && errors ? (
+                    <CheckoutFormProvider content={form} errors={errors} locale={locale}>
+                        <CheckoutSummaryWithTax content={summary} errors={errors} subscriptionConfig={subscriptionConfig} subscriptionPrices={subscriptionPrices} />
                         <button
                             type="button"
                             onClick={() => setMobileCheckoutOpen(true)}

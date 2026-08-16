@@ -106,6 +106,7 @@ export interface Config {
     subscriptionConfig: SubscriptionConfig;
     checkout: Checkout;
     licenses: License;
+    errors: Error;
   };
   globalsSelect: {
     navigation: NavigationSelect<false> | NavigationSelect<true>;
@@ -114,6 +115,7 @@ export interface Config {
     subscriptionConfig: SubscriptionConfigSelect<false> | SubscriptionConfigSelect<true>;
     checkout: CheckoutSelect<false> | CheckoutSelect<true>;
     licenses: LicensesSelect<false> | LicensesSelect<true>;
+    errors: ErrorsSelect<false> | ErrorsSelect<true>;
   };
   locale: 'en' | 'de';
   widgets: {
@@ -3158,22 +3160,6 @@ export interface Checkout {
     customerSelectLabel: string;
     newCustomerLabel: string;
     customerFallbackLabel: string;
-    paymentErrorFallback: string;
-    errors: {
-      sessionUnavailable: string;
-      customerCreation: string;
-      customerTypeMismatch: string;
-      checkoutCustomer: string;
-      checkoutSession: string;
-      checkoutSessionExpired: string;
-      billingAddressUpdate: string;
-      emailUpdate: string;
-      taxIdUpdate: string;
-      taxIdIncomplete: string;
-      paymentConfirmation: string;
-      discountSessionRequired: string;
-      discountValidation: string;
-    };
     mobileContactLabel: string;
     mobileNextLabel: string;
     mobileTaxLabel: string;
@@ -3205,7 +3191,6 @@ export interface Checkout {
     licenseDashboardLabel: string;
     licensePendingLabel: string;
     licenseReadyLabel: string;
-    licenseStatusError: string;
     licenseStatusRetryLabel: string;
     /**
      * Shown once the payment is confirmed. The exact amount is on the Stripe receipt, not on this page.
@@ -3246,6 +3231,7 @@ export interface License {
     emptyCustomers: string;
     recentLicenses: string;
     customerLabel: string;
+    nameLabel: string;
     typeLabel: string;
     emailLabel: string;
     lastEditedLabel: string;
@@ -3302,10 +3288,6 @@ export interface License {
     downloadLabel: string;
     unavailableLabel: string;
   };
-  errors: {
-    dashboardLoad: string;
-    retry: string;
-  };
   pagination: {
     loadMoreLabel: string;
     loadingLabel: string;
@@ -3314,7 +3296,6 @@ export interface License {
     customerTitle: string;
     customerDescription: string;
     contactHeading: string;
-    billingAddressHeading: string;
     paymentMethodHeading: string;
     paymentMethodDescription: string;
     changePaymentMethodLabel: string;
@@ -3324,21 +3305,10 @@ export interface License {
     paymentMethodSuccess: string;
     licenseTitle: string;
     licenseDescription: string;
-    nameLabel: string;
-    phoneLabel: string;
-    addressLine1Label: string;
-    addressLine2Label: string;
-    cityLabel: string;
-    stateLabel: string;
-    postalCodeLabel: string;
-    countryLabel: string;
     namespaceLabel: string;
     saveLabel: string;
     cancelLabel: string;
     closeLabel: string;
-    customerError: string;
-    paymentMethodSetupError: string;
-    licenseError: string;
     selfHostedDescription: string;
   };
   /**
@@ -3350,7 +3320,6 @@ export interface License {
     immediateNote: string;
     scheduledNote: string;
     loadingLabel: string;
-    error: string;
   };
   billing: {
     title: string;
@@ -3358,7 +3327,6 @@ export interface License {
     periodLabel: string;
     currentPeriodEndLabel: string;
     pendingChangeLabel: string;
-    updateError: string;
   };
   cancel: {
     title: string;
@@ -3368,16 +3336,47 @@ export interface License {
     pendingDescription: string;
     cancelAtLabel: string;
     resumeLabel: string;
-    cancelError: string;
-    resumeError: string;
   };
   upgrade: {
     title: string;
     description: string;
     planLabel: string;
     increaseOnlyNote: string;
-    updateError: string;
   };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "errors".
+ */
+export interface Error {
+  id: number;
+  dashboardLoad: string;
+  retry: string;
+  customerUpdate: string;
+  paymentMethodUpdate: string;
+  licenseUpdate: string;
+  subscriptionPreview: string;
+  billingUpdate: string;
+  subscriptionCancel: string;
+  subscriptionResume: string;
+  planUpgrade: string;
+  paymentFallback: string;
+  sessionUnavailable: string;
+  customerCreation: string;
+  customerTypeMismatch: string;
+  checkoutCustomer: string;
+  checkoutSession: string;
+  checkoutSessionExpired: string;
+  billingAddressUpdate: string;
+  emailUpdate: string;
+  taxIdUpdate: string;
+  taxIdIncomplete: string;
+  paymentConfirmation: string;
+  discountSessionRequired: string;
+  discountValidation: string;
+  checkoutLicenseStatus: string;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -3894,24 +3893,6 @@ export interface CheckoutSelect<T extends boolean = true> {
         customerSelectLabel?: T;
         newCustomerLabel?: T;
         customerFallbackLabel?: T;
-        paymentErrorFallback?: T;
-        errors?:
-          | T
-          | {
-              sessionUnavailable?: T;
-              customerCreation?: T;
-              customerTypeMismatch?: T;
-              checkoutCustomer?: T;
-              checkoutSession?: T;
-              checkoutSessionExpired?: T;
-              billingAddressUpdate?: T;
-              emailUpdate?: T;
-              taxIdUpdate?: T;
-              taxIdIncomplete?: T;
-              paymentConfirmation?: T;
-              discountSessionRequired?: T;
-              discountValidation?: T;
-            };
         mobileContactLabel?: T;
         mobileNextLabel?: T;
         mobileTaxLabel?: T;
@@ -3945,7 +3926,6 @@ export interface CheckoutSelect<T extends boolean = true> {
         licenseDashboardLabel?: T;
         licensePendingLabel?: T;
         licenseReadyLabel?: T;
-        licenseStatusError?: T;
         licenseStatusRetryLabel?: T;
         receiptHint?: T;
         failedHeading?: T;
@@ -3984,6 +3964,7 @@ export interface LicensesSelect<T extends boolean = true> {
         emptyCustomers?: T;
         recentLicenses?: T;
         customerLabel?: T;
+        nameLabel?: T;
         typeLabel?: T;
         emailLabel?: T;
         lastEditedLabel?: T;
@@ -4056,12 +4037,6 @@ export interface LicensesSelect<T extends boolean = true> {
         downloadLabel?: T;
         unavailableLabel?: T;
       };
-  errors?:
-    | T
-    | {
-        dashboardLoad?: T;
-        retry?: T;
-      };
   pagination?:
     | T
     | {
@@ -4074,7 +4049,6 @@ export interface LicensesSelect<T extends boolean = true> {
         customerTitle?: T;
         customerDescription?: T;
         contactHeading?: T;
-        billingAddressHeading?: T;
         paymentMethodHeading?: T;
         paymentMethodDescription?: T;
         changePaymentMethodLabel?: T;
@@ -4084,21 +4058,10 @@ export interface LicensesSelect<T extends boolean = true> {
         paymentMethodSuccess?: T;
         licenseTitle?: T;
         licenseDescription?: T;
-        nameLabel?: T;
-        phoneLabel?: T;
-        addressLine1Label?: T;
-        addressLine2Label?: T;
-        cityLabel?: T;
-        stateLabel?: T;
-        postalCodeLabel?: T;
-        countryLabel?: T;
         namespaceLabel?: T;
         saveLabel?: T;
         cancelLabel?: T;
         closeLabel?: T;
-        customerError?: T;
-        paymentMethodSetupError?: T;
-        licenseError?: T;
         selfHostedDescription?: T;
       };
   subscriptionPreview?:
@@ -4109,7 +4072,6 @@ export interface LicensesSelect<T extends boolean = true> {
         immediateNote?: T;
         scheduledNote?: T;
         loadingLabel?: T;
-        error?: T;
       };
   billing?:
     | T
@@ -4119,7 +4081,6 @@ export interface LicensesSelect<T extends boolean = true> {
         periodLabel?: T;
         currentPeriodEndLabel?: T;
         pendingChangeLabel?: T;
-        updateError?: T;
       };
   cancel?:
     | T
@@ -4131,8 +4092,6 @@ export interface LicensesSelect<T extends boolean = true> {
         pendingDescription?: T;
         cancelAtLabel?: T;
         resumeLabel?: T;
-        cancelError?: T;
-        resumeError?: T;
       };
   upgrade?:
     | T
@@ -4141,8 +4100,41 @@ export interface LicensesSelect<T extends boolean = true> {
         description?: T;
         planLabel?: T;
         increaseOnlyNote?: T;
-        updateError?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "errors_select".
+ */
+export interface ErrorsSelect<T extends boolean = true> {
+  dashboardLoad?: T;
+  retry?: T;
+  customerUpdate?: T;
+  paymentMethodUpdate?: T;
+  licenseUpdate?: T;
+  subscriptionPreview?: T;
+  billingUpdate?: T;
+  subscriptionCancel?: T;
+  subscriptionResume?: T;
+  planUpgrade?: T;
+  paymentFallback?: T;
+  sessionUnavailable?: T;
+  customerCreation?: T;
+  customerTypeMismatch?: T;
+  checkoutCustomer?: T;
+  checkoutSession?: T;
+  checkoutSessionExpired?: T;
+  billingAddressUpdate?: T;
+  emailUpdate?: T;
+  taxIdUpdate?: T;
+  taxIdIncomplete?: T;
+  paymentConfirmation?: T;
+  discountSessionRequired?: T;
+  discountValidation?: T;
+  checkoutLicenseStatus?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

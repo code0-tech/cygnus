@@ -2,7 +2,7 @@
 
 import { LicenseDataProvider, useLicenseData } from "@/components/licenses/LicenseDataProvider"
 import { LicenseSidebar } from "@/components/licenses/LicenseSidebar"
-import type { LicenseContent } from "@/lib/cms"
+import type { ErrorsContent, LicenseContent } from "@/lib/cms"
 import { AppLocale } from "@/lib/i18n"
 import { Button, Card, Flex, FullScreen, ScrollArea, ScrollAreaScrollbar, ScrollAreaThumb, ScrollAreaViewport, Text } from "@code0-tech/pictor"
 import type { ReactNode } from "react"
@@ -10,11 +10,12 @@ import type { ReactNode } from "react"
 interface LicenseLayoutProps {
     children: ReactNode
     content: LicenseContent
+    errors: ErrorsContent
     locale: AppLocale
     modal?: ReactNode
 }
 
-function LicenseLayoutContent({ children, content, locale }: LicenseLayoutProps) {
+function LicenseLayoutContent({ children, content, errors, locale }: LicenseLayoutProps) {
     const { error, isRefreshing, isSidebarLoading, reload, sidebarLicenses } = useLicenseData()
 
     return (
@@ -33,7 +34,7 @@ function LicenseLayoutContent({ children, content, locale }: LicenseLayoutProps)
                                                 {error}
                                             </Text>
                                             <Button type="button" variant="normal" paddingSize="xs" onClick={reload}>
-                                                {content.errors.retry}
+                                                {errors.retry}
                                             </Button>
                                         </Flex>
                                     </Card>
@@ -54,7 +55,7 @@ function LicenseLayoutContent({ children, content, locale }: LicenseLayoutProps)
 
 export function LicenseLayout(props: LicenseLayoutProps) {
     return (
-        <LicenseDataProvider loadError={props.content.errors.dashboardLoad} redirectUrl={props.content.redirectUrl}>
+        <LicenseDataProvider loadError={props.errors.dashboardLoad} redirectUrl={props.content.redirectUrl}>
             <LicenseLayoutContent {...props} />
             {props.modal}
         </LicenseDataProvider>

@@ -36,7 +36,7 @@ export function LicenseCustomerPage({ content, customerId, locale }: LicenseCust
     })
     const customerDetails = customer
         ? [
-              { label: content.editor.nameLabel, value: customer.name || "—" },
+              { label: content.dashboard.nameLabel, value: customer.name || "—" },
               { label: content.dashboard.emailLabel, value: customer.email || "—" },
               {
                   label: content.dashboard.customerLabel,

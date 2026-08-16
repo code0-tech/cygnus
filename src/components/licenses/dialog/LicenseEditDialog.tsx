@@ -2,7 +2,7 @@
 
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
 import { ButtonLoader } from "@/components/ui/Loader"
-import type { LicenseContent } from "@/lib/cms"
+import type { ErrorsContent, LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { decodeLicenseRouteId } from "@/lib/licenses/licenseRoute"
 import { Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogOverlay, DialogPortal, DialogTitle, TextInput } from "@code0-tech/pictor"
@@ -13,11 +13,12 @@ import { type SyntheticEvent, useEffect, useState } from "react"
 interface LicenseEditDialogProps {
     content: LicenseContent
     customerId: string
+    errors: ErrorsContent
     licenseId: string
     locale: AppLocale
 }
 
-export function LicenseEditDialog({ content, customerId, licenseId, locale }: LicenseEditDialogProps) {
+export function LicenseEditDialog({ content, customerId, errors, licenseId, locale }: LicenseEditDialogProps) {
     const router = useRouter()
     const { licenses, updateLicense } = useLicenseData()
     const resolvedCustomerId = decodeLicenseRouteId(customerId)
@@ -45,14 +46,14 @@ export function LicenseEditDialog({ content, customerId, licenseId, locale }: Li
                 headers: { "content-type": "application/json" },
                 body: JSON.stringify({ id: license.id, namespaceId: namespaceId.trim() }),
             })
-            if (!response.ok) throw new Error(content.editor.licenseError)
+            if (!response.ok) throw new Error(errors.licenseUpdate)
             const updated: unknown = await response.json()
             const updatedAt = updated && typeof updated === "object" && "updatedAt" in updated && typeof updated.updatedAt === "string" ? updated.updatedAt : undefined
 
             updateLicense(license.id, { namespaceId: namespaceId.trim(), ...(updatedAt ? { updatedAt } : {}) })
             close()
         } catch (saveError) {
-            setError(saveError instanceof Error ? saveError.message : content.editor.licenseError)
+            setError(saveError instanceof Error ? saveError.message : errors.licenseUpdate)
         } finally {
             setIsSaving(false)
         }

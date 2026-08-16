@@ -4,7 +4,7 @@ import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
 import { Switch } from "@/components/ui/Switch"
 import { Slider } from "@/components/ui/Slider"
 import { ButtonLoader } from "@/components/ui/Loader"
-import type { LicenseContent, SubscriptionConfigData } from "@/lib/cms"
+import type { ErrorsContent, LicenseContent, SubscriptionConfigData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { formatMinorCurrency } from "@/lib/formatters"
 import { decodeLicenseRouteId } from "@/lib/licenses/licenseRoute"
@@ -27,6 +27,7 @@ interface SubscriptionUpdatePreview {
 interface LicenseUpgradeDialogProps {
     content: LicenseContent
     customerId: string
+    errors: ErrorsContent
     licenseId: string
     locale: AppLocale
     subscriptionConfig: SubscriptionConfigData
@@ -36,7 +37,7 @@ interface LicenseUpgradeDialogProps {
 const PLAN_ORDER: Record<SubscriptionPlan, number> = { pro: 0, max: 1, custom: 2 }
 const PLANS: SubscriptionPlan[] = ["pro", "max", "custom"]
 
-export function LicenseUpgradeDialog({ content, customerId, licenseId, locale, subscriptionConfig }: LicenseUpgradeDialogProps) {
+export function LicenseUpgradeDialog({ content, customerId, errors, licenseId, locale, subscriptionConfig }: LicenseUpgradeDialogProps) {
     const router = useRouter()
     const { licenses, updateLicense } = useLicenseData()
     const resolvedCustomerId = decodeLicenseRouteId(customerId)
@@ -95,14 +96,14 @@ export function LicenseUpgradeDialog({ content, customerId, licenseId, locale, s
             body: JSON.stringify({ id: license.subscriptionId, ...changeFields }),
         })
             .then(async (response) => {
-                if (!response.ok) throw new Error(content.subscriptionPreview.error)
+                if (!response.ok) throw new Error(errors.subscriptionPreview)
                 return (await response.json()) as SubscriptionUpdatePreview
             })
             .then((nextPreview) => {
                 if (active) setPreview(nextPreview)
             })
             .catch(() => {
-                if (active) setPreviewError(content.subscriptionPreview.error)
+                if (active) setPreviewError(errors.subscriptionPreview)
             })
             .finally(() => {
                 if (active) setIsLoadingPreview(false)
@@ -111,7 +112,7 @@ export function LicenseUpgradeDialog({ content, customerId, licenseId, locale, s
         return () => {
             active = false
         }
-    }, [content.subscriptionPreview.error, hasChange, license?.subscriptionId, plan, resolvedAiTokens, resolvedWorkflowExecutions])
+    }, [errors.subscriptionPreview, hasChange, license?.subscriptionId, plan, resolvedAiTokens, resolvedWorkflowExecutions])
 
     const save = async () => {
         if (!license?.subscriptionId || !hasChange || isSaving) return
@@ -125,9 +126,9 @@ export function LicenseUpgradeDialog({ content, customerId, licenseId, locale, s
                 headers: { "content-type": "application/json" },
                 body: JSON.stringify({ id: license.subscriptionId, ...changeFields }),
             })
-            if (!response.ok) throw new Error(content.upgrade.updateError)
+            if (!response.ok) throw new Error(errors.planUpgrade)
             const updated: unknown = await response.json()
-            if (!updated || typeof updated !== "object") throw new Error(content.upgrade.updateError)
+            if (!updated || typeof updated !== "object") throw new Error(errors.planUpgrade)
 
             const subscription = updated as {
                 aiTokens?: number
@@ -146,7 +147,7 @@ export function LicenseUpgradeDialog({ content, customerId, licenseId, locale, s
             })
             close()
         } catch (error) {
-            setSaveError(error instanceof Error ? error.message : content.upgrade.updateError)
+            setSaveError(error instanceof Error ? error.message : errors.planUpgrade)
         } finally {
             setIsSaving(false)
         }

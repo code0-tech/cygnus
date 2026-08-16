@@ -32,10 +32,10 @@ const originalFetch = globalThis.fetch
 
 const content = {
     closeLabel: "Close",
-    paymentMethodSetupError: "Could not update payment method.",
     paymentMethodSuccess: "Payment method updated.",
     savingPaymentMethodLabel: "Waiting for confirmation…",
 } as LicenseContent["editor"]
+const errorMessage = "Could not update payment method."
 
 afterEach(() => {
     cleanup()
@@ -54,6 +54,7 @@ test("keeps the payment method UI pending until Crater confirms webhook readines
         <PaymentMethodSetupPendingStatus
             content={content}
             customerId="gid://crater/Customer/7"
+            errorMessage={errorMessage}
             onCancel={() => undefined}
             onSuccess={() => {
                 successCalls += 1

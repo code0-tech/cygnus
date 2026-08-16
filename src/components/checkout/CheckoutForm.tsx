@@ -3,7 +3,7 @@
 import { CheckoutFormProvider, useCheckoutFormState } from "@/components/checkout/CheckoutFormProvider"
 import { CheckoutErrorState, CheckoutPaymentForm, CheckoutPaymentFormSkeleton } from "@/components/checkout/CheckoutPaymentForm"
 import { useCheckoutStage } from "@/components/checkout/CheckoutStepper"
-import type { CheckoutData } from "@/lib/cms"
+import type { CheckoutData, ErrorsContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { SelectContent, SelectInput, SelectItem, SelectItemText, SelectPortal, SelectTrigger, SelectValue, SelectViewport } from "@code0-tech/pictor"
 import { IconChevronDown, IconPlus } from "@tabler/icons-react"
@@ -27,6 +27,7 @@ function CheckoutFormContent() {
         customers,
         customerType,
         errorMessage,
+        errors,
         hasExistingCustomers,
         isLoading,
         isRefreshingSession,
@@ -89,6 +90,7 @@ function CheckoutFormContent() {
             billingAddress={stripeBillingAddress}
             collectTaxId={customerType === "business"}
             content={content}
+            errors={errors}
             customerSelect={customerSelect}
             customerSelectSkeleton={customerSelect ? <CheckoutCustomerSelectSkeleton /> : null}
             email={stripeEmail}
@@ -115,14 +117,15 @@ function CheckoutFormContent() {
 
 interface CheckoutFormProps {
     content?: CheckoutData["form"] | null
+    errors?: ErrorsContent | null
     locale?: AppLocale
     mobileSteps?: boolean
 }
 
-export function CheckoutForm({ content, locale }: CheckoutFormProps) {
+export function CheckoutForm({ content, errors, locale }: CheckoutFormProps) {
     const form = <CheckoutFormContent />
-    return content && locale ? (
-        <CheckoutFormProvider content={content} locale={locale}>
+    return content && errors && locale ? (
+        <CheckoutFormProvider content={content} errors={errors} locale={locale}>
             {form}
         </CheckoutFormProvider>
     ) : (

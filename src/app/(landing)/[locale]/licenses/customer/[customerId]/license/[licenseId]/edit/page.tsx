@@ -1,13 +1,13 @@
 import { LicenseEditDialog } from "@/components/licenses/dialog/LicenseEditDialog"
-import { getLicenseContent } from "@/lib/cms"
+import { getErrorsContent, getLicenseContent } from "@/lib/cms"
 import { isSupportedLocale } from "@/lib/i18n"
 import { notFound } from "next/navigation"
 
 export default async function EditLicensePage({ params }: { params: Promise<{ customerId: string; licenseId: string; locale: string }> }) {
     const { customerId, licenseId, locale } = await params
     if (!isSupportedLocale(locale)) notFound()
-    const content = await getLicenseContent(locale)
-    if (!content) notFound()
+    const [content, errors] = await Promise.all([getLicenseContent(locale), getErrorsContent(locale)])
+    if (!content || !errors) notFound()
 
-    return <LicenseEditDialog content={content} customerId={customerId} licenseId={licenseId} locale={locale} />
+    return <LicenseEditDialog content={content} customerId={customerId} errors={errors} licenseId={licenseId} locale={locale} />
 }

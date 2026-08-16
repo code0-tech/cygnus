@@ -340,22 +340,6 @@ export interface CheckoutData {
         customerSelectLabel: string
         newCustomerLabel: string
         customerFallbackLabel: string
-        paymentErrorFallback: string
-        errors: {
-            sessionUnavailable: string
-            customerCreation: string
-            customerTypeMismatch: string
-            checkoutCustomer: string
-            checkoutSession: string
-            checkoutSessionExpired: string
-            billingAddressUpdate: string
-            emailUpdate: string
-            taxIdUpdate: string
-            taxIdIncomplete: string
-            paymentConfirmation: string
-            discountSessionRequired: string
-            discountValidation: string
-        }
         mobileContactLabel: string
         mobileNextLabel: string
         mobileTaxLabel: string
@@ -387,7 +371,6 @@ export interface CheckoutData {
         licenseDashboardLabel: string
         licensePendingLabel: string
         licenseReadyLabel: string
-        licenseStatusError: string
         licenseStatusRetryLabel: string
         receiptHint: string
         failedHeading: string
@@ -416,6 +399,7 @@ export interface LicenseContent {
         emptyCustomers: string
         recentLicenses: string
         customerLabel: string
+        nameLabel: string
         typeLabel: string
         emailLabel: string
         lastEditedLabel: string
@@ -445,10 +429,6 @@ export interface LicenseContent {
         downloadLabel: string
         unavailableLabel: string
     }
-    errors: {
-        dashboardLoad: string
-        retry: string
-    }
     pagination: {
         loadMoreLabel: string
         loadingLabel: string
@@ -457,7 +437,6 @@ export interface LicenseContent {
         customerTitle: string
         customerDescription: string
         contactHeading: string
-        billingAddressHeading: string
         paymentMethodHeading: string
         paymentMethodDescription: string
         changePaymentMethodLabel: string
@@ -467,21 +446,10 @@ export interface LicenseContent {
         paymentMethodSuccess: string
         licenseTitle: string
         licenseDescription: string
-        nameLabel: string
-        phoneLabel: string
-        addressLine1Label: string
-        addressLine2Label: string
-        cityLabel: string
-        stateLabel: string
-        postalCodeLabel: string
-        countryLabel: string
         namespaceLabel: string
         saveLabel: string
         cancelLabel: string
         closeLabel: string
-        customerError: string
-        paymentMethodSetupError: string
-        licenseError: string
         selfHostedDescription: string
     }
     subscriptionPreview: {
@@ -490,7 +458,6 @@ export interface LicenseContent {
         immediateNote: string
         scheduledNote: string
         loadingLabel: string
-        error: string
     }
     billing: {
         title: string
@@ -498,7 +465,6 @@ export interface LicenseContent {
         periodLabel: string
         currentPeriodEndLabel: string
         pendingChangeLabel: string
-        updateError: string
     }
     cancel: {
         title: string
@@ -508,16 +474,41 @@ export interface LicenseContent {
         pendingDescription: string
         cancelAtLabel: string
         resumeLabel: string
-        cancelError: string
-        resumeError: string
     }
     upgrade: {
         title: string
         description: string
         planLabel: string
         increaseOnlyNote: string
-        updateError: string
     }
+}
+
+export interface ErrorsContent {
+    dashboardLoad: string
+    retry: string
+    customerUpdate: string
+    paymentMethodUpdate: string
+    licenseUpdate: string
+    subscriptionPreview: string
+    billingUpdate: string
+    subscriptionCancel: string
+    subscriptionResume: string
+    planUpgrade: string
+    paymentFallback: string
+    sessionUnavailable: string
+    customerCreation: string
+    customerTypeMismatch: string
+    checkoutCustomer: string
+    checkoutSession: string
+    checkoutSessionExpired: string
+    billingAddressUpdate: string
+    emailUpdate: string
+    taxIdUpdate: string
+    taxIdIncomplete: string
+    paymentConfirmation: string
+    discountSessionRequired: string
+    discountValidation: string
+    checkoutLicenseStatus: string
 }
 
 function isMissingPayloadTablesError(error: unknown): boolean {
@@ -889,6 +880,15 @@ const getLicenseContentCached = cache(async (locale: AppLocale): Promise<License
     })
 })
 
+const getErrorsContentCached = cache(async (locale: AppLocale): Promise<ErrorsContent | null> => {
+    return cmsFindGlobal(`getErrors(${locale})`, null, {
+        slug: "errors",
+        locale,
+        fallbackLocale: DEFAULT_LOCALE,
+        depth: 0,
+    })
+})
+
 export async function getLandingPage(slug = "main", locale: AppLocale = DEFAULT_LOCALE): Promise<Page | null> {
     return getLandingPageCached(slug, locale)
 }
@@ -963,4 +963,8 @@ export async function getCheckoutContent(locale: AppLocale = DEFAULT_LOCALE): Pr
 
 export async function getLicenseContent(locale: AppLocale = DEFAULT_LOCALE): Promise<LicenseContent | null> {
     return getLicenseContentCached(locale)
+}
+
+export async function getErrorsContent(locale: AppLocale = DEFAULT_LOCALE): Promise<ErrorsContent | null> {
+    return getErrorsContentCached(locale)
 }

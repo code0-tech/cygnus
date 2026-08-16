@@ -1,5 +1,5 @@
 import { LicenseLayout } from "@/components/licenses/LicenseLayout"
-import { getLicenseContent } from "@/lib/cms"
+import { getErrorsContent, getLicenseContent } from "@/lib/cms"
 import { isSupportedLocale } from "@/lib/i18n"
 import { notFound } from "next/navigation"
 import type { Metadata } from "next"
@@ -19,8 +19,12 @@ export default async function LicensesLayout({ children, modal, params }: Licens
     const { locale } = await params
     if (!isSupportedLocale(locale)) notFound()
 
-    const content = await getLicenseContent(locale)
-    if (!content) notFound()
+    const [content, errors] = await Promise.all([getLicenseContent(locale), getErrorsContent(locale)])
+    if (!content || !errors) notFound()
 
-    return <LicenseLayout content={content} locale={locale} modal={modal}>{children}</LicenseLayout>
+    return (
+        <LicenseLayout content={content} errors={errors} locale={locale} modal={modal}>
+            {children}
+        </LicenseLayout>
+    )
 }

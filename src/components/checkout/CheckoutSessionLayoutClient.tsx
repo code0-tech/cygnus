@@ -7,15 +7,15 @@ import { Container } from "@code0-tech/pictor"
 import Image from "next/image"
 import Link from "next/link"
 import type { ReactNode } from "react"
-import type { CheckoutData } from "@/lib/cms"
+import type { ErrorsContent } from "@/lib/cms"
 
 interface CheckoutSessionLayoutClientProps {
     children: ReactNode
-    formContent?: CheckoutData["form"] | null
+    errors?: ErrorsContent | null
     stepperContent?: CheckoutStepperContent | null
 }
 
-export function CheckoutSessionLayoutClient({ children, formContent, stepperContent }: CheckoutSessionLayoutClientProps) {
+export function CheckoutSessionLayoutClient({ children, errors, stepperContent }: CheckoutSessionLayoutClientProps) {
     return (
         <>
             <div className="border-b border-white/10 bg-primary/50 py-3 backdrop-blur-sm">
@@ -28,7 +28,7 @@ export function CheckoutSessionLayoutClient({ children, formContent, stepperCont
                     </div>
                 </Container>
             </div>
-            <CraterSessionProvider errorMessage={formContent?.errors.sessionUnavailable ?? formContent?.paymentErrorFallback}>
+            <CraterSessionProvider errorMessage={errors?.sessionUnavailable ?? errors?.paymentFallback}>
                 <LandingContainer className="min-h-0 flex-1 overflow-y-auto my-8">{children}</LandingContainer>
             </CraterSessionProvider>
         </>

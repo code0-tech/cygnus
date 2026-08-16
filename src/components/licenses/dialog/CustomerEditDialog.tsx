@@ -3,7 +3,7 @@
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
 import { PaymentMethodSetupDialog } from "@/components/licenses/dialog/PaymentMethodSetupDialog"
 import { ButtonLoader } from "@/components/ui/Loader"
-import type { LicenseContent } from "@/lib/cms"
+import type { CheckoutData, ErrorsContent, LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { decodeLicenseRouteId } from "@/lib/licenses/licenseRoute"
 import {
@@ -29,12 +29,14 @@ import { useRouter } from "next/navigation"
 import { type SyntheticEvent, useEffect, useState } from "react"
 
 interface CustomerEditDialogProps {
+    checkoutForm: CheckoutData["form"]
     content: LicenseContent
     customerId: string
+    errors: ErrorsContent
     locale: AppLocale
 }
 
-export function CustomerEditDialog({ content, customerId, locale }: CustomerEditDialogProps) {
+export function CustomerEditDialog({ checkoutForm, content, customerId, errors, locale }: CustomerEditDialogProps) {
     const router = useRouter()
     const { customers, reload, updateCustomer } = useLicenseData()
     const resolvedCustomerId = decodeLicenseRouteId(customerId)
@@ -91,7 +93,7 @@ export function CustomerEditDialog({ content, customerId, locale }: CustomerEdit
                     },
                 }),
             })
-            if (!response.ok) throw new Error(content.editor.customerError)
+            if (!response.ok) throw new Error(errors.customerUpdate)
 
             updateCustomer(customer.id, {
                 address: {
@@ -108,7 +110,7 @@ export function CustomerEditDialog({ content, customerId, locale }: CustomerEdit
             })
             close()
         } catch (saveError) {
-            setError(saveError instanceof Error ? saveError.message : content.editor.customerError)
+            setError(saveError instanceof Error ? saveError.message : errors.customerUpdate)
         } finally {
             setIsSaving(false)
         }
@@ -140,7 +142,7 @@ export function CustomerEditDialog({ content, customerId, locale }: CustomerEdit
                                         </legend>
                                         <div className="grid gap-4 sm:grid-cols-2">
                                             <TextInput
-                                                title={content.editor.nameLabel}
+                                                title={checkoutForm.nameLabel}
                                                 name="name"
                                                 autoComplete="name"
                                                 value={name}
@@ -148,7 +150,7 @@ export function CustomerEditDialog({ content, customerId, locale }: CustomerEdit
                                                 className="w-full!"
                                             />
                                             <EmailInput
-                                                title={content.dashboard.emailLabel}
+                                                title={checkoutForm.emailLabel}
                                                 name="email"
                                                 autoComplete="email"
                                                 value={email}
@@ -156,7 +158,7 @@ export function CustomerEditDialog({ content, customerId, locale }: CustomerEdit
                                                 className="w-full!"
                                             />
                                             <TextInput
-                                                title={content.editor.phoneLabel}
+                                                title={checkoutForm.phoneLabel}
                                                 name="phone"
                                                 autoComplete="tel"
                                                 value={phone}
@@ -169,12 +171,12 @@ export function CustomerEditDialog({ content, customerId, locale }: CustomerEdit
                                     <fieldset className="space-y-4">
                                         <legend>
                                             <Text size="sm" fw={500} hierarchy="secondary">
-                                                {content.editor.billingAddressHeading}
+                                                {checkoutForm.billingHeading}
                                             </Text>
                                         </legend>
                                         <div className="grid gap-4 sm:grid-cols-2">
                                             <TextInput
-                                                title={content.editor.addressLine1Label}
+                                                title={checkoutForm.line1Label}
                                                 name="address-line1"
                                                 autoComplete="address-line1"
                                                 value={line1}
@@ -182,7 +184,7 @@ export function CustomerEditDialog({ content, customerId, locale }: CustomerEdit
                                                 className="w-full! sm:col-span-2"
                                             />
                                             <TextInput
-                                                title={content.editor.addressLine2Label}
+                                                title={checkoutForm.line2Label}
                                                 name="address-line2"
                                                 autoComplete="address-line2"
                                                 value={line2}
@@ -190,7 +192,7 @@ export function CustomerEditDialog({ content, customerId, locale }: CustomerEdit
                                                 className="w-full! sm:col-span-2"
                                             />
                                             <TextInput
-                                                title={content.editor.postalCodeLabel}
+                                                title={checkoutForm.postalCodeLabel}
                                                 name="postal-code"
                                                 autoComplete="postal-code"
                                                 value={postalCode}
@@ -198,7 +200,7 @@ export function CustomerEditDialog({ content, customerId, locale }: CustomerEdit
                                                 className="w-full!"
                                             />
                                             <TextInput
-                                                title={content.editor.cityLabel}
+                                                title={checkoutForm.cityLabel}
                                                 name="address-level2"
                                                 autoComplete="address-level2"
                                                 value={city}
@@ -206,7 +208,7 @@ export function CustomerEditDialog({ content, customerId, locale }: CustomerEdit
                                                 className="w-full!"
                                             />
                                             <TextInput
-                                                title={content.editor.stateLabel}
+                                                title={checkoutForm.stateLabel}
                                                 name="address-level1"
                                                 autoComplete="address-level1"
                                                 value={state}
@@ -214,7 +216,7 @@ export function CustomerEditDialog({ content, customerId, locale }: CustomerEdit
                                                 className="w-full!"
                                             />
                                             <TextInput
-                                                title={content.editor.countryLabel}
+                                                title={checkoutForm.countryLabel}
                                                 name="country"
                                                 autoComplete="country"
                                                 maxLength={2}
@@ -236,7 +238,7 @@ export function CustomerEditDialog({ content, customerId, locale }: CustomerEdit
                                     <Text size="sm" hierarchy="tertiary">
                                         {content.editor.paymentMethodDescription}
                                     </Text>
-                                    {customer ? <PaymentMethodSetupDialog content={content} customerId={customer.id} disabled={isSaving} locale={locale} onSuccess={reload} /> : null}
+                                    {customer ? <PaymentMethodSetupDialog content={content} customerId={customer.id} disabled={isSaving} errors={errors} locale={locale} onSuccess={reload} /> : null}
                                 </fieldset>
                                 {error && (
                                     <p role="alert" className="text-sm text-error">

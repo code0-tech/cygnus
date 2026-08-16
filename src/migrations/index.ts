@@ -130,6 +130,7 @@ import * as migration_20260815_110000_license_pagination_labels from './20260815
 import * as migration_20260816_090000_checkout_success_states from './20260816_090000_checkout_success_states';
 import * as migration_20260817_090000_payment_period_title from './20260817_090000_payment_period_title';
 import * as migration_20260817_120000_subscription_management_dialogs from './20260817_120000_subscription_management_dialogs';
+import * as migration_20260817_130000_error_consolidation from './20260817_130000_error_consolidation';
 
 export const migrations = [
   {
@@ -791,5 +792,10 @@ export const migrations = [
     up: migration_20260817_120000_subscription_management_dialogs.up,
     down: migration_20260817_120000_subscription_management_dialogs.down,
     name: '20260817_120000_subscription_management_dialogs',
+  },
+  {
+    up: migration_20260817_130000_error_consolidation.up,
+    down: migration_20260817_130000_error_consolidation.down,
+    name: '20260817_130000_error_consolidation',
   },
 ];
