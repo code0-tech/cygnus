@@ -11,11 +11,12 @@ export type CheckoutStepperContent = CheckoutData["stepper"]
 
 type CheckoutStage = "billingAddress" | "payment"
 
-const CheckoutStageContext = createContext<{ stage: CheckoutStage; setStage: (stage: CheckoutStage) => void } | null>(null)
+const CheckoutStageContext = createContext<{ stage: CheckoutStage; setStage: (stage: CheckoutStage) => void; hasError: boolean; setHasError: (hasError: boolean) => void } | null>(null)
 
 export function CheckoutStageProvider({ children }: { children: ReactNode }) {
     const [stage, setStage] = useState<CheckoutStage>("billingAddress")
-    const value = useMemo(() => ({ stage, setStage }), [stage])
+    const [hasError, setHasError] = useState(false)
+    const value = useMemo(() => ({ stage, setStage, hasError, setHasError }), [stage, hasError])
 
     return <CheckoutStageContext.Provider value={value}>{children}</CheckoutStageContext.Provider>
 }
@@ -34,7 +35,7 @@ const STEP_BUTTON_CLASS_NAME = "-mx-2 -my-1 flex items-center gap-1.5 rounded-fu
 export function CheckoutStepper({ content }: { content?: CheckoutStepperContent | null }) {
     const pathname = usePathname()
     const searchParams = useSearchParams()
-    const { stage, setStage } = useCheckoutStage()
+    const { stage, setStage, hasError } = useCheckoutStage()
     const isSuccessPage = Boolean(pathname?.endsWith("/checkout/success"))
     const currentStep: CheckoutStep = isSuccessPage ? "success" : stage
     const currentIndex = CHECKOUT_STEPS.indexOf(currentStep)
@@ -48,6 +49,8 @@ export function CheckoutStepper({ content }: { content?: CheckoutStepperContent 
         payment: content?.paymentLabel || "Payment",
         success: content?.successLabel || "Success",
     }
+
+    if (hasError && !isSuccessPage) return null
 
     return (
         <ol className="flex items-center">

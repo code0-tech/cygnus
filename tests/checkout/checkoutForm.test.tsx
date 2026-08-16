@@ -73,6 +73,8 @@ mock.module("@/components/checkout/CheckoutStepper", {
                 () => checkoutStage
             ),
             setStage: setCheckoutStage,
+            hasError: false,
+            setHasError: () => {},
         }),
     },
 })

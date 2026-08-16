@@ -33,7 +33,7 @@ function getPreparationErrorMessage(error: unknown, errors: ErrorsContent) {
 
 function useCreateCheckoutFormState(content: CheckoutFormContent, errors: ErrorsContent, locale: AppLocale) {
     const searchParams = useSearchParams()
-    const { setStage } = useCheckoutStage()
+    const { setStage, setHasError } = useCheckoutStage()
     const [isLoading, setIsLoading] = useState(false)
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
     const [checkoutSession, setCheckoutSession] = useState<CheckoutSessionData | null>(null)
@@ -56,6 +56,13 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, errors: Errors
     const customerType = resolveCraterCustomerType(searchParams.get("customerType"))
     const searchParamsString = searchParams.toString()
     const promotionCode = searchParams.get("promotionCode")?.trim() || null
+    const resolvedError = errorMessage ?? sessionError ?? stripeSessionError
+
+    useEffect(() => {
+        setHasError(Boolean(resolvedError))
+    }, [resolvedError, setHasError])
+
+    useEffect(() => () => setHasError(false), [setHasError])
 
     const refreshCheckoutSession = useCallback(() => {
         if (!selectedCustomerId) return Promise.resolve()
@@ -243,6 +250,7 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, errors: Errors
         retryPreparation,
         markCheckoutSessionReady,
         refreshExpiredCheckoutSession,
+        resolvedError,
         selectedCustomerId,
         selectCheckoutCustomer,
         sessionError,

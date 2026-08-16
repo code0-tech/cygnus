@@ -26,7 +26,6 @@ function CheckoutFormContent() {
         content,
         customers,
         customerType,
-        errorMessage,
         errors,
         hasExistingCustomers,
         isLoading,
@@ -34,9 +33,9 @@ function CheckoutFormContent() {
         isSessionLoading,
         markCheckoutSessionReady,
         refreshExpiredCheckoutSession,
+        resolvedError,
         selectedCustomerId,
         selectCheckoutCustomer,
-        sessionError,
         setStripeBillingAddress,
         setStripeEmail,
         setStripeSessionError,
@@ -44,10 +43,8 @@ function CheckoutFormContent() {
         setIsConfirmingPayment,
         stripeBillingAddress,
         stripeEmail,
-        stripeSessionError,
     } = useCheckoutFormState()
     const selectedCustomer = customers.find((customer) => customer.id === selectedCustomerId)
-    const resolvedError = errorMessage ?? sessionError ?? stripeSessionError
     const customerSelect =
         stage === "billingAddress" && hasExistingCustomers && selectedCustomerId && customers.length > 0 ? (
             <div className="[&_.input__label]:leading-none [&_.input-wrapper]:mt-1">
