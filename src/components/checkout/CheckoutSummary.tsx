@@ -3,12 +3,14 @@
 import { CheckoutDiscount, type CheckoutDiscountValue } from "@/components/checkout/CheckoutDiscount"
 import { SummaryBadge } from "@/components/checkout/CheckoutSummaryBadge"
 import { getIcon } from "@/components/ui/IconRenderer"
+import { Switch } from "@/components/ui/Switch"
 import type { CheckoutData, ErrorsContent, SubscriptionConfigData } from "@/lib/cms"
 import type { CheckoutTaxQuoteData } from "@/lib/checkout/checkoutSubmission"
 import { formatCompactNumber, formatEuroCurrency } from "@/lib/formatters"
-import { calculateExclusiveTaxRate, calculatePromotionDiscountAmount, formatDiscountBadge, resolveCheckoutPricing } from "@/lib/subscriptionCalculator"
+import { calculateExclusiveTaxRate, calculatePromotionDiscountAmount, formatDiscountBadge, resolveCheckoutPricing, type PaymentPeriod } from "@/lib/subscriptionCalculator"
+import { getPaymentPeriodOptions, type SubscriptionCustomerType } from "@/lib/subscriptionConfigurator"
 import type { SubscriptionPriceCatalog } from "@/lib/subscriptionPrices"
-import { useParams, useSearchParams } from "next/navigation"
+import { usePathname, useParams, useRouter, useSearchParams } from "next/navigation"
 import { useState } from "react"
 import { Card } from "../ui/Card"
 
@@ -21,6 +23,8 @@ interface CheckoutSummaryProps {
 }
 
 export function CheckoutSummary({ content, errors, subscriptionConfig, subscriptionPrices, taxQuote }: CheckoutSummaryProps) {
+    const router = useRouter()
+    const pathname = usePathname()
     const searchParams = useSearchParams()
     const params = useParams<{ locale?: string }>()
     const [promotionDiscount, setPromotionDiscount] = useState<CheckoutDiscountValue | null>(null)
@@ -28,6 +32,13 @@ export function CheckoutSummary({ content, errors, subscriptionConfig, subscript
 
     const deployment = searchParams.get("deploymentType") ?? searchParams.get("deployment")
     const customerType = searchParams.get("customerType")
+    const resolvedCustomerType: SubscriptionCustomerType = customerType === "b2b" ? "b2b" : "b2c"
+    const periodOptions = getPaymentPeriodOptions(resolvedCustomerType)
+    const handlePeriodChange = (period: PaymentPeriod) => {
+        const nextParams = new URLSearchParams(searchParams.toString())
+        nextParams.set("paymentPeriod", period)
+        router.replace(`${pathname}?${nextParams.toString()}`, { scroll: false })
+    }
     const planParam = searchParams.get("plan")
     const paymentPeriodParam = searchParams.get("paymentPeriod")
     const workflowExecutionsParam = searchParams.get("workflowExecutions")
@@ -68,48 +79,14 @@ export function CheckoutSummary({ content, errors, subscriptionConfig, subscript
                 <p className="mt-2 max-w-md text-sm leading-6 text-secondary">{content.description}</p>
             </div>
 
-            {isCustomPlan && (deployment || customerType || aiTokensParam || workflowExecutionsParam) && (
-                <div className="flex flex-col gap-2">
-                    <span className="text-sm text-secondary">{content.configurationLabel}</span>
-                    <div className="flex flex-wrap items-center gap-1.5 mb-4">
-                        {deployment && (
-                            <SummaryBadge
-                                icon={getIcon(deployment === "cloud" ? content.deploymentIcons.cloud : content.deploymentIcons.selfHosted, 16)}
-                                tone={content.deploymentIconColor}
-                                value={<span className="capitalize">{deployment.replaceAll("_", " ").replaceAll("-", " ")}</span>}
-                            />
-                        )}
-                        {customerType && (
-                            <SummaryBadge
-                                icon={getIcon(customerType === "b2c" ? content.customerTypeIcons.b2c : content.customerTypeIcons.b2b, 16)}
-                                tone={content.customerTypeIconColor}
-                                value={<span className="uppercase">{customerType}</span>}
-                            />
-                        )}
-                        {aiTokensParam && (
-                            <SummaryBadge
-                                icon={getIcon(content.aiTokensIcon, 16)}
-                                tone={content.aiTokensIconColor}
-                                value={
-                                    <span>
-                                        {formatCompactNumber(aiTokens)} {monthlyPeriodSuffix}
-                                    </span>
-                                }
-                            />
-                        )}
-                        {workflowExecutionsParam && (
-                            <SummaryBadge
-                                icon={getIcon(content.workflowExecutionsIcon, 16)}
-                                tone={content.workflowExecutionsIconColor}
-                                value={
-                                    <span>
-                                        {formatCompactNumber(workflowExecutions)} {monthlyPeriodSuffix}
-                                    </span>
-                                }
-                            />
-                        )}
-                    </div>
-                </div>
+            {subscriptionConfig && (
+                <Switch
+                    className="mt-4 mb-2"
+                    label={subscriptionConfig.paymentPeriod.title}
+                    value={paymentPeriod}
+                    options={periodOptions.map((period) => ({ value: period, label: subscriptionConfig.paymentPeriod[`${period}Text`] }))}
+                    onChange={handlePeriodChange}
+                />
             )}
 
             <Card variant="light" className="mt-4 mb-2">
@@ -122,19 +99,57 @@ export function CheckoutSummary({ content, errors, subscriptionConfig, subscript
 
                 <div className="space-y-2 pt-4">
                     <div className="flex items-start justify-between gap-4 text-sm">
-                        <span className="text-secondary">{content.pricing.planLabel}</span>
+                        <span className="flex gap-2 text-secondary items-center">
+                            {content.pricing.planLabel}{" "}
+                            {deployment && (
+                                <SummaryBadge
+                                    icon={getIcon(deployment === "cloud" ? content.deploymentIcons.cloud : content.deploymentIcons.selfHosted, 16)}
+                                    tone={content.deploymentIconColor}
+                                    value={<span className="capitalize">{deployment.replaceAll("_", " ").replaceAll("-", " ")}</span>}
+                                />
+                            )}
+                            {customerType && (
+                                <SummaryBadge
+                                    icon={getIcon(customerType === "b2c" ? content.customerTypeIcons.b2c : content.customerTypeIcons.b2b, 16)}
+                                    tone={content.customerTypeIconColor}
+                                    value={<span className="uppercase">{customerType}</span>}
+                                />
+                            )}
+                        </span>
                         <span className="shrink-0 text-white">{planTitle}</span>
                     </div>
 
                     {isCustomPlan && (
                         <>
                             <div className="flex items-start justify-between gap-4 text-sm">
-                                <span className="text-secondary">{content.pricing.baseLabel}</span>
+                                <span className="flex gap-2 text-secondary items-center">
+                                    {content.pricing.baseLabel}{" "}
+                                    <SummaryBadge
+                                        icon={getIcon(content.aiTokensIcon, 16)}
+                                        tone={content.aiTokensIconColor}
+                                        value={
+                                            <span>
+                                                {formatCompactNumber(aiTokens)} {monthlyPeriodSuffix}
+                                            </span>
+                                        }
+                                    />
+                                </span>
                                 <span className="shrink-0 tabular-nums text-white">{formattedBasePrice}</span>
                             </div>
 
                             <div className="flex items-start justify-between gap-4 text-sm">
-                                <span className="text-secondary">{content.pricing.workflowExecutionsLabel}</span>
+                                <span className="flex gap-2 text-secondary items-center">
+                                    {content.pricing.workflowExecutionsLabel}{" "}
+                                    <SummaryBadge
+                                        icon={getIcon(content.workflowExecutionsIcon, 16)}
+                                        tone={content.workflowExecutionsIconColor}
+                                        value={
+                                            <span>
+                                                {formatCompactNumber(workflowExecutions)} {monthlyPeriodSuffix}
+                                            </span>
+                                        }
+                                    />
+                                </span>
                                 <span className="shrink-0 tabular-nums text-white">{formattedWorkflowExecutionsPrice}</span>
                             </div>
                         </>

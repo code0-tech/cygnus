@@ -31,7 +31,7 @@ const CONTAINER_TONE_CLASS_NAME: Record<CheckoutSummaryIconColor, string> = {
 
 export function SummaryBadge({ icon, value, tone = "neutral" }: SummaryBadgeProps) {
     return (
-        <span className={`inline-flex min-w-0 max-w-full items-center gap-1.5 rounded-xl border pl-2 pr-3 py-1 text-sm ${CONTAINER_TONE_CLASS_NAME[tone]}`}>
+        <span className={`inline-flex min-w-0 max-w-full items-center gap-1 rounded-xl border pl-1 pr-2 py-0.5 text-xs ${CONTAINER_TONE_CLASS_NAME[tone]}`}>
             <span className={`inline-flex shrink-0 ${ICON_TONE_CLASS_NAME[tone]}`}>{icon}</span>
             <span className="min-w-0 truncate font-medium text-white">{value}</span>
         </span>
