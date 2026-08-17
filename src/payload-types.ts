@@ -2938,22 +2938,10 @@ export interface SubscriptionConfig {
     pro?: {
       title?: string | null;
       description?: string | null;
-      prices?: {
-        weekly?: number | null;
-        monthly?: number | null;
-        quarterly?: number | null;
-        yearly?: number | null;
-      };
     };
     max?: {
       title?: string | null;
       description?: string | null;
-      prices?: {
-        weekly?: number | null;
-        monthly?: number | null;
-        quarterly?: number | null;
-        yearly?: number | null;
-      };
     };
     custom?: {
       title?: string | null;
@@ -2991,12 +2979,6 @@ export interface SubscriptionConfig {
     monthlyColor?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
     quarterlyColor?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
     yearlyColor?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
-    /**
-     * B2C only: discount off the weekly base price when monthly billing is selected.
-     */
-    monthlyDiscount?: number | null;
-    quarterlyDiscount?: number | null;
-    yearlyDiscount?: number | null;
   };
   workflowExecutions?: {
     title?: string | null;
@@ -3039,14 +3021,6 @@ export interface SubscriptionConfig {
         }[]
       | null;
   };
-  /**
-   * Monthly price factor, used for monthly/quarterly/yearly billing.
-   */
-  workflowExecutionPriceFactor?: number | null;
-  /**
-   * Used directly for weekly billing instead of being calculated from the monthly factor.
-   */
-  workflowExecutionWeeklyPriceFactor?: number | null;
   aiTokens?: {
     title?: string | null;
     description?: string | null;
@@ -3064,14 +3038,6 @@ export interface SubscriptionConfig {
     };
     suffix?: string | null;
   };
-  /**
-   * Monthly price factor, used for monthly/quarterly/yearly billing.
-   */
-  aiTokenPriceFactor?: number | null;
-  /**
-   * Used directly for weekly billing instead of being calculated from the monthly factor.
-   */
-  aiTokenWeeklyPriceFactor?: number | null;
   contactSales?: {
     prompt?: string | null;
     label?: string | null;
@@ -3664,28 +3630,12 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
           | {
               title?: T;
               description?: T;
-              prices?:
-                | T
-                | {
-                    weekly?: T;
-                    monthly?: T;
-                    quarterly?: T;
-                    yearly?: T;
-                  };
             };
         max?:
           | T
           | {
               title?: T;
               description?: T;
-              prices?:
-                | T
-                | {
-                    weekly?: T;
-                    monthly?: T;
-                    quarterly?: T;
-                    yearly?: T;
-                  };
             };
         custom?:
           | T
@@ -3715,9 +3665,6 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
         monthlyColor?: T;
         quarterlyColor?: T;
         yearlyColor?: T;
-        monthlyDiscount?: T;
-        quarterlyDiscount?: T;
-        yearlyDiscount?: T;
       };
   workflowExecutions?:
     | T
@@ -3768,8 +3715,6 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
               id?: T;
             };
       };
-  workflowExecutionPriceFactor?: T;
-  workflowExecutionWeeklyPriceFactor?: T;
   aiTokens?:
     | T
     | {
@@ -3793,8 +3738,6 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
             };
         suffix?: T;
       };
-  aiTokenPriceFactor?: T;
-  aiTokenWeeklyPriceFactor?: T;
   contactSales?:
     | T
     | {

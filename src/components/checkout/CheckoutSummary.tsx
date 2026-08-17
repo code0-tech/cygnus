@@ -4,13 +4,14 @@ import { CheckoutDiscount, type CheckoutDiscountValue } from "@/components/check
 import { SummaryBadge } from "@/components/checkout/CheckoutSummaryBadge"
 import { getIcon } from "@/components/ui/IconRenderer"
 import { Switch } from "@/components/ui/Switch"
-import type { CheckoutData, ErrorsContent, SubscriptionConfigData } from "@/lib/cms"
 import type { CheckoutTaxQuoteData } from "@/lib/checkout/checkoutSubmission"
+import type { CheckoutData, ErrorsContent, SubscriptionConfigData } from "@/lib/cms"
 import { formatCompactNumber, formatEuroCurrency } from "@/lib/formatters"
 import { calculateExclusiveTaxRate, calculatePromotionDiscountAmount, formatDiscountBadge, resolveCheckoutPricing, type PaymentPeriod } from "@/lib/subscriptionCalculator"
 import { getPaymentPeriodOptions, type SubscriptionCustomerType } from "@/lib/subscriptionConfigurator"
 import type { SubscriptionPriceCatalog } from "@/lib/subscriptionPrices"
-import { usePathname, useParams, useRouter, useSearchParams } from "next/navigation"
+import NumberFlow from "@number-flow/react"
+import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useState } from "react"
 import { Card } from "../ui/Card"
 
@@ -64,14 +65,11 @@ export function CheckoutSummary({ content, errors, subscriptionConfig, subscript
     const taxPercentage = taxQuote ? calculateExclusiveTaxRate(taxQuote.amountTotal, taxQuote.taxAmountExclusive) : 0
     const taxAmount = taxQuote ? Math.round(discountedPrice * taxPercentage * 100) / 100 : 0
     const totalPrice = discountedPrice + taxAmount
-    const formattedTotalPrice = formatEuroCurrency(totalPrice, locale)
     const formattedBasePrice = formatEuroCurrency(pricing.aiTokenPrice, locale)
     const formattedWorkflowExecutionsPrice = formatEuroCurrency(pricing.workflowExecutionPrice, locale)
     const formattedPaymentPeriodDiscountAmount = formatEuroCurrency(paymentPeriodDiscountAmount, locale)
     const formattedDiscountAmount = formatEuroCurrency(promotionDiscountAmount, locale)
     const formattedTaxAmount = formatEuroCurrency(taxAmount, locale)
-
-    console.log(planTitle)
 
     return (
         <div className="flex-1">
@@ -86,7 +84,28 @@ export function CheckoutSummary({ content, errors, subscriptionConfig, subscript
                     className="mt-4 mb-2"
                     label={subscriptionConfig.paymentPeriod.title}
                     value={paymentPeriod}
-                    options={periodOptions.map((period) => ({ value: period, label: subscriptionConfig.paymentPeriod[`${period}Text`] }))}
+                    options={periodOptions.map((period) => {
+                        const { pricing: periodPricing } = resolveCheckoutPricing({
+                            aiTokensParam,
+                            customerTypeParam: customerType,
+                            fallbackPeriodSuffix: content.pricing.perMonthSuffix,
+                            paymentPeriodParam: period,
+                            planParam,
+                            subscriptionConfig,
+                            subscriptionPrices,
+                            workflowExecutionsParam,
+                        })
+
+                        const discountAmount = Math.max(0, periodPricing.totalBeforeDiscount - periodPricing.totalPrice)
+
+                        const discountPercentage = periodPricing.totalBeforeDiscount > 0 ? discountAmount / periodPricing.totalBeforeDiscount : 0
+
+                        return {
+                            value: period,
+                            label: subscriptionConfig.paymentPeriod[`${period}Text`],
+                            badge: discountPercentage > 0 ? `-${formatDiscountBadge(discountPercentage, locale)}` : null,
+                        }
+                    })}
                     onChange={handlePeriodChange}
                 />
             )}
@@ -183,9 +202,16 @@ export function CheckoutSummary({ content, errors, subscriptionConfig, subscript
 
                 <div className="-mx-4 mt-4 flex items-center justify-between gap-4 border-t border-white/10 px-4 pt-4 text-sm">
                     <span className="text-secondary">{content.pricing.totalLabel}</span>
-                    <span className="tabular-nums text-brand text-lg">
-                        {formattedTotalPrice} <span className="text-tertiary text-sm">{periodSuffix}</span>
-                    </span>
+
+                    <div className="flex items-center gap-2">
+                        <NumberFlow
+                            value={totalPrice}
+                            className="text-brand text-lg"
+                            locales={locale === "de" ? "de-DE" : "en-US"}
+                            format={{ style: "currency", currency: "EUR", trailingZeroDisplay: "stripIfInteger" }}
+                        />
+                        <span className="text-tertiary text-sm">{periodSuffix}</span>
+                    </div>
                 </div>
             </Card>
 
