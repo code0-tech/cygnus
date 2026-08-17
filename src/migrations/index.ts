@@ -123,14 +123,7 @@ import * as migration_20260813_094509_license_cms_errors_and_value_labels from '
 import * as migration_20260813_095911_license_dashboard_refresh_labels from './20260813_095911_license_dashboard_refresh_labels';
 import * as migration_20260814_113937_license_invoice_history from './20260814_113937_license_invoice_history';
 import * as migration_20260814_133037_license_customer_billing_fields from './20260814_133037_license_customer_billing_fields';
-import * as migration_20260814_160500_license_payment_method_setup_fields from './20260814_160500_license_payment_method_setup_fields';
-import * as migration_20260815_090000_remove_additional_features from './20260815_090000_remove_additional_features';
-import * as migration_20260815_100000_payment_method_ready_copy from './20260815_100000_payment_method_ready_copy';
-import * as migration_20260815_110000_license_pagination_labels from './20260815_110000_license_pagination_labels';
-import * as migration_20260816_090000_checkout_success_states from './20260816_090000_checkout_success_states';
-import * as migration_20260817_090000_payment_period_title from './20260817_090000_payment_period_title';
-import * as migration_20260817_120000_subscription_management_dialogs from './20260817_120000_subscription_management_dialogs';
-import * as migration_20260817_130000_error_consolidation from './20260817_130000_error_consolidation';
+import * as migration_20260817_091125_add_plan_colors from './20260817_091125_add_plan_colors';
 
 export const migrations = [
   {
@@ -759,43 +752,8 @@ export const migrations = [
     name: '20260814_133037_license_customer_billing_fields',
   },
   {
-    up: migration_20260814_160500_license_payment_method_setup_fields.up,
-    down: migration_20260814_160500_license_payment_method_setup_fields.down,
-    name: '20260814_160500_license_payment_method_setup_fields',
-  },
-  {
-    up: migration_20260815_090000_remove_additional_features.up,
-    down: migration_20260815_090000_remove_additional_features.down,
-    name: '20260815_090000_remove_additional_features',
-  },
-  {
-    up: migration_20260815_100000_payment_method_ready_copy.up,
-    down: migration_20260815_100000_payment_method_ready_copy.down,
-    name: '20260815_100000_payment_method_ready_copy',
-  },
-  {
-    up: migration_20260815_110000_license_pagination_labels.up,
-    down: migration_20260815_110000_license_pagination_labels.down,
-    name: '20260815_110000_license_pagination_labels',
-  },
-  {
-    up: migration_20260816_090000_checkout_success_states.up,
-    down: migration_20260816_090000_checkout_success_states.down,
-    name: '20260816_090000_checkout_success_states',
-  },
-  {
-    up: migration_20260817_090000_payment_period_title.up,
-    down: migration_20260817_090000_payment_period_title.down,
-    name: '20260817_090000_payment_period_title',
-  },
-  {
-    up: migration_20260817_120000_subscription_management_dialogs.up,
-    down: migration_20260817_120000_subscription_management_dialogs.down,
-    name: '20260817_120000_subscription_management_dialogs',
-  },
-  {
-    up: migration_20260817_130000_error_consolidation.up,
-    down: migration_20260817_130000_error_consolidation.down,
-    name: '20260817_130000_error_consolidation',
+    up: migration_20260817_091125_add_plan_colors.up,
+    down: migration_20260817_091125_add_plan_colors.down,
+    name: '20260817_091125_add_plan_colors'
   },
 ];

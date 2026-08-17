@@ -2894,18 +2894,21 @@ export interface SubscriptionConfig {
       title?: string | null;
       description?: string | null;
       icon: string;
+      color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
       image?: (number | null) | Media;
     };
     max: {
       title?: string | null;
       description?: string | null;
       icon: string;
+      color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
       image?: (number | null) | Media;
     };
     custom: {
       title?: string | null;
       description?: string | null;
       icon: string;
+      color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
       image?: (number | null) | Media;
     };
   };
@@ -3597,6 +3600,7 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
               title?: T;
               description?: T;
               icon?: T;
+              color?: T;
               image?: T;
             };
         max?:
@@ -3605,6 +3609,7 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
               title?: T;
               description?: T;
               icon?: T;
+              color?: T;
               image?: T;
             };
         custom?:
@@ -3613,6 +3618,7 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
               title?: T;
               description?: T;
               icon?: T;
+              color?: T;
               image?: T;
             };
       };
