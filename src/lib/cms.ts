@@ -2,9 +2,9 @@ import "server-only"
 
 import { extractActionModuleInfo, fetchMediaJson } from "@/lib/actionExtraction"
 import { DEFAULT_LOCALE, type AppLocale } from "@/lib/i18n"
+import type { NavigationData } from "@/lib/navigation"
 import { getPayloadClient } from "@/lib/payloadClient"
 import type { Action, Blog, CookieBanner, Footer, Job, Media, Navigation, Page, TeamMember } from "@/payload-types"
-import type { NavigationData, NavbarButtonData, NavbarItemData } from "@/lib/navigation"
 import { cache } from "react"
 
 const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build" || process.env.npm_lifecycle_event === "build"

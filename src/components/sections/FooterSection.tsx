@@ -43,6 +43,12 @@ export const FooterSection: React.FC<FooterSectionProps> = ({ locale, footer, cu
                   url: footer.legalLinks.legalNotice.url,
               }
             : null,
+        footer.legalLinks?.terms?.url && footer.legalLinks?.terms?.label
+            ? {
+                  label: footer.legalLinks.terms.label,
+                  url: footer.legalLinks.terms.url,
+              }
+            : null,
     ].filter((link): link is { label: string; url: string } => Boolean(link))
 
     return (
@@ -83,13 +89,7 @@ export const FooterSection: React.FC<FooterSectionProps> = ({ locale, footer, cu
                                     if (!Icon || !socialLink.url) return null
 
                                     return (
-                                        <HapticLink
-                                            href={socialLink.url}
-                                            key={`${socialLink.platform}-${socialLink.id ?? socialLink.url}`}
-                                            className="group"
-                                            target="_blank"
-                                            rel="noreferrer"
-                                        >
+                                        <HapticLink href={socialLink.url} key={`${socialLink.platform}-${socialLink.id ?? socialLink.url}`} className="group" target="_blank" rel="noreferrer">
                                             <Icon size={16} className="text-tertiary group-hover:text-white" />
                                         </HapticLink>
                                     )

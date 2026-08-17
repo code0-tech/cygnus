@@ -16,6 +16,7 @@ export function CheckoutLegalFooter({ className, footer, locale, currentYear }: 
     const legalLinks = [
         footer.legalLinks?.privacy?.url && footer.legalLinks?.privacy?.label ? { label: footer.legalLinks.privacy.label, url: footer.legalLinks.privacy.url } : null,
         footer.legalLinks?.legalNotice?.url && footer.legalLinks?.legalNotice?.label ? { label: footer.legalLinks.legalNotice.label, url: footer.legalLinks.legalNotice.url } : null,
+        footer.legalLinks?.terms?.url && footer.legalLinks?.terms?.label ? { label: footer.legalLinks.terms.label, url: footer.legalLinks.terms.url } : null,
     ].filter((link): link is { label: string; url: string } => Boolean(link))
 
     return (

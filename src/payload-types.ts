@@ -2786,6 +2786,10 @@ export interface Footer {
       label: string;
       url: string;
     };
+    terms: {
+      label: string;
+      url: string;
+    };
   };
   socialLinks?:
     | {
@@ -3449,6 +3453,12 @@ export interface FooterSelect<T extends boolean = true> {
               url?: T;
             };
         legalNotice?:
+          | T
+          | {
+              label?: T;
+              url?: T;
+            };
+        terms?:
           | T
           | {
               label?: T;
