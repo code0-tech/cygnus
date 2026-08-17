@@ -28,7 +28,7 @@ export function CheckoutSummary({ content, errors, subscriptionConfig, subscript
     const searchParams = useSearchParams()
     const params = useParams<{ locale?: string }>()
     const [promotionDiscount, setPromotionDiscount] = useState<CheckoutDiscountValue | null>(null)
-    if (!content) return null
+    if (!content || !subscriptionConfig || !subscriptionPrices) return null
 
     const deployment = searchParams.get("deploymentType") ?? searchParams.get("deployment")
     const customerType = searchParams.get("customerType")
@@ -71,6 +71,8 @@ export function CheckoutSummary({ content, errors, subscriptionConfig, subscript
     const formattedDiscountAmount = formatEuroCurrency(promotionDiscountAmount, locale)
     const formattedTaxAmount = formatEuroCurrency(taxAmount, locale)
 
+    console.log(planTitle)
+
     return (
         <div className="flex-1">
             <div className="mb-6">
@@ -98,26 +100,29 @@ export function CheckoutSummary({ content, errors, subscriptionConfig, subscript
                 </div>
 
                 <div className="space-y-2 pt-4">
-                    <div className="flex items-start justify-between gap-4 text-sm">
-                        <span className="flex gap-2 text-secondary items-center">
-                            {content.pricing.planLabel}{" "}
-                            {deployment && (
-                                <SummaryBadge
-                                    icon={getIcon(deployment === "cloud" ? content.deploymentIcons.cloud : content.deploymentIcons.selfHosted, 16)}
-                                    tone={content.deploymentIconColor}
-                                    value={<span className="capitalize">{deployment.replaceAll("_", " ").replaceAll("-", " ")}</span>}
-                                />
-                            )}
-                            {customerType && (
-                                <SummaryBadge
-                                    icon={getIcon(customerType === "b2c" ? content.customerTypeIcons.b2c : content.customerTypeIcons.b2b, 16)}
-                                    tone={content.customerTypeIconColor}
-                                    value={<span className="uppercase">{customerType}</span>}
-                                />
-                            )}
-                        </span>
-                        <span className="shrink-0 text-white">{planTitle}</span>
-                    </div>
+                    <span className="flex gap-2 text-secondary items-center text-sm">
+                        {content.pricing.planLabel}
+
+                        <SummaryBadge
+                            icon={getIcon(planTitle === "Pro" ? subscriptionConfig.plan.pro.icon : planTitle === "Max" ? subscriptionConfig.plan.max.icon : subscriptionConfig.plan.custom.icon, 16)}
+                            tone={planTitle === "Pro" ? subscriptionConfig.plan.pro.color : planTitle === "Max" ? subscriptionConfig.plan.max.color : subscriptionConfig.plan.custom.color}
+                            value={<span className="capitalize">{planTitle.replaceAll("_", " ").replaceAll("-", " ")}</span>}
+                        />
+                        {deployment && (
+                            <SummaryBadge
+                                icon={getIcon(deployment === "cloud" ? content.deploymentIcons.cloud : content.deploymentIcons.selfHosted, 16)}
+                                tone={content.deploymentIconColor}
+                                value={<span className="capitalize">{deployment.replaceAll("_", " ").replaceAll("-", " ")}</span>}
+                            />
+                        )}
+                        {customerType && (
+                            <SummaryBadge
+                                icon={getIcon(customerType === "b2c" ? content.customerTypeIcons.b2c : content.customerTypeIcons.b2b, 16)}
+                                tone={content.customerTypeIconColor}
+                                value={<span className="uppercase">{customerType}</span>}
+                            />
+                        )}
+                    </span>
 
                     {isCustomPlan && (
                         <>

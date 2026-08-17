@@ -1,13 +1,13 @@
-import type { CheckoutSummaryIconColor } from "@/lib/cms"
+import type { IconColor } from "@/lib/cms"
 import type { ReactNode } from "react"
 
 export interface SummaryBadgeProps {
     icon: ReactNode
     value: ReactNode
-    tone?: CheckoutSummaryIconColor
+    tone?: IconColor
 }
 
-const ICON_TONE_CLASS_NAME: Record<CheckoutSummaryIconColor, string> = {
+const ICON_TONE_CLASS_NAME: Record<IconColor, string> = {
     neutral: "text-white",
     brand: "text-brand",
     aqua: "text-aqua",
@@ -18,7 +18,7 @@ const ICON_TONE_CLASS_NAME: Record<CheckoutSummaryIconColor, string> = {
     magenta: "text-magenta",
 }
 
-const CONTAINER_TONE_CLASS_NAME: Record<CheckoutSummaryIconColor, string> = {
+const CONTAINER_TONE_CLASS_NAME: Record<IconColor, string> = {
     neutral: "border-white/10 bg-white/5",
     brand: "border-brand/10 bg-brand/5",
     aqua: "border-aqua/10 bg-aqua/5",

@@ -111,14 +111,14 @@ export interface SubscriptionConfigData {
             description: string
             icon: string
             image?: number | Media | null
-            color: "brand" | "pink" | "yellow" | "aqua" | "blue" | "lime" | "magenta"
+            color: IconColor
         }
         cloud: {
             title: string
             description: string
             icon: string
             image?: number | Media | null
-            color: "brand" | "pink" | "yellow" | "aqua" | "blue" | "lime" | "magenta"
+            color: IconColor
         }
     }
     plan: {
@@ -128,18 +128,21 @@ export interface SubscriptionConfigData {
             title: string
             description: string
             icon: string
+            color: IconColor
             image?: number | Media | null
         }
         max: {
             title: string
             description: string
             icon: string
+            color: IconColor
             image?: number | Media | null
         }
         custom: {
             title: string
             description: string
             icon: string
+            color: IconColor
             image?: number | Media | null
         }
     }
@@ -151,14 +154,14 @@ export interface SubscriptionConfigData {
             description: string
             icon: string
             image?: number | Media | null
-            color: "brand" | "pink" | "yellow" | "aqua" | "blue" | "lime" | "magenta"
+            color: IconColor
         }
         b2c: {
             title: string
             description: string
             icon: string
             image?: number | Media | null
-            color: "brand" | "pink" | "yellow" | "aqua" | "blue" | "lime" | "magenta"
+            color: IconColor
         }
     }
     packages: {
@@ -202,10 +205,10 @@ export interface SubscriptionConfigData {
         weeklyPaidLabel: string
         quarterlyPaidLabel: string
         yearlyPaidLabel: string
-        weeklyColor: "brand" | "pink" | "yellow" | "aqua" | "blue" | "lime" | "magenta"
-        monthlyColor: "brand" | "pink" | "yellow" | "aqua" | "blue" | "lime" | "magenta"
-        quarterlyColor: "brand" | "pink" | "yellow" | "aqua" | "blue" | "lime" | "magenta"
-        yearlyColor: "brand" | "pink" | "yellow" | "aqua" | "blue" | "lime" | "magenta"
+        weeklyColor: IconColor
+        monthlyColor: IconColor
+        quarterlyColor: IconColor
+        yearlyColor: IconColor
         monthlyDiscount: number
         quarterlyDiscount: number
         yearlyDiscount: number
@@ -274,7 +277,7 @@ export interface SubscriptionConfiguratorBlockData {
 
 export type SubscriptionConfiguratorContent = SubscriptionConfigData & SubscriptionConfiguratorBlockData
 
-export type CheckoutSummaryIconColor = "neutral" | "brand" | "aqua" | "blue" | "pink" | "yellow" | "lime" | "magenta"
+export type IconColor = "neutral" | "brand" | "aqua" | "blue" | "pink" | "yellow" | "lime" | "magenta"
 
 export interface CheckoutData {
     id: number
@@ -307,19 +310,19 @@ export interface CheckoutData {
             cloud: string
             selfHosted: string
         }
-        deploymentIconColor: CheckoutSummaryIconColor
+        deploymentIconColor: IconColor
         customerTypeLabel: string
         customerTypeIcons: {
             b2b: string
             b2c: string
         }
-        customerTypeIconColor: CheckoutSummaryIconColor
+        customerTypeIconColor: IconColor
         aiTokensLabel: string
         aiTokensIcon: string
-        aiTokensIconColor: CheckoutSummaryIconColor
+        aiTokensIconColor: IconColor
         workflowExecutionsLabel: string
         workflowExecutionsIcon: string
-        workflowExecutionsIconColor: CheckoutSummaryIconColor
+        workflowExecutionsIconColor: IconColor
         pricing: {
             label: string
             description: string
