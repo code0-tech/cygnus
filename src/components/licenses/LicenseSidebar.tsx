@@ -29,6 +29,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useState } from "react"
+import { cn } from "@/lib/utils"
 
 interface LicenseSidebarProps {
     content: Pick<LicenseContent, "emptyLicenses" | "licenses" | "redirectUrl" | "sidebar" | "values">
@@ -195,21 +196,21 @@ export function LicenseSidebar({ content, isLoading, isRefreshing, locale, licen
                 </Link>
 
                 <nav aria-label={content.sidebar.dashboard} className="mt-8">
-                    <Link
-                        href={dashboardHref}
-                        aria-current={dashboardIsActive ? "page" : undefined}
-                        className={`flex min-w-0 items-center gap-3 rounded-xl px-2 py-2 text-sm font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-brand/50 ${
-                            dashboardIsActive ? "bg-white/7 text-white" : "text-secondary hover:bg-white/7 hover:text-white"
-                        }`}
-                    >
-                        <IconLayoutDashboard aria-hidden="true" size={18} />
-                        <span className="truncate">{content.sidebar.dashboard}</span>
+                    <Link href={dashboardHref} aria-current={dashboardIsActive ? "page" : undefined}>
+                        <Button
+                            variant="normal"
+                            paddingSize={"xxs"}
+                            className={cn("w-full! justify-start! shadow-none! hover:shadow-[inset_0_1px_1px_#bfbfbf1a]!", dashboardIsActive && "shadow-[inset_0_1px_1px_#bfbfbf1a]! bg-white/5!")}
+                        >
+                            <IconLayoutDashboard aria-hidden="true" size={18} />
+                            <span className="truncate">{content.sidebar.dashboard}</span>
+                        </Button>
                     </Link>
                 </nav>
 
                 <div className="mt-6 flex min-h-0 flex-1 flex-col">
                     <Flex align="center" justify="space-between" className="mb-3 px-2">
-                        <Text hierarchy="tertiary" className="text-xs! font-medium! tracking-wide!">
+                        <Text hierarchy="tertiary" className="text-xs! font-medium! tracking-[0.5px]">
                             {content.licenses}
                         </Text>
                         <Flex align="center" style={{ gap: "0.25rem" }}>
@@ -223,12 +224,12 @@ export function LicenseSidebar({ content, isLoading, isRefreshing, locale, licen
                                 title={isRefreshing ? content.sidebar.refreshing : content.sidebar.refresh}
                                 className="size-7! p-0! text-tertiary! hover:text-white!"
                             >
-                                {isRefreshing ? <ButtonLoader label={content.sidebar.refreshing} /> : <IconRefresh aria-hidden="true" size={14} />}
+                                {isRefreshing ? <ButtonLoader /> : <IconRefresh aria-hidden="true" size={14} />}
                             </Button>
                             {isLoading ? (
                                 <span aria-hidden="true" className="h-5 w-6 animate-pulse rounded-full bg-white/10 motion-reduce:animate-none" />
                             ) : (
-                                <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-[#191825] px-1.5 py-[0.1167rem] text-[0.65rem] font-normal tracking-[-0.5px] text-white/75 shadow-[inset_0_1px_1px_rgba(191,191,191,0.1)]">
+                                <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-[#191825] px-1.5 py-[0.1167rem] text-[0.65rem] font-normal tracking-[-0.5px] text-secondary shadow-[inset_0_1px_1px_rgba(191,191,191,0.1)]">
                                     {licenses.length}
                                 </span>
                             )}
@@ -251,31 +252,27 @@ export function LicenseSidebar({ content, isLoading, isRefreshing, locale, licen
 
                                             return (
                                                 <li key={license.id}>
-                                                    <Link
-                                                        href={licenseHref}
-                                                        aria-current={licenseIsActive ? "page" : undefined}
-                                                        className={`group flex min-w-0 items-center gap-3 rounded-xl px-2 py-2 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-brand/50 ${
-                                                            licenseIsActive ? "bg-white/7 text-white" : "text-secondary hover:bg-white/7 hover:text-white"
-                                                        }`}
-                                                    >
-                                                        <span className="relative shrink-0">
-                                                            <LicensePlanIcon plan={license.plan} />
-                                                            <LicenseStatusDot
-                                                                status={license.status}
-                                                                aria-label={status}
-                                                                title={status}
-                                                                className="absolute -bottom-0.5 -right-0.5 ring-2 ring-light"
-                                                            />
-                                                        </span>
-                                                        <span className="min-w-0 flex-1">
-                                                            <span className="flex min-w-0 items-center gap-1.5">
-                                                                <span className="truncate text-sm font-medium text-white">{formatLicenseDisplayValue(license.plan, "plan", content.values)}</span>
-                                                                {deployment ? <span className="shrink-0 text-xs text-tertiary">| {deployment}</span> : null}
+                                                    <Link href={licenseHref} aria-current={licenseIsActive ? "page" : undefined}>
+                                                        <Button
+                                                            variant="normal"
+                                                            paddingSize="xxs"
+                                                            className={cn(
+                                                                "w-full! justify-start! shadow-none! hover:shadow-[inset_0_1px_1px_#bfbfbf1a]!",
+                                                                licenseIsActive && "shadow-[inset_0_1px_1px_#bfbfbf1a]! bg-white/5!"
+                                                            )}
+                                                        >
+                                                            <span className="relative shrink-0">
+                                                                <LicensePlanIcon plan={license.plan} />
+                                                                <LicenseStatusDot
+                                                                    status={license.status}
+                                                                    aria-label={status}
+                                                                    title={status}
+                                                                    className="absolute -bottom-0.5 -right-0.5 ring-2 ring-light"
+                                                                />
                                                             </span>
-                                                            <span className="block truncate text-xs text-tertiary">
-                                                                {license.customerName} | {identifier}
-                                                            </span>
-                                                        </span>
+                                                            {formatLicenseDisplayValue(license.plan, "plan", content.values)}
+                                                            {deployment ? <span className="shrink-0 text-xs text-tertiary">{`(${deployment})`}</span> : null}
+                                                        </Button>
                                                     </Link>
                                                 </li>
                                             )
@@ -297,11 +294,11 @@ export function LicenseSidebar({ content, isLoading, isRefreshing, locale, licen
 
                 <Button
                     type="button"
-                    variant="none"
-                    paddingSize="sm"
+                    variant="normal"
+                    paddingSize="xxs"
                     disabled={isLoggingOut}
                     onClick={() => void logout()}
-                    className="mt-6 w-full! justify-start! gap-2! rounded-xl! text-secondary! hover:bg-white/7! hover:text-white! lg:mt-auto"
+                    className="mt-6 w-full! justify-start! shadow-none! hover:shadow-[inset_0_1px_1px_#bfbfbf1a]!"
                 >
                     {isLoggingOut ? (
                         <ButtonLoader label={content.sidebar.loggingOut} />

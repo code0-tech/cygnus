@@ -7,7 +7,7 @@ type LoaderProps = ComponentProps<typeof IconLoader> & {
 }
 
 interface ButtonLoaderProps {
-    label: string
+    label?: string
 }
 
 function Loader({ className, loading = true, stroke = 2, ...props }: LoaderProps) {
