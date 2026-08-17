@@ -19,6 +19,7 @@ import { Button, Card, Flex, Spacing, Text } from "@code0-tech/pictor"
 import { useRouter } from "next/navigation"
 import { Fragment } from "react"
 import { LicenseLoadMoreButton } from "@/components/licenses/LicenseLoadMoreButton"
+import { UpgradePlanBox } from "../UpgradePlanBox"
 
 interface LicenseDetailPageProps {
     content: LicenseContent
@@ -114,15 +115,6 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale }: Li
                                     >
                                         {content.cancel.confirmLabel}
                                     </Button>
-                                    <Button
-                                        type="button"
-                                        variant="filled"
-                                        paddingSize="xs"
-                                        className="shrink-0 text-sm! bg-white/80! hover:bg-white! text-primary!"
-                                        onClick={() => router.push(`/${locale}/licenses/customer/${encodeURIComponent(license.customerId)}/license/${encodeURIComponent(license.id)}/upgrade`)}
-                                    >
-                                        {content.upgrade.title}
-                                    </Button>
                                 </>
                             )}
                             <Button
@@ -142,7 +134,6 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale }: Li
                     ) : null}
                 </Flex>
                 <Spacing spacing="md" />
-
                 <Card color="secondary">
                     {license ? (
                         <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
@@ -179,9 +170,27 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale }: Li
                     )}
                 </Card>
             </section>
-
             <Spacing spacing="xl" />
 
+            {license?.subscriptionId && (
+                <Card color="secondary" className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        Upgrade to
+                        <UpgradePlanBox plan={license.plan === "pro" ? "max" : "custom"} />
+                    </div>
+                    <Button
+                        type="button"
+                        variant="filled"
+                        paddingSize="xs"
+                        className="shrink-0 text-sm! bg-white/80! hover:bg-white! text-primary!"
+                        onClick={() => router.push(`/${locale}/licenses/customer/${encodeURIComponent(license.customerId)}/license/${encodeURIComponent(license.id)}/upgrade`)}
+                    >
+                        {content.upgrade.title}
+                    </Button>
+                </Card>
+            )}
+
+            <Spacing spacing="xl" />
             <section aria-labelledby="license-invoices-heading">
                 <Text id="license-invoices-heading" hierarchy="secondary" size="lg">
                     {content.invoices.title}
