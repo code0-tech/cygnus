@@ -109,19 +109,19 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale }: Li
                                         type="button"
                                         variant="normal"
                                         paddingSize="xs"
-                                        onClick={() => router.push(`/${locale}/licenses/customer/${encodeURIComponent(license.customerId)}/license/${encodeURIComponent(license.id)}/upgrade`)}
-                                        className="shrink-0 text-sm!"
-                                    >
-                                        {content.upgrade.title}
-                                    </Button>
-                                    <Button
-                                        type="button"
-                                        variant="normal"
-                                        paddingSize="xs"
                                         onClick={() => router.push(`/${locale}/licenses/customer/${encodeURIComponent(license.customerId)}/license/${encodeURIComponent(license.id)}/cancel`)}
                                         className="shrink-0 text-sm!"
                                     >
                                         {content.cancel.confirmLabel}
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="filled"
+                                        paddingSize="xs"
+                                        className="shrink-0 text-sm! bg-white/80! hover:bg-white! text-primary!"
+                                        onClick={() => router.push(`/${locale}/licenses/customer/${encodeURIComponent(license.customerId)}/license/${encodeURIComponent(license.id)}/upgrade`)}
+                                    >
+                                        {content.upgrade.title}
                                     </Button>
                                 </>
                             )}
@@ -253,9 +253,7 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale }: Li
                         )}
                     </DataTable>
                 </Card>
-                {pagination?.invoices?.hasNextPage ? (
-                    <LicenseLoadMoreButton loading={loadingMore === "invoices"} labels={content.pagination} onClick={() => void loadMore("invoices")} />
-                ) : null}
+                {pagination?.invoices?.hasNextPage ? <LicenseLoadMoreButton loading={loadingMore === "invoices"} labels={content.pagination} onClick={() => void loadMore("invoices")} /> : null}
             </section>
         </div>
     )

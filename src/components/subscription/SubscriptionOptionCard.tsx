@@ -2,7 +2,7 @@ import { StableBadge } from "@/components/ui/StableBadge"
 import { cn } from "@/lib/utils"
 import type { CSSProperties, ReactNode } from "react"
 
-type SubscriptionOptionAccent = "aqua" | "yellow" | "pink" | "blue" | "brand" | "lime" | "magenta"
+type SubscriptionOptionAccent = "aqua" | "yellow" | "pink" | "blue" | "brand" | "lime" | "magenta" | "neutral"
 
 const SUBSCRIPTION_OPTION_ACTIVE_GLOW_STYLE: CSSProperties = {
     background: "radial-gradient(circle at top right, color-mix(in oklab, var(--option-accent) 16%, transparent), transparent 38%)",

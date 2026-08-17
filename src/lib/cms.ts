@@ -168,22 +168,10 @@ export interface SubscriptionConfigData {
         pro: {
             title: string
             description: string
-            prices: {
-                weekly: number
-                monthly: number
-                quarterly: number
-                yearly: number
-            }
         }
         max: {
             title: string
             description: string
-            prices: {
-                weekly: number
-                monthly: number
-                quarterly: number
-                yearly: number
-            }
         }
         custom: {
             title: string
@@ -209,9 +197,6 @@ export interface SubscriptionConfigData {
         monthlyColor: IconColor
         quarterlyColor: IconColor
         yearlyColor: IconColor
-        monthlyDiscount: number
-        quarterlyDiscount: number
-        yearlyDiscount: number
     }
     workflowExecutions: {
         title: string
@@ -242,8 +227,6 @@ export interface SubscriptionConfigData {
             id?: string | null
         }[]
     }
-    workflowExecutionPriceFactor: number
-    workflowExecutionWeeklyPriceFactor: number
     aiTokens: {
         title: string
         description?: string | null
@@ -251,8 +234,6 @@ export interface SubscriptionConfigData {
         b2c: SubscriptionUsageRange
         suffix: string
     }
-    aiTokenPriceFactor: number
-    aiTokenWeeklyPriceFactor: number
     contactSales: {
         prompt: string
         label: string

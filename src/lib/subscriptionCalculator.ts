@@ -48,14 +48,6 @@ export function calculatePromotionDiscountAmount(
     return 0
 }
 
-export function getPaymentPeriodDiscount(period: PaymentPeriod, paymentPeriod: SubscriptionConfigData["paymentPeriod"], customerType: SubscriptionCustomerType) {
-    if (period === "quarterly") return paymentPeriod.quarterlyDiscount
-    if (period === "yearly") return paymentPeriod.yearlyDiscount
-    // B2C bills weekly as the base rate, so monthly is a discount off the weekly-equivalent price instead of the other way around.
-    if (period === "monthly" && customerType === "b2c") return paymentPeriod.monthlyDiscount
-    return 0
-}
-
 export function getPaymentPeriodMonths(period: PaymentPeriod) {
     if (period === "weekly") return 1
     if (period === "quarterly") return 3

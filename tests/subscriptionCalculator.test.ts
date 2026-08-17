@@ -7,7 +7,6 @@ import {
     formatDiscountBadge,
     getMonthlyEquivalentAmount,
     getPaymentPeriodAmount,
-    getPaymentPeriodDiscount,
     getPaymentPeriodMonths,
     getPaymentPeriodSuffix,
     resolveCheckoutPricing,
@@ -77,12 +76,6 @@ const paymentPeriod = {
 } as const
 
 test("resolves payment period discounts and suffixes", () => {
-    assert.equal(getPaymentPeriodDiscount("weekly", paymentPeriod, "b2c"), 0)
-    assert.equal(getPaymentPeriodDiscount("monthly", paymentPeriod, "b2b"), 0)
-    assert.equal(getPaymentPeriodDiscount("monthly", paymentPeriod, "b2c"), 0.05)
-    assert.equal(getPaymentPeriodDiscount("quarterly", paymentPeriod, "b2b"), 0.1)
-    assert.equal(getPaymentPeriodDiscount("yearly", paymentPeriod, "b2c"), 0.2)
-
     assert.equal(getPaymentPeriodSuffix("weekly", paymentPeriod), "per week")
     assert.equal(getPaymentPeriodSuffix("monthly", paymentPeriod), "per month")
     assert.equal(getPaymentPeriodSuffix("quarterly", paymentPeriod), "per quarter")

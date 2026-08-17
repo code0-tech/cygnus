@@ -45,13 +45,6 @@ const usageRangeFields = (defaults: { default: number; min: number; max: number;
     { name: "max", type: "number", required: false, defaultValue: defaults.max },
 ]
 
-const packagePriceFields = (): Field[] => [
-    { name: "weekly", label: "Weekly", type: "number", required: false, defaultValue: 0, min: 0 },
-    { name: "monthly", label: "Monthly", type: "number", required: false, defaultValue: 0, min: 0 },
-    { name: "quarterly", label: "Quarterly", type: "number", required: false, defaultValue: 0, min: 0 },
-    { name: "yearly", label: "Yearly", type: "number", required: false, defaultValue: 0, min: 0 },
-]
-
 export const SubscriptionCollection: GlobalConfig = {
     slug: "subscriptionConfig",
     access: {
@@ -313,12 +306,6 @@ export const SubscriptionCollection: GlobalConfig = {
                             localized: true,
                             defaultValue: "For individuals and smaller teams.",
                         },
-                        {
-                            name: "prices",
-                            label: "Prices",
-                            type: "group",
-                            fields: packagePriceFields(),
-                        },
                     ],
                 },
                 {
@@ -333,12 +320,6 @@ export const SubscriptionCollection: GlobalConfig = {
                             required: false,
                             localized: true,
                             defaultValue: "For organizations with higher requirements.",
-                        },
-                        {
-                            name: "prices",
-                            label: "Prices",
-                            type: "group",
-                            fields: packagePriceFields(),
                         },
                     ],
                 },
@@ -419,34 +400,6 @@ export const SubscriptionCollection: GlobalConfig = {
                 { ...colorField, name: "monthlyColor", defaultValue: "brand" },
                 { ...colorField, name: "quarterlyColor", defaultValue: "aqua" },
                 { ...colorField, name: "yearlyColor", defaultValue: "magenta" },
-                {
-                    name: "monthlyDiscount",
-                    label: "Monthly Discount (B2C)",
-                    type: "number",
-                    required: false,
-                    defaultValue: 0,
-                    min: 0,
-                    max: 1,
-                    admin: { description: "B2C only: discount off the weekly base price when monthly billing is selected." },
-                },
-                {
-                    name: "quarterlyDiscount",
-                    label: "Quarterly Discount",
-                    type: "number",
-                    required: false,
-                    defaultValue: 0,
-                    min: 0,
-                    max: 1,
-                },
-                {
-                    name: "yearlyDiscount",
-                    label: "Yearly Discount",
-                    type: "number",
-                    required: false,
-                    defaultValue: 0,
-                    min: 0,
-                    max: 1,
-                },
             ],
         },
         {
@@ -531,24 +484,6 @@ export const SubscriptionCollection: GlobalConfig = {
             ],
         },
         {
-            name: "workflowExecutionPriceFactor",
-            label: "Workflow Execution Price Factor",
-            type: "number",
-            required: false,
-            defaultValue: 0.001,
-            min: 0,
-            admin: { description: "Monthly price factor, used for monthly/quarterly/yearly billing." },
-        },
-        {
-            name: "workflowExecutionWeeklyPriceFactor",
-            label: "Workflow Execution Weekly Price Factor",
-            type: "number",
-            required: false,
-            defaultValue: 0.00023,
-            min: 0,
-            admin: { description: "Used directly for weekly billing instead of being calculated from the monthly factor." },
-        },
-        {
             name: "aiTokens",
             label: "AI Tokens",
             type: "group",
@@ -569,24 +504,6 @@ export const SubscriptionCollection: GlobalConfig = {
                 },
                 { name: "suffix", type: "text", required: false, localized: true, defaultValue: "tokens" },
             ],
-        },
-        {
-            name: "aiTokenPriceFactor",
-            label: "AI Token Price Factor",
-            type: "number",
-            required: false,
-            defaultValue: 0.000001,
-            min: 0,
-            admin: { description: "Monthly price factor, used for monthly/quarterly/yearly billing." },
-        },
-        {
-            name: "aiTokenWeeklyPriceFactor",
-            label: "AI Token Weekly Price Factor",
-            type: "number",
-            required: false,
-            defaultValue: 0.00000023,
-            min: 0,
-            admin: { description: "Used directly for weekly billing instead of being calculated from the monthly factor." },
         },
         {
             name: "contactSales",
