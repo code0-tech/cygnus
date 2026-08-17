@@ -48,6 +48,20 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale }: Li
               { label: content.dashboard.deploymentLabel, value: formatLicenseDisplayValue(license.deploymentType, "deploymentType", content.values) },
               { label: content.licenses, value: formatLicenseDisplayValue(license.plan, "plan", content.values), showPlanIcon: true },
               { label: content.dashboard.paymentPeriodLabel, value: formatLicenseDisplayValue(license.paymentPeriod, "paymentPeriod", content.values) },
+              ...(license.pendingUpdate
+                  ? [
+                        {
+                            label: content.billing.pendingChangeLabel,
+                            value: [
+                                license.pendingUpdate.plan ? formatLicenseDisplayValue(license.pendingUpdate.plan, "plan", content.values) : null,
+                                license.pendingUpdate.paymentPeriod ? formatLicenseDisplayValue(license.pendingUpdate.paymentPeriod, "paymentPeriod", content.values) : null,
+                                license.pendingUpdate.effectiveAt ? dateFormatter.format(new Date(license.pendingUpdate.effectiveAt)) : null,
+                            ]
+                                .filter(Boolean)
+                                .join(" · "),
+                        },
+                    ]
+                  : []),
               ...(license.plan?.toLowerCase() === "custom"
                   ? [
                         { label: content.dashboard.workflowExecutionsLabel, value: license.workflowExecutions === undefined ? "—" : formatCompactNumber(license.workflowExecutions) },

@@ -10,6 +10,7 @@ import type { CheckoutSuccessSummary } from "@/lib/checkout/checkoutSuccessSumma
 import type { CheckoutData } from "@/lib/cms"
 import type { CheckoutCompletionState } from "@code0-tech/crater-graphql-types"
 import { Button } from "@code0-tech/pictor"
+import { IconCircleCheckFilled, IconExclamationCircleFilled } from "@tabler/icons-react"
 import Link from "next/link"
 import { useCallback, useEffect, useRef, useState } from "react"
 
@@ -138,7 +139,11 @@ export function CheckoutSuccessStatus({ content, errorMessage, locale, sessionId
 
     return (
         <div className="flex flex-col items-center justify-center gap-2">
-            {heading && <h1 className="text-3xl font-semibold text-white">{heading}</h1>}
+            <div className="flex itemss-center gap-2">
+                {status === "READY" && <IconCircleCheckFilled size={32} className="mt-0.5" />}
+                {status === "ERROR" && <IconExclamationCircleFilled size={32} className="mt-0.5" />}
+                {heading && <h1 className="text-3xl font-semibold text-white">{heading}</h1>}
+            </div>
             {description && <p className="text-secondary max-w-md">{description}</p>}
             {fulfillmentConfirmed && summary && summary.rows.length > 0 && (
                 <div className="my-4 flex flex-col items-center gap-2">
