@@ -3129,6 +3129,10 @@ export interface Checkout {
     continueLabel: string;
     backToBillingLabel: string;
     payNowLabel: string;
+    /**
+     * Shown below the primary billing/payment button for business customers only.
+     */
+    sendOfferLabel: string;
     processingLabel: string;
     customerSelectLabel: string;
     newCustomerLabel: string;
@@ -3870,6 +3874,7 @@ export interface CheckoutSelect<T extends boolean = true> {
         continueLabel?: T;
         backToBillingLabel?: T;
         payNowLabel?: T;
+        sendOfferLabel?: T;
         processingLabel?: T;
         customerSelectLabel?: T;
         newCustomerLabel?: T;

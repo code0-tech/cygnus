@@ -127,6 +127,7 @@ import * as migration_20260817_091125_add_plan_colors from './20260817_091125_ad
 import * as migration_20260817_124334_remove_subscription_prices from './20260817_124334_remove_subscription_prices';
 import * as migration_20260818_063753_upgrade_checkout_banner from './20260818_063753_upgrade_checkout_banner';
 import * as migration_20260818_065236_checkout_next_steps from './20260818_065236_checkout_next_steps';
+import * as migration_20260818_101759_checkout_send_offer_label from './20260818_101759_checkout_send_offer_label';
 
 export const migrations = [
   {
@@ -772,6 +773,11 @@ export const migrations = [
   {
     up: migration_20260818_065236_checkout_next_steps.up,
     down: migration_20260818_065236_checkout_next_steps.down,
-    name: '20260818_065236_checkout_next_steps'
+    name: '20260818_065236_checkout_next_steps',
+  },
+  {
+    up: migration_20260818_101759_checkout_send_offer_label.up,
+    down: migration_20260818_101759_checkout_send_offer_label.down,
+    name: '20260818_101759_checkout_send_offer_label'
   },
 ];

@@ -146,6 +146,7 @@ interface CheckoutPaymentFormProps {
     customerSelect: ReactNode
     customerSelectSkeleton: ReactNode
     email: string | null
+    isBusinessCustomer: boolean
     onAddressChange: (address: StripeCheckoutContact | null) => void
     onEmailChange: (email: string | null) => void
     onTaxQuoteChange: (taxQuote: CheckoutTaxQuoteData | null) => void
@@ -223,6 +224,7 @@ function CheckoutPaymentFields({
     customerSelect,
     customerSelectSkeleton,
     email,
+    isBusinessCustomer,
     onAddressChange,
     onEmailChange,
     onTaxQuoteChange,
@@ -435,6 +437,15 @@ function CheckoutPaymentFields({
                         >
                             {isUpdatingBilling ? <ButtonLoader label={content.processingLabel} /> : content.continueLabel}
                         </Button>
+                        {isBusinessCustomer && (
+                            <Button
+                                type="button"
+                                variant="normal"
+                                className="h-10! w-full! border-white/10! bg-white/3! text-sm! text-secondary! hover:bg-white/6! hover:text-white!"
+                            >
+                                {content.sendOfferLabel}
+                            </Button>
+                        )}
                     </div>
                 </>
             ) : (
@@ -469,6 +480,15 @@ function CheckoutPaymentFields({
                         >
                             {isConfirming ? <ButtonLoader label={content.processingLabel} /> : content.payNowLabel}
                         </Button>
+                        {isBusinessCustomer && (
+                            <Button
+                                type="button"
+                                variant="normal"
+                                className="h-10! w-full! border-white/10! bg-white/3! text-sm! text-secondary! hover:bg-white/6! hover:text-white!"
+                            >
+                                {content.sendOfferLabel}
+                            </Button>
+                        )}
                         <Button
                             type="button"
                             variant="normal"
@@ -493,6 +513,7 @@ export function CheckoutPaymentForm({
     customerSelect,
     customerSelectSkeleton,
     email,
+    isBusinessCustomer,
     onAddressChange,
     onEmailChange,
     onTaxQuoteChange,
@@ -541,6 +562,7 @@ export function CheckoutPaymentForm({
                 customerSelect={customerSelect}
                 customerSelectSkeleton={customerSelectSkeleton}
                 email={email}
+                isBusinessCustomer={isBusinessCustomer}
                 onAddressChange={onAddressChange}
                 onEmailChange={onEmailChange}
                 onTaxQuoteChange={onTaxQuoteChange}

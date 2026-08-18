@@ -39,7 +39,7 @@ export function CheckoutUpgradePlan({ content, subscriptionConfig }: CheckoutUpg
     }
 
     return (
-        <Card className="flex justify-between items-center gap-x-1.5 bg-linear-to-r from-brand/15 to-primary text-sm text-white">
+        <Card className="flex justify-between items-center gap-x-1.5 bg-linear-to-r from-brand/15 to-primary text-sm text-white bg-clip-padding">
             <span>
                 {textBeforePlan}
                 <span className="text-brand font-medium">{nextPlanTitle}</span>
