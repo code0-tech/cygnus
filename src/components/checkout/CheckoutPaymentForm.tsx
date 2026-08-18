@@ -259,6 +259,18 @@ function CheckoutPaymentFields({
     const markAddressElementReady = useCallback(() => setIsAddressElementReady(true), [])
     const markTaxIdElementReady = useCallback(() => setIsTaxIdElementReady(true), [])
 
+    // The success page redirects back here with this flag when Crater reports a failed payment, so the
+    // customer lands directly back in checkout with the failure explained instead of stuck on that page.
+    // Stripped via history.replaceState (not the router) so it doesn't re-trigger session preparation.
+    useEffect(() => {
+        const currentUrl = new URL(window.location.href)
+        if (currentUrl.searchParams.get("paymentFailed") !== "1") return
+
+        currentUrl.searchParams.delete("paymentFailed")
+        window.history.replaceState(window.history.state, "", `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`)
+        setErrorMessage(errors.paymentConfirmation)
+    }, [errors.paymentConfirmation])
+
     useEffect(() => {
         if (checkoutState.type === "success") {
             onSessionLoadErrorChange(null)

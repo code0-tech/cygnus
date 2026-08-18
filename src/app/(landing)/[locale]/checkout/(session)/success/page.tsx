@@ -36,7 +36,8 @@ export default async function CheckoutSuccessPage({ params, searchParams }: Chec
         getErrorsContent(locale),
     ])
     const currentYear = new Date().getUTCFullYear()
-    const summary = buildCheckoutSuccessSummary({ checkoutContent, searchParams: toSearchParams(query), subscriptionConfig })
+    const checkoutSearchParams = toSearchParams(query)
+    const summary = buildCheckoutSuccessSummary({ checkoutContent, searchParams: checkoutSearchParams, subscriptionConfig })
 
     return (
         <div className="flex min-h-full flex-col gap-8">
@@ -44,7 +45,14 @@ export default async function CheckoutSuccessPage({ params, searchParams }: Chec
                 <div className="flex flex-col gap-4 max-w-2xl text-center">
                     <div className="relative z-10 space-y-4">
                         {checkoutContent?.success && errors ? (
-                            <CheckoutSuccessStatus content={checkoutContent.success} errorMessage={errors.checkoutLicenseStatus} locale={locale} sessionId={checkoutSessionId} summary={summary} />
+                            <CheckoutSuccessStatus
+                                checkoutSearchParams={checkoutSearchParams}
+                                content={checkoutContent.success}
+                                errorMessage={errors.checkoutLicenseStatus}
+                                locale={locale}
+                                sessionId={checkoutSessionId}
+                                summary={summary}
+                            />
                         ) : null}
                     </div>
                 </div>

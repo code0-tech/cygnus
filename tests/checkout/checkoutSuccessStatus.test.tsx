@@ -14,6 +14,16 @@ mock.module("@code0-tech/pictor", {
 mock.module("next/link", {
     defaultExport: ({ children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => <a {...props}>{children}</a>,
 })
+let routerReplaceCalls: string[] = []
+mock.module("next/navigation", {
+    namedExports: {
+        useRouter: () => ({
+            replace: (url: string) => {
+                routerReplaceCalls.push(url)
+            },
+        }),
+    },
+})
 // The real getIcon pulls in @mvriu5/payload-icon-picker, which imports a .css file Node's test runner cannot load.
 mock.module("@/components/ui/IconRenderer", {
     namedExports: {
@@ -43,6 +53,7 @@ const content: CheckoutData["success"] = {
 }
 
 const errorMessage = "Could not confirm the license."
+const checkoutSearchParams = new URLSearchParams({ session_id: "cs_test", plan: "pro", customerType: "b2b", paymentPeriod: "monthly" })
 
 function respondWith(body: unknown, status = 200) {
     globalThis.fetch = (async () => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } })) as typeof fetch
@@ -52,6 +63,7 @@ afterEach(() => {
     cleanup()
     globalThis.fetch = originalFetch
     Date.now = originalDateNow
+    routerReplaceCalls = []
 })
 
 test("stops checkout success polling after the configured time limit", async () => {
@@ -71,7 +83,7 @@ test("stops checkout success polling after the configured time limit", async () 
         )
     }) as typeof fetch
 
-    render(<CheckoutSuccessStatus content={content} errorMessage={errorMessage} locale="en" sessionId="cs_test" />)
+    render(<CheckoutSuccessStatus checkoutSearchParams={checkoutSearchParams} content={content} errorMessage={errorMessage} locale="en" sessionId="cs_test" />)
 
     assert.ok(await screen.findByRole("button", { name: content.licenseStatusRetryLabel }))
     assert.equal(requests, 1)
@@ -79,26 +91,28 @@ test("stops checkout success polling after the configured time limit", async () 
     assert.ok(screen.getByText(errorMessage))
 })
 
-test("explains a declined payment and offers a way back into the checkout", async () => {
+test("explains a declined payment and redirects back into checkout with the failure flagged", async () => {
     respondWith({ state: "FAILED", customerId: "gid://crater/Customer/1", licenseId: null })
 
-    render(<CheckoutSuccessStatus content={content} errorMessage={errorMessage} locale="en" sessionId="cs_test" />)
+    render(<CheckoutSuccessStatus checkoutSearchParams={checkoutSearchParams} content={content} errorMessage={errorMessage} locale="en" sessionId="cs_test" />)
 
     assert.ok(await screen.findByText(content.failedHeading))
     assert.ok(screen.getByText(content.failedDescription))
     assert.equal(screen.getByRole("link", { name: content.checkoutRetryLabel }).getAttribute("href"), "/en/checkout")
     assert.equal(screen.queryByText(content.heading), null)
     assert.equal(screen.queryByText(content.receiptHint), null)
+    assert.deepEqual(routerReplaceCalls, ["/en/checkout?plan=pro&customerType=b2b&paymentPeriod=monthly&paymentFailed=1"])
 })
 
 test("explains a checkout session that cannot be verified", async () => {
     respondWith({ error: "The checkout session could not be verified.", errorCode: "INVALID_CHECKOUT_STATUS_SESSION" }, 404)
 
-    render(<CheckoutSuccessStatus content={content} errorMessage={errorMessage} locale="de" sessionId="cs_test" />)
+    render(<CheckoutSuccessStatus checkoutSearchParams={checkoutSearchParams} content={content} errorMessage={errorMessage} locale="de" sessionId="cs_test" />)
 
     assert.ok(await screen.findByText(content.invalidHeading))
     assert.ok(screen.getByText(content.invalidDescription))
     assert.equal(screen.getByRole("link", { name: content.checkoutRetryLabel }).getAttribute("href"), "/de/checkout")
+    assert.deepEqual(routerReplaceCalls, [])
 })
 
 test("shows the order summary and the receipt hint once the payment is confirmed", async () => {
@@ -112,7 +126,7 @@ test("shows the order summary and the receipt hint once the payment is confirmed
         ],
     }
 
-    render(<CheckoutSuccessStatus content={content} errorMessage={errorMessage} locale="en" sessionId="cs_test" summary={summary} />)
+    render(<CheckoutSuccessStatus checkoutSearchParams={checkoutSearchParams} content={content} errorMessage={errorMessage} locale="en" sessionId="cs_test" summary={summary} />)
 
     assert.ok(await screen.findByText(content.heading))
     assert.ok(screen.getByText(summary.title))

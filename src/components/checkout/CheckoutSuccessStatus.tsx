@@ -12,6 +12,7 @@ import type { CheckoutCompletionState } from "@code0-tech/crater-graphql-types"
 import { Button } from "@code0-tech/pictor"
 import { IconCircleCheckFilled, IconExclamationCircleFilled } from "@tabler/icons-react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { useCallback, useEffect, useRef, useState } from "react"
 
 type SuccessContent = CheckoutData["success"]
@@ -23,6 +24,7 @@ type StatusResponse = {
 }
 
 interface CheckoutSuccessStatusProps {
+    checkoutSearchParams: URLSearchParams
     content: SuccessContent
     errorMessage: string
     locale: string
@@ -44,7 +46,8 @@ function parseStatusResponse(value: unknown): StatusResponse | null {
     return response as StatusResponse
 }
 
-export function CheckoutSuccessStatus({ content, errorMessage, locale, sessionId, summary }: CheckoutSuccessStatusProps) {
+export function CheckoutSuccessStatus({ checkoutSearchParams, content, errorMessage, locale, sessionId, summary }: CheckoutSuccessStatusProps) {
+    const router = useRouter()
     const [status, setStatus] = useState<CheckoutStatus>("LOADING")
     const [completion, setCompletion] = useState<StatusResponse | null>(null)
     const [attempt, setAttempt] = useState(0)
@@ -128,6 +131,17 @@ export function CheckoutSuccessStatus({ content, errorMessage, locale, sessionId
             if (pollTimeoutRef.current !== null) window.clearTimeout(pollTimeoutRef.current)
         }
     }, [attempt, checkStatus])
+
+    // A declined or otherwise failed payment should drop the customer back into checkout with their
+    // configuration intact and the failure explained there, not leave them stranded on this status page.
+    useEffect(() => {
+        if (status !== "FAILED") return
+
+        const nextParams = new URLSearchParams(checkoutSearchParams)
+        nextParams.delete("session_id")
+        nextParams.set("paymentFailed", "1")
+        router.replace(`/${locale}/checkout?${nextParams.toString()}`)
+    }, [checkoutSearchParams, locale, router, status])
 
     const fulfillmentConfirmed = status === "FULFILLMENT_PENDING" || status === "READY"
     const statusFailed = status === "FAILED" || status === "INVALID"
