@@ -349,6 +349,10 @@ export interface CheckoutData {
         taxIdValueLabel: string
         taxIdValuePlaceholder: string
     }
+    upgradeBanner: {
+        text: string
+        buttonLabel: string
+    }
     success: {
         heading: string
         description: string

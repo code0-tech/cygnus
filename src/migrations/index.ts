@@ -125,6 +125,7 @@ import * as migration_20260814_113937_license_invoice_history from './20260814_1
 import * as migration_20260814_133037_license_customer_billing_fields from './20260814_133037_license_customer_billing_fields';
 import * as migration_20260817_091125_add_plan_colors from './20260817_091125_add_plan_colors';
 import * as migration_20260817_124334_remove_subscription_prices from './20260817_124334_remove_subscription_prices';
+import * as migration_20260818_063753_upgrade_checkout_banner from './20260818_063753_upgrade_checkout_banner';
 
 export const migrations = [
   {
@@ -760,6 +761,11 @@ export const migrations = [
   {
     up: migration_20260817_124334_remove_subscription_prices.up,
     down: migration_20260817_124334_remove_subscription_prices.down,
-    name: '20260817_124334_remove_subscription_prices'
+    name: '20260817_124334_remove_subscription_prices',
+  },
+  {
+    up: migration_20260818_063753_upgrade_checkout_banner.up,
+    down: migration_20260818_063753_upgrade_checkout_banner.down,
+    name: '20260818_063753_upgrade_checkout_banner'
   },
 ];

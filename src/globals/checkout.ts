@@ -198,6 +198,22 @@ export const Checkout: GlobalConfig = {
             ],
         },
         {
+            name: "upgradeBanner",
+            type: "group",
+            admin: { description: "Small, low-emphasis nudge shown in checkout when a higher plan than the one being purchased is available." },
+            fields: [
+                {
+                    name: "text",
+                    type: "text",
+                    required: true,
+                    localized: true,
+                    defaultValue: "Need more? {plan} gives you more headroom.",
+                    admin: { description: "Use {plan} as a placeholder for the suggested plan's name." },
+                },
+                { name: "buttonLabel", type: "text", required: true, localized: true, defaultValue: "Upgrade" },
+            ],
+        },
+        {
             name: "success",
             type: "group",
             fields: [

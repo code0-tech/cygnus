@@ -2,6 +2,7 @@
 
 import { CheckoutDiscount, type CheckoutDiscountValue } from "@/components/checkout/CheckoutDiscount"
 import { SummaryBadge } from "@/components/checkout/CheckoutSummaryBadge"
+import { CheckoutUpgradePlan } from "@/components/checkout/CheckoutUpgradePlan"
 import { getIcon } from "@/components/ui/IconRenderer"
 import { Switch } from "@/components/ui/Switch"
 import type { CheckoutTaxQuoteData } from "@/lib/checkout/checkoutSubmission"
@@ -21,9 +22,10 @@ interface CheckoutSummaryProps {
     subscriptionConfig?: SubscriptionConfigData | null
     subscriptionPrices: SubscriptionPriceCatalog
     taxQuote?: CheckoutTaxQuoteData | null
+    upgradeBanner?: CheckoutData["upgradeBanner"] | null
 }
 
-export function CheckoutSummary({ content, errors, subscriptionConfig, subscriptionPrices, taxQuote }: CheckoutSummaryProps) {
+export function CheckoutSummary({ content, errors, subscriptionConfig, subscriptionPrices, taxQuote, upgradeBanner }: CheckoutSummaryProps) {
     const router = useRouter()
     const pathname = usePathname()
     const searchParams = useSearchParams()
@@ -214,6 +216,8 @@ export function CheckoutSummary({ content, errors, subscriptionConfig, subscript
                     </div>
                 </div>
             </Card>
+
+            <CheckoutUpgradePlan content={upgradeBanner} subscriptionConfig={subscriptionConfig} />
 
             {errors && (
                 <CheckoutDiscount

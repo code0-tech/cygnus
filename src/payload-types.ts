@@ -3158,6 +3158,16 @@ export interface Checkout {
     taxIdValueLabel: string;
     taxIdValuePlaceholder: string;
   };
+  /**
+   * Small, low-emphasis nudge shown in checkout when a higher plan than the one being purchased is available.
+   */
+  upgradeBanner: {
+    /**
+     * Use {plan} as a placeholder for the suggested plan's name.
+     */
+    text: string;
+    buttonLabel: string;
+  };
   success: {
     heading: string;
     description: string;
@@ -3876,6 +3886,12 @@ export interface CheckoutSelect<T extends boolean = true> {
         taxIdTypePlaceholder?: T;
         taxIdValueLabel?: T;
         taxIdValuePlaceholder?: T;
+      };
+  upgradeBanner?:
+    | T
+    | {
+        text?: T;
+        buttonLabel?: T;
       };
   success?:
     | T
