@@ -214,6 +214,20 @@ export const Checkout: GlobalConfig = {
             ],
         },
         {
+            name: "nextSteps",
+            type: "group",
+            admin: { description: "Vertical 3-step 'what happens after you pay' stepper shown in the summary once the payment step is reached, replacing the order summary heading and payment period switcher." },
+            fields: [
+                { name: "heading", type: "text", required: true, localized: true, defaultValue: "What happens next" },
+                { name: "step1Title", type: "text", required: true, localized: true, defaultValue: "Payment confirmed" },
+                { name: "step1Description", type: "text", required: true, localized: true, defaultValue: "Stripe securely confirms your payment." },
+                { name: "step2Title", type: "text", required: true, localized: true, defaultValue: "License provisioned" },
+                { name: "step2Description", type: "text", required: true, localized: true, defaultValue: "Your license is created automatically." },
+                { name: "step3Title", type: "text", required: true, localized: true, defaultValue: "Get started" },
+                { name: "step3Description", type: "text", required: true, localized: true, defaultValue: "Access your license dashboard and start building." },
+            ],
+        },
+        {
             name: "success",
             type: "group",
             fields: [

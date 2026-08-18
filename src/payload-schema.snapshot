@@ -75,6 +75,9 @@ export const enum_subscription_config_defaults_payment_period_b2b = pgEnum('enum
 export const enum_subscription_config_defaults_payment_period_b2c = pgEnum('enum_subscription_config_defaults_payment_period_b2c', ['weekly', 'monthly', 'yearly'])
 export const enum_subscription_config_deployment_self_hosted_color = pgEnum('enum_subscription_config_deployment_self_hosted_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
 export const enum_subscription_config_deployment_cloud_color = pgEnum('enum_subscription_config_deployment_cloud_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
+export const enum_subscription_config_plan_pro_color = pgEnum('enum_subscription_config_plan_pro_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
+export const enum_subscription_config_plan_max_color = pgEnum('enum_subscription_config_plan_max_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
+export const enum_subscription_config_plan_custom_color = pgEnum('enum_subscription_config_plan_custom_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
 export const enum_subscription_config_customer_type_b2b_color = pgEnum('enum_subscription_config_customer_type_b2b_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
 export const enum_subscription_config_customer_type_b2c_color = pgEnum('enum_subscription_config_customer_type_b2c_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
 export const enum_subscription_config_payment_period_weekly_color = pgEnum('enum_subscription_config_payment_period_weekly_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
@@ -2178,6 +2181,7 @@ export const footer = pgTable('footer', {
   contactEmail: varchar('contact_email'),
   legalLinks_privacy_url: varchar('legal_links_privacy_url').notNull().default("/privacy"),
   legalLinks_legalNotice_url: varchar('legal_links_legal_notice_url').notNull().default("/legal-notice"),
+  legalLinks_terms_url: varchar('legal_links_terms_url').notNull().default("/terms"),
   updatedAt: timestamp('updated_at', {mode: 'string',withTimezone: true,precision: 3}),
   createdAt: timestamp('created_at', {mode: 'string',withTimezone: true,precision: 3}),
 }, (columns) => [
@@ -2191,6 +2195,7 @@ export const footer_locales = pgTable('footer_locales', {
   description: varchar('description'),
   legalLinks_privacy_label: varchar('legal_links_privacy_label').notNull().default("Privacy Policy"),
   legalLinks_legalNotice_label: varchar('legal_links_legal_notice_label').notNull().default("Legal Notice"),
+  legalLinks_terms_label: varchar('legal_links_terms_label').notNull().default("Terms & Conditions"),
   id: serial('id').primaryKey(),
   _locale: enum__locales('_locale').notNull(),
   _parentID: integer('_parent_id').notNull(),
@@ -2294,14 +2299,17 @@ export const subscription_config = pgTable('subscription_config', {
       onDelete: 'set null'
   }),
   plan_pro_icon: varchar('plan_pro_icon').notNull().default("sparkles"),
+  plan_pro_color: enum_subscription_config_plan_pro_color('plan_pro_color').default("lime"),
   plan_pro_image: integer('plan_pro_image_id').references(() => media.id, {
       onDelete: 'set null'
   }),
   plan_max_icon: varchar('plan_max_icon').notNull().default("rocket"),
+  plan_max_color: enum_subscription_config_plan_max_color('plan_max_color').default("magenta"),
   plan_max_image: integer('plan_max_image_id').references(() => media.id, {
       onDelete: 'set null'
   }),
   plan_custom_icon: varchar('plan_custom_icon').notNull().default("settings"),
+  plan_custom_color: enum_subscription_config_plan_custom_color('plan_custom_color').default("yellow"),
   plan_custom_image: integer('plan_custom_image_id').references(() => media.id, {
       onDelete: 'set null'
   }),
@@ -2315,21 +2323,10 @@ export const subscription_config = pgTable('subscription_config', {
   customerType_b2c_image: integer('customer_type_b2c_image_id').references(() => media.id, {
       onDelete: 'set null'
   }),
-  packages_pro_prices_weekly: numeric('packages_pro_prices_weekly', {mode: 'number'}).default(0),
-  packages_pro_prices_monthly: numeric('packages_pro_prices_monthly', {mode: 'number'}).default(0),
-  packages_pro_prices_quarterly: numeric('packages_pro_prices_quarterly', {mode: 'number'}).default(0),
-  packages_pro_prices_yearly: numeric('packages_pro_prices_yearly', {mode: 'number'}).default(0),
-  packages_max_prices_weekly: numeric('packages_max_prices_weekly', {mode: 'number'}).default(0),
-  packages_max_prices_monthly: numeric('packages_max_prices_monthly', {mode: 'number'}).default(0),
-  packages_max_prices_quarterly: numeric('packages_max_prices_quarterly', {mode: 'number'}).default(0),
-  packages_max_prices_yearly: numeric('packages_max_prices_yearly', {mode: 'number'}).default(0),
   paymentPeriod_weeklyColor: enum_subscription_config_payment_period_weekly_color('payment_period_weekly_color').default("lime"),
   paymentPeriod_monthlyColor: enum_subscription_config_payment_period_monthly_color('payment_period_monthly_color').default("brand"),
   paymentPeriod_quarterlyColor: enum_subscription_config_payment_period_quarterly_color('payment_period_quarterly_color').default("aqua"),
   paymentPeriod_yearlyColor: enum_subscription_config_payment_period_yearly_color('payment_period_yearly_color').default("magenta"),
-  paymentPeriod_monthlyDiscount: numeric('payment_period_monthly_discount', {mode: 'number'}).default(0),
-  paymentPeriod_quarterlyDiscount: numeric('payment_period_quarterly_discount', {mode: 'number'}).default(0),
-  paymentPeriod_yearlyDiscount: numeric('payment_period_yearly_discount', {mode: 'number'}).default(0),
   workflowExecutions_b2b_default: numeric('workflow_executions_b2b_default', {mode: 'number'}).default(1000),
   workflowExecutions_b2b_step: numeric('workflow_executions_b2b_step', {mode: 'number'}).default(100),
   workflowExecutions_b2b_min: numeric('workflow_executions_b2b_min', {mode: 'number'}).default(200),
@@ -2338,8 +2335,6 @@ export const subscription_config = pgTable('subscription_config', {
   workflowExecutions_b2c_step: numeric('workflow_executions_b2c_step', {mode: 'number'}).default(10),
   workflowExecutions_b2c_min: numeric('workflow_executions_b2c_min', {mode: 'number'}).default(10),
   workflowExecutions_b2c_max: numeric('workflow_executions_b2c_max', {mode: 'number'}).default(1000),
-  workflowExecutionPriceFactor: numeric('workflow_execution_price_factor', {mode: 'number'}).default(0.001),
-  workflowExecutionWeeklyPriceFactor: numeric('workflow_execution_weekly_price_factor', {mode: 'number'}).default(0.00023),
   aiTokens_b2b_default: numeric('ai_tokens_b2b_default', {mode: 'number'}).default(1000000),
   aiTokens_b2b_step: numeric('ai_tokens_b2b_step', {mode: 'number'}).default(100000),
   aiTokens_b2b_min: numeric('ai_tokens_b2b_min', {mode: 'number'}).default(100000),
@@ -2348,8 +2343,6 @@ export const subscription_config = pgTable('subscription_config', {
   aiTokens_b2c_step: numeric('ai_tokens_b2c_step', {mode: 'number'}).default(10000),
   aiTokens_b2c_min: numeric('ai_tokens_b2c_min', {mode: 'number'}).default(10000),
   aiTokens_b2c_max: numeric('ai_tokens_b2c_max', {mode: 'number'}).default(1000000),
-  aiTokenPriceFactor: numeric('ai_token_price_factor', {mode: 'number'}).default(0.000001),
-  aiTokenWeeklyPriceFactor: numeric('ai_token_weekly_price_factor', {mode: 'number'}).default(2.3e-7),
   contactSales_href: varchar('contact_sales_href').default("/contact"),
   subscribe_baseUrl: varchar('subscribe_base_url').default(""),
   updatedAt: timestamp('updated_at', {mode: 'string',withTimezone: true,precision: 3}),
@@ -2527,6 +2520,15 @@ export const checkout_locales = pgTable('checkout_locales', {
   form_taxIdTypePlaceholder: varchar('form_tax_id_type_placeholder').notNull().default("eu_vat"),
   form_taxIdValueLabel: varchar('form_tax_id_value_label').notNull().default("Tax ID"),
   form_taxIdValuePlaceholder: varchar('form_tax_id_value_placeholder').notNull().default("DE123456789"),
+  upgradeBanner_text: varchar('upgrade_banner_text').notNull().default("Need more? {plan} gives you more headroom."),
+  upgradeBanner_buttonLabel: varchar('upgrade_banner_button_label').notNull().default("Upgrade"),
+  nextSteps_heading: varchar('next_steps_heading').notNull().default("What happens next"),
+  nextSteps_step1Title: varchar('next_steps_step1_title').notNull().default("Payment confirmed"),
+  nextSteps_step1Description: varchar('next_steps_step1_description').notNull().default("Stripe securely confirms your payment."),
+  nextSteps_step2Title: varchar('next_steps_step2_title').notNull().default("License provisioned"),
+  nextSteps_step2Description: varchar('next_steps_step2_description').notNull().default("Your license is created automatically."),
+  nextSteps_step3Title: varchar('next_steps_step3_title').notNull().default("Get started"),
+  nextSteps_step3Description: varchar('next_steps_step3_description').notNull().default("Access your license dashboard and start building."),
   success_heading: varchar('success_heading').notNull().default("Payment submitted"),
   success_description: varchar('success_description').notNull().default("Stripe has received your payment confirmation. You can close this page or return to the site."),
   success_licenseDashboardLabel: varchar('success_license_dashboard_label').notNull().default("Open license dashboard"),
@@ -4146,6 +4148,9 @@ type DatabaseSchema = {
   enum_subscription_config_defaults_payment_period_b2c: typeof enum_subscription_config_defaults_payment_period_b2c
   enum_subscription_config_deployment_self_hosted_color: typeof enum_subscription_config_deployment_self_hosted_color
   enum_subscription_config_deployment_cloud_color: typeof enum_subscription_config_deployment_cloud_color
+  enum_subscription_config_plan_pro_color: typeof enum_subscription_config_plan_pro_color
+  enum_subscription_config_plan_max_color: typeof enum_subscription_config_plan_max_color
+  enum_subscription_config_plan_custom_color: typeof enum_subscription_config_plan_custom_color
   enum_subscription_config_customer_type_b2b_color: typeof enum_subscription_config_customer_type_b2b_color
   enum_subscription_config_customer_type_b2c_color: typeof enum_subscription_config_customer_type_b2c_color
   enum_subscription_config_payment_period_weekly_color: typeof enum_subscription_config_payment_period_weekly_color

@@ -353,6 +353,15 @@ export interface CheckoutData {
         text: string
         buttonLabel: string
     }
+    nextSteps: {
+        heading: string
+        step1Title: string
+        step1Description: string
+        step2Title: string
+        step2Description: string
+        step3Title: string
+        step3Description: string
+    }
     success: {
         heading: string
         description: string

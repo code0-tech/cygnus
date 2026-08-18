@@ -1,6 +1,8 @@
 "use client"
 
 import { CheckoutDiscount, type CheckoutDiscountValue } from "@/components/checkout/CheckoutDiscount"
+import { CheckoutNextSteps } from "@/components/checkout/CheckoutNextSteps"
+import { useCheckoutStage } from "@/components/checkout/CheckoutStepper"
 import { SummaryBadge } from "@/components/checkout/CheckoutSummaryBadge"
 import { CheckoutUpgradePlan } from "@/components/checkout/CheckoutUpgradePlan"
 import { getIcon } from "@/components/ui/IconRenderer"
@@ -19,17 +21,19 @@ import { Card } from "../ui/Card"
 interface CheckoutSummaryProps {
     content?: CheckoutData["summary"] | null
     errors?: ErrorsContent | null
+    nextSteps?: CheckoutData["nextSteps"] | null
     subscriptionConfig?: SubscriptionConfigData | null
     subscriptionPrices: SubscriptionPriceCatalog
     taxQuote?: CheckoutTaxQuoteData | null
     upgradeBanner?: CheckoutData["upgradeBanner"] | null
 }
 
-export function CheckoutSummary({ content, errors, subscriptionConfig, subscriptionPrices, taxQuote, upgradeBanner }: CheckoutSummaryProps) {
+export function CheckoutSummary({ content, errors, nextSteps, subscriptionConfig, subscriptionPrices, taxQuote, upgradeBanner }: CheckoutSummaryProps) {
     const router = useRouter()
     const pathname = usePathname()
     const searchParams = useSearchParams()
     const params = useParams<{ locale?: string }>()
+    const { stage } = useCheckoutStage()
     const [promotionDiscount, setPromotionDiscount] = useState<CheckoutDiscountValue | null>(null)
     if (!content || !subscriptionConfig || !subscriptionPrices) return null
 
@@ -75,41 +79,47 @@ export function CheckoutSummary({ content, errors, subscriptionConfig, subscript
 
     return (
         <div className="flex-1">
-            <div className="mb-6">
-                <p className="tracking-wide text-brand">{content.eyebrow}</p>
-                <h2 className="mt-4 text-2xl text-white">{content.heading}</h2>
-                <p className="mt-2 max-w-md text-sm leading-6 text-secondary">{content.description}</p>
-            </div>
+            {stage === "payment" ? (
+                <CheckoutNextSteps content={nextSteps} />
+            ) : (
+                <>
+                    <div className="mb-6">
+                        <p className="tracking-wide text-brand">{content.eyebrow}</p>
+                        <h2 className="mt-4 text-2xl text-white">{content.heading}</h2>
+                        <p className="mt-2 max-w-md text-sm leading-6 text-secondary">{content.description}</p>
+                    </div>
 
-            {subscriptionConfig && (
-                <Switch
-                    className="mt-4 mb-2"
-                    label={subscriptionConfig.paymentPeriod.title}
-                    value={paymentPeriod}
-                    options={periodOptions.map((period) => {
-                        const { pricing: periodPricing } = resolveCheckoutPricing({
-                            aiTokensParam,
-                            customerTypeParam: customerType,
-                            fallbackPeriodSuffix: content.pricing.perMonthSuffix,
-                            paymentPeriodParam: period,
-                            planParam,
-                            subscriptionConfig,
-                            subscriptionPrices,
-                            workflowExecutionsParam,
-                        })
+                    {subscriptionConfig && (
+                        <Switch
+                            className="mt-4 mb-2"
+                            label={subscriptionConfig.paymentPeriod.title}
+                            value={paymentPeriod}
+                            options={periodOptions.map((period) => {
+                                const { pricing: periodPricing } = resolveCheckoutPricing({
+                                    aiTokensParam,
+                                    customerTypeParam: customerType,
+                                    fallbackPeriodSuffix: content.pricing.perMonthSuffix,
+                                    paymentPeriodParam: period,
+                                    planParam,
+                                    subscriptionConfig,
+                                    subscriptionPrices,
+                                    workflowExecutionsParam,
+                                })
 
-                        const discountAmount = Math.max(0, periodPricing.totalBeforeDiscount - periodPricing.totalPrice)
+                                const discountAmount = Math.max(0, periodPricing.totalBeforeDiscount - periodPricing.totalPrice)
 
-                        const discountPercentage = periodPricing.totalBeforeDiscount > 0 ? discountAmount / periodPricing.totalBeforeDiscount : 0
+                                const discountPercentage = periodPricing.totalBeforeDiscount > 0 ? discountAmount / periodPricing.totalBeforeDiscount : 0
 
-                        return {
-                            value: period,
-                            label: subscriptionConfig.paymentPeriod[`${period}Text`],
-                            badge: discountPercentage > 0 ? `-${formatDiscountBadge(discountPercentage, locale)}` : null,
-                        }
-                    })}
-                    onChange={handlePeriodChange}
-                />
+                                return {
+                                    value: period,
+                                    label: subscriptionConfig.paymentPeriod[`${period}Text`],
+                                    badge: discountPercentage > 0 ? `-${formatDiscountBadge(discountPercentage, locale)}` : null,
+                                }
+                            })}
+                            onChange={handlePeriodChange}
+                        />
+                    )}
+                </>
             )}
 
             <Card variant="light" className="mt-4 mb-2">

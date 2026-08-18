@@ -29,6 +29,7 @@ export default async function CheckoutPage({ params }: { params: Promise<{ local
                 form={checkoutContent?.form}
                 locale={locale}
                 subscriptionConfig={subscriptionConfig}
+                nextSteps={checkoutContent?.nextSteps}
                 subscriptionPrices={subscriptionPrices}
                 summary={checkoutContent?.summary}
                 upgradeBanner={checkoutContent?.upgradeBanner}

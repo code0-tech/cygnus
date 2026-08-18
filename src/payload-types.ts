@@ -3168,6 +3168,18 @@ export interface Checkout {
     text: string;
     buttonLabel: string;
   };
+  /**
+   * Vertical 3-step 'what happens after you pay' stepper shown in the summary once the payment step is reached, replacing the order summary heading and payment period switcher.
+   */
+  nextSteps: {
+    heading: string;
+    step1Title: string;
+    step1Description: string;
+    step2Title: string;
+    step2Description: string;
+    step3Title: string;
+    step3Description: string;
+  };
   success: {
     heading: string;
     description: string;
@@ -3892,6 +3904,17 @@ export interface CheckoutSelect<T extends boolean = true> {
     | {
         text?: T;
         buttonLabel?: T;
+      };
+  nextSteps?:
+    | T
+    | {
+        heading?: T;
+        step1Title?: T;
+        step1Description?: T;
+        step2Title?: T;
+        step2Description?: T;
+        step3Title?: T;
+        step3Description?: T;
       };
   success?:
     | T

@@ -19,6 +19,7 @@ interface CheckoutPageContentProps {
     footer?: Footer | null
     form?: CheckoutData["form"] | null
     locale: AppLocale
+    nextSteps?: CheckoutData["nextSteps"] | null
     subscriptionConfig?: SubscriptionConfigData | null
     subscriptionPrices: SubscriptionPriceCatalog
     summary?: CheckoutData["summary"] | null
@@ -30,7 +31,7 @@ function CheckoutSummaryWithTax(props: Omit<ComponentProps<typeof CheckoutSummar
     return <CheckoutSummary {...props} taxQuote={taxQuote} />
 }
 
-export function CheckoutPageContent({ currentYear, errors, footer, form, locale, subscriptionConfig, subscriptionPrices, summary, upgradeBanner }: CheckoutPageContentProps) {
+export function CheckoutPageContent({ currentYear, errors, footer, form, locale, nextSteps, subscriptionConfig, subscriptionPrices, summary, upgradeBanner }: CheckoutPageContentProps) {
     const [mobileCheckoutOpen, setMobileCheckoutOpen] = useState(false)
     const { hasError } = useCheckoutStage()
 
@@ -64,7 +65,14 @@ export function CheckoutPageContent({ currentYear, errors, footer, form, locale,
                 {form && errors ? (
                     <CheckoutFormProvider content={form} errors={errors} locale={locale}>
                         {!hasError && (
-                            <CheckoutSummaryWithTax content={summary} errors={errors} subscriptionConfig={subscriptionConfig} subscriptionPrices={subscriptionPrices} upgradeBanner={upgradeBanner} />
+                            <CheckoutSummaryWithTax
+                                content={summary}
+                                errors={errors}
+                                nextSteps={nextSteps}
+                                subscriptionConfig={subscriptionConfig}
+                                subscriptionPrices={subscriptionPrices}
+                                upgradeBanner={upgradeBanner}
+                            />
                         )}
                         <button
                             type="button"
@@ -108,7 +116,7 @@ export function CheckoutPageContent({ currentYear, errors, footer, form, locale,
                         </div>
                     </CheckoutFormProvider>
                 ) : (
-                    <CheckoutSummary content={summary} subscriptionConfig={subscriptionConfig} subscriptionPrices={subscriptionPrices} upgradeBanner={upgradeBanner} />
+                    <CheckoutSummary content={summary} nextSteps={nextSteps} subscriptionConfig={subscriptionConfig} subscriptionPrices={subscriptionPrices} upgradeBanner={upgradeBanner} />
                 )}
             </div>
 
