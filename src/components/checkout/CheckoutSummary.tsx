@@ -135,20 +135,20 @@ export function CheckoutSummary({ content, errors, nextSteps, subscriptionConfig
                         {content.pricing.planLabel}
 
                         <SummaryBadge
-                            icon={getIcon(planTitle === "Pro" ? subscriptionConfig.plan.pro.icon : planTitle === "Max" ? subscriptionConfig.plan.max.icon : subscriptionConfig.plan.custom.icon, 16)}
+                            icon={getIcon(planTitle === "Pro" ? subscriptionConfig.plan.pro.icon : planTitle === "Max" ? subscriptionConfig.plan.max.icon : subscriptionConfig.plan.custom.icon, 14)}
                             tone={planTitle === "Pro" ? subscriptionConfig.plan.pro.color : planTitle === "Max" ? subscriptionConfig.plan.max.color : subscriptionConfig.plan.custom.color}
                             value={<span className="capitalize">{planTitle.replaceAll("_", " ").replaceAll("-", " ")}</span>}
                         />
                         {deployment && (
                             <SummaryBadge
-                                icon={getIcon(deployment === "cloud" ? content.deploymentIcons.cloud : content.deploymentIcons.selfHosted, 16)}
+                                icon={getIcon(deployment === "cloud" ? content.deploymentIcons.cloud : content.deploymentIcons.selfHosted, 14)}
                                 tone={content.deploymentIconColor}
                                 value={<span className="capitalize">{deployment.replaceAll("_", " ").replaceAll("-", " ")}</span>}
                             />
                         )}
                         {customerType && (
                             <SummaryBadge
-                                icon={getIcon(customerType === "b2c" ? content.customerTypeIcons.b2c : content.customerTypeIcons.b2b, 16)}
+                                icon={getIcon(customerType === "b2c" ? content.customerTypeIcons.b2c : content.customerTypeIcons.b2b, 14)}
                                 tone={content.customerTypeIconColor}
                                 value={<span className="uppercase">{customerType}</span>}
                             />
@@ -161,7 +161,7 @@ export function CheckoutSummary({ content, errors, nextSteps, subscriptionConfig
                                 <span className="flex gap-2 text-secondary items-center">
                                     {content.pricing.baseLabel}{" "}
                                     <SummaryBadge
-                                        icon={getIcon(content.aiTokensIcon, 16)}
+                                        icon={getIcon(content.aiTokensIcon, 14)}
                                         tone={content.aiTokensIconColor}
                                         value={
                                             <span>
@@ -177,7 +177,7 @@ export function CheckoutSummary({ content, errors, nextSteps, subscriptionConfig
                                 <span className="flex gap-2 text-secondary items-center">
                                     {content.pricing.workflowExecutionsLabel}{" "}
                                     <SummaryBadge
-                                        icon={getIcon(content.workflowExecutionsIcon, 16)}
+                                        icon={getIcon(content.workflowExecutionsIcon, 14)}
                                         tone={content.workflowExecutionsIconColor}
                                         value={
                                             <span>
