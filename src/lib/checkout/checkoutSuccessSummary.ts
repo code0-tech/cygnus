@@ -1,10 +1,10 @@
-import type { CheckoutData, CheckoutSummaryIconColor, SubscriptionConfigData } from "@/lib/cms"
+import type { CheckoutData, IconColor, SubscriptionConfigData } from "@/lib/cms"
 import { formatCompactNumber } from "@/lib/formatters"
 import { resolveSubscriptionSelection } from "@/lib/subscriptionConfigurator"
 
 export type CheckoutSuccessSummary = {
     title: string
-    rows: { id: string; label: string; value: string; icon: string; tone: CheckoutSummaryIconColor }[]
+    rows: { id: string; label: string; value: string; icon: string; tone: IconColor }[]
 }
 
 // Mirrors the accent SubscriptionConfigurator hardcodes for the same plans -- there is no CMS field for it.
@@ -13,7 +13,7 @@ const PLAN_ICON_FALLBACKS: Record<"pro" | "max" | "custom", string> = {
     max: "tabler:IconRocket",
     custom: "tabler:IconSettings",
 }
-const PLAN_TONES: Record<"pro" | "max" | "custom", CheckoutSummaryIconColor> = {
+const PLAN_TONES: Record<"pro" | "max" | "custom", IconColor> = {
     pro: "brand",
     max: "magenta",
     custom: "aqua",

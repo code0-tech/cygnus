@@ -2,13 +2,15 @@
 
 import type { CheckoutData, ErrorsContent } from "@/lib/cms"
 import type { CheckoutSessionData, CheckoutTaxQuoteData } from "@/lib/checkout/checkoutSubmission"
+import { AcceptTermsCheckbox } from "@/components/forms/AcceptTermsCheckbox"
 import { useCheckoutStage } from "@/components/checkout/CheckoutStepper"
 import { ButtonLoader } from "@/components/ui/Loader"
 import { Button, EmailInput } from "@code0-tech/pictor"
 import { IconAlertTriangle } from "@tabler/icons-react"
 import { BillingAddressElement, CheckoutElementsProvider, ContactDetailsElement, PaymentElement, TaxIdElement, useCheckoutElements } from "@stripe/react-stripe-js/checkout"
 import { loadStripe, type StripeCheckoutContact, type StripeCheckoutElementsSdkOptions, type StripeCheckoutSession } from "@stripe/stripe-js"
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react"
+import { useParams } from "next/navigation"
+import { useCallback, useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react"
 
 type CheckoutFormContent = CheckoutData["form"]
 
@@ -231,10 +233,19 @@ function CheckoutPaymentFields({
 }: Omit<CheckoutPaymentFormProps, "session">) {
     const checkoutState = useCheckoutElements()
     const { stage: activeStep, setStage } = useCheckoutStage()
+    const params = useParams<{ locale?: string }>()
+    const locale = params?.locale === "de" ? "de" : "en"
+    // The accept-terms checkbox can't live inside a <form>: Radix's Checkbox stops click propagation
+    // when nested in one (for its native bubble-input sync), which breaks pictor's CheckboxInput --
+    // it toggles by listening for that click to bubble up to a wrapping div. Scoping <form> to just the
+    // PaymentElement and wiring "Pay now" via the HTML form= attribute keeps the checkbox clickable.
+    const paymentFormId = useId()
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
     const [isUpdatingBilling, setIsUpdatingBilling] = useState(false)
     const [isConfirming, setIsConfirming] = useState(false)
+    const [acceptedTerms, setAcceptedTerms] = useState(false)
     const [isPaymentElementReady, setIsPaymentElementReady] = useState(false)
+    const [isPaymentDetailsComplete, setIsPaymentDetailsComplete] = useState(false)
     const [isContactElementReady, setIsContactElementReady] = useState(false)
     const [isAddressElementReady, setIsAddressElementReady] = useState(false)
     const [isTaxIdElementReady, setIsTaxIdElementReady] = useState(!collectTaxId)
@@ -373,7 +384,7 @@ function CheckoutPaymentFields({
     }
 
     return (
-        <form onSubmit={handleSubmit} className="w-full space-y-6">
+        <div className="w-full space-y-6">
             {activeStep === "billingAddress" && customerSelect ? (isContactElementReady && isAddressElementReady && isTaxIdElementReady ? customerSelect : customerSelectSkeleton) : null}
             {activeStep === "billingAddress" ? (
                 <>
@@ -416,13 +427,19 @@ function CheckoutPaymentFields({
                 </>
             ) : (
                 <>
-                    <section className="w-full space-y-4">
+                    <form id={paymentFormId} onSubmit={handleSubmit} className="w-full space-y-4">
                         <PaymentElement
                             options={{ fields: { billingDetails: { name: "never", address: "never" } } }}
-                            onLoaderStart={() => setIsPaymentElementReady(false)}
+                            onLoaderStart={() => {
+                                setIsPaymentElementReady(false)
+                                setIsPaymentDetailsComplete(false)
+                            }}
                             onReady={() => setIsPaymentElementReady(true)}
+                            onChange={(event) => setIsPaymentDetailsComplete(event.complete)}
                         />
-                    </section>
+                    </form>
+
+                    <AcceptTermsCheckbox locale={locale} initialValue={false} formValidation={{ setValue: setAcceptedTerms, valid: true }} />
 
                     {errorMessage && (
                         <p className="rounded-xl border border-error/20 bg-error/10 px-4 py-3 text-sm text-error" role="alert">
@@ -433,8 +450,9 @@ function CheckoutPaymentFields({
                     <div className="space-y-3">
                         <Button
                             type="submit"
+                            form={paymentFormId}
                             variant="normal"
-                            disabled={isConfirming || isUpdatingBilling || !isPaymentElementReady}
+                            disabled={isConfirming || isUpdatingBilling || !isPaymentElementReady || !isPaymentDetailsComplete || !acceptedTerms}
                             className="h-10! w-full! whitespace-nowrap bg-white/80! px-8! text-sm! text-primary! ring-1! ring-white/20! hover:bg-white!"
                         >
                             {isConfirming ? <ButtonLoader label={content.processingLabel} /> : content.payNowLabel}
@@ -451,7 +469,7 @@ function CheckoutPaymentFields({
                     </div>
                 </>
             )}
-        </form>
+        </div>
     )
 }
 

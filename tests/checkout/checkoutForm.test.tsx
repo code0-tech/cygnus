@@ -27,6 +27,7 @@ let contactDetailsOnReady: (() => void) | null = null
 let billingAddressOptions: unknown = null
 let paymentElementOptions: unknown = null
 let paymentElementOnReady: (() => void) | null = null
+let paymentElementOnChange: ((event: { complete: boolean }) => void) | null = null
 let taxIdElementOptions: unknown = null
 let stripeLoadOptions: unknown = null
 let checkoutStages: string[] = []
@@ -50,7 +51,11 @@ process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY = "pk_test_example"
 mock.module("next/navigation", {
     namedExports: {
         useSearchParams: () => checkoutSearchParams,
+        useParams: () => ({ locale: "en" }),
     },
+})
+mock.module("next/link", {
+    defaultExport: ({ children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => <a {...props}>{children}</a>,
 })
 mock.module("@/components/checkout/CraterSessionProvider", {
     namedExports: {
@@ -83,6 +88,8 @@ mock.module("@code0-tech/pictor", {
         Button: ({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button {...props}>{children}</button>,
         EmailInput: TestInput,
         TextInput: TestInput,
+        CheckboxInput: TestCheckbox,
+        InputMessage: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
         SelectInput: ({ children, onValueChange, title }: { children: React.ReactNode; onValueChange?: (value: string) => void; title?: React.ReactNode }) => {
             customerSelectOnValueChange = onValueChange ?? null
             return (
@@ -138,9 +145,18 @@ mock.module("@stripe/react-stripe-js/checkout", {
             contactDetailsOnReady = onReady ?? null
             return <div data-testid="stripe-contact-details">Contact details</div>
         },
-        PaymentElement: ({ onReady, options }: { onReady?: () => void; options?: unknown }) => {
+        PaymentElement: ({
+            onChange,
+            onReady,
+            options,
+        }: {
+            onChange?: (event: { complete: boolean }) => void
+            onReady?: () => void
+            options?: unknown
+        }) => {
             paymentElementOptions = options
             paymentElementOnReady = onReady ?? null
+            paymentElementOnChange = onChange ?? null
             return <div data-testid="stripe-payment">Payment details</div>
         },
         TaxIdElement: ({ options }: { options: unknown }) => {
@@ -189,6 +205,7 @@ afterEach(() => {
     billingAddressOptions = null
     paymentElementOptions = null
     paymentElementOnReady = null
+    paymentElementOnChange = null
     taxIdElementOptions = null
     checkoutStages = []
     checkoutStage = "billingAddress"
@@ -269,6 +286,10 @@ function TestInput({
             {formValidation?.error && <span>{formValidation.error}</span>}
         </label>
     )
+}
+
+function TestCheckbox({ formValidation }: { formValidation?: { setValue?: (value: boolean) => void } }) {
+    return <input type="checkbox" onChange={(event) => formValidation?.setValue?.(event.target.checked)} />
 }
 
 function useTestForm<T extends Record<string, unknown>>({
@@ -425,6 +446,10 @@ test("creates the customer and checkout session on mount before collecting Strip
     assert.deepEqual(paymentElementOptions, { fields: { billingDetails: { name: "never", address: "never" } } })
     assert.equal((screen.getByRole("button", { name: "Pay now" }) as HTMLButtonElement).disabled, true)
     act(() => paymentElementOnReady?.())
+    assert.equal((screen.getByRole("button", { name: "Pay now" }) as HTMLButtonElement).disabled, true)
+    act(() => paymentElementOnChange?.({ complete: true }))
+    assert.equal((screen.getByRole("button", { name: "Pay now" }) as HTMLButtonElement).disabled, true)
+    await user.click(screen.getByRole("checkbox"))
     assert.equal((screen.getByRole("button", { name: "Pay now" }) as HTMLButtonElement).disabled, false)
     assert.deepEqual(stripeBillingAddressUpdates, [stripeBillingAddress])
     assert.deepEqual(stripeEmailUpdates, ["ada@example.com"])
@@ -446,6 +471,7 @@ test("creates the customer and checkout session on mount before collecting Strip
     await user.click(screen.getByRole("button", { name: "Continue to payment" }))
     assert.equal((screen.getByRole("button", { name: "Pay now" }) as HTMLButtonElement).disabled, true)
     act(() => paymentElementOnReady?.())
+    act(() => paymentElementOnChange?.({ complete: true }))
 
     stripeConfirmErrorMessage = "Your payment could not be confirmed."
     await user.click(screen.getByRole("button", { name: "Pay now" }))
