@@ -31,6 +31,7 @@ export default async function CheckoutPage({ params }: { params: Promise<{ local
                 subscriptionConfig={subscriptionConfig}
                 subscriptionPrices={subscriptionPrices}
                 summary={checkoutContent?.summary}
+                upgradeBanner={checkoutContent?.upgradeBanner}
             />
         </div>
     )

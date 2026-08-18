@@ -22,6 +22,7 @@ interface CheckoutPageContentProps {
     subscriptionConfig?: SubscriptionConfigData | null
     subscriptionPrices: SubscriptionPriceCatalog
     summary?: CheckoutData["summary"] | null
+    upgradeBanner?: CheckoutData["upgradeBanner"] | null
 }
 
 function CheckoutSummaryWithTax(props: Omit<ComponentProps<typeof CheckoutSummary>, "taxQuote">) {
@@ -29,7 +30,7 @@ function CheckoutSummaryWithTax(props: Omit<ComponentProps<typeof CheckoutSummar
     return <CheckoutSummary {...props} taxQuote={taxQuote} />
 }
 
-export function CheckoutPageContent({ currentYear, errors, footer, form, locale, subscriptionConfig, subscriptionPrices, summary }: CheckoutPageContentProps) {
+export function CheckoutPageContent({ currentYear, errors, footer, form, locale, subscriptionConfig, subscriptionPrices, summary, upgradeBanner }: CheckoutPageContentProps) {
     const [mobileCheckoutOpen, setMobileCheckoutOpen] = useState(false)
     const { hasError } = useCheckoutStage()
 
@@ -62,7 +63,9 @@ export function CheckoutPageContent({ currentYear, errors, footer, form, locale,
             <div className="flex w-full flex-col gap-8 lg:flex-row lg:gap-16">
                 {form && errors ? (
                     <CheckoutFormProvider content={form} errors={errors} locale={locale}>
-                        {!hasError && <CheckoutSummaryWithTax content={summary} errors={errors} subscriptionConfig={subscriptionConfig} subscriptionPrices={subscriptionPrices} />}
+                        {!hasError && (
+                            <CheckoutSummaryWithTax content={summary} errors={errors} subscriptionConfig={subscriptionConfig} subscriptionPrices={subscriptionPrices} upgradeBanner={upgradeBanner} />
+                        )}
                         <button
                             type="button"
                             onClick={() => setMobileCheckoutOpen(true)}
@@ -105,7 +108,7 @@ export function CheckoutPageContent({ currentYear, errors, footer, form, locale,
                         </div>
                     </CheckoutFormProvider>
                 ) : (
-                    <CheckoutSummary content={summary} subscriptionConfig={subscriptionConfig} subscriptionPrices={subscriptionPrices} />
+                    <CheckoutSummary content={summary} subscriptionConfig={subscriptionConfig} subscriptionPrices={subscriptionPrices} upgradeBanner={upgradeBanner} />
                 )}
             </div>
 
