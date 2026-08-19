@@ -5,6 +5,7 @@ export interface SummaryBadgeProps {
     icon: ReactNode
     value: ReactNode
     tone?: IconColor
+    size?: "sm" | "lg"
 }
 
 const ICON_TONE_CLASS_NAME: Record<IconColor, string> = {
@@ -29,9 +30,14 @@ const CONTAINER_TONE_CLASS_NAME: Record<IconColor, string> = {
     magenta: "border-magenta/10 bg-magenta/5",
 }
 
-export function SummaryBadge({ icon, value, tone = "neutral" }: SummaryBadgeProps) {
+const SIZE_CLASS_NAME: Record<"sm" | "lg", string> = {
+    sm: "gap-1 pl-1 pr-2 py-0.5 text-xs",
+    lg: "gap-1.5 pl-2 pr-3 py-0.5 text-base",
+}
+
+export function SummaryBadge({ icon, value, tone = "neutral", size = "sm" }: SummaryBadgeProps) {
     return (
-        <span className={`inline-flex min-w-0 max-w-full items-center gap-1 rounded-xl border pl-1 pr-2 py-0.5 text-xs ${CONTAINER_TONE_CLASS_NAME[tone]}`}>
+        <span className={`inline-flex min-w-0 max-w-full items-center rounded-xl border ${SIZE_CLASS_NAME[size]} ${CONTAINER_TONE_CLASS_NAME[tone]}`}>
             <span className={`inline-flex shrink-0 ${ICON_TONE_CLASS_NAME[tone]}`}>{icon}</span>
             <span className="min-w-0 truncate font-medium text-white">{value}</span>
         </span>
