@@ -5,7 +5,7 @@ import { LicenseSidebar } from "@/components/licenses/LicenseSidebar"
 import type { ErrorsContent, LicenseContent } from "@/lib/cms"
 import { AppLocale } from "@/lib/i18n"
 import { Button, Card, Flex, FullScreen, ScrollArea, ScrollAreaScrollbar, ScrollAreaThumb, ScrollAreaViewport, Text } from "@code0-tech/pictor"
-import type { ReactNode } from "react"
+import { Fragment, type ReactNode } from "react"
 
 interface LicenseLayoutProps {
     children: ReactNode
@@ -56,8 +56,8 @@ function LicenseLayoutContent({ children, content, errors, locale }: LicenseLayo
 export function LicenseLayout(props: LicenseLayoutProps) {
     return (
         <LicenseDataProvider loadError={props.errors.dashboardLoad} redirectUrl={props.content.redirectUrl}>
-            <LicenseLayoutContent {...props} />
-            {props.modal}
+            <LicenseLayoutContent key="content" {...props} />
+            <Fragment key="modal">{props.modal}</Fragment>
         </LicenseDataProvider>
     )
 }

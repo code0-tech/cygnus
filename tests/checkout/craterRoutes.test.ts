@@ -1360,56 +1360,40 @@ test("license detail loads lightweight navigation and forwards the invoice curso
                                 email: "second@example.com",
                                 name: "Second",
                                 licenses: {
+                                    count: 2,
                                     edges: [
                                         { cursor: "license-8a", node: { id: "gid://crater/License/8", plan: "pro", updatedAt: "2026-08-11T10:00:00Z" } },
-                                        { cursor: "license-8b", node: { id: "gid://crater/License/9", plan: "custom", updatedAt: "2026-08-12T10:00:00Z" } },
-                                    ],
-                                    pageInfo: { endCursor: "license-8b", hasNextPage: false },
-                                },
-                            },
-                        ],
-                    },
-                },
-            },
-        },
-        {
-            data: {
-                currentUser: {
-                    customers: {
-                        nodes: [
-                            {
-                                id: "gid://crater/Customer/8",
-                                customerType: "business",
-                                email: "second@example.com",
-                                name: "Second",
-                                licenses: {
-                                    count: 2,
-                                    nodes: [
                                         {
-                                            aiTokens: 500000000,
-                                            deploymentType: "self_hosted",
-                                            id: "gid://crater/License/9",
-                                            paymentPeriod: "MONTHLY",
-                                            plan: "custom",
-                                            status: "paid",
-                                            updatedAt: "2026-08-12T10:00:00Z",
-                                            workflowExecutions: 250000,
-                                            invoices: {
-                                                nodes: [
-                                                    {
-                                                        billingPeriodEnd: "2026-09-01T00:00:00Z",
-                                                        billingPeriodStart: "2026-08-01T00:00:00Z",
-                                                        currency: "eur",
-                                                        id: "gid://crater/Invoice/12",
-                                                        invoiceNumber: "INV-0012",
-                                                        status: "paid",
-                                                        stripePdfUrl: "https://pay.stripe.com/invoice/example/pdf",
-                                                        total: 13500,
-                                                    },
-                                                ],
+                                            cursor: "license-8b",
+                                            node: {
+                                                aiTokens: 500000000,
+                                                deploymentType: "self_hosted",
+                                                id: "gid://crater/License/9",
+                                                paymentPeriod: "MONTHLY",
+                                                plan: "custom",
+                                                status: "paid",
+                                                updatedAt: "2026-08-12T10:00:00Z",
+                                                workflowExecutions: 250000,
+                                                invoices: {
+                                                    count: 1,
+                                                    nodes: [
+                                                        {
+                                                            billingPeriodEnd: "2026-09-01T00:00:00Z",
+                                                            billingPeriodStart: "2026-08-01T00:00:00Z",
+                                                            currency: "eur",
+                                                            id: "gid://crater/Invoice/12",
+                                                            invoiceNumber: "INV-0012",
+                                                            status: "paid",
+                                                            stripePdfUrl: "https://pay.stripe.com/invoice/example/pdf",
+                                                            total: 13500,
+                                                        },
+                                                    ],
+                                                    pageInfo: { endCursor: "invoice-25", hasNextPage: false },
+                                                },
                                             },
                                         },
                                     ],
+                                    pageInfo: { endCursor: "license-8b", hasNextPage: false },
                                 },
                             },
                         ],
@@ -1433,8 +1417,7 @@ test("license detail loads lightweight navigation and forwards the invoice curso
         assert.equal(response.status, 200)
         assert.equal(graphQLServer.requests[0].body.operationName, "CustomerNavigationPage")
         assert.equal(graphQLServer.requests[1].body.operationName, "LicenseNavigationPage")
-        assert.equal(graphQLServer.requests[2].body.operationName, "LicenseDetail")
-        assert.deepEqual(graphQLServer.requests[2].body.variables, { customerAfter: "customer-7", licenseAfter: "license-8a", invoiceAfter: "invoice-25" })
+        assert.deepEqual(graphQLServer.requests[1].body.variables, { customerAfter: "customer-7", invoiceAfter: "invoice-25" })
         assert.deepEqual(
             body.customers.map((customer: { id: string }) => customer.id),
             ["gid://crater/Customer/8"]
@@ -1455,7 +1438,7 @@ test("license detail loads lightweight navigation and forwards the invoice curso
                 total: 13500,
             },
         ])
-        assert.match(graphQLServer.requests[2].body.query ?? "", /invoices\(after: \$invoiceAfter, first: 25\)/)
+        assert.match(graphQLServer.requests[1].body.query ?? "", /invoices\(after: \$invoiceAfter, first: 25\)/)
         assert.deepEqual(
             body.navigationLicenses.map((license: { id: string }) => license.id),
             ["gid://crater/License/9", "gid://crater/License/8", "gid://crater/License/7"]

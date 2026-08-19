@@ -6,6 +6,7 @@ import type { Customer, Invoice, License, Mutation, MutationLicensesLinkNamespac
 import { gql, type TypedDocumentNode } from "@apollo/client"
 
 export const runtime = "nodejs"
+export const dynamic = "force-dynamic"
 
 type LicenseDashboardQuery = Pick<Query, "currentUser">
 type CustomerPageVariables = { customerAfter?: string | null }
@@ -109,8 +110,14 @@ const CUSTOMER_NAVIGATION_PAGE: TypedDocumentNode<LicenseDashboardQuery, Custome
     }
 `
 
+// Fetches full per-license detail (incl. invoices) directly during navigation, rather than trying to seek to one
+// already-known license via a second, separate "after this cursor" query: Crater's StableConnection resolves
+// "after" purely by comparing license ids, which silently diverges from the "most recently updated first" order
+// this connection is sorted by (see CustomerType#licenses), so a synthetic seek cursor can land on the wrong row
+// whenever any license anywhere has a higher id than the seek target. Walking the same connection page by page
+// with real, server-issued endCursor values (as this loop does) does not have that failure mode.
 const LICENSE_NAVIGATION_PAGE: TypedDocumentNode<LicenseDashboardQuery, LicenseDetailVariables> = gql`
-    query LicenseNavigationPage($customerAfter: String, $licenseAfter: String) {
+    query LicenseNavigationPage($customerAfter: String, $licenseAfter: String, $invoiceAfter: String) {
         currentUser {
             customers(after: $customerAfter, first: 1) {
                 nodes {
@@ -120,15 +127,50 @@ const LICENSE_NAVIGATION_PAGE: TypedDocumentNode<LicenseDashboardQuery, LicenseD
                     email
                     updatedAt
                     licenses(after: $licenseAfter, first: ${PAGE_SIZE}) {
+                        count
                         edges {
                             cursor
                             node {
+                                aiTokens
                                 deploymentType
                                 id
                                 namespaceId
+                                paymentPeriod
                                 plan
                                 status
                                 updatedAt
+                                workflowExecutions
+                                subscription {
+                                    id
+                                    status
+                                    cancelAt
+                                    canceledAt
+                                    currentPeriodEnd
+                                    pendingUpdate {
+                                        plan
+                                        paymentPeriod
+                                        aiTokens
+                                        workflowExecutions
+                                        effectiveAt
+                                    }
+                                }
+                                invoices(after: $invoiceAfter, first: ${PAGE_SIZE}) {
+                                    count
+                                    nodes {
+                                        billingPeriodEnd
+                                        billingPeriodStart
+                                        currency
+                                        id
+                                        invoiceNumber
+                                        status
+                                        stripePdfUrl
+                                        total
+                                    }
+                                    pageInfo {
+                                        endCursor
+                                        hasNextPage
+                                    }
+                                }
                             }
                         }
                         pageInfo {
@@ -191,67 +233,6 @@ const LICENSE_CUSTOMER_DETAIL: TypedDocumentNode<LicenseDashboardQuery, LicenseD
                         pageInfo {
                             endCursor
                             hasNextPage
-                        }
-                    }
-                }
-            }
-        }
-    }
-`
-
-const LICENSE_DETAIL: TypedDocumentNode<LicenseDashboardQuery, LicenseDetailVariables> = gql`
-    query LicenseDetail($customerAfter: String, $licenseAfter: String, $invoiceAfter: String) {
-        currentUser {
-            customers(after: $customerAfter, first: 1) {
-                nodes {
-                    id
-                    customerType
-                    name
-                    email
-                    updatedAt
-                    licenses(after: $licenseAfter, first: 1) {
-                        count
-                        nodes {
-                            aiTokens
-                            deploymentType
-                            id
-                            namespaceId
-                            paymentPeriod
-                            plan
-                            status
-                            updatedAt
-                            workflowExecutions
-                            subscription {
-                                id
-                                status
-                                cancelAt
-                                canceledAt
-                                currentPeriodEnd
-                                pendingUpdate {
-                                    plan
-                                    paymentPeriod
-                                    aiTokens
-                                    workflowExecutions
-                                    effectiveAt
-                                }
-                            }
-                            invoices(after: $invoiceAfter, first: ${PAGE_SIZE}) {
-                                count
-                                nodes {
-                                    billingPeriodEnd
-                                    billingPeriodStart
-                                    currency
-                                    id
-                                    invoiceNumber
-                                    status
-                                    stripePdfUrl
-                                    total
-                                }
-                                pageInfo {
-                                    endCursor
-                                    hasNextPage
-                                }
-                            }
                         }
                     }
                 }
@@ -470,7 +451,7 @@ async function findCustomerCursor(client: ReturnType<typeof createApolloClient>,
     }
 }
 
-async function findLicenseCursor(client: ReturnType<typeof createApolloClient>, customerAfter: string | null, customerId: string, licenseId: string) {
+async function findLicenseCursor(client: ReturnType<typeof createApolloClient>, customerAfter: string | null, customerId: string, licenseId: string, invoiceAfter: string | null) {
     const seenCursors = new Set<string>()
     const navigationLicenses: LicenseDashboardLicense[] = []
     let licenseAfter: string | null = null
@@ -478,7 +459,7 @@ async function findLicenseCursor(client: ReturnType<typeof createApolloClient>, 
     while (true) {
         const result = await client.query({
             query: LICENSE_NAVIGATION_PAGE,
-            variables: { ...(customerAfter ? { customerAfter } : {}), ...(licenseAfter ? { licenseAfter } : {}) },
+            variables: { ...(customerAfter ? { customerAfter } : {}), ...(licenseAfter ? { licenseAfter } : {}), ...(invoiceAfter ? { invoiceAfter } : {}) },
             fetchPolicy: "no-cache",
         })
         const customer = result.data?.currentUser?.customers?.nodes?.[0]
@@ -487,13 +468,9 @@ async function findLicenseCursor(client: ReturnType<typeof createApolloClient>, 
 
         const edges = customer.licenses?.edges ?? []
         appendNavigationLicenses(navigationLicenses, customer)
-        const licenseIndex = edges.findIndex((edge) => edge?.node?.id === licenseId)
-        if (licenseIndex >= 0) {
-            return {
-                status: "found" as const,
-                licenseAfter: licenseIndex > 0 ? (edges[licenseIndex - 1]?.cursor ?? null) : licenseAfter,
-                navigationLicenses,
-            }
+        const matchedLicense = edges.find((edge) => edge?.node?.id === licenseId)?.node
+        if (matchedLicense) {
+            return { status: "found" as const, customer, license: matchedLicense, navigationLicenses }
         }
 
         const pageInfo = mapPageInfo(customer.licenses?.pageInfo)
@@ -548,23 +525,40 @@ export async function GET(request: Request) {
         if (customerLookup.status === "unauthenticated") return craterJson({ error: "The Crater session has no authenticated user." }, 401)
         if (customerLookup.status === "missing") return craterJson({ error: "The requested customer was not found." }, 404)
 
-        let targetLicenseAfter: string | null = licenseAfter
-        let navigationLicenses = customerLookup.navigationLicenses
         if (view === "license") {
-            const licenseLookup = await findLicenseCursor(client, customerLookup.customerAfter, customerId, licenseId)
+            const licenseLookup = await findLicenseCursor(client, customerLookup.customerAfter, customerId, licenseId, invoiceAfter)
             if (licenseLookup.status === "missing") return craterJson({ error: "The requested license was not found." }, 404)
-            targetLicenseAfter = licenseLookup.licenseAfter
-            navigationLicenses = [...navigationLicenses, ...licenseLookup.navigationLicenses.filter((license) => !navigationLicenses.some((candidate) => candidate.id === license.id))]
+
+            const navigationLicenses = [
+                ...customerLookup.navigationLicenses,
+                ...licenseLookup.navigationLicenses.filter((license) => !customerLookup.navigationLicenses.some((candidate) => candidate.id === license.id)),
+            ]
+            navigationLicenses.sort((left, right) => Date.parse(right.updatedAt ?? "") - Date.parse(left.updatedAt ?? ""))
+
+            const mappedCustomer = mapCustomer(licenseLookup.customer)
+            const mappedLicense = mapLicense(licenseLookup.license, licenseLookup.customer)
+            if (!mappedCustomer || !mappedLicense) return craterJson({ error: "Crater returned incomplete license data." }, 502)
+            if (!navigationLicenses.some((candidate) => candidate.id === mappedLicense.id)) navigationLicenses.push(mappedLicense)
+
+            return setCraterSessionCookie(
+                craterJson({
+                    customers: [mappedCustomer],
+                    licenses: [mappedLicense],
+                    navigationLicenses,
+                    pagination: { invoices: mapPageInfo(licenseLookup.license.invoices?.pageInfo, licenseLookup.license.invoices?.count) },
+                } satisfies LicenseDashboardData),
+                session.token
+            )
         }
+
+        const navigationLicenses = customerLookup.navigationLicenses
         navigationLicenses.sort((left, right) => Date.parse(right.updatedAt ?? "") - Date.parse(left.updatedAt ?? ""))
 
         const detailResult = await client.query({
-            query: view === "customer" ? LICENSE_CUSTOMER_DETAIL : LICENSE_DETAIL,
+            query: LICENSE_CUSTOMER_DETAIL,
             variables: {
                 ...(customerLookup.customerAfter ? { customerAfter: customerLookup.customerAfter } : {}),
-                ...(view === "customer" && licenseAfter ? { licenseAfter } : {}),
-                ...(view === "license" && targetLicenseAfter ? { licenseAfter: targetLicenseAfter } : {}),
-                ...(view === "license" && invoiceAfter ? { invoiceAfter } : {}),
+                ...(licenseAfter ? { licenseAfter } : {}),
             },
             fetchPolicy: "no-cache",
         })
@@ -573,7 +567,6 @@ export async function GET(request: Request) {
 
         const detailData = mapUserData(detailUser)
         if (detailData.customers[0]?.id !== customerId) return craterJson({ error: "The requested customer was not found." }, 404)
-        if (view === "license" && detailData.licenses[0]?.id !== licenseId) return craterJson({ error: "The requested license was not found." }, 404)
 
         for (const license of detailData.licenses) {
             if (!navigationLicenses.some((candidate) => candidate.id === license.id)) navigationLicenses.push(license)
@@ -581,11 +574,7 @@ export async function GET(request: Request) {
         navigationLicenses.sort((left, right) => Date.parse(right.updatedAt ?? "") - Date.parse(left.updatedAt ?? ""))
 
         const detailCustomer = detailUser.customers?.nodes?.[0]
-        const detailLicense = detailCustomer?.licenses?.nodes?.[0]
-        const pagination =
-            view === "customer"
-                ? { licenses: mapPageInfo(detailCustomer?.licenses?.pageInfo, detailCustomer?.licenses?.count) }
-                : { invoices: mapPageInfo(detailLicense?.invoices?.pageInfo, detailLicense?.invoices?.count) }
+        const pagination = { licenses: mapPageInfo(detailCustomer?.licenses?.pageInfo, detailCustomer?.licenses?.count) }
 
         return setCraterSessionCookie(craterJson({ ...detailData, navigationLicenses, pagination } satisfies LicenseDashboardData), session.token)
     } catch (error) {
