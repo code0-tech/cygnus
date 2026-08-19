@@ -97,17 +97,6 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, subs
                     </Text>
                     {isLoading || license ? (
                         <Flex align="center" style={{ gap: "0.5rem" }} className="flex-wrap justify-end">
-                            {license?.subscriptionId && (
-                                <Button
-                                    type="button"
-                                    variant="normal"
-                                    paddingSize="xs"
-                                    onClick={() => router.push(`/${locale}/licenses/customer/${encodeURIComponent(license.customerId)}/license/${encodeURIComponent(license.id)}/billing`)}
-                                    className="shrink-0 text-sm!"
-                                >
-                                    {content.billing.title}
-                                </Button>
-                            )}
                             <Button
                                 type="button"
                                 variant="normal"
@@ -174,9 +163,22 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, subs
 
             <Spacing spacing="xl" />
             <section aria-labelledby="license-invoices-heading">
-                <Text id="license-invoices-heading" hierarchy="secondary" size="lg">
-                    {content.invoices.title}
-                </Text>
+                <Flex align="center" justify="space-between" style={{ gap: "1rem" }}>
+                    <Text id="license-invoices-heading" hierarchy="secondary" size="lg">
+                        {content.invoices.title}
+                    </Text>
+                    {license?.subscriptionId && (
+                        <Button
+                            type="button"
+                            variant="normal"
+                            paddingSize="xs"
+                            onClick={() => router.push(`/${locale}/licenses/customer/${encodeURIComponent(license.customerId)}/license/${encodeURIComponent(license.id)}/billing`)}
+                            className="shrink-0 text-sm!"
+                        >
+                            {content.billing.title}
+                        </Button>
+                    )}
+                </Flex>
                 <Spacing spacing="md" />
 
                 <Card color="secondary" className="pt-2!">
