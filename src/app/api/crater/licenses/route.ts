@@ -453,7 +453,6 @@ async function findCustomerCursor(client: ReturnType<typeof createApolloClient>,
 
 async function findLicenseCursor(client: ReturnType<typeof createApolloClient>, customerAfter: string | null, customerId: string, licenseId: string, invoiceAfter: string | null) {
     const seenCursors = new Set<string>()
-    const navigationLicenses: LicenseDashboardLicense[] = []
     let licenseAfter: string | null = null
 
     while (true) {
@@ -467,10 +466,9 @@ async function findLicenseCursor(client: ReturnType<typeof createApolloClient>, 
         if (customer.id !== customerId) return { status: "missing" as const }
 
         const edges = customer.licenses?.edges ?? []
-        appendNavigationLicenses(navigationLicenses, customer)
         const matchedLicense = edges.find((edge) => edge?.node?.id === licenseId)?.node
         if (matchedLicense) {
-            return { status: "found" as const, customer, license: matchedLicense, navigationLicenses }
+            return { status: "found" as const, customer, license: matchedLicense }
         }
 
         const pageInfo = mapPageInfo(customer.licenses?.pageInfo)
@@ -529,16 +527,13 @@ export async function GET(request: Request) {
             const licenseLookup = await findLicenseCursor(client, customerLookup.customerAfter, customerId, licenseId, invoiceAfter)
             if (licenseLookup.status === "missing") return craterJson({ error: "The requested license was not found." }, 404)
 
-            const navigationLicenses = [
-                ...customerLookup.navigationLicenses,
-                ...licenseLookup.navigationLicenses.filter((license) => !customerLookup.navigationLicenses.some((candidate) => candidate.id === license.id)),
-            ]
-            navigationLicenses.sort((left, right) => Date.parse(right.updatedAt ?? "") - Date.parse(left.updatedAt ?? ""))
+            const navigationLicenses = [...customerLookup.navigationLicenses]
 
             const mappedCustomer = mapCustomer(licenseLookup.customer)
             const mappedLicense = mapLicense(licenseLookup.license, licenseLookup.customer)
             if (!mappedCustomer || !mappedLicense) return craterJson({ error: "Crater returned incomplete license data." }, 502)
             if (!navigationLicenses.some((candidate) => candidate.id === mappedLicense.id)) navigationLicenses.push(mappedLicense)
+            navigationLicenses.sort((left, right) => Date.parse(right.updatedAt ?? "") - Date.parse(left.updatedAt ?? ""))
 
             return setCraterSessionCookie(
                 craterJson({
@@ -567,11 +562,6 @@ export async function GET(request: Request) {
 
         const detailData = mapUserData(detailUser)
         if (detailData.customers[0]?.id !== customerId) return craterJson({ error: "The requested customer was not found." }, 404)
-
-        for (const license of detailData.licenses) {
-            if (!navigationLicenses.some((candidate) => candidate.id === license.id)) navigationLicenses.push(license)
-        }
-        navigationLicenses.sort((left, right) => Date.parse(right.updatedAt ?? "") - Date.parse(left.updatedAt ?? ""))
 
         const detailCustomer = detailUser.customers?.nodes?.[0]
         const pagination = { licenses: mapPageInfo(detailCustomer?.licenses?.pageInfo, detailCustomer?.licenses?.count) }
