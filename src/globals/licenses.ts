@@ -374,7 +374,7 @@ export const Licenses: GlobalConfig = {
             name: "billing",
             type: "group",
             fields: [
-                { name: "title", type: "text", required: true, localized: true, defaultValue: localizedDefault("Billing", "Abrechnung") },
+                { name: "title", type: "text", required: true, localized: true, defaultValue: localizedDefault("Change Period", "Zahlungsperiode ändern") },
                 {
                     name: "description",
                     type: "textarea",

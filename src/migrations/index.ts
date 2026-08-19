@@ -128,6 +128,7 @@ import * as migration_20260817_124334_remove_subscription_prices from './2026081
 import * as migration_20260818_063753_upgrade_checkout_banner from './20260818_063753_upgrade_checkout_banner';
 import * as migration_20260818_065236_checkout_next_steps from './20260818_065236_checkout_next_steps';
 import * as migration_20260818_101759_checkout_send_offer_label from './20260818_101759_checkout_send_offer_label';
+import * as migration_20260819_150000_license_billing_title_change_period from './20260819_150000_license_billing_title_change_period';
 
 export const migrations = [
   {
@@ -779,5 +780,10 @@ export const migrations = [
     up: migration_20260818_101759_checkout_send_offer_label.up,
     down: migration_20260818_101759_checkout_send_offer_label.down,
     name: '20260818_101759_checkout_send_offer_label'
+  },
+  {
+    up: migration_20260819_150000_license_billing_title_change_period.up,
+    down: migration_20260819_150000_license_billing_title_change_period.down,
+    name: '20260819_150000_license_billing_title_change_period'
   },
 ];
