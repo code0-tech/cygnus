@@ -4,7 +4,7 @@ import { CheckoutDiscount, type CheckoutDiscountValue } from "@/components/check
 import { CheckoutNextSteps } from "@/components/checkout/CheckoutNextSteps"
 import { useCheckoutStage } from "@/components/checkout/CheckoutStepper"
 import { SummaryBadge } from "@/components/checkout/CheckoutSummaryBadge"
-import { CheckoutUpgradePlan } from "@/components/checkout/CheckoutUpgradePlan"
+import { UpgradePlanBanner, type SubscriptionPlan } from "@/components/checkout/UpgradePlanBanner"
 import { getIcon } from "@/components/ui/IconRenderer"
 import { Switch } from "@/components/ui/Switch"
 import type { CheckoutTaxQuoteData } from "@/lib/checkout/checkoutSubmission"
@@ -47,6 +47,13 @@ export function CheckoutSummary({ content, errors, nextSteps, subscriptionConfig
         router.replace(`${pathname}?${nextParams.toString()}`, { scroll: false })
     }
     const planParam = searchParams.get("plan")
+    const handleUpgradePlan = (nextPlan: SubscriptionPlan) => {
+        const nextSearchParams = new URLSearchParams(searchParams.toString())
+        nextSearchParams.set("plan", nextPlan)
+        nextSearchParams.delete("aiTokens")
+        nextSearchParams.delete("workflowExecutions")
+        router.push(`/${locale}/checkout?${nextSearchParams.toString()}`)
+    }
     const paymentPeriodParam = searchParams.get("paymentPeriod")
     const workflowExecutionsParam = searchParams.get("workflowExecutions")
     const aiTokensParam = searchParams.get("aiTokens")
@@ -227,7 +234,7 @@ export function CheckoutSummary({ content, errors, nextSteps, subscriptionConfig
                 </div>
             </Card>
 
-            <CheckoutUpgradePlan content={upgradeBanner} subscriptionConfig={subscriptionConfig} />
+            <UpgradePlanBanner content={upgradeBanner} currentPlan={planParam} onUpgrade={handleUpgradePlan} subscriptionConfig={subscriptionConfig} />
 
             {errors && (
                 <CheckoutDiscount

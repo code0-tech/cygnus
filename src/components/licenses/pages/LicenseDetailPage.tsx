@@ -10,7 +10,8 @@ import {
     LicenseDataTableHeader as DataTableHeader,
     LicenseDataTableHeaderColumn as DataTableHeaderColumn,
 } from "@/components/licenses/LicenseDataTable"
-import type { LicenseContent } from "@/lib/cms"
+import { UpgradePlanBanner } from "@/components/checkout/UpgradePlanBanner"
+import type { CheckoutData, LicenseContent, SubscriptionConfigData } from "@/lib/cms"
 import { formatCompactNumber, formatMinorCurrency } from "@/lib/formatters"
 import type { AppLocale } from "@/lib/i18n"
 import { decodeLicenseRouteId, getNamespaceDisplayId } from "@/lib/licenses/licenseRoute"
@@ -19,16 +20,17 @@ import { Button, Card, Flex, Spacing, Text } from "@code0-tech/pictor"
 import { useRouter } from "next/navigation"
 import { Fragment } from "react"
 import { LicenseLoadMoreButton } from "@/components/licenses/LicenseLoadMoreButton"
-import { UpgradePlanBox } from "../UpgradePlanBox"
 
 interface LicenseDetailPageProps {
     content: LicenseContent
     customerId: string
     licenseId: string
     locale: AppLocale
+    subscriptionConfig?: SubscriptionConfigData | null
+    upgradeBanner?: CheckoutData["upgradeBanner"] | null
 }
 
-export function LicenseDetailPage({ content, customerId, licenseId, locale }: LicenseDetailPageProps) {
+export function LicenseDetailPage({ content, customerId, licenseId, locale, subscriptionConfig, upgradeBanner }: LicenseDetailPageProps) {
     const router = useRouter()
     const { customers, isLoading, licenses, loadMore, loadingMore, pagination } = useLicenseData()
     const resolvedCustomerId = decodeLicenseRouteId(customerId)
@@ -173,21 +175,12 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale }: Li
             <Spacing spacing="xl" />
 
             {license?.subscriptionId && (
-                <Card color="secondary" className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        Upgrade to
-                        <UpgradePlanBox plan={license.plan === "pro" ? "max" : "custom"} />
-                    </div>
-                    <Button
-                        type="button"
-                        variant="filled"
-                        paddingSize="xs"
-                        className="shrink-0 text-sm! bg-white/80! hover:bg-white! text-primary!"
-                        onClick={() => router.push(`/${locale}/licenses/customer/${encodeURIComponent(license.customerId)}/license/${encodeURIComponent(license.id)}/upgrade`)}
-                    >
-                        {content.upgrade.title}
-                    </Button>
-                </Card>
+                <UpgradePlanBanner
+                    content={upgradeBanner}
+                    currentPlan={license.plan}
+                    onUpgrade={() => router.push(`/${locale}/licenses/customer/${encodeURIComponent(license.customerId)}/license/${encodeURIComponent(license.id)}/upgrade`)}
+                    subscriptionConfig={subscriptionConfig}
+                />
             )}
 
             <Spacing spacing="xl" />
