@@ -53,6 +53,7 @@ export interface LicenseDashboardLicense {
     paymentPeriod?: string
     pendingUpdate?: LicenseDashboardPendingUpdate
     plan?: string
+    startDate?: string
     status?: string
     subscriptionId?: string
     subscriptionStatus?: string

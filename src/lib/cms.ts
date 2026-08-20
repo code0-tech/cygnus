@@ -465,6 +465,9 @@ export interface LicenseContent {
         scheduledNote: string
         loadingLabel: string
     }
+    withdrawal: {
+        text: string
+    }
     billing: {
         title: string
         description: string
