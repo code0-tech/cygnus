@@ -18,8 +18,9 @@ interface UpgradePlanBannerProps {
 export function UpgradePlanBanner({ content, currentPlan, onUpgrade, subscriptionConfig }: UpgradePlanBannerProps) {
     if (!content || !subscriptionConfig) return null
 
-    const currentIndex = currentPlan ? PLAN_ORDER.indexOf(currentPlan.toLowerCase() as SubscriptionPlan) : -1
-    const nextPlan = currentIndex >= 0 && currentIndex < PLAN_ORDER.length - 1 ? PLAN_ORDER[currentIndex + 1] : null
+    const normalizedCurrentPlan = currentPlan ? (currentPlan.toLowerCase() as SubscriptionPlan) : null
+    const currentIndex = normalizedCurrentPlan ? PLAN_ORDER.indexOf(normalizedCurrentPlan) : -1
+    const nextPlan = normalizedCurrentPlan === "custom" ? "custom" : currentIndex >= 0 && currentIndex < PLAN_ORDER.length - 1 ? PLAN_ORDER[currentIndex + 1] : null
     if (!nextPlan) return null
 
     const nextPlanTitle = subscriptionConfig.packages[nextPlan].title

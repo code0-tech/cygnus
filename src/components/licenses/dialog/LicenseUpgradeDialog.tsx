@@ -64,9 +64,7 @@ export function LicenseUpgradeDialog({ content, customerId, errors, licenseId, l
 
     const aiTokensRange = subscriptionConfig.aiTokens[customerType]
     const workflowExecutionsRange = subscriptionConfig.workflowExecutions[customerType]
-    const aiTokensMin = wasCustom && typeof license?.aiTokens === "number" ? license.aiTokens : aiTokensRange.min
     const aiTokensDefault = wasCustom && typeof license?.aiTokens === "number" ? license.aiTokens : aiTokensRange.default
-    const workflowExecutionsMin = wasCustom && typeof license?.workflowExecutions === "number" ? license.workflowExecutions : workflowExecutionsRange.min
     const workflowExecutionsDefault = wasCustom && typeof license?.workflowExecutions === "number" ? license.workflowExecutions : workflowExecutionsRange.default
 
     const [aiTokens, setAiTokens] = useState<number | null>(null)
@@ -109,8 +107,6 @@ export function LicenseUpgradeDialog({ content, customerId, errors, licenseId, l
         setIsLoadingPreview(true)
         setPreviewError(null)
 
-        // While the slider is being dragged, plan/resolvedAiTokens/resolvedWorkflowExecutions change on every
-        // tick. Debounce the actual preview request so dragging doesn't spam Crater with a request per pixel.
         const debounceTimer = window.setTimeout(() => {
             void fetch("/api/crater/subscriptions/preview", {
                 method: "POST",
@@ -209,9 +205,8 @@ export function LicenseUpgradeDialog({ content, customerId, errors, licenseId, l
 
                         {plan === "custom" && (
                             <div className="space-y-4">
-                                {wasCustom && <p className="text-xs text-tertiary">{content.upgrade.increaseOnlyNote}</p>}
                                 <Slider
-                                    min={aiTokensMin}
+                                    min={aiTokensRange.min}
                                     max={aiTokensRange.max}
                                     step={aiTokensRange.step}
                                     value={resolvedAiTokens}
@@ -223,7 +218,7 @@ export function LicenseUpgradeDialog({ content, customerId, errors, licenseId, l
                                     shape="cone-incline"
                                 />
                                 <Slider
-                                    min={workflowExecutionsMin}
+                                    min={workflowExecutionsRange.min}
                                     max={workflowExecutionsRange.max}
                                     step={workflowExecutionsRange.step}
                                     value={resolvedWorkflowExecutions}
