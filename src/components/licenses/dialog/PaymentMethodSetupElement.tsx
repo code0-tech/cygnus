@@ -52,25 +52,25 @@ const appearance = {
 interface PaymentMethodSetupElementProps {
     clientSecret: string
     content: LicenseContent["editor"]
-    customerId: string
     errorMessage: string
     onCancel: () => void
     onSuccess: () => void
     retryLabel: string
     returnPath: string
+    subscriptionId: string
 }
 
 interface PaymentMethodSetupPendingStatusProps {
     content: LicenseContent["editor"]
-    customerId: string
     errorMessage: string
     onCancel: () => void
     onSuccess: () => void
     retryLabel: string
     setupIntentId: string
+    subscriptionId: string
 }
 
-export function PaymentMethodSetupPendingStatus({ content, customerId, errorMessage, onCancel, onSuccess, retryLabel, setupIntentId }: PaymentMethodSetupPendingStatusProps) {
+export function PaymentMethodSetupPendingStatus({ content, errorMessage, onCancel, onSuccess, retryLabel, setupIntentId, subscriptionId }: PaymentMethodSetupPendingStatusProps) {
     const [isComplete, setIsComplete] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [retryKey, setRetryKey] = useState(0)
@@ -81,8 +81,8 @@ export function PaymentMethodSetupPendingStatus({ content, customerId, errorMess
 
         const checkStatus = async () => {
             try {
-                const statusUrl = new URL("/api/crater/customer/payment-method-setup", window.location.origin)
-                statusUrl.searchParams.set("customerId", customerId)
+                const statusUrl = new URL("/api/crater/subscriptions/payment-method-setup", window.location.origin)
+                statusUrl.searchParams.set("subscriptionId", subscriptionId)
                 statusUrl.searchParams.set("setupIntentId", setupIntentId)
                 const response = await fetch(statusUrl, {
                     cache: "no-store",
@@ -115,7 +115,7 @@ export function PaymentMethodSetupPendingStatus({ content, customerId, errorMess
             controller.abort()
             if (timeout) clearTimeout(timeout)
         }
-    }, [customerId, errorMessage, onSuccess, retryKey, setupIntentId])
+    }, [errorMessage, onSuccess, retryKey, setupIntentId, subscriptionId])
 
     if (isComplete) {
         return (
@@ -162,7 +162,7 @@ export function PaymentMethodSetupPendingStatus({ content, customerId, errorMess
     )
 }
 
-function PaymentMethodSetupForm({ content, customerId, errorMessage, onCancel, onSuccess, retryLabel, returnPath }: Omit<PaymentMethodSetupElementProps, "clientSecret">) {
+function PaymentMethodSetupForm({ content, errorMessage, onCancel, onSuccess, retryLabel, returnPath, subscriptionId }: Omit<PaymentMethodSetupElementProps, "clientSecret">) {
     const stripe = useStripe()
     const elements = useElements()
     const [isReady, setIsReady] = useState(false)
@@ -201,12 +201,12 @@ function PaymentMethodSetupForm({ content, customerId, errorMessage, onCancel, o
         return (
             <PaymentMethodSetupPendingStatus
                 content={content}
-                customerId={customerId}
                 errorMessage={errorMessage}
                 onCancel={onCancel}
                 onSuccess={onSuccess}
                 retryLabel={retryLabel}
                 setupIntentId={setupIntentId}
+                subscriptionId={subscriptionId}
             />
         )
 
@@ -230,7 +230,7 @@ function PaymentMethodSetupForm({ content, customerId, errorMessage, onCancel, o
     )
 }
 
-export function PaymentMethodSetupElement({ clientSecret, content, customerId, errorMessage, onCancel, onSuccess, retryLabel, returnPath }: PaymentMethodSetupElementProps) {
+export function PaymentMethodSetupElement({ clientSecret, content, errorMessage, onCancel, onSuccess, retryLabel, returnPath, subscriptionId }: PaymentMethodSetupElementProps) {
     const stripeRef = useRef(stripePromise)
     const options = useMemo<StripeElementsOptions>(() => ({ appearance, clientSecret }), [clientSecret])
 
@@ -244,7 +244,15 @@ export function PaymentMethodSetupElement({ clientSecret, content, customerId, e
 
     return (
         <Elements key={clientSecret} stripe={stripeRef.current} options={options}>
-            <PaymentMethodSetupForm content={content} customerId={customerId} errorMessage={errorMessage} onCancel={onCancel} onSuccess={onSuccess} retryLabel={retryLabel} returnPath={returnPath} />
+            <PaymentMethodSetupForm
+                content={content}
+                errorMessage={errorMessage}
+                onCancel={onCancel}
+                onSuccess={onSuccess}
+                retryLabel={retryLabel}
+                returnPath={returnPath}
+                subscriptionId={subscriptionId}
+            />
         </Elements>
     )
 }

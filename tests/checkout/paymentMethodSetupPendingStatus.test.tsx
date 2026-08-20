@@ -53,7 +53,6 @@ test("keeps the payment method UI pending until Crater confirms webhook readines
     render(
         <PaymentMethodSetupPendingStatus
             content={content}
-            customerId="gid://crater/Customer/7"
             errorMessage={errorMessage}
             onCancel={() => undefined}
             onSuccess={() => {
@@ -61,6 +60,7 @@ test("keeps the payment method UI pending until Crater confirms webhook readines
             }}
             retryLabel="Try again"
             setupIntentId="seti_example"
+            subscriptionId="gid://crater/Subscription/8"
         />
     )
 

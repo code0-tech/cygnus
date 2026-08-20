@@ -13,10 +13,12 @@ interface PaymentMethodSetupDialogProps {
     disabled?: boolean
     errors: ErrorsContent
     locale: AppLocale
+    licenseId: string
     onSuccess: () => void
+    subscriptionId: string
 }
 
-export function PaymentMethodSetupDialog({ content, customerId, disabled = false, errors, locale, onSuccess }: PaymentMethodSetupDialogProps) {
+export function PaymentMethodSetupDialog({ content, customerId, disabled = false, errors, licenseId, locale, onSuccess, subscriptionId }: PaymentMethodSetupDialogProps) {
     const requestStartedRef = useRef(false)
     const [open, setOpen] = useState(false)
     const [clientSecret, setClientSecret] = useState<string | null>(null)
@@ -50,11 +52,11 @@ export function PaymentMethodSetupDialog({ content, customerId, disabled = false
         setError(null)
         let active = true
 
-        void fetch("/api/crater/customer/payment-method-setup", {
+        void fetch("/api/crater/subscriptions/payment-method-setup", {
             method: "POST",
             credentials: "same-origin",
             headers: { "content-type": "application/json" },
-            body: JSON.stringify({ customerId }),
+            body: JSON.stringify({ subscriptionId }),
         })
             .then(async (response) => {
                 const result: unknown = await response.json()
@@ -76,7 +78,7 @@ export function PaymentMethodSetupDialog({ content, customerId, disabled = false
         return () => {
             active = false
         }
-    }, [customerId, errors.paymentMethodUpdate, open, pendingSetupIntentId])
+    }, [errors.paymentMethodUpdate, open, pendingSetupIntentId, subscriptionId])
 
     return (
         <>
@@ -100,23 +102,23 @@ export function PaymentMethodSetupDialog({ content, customerId, disabled = false
                     ) : pendingSetupIntentId ? (
                         <PaymentMethodSetupPendingStatus
                             content={content.editor}
-                            customerId={customerId}
                             errorMessage={errors.paymentMethodUpdate}
                             onCancel={close}
                             onSuccess={onSuccess}
                             retryLabel={errors.retry}
                             setupIntentId={pendingSetupIntentId}
+                            subscriptionId={subscriptionId}
                         />
                     ) : clientSecret ? (
                         <PaymentMethodSetupElement
                             clientSecret={clientSecret}
                             content={content.editor}
-                            customerId={customerId}
                             errorMessage={errors.paymentMethodUpdate}
                             onCancel={close}
                             onSuccess={onSuccess}
                             retryLabel={errors.retry}
-                            returnPath={`/${locale}/licenses/customer/${encodeURIComponent(customerId)}/edit`}
+                            returnPath={`/${locale}/licenses/customer/${encodeURIComponent(customerId)}/license/${encodeURIComponent(licenseId)}/edit`}
+                            subscriptionId={subscriptionId}
                         />
                     ) : null}
                 </div>
