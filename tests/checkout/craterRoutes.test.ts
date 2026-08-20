@@ -52,6 +52,9 @@ test("Crater login returns retry guidance after its rate limit is exceeded", asy
     const previousMax = process.env.CRATER_LOGIN_RATE_LIMIT_MAX
     const previousWindow = process.env.CRATER_LOGIN_RATE_LIMIT_WINDOW_SECONDS
     const previousProxyHops = process.env.CRATER_RATE_LIMIT_TRUSTED_PROXY_HOPS
+    const originalWarn = console.warn
+    const warnings: string[] = []
+    console.warn = (message) => warnings.push(String(message))
     process.env.CRATER_LOGIN_RATE_LIMIT_MAX = "2"
     process.env.CRATER_LOGIN_RATE_LIMIT_WINDOW_SECONDS = "60"
     process.env.CRATER_RATE_LIMIT_TRUSTED_PROXY_HOPS = "1"
@@ -77,7 +80,17 @@ test("Crater login returns retry guidance after its rate limit is exceeded", asy
         assert.equal(response.headers.get("ratelimit-remaining"), "0")
         assert.equal(response.headers.get("ratelimit-reset"), "60")
         assert.equal(response.headers.get("cache-control"), "no-store")
+        assert.equal(warnings.length, 1)
+        assert.deepEqual(JSON.parse(warnings[0]), {
+            timestamp: JSON.parse(warnings[0]).timestamp,
+            event: "rate_limit_exceeded",
+            policy: "login",
+            limit: 2,
+            retryAfterSeconds: 60,
+            scope: "anonymous",
+        })
     } finally {
+        console.warn = originalWarn
         if (previousMax === undefined) delete process.env.CRATER_LOGIN_RATE_LIMIT_MAX
         else process.env.CRATER_LOGIN_RATE_LIMIT_MAX = previousMax
         if (previousWindow === undefined) delete process.env.CRATER_LOGIN_RATE_LIMIT_WINDOW_SECONDS
@@ -1036,6 +1049,9 @@ test("login and discount validation forward documented Crater domain error detai
     ])
     const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
     process.env.CRATER_GRAPHQL_URL = graphQLServer.url
+    const originalWarn = console.warn
+    const warnings: string[] = []
+    console.warn = (message) => warnings.push(String(message))
 
     try {
         const loginResponse = await createSession(
@@ -1067,7 +1083,12 @@ test("login and discount validation forward documented Crater domain error detai
         })
         assert.match(graphQLServer.requests[0].body.query ?? "", /fragment CraterErrorFields on Error/)
         assert.match(graphQLServer.requests[1].body.query ?? "", /fragment CraterErrorFields on Error/)
+        assert.equal(warnings.length, 1)
+        assert.match(warnings[0], /"event":"crater_login_failed"/)
+        assert.match(warnings[0], /"errorCode":"INVALID_SAGITTARIUS_TOKEN"/)
+        assert.doesNotMatch(warnings[0], /invalid-sagittarius-token|Sagittarius token was rejected/)
     } finally {
+        console.warn = originalWarn
         if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
         else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
         await graphQLServer.close()
