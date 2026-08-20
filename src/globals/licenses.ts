@@ -371,6 +371,27 @@ export const Licenses: GlobalConfig = {
             ],
         },
         {
+            name: "withdrawal",
+            type: "group",
+            admin: {
+                description:
+                    "Notice shown on the license detail page while the customer's statutory 14-day right of withdrawal is still running. Only shown for personal (B2C) customers.",
+            },
+            fields: [
+                {
+                    name: "text",
+                    type: "text",
+                    required: true,
+                    localized: true,
+                    defaultValue: localizedDefault(
+                        "You can withdraw from this purchase free of charge until {date}.",
+                        "Du kannst diesen Kauf bis zum {date} kostenlos widerrufen."
+                    ),
+                    admin: { description: "Use {date} as a placeholder for the withdrawal deadline." },
+                },
+            ],
+        },
+        {
             name: "billing",
             type: "group",
             fields: [

@@ -2642,6 +2642,7 @@ export const licenses_locales = pgTable('licenses_locales', {
   subscriptionPreview_immediateNote: varchar('subscription_preview_immediate_note').notNull(),
   subscriptionPreview_scheduledNote: varchar('subscription_preview_scheduled_note').notNull(),
   subscriptionPreview_loadingLabel: varchar('subscription_preview_loading_label').notNull(),
+  withdrawal_text: varchar('withdrawal_text').notNull(),
   billing_title: varchar('billing_title').notNull(),
   billing_description: varchar('billing_description').notNull(),
   billing_periodLabel: varchar('billing_period_label').notNull(),

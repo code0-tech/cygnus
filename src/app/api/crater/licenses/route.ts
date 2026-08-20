@@ -137,6 +137,7 @@ const LICENSE_NAVIGATION_PAGE: TypedDocumentNode<LicenseDashboardQuery, LicenseD
                                 namespaceId
                                 paymentPeriod
                                 plan
+                                startDate
                                 status
                                 updatedAt
                                 workflowExecutions
@@ -364,6 +365,7 @@ function mapLicense(license: License, customer: Customer): LicenseDashboardLicen
         ...(license.namespaceId ? { namespaceId: license.namespaceId } : {}),
         ...(license.paymentPeriod ? { paymentPeriod: license.paymentPeriod } : {}),
         ...(license.plan ? { plan: license.plan } : {}),
+        ...(license.startDate ? { startDate: license.startDate } : {}),
         ...(license.status ? { status: license.status } : {}),
         ...(license.updatedAt ? { updatedAt: license.updatedAt } : {}),
         ...(typeof license.workflowExecutions === "number" ? { workflowExecutions: license.workflowExecutions } : {}),

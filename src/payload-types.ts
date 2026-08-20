@@ -3320,6 +3320,15 @@ export interface License {
     scheduledNote: string;
     loadingLabel: string;
   };
+  /**
+   * Notice shown on the license detail page while the customer's statutory 14-day right of withdrawal is still running. Only shown for personal (B2C) customers.
+   */
+  withdrawal: {
+    /**
+     * Use {date} as a placeholder for the withdrawal deadline.
+     */
+    text: string;
+  };
   billing: {
     title: string;
     description: string;
@@ -4075,6 +4084,11 @@ export interface LicensesSelect<T extends boolean = true> {
         immediateNote?: T;
         scheduledNote?: T;
         loadingLabel?: T;
+      };
+  withdrawal?:
+    | T
+    | {
+        text?: T;
       };
   billing?:
     | T
