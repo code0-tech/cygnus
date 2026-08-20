@@ -44,6 +44,7 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, subs
     const licenseDetails = license
         ? [
               { label: content.dashboard.statusLabel, value: formatLicenseDisplayValue(license.status, "status", content.values), showStatusDot: true },
+              { label: content.dashboard.customerLabel, value: customer?.name?.trim() || customer?.email?.trim() || customer?.id || license.customerName || license.customerId },
               {
                   label: content.dashboard.typeLabel,
                   value: formatLicenseDisplayValue(customer?.customerType ?? license.customerType, "customerType", content.values),
