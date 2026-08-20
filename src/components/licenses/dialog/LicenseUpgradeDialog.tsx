@@ -1,6 +1,7 @@
 "use client"
 
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
+import { LicenseDialog } from "@/components/licenses/dialog/LicenseDialog"
 import { AcceptTermsCheckbox } from "@/components/forms/AcceptTermsCheckbox"
 import { SummaryBadge } from "@/components/checkout/CheckoutSummaryBadge"
 import { Switch } from "@/components/ui/Switch"
@@ -16,8 +17,7 @@ import { calculateSubscriptionQuote, type PaymentPeriod } from "@/lib/subscripti
 import { getSubscriptionCatalog } from "@/lib/subscriptionCatalog"
 import { getPaymentPeriodForCustomerType } from "@/lib/subscriptionConfigurator"
 import type { SubscriptionPriceCatalog } from "@/lib/subscriptionPrices"
-import { Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogOverlay, DialogPortal, DialogTitle } from "@code0-tech/pictor"
-import { IconX } from "@tabler/icons-react"
+import { Button, DialogFooter } from "@code0-tech/pictor"
 import { useRouter } from "next/navigation"
 import { useEffect, useMemo, useState } from "react"
 
@@ -175,111 +175,94 @@ export function LicenseUpgradeDialog({ content, customerId, errors, licenseId, l
     }
 
     return (
-        <Dialog open onOpenChange={(open) => !open && close()}>
-            <DialogPortal>
-                <DialogOverlay className="backdrop-blur-sm" />
-                <DialogContent className="max-h-[calc(100dvh-2rem)]! w-[calc(100vw-2rem)]! max-w-xl! overflow-y-auto border border-white/5 bg-primary! p-4! sm:p-6!">
-                    <DialogHeader className="pr-10 text-left!">
-                        <DialogTitle className="font-normal! text-white! flex items-center gap-2">
-                            {content.upgrade.title}
-                            <SummaryBadge size="lg" icon={getIcon(subscriptionConfig.plan[plan].icon, 18)} tone={subscriptionConfig.plan[plan].color} value={subscriptionConfig.plan[plan].title} />
-                        </DialogTitle>
-                        <DialogDescription className="text-sm! text-secondary!">{content.upgrade.description}</DialogDescription>
-                    </DialogHeader>
-                    <div className="absolute right-4 top-4 z-10">
-                        <Button type="button" variant="none" onClick={close} aria-label={content.editor.closeLabel} className="size-9! p-0! text-secondary! hover:text-white!">
-                            <IconX size={18} />
-                        </Button>
-                    </div>
+        <LicenseDialog
+            backLabel={content.editor.cancelLabel}
+            description={content.upgrade.description}
+            onClose={close}
+            title={content.upgrade.title}
+            sidebar={<SummaryBadge size="lg" icon={getIcon(subscriptionConfig.plan[plan].icon, 18)} tone={subscriptionConfig.plan[plan].color} value={subscriptionConfig.plan[plan].title} />}
+        >
+            <div className="space-y-4">
+                <div>
+                    {upgradeTargets.length > 1 && (
+                        <Switch
+                            value={plan}
+                            options={upgradeTargets.map((option) => ({ value: option, label: subscriptionConfig.packages[option].title }))}
+                            onChange={(value) => setSelectedPlan(value)}
+                        />
+                    )}
+                </div>
 
-                    <div className="space-y-4 pt-2">
-                        <div>
-                            {upgradeTargets.length > 1 && (
-                                <Switch
-                                    value={plan}
-                                    options={upgradeTargets.map((option) => ({ value: option, label: subscriptionConfig.packages[option].title }))}
-                                    onChange={(value) => setSelectedPlan(value)}
-                                />
+                {plan === "custom" && (
+                    <div className="space-y-4">
+                        <Slider
+                            min={aiTokensRange.min}
+                            max={aiTokensRange.max}
+                            step={aiTokensRange.step}
+                            value={resolvedAiTokens}
+                            onChange={setAiTokens}
+                            onValueCommit={setAiTokens}
+                            ariaLabel={content.dashboard.aiTokensLabel}
+                            className="rounded-2xl border border-white/10 p-4"
+                            variant="gradient"
+                            shape="cone-incline"
+                        />
+                        <Slider
+                            min={workflowExecutionsRange.min}
+                            max={workflowExecutionsRange.max}
+                            step={workflowExecutionsRange.step}
+                            value={resolvedWorkflowExecutions}
+                            onChange={setWorkflowExecutions}
+                            onValueCommit={setWorkflowExecutions}
+                            ariaLabel={content.dashboard.workflowExecutionsLabel}
+                            className="rounded-2xl border border-white/10 p-4"
+                            variant="gradient"
+                            shape="cone-incline"
+                        />
+                    </div>
+                )}
+
+                <div className="space-y-1 rounded-xl border border-white/10 bg-white/3 p-3 text-sm">
+                    <div className="flex items-center justify-between">
+                        <span className="text-secondary">{content.subscriptionPreview.totalLabel}</span>
+                        <span className="text-white">{formatMinorCurrency(localQuote.total, "EUR", locale)}</span>
+                    </div>
+                    {isLoadingPreview ? (
+                        <p className="text-tertiary">{content.subscriptionPreview.loadingLabel}</p>
+                    ) : previewError ? (
+                        <p role="alert" className="text-error">
+                            {previewError}
+                        </p>
+                    ) : preview ? (
+                        <>
+                            {preview.prorationAmount > 0 && (
+                                <div className="flex items-center justify-between">
+                                    <span className="text-secondary">{content.subscriptionPreview.prorationLabel}</span>
+                                    <span className="text-white">{formatMinorCurrency(preview.prorationAmount, preview.currency, locale)}</span>
+                                </div>
                             )}
-                        </div>
+                            <p className="text-tertiary">{preview.immediate ? content.subscriptionPreview.immediateNote : content.subscriptionPreview.scheduledNote}</p>
+                        </>
+                    ) : null}
+                </div>
 
-                        {plan === "custom" && (
-                            <div className="space-y-4">
-                                <Slider
-                                    min={aiTokensRange.min}
-                                    max={aiTokensRange.max}
-                                    step={aiTokensRange.step}
-                                    value={resolvedAiTokens}
-                                    onChange={setAiTokens}
-                                    onValueCommit={setAiTokens}
-                                    ariaLabel={content.dashboard.aiTokensLabel}
-                                    className="rounded-2xl border border-white/10 p-4"
-                                    variant="gradient"
-                                    shape="cone-incline"
-                                />
-                                <Slider
-                                    min={workflowExecutionsRange.min}
-                                    max={workflowExecutionsRange.max}
-                                    step={workflowExecutionsRange.step}
-                                    value={resolvedWorkflowExecutions}
-                                    onChange={setWorkflowExecutions}
-                                    onValueCommit={setWorkflowExecutions}
-                                    ariaLabel={content.dashboard.workflowExecutionsLabel}
-                                    className="rounded-2xl border border-white/10 p-4"
-                                    variant="gradient"
-                                    shape="cone-incline"
-                                />
-                            </div>
-                        )}
+                {saveError && (
+                    <p role="alert" className="text-sm text-error">
+                        {saveError}
+                    </p>
+                )}
 
-                        <div className="space-y-1 rounded-xl border border-white/10 bg-white/3 p-3 text-sm">
-                            <div className="flex items-center justify-between">
-                                <span className="text-secondary">{content.subscriptionPreview.totalLabel}</span>
-                                <span className="text-white">{formatMinorCurrency(localQuote.total, "EUR", locale)}</span>
-                            </div>
-                            {isLoadingPreview ? (
-                                <p className="text-tertiary">{content.subscriptionPreview.loadingLabel}</p>
-                            ) : previewError ? (
-                                <p role="alert" className="text-error">
-                                    {previewError}
-                                </p>
-                            ) : preview ? (
-                                <>
-                                    {preview.prorationAmount > 0 && (
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-secondary">{content.subscriptionPreview.prorationLabel}</span>
-                                            <span className="text-white">{formatMinorCurrency(preview.prorationAmount, preview.currency, locale)}</span>
-                                        </div>
-                                    )}
-                                    <p className="text-tertiary">{preview.immediate ? content.subscriptionPreview.immediateNote : content.subscriptionPreview.scheduledNote}</p>
-                                </>
-                            ) : null}
-                        </div>
+                <AcceptTermsCheckbox locale={locale} initialValue={false} formValidation={{ setValue: setAcceptedTerms, valid: true }} />
 
-                        {saveError && (
-                            <p role="alert" className="text-sm text-error">
-                                {saveError}
-                            </p>
-                        )}
-
-                        <AcceptTermsCheckbox locale={locale} initialValue={false} formValidation={{ setValue: setAcceptedTerms, valid: true }} />
-
-                        <DialogFooter className="gap-3! pt-2!">
-                            <Button type="button" variant="none" onClick={close}>
-                                {content.editor.cancelLabel}
-                            </Button>
-                            <Button
-                                type="button"
-                                variant="filled"
-                                disabled={!hasChange || isSaving || isLoadingPreview || !preview || Boolean(previewError) || !acceptedTerms}
-                                onClick={() => void save()}
-                            >
-                                {isSaving ? <ButtonLoader label={content.editor.saveLabel} /> : content.editor.saveLabel}
-                            </Button>
-                        </DialogFooter>
-                    </div>
-                </DialogContent>
-            </DialogPortal>
-        </Dialog>
+                <DialogFooter className="gap-3! pt-2!">
+                    <Button type="button" variant="none" onClick={close}>
+                        {content.editor.cancelLabel}
+                    </Button>
+                    <Button type="button" variant="filled" disabled={!hasChange || isSaving || isLoadingPreview || !preview || Boolean(previewError) || !acceptedTerms} onClick={() => void save()}>
+                        {isSaving ? <ButtonLoader label={content.editor.saveLabel} /> : content.editor.saveLabel}
+                    </Button>
+                </DialogFooter>
+            </div>
+        </LicenseDialog>
     )
 }

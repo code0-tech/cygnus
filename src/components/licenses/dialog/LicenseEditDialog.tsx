@@ -1,12 +1,12 @@
 "use client"
 
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
+import { LicenseDialog } from "@/components/licenses/dialog/LicenseDialog"
 import { ButtonLoader } from "@/components/ui/Loader"
 import type { ErrorsContent, LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { decodeLicenseRouteId } from "@/lib/licenses/licenseRoute"
-import { Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogOverlay, DialogPortal, DialogTitle, TextInput } from "@code0-tech/pictor"
-import { IconX } from "@tabler/icons-react"
+import { Button, DialogFooter, TextInput } from "@code0-tech/pictor"
 import { useRouter } from "next/navigation"
 import { type SyntheticEvent, useEffect, useState } from "react"
 
@@ -62,54 +62,33 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
     const isCloud = license?.deploymentType === "cloud"
 
     return (
-        <Dialog open onOpenChange={(open) => !open && close()}>
-            <DialogPortal>
-                <DialogOverlay className="backdrop-blur-sm" />
-                <DialogContent className="max-h-[calc(100dvh-2rem)]! w-[calc(100vw-2rem)]! max-w-xl! overflow-y-auto border border-white/5 bg-primary! p-4! sm:p-6!">
-                    <DialogHeader className="pr-10 text-left!">
-                        <DialogTitle className="font-normal! text-white!">{content.editor.licenseTitle}</DialogTitle>
-                        {license && isCloud && <DialogDescription className="text-sm! text-secondary!">{content.editor.licenseDescription}</DialogDescription>}
-                    </DialogHeader>
-                    <div className="absolute right-4 top-4 z-10">
-                        <Button type="button" variant="none" onClick={close} aria-label={content.editor.closeLabel} className="size-9! p-0! text-secondary! hover:text-white!">
-                            <IconX size={18} />
+        <LicenseDialog backLabel={content.editor.cancelLabel} description={license && isCloud ? content.editor.licenseDescription : undefined} onClose={close} title={content.editor.licenseTitle}>
+            <form onSubmit={save} className="space-y-4">
+                {license && isCloud && <TextInput label={content.editor.namespaceLabel} value={namespaceId} onChange={(event) => setNamespaceId(event.currentTarget.value)} className="w-full!" />}
+                {error && (
+                    <p role="alert" className="text-sm text-error">
+                        {error}
+                    </p>
+                )}
+                <DialogFooter className="gap-3! pt-2! justify-between!">
+                    {license?.subscriptionId && (
+                        <Button
+                            type="button"
+                            variant="normal"
+                            onClick={() => router.push(`/${locale}/licenses/customer/${encodeURIComponent(license.customerId)}/license/${encodeURIComponent(license.id)}/cancel`)}
+                        >
+                            {content.cancel.confirmLabel}
                         </Button>
+                    )}
+                    <div className="flex gap-3">
+                        {(!license || isCloud) && (
+                            <Button type="submit" variant="filled" disabled={!license || !namespaceId.trim() || isSaving}>
+                                {isSaving ? <ButtonLoader label={content.editor.saveLabel} /> : content.editor.saveLabel}
+                            </Button>
+                        )}
                     </div>
-                    <form onSubmit={save} className="space-y-4 pt-6">
-                        {license && isCloud && (
-                            <TextInput label={content.editor.namespaceLabel} value={namespaceId} onChange={(event) => setNamespaceId(event.currentTarget.value)} className="w-full!" />
-                        )}
-                        {error && (
-                            <p role="alert" className="text-sm text-error">
-                                {error}
-                            </p>
-                        )}
-                        <DialogFooter className="gap-3! pt-2! justify-between!">
-                            {license?.subscriptionId && (
-                                <Button
-                                    type="button"
-                                    variant="normal"
-                                    onClick={() =>
-                                        router.push(`/${locale}/licenses/customer/${encodeURIComponent(license.customerId)}/license/${encodeURIComponent(license.id)}/cancel`)
-                                    }
-                                >
-                                    {content.cancel.confirmLabel}
-                                </Button>
-                            )}
-                            <div className="flex gap-3">
-                                <Button type="button" variant="none" onClick={close}>
-                                    {content.editor.cancelLabel}
-                                </Button>
-                                {(!license || isCloud) && (
-                                    <Button type="submit" variant="filled" disabled={!license || !namespaceId.trim() || isSaving}>
-                                        {isSaving ? <ButtonLoader label={content.editor.saveLabel} /> : content.editor.saveLabel}
-                                    </Button>
-                                )}
-                            </div>
-                        </DialogFooter>
-                    </form>
-                </DialogContent>
-            </DialogPortal>
-        </Dialog>
+                </DialogFooter>
+            </form>
+        </LicenseDialog>
     )
 }
