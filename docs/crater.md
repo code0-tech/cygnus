@@ -534,7 +534,7 @@ This is the rule, and it is the same one in `subscriptionsPreviewUpdate` and `su
 | Downgrade: same payment period, equal or lower recurring total | End of the current period | Subscription schedule, second phase, `proration_behavior: none`     |
 | Any change of the payment period                               | End of the current period | Subscription schedule, second phase, `proration_behavior: none`     |
 
-An upgrade is immediate so the user gets what they are being charged for straight away. A downgrade waits and produces no credit, because refunding the unused remainder would create balances that neither the bookkeeping nor the append-only licence chain can represent. An interval change always waits: switching from yearly to monthly halfway through a paid year would credit the rest of that year.
+An upgrade is immediate so the user gets what they are being charged for straight away. A downgrade waits and produces no credit, because refunding the unused remainder would create balances that neither the bookkeeping nor the append-only license chain can represent. An interval change always waits: switching from yearly to monthly halfway through a paid year would credit the rest of that year.
 
 A total that stays exactly the same counts as a downgrade on purpose. Nothing is owed, so there is no reason to charge or prorate mid-period.
 
@@ -555,11 +555,11 @@ The schedule is mirrored locally in the `pending_*` columns and exposed as `Subs
 - An update that asks for the selection the subscription already has is a successful no-op: no Stripe call, no proration.
 - A subscription that is no longer active (`canceled`, `incomplete_expired`) and one from a `CustomCheckoutConfiguration` are refused with `INVALID_SUBSCRIPTION`. Cancelling a negotiated subscription is still allowed, because no plan catalogue is involved.
 
-#### What a change does to licences
+#### What a change does to licenses
 
-Nothing directly. Licences stay append-only, and a plan change rewrites no existing snapshot.
+Nothing directly. Licenses stay append-only, and a plan change rewrites no existing snapshot.
 
-**A change never writes a licence, not even an immediate upgrade.** The entitlements of the new plan reach the user through the next `invoice.paid` snapshot, which is the only event that grants paid access. This keeps a single writer for the licence chain: a plan the user was upgraded to but has not been invoiced for yet does not silently become an entitlement, and there is no snapshot that would have to be revoked if the proration invoice then fails.
+**A change never writes a license, not even an immediate upgrade.** The entitlements of the new plan reach the user through the next `invoice.paid` snapshot, which is the only event that grants paid access. This keeps a single writer for the license chain: a plan the user was upgraded to but has not been invoiced for yet does not silently become an entitlement, and there is no snapshot that would have to be revoked if the proration invoice then fails.
 
 On a cancellation `end_date` is deliberately not moved. The already paid period plus its `grace_period_days` simply lapses, and the `canceled` snapshot still arrives the usual way through `customer.subscription.deleted`. `immediately: true` is no different: the period the user already paid for stays licensed.
 
@@ -583,7 +583,7 @@ Only these event types are requested from Stripe and accepted by the webhook end
 | `checkout.session.completed`    | `Webhooks::HandleCheckoutSessionCompletedService` | Upserts the subscription projection, syncs contact details, address, and tax ID back to the customer, and activates a draft customer. Grants no access.                  |
 | `invoice.paid`                  | `Webhooks::HandleInvoicePaidService`              | Records the invoice locally and appends a `paid` license snapshot. This is the only event that grants paid access.                                                       |
 | `invoice.payment_failed`        | `Webhooks::HandleInvoicePaymentFailedService`     | Records the invoice locally and appends a `payment_failed` snapshot that carries the previous `end_date` and grace period forward.                                       |
-| `customer.subscription.updated` | `Webhooks::HandleSubscriptionUpdatedService`      | Syncs the projection: plan, period, quantities, status, `cancel_at`, and the billing period bounds. Grants no access and writes no licence.                              |
+| `customer.subscription.updated` | `Webhooks::HandleSubscriptionUpdatedService`      | Syncs the projection: plan, period, quantities, status, `cancel_at`, and the billing period bounds. Grants no access and writes no license.                              |
 | `customer.subscription.deleted` | `Webhooks::HandleSubscriptionDeletedService`      | Sets the local Stripe status to `canceled` and appends a `canceled` snapshot.                                                                                            |
 | `setup_intent.succeeded`        | `Webhooks::HandleSetupIntentSucceededService`     | Promotes the collected payment method to the Stripe customer's `invoice_settings.default_payment_method`. Stores nothing locally and touches no license or subscription. |
 
@@ -594,9 +594,9 @@ Only these event types are requested from Stripe and accepted by the webhook end
 3. `invoice.payment_failed` appends a `payment_failed` snapshot. The `end_date` is deliberately not moved, so entitlements remain valid until the already granted period plus grace period lapses. A later successful payment appends a fresh `paid` snapshot and extends the end date again.
 4. `customer.subscription.deleted` sets the subscription's Stripe status to `canceled` and appends a `canceled` snapshot.
 
-Licenses are append-only: every transition adds a row that carries the previous snapshot's entitlements forward, so the history is never rewritten.
+Licenses are append-only: every transition adds a row that carries the previous snapshot's entitlements forward, so the history is never rewritten. Only the newest row of a subscription is in force; the API reflects that and does not hand the raw chain to a dashboard, see [the current snapshot and the history](#the-current-snapshot-and-the-history).
 
-A plan change is not a step in this chain. `customer.subscription.updated` -- and `subscriptionsUpdate` itself -- writes no snapshot at all, not even for an immediately effective upgrade; the new entitlements arrive with the next `invoice.paid`. Step 2 therefore stays the single place that grants paid access. See [what a change does to licences](#what-a-change-does-to-licences).
+A plan change is not a step in this chain. `customer.subscription.updated` -- and `subscriptionsUpdate` itself -- writes no snapshot at all, not even for an immediately effective upgrade; the new entitlements arrive with the next `invoice.paid`. Step 2 therefore stays the single place that grants paid access. See [what a change does to licenses](#what-a-change-does-to-licenses).
 
 The subscription an invoice belongs to is read from `parent.subscription_details.subscription`, since the invoice no longer carries a top level `subscription` field. The paid period comes from the line item periods rather than from `invoice.period_end`, which Stripe documents as the window in which items can be added to the invoice and not as the service period.
 
@@ -619,7 +619,7 @@ The subscription an invoice belongs to is read from `parent.subscription_details
 - The billing period is read from the subscription items, where Stripe now reports it, and falls back to the subscription level for older payloads.
 - When the reported selection is the one the projection was waiting for, the scheduled change has arrived: the `pending_*` columns and the schedule pointer are cleared. A selection that is _not_ the pending one leaves the pending update in place.
 - A payload the projection would refuse -- a period the customer's type is not billed in, for instance -- returns an error, so the event stays unprocessed and Stripe's redelivery can run it again.
-- Like the licence-relevant events it can arrive before `checkout.session.completed` created the projection. A missing local subscription is treated as temporary and retried with the same polynomial backoff.
+- Like the license-relevant events it can arrive before `checkout.session.completed` created the projection. A missing local subscription is treated as temporary and retried with the same polynomial backoff.
 
 #### The local invoice projection
 
@@ -653,16 +653,16 @@ All queries start at the root `Query` type. The currently documented query field
 `currentUser` is the entry point for the read-only dashboard. It exposes only data the authenticated user is a member of:
 
 - `User.customers` is a `CustomerConnection!` over the **active** customers linked through `CustomerUser`. Customers of other users never appear, and neither do checkout drafts: they are filtered out of the nodes and of `count`, so a running or abandoned checkout never shows up in a dropdown, a counter, or the license dashboard. A draft's licenses are unreachable for the same reason, since they hang off the customer.
-- `Customer.licenses` is a `LicenseConnection!` resolved through `customer.subscriptions.licenses`, ordered by `updated_at DESC` and then `id DESC` so equal timestamps still produce a stable order. A customer without licenses returns an empty connection rather than `null`.
+- `Customer.licenses` is a `LicenseConnection!` over **the snapshot currently in force for each of the customer's subscriptions**, ordered by `updated_at DESC` and then `id DESC` so equal timestamps still produce a stable order. A customer without licenses returns an empty connection rather than `null`. It is one entry per subscription, never the whole append-only chain: see [the current snapshot and the history](#the-current-snapshot-and-the-history).
 - `License.invoices` is an `InvoiceConnection!` over the invoices of the license's subscription. A license without invoices returns an empty connection rather than `null`.
 - `Customer.subscriptions` is a `SubscriptionConnection!` over the customer's subscriptions, ordered by `updated_at DESC` and then `id DESC` like the licenses. It is what the subscription mutations address, and a customer without subscriptions returns an empty connection rather than `null`.
-- `License.subscription` is the way back from a licence to the subscription it is a snapshot of, so a dashboard that lists licences can offer the change and cancel actions without a second round trip.
+- `License.subscription` is the way back from a license to the subscription it is a snapshot of, so a dashboard that lists licenses can offer the change and cancel actions without a second round trip.
 
 All connections use the standard cursor pagination arguments (`first`, `after`, `last`, `before`) and expose `count`.
 
 #### The Subscription type
 
-`License` alone cannot carry this: licences are append-only snapshots, several of them belong to the same subscription, and none of them can express "cancelled as of 30 September" or "moving to Max on 1 October". `Subscription` is the addressable thing the mutations take and the state the UI renders.
+`License` alone cannot carry this: licenses are append-only snapshots, several of them belong to the same subscription, and none of them can express "cancelled as of 30 September" or "moving to Max on 1 October". `Subscription` is the addressable thing the mutations take and the state the UI renders.
 
 | Field                                    | Type                        | Meaning                                                                            |
 | ---------------------------------------- | --------------------------- | ---------------------------------------------------------------------------------- |
@@ -705,6 +705,27 @@ query LicenseDashboard {
                         updatedAt
                     }
                 }
+                subscriptions(first: 5) {
+                    count
+                    nodes {
+                        id
+                        status
+                        plan
+                        pendingUpdate {
+                            plan
+                            paymentPeriod
+                            effectiveAt
+                        }
+                        licenses(first: 20) {
+                            count
+                            nodes {
+                                id
+                                status
+                                updatedAt
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -712,6 +733,25 @@ query LicenseDashboard {
 ```
 
 Authorization uses the existing policies. `UserPolicy` grants `read_user` only for the user themselves, `CustomerPolicy` grants `read_customer` to members through `CustomerUser`, and `LicensePolicy`, `InvoicePolicy`, and `SubscriptionPolicy` derive `read_license`, `read_invoice`, `read_subscription`, and `update_subscription` from `read_customer`, so membership is defined in exactly one place. As with the other resource policies, being an admin grants no extra read access. An anonymous request returns `currentUser: null`; an invalid or inactive session token is still answered with HTTP `401 Unauthorized` before the query runs.
+
+#### The current snapshot and the history
+
+Licenses are append-only: a subscription grows a row on every payment, failed payment, and cancellation. A subscription that has been paid three times therefore has three `License` rows, but the user holds **one** license -- the newest row is the entitlement in force, everything before it is history.
+
+`Customer.licenses` reflects that and returns one license per subscription, the newest. Listing the raw rows would show one subscription as three licenses and count it as three, which is neither what the user bought nor what they should see in a dashboard.
+
+The history is reached through the subscription:
+
+| Field                         | Returns                                                                                |
+| ----------------------------- | -------------------------------------------------------------------------------------- |
+| `Customer.licenses`           | One license per subscription: the snapshot in force                                    |
+| `Subscription.currentLicense` | The same snapshot for one subscription, `null` until the first paid invoice created it |
+| `Subscription.licenses`       | Every snapshot of that subscription, newest first -- the history                       |
+| `License.subscription`        | The way from a snapshot back to its subscription                                       |
+
+`Subscription.currentLicense` is batched with a dataloader source (`Sources::CurrentLicenseBySubscription`), so listing many subscriptions with their current license costs a constant number of queries.
+
+Because every snapshot of a subscription resolves the same invoice history, `License.invoices` returns the identical result whichever snapshot it is asked on.
 
 #### Invoices of a license
 
