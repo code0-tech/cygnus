@@ -2,6 +2,7 @@ import { createApolloClient } from "@/lib/apolloClient"
 import { CRATER_ERROR_FIELDS, craterJson, craterMutationErrorResponse, craterTransportErrorResponse, optionalString, readJsonObject, requireCraterSession } from "@/lib/checkout/craterApi"
 import type { Mutation, MutationCheckoutValidateDiscountArgs } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
+import { enforceRateLimit } from "@/lib/security/rateLimiter"
 
 export const runtime = "nodejs"
 
@@ -28,6 +29,9 @@ const CHECKOUT_VALIDATE_DISCOUNT: TypedDocumentNode<CheckoutValidateDiscountData
 export async function POST(request: Request) {
     const session = requireCraterSession(request)
     if (session.response) return session.response
+
+    const rateLimitResponse = enforceRateLimit("discount", request)
+    if (rateLimitResponse) return rateLimitResponse
 
     const body = await readJsonObject(request)
     const code = optionalString(body?.code)

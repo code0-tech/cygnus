@@ -1,10 +1,14 @@
 import { craterJson, craterMutationErrorResponse, optionalString, readJsonObject } from "@/lib/checkout/craterApi"
 import { createCraterUserSession } from "@/lib/checkout/craterLogin"
 import { setCraterSessionCookie } from "@/lib/checkout/craterSession"
+import { enforceRateLimit } from "@/lib/security/rateLimiter"
 
 export const runtime = "nodejs"
 
 export async function POST(request: Request) {
+    const rateLimitResponse = enforceRateLimit("login", request)
+    if (rateLimitResponse) return rateLimitResponse
+
     const body = await readJsonObject(request)
     const sagittariusToken = optionalString(body?.sagittariusToken) ?? optionalString(process.env.CRATER_SAGITTARIUS_TOKEN)
     const clientMutationId = optionalString(body?.clientMutationId)

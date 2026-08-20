@@ -48,6 +48,45 @@ test("Crater login requires a Sagittarius token", async () => {
     }
 })
 
+test("Crater login returns retry guidance after its rate limit is exceeded", async () => {
+    const previousMax = process.env.CRATER_LOGIN_RATE_LIMIT_MAX
+    const previousWindow = process.env.CRATER_LOGIN_RATE_LIMIT_WINDOW_SECONDS
+    const previousProxyHops = process.env.CRATER_RATE_LIMIT_TRUSTED_PROXY_HOPS
+    process.env.CRATER_LOGIN_RATE_LIMIT_MAX = "2"
+    process.env.CRATER_LOGIN_RATE_LIMIT_WINDOW_SECONDS = "60"
+    process.env.CRATER_RATE_LIMIT_TRUSTED_PROXY_HOPS = "1"
+
+    const request = () =>
+        new Request("https://example.com/api/crater/login", {
+            method: "POST",
+            headers: {
+                "content-type": "application/json",
+                "x-forwarded-for": "192.0.2.240",
+            },
+            body: JSON.stringify({}),
+        })
+
+    try {
+        assert.equal((await createSession(request())).status, 400)
+        assert.equal((await createSession(request())).status, 400)
+
+        const response = await createSession(request())
+        assert.equal(response.status, 429)
+        assert.equal(response.headers.get("retry-after"), "60")
+        assert.equal(response.headers.get("ratelimit-limit"), "2")
+        assert.equal(response.headers.get("ratelimit-remaining"), "0")
+        assert.equal(response.headers.get("ratelimit-reset"), "60")
+        assert.equal(response.headers.get("cache-control"), "no-store")
+    } finally {
+        if (previousMax === undefined) delete process.env.CRATER_LOGIN_RATE_LIMIT_MAX
+        else process.env.CRATER_LOGIN_RATE_LIMIT_MAX = previousMax
+        if (previousWindow === undefined) delete process.env.CRATER_LOGIN_RATE_LIMIT_WINDOW_SECONDS
+        else process.env.CRATER_LOGIN_RATE_LIMIT_WINDOW_SECONDS = previousWindow
+        if (previousProxyHops === undefined) delete process.env.CRATER_RATE_LIMIT_TRUSTED_PROXY_HOPS
+        else process.env.CRATER_RATE_LIMIT_TRUSTED_PROXY_HOPS = previousProxyHops
+    }
+})
+
 test("server-side login callback exchanges Sagittarius for an HttpOnly Crater cookie", async () => {
     const graphQLServer = await createGraphQLTestServer([
         {
@@ -70,9 +109,7 @@ test("server-side login callback exchanges Sagittarius for an HttpOnly Crater co
 
     try {
         const returnPath = "/de/checkout?plan=pro&deploymentType=self_hosted"
-        const response = await completeCraterLogin(
-            new Request(`https://code0.example/api/crater/auth/callback?returnPath=${encodeURIComponent(returnPath)}&token=sagittarius-secret`)
-        )
+        const response = await completeCraterLogin(new Request(`https://code0.example/api/crater/auth/callback?returnPath=${encodeURIComponent(returnPath)}&token=sagittarius-secret`))
 
         assert.equal(response.status, 307)
         assert.equal(response.headers.get("location"), `https://code0.example${returnPath}`)
@@ -127,9 +164,7 @@ test("server-side login callback logs why Crater rejected the login without leak
 })
 
 test("server-side login callback rejects external return paths and never forwards the token", async () => {
-    const response = await completeCraterLogin(
-        new Request("https://code0.example/api/crater/auth/callback?returnPath=https%3A%2F%2Fevil.example%2Fcollect&token=sagittarius-secret")
-    )
+    const response = await completeCraterLogin(new Request("https://code0.example/api/crater/auth/callback?returnPath=https%3A%2F%2Fevil.example%2Fcollect&token=sagittarius-secret"))
 
     assert.equal(response.status, 307)
     assert.equal(response.headers.get("location"), "https://code0.example/?authError=session")
@@ -260,18 +295,15 @@ test("creates a SetupIntent for the selected subscription", async () => {
 })
 
 test("returns the verified subscription payment method setup status", async () => {
-    const graphQLServer = await createGraphQLTestServer([
-        { data: { subscriptionPaymentMethodSetupStatus: "READY" } },
-    ])
+    const graphQLServer = await createGraphQLTestServer([{ data: { subscriptionPaymentMethodSetupStatus: "READY" } }])
     const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
     process.env.CRATER_GRAPHQL_URL = graphQLServer.url
 
     try {
         const response = await getSubscriptionPaymentMethodSetupStatus(
-            new Request(
-                "https://example.com/api/crater/subscriptions/payment-method-setup?subscriptionId=gid%3A%2F%2Fcrater%2FSubscription%2F1&setupIntentId=seti_example",
-                { headers: sessionHeaders }
-            )
+            new Request("https://example.com/api/crater/subscriptions/payment-method-setup?subscriptionId=gid%3A%2F%2Fcrater%2FSubscription%2F1&setupIntentId=seti_example", {
+                headers: sessionHeaders,
+            })
         )
 
         assert.equal(response.status, 200)
@@ -1707,10 +1739,9 @@ test("license detail loads lightweight navigation and forwards the invoice curso
 
     try {
         const response = await getLicenseDashboard(
-            new Request(
-                "https://example.com/api/crater/licenses?view=license&customerId=gid%3A%2F%2Fcrater%2FCustomer%2F8&licenseId=gid%3A%2F%2Fcrater%2FLicense%2F9&invoiceAfter=invoice-25",
-                { headers: sessionHeaders }
-            )
+            new Request("https://example.com/api/crater/licenses?view=license&customerId=gid%3A%2F%2Fcrater%2FCustomer%2F8&licenseId=gid%3A%2F%2Fcrater%2FLicense%2F9&invoiceAfter=invoice-25", {
+                headers: sessionHeaders,
+            })
         )
         const body = await response.json()
 
@@ -1788,10 +1819,7 @@ test("paginates licenses on a customer detail page", async () => {
 
     try {
         const response = await getLicenseDashboard(
-            new Request(
-                "https://example.com/api/crater/licenses?view=customer&customerId=gid%3A%2F%2Fcrater%2FCustomer%2F1&licenseAfter=license-25",
-                { headers: sessionHeaders }
-            )
+            new Request("https://example.com/api/crater/licenses?view=customer&customerId=gid%3A%2F%2Fcrater%2FCustomer%2F1&licenseAfter=license-25", { headers: sessionHeaders })
         )
 
         assert.equal(response.status, 200)
@@ -1851,9 +1879,7 @@ test("finds a license customer beyond the first Crater cursor page", async () =>
     process.env.CRATER_GRAPHQL_URL = graphQLServer.url
 
     try {
-        const response = await getLicenseDashboard(
-            new Request("https://example.com/api/crater/licenses?view=customer&customerId=gid%3A%2F%2Fcrater%2FCustomer%2F26", { headers: sessionHeaders })
-        )
+        const response = await getLicenseDashboard(new Request("https://example.com/api/crater/licenses?view=customer&customerId=gid%3A%2F%2Fcrater%2FCustomer%2F26", { headers: sessionHeaders }))
 
         assert.equal(response.status, 200)
         assert.equal(graphQLServer.requests[0].body.operationName, "CustomerNavigationPage")
