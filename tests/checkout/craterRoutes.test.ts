@@ -1200,6 +1200,55 @@ test("license dashboard loads from the HttpOnly Crater session cookie", async ()
             data: {
                 currentUser: {
                     customers: {
+                        edges: [
+                            {
+                                cursor: "customer-7",
+                                node: {
+                                    id: "gid://crater/Customer/7",
+                                    customerType: "business",
+                                    email: "billing@example.com",
+                                    name: "Example GmbH",
+                                    updatedAt: "2026-08-10T10:00:00Z",
+                                    licenses: {
+                                        count: 2,
+                                        edges: [
+                                            {
+                                                cursor: "license-1",
+                                                node: {
+                                                    id: "gid://crater/License/1",
+                                                    status: "active",
+                                                    plan: "pro",
+                                                    deploymentType: "cloud",
+                                                    namespaceId: "namespace-1",
+                                                    updatedAt: "2026-08-10T10:00:00Z",
+                                                },
+                                            },
+                                            {
+                                                cursor: "license-2",
+                                                node: {
+                                                    id: "gid://crater/License/2",
+                                                    status: "active",
+                                                    plan: "custom_plan",
+                                                    deploymentType: "self_hosted",
+                                                    namespaceId: null,
+                                                    updatedAt: "2026-08-12T10:00:00Z",
+                                                },
+                                            },
+                                        ],
+                                        pageInfo: { endCursor: "license-2", hasNextPage: false },
+                                    },
+                                },
+                            },
+                        ],
+                        pageInfo: { endCursor: "customer-7", hasNextPage: false },
+                    },
+                },
+            },
+        },
+        {
+            data: {
+                currentUser: {
+                    customers: {
                         nodes: [
                             {
                                 id: "gid://crater/Customer/7",
@@ -1254,9 +1303,10 @@ test("license dashboard loads from the HttpOnly Crater session cookie", async ()
         assert.equal(response.status, 200)
         assert.equal(graphQLServer.requests[0].authorization, "Session persisted-token")
         assert.match(response.headers.get("set-cookie") ?? "", /crater_session=persisted-token/)
-        assert.equal(graphQLServer.requests[0].body.operationName, "LicenseDashboard")
-        assert.match(graphQLServer.requests[0].body.query ?? "", /customers\(after: \$customerAfter, first: 25\)/)
-        assert.match(graphQLServer.requests[0].body.query ?? "", /licenses\(first: 5\)/)
+        assert.equal(graphQLServer.requests[0].body.operationName, "CustomerNavigationPage")
+        assert.equal(graphQLServer.requests[1].body.operationName, "LicenseDashboard")
+        assert.match(graphQLServer.requests[1].body.query ?? "", /customers\(after: \$customerAfter, first: 25\)/)
+        assert.match(graphQLServer.requests[1].body.query ?? "", /licenses\(first: 5\)/)
         assert.deepEqual(await response.json(), {
             customers: [
                 {
@@ -1299,8 +1349,134 @@ test("license dashboard loads from the HttpOnly Crater session cookie", async ()
                     workflowExecutions: 250000,
                 },
             ],
+            navigationLicenses: [
+                {
+                    customerId: "gid://crater/Customer/7",
+                    customerName: "Example GmbH",
+                    customerType: "business",
+                    id: "gid://crater/License/2",
+                    name: "Custom Plan",
+                    deploymentType: "self_hosted",
+                    plan: "custom_plan",
+                    status: "active",
+                    updatedAt: "2026-08-12T10:00:00Z",
+                },
+                {
+                    customerId: "gid://crater/Customer/7",
+                    customerName: "Example GmbH",
+                    customerType: "business",
+                    id: "gid://crater/License/1",
+                    name: "Pro",
+                    deploymentType: "cloud",
+                    namespaceId: "namespace-1",
+                    plan: "pro",
+                    status: "active",
+                    updatedAt: "2026-08-10T10:00:00Z",
+                },
+            ],
             pagination: { customers: { endCursor: null, hasNextPage: false } },
         })
+    } finally {
+        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
+        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
+        await graphQLServer.close()
+    }
+})
+
+test("license dashboard navigation includes licenses beyond a customer's first Crater page", async () => {
+    const graphQLServer = await createGraphQLTestServer([
+        {
+            data: {
+                currentUser: {
+                    customers: {
+                        edges: [
+                            {
+                                cursor: "customer-1",
+                                node: {
+                                    id: "gid://crater/Customer/1",
+                                    customerType: "personal",
+                                    name: "All Licenses",
+                                    licenses: {
+                                        count: 26,
+                                        edges: [
+                                            {
+                                                cursor: "license-25",
+                                                node: { id: "gid://crater/License/25", plan: "pro", updatedAt: "2026-08-10T10:00:00Z" },
+                                            },
+                                        ],
+                                        pageInfo: { endCursor: "license-25", hasNextPage: true },
+                                    },
+                                },
+                            },
+                        ],
+                        pageInfo: { endCursor: "customer-1", hasNextPage: false },
+                    },
+                },
+            },
+        },
+        {
+            data: {
+                currentUser: {
+                    customers: {
+                        nodes: [
+                            {
+                                id: "gid://crater/Customer/1",
+                                customerType: "personal",
+                                name: "All Licenses",
+                                licenses: {
+                                    count: 26,
+                                    edges: [
+                                        {
+                                            cursor: "license-26",
+                                            node: { id: "gid://crater/License/26", plan: "max", updatedAt: "2026-08-11T10:00:00Z" },
+                                        },
+                                    ],
+                                    pageInfo: { endCursor: "license-26", hasNextPage: false },
+                                },
+                            },
+                        ],
+                    },
+                },
+            },
+        },
+        {
+            data: {
+                currentUser: {
+                    customers: {
+                        count: 1,
+                        nodes: [
+                            {
+                                id: "gid://crater/Customer/1",
+                                customerType: "personal",
+                                name: "All Licenses",
+                                licenses: {
+                                    count: 26,
+                                    nodes: [{ id: "gid://crater/License/26", plan: "max", updatedAt: "2026-08-11T10:00:00Z" }],
+                                },
+                            },
+                        ],
+                        pageInfo: { endCursor: "customer-1", hasNextPage: false },
+                    },
+                },
+            },
+        },
+    ])
+    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
+    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
+
+    try {
+        const response = await getLicenseDashboard(new Request("https://example.com/api/crater/licenses", { headers: sessionHeaders }))
+        const body = await response.json()
+
+        assert.equal(response.status, 200)
+        assert.equal(graphQLServer.requests[0].body.operationName, "CustomerNavigationPage")
+        assert.equal(graphQLServer.requests[1].body.operationName, "CustomerLicensePage")
+        assert.deepEqual(graphQLServer.requests[1].body.variables, { licenseAfter: "license-25" })
+        assert.equal(graphQLServer.requests[2].body.operationName, "LicenseDashboard")
+        assert.deepEqual(
+            body.navigationLicenses.map((license: { id: string }) => license.id),
+            ["gid://crater/License/26", "gid://crater/License/25"]
+        )
     } finally {
         if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
         else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
