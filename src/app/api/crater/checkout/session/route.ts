@@ -1,9 +1,19 @@
 import { createApolloClient } from "@/lib/apolloClient"
-import { CRATER_ERROR_FIELDS, craterJson, craterMutationErrorResponse, craterTransportErrorResponse, optionalString, readJsonObject, requireCraterSession, type JsonObject } from "@/lib/checkout/craterApi"
+import {
+    CRATER_ERROR_FIELDS,
+    craterJson,
+    craterMutationErrorResponse,
+    craterTransportErrorResponse,
+    optionalString,
+    readJsonObject,
+    requireCraterSession,
+    type JsonObject,
+} from "@/lib/checkout/craterApi"
 import { DEFAULT_CRATER_PAYMENT_PERIOD, parseCraterPaymentPeriod, toCraterPaymentPeriod } from "@/lib/checkout/craterCheckout"
 import { resolveSubscriptionSelection, type SubscriptionSelection } from "@/lib/subscriptionConfigurator"
 import { resolveSiteUrl } from "@/lib/siteConfig"
 import { DEFAULT_LOCALE, isSupportedLocale } from "@/lib/i18n"
+import { enforceRateLimit } from "@/lib/security/rateLimiter"
 import type { Mutation, MutationCheckoutCreateSessionArgs, Scalars } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 
@@ -38,6 +48,9 @@ const CHECKOUT_CREATE_SESSION: TypedDocumentNode<CheckoutCreateSessionData, Muta
 export async function POST(request: Request) {
     const authorization = requireCraterSession(request)
     if (authorization.response) return authorization.response
+
+    const rateLimitResponse = enforceRateLimit("checkout", request)
+    if (rateLimitResponse) return rateLimitResponse
 
     try {
         const body = await readJsonObject(request)

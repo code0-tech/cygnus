@@ -1,7 +1,17 @@
 import { createApolloClient } from "@/lib/apolloClient"
-import { CRATER_ERROR_FIELDS, craterJson, craterMutationErrorResponse, craterTransportErrorResponse, optionalString, readJsonObject, requireCraterSession, type JsonObject } from "@/lib/checkout/craterApi"
+import {
+    CRATER_ERROR_FIELDS,
+    craterJson,
+    craterMutationErrorResponse,
+    craterTransportErrorResponse,
+    optionalString,
+    readJsonObject,
+    requireCraterSession,
+    type JsonObject,
+} from "@/lib/checkout/craterApi"
 import { toCraterPaymentPeriod } from "@/lib/checkout/craterCheckout"
 import { resolveSubscriptionSelection } from "@/lib/subscriptionConfigurator"
+import { enforceRateLimit } from "@/lib/security/rateLimiter"
 import type { Mutation, MutationCheckoutCalculateTaxArgs } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 
@@ -28,6 +38,9 @@ const CHECKOUT_CALCULATE_TAX: TypedDocumentNode<CheckoutCalculateTaxData, Mutati
 export async function POST(request: Request) {
     const session = requireCraterSession(request)
     if (session.response) return session.response
+
+    const rateLimitResponse = enforceRateLimit("tax", request)
+    if (rateLimitResponse) return rateLimitResponse
 
     const body = await readJsonObject(request)
     const requestData = body?.metadata && typeof body.metadata === "object" && !Array.isArray(body.metadata) ? (body.metadata as JsonObject) : body
