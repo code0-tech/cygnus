@@ -1,6 +1,7 @@
 "use client"
 
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
+import { LicenseDialog } from "@/components/licenses/dialog/LicenseDialog"
 import { Switch } from "@/components/ui/Switch"
 import { ButtonLoader } from "@/components/ui/Loader"
 import type { ErrorsContent, LicenseContent, SubscriptionConfigData } from "@/lib/cms"
@@ -11,8 +12,7 @@ import { resolveSubscriptionCustomerType } from "@/lib/licenses/licenseSubscript
 import { formatLicenseDisplayValue } from "@/lib/licenses/licenseDisplayValues"
 import type { PaymentPeriod } from "@/lib/subscriptionCalculator"
 import { getPaymentPeriodOptions } from "@/lib/subscriptionConfigurator"
-import { Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogOverlay, DialogPortal, DialogTitle } from "@code0-tech/pictor"
-import { IconX } from "@tabler/icons-react"
+import { Button, DialogFooter } from "@code0-tech/pictor"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 
@@ -129,98 +129,79 @@ export function LicenseBillingDialog({ content, customerId, errors, licenseId, l
     const periodLabelFor = (value: PaymentPeriod) => subscriptionConfig.paymentPeriod[`${value}Text`]
 
     return (
-        <Dialog open onOpenChange={(open) => !open && close()}>
-            <DialogPortal>
-                <DialogOverlay className="backdrop-blur-sm" />
-                <DialogContent className="max-h-[calc(100dvh-2rem)]! w-[calc(100vw-2rem)]! max-w-xl! overflow-y-auto border border-white/5 bg-primary! p-4! sm:p-6!">
-                    <DialogHeader className="pr-10 text-left!">
-                        <DialogTitle className="font-normal! text-white!">{content.billing.title}</DialogTitle>
-                        <DialogDescription className="text-sm! text-secondary!">{content.billing.description}</DialogDescription>
-                    </DialogHeader>
-                    <div className="absolute right-4 top-4 z-10">
-                        <Button type="button" variant="none" onClick={close} aria-label={content.editor.closeLabel} className="size-9! p-0! text-secondary! hover:text-white!">
-                            <IconX size={18} />
-                        </Button>
+        <LicenseDialog backLabel={content.editor.cancelLabel} description={content.billing.description} onClose={close} title={content.billing.title}>
+            <div className="space-y-4">
+                {license && (
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <p className="text-tertiary">{content.dashboard.statusLabel}</p>
+                            <p className="mt-1 text-white">{formatLicenseDisplayValue(license.subscriptionStatus ?? license.status, "status", content.values)}</p>
+                        </div>
+                        <div>
+                            <p className="text-tertiary">{content.billing.currentPeriodEndLabel}</p>
+                            <p className="mt-1 text-white">{formatDate(license.currentPeriodEnd)}</p>
+                        </div>
+                        {license.pendingUpdate && (
+                            <div className="col-span-2 rounded-xl border border-white/10 bg-white/3 p-3">
+                                <p className="text-tertiary">{content.billing.pendingChangeLabel}</p>
+                                <p className="mt-1 text-white">
+                                    {license.pendingUpdate.paymentPeriod
+                                        ? periodLabelFor(license.pendingUpdate.paymentPeriod.toLowerCase() as PaymentPeriod)
+                                        : formatLicenseDisplayValue(license.pendingUpdate.plan, "plan", content.values)}
+                                    {" · "}
+                                    {formatDate(license.pendingUpdate.effectiveAt)}
+                                </p>
+                            </div>
+                        )}
                     </div>
+                )}
 
-                    <div className="space-y-4 pt-6">
-                        {license && (
-                            <div className="grid grid-cols-2 gap-4 text-sm">
-                                <div>
-                                    <p className="text-tertiary">{content.dashboard.statusLabel}</p>
-                                    <p className="mt-1 text-white">{formatLicenseDisplayValue(license.subscriptionStatus ?? license.status, "status", content.values)}</p>
+                <div>
+                    <p className="mb-2 text-sm text-secondary">{content.billing.periodLabel}</p>
+                    <Switch value={period} options={periodOptions.map((option) => ({ value: option, label: periodLabelFor(option) }))} onChange={(value) => setSelectedPeriod(value)} />
+                </div>
+
+                {hasChange && (
+                    <div className="rounded-xl border border-white/10 bg-white/3 p-3 text-sm">
+                        {isLoadingPreview ? (
+                            <p className="text-tertiary">{content.subscriptionPreview.loadingLabel}</p>
+                        ) : previewError ? (
+                            <p role="alert" className="text-error">
+                                {previewError}
+                            </p>
+                        ) : preview ? (
+                            <div className="space-y-1">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-secondary">{content.subscriptionPreview.totalLabel}</span>
+                                    <span className="text-white">{formatMinorCurrency(preview.total, preview.currency, locale)}</span>
                                 </div>
-                                <div>
-                                    <p className="text-tertiary">{content.billing.currentPeriodEndLabel}</p>
-                                    <p className="mt-1 text-white">{formatDate(license.currentPeriodEnd)}</p>
-                                </div>
-                                {license.pendingUpdate && (
-                                    <div className="col-span-2 rounded-xl border border-white/10 bg-white/3 p-3">
-                                        <p className="text-tertiary">{content.billing.pendingChangeLabel}</p>
-                                        <p className="mt-1 text-white">
-                                            {license.pendingUpdate.paymentPeriod
-                                                ? periodLabelFor(license.pendingUpdate.paymentPeriod.toLowerCase() as PaymentPeriod)
-                                                : formatLicenseDisplayValue(license.pendingUpdate.plan, "plan", content.values)}
-                                            {" · "}
-                                            {formatDate(license.pendingUpdate.effectiveAt)}
-                                        </p>
+                                {preview.prorationAmount > 0 && (
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-secondary">{content.subscriptionPreview.prorationLabel}</span>
+                                        <span className="text-white">{formatMinorCurrency(preview.prorationAmount, preview.currency, locale)}</span>
                                     </div>
                                 )}
+                                <p className="text-tertiary">{preview.immediate ? content.subscriptionPreview.immediateNote : content.subscriptionPreview.scheduledNote}</p>
                             </div>
-                        )}
-
-                        <div>
-                            <p className="mb-2 text-sm text-secondary">{content.billing.periodLabel}</p>
-                            <Switch
-                                value={period}
-                                options={periodOptions.map((option) => ({ value: option, label: periodLabelFor(option) }))}
-                                onChange={(value) => setSelectedPeriod(value)}
-                            />
-                        </div>
-
-                        {hasChange && (
-                            <div className="rounded-xl border border-white/10 bg-white/3 p-3 text-sm">
-                                {isLoadingPreview ? (
-                                    <p className="text-tertiary">{content.subscriptionPreview.loadingLabel}</p>
-                                ) : previewError ? (
-                                    <p role="alert" className="text-error">
-                                        {previewError}
-                                    </p>
-                                ) : preview ? (
-                                    <div className="space-y-1">
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-secondary">{content.subscriptionPreview.totalLabel}</span>
-                                            <span className="text-white">{formatMinorCurrency(preview.total, preview.currency, locale)}</span>
-                                        </div>
-                                        {preview.prorationAmount > 0 && (
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-secondary">{content.subscriptionPreview.prorationLabel}</span>
-                                                <span className="text-white">{formatMinorCurrency(preview.prorationAmount, preview.currency, locale)}</span>
-                                            </div>
-                                        )}
-                                        <p className="text-tertiary">{preview.immediate ? content.subscriptionPreview.immediateNote : content.subscriptionPreview.scheduledNote}</p>
-                                    </div>
-                                ) : null}
-                            </div>
-                        )}
-
-                        {saveError && (
-                            <p role="alert" className="text-sm text-error">
-                                {saveError}
-                            </p>
-                        )}
-
-                        <DialogFooter className="gap-3! pt-2!">
-                            <Button type="button" variant="none" onClick={close}>
-                                {content.editor.cancelLabel}
-                            </Button>
-                            <Button type="button" variant="filled" disabled={!hasChange || isSaving || isLoadingPreview} onClick={() => void save()}>
-                                {isSaving ? <ButtonLoader label={content.editor.saveLabel} /> : content.editor.saveLabel}
-                            </Button>
-                        </DialogFooter>
+                        ) : null}
                     </div>
-                </DialogContent>
-            </DialogPortal>
-        </Dialog>
+                )}
+
+                {saveError && (
+                    <p role="alert" className="text-sm text-error">
+                        {saveError}
+                    </p>
+                )}
+
+                <DialogFooter className="gap-3! pt-2!">
+                    <Button type="button" variant="none" onClick={close}>
+                        {content.editor.cancelLabel}
+                    </Button>
+                    <Button type="button" variant="filled" disabled={!hasChange || isSaving || isLoadingPreview} onClick={() => void save()}>
+                        {isSaving ? <ButtonLoader label={content.editor.saveLabel} /> : content.editor.saveLabel}
+                    </Button>
+                </DialogFooter>
+            </div>
+        </LicenseDialog>
     )
 }

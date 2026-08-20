@@ -1,10 +1,10 @@
 "use client"
 
 import { PaymentMethodSetupElement, PaymentMethodSetupPendingStatus } from "@/components/licenses/dialog/PaymentMethodSetupElement"
+import { LicenseDialog } from "@/components/licenses/dialog/LicenseDialog"
 import type { ErrorsContent, LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
-import { Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogOverlay, DialogPortal, DialogTitle, Text } from "@code0-tech/pictor"
-import { IconX } from "@tabler/icons-react"
+import { Button, Text } from "@code0-tech/pictor"
 import { useEffect, useRef, useState } from "react"
 
 interface PaymentMethodSetupDialogProps {
@@ -84,58 +84,43 @@ export function PaymentMethodSetupDialog({ content, customerId, disabled = false
                 {content.editor.changePaymentMethodLabel}
             </Button>
 
-            <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && close()}>
-                <DialogPortal>
-                    <DialogOverlay className="backdrop-blur-sm" />
-                    <DialogContent className="max-h-[calc(100dvh-2rem)]! w-[calc(100vw-2rem)]! max-w-xl! overflow-y-auto! border border-white/5 bg-primary! p-4! sm:p-6!">
-                        <DialogHeader className="pr-10 text-left!">
-                            <DialogTitle className="font-normal! text-white!">{content.editor.paymentMethodHeading}</DialogTitle>
-                            <DialogDescription className="text-sm! text-secondary!">{content.editor.paymentMethodDescription}</DialogDescription>
-                        </DialogHeader>
-                        <div className="absolute right-4 top-4 z-10">
-                            <Button type="button" variant="none" onClick={close} aria-label={content.editor.closeLabel} className="size-9! p-0! text-secondary! hover:text-white!">
-                                <IconX aria-hidden="true" size={18} />
-                            </Button>
+            <LicenseDialog backLabel={content.editor.cancelLabel} description={content.editor.paymentMethodDescription} onClose={close} open={open} title={content.editor.paymentMethodHeading}>
+                <div>
+                    {isLoading ? (
+                        <div role="status" className="space-y-4 animate-pulse motion-reduce:animate-none">
+                            <span className="sr-only">{content.editor.loadingPaymentMethodLabel}</span>
+                            <div aria-hidden="true" className="h-14 rounded-2xl bg-white/8" />
+                            <div aria-hidden="true" className="h-14 rounded-2xl bg-white/8" />
+                            <div aria-hidden="true" className="ml-auto h-10 w-40 rounded-xl bg-white/8" />
                         </div>
-
-                        <div className="pt-6">
-                            {isLoading ? (
-                                <div role="status" className="space-y-4 animate-pulse motion-reduce:animate-none">
-                                    <span className="sr-only">{content.editor.loadingPaymentMethodLabel}</span>
-                                    <div aria-hidden="true" className="h-14 rounded-2xl bg-white/8" />
-                                    <div aria-hidden="true" className="h-14 rounded-2xl bg-white/8" />
-                                    <div aria-hidden="true" className="ml-auto h-10 w-40 rounded-xl bg-white/8" />
-                                </div>
-                            ) : error ? (
-                                <Text role="alert" size="sm" className="text-error!">
-                                    {error}
-                                </Text>
-                            ) : pendingSetupIntentId ? (
-                                <PaymentMethodSetupPendingStatus
-                                    content={content.editor}
-                                    customerId={customerId}
-                                    errorMessage={errors.paymentMethodUpdate}
-                                    onCancel={close}
-                                    onSuccess={onSuccess}
-                                    retryLabel={errors.retry}
-                                    setupIntentId={pendingSetupIntentId}
-                                />
-                            ) : clientSecret ? (
-                                <PaymentMethodSetupElement
-                                    clientSecret={clientSecret}
-                                    content={content.editor}
-                                    customerId={customerId}
-                                    errorMessage={errors.paymentMethodUpdate}
-                                    onCancel={close}
-                                    onSuccess={onSuccess}
-                                    retryLabel={errors.retry}
-                                    returnPath={`/${locale}/licenses/customer/${encodeURIComponent(customerId)}/edit`}
-                                />
-                            ) : null}
-                        </div>
-                    </DialogContent>
-                </DialogPortal>
-            </Dialog>
+                    ) : error ? (
+                        <Text role="alert" size="sm" className="text-error!">
+                            {error}
+                        </Text>
+                    ) : pendingSetupIntentId ? (
+                        <PaymentMethodSetupPendingStatus
+                            content={content.editor}
+                            customerId={customerId}
+                            errorMessage={errors.paymentMethodUpdate}
+                            onCancel={close}
+                            onSuccess={onSuccess}
+                            retryLabel={errors.retry}
+                            setupIntentId={pendingSetupIntentId}
+                        />
+                    ) : clientSecret ? (
+                        <PaymentMethodSetupElement
+                            clientSecret={clientSecret}
+                            content={content.editor}
+                            customerId={customerId}
+                            errorMessage={errors.paymentMethodUpdate}
+                            onCancel={close}
+                            onSuccess={onSuccess}
+                            retryLabel={errors.retry}
+                            returnPath={`/${locale}/licenses/customer/${encodeURIComponent(customerId)}/edit`}
+                        />
+                    ) : null}
+                </div>
+            </LicenseDialog>
         </>
     )
 }
