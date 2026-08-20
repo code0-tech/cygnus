@@ -9,6 +9,7 @@ test("selects the client address from the trusted side of a forwarded chain", ()
 
     assert.equal(getTrustedClientIp(request, { CRATER_RATE_LIMIT_TRUSTED_PROXY_HOPS: "1" }), "198.51.100.20")
     assert.equal(getTrustedClientIp(request, { CRATER_RATE_LIMIT_TRUSTED_PROXY_HOPS: "2" }), "203.0.113.10")
+    assert.equal(getTrustedClientIp(request, { CRATER_RATE_LIMIT_TRUSTED_PROXY_HOPS: "4" }), null)
     assert.equal(getTrustedClientIp(request, { CRATER_RATE_LIMIT_TRUSTED_PROXY_HOPS: "0" }), null)
 })
 
