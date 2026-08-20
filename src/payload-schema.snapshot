@@ -2249,6 +2249,54 @@ export const cookie_banner_locales = pgTable('cookie_banner_locales', {
 )
 
 
+export const subscription_config_plan_pro_features = pgTable('subscription_config_plan_pro_features', {
+  _order: integer('_order').notNull(),
+  _parentID: integer('_parent_id').notNull(),
+  _locale: enum__locales('_locale').notNull(),
+  id: varchar('id').primaryKey(),
+  text: varchar('text').notNull(),
+}, (columns) => [
+    index('subscription_config_plan_pro_features_order_idx').on(columns._order), index('subscription_config_plan_pro_features_parent_id_idx').on(columns._parentID), index('subscription_config_plan_pro_features_locale_idx').on(columns._locale), foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [subscription_config.id],
+      name: 'subscription_config_plan_pro_features_parent_id_fk'
+    }).onDelete('cascade'),
+]
+)
+
+
+export const subscription_config_plan_max_features = pgTable('subscription_config_plan_max_features', {
+  _order: integer('_order').notNull(),
+  _parentID: integer('_parent_id').notNull(),
+  _locale: enum__locales('_locale').notNull(),
+  id: varchar('id').primaryKey(),
+  text: varchar('text').notNull(),
+}, (columns) => [
+    index('subscription_config_plan_max_features_order_idx').on(columns._order), index('subscription_config_plan_max_features_parent_id_idx').on(columns._parentID), index('subscription_config_plan_max_features_locale_idx').on(columns._locale), foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [subscription_config.id],
+      name: 'subscription_config_plan_max_features_parent_id_fk'
+    }).onDelete('cascade'),
+]
+)
+
+
+export const subscription_config_plan_custom_features = pgTable('subscription_config_plan_custom_features', {
+  _order: integer('_order').notNull(),
+  _parentID: integer('_parent_id').notNull(),
+  _locale: enum__locales('_locale').notNull(),
+  id: varchar('id').primaryKey(),
+  text: varchar('text').notNull(),
+}, (columns) => [
+    index('subscription_config_plan_custom_features_order_idx').on(columns._order), index('subscription_config_plan_custom_features_parent_id_idx').on(columns._parentID), index('subscription_config_plan_custom_features_locale_idx').on(columns._locale), foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [subscription_config.id],
+      name: 'subscription_config_plan_custom_features_parent_id_fk'
+    }).onDelete('cascade'),
+]
+)
+
+
 export const subscription_config_workflow_calculator_business_types = pgTable('subscription_config_workflow_calculator_business_types', {
   _order: integer('_order').notNull(),
   _parentID: integer('_parent_id').notNull(),
@@ -3967,6 +4015,30 @@ export const relations_cookie_banner = relations(cookie_banner, ({ many }) => ({
             relationName: '_locales',
     }),
       }))
+export const relations_subscription_config_plan_pro_features = relations(subscription_config_plan_pro_features, ({ one }) => ({
+  _parentID: one(subscription_config, {
+
+    fields: [subscription_config_plan_pro_features._parentID],
+    references: [subscription_config.id],
+    relationName: 'plan_pro_features',
+    }),
+      }))
+export const relations_subscription_config_plan_max_features = relations(subscription_config_plan_max_features, ({ one }) => ({
+  _parentID: one(subscription_config, {
+
+    fields: [subscription_config_plan_max_features._parentID],
+    references: [subscription_config.id],
+    relationName: 'plan_max_features',
+    }),
+      }))
+export const relations_subscription_config_plan_custom_features = relations(subscription_config_plan_custom_features, ({ one }) => ({
+  _parentID: one(subscription_config, {
+
+    fields: [subscription_config_plan_custom_features._parentID],
+    references: [subscription_config.id],
+    relationName: 'plan_custom_features',
+    }),
+      }))
 export const relations_subscription_config_workflow_calculator_business_types_locales = relations(subscription_config_workflow_calculator_business_types_locales, ({ one }) => ({
   _parentID: one(subscription_config_workflow_calculator_business_types, {
     
@@ -4007,17 +4079,26 @@ export const relations_subscription_config = relations(subscription_config, ({ o
     references: [media.id],
     relationName: 'deployment_cloud_image',
     }),
+    plan_pro_features: many(subscription_config_plan_pro_features, {
+            relationName: 'plan_pro_features',
+    }),
     plan_pro_image: one(media, {
     
     fields: [subscription_config.plan_pro_image],
     references: [media.id],
     relationName: 'plan_pro_image',
     }),
+    plan_max_features: many(subscription_config_plan_max_features, {
+            relationName: 'plan_max_features',
+    }),
     plan_max_image: one(media, {
     
     fields: [subscription_config.plan_max_image],
     references: [media.id],
     relationName: 'plan_max_image',
+    }),
+    plan_custom_features: many(subscription_config_plan_custom_features, {
+            relationName: 'plan_custom_features',
     }),
     plan_custom_image: one(media, {
     
@@ -4271,6 +4352,9 @@ type DatabaseSchema = {
   footer_locales: typeof footer_locales
   cookie_banner: typeof cookie_banner
   cookie_banner_locales: typeof cookie_banner_locales
+  subscription_config_plan_pro_features: typeof subscription_config_plan_pro_features
+  subscription_config_plan_max_features: typeof subscription_config_plan_max_features
+  subscription_config_plan_custom_features: typeof subscription_config_plan_custom_features
   subscription_config_workflow_calculator_business_types: typeof subscription_config_workflow_calculator_business_types
   subscription_config_workflow_calculator_business_types_locales: typeof subscription_config_workflow_calculator_business_types_locales
   subscription_config: typeof subscription_config
@@ -4389,6 +4473,9 @@ type DatabaseSchema = {
   relations_footer: typeof relations_footer
   relations_cookie_banner_locales: typeof relations_cookie_banner_locales
   relations_cookie_banner: typeof relations_cookie_banner
+  relations_subscription_config_plan_pro_features: typeof relations_subscription_config_plan_pro_features
+  relations_subscription_config_plan_max_features: typeof relations_subscription_config_plan_max_features
+  relations_subscription_config_plan_custom_features: typeof relations_subscription_config_plan_custom_features
   relations_subscription_config_workflow_calculator_business_types_locales: typeof relations_subscription_config_workflow_calculator_business_types_locales
   relations_subscription_config_workflow_calculator_business_types: typeof relations_subscription_config_workflow_calculator_business_types
   relations_subscription_config_locales: typeof relations_subscription_config_locales
@@ -4407,4 +4494,3 @@ declare module '@payloadcms/db-postgres' {
     schema: DatabaseSchema
   }
 }
-    

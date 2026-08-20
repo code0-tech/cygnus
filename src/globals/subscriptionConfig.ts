@@ -1,6 +1,8 @@
 import { iconField as payloadIconField } from "@mvriu5/payload-icon-picker"
 import type { Field, GlobalConfig } from "payload"
 
+type LocalizedFeature = { de: string; en: string }
+
 const accentColorOptions = [
     { label: "Brand", value: "brand" },
     { label: "Pink", value: "pink" },
@@ -44,6 +46,17 @@ const usageRangeFields = (defaults: { default: number; min: number; max: number;
     { name: "min", type: "number", required: false, defaultValue: defaults.min },
     { name: "max", type: "number", required: false, defaultValue: defaults.max },
 ]
+
+const planFeaturesField = (features: LocalizedFeature[]): Field => ({
+    name: "features",
+    label: "Features",
+    type: "array",
+    localized: true,
+    required: true,
+    minRows: 1,
+    defaultValue: ({ locale }) => features.map((feature) => ({ text: locale === "de" ? feature.de : feature.en })),
+    fields: [{ name: "text", label: "Feature", type: "text", required: true }],
+})
 
 export const SubscriptionCollection: GlobalConfig = {
     slug: "subscriptionConfig",
@@ -197,6 +210,11 @@ export const SubscriptionCollection: GlobalConfig = {
                             localized: true,
                             defaultValue: "A ready-to-use plan for individuals and smaller teams.",
                         },
+                        planFeaturesField([
+                            { en: "Essential workflow automation", de: "Grundlegende Workflow-Automatisierung" },
+                            { en: "AI-assisted workflows", de: "KI-unterstützte Workflows" },
+                            { en: "Cloud or self-hosted deployment", de: "Cloud- oder Self-hosted-Bereitstellung" },
+                        ]),
                         { ...iconField, defaultValue: "sparkles" },
                         { ...colorField, defaultValue: "lime" },
                         optionImageField(),
@@ -215,6 +233,11 @@ export const SubscriptionCollection: GlobalConfig = {
                             localized: true,
                             defaultValue: "A ready-to-use plan for organizations with higher requirements.",
                         },
+                        planFeaturesField([
+                            { en: "Everything included in Pro", de: "Alle Funktionen aus Pro" },
+                            { en: "Advanced automation capabilities", de: "Erweiterte Automatisierungsfunktionen" },
+                            { en: "Designed for higher workflow demand", de: "Für einen höheren Workflow-Bedarf ausgelegt" },
+                        ]),
                         { ...iconField, defaultValue: "rocket" },
                         { ...colorField, defaultValue: "magenta" },
                         optionImageField(),
@@ -233,6 +256,11 @@ export const SubscriptionCollection: GlobalConfig = {
                             localized: true,
                             defaultValue: "Configure usage for an individual setup.",
                         },
+                        planFeaturesField([
+                            { en: "Configurable AI token volume", de: "Konfigurierbares KI-Token-Volumen" },
+                            { en: "Configurable workflow executions", de: "Konfigurierbare Workflow-Ausführungen" },
+                            { en: "Tailored usage configuration", de: "Individuelle Nutzungskonfiguration" },
+                        ]),
                         { ...iconField, defaultValue: "settings" },
                         { ...colorField, defaultValue: "yellow" },
                         optionImageField(),

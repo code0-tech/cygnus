@@ -130,6 +130,7 @@ import * as migration_20260818_065236_checkout_next_steps from './20260818_06523
 import * as migration_20260818_101759_checkout_send_offer_label from './20260818_101759_checkout_send_offer_label';
 import * as migration_20260819_150000_license_billing_title_change_period from './20260819_150000_license_billing_title_change_period';
 import * as migration_20260820_041742_license_withdrawal_notice from './20260820_041742_license_withdrawal_notice';
+import * as migration_20260820_061154_add_subscription_plan_features from './20260820_061154_add_subscription_plan_features';
 
 export const migrations = [
   {
@@ -790,6 +791,11 @@ export const migrations = [
   {
     up: migration_20260820_041742_license_withdrawal_notice.up,
     down: migration_20260820_041742_license_withdrawal_notice.down,
-    name: '20260820_041742_license_withdrawal_notice'
+    name: '20260820_041742_license_withdrawal_notice',
+  },
+  {
+    up: migration_20260820_061154_add_subscription_plan_features.up,
+    down: migration_20260820_061154_add_subscription_plan_features.down,
+    name: '20260820_061154_add_subscription_plan_features',
   },
 ];

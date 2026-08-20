@@ -2897,6 +2897,10 @@ export interface SubscriptionConfig {
     pro: {
       title?: string | null;
       description?: string | null;
+      features: {
+        text: string;
+        id?: string | null;
+      }[];
       icon: string;
       color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
       image?: (number | null) | Media;
@@ -2904,6 +2908,10 @@ export interface SubscriptionConfig {
     max: {
       title?: string | null;
       description?: string | null;
+      features: {
+        text: string;
+        id?: string | null;
+      }[];
       icon: string;
       color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
       image?: (number | null) | Media;
@@ -2911,6 +2919,10 @@ export interface SubscriptionConfig {
     custom: {
       title?: string | null;
       description?: string | null;
+      features: {
+        text: string;
+        id?: string | null;
+      }[];
       icon: string;
       color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
       image?: (number | null) | Media;
@@ -3610,6 +3622,12 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
           | {
               title?: T;
               description?: T;
+              features?:
+                | T
+                | {
+                    text?: T;
+                    id?: T;
+                  };
               icon?: T;
               color?: T;
               image?: T;
@@ -3619,6 +3637,12 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
           | {
               title?: T;
               description?: T;
+              features?:
+                | T
+                | {
+                    text?: T;
+                    id?: T;
+                  };
               icon?: T;
               color?: T;
               image?: T;
@@ -3628,6 +3652,12 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
           | {
               title?: T;
               description?: T;
+              features?:
+                | T
+                | {
+                    text?: T;
+                    id?: T;
+                  };
               icon?: T;
               color?: T;
               image?: T;

@@ -119,6 +119,7 @@ export interface SubscriptionConfigData {
         pro: {
             title: string
             description: string
+            features?: Array<{ id?: string | null; text?: string | null }> | null
             icon: string
             color: IconColor
             image?: number | Media | null
@@ -126,6 +127,7 @@ export interface SubscriptionConfigData {
         max: {
             title: string
             description: string
+            features?: Array<{ id?: string | null; text?: string | null }> | null
             icon: string
             color: IconColor
             image?: number | Media | null
@@ -133,6 +135,7 @@ export interface SubscriptionConfigData {
         custom: {
             title: string
             description: string
+            features?: Array<{ id?: string | null; text?: string | null }> | null
             icon: string
             color: IconColor
             image?: number | Media | null

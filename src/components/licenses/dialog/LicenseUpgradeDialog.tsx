@@ -4,7 +4,6 @@ import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
 import { LicenseDialog } from "@/components/licenses/dialog/LicenseDialog"
 import { AcceptTermsCheckbox } from "@/components/forms/AcceptTermsCheckbox"
 import { SummaryBadge } from "@/components/checkout/CheckoutSummaryBadge"
-import { Switch } from "@/components/ui/Switch"
 import { Slider } from "@/components/ui/Slider"
 import { ButtonLoader } from "@/components/ui/Loader"
 import { getIcon } from "@/components/ui/IconRenderer"
@@ -18,8 +17,10 @@ import { getSubscriptionCatalog } from "@/lib/subscriptionCatalog"
 import { getPaymentPeriodForCustomerType } from "@/lib/subscriptionConfigurator"
 import type { SubscriptionPriceCatalog } from "@/lib/subscriptionPrices"
 import { Button, DialogFooter } from "@code0-tech/pictor"
+import { IconCheck } from "@tabler/icons-react"
 import { useRouter } from "next/navigation"
 import { useEffect, useMemo, useState } from "react"
+import { cn } from "@/lib/utils"
 
 type SubscriptionPlan = "pro" | "max" | "custom"
 
@@ -174,25 +175,43 @@ export function LicenseUpgradeDialog({ content, customerId, errors, licenseId, l
         }
     }
 
-    return (
-        <LicenseDialog
-            backLabel={content.editor.cancelLabel}
-            description={content.upgrade.description}
-            onClose={close}
-            title={content.upgrade.title}
-            sidebar={<SummaryBadge size="lg" icon={getIcon(subscriptionConfig.plan[plan].icon, 18)} tone={subscriptionConfig.plan[plan].color} value={subscriptionConfig.plan[plan].title} />}
-        >
-            <div className="space-y-4">
-                <div>
-                    {upgradeTargets.length > 1 && (
-                        <Switch
-                            value={plan}
-                            options={upgradeTargets.map((option) => ({ value: option, label: subscriptionConfig.packages[option].title }))}
-                            onChange={(value) => setSelectedPlan(value)}
-                        />
-                    )}
-                </div>
+    const planBadge = (option: SubscriptionPlan) => (
+        <SummaryBadge size="lg" icon={getIcon(subscriptionConfig.plan[option].icon, 18)} tone={subscriptionConfig.plan[option].color} value={subscriptionConfig.plan[option].title} />
+    )
 
+    const planSelection =
+        upgradeTargets.length > 0 ? (
+            <div role="radiogroup" aria-label={content.upgrade.title} className="flex flex-col gap-2">
+                {upgradeTargets.map((option) => (
+                    <Button
+                        key={option}
+                        type="button"
+                        role="radio"
+                        aria-checked={plan === option}
+                        active={plan === option}
+                        variant={plan === option ? "normal" : "none"}
+                        paddingSize="xxs"
+                        w="100%"
+                        justify="start"
+                        className={cn("text-base!", plan === option && "shadow-[inset_0_1px_1px_#bfbfbf1a]! bg-white/5!")}
+                        onClick={() => setSelectedPlan(option)}
+                    >
+                        {subscriptionConfig.plan[option].title}
+                    </Button>
+                ))}
+            </div>
+        ) : (
+            planBadge(plan)
+        )
+    const planFeatures =
+        subscriptionConfig.plan[plan].features?.flatMap((feature, index) => {
+            const text = feature.text?.trim()
+            return text ? [{ key: feature.id ?? `${index}-${text}`, text }] : []
+        }) ?? []
+
+    return (
+        <LicenseDialog backLabel={content.editor.cancelLabel} description={content.upgrade.description} onClose={close} title={content.upgrade.title} sidebar={planSelection}>
+            <div className="space-y-4">
                 {plan === "custom" && (
                     <div className="space-y-4">
                         <Slider
@@ -220,6 +239,17 @@ export function LicenseUpgradeDialog({ content, customerId, errors, licenseId, l
                             shape="cone-incline"
                         />
                     </div>
+                )}
+
+                {planFeatures.length > 0 && (
+                    <ul className="space-y-2 py-2">
+                        {planFeatures.map((feature) => (
+                            <li key={feature.key} className="flex items-start gap-2 text-sm text-secondary">
+                                <IconCheck aria-hidden="true" size={18} className="mt-0.5 shrink-0 text-brand" />
+                                <span>{feature.text}</span>
+                            </li>
+                        ))}
+                    </ul>
                 )}
 
                 <div className="space-y-1 rounded-xl border border-white/10 bg-white/3 p-3 text-sm">
