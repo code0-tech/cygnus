@@ -1,6 +1,7 @@
 import { createApolloClient } from "@/lib/apolloClient"
 import { craterJson, craterMutationErrorResponse, craterTransportErrorResponse, optionalString, readJsonObject, requireCraterSession } from "@/lib/checkout/craterApi"
 import { setCraterSessionCookie } from "@/lib/checkout/craterSession"
+import { isLicenseId } from "@/lib/licenses/craterLicenseRequest"
 import type { LicenseDashboardCustomer, LicenseDashboardData, LicenseDashboardInvoice, LicenseDashboardLicense, LicenseDashboardPendingUpdate } from "@/lib/licenses/licenseTypes"
 import type { Customer, Invoice, License, Mutation, MutationLicensesLinkNamespaceArgs, Query, Scalars, Subscription, SubscriptionPendingUpdate, User } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
@@ -15,10 +16,6 @@ type LinkLicenseNamespaceData = Pick<Mutation, "licensesLinkNamespace">
 
 const PAGE_SIZE = 25
 const RECENT_LICENSES_PER_CUSTOMER = 5
-
-function isLicenseId(value: string): value is Scalars["LicenseID"]["input"] {
-    return /^gid:\/\/crater\/License\/\d+$/.test(value)
-}
 
 function isCustomerId(value: string): value is Scalars["CustomerID"]["input"] {
     return /^gid:\/\/crater\/Customer\/\d+$/.test(value)

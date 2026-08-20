@@ -514,7 +514,34 @@ The Rails mail bodies are currently placeholders, and automatic delivery of thes
 - grace period, options, and restrictions in the data model
 - creation and update timestamps
 
-Self-hosted licenses can be exported as strings. Cloud licenses can be linked to a Sagittarius namespace or transferred to another namespace.
+Self-hosted licenses can be exported as a signed license file. Cloud licenses can be linked to a Sagittarius namespace or transferred to another namespace.
+
+#### What a license carries
+
+`restrictions` and `options` are the two free-form hashes the `code0-license` format hands to the installation running on the license. Crater derives both from the subscription and stores them on the snapshot, so they describe what was in force when that snapshot was appended rather than what the subscription looks like now.
+
+| Hash           | Key                  | Value                                                 |
+| -------------- | -------------------- | ----------------------------------------------------- |
+| `restrictions` | `aiTokens`           | AI Token quantity, only for the custom plan           |
+| `restrictions` | `workflowExecutions` | Workflow Execution quantity, only for the custom plan |
+| `options`      | `paymentPeriod`      | `weekly`, `monthly`, `quarterly`, or `yearly`         |
+| `options`      | `customerType`       | `personal` or `business`                              |
+| `options`      | `plan`               | `PRO`, `MAX`, or `CUSTOM`                             |
+
+The keys are camelCase because the product reads them, not Rails; `Code0::License.load` symbolizes them again on the consuming side. The plan is upper case there and lower case in Crater's own storage and GraphQL.
+
+Only keys that have a value are written. A Pro or Max subscription carries no quantity restriction at all rather than one set to null, so `restricted?(:aiTokens)` answers `false` for it, and a subscription from a negotiated `CustomCheckoutConfiguration` carries neither `plan` nor `paymentPeriod`.
+
+#### The license file
+
+`licensesExport` returns a file produced by the `code0-license` gem, not a hand-rolled payload, so it is the format the product already knows how to read. `Code0::License.load` verifies it against the matching public key and yields the licensee, the validity window, the restrictions, and the options.
+
+- The file is signed with the RSA private key from `license.private_key`. Without that key the export is refused with `INVALID_LICENSE`; Crater never hands out an unsigned file.
+- `Code0::License.encryption_key` is process-wide state that `export` only reads, so Crater sets it exactly once at boot in an initializer. A malformed key fails the boot rather than degrading to unsigned output.
+- The payload is wrapped in the gem's own boundary, `-----BEGIN CODE0 LICENSE-----` to `-----END CODE0 LICENSE-----`, and can be written to disk exactly as returned.
+- `licensee` names the customer id, name, and email, plus the license and subscription ids so an installation can be matched back in a support case. No payment data and no session data goes into the file.
+- `fileName` accompanies the file so a client does not have to invent one; it is `code0-license-<license id>.lic`.
+- Only self-hosted licenses can be exported, and only by a member of the license's customer.
 
 ### Managing an existing subscription
 
@@ -963,10 +990,10 @@ For `subscriptionsUpdate` and `subscriptionsPreviewUpdate`:
 
 #### Licenses
 
-| Mutation                | Key arguments                            | Result                                    |
-| ----------------------- | ---------------------------------------- | ----------------------------------------- |
-| `licensesExport`        | `id: LicenseID!`                         | Exported license string; self-hosted only |
-| `licensesLinkNamespace` | `id: LicenseID!`, `namespaceId: String!` | Updated cloud license                     |
+| Mutation                | Key arguments                            | Result                                                                         |
+| ----------------------- | ---------------------------------------- | ------------------------------------------------------------------------------ |
+| `licensesExport`        | `id: LicenseID!`                         | Signed license file plus the `fileName` to download it under; self-hosted only |
+| `licensesLinkNamespace` | `id: LicenseID!`, `namespaceId: String!` | Updated cloud license                                                          |
 
 ## Error handling
 
