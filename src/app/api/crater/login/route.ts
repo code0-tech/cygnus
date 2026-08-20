@@ -2,6 +2,7 @@ import { craterJson, craterMutationErrorResponse, optionalString, readJsonObject
 import { createCraterUserSession } from "@/lib/checkout/craterLogin"
 import { setCraterSessionCookie } from "@/lib/checkout/craterSession"
 import { enforceRateLimit } from "@/lib/security/rateLimiter"
+import { logSecurityEvent } from "@/lib/security/securityLog"
 
 export const runtime = "nodejs"
 
@@ -21,7 +22,10 @@ export async function POST(request: Request) {
         const payload = await createCraterUserSession(sagittariusToken, clientMutationId)
 
         const errorResponse = craterMutationErrorResponse(payload.errors, "Crater could not create a user session.")
-        if (errorResponse) return errorResponse
+        if (errorResponse) {
+            logSecurityEvent({ event: "crater_login_failed", errorCode: payload.errors?.[0]?.errorCode ?? "UNKNOWN" })
+            return errorResponse
+        }
 
         if (!payload.userSession?.token) {
             throw new Error("Crater returned no user session token.")
@@ -29,7 +33,7 @@ export async function POST(request: Request) {
 
         return setCraterSessionCookie(craterJson({ authenticated: true }), payload.userSession.token)
     } catch (error) {
-        console.error("Crater user login error:", error)
+        console.error("Crater user login error:", error instanceof Error ? error.name : "UnknownError")
         return craterJson({ error: "Could not create Crater session." }, 502)
     }
 }

@@ -1,8 +1,10 @@
 import { createRateLimitKey } from "@/lib/security/rateLimitKey"
 import { getRateLimitPolicy, type RateLimitPolicy, type RateLimitPolicyName } from "@/lib/security/rateLimitPolicies"
+import { logSecurityEvent } from "@/lib/security/securityLog"
 
 interface RateLimitBucket {
     count: number
+    rejectionLogged: boolean
     resetAt: number
 }
 
@@ -11,6 +13,7 @@ export interface RateLimitResult {
     limit: number
     remaining: number
     resetSeconds: number
+    shouldLog: boolean
 }
 
 const DEFAULT_MAX_BUCKETS = 10_000
@@ -29,15 +32,19 @@ export class InMemoryRateLimiter {
 
         if (!current || current.resetAt <= now) {
             this.makeRoom(now)
-            this.buckets.set(key, { count: 1, resetAt: now + policy.windowSeconds * 1000 })
-            return { allowed: true, limit: policy.max, remaining: policy.max - 1, resetSeconds: policy.windowSeconds }
+            this.buckets.set(key, { count: 1, rejectionLogged: false, resetAt: now + policy.windowSeconds * 1000 })
+            return { allowed: true, limit: policy.max, remaining: policy.max - 1, resetSeconds: policy.windowSeconds, shouldLog: false }
         }
 
         const resetSeconds = Math.max(1, Math.ceil((current.resetAt - now) / 1000))
-        if (current.count >= policy.max) return { allowed: false, limit: policy.max, remaining: 0, resetSeconds }
+        if (current.count >= policy.max) {
+            const shouldLog = !current.rejectionLogged
+            current.rejectionLogged = true
+            return { allowed: false, limit: policy.max, remaining: 0, resetSeconds, shouldLog }
+        }
 
         current.count += 1
-        return { allowed: true, limit: policy.max, remaining: policy.max - current.count, resetSeconds }
+        return { allowed: true, limit: policy.max, remaining: policy.max - current.count, resetSeconds, shouldLog: false }
     }
 
     private makeRoom(now: number) {
@@ -66,6 +73,16 @@ export function enforceRateLimit(name: RateLimitPolicyName, request: Request) {
 
     const result = limiter.consume(key, getRateLimitPolicy(name))
     if (result.allowed) return null
+
+    if (result.shouldLog) {
+        logSecurityEvent({
+            event: "rate_limit_exceeded",
+            policy: name,
+            limit: result.limit,
+            retryAfterSeconds: result.resetSeconds,
+            scope: key.includes(":session:") ? "authenticated" : "anonymous",
+        })
+    }
 
     return new Response(JSON.stringify({ error: "Too many requests. Please try again later." }), {
         status: 429,
