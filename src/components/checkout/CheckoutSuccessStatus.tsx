@@ -164,7 +164,7 @@ export function CheckoutSuccessStatus({ checkoutSearchParams, content, errorMess
                     <span className="text-sm text-white">{summary.title}</span>
                     <div className="flex flex-wrap items-center justify-center gap-1.5 max-w-sm">
                         {summary.rows.map((row) => (
-                            <SummaryBadge key={row.id} icon={getIcon(row.icon, 16)} tone={row.tone} value={row.value} />
+                            <SummaryBadge key={row.id} icon={getIcon(row.icon, 14)} tone={row.tone} value={row.value} />
                         ))}
                     </div>
                 </div>
