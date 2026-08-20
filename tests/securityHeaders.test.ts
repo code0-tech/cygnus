@@ -2,7 +2,15 @@ import assert from "node:assert/strict"
 import test from "node:test"
 import { NextRequest } from "next/server"
 import { createContentSecurityPolicy } from "../src/lib/security/contentSecurityPolicy"
+import { staticSecurityHeaders } from "../src/lib/security/staticSecurityHeaders"
 import { proxy } from "../src/proxy"
+
+test("static security headers limit referrer data and disable MIME sniffing", () => {
+    assert.deepEqual(staticSecurityHeaders, [
+        { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+        { key: "X-Content-Type-Options", value: "nosniff" },
+    ])
+})
 
 test("production CSP permits Stripe Elements and only nonce-authorized inline scripts", () => {
     const policy = createContentSecurityPolicy("test-nonce", false)
