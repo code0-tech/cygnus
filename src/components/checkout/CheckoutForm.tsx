@@ -90,6 +90,7 @@ function CheckoutFormContent() {
             errors={errors}
             customerSelect={customerSelect}
             customerSelectSkeleton={customerSelect ? <CheckoutCustomerSelectSkeleton /> : null}
+            customerEmail={selectedCustomer?.email ?? null}
             email={stripeEmail}
             isBusinessCustomer={customerType === "business"}
             onAddressChange={setStripeBillingAddress}

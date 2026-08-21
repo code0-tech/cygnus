@@ -230,6 +230,7 @@ interface CheckoutPaymentFormProps {
     billingAddress: StripeCheckoutContact | null
     collectTaxId: boolean
     content: CheckoutFormContent
+    customerEmail: string | null
     errors: ErrorsContent
     customerSelect: ReactNode
     customerSelectSkeleton: ReactNode
@@ -308,6 +309,7 @@ function CheckoutPaymentFields({
     billingAddress,
     collectTaxId,
     content,
+    customerEmail,
     errors,
     customerSelect,
     customerSelectSkeleton,
@@ -340,7 +342,6 @@ function CheckoutPaymentFields({
     const [isAddressElementReady, setIsAddressElementReady] = useState(false)
     const [isTaxIdElementReady, setIsTaxIdElementReady] = useState(!collectTaxId)
     const checkoutErrorMessage = checkoutState.type === "error" ? checkoutState.error.message : null
-    const checkoutEmail = checkoutState.type === "success" ? checkoutState.checkout.email : null
     const restoredBillingRef = useRef(false)
     const markContactElementLoading = useCallback(() => setIsContactElementReady(false), [])
     const markAddressElementLoading = useCallback(() => setIsAddressElementReady(false), [])
@@ -382,10 +383,10 @@ function CheckoutPaymentFields({
     }, [checkoutState.type, isAddressElementReady, isContactElementReady, isTaxIdElementReady, onSessionReady])
 
     useEffect(() => {
-        if (!checkoutEmail) return
-        onEmailChange(checkoutEmail)
+        if (!customerEmail) return
+        onEmailChange(customerEmail)
         setIsContactElementReady(true)
-    }, [checkoutEmail, onEmailChange])
+    }, [customerEmail, onEmailChange])
 
     const showBillingAddress = () => {
         setStage("billingAddress")
@@ -491,8 +492,8 @@ function CheckoutPaymentFields({
             {activeStep === "billingAddress" ? (
                 <>
                     <section className="w-full space-y-4">
-                        {checkoutEmail ? (
-                            <EmailInput title={content.emailLabel} value={checkoutEmail} disabled className="w-full! bg-[#17151e]! hover:bg-[#17151e]! text-tertiary/50!" />
+                        {customerEmail ? (
+                            <EmailInput title={content.emailLabel} value={customerEmail} disabled className="w-full! bg-[#17151e]! hover:bg-[#17151e]! text-tertiary/50!" />
                         ) : (
                             <ContactDetailsElement
                                 onChange={(event) => onEmailChange(event.complete ? event.value.email : null)}
@@ -580,6 +581,7 @@ export function CheckoutPaymentForm({
     billingAddress,
     collectTaxId,
     content,
+    customerEmail,
     errors,
     customerSelect,
     customerSelectSkeleton,
@@ -629,6 +631,7 @@ export function CheckoutPaymentForm({
                 billingAddress={billingAddress}
                 collectTaxId={collectTaxId}
                 content={content}
+                customerEmail={customerEmail}
                 errors={errors}
                 customerSelect={customerSelect}
                 customerSelectSkeleton={customerSelectSkeleton}

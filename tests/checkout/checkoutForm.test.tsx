@@ -433,6 +433,8 @@ test("creates the customer and checkout session on mount before collecting Strip
     act(() => billingAddressOnChange?.({ complete: true, value: stripeBillingAddress }))
     assert.equal((screen.getByRole("button", { name: "Continue to payment" }) as HTMLButtonElement).disabled, true)
     act(() => contactDetailsOnChange?.({ complete: true, value: { email: "ada@example.com" } }))
+    assert.ok(screen.getByTestId("stripe-contact-details"))
+    assert.equal(screen.queryByRole("textbox", { name: content.emailLabel }), null)
     assert.equal(screen.queryByTestId("stripe-payment"), null)
     assert.equal(checkoutStages.includes("payment"), false)
     await user.click(screen.getByRole("button", { name: "Continue to payment" }))
@@ -692,14 +694,16 @@ test("renders Stripe's Tax ID Element for a business customer", async () => {
         paymentPeriod: "monthly",
         plan: "pro",
     })
-    assert.ok(screen.getByTestId("stripe-contact-details"))
+    assert.equal(screen.queryByTestId("stripe-contact-details"), null)
+    const storedEmailInput = screen.getByRole("textbox", { name: content.emailLabel }) as HTMLInputElement
+    assert.equal(storedEmailInput.value, "billing@example.com")
+    assert.equal(storedEmailInput.disabled, true)
     assert.ok(screen.getByTestId("stripe-billing-address"))
     assert.ok(screen.getByTestId("stripe-tax-id"))
     assert.ok(screen.getByRole("button", { name: content.sendOfferLabel }))
     assert.deepEqual(taxIdElementOptions, { fields: { businessName: "never" }, visibility: "auto" })
     assert.deepEqual(stripeLoadOptions, { betas: ["custom_checkout_tax_id_1"], locale: "en" })
     act(() => billingAddressOnChange?.({ complete: true, value: stripeBillingAddress }))
-    act(() => contactDetailsOnChange?.({ complete: true, value: { email: "billing@example.com" } }))
     await user.click(screen.getByRole("button", { name: "Continue to payment" }))
 
     assert.ok(await screen.findByTestId("stripe-payment"))
