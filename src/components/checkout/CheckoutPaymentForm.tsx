@@ -17,6 +17,7 @@ type CheckoutFormContent = CheckoutData["form"]
 
 const stripePublicKey = process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY
 const stripePromise = stripePublicKey ? loadStripe(stripePublicKey, { betas: ["custom_checkout_tax_id_1"], locale: "en" }) : null
+const STRIPE_APPEARANCE_VERSION = "pictor-3"
 const stripeAppearance = {
     theme: "night",
     labels: "above",
@@ -99,6 +100,92 @@ const stripeAppearance = {
             fontWeight: "400",
             letterSpacing: "-0.5px",
             textTransform: "uppercase",
+        },
+        ".Block": {
+            backgroundColor: "#191825",
+            border: "none",
+            boxShadow: "inset 0 1px 1px rgba(191, 191, 191, 0.1)",
+            outline: "none",
+        },
+        ".PickerItem": {
+            backgroundColor: "#191825",
+            border: "none",
+            boxShadow: "inset 0 1px 1px rgba(191, 191, 191, 0.1)",
+            outline: "none",
+        },
+        ".PickerItem--selected": {
+            backgroundColor: "#191825",
+            border: "none",
+            boxShadow: "inset 0 1px 1px rgba(191, 191, 191, 0.1)",
+            outline: "none",
+        },
+        ".PickerItem:focus": {
+            border: "none",
+            boxShadow: "inset 0 1px 1px rgba(191, 191, 191, 0.1)",
+            outline: "none",
+        },
+        ".PickerItem:hover": {
+            border: "none",
+            boxShadow: "inset 0 1px 1px rgba(191, 191, 191, 0.1)",
+            outline: "none",
+        },
+        ".PickerItem--highlight": {
+            border: "none",
+            boxShadow: "inset 0 1px 1px rgba(191, 191, 191, 0.1)",
+            outline: "none",
+        },
+        ".PickerItem:active": {
+            border: "none",
+            boxShadow: "inset 0 1px 1px rgba(191, 191, 191, 0.1)",
+            outline: "none",
+        },
+        ".PickerItem--selected:hover": {
+            backgroundColor: "#191825",
+            border: "none",
+            borderColor: "transparent",
+            borderWidth: "0px",
+            boxShadow: "inset 0 1px 1px rgba(191, 191, 191, 0.1)",
+            outline: "none",
+            outlineOffset: "0px",
+        },
+        ".PickerItem--selected:focus": {
+            backgroundColor: "#191825",
+            border: "none",
+            boxShadow: "inset 0 1px 1px rgba(191, 191, 191, 0.1)",
+            outline: "none",
+        },
+        ".PickerItem--selected:active": {
+            backgroundColor: "#191825",
+            border: "none",
+            boxShadow: "inset 0 1px 1px rgba(191, 191, 191, 0.1)",
+            outline: "none",
+        },
+        ".PickerItem--highlight:hover": {
+            backgroundColor: "#191825",
+            border: "none",
+            borderColor: "transparent",
+            borderWidth: "0px",
+            boxShadow: "inset 0 1px 1px rgba(191, 191, 191, 0.1)",
+            outline: "none",
+            outlineOffset: "0px",
+        },
+        ".PickerItem--highlight:focus": {
+            backgroundColor: "#191825",
+            border: "none",
+            borderColor: "transparent",
+            borderWidth: "0px",
+            boxShadow: "inset 0 1px 1px rgba(191, 191, 191, 0.1)",
+            outline: "none",
+            outlineOffset: "0px",
+        },
+        ".PickerItem--highlight:active": {
+            backgroundColor: "#191825",
+            border: "none",
+            borderColor: "transparent",
+            borderWidth: "0px",
+            boxShadow: "inset 0 1px 1px rgba(191, 191, 191, 0.1)",
+            outline: "none",
+            outlineOffset: "0px",
         },
         ".Tab": {
             backgroundColor: "#191825",
@@ -405,7 +492,7 @@ function CheckoutPaymentFields({
                 <>
                     <section className="w-full space-y-4">
                         {checkoutEmail ? (
-                            <EmailInput title={content.emailLabel} value={checkoutEmail} disabled className="w-full! bg-[#17151e]! hover:bg-[#17151e]!" />
+                            <EmailInput title={content.emailLabel} value={checkoutEmail} disabled className="w-full! bg-[#17151e]! hover:bg-[#17151e]! text-tertiary/50!" />
                         ) : (
                             <ContactDetailsElement
                                 onChange={(event) => onEmailChange(event.complete ? event.value.email : null)}
@@ -537,7 +624,7 @@ export function CheckoutPaymentForm({
     }
 
     return (
-        <CheckoutElementsProvider key={session.clientSecret} stripe={stripeRef.current} options={options}>
+        <CheckoutElementsProvider key={`${session.clientSecret}:${STRIPE_APPEARANCE_VERSION}`} stripe={stripeRef.current} options={options}>
             <CheckoutPaymentFields
                 billingAddress={billingAddress}
                 collectTaxId={collectTaxId}
