@@ -75,8 +75,8 @@ test("license export returns the signed self-hosted license as a private downloa
             assert.equal(response.status, 200)
             assert.equal(await response.text(), licenseFile)
             assert.equal(response.headers.get("content-type"), "application/octet-stream")
-            assert.equal(response.headers.get("content-disposition"), 'attachment; filename="code0-license-42.lic"')
-            assert.equal(response.headers.get("x-license-filename"), "code0-license-42.lic")
+            assert.equal(response.headers.get("content-disposition"), 'attachment; filename="code0-license-42.czlc"')
+            assert.equal(response.headers.get("x-license-filename"), "code0-license-42.czlc")
             assert.match(response.headers.get("cache-control") ?? "", /no-store/)
             assert.equal(graphQLServer.requests[0]?.authorization, "Session c_ust_example")
             assert.equal(graphQLServer.requests[0]?.body.operationName, "LicensesExport")
@@ -108,7 +108,7 @@ test("license export sanitizes Crater's suggested download name", async () => {
             )
 
             assert.equal(response.status, 200)
-            assert.equal(response.headers.get("x-license-filename"), "unsafe-name.lic")
+            assert.equal(response.headers.get("x-license-filename"), "unsafe-name.czlc")
             assert.doesNotMatch(response.headers.get("content-disposition") ?? "", /[\r\n]/)
         }
     )

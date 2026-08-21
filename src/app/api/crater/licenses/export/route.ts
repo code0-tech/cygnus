@@ -23,13 +23,16 @@ const LICENSES_EXPORT: TypedDocumentNode<LicensesExportData, MutationLicensesExp
 
 function safeLicenseFileName(value: string) {
     const suggestedName = value.split(/[\\/]/).at(-1) ?? value
-    const fileName = suggestedName
+    const sanitizedName = suggestedName
         .normalize("NFKD")
         .replace(/[^A-Za-z0-9._-]+/g, "-")
         .replace(/^[.-]+/, "")
-        .slice(0, 180)
+    const fileNameWithoutExtension = sanitizedName
+        .replace(/\.[A-Za-z0-9]+$/, "")
+        .replace(/[.-]+$/, "")
+        .slice(0, 175)
 
-    return fileName || "code0-license.czlc"
+    return `${fileNameWithoutExtension || "code0-license"}.czlc`
 }
 
 export async function POST(request: Request) {
