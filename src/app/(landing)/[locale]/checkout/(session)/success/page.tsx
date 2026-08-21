@@ -1,7 +1,6 @@
 import { CheckoutLegalFooter } from "@/components/checkout/CheckoutLegalFooter"
 import { CheckoutSuccessStatus } from "@/components/checkout/CheckoutSuccessStatus"
 import { parseCheckoutSessionId } from "@/lib/checkout/checkoutReturn"
-import { buildCheckoutSuccessSummary } from "@/lib/checkout/checkoutSuccessSummary"
 import { getCheckoutContent, getErrorsContent, getFooter, getLicenseContent, getSubscriptionConfig } from "@/lib/cms"
 import { isSupportedLocale } from "@/lib/i18n"
 import type { Metadata } from "next"
@@ -38,22 +37,22 @@ export default async function CheckoutSuccessPage({ params, searchParams }: Chec
     ])
     const currentYear = new Date().getUTCFullYear()
     const checkoutSearchParams = toSearchParams(query)
-    const summary = buildCheckoutSuccessSummary({ searchParams: checkoutSearchParams, subscriptionConfig })
 
     return (
         <div className="flex min-h-full flex-col gap-8">
             <div className="flex flex-1 items-center justify-center">
                 <div className="flex flex-col gap-4 max-w-2xl text-center">
                     <div className="relative z-10 space-y-4">
-                        {checkoutContent?.success && errors ? (
+                        {checkoutContent?.success && checkoutContent.summary && subscriptionConfig && errors ? (
                             <CheckoutSuccessStatus
                                 checkoutSearchParams={checkoutSearchParams}
                                 content={checkoutContent.success}
                                 errorMessage={errors.checkoutLicenseStatus}
                                 locale={locale}
+                                pricingContent={checkoutContent.summary}
                                 sessionId={checkoutSessionId}
                                 sculptorUrl={licenseContent?.redirectUrl}
-                                summary={summary}
+                                subscriptionConfig={subscriptionConfig}
                             />
                         ) : null}
                     </div>
