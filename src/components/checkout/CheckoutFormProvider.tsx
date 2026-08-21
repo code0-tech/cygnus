@@ -4,7 +4,7 @@ import { useCraterSession } from "@/components/checkout/CraterSessionProvider"
 import { useCheckoutStage } from "@/components/checkout/CheckoutStage"
 import type { CheckoutData, ErrorsContent } from "@/lib/cms"
 import { resolveCraterCustomerType } from "@/lib/checkout/craterCustomer"
-import { getOrCreateCheckoutDraftKey } from "@/lib/checkout/checkoutDraft"
+import { getCheckoutContactDraftCustomerId, getOrCreateCheckoutDraftKey, saveCheckoutContactDraft, takeCheckoutContactDraft } from "@/lib/checkout/checkoutDraft"
 import {
     calculateCheckoutTax,
     CheckoutSubmissionError,
@@ -33,7 +33,7 @@ function getPreparationErrorMessage(error: unknown, errors: ErrorsContent) {
 
 function useCreateCheckoutFormState(content: CheckoutFormContent, errors: ErrorsContent, locale: AppLocale) {
     const searchParams = useSearchParams()
-    const { setStage, setHasError } = useCheckoutStage()
+    const { stage, setStage, setHasError } = useCheckoutStage()
     const [isLoading, setIsLoading] = useState(false)
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
     const [checkoutSession, setCheckoutSession] = useState<CheckoutSessionData | null>(null)
@@ -124,11 +124,18 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, errors: Errors
             else checkoutSearchParams.delete("promotionCode")
 
             const query = checkoutSearchParams.toString()
+            saveCheckoutContactDraft({
+                billingAddress: stripeBillingAddress,
+                customerId: selectedCustomerIdRef.current,
+                email: stripeEmail,
+                searchParams: checkoutSearchParams,
+                stage,
+            })
             window.history.replaceState(window.history.state, "", query ? `${window.location.pathname}?${query}` : window.location.pathname)
             window.location.reload()
             return "navigating" as const
         },
-        [checkoutSession, checkoutSessionPromotionCode, errors.checkoutSession, searchParamsString]
+        [checkoutSession, checkoutSessionPromotionCode, errors.checkoutSession, searchParamsString, stage, stripeBillingAddress, stripeEmail]
     )
 
     const refreshExpiredCheckoutSession = useCallback(() => {
@@ -167,8 +174,14 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, errors: Errors
                 const availableCustomers = await getCheckoutCustomers()
                 if (requestId !== sessionRefreshRequestRef.current) return
                 const matchingCustomers = availableCustomers.filter((candidate) => candidate.customerType === customerType)
+                const restoredCustomerId = getCheckoutContactDraftCustomerId(checkoutSearchParams)
                 setHasExistingCustomers(matchingCustomers.length > 0)
-                const customer = matchingCustomers[0] ?? (await createCheckoutCustomer({ checkoutKey: getOrCreateCheckoutDraftKey(customerType), customerType }))
+                let customer = restoredCustomerId ? matchingCustomers.find((candidate) => candidate.id === restoredCustomerId) : undefined
+                if (!customer && restoredCustomerId) {
+                    const restoredDraftCustomer = await createCheckoutCustomer({ checkoutKey: getOrCreateCheckoutDraftKey(customerType), customerType })
+                    if (restoredDraftCustomer.id === restoredCustomerId) customer = restoredDraftCustomer
+                }
+                customer ??= matchingCustomers[0] ?? (await createCheckoutCustomer({ checkoutKey: getOrCreateCheckoutDraftKey(customerType), customerType }))
                 if (requestId !== sessionRefreshRequestRef.current) return
                 setCustomers(matchingCustomers)
                 selectedCustomerIdRef.current = customer.id
@@ -176,6 +189,12 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, errors: Errors
 
                 const session = await createCheckoutSession({ customerId: customer.id, locale, searchParams: checkoutSearchParams })
                 if (requestId !== sessionRefreshRequestRef.current) return
+                const restoredContactDraft = takeCheckoutContactDraft({ customerId: customer.id, searchParams: checkoutSearchParams })
+                if (restoredContactDraft) {
+                    setStripeBillingAddress(restoredContactDraft.billingAddress)
+                    setStripeEmail(restoredContactDraft.email)
+                    setStage(restoredContactDraft.stage)
+                }
                 setCheckoutSession(session)
                 expiredRefreshAttemptsRef.current = 0
                 setCheckoutSessionPromotionCode(checkoutSearchParams.get("promotionCode")?.trim() || null)
