@@ -6,8 +6,6 @@ import { Button } from "@code0-tech/pictor"
 
 export type SubscriptionPlan = "pro" | "max" | "custom"
 
-const PLAN_ORDER: SubscriptionPlan[] = ["pro", "max", "custom"]
-
 interface UpgradePlanBannerProps {
     content?: CheckoutData["upgradeBanner"] | null
     currentPlan?: string | null
@@ -18,12 +16,10 @@ interface UpgradePlanBannerProps {
 export function UpgradePlanBanner({ content, currentPlan, onUpgrade, subscriptionConfig }: UpgradePlanBannerProps) {
     if (!content || !subscriptionConfig) return null
 
-    const normalizedCurrentPlan = currentPlan ? (currentPlan.toLowerCase() as SubscriptionPlan) : null
-    const currentIndex = normalizedCurrentPlan ? PLAN_ORDER.indexOf(normalizedCurrentPlan) : -1
-    const nextPlan = normalizedCurrentPlan === "custom" ? "custom" : currentIndex >= 0 && currentIndex < PLAN_ORDER.length - 1 ? PLAN_ORDER[currentIndex + 1] : null
-    if (!nextPlan) return null
+    if (currentPlan?.toLowerCase() !== "pro") return null
 
-    const nextPlanTitle = subscriptionConfig.packages[nextPlan].title
+    const nextPlan: SubscriptionPlan = "max"
+    const nextPlanTitle = subscriptionConfig.packages.max.title
     const [textBeforePlan, textAfterPlan] = content.text.split("{plan}")
 
     return (
