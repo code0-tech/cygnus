@@ -222,22 +222,6 @@ export const Checkout: GlobalConfig = {
             ],
         },
         {
-            name: "upgradeBanner",
-            type: "group",
-            admin: { description: "Small, low-emphasis nudge shown in checkout when a higher plan than the one being purchased is available." },
-            fields: [
-                {
-                    name: "text",
-                    type: "text",
-                    required: true,
-                    localized: true,
-                    defaultValue: "Need more? {plan} gives you more headroom.",
-                    admin: { description: "Use {plan} as a placeholder for the suggested plan's name." },
-                },
-                { name: "buttonLabel", type: "text", required: true, localized: true, defaultValue: "Upgrade" },
-            ],
-        },
-        {
             name: "nextSteps",
             type: "group",
             admin: { description: "Vertical 3-step 'what happens after you pay' stepper shown in the summary once the payment step is reached, replacing the order summary heading and payment period switcher." },

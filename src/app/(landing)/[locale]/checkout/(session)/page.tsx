@@ -1,5 +1,5 @@
 import { CheckoutPageContent } from "@/components/checkout/CheckoutPageContent"
-import { getCheckoutContent, getErrorsContent, getFooter, getSubscriptionConfig } from "@/lib/cms"
+import { getCheckoutContent, getErrorsContent, getFooter, getSubscriptionConfig, getUpgradeBannerContent } from "@/lib/cms"
 import { getCraterSubscriptionPrices } from "@/lib/craterSubscriptionPrices"
 import { isSupportedLocale } from "@/lib/i18n"
 import type { Metadata } from "next"
@@ -11,12 +11,13 @@ export default async function CheckoutPage({ params }: { params: Promise<{ local
     const { locale } = await params
     if (!isSupportedLocale(locale)) notFound()
 
-    const [checkoutContent, subscriptionConfig, subscriptionPrices, footer, errors] = await Promise.all([
+    const [checkoutContent, subscriptionConfig, subscriptionPrices, footer, errors, upgradeBanner] = await Promise.all([
         getCheckoutContent(locale),
         getSubscriptionConfig(locale),
         getCraterSubscriptionPrices(),
         getFooter(locale),
         getErrorsContent(locale),
+        getUpgradeBannerContent(locale),
     ])
     const currentYear = new Date().getUTCFullYear()
 
@@ -32,7 +33,7 @@ export default async function CheckoutPage({ params }: { params: Promise<{ local
                 nextSteps={checkoutContent?.nextSteps}
                 subscriptionPrices={subscriptionPrices}
                 summary={checkoutContent?.summary}
-                upgradeBanner={checkoutContent?.upgradeBanner}
+                upgradeBanner={upgradeBanner}
             />
         </div>
     )

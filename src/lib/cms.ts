@@ -363,10 +363,6 @@ export interface CheckoutData {
         taxIdValueLabel: string
         taxIdValuePlaceholder: string
     }
-    upgradeBanner: {
-        text: string
-        buttonLabel: string
-    }
     nextSteps: {
         heading: string
         step1Title: string
@@ -394,6 +390,19 @@ export interface CheckoutData {
         checkoutRetryLabel: string
         backToHomepageLabel: string
     }
+}
+
+export interface UpgradeBannerPlanContent {
+    buttonLabel: string
+    gradientFrom: string
+    gradientTo: string
+    text: string
+}
+
+export interface UpgradeBannerData {
+    pro: UpgradeBannerPlanContent
+    max: UpgradeBannerPlanContent
+    custom: UpgradeBannerPlanContent
 }
 
 export interface LicenseContent {
@@ -950,6 +959,15 @@ const getCheckoutContentCached = cache(async (locale: AppLocale): Promise<Checko
     })
 })
 
+const getUpgradeBannerContentCached = cache(async (locale: AppLocale): Promise<UpgradeBannerData | null> => {
+    return cmsFindGlobal(`getUpgradeBanner(${locale})`, null, {
+        slug: "upgradeBanner",
+        locale,
+        fallbackLocale: DEFAULT_LOCALE,
+        depth: 0,
+    })
+})
+
 const getLicenseContentCached = cache(async (locale: AppLocale): Promise<LicenseContent | null> => {
     return cmsFindGlobal(`getLicenses(${locale})`, null, {
         slug: "licenses",
@@ -1041,6 +1059,10 @@ export async function getSubscriptionConfig(locale: AppLocale = DEFAULT_LOCALE):
 
 export async function getCheckoutContent(locale: AppLocale = DEFAULT_LOCALE): Promise<CheckoutData | null> {
     return getCheckoutContentCached(locale)
+}
+
+export async function getUpgradeBannerContent(locale: AppLocale = DEFAULT_LOCALE): Promise<UpgradeBannerData | null> {
+    return getUpgradeBannerContentCached(locale)
 }
 
 export async function getLicenseContent(locale: AppLocale = DEFAULT_LOCALE): Promise<LicenseContent | null> {
