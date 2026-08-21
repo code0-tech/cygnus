@@ -3,16 +3,19 @@ import type { StripeCheckoutContact } from "@stripe/stripe-js"
 
 const CHECKOUT_DRAFT_KEY_PREFIX = "code0.checkout.customerDraftKey"
 const CHECKOUT_CONTACT_DRAFT_KEY = "code0.checkout.contactDraft"
-const CHECKOUT_CONTACT_DRAFT_TTL_MS = 10 * 60 * 1000
+const CHECKOUT_CONTACT_DRAFT_TTL_MS = 30 * 60 * 1000
 const inMemoryKeys = new Map<CraterCustomerType, string>()
 
 type CheckoutContactDraftStage = "billingAddress" | "payment"
 
-interface CheckoutContactDraft {
+export interface CheckoutContactDraft {
     billingAddress: StripeCheckoutContact | null
+    billingAddressComplete: boolean
     configuration: string
     customerId: string
     email: string | null
+    emailComplete: boolean
+    emailSyncedToStripe: boolean
     expiresAt: number
     stage: CheckoutContactDraftStage
 }
@@ -88,22 +91,31 @@ function parseBillingAddress(value: unknown): StripeCheckoutContact | null {
 
 export function saveCheckoutContactDraft({
     billingAddress,
+    billingAddressComplete = Boolean(billingAddress),
     customerId,
     email,
+    emailComplete = Boolean(email),
+    emailSyncedToStripe = false,
     searchParams,
     stage,
 }: {
     billingAddress: StripeCheckoutContact | null
+    billingAddressComplete?: boolean
     customerId: string
     email: string | null
+    emailComplete?: boolean
+    emailSyncedToStripe?: boolean
     searchParams: URLSearchParams
     stage: CheckoutContactDraftStage
 }) {
     const draft: CheckoutContactDraft = {
         billingAddress,
+        billingAddressComplete,
         configuration: getCheckoutContactDraftConfiguration(searchParams),
         customerId,
         email,
+        emailComplete,
+        emailSyncedToStripe,
         expiresAt: Date.now() + CHECKOUT_CONTACT_DRAFT_TTL_MS,
         stage,
     }
@@ -111,57 +123,56 @@ export function saveCheckoutContactDraft({
     try {
         window.sessionStorage.setItem(CHECKOUT_CONTACT_DRAFT_KEY, JSON.stringify(draft))
     } catch {
-        // The discount reload still works when storage is unavailable; only form values cannot be restored.
+        // Checkout still works when storage is unavailable; only form recovery is disabled.
     }
 }
 
-export function getCheckoutContactDraftCustomerId(searchParams: URLSearchParams) {
+export function readCheckoutContactDraft(searchParams: URLSearchParams): CheckoutContactDraft | null {
     try {
         const stored = window.sessionStorage.getItem(CHECKOUT_CONTACT_DRAFT_KEY)
         if (!stored) return null
 
         const value: unknown = JSON.parse(stored)
-        if (!value || typeof value !== "object") return null
+        if (!value || typeof value !== "object") {
+            window.sessionStorage.removeItem(CHECKOUT_CONTACT_DRAFT_KEY)
+            return null
+        }
         const draft = value as Record<string, unknown>
         if (
             typeof draft.customerId !== "string" ||
-            draft.configuration !== getCheckoutContactDraftConfiguration(searchParams) ||
-            typeof draft.expiresAt !== "number" ||
-            draft.expiresAt <= Date.now()
-        ) {
-            return null
-        }
-
-        return draft.customerId
-    } catch {
-        return null
-    }
-}
-
-export function takeCheckoutContactDraft({ customerId, searchParams }: { customerId: string; searchParams: URLSearchParams }) {
-    try {
-        const stored = window.sessionStorage.getItem(CHECKOUT_CONTACT_DRAFT_KEY)
-        if (!stored) return null
-        window.sessionStorage.removeItem(CHECKOUT_CONTACT_DRAFT_KEY)
-
-        const value: unknown = JSON.parse(stored)
-        if (!value || typeof value !== "object") return null
-        const draft = value as Record<string, unknown>
-        if (
-            draft.customerId !== customerId ||
             draft.configuration !== getCheckoutContactDraftConfiguration(searchParams) ||
             typeof draft.expiresAt !== "number" ||
             draft.expiresAt <= Date.now() ||
             !optionalString(draft.email) ||
             (draft.stage !== "billingAddress" && draft.stage !== "payment")
         ) {
+            window.sessionStorage.removeItem(CHECKOUT_CONTACT_DRAFT_KEY)
             return null
         }
 
         const billingAddress = draft.billingAddress === null ? null : parseBillingAddress(draft.billingAddress)
-        if (draft.billingAddress !== null && !billingAddress) return null
+        if (draft.billingAddress !== null && !billingAddress) {
+            window.sessionStorage.removeItem(CHECKOUT_CONTACT_DRAFT_KEY)
+            return null
+        }
 
-        return { billingAddress, email: draft.email, stage: draft.stage as CheckoutContactDraftStage }
+        return {
+            billingAddress,
+            billingAddressComplete: typeof draft.billingAddressComplete === "boolean" ? draft.billingAddressComplete : Boolean(billingAddress),
+            configuration: draft.configuration as string,
+            customerId: draft.customerId,
+            email: draft.email,
+            emailComplete: typeof draft.emailComplete === "boolean" ? draft.emailComplete : Boolean(draft.email),
+            // Older drafts cannot tell whether Stripe already accepted a complete email.
+            // Treating it as synchronized prevents a legacy draft from replaying the email
+            // into a Customer-backed Checkout Session and breaking the entire form load.
+            emailSyncedToStripe:
+                typeof draft.emailSyncedToStripe === "boolean"
+                    ? draft.emailSyncedToStripe
+                    : Boolean(draft.email) && (typeof draft.emailComplete !== "boolean" || draft.emailComplete),
+            expiresAt: draft.expiresAt,
+            stage: draft.stage as CheckoutContactDraftStage,
+        }
     } catch {
         try {
             window.sessionStorage.removeItem(CHECKOUT_CONTACT_DRAFT_KEY)
@@ -170,6 +181,10 @@ export function takeCheckoutContactDraft({ customerId, searchParams }: { custome
         }
         return null
     }
+}
+
+export function getCheckoutContactDraftCustomerId(searchParams: URLSearchParams) {
+    return readCheckoutContactDraft(searchParams)?.customerId ?? null
 }
 
 export function clearCheckoutDraftKeys() {

@@ -228,6 +228,7 @@ const stripeAppearance = {
 
 interface CheckoutPaymentFormProps {
     billingAddress: StripeCheckoutContact | null
+    billingAddressComplete: boolean
     collectTaxId: boolean
     content: CheckoutFormContent
     customerEmail: string | null
@@ -235,9 +236,12 @@ interface CheckoutPaymentFormProps {
     customerSelect: ReactNode
     customerSelectSkeleton: ReactNode
     email: string | null
+    emailComplete: boolean
+    emailSyncedToStripe: boolean
     isBusinessCustomer: boolean
-    onAddressChange: (address: StripeCheckoutContact | null) => void
-    onEmailChange: (email: string | null) => void
+    onAddressChange: (address: StripeCheckoutContact | null, complete: boolean) => void
+    onEmailChange: (email: string | null, complete: boolean) => void
+    onEmailSyncedChange: (synced: boolean) => void
     onTaxQuoteChange: (taxQuote: CheckoutTaxQuoteData | null) => void
     onPaymentConfirmationChange: (confirming: boolean) => void
     onPricingChange: (pricing: CheckoutStripePricingData | null) => void
@@ -249,7 +253,7 @@ interface CheckoutPaymentFormProps {
     session: CheckoutSessionData
 }
 
-export function CheckoutErrorState({ message }: { message: string }) {
+export function CheckoutErrorState({ message, onRetry, retryLabel }: { message: string; onRetry?: () => void; retryLabel?: string }) {
     return (
         <div
             role="alert"
@@ -259,7 +263,12 @@ export function CheckoutErrorState({ message }: { message: string }) {
             <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-error/15 ring-1 ring-error/20">
                 <IconAlertTriangle aria-hidden="true" size={21} stroke={1.8} />
             </span>
-            <p className="min-w-0 text-base font-medium leading-6 text-error">{message}</p>
+            <p className="min-w-0 flex-1 text-base font-medium leading-6 text-error">{message}</p>
+            {onRetry && retryLabel ? (
+                <Button type="button" variant="normal" onClick={onRetry} className="shrink-0 text-sm!">
+                    {retryLabel}
+                </Button>
+            ) : null}
         </div>
     )
 }
@@ -323,6 +332,7 @@ export function CheckoutPaymentFormSkeleton({ label }: { label: string }) {
 
 function CheckoutPaymentFields({
     billingAddress,
+    billingAddressComplete,
     collectTaxId,
     content,
     customerEmail,
@@ -330,9 +340,12 @@ function CheckoutPaymentFields({
     customerSelect,
     customerSelectSkeleton,
     email,
+    emailComplete,
+    emailSyncedToStripe,
     isBusinessCustomer,
     onAddressChange,
     onEmailChange,
+    onEmailSyncedChange,
     onTaxQuoteChange,
     onPaymentConfirmationChange,
     onPricingChange,
@@ -358,6 +371,8 @@ function CheckoutPaymentFields({
     const [acceptedTerms, setAcceptedTerms] = useState(false)
     const [isPaymentElementReady, setIsPaymentElementReady] = useState(false)
     const [isPaymentDetailsComplete, setIsPaymentDetailsComplete] = useState(false)
+    const [isContactDetailsComplete, setIsContactDetailsComplete] = useState(Boolean(customerEmail) || emailComplete)
+    const [isBillingAddressComplete, setIsBillingAddressComplete] = useState(billingAddressComplete)
     const [isContactElementReady, setIsContactElementReady] = useState(false)
     const [isAddressElementReady, setIsAddressElementReady] = useState(false)
     const [isTaxIdElementReady, setIsTaxIdElementReady] = useState(!collectTaxId)
@@ -454,9 +469,11 @@ function CheckoutPaymentFields({
 
     useEffect(() => {
         if (!customerEmail) return
-        onEmailChange(customerEmail)
+        onEmailChange(customerEmail, true)
+        onEmailSyncedChange(true)
+        setIsContactDetailsComplete(true)
         setIsContactElementReady(true)
-    }, [customerEmail, onEmailChange])
+    }, [customerEmail, onEmailChange, onEmailSyncedChange])
 
     const showBillingAddress = () => {
         setStage("billingAddress")
@@ -465,7 +482,7 @@ function CheckoutPaymentFields({
 
     const updateCheckoutBilling = useCallback(
         async (moveToPayment: boolean) => {
-            if (!billingAddress || !email || checkoutState.type !== "success" || isUpdatingBilling) return
+            if (!billingAddress || !email || !isBillingAddressComplete || !isContactDetailsComplete || checkoutState.type !== "success" || isUpdatingBilling) return
 
             setIsUpdatingBilling(true)
             setErrorMessage(null)
@@ -479,13 +496,16 @@ function CheckoutPaymentFields({
 
                 // A restored payment stage means this checkout already wrote the entered email before
                 // the discount reload. Draft customers may not expose that Stripe email locally yet.
-                if (activeStep !== "payment" && !customerEmail && !checkoutState.checkout.email) {
+                if (!emailSyncedToStripe && !customerEmail && !checkoutState.checkout.email) {
                     const emailResult = await checkoutState.checkout.updateEmail(email)
                     if (emailResult.type === "error") {
                         setErrorMessage(errors.emailUpdate)
                         return
                     }
                     updatedSession = emailResult.session
+                    onEmailSyncedChange(true)
+                } else if (checkoutState.checkout.email) {
+                    onEmailSyncedChange(true)
                 }
 
                 onTaxQuoteChange(getTaxQuoteFromSession(updatedSession))
@@ -500,17 +520,17 @@ function CheckoutPaymentFields({
                 setIsUpdatingBilling(false)
             }
         },
-        [activeStep, billingAddress, checkoutState, customerEmail, errors.billingAddressUpdate, errors.emailUpdate, errors.paymentFallback, email, isUpdatingBilling, onPricingChange, onTaxQuoteChange, setStage]
+        [billingAddress, checkoutState, customerEmail, emailSyncedToStripe, errors.billingAddressUpdate, errors.emailUpdate, errors.paymentFallback, email, isBillingAddressComplete, isContactDetailsComplete, isUpdatingBilling, onEmailSyncedChange, onPricingChange, onTaxQuoteChange, setStage]
     )
 
     const showPayment = () => updateCheckoutBilling(true)
 
     useEffect(() => {
-        if (activeStep !== "payment" || checkoutState.type !== "success" || !billingAddress || !email || restoredBillingRef.current) return
+        if (activeStep !== "payment" || checkoutState.type !== "success" || !billingAddress || !email || !isBillingAddressComplete || !isContactDetailsComplete || restoredBillingRef.current) return
 
         restoredBillingRef.current = true
         void updateCheckoutBilling(false)
-    }, [activeStep, billingAddress, checkoutState.type, email, updateCheckoutBilling])
+    }, [activeStep, billingAddress, checkoutState.type, email, isBillingAddressComplete, isContactDetailsComplete, updateCheckoutBilling])
 
     const handleSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
         event.preventDefault()
@@ -568,14 +588,20 @@ function CheckoutPaymentFields({
                             <EmailInput title={content.emailLabel} value={customerEmail} disabled className="w-full! bg-[#17151e]! hover:bg-[#17151e]! text-tertiary/50!" />
                         ) : (
                             <ContactDetailsElement
-                                onChange={(event) => onEmailChange(event.complete ? event.value.email : null)}
+                                onChange={(event) => {
+                                    setIsContactDetailsComplete(event.complete)
+                                    onEmailChange(event.value.email || null, event.complete)
+                                }}
                                 onLoaderStart={markContactElementLoading}
                                 onReady={markContactElementReady}
                             />
                         )}
                         <BillingAddressElement
                             options={{ display: { name: "full" } }}
-                            onChange={(event) => onAddressChange(event.complete ? { name: event.value.name, address: event.value.address } : null)}
+                            onChange={(event) => {
+                                setIsBillingAddressComplete(event.complete)
+                                onAddressChange({ name: event.value.name, address: event.value.address }, event.complete)
+                            }}
                             onLoaderStart={markAddressElementLoading}
                             onReady={markAddressElementReady}
                         />
@@ -592,7 +618,7 @@ function CheckoutPaymentFields({
                         <Button
                             type="button"
                             variant="normal"
-                            disabled={!billingAddress || !email || isUpdatingBilling}
+                            disabled={!billingAddress || !email || !isBillingAddressComplete || !isContactDetailsComplete || isUpdatingBilling}
                             onClick={() => void showPayment()}
                             className="h-10! w-full! whitespace-nowrap bg-white/80! px-8! text-sm! text-primary! ring-1! ring-white/20! hover:bg-white!"
                         >
@@ -651,6 +677,7 @@ function CheckoutPaymentFields({
 
 export function CheckoutPaymentForm({
     billingAddress,
+    billingAddressComplete,
     collectTaxId,
     content,
     customerEmail,
@@ -658,9 +685,12 @@ export function CheckoutPaymentForm({
     customerSelect,
     customerSelectSkeleton,
     email,
+    emailComplete,
+    emailSyncedToStripe,
     isBusinessCustomer,
     onAddressChange,
     onEmailChange,
+    onEmailSyncedChange,
     onTaxQuoteChange,
     onPaymentConfirmationChange,
     onPricingChange,
@@ -682,7 +712,7 @@ export function CheckoutPaymentForm({
             clientSecret: session.clientSecret,
             values: {
                 ...(billingAddress ? { billingAddress } : {}),
-                ...(email ? { email } : {}),
+                ...(email && !customerEmail && !emailSyncedToStripe ? { email } : {}),
             },
         }
     }
@@ -704,6 +734,7 @@ export function CheckoutPaymentForm({
         <CheckoutElementsProvider key={`${session.clientSecret}:${STRIPE_APPEARANCE_VERSION}`} stripe={stripeRef.current} options={options}>
             <CheckoutPaymentFields
                 billingAddress={billingAddress}
+                billingAddressComplete={billingAddressComplete}
                 collectTaxId={collectTaxId}
                 content={content}
                 customerEmail={customerEmail}
@@ -711,9 +742,12 @@ export function CheckoutPaymentForm({
                 customerSelect={customerSelect}
                 customerSelectSkeleton={customerSelectSkeleton}
                 email={email}
+                emailComplete={emailComplete}
+                emailSyncedToStripe={emailSyncedToStripe}
                 isBusinessCustomer={isBusinessCustomer}
                 onAddressChange={onAddressChange}
                 onEmailChange={onEmailChange}
+                onEmailSyncedChange={onEmailSyncedChange}
                 onTaxQuoteChange={onTaxQuoteChange}
                 onPaymentConfirmationChange={onPaymentConfirmationChange}
                 onPricingChange={onPricingChange}

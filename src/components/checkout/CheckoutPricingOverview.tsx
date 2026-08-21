@@ -133,7 +133,7 @@ export function CheckoutPricingOverview({
                 )}
             </div>
 
-            <div className="-mx-4 mt-4 flex items-center justify-between gap-4 border-t border-white/10 px-4 pt-4 text-sm">
+            <div className="-mx-4 mt-2 -mb-2 flex items-center justify-between gap-4 border-t border-white/5 px-4 pt-2 text-sm">
                 <span className="text-secondary">{content.pricing.totalLabel}</span>
 
                 <div className="flex items-center gap-2">
