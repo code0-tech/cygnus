@@ -30,8 +30,17 @@ mock.module("@/components/ui/IconRenderer", {
         getIcon: (icon: string | null | undefined) => <span data-icon={icon ?? undefined} />,
     },
 })
+let downloadedLicenseIds: string[] = []
+mock.module("@/lib/licenses/downloadLicenseFile", {
+    namedExports: {
+        downloadLicenseFile: async (licenseId: string) => {
+            downloadedLicenseIds.push(licenseId)
+        },
+    },
+})
 
 const { cleanup, render, screen } = await import("@testing-library/react")
+const userEvent = (await import("@testing-library/user-event")).default
 const { CheckoutSuccessStatus } = await import("../../src/components/checkout/CheckoutSuccessStatus")
 const originalFetch = globalThis.fetch
 const originalDateNow = Date.now
@@ -40,6 +49,9 @@ const content: CheckoutData["success"] = {
     heading: "Checkout complete",
     description: "Your subscription is ready.",
     licenseDashboardLabel: "Open licenses",
+    sculptorLabel: "Open Sculptor",
+    licenseDownloadLabel: "Download license",
+    licenseDownloadError: "Could not download license.",
     licensePendingLabel: "Preparing license",
     licenseReadyLabel: "License ready",
     licenseStatusRetryLabel: "Try again",
@@ -64,6 +76,7 @@ afterEach(() => {
     globalThis.fetch = originalFetch
     Date.now = originalDateNow
     routerReplaceCalls = []
+    downloadedLicenseIds = []
 })
 
 test("stops checkout success polling after the configured time limit", async () => {
@@ -118,6 +131,7 @@ test("explains a checkout session that cannot be verified", async () => {
 test("shows the order summary and the receipt hint once the payment is confirmed", async () => {
     respondWith({ state: "FULFILLMENT_PENDING", customerId: "gid://crater/Customer/1", licenseId: null })
     const summary = {
+        deployment: "self_hosted" as const,
         title: "Your configuration",
         rows: [
             { id: "plan", label: "Plan", value: "Custom", icon: "tabler:IconSettings", tone: "aqua" as const },
@@ -133,4 +147,44 @@ test("shows the order summary and the receipt hint once the payment is confirmed
     assert.ok(screen.getByText("Yearly"))
     assert.ok(screen.getByText("1M"))
     assert.ok(screen.getByText(content.receiptHint))
+})
+
+test("offers Sculptor next to the license dashboard for a cloud license", async () => {
+    respondWith({ state: "READY", customerId: "gid://crater/Customer/1", licenseId: "gid://crater/License/2" })
+
+    render(
+        <CheckoutSuccessStatus
+            checkoutSearchParams={checkoutSearchParams}
+            content={content}
+            errorMessage={errorMessage}
+            locale="en"
+            sculptorUrl="https://sculptor.example/cloud"
+            sessionId="cs_test"
+            summary={{ deployment: "cloud", title: "Configuration", rows: [] }}
+        />
+    )
+
+    assert.equal((await screen.findByRole("link", { name: content.licenseDashboardLabel })).getAttribute("href")?.startsWith("/api/crater/licenses/access"), true)
+    assert.equal(screen.getByRole("link", { name: content.sculptorLabel }).getAttribute("href"), "https://sculptor.example/cloud")
+    assert.equal(screen.queryByRole("button", { name: content.licenseDownloadLabel }), null)
+})
+
+test("downloads the Crater license next to the dashboard for self-hosted", async () => {
+    respondWith({ state: "READY", customerId: "gid://crater/Customer/1", licenseId: "gid://crater/License/2" })
+
+    render(
+        <CheckoutSuccessStatus
+            checkoutSearchParams={checkoutSearchParams}
+            content={content}
+            errorMessage={errorMessage}
+            locale="en"
+            sculptorUrl="https://sculptor.example/cloud"
+            sessionId="cs_test"
+            summary={{ deployment: "self_hosted", title: "Configuration", rows: [] }}
+        />
+    )
+
+    await userEvent.setup().click(await screen.findByRole("button", { name: content.licenseDownloadLabel }))
+    assert.deepEqual(downloadedLicenseIds, ["gid://crater/License/2"])
+    assert.equal(screen.queryByRole("link", { name: content.sculptorLabel }), null)
 })

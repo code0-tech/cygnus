@@ -370,6 +370,9 @@ export interface CheckoutData {
         heading: string
         description: string
         licenseDashboardLabel: string
+        sculptorLabel: string
+        licenseDownloadLabel: string
+        licenseDownloadError: string
         licensePendingLabel: string
         licenseReadyLabel: string
         licenseStatusRetryLabel: string

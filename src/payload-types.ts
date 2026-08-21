@@ -3200,6 +3200,9 @@ export interface Checkout {
     heading: string;
     description: string;
     licenseDashboardLabel: string;
+    sculptorLabel: string;
+    licenseDownloadLabel: string;
+    licenseDownloadError: string;
     licensePendingLabel: string;
     licenseReadyLabel: string;
     licenseStatusRetryLabel: string;
@@ -3966,6 +3969,9 @@ export interface CheckoutSelect<T extends boolean = true> {
         heading?: T;
         description?: T;
         licenseDashboardLabel?: T;
+        sculptorLabel?: T;
+        licenseDownloadLabel?: T;
+        licenseDownloadError?: T;
         licensePendingLabel?: T;
         licenseReadyLabel?: T;
         licenseStatusRetryLabel?: T;

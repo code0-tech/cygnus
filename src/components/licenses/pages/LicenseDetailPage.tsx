@@ -17,6 +17,7 @@ import { formatCompactNumber, formatMinorCurrency } from "@/lib/formatters"
 import type { AppLocale } from "@/lib/i18n"
 import { decodeLicenseRouteId, getNamespaceDisplayId } from "@/lib/licenses/licenseRoute"
 import { formatLicenseDisplayValue } from "@/lib/licenses/licenseDisplayValues"
+import { downloadLicenseFile } from "@/lib/licenses/downloadLicenseFile"
 import { Button, Card, Flex, Spacing, Text } from "@code0-tech/pictor"
 import { IconDownload } from "@tabler/icons-react"
 import { useRouter } from "next/navigation"
@@ -99,31 +100,14 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, subs
             .join(" – ")
     }
 
-    const downloadLicenseFile = async () => {
+    const downloadCurrentLicense = async () => {
         if (!license || license.deploymentType !== "self_hosted" || isDownloadingLicense) return
 
         setIsDownloadingLicense(true)
         setLicenseDownloadError(false)
 
         try {
-            const response = await fetch("/api/crater/licenses/export", {
-                method: "POST",
-                credentials: "same-origin",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify({ id: license.id }),
-            })
-            if (!response.ok) throw new Error("License export failed.")
-
-            const file = await response.blob()
-            const fileName = response.headers.get("x-license-filename")?.trim() || "code0-license.lic"
-            const fileUrl = URL.createObjectURL(file)
-            const download = document.createElement("a")
-            download.href = fileUrl
-            download.download = fileName
-            document.body.append(download)
-            download.click()
-            download.remove()
-            window.setTimeout(() => URL.revokeObjectURL(fileUrl), 1_000)
+            await downloadLicenseFile(license.id)
         } catch {
             setLicenseDownloadError(true)
         } finally {
@@ -141,7 +125,7 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, subs
                     {isLoading || license ? (
                         <Flex align="center" style={{ gap: "0.5rem" }} className="flex-wrap justify-end">
                             {license?.deploymentType === "self_hosted" ? (
-                                <Button type="button" variant="normal" paddingSize="xs" disabled={isDownloadingLicense} onClick={() => void downloadLicenseFile()} className="shrink-0 text-sm!">
+                                <Button type="button" variant="normal" paddingSize="xs" disabled={isDownloadingLicense} onClick={() => void downloadCurrentLicense()} className="shrink-0 text-sm!">
                                     {isDownloadingLicense ? <ButtonLoader label={content.invoices.downloadLabel} /> : <IconDownload aria-hidden="true" size={16} />}
                                     {!isDownloadingLicense ? content.invoices.downloadLabel : null}
                                 </Button>

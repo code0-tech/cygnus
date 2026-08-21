@@ -2,7 +2,7 @@ import { CheckoutLegalFooter } from "@/components/checkout/CheckoutLegalFooter"
 import { CheckoutSuccessStatus } from "@/components/checkout/CheckoutSuccessStatus"
 import { parseCheckoutSessionId } from "@/lib/checkout/checkoutReturn"
 import { buildCheckoutSuccessSummary } from "@/lib/checkout/checkoutSuccessSummary"
-import { getCheckoutContent, getErrorsContent, getFooter, getSubscriptionConfig } from "@/lib/cms"
+import { getCheckoutContent, getErrorsContent, getFooter, getLicenseContent, getSubscriptionConfig } from "@/lib/cms"
 import { isSupportedLocale } from "@/lib/i18n"
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
@@ -29,11 +29,12 @@ export default async function CheckoutSuccessPage({ params, searchParams }: Chec
     const checkoutSessionId = parseCheckoutSessionId(query.session_id)
     if (!checkoutSessionId) notFound()
 
-    const [checkoutContent, subscriptionConfig, footer, errors] = await Promise.all([
+    const [checkoutContent, subscriptionConfig, footer, errors, licenseContent] = await Promise.all([
         getCheckoutContent(locale),
         getSubscriptionConfig(locale),
         getFooter(locale),
         getErrorsContent(locale),
+        getLicenseContent(locale),
     ])
     const currentYear = new Date().getUTCFullYear()
     const checkoutSearchParams = toSearchParams(query)
@@ -51,6 +52,7 @@ export default async function CheckoutSuccessPage({ params, searchParams }: Chec
                                 errorMessage={errors.checkoutLicenseStatus}
                                 locale={locale}
                                 sessionId={checkoutSessionId}
+                                sculptorUrl={licenseContent?.redirectUrl}
                                 summary={summary}
                             />
                         ) : null}

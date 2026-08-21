@@ -8,9 +8,10 @@ import { clearCheckoutDraftKeys } from "@/lib/checkout/checkoutDraft"
 import { getCheckoutStatusPollDelay, hasCheckoutStatusPollingExpired } from "@/lib/checkout/checkoutStatusPolling"
 import type { CheckoutSuccessSummary } from "@/lib/checkout/checkoutSuccessSummary"
 import type { CheckoutData } from "@/lib/cms"
+import { downloadLicenseFile } from "@/lib/licenses/downloadLicenseFile"
 import type { CheckoutCompletionState } from "@code0-tech/crater-graphql-types"
 import { Button } from "@code0-tech/pictor"
-import { IconCircleCheckFilled, IconExclamationCircleFilled } from "@tabler/icons-react"
+import { IconCircleCheckFilled, IconCloud, IconDownload, IconExclamationCircleFilled } from "@tabler/icons-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useCallback, useEffect, useRef, useState } from "react"
@@ -28,6 +29,7 @@ interface CheckoutSuccessStatusProps {
     content: SuccessContent
     errorMessage: string
     locale: string
+    sculptorUrl?: string | null
     sessionId: string
     summary?: CheckoutSuccessSummary | null
 }
@@ -46,11 +48,13 @@ function parseStatusResponse(value: unknown): StatusResponse | null {
     return response as StatusResponse
 }
 
-export function CheckoutSuccessStatus({ checkoutSearchParams, content, errorMessage, locale, sessionId, summary }: CheckoutSuccessStatusProps) {
+export function CheckoutSuccessStatus({ checkoutSearchParams, content, errorMessage, locale, sculptorUrl, sessionId, summary }: CheckoutSuccessStatusProps) {
     const router = useRouter()
     const [status, setStatus] = useState<CheckoutStatus>("LOADING")
     const [completion, setCompletion] = useState<StatusResponse | null>(null)
     const [attempt, setAttempt] = useState(0)
+    const [isDownloadingLicense, setIsDownloadingLicense] = useState(false)
+    const [licenseDownloadError, setLicenseDownloadError] = useState(false)
     const pollAttemptRef = useRef(0)
     const pollingStartedAtRef = useRef(Date.now())
     const pollTimeoutRef = useRef<number | null>(null)
@@ -151,6 +155,20 @@ export function CheckoutSuccessStatus({ checkoutSearchParams, content, errorMess
         status === "READY" && completion?.licenseId ? `/${locale}/licenses/customer/${encodeURIComponent(completion.customerId)}/license/${encodeURIComponent(completion.licenseId)}` : null
     const licenseAccessUrl = licenseReturnPath ? `/api/crater/licenses/access?locale=${encodeURIComponent(locale)}&returnPath=${encodeURIComponent(licenseReturnPath)}` : null
 
+    const downloadSelfHostedLicense = async () => {
+        if (!completion?.licenseId || isDownloadingLicense) return
+
+        setIsDownloadingLicense(true)
+        setLicenseDownloadError(false)
+        try {
+            await downloadLicenseFile(completion.licenseId)
+        } catch {
+            setLicenseDownloadError(true)
+        } finally {
+            setIsDownloadingLicense(false)
+        }
+    }
+
     return (
         <div className="flex flex-col items-center justify-center gap-2">
             <div className="flex itemss-center gap-2">
@@ -172,11 +190,37 @@ export function CheckoutSuccessStatus({ checkoutSearchParams, content, errorMess
             {fulfillmentConfirmed && <p className="text-sm text-tertiary mb-4">{content.receiptHint}</p>}
             {status === "ERROR" && <p className="text-secondary">{errorMessage}</p>}
             {status === "READY" && licenseAccessUrl ? (
-                <Link href={licenseAccessUrl} target="_blank" rel="noreferrer">
-                    <Button variant="filled" className="bg-white/80! hover:bg-white! text-primary! text-base!">
-                        {content.licenseDashboardLabel}
-                    </Button>
-                </Link>
+                <div className="flex flex-col items-center gap-2">
+                    <div className="flex flex-wrap items-center justify-center gap-2">
+                        <Link href={licenseAccessUrl} target="_blank" rel="noreferrer">
+                            <Button>{content.licenseDashboardLabel}</Button>
+                        </Link>
+                        {summary?.deployment === "cloud" && sculptorUrl ? (
+                            <Link href={sculptorUrl} target="_blank" rel="noreferrer">
+                                <Button variant="filled" className="bg-white/80! hover:bg-white! text-primary!">
+                                    <IconCloud aria-hidden="true" size={17} />
+                                    {content.sculptorLabel}
+                                </Button>
+                            </Link>
+                        ) : summary?.deployment === "self_hosted" ? (
+                            <Button
+                                type="button"
+                                variant="filled"
+                                className="bg-white/80! hover:bg-white! text-primary!"
+                                disabled={isDownloadingLicense}
+                                onClick={() => void downloadSelfHostedLicense()}
+                            >
+                                {isDownloadingLicense ? <ButtonLoader label={content.licenseDownloadLabel} /> : <IconDownload aria-hidden="true" size={17} />}
+                                {!isDownloadingLicense ? content.licenseDownloadLabel : null}
+                            </Button>
+                        ) : null}
+                    </div>
+                    {licenseDownloadError ? (
+                        <p role="alert" className="text-sm text-error">
+                            {content.licenseDownloadError}
+                        </p>
+                    ) : null}
+                </div>
             ) : status === "ERROR" ? (
                 <Button
                     type="button"
