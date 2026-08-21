@@ -32,6 +32,7 @@ function CheckoutFormContent() {
         isRefreshingSession,
         isSessionLoading,
         markCheckoutSessionReady,
+        retryCheckout,
         setPromotionCodeActions,
         recoverCheckoutSessionLoad,
         refreshExpiredCheckoutSession,
@@ -40,12 +41,16 @@ function CheckoutFormContent() {
         selectCheckoutCustomer,
         setStripeBillingAddress,
         setStripeEmail,
+        setStripeEmailSynced,
         setStripePricing,
         setStripeSessionError,
         setTaxQuote,
         setIsConfirmingPayment,
         stripeBillingAddress,
+        stripeBillingAddressComplete,
         stripeEmail,
+        stripeEmailComplete,
+        stripeEmailSynced,
     } = useCheckoutFormState()
     const selectedCustomer = customers.find((customer) => customer.id === selectedCustomerId)
     const customerSelect =
@@ -83,11 +88,12 @@ function CheckoutFormContent() {
             </div>
         ) : null
 
-    if (resolvedError) return <CheckoutErrorState message={resolvedError} />
+    if (resolvedError) return <CheckoutErrorState message={resolvedError} onRetry={retryCheckout} retryLabel={errors.retry} />
 
     const checkoutContent = checkoutSession ? (
         <CheckoutPaymentForm
             billingAddress={stripeBillingAddress}
+            billingAddressComplete={stripeBillingAddressComplete}
             collectTaxId={customerType === "business"}
             content={content}
             errors={errors}
@@ -95,9 +101,12 @@ function CheckoutFormContent() {
             customerSelectSkeleton={customerSelect ? <CheckoutCustomerSelectSkeleton /> : null}
             customerEmail={selectedCustomer?.email ?? null}
             email={stripeEmail}
+            emailComplete={stripeEmailComplete}
+            emailSyncedToStripe={stripeEmailSynced}
             isBusinessCustomer={customerType === "business"}
             onAddressChange={setStripeBillingAddress}
             onEmailChange={setStripeEmail}
+            onEmailSyncedChange={setStripeEmailSynced}
             onTaxQuoteChange={setTaxQuote}
             onPaymentConfirmationChange={setIsConfirmingPayment}
             onPricingChange={setStripePricing}

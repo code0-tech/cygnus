@@ -218,11 +218,12 @@ const userEvent = (await import("@testing-library/user-event")).default
 const { CheckoutForm } = await import("../../src/components/checkout/CheckoutForm")
 const { getStripePricingFromSession } = await import("../../src/components/checkout/CheckoutPaymentForm")
 const { CheckoutFormProvider, useCheckoutFormState } = await import("../../src/components/checkout/CheckoutFormProvider")
-const { saveCheckoutContactDraft } = await import("../../src/lib/checkout/checkoutDraft")
+const { clearCheckoutDraftKeys, readCheckoutContactDraft, saveCheckoutContactDraft } = await import("../../src/lib/checkout/checkoutDraft")
 
 const originalFetch = globalThis.fetch
 afterEach(() => {
     cleanup()
+    clearCheckoutDraftKeys()
     globalThis.fetch = originalFetch
     checkoutSearchParams.set("customerType", "b2c")
     checkoutSearchParams.delete("promotionCode")
@@ -251,6 +252,7 @@ afterEach(() => {
 })
 
 const errors = {
+    retry: "Try again",
     sessionUnavailable: "Session unavailable",
     customerCreation: "Customer creation failed",
     customerTypeMismatch: "Customer type mismatch",
@@ -489,6 +491,19 @@ test("creates the customer and checkout session on mount before collecting Strip
     assert.equal(checkoutStages.includes("payment"), false)
     assert.equal((screen.getByRole("button", { name: "Continue to payment" }) as HTMLButtonElement).disabled, true)
 
+    const partialBillingAddress = {
+        name: "Ada",
+        address: { city: "Ber", country: "DE", line1: "Test", line2: null, postal_code: "", state: "" },
+    }
+    act(() => billingAddressOnChange?.({ complete: false, value: partialBillingAddress }))
+    act(() => contactDetailsOnChange?.({ complete: false, value: { email: "ada@" } }))
+    await waitFor(() => {
+        const draft = readCheckoutContactDraft(checkoutSearchParams)
+        assert.equal(draft?.email, "ada@")
+        assert.deepEqual(draft?.billingAddress, partialBillingAddress)
+    })
+    assert.equal((screen.getByRole("button", { name: "Continue to payment" }) as HTMLButtonElement).disabled, true)
+
     act(() => billingAddressOnChange?.({ complete: true, value: stripeBillingAddress }))
     assert.equal((screen.getByRole("button", { name: "Continue to payment" }) as HTMLButtonElement).disabled, true)
     act(() => contactDetailsOnChange?.({ complete: true, value: { email: "ada@example.com" } }))
@@ -512,6 +527,13 @@ test("creates the customer and checkout session on mount before collecting Strip
     assert.equal(screen.queryByTestId("stripe-contact-details"), null)
     assert.equal(screen.queryByTestId("stripe-billing-address"), null)
     assert.equal(checkoutStages.at(-1), "payment")
+    await waitFor(() => {
+        const draft = readCheckoutContactDraft(checkoutSearchParams)
+        assert.equal(draft?.customerId, "gid://crater/Customer/1")
+        assert.equal(draft?.email, "ada@example.com")
+        assert.deepEqual(draft?.billingAddress, stripeBillingAddress)
+        assert.equal(draft?.stage, "payment")
+    })
 
     await user.click(screen.getByRole("button", { name: content.backToBillingLabel }))
     assert.ok(screen.getByTestId("stripe-billing-address"))
@@ -764,7 +786,7 @@ test("shows only the configured error when Stripe cannot load the checkout sessi
     assert.equal(screen.queryByTestId("stripe-contact-details"), null)
     assert.equal(screen.queryByTestId("stripe-billing-address"), null)
     assert.equal(screen.queryByTestId("checkout-form-skeleton"), null)
-    assert.equal(screen.queryByRole("button"), null)
+    assert.ok(screen.getByRole("button", { name: errors.retry }))
 })
 
 test("shows the checkout rate limit instead of disguising it as a session creation error", async () => {
@@ -841,6 +863,7 @@ test("does not write a draft customer email again after restoring the payment st
         billingAddress: stripeBillingAddress,
         customerId: "gid://crater/Customer/1",
         email: "ada@example.com",
+        emailSyncedToStripe: true,
         searchParams: checkoutSearchParams,
         stage: "payment",
     })
@@ -872,6 +895,7 @@ test("does not write a draft customer email again after restoring the payment st
 
     await waitFor(() => assert.deepEqual(stripeBillingAddressUpdates, [stripeBillingAddress]))
     assert.deepEqual(stripeEmailUpdates, [])
+    assert.deepEqual(checkoutProviderOptions?.defaultValues, { billingAddress: stripeBillingAddress })
     assert.ok(screen.getByTestId("stripe-payment"))
 })
 
@@ -891,7 +915,9 @@ test("shows only the configured error when automatic customer creation fails", a
     assert.equal(screen.queryByTestId("checkout-form-skeleton"), null)
     assert.equal(screen.queryByTestId("checkout-customer-select-skeleton"), null)
     assert.equal(screen.queryByText(content.customerSelectLabel), null)
-    assert.equal(screen.queryByRole("button"), null)
+    const retryButton = screen.getByRole("button", { name: errors.retry })
+    await userEvent.setup().click(retryButton)
+    await waitFor(() => assert.equal(requestCount, 2))
 })
 
 test("applies a promotion code inside the active Stripe session without reloading checkout", async () => {
