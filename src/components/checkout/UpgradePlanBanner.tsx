@@ -24,17 +24,17 @@ export function UpgradePlanBanner({ content, currentPlan, onUpgrade, showPlanSpe
     const nextPlan: SubscriptionPlan = plan === "pro" ? "max" : "custom"
     const planTitle = subscriptionConfig.packages[nextPlan].title
     const planContent = content[plan]
-    const renderWithPlan = (value: string) => {
+    const renderWithPlan = (value: string, showColor = true) => {
         const [before, ...after] = value.split("{plan}")
         if (after.length === 0) return value
         return (
-            <>
+            <span>
                 {before}
-                <span className="font-medium" style={{ color: planContent.gradientFrom }}>
+                <span className="" style={showColor ? { color: planContent.gradientFrom } : undefined}>
                     {planTitle}
                 </span>
                 {after.join("{plan}")}
-            </>
+            </span>
         )
     }
 
@@ -45,7 +45,7 @@ export function UpgradePlanBanner({ content, currentPlan, onUpgrade, showPlanSpe
         >
             <span>{renderWithPlan(planContent.text)}</span>
             <Button variant="filled" onClick={() => onUpgrade(nextPlan)} className="bg-white/80! hover:bg-white! text-primary! py-1! px-2! rounded-lg!">
-                {renderWithPlan(planContent.buttonLabel)}
+                {renderWithPlan(planContent.buttonLabel, false)}
             </Button>
         </Card>
     )

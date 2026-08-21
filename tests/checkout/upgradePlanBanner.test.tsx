@@ -37,7 +37,9 @@ test("offers the configured upgrade from pro to max", async () => {
     render(<UpgradePlanBanner content={content} currentPlan="pro" onUpgrade={onUpgrade} subscriptionConfig={subscriptionConfig} />)
 
     assert.match(screen.getByText(/Switch to/).textContent ?? "", /Max/)
-    await userEvent.setup().click(screen.getByRole("button", { name: "Upgrade to Max" }))
+    const button = screen.getByRole("button", { name: "Upgrade to Max" })
+    assert.equal((button.querySelector("span") as HTMLElement | null)?.style.color ?? "", "")
+    await userEvent.setup().click(button)
     assert.deepEqual(onUpgrade.mock.calls[0]?.arguments, ["max"])
 })
 
