@@ -26,8 +26,10 @@ interface CheckoutDiscountProps {
     discountValidationError: string
     inputPlaceholder: string
     onApplied?: (discount: CheckoutDiscountValue | null) => void
+    onPromotionCodeChange?: (code: string | null) => Promise<"navigating" | "updated" | void>
     promptLabel: string
     removeLabel: string
+    sessionReady?: boolean
 }
 
 export function CheckoutDiscount({
@@ -39,8 +41,10 @@ export function CheckoutDiscount({
     discountValidationError,
     inputPlaceholder,
     onApplied,
+    onPromotionCodeChange,
     promptLabel,
     removeLabel,
+    sessionReady = true,
 }: CheckoutDiscountProps) {
     const { authenticated: contextAuthenticated } = useCraterSession()
     const pathname = usePathname()
@@ -73,7 +77,7 @@ export function CheckoutDiscount({
 
     const validateDiscount = useCallback(
         async (normalizedCode: string) => {
-            if (!isAuthenticated) {
+            if (!isAuthenticated || !sessionReady) {
                 setErrorMessage(discountSessionRequiredError)
                 return
             }
@@ -100,6 +104,10 @@ export function CheckoutDiscount({
                 if (requestId !== validationRequestRef.current) return
 
                 const discount = result as CheckoutDiscountValue
+                const promotionCodeChange = await onPromotionCodeChange?.(discount.code)
+                if (promotionCodeChange === "navigating") return
+                if (requestId !== validationRequestRef.current) return
+
                 replacePromotionCode(discount.code)
                 setCode((currentCode) => (currentCode.trim() === normalizedCode ? discount.code : currentCode))
                 setAppliedCode(discount.code)
@@ -120,22 +128,49 @@ export function CheckoutDiscount({
                 }
             }
         },
-        [discountSessionRequiredError, discountValidationError, isAuthenticated, onApplied, replacePromotionCode]
+        [discountSessionRequiredError, discountValidationError, isAuthenticated, onApplied, onPromotionCodeChange, replacePromotionCode, sessionReady]
     )
 
     useEffect(() => {
         const promotionCode = searchParams.get("promotionCode")?.trim()
 
-        if (!isAuthenticated || !promotionCode || appliedCode === promotionCode || automaticallyValidatedCodeRef.current === promotionCode) {
+        if (!isAuthenticated || !sessionReady || !promotionCode || appliedCode === promotionCode || automaticallyValidatedCodeRef.current === promotionCode) {
             return
         }
 
         automaticallyValidatedCodeRef.current = promotionCode
         setCode(promotionCode)
         void validateDiscount(promotionCode)
-    }, [appliedCode, isAuthenticated, searchParams, validateDiscount])
+    }, [appliedCode, isAuthenticated, searchParams, sessionReady, validateDiscount])
 
-    const applyEmptyDiscount = () => {
+    const applyEmptyDiscount = async () => {
+        if (isApplying) return
+
+        const requestId = ++validationRequestRef.current
+        setIsApplying(true)
+        setErrorMessage(null)
+
+        try {
+            const promotionCodeChange = await onPromotionCodeChange?.(null)
+            if (promotionCodeChange === "navigating") return
+            if (requestId !== validationRequestRef.current) return
+
+            automaticallyValidatedCodeRef.current = null
+            setAppliedCode(null)
+            setCode("")
+            setIsEditing(false)
+            replacePromotionCode(null)
+            onApplied?.(null)
+        } catch (error) {
+            if (requestId !== validationRequestRef.current) return
+            console.error("Failed to remove the checkout discount:", error)
+            setErrorMessage(discountValidationError)
+        } finally {
+            if (requestId === validationRequestRef.current) setIsApplying(false)
+        }
+    }
+
+    const clearUnappliedDiscount = () => {
         validationRequestRef.current += 1
         automaticallyValidatedCodeRef.current = searchParams.get("promotionCode")?.trim() ?? null
         setAppliedCode(null)
@@ -153,7 +188,7 @@ export function CheckoutDiscount({
         const normalizedCode = code.trim()
         if (isApplying) return
 
-        if (normalizedCode !== appliedCode) {
+        if (appliedCode && normalizedCode !== appliedCode) {
             automaticallyValidatedCodeRef.current = searchParams.get("promotionCode")?.trim() ?? null
             setAppliedCode(null)
             replacePromotionCode(null)
@@ -161,7 +196,7 @@ export function CheckoutDiscount({
         }
 
         if (!normalizedCode) {
-            applyEmptyDiscount()
+            clearUnappliedDiscount()
             return
         }
 
@@ -173,7 +208,7 @@ export function CheckoutDiscount({
             <div className="flex min-w-0 items-center justify-between gap-4 text-sm">
                 <div className="flex min-w-0 items-center gap-1">
                     <span className="min-w-0 truncate text-secondary">{appliedCode}</span>
-                    <button type="button" onClick={applyEmptyDiscount} className="shrink-0 text-tertiary transition-colors hover:text-white">
+                    <button type="button" disabled={isApplying} onClick={() => void applyEmptyDiscount()} className="shrink-0 text-tertiary transition-colors hover:text-white disabled:cursor-wait disabled:opacity-60">
                         ({removeLabel})
                     </button>
                 </div>
@@ -203,7 +238,7 @@ export function CheckoutDiscount({
                 <Button
                     type="submit"
                     variant="normal"
-                    disabled={isApplying || code.trim() === (appliedCode ?? "")}
+                    disabled={!sessionReady || isApplying || code.trim() === (appliedCode ?? "")}
                     className="h-10! shrink-0 px-5! whitespace-nowrap bg-white/80! hover:bg-white! ring-1! ring-white/20! text-sm! text-primary!"
                 >
                     {isApplying ? <ButtonLoader label={buttonLabel} /> : buttonLabel}
