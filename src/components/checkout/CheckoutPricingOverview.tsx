@@ -22,6 +22,7 @@ interface CheckoutPricingOverviewProps {
     paymentPeriodDiscountLabel: string | null
     paymentPeriodDiscountPercentage: number
     periodSuffix: string
+    planPrice: number | null
     planTitle: string
     subscriptionConfig: SubscriptionConfigData
     taxAmount: number
@@ -44,6 +45,7 @@ export function CheckoutPricingOverview({
     paymentPeriodDiscountLabel,
     paymentPeriodDiscountPercentage,
     periodSuffix,
+    planPrice,
     planTitle,
     subscriptionConfig,
     taxAmount,
@@ -57,7 +59,6 @@ export function CheckoutPricingOverview({
     return (
         <Card className="bg-light! p-4!">
             <span className="flex items-center gap-2 text-sm text-secondary pb-1">
-                <SummaryBadge icon={getIcon(plan.icon, 16)} tone={plan.color} value={<span className="capitalize">{planTitle.replaceAll("_", " ").replaceAll("-", " ")}</span>} />
                 {deployment && (
                     <SummaryBadge
                         icon={getIcon(deployment === "cloud" ? content.deploymentIcons.cloud : content.deploymentIcons.selfHosted, 16)}
@@ -75,6 +76,13 @@ export function CheckoutPricingOverview({
             </span>
 
             <div className="space-y-2 pt-4">
+                {planPrice !== null && (
+                    <div className="flex items-start justify-between gap-4 text-sm">
+                        <span className="flex items-center gap-2 text-secondary">{content.pricing.planLabel}</span>
+                        <span className="shrink-0 tabular-nums text-white">{formatEuroCurrency(planPrice, locale)}</span>
+                    </div>
+                )}
+
                 {isCustomPlan && (
                     <>
                         <div className="flex items-start justify-between gap-4 text-sm">

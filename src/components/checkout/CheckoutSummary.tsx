@@ -45,7 +45,7 @@ export function CheckoutSummary({ content, errors, nextSteps, subscriptionConfig
     const paymentPeriodParam = searchParams.get("paymentPeriod")
     const workflowExecutionsParam = searchParams.get("workflowExecutions")
     const aiTokensParam = searchParams.get("aiTokens")
-    const { aiTokens, isCustomPlan, paymentPeriod, periodSuffix, planTitle, pricing, workflowExecutions } = resolveCheckoutPricing({
+    const { aiTokens, isCustomPlan, paymentPeriod, periodSuffix, planPrice, planTitle, pricing, workflowExecutions } = resolveCheckoutPricing({
         aiTokensParam,
         customerTypeParam: customerType,
         fallbackPeriodSuffix: content.pricing.perMonthSuffix,
@@ -126,6 +126,7 @@ export function CheckoutSummary({ content, errors, nextSteps, subscriptionConfig
                 paymentPeriodDiscountLabel={paymentPeriodDiscountLabel}
                 paymentPeriodDiscountPercentage={paymentPeriodDiscountPercentage}
                 periodSuffix={periodSuffix}
+                planPrice={planPrice}
                 planTitle={planTitle}
                 subscriptionConfig={subscriptionConfig}
                 taxAmount={taxAmount}

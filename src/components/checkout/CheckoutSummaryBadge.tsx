@@ -1,5 +1,5 @@
+import { StableBadge } from "@/components/ui/StableBadge"
 import type { IconColor } from "@/lib/cms"
-import { Badge } from "@code0-tech/pictor"
 import type { ReactNode } from "react"
 
 export interface SummaryBadgeProps {
@@ -22,9 +22,9 @@ const TONE_CLASS_NAME: Record<IconColor, string> = {
 
 export function SummaryBadge({ icon, value, tone = "neutral" }: SummaryBadgeProps) {
     return (
-        <Badge color="secondary" border className={`min-w-0! max-w-full! rounded-xl! gap-1.5! pl-1.5! pr-2.5! py-0.5! text-sm! ${TONE_CLASS_NAME[tone]}`}>
+        <StableBadge color={tone} border className={`min-w-0! max-w-full! rounded-xl! gap-1.5! pl-1.5! pr-2.5! py-0.5! text-sm! ${TONE_CLASS_NAME[tone]}`}>
             <span className="inline-flex shrink-0 text-current">{icon}</span>
             <span className="min-w-0 truncate font-medium">{value}</span>
-        </Badge>
+        </StableBadge>
     )
 }

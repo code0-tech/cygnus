@@ -1,7 +1,7 @@
 "use client"
 
+import { StableBadge } from "@/components/ui/StableBadge"
 import { cn } from "@/lib/utils"
-import { Badge } from "@code0-tech/pictor"
 import { useLayoutEffect, useRef, useState } from "react"
 
 export interface SwitchOption<TValue extends string> {
@@ -104,9 +104,9 @@ export function Switch<TValue extends string>({ label, description, value, optio
                             <span className="flex min-w-0 max-w-full items-center justify-center gap-2">
                                 <span className={cn("min-w-0", fitContent ? "whitespace-nowrap" : "truncate")}>{option.label}</span>
                                 {option.badge && variant === "pictor" ? (
-                                    <Badge color="info" border className="shrink-0">
+                                    <StableBadge color="info" border className="shrink-0">
                                         {option.badge}
-                                    </Badge>
+                                    </StableBadge>
                                 ) : option.badge ? (
                                     <span className="shrink-0 rounded-full border border-brand/10 bg-brand/10 px-1 py-0.5 text-[10px] leading-none tracking-wider text-brand">{option.badge}</span>
                                 ) : null}

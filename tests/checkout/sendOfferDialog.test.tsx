@@ -32,12 +32,14 @@ const content = {
     emailPlaceholder: "offer@example.com",
     sendOfferDescription: "Enter the recipient email address.",
     sendOfferLabel: "Send offer",
+    sendOfferPrompt: "Need an invoice or a quote first?",
     sendOfferTitle: "Send an offer",
 }
 
 test("collects a valid email and exposes it through the future send integration", async () => {
     const onSend = mock.fn()
     render(<SendOfferDialog content={content} onSend={onSend} />)
+    assert.ok(screen.getByText(content.sendOfferPrompt))
     const sendButtons = screen.getAllByRole("button", { name: content.sendOfferLabel }) as HTMLButtonElement[]
     const submitButton = sendButtons.at(-1)!
 

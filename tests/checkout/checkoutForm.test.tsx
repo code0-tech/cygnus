@@ -246,6 +246,7 @@ const content = {
     continueLabel: "Continue to payment",
     backToBillingLabel: "Back",
     payNowLabel: "Pay now",
+    sendOfferPrompt: "Need an invoice or a quote first?",
     sendOfferLabel: "Send offer",
     sendOfferTitle: "Send offer",
     sendOfferDescription: "Enter the recipient email address.",
