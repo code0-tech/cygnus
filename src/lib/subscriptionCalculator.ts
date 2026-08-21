@@ -60,9 +60,11 @@ export function getMonthlyEquivalentAmount(amount: number, period: PaymentPeriod
     return Math.round(amount / getPaymentPeriodMonths(period))
 }
 
-export function getPaymentPeriodAmount(monthlyAmount: number, period: PaymentPeriod) {
-    const multiplier = period === "weekly" ? 1 / AVERAGE_WEEKS_PER_MONTH : period === "quarterly" ? 3 : period === "yearly" ? 12 : 1
-    return Math.round(monthlyAmount * multiplier * 100) / 100
+export function getSubscriptionDisplayPrices(totalAmount: number, period: PaymentPeriod) {
+    return {
+        monthlyPrice: getMonthlyEquivalentAmount(totalAmount, period) / 100,
+        paymentPeriodPrice: totalAmount / 100,
+    }
 }
 
 export function getPaymentPeriodSuffix(period: PaymentPeriod, paymentPeriod: SubscriptionConfigData["paymentPeriod"]) {
