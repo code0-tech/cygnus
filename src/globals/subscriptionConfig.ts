@@ -66,19 +66,6 @@ export const SubscriptionCollection: GlobalConfig = {
     },
     fields: [
         {
-            name: "title",
-            type: "text",
-            required: false,
-            defaultValue: "Subscription Config",
-        },
-        {
-            name: "optionsPanelHeading",
-            type: "text",
-            required: false,
-            localized: true,
-            defaultValue: "Build the subscription shape",
-        },
-        {
             name: "defaults",
             label: "Configurator Defaults",
             type: "group",
@@ -374,14 +361,6 @@ export const SubscriptionCollection: GlobalConfig = {
             type: "group",
             fields: [
                 {
-                    name: "title",
-                    type: "text",
-                    required: false,
-                    localized: true,
-                    defaultValue: "Payment Period",
-                    admin: { description: "Short noun label, e.g. for the checkout success summary. Not the configurator heading -- that is `label` below." },
-                },
-                {
                     name: "label",
                     type: "text",
                     required: false,
@@ -548,14 +527,6 @@ export const SubscriptionCollection: GlobalConfig = {
             fields: [
                 { name: "label", type: "text", required: false, localized: true, defaultValue: "Buy now" },
                 { name: "baseUrl", type: "text", required: false, defaultValue: "" },
-            ],
-        },
-        {
-            name: "price",
-            type: "group",
-            fields: [
-                { name: "heading", type: "text", required: false, localized: true, defaultValue: "Price" },
-                { name: "caption", type: "text", required: false, localized: true, defaultValue: "per month" },
             ],
         },
     ],

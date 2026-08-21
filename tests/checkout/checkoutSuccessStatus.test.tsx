@@ -59,7 +59,6 @@ const content: CheckoutData["success"] = {
     licenseDownloadLabel: "Download license",
     licenseDownloadError: "Could not download license.",
     licensePendingLabel: "Preparing license",
-    licenseReadyLabel: "License ready",
     licenseStatusRetryLabel: "Try again",
     receiptHint: "Stripe sends the receipt to your email address.",
     failedHeading: "Payment failed",
@@ -67,7 +66,6 @@ const content: CheckoutData["success"] = {
     invalidHeading: "Checkout link is no longer valid",
     invalidDescription: "The link has expired or belongs to another account.",
     checkoutRetryLabel: "Back to checkout",
-    backToHomepageLabel: "Back to homepage",
 }
 
 const errorMessage = "Could not confirm the license."
@@ -138,7 +136,6 @@ test("shows the pricing overview and the receipt hint once the payment is confir
     respondWith({ state: "FULFILLMENT_PENDING", customerId: "gid://crater/Customer/1", licenseId: null })
     const summary = {
         deployment: "self_hosted" as const,
-        title: "Your configuration",
         overview: {
             aiTokenPrice: 50,
             aiTokens: 1_000_000,
@@ -158,11 +155,6 @@ test("shows the pricing overview and the receipt hint once the payment is confir
             workflowExecutionPrice: 50,
             workflowExecutions: 1_000,
         },
-        rows: [
-            { id: "plan", label: "Plan", value: "Custom", icon: "tabler:IconSettings", tone: "aqua" as const },
-            { id: "paymentPeriod", label: "Payment period", value: "Yearly", icon: "tabler:IconCalendarMonth", tone: "magenta" as const },
-            { id: "aiTokens", label: "AI Tokens", value: "1M", icon: "tabler:IconBrain", tone: "magenta" as const },
-        ],
     }
 
     render(
@@ -194,7 +186,7 @@ test("offers Sculptor next to the license dashboard for a cloud license", async 
             locale="en"
             sculptorUrl="https://sculptor.example/cloud"
             sessionId="cs_test"
-            summary={{ deployment: "cloud", title: "Configuration", rows: [] }}
+            summary={{ deployment: "cloud" }}
         />
     )
 
@@ -214,7 +206,7 @@ test("downloads the Crater license next to the dashboard for self-hosted", async
             locale="en"
             sculptorUrl="https://sculptor.example/cloud"
             sessionId="cs_test"
-            summary={{ deployment: "self_hosted", title: "Configuration", rows: [] }}
+            summary={{ deployment: "self_hosted" }}
         />
     )
 

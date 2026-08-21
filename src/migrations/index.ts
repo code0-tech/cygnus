@@ -136,6 +136,7 @@ import * as migration_20260821_055835_checkout_send_offer_dialog from './2026082
 import * as migration_20260821_065512_plan_upgrade_banner from './20260821_065512_plan_upgrade_banner';
 import * as migration_20260821_142512_remove_checkout_stepper from './20260821_142512_remove_checkout_stepper';
 import * as migration_20260821_152105_add_send_offer_prompt from './20260821_152105_add_send_offer_prompt';
+import * as migration_20260821_162845_remove_unused_subscription_checkout_license_fields from './20260821_162845_remove_unused_subscription_checkout_license_fields';
 
 export const migrations = [
   {
@@ -827,5 +828,10 @@ export const migrations = [
     up: migration_20260821_152105_add_send_offer_prompt.up,
     down: migration_20260821_152105_add_send_offer_prompt.down,
     name: '20260821_152105_add_send_offer_prompt',
+  },
+  {
+    up: migration_20260821_162845_remove_unused_subscription_checkout_license_fields.up,
+    down: migration_20260821_162845_remove_unused_subscription_checkout_license_fields.down,
+    name: '20260821_162845_remove_unused_subscription_checkout_license_fields'
   },
 ];

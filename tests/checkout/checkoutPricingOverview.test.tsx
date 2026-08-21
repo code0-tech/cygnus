@@ -25,23 +25,19 @@ const { cleanup, render } = await import("@testing-library/react")
 const { CheckoutPricingOverview } = await import("../../src/components/checkout/CheckoutPricingOverview")
 
 const content = {
+    eyebrow: "Order summary",
+    heading: "Review your configuration",
+    description: "Your selected configuration",
     deploymentIcons: { cloud: "cloud", selfHosted: "server" },
     deploymentIconColor: "aqua",
     customerTypeIcons: { b2b: "building", b2c: "user" },
     customerTypeIconColor: "blue",
-    aiTokensIcon: "sparkles",
-    aiTokensIconColor: "brand",
-    workflowExecutionsIcon: "workflow",
-    workflowExecutionsIconColor: "lime",
     pricing: {
-        label: "Pricing overview",
-        description: "Your selected configuration",
         planLabel: "Plan",
         baseLabel: "AI tokens",
         workflowExecutionsLabel: "Workflow executions",
         quarterlyDiscountLabel: "Quarterly discount",
         yearlyDiscountLabel: "Yearly discount",
-        discountLabel: "Discount",
         discountInputPlaceholder: "Code",
         discountButtonLabel: "Apply",
         discountPromptLabel: "Add discount",

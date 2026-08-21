@@ -86,8 +86,6 @@ export const enum_subscription_config_payment_period_quarterly_color = pgEnum('e
 export const enum_subscription_config_payment_period_yearly_color = pgEnum('enum_subscription_config_payment_period_yearly_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
 export const enum_checkout_summary_deployment_icon_color = pgEnum('enum_checkout_summary_deployment_icon_color', ['neutral', 'brand', 'aqua', 'blue', 'pink', 'yellow', 'lime', 'magenta'])
 export const enum_checkout_summary_customer_type_icon_color = pgEnum('enum_checkout_summary_customer_type_icon_color', ['neutral', 'brand', 'aqua', 'blue', 'pink', 'yellow', 'lime', 'magenta'])
-export const enum_checkout_summary_ai_tokens_icon_color = pgEnum('enum_checkout_summary_ai_tokens_icon_color', ['neutral', 'brand', 'aqua', 'blue', 'pink', 'yellow', 'lime', 'magenta'])
-export const enum_checkout_summary_workflow_executions_icon_color = pgEnum('enum_checkout_summary_workflow_executions_icon_color', ['neutral', 'brand', 'aqua', 'blue', 'pink', 'yellow', 'lime', 'magenta'])
 
 export const users_sessions = pgTable('users_sessions', {
   _order: integer('_order').notNull(),
@@ -2331,7 +2329,6 @@ export const subscription_config_workflow_calculator_business_types_locales = pg
 
 export const subscription_config = pgTable('subscription_config', {
   id: serial('id').primaryKey(),
-  title: varchar('title').default("Subscription Config"),
   defaults_deployment: enum_subscription_config_defaults_deployment('defaults_deployment').default("self_hosted"),
   defaults_customerType: enum_subscription_config_defaults_customer_type('defaults_customer_type').default("b2b"),
   defaults_paymentPeriod_b2b: enum_subscription_config_defaults_payment_period_b2b('defaults_payment_period_b2b').default("monthly"),
@@ -2402,7 +2399,6 @@ export const subscription_config = pgTable('subscription_config', {
 
 
 export const subscription_config_locales = pgTable('subscription_config_locales', {
-  optionsPanelHeading: varchar('options_panel_heading').default("Build the subscription shape"),
   deployment_label: varchar('deployment_label').default("Choose where your code0 instance will run."),
   deployment_description: varchar('deployment_description'),
   deployment_selfHosted_title: varchar('deployment_self_hosted_title').default("Self-hosted"),
@@ -2429,7 +2425,6 @@ export const subscription_config_locales = pgTable('subscription_config_locales'
   packages_max_description: varchar('packages_max_description').default("For organizations with higher requirements."),
   packages_custom_title: varchar('packages_custom_title').default("Custom"),
   packages_custom_description: varchar('packages_custom_description').default("A tailored package for individual requirements."),
-  paymentPeriod_title: varchar('payment_period_title').default("Payment Period"),
   paymentPeriod_label: varchar('payment_period_label').default("Choose how often you want to be billed."),
   paymentPeriod_description: varchar('payment_period_description'),
   paymentPeriod_weeklyText: varchar('payment_period_weekly_text').default("Weekly"),
@@ -2465,8 +2460,6 @@ export const subscription_config_locales = pgTable('subscription_config_locales'
   contactSales_prompt: varchar('contact_sales_prompt').default("Need more?"),
   contactSales_label: varchar('contact_sales_label').default("Contact sales"),
   subscribe_label: varchar('subscribe_label').default("Buy now"),
-  price_heading: varchar('price_heading').default("Price"),
-  price_caption: varchar('price_caption').default("per month"),
   id: serial('id').primaryKey(),
   _locale: enum__locales('_locale').notNull(),
   _parentID: integer('_parent_id').notNull(),
@@ -2482,7 +2475,6 @@ export const subscription_config_locales = pgTable('subscription_config_locales'
 
 export const checkout = pgTable('checkout', {
   id: serial('id').primaryKey(),
-  title: varchar('title').notNull().default("Checkout Content"),
   login_loginUrl: varchar('login_login_url').notNull().default("https://app.code0.tech/login"),
   summary_deploymentIcons_cloud: varchar('summary_deployment_icons_cloud').notNull().default("tabler:IconCloud"),
   summary_deploymentIcons_selfHosted: varchar('summary_deployment_icons_self_hosted').notNull().default("tabler:IconServer"),
@@ -2490,10 +2482,6 @@ export const checkout = pgTable('checkout', {
   summary_customerTypeIcons_b2b: varchar('summary_customer_type_icons_b2b').notNull().default("tabler:IconUsers"),
   summary_customerTypeIcons_b2c: varchar('summary_customer_type_icons_b2c').notNull().default("tabler:IconBuildingStore"),
   summary_customerTypeIconColor: enum_checkout_summary_customer_type_icon_color('summary_customer_type_icon_color').notNull().default("yellow"),
-  summary_aiTokensIcon: varchar('summary_ai_tokens_icon').notNull().default("tabler:IconBrain"),
-  summary_aiTokensIconColor: enum_checkout_summary_ai_tokens_icon_color('summary_ai_tokens_icon_color').notNull().default("magenta"),
-  summary_workflowExecutionsIcon: varchar('summary_workflow_executions_icon').notNull().default("tabler:IconBolt"),
-  summary_workflowExecutionsIconColor: enum_checkout_summary_workflow_executions_icon_color('summary_workflow_executions_icon_color').notNull().default("brand"),
   updatedAt: timestamp('updated_at', {mode: 'string',withTimezone: true,precision: 3}),
   createdAt: timestamp('created_at', {mode: 'string',withTimezone: true,precision: 3}),
 }
@@ -2501,7 +2489,6 @@ export const checkout = pgTable('checkout', {
 
 
 export const checkout_locales = pgTable('checkout_locales', {
-  navigation_backLabel: varchar('navigation_back_label').notNull().default("Back"),
   login_heading: varchar('login_heading').notNull().default("Sign in to CodeZero"),
   login_description: varchar('login_description').notNull().default("Use your CodeZero account to continue with your configured subscription."),
   login_loginLabel: varchar('login_login_label').notNull().default("Sign in"),
@@ -2511,19 +2498,11 @@ export const checkout_locales = pgTable('checkout_locales', {
   summary_eyebrow: varchar('summary_eyebrow').notNull().default("Order Summary"),
   summary_heading: varchar('summary_heading').notNull().default("Review your configuration"),
   summary_description: varchar('summary_description').notNull().default("This checkout reflects the subscription shape you configured, including runtime."),
-  summary_configurationLabel: varchar('summary_configuration_label').notNull().default("Your configuration"),
-  summary_deploymentLabel: varchar('summary_deployment_label').notNull().default("Deployment"),
-  summary_customerTypeLabel: varchar('summary_customer_type_label').notNull().default("Customer Type"),
-  summary_aiTokensLabel: varchar('summary_ai_tokens_label').notNull().default("AI Tokens"),
-  summary_workflowExecutionsLabel: varchar('summary_workflow_executions_label').notNull().default("Workflow Executions"),
-  summary_pricing_label: varchar('summary_pricing_label').notNull().default("Pricing"),
-  summary_pricing_description: varchar('summary_pricing_description').notNull().default("Monthly breakdown based on your current setup."),
   summary_pricing_planLabel: varchar('summary_pricing_plan_label').notNull().default("Plan"),
   summary_pricing_baseLabel: varchar('summary_pricing_base_label').notNull().default("AI Tokens"),
   summary_pricing_workflowExecutionsLabel: varchar('summary_pricing_workflow_executions_label').notNull().default("Workflow Executions"),
   summary_pricing_quarterlyDiscountLabel: varchar('summary_pricing_quarterly_discount_label').notNull().default("Quarterly discount"),
   summary_pricing_yearlyDiscountLabel: varchar('summary_pricing_yearly_discount_label').notNull().default("Yearly discount"),
-  summary_pricing_discountLabel: varchar('summary_pricing_discount_label').notNull().default("Discount"),
   summary_pricing_discountInputPlaceholder: varchar('summary_pricing_discount_input_placeholder').notNull().default("Discount code"),
   summary_pricing_discountButtonLabel: varchar('summary_pricing_discount_button_label').notNull().default("Apply"),
   summary_pricing_discountPromptLabel: varchar('summary_pricing_discount_prompt_label').notNull().default("Have a discount?"),
@@ -2532,7 +2511,6 @@ export const checkout_locales = pgTable('checkout_locales', {
   summary_pricing_totalLabel: varchar('summary_pricing_total_label').notNull().default("Total"),
   summary_pricing_perMonthSuffix: varchar('summary_pricing_per_month_suffix').notNull().default("/mo"),
   form_billingHeading: varchar('form_billing_heading').notNull().default("Billing Address"),
-  form_paymentHeading: varchar('form_payment_heading').notNull().default("Payment Details"),
   form_continueLabel: varchar('form_continue_label').notNull().default("Continue to Payment"),
   form_backToBillingLabel: varchar('form_back_to_billing_label').notNull().default("Back to Billing"),
   form_payNowLabel: varchar('form_pay_now_label').notNull().default("Pay now"),
@@ -2543,31 +2521,16 @@ export const checkout_locales = pgTable('checkout_locales', {
   form_processingLabel: varchar('form_processing_label').notNull().default("Processing..."),
   form_customerSelectLabel: varchar('form_customer_select_label').notNull().default("Billing customer"),
   form_newCustomerLabel: varchar('form_new_customer_label').notNull().default("Create new customer"),
-  form_customerFallbackLabel: varchar('form_customer_fallback_label').notNull().default("Customer"),
-  form_mobileContactLabel: varchar('form_mobile_contact_label').notNull().default("Contact details"),
-  form_mobileNextLabel: varchar('form_mobile_next_label').notNull().default("Continue"),
-  form_mobileTaxLabel: varchar('form_mobile_tax_label').notNull().default("Tax details"),
   form_nameLabel: varchar('form_name_label').notNull().default("Name"),
-  form_namePlaceholder: varchar('form_name_placeholder').notNull().default("Full name or company name"),
   form_emailLabel: varchar('form_email_label').notNull().default("Email"),
   form_emailPlaceholder: varchar('form_email_placeholder').notNull().default("billing@example.com"),
   form_phoneLabel: varchar('form_phone_label').notNull().default("Phone"),
-  form_phonePlaceholder: varchar('form_phone_placeholder').notNull().default("Optional"),
   form_line1Label: varchar('form_line1_label').notNull().default("Address"),
-  form_line1Placeholder: varchar('form_line1_placeholder').notNull().default("Street and house number"),
   form_line2Label: varchar('form_line2_label').notNull().default("Address line 2"),
-  form_line2Placeholder: varchar('form_line2_placeholder').notNull().default("Optional"),
   form_cityLabel: varchar('form_city_label').notNull().default("City"),
   form_stateLabel: varchar('form_state_label').notNull().default("State"),
-  form_statePlaceholder: varchar('form_state_placeholder').notNull().default("Optional"),
   form_postalCodeLabel: varchar('form_postal_code_label').notNull().default("Postal code"),
   form_countryLabel: varchar('form_country_label').notNull().default("Country"),
-  form_countryPlaceholder: varchar('form_country_placeholder').notNull().default("Select a country"),
-  form_countryEmptyLabel: varchar('form_country_empty_label').notNull().default("No country found."),
-  form_taxIdTypeLabel: varchar('form_tax_id_type_label').notNull().default("Tax ID type"),
-  form_taxIdTypePlaceholder: varchar('form_tax_id_type_placeholder').notNull().default("eu_vat"),
-  form_taxIdValueLabel: varchar('form_tax_id_value_label').notNull().default("Tax ID"),
-  form_taxIdValuePlaceholder: varchar('form_tax_id_value_placeholder').notNull().default("DE123456789"),
   nextSteps_heading: varchar('next_steps_heading').notNull().default("What happens next"),
   nextSteps_step1Title: varchar('next_steps_step1_title').notNull().default("Payment confirmed"),
   nextSteps_step1Description: varchar('next_steps_step1_description').notNull().default("Stripe securely confirms your payment."),
@@ -2582,7 +2545,6 @@ export const checkout_locales = pgTable('checkout_locales', {
   success_licenseDownloadLabel: varchar('success_license_download_label').notNull(),
   success_licenseDownloadError: varchar('success_license_download_error').notNull(),
   success_licensePendingLabel: varchar('success_license_pending_label').notNull().default("Your license is being prepared…"),
-  success_licenseReadyLabel: varchar('success_license_ready_label').notNull().default("Your license is ready."),
   success_licenseStatusRetryLabel: varchar('success_license_status_retry_label').notNull().default("Try again"),
   success_receiptHint: varchar('success_receipt_hint').notNull().default("Stripe sends the receipt to your email address."),
   success_failedHeading: varchar('success_failed_heading').notNull().default("Payment failed"),
@@ -2590,7 +2552,6 @@ export const checkout_locales = pgTable('checkout_locales', {
   success_invalidHeading: varchar('success_invalid_heading').notNull().default("This checkout link is no longer valid"),
   success_invalidDescription: varchar('success_invalid_description').notNull().default("The link has expired or belongs to another account. If your payment went through, you will find the license in your license dashboard."),
   success_checkoutRetryLabel: varchar('success_checkout_retry_label').notNull().default("Back to checkout"),
-  success_backToHomepageLabel: varchar('success_back_to_homepage_label').notNull().default("Return to homepage"),
   id: serial('id').primaryKey(),
   _locale: enum__locales('_locale').notNull(),
   _parentID: integer('_parent_id').notNull(),
@@ -2718,7 +2679,6 @@ export const licenses_locales = pgTable('licenses_locales', {
   editor_saveLabel: varchar('editor_save_label').notNull(),
   editor_cancelLabel: varchar('editor_cancel_label').notNull(),
   editor_closeLabel: varchar('editor_close_label').notNull(),
-  editor_selfHostedDescription: varchar('editor_self_hosted_description').notNull(),
   subscriptionPreview_totalLabel: varchar('subscription_preview_total_label').notNull(),
   subscriptionPreview_prorationLabel: varchar('subscription_preview_proration_label').notNull(),
   subscriptionPreview_immediateNote: varchar('subscription_preview_immediate_note').notNull(),
@@ -2739,8 +2699,6 @@ export const licenses_locales = pgTable('licenses_locales', {
   cancel_resumeLabel: varchar('cancel_resume_label').notNull(),
   upgrade_title: varchar('upgrade_title').notNull(),
   upgrade_description: varchar('upgrade_description').notNull(),
-  upgrade_planLabel: varchar('upgrade_plan_label').notNull(),
-  upgrade_increaseOnlyNote: varchar('upgrade_increase_only_note').notNull(),
   id: serial('id').primaryKey(),
   _locale: enum__locales('_locale').notNull(),
   _parentID: integer('_parent_id').notNull(),
@@ -4289,8 +4247,6 @@ type DatabaseSchema = {
   enum_subscription_config_payment_period_yearly_color: typeof enum_subscription_config_payment_period_yearly_color
   enum_checkout_summary_deployment_icon_color: typeof enum_checkout_summary_deployment_icon_color
   enum_checkout_summary_customer_type_icon_color: typeof enum_checkout_summary_customer_type_icon_color
-  enum_checkout_summary_ai_tokens_icon_color: typeof enum_checkout_summary_ai_tokens_icon_color
-  enum_checkout_summary_workflow_executions_icon_color: typeof enum_checkout_summary_workflow_executions_icon_color
   users_sessions: typeof users_sessions
   users: typeof users
   media: typeof media

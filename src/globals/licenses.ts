@@ -333,13 +333,6 @@ export const Licenses: GlobalConfig = {
                 { name: "saveLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Save", "Speichern") },
                 { name: "cancelLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Cancel", "Abbrechen") },
                 { name: "closeLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Close", "Schließen") },
-                {
-                    name: "selfHostedDescription",
-                    type: "text",
-                    required: true,
-                    localized: true,
-                    defaultValue: localizedDefault("Self-hosted licenses have no editable namespace.", "Self-hosted-Lizenzen besitzen keinen bearbeitbaren Namespace."),
-                },
             ],
         },
         {
@@ -447,14 +440,6 @@ export const Licenses: GlobalConfig = {
                     required: true,
                     localized: true,
                     defaultValue: localizedDefault("Move to a higher plan or increase your custom usage.", "Wechsle auf einen höheren Plan oder erhöhe deine individuelle Nutzung."),
-                },
-                { name: "planLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("New plan", "Neuer Plan") },
-                {
-                    name: "increaseOnlyNote",
-                    type: "text",
-                    required: true,
-                    localized: true,
-                    defaultValue: localizedDefault("You can only increase these amounts here.", "Diese Mengen können hier nur erhöht werden."),
                 },
             ],
         },
