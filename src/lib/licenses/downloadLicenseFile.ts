@@ -8,7 +8,7 @@ export async function downloadLicenseFile(licenseId: string) {
     if (!response.ok) throw new Error("License export failed.")
 
     const file = await response.blob()
-    const fileName = response.headers.get("x-license-filename")?.trim() || "code0-license.lic"
+    const fileName = response.headers.get("x-license-filename")?.trim() || "code0-license.czlc"
     const fileUrl = URL.createObjectURL(file)
     const download = document.createElement("a")
     download.href = fileUrl
