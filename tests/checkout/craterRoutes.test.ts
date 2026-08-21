@@ -1923,6 +1923,105 @@ test("paginates licenses on a customer detail page", async () => {
     }
 })
 
+test("returns every snapshot page for an authenticated license history request", async () => {
+    const graphQLServer = await createGraphQLTestServer([
+        {
+            data: {
+                currentUser: {
+                    customers: {
+                        edges: [
+                            {
+                                cursor: "customer-8",
+                                node: {
+                                    id: "gid://crater/Customer/8",
+                                    licenses: {
+                                        edges: [{ cursor: "license-9", node: { id: "gid://crater/License/9", plan: "max", updatedAt: "2026-08-21T00:00:00Z" } }],
+                                        pageInfo: { endCursor: "license-9", hasNextPage: false },
+                                    },
+                                },
+                            },
+                        ],
+                        pageInfo: { endCursor: "customer-8", hasNextPage: false },
+                    },
+                },
+            },
+        },
+        {
+            data: {
+                currentUser: {
+                    customers: {
+                        nodes: [
+                            {
+                                id: "gid://crater/Customer/8",
+                                licenses: {
+                                    edges: [
+                                        {
+                                            node: {
+                                                id: "gid://crater/License/9",
+                                                subscription: {
+                                                    licenses: {
+                                                        count: 2,
+                                                        nodes: [
+                                                            {
+                                                                createdAt: "2026-08-21T00:00:00Z",
+                                                                endDate: "2026-09-21T00:00:00Z",
+                                                                id: "gid://crater/License/9",
+                                                                paymentPeriod: "MONTHLY",
+                                                                plan: "max",
+                                                                startDate: "2026-08-21T00:00:00Z",
+                                                                status: "active",
+                                                            },
+                                                            {
+                                                                createdAt: "2026-07-21T00:00:00Z",
+                                                                endDate: "2026-08-21T00:00:00Z",
+                                                                id: "gid://crater/License/7",
+                                                                paymentPeriod: "MONTHLY",
+                                                                plan: "pro",
+                                                                startDate: "2026-07-21T00:00:00Z",
+                                                                status: "expired",
+                                                            },
+                                                        ],
+                                                        pageInfo: { endCursor: "history-2", hasNextPage: false },
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    ],
+                                    pageInfo: { endCursor: "license-9", hasNextPage: false },
+                                },
+                            },
+                        ],
+                    },
+                },
+            },
+        },
+    ])
+    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
+    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
+
+    try {
+        const response = await getLicenseDashboard(
+            new Request("https://example.com/api/crater/licenses?view=history&customerId=gid%3A%2F%2Fcrater%2FCustomer%2F8&licenseId=gid%3A%2F%2Fcrater%2FLicense%2F9", {
+                headers: sessionHeaders,
+            })
+        )
+        const body = await response.json()
+
+        assert.equal(response.status, 200)
+        assert.equal(graphQLServer.requests[1].body.operationName, "LicenseHistoryPage")
+        assert.match(graphQLServer.requests[1].body.query ?? "", /subscription\s*\{\s*licenses\(after: \$historyAfter, first: 25\)/)
+        assert.deepEqual(
+            body.snapshots.map((snapshot: { id: string }) => snapshot.id),
+            ["gid://crater/License/9", "gid://crater/License/7"]
+        )
+        assert.deepEqual(body.pagination, { endCursor: "history-2", hasNextPage: false, totalCount: 2 })
+    } finally {
+        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
+        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
+        await graphQLServer.close()
+    }
+})
+
 test("finds a license customer beyond the first Crater cursor page", async () => {
     const graphQLServer = await createGraphQLTestServer([
         {

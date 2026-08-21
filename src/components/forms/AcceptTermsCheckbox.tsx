@@ -1,13 +1,19 @@
 "use client"
 
 import { DEFAULT_LOCALE, type AppLocale, localizeHref } from "@/lib/i18n"
-import { CheckboxInput, InputMessage } from "@code0-tech/pictor"
+import { cn } from "@/lib/utils"
+import { InputMessage } from "@code0-tech/pictor"
 import type { CheckboxInputProps } from "@code0-tech/pictor/dist/components/form/CheckboxInput"
+import { IconCheck } from "@tabler/icons-react"
 import Link from "next/link"
-import type { ReactNode } from "react"
+import { type ReactNode, useState } from "react"
 import { useWebHaptics } from "web-haptics/react"
 
-interface AcceptTermsCheckboxProps extends Omit<CheckboxInputProps, "label"> {
+interface AcceptTermsCheckboxProps {
+    className?: string
+    disabled?: boolean
+    formValidation?: CheckboxInputProps["formValidation"]
+    initialValue?: boolean
     locale?: AppLocale
     revalidateOnToggle?: () => void
 }
@@ -27,26 +33,21 @@ const copy: Record<AppLocale, { labelStart: string; termsLabel: string; privacyL
     },
 }
 
-export function AcceptTermsCheckbox({ locale = DEFAULT_LOCALE, className, revalidateOnToggle, ...checkboxProps }: AcceptTermsCheckboxProps) {
+export function AcceptTermsCheckbox({ locale = DEFAULT_LOCALE, className, disabled, formValidation, initialValue = false, revalidateOnToggle }: AcceptTermsCheckboxProps) {
     const { trigger } = useWebHaptics()
-    const { formValidation, ...rest } = checkboxProps
+    const [checked, setChecked] = useState(initialValue)
 
     const labels = copy[locale]
     const termsHref = localizeHref("/terms", locale)
     const privacyHref = localizeHref("/privacy", locale)
 
-    const checkboxFormValidation = formValidation
-        ? {
-              ...formValidation,
-              notValidMessage: null,
-              setValue: (value: boolean) => {
-                  formValidation.setValue?.(value)
-                  if (!formValidation.valid) {
-                      revalidateOnToggle?.()
-                  }
-              },
-          }
-        : undefined
+    const toggle = () => {
+        if (disabled) return
+        const nextChecked = !checked
+        setChecked(nextChecked)
+        formValidation?.setValue?.(nextChecked)
+        if (formValidation && !formValidation.valid) revalidateOnToggle?.()
+    }
 
     const label: ReactNode = (
         <span className="text-sm leading-6 text-secondary">
@@ -65,7 +66,20 @@ export function AcceptTermsCheckbox({ locale = DEFAULT_LOCALE, className, revali
     return (
         <div className={className}>
             <div className="flex items-start">
-                <CheckboxInput className="-mr-3" formValidation={checkboxFormValidation} {...rest} />
+                <div className={cn("input checkbox-input -mr-3", formValidation && !formValidation.valid && "input--not-valid")}>
+                    <button
+                        type="button"
+                        role="checkbox"
+                        aria-checked={checked}
+                        aria-label={`${labels.labelStart} ${labels.termsLabel} ${labels.labelJoin} ${labels.privacyLabel}`}
+                        className="checkbox-input__button"
+                        data-state={checked ? "checked" : "unchecked"}
+                        disabled={disabled}
+                        onClick={toggle}
+                    >
+                        {checked ? <IconCheck aria-hidden="true" className="checkbox-input__indicator" size={16} /> : null}
+                    </button>
+                </div>
                 {label}
             </div>
             {!formValidation?.valid && formValidation?.notValidMessage && <InputMessage>{formValidation.notValidMessage}</InputMessage>}

@@ -61,6 +61,30 @@ export interface LicenseDashboardLicense {
     workflowExecutions?: number
 }
 
+export interface LicenseHistorySnapshot {
+    aiTokens?: number
+    createdAt?: string
+    deploymentType?: string
+    endDate?: string
+    id: string
+    namespaceId?: string
+    paymentPeriod?: string
+    plan?: string
+    startDate?: string
+    status?: string
+    updatedAt?: string
+    workflowExecutions?: number
+}
+
+export interface LicenseHistoryData {
+    snapshots: LicenseHistorySnapshot[]
+    pagination: {
+        endCursor: string | null
+        hasNextPage: boolean
+        totalCount?: number
+    }
+}
+
 interface LicenseDashboardPageInfo {
     endCursor: string | null
     hasNextPage: boolean
