@@ -1,6 +1,7 @@
 "use client"
 
 import { CheckoutDiscount, type CheckoutDiscountValue } from "@/components/checkout/CheckoutDiscount"
+import { useOptionalCheckoutFormState } from "@/components/checkout/CheckoutFormProvider"
 import { CheckoutNextSteps } from "@/components/checkout/CheckoutNextSteps"
 import { CheckoutPricingOverview } from "@/components/checkout/CheckoutPricingOverview"
 import { useCheckoutStage } from "@/components/checkout/CheckoutStage"
@@ -29,6 +30,7 @@ export function CheckoutSummary({ content, errors, nextSteps, subscriptionConfig
     const searchParams = useSearchParams()
     const params = useParams<{ locale?: string }>()
     const { stage } = useCheckoutStage()
+    const checkoutFormState = useOptionalCheckoutFormState()
     const [promotionDiscount, setPromotionDiscount] = useState<CheckoutDiscountValue | null>(null)
     if (!content || !subscriptionConfig || !subscriptionPrices) return null
 
@@ -145,8 +147,10 @@ export function CheckoutSummary({ content, errors, nextSteps, subscriptionConfig
                     discountValidationError={errors.discountValidation}
                     inputPlaceholder={content.pricing.discountInputPlaceholder}
                     onApplied={setPromotionDiscount}
+                    onPromotionCodeChange={checkoutFormState?.updateCheckoutPromotionCode}
                     promptLabel={content.pricing.discountPromptLabel}
                     removeLabel={content.pricing.discountRemoveLabel}
+                    sessionReady={!checkoutFormState || Boolean(checkoutFormState.selectedCustomerId && checkoutFormState.checkoutSession)}
                 />
             )}
         </div>

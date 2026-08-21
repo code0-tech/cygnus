@@ -157,6 +157,85 @@ test("validates and applies a promotion code already present in the URL", async 
     assert.equal(window.location.pathname + window.location.search, "/en/checkout?plan=pro&promotionCode=WELCOME")
 })
 
+test("waits for the checkout session before validating a promotion code from the URL", async () => {
+    currentSearchParams = new URLSearchParams("plan=pro&promotionCode=WELCOME")
+    window.history.replaceState(null, "", "/en/checkout?plan=pro&promotionCode=WELCOME")
+    let validationRequests = 0
+    globalThis.fetch = (async () => {
+        validationRequests += 1
+        return discountResponse("WELCOME", 15)
+    }) as typeof fetch
+
+    const view = render(
+        <CheckoutDiscount
+            {...discountErrorProps}
+            authenticated
+            buttonLabel="Apply"
+            inputPlaceholder="Discount code"
+            promptLabel="Have a discount?"
+            removeLabel="Remove"
+            sessionReady={false}
+        />
+    )
+
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    assert.equal(validationRequests, 0)
+
+    view.rerender(
+        <CheckoutDiscount
+            {...discountErrorProps}
+            authenticated
+            buttonLabel="Apply"
+            inputPlaceholder="Discount code"
+            promptLabel="Have a discount?"
+            removeLabel="Remove"
+            sessionReady
+        />
+    )
+
+    await waitFor(() => assert.equal(validationRequests, 1))
+    assert.ok(await screen.findByText("WELCOME"))
+})
+
+test("shows a discount only after the replacement checkout session is ready", async () => {
+    globalThis.fetch = (async (_input, init) => {
+        const body = JSON.parse(String(init?.body))
+        return discountResponse(body.code, 10)
+    }) as typeof fetch
+    let finishSessionReplacement!: () => void
+    const sessionReplacement = new Promise<void>((resolve) => {
+        finishSessionReplacement = resolve
+    })
+    const appliedValues: Array<CheckoutDiscountValue | null> = []
+    const user = userEvent.setup()
+
+    render(
+        <CheckoutDiscount
+            {...discountErrorProps}
+            authenticated
+            buttonLabel="Apply"
+            inputPlaceholder="Discount code"
+            onApplied={(discount) => appliedValues.push(discount)}
+            onPromotionCodeChange={() => sessionReplacement}
+            promptLabel="Have a discount?"
+            removeLabel="Remove"
+        />
+    )
+
+    await user.click(screen.getAllByRole("button", { name: "Have a discount?" }).at(-1)!)
+    await user.type(screen.getByPlaceholderText("Discount code"), "SAVE10")
+    await user.click(screen.getByRole("button", { name: "Apply" }))
+
+    await waitFor(() => assert.equal((screen.getByRole("button", { name: "Apply" }) as HTMLButtonElement).disabled, true))
+    assert.equal(appliedValues.length, 0)
+    assert.equal(screen.queryByText("SAVE10"), null)
+
+    finishSessionReplacement()
+
+    await waitFor(() => assert.equal(appliedValues.at(-1)?.code, "SAVE10"))
+    assert.ok(screen.getByText("SAVE10"))
+})
+
 test("shows the configured CMS error instead of the Crater discount error", async () => {
     globalThis.fetch = (async () =>
         new Response(JSON.stringify({ error: "Raw Crater discount error", details: ["Raw validation detail"] }), {

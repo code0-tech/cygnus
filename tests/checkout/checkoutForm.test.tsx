@@ -197,6 +197,7 @@ mock.module("@stripe/react-stripe-js/checkout", {
 const { act, cleanup, render, screen, waitFor } = await import("@testing-library/react")
 const userEvent = (await import("@testing-library/user-event")).default
 const { CheckoutForm } = await import("../../src/components/checkout/CheckoutForm")
+const { CheckoutFormProvider, useCheckoutFormState } = await import("../../src/components/checkout/CheckoutFormProvider")
 
 const originalFetch = globalThis.fetch
 afterEach(() => {
@@ -221,6 +222,7 @@ afterEach(() => {
     stripeBillingAddressUpdates = []
     stripeEmailUpdates = []
     customerSelectOnValueChange = null
+    window.history.replaceState(null, "", "/en/checkout")
 })
 
 const errors = {
@@ -723,7 +725,7 @@ test("shows only the configured error when automatic customer creation fails", a
     assert.equal(screen.queryByRole("button"), null)
 })
 
-test("recreates only the checkout session when the promotion code changes or is removed", async () => {
+test("reloads checkout with the promotion code instead of hot-swapping the active Stripe session", async () => {
     const requests: Array<{ init?: RequestInit; url: string }> = []
     let checkoutSessionCount = 0
     globalThis.fetch = (async (input, init) => {
@@ -750,40 +752,32 @@ test("recreates only the checkout session when the promotion code changes or is 
             headers: { "content-type": "application/json" },
         })
     }) as typeof fetch
-    const view = render(<CheckoutForm content={content} errors={errors} locale="en" />)
+
+    function PromotionCodeHarness() {
+        const { checkoutSession, updateCheckoutPromotionCode } = useCheckoutFormState()
+
+        return (
+            <div>
+                {checkoutSession ? <span>{checkoutSession.clientSecret}</span> : <span>Replacing session</span>}
+                <button type="button" onClick={() => void updateCheckoutPromotionCode("SAVE10")}>
+                    Apply SAVE10
+                </button>
+            </div>
+        )
+    }
+
+    render(
+        <CheckoutFormProvider content={content} errors={errors} locale="en">
+            <PromotionCodeHarness />
+        </CheckoutFormProvider>
+    )
     await waitFor(() => assert.equal(requests.length, 3))
+    assert.ok(screen.getByText("cs_test_secret_1"))
 
-    act(() => setCheckoutStage("payment"))
-    checkoutSearchParams.set("promotionCode", "SAVE10")
-    view.rerender(<CheckoutForm content={content} errors={errors} locale="en" />)
+    await userEvent.setup().click(screen.getByRole("button", { name: "Apply SAVE10" }))
 
-    await waitFor(() => assert.equal(requests.filter((request) => request.url === "/api/crater/checkout/session").length, 2))
+    await waitFor(() => assert.equal(window.location.search, "?customerType=b2c&deploymentType=self_hosted&paymentPeriod=monthly&plan=pro&promotionCode=SAVE10"))
     assert.equal(requests.filter((request) => request.url === "/api/crater/customer").length, 1)
-    assert.equal(requests.filter((request) => request.url === "/api/crater/checkout/session").length, 2)
-    assert.deepEqual(JSON.parse(String(requests.filter((request) => request.url === "/api/crater/checkout/session").at(-1)?.init?.body)), {
-        customerId: "gid://crater/Customer/1",
-        customerType: "b2c",
-        deploymentType: "self_hosted",
-        locale: "en",
-        paymentPeriod: "monthly",
-        plan: "pro",
-        promotionCode: "SAVE10",
-    })
-    await waitFor(() => assert.equal(checkoutProviderOptions?.clientSecret, "cs_test_secret_2"))
-    assert.equal(checkoutStage, "payment")
-
-    checkoutSearchParams.delete("promotionCode")
-    view.rerender(<CheckoutForm content={content} errors={errors} locale="en" />)
-
-    await waitFor(() => assert.equal(requests.filter((request) => request.url === "/api/crater/checkout/session").length, 3))
-    assert.equal(requests.filter((request) => request.url === "/api/crater/customer").length, 1)
-    assert.deepEqual(JSON.parse(String(requests.filter((request) => request.url === "/api/crater/checkout/session").at(-1)?.init?.body)), {
-        customerId: "gid://crater/Customer/1",
-        customerType: "b2c",
-        deploymentType: "self_hosted",
-        locale: "en",
-        paymentPeriod: "monthly",
-        plan: "pro",
-    })
-    await waitFor(() => assert.equal(checkoutProviderOptions?.clientSecret, "cs_test_secret_3"))
+    assert.equal(requests.filter((request) => request.url === "/api/crater/checkout/session").length, 1)
+    assert.ok(screen.getByText("cs_test_secret_1"))
 })
