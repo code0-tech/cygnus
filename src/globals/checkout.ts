@@ -1,5 +1,10 @@
 import { iconField } from "@mvriu5/payload-icon-picker"
-import type { Field, GlobalConfig } from "payload"
+import type { DefaultValue, Field, GlobalConfig } from "payload"
+
+const localizedDefault =
+    (en: string, de: string): DefaultValue =>
+    ({ locale }) =>
+        locale === "de" ? de : en
 
 const iconColorOptions = [
     { label: "Neutral", value: "neutral" },
@@ -248,6 +253,15 @@ export const Checkout: GlobalConfig = {
                     defaultValue: "Stripe has received your payment confirmation. You can close this page or return to the site.",
                 },
                 { name: "licenseDashboardLabel", type: "text", required: true, localized: true, defaultValue: "Open license dashboard" },
+                { name: "sculptorLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Open Sculptor", "Sculptor öffnen") },
+                { name: "licenseDownloadLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Download license", "Lizenz herunterladen") },
+                {
+                    name: "licenseDownloadError",
+                    type: "text",
+                    required: true,
+                    localized: true,
+                    defaultValue: localizedDefault("The license could not be downloaded.", "Die Lizenz konnte nicht heruntergeladen werden."),
+                },
                 { name: "licensePendingLabel", type: "text", required: true, localized: true, defaultValue: "Your license is being prepared…" },
                 { name: "licenseReadyLabel", type: "text", required: true, localized: true, defaultValue: "Your license is ready." },
                 { name: "licenseStatusRetryLabel", type: "text", required: true, localized: true, defaultValue: "Try again" },

@@ -147,6 +147,7 @@ export async function POST(request: Request) {
         if (normalizedSelection) {
             returnUrl.searchParams.set("plan", normalizedSelection.plan)
             returnUrl.searchParams.set("customerType", normalizedSelection.customerType)
+            returnUrl.searchParams.set("deploymentType", normalizedSelection.deployment)
             returnUrl.searchParams.set("paymentPeriod", normalizedSelection.paymentPeriod)
             if (normalizedSelection.plan === "custom") {
                 returnUrl.searchParams.set("aiTokens", String(normalizedSelection.aiTokens))

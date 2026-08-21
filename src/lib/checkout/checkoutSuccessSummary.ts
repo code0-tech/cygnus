@@ -3,6 +3,7 @@ import { formatCompactNumber } from "@/lib/formatters"
 import { resolveSubscriptionSelection } from "@/lib/subscriptionConfigurator"
 
 export type CheckoutSuccessSummary = {
+    deployment: "self_hosted" | "cloud"
     title: string
     rows: { id: string; label: string; value: string; icon: string; tone: IconColor }[]
 }
@@ -83,5 +84,5 @@ export function buildCheckoutSuccessSummary({
         )
     }
 
-    return { title: summary.configurationLabel, rows }
+    return { deployment: selection.deployment, title: summary.configurationLabel, rows }
 }
