@@ -18,7 +18,6 @@ import type { AppLocale } from "@/lib/i18n"
 import { decodeLicenseRouteId, getNamespaceDisplayId } from "@/lib/licenses/licenseRoute"
 import { formatLicenseDisplayValue } from "@/lib/licenses/licenseDisplayValues"
 import { downloadLicenseFile } from "@/lib/licenses/downloadLicenseFile"
-import { getLicenseHistoryContent } from "@/lib/licenses/licenseHistoryContent"
 import { Button, Card, Flex, Spacing, Text } from "@code0-tech/pictor"
 import { IconDownload } from "@tabler/icons-react"
 import { useRouter } from "next/navigation"
@@ -41,7 +40,6 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, subs
     const resolvedLicenseId = decodeLicenseRouteId(licenseId)
     const license = licenses.find((candidate) => candidate.id === resolvedLicenseId && candidate.customerId === resolvedCustomerId)
     const customer = customers.find((candidate) => candidate.id === resolvedCustomerId)
-    const historyContent = getLicenseHistoryContent(locale)
     const [isDownloadingLicense, setIsDownloadingLicense] = useState(false)
     const [licenseDownloadError, setLicenseDownloadError] = useState(false)
     const dateFormatter = new Intl.DateTimeFormat(locale, {
@@ -126,19 +124,6 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, subs
                     </Text>
                     {isLoading || license ? (
                         <Flex align="center" style={{ gap: "0.5rem" }} className="flex-wrap justify-end">
-                            <Button
-                                type="button"
-                                variant="normal"
-                                paddingSize="xs"
-                                disabled={isLoading || !license}
-                                onClick={() => {
-                                    if (!license) return
-                                    router.push(`/${locale}/licenses/customer/${encodeURIComponent(license.customerId)}/license/${encodeURIComponent(license.id)}/history`)
-                                }}
-                                className="shrink-0 text-sm!"
-                            >
-                                {historyContent.buttonLabel}
-                            </Button>
                             {license?.deploymentType === "self_hosted" ? (
                                 <Button type="button" variant="normal" paddingSize="xs" disabled={isDownloadingLicense} onClick={() => void downloadCurrentLicense()} className="shrink-0 text-sm!">
                                     {isDownloadingLicense ? <ButtonLoader label={content.invoices.downloadLabel} /> : <IconDownload aria-hidden="true" size={16} />}
