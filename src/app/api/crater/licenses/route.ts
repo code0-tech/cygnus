@@ -2,7 +2,15 @@ import { createApolloClient } from "@/lib/apolloClient"
 import { craterJson, craterMutationErrorResponse, craterTransportErrorResponse, optionalString, readJsonObject, requireCraterSession } from "@/lib/checkout/craterApi"
 import { setCraterSessionCookie } from "@/lib/checkout/craterSession"
 import { isLicenseId } from "@/lib/licenses/craterLicenseRequest"
-import type { LicenseDashboardCustomer, LicenseDashboardData, LicenseDashboardInvoice, LicenseDashboardLicense, LicenseDashboardPendingUpdate } from "@/lib/licenses/licenseTypes"
+import type {
+    LicenseDashboardCustomer,
+    LicenseDashboardData,
+    LicenseDashboardInvoice,
+    LicenseDashboardLicense,
+    LicenseDashboardPendingUpdate,
+    LicenseHistoryData,
+    LicenseHistorySnapshot,
+} from "@/lib/licenses/licenseTypes"
 import type { Customer, Invoice, License, Mutation, MutationLicensesLinkNamespaceArgs, Query, Scalars, Subscription, SubscriptionPendingUpdate, User } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 
@@ -12,6 +20,7 @@ export const dynamic = "force-dynamic"
 type LicenseDashboardQuery = Pick<Query, "currentUser">
 type CustomerPageVariables = { customerAfter?: string | null }
 type LicenseDetailVariables = { customerAfter?: string | null; invoiceAfter?: string | null; licenseAfter?: string | null }
+type LicenseHistoryVariables = { customerAfter?: string | null; historyAfter?: string | null; licenseAfter?: string | null }
 type LinkLicenseNamespaceData = Pick<Mutation, "licensesLinkNamespace">
 
 const PAGE_SIZE = 25
@@ -208,6 +217,52 @@ const LICENSE_NAVIGATION_PAGE: TypedDocumentNode<LicenseDashboardQuery, LicenseD
                                     pageInfo {
                                         endCursor
                                         hasNextPage
+                                    }
+                                }
+                            }
+                        }
+                        pageInfo {
+                            endCursor
+                            hasNextPage
+                        }
+                    }
+                }
+            }
+        }
+    }
+`
+
+const LICENSE_HISTORY_PAGE: TypedDocumentNode<LicenseDashboardQuery, LicenseHistoryVariables> = gql`
+    query LicenseHistoryPage($customerAfter: String, $licenseAfter: String, $historyAfter: String) {
+        currentUser {
+            customers(after: $customerAfter, first: 1) {
+                nodes {
+                    id
+                    licenses(after: $licenseAfter, first: ${PAGE_SIZE}) {
+                        edges {
+                            node {
+                                id
+                                subscription {
+                                    licenses(after: $historyAfter, first: ${PAGE_SIZE}) {
+                                        count
+                                        nodes {
+                                            aiTokens
+                                            createdAt
+                                            deploymentType
+                                            endDate
+                                            id
+                                            namespaceId
+                                            paymentPeriod
+                                            plan
+                                            startDate
+                                            status
+                                            updatedAt
+                                            workflowExecutions
+                                        }
+                                        pageInfo {
+                                            endCursor
+                                            hasNextPage
+                                        }
                                     }
                                 }
                             }
@@ -556,6 +611,63 @@ async function findLicenseCursor(client: ReturnType<typeof createApolloClient>, 
     }
 }
 
+function mapHistorySnapshot(license: License): LicenseHistorySnapshot | null {
+    if (!license.id) return null
+
+    return {
+        id: license.id,
+        ...(typeof license.aiTokens === "number" ? { aiTokens: license.aiTokens } : {}),
+        ...(license.createdAt ? { createdAt: license.createdAt } : {}),
+        ...(license.deploymentType ? { deploymentType: license.deploymentType } : {}),
+        ...(license.endDate ? { endDate: license.endDate } : {}),
+        ...(license.namespaceId ? { namespaceId: license.namespaceId } : {}),
+        ...(license.paymentPeriod ? { paymentPeriod: license.paymentPeriod } : {}),
+        ...(license.plan ? { plan: license.plan } : {}),
+        ...(license.startDate ? { startDate: license.startDate } : {}),
+        ...(license.status ? { status: license.status } : {}),
+        ...(license.updatedAt ? { updatedAt: license.updatedAt } : {}),
+        ...(typeof license.workflowExecutions === "number" ? { workflowExecutions: license.workflowExecutions } : {}),
+    }
+}
+
+async function findLicenseHistoryPage(
+    client: ReturnType<typeof createApolloClient>,
+    customerAfter: string | null,
+    customerId: string,
+    licenseId: string,
+    historyAfter: string | null
+) {
+    const seenCursors = new Set<string>()
+    let licenseAfter: string | null = null
+
+    while (true) {
+        const result = await client.query({
+            query: LICENSE_HISTORY_PAGE,
+            variables: { ...(customerAfter ? { customerAfter } : {}), ...(licenseAfter ? { licenseAfter } : {}), ...(historyAfter ? { historyAfter } : {}) },
+            fetchPolicy: "no-cache",
+        })
+        const customer = result.data?.currentUser?.customers?.nodes?.[0]
+        if (!customer || customer.id !== customerId) return { status: "missing" as const }
+
+        const matchedLicense = customer.licenses?.edges?.find((edge) => edge?.node?.id === licenseId)?.node
+        if (matchedLicense) {
+            const history = matchedLicense.subscription?.licenses
+            if (!history) return { status: "missing" as const }
+            const snapshots = (history.nodes ?? []).flatMap((snapshot) => {
+                const mapped = snapshot ? mapHistorySnapshot(snapshot) : null
+                return mapped ? [mapped] : []
+            })
+            return { status: "found" as const, snapshots, pagination: mapPageInfo(history.pageInfo, history.count) }
+        }
+
+        const pageInfo = mapPageInfo(customer.licenses?.pageInfo)
+        if (!pageInfo.hasNextPage) return { status: "missing" as const }
+        if (!pageInfo.endCursor || seenCursors.has(pageInfo.endCursor)) throw new Error("Crater returned an invalid license pagination cursor.")
+        seenCursors.add(pageInfo.endCursor)
+        licenseAfter = pageInfo.endCursor
+    }
+}
+
 export async function GET(request: Request) {
     const session = requireCraterSession(request)
     if (session.response) return session.response
@@ -567,13 +679,14 @@ export async function GET(request: Request) {
     const customerAfter = readCursor(requestUrl, "customerAfter")
     const licenseAfter = readCursor(requestUrl, "licenseAfter")
     const invoiceAfter = readCursor(requestUrl, "invoiceAfter")
+    const historyAfter = readCursor(requestUrl, "historyAfter")
 
-    if (!(["dashboard", "customer", "license"] as const).includes(view as "dashboard" | "customer" | "license")) {
-        return craterJson({ error: "view must be dashboard, customer, or license." }, 400)
+    if (!(["dashboard", "customer", "license", "history"] as const).includes(view as "dashboard" | "customer" | "license" | "history")) {
+        return craterJson({ error: "view must be dashboard, customer, license, or history." }, 400)
     }
     if (view !== "dashboard" && !isCustomerId(customerId)) return craterJson({ error: "A valid Crater customer id is required." }, 400)
-    if (view === "license" && !isLicenseId(licenseId)) return craterJson({ error: "A valid Crater license id is required." }, 400)
-    if (customerAfter === undefined || licenseAfter === undefined || invoiceAfter === undefined) return craterJson({ error: "The pagination cursor is invalid." }, 400)
+    if ((view === "license" || view === "history") && !isLicenseId(licenseId)) return craterJson({ error: "A valid Crater license id is required." }, 400)
+    if (customerAfter === undefined || licenseAfter === undefined || invoiceAfter === undefined || historyAfter === undefined) return craterJson({ error: "The pagination cursor is invalid." }, 400)
 
     try {
         const client = createApolloClient(session.token)
@@ -601,6 +714,16 @@ export async function GET(request: Request) {
 
         if (!navigationLookup.customerCursors.has(customerId)) return craterJson({ error: "The requested customer was not found." }, 404)
         const selectedCustomerAfter = navigationLookup.customerCursors.get(customerId) ?? null
+
+        if (view === "history") {
+            const historyLookup = await findLicenseHistoryPage(client, selectedCustomerAfter, customerId, licenseId, historyAfter)
+            if (historyLookup.status === "missing") return craterJson({ error: "The requested license history was not found." }, 404)
+
+            return setCraterSessionCookie(
+                craterJson({ snapshots: historyLookup.snapshots, pagination: historyLookup.pagination } satisfies LicenseHistoryData),
+                session.token
+            )
+        }
 
         if (view === "license") {
             const licenseLookup = await findLicenseCursor(client, selectedCustomerAfter, customerId, licenseId, invoiceAfter)
