@@ -31,11 +31,6 @@ mock.module("@/components/ui/IconRenderer", {
         getIcon: (icon: string | null | undefined) => <span data-icon={icon ?? undefined} />,
     },
 })
-mock.module("@/components/checkout/CheckoutPricingOverview", {
-    namedExports: {
-        CheckoutPricingOverview: ({ totalPrice }: { totalPrice: number }) => <div>Pricing overview: {totalPrice}</div>,
-    },
-})
 let downloadedLicenseIds: string[] = []
 mock.module("@/lib/licenses/downloadLicenseFile", {
     namedExports: {
@@ -45,7 +40,7 @@ mock.module("@/lib/licenses/downloadLicenseFile", {
     },
 })
 
-const { cleanup, render, screen } = await import("@testing-library/react")
+const { cleanup, render, screen, waitFor } = await import("@testing-library/react")
 const userEvent = (await import("@testing-library/user-event")).default
 const { CheckoutSuccessStatus } = await import("../../src/components/checkout/CheckoutSuccessStatus")
 const originalFetch = globalThis.fetch
@@ -118,7 +113,9 @@ test("explains a declined payment and redirects back into checkout with the fail
     assert.equal(screen.getByRole("link", { name: content.checkoutRetryLabel }).getAttribute("href"), "/en/checkout")
     assert.equal(screen.queryByText(content.heading), null)
     assert.equal(screen.queryByText(content.receiptHint), null)
-    assert.deepEqual(routerReplaceCalls, ["/en/checkout?plan=pro&customerType=b2b&paymentPeriod=monthly&paymentFailed=1"])
+    await waitFor(() => {
+        assert.deepEqual(routerReplaceCalls, ["/en/checkout?plan=pro&customerType=b2b&paymentPeriod=monthly&paymentFailed=1"])
+    })
 })
 
 test("explains a checkout session that cannot be verified", async () => {
@@ -132,30 +129,8 @@ test("explains a checkout session that cannot be verified", async () => {
     assert.deepEqual(routerReplaceCalls, [])
 })
 
-test("shows the pricing overview and the receipt hint once the payment is confirmed", async () => {
+test("shows the receipt hint without reconstructing a price once payment is confirmed", async () => {
     respondWith({ state: "FULFILLMENT_PENDING", customerId: "gid://crater/Customer/1", licenseId: null })
-    const summary = {
-        deployment: "self_hosted" as const,
-        overview: {
-            aiTokenPrice: 50,
-            aiTokens: 1_000_000,
-            customerType: "b2b",
-            deployment: "self_hosted",
-            isCustomPlan: true,
-            monthlyPeriodSuffix: "per month",
-            paymentPeriodDiscountAmount: 25,
-            paymentPeriodDiscountLabel: "Yearly discount",
-            paymentPeriodDiscountPercentage: 0.25,
-            periodSuffix: "per year",
-            planPrice: null,
-            planTitle: "Custom",
-            taxAmount: 0,
-            taxPercentage: null,
-            totalPrice: 75,
-            workflowExecutionPrice: 50,
-            workflowExecutions: 1_000,
-        },
-    }
 
     render(
         <CheckoutSuccessStatus
@@ -163,15 +138,13 @@ test("shows the pricing overview and the receipt hint once the payment is confir
             content={content}
             errorMessage={errorMessage}
             locale="en"
-            pricingContent={{} as CheckoutData["summary"]}
             sessionId="cs_test"
-            subscriptionConfig={{} as never}
-            summary={summary}
+            summary={{ deployment: "self_hosted" }}
         />
     )
 
     assert.ok(await screen.findByText(content.heading))
-    assert.ok(screen.getByText("Pricing overview: 75"))
+    assert.equal(screen.queryByText(/Pricing overview:/), null)
     assert.ok(screen.getByText(content.receiptHint))
 })
 

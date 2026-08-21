@@ -26,7 +26,7 @@ interface CheckoutDiscountProps {
     discountValidationError: string
     inputPlaceholder: string
     onApplied?: (discount: CheckoutDiscountValue | null) => void
-    onPromotionCodeChange?: (code: string | null) => Promise<"navigating" | "updated" | void>
+    onPromotionCodeChange?: (code: string | null) => Promise<"updated" | void>
     promptLabel: string
     removeLabel: string
     sessionReady?: boolean
@@ -104,8 +104,7 @@ export function CheckoutDiscount({
                 if (requestId !== validationRequestRef.current) return
 
                 const discount = result as CheckoutDiscountValue
-                const promotionCodeChange = await onPromotionCodeChange?.(discount.code)
-                if (promotionCodeChange === "navigating") return
+                await onPromotionCodeChange?.(discount.code)
                 if (requestId !== validationRequestRef.current) return
 
                 replacePromotionCode(discount.code)
@@ -151,8 +150,7 @@ export function CheckoutDiscount({
         setErrorMessage(null)
 
         try {
-            const promotionCodeChange = await onPromotionCodeChange?.(null)
-            if (promotionCodeChange === "navigating") return
+            await onPromotionCodeChange?.(null)
             if (requestId !== validationRequestRef.current) return
 
             automaticallyValidatedCodeRef.current = null

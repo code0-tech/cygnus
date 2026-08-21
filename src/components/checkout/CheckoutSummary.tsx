@@ -6,9 +6,9 @@ import { CheckoutNextSteps } from "@/components/checkout/CheckoutNextSteps"
 import { CheckoutPricingOverview } from "@/components/checkout/CheckoutPricingOverview"
 import { useCheckoutStage } from "@/components/checkout/CheckoutStage"
 import { Switch } from "@/components/ui/Switch"
-import type { CheckoutTaxQuoteData } from "@/lib/checkout/checkoutSubmission"
+import type { CheckoutStripePricingData, CheckoutTaxQuoteData } from "@/lib/checkout/checkoutSubmission"
 import type { CheckoutData, ErrorsContent, SubscriptionConfigData, UpgradeBannerData } from "@/lib/cms"
-import { formatEuroCurrency } from "@/lib/formatters"
+import { formatCurrency } from "@/lib/formatters"
 import { calculateExclusiveTaxRate, calculatePromotionDiscountAmount, formatDiscountBadge, resolveCheckoutPricing, type PaymentPeriod } from "@/lib/subscriptionCalculator"
 import { getPaymentPeriodOptions, type SubscriptionCustomerType } from "@/lib/subscriptionConfigurator"
 import type { SubscriptionPriceCatalog } from "@/lib/subscriptionPrices"
@@ -21,10 +21,11 @@ interface CheckoutSummaryProps {
     nextSteps?: CheckoutData["nextSteps"] | null
     subscriptionConfig?: SubscriptionConfigData | null
     subscriptionPrices: SubscriptionPriceCatalog
+    stripePricing?: CheckoutStripePricingData | null
     taxQuote?: CheckoutTaxQuoteData | null
 }
 
-export function CheckoutSummary({ content, errors, nextSteps, subscriptionConfig, subscriptionPrices, taxQuote }: CheckoutSummaryProps) {
+export function CheckoutSummary({ content, errors, nextSteps, stripePricing, subscriptionConfig, subscriptionPrices, taxQuote }: CheckoutSummaryProps) {
     const router = useRouter()
     const pathname = usePathname()
     const searchParams = useSearchParams()
@@ -63,12 +64,20 @@ export function CheckoutSummary({ content, errors, nextSteps, subscriptionConfig
     const paymentPeriodDiscountPercentage = pricing.totalBeforeDiscount > 0 ? paymentPeriodDiscountAmount / pricing.totalBeforeDiscount : 0
     const paymentPeriodDiscountLabel = paymentPeriod === "quarterly" ? content.pricing.quarterlyDiscountLabel : paymentPeriod === "yearly" ? content.pricing.yearlyDiscountLabel : null
     const paymentPeriodTotalPrice = pricing.totalPrice
-    const promotionDiscountAmount = calculatePromotionDiscountAmount(paymentPeriodTotalPrice, promotionDiscount)
-    const discountedPrice = Math.max(0, paymentPeriodTotalPrice - promotionDiscountAmount)
-    const taxPercentage = taxQuote ? calculateExclusiveTaxRate(taxQuote.amountTotal, taxQuote.taxAmountExclusive) : 0
-    const taxAmount = taxQuote ? Math.round(discountedPrice * taxPercentage * 100) / 100 : 0
-    const totalPrice = discountedPrice + taxAmount
-    const formattedDiscountAmount = formatEuroCurrency(promotionDiscountAmount, locale)
+    const previewPromotionDiscountAmount = calculatePromotionDiscountAmount(paymentPeriodTotalPrice, promotionDiscount)
+    const previewDiscountedPrice = Math.max(0, paymentPeriodTotalPrice - previewPromotionDiscountAmount)
+    const previewTaxPercentage = taxQuote ? calculateExclusiveTaxRate(taxQuote.amountTotal, taxQuote.taxAmountExclusive) : 0
+    const previewTaxAmount = taxQuote ? Math.round(previewDiscountedPrice * previewTaxPercentage * 100) / 100 : 0
+    const currency = stripePricing?.currency ?? "EUR"
+    const promotionDiscountAmount = stripePricing?.discountAmount ?? previewPromotionDiscountAmount
+    const taxAmount = stripePricing?.taxAmount ?? previewTaxAmount
+    const taxPercentage = stripePricing
+        ? calculateExclusiveTaxRate(stripePricing.totalPrice, stripePricing.taxAmount)
+        : taxQuote
+          ? previewTaxPercentage
+          : null
+    const totalPrice = stripePricing?.totalPrice ?? previewDiscountedPrice + previewTaxAmount
+    const formattedDiscountAmount = formatCurrency(promotionDiscountAmount, currency, locale)
 
     return (
         <div className="flex-1">
@@ -119,6 +128,7 @@ export function CheckoutSummary({ content, errors, nextSteps, subscriptionConfig
                 aiTokenPrice={pricing.aiTokenPrice}
                 aiTokens={aiTokens}
                 content={content}
+                currency={currency}
                 customerType={customerType}
                 deployment={deployment}
                 isCustomPlan={isCustomPlan}
@@ -132,7 +142,7 @@ export function CheckoutSummary({ content, errors, nextSteps, subscriptionConfig
                 planTitle={planTitle}
                 subscriptionConfig={subscriptionConfig}
                 taxAmount={taxAmount}
-                taxPercentage={taxQuote ? taxPercentage : null}
+                taxPercentage={taxPercentage}
                 totalPrice={totalPrice}
                 workflowExecutionPrice={pricing.workflowExecutionPrice}
                 workflowExecutions={workflowExecutions}
@@ -140,6 +150,7 @@ export function CheckoutSummary({ content, errors, nextSteps, subscriptionConfig
 
             {errors && (
                 <CheckoutDiscount
+                    key={checkoutFormState?.checkoutSession?.clientSecret ?? "checkout-discount"}
                     appliedAmount={promotionDiscountAmount > 0 ? formattedDiscountAmount : null}
                     appliedContainerId="checkout-applied-discount"
                     buttonLabel={content.pricing.discountButtonLabel}
@@ -150,7 +161,7 @@ export function CheckoutSummary({ content, errors, nextSteps, subscriptionConfig
                     onPromotionCodeChange={checkoutFormState?.updateCheckoutPromotionCode}
                     promptLabel={content.pricing.discountPromptLabel}
                     removeLabel={content.pricing.discountRemoveLabel}
-                    sessionReady={!checkoutFormState || Boolean(checkoutFormState.selectedCustomerId && checkoutFormState.checkoutSession)}
+                    sessionReady={!checkoutFormState || Boolean(checkoutFormState.selectedCustomerId && checkoutFormState.checkoutSession && checkoutFormState.promotionCodeActionsReady)}
                 />
             )}
         </div>

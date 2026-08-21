@@ -3,7 +3,7 @@
 import { SummaryBadge } from "@/components/checkout/CheckoutSummaryBadge"
 import { getIcon } from "@/components/ui/IconRenderer"
 import type { CheckoutData, SubscriptionConfigData } from "@/lib/cms"
-import { formatCompactNumber, formatEuroCurrency } from "@/lib/formatters"
+import { formatCompactNumber, formatCurrency } from "@/lib/formatters"
 import type { AppLocale } from "@/lib/i18n"
 import { formatDiscountBadge } from "@/lib/subscriptionCalculator"
 import { Card } from "@code0-tech/pictor"
@@ -12,6 +12,7 @@ import NumberFlow from "@number-flow/react"
 export interface CheckoutPricingOverviewData {
     aiTokenPrice: number
     aiTokens: number
+    currency?: string
     customerType: string | null
     deployment: string | null
     isCustomPlan: boolean
@@ -39,6 +40,7 @@ export function CheckoutPricingOverview({
     aiTokenPrice,
     aiTokens,
     content,
+    currency = "EUR",
     customerType,
     deployment,
     isCustomPlan,
@@ -82,7 +84,7 @@ export function CheckoutPricingOverview({
                 {planPrice !== null && (
                     <div className="flex items-start justify-between gap-4 text-sm text-secondary">
                         {content.pricing.planLabel}
-                        <span className="shrink-0 tabular-nums text-white">{formatEuroCurrency(planPrice, locale)}</span>
+                        <span className="shrink-0 tabular-nums text-white">{formatCurrency(planPrice, currency, locale)}</span>
                     </div>
                 )}
 
@@ -95,7 +97,7 @@ export function CheckoutPricingOverview({
                                     {formatCompactNumber(aiTokens)} {monthlyPeriodSuffix}
                                 </span>
                             </span>
-                            <span className="shrink-0 tabular-nums text-white">{formatEuroCurrency(aiTokenPrice, locale)}</span>
+                            <span className="shrink-0 tabular-nums text-white">{formatCurrency(aiTokenPrice, currency, locale)}</span>
                         </div>
 
                         <div className="flex items-start justify-between gap-4 text-sm">
@@ -105,7 +107,7 @@ export function CheckoutPricingOverview({
                                     {formatCompactNumber(workflowExecutions)} {monthlyPeriodSuffix}
                                 </span>
                             </span>
-                            <span className="shrink-0 tabular-nums text-white">{formatEuroCurrency(workflowExecutionPrice, locale)}</span>
+                            <span className="shrink-0 tabular-nums text-white">{formatCurrency(workflowExecutionPrice, currency, locale)}</span>
                         </div>
                     </>
                 )}
@@ -115,7 +117,7 @@ export function CheckoutPricingOverview({
                         <span className="text-secondary">
                             {paymentPeriodDiscountLabel} <span className="text-tertiary">(-{formatDiscountBadge(paymentPeriodDiscountPercentage, locale)})</span>
                         </span>
-                        <span className="tabular-nums text-white">-{formatEuroCurrency(paymentPeriodDiscountAmount, locale)}</span>
+                        <span className="tabular-nums text-white">-{formatCurrency(paymentPeriodDiscountAmount, currency, locale)}</span>
                     </div>
                 )}
 
@@ -126,7 +128,7 @@ export function CheckoutPricingOverview({
                         <span className="flex items-center gap-1 text-secondary">
                             {content.pricing.taxLabel} <span className="text-tertiary">({formatDiscountBadge(taxPercentage, locale)})</span>
                         </span>
-                        <span className="tabular-nums text-white">{formatEuroCurrency(taxAmount, locale)}</span>
+                        <span className="tabular-nums text-white">{formatCurrency(taxAmount, currency, locale)}</span>
                     </div>
                 )}
             </div>
@@ -139,7 +141,7 @@ export function CheckoutPricingOverview({
                         value={totalPrice}
                         className="text-lg text-brand"
                         locales={locale === "de" ? "de-DE" : "en-US"}
-                        format={{ style: "currency", currency: "EUR", trailingZeroDisplay: "stripIfInteger" }}
+                        format={{ style: "currency", currency: currency.toUpperCase(), trailingZeroDisplay: "stripIfInteger" }}
                     />
                     <span className="text-sm text-tertiary">{periodSuffix}</span>
                 </div>

@@ -39,7 +39,10 @@ let stripeCheckoutLoadErrorMessage: string | null = null
 let stripeConfirmOptions: unknown[] = []
 let stripeBillingAddressUpdates: unknown[] = []
 let stripeEmailUpdates: unknown[] = []
+let stripePromotionCodesApplied: string[] = []
+let stripePromotionCodesRemoved = 0
 let customerSelectOnValueChange: ((value: string) => void) | null = null
+let checkoutPageReplacements: string[] = []
 const setCheckoutStage = (stage: string) => {
     checkoutStage = stage
     checkoutStages.push(stage)
@@ -81,6 +84,14 @@ mock.module("@/components/checkout/CheckoutStage", {
             hasError: false,
             setHasError: () => {},
         }),
+    },
+})
+mock.module("@/lib/checkout/checkoutNavigation", {
+    namedExports: {
+        replaceCheckoutPage: (url: string) => {
+            checkoutPageReplacements.push(url)
+            window.history.replaceState(window.history.state, "", url)
+        },
     },
 })
 mock.module("@/components/checkout/SendOfferDialog", {
@@ -174,6 +185,10 @@ mock.module("@stripe/react-stripe-js/checkout", {
                 : {
                       type: "success",
                       checkout: {
+                          applyPromotionCode: async (code: string) => {
+                              stripePromotionCodesApplied.push(code)
+                              return { type: "success", session: { tax: { status: "requires_location_inputs" } } }
+                          },
                           email: null,
                           confirm: async (options: unknown) => {
                               stripeConfirmCalls += 1
@@ -189,6 +204,10 @@ mock.module("@stripe/react-stripe-js/checkout", {
                               stripeEmailUpdates.push(email)
                               return { type: "success", session: {} }
                           },
+                          removePromotionCode: async () => {
+                              stripePromotionCodesRemoved += 1
+                              return { type: "success", session: { tax: { status: "requires_location_inputs" } } }
+                          },
                       },
                   },
     },
@@ -197,7 +216,9 @@ mock.module("@stripe/react-stripe-js/checkout", {
 const { act, cleanup, render, screen, waitFor } = await import("@testing-library/react")
 const userEvent = (await import("@testing-library/user-event")).default
 const { CheckoutForm } = await import("../../src/components/checkout/CheckoutForm")
+const { getStripePricingFromSession } = await import("../../src/components/checkout/CheckoutPaymentForm")
 const { CheckoutFormProvider, useCheckoutFormState } = await import("../../src/components/checkout/CheckoutFormProvider")
+const { saveCheckoutContactDraft } = await import("../../src/lib/checkout/checkoutDraft")
 
 const originalFetch = globalThis.fetch
 afterEach(() => {
@@ -218,10 +239,14 @@ afterEach(() => {
     stripeConfirmCalls = 0
     stripeConfirmErrorMessage = null
     stripeCheckoutLoadErrorMessage = null
+    window.sessionStorage.removeItem("code0.checkout.sessionLoadRecovery")
     stripeConfirmOptions = []
     stripeBillingAddressUpdates = []
     stripeEmailUpdates = []
+    stripePromotionCodesApplied = []
+    stripePromotionCodesRemoved = 0
     customerSelectOnValueChange = null
+    checkoutPageReplacements = []
     window.history.replaceState(null, "", "/en/checkout")
 })
 
@@ -282,6 +307,40 @@ function TestInput({
         </label>
     )
 }
+
+test("maps Stripe's exact discount, tax, and total from minor currency units", () => {
+    const pricing = getStripePricingFromSession({
+        currency: "eur",
+        minorUnitsAmountDivisor: 100,
+        tax: { status: "ready" },
+        total: {
+            discount: { amount: "€10.00", minorUnitsAmount: 1_000 },
+            subtotal: { amount: "€100.00", minorUnitsAmount: 10_000 },
+            taxExclusive: { amount: "€17.10", minorUnitsAmount: 1_710 },
+            total: { amount: "€107.10", minorUnitsAmount: 10_710 },
+        },
+    } as never)
+
+    assert.deepEqual(pricing, {
+        currency: "eur",
+        discountAmount: 10,
+        subtotalPrice: 100,
+        taxAmount: 17.1,
+        totalPrice: 107.1,
+    })
+})
+
+test("does not treat Stripe totals as final while tax is still pending", () => {
+    assert.equal(
+        getStripePricingFromSession({
+            currency: "eur",
+            minorUnitsAmountDivisor: 100,
+            tax: { status: "requires_location_inputs" },
+            total: {},
+        } as never),
+        null
+    )
+})
 
 function TestCheckbox({ formValidation }: { formValidation?: { setValue?: (value: boolean) => void } }) {
     return <input type="checkbox" onChange={(event) => formValidation?.setValue?.(event.target.checked)} />
@@ -639,17 +698,59 @@ test("replaces an inactive Stripe checkout session only once", async () => {
     assert.equal(requests.filter((url) => url === "/api/crater/customer").length, 1)
 })
 
-test("shows only the configured error when Stripe cannot load the checkout session", async () => {
+test("recovers once when a newly created Stripe checkout session cannot be loaded", async () => {
     stripeCheckoutLoadErrorMessage = "The Checkout Session could not be loaded."
+    let checkoutSessionCount = 0
     globalThis.fetch = (async (input) => {
         const url = String(input)
+
+        if (url === "/api/crater/customer") {
+            return new Response(JSON.stringify({ customers: [{ customerType: "personal", email: "ada@example.com", id: "gid://crater/Customer/1", name: "Ada Lovelace" }] }), {
+                status: 200,
+                headers: { "content-type": "application/json" },
+            })
+        }
+
+        if (url === "/api/crater/checkout/tax") {
+            return new Response(JSON.stringify({ amountTotal: 11_900, currency: "eur", taxAmountExclusive: 1_900 }), {
+                status: 200,
+                headers: { "content-type": "application/json" },
+            })
+        }
+
+        checkoutSessionCount += 1
+        return new Response(JSON.stringify({ clientSecret: `cs_recover_${checkoutSessionCount}`, expiresAt: 1_800_000_000, id: `cs_recover_${checkoutSessionCount}` }), {
+            status: 200,
+            headers: { "content-type": "application/json" },
+        })
+    }) as typeof fetch
+
+    render(<CheckoutForm content={content} errors={errors} locale="en" />)
+
+    await waitFor(() => assert.ok(window.sessionStorage.getItem("code0.checkout.sessionLoadRecovery")))
+    assert.equal(checkoutSessionCount, 1)
+    assert.deepEqual(checkoutPageReplacements, [window.location.href])
+    assert.equal(screen.queryByText(errors.checkoutSession), null)
+    assert.ok(screen.getByTestId("checkout-form-skeleton"))
+})
+
+test("shows only the configured error when Stripe cannot load the checkout session", async () => {
+    stripeCheckoutLoadErrorMessage = "The Checkout Session could not be loaded."
+    window.sessionStorage.setItem(
+        "code0.checkout.sessionLoadRecovery",
+        JSON.stringify({ recoveryId: checkoutSearchParams.toString(), expiresAt: Date.now() + 60_000 })
+    )
+    let checkoutSessionCount = 0
+    globalThis.fetch = (async (input) => {
+        const url = String(input)
+        if (url === "/api/crater/checkout/session") checkoutSessionCount += 1
         return new Response(
             JSON.stringify(
                 url === "/api/crater/customer"
                     ? { customers: [{ customerType: "personal", email: "ada@example.com", id: "gid://crater/Customer/1", name: "Ada Lovelace" }] }
                     : url === "/api/crater/checkout/tax"
                       ? { amountTotal: 11_900, currency: "eur", taxAmountExclusive: 1_900 }
-                      : { clientSecret: "cs_load_error", expiresAt: 1_800_000_000, id: "cs_load_error" }
+                      : { clientSecret: `cs_load_error_${checkoutSessionCount}`, expiresAt: 1_800_000_000, id: `cs_load_error_${checkoutSessionCount}` }
             ),
             { status: 200, headers: { "content-type": "application/json" } }
         )
@@ -657,12 +758,35 @@ test("shows only the configured error when Stripe cannot load the checkout sessi
 
     render(<CheckoutForm content={content} errors={errors} locale="en" />)
 
-    assert.ok(await screen.findByText(errors.checkoutSession))
+    assert.ok(await screen.findByText(`${errors.checkoutSession} (${stripeCheckoutLoadErrorMessage})`))
+    assert.equal(checkoutSessionCount, 1)
     assert.equal(screen.queryByText(content.customerSelectLabel), null)
     assert.equal(screen.queryByTestId("stripe-contact-details"), null)
     assert.equal(screen.queryByTestId("stripe-billing-address"), null)
     assert.equal(screen.queryByTestId("checkout-form-skeleton"), null)
     assert.equal(screen.queryByRole("button"), null)
+})
+
+test("shows the checkout rate limit instead of disguising it as a session creation error", async () => {
+    globalThis.fetch = (async (input) => {
+        const url = String(input)
+        if (url === "/api/crater/customer") {
+            return new Response(JSON.stringify({ customers: [{ customerType: "personal", email: "ada@example.com", id: "gid://crater/Customer/1", name: "Ada Lovelace" }] }), {
+                status: 200,
+                headers: { "content-type": "application/json" },
+            })
+        }
+
+        return new Response(JSON.stringify({ error: "Too many requests. Please try again later." }), {
+            status: 429,
+            headers: { "content-type": "application/json", "Retry-After": "42" },
+        })
+    }) as typeof fetch
+
+    render(<CheckoutForm content={content} errors={errors} locale="en" />)
+
+    assert.ok(await screen.findByText("Too many requests. Please try again later. (42s)"))
+    assert.equal(screen.queryByText(errors.checkoutSession), null)
 })
 
 test("renders Stripe's Tax ID Element for a business customer", async () => {
@@ -707,7 +831,48 @@ test("renders Stripe's Tax ID Element for a business customer", async () => {
     await user.click(screen.getByRole("button", { name: "Continue to payment" }))
 
     assert.ok(await screen.findByTestId("stripe-payment"))
+    assert.deepEqual(stripeEmailUpdates, [])
     assert.equal(screen.queryByRole("button", { name: content.sendOfferLabel }), null)
+})
+
+test("does not write a draft customer email again after restoring the payment stage", async () => {
+    checkoutSearchParams.set("promotionCode", "SAVE10")
+    saveCheckoutContactDraft({
+        billingAddress: stripeBillingAddress,
+        customerId: "gid://crater/Customer/1",
+        email: "ada@example.com",
+        searchParams: checkoutSearchParams,
+        stage: "payment",
+    })
+
+    globalThis.fetch = (async (input, init) => {
+        const url = String(input)
+        if (url === "/api/crater/customer" && init?.method !== "POST") {
+            return new Response(JSON.stringify({ customers: [] }), { status: 200, headers: { "content-type": "application/json" } })
+        }
+        if (url === "/api/crater/customer") {
+            return new Response(JSON.stringify({ customerType: "personal", email: null, id: "gid://crater/Customer/1", name: null }), {
+                status: 200,
+                headers: { "content-type": "application/json" },
+            })
+        }
+        if (url === "/api/crater/checkout/tax") {
+            return new Response(JSON.stringify({ amountTotal: 10_710, currency: "eur", taxAmountExclusive: 1_710 }), {
+                status: 200,
+                headers: { "content-type": "application/json" },
+            })
+        }
+        return new Response(JSON.stringify({ clientSecret: "cs_discount_restore", expiresAt: 1_800_000_000, id: "cs_discount_restore" }), {
+            status: 200,
+            headers: { "content-type": "application/json" },
+        })
+    }) as typeof fetch
+
+    render(<CheckoutForm content={content} errors={errors} locale="en" />)
+
+    await waitFor(() => assert.deepEqual(stripeBillingAddressUpdates, [stripeBillingAddress]))
+    assert.deepEqual(stripeEmailUpdates, [])
+    assert.ok(screen.getByTestId("stripe-payment"))
 })
 
 test("shows only the configured error when automatic customer creation fails", async () => {
@@ -729,7 +894,7 @@ test("shows only the configured error when automatic customer creation fails", a
     assert.equal(screen.queryByRole("button"), null)
 })
 
-test("reloads checkout with the promotion code instead of hot-swapping the active Stripe session", async () => {
+test("applies a promotion code inside the active Stripe session without reloading checkout", async () => {
     const requests: Array<{ init?: RequestInit; url: string }> = []
     let checkoutSessionCount = 0
     globalThis.fetch = (async (input, init) => {
@@ -758,7 +923,19 @@ test("reloads checkout with the promotion code instead of hot-swapping the activ
     }) as typeof fetch
 
     function PromotionCodeHarness() {
-        const { checkoutSession, updateCheckoutPromotionCode } = useCheckoutFormState()
+        const { checkoutSession, setPromotionCodeActions, updateCheckoutPromotionCode } = useCheckoutFormState()
+
+        React.useEffect(() => {
+            setPromotionCodeActions({
+                apply: async (code) => {
+                    stripePromotionCodesApplied.push(code)
+                },
+                remove: async () => {
+                    stripePromotionCodesRemoved += 1
+                },
+            })
+            return () => setPromotionCodeActions(null)
+        }, [setPromotionCodeActions])
 
         return (
             <div>
@@ -780,8 +957,9 @@ test("reloads checkout with the promotion code instead of hot-swapping the activ
 
     await userEvent.setup().click(screen.getByRole("button", { name: "Apply SAVE10" }))
 
-    await waitFor(() => assert.equal(window.location.search, "?customerType=b2c&deploymentType=self_hosted&paymentPeriod=monthly&plan=pro&promotionCode=SAVE10"))
+    await waitFor(() => assert.deepEqual(stripePromotionCodesApplied, ["SAVE10"]))
     assert.equal(requests.filter((request) => request.url === "/api/crater/customer").length, 1)
     assert.equal(requests.filter((request) => request.url === "/api/crater/checkout/session").length, 1)
+    assert.deepEqual(checkoutPageReplacements, [])
     assert.ok(screen.getByText("cs_test_secret_1"))
 })

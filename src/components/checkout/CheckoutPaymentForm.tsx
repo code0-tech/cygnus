@@ -1,7 +1,7 @@
 "use client"
 
 import type { CheckoutData, ErrorsContent } from "@/lib/cms"
-import type { CheckoutSessionData, CheckoutTaxQuoteData } from "@/lib/checkout/checkoutSubmission"
+import type { CheckoutSessionData, CheckoutStripePricingData, CheckoutTaxQuoteData } from "@/lib/checkout/checkoutSubmission"
 import { AcceptTermsCheckbox } from "@/components/forms/AcceptTermsCheckbox"
 import { useCheckoutStage } from "@/components/checkout/CheckoutStage"
 import { ButtonLoader } from "@/components/ui/Loader"
@@ -240,7 +240,10 @@ interface CheckoutPaymentFormProps {
     onEmailChange: (email: string | null) => void
     onTaxQuoteChange: (taxQuote: CheckoutTaxQuoteData | null) => void
     onPaymentConfirmationChange: (confirming: boolean) => void
-    onSessionExpired: () => Promise<void>
+    onPricingChange: (pricing: CheckoutStripePricingData | null) => void
+    onPromotionCodeActionsChange: (actions: { apply: (code: string) => Promise<void>; remove: () => Promise<void> } | null) => void
+    onSessionExpired: () => Promise<boolean>
+    onSessionLoadError: () => Promise<boolean>
     onSessionLoadErrorChange: (error: string | null) => void
     onSessionReady: () => void
     session: CheckoutSessionData
@@ -277,6 +280,19 @@ function getTaxQuoteFromSession(session: StripeCheckoutSession): CheckoutTaxQuot
         amountTotal: session.total.total.minorUnitsAmount,
         currency: session.currency,
         taxAmountExclusive: session.total.taxExclusive.minorUnitsAmount,
+    }
+}
+
+export function getStripePricingFromSession(session: StripeCheckoutSession): CheckoutStripePricingData | null {
+    const divisor = session.minorUnitsAmountDivisor
+    if (session.tax?.status !== "ready" || !Number.isFinite(divisor) || divisor <= 0) return null
+
+    return {
+        currency: session.currency,
+        discountAmount: session.total.discount.minorUnitsAmount / divisor,
+        subtotalPrice: session.total.subtotal.minorUnitsAmount / divisor,
+        taxAmount: session.total.taxExclusive.minorUnitsAmount / divisor,
+        totalPrice: session.total.total.minorUnitsAmount / divisor,
     }
 }
 
@@ -319,10 +335,14 @@ function CheckoutPaymentFields({
     onEmailChange,
     onTaxQuoteChange,
     onPaymentConfirmationChange,
+    onPricingChange,
+    onPromotionCodeActionsChange,
     onSessionExpired,
+    onSessionLoadError,
     onSessionLoadErrorChange,
     onSessionReady,
-}: Omit<CheckoutPaymentFormProps, "session">) {
+    sessionKey,
+}: Omit<CheckoutPaymentFormProps, "session"> & { sessionKey: string }) {
     const checkoutState = useCheckoutElements()
     const { stage: activeStep, setStage } = useCheckoutStage()
     const params = useParams<{ locale?: string }>()
@@ -342,6 +362,9 @@ function CheckoutPaymentFields({
     const [isAddressElementReady, setIsAddressElementReady] = useState(false)
     const [isTaxIdElementReady, setIsTaxIdElementReady] = useState(!collectTaxId)
     const checkoutErrorMessage = checkoutState.type === "error" ? checkoutState.error.message : null
+    const liveStripePricing = checkoutState.type === "success" ? getStripePricingFromSession(checkoutState.checkout) : null
+    const promotionCodeCheckoutRef = useRef(checkoutState.type === "success" ? checkoutState.checkout : null)
+    promotionCodeCheckoutRef.current = checkoutState.type === "success" ? checkoutState.checkout : null
     const restoredBillingRef = useRef(false)
     const markContactElementLoading = useCallback(() => setIsContactElementReady(false), [])
     const markAddressElementLoading = useCallback(() => setIsAddressElementReady(false), [])
@@ -369,18 +392,65 @@ function CheckoutPaymentFields({
         }
 
         if (!checkoutErrorMessage) return
+
+        console.error("Stripe checkout session load error:", checkoutErrorMessage)
+        onSessionLoadErrorChange(null)
         if (isInactiveCheckoutSessionError(checkoutErrorMessage)) {
-            onSessionLoadErrorChange(null)
-            void onSessionExpired()
+            void onSessionExpired().then((isRetrying) => {
+                if (!isRetrying) onSessionLoadErrorChange(errors.checkoutSessionExpired)
+            })
             return
         }
 
-        onSessionLoadErrorChange(errors.checkoutSession)
-    }, [checkoutErrorMessage, checkoutState.type, errors.checkoutSession, onSessionExpired, onSessionLoadErrorChange])
+        void onSessionLoadError().then((isReloading) => {
+            if (!isReloading) onSessionLoadErrorChange(`${errors.checkoutSession} (${checkoutErrorMessage})`)
+        })
+    }, [checkoutErrorMessage, checkoutState.type, errors.checkoutSession, errors.checkoutSessionExpired, onSessionExpired, onSessionLoadError, onSessionLoadErrorChange, sessionKey])
 
     useEffect(() => {
         if (checkoutState.type === "success" && isContactElementReady && isAddressElementReady && isTaxIdElementReady) onSessionReady()
     }, [checkoutState.type, isAddressElementReady, isContactElementReady, isTaxIdElementReady, onSessionReady])
+
+    useEffect(() => {
+        onPricingChange(liveStripePricing)
+    }, [
+        liveStripePricing?.currency,
+        liveStripePricing?.discountAmount,
+        liveStripePricing?.subtotalPrice,
+        liveStripePricing?.taxAmount,
+        liveStripePricing?.totalPrice,
+        onPricingChange,
+    ])
+
+    useEffect(() => {
+        if (checkoutState.type !== "success") {
+            onPromotionCodeActionsChange(null)
+            return
+        }
+
+        const syncSessionPricing = (session: StripeCheckoutSession) => {
+            onTaxQuoteChange(getTaxQuoteFromSession(session))
+            onPricingChange(getStripePricingFromSession(session))
+        }
+        onPromotionCodeActionsChange({
+            apply: async (code) => {
+                const checkout = promotionCodeCheckoutRef.current
+                if (!checkout) throw new Error(errors.checkoutSession)
+                const result = await checkout.applyPromotionCode(code)
+                if (result.type === "error") throw new Error(result.error.message)
+                syncSessionPricing(result.session)
+            },
+            remove: async () => {
+                const checkout = promotionCodeCheckoutRef.current
+                if (!checkout) throw new Error(errors.checkoutSession)
+                const result = await checkout.removePromotionCode()
+                if (result.type === "error") throw new Error(result.error.message)
+                syncSessionPricing(result.session)
+            },
+        })
+
+        return () => onPromotionCodeActionsChange(null)
+    }, [checkoutState.type, errors.checkoutSession, onPricingChange, onPromotionCodeActionsChange, onTaxQuoteChange, sessionKey])
 
     useEffect(() => {
         if (!customerEmail) return
@@ -407,7 +477,9 @@ function CheckoutPaymentFields({
                 }
                 let updatedSession = billingResult.session
 
-                if (!checkoutState.checkout.email) {
+                // A restored payment stage means this checkout already wrote the entered email before
+                // the discount reload. Draft customers may not expose that Stripe email locally yet.
+                if (activeStep !== "payment" && !customerEmail && !checkoutState.checkout.email) {
                     const emailResult = await checkoutState.checkout.updateEmail(email)
                     if (emailResult.type === "error") {
                         setErrorMessage(errors.emailUpdate)
@@ -417,6 +489,7 @@ function CheckoutPaymentFields({
                 }
 
                 onTaxQuoteChange(getTaxQuoteFromSession(updatedSession))
+                onPricingChange(getStripePricingFromSession(updatedSession))
                 restoredBillingRef.current = true
                 setIsPaymentElementReady(false)
                 if (moveToPayment) setStage("payment")
@@ -427,7 +500,7 @@ function CheckoutPaymentFields({
                 setIsUpdatingBilling(false)
             }
         },
-        [billingAddress, checkoutState, errors.billingAddressUpdate, errors.emailUpdate, errors.paymentFallback, email, isUpdatingBilling, onTaxQuoteChange, setStage]
+        [activeStep, billingAddress, checkoutState, customerEmail, errors.billingAddressUpdate, errors.emailUpdate, errors.paymentFallback, email, isUpdatingBilling, onPricingChange, onTaxQuoteChange, setStage]
     )
 
     const showPayment = () => updateCheckoutBilling(true)
@@ -482,8 +555,7 @@ function CheckoutPaymentFields({
     }
 
     if (checkoutState.type === "error") {
-        const message = isInactiveCheckoutSessionError(checkoutState.error.message) ? errors.checkoutSessionExpired : errors.checkoutSession
-        return <CheckoutErrorState message={message} />
+        return <CheckoutPaymentFormSkeleton label={content.processingLabel} />
     }
 
     return (
@@ -591,7 +663,10 @@ export function CheckoutPaymentForm({
     onEmailChange,
     onTaxQuoteChange,
     onPaymentConfirmationChange,
+    onPricingChange,
+    onPromotionCodeActionsChange,
     onSessionExpired,
+    onSessionLoadError,
     onSessionLoadErrorChange,
     onSessionReady,
     session,
@@ -641,9 +716,13 @@ export function CheckoutPaymentForm({
                 onEmailChange={onEmailChange}
                 onTaxQuoteChange={onTaxQuoteChange}
                 onPaymentConfirmationChange={onPaymentConfirmationChange}
+                onPricingChange={onPricingChange}
+                onPromotionCodeActionsChange={onPromotionCodeActionsChange}
                 onSessionExpired={onSessionExpired}
+                onSessionLoadError={onSessionLoadError}
                 onSessionLoadErrorChange={onSessionLoadErrorChange}
                 onSessionReady={onSessionReady}
+                sessionKey={session.clientSecret}
             />
         </CheckoutElementsProvider>
     )
