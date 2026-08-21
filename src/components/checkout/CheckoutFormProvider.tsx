@@ -1,7 +1,7 @@
 "use client"
 
 import { useCraterSession } from "@/components/checkout/CraterSessionProvider"
-import { useCheckoutStage } from "@/components/checkout/CheckoutStepper"
+import { useCheckoutStage } from "@/components/checkout/CheckoutStage"
 import type { CheckoutData, ErrorsContent } from "@/lib/cms"
 import { resolveCraterCustomerType } from "@/lib/checkout/craterCustomer"
 import { getOrCreateCheckoutDraftKey } from "@/lib/checkout/checkoutDraft"

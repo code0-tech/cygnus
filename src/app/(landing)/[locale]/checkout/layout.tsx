@@ -1,4 +1,4 @@
-import { CheckoutStageProvider } from "@/components/checkout/CheckoutStepper"
+import { CheckoutStageProvider } from "@/components/checkout/CheckoutStage"
 import { isSupportedLocale } from "@/lib/i18n"
 import type { ReactNode } from "react"
 import { notFound } from "next/navigation"

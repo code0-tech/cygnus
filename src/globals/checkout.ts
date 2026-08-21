@@ -55,16 +55,6 @@ export const Checkout: GlobalConfig = {
             fields: [{ name: "backLabel", type: "text", required: true, localized: true, defaultValue: "Back" }],
         },
         {
-            name: "stepper",
-            type: "group",
-            fields: [
-                { name: "configurationLabel", type: "text", required: true, localized: true, defaultValue: "Configuration" },
-                { name: "billingAddressLabel", type: "text", required: true, localized: true, defaultValue: "Billing Address" },
-                { name: "paymentLabel", type: "text", required: true, localized: true, defaultValue: "Payment" },
-                { name: "successLabel", type: "text", required: true, localized: true, defaultValue: "Success" },
-            ],
-        },
-        {
             name: "login",
             label: "Checkout Login",
             type: "group",

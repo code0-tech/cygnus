@@ -1,4 +1,5 @@
 import type { IconColor } from "@/lib/cms"
+import { Badge } from "@code0-tech/pictor"
 import type { ReactNode } from "react"
 
 export interface SummaryBadgeProps {
@@ -8,38 +9,22 @@ export interface SummaryBadgeProps {
     size?: "sm" | "lg"
 }
 
-const ICON_TONE_CLASS_NAME: Record<IconColor, string> = {
-    neutral: "text-white",
-    brand: "text-brand",
-    aqua: "text-aqua",
-    blue: "text-blue",
-    pink: "text-pink",
-    yellow: "text-yellow",
-    lime: "text-lime",
-    magenta: "text-magenta",
+const TONE_CLASS_NAME: Record<IconColor, string> = {
+    neutral: "border-white/10! bg-white/10! text-white!",
+    brand: "border-brand/10! bg-brand/10! text-brand!",
+    aqua: "border-aqua/10! bg-aqua/10! text-aqua!",
+    blue: "border-blue/10! bg-blue/10! text-blue!",
+    pink: "border-pink/10! bg-pink/10! text-pink!",
+    yellow: "border-yellow/10! bg-yellow/10! text-yellow!",
+    lime: "border-lime/10! bg-lime/10! text-lime!",
+    magenta: "border-magenta/10! bg-magenta/10! text-magenta!",
 }
 
-const CONTAINER_TONE_CLASS_NAME: Record<IconColor, string> = {
-    neutral: "border-white/10 bg-white/5",
-    brand: "border-brand/10 bg-brand/5",
-    aqua: "border-aqua/10 bg-aqua/5",
-    blue: "border-blue/10 bg-blue/5",
-    pink: "border-pink/10 bg-pink/5",
-    yellow: "border-yellow/10 bg-yellow/5",
-    lime: "border-lime/10 bg-lime/5",
-    magenta: "border-magenta/10 bg-magenta/5",
-}
-
-const SIZE_CLASS_NAME: Record<"sm" | "lg", string> = {
-    sm: "gap-1 pl-1 pr-2 py-0.5 text-xs",
-    lg: "gap-1.5 pl-2 pr-3 py-0.5 text-base",
-}
-
-export function SummaryBadge({ icon, value, tone = "neutral", size = "sm" }: SummaryBadgeProps) {
+export function SummaryBadge({ icon, value, tone = "neutral" }: SummaryBadgeProps) {
     return (
-        <span className={`inline-flex min-w-0 max-w-full items-center rounded-xl border ${SIZE_CLASS_NAME[size]} ${CONTAINER_TONE_CLASS_NAME[tone]}`}>
-            <span className={`inline-flex shrink-0 ${ICON_TONE_CLASS_NAME[tone]}`}>{icon}</span>
-            <span className="min-w-0 truncate font-medium text-white">{value}</span>
-        </span>
+        <Badge color="secondary" border className={`min-w-0! max-w-full! rounded-xl! gap-1.5! pl-1.5! pr-2.5! py-0.5! text-sm! ${TONE_CLASS_NAME[tone]}`}>
+            <span className="inline-flex shrink-0 text-current">{icon}</span>
+            <span className="min-w-0 truncate font-medium">{value}</span>
+        </Badge>
     )
 }

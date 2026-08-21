@@ -3,7 +3,7 @@
 import type { CheckoutData, ErrorsContent } from "@/lib/cms"
 import type { CheckoutSessionData, CheckoutTaxQuoteData } from "@/lib/checkout/checkoutSubmission"
 import { AcceptTermsCheckbox } from "@/components/forms/AcceptTermsCheckbox"
-import { useCheckoutStage } from "@/components/checkout/CheckoutStepper"
+import { useCheckoutStage } from "@/components/checkout/CheckoutStage"
 import { ButtonLoader } from "@/components/ui/Loader"
 import { SendOfferDialog } from "@/components/checkout/SendOfferDialog"
 import { Button, EmailInput } from "@code0-tech/pictor"

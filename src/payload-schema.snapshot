@@ -2502,10 +2502,6 @@ export const checkout = pgTable('checkout', {
 
 export const checkout_locales = pgTable('checkout_locales', {
   navigation_backLabel: varchar('navigation_back_label').notNull().default("Back"),
-  stepper_configurationLabel: varchar('stepper_configuration_label').notNull().default("Configuration"),
-  stepper_billingAddressLabel: varchar('stepper_billing_address_label').notNull().default("Billing Address"),
-  stepper_paymentLabel: varchar('stepper_payment_label').notNull().default("Payment"),
-  stepper_successLabel: varchar('stepper_success_label').notNull().default("Success"),
   login_heading: varchar('login_heading').notNull().default("Sign in to CodeZero"),
   login_description: varchar('login_description').notNull().default("Use your CodeZero account to continue with your configured subscription."),
   login_loginLabel: varchar('login_login_label').notNull().default("Sign in"),

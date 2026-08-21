@@ -66,7 +66,7 @@ mock.module("@/components/checkout/CraterSessionProvider", {
         }),
     },
 })
-mock.module("@/components/checkout/CheckoutStepper", {
+mock.module("@/components/checkout/CheckoutStage", {
     namedExports: {
         useCheckoutStage: () => ({
             stage: React.useSyncExternalStore(

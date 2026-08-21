@@ -134,6 +134,7 @@ import * as migration_20260820_061154_add_subscription_plan_features from './202
 import * as migration_20260821_052749_checkout_success_actions from './20260821_052749_checkout_success_actions';
 import * as migration_20260821_055835_checkout_send_offer_dialog from './20260821_055835_checkout_send_offer_dialog';
 import * as migration_20260821_065512_plan_upgrade_banner from './20260821_065512_plan_upgrade_banner';
+import * as migration_20260821_142512_remove_checkout_stepper from './20260821_142512_remove_checkout_stepper';
 
 export const migrations = [
   {
@@ -815,5 +816,10 @@ export const migrations = [
     up: migration_20260821_065512_plan_upgrade_banner.up,
     down: migration_20260821_065512_plan_upgrade_banner.down,
     name: '20260821_065512_plan_upgrade_banner',
+  },
+  {
+    up: migration_20260821_142512_remove_checkout_stepper.up,
+    down: migration_20260821_142512_remove_checkout_stepper.down,
+    name: '20260821_142512_remove_checkout_stepper',
   },
 ];

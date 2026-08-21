@@ -3078,12 +3078,6 @@ export interface Checkout {
   navigation: {
     backLabel: string;
   };
-  stepper: {
-    configurationLabel: string;
-    billingAddressLabel: string;
-    paymentLabel: string;
-    successLabel: string;
-  };
   login: {
     heading: string;
     description: string;
@@ -3878,14 +3872,6 @@ export interface CheckoutSelect<T extends boolean = true> {
     | T
     | {
         backLabel?: T;
-      };
-  stepper?:
-    | T
-    | {
-        configurationLabel?: T;
-        billingAddressLabel?: T;
-        paymentLabel?: T;
-        successLabel?: T;
       };
   login?:
     | T
