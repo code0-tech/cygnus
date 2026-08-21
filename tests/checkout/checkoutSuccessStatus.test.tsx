@@ -8,6 +8,7 @@ installDomTestEnvironment("https://code0.example/en/checkout/success?session_id=
 
 mock.module("@code0-tech/pictor", {
     namedExports: {
+        Badge: ({ children, className }: { children: React.ReactNode; className?: string }) => <span className={className}>{children}</span>,
         Button: ({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button {...props}>{children}</button>,
     },
 })
