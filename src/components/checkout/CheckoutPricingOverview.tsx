@@ -90,7 +90,7 @@ export function CheckoutPricingOverview({
                     <>
                         <div className="flex items-start justify-between gap-4 text-sm">
                             <span className="flex items-center gap-2 text-secondary">
-                                {content.pricing.baseLabel}{" "}
+                                {content.pricing.baseLabel}
                                 <span className="text-tertiary">
                                     {formatCompactNumber(aiTokens)} {monthlyPeriodSuffix}
                                 </span>
@@ -100,7 +100,7 @@ export function CheckoutPricingOverview({
 
                         <div className="flex items-start justify-between gap-4 text-sm">
                             <span className="flex items-center gap-2 text-secondary">
-                                {content.pricing.workflowExecutionsLabel}{" "}
+                                {content.pricing.workflowExecutionsLabel}
                                 <span className="text-tertiary">
                                     {formatCompactNumber(workflowExecutions)} {monthlyPeriodSuffix}
                                 </span>
@@ -113,7 +113,8 @@ export function CheckoutPricingOverview({
                 {paymentPeriodDiscountLabel && paymentPeriodDiscountAmount > 0 && (
                     <div className="flex items-center justify-between gap-4 text-sm">
                         <span className="text-secondary">
-                            {paymentPeriodDiscountLabel} (-{formatDiscountBadge(paymentPeriodDiscountPercentage, locale)})
+                            {paymentPeriodDiscountLabel}
+                            <span className="text-tertiary">(-{formatDiscountBadge(paymentPeriodDiscountPercentage, locale)})</span>
                         </span>
                         <span className="tabular-nums text-white">-{formatEuroCurrency(paymentPeriodDiscountAmount, locale)}</span>
                     </div>

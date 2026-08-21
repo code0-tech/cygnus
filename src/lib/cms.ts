@@ -93,8 +93,6 @@ function sortBlogPosts(posts: BlogPostItem[]): BlogPostItem[] {
 
 export interface SubscriptionConfigData {
     id: number
-    title: string
-    optionsPanelHeading: string
     defaults: {
         deployment: "self_hosted" | "cloud"
         customerType: "b2b" | "b2c"
@@ -182,7 +180,6 @@ export interface SubscriptionConfigData {
         }
     }
     paymentPeriod: {
-        title: string
         label: string
         description?: string | null
         weeklyText: string
@@ -246,10 +243,6 @@ export interface SubscriptionConfigData {
         label: string
         baseUrl: string
     }
-    price: {
-        heading: string
-        caption: string
-    }
 }
 
 export interface SubscriptionConfiguratorBlockData {
@@ -265,10 +258,6 @@ export type IconColor = "neutral" | "brand" | "aqua" | "blue" | "pink" | "yellow
 
 export interface CheckoutData {
     id: number
-    title: string
-    navigation: {
-        backLabel: string
-    }
     login: {
         heading: string
         description: string
@@ -282,34 +271,22 @@ export interface CheckoutData {
         eyebrow: string
         heading: string
         description: string
-        configurationLabel: string
-        deploymentLabel: string
         deploymentIcons: {
             cloud: string
             selfHosted: string
         }
         deploymentIconColor: IconColor
-        customerTypeLabel: string
         customerTypeIcons: {
             b2b: string
             b2c: string
         }
         customerTypeIconColor: IconColor
-        aiTokensLabel: string
-        aiTokensIcon: string
-        aiTokensIconColor: IconColor
-        workflowExecutionsLabel: string
-        workflowExecutionsIcon: string
-        workflowExecutionsIconColor: IconColor
         pricing: {
-            label: string
-            description: string
             planLabel: string
             baseLabel: string
             workflowExecutionsLabel: string
             quarterlyDiscountLabel: string
             yearlyDiscountLabel: string
-            discountLabel: string
             discountInputPlaceholder: string
             discountButtonLabel: string
             discountPromptLabel: string
@@ -321,7 +298,6 @@ export interface CheckoutData {
     }
     form: {
         billingHeading: string
-        paymentHeading: string
         continueLabel: string
         backToBillingLabel: string
         payNowLabel: string
@@ -332,31 +308,16 @@ export interface CheckoutData {
         processingLabel: string
         customerSelectLabel: string
         newCustomerLabel: string
-        customerFallbackLabel: string
-        mobileContactLabel: string
-        mobileNextLabel: string
-        mobileTaxLabel: string
         nameLabel: string
-        namePlaceholder: string
         emailLabel: string
         emailPlaceholder: string
         phoneLabel: string
-        phonePlaceholder: string
         line1Label: string
-        line1Placeholder: string
         line2Label: string
-        line2Placeholder: string
         cityLabel: string
         stateLabel: string
-        statePlaceholder: string
         postalCodeLabel: string
         countryLabel: string
-        countryPlaceholder: string
-        countryEmptyLabel: string
-        taxIdTypeLabel: string
-        taxIdTypePlaceholder: string
-        taxIdValueLabel: string
-        taxIdValuePlaceholder: string
     }
     nextSteps: {
         heading: string
@@ -375,7 +336,6 @@ export interface CheckoutData {
         licenseDownloadLabel: string
         licenseDownloadError: string
         licensePendingLabel: string
-        licenseReadyLabel: string
         licenseStatusRetryLabel: string
         receiptHint: string
         failedHeading: string
@@ -383,7 +343,6 @@ export interface CheckoutData {
         invalidHeading: string
         invalidDescription: string
         checkoutRetryLabel: string
-        backToHomepageLabel: string
     }
 }
 
@@ -468,7 +427,6 @@ export interface LicenseContent {
         saveLabel: string
         cancelLabel: string
         closeLabel: string
-        selfHostedDescription: string
     }
     subscriptionPreview: {
         totalLabel: string
@@ -499,8 +457,6 @@ export interface LicenseContent {
     upgrade: {
         title: string
         description: string
-        planLabel: string
-        increaseOnlyNote: string
     }
 }
 

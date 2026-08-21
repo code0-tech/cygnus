@@ -2882,8 +2882,6 @@ export interface CookieBanner {
  */
 export interface SubscriptionConfig {
   id: number;
-  title?: string | null;
-  optionsPanelHeading?: string | null;
   defaults?: {
     deployment?: ('self_hosted' | 'cloud') | null;
     customerType?: ('b2b' | 'b2c') | null;
@@ -2980,10 +2978,6 @@ export interface SubscriptionConfig {
     };
   };
   paymentPeriod?: {
-    /**
-     * Short noun label, e.g. for the checkout success summary. Not the configurator heading -- that is `label` below.
-     */
-    title?: string | null;
     label?: string | null;
     description?: string | null;
     weeklyText?: string | null;
@@ -3078,10 +3072,6 @@ export interface SubscriptionConfig {
     label?: string | null;
     baseUrl?: string | null;
   };
-  price?: {
-    heading?: string | null;
-    caption?: string | null;
-  };
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -3091,10 +3081,6 @@ export interface SubscriptionConfig {
  */
 export interface Checkout {
   id: number;
-  title: string;
-  navigation: {
-    backLabel: string;
-  };
   login: {
     heading: string;
     description: string;
@@ -3111,34 +3097,22 @@ export interface Checkout {
     eyebrow: string;
     heading: string;
     description: string;
-    configurationLabel: string;
-    deploymentLabel: string;
     deploymentIcons: {
       cloud: string;
       selfHosted: string;
     };
     deploymentIconColor: 'neutral' | 'brand' | 'aqua' | 'blue' | 'pink' | 'yellow' | 'lime' | 'magenta';
-    customerTypeLabel: string;
     customerTypeIcons: {
       b2b: string;
       b2c: string;
     };
     customerTypeIconColor: 'neutral' | 'brand' | 'aqua' | 'blue' | 'pink' | 'yellow' | 'lime' | 'magenta';
-    aiTokensLabel: string;
-    aiTokensIcon: string;
-    aiTokensIconColor: 'neutral' | 'brand' | 'aqua' | 'blue' | 'pink' | 'yellow' | 'lime' | 'magenta';
-    workflowExecutionsLabel: string;
-    workflowExecutionsIcon: string;
-    workflowExecutionsIconColor: 'neutral' | 'brand' | 'aqua' | 'blue' | 'pink' | 'yellow' | 'lime' | 'magenta';
     pricing: {
-      label: string;
-      description: string;
       planLabel: string;
       baseLabel: string;
       workflowExecutionsLabel: string;
       quarterlyDiscountLabel: string;
       yearlyDiscountLabel: string;
-      discountLabel: string;
       discountInputPlaceholder: string;
       discountButtonLabel: string;
       discountPromptLabel: string;
@@ -3150,7 +3124,6 @@ export interface Checkout {
   };
   form: {
     billingHeading: string;
-    paymentHeading: string;
     continueLabel: string;
     backToBillingLabel: string;
     payNowLabel: string;
@@ -3164,31 +3137,16 @@ export interface Checkout {
     processingLabel: string;
     customerSelectLabel: string;
     newCustomerLabel: string;
-    customerFallbackLabel: string;
-    mobileContactLabel: string;
-    mobileNextLabel: string;
-    mobileTaxLabel: string;
     nameLabel: string;
-    namePlaceholder: string;
     emailLabel: string;
     emailPlaceholder: string;
     phoneLabel: string;
-    phonePlaceholder: string;
     line1Label: string;
-    line1Placeholder: string;
     line2Label: string;
-    line2Placeholder: string;
     cityLabel: string;
     stateLabel: string;
-    statePlaceholder: string;
     postalCodeLabel: string;
     countryLabel: string;
-    countryPlaceholder: string;
-    countryEmptyLabel: string;
-    taxIdTypeLabel: string;
-    taxIdTypePlaceholder: string;
-    taxIdValueLabel: string;
-    taxIdValuePlaceholder: string;
   };
   /**
    * Vertical 3-step 'what happens after you pay' stepper shown in the summary once the payment step is reached, replacing the order summary heading and payment period switcher.
@@ -3210,7 +3168,6 @@ export interface Checkout {
     licenseDownloadLabel: string;
     licenseDownloadError: string;
     licensePendingLabel: string;
-    licenseReadyLabel: string;
     licenseStatusRetryLabel: string;
     /**
      * Shown once the payment is confirmed. The exact amount is on the Stripe receipt, not on this page.
@@ -3221,7 +3178,6 @@ export interface Checkout {
     invalidHeading: string;
     invalidDescription: string;
     checkoutRetryLabel: string;
-    backToHomepageLabel: string;
   };
   updatedAt?: string | null;
   createdAt?: string | null;
@@ -3374,7 +3330,6 @@ export interface License {
     saveLabel: string;
     cancelLabel: string;
     closeLabel: string;
-    selfHostedDescription: string;
   };
   /**
    * Shared between the billing and upgrade dialogs, both of which preview a change through subscriptionsPreviewUpdate before applying it.
@@ -3414,8 +3369,6 @@ export interface License {
   upgrade: {
     title: string;
     description: string;
-    planLabel: string;
-    increaseOnlyNote: string;
   };
   updatedAt?: string | null;
   createdAt?: string | null;
@@ -3628,8 +3581,6 @@ export interface CookieBannerSelect<T extends boolean = true> {
  * via the `definition` "subscriptionConfig_select".
  */
 export interface SubscriptionConfigSelect<T extends boolean = true> {
-  title?: T;
-  optionsPanelHeading?: T;
   defaults?:
     | T
     | {
@@ -3766,7 +3717,6 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
   paymentPeriod?:
     | T
     | {
-        title?: T;
         label?: T;
         description?: T;
         weeklyText?: T;
@@ -3870,12 +3820,6 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
         label?: T;
         baseUrl?: T;
       };
-  price?:
-    | T
-    | {
-        heading?: T;
-        caption?: T;
-      };
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
@@ -3885,12 +3829,6 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
  * via the `definition` "checkout_select".
  */
 export interface CheckoutSelect<T extends boolean = true> {
-  title?: T;
-  navigation?:
-    | T
-    | {
-        backLabel?: T;
-      };
   login?:
     | T
     | {
@@ -3908,8 +3846,6 @@ export interface CheckoutSelect<T extends boolean = true> {
         eyebrow?: T;
         heading?: T;
         description?: T;
-        configurationLabel?: T;
-        deploymentLabel?: T;
         deploymentIcons?:
           | T
           | {
@@ -3917,7 +3853,6 @@ export interface CheckoutSelect<T extends boolean = true> {
               selfHosted?: T;
             };
         deploymentIconColor?: T;
-        customerTypeLabel?: T;
         customerTypeIcons?:
           | T
           | {
@@ -3925,23 +3860,14 @@ export interface CheckoutSelect<T extends boolean = true> {
               b2c?: T;
             };
         customerTypeIconColor?: T;
-        aiTokensLabel?: T;
-        aiTokensIcon?: T;
-        aiTokensIconColor?: T;
-        workflowExecutionsLabel?: T;
-        workflowExecutionsIcon?: T;
-        workflowExecutionsIconColor?: T;
         pricing?:
           | T
           | {
-              label?: T;
-              description?: T;
               planLabel?: T;
               baseLabel?: T;
               workflowExecutionsLabel?: T;
               quarterlyDiscountLabel?: T;
               yearlyDiscountLabel?: T;
-              discountLabel?: T;
               discountInputPlaceholder?: T;
               discountButtonLabel?: T;
               discountPromptLabel?: T;
@@ -3955,7 +3881,6 @@ export interface CheckoutSelect<T extends boolean = true> {
     | T
     | {
         billingHeading?: T;
-        paymentHeading?: T;
         continueLabel?: T;
         backToBillingLabel?: T;
         payNowLabel?: T;
@@ -3966,31 +3891,16 @@ export interface CheckoutSelect<T extends boolean = true> {
         processingLabel?: T;
         customerSelectLabel?: T;
         newCustomerLabel?: T;
-        customerFallbackLabel?: T;
-        mobileContactLabel?: T;
-        mobileNextLabel?: T;
-        mobileTaxLabel?: T;
         nameLabel?: T;
-        namePlaceholder?: T;
         emailLabel?: T;
         emailPlaceholder?: T;
         phoneLabel?: T;
-        phonePlaceholder?: T;
         line1Label?: T;
-        line1Placeholder?: T;
         line2Label?: T;
-        line2Placeholder?: T;
         cityLabel?: T;
         stateLabel?: T;
-        statePlaceholder?: T;
         postalCodeLabel?: T;
         countryLabel?: T;
-        countryPlaceholder?: T;
-        countryEmptyLabel?: T;
-        taxIdTypeLabel?: T;
-        taxIdTypePlaceholder?: T;
-        taxIdValueLabel?: T;
-        taxIdValuePlaceholder?: T;
       };
   nextSteps?:
     | T
@@ -4013,7 +3923,6 @@ export interface CheckoutSelect<T extends boolean = true> {
         licenseDownloadLabel?: T;
         licenseDownloadError?: T;
         licensePendingLabel?: T;
-        licenseReadyLabel?: T;
         licenseStatusRetryLabel?: T;
         receiptHint?: T;
         failedHeading?: T;
@@ -4021,7 +3930,6 @@ export interface CheckoutSelect<T extends boolean = true> {
         invalidHeading?: T;
         invalidDescription?: T;
         checkoutRetryLabel?: T;
-        backToHomepageLabel?: T;
       };
   updatedAt?: T;
   createdAt?: T;
@@ -4183,7 +4091,6 @@ export interface LicensesSelect<T extends boolean = true> {
         saveLabel?: T;
         cancelLabel?: T;
         closeLabel?: T;
-        selfHostedDescription?: T;
       };
   subscriptionPreview?:
     | T
@@ -4224,8 +4131,6 @@ export interface LicensesSelect<T extends boolean = true> {
     | {
         title?: T;
         description?: T;
-        planLabel?: T;
-        increaseOnlyNote?: T;
       };
   updatedAt?: T;
   createdAt?: T;

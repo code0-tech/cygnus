@@ -25,22 +25,29 @@ const subscriptionPrices = Object.fromEntries(
 
 const checkoutContent = {
     summary: {
-        aiTokensIcon: "tabler:IconBrain",
-        aiTokensIconColor: "magenta",
-        aiTokensLabel: "AI Tokens",
-        configurationLabel: "Your configuration",
+        eyebrow: "Order summary",
+        heading: "Review your configuration",
+        description: "Your selected configuration",
         customerTypeIcons: { b2b: "tabler:IconBriefcase2", b2c: "tabler:IconBuildingStore" },
         customerTypeIconColor: "yellow",
-        customerTypeLabel: "Customer Type",
         deploymentIcons: { cloud: "tabler:IconCloud", selfHosted: "tabler:IconServer" },
         deploymentIconColor: "aqua",
-        deploymentLabel: "Deployment",
-        workflowExecutionsIcon: "tabler:IconBolt",
-        workflowExecutionsIconColor: "brand",
-        workflowExecutionsLabel: "Workflow Executions",
-        pricing: { planLabel: "Plan" },
+        pricing: {
+            planLabel: "Plan",
+            baseLabel: "AI Tokens",
+            workflowExecutionsLabel: "Workflow executions",
+            quarterlyDiscountLabel: "Quarterly discount",
+            yearlyDiscountLabel: "Yearly discount",
+            discountInputPlaceholder: "Code",
+            discountButtonLabel: "Apply",
+            discountPromptLabel: "Discount?",
+            discountRemoveLabel: "Remove",
+            taxLabel: "Tax",
+            totalLabel: "Total",
+            perMonthSuffix: "per month",
+        },
     },
-} as CheckoutData
+} as unknown as CheckoutData
 
 const subscriptionConfig = {
     aiTokens: {
@@ -59,7 +66,6 @@ const subscriptionConfig = {
         pro: { icon: "tabler:IconSparkles" },
     },
     paymentPeriod: {
-        title: "Payment period",
         monthlyColor: "brand",
         monthlyPeriodSuffix: "per month",
         monthlyText: "Monthly",
@@ -77,22 +83,17 @@ const subscriptionConfig = {
         b2b: { default: 1_000, min: 200, max: 10_000, step: 100 },
         b2c: { default: 100, min: 10, max: 1_000, step: 10 },
     },
-} as SubscriptionConfigData
+} as unknown as SubscriptionConfigData
 
-test("summarizes a fixed plan without the custom quantities", () => {
+test("resolves the success deployment without loading prices", () => {
     const summary = buildCheckoutSuccessSummary({
         checkoutContent,
         searchParams: new URLSearchParams({ plan: "pro", customerType: "b2b", paymentPeriod: "quarterly" }),
         subscriptionConfig,
     })
 
-    assert.equal(summary?.title, "Your configuration")
-    assert.deepEqual(summary?.rows, [
-        { id: "plan", label: "Plan", value: "Pro", icon: "tabler:IconSparkles", tone: "brand" },
-        { id: "customerType", label: "Customer Type", value: "B2B", icon: "tabler:IconBriefcase2", tone: "yellow" },
-        { id: "deployment", label: "Deployment", value: "Self Hosted", icon: "tabler:IconServer", tone: "aqua" },
-        { id: "paymentPeriod", label: "Payment period", value: "Quarterly", icon: "tabler:IconCalendarMonth", tone: "aqua" },
-    ])
+    assert.equal(summary?.deployment, "self_hosted")
+    assert.equal(summary?.overview, undefined)
 })
 
 test("builds the checkout pricing overview from Crater's recurring price catalog", () => {
@@ -109,21 +110,17 @@ test("builds the checkout pricing overview from Crater's recurring price catalog
     assert.equal(summary?.overview?.periodSuffix, "per quarter")
 })
 
-test("summarizes the custom plan with its quantities, deployment, and customer type", () => {
+test("keeps the selected deployment in the pricing overview", () => {
     const summary = buildCheckoutSuccessSummary({
         checkoutContent,
         searchParams: new URLSearchParams({ plan: "custom", customerType: "b2c", deploymentType: "cloud", paymentPeriod: "yearly", aiTokens: "50000", workflowExecutions: "1000" }),
         subscriptionConfig,
+        subscriptionPrices,
     })
 
-    assert.deepEqual(summary?.rows, [
-        { id: "plan", label: "Plan", value: "Custom", icon: "tabler:IconSettings", tone: "aqua" },
-        { id: "customerType", label: "Customer Type", value: "B2C", icon: "tabler:IconBuildingStore", tone: "yellow" },
-        { id: "deployment", label: "Deployment", value: "Cloud", icon: "tabler:IconCloud", tone: "aqua" },
-        { id: "paymentPeriod", label: "Payment period", value: "Yearly", icon: "tabler:IconCalendarMonth", tone: "magenta" },
-        { id: "aiTokens", label: "AI Tokens", value: "50K", icon: "tabler:IconBrain", tone: "magenta" },
-        { id: "workflowExecutions", label: "Workflow Executions", value: "1K", icon: "tabler:IconBolt", tone: "brand" },
-    ])
+    assert.equal(summary?.deployment, "cloud")
+    assert.equal(summary?.overview?.deployment, "cloud")
+    assert.equal(summary?.overview?.aiTokens, 50_000)
 })
 
 test("normalizes a manipulated period against the customer type", () => {
@@ -131,20 +128,10 @@ test("normalizes a manipulated period against the customer type", () => {
         checkoutContent,
         searchParams: new URLSearchParams({ plan: "max", customerType: "b2b", paymentPeriod: "weekly" }),
         subscriptionConfig,
+        subscriptionPrices,
     })
 
-    assert.equal(summary?.rows.find((row) => row.id === "paymentPeriod")?.value, "Monthly")
-})
-
-test("falls back to a default plan icon when the CMS field is blank", () => {
-    const blankPlanIconConfig = { ...subscriptionConfig, plan: { ...subscriptionConfig.plan, max: { icon: "  " } } } as SubscriptionConfigData
-    const summary = buildCheckoutSuccessSummary({
-        checkoutContent,
-        searchParams: new URLSearchParams({ plan: "max", customerType: "b2c", paymentPeriod: "monthly" }),
-        subscriptionConfig: blankPlanIconConfig,
-    })
-
-    assert.equal(summary?.rows[0]?.icon, "tabler:IconRocket")
+    assert.equal(summary?.overview?.periodSuffix, "per month")
 })
 
 test("stays absent without a plan or without the CMS content", () => {
