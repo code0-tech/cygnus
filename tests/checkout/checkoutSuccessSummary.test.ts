@@ -2,6 +2,26 @@ import assert from "node:assert/strict"
 import test from "node:test"
 import { buildCheckoutSuccessSummary } from "@/lib/checkout/checkoutSuccessSummary"
 import type { CheckoutData, SubscriptionConfigData } from "@/lib/cms"
+import { SUBSCRIPTION_PRICE_LOOKUP_KEYS, type SubscriptionPriceCatalog } from "@/lib/subscriptionPrices"
+
+const subscriptionPrices = Object.fromEntries(
+    SUBSCRIPTION_PRICE_LOOKUP_KEYS.map((lookupKey) => {
+        const period = lookupKey.split("_").at(-1)
+        const unitAmountDecimal = lookupKey === "pro_b2b_monthly" ? "1500" : lookupKey === "pro_b2b_quarterly" ? "4050" : lookupKey.startsWith("ai_token") ? "0.001" : "1"
+        return [
+            lookupKey,
+            {
+                currency: "eur",
+                id: `price_${lookupKey}`,
+                interval: period === "weekly" ? "week" : period === "yearly" ? "year" : "month",
+                intervalCount: period === "quarterly" ? 3 : 1,
+                lookupKey,
+                productName: lookupKey,
+                unitAmountDecimal,
+            },
+        ]
+    })
+) as SubscriptionPriceCatalog
 
 const checkoutContent = {
     summary: {
@@ -41,12 +61,16 @@ const subscriptionConfig = {
     paymentPeriod: {
         title: "Payment period",
         monthlyColor: "brand",
+        monthlyPeriodSuffix: "per month",
         monthlyText: "Monthly",
         quarterlyColor: "aqua",
+        quarterlyPeriodSuffix: "per quarter",
         quarterlyText: "Quarterly",
         weeklyColor: "lime",
+        weeklyPeriodSuffix: "per week",
         weeklyText: "Weekly",
         yearlyColor: "magenta",
+        yearlyPeriodSuffix: "per year",
         yearlyText: "Yearly",
     },
     workflowExecutions: {
@@ -69,6 +93,20 @@ test("summarizes a fixed plan without the custom quantities", () => {
         { id: "deployment", label: "Deployment", value: "Self Hosted", icon: "tabler:IconServer", tone: "aqua" },
         { id: "paymentPeriod", label: "Payment period", value: "Quarterly", icon: "tabler:IconCalendarMonth", tone: "aqua" },
     ])
+})
+
+test("builds the checkout pricing overview from Crater's recurring price catalog", () => {
+    const summary = buildCheckoutSuccessSummary({
+        checkoutContent,
+        searchParams: new URLSearchParams({ plan: "pro", customerType: "b2b", paymentPeriod: "quarterly" }),
+        subscriptionConfig,
+        subscriptionPrices,
+    })
+
+    assert.equal(summary?.overview?.planPrice, 40.5)
+    assert.equal(summary?.overview?.paymentPeriodDiscountAmount, 4.5)
+    assert.equal(summary?.overview?.totalPrice, 40.5)
+    assert.equal(summary?.overview?.periodSuffix, "per quarter")
 })
 
 test("summarizes the custom plan with its quantities, deployment, and customer type", () => {

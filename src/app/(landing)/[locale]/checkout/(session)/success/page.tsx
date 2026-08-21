@@ -3,6 +3,7 @@ import { CheckoutSuccessStatus } from "@/components/checkout/CheckoutSuccessStat
 import { parseCheckoutSessionId } from "@/lib/checkout/checkoutReturn"
 import { buildCheckoutSuccessSummary } from "@/lib/checkout/checkoutSuccessSummary"
 import { getCheckoutContent, getErrorsContent, getFooter, getLicenseContent, getSubscriptionConfig } from "@/lib/cms"
+import { getCraterSubscriptionPrices } from "@/lib/craterSubscriptionPrices"
 import { isSupportedLocale } from "@/lib/i18n"
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
@@ -29,16 +30,17 @@ export default async function CheckoutSuccessPage({ params, searchParams }: Chec
     const checkoutSessionId = parseCheckoutSessionId(query.session_id)
     if (!checkoutSessionId) notFound()
 
-    const [checkoutContent, subscriptionConfig, footer, errors, licenseContent] = await Promise.all([
+    const [checkoutContent, subscriptionConfig, subscriptionPrices, footer, errors, licenseContent] = await Promise.all([
         getCheckoutContent(locale),
         getSubscriptionConfig(locale),
+        getCraterSubscriptionPrices(),
         getFooter(locale),
         getErrorsContent(locale),
         getLicenseContent(locale),
     ])
     const currentYear = new Date().getUTCFullYear()
     const checkoutSearchParams = toSearchParams(query)
-    const summary = buildCheckoutSuccessSummary({ checkoutContent, searchParams: checkoutSearchParams, subscriptionConfig })
+    const summary = buildCheckoutSuccessSummary({ checkoutContent, searchParams: checkoutSearchParams, subscriptionConfig, subscriptionPrices })
 
     return (
         <div className="flex min-h-full flex-col gap-8">
@@ -51,9 +53,11 @@ export default async function CheckoutSuccessPage({ params, searchParams }: Chec
                                 content={checkoutContent.success}
                                 errorMessage={errors.checkoutLicenseStatus}
                                 locale={locale}
+                                pricingContent={checkoutContent.summary}
                                 sessionId={checkoutSessionId}
                                 sculptorUrl={licenseContent?.redirectUrl}
                                 summary={summary}
+                                subscriptionConfig={subscriptionConfig}
                             />
                         ) : null}
                     </div>
