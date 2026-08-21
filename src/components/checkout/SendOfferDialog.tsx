@@ -2,9 +2,9 @@
 
 import type { CheckoutData } from "@/lib/cms"
 import { Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogOverlay, DialogPortal, DialogTitle, DialogTrigger, EmailInput, emailValidation } from "@code0-tech/pictor"
-import { type FormEvent, useEffect, useState } from "react"
+import { type SubmitEvent, useEffect, useState } from "react"
 
-type SendOfferContent = Pick<CheckoutData["form"], "emailLabel" | "emailPlaceholder" | "sendOfferDescription" | "sendOfferLabel" | "sendOfferTitle">
+type SendOfferContent = Pick<CheckoutData["form"], "emailLabel" | "emailPlaceholder" | "sendOfferDescription" | "sendOfferLabel" | "sendOfferPrompt" | "sendOfferTitle">
 
 interface SendOfferDialogProps {
     content: SendOfferContent
@@ -19,21 +19,23 @@ export function SendOfferDialog({ content, initialEmail, onSend }: SendOfferDial
 
     useEffect(() => setEmail(initialEmail?.trim() ?? ""), [initialEmail])
 
-    const submit = (event: FormEvent<HTMLFormElement>) => {
+    const submit = (event: SubmitEvent<HTMLFormElement>) => {
         event.preventDefault()
         if (!validEmail) return
 
-        // The dialog already exposes the integration boundary; the actual offer-delivery request is added later.
         void onSend?.(normalizedEmail)
     }
 
     return (
         <Dialog>
-            <DialogTrigger asChild>
-                <Button type="button" variant="normal" className="h-10! w-full! border-white/10! bg-white/3! text-sm! text-secondary! hover:bg-white/6! hover:text-white!">
-                    {content.sendOfferLabel}
-                </Button>
-            </DialogTrigger>
+            <span className="flex flex-wrap items-center justify-center gap-x-1 text-sm text-secondary">
+                <span>{content.sendOfferPrompt}</span>
+                <DialogTrigger asChild>
+                    <Button type="button" variant="none" className="h-auto! w-auto! p-0! text-sm! text-brand! shadow-none! hover:bg-transparent! hover:underline! hover:text-brand!">
+                        {content.sendOfferLabel}
+                    </Button>
+                </DialogTrigger>
+            </span>
             <DialogPortal>
                 <DialogOverlay className="backdrop-blur-sm" />
                 <DialogContent className="w-[calc(100vw-2rem)]! max-w-md! border border-white/5 bg-primary! p-4! sm:p-6!">

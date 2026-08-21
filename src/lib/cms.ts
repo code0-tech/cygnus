@@ -317,6 +317,7 @@ export interface CheckoutData {
         continueLabel: string
         backToBillingLabel: string
         payNowLabel: string
+        sendOfferPrompt: string
         sendOfferLabel: string
         sendOfferTitle: string
         sendOfferDescription: string

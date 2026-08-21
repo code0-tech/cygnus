@@ -135,6 +135,7 @@ import * as migration_20260821_052749_checkout_success_actions from './20260821_
 import * as migration_20260821_055835_checkout_send_offer_dialog from './20260821_055835_checkout_send_offer_dialog';
 import * as migration_20260821_065512_plan_upgrade_banner from './20260821_065512_plan_upgrade_banner';
 import * as migration_20260821_142512_remove_checkout_stepper from './20260821_142512_remove_checkout_stepper';
+import * as migration_20260821_152105_add_send_offer_prompt from './20260821_152105_add_send_offer_prompt';
 
 export const migrations = [
   {
@@ -821,5 +822,10 @@ export const migrations = [
     up: migration_20260821_142512_remove_checkout_stepper.up,
     down: migration_20260821_142512_remove_checkout_stepper.down,
     name: '20260821_142512_remove_checkout_stepper',
+  },
+  {
+    up: migration_20260821_152105_add_send_offer_prompt.up,
+    down: migration_20260821_152105_add_send_offer_prompt.down,
+    name: '20260821_152105_add_send_offer_prompt',
   },
 ];

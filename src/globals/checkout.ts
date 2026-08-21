@@ -163,6 +163,13 @@ export const Checkout: GlobalConfig = {
                 { name: "backToBillingLabel", type: "text", required: true, localized: true, defaultValue: "Back to Billing" },
                 { name: "payNowLabel", type: "text", required: true, localized: true, defaultValue: "Pay now" },
                 {
+                    name: "sendOfferPrompt",
+                    type: "text",
+                    required: true,
+                    localized: true,
+                    defaultValue: localizedDefault("Need an invoice or a quote first?", "Benötigst du zuerst eine Rechnung oder ein Angebot?"),
+                },
+                {
                     name: "sendOfferLabel",
                     type: "text",
                     required: true,

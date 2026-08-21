@@ -77,6 +77,7 @@ test("renders the checkout configuration and all applicable price rows", () => {
             paymentPeriodDiscountLabel="Quarterly discount"
             paymentPeriodDiscountPercentage={0.1}
             periodSuffix="/ quarter"
+            planPrice={null}
             planTitle="Custom"
             subscriptionConfig={subscriptionConfig}
             taxAmount={47.5}
@@ -87,11 +88,39 @@ test("renders the checkout configuration and all applicable price rows", () => {
         />
     )
 
-    assert.match(container.textContent ?? "", /Custom/)
     assert.match(container.textContent ?? "", /500M \/ month/)
     assert.match(container.textContent ?? "", /250K \/ month/)
     assert.match(container.textContent ?? "", /Quarterly discount \(-10%\)/)
     assert.match(container.textContent ?? "", /Tax \(19%\)/)
     assert.equal(container.querySelector('[data-testid="total-price"]')?.textContent, "297.5")
     assert.ok(container.querySelector("#checkout-applied-discount"))
+})
+
+test("renders the fixed plan price", () => {
+    const { container } = render(
+        <CheckoutPricingOverview
+            aiTokenPrice={0}
+            aiTokens={0}
+            content={content}
+            customerType="b2b"
+            deployment="cloud"
+            isCustomPlan={false}
+            locale="en"
+            monthlyPeriodSuffix="/ month"
+            paymentPeriodDiscountAmount={0}
+            paymentPeriodDiscountLabel={null}
+            paymentPeriodDiscountPercentage={0}
+            periodSuffix="/ month"
+            planPrice={99}
+            planTitle="Pro"
+            subscriptionConfig={subscriptionConfig}
+            taxAmount={0}
+            taxPercentage={null}
+            totalPrice={99}
+            workflowExecutionPrice={0}
+            workflowExecutions={0}
+        />
+    )
+
+    assert.match(container.textContent ?? "", /Plan€99\.00/)
 })
