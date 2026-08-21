@@ -6,7 +6,7 @@ import { CheckoutLegalFooter } from "@/components/checkout/CheckoutLegalFooter"
 import { CheckoutSummary } from "@/components/checkout/CheckoutSummary"
 import { useCheckoutStage } from "@/components/checkout/CheckoutStage"
 import { cn } from "@/lib/utils"
-import type { CheckoutData, ErrorsContent, SubscriptionConfigData, UpgradeBannerData } from "@/lib/cms"
+import type { CheckoutData, ErrorsContent, SubscriptionConfigData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import type { SubscriptionPriceCatalog } from "@/lib/subscriptionPrices"
 import type { Footer } from "@/payload-types"
@@ -23,7 +23,6 @@ interface CheckoutPageContentProps {
     subscriptionConfig?: SubscriptionConfigData | null
     subscriptionPrices: SubscriptionPriceCatalog
     summary?: CheckoutData["summary"] | null
-    upgradeBanner?: UpgradeBannerData | null
 }
 
 function CheckoutSummaryWithTax(props: Omit<ComponentProps<typeof CheckoutSummary>, "taxQuote">) {
@@ -31,7 +30,7 @@ function CheckoutSummaryWithTax(props: Omit<ComponentProps<typeof CheckoutSummar
     return <CheckoutSummary {...props} taxQuote={taxQuote} />
 }
 
-export function CheckoutPageContent({ currentYear, errors, footer, form, locale, nextSteps, subscriptionConfig, subscriptionPrices, summary, upgradeBanner }: CheckoutPageContentProps) {
+export function CheckoutPageContent({ currentYear, errors, footer, form, locale, nextSteps, subscriptionConfig, subscriptionPrices, summary }: CheckoutPageContentProps) {
     const [mobileCheckoutOpen, setMobileCheckoutOpen] = useState(false)
     const { hasError } = useCheckoutStage()
 
@@ -65,14 +64,7 @@ export function CheckoutPageContent({ currentYear, errors, footer, form, locale,
                 {form && errors ? (
                     <CheckoutFormProvider content={form} errors={errors} locale={locale}>
                         {!hasError && (
-                            <CheckoutSummaryWithTax
-                                content={summary}
-                                errors={errors}
-                                nextSteps={nextSteps}
-                                subscriptionConfig={subscriptionConfig}
-                                subscriptionPrices={subscriptionPrices}
-                                upgradeBanner={upgradeBanner}
-                            />
+                            <CheckoutSummaryWithTax content={summary} errors={errors} nextSteps={nextSteps} subscriptionConfig={subscriptionConfig} subscriptionPrices={subscriptionPrices} />
                         )}
                         <button
                             type="button"
@@ -93,10 +85,7 @@ export function CheckoutPageContent({ currentYear, errors, footer, form, locale,
                                 type="button"
                                 aria-label={form.backToBillingLabel}
                                 onClick={() => setMobileCheckoutOpen(false)}
-                                className={cn(
-                                    "fixed inset-0 bg-black/65 backdrop-blur-sm transition-opacity duration-300 lg:hidden",
-                                    mobileCheckoutOpen ? "opacity-100" : "opacity-0"
-                                )}
+                                className={cn("fixed inset-0 bg-black/65 backdrop-blur-sm transition-opacity duration-300 lg:hidden", mobileCheckoutOpen ? "opacity-100" : "opacity-0")}
                             />
                             <div
                                 role={mobileCheckoutOpen ? "dialog" : undefined}
@@ -116,7 +105,7 @@ export function CheckoutPageContent({ currentYear, errors, footer, form, locale,
                         </div>
                     </CheckoutFormProvider>
                 ) : (
-                    <CheckoutSummary content={summary} nextSteps={nextSteps} subscriptionConfig={subscriptionConfig} subscriptionPrices={subscriptionPrices} upgradeBanner={upgradeBanner} />
+                    <CheckoutSummary content={summary} nextSteps={nextSteps} subscriptionConfig={subscriptionConfig} subscriptionPrices={subscriptionPrices} />
                 )}
             </div>
 

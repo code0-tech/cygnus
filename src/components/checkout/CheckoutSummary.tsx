@@ -4,7 +4,6 @@ import { CheckoutDiscount, type CheckoutDiscountValue } from "@/components/check
 import { CheckoutNextSteps } from "@/components/checkout/CheckoutNextSteps"
 import { CheckoutPricingOverview } from "@/components/checkout/CheckoutPricingOverview"
 import { useCheckoutStage } from "@/components/checkout/CheckoutStage"
-import { UpgradePlanBanner, type SubscriptionPlan } from "@/components/checkout/UpgradePlanBanner"
 import { Switch } from "@/components/ui/Switch"
 import type { CheckoutTaxQuoteData } from "@/lib/checkout/checkoutSubmission"
 import type { CheckoutData, ErrorsContent, SubscriptionConfigData, UpgradeBannerData } from "@/lib/cms"
@@ -22,10 +21,9 @@ interface CheckoutSummaryProps {
     subscriptionConfig?: SubscriptionConfigData | null
     subscriptionPrices: SubscriptionPriceCatalog
     taxQuote?: CheckoutTaxQuoteData | null
-    upgradeBanner?: UpgradeBannerData | null
 }
 
-export function CheckoutSummary({ content, errors, nextSteps, subscriptionConfig, subscriptionPrices, taxQuote, upgradeBanner }: CheckoutSummaryProps) {
+export function CheckoutSummary({ content, errors, nextSteps, subscriptionConfig, subscriptionPrices, taxQuote }: CheckoutSummaryProps) {
     const router = useRouter()
     const pathname = usePathname()
     const searchParams = useSearchParams()
@@ -44,13 +42,6 @@ export function CheckoutSummary({ content, errors, nextSteps, subscriptionConfig
         router.replace(`${pathname}?${nextParams.toString()}`, { scroll: false })
     }
     const planParam = searchParams.get("plan")
-    const handleUpgradePlan = (nextPlan: SubscriptionPlan) => {
-        const nextSearchParams = new URLSearchParams(searchParams.toString())
-        nextSearchParams.set("plan", nextPlan)
-        nextSearchParams.delete("aiTokens")
-        nextSearchParams.delete("workflowExecutions")
-        router.push(`/${locale}/checkout?${nextSearchParams.toString()}`)
-    }
     const paymentPeriodParam = searchParams.get("paymentPeriod")
     const workflowExecutionsParam = searchParams.get("workflowExecutions")
     const aiTokensParam = searchParams.get("aiTokens")
@@ -143,8 +134,6 @@ export function CheckoutSummary({ content, errors, nextSteps, subscriptionConfig
                 workflowExecutionPrice={pricing.workflowExecutionPrice}
                 workflowExecutions={workflowExecutions}
             />
-
-            <UpgradePlanBanner content={upgradeBanner} currentPlan={planParam} onUpgrade={handleUpgradePlan} subscriptionConfig={subscriptionConfig} />
 
             {errors && (
                 <CheckoutDiscount

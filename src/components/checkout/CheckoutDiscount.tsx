@@ -248,7 +248,7 @@ export function CheckoutDiscount({
                 </Dialog.Portal>
             </Dialog.Root>
 
-            <div className="hidden w-full flex-col items-end space-y-2 pt-2 lg:flex">
+            <div className="hidden w-full flex-col items-start space-y-2 pt-2 lg:flex">
                 <button
                     type="button"
                     aria-expanded={isEditing}
