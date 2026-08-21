@@ -111,7 +111,7 @@ export function PricingSection({ content, locale, subscriptionConfig, subscripti
             className="overflow-visible!"
         >
             <div className="flex w-full justify-center">
-                <Switch value={selectedPeriod} options={periodOptions} onChange={setSelectedPeriod} className="[&>div>button]:min-w-34 sm:[&>div>button]:min-w-40" fitContent />
+                <Switch variant="pictor" value={selectedPeriod} options={periodOptions} onChange={setSelectedPeriod} className="[&>div>button]:min-w-34 sm:[&>div>button]:min-w-40" fitContent />
             </div>
 
             <StaggerContainer className="grid w-full grid-cols-1 items-stretch gap-6 md:grid-cols-2 lg:grid-cols-3" delayChildren={0.04} staggerChildren={0.08}>

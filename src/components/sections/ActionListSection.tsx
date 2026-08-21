@@ -104,7 +104,7 @@ export function ActionListSection({ actions, locale, content }: { actions: Actio
                             className="w-full! text-white!"
                         />
                     </div>
-                    <Switch value={sortOrder} options={sortOptions} onChange={setSortOrder} className="w-auto shrink-0 [&>div]:h-10.5 [&>div>button]:py-0" fitContent />
+                    <Switch variant="pictor" value={sortOrder} options={sortOptions} onChange={setSortOrder} className="w-auto shrink-0 [&>div]:h-10.5 [&>div>button]:py-0" fitContent />
                 </div>
             </div>
             <div className="grid items-start gap-6 md:grid-cols-[13rem_minmax(0,1fr)]">
