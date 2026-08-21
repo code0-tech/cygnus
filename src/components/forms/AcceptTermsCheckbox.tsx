@@ -65,8 +65,8 @@ export function AcceptTermsCheckbox({ locale = DEFAULT_LOCALE, className, disabl
 
     return (
         <div className={className}>
-            <div className="flex items-start">
-                <div className={cn("input checkbox-input -mr-3", formValidation && !formValidation.valid && "input--not-valid")}>
+            <div className="flex items-start gap-2">
+                <div className={cn("input checkbox-input mt-0.5 shrink-0", formValidation && !formValidation.valid && "input--not-valid")}>
                     <button
                         type="button"
                         role="checkbox"

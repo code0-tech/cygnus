@@ -12,7 +12,7 @@ import {
 } from "@/components/licenses/LicenseDataTable"
 import { UpgradePlanBanner } from "@/components/checkout/UpgradePlanBanner"
 import { ButtonLoader } from "@/components/ui/Loader"
-import type { CheckoutData, LicenseContent, SubscriptionConfigData } from "@/lib/cms"
+import type { LicenseContent, SubscriptionConfigData, UpgradeBannerData } from "@/lib/cms"
 import { formatCompactNumber, formatMinorCurrency } from "@/lib/formatters"
 import type { AppLocale } from "@/lib/i18n"
 import { decodeLicenseRouteId, getNamespaceDisplayId } from "@/lib/licenses/licenseRoute"
@@ -31,7 +31,7 @@ interface LicenseDetailPageProps {
     licenseId: string
     locale: AppLocale
     subscriptionConfig?: SubscriptionConfigData | null
-    upgradeBanner?: CheckoutData["upgradeBanner"] | null
+    upgradeBanner?: UpgradeBannerData | null
 }
 
 export function LicenseDetailPage({ content, customerId, licenseId, locale, subscriptionConfig, upgradeBanner }: LicenseDetailPageProps) {
@@ -224,6 +224,7 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, subs
                     content={upgradeBanner}
                     currentPlan={license.plan}
                     onUpgrade={() => router.push(`/${locale}/licenses/customer/${encodeURIComponent(license.customerId)}/license/${encodeURIComponent(license.id)}/upgrade`)}
+                    showPlanSpecificActions
                     subscriptionConfig={subscriptionConfig}
                 />
             )}

@@ -1,5 +1,5 @@
 import { LicenseDetailPage } from "@/components/licenses/pages/LicenseDetailPage"
-import { getCheckoutContent, getLicenseContent, getSubscriptionConfig } from "@/lib/cms"
+import { getLicenseContent, getSubscriptionConfig, getUpgradeBannerContent } from "@/lib/cms"
 import { isSupportedLocale } from "@/lib/i18n"
 import { notFound } from "next/navigation"
 
@@ -11,7 +11,7 @@ export default async function LicensePage({ params }: LicensePageProps) {
     const { customerId, licenseId, locale } = await params
     if (!isSupportedLocale(locale)) notFound()
 
-    const [content, checkoutContent, subscriptionConfig] = await Promise.all([getLicenseContent(locale), getCheckoutContent(locale), getSubscriptionConfig(locale)])
+    const [content, subscriptionConfig, upgradeBanner] = await Promise.all([getLicenseContent(locale), getSubscriptionConfig(locale), getUpgradeBannerContent(locale)])
     if (!content) notFound()
 
     return (
@@ -21,7 +21,7 @@ export default async function LicensePage({ params }: LicensePageProps) {
             licenseId={licenseId}
             locale={locale}
             subscriptionConfig={subscriptionConfig}
-            upgradeBanner={checkoutContent?.upgradeBanner}
+            upgradeBanner={upgradeBanner}
         />
     )
 }

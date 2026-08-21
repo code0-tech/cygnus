@@ -2571,8 +2571,6 @@ export const checkout_locales = pgTable('checkout_locales', {
   form_taxIdTypePlaceholder: varchar('form_tax_id_type_placeholder').notNull().default("eu_vat"),
   form_taxIdValueLabel: varchar('form_tax_id_value_label').notNull().default("Tax ID"),
   form_taxIdValuePlaceholder: varchar('form_tax_id_value_placeholder').notNull().default("DE123456789"),
-  upgradeBanner_text: varchar('upgrade_banner_text').notNull().default("Need more? {plan} gives you more headroom."),
-  upgradeBanner_buttonLabel: varchar('upgrade_banner_button_label').notNull().default("Upgrade"),
   nextSteps_heading: varchar('next_steps_heading').notNull().default("What happens next"),
   nextSteps_step1Title: varchar('next_steps_step1_title').notNull().default("Payment confirmed"),
   nextSteps_step1Description: varchar('next_steps_step1_description').notNull().default("Stripe securely confirms your payment."),
@@ -2604,6 +2602,40 @@ export const checkout_locales = pgTable('checkout_locales', {
       columns: [columns['_parentID']],
       foreignColumns: [checkout.id],
       name: 'checkout_locales_parent_id_fk'
+    }).onDelete('cascade'),
+]
+)
+
+
+export const upgrade_banner = pgTable('upgrade_banner', {
+  id: serial('id').primaryKey(),
+  pro_gradientFrom: varchar('pro_gradient_from').notNull().default("#7af69a"),
+  pro_gradientTo: varchar('pro_gradient_to').notNull().default("#13102d"),
+  max_gradientFrom: varchar('max_gradient_from').notNull().default("#72c9f8"),
+  max_gradientTo: varchar('max_gradient_to').notNull().default("#13102d"),
+  custom_gradientFrom: varchar('custom_gradient_from').notNull().default("#f872e2"),
+  custom_gradientTo: varchar('custom_gradient_to').notNull().default("#13102d"),
+  updatedAt: timestamp('updated_at', {mode: 'string',withTimezone: true,precision: 3}),
+  createdAt: timestamp('created_at', {mode: 'string',withTimezone: true,precision: 3}),
+}
+)
+
+
+export const upgrade_banner_locales = pgTable('upgrade_banner_locales', {
+  pro_text: varchar('pro_text').notNull(),
+  pro_buttonLabel: varchar('pro_button_label').notNull(),
+  max_text: varchar('max_text').notNull(),
+  max_buttonLabel: varchar('max_button_label').notNull(),
+  custom_text: varchar('custom_text').notNull(),
+  custom_buttonLabel: varchar('custom_button_label').notNull(),
+  id: serial('id').primaryKey(),
+  _locale: enum__locales('_locale').notNull(),
+  _parentID: integer('_parent_id').notNull(),
+}, (columns) => [
+    uniqueIndex('upgrade_banner_locales_locale_parent_id_unique').on(columns._locale, columns._parentID), foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [upgrade_banner.id],
+      name: 'upgrade_banner_locales_parent_id_fk'
     }).onDelete('cascade'),
 ]
 )
@@ -4143,6 +4175,19 @@ export const relations_checkout = relations(checkout, ({ many }) => ({
             relationName: '_locales',
     }),
       }))
+export const relations_upgrade_banner_locales = relations(upgrade_banner_locales, ({ one }) => ({
+  _parentID: one(upgrade_banner, {
+
+    fields: [upgrade_banner_locales._parentID],
+    references: [upgrade_banner.id],
+    relationName: '_locales',
+    }),
+      }))
+export const relations_upgrade_banner = relations(upgrade_banner, ({ many }) => ({
+  _locales: many(upgrade_banner_locales, {
+            relationName: '_locales',
+    }),
+      }))
 export const relations_licenses_locales = relations(licenses_locales, ({ one }) => ({
   _parentID: one(licenses, {
     
@@ -4366,6 +4411,8 @@ type DatabaseSchema = {
   subscription_config_locales: typeof subscription_config_locales
   checkout: typeof checkout
   checkout_locales: typeof checkout_locales
+  upgrade_banner: typeof upgrade_banner
+  upgrade_banner_locales: typeof upgrade_banner_locales
   licenses: typeof licenses
   licenses_locales: typeof licenses_locales
   errors: typeof errors
@@ -4487,6 +4534,8 @@ type DatabaseSchema = {
   relations_subscription_config: typeof relations_subscription_config
   relations_checkout_locales: typeof relations_checkout_locales
   relations_checkout: typeof relations_checkout
+  relations_upgrade_banner_locales: typeof relations_upgrade_banner_locales
+  relations_upgrade_banner: typeof relations_upgrade_banner
   relations_licenses_locales: typeof relations_licenses_locales
   relations_licenses: typeof relations_licenses
   relations_errors_locales: typeof relations_errors_locales

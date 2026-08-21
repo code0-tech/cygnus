@@ -6,7 +6,7 @@ import { CheckoutLegalFooter } from "@/components/checkout/CheckoutLegalFooter"
 import { CheckoutSummary } from "@/components/checkout/CheckoutSummary"
 import { useCheckoutStage } from "@/components/checkout/CheckoutStepper"
 import { cn } from "@/lib/utils"
-import type { CheckoutData, ErrorsContent, SubscriptionConfigData } from "@/lib/cms"
+import type { CheckoutData, ErrorsContent, SubscriptionConfigData, UpgradeBannerData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import type { SubscriptionPriceCatalog } from "@/lib/subscriptionPrices"
 import type { Footer } from "@/payload-types"
@@ -23,7 +23,7 @@ interface CheckoutPageContentProps {
     subscriptionConfig?: SubscriptionConfigData | null
     subscriptionPrices: SubscriptionPriceCatalog
     summary?: CheckoutData["summary"] | null
-    upgradeBanner?: CheckoutData["upgradeBanner"] | null
+    upgradeBanner?: UpgradeBannerData | null
 }
 
 function CheckoutSummaryWithTax(props: Omit<ComponentProps<typeof CheckoutSummary>, "taxQuote">) {

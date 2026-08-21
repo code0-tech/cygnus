@@ -105,6 +105,7 @@ export interface Config {
     'cookie-banner': CookieBanner;
     subscriptionConfig: SubscriptionConfig;
     checkout: Checkout;
+    upgradeBanner: UpgradeBanner;
     licenses: License;
     errors: Error;
   };
@@ -114,6 +115,7 @@ export interface Config {
     'cookie-banner': CookieBannerSelect<false> | CookieBannerSelect<true>;
     subscriptionConfig: SubscriptionConfigSelect<false> | SubscriptionConfigSelect<true>;
     checkout: CheckoutSelect<false> | CheckoutSelect<true>;
+    upgradeBanner: UpgradeBannerSelect<false> | UpgradeBannerSelect<true>;
     licenses: LicensesSelect<false> | LicensesSelect<true>;
     errors: ErrorsSelect<false> | ErrorsSelect<true>;
   };
@@ -3177,16 +3179,6 @@ export interface Checkout {
     taxIdValuePlaceholder: string;
   };
   /**
-   * Small, low-emphasis nudge shown in checkout when a higher plan than the one being purchased is available.
-   */
-  upgradeBanner: {
-    /**
-     * Use {plan} as a placeholder for the suggested plan's name.
-     */
-    text: string;
-    buttonLabel: string;
-  };
-  /**
    * Vertical 3-step 'what happens after you pay' stepper shown in the summary once the payment step is reached, replacing the order summary heading and payment period switcher.
    */
   nextSteps: {
@@ -3218,6 +3210,51 @@ export interface Checkout {
     invalidDescription: string;
     checkoutRetryLabel: string;
     backToHomepageLabel: string;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "upgradeBanner".
+ */
+export interface UpgradeBanner {
+  id: number;
+  pro: {
+    /**
+     * Use {plan} as a placeholder for the suggested or current plan name.
+     */
+    text: string;
+    /**
+     * Use {plan} as a placeholder for the suggested or current plan name.
+     */
+    buttonLabel: string;
+    gradientFrom: string;
+    gradientTo: string;
+  };
+  max: {
+    /**
+     * Use {plan} as a placeholder for the suggested or current plan name.
+     */
+    text: string;
+    /**
+     * Use {plan} as a placeholder for the suggested or current plan name.
+     */
+    buttonLabel: string;
+    gradientFrom: string;
+    gradientTo: string;
+  };
+  custom: {
+    /**
+     * Use {plan} as a placeholder for the suggested or current plan name.
+     */
+    text: string;
+    /**
+     * Use {plan} as a placeholder for the suggested or current plan name.
+     */
+    buttonLabel: string;
+    gradientFrom: string;
+    gradientTo: string;
   };
   updatedAt?: string | null;
   createdAt?: string | null;
@@ -3950,12 +3987,6 @@ export interface CheckoutSelect<T extends boolean = true> {
         taxIdValueLabel?: T;
         taxIdValuePlaceholder?: T;
       };
-  upgradeBanner?:
-    | T
-    | {
-        text?: T;
-        buttonLabel?: T;
-      };
   nextSteps?:
     | T
     | {
@@ -3986,6 +4017,39 @@ export interface CheckoutSelect<T extends boolean = true> {
         invalidDescription?: T;
         checkoutRetryLabel?: T;
         backToHomepageLabel?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "upgradeBanner_select".
+ */
+export interface UpgradeBannerSelect<T extends boolean = true> {
+  pro?:
+    | T
+    | {
+        text?: T;
+        buttonLabel?: T;
+        gradientFrom?: T;
+        gradientTo?: T;
+      };
+  max?:
+    | T
+    | {
+        text?: T;
+        buttonLabel?: T;
+        gradientFrom?: T;
+        gradientTo?: T;
+      };
+  custom?:
+    | T
+    | {
+        text?: T;
+        buttonLabel?: T;
+        gradientFrom?: T;
+        gradientTo?: T;
       };
   updatedAt?: T;
   createdAt?: T;

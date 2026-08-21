@@ -133,6 +133,7 @@ import * as migration_20260820_041742_license_withdrawal_notice from './20260820
 import * as migration_20260820_061154_add_subscription_plan_features from './20260820_061154_add_subscription_plan_features';
 import * as migration_20260821_052749_checkout_success_actions from './20260821_052749_checkout_success_actions';
 import * as migration_20260821_055835_checkout_send_offer_dialog from './20260821_055835_checkout_send_offer_dialog';
+import * as migration_20260821_065512_plan_upgrade_banner from './20260821_065512_plan_upgrade_banner';
 
 export const migrations = [
   {
@@ -809,5 +810,10 @@ export const migrations = [
     up: migration_20260821_055835_checkout_send_offer_dialog.up,
     down: migration_20260821_055835_checkout_send_offer_dialog.down,
     name: '20260821_055835_checkout_send_offer_dialog',
+  },
+  {
+    up: migration_20260821_065512_plan_upgrade_banner.up,
+    down: migration_20260821_065512_plan_upgrade_banner.down,
+    name: '20260821_065512_plan_upgrade_banner',
   },
 ];

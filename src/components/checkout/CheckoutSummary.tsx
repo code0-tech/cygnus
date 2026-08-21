@@ -8,7 +8,7 @@ import { UpgradePlanBanner, type SubscriptionPlan } from "@/components/checkout/
 import { getIcon } from "@/components/ui/IconRenderer"
 import { Switch } from "@/components/ui/Switch"
 import type { CheckoutTaxQuoteData } from "@/lib/checkout/checkoutSubmission"
-import type { CheckoutData, ErrorsContent, SubscriptionConfigData } from "@/lib/cms"
+import type { CheckoutData, ErrorsContent, SubscriptionConfigData, UpgradeBannerData } from "@/lib/cms"
 import { formatCompactNumber, formatEuroCurrency } from "@/lib/formatters"
 import { calculateExclusiveTaxRate, calculatePromotionDiscountAmount, formatDiscountBadge, resolveCheckoutPricing, type PaymentPeriod } from "@/lib/subscriptionCalculator"
 import { getPaymentPeriodOptions, type SubscriptionCustomerType } from "@/lib/subscriptionConfigurator"
@@ -25,7 +25,7 @@ interface CheckoutSummaryProps {
     subscriptionConfig?: SubscriptionConfigData | null
     subscriptionPrices: SubscriptionPriceCatalog
     taxQuote?: CheckoutTaxQuoteData | null
-    upgradeBanner?: CheckoutData["upgradeBanner"] | null
+    upgradeBanner?: UpgradeBannerData | null
 }
 
 export function CheckoutSummary({ content, errors, nextSteps, subscriptionConfig, subscriptionPrices, taxQuote, upgradeBanner }: CheckoutSummaryProps) {
