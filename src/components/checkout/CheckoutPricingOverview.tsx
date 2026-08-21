@@ -9,14 +9,12 @@ import { formatDiscountBadge } from "@/lib/subscriptionCalculator"
 import { Card } from "@code0-tech/pictor"
 import NumberFlow from "@number-flow/react"
 
-interface CheckoutPricingOverviewProps {
+export interface CheckoutPricingOverviewData {
     aiTokenPrice: number
     aiTokens: number
-    content: CheckoutData["summary"]
     customerType: string | null
     deployment: string | null
     isCustomPlan: boolean
-    locale: AppLocale
     monthlyPeriodSuffix: string
     paymentPeriodDiscountAmount: number
     paymentPeriodDiscountLabel: string | null
@@ -24,12 +22,17 @@ interface CheckoutPricingOverviewProps {
     periodSuffix: string
     planPrice: number | null
     planTitle: string
-    subscriptionConfig: SubscriptionConfigData
     taxAmount: number
     taxPercentage: number | null
     totalPrice: number
     workflowExecutionPrice: number
     workflowExecutions: number
+}
+
+interface CheckoutPricingOverviewProps extends CheckoutPricingOverviewData {
+    content: CheckoutData["summary"]
+    locale: AppLocale
+    subscriptionConfig: SubscriptionConfigData
 }
 
 export function CheckoutPricingOverview({

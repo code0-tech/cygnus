@@ -565,7 +565,7 @@ function CheckoutPaymentFields({
                             variant="normal"
                             disabled={isConfirming}
                             onClick={showBillingAddress}
-                            className="h-10! w-full! border-white/10! bg-white/3! text-sm! text-secondary! hover:bg-white/6! hover:text-white!"
+                            className="h-10! w-full! border-none! bg-transparent! text-sm! text-tertiary! shadow-none! hover:bg-white/6! hover:text-white! transition-colors!"
                         >
                             {content.backToBillingLabel}
                         </Button>

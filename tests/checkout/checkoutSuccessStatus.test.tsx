@@ -31,6 +31,11 @@ mock.module("@/components/ui/IconRenderer", {
         getIcon: (icon: string | null | undefined) => <span data-icon={icon ?? undefined} />,
     },
 })
+mock.module("@/components/checkout/CheckoutPricingOverview", {
+    namedExports: {
+        CheckoutPricingOverview: ({ totalPrice }: { totalPrice: number }) => <div>Pricing overview: {totalPrice}</div>,
+    },
+})
 let downloadedLicenseIds: string[] = []
 mock.module("@/lib/licenses/downloadLicenseFile", {
     namedExports: {
@@ -129,11 +134,30 @@ test("explains a checkout session that cannot be verified", async () => {
     assert.deepEqual(routerReplaceCalls, [])
 })
 
-test("shows the order summary and the receipt hint once the payment is confirmed", async () => {
+test("shows the pricing overview and the receipt hint once the payment is confirmed", async () => {
     respondWith({ state: "FULFILLMENT_PENDING", customerId: "gid://crater/Customer/1", licenseId: null })
     const summary = {
         deployment: "self_hosted" as const,
         title: "Your configuration",
+        overview: {
+            aiTokenPrice: 50,
+            aiTokens: 1_000_000,
+            customerType: "b2b",
+            deployment: "self_hosted",
+            isCustomPlan: true,
+            monthlyPeriodSuffix: "per month",
+            paymentPeriodDiscountAmount: 25,
+            paymentPeriodDiscountLabel: "Yearly discount",
+            paymentPeriodDiscountPercentage: 0.25,
+            periodSuffix: "per year",
+            planPrice: null,
+            planTitle: "Custom",
+            taxAmount: 0,
+            taxPercentage: null,
+            totalPrice: 75,
+            workflowExecutionPrice: 50,
+            workflowExecutions: 1_000,
+        },
         rows: [
             { id: "plan", label: "Plan", value: "Custom", icon: "tabler:IconSettings", tone: "aqua" as const },
             { id: "paymentPeriod", label: "Payment period", value: "Yearly", icon: "tabler:IconCalendarMonth", tone: "magenta" as const },
@@ -141,12 +165,21 @@ test("shows the order summary and the receipt hint once the payment is confirmed
         ],
     }
 
-    render(<CheckoutSuccessStatus checkoutSearchParams={checkoutSearchParams} content={content} errorMessage={errorMessage} locale="en" sessionId="cs_test" summary={summary} />)
+    render(
+        <CheckoutSuccessStatus
+            checkoutSearchParams={checkoutSearchParams}
+            content={content}
+            errorMessage={errorMessage}
+            locale="en"
+            pricingContent={{} as CheckoutData["summary"]}
+            sessionId="cs_test"
+            subscriptionConfig={{} as never}
+            summary={summary}
+        />
+    )
 
     assert.ok(await screen.findByText(content.heading))
-    assert.ok(screen.getByText(summary.title))
-    assert.ok(screen.getByText("Yearly"))
-    assert.ok(screen.getByText("1M"))
+    assert.ok(screen.getByText("Pricing overview: 75"))
     assert.ok(screen.getByText(content.receiptHint))
 })
 

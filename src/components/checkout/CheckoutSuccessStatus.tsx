@@ -1,17 +1,17 @@
 "use client"
 
-import { SummaryBadge } from "@/components/checkout/CheckoutSummaryBadge"
-import { getIcon } from "@/components/ui/IconRenderer"
+import { CheckoutPricingOverview } from "@/components/checkout/CheckoutPricingOverview"
 import { LinkButton } from "@/components/ui/LinkButton"
 import { ButtonLoader } from "@/components/ui/Loader"
 import { clearCheckoutDraftKeys } from "@/lib/checkout/checkoutDraft"
 import { getCheckoutStatusPollDelay, hasCheckoutStatusPollingExpired } from "@/lib/checkout/checkoutStatusPolling"
 import type { CheckoutSuccessSummary } from "@/lib/checkout/checkoutSuccessSummary"
-import type { CheckoutData } from "@/lib/cms"
+import type { CheckoutData, SubscriptionConfigData } from "@/lib/cms"
+import type { AppLocale } from "@/lib/i18n"
 import { downloadLicenseFile } from "@/lib/licenses/downloadLicenseFile"
 import type { CheckoutCompletionState } from "@code0-tech/crater-graphql-types"
 import { Button } from "@code0-tech/pictor"
-import { IconCircleCheckFilled, IconCloud, IconDownload, IconExclamationCircleFilled } from "@tabler/icons-react"
+import { IconCheck, IconCloud, IconDownload, IconX } from "@tabler/icons-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useCallback, useEffect, useRef, useState } from "react"
@@ -28,10 +28,12 @@ interface CheckoutSuccessStatusProps {
     checkoutSearchParams: URLSearchParams
     content: SuccessContent
     errorMessage: string
-    locale: string
+    locale: AppLocale
+    pricingContent?: CheckoutData["summary"] | null
     sculptorUrl?: string | null
     sessionId: string
     summary?: CheckoutSuccessSummary | null
+    subscriptionConfig?: SubscriptionConfigData | null
 }
 
 const REQUEST_TIMEOUT_MS = 10_000
@@ -48,7 +50,7 @@ function parseStatusResponse(value: unknown): StatusResponse | null {
     return response as StatusResponse
 }
 
-export function CheckoutSuccessStatus({ checkoutSearchParams, content, errorMessage, locale, sculptorUrl, sessionId, summary }: CheckoutSuccessStatusProps) {
+export function CheckoutSuccessStatus({ checkoutSearchParams, content, errorMessage, locale, pricingContent, sculptorUrl, sessionId, summary, subscriptionConfig }: CheckoutSuccessStatusProps) {
     const router = useRouter()
     const [status, setStatus] = useState<CheckoutStatus>("LOADING")
     const [completion, setCompletion] = useState<StatusResponse | null>(null)
@@ -171,20 +173,16 @@ export function CheckoutSuccessStatus({ checkoutSearchParams, content, errorMess
 
     return (
         <div className="flex flex-col items-center justify-center gap-2">
-            <div className="flex itemss-center gap-2">
-                {status === "READY" && <IconCircleCheckFilled size={32} className="mt-0.5" />}
-                {status === "ERROR" && <IconExclamationCircleFilled size={32} className="mt-0.5" />}
-                {heading && <h1 className="text-3xl font-semibold text-white">{heading}</h1>}
-            </div>
-            {description && <p className="text-secondary max-w-md">{description}</p>}
-            {fulfillmentConfirmed && summary && summary.rows.length > 0 && (
-                <div className="my-4 flex flex-col items-center gap-2">
-                    <span className="text-sm text-white">{summary.title}</span>
-                    <div className="flex flex-wrap items-center justify-center gap-1.5 max-w-sm">
-                        {summary.rows.map((row) => (
-                            <SummaryBadge key={row.id} icon={getIcon(row.icon, 14)} tone={row.tone} value={row.value} />
-                        ))}
-                    </div>
+            {status === "READY" || status === "ERROR" ? (
+                <div className="mb-2 flex size-12 items-center justify-center rounded-2xl bg-brand/10 text-brand shadow-[inset_0_1px_1px_#bfbfbf1a]">
+                    {status === "READY" ? <IconCheck aria-hidden="true" size={28} /> : <IconX aria-hidden="true" size={28} />}
+                </div>
+            ) : null}
+            {heading && <h1 className="text-3xl font-semibold text-white">{heading}</h1>}
+            {description && <p className="text-secondary max-w-lg">{description}</p>}
+            {fulfillmentConfirmed && summary?.overview && pricingContent && subscriptionConfig && (
+                <div className="my-4 w-full max-w-lg text-left">
+                    <CheckoutPricingOverview {...summary.overview} content={pricingContent} locale={locale} subscriptionConfig={subscriptionConfig} />
                 </div>
             )}
             {fulfillmentConfirmed && <p className="text-sm text-tertiary mb-4">{content.receiptHint}</p>}
