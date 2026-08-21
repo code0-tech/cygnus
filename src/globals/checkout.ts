@@ -178,7 +178,18 @@ export const Checkout: GlobalConfig = {
                     required: true,
                     localized: true,
                     defaultValue: "Send offer",
-                    admin: { description: "Shown below the primary billing/payment button for business customers only." },
+                    admin: { description: "Shown below the primary billing button for business customers only." },
+                },
+                { name: "sendOfferTitle", type: "text", required: true, localized: true, defaultValue: localizedDefault("Send offer", "Angebot senden") },
+                {
+                    name: "sendOfferDescription",
+                    type: "textarea",
+                    required: true,
+                    localized: true,
+                    defaultValue: localizedDefault(
+                        "Enter the email address that should receive this configuration as an offer.",
+                        "Gib die E-Mail-Adresse ein, an die diese Konfiguration als Angebot gesendet werden soll."
+                    ),
                 },
                 { name: "processingLabel", type: "text", required: true, localized: true, defaultValue: "Processing..." },
                 { name: "customerSelectLabel", type: "text", required: true, localized: true, defaultValue: "Billing customer" },

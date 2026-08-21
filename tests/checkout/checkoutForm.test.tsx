@@ -83,6 +83,11 @@ mock.module("@/components/checkout/CheckoutStepper", {
         }),
     },
 })
+mock.module("@/components/checkout/SendOfferDialog", {
+    namedExports: {
+        SendOfferDialog: ({ content }: { content: CheckoutData["form"] }) => <button type="button">{content.sendOfferLabel}</button>,
+    },
+})
 mock.module("@code0-tech/pictor", {
     namedExports: {
         Button: ({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button {...props}>{children}</button>,
@@ -241,6 +246,9 @@ const content = {
     continueLabel: "Continue to payment",
     backToBillingLabel: "Back",
     payNowLabel: "Pay now",
+    sendOfferLabel: "Send offer",
+    sendOfferTitle: "Send offer",
+    sendOfferDescription: "Enter the recipient email address.",
     processingLabel: "Processing",
     customerSelectLabel: "Billing customer",
     newCustomerLabel: "Create new customer",
@@ -700,6 +708,7 @@ test("renders Stripe's Tax ID Element for a business customer", async () => {
     assert.ok(screen.getByTestId("stripe-contact-details"))
     assert.ok(screen.getByTestId("stripe-billing-address"))
     assert.ok(screen.getByTestId("stripe-tax-id"))
+    assert.ok(screen.getByRole("button", { name: content.sendOfferLabel }))
     assert.deepEqual(taxIdElementOptions, { fields: { businessName: "never" }, visibility: "auto" })
     assert.deepEqual(stripeLoadOptions, { betas: ["custom_checkout_tax_id_1"], locale: "en" })
     act(() => billingAddressOnChange?.({ complete: true, value: stripeBillingAddress }))
@@ -707,6 +716,7 @@ test("renders Stripe's Tax ID Element for a business customer", async () => {
     await user.click(screen.getByRole("button", { name: "Continue to payment" }))
 
     assert.ok(await screen.findByTestId("stripe-payment"))
+    assert.equal(screen.queryByRole("button", { name: content.sendOfferLabel }), null)
 })
 
 test("shows only the configured error when automatic customer creation fails", async () => {

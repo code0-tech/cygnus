@@ -5,6 +5,7 @@ import type { CheckoutSessionData, CheckoutTaxQuoteData } from "@/lib/checkout/c
 import { AcceptTermsCheckbox } from "@/components/forms/AcceptTermsCheckbox"
 import { useCheckoutStage } from "@/components/checkout/CheckoutStepper"
 import { ButtonLoader } from "@/components/ui/Loader"
+import { SendOfferDialog } from "@/components/checkout/SendOfferDialog"
 import { Button, EmailInput } from "@code0-tech/pictor"
 import { IconAlertTriangle } from "@tabler/icons-react"
 import { BillingAddressElement, CheckoutElementsProvider, ContactDetailsElement, PaymentElement, TaxIdElement, useCheckoutElements } from "@stripe/react-stripe-js/checkout"
@@ -437,15 +438,7 @@ function CheckoutPaymentFields({
                         >
                             {isUpdatingBilling ? <ButtonLoader label={content.processingLabel} /> : content.continueLabel}
                         </Button>
-                        {isBusinessCustomer && (
-                            <Button
-                                type="button"
-                                variant="normal"
-                                className="h-10! w-full! border-white/10! bg-white/3! text-sm! text-secondary! hover:bg-white/6! hover:text-white!"
-                            >
-                                {content.sendOfferLabel}
-                            </Button>
-                        )}
+                        {isBusinessCustomer && <SendOfferDialog content={content} initialEmail={email} />}
                     </div>
                 </>
             ) : (
@@ -480,15 +473,6 @@ function CheckoutPaymentFields({
                         >
                             {isConfirming ? <ButtonLoader label={content.processingLabel} /> : content.payNowLabel}
                         </Button>
-                        {isBusinessCustomer && (
-                            <Button
-                                type="button"
-                                variant="normal"
-                                className="h-10! w-full! border-white/10! bg-white/3! text-sm! text-secondary! hover:bg-white/6! hover:text-white!"
-                            >
-                                {content.sendOfferLabel}
-                            </Button>
-                        )}
                         <Button
                             type="button"
                             variant="normal"

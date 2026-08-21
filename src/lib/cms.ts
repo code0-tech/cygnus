@@ -324,6 +324,8 @@ export interface CheckoutData {
         backToBillingLabel: string
         payNowLabel: string
         sendOfferLabel: string
+        sendOfferTitle: string
+        sendOfferDescription: string
         processingLabel: string
         customerSelectLabel: string
         newCustomerLabel: string

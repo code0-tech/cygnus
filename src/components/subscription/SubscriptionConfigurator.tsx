@@ -9,14 +9,7 @@ import type { SubscriptionConfiguratorContent } from "@/lib/cms"
 import { formatEuroCurrency } from "@/lib/formatters"
 import { localizeHref, type AppLocale } from "@/lib/i18n"
 import { getSubscriptionCatalog } from "@/lib/subscriptionCatalog"
-import {
-    calculateSubscriptionQuote,
-    formatDiscountBadge,
-    getMonthlyEquivalentAmount,
-    getPaymentPeriodAmount,
-    getPaymentPeriodSuffix,
-    getSubscriptionQuoteDiscountRate,
-} from "@/lib/subscriptionCalculator"
+import { calculateSubscriptionQuote, formatDiscountBadge, getPaymentPeriodSuffix, getSubscriptionDisplayPrices, getSubscriptionQuoteDiscountRate } from "@/lib/subscriptionCalculator"
 import type { SubscriptionPriceCatalog } from "@/lib/subscriptionPrices"
 import { cn } from "@/lib/utils"
 import {
@@ -100,8 +93,7 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
     const paymentPeriodSuffix = getPaymentPeriodSuffix(selection.paymentPeriod, content.paymentPeriod)
     const monthlyPeriodSuffix = getPaymentPeriodSuffix("monthly", content.paymentPeriod)
     const quote = calculateSubscriptionQuote(selection, catalog)
-    const monthlyPrice = getMonthlyEquivalentAmount(quote.total, selection.paymentPeriod) / 100
-    const paymentPeriodPrice = getPaymentPeriodAmount(monthlyPrice, selection.paymentPeriod)
+    const { monthlyPrice, paymentPeriodPrice } = getSubscriptionDisplayPrices(quote.total, selection.paymentPeriod)
     const selectionSearchParamsString = buildSubscriptionSelectionSearchParams(selection).toString()
     const configurationUrl = `${pathname}?${selectionSearchParamsString}`
     const subscribeSearchParams = new URLSearchParams(selectionSearchParamsString)

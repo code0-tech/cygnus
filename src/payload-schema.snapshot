@@ -2541,6 +2541,8 @@ export const checkout_locales = pgTable('checkout_locales', {
   form_backToBillingLabel: varchar('form_back_to_billing_label').notNull().default("Back to Billing"),
   form_payNowLabel: varchar('form_pay_now_label').notNull().default("Pay now"),
   form_sendOfferLabel: varchar('form_send_offer_label').notNull().default("Send offer"),
+  form_sendOfferTitle: varchar('form_send_offer_title').notNull(),
+  form_sendOfferDescription: varchar('form_send_offer_description').notNull(),
   form_processingLabel: varchar('form_processing_label').notNull().default("Processing..."),
   form_customerSelectLabel: varchar('form_customer_select_label').notNull().default("Billing customer"),
   form_newCustomerLabel: varchar('form_new_customer_label').notNull().default("Create new customer"),

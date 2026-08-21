@@ -6,9 +6,9 @@ import {
     calculateSubscriptionQuote,
     formatDiscountBadge,
     getMonthlyEquivalentAmount,
-    getPaymentPeriodAmount,
     getPaymentPeriodMonths,
     getPaymentPeriodSuffix,
+    getSubscriptionDisplayPrices,
     resolveCheckoutPricing,
 } from "@/lib/subscriptionCalculator"
 import { SUBSCRIPTION_PRICE_LOOKUP_KEYS, type SubscriptionPriceCatalog, type SubscriptionPriceLookupKey } from "@/lib/subscriptionPrices"
@@ -94,11 +94,11 @@ test("normalizes subscription amounts to a comparable monthly amount", () => {
     assert.equal(getMonthlyEquivalentAmount(28_800, "yearly"), 2_400)
 })
 
-test("converts a monthly display price to the selected billing period", () => {
-    assert.equal(getPaymentPeriodAmount(5.2, "weekly"), 1.2)
-    assert.equal(getPaymentPeriodAmount(5.2, "monthly"), 5.2)
-    assert.equal(getPaymentPeriodAmount(5.2, "quarterly"), 15.6)
-    assert.equal(getPaymentPeriodAmount(5.2, "yearly"), 62.4)
+test("keeps the exact period total when its monthly equivalent must be rounded", () => {
+    assert.deepEqual(getSubscriptionDisplayPrices(25_000, "quarterly"), {
+        monthlyPrice: 83.33,
+        paymentPeriodPrice: 250,
+    })
 })
 
 test("formats discount badges by locale", () => {
