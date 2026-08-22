@@ -46,6 +46,7 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, subs
         dateStyle: "medium",
         timeZone: "UTC",
     })
+    const accessEndDate = license?.endDate ?? license?.cancelAt
     const licenseDetails = license
         ? [
               { label: content.dashboard.statusLabel, value: formatLicenseDisplayValue(license.status, "status", content.values), showStatusDot: true },
@@ -57,6 +58,14 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, subs
               { label: content.dashboard.deploymentLabel, value: formatLicenseDisplayValue(license.deploymentType, "deploymentType", content.values) },
               { label: content.licenses, value: formatLicenseDisplayValue(license.plan, "plan", content.values), showPlanIcon: true },
               { label: content.dashboard.paymentPeriodLabel, value: formatLicenseDisplayValue(license.paymentPeriod, "paymentPeriod", content.values) },
+              ...(accessEndDate
+                  ? [
+                        {
+                            label: content.cancel.cancelAtLabel,
+                            value: dateFormatter.format(new Date(accessEndDate)),
+                        },
+                    ]
+                  : []),
               ...(license.pendingUpdate
                   ? [
                         {

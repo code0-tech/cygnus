@@ -46,6 +46,7 @@ export interface LicenseDashboardLicense {
     customerName: string
     customerType?: string
     deploymentType?: string
+    endDate?: string
     id: string
     invoices?: LicenseDashboardInvoice[]
     name: string

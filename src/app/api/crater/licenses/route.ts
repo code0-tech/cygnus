@@ -46,6 +46,7 @@ const LICENSE_DASHBOARD: TypedDocumentNode<LicenseDashboardQuery, CustomerPageVa
                             status
                             plan
                             deploymentType
+                            endDate
                             namespaceId
                             paymentPeriod
                             updatedAt
@@ -177,6 +178,7 @@ const LICENSE_NAVIGATION_PAGE: TypedDocumentNode<LicenseDashboardQuery, LicenseD
                             node {
                                 aiTokens
                                 deploymentType
+                                endDate
                                 id
                                 namespaceId
                                 paymentPeriod
@@ -253,6 +255,7 @@ const LICENSE_CUSTOMER_DETAIL: TypedDocumentNode<LicenseDashboardQuery, LicenseD
                         nodes {
                             aiTokens
                             deploymentType
+                            endDate
                             id
                             namespaceId
                             paymentPeriod
@@ -406,6 +409,7 @@ function mapLicense(license: License, customer: Customer): LicenseDashboardLicen
             : {}),
         name: licenseName(license.plan, license.id),
         ...(license.deploymentType ? { deploymentType: license.deploymentType } : {}),
+        ...(license.endDate ? { endDate: license.endDate } : {}),
         ...(license.namespaceId ? { namespaceId: license.namespaceId } : {}),
         ...(license.paymentPeriod ? { paymentPeriod: license.paymentPeriod } : {}),
         ...(license.plan ? { plan: license.plan } : {}),
