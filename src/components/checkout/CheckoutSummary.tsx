@@ -71,16 +71,12 @@ export function CheckoutSummary({ content, errors, nextSteps, stripePricing, sub
     const currency = stripePricing?.currency ?? "EUR"
     const promotionDiscountAmount = stripePricing?.discountAmount ?? previewPromotionDiscountAmount
     const taxAmount = stripePricing?.taxAmount ?? previewTaxAmount
-    const taxPercentage = stripePricing
-        ? calculateExclusiveTaxRate(stripePricing.totalPrice, stripePricing.taxAmount)
-        : taxQuote
-          ? previewTaxPercentage
-          : null
+    const taxPercentage = stripePricing ? calculateExclusiveTaxRate(stripePricing.totalPrice, stripePricing.taxAmount) : taxQuote ? previewTaxPercentage : null
     const totalPrice = stripePricing?.totalPrice ?? previewDiscountedPrice + previewTaxAmount
     const formattedDiscountAmount = formatCurrency(promotionDiscountAmount, currency, locale)
 
     return (
-        <div className="flex-1">
+        <div className="flex-[1.34]">
             {stage === "payment" ? (
                 <CheckoutNextSteps content={nextSteps} />
             ) : (
