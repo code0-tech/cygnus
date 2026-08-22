@@ -17,7 +17,7 @@ type CheckoutFormContent = CheckoutData["form"]
 
 const stripePublicKey = process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY
 const stripePromise = stripePublicKey ? loadStripe(stripePublicKey, { betas: ["custom_checkout_tax_id_1"], locale: "en" }) : null
-const STRIPE_APPEARANCE_VERSION = "pictor-3"
+const STRIPE_APPEARANCE_VERSION = "pictor-7"
 const stripeAppearance = {
     theme: "night",
     labels: "above",
@@ -28,6 +28,11 @@ const stripeAppearance = {
         colorTextSecondary: "rgba(255, 255, 255, 0.5)",
         colorTextPlaceholder: "rgba(255, 255, 255, 0.35)",
         colorDanger: "#ef5b68",
+        tabIconColor: "rgba(255, 255, 255, 0.7)",
+        tabIconHoverColor: "#ffffff",
+        tabIconSelectedColor: "#ffffff",
+        tabIconMoreColor: "rgba(255, 255, 255, 0.7)",
+        tabIconMoreHoverColor: "#ffffff",
         fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif",
         fontSizeBase: "13px",
         fontWeightNormal: "400",
@@ -191,18 +196,28 @@ const stripeAppearance = {
             backgroundColor: "#191825",
             border: "none",
             boxShadow: "inset 0 1px 1px rgba(255, 255, 255, 0.1)",
+            color: "rgba(255, 255, 255, 0.7)",
+            padding: "12px 14px",
         },
         ".Tab:hover": {
             backgroundColor: "#201e2c",
+            color: "#ffffff",
         },
         ".Tab--selected": {
-            backgroundColor: "#201e2c",
+            backgroundColor: "#302e3b",
             border: "none",
-            boxShadow: "none",
+            boxShadow: "inset 0 1px 1px rgba(255, 255, 255, 0.12)",
+            color: "#ffffff",
+        },
+        ".Tab--selected:hover": {
+            backgroundColor: "#302e3b",
+            border: "none",
+            boxShadow: "inset 0 1px 1px rgba(255, 255, 255, 0.12)",
+            color: "#ffffff",
         },
         ".Tab:focus": {
-            backgroundColor: "#2b2938",
-            boxShadow: "none",
+            backgroundColor: "#302e3b",
+            boxShadow: "inset 0 1px 1px rgba(255, 255, 255, 0.12)",
             outline: "none",
         },
         ".AccordionItem": {
@@ -360,10 +375,7 @@ function CheckoutPaymentFields({
     const { stage: activeStep, setStage } = useCheckoutStage()
     const params = useParams<{ locale?: string }>()
     const locale = params?.locale === "de" ? "de" : "en"
-    // The accept-terms checkbox can't live inside a <form>: Radix's Checkbox stops click propagation
-    // when nested in one (for its native bubble-input sync), which breaks pictor's CheckboxInput --
-    // it toggles by listening for that click to bubble up to a wrapping div. Scoping <form> to just the
-    // PaymentElement and wiring "Pay now" via the HTML form= attribute keeps the checkbox clickable.
+
     const paymentFormId = useId()
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
     const [isUpdatingBilling, setIsUpdatingBilling] = useState(false)
@@ -428,14 +440,7 @@ function CheckoutPaymentFields({
 
     useEffect(() => {
         onPricingChange(liveStripePricing)
-    }, [
-        liveStripePricing?.currency,
-        liveStripePricing?.discountAmount,
-        liveStripePricing?.subtotalPrice,
-        liveStripePricing?.taxAmount,
-        liveStripePricing?.totalPrice,
-        onPricingChange,
-    ])
+    }, [liveStripePricing?.currency, liveStripePricing?.discountAmount, liveStripePricing?.subtotalPrice, liveStripePricing?.taxAmount, liveStripePricing?.totalPrice, onPricingChange])
 
     useEffect(() => {
         if (checkoutState.type !== "success") {
@@ -520,7 +525,23 @@ function CheckoutPaymentFields({
                 setIsUpdatingBilling(false)
             }
         },
-        [billingAddress, checkoutState, customerEmail, emailSyncedToStripe, errors.billingAddressUpdate, errors.emailUpdate, errors.paymentFallback, email, isBillingAddressComplete, isContactDetailsComplete, isUpdatingBilling, onEmailSyncedChange, onPricingChange, onTaxQuoteChange, setStage]
+        [
+            billingAddress,
+            checkoutState,
+            customerEmail,
+            emailSyncedToStripe,
+            errors.billingAddressUpdate,
+            errors.emailUpdate,
+            errors.paymentFallback,
+            email,
+            isBillingAddressComplete,
+            isContactDetailsComplete,
+            isUpdatingBilling,
+            onEmailSyncedChange,
+            onPricingChange,
+            onTaxQuoteChange,
+            setStage,
+        ]
     )
 
     const showPayment = () => updateCheckoutBilling(true)
@@ -631,7 +652,7 @@ function CheckoutPaymentFields({
                 <>
                     <form id={paymentFormId} onSubmit={handleSubmit} className="w-full space-y-4">
                         <PaymentElement
-                            options={{ fields: { billingDetails: { name: "never", address: "never" } } }}
+                            options={{ layout: "tabs", fields: { billingDetails: { name: "never", address: "never" } } }}
                             onLoaderStart={() => {
                                 setIsPaymentElementReady(false)
                                 setIsPaymentDetailsComplete(false)
