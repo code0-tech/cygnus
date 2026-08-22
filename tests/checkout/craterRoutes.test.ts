@@ -1839,6 +1839,7 @@ test("license detail loads lightweight navigation and forwards the invoice curso
                                             node: {
                                                 aiTokens: 500000000,
                                                 deploymentType: "self_hosted",
+                                                endDate: "2026-09-01T00:00:00Z",
                                                 id: "gid://crater/License/9",
                                                 paymentPeriod: "MONTHLY",
                                                 plan: "custom",
@@ -1896,6 +1897,7 @@ test("license detail loads lightweight navigation and forwards the invoice curso
             body.licenses.map((license: { id: string }) => license.id),
             ["gid://crater/License/9"]
         )
+        assert.equal(body.licenses[0].endDate, "2026-09-01T00:00:00Z")
         assert.deepEqual(body.licenses[0].invoices, [
             {
                 billingPeriodEnd: "2026-09-01T00:00:00Z",
@@ -1909,6 +1911,7 @@ test("license detail loads lightweight navigation and forwards the invoice curso
             },
         ])
         assert.match(graphQLServer.requests[1].body.query ?? "", /invoices\(after: \$invoiceAfter, first: 25\)/)
+        assert.match(graphQLServer.requests[1].body.query ?? "", /endDate/)
         assert.deepEqual(
             body.navigationLicenses.map((license: { id: string }) => license.id),
             ["gid://crater/License/9", "gid://crater/License/8", "gid://crater/License/7"]
