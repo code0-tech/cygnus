@@ -2,14 +2,14 @@
 
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
 import { LicenseDialog } from "@/components/licenses/dialog/LicenseDialog"
+import { CustomerPaymentMethodCard, type CustomerPaymentMethodSummary } from "@/components/licenses/dialog/CustomerPaymentMethodCard"
 import { PaymentMethodSetupDialog } from "@/components/licenses/dialog/PaymentMethodSetupDialog"
 import { ButtonLoader } from "@/components/ui/Loader"
 import type { ErrorsContent, LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { decodeLicenseRouteId } from "@/lib/licenses/licenseRoute"
 import { cn } from "@/lib/utils"
-import { Button, DialogFooter, Text, TextInput } from "@code0-tech/pictor"
-import { IconCreditCard } from "@tabler/icons-react"
+import { Button, DialogFooter, ScrollArea, ScrollAreaScrollbar, ScrollAreaThumb, ScrollAreaViewport, Text, TextInput } from "@code0-tech/pictor"
 import { useRouter } from "next/navigation"
 import { type SyntheticEvent, useCallback, useEffect, useState } from "react"
 
@@ -27,16 +27,6 @@ interface PaymentMethodSummary {
     brand: string | null
     expiresMonth: number | null
     expiresYear: number | null
-    last4: string | null
-    type: string
-}
-
-interface CustomerPaymentMethodSummary {
-    brand: string | null
-    expiresMonth: number | null
-    expiresYear: number | null
-    id: string
-    isDefault: boolean
     last4: string | null
     type: string
 }
@@ -201,9 +191,6 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
             })}
         </div>
     ) : null
-    const paymentMethodTitle = paymentMethod?.brand?.trim() || paymentMethod?.type.replaceAll("_", " ")
-    const paymentMethodExpiry = paymentMethod?.expiresMonth && paymentMethod.expiresYear ? `${String(paymentMethod.expiresMonth).padStart(2, "0")}/${paymentMethod.expiresYear}` : null
-
     return (
         <LicenseDialog
             backLabel={content.editor.cancelLabel}
@@ -250,44 +237,32 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
                         </Text>
                     </div>
 
-                    <div className="rounded-2xl border border-white/10 bg-white/3 p-4">
-                        {isLoadingPaymentMethod ? (
+                    {isLoadingPaymentMethod ? (
+                        <div className="rounded-2xl border border-white/10 bg-white/3 p-4">
                             <div role="status" className="animate-pulse motion-reduce:animate-none">
                                 <span className="sr-only">{content.editor.loadingPaymentMethodLabel}</span>
                                 <div aria-hidden="true" className="h-5 w-40 rounded-full bg-white/10" />
                                 <div aria-hidden="true" className="mt-2 h-4 w-24 rounded-full bg-white/10" />
                             </div>
-                        ) : paymentMethodError ? (
-                            <div className="space-y-3">
-                                <Text role="alert" size="sm" className="text-error!">
-                                    {errors.paymentMethodUpdate}
-                                </Text>
-                                <Button type="button" variant="normal" paddingSize="xs" onClick={() => setPaymentMethodRefreshKey((value) => value + 1)}>
-                                    {errors.retry}
-                                </Button>
-                            </div>
-                        ) : paymentMethod ? (
-                            <div className="flex items-center gap-3">
-                                <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-white/7 text-brand">
-                                    <IconCreditCard aria-hidden="true" size={20} />
-                                </div>
-                                <div className="min-w-0">
-                                    <Text size="sm" fw={500} className="capitalize">
-                                        {[paymentMethodTitle, paymentMethod.last4 ? `•••• ${paymentMethod.last4}` : null].filter(Boolean).join(" · ")}
-                                    </Text>
-                                    {paymentMethodExpiry ? (
-                                        <Text size="sm" hierarchy="tertiary">
-                                            {paymentMethodExpiry}
-                                        </Text>
-                                    ) : null}
-                                </div>
-                            </div>
-                        ) : (
+                        </div>
+                    ) : paymentMethodError ? (
+                        <div className="space-y-3 rounded-2xl border border-white/10 bg-white/3 p-4">
+                            <Text role="alert" size="sm" className="text-error!">
+                                {errors.paymentMethodUpdate}
+                            </Text>
+                            <Button type="button" variant="normal" paddingSize="xs" onClick={() => setPaymentMethodRefreshKey((value) => value + 1)}>
+                                {errors.retry}
+                            </Button>
+                        </div>
+                    ) : paymentMethod ? (
+                        <CustomerPaymentMethodCard method={paymentMethod} />
+                    ) : (
+                        <div className="rounded-2xl border border-white/10 bg-white/3 p-4">
                             <Text size="sm" hierarchy="tertiary">
                                 {content.invoices.unavailableLabel}
                             </Text>
-                        )}
-                    </div>
+                        </div>
+                    )}
 
                     {isLoadingCustomerPaymentMethods ? null : customerPaymentMethodsError ? (
                         <Text role="alert" size="sm" className="text-error!">
@@ -298,31 +273,36 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
                             <Text hierarchy="secondary" size="sm" fw={500}>
                                 {content.editor.otherPaymentMethodsHeading}
                             </Text>
-                            {customerPaymentMethods.map((method) => {
-                                const title = method.brand?.trim() || method.type.replaceAll("_", " ")
-                                const expiry = method.expiresMonth && method.expiresYear ? `${String(method.expiresMonth).padStart(2, "0")}/${method.expiresYear}` : null
-
-                                return (
-                                    <div key={method.id} className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/3 p-4">
-                                        <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-white/7 text-brand">
-                                            <IconCreditCard aria-hidden="true" size={20} />
-                                        </div>
-                                        <div className="min-w-0 flex-1">
-                                            <Text size="sm" fw={500} className="capitalize">
-                                                {[title, method.last4 ? `•••• ${method.last4}` : null].filter(Boolean).join(" · ")}
-                                            </Text>
-                                            {expiry ? (
-                                                <Text size="sm" hierarchy="tertiary">
-                                                    {expiry}
-                                                </Text>
-                                            ) : null}
-                                        </div>
-                                        <Button type="button" variant="normal" paddingSize="xs" disabled={assigningPaymentMethodId === method.id} onClick={() => void assignPaymentMethod(method.id)}>
-                                            {assigningPaymentMethodId === method.id ? <ButtonLoader label={content.editor.settingPaymentMethodLabel} /> : content.editor.usePaymentMethodLabel}
-                                        </Button>
+                            <ScrollArea h="20rem" type="scroll">
+                                <ScrollAreaViewport className="h-full! w-full!">
+                                    <div className="space-y-3 pr-3">
+                                        {customerPaymentMethods.map((method) => (
+                                            <CustomerPaymentMethodCard
+                                                key={method.id}
+                                                method={method}
+                                                action={
+                                                    <Button
+                                                        type="button"
+                                                        variant="normal"
+                                                        paddingSize="xs"
+                                                        disabled={assigningPaymentMethodId === method.id}
+                                                        onClick={() => void assignPaymentMethod(method.id)}
+                                                    >
+                                                        {assigningPaymentMethodId === method.id ? (
+                                                            <ButtonLoader label={content.editor.settingPaymentMethodLabel} />
+                                                        ) : (
+                                                            content.editor.usePaymentMethodLabel
+                                                        )}
+                                                    </Button>
+                                                }
+                                            />
+                                        ))}
                                     </div>
-                                )
-                            })}
+                                </ScrollAreaViewport>
+                                <ScrollAreaScrollbar orientation="vertical" className="w-1.5!">
+                                    <ScrollAreaThumb className="bg-white/15! hover:bg-white/25!" />
+                                </ScrollAreaScrollbar>
+                            </ScrollArea>
                             {assignPaymentMethodError && (
                                 <Text role="alert" size="sm" className="text-error!">
                                     {errors.paymentMethodAssign}

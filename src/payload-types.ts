@@ -3375,6 +3375,7 @@ export interface Error {
   customerUpdate: string;
   paymentMethodUpdate: string;
   paymentMethodRemove: string;
+  paymentMethodInUse: string;
   paymentMethodAssign: string;
   licenseUpdate: string;
   subscriptionPreview: string;
@@ -4147,6 +4148,7 @@ export interface ErrorsSelect<T extends boolean = true> {
   customerUpdate?: T;
   paymentMethodUpdate?: T;
   paymentMethodRemove?: T;
+  paymentMethodInUse?: T;
   paymentMethodAssign?: T;
   licenseUpdate?: T;
   subscriptionPreview?: T;

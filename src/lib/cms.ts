@@ -466,6 +466,7 @@ export interface ErrorsContent {
     customerUpdate: string
     paymentMethodUpdate: string
     paymentMethodRemove: string
+    paymentMethodInUse: string
     paymentMethodAssign: string
     licenseUpdate: string
     subscriptionPreview: string
