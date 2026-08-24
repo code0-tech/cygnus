@@ -13,7 +13,7 @@ import type { LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { decodeLicenseRouteId } from "@/lib/licenses/licenseRoute"
 import { formatLicenseDisplayValue } from "@/lib/licenses/licenseDisplayValues"
-import { Button, Card, Flex, Spacing, Text } from "@code0-tech/pictor"
+import { Button, Card, Flex, ScrollArea, ScrollAreaScrollbar, ScrollAreaThumb, ScrollAreaViewport, Spacing, Text } from "@code0-tech/pictor"
 import { useRouter } from "next/navigation"
 import { Fragment } from "react"
 import { LicenseLoadMoreButton } from "@/components/licenses/LicenseLoadMoreButton"
@@ -124,60 +124,65 @@ export function LicenseCustomerPage({ content, customerId, locale }: LicenseCust
                 <Spacing spacing="md" />
 
                 <Card color="secondary" className="pt-2!">
-                    <DataTable
-                        data={customerLicenses}
-                        loading={isLoading}
-                        onRowClick={(license) => router.push(`/${locale}/licenses/customer/${encodeURIComponent(resolvedCustomerId)}/license/${encodeURIComponent(license.id)}`)}
-                        rowKey={(license) => license.id}
-                        emptyComponent={
-                            <DataTableColumn colSpan={4}>
-                                <Text size="sm" hierarchy="tertiary">
-                                    {content.emptyLicenses}
-                                </Text>
-                            </DataTableColumn>
-                        }
-                    >
-                        <DataTableHeader>
-                            <DataTableHeaderColumn>{content.licenses}</DataTableHeaderColumn>
-                            <DataTableHeaderColumn>{content.dashboard.statusLabel}</DataTableHeaderColumn>
-                            <DataTableHeaderColumn>{content.dashboard.deploymentLabel}</DataTableHeaderColumn>
-                            <DataTableHeaderColumn>{content.dashboard.lastEditedLabel}</DataTableHeaderColumn>
-                        </DataTableHeader>
-                        {(license) => (
-                            <Fragment key={license.id}>
-                                <DataTableColumn>
-                                    <Flex align="center" style={{ gap: "0.6rem" }}>
-                                        <LicensePlanIcon className="shrink-0 text-brand" plan={license.plan} size={16} />
-                                        <Text size="sm" fw={500}>
-                                            {formatLicenseDisplayValue(license.plan, "plan", content.values)}
-                                        </Text>
-                                    </Flex>
-                                </DataTableColumn>
-                                <DataTableColumn>
-                                    <Flex align="center" style={{ gap: "0.5rem" }}>
-                                        <LicenseStatusDot aria-hidden="true" status={license.status} />
+                    <ScrollArea h="28rem" type="scroll" className="max-h-full!">
+                        <ScrollAreaViewport className="h-full! w-full!">
+                            <DataTable
+                                data={customerLicenses}
+                                loading={isLoading}
+                                onRowClick={(license) => router.push(`/${locale}/licenses/customer/${encodeURIComponent(resolvedCustomerId)}/license/${encodeURIComponent(license.id)}`)}
+                                rowKey={(license) => license.id}
+                                emptyComponent={
+                                    <DataTableColumn colSpan={4}>
                                         <Text size="sm" hierarchy="tertiary">
-                                            {formatLicenseDisplayValue(license.status, "status", content.values)}
+                                            {content.emptyLicenses}
                                         </Text>
-                                    </Flex>
-                                </DataTableColumn>
-                                <DataTableColumn>
-                                    <Text size="sm" hierarchy="tertiary">
-                                        {formatLicenseDisplayValue(license.deploymentType, "deploymentType", content.values)}
-                                    </Text>
-                                </DataTableColumn>
-                                <DataTableColumn>
-                                    <Text size="sm" hierarchy="tertiary">
-                                        {license.updatedAt ? dateFormatter.format(new Date(license.updatedAt)) : "—"}
-                                    </Text>
-                                </DataTableColumn>
-                            </Fragment>
-                        )}
-                    </DataTable>
+                                    </DataTableColumn>
+                                }
+                            >
+                                <DataTableHeader>
+                                    <DataTableHeaderColumn>{content.licenses}</DataTableHeaderColumn>
+                                    <DataTableHeaderColumn>{content.dashboard.statusLabel}</DataTableHeaderColumn>
+                                    <DataTableHeaderColumn>{content.dashboard.deploymentLabel}</DataTableHeaderColumn>
+                                    <DataTableHeaderColumn>{content.dashboard.lastEditedLabel}</DataTableHeaderColumn>
+                                </DataTableHeader>
+                                {(license) => (
+                                    <Fragment key={license.id}>
+                                        <DataTableColumn>
+                                            <Flex align="center" style={{ gap: "0.6rem" }}>
+                                                <LicensePlanIcon className="shrink-0 text-brand" plan={license.plan} size={16} />
+                                                <Text size="sm" fw={500}>
+                                                    {formatLicenseDisplayValue(license.plan, "plan", content.values)}
+                                                </Text>
+                                            </Flex>
+                                        </DataTableColumn>
+                                        <DataTableColumn>
+                                            <Flex align="center" style={{ gap: "0.5rem" }}>
+                                                <LicenseStatusDot aria-hidden="true" status={license.status} />
+                                                <Text size="sm" hierarchy="tertiary">
+                                                    {formatLicenseDisplayValue(license.status, "status", content.values)}
+                                                </Text>
+                                            </Flex>
+                                        </DataTableColumn>
+                                        <DataTableColumn>
+                                            <Text size="sm" hierarchy="tertiary">
+                                                {formatLicenseDisplayValue(license.deploymentType, "deploymentType", content.values)}
+                                            </Text>
+                                        </DataTableColumn>
+                                        <DataTableColumn>
+                                            <Text size="sm" hierarchy="tertiary">
+                                                {license.updatedAt ? dateFormatter.format(new Date(license.updatedAt)) : "—"}
+                                            </Text>
+                                        </DataTableColumn>
+                                    </Fragment>
+                                )}
+                            </DataTable>
+                        </ScrollAreaViewport>
+                        <ScrollAreaScrollbar orientation="vertical" className="w-1.5!">
+                            <ScrollAreaThumb className="bg-white/15! hover:bg-white/25!" />
+                        </ScrollAreaScrollbar>
+                    </ScrollArea>
                 </Card>
-                {pagination?.licenses?.hasNextPage ? (
-                    <LicenseLoadMoreButton loading={loadingMore === "licenses"} labels={content.pagination} onClick={() => void loadMore("licenses")} />
-                ) : null}
+                {pagination?.licenses?.hasNextPage ? <LicenseLoadMoreButton loading={loadingMore === "licenses"} labels={content.pagination} onClick={() => void loadMore("licenses")} /> : null}
             </section>
         </div>
     )
