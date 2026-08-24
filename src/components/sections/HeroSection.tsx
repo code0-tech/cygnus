@@ -74,25 +74,27 @@ export function HeroSection({ content }: HeroSectionProps) {
                             </StaggerItem>
                         </div>
 
-                        {hasHeroImage && <div className="w-full max-w-6xl">
-                            <div
-                                className="rounded-[1.3rem] border border-white/20 bg-white/10 p-1"
-                                style={content.imageBackground?.trim() ? { backgroundColor: content.imageBackground.trim() } : undefined}
-                            >
-                                <div className="relative overflow-hidden rounded-2xl">
-                                    <Image
-                                        src={resolvedImageSrc}
-                                        alt={resolvedImageAlt}
-                                        height={620}
-                                        width={1200}
-                                        priority
-                                        fetchPriority="high"
-                                        sizes="(min-width: 1024px) 72rem, 100vw"
-                                        className="block rounded-2xl"
-                                    />
+                        {hasHeroImage && (
+                            <div className="w-full max-w-6xl">
+                                <div
+                                    className="rounded-[1.3rem] border border-white/20 bg-light p-1"
+                                    style={content.imageBackground?.trim() ? { backgroundColor: content.imageBackground.trim() } : undefined}
+                                >
+                                    <div className="relative overflow-hidden rounded-2xl">
+                                        <Image
+                                            src={resolvedImageSrc}
+                                            alt={resolvedImageAlt}
+                                            height={620}
+                                            width={1200}
+                                            priority
+                                            fetchPriority="high"
+                                            sizes="(min-width: 1024px) 72rem, 100vw"
+                                            className="block rounded-2xl"
+                                        />
+                                    </div>
                                 </div>
                             </div>
-                        </div>}
+                        )}
                     </StaggerContainer>
                 </div>
             </Section>
@@ -153,25 +155,27 @@ export function HeroSection({ content }: HeroSectionProps) {
                             ))}
                         </StaggerItem>
                     </div>
-                    {hasHeroImage && <div className="h-auto w-full lg:w-4/5 lg:-mr-56">
-                        <div
-                            className="rounded-[1.3rem] border border-white/20 bg-white/10 p-1 lg:rounded-l-[1.3rem] lg:rounded-r-none"
-                            style={content.imageBackground?.trim() ? { backgroundColor: content.imageBackground.trim() } : undefined}
-                        >
-                            <div className="relative overflow-hidden rounded-2xl lg:rounded-l-2xl lg:rounded-r-none">
-                                <Image
-                                    src={resolvedImageSrc}
-                                    alt={resolvedImageAlt}
-                                    height={620}
-                                    width={900}
-                                    priority
-                                    fetchPriority="high"
-                                    sizes="(min-width: 1024px) 60vw, 100vw"
-                                    className="block rounded-2xl lg:rounded-l-2xl lg:rounded-r-none"
-                                />
+                    {hasHeroImage && (
+                        <div className="h-auto w-full lg:w-4/5 lg:-mr-56">
+                            <div
+                                className="rounded-[1.3rem] border border-white/20 bg-light p-1 lg:rounded-l-[1.3rem] lg:rounded-r-none"
+                                style={content.imageBackground?.trim() ? { backgroundColor: content.imageBackground.trim() } : undefined}
+                            >
+                                <div className="relative overflow-hidden rounded-2xl lg:rounded-l-2xl lg:rounded-r-none">
+                                    <Image
+                                        src={resolvedImageSrc}
+                                        alt={resolvedImageAlt}
+                                        height={620}
+                                        width={900}
+                                        priority
+                                        fetchPriority="high"
+                                        sizes="(min-width: 1024px) 60vw, 100vw"
+                                        className="block rounded-2xl lg:rounded-l-2xl lg:rounded-r-none"
+                                    />
+                                </div>
                             </div>
                         </div>
-                    </div>}
+                    )}
                 </StaggerContainer>
             </div>
         </Section>

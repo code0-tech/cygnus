@@ -18,7 +18,7 @@ interface NavigationMobileItemProps {
 export function NavigationMobileItem({ item, isOpen, onToggle, onNavigate }: NavigationMobileItemProps) {
     const submenuContentRef = useRef<HTMLDivElement>(null)
     const [submenuHeight, setSubmenuHeight] = useState(0)
-    const isAccordion = Boolean(item.subMenu?.length)
+    const isAccordion = Boolean(item.subMenuGroups?.length || item.shortLinkGroups?.length)
     const hasRoute = Boolean(item.href)
 
     useLayoutEffect(() => {
@@ -39,7 +39,7 @@ export function NavigationMobileItem({ item, isOpen, onToggle, onNavigate }: Nav
         resizeObserver.observe(element)
 
         return () => resizeObserver.disconnect()
-    }, [isOpen, item.subMenu])
+    }, [isOpen, item.subMenuGroups, item.shortLinkGroups])
 
     return (
         <div className="flex flex-col">
@@ -47,8 +47,8 @@ export function NavigationMobileItem({ item, isOpen, onToggle, onNavigate }: Nav
                 <button
                     type="button"
                     className={cn(
-                        "group/navigation-menu-trigger inline-flex h-auto w-full items-center justify-between rounded-xl px-4 py-2 text-left text-base font-medium text-secondary outline-none transition-colors hover:bg-white/10 hover:text-white focus:bg-white/10 focus:text-white disabled:pointer-events-none disabled:opacity-50 data-popup-open:bg-white/10 data-open:bg-white/10",
-                        isOpen && "bg-white/10 text-white"
+                        "group/navigation-menu-trigger inline-flex h-auto w-full items-center justify-between rounded-xl px-4 py-2 text-left text-base font-medium text-secondary outline-none transition-colors hover:bg-light hover:text-white focus:bg-light focus:text-white disabled:pointer-events-none disabled:opacity-50 data-popup-open:bg-light data-open:bg-light",
+                        isOpen && "bg-light text-white"
                     )}
                     onClick={onToggle}
                 >
@@ -59,7 +59,7 @@ export function NavigationMobileItem({ item, isOpen, onToggle, onNavigate }: Nav
                 <Link
                     href={item.href ?? "#"}
                     className={cn(
-                        "group/navigation-menu-trigger inline-flex h-auto w-full items-center justify-between rounded-xl px-4 py-2 text-left text-base font-medium text-secondary outline-none transition-colors hover:bg-white/10 hover:text-white focus:bg-white/10 focus:text-white disabled:pointer-events-none disabled:opacity-50 data-popup-open:bg-white/10 data-open:bg-white/10",
+                        "group/navigation-menu-trigger inline-flex h-auto w-full items-center justify-between rounded-xl px-4 py-2 text-left text-base font-medium text-secondary outline-none transition-colors hover:bg-light hover:text-white focus:bg-light focus:text-white disabled:pointer-events-none disabled:opacity-50 data-popup-open:bg-light data-open:bg-light",
                         !hasRoute && "pointer-events-none opacity-60"
                     )}
                     onClick={onNavigate}
@@ -89,7 +89,7 @@ export function NavigationMobileItem({ item, isOpen, onToggle, onNavigate }: Nav
                             className="overflow-hidden"
                         >
                             <div ref={submenuContentRef} className="mt-1 rounded-lg">
-                                <NavigationSubMenu items={item.subMenu!} onSelect={onNavigate} />
+                                <NavigationSubMenu groups={item.subMenuGroups} shortLinkGroups={item.shortLinkGroups} onSelect={onNavigate} />
                             </div>
                         </motion.div>
                     )}

@@ -35,7 +35,7 @@ function NavigationCursor({ ref }: NavigationCursorProps) {
         [opacity, width, x]
     )
 
-    return <motion.div className="absolute z-40 h-8 rounded-[0.75rem] bg-white/10 will-change-transform" style={{ x, width, opacity }} />
+    return <motion.div className="absolute z-40 h-8 rounded-xl bg-light will-change-transform" style={{ x, width, opacity }} />
 }
 
 export { NavigationCursor }

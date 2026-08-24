@@ -2023,7 +2023,7 @@ export const payload_migrations = pgTable('payload_migrations', {
 )
 
 
-export const navigation_items_items_sub_menu = pgTable('navigation_items_items_sub_menu', {
+export const navigation_items_items_sub_menu_groups_items = pgTable('navigation_items_items_sub_menu_groups_items', {
   _order: integer('_order').notNull(),
   _parentID: varchar('_parent_id').notNull(),
   id: varchar('id').primaryKey(),
@@ -2031,26 +2031,115 @@ export const navigation_items_items_sub_menu = pgTable('navigation_items_items_s
   href: varchar('href').notNull(),
   icon: varchar('icon').notNull(),
 }, (columns) => [
-    index('navigation_items_items_sub_menu_order_idx').on(columns._order), index('navigation_items_items_sub_menu_parent_id_idx').on(columns._parentID), foreignKey({
+    index('navigation_items_items_sub_menu_groups_items_order_idx').on(columns._order), index('navigation_items_items_sub_menu_groups_items_parent_id_idx').on(columns._parentID), foreignKey({
       columns: [columns['_parentID']],
-      foreignColumns: [navigation_items_items.id],
-      name: 'navigation_items_items_sub_menu_parent_id_fk'
+      foreignColumns: [navigation_items_items_sub_menu_groups.id],
+      name: 'navigation_items_items_sub_menu_groups_items_parent_id_fk'
     }).onDelete('cascade'),
 ]
 )
 
 
-export const navigation_items_items_sub_menu_locales = pgTable('navigation_items_items_sub_menu_locales', {
+export const navigation_items_items_sub_menu_groups_items_locales = pgTable('navigation_items_items_sub_menu_groups_items_locales', {
   title: varchar('title').notNull(),
   description: varchar('description').notNull(),
   id: serial('id').primaryKey(),
   _locale: enum__locales('_locale').notNull(),
   _parentID: varchar('_parent_id').notNull(),
 }, (columns) => [
-    uniqueIndex('navigation_items_items_sub_menu_locales_locale_parent_id_uni').on(columns._locale, columns._parentID), foreignKey({
+    uniqueIndex('navigation_items_items_sub_menu_groups_items_locales_locale_').on(columns._locale, columns._parentID), foreignKey({
       columns: [columns['_parentID']],
-      foreignColumns: [navigation_items_items_sub_menu.id],
-      name: 'navigation_items_items_sub_menu_locales_parent_id_fk'
+      foreignColumns: [navigation_items_items_sub_menu_groups_items.id],
+      name: 'navigation_items_items_sub_menu_groups_items_locales_pare_fk'
+    }).onDelete('cascade'),
+]
+)
+
+
+export const navigation_items_items_sub_menu_groups = pgTable('navigation_items_items_sub_menu_groups', {
+  _order: integer('_order').notNull(),
+  _parentID: varchar('_parent_id').notNull(),
+  id: varchar('id').primaryKey(),
+}, (columns) => [
+    index('navigation_items_items_sub_menu_groups_order_idx').on(columns._order), index('navigation_items_items_sub_menu_groups_parent_id_idx').on(columns._parentID), foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [navigation_items_items.id],
+      name: 'navigation_items_items_sub_menu_groups_parent_id_fk'
+    }).onDelete('cascade'),
+]
+)
+
+
+export const navigation_items_items_sub_menu_groups_locales = pgTable('navigation_items_items_sub_menu_groups_locales', {
+  title: varchar('title').notNull(),
+  id: serial('id').primaryKey(),
+  _locale: enum__locales('_locale').notNull(),
+  _parentID: varchar('_parent_id').notNull(),
+}, (columns) => [
+    uniqueIndex('navigation_items_items_sub_menu_groups_locales_locale_parent').on(columns._locale, columns._parentID), foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [navigation_items_items_sub_menu_groups.id],
+      name: 'navigation_items_items_sub_menu_groups_locales_parent_id_fk'
+    }).onDelete('cascade'),
+]
+)
+
+
+export const navigation_items_items_short_link_groups_links = pgTable('navigation_items_items_short_link_groups_links', {
+  _order: integer('_order').notNull(),
+  _parentID: varchar('_parent_id').notNull(),
+  id: varchar('id').primaryKey(),
+  href: varchar('href').notNull(),
+  newTab: boolean('new_tab').default(false),
+}, (columns) => [
+    index('navigation_items_items_short_link_groups_links_order_idx').on(columns._order), index('navigation_items_items_short_link_groups_links_parent_id_idx').on(columns._parentID), foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [navigation_items_items_short_link_groups.id],
+      name: 'navigation_items_items_short_link_groups_links_parent_id_fk'
+    }).onDelete('cascade'),
+]
+)
+
+
+export const navigation_items_items_short_link_groups_links_locales = pgTable('navigation_items_items_short_link_groups_links_locales', {
+  title: varchar('title').notNull(),
+  id: serial('id').primaryKey(),
+  _locale: enum__locales('_locale').notNull(),
+  _parentID: varchar('_parent_id').notNull(),
+}, (columns) => [
+    uniqueIndex('navigation_items_items_short_link_groups_links_locales_local').on(columns._locale, columns._parentID), foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [navigation_items_items_short_link_groups_links.id],
+      name: 'navigation_items_items_short_link_groups_links_locales_pa_fk'
+    }).onDelete('cascade'),
+]
+)
+
+
+export const navigation_items_items_short_link_groups = pgTable('navigation_items_items_short_link_groups', {
+  _order: integer('_order').notNull(),
+  _parentID: varchar('_parent_id').notNull(),
+  id: varchar('id').primaryKey(),
+}, (columns) => [
+    index('navigation_items_items_short_link_groups_order_idx').on(columns._order), index('navigation_items_items_short_link_groups_parent_id_idx').on(columns._parentID), foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [navigation_items_items.id],
+      name: 'navigation_items_items_short_link_groups_parent_id_fk'
+    }).onDelete('cascade'),
+]
+)
+
+
+export const navigation_items_items_short_link_groups_locales = pgTable('navigation_items_items_short_link_groups_locales', {
+  title: varchar('title').notNull(),
+  id: serial('id').primaryKey(),
+  _locale: enum__locales('_locale').notNull(),
+  _parentID: varchar('_parent_id').notNull(),
+}, (columns) => [
+    uniqueIndex('navigation_items_items_short_link_groups_locales_locale_pare').on(columns._locale, columns._parentID), foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [navigation_items_items_short_link_groups.id],
+      name: 'navigation_items_items_short_link_groups_locales_parent_i_fk'
     }).onDelete('cascade'),
 ]
 )
@@ -3215,7 +3304,7 @@ export const relations_pages_blocks_small_pricing = relations(pages_blocks_small
       }))
 export const relations_pages_blocks_compare_application_apps_features = relations(pages_blocks_compare_application_apps_features, ({ one }) => ({
   _parentID: one(pages_blocks_compare_application_apps, {
-
+    
     fields: [pages_blocks_compare_application_apps_features._parentID],
     references: [pages_blocks_compare_application_apps.id],
     relationName: 'features',
@@ -3223,13 +3312,13 @@ export const relations_pages_blocks_compare_application_apps_features = relation
       }))
 export const relations_pages_blocks_compare_application_apps = relations(pages_blocks_compare_application_apps, ({ one, many }) => ({
   _parentID: one(pages_blocks_compare_application, {
-
+    
     fields: [pages_blocks_compare_application_apps._parentID],
     references: [pages_blocks_compare_application.id],
     relationName: 'apps',
     }),
     logo: one(media, {
-
+    
     fields: [pages_blocks_compare_application_apps.logo],
     references: [media.id],
     relationName: 'logo',
@@ -3240,7 +3329,7 @@ export const relations_pages_blocks_compare_application_apps = relations(pages_b
       }))
 export const relations_pages_blocks_compare_application_buttons = relations(pages_blocks_compare_application_buttons, ({ one }) => ({
   _parentID: one(pages_blocks_compare_application, {
-
+    
     fields: [pages_blocks_compare_application_buttons._parentID],
     references: [pages_blocks_compare_application.id],
     relationName: 'buttons',
@@ -3248,7 +3337,7 @@ export const relations_pages_blocks_compare_application_buttons = relations(page
       }))
 export const relations_pages_blocks_compare_application = relations(pages_blocks_compare_application, ({ one, many }) => ({
   _parentID: one(pages, {
-
+    
     fields: [pages_blocks_compare_application._parentID],
     references: [pages.id],
     relationName: '_blocks_compareApplication',
@@ -3577,23 +3666,86 @@ export const relations_payload_preferences = relations(payload_preferences, ({ m
 export const relations_payload_migrations = relations(payload_migrations, () => ({
   
       }))
-export const relations_navigation_items_items_sub_menu_locales = relations(navigation_items_items_sub_menu_locales, ({ one }) => ({
-  _parentID: one(navigation_items_items_sub_menu, {
+export const relations_navigation_items_items_sub_menu_groups_items_locales = relations(navigation_items_items_sub_menu_groups_items_locales, ({ one }) => ({
+  _parentID: one(navigation_items_items_sub_menu_groups_items, {
     
-    fields: [navigation_items_items_sub_menu_locales._parentID],
-    references: [navigation_items_items_sub_menu.id],
+    fields: [navigation_items_items_sub_menu_groups_items_locales._parentID],
+    references: [navigation_items_items_sub_menu_groups_items.id],
     relationName: '_locales',
     }),
       }))
-export const relations_navigation_items_items_sub_menu = relations(navigation_items_items_sub_menu, ({ one, many }) => ({
+export const relations_navigation_items_items_sub_menu_groups_items = relations(navigation_items_items_sub_menu_groups_items, ({ one, many }) => ({
+  _parentID: one(navigation_items_items_sub_menu_groups, {
+    
+    fields: [navigation_items_items_sub_menu_groups_items._parentID],
+    references: [navigation_items_items_sub_menu_groups.id],
+    relationName: 'items',
+    }),
+    _locales: many(navigation_items_items_sub_menu_groups_items_locales, {
+            relationName: '_locales',
+    }),
+      }))
+export const relations_navigation_items_items_sub_menu_groups_locales = relations(navigation_items_items_sub_menu_groups_locales, ({ one }) => ({
+  _parentID: one(navigation_items_items_sub_menu_groups, {
+    
+    fields: [navigation_items_items_sub_menu_groups_locales._parentID],
+    references: [navigation_items_items_sub_menu_groups.id],
+    relationName: '_locales',
+    }),
+      }))
+export const relations_navigation_items_items_sub_menu_groups = relations(navigation_items_items_sub_menu_groups, ({ one, many }) => ({
   _parentID: one(navigation_items_items, {
     
-    fields: [navigation_items_items_sub_menu._parentID],
+    fields: [navigation_items_items_sub_menu_groups._parentID],
     references: [navigation_items_items.id],
-    relationName: 'subMenu',
+    relationName: 'subMenuGroups',
     }),
-    _locales: many(navigation_items_items_sub_menu_locales, {
+    _locales: many(navigation_items_items_sub_menu_groups_locales, {
             relationName: '_locales',
+    }),
+    items: many(navigation_items_items_sub_menu_groups_items, {
+            relationName: 'items',
+    }),
+      }))
+export const relations_navigation_items_items_short_link_groups_links_locales = relations(navigation_items_items_short_link_groups_links_locales, ({ one }) => ({
+  _parentID: one(navigation_items_items_short_link_groups_links, {
+    
+    fields: [navigation_items_items_short_link_groups_links_locales._parentID],
+    references: [navigation_items_items_short_link_groups_links.id],
+    relationName: '_locales',
+    }),
+      }))
+export const relations_navigation_items_items_short_link_groups_links = relations(navigation_items_items_short_link_groups_links, ({ one, many }) => ({
+  _parentID: one(navigation_items_items_short_link_groups, {
+    
+    fields: [navigation_items_items_short_link_groups_links._parentID],
+    references: [navigation_items_items_short_link_groups.id],
+    relationName: 'links',
+    }),
+    _locales: many(navigation_items_items_short_link_groups_links_locales, {
+            relationName: '_locales',
+    }),
+      }))
+export const relations_navigation_items_items_short_link_groups_locales = relations(navigation_items_items_short_link_groups_locales, ({ one }) => ({
+  _parentID: one(navigation_items_items_short_link_groups, {
+    
+    fields: [navigation_items_items_short_link_groups_locales._parentID],
+    references: [navigation_items_items_short_link_groups.id],
+    relationName: '_locales',
+    }),
+      }))
+export const relations_navigation_items_items_short_link_groups = relations(navigation_items_items_short_link_groups, ({ one, many }) => ({
+  _parentID: one(navigation_items_items, {
+    
+    fields: [navigation_items_items_short_link_groups._parentID],
+    references: [navigation_items_items.id],
+    relationName: 'shortLinkGroups',
+    }),
+    _locales: many(navigation_items_items_short_link_groups_locales, {
+            relationName: '_locales',
+    }),
+    links: many(navigation_items_items_short_link_groups_links, {
+            relationName: 'links',
     }),
       }))
 export const relations_navigation_items_items_locales = relations(navigation_items_items_locales, ({ one }) => ({
@@ -3614,8 +3766,11 @@ export const relations_navigation_items_items = relations(navigation_items_items
     _locales: many(navigation_items_items_locales, {
             relationName: '_locales',
     }),
-    subMenu: many(navigation_items_items_sub_menu, {
-            relationName: 'subMenu',
+    subMenuGroups: many(navigation_items_items_sub_menu_groups, {
+            relationName: 'subMenuGroups',
+    }),
+    shortLinkGroups: many(navigation_items_items_short_link_groups, {
+            relationName: 'shortLinkGroups',
     }),
       }))
 export const relations_navigation_buttons_buttons_locales = relations(navigation_buttons_buttons_locales, ({ one }) => ({
@@ -3962,8 +4117,14 @@ type DatabaseSchema = {
   payload_preferences: typeof payload_preferences
   payload_preferences_rels: typeof payload_preferences_rels
   payload_migrations: typeof payload_migrations
-  navigation_items_items_sub_menu: typeof navigation_items_items_sub_menu
-  navigation_items_items_sub_menu_locales: typeof navigation_items_items_sub_menu_locales
+  navigation_items_items_sub_menu_groups_items: typeof navigation_items_items_sub_menu_groups_items
+  navigation_items_items_sub_menu_groups_items_locales: typeof navigation_items_items_sub_menu_groups_items_locales
+  navigation_items_items_sub_menu_groups: typeof navigation_items_items_sub_menu_groups
+  navigation_items_items_sub_menu_groups_locales: typeof navigation_items_items_sub_menu_groups_locales
+  navigation_items_items_short_link_groups_links: typeof navigation_items_items_short_link_groups_links
+  navigation_items_items_short_link_groups_links_locales: typeof navigation_items_items_short_link_groups_links_locales
+  navigation_items_items_short_link_groups: typeof navigation_items_items_short_link_groups
+  navigation_items_items_short_link_groups_locales: typeof navigation_items_items_short_link_groups_locales
   navigation_items_items: typeof navigation_items_items
   navigation_items_items_locales: typeof navigation_items_items_locales
   navigation_buttons_buttons: typeof navigation_buttons_buttons
@@ -4078,8 +4239,14 @@ type DatabaseSchema = {
   relations_payload_preferences_rels: typeof relations_payload_preferences_rels
   relations_payload_preferences: typeof relations_payload_preferences
   relations_payload_migrations: typeof relations_payload_migrations
-  relations_navigation_items_items_sub_menu_locales: typeof relations_navigation_items_items_sub_menu_locales
-  relations_navigation_items_items_sub_menu: typeof relations_navigation_items_items_sub_menu
+  relations_navigation_items_items_sub_menu_groups_items_locales: typeof relations_navigation_items_items_sub_menu_groups_items_locales
+  relations_navigation_items_items_sub_menu_groups_items: typeof relations_navigation_items_items_sub_menu_groups_items
+  relations_navigation_items_items_sub_menu_groups_locales: typeof relations_navigation_items_items_sub_menu_groups_locales
+  relations_navigation_items_items_sub_menu_groups: typeof relations_navigation_items_items_sub_menu_groups
+  relations_navigation_items_items_short_link_groups_links_locales: typeof relations_navigation_items_items_short_link_groups_links_locales
+  relations_navigation_items_items_short_link_groups_links: typeof relations_navigation_items_items_short_link_groups_links
+  relations_navigation_items_items_short_link_groups_locales: typeof relations_navigation_items_items_short_link_groups_locales
+  relations_navigation_items_items_short_link_groups: typeof relations_navigation_items_items_short_link_groups
   relations_navigation_items_items_locales: typeof relations_navigation_items_items_locales
   relations_navigation_items_items: typeof relations_navigation_items_items
   relations_navigation_buttons_buttons_locales: typeof relations_navigation_buttons_buttons_locales
@@ -4101,10 +4268,11 @@ type DatabaseSchema = {
   relations_subscription_config_locales: typeof relations_subscription_config_locales
   relations_subscription_config: typeof relations_subscription_config
 }
-
+    
 
 declare module '@payloadcms/db-postgres' {
   export interface GeneratedDatabaseSchema {
     schema: DatabaseSchema
   }
 }
+    

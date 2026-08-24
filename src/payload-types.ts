@@ -2792,13 +2792,35 @@ export interface Navigation {
        */
       href?: string | null;
       order: number;
-      subMenu?:
+      subMenuGroups?:
         | {
-            key: string;
+            /**
+             * Hidden in the navigation when this is the only submenu group.
+             */
             title: string;
-            href: string;
-            description: string;
-            icon: string;
+            items: {
+              key: string;
+              title: string;
+              href: string;
+              description: string;
+              icon: string;
+              id?: string | null;
+            }[];
+            id?: string | null;
+          }[]
+        | null;
+      shortLinkGroups?:
+        | {
+            /**
+             * Hidden in the navigation when this is the only short-link group.
+             */
+            title: string;
+            links: {
+              title: string;
+              href: string;
+              newTab?: boolean | null;
+              id?: string | null;
+            }[];
             id?: string | null;
           }[]
         | null;
@@ -3113,14 +3135,34 @@ export interface NavigationSelect<T extends boolean = true> {
               title?: T;
               href?: T;
               order?: T;
-              subMenu?:
+              subMenuGroups?:
                 | T
                 | {
-                    key?: T;
                     title?: T;
-                    href?: T;
-                    description?: T;
-                    icon?: T;
+                    items?:
+                      | T
+                      | {
+                          key?: T;
+                          title?: T;
+                          href?: T;
+                          description?: T;
+                          icon?: T;
+                          id?: T;
+                        };
+                    id?: T;
+                  };
+              shortLinkGroups?:
+                | T
+                | {
+                    title?: T;
+                    links?:
+                      | T
+                      | {
+                          title?: T;
+                          href?: T;
+                          newTab?: T;
+                          id?: T;
+                        };
                     id?: T;
                   };
               id?: T;

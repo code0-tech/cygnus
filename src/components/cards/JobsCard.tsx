@@ -15,7 +15,7 @@ export function JobsCard({ job, locale }: JobsCardProps) {
 
     return (
         <Link href={`/${locale}/jobs/${job.slug}`} onClick={() => trigger("medium")} className="group block">
-            <Card variant="light" size="lg" className="transition-colors group-hover:bg-white/10">
+            <Card variant="light" size="lg" className="transition-colors group-hover:bg-light">
                 <div className="relative z-10">
                     <h3 className="text-2xl font-semibold tracking-tight text-white mb-2">{job.title}</h3>
                     <p className="text-sm text-tertiary mb-4">

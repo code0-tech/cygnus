@@ -43,7 +43,7 @@ export function FlowExampleDiagram({ trigger, items }: { trigger: FlowDiagramNod
                 return (
                     <div className="flex flex-col items-center" key={node.id}>
                         {index > 0 && (
-                            <div className="relative h-12 w-px overflow-hidden bg-white/10 md:h-16" aria-hidden="true">
+                            <div className="relative h-12 w-px overflow-hidden bg-light md:h-16" aria-hidden="true">
                                 <motion.div
                                     className="absolute inset-0 origin-top bg-linear-to-b from-brand/50 via-brand to-brand/70"
                                     animate={

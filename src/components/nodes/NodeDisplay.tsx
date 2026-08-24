@@ -60,7 +60,7 @@ function NodeMessage({ segments }: { segments: NodeSegment[] }) {
                         key={`${segment.type}-${segment.value}-${index}`}
                         style={{ verticalAlign: "middle", textWrap: "nowrap" }}
                         border
-                        className="border-white/20! bg-white/8! shadow-[0_2px_8px_rgba(0,0,0,0.22),inset_0_1px_0_rgba(255,255,255,0.08)]"
+                        className="border-white/20! bg-light! shadow-[0_2px_8px_rgba(0,0,0,0.22),inset_0_1px_0_rgba(255,255,255,0.08)]"
                     >
                         <IconNote size={12} className="text-brand" />
                         <Text size="sm" style={{ color: "white" }}>

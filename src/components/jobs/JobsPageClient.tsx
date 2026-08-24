@@ -133,7 +133,7 @@ export function JobsPageClient({ jobs, locale, content }: JobsPageClientProps) {
                 <div key={category} className="flex flex-col gap-4">
                     <div className="flex items-center gap-2 w-full">
                         <h2 className="text-tertiary">{category}</h2>
-                        <div className="h-0.5 flex-1 bg-white/10 rounded-full" />
+                        <div className="h-0.5 flex-1 bg-light rounded-full" />
                     </div>
                     {items.map((job) => (
                         <JobsCard key={job.id} job={job} locale={locale} />

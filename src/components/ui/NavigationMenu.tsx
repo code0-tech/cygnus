@@ -24,7 +24,7 @@ function NavigationMenuTrigger({ className, children, showIcon = true, ...props 
         <NavigationMenuPrimitive.Trigger
             data-slot="navigation-menu-trigger"
             className={cn(
-                "group/navigation-menu-trigger inline-flex h-9 w-max items-center justify-center rounded-xl px-4 py-1 text-sm font-medium text-white outline-none transition-colors hover:bg-white/10 focus:bg-white/10 disabled:pointer-events-none disabled:opacity-50 data-popup-open:bg-white/10 data-open:bg-white/10",
+                "group/navigation-menu-trigger inline-flex h-9 w-max items-center justify-center rounded-xl px-4 py-1 text-sm font-medium text-white outline-none transition-colors hover:bg-light focus:bg-light disabled:pointer-events-none disabled:opacity-50 data-popup-open:bg-white/10 data-open:bg-white/10",
                 "group",
                 className
             )}
@@ -82,7 +82,7 @@ function NavigationMenuLink({ className, ...props }: NavigationMenuPrimitive.Lin
         <NavigationMenuPrimitive.Link
             data-slot="navigation-menu-link"
             className={cn(
-                "flex items-center gap-1.5 rounded-xl p-2 text-sm text-white outline-none transition-colors hover:bg-white/10 focus:bg-white/10 data-[active=true]:bg-white/10 [&_svg:not([class*='size-'])]:size-4",
+                "flex items-center gap-1.5 rounded-xl p-2 text-sm text-white outline-none transition-colors hover:bg-light focus:bg-light data-[active=true]:bg-light [&_svg:not([class*='size-'])]:size-4",
                 className
             )}
             {...props}

@@ -80,7 +80,7 @@ export function CTAImageSection({ content }: CTAImageSectionProps) {
                     </div>
 
                     <div className={cn("h-auto w-full", showCard ? "lg:w-4/5 lg:-mr-56" : "lg:w-[58%]")}>
-                        <div className={cn(showCard ? "rounded-[1.3rem] bg-white/10 p-1 lg:rounded-l-[1.3rem] lg:rounded-r-none" : "rounded-2xl", showImageBorder && "border border-white/20")}>
+                        <div className={cn(showCard ? "rounded-[1.3rem] bg-light p-1 lg:rounded-l-[1.3rem] lg:rounded-r-none" : "rounded-2xl", showImageBorder && "border border-white/20")}>
                             <div className={cn("relative overflow-hidden", showCard ? "rounded-2xl lg:rounded-l-2xl lg:rounded-r-none" : "rounded-2xl")}>
                                 <Image
                                     src={imageUrl}

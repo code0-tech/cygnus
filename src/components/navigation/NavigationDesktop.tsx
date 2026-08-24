@@ -48,7 +48,7 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ homeHref, items: 
     })
 
     const activeMenuItem = navbarItems.find((item) => item.title === activeMenuValue)
-    const activeSubMenu = activeMenuItem?.subMenu?.length ? activeMenuItem.subMenu : null
+    const activeSubMenu = activeMenuItem && (activeMenuItem.subMenuGroups?.length || activeMenuItem.shortLinkGroups?.length) ? activeMenuItem : null
     const shellInset = isScrolled ? shellInsetWidth + 14 : 0
     const contentInset = isScrolled ? shellInsetWidth + 20 : 12
 
@@ -180,7 +180,7 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ homeHref, items: 
                                     <NavigationMenuList className="gap-2">
                                         {navbarItems.map((item) => {
                                             const itemValue = item.title
-                                            const hasSubMenu = Boolean(item.subMenu?.length)
+                                            const hasSubMenu = Boolean(item.subMenuGroups?.length || item.shortLinkGroups?.length)
 
                                             return (
                                                 <NavigationMenuItem key={item.title} value={itemValue}>
@@ -207,7 +207,7 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ homeHref, items: 
                                                             </div>
                                                             {!isScrolled && (
                                                                 <NavigationMenuContent className="p-2">
-                                                                    <NavigationSubMenu items={item.subMenu!} onSelect={() => setActiveMenuValue(null)} />
+                                                                    <NavigationSubMenu groups={item.subMenuGroups} shortLinkGroups={item.shortLinkGroups} onSelect={() => setActiveMenuValue(null)} />
                                                                 </NavigationMenuContent>
                                                             )}
                                                         </>
@@ -255,10 +255,15 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ homeHref, items: 
                                         opacity: { duration: 0.16, ease: "easeOut" },
                                         y: { duration: 0.2, ease: [0.22, 1, 0.36, 1] },
                                     }}
-                                    className="overflow-hidden px-2"
+                                    className="overflow-hidden"
                                 >
                                     <div ref={submenuContentRef} className="pt-1">
-                                        <NavigationSubMenu items={activeSubMenu} onSelect={() => setActiveMenuValue(null)} />
+                                        <NavigationSubMenu
+                                            embedded
+                                            groups={activeSubMenu.subMenuGroups}
+                                            shortLinkGroups={activeSubMenu.shortLinkGroups}
+                                            onSelect={() => setActiveMenuValue(null)}
+                                        />
                                     </div>
                                 </motion.div>
                             )}
