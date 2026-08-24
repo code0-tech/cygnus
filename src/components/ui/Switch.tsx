@@ -67,7 +67,7 @@ export function Switch<TValue extends string>({ label, description, value, optio
             >
                 {fitContent ? (
                     <div
-                        className="pointer-events-none absolute top-1 h-[calc(100%-0.5rem)] rounded-xl bg-white/10 transition-[left,width] duration-300 ease-out"
+                        className="pointer-events-none absolute top-1 h-[calc(100%-0.5rem)] rounded-xl bg-light transition-[left,width] duration-300 ease-out"
                         style={{
                             left: fitIndicator.left,
                             width: fitIndicator.width,
@@ -75,7 +75,7 @@ export function Switch<TValue extends string>({ label, description, value, optio
                     />
                 ) : (
                     <div
-                        className="absolute left-1 top-1 h-[calc(100%-0.5rem)] rounded-xl bg-white/10 transition-[transform,width] duration-300 ease-out"
+                        className="absolute left-1 top-1 h-[calc(100%-0.5rem)] rounded-xl bg-light transition-[transform,width] duration-300 ease-out"
                         style={{
                             width: `calc((100% - 0.5rem) / ${columnCount})`,
                             transform: `translateX(${activeIndex * 100}%)`,

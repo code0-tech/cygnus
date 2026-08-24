@@ -57,33 +57,92 @@ export const Navigation: GlobalConfig = {
               defaultValue: 0,
             },
             {
-              name: "subMenu",
+              name: "subMenuGroups",
+              label: "Submenu Groups",
               type: "array",
               required: false,
               fields: [
-                {
-                  name: "key",
-                  type: "text",
-                  required: true,
-                },
                 {
                   name: "title",
                   type: "text",
                   required: true,
                   localized: true,
+                  admin: {
+                    description: "Hidden in the navigation when this is the only submenu group.",
+                  },
                 },
                 {
-                  name: "href",
+                  name: "items",
+                  type: "array",
+                  required: true,
+                  minRows: 1,
+                  fields: [
+                    {
+                      name: "key",
+                      type: "text",
+                      required: true,
+                    },
+                    {
+                      name: "title",
+                      type: "text",
+                      required: true,
+                      localized: true,
+                    },
+                    {
+                      name: "href",
+                      type: "text",
+                      required: true,
+                    },
+                    {
+                      name: "description",
+                      type: "textarea",
+                      required: true,
+                      localized: true,
+                    },
+                    pickerIconField,
+                  ],
+                },
+              ],
+            },
+            {
+              name: "shortLinkGroups",
+              label: "Short Link Groups",
+              type: "array",
+              required: false,
+              fields: [
+                {
+                  name: "title",
                   type: "text",
                   required: true,
+                  localized: true,
+                  admin: {
+                    description: "Hidden in the navigation when this is the only short-link group.",
+                  },
                 },
                 {
-                  name: "description",
-                  type: "textarea",
+                  name: "links",
+                  type: "array",
                   required: true,
-                  localized: true,
+                  minRows: 1,
+                  fields: [
+                    {
+                      name: "title",
+                      type: "text",
+                      required: true,
+                      localized: true,
+                    },
+                    {
+                      name: "href",
+                      type: "text",
+                      required: true,
+                    },
+                    {
+                      name: "newTab",
+                      type: "checkbox",
+                      defaultValue: false,
+                    },
+                  ],
                 },
-                pickerIconField,
               ],
             },
           ],

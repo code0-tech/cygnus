@@ -8,7 +8,8 @@ import type { ReactNode } from "react"
 export type NavItem = {
     title: string
     href: string | null
-    subMenu?: SubNavItem[]
+    subMenuGroups?: SubNavGroup[]
+    shortLinkGroups?: ShortLinkGroup[]
 }
 
 export type SubNavItem = {
@@ -17,6 +18,25 @@ export type SubNavItem = {
     href: string
     description: string
     icon: ReactNode
+}
+
+export type SubNavGroup = {
+    key: string
+    title: string
+    items: SubNavItem[]
+}
+
+export type ShortLink = {
+    key: string
+    title: string
+    href: string
+    newTab: boolean
+}
+
+export type ShortLinkGroup = {
+    key: string
+    title: string
+    links: ShortLink[]
 }
 
 type NavigationLinkVariant = "none" | "normal" | "outlined" | "filled"
@@ -51,21 +71,43 @@ export function mapNavbarItems(items: NavbarItemData[], locale: AppLocale): NavI
     const navbarItems: NavItem[] = []
 
     for (const item of sortedItems) {
-        const mappedSubMenu: SubNavItem[] = []
+        const subMenuGroups: SubNavGroup[] = (item.subMenuGroups ?? []).flatMap((group, groupIndex) => {
+            const mappedItems: SubNavItem[] = (group.items ?? []).flatMap((sub) => {
+                if (!sub?.title || !sub.href || !sub.description) return []
 
-        for (const sub of item.subMenu ?? []) {
-            if (!sub?.title || !sub.href || !sub.description) continue
-            mappedSubMenu.push({
-                ...sub,
-                href: localizeHref(sub.href, locale),
-                icon: getSubMenuIcon(sub.icon),
+                return [{
+                    key: sub.key,
+                    title: sub.title,
+                    href: localizeHref(sub.href, locale),
+                    description: sub.description,
+                    icon: getSubMenuIcon(sub.icon),
+                }]
             })
-        }
+
+            if (mappedItems.length === 0) return []
+            return [{ key: group.id ?? `submenu-group-${groupIndex}`, title: group.title, items: mappedItems }]
+        })
+        const shortLinkGroups: ShortLinkGroup[] = (item.shortLinkGroups ?? []).flatMap((group, groupIndex) => {
+            const links: ShortLink[] = (group.links ?? []).flatMap((link, linkIndex) => {
+                if (!link?.title || !link.href) return []
+
+                return [{
+                    key: link.id ?? `short-link-${linkIndex}`,
+                    title: link.title,
+                    href: localizeHref(link.href, locale),
+                    newTab: Boolean(link.newTab),
+                }]
+            })
+
+            if (links.length === 0) return []
+            return [{ key: group.id ?? `short-link-group-${groupIndex}`, title: group.title, links }]
+        })
 
         navbarItems.push({
             title: item.title,
             href: item.href ? localizeHref(item.href, locale) : null,
-            subMenu: mappedSubMenu.length > 0 ? mappedSubMenu : undefined,
+            subMenuGroups: subMenuGroups.length > 0 ? subMenuGroups : undefined,
+            shortLinkGroups: shortLinkGroups.length > 0 ? shortLinkGroups : undefined,
         })
     }
 
