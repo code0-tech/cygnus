@@ -2673,6 +2673,14 @@ export const licenses_locales = pgTable('licenses_locales', {
   editor_savePaymentMethodLabel: varchar('editor_save_payment_method_label').notNull(),
   editor_savingPaymentMethodLabel: varchar('editor_saving_payment_method_label').notNull(),
   editor_paymentMethodSuccess: varchar('editor_payment_method_success').notNull(),
+  editor_noPaymentMethodsLabel: varchar('editor_no_payment_methods_label').notNull(),
+  editor_addPaymentMethodLabel: varchar('editor_add_payment_method_label').notNull(),
+  editor_removePaymentMethodLabel: varchar('editor_remove_payment_method_label').notNull(),
+  editor_removingPaymentMethodLabel: varchar('editor_removing_payment_method_label').notNull(),
+  editor_defaultPaymentMethodLabel: varchar('editor_default_payment_method_label').notNull(),
+  editor_otherPaymentMethodsHeading: varchar('editor_other_payment_methods_heading').notNull(),
+  editor_usePaymentMethodLabel: varchar('editor_use_payment_method_label').notNull(),
+  editor_settingPaymentMethodLabel: varchar('editor_setting_payment_method_label').notNull(),
   editor_licenseTitle: varchar('editor_license_title').notNull(),
   editor_licenseDescription: varchar('editor_license_description').notNull(),
   editor_namespaceLabel: varchar('editor_namespace_label').notNull(),
@@ -2725,6 +2733,8 @@ export const errors_locales = pgTable('errors_locales', {
   retry: varchar('retry').notNull(),
   customerUpdate: varchar('customer_update').notNull(),
   paymentMethodUpdate: varchar('payment_method_update').notNull(),
+  paymentMethodRemove: varchar('payment_method_remove').notNull(),
+  paymentMethodAssign: varchar('payment_method_assign').notNull(),
   licenseUpdate: varchar('license_update').notNull(),
   subscriptionPreview: varchar('subscription_preview').notNull(),
   billingUpdate: varchar('billing_update').notNull(),
@@ -4009,7 +4019,7 @@ export const relations_cookie_banner = relations(cookie_banner, ({ many }) => ({
       }))
 export const relations_subscription_config_plan_pro_features = relations(subscription_config_plan_pro_features, ({ one }) => ({
   _parentID: one(subscription_config, {
-
+    
     fields: [subscription_config_plan_pro_features._parentID],
     references: [subscription_config.id],
     relationName: 'plan_pro_features',
@@ -4017,7 +4027,7 @@ export const relations_subscription_config_plan_pro_features = relations(subscri
       }))
 export const relations_subscription_config_plan_max_features = relations(subscription_config_plan_max_features, ({ one }) => ({
   _parentID: one(subscription_config, {
-
+    
     fields: [subscription_config_plan_max_features._parentID],
     references: [subscription_config.id],
     relationName: 'plan_max_features',
@@ -4025,7 +4035,7 @@ export const relations_subscription_config_plan_max_features = relations(subscri
       }))
 export const relations_subscription_config_plan_custom_features = relations(subscription_config_plan_custom_features, ({ one }) => ({
   _parentID: one(subscription_config, {
-
+    
     fields: [subscription_config_plan_custom_features._parentID],
     references: [subscription_config.id],
     relationName: 'plan_custom_features',
@@ -4132,7 +4142,7 @@ export const relations_checkout = relations(checkout, ({ many }) => ({
       }))
 export const relations_upgrade_banner_locales = relations(upgrade_banner_locales, ({ one }) => ({
   _parentID: one(upgrade_banner, {
-
+    
     fields: [upgrade_banner_locales._parentID],
     references: [upgrade_banner.id],
     relationName: '_locales',
@@ -4501,3 +4511,4 @@ declare module '@payloadcms/db-postgres' {
     schema: DatabaseSchema
   }
 }
+    

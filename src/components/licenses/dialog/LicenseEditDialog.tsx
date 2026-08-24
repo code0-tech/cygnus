@@ -31,6 +31,16 @@ interface PaymentMethodSummary {
     type: string
 }
 
+interface CustomerPaymentMethodSummary {
+    brand: string | null
+    expiresMonth: number | null
+    expiresYear: number | null
+    id: string
+    isDefault: boolean
+    last4: string | null
+    type: string
+}
+
 export function LicenseEditDialog({ content, customerId, errors, licenseId, locale }: LicenseEditDialogProps) {
     const router = useRouter()
     const { licenses, updateLicense } = useLicenseData()
@@ -45,6 +55,11 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
     const [paymentMethodError, setPaymentMethodError] = useState(false)
     const [isLoadingPaymentMethod, setIsLoadingPaymentMethod] = useState(false)
     const [paymentMethodRefreshKey, setPaymentMethodRefreshKey] = useState(0)
+    const [customerPaymentMethods, setCustomerPaymentMethods] = useState<CustomerPaymentMethodSummary[] | null>(null)
+    const [customerPaymentMethodsError, setCustomerPaymentMethodsError] = useState(false)
+    const [isLoadingCustomerPaymentMethods, setIsLoadingCustomerPaymentMethods] = useState(false)
+    const [assigningPaymentMethodId, setAssigningPaymentMethodId] = useState<string | null>(null)
+    const [assignPaymentMethodError, setAssignPaymentMethodError] = useState(false)
     const close = () => router.replace(`/${locale}/licenses/customer/${encodeURIComponent(resolvedCustomerId)}/license/${encodeURIComponent(resolvedLicenseId)}`)
 
     useEffect(() => {
@@ -84,6 +99,54 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
     const paymentMethodUpdated = useCallback(() => {
         setPaymentMethodRefreshKey((value) => value + 1)
     }, [])
+
+    useEffect(() => {
+        if (section !== "payment" || !license?.customerId) return
+
+        const controller = new AbortController()
+        const url = new URL("/api/crater/customer/payment-methods", window.location.origin)
+        url.searchParams.set("customerId", license.customerId)
+        setIsLoadingCustomerPaymentMethods(true)
+        setCustomerPaymentMethodsError(false)
+
+        void fetch(url, { cache: "no-store", credentials: "same-origin", signal: controller.signal })
+            .then(async (response) => {
+                const result: unknown = await response.json()
+                if (!response.ok || !result || typeof result !== "object" || !("paymentMethods" in result)) throw new Error("Invalid payment methods response.")
+                return result.paymentMethods as CustomerPaymentMethodSummary[]
+            })
+            .then(setCustomerPaymentMethods)
+            .catch((loadError) => {
+                if (!(loadError instanceof DOMException && loadError.name === "AbortError")) setCustomerPaymentMethodsError(true)
+            })
+            .finally(() => {
+                if (!controller.signal.aborted) setIsLoadingCustomerPaymentMethods(false)
+            })
+
+        return () => controller.abort()
+    }, [license?.customerId, paymentMethodRefreshKey, section])
+
+    const assignPaymentMethod = async (paymentMethodId: string) => {
+        if (!license?.subscriptionId || assigningPaymentMethodId) return
+        setAssigningPaymentMethodId(paymentMethodId)
+        setAssignPaymentMethodError(false)
+
+        try {
+            const response = await fetch("/api/crater/subscriptions/payment-method", {
+                method: "POST",
+                credentials: "same-origin",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ subscriptionId: license.subscriptionId, paymentMethodId }),
+            })
+            if (!response.ok) throw new Error(errors.paymentMethodAssign)
+
+            paymentMethodUpdated()
+        } catch {
+            setAssignPaymentMethodError(true)
+        } finally {
+            setAssigningPaymentMethodId(null)
+        }
+    }
 
     const save = async (event: SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
         event.preventDefault()
@@ -226,14 +289,55 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
                         )}
                     </div>
 
+                    {isLoadingCustomerPaymentMethods ? null : customerPaymentMethodsError ? (
+                        <Text role="alert" size="sm" className="text-error!">
+                            {errors.paymentMethodAssign}
+                        </Text>
+                    ) : customerPaymentMethods && customerPaymentMethods.length > 0 ? (
+                        <div className="space-y-3">
+                            <Text hierarchy="secondary" size="sm" fw={500}>
+                                {content.editor.otherPaymentMethodsHeading}
+                            </Text>
+                            {customerPaymentMethods.map((method) => {
+                                const title = method.brand?.trim() || method.type.replaceAll("_", " ")
+                                const expiry = method.expiresMonth && method.expiresYear ? `${String(method.expiresMonth).padStart(2, "0")}/${method.expiresYear}` : null
+
+                                return (
+                                    <div key={method.id} className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/3 p-4">
+                                        <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-white/7 text-brand">
+                                            <IconCreditCard aria-hidden="true" size={20} />
+                                        </div>
+                                        <div className="min-w-0 flex-1">
+                                            <Text size="sm" fw={500} className="capitalize">
+                                                {[title, method.last4 ? `•••• ${method.last4}` : null].filter(Boolean).join(" · ")}
+                                            </Text>
+                                            {expiry ? (
+                                                <Text size="sm" hierarchy="tertiary">
+                                                    {expiry}
+                                                </Text>
+                                            ) : null}
+                                        </div>
+                                        <Button type="button" variant="normal" paddingSize="xs" disabled={assigningPaymentMethodId === method.id} onClick={() => void assignPaymentMethod(method.id)}>
+                                            {assigningPaymentMethodId === method.id ? <ButtonLoader label={content.editor.settingPaymentMethodLabel} /> : content.editor.usePaymentMethodLabel}
+                                        </Button>
+                                    </div>
+                                )
+                            })}
+                            {assignPaymentMethodError && (
+                                <Text role="alert" size="sm" className="text-error!">
+                                    {errors.paymentMethodAssign}
+                                </Text>
+                            )}
+                        </div>
+                    ) : null}
+
                     <PaymentMethodSetupDialog
                         content={content}
-                        customerId={license.customerId}
                         errors={errors}
-                        licenseId={license.id}
-                        locale={locale}
                         onSuccess={paymentMethodUpdated}
-                        subscriptionId={license.subscriptionId}
+                        owner={{ subscriptionId: license.subscriptionId, type: "subscription" }}
+                        returnPath={`/${locale}/licenses/customer/${encodeURIComponent(license.customerId)}/license/${encodeURIComponent(license.id)}/edit`}
+                        triggerLabel={content.editor.changePaymentMethodLabel}
                     />
                 </div>
             )}

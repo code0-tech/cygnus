@@ -49,15 +49,24 @@ const appearance = {
     },
 } satisfies Appearance
 
+export type PaymentMethodSetupOwner = { customerId: string; type: "customer" } | { subscriptionId: string; type: "subscription" }
+
+export function paymentMethodSetupStatusUrl(owner: PaymentMethodSetupOwner, setupIntentId: string) {
+    const statusUrl = new URL(owner.type === "customer" ? "/api/crater/customer/payment-method-setup" : "/api/crater/subscriptions/payment-method-setup", window.location.origin)
+    statusUrl.searchParams.set(owner.type === "customer" ? "customerId" : "subscriptionId", owner.type === "customer" ? owner.customerId : owner.subscriptionId)
+    statusUrl.searchParams.set("setupIntentId", setupIntentId)
+    return statusUrl
+}
+
 interface PaymentMethodSetupElementProps {
     clientSecret: string
     content: LicenseContent["editor"]
     errorMessage: string
     onCancel: () => void
     onSuccess: () => void
+    owner: PaymentMethodSetupOwner
     retryLabel: string
     returnPath: string
-    subscriptionId: string
 }
 
 interface PaymentMethodSetupPendingStatusProps {
@@ -65,12 +74,12 @@ interface PaymentMethodSetupPendingStatusProps {
     errorMessage: string
     onCancel: () => void
     onSuccess: () => void
+    owner: PaymentMethodSetupOwner
     retryLabel: string
     setupIntentId: string
-    subscriptionId: string
 }
 
-export function PaymentMethodSetupPendingStatus({ content, errorMessage, onCancel, onSuccess, retryLabel, setupIntentId, subscriptionId }: PaymentMethodSetupPendingStatusProps) {
+export function PaymentMethodSetupPendingStatus({ content, errorMessage, onCancel, onSuccess, owner, retryLabel, setupIntentId }: PaymentMethodSetupPendingStatusProps) {
     const [isComplete, setIsComplete] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [retryKey, setRetryKey] = useState(0)
@@ -81,9 +90,7 @@ export function PaymentMethodSetupPendingStatus({ content, errorMessage, onCance
 
         const checkStatus = async () => {
             try {
-                const statusUrl = new URL("/api/crater/subscriptions/payment-method-setup", window.location.origin)
-                statusUrl.searchParams.set("subscriptionId", subscriptionId)
-                statusUrl.searchParams.set("setupIntentId", setupIntentId)
+                const statusUrl = paymentMethodSetupStatusUrl(owner, setupIntentId)
                 const response = await fetch(statusUrl, {
                     cache: "no-store",
                     credentials: "same-origin",
@@ -115,7 +122,7 @@ export function PaymentMethodSetupPendingStatus({ content, errorMessage, onCance
             controller.abort()
             if (timeout) clearTimeout(timeout)
         }
-    }, [errorMessage, onSuccess, retryKey, setupIntentId, subscriptionId])
+    }, [errorMessage, onSuccess, owner, retryKey, setupIntentId])
 
     if (isComplete) {
         return (
@@ -162,7 +169,7 @@ export function PaymentMethodSetupPendingStatus({ content, errorMessage, onCance
     )
 }
 
-function PaymentMethodSetupForm({ content, errorMessage, onCancel, onSuccess, retryLabel, returnPath, subscriptionId }: Omit<PaymentMethodSetupElementProps, "clientSecret">) {
+function PaymentMethodSetupForm({ content, errorMessage, onCancel, onSuccess, owner, retryLabel, returnPath }: Omit<PaymentMethodSetupElementProps, "clientSecret">) {
     const stripe = useStripe()
     const elements = useElements()
     const [isReady, setIsReady] = useState(false)
@@ -204,9 +211,9 @@ function PaymentMethodSetupForm({ content, errorMessage, onCancel, onSuccess, re
                 errorMessage={errorMessage}
                 onCancel={onCancel}
                 onSuccess={onSuccess}
+                owner={owner}
                 retryLabel={retryLabel}
                 setupIntentId={setupIntentId}
-                subscriptionId={subscriptionId}
             />
         )
 
@@ -230,7 +237,7 @@ function PaymentMethodSetupForm({ content, errorMessage, onCancel, onSuccess, re
     )
 }
 
-export function PaymentMethodSetupElement({ clientSecret, content, errorMessage, onCancel, onSuccess, retryLabel, returnPath, subscriptionId }: PaymentMethodSetupElementProps) {
+export function PaymentMethodSetupElement({ clientSecret, content, errorMessage, onCancel, onSuccess, owner, retryLabel, returnPath }: PaymentMethodSetupElementProps) {
     const stripeRef = useRef(stripePromise)
     const options = useMemo<StripeElementsOptions>(() => ({ appearance, clientSecret }), [clientSecret])
 
@@ -244,15 +251,7 @@ export function PaymentMethodSetupElement({ clientSecret, content, errorMessage,
 
     return (
         <Elements key={clientSecret} stripe={stripeRef.current} options={options}>
-            <PaymentMethodSetupForm
-                content={content}
-                errorMessage={errorMessage}
-                onCancel={onCancel}
-                onSuccess={onSuccess}
-                retryLabel={retryLabel}
-                returnPath={returnPath}
-                subscriptionId={subscriptionId}
-            />
+            <PaymentMethodSetupForm content={content} errorMessage={errorMessage} onCancel={onCancel} onSuccess={onSuccess} owner={owner} retryLabel={retryLabel} returnPath={returnPath} />
         </Elements>
     )
 }

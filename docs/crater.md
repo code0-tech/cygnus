@@ -525,6 +525,31 @@ const { error } = await stripe.confirmSetup({
 })
 ```
 
+#### Listing and detaching stored payment methods
+
+`customerPaymentMethodSetupCreate` and the webhook above cover adding a payment method and promoting it to the default. Two more operations round out payment method management, and neither needs a SetupIntent because they act on payment methods Stripe has already collected and attached.
+
+`customerPaymentMethods(customerId)` lists every Stripe payment method stored on the customer, not only the current default. Each `CustomerPaymentMethod` carries `id` — the Stripe PaymentMethod ID, stable across requests and the identifier the other two operations below take — plus the same non-sensitive display fields as the subscription default (`type`, `brand`, `last4`, `expiresMonth`, `expiresYear`), and `isDefault`. Crater stores none of it: the list comes from `payment_methods.list` and `isDefault` is decided by comparing each id against the customer's `invoice_settings.default_payment_method`, read fresh from Stripe on every call.
+
+`customerPaymentMethodDetach(customerId, paymentMethodId)` removes a stored payment method from the customer. It is refused with `PAYMENT_METHOD_IN_USE` while the payment method is charged for anything:
+
+- it is the customer's `invoice_settings.default_payment_method`, or
+- it is the `default_payment_method` of one of the customer's non-terminal subscriptions (any status other than `canceled` or `incomplete_expired`, the same set `Subscription::TERMINAL_STRIPE_STATUSES` names elsewhere).
+
+Both checks read straight from Stripe rather than Crater's local `Subscription` projection, so they hold even where the projection has not caught up yet. The customer-level default is checked first, because it costs one Stripe call and answers the common case without a second one. Freeing a payment method for removal means moving the conflicting default elsewhere first, either with a fresh `customerPaymentMethodSetupCreate` / `subscriptionPaymentMethodSetupCreate`, or with `subscriptionsSetPaymentMethod` below.
+
+Access for both is the same `CustomerPolicy` membership rule as the rest of this section. A payment method id that does not exist and one belonging to a different Stripe customer are answered identically with `INVALID_PAYMENT_METHOD`, the same anti-enumeration idiom `INVALID_PAYMENT_METHOD_SETUP_CUSTOMER` already follows for the customer itself: the id is always resolved server-side through `payment_methods.retrieve` and compared against the customer's `stripe_customer_id`, never trusted from the request.
+
+#### Selecting an already-stored payment method for a subscription
+
+A subscription's default payment method can already be read with the `subscriptionPaymentMethod(subscriptionId)` query, which returns the same non-sensitive summary as `customerPaymentMethods`, and replaced with a freshly collected one through `subscriptionPaymentMethodSetupCreate`, which creates a SetupIntent scoped to that subscription the same way `customerPaymentMethodSetupCreate` does for the customer as a whole.
+
+`subscriptionsSetPaymentMethod(subscriptionId, paymentMethodId)` is the third option: pick one of the customer's already-stored payment methods instead of collecting a new one. Because the method is already verified and attached to the Stripe customer, no SetupIntent, no client secret, and no round trip through Stripe Elements are involved -- the subscription's `default_payment_method` is set directly.
+
+- `paymentMethodId` is resolved server-side through `payment_methods.retrieve` and must belong to the subscription's own customer; a payment method that does not exist and one belonging to a different customer are both `INVALID_PAYMENT_METHOD` with an identical message.
+- Access is `update_subscription`, the same ability `subscriptionsCancel` and `subscriptionsUpdate` require; a subscription that does not exist, one belonging to somebody else, and a terminal one are all `INVALID_SUBSCRIPTION`.
+- The mutation stores nothing locally -- there is no `default_payment_method` column on `Subscription` -- and returns the new default reduced to the same summary `subscriptionPaymentMethod` reports, so the client can update its display without an extra query.
+
 #### Checkout return URLs
 
 The checkout is the only flow whose return URL passes through Crater. `Crater::ReturnUrl` accepts only absolute `http` or `https` URLs whose origin appears in `checkout.allowed_return_origins`; anything relative, scheme-less, or pointing at another origin is rejected before Stripe is called, so no request can make Stripe redirect a user to a host we do not control.
@@ -1080,6 +1105,7 @@ Documented error codes:
 | `INVALID_DISCOUNT_CODE`                 | The discount code is invalid or inactive                                                                                                                                               |
 | `INVALID_INVOICE`                       | The invoice is invalid                                                                                                                                                                 |
 | `INVALID_LICENSE`                       | The license is invalid                                                                                                                                                                 |
+| `INVALID_PAYMENT_METHOD`                | The selected payment method does not exist or does not belong to this customer                                                                                                         |
 | `INVALID_PAYMENT_METHOD_SETUP_CUSTOMER` | The selected customer does not exist, is not accessible to the current user, or has no billing account to set a payment method up for                                                  |
 | `INVALID_PAYMENT_METHOD_SETUP_SESSION`  | The payment method setup could not be created                                                                                                                                          |
 | `INVALID_SAGITTARIUS_TOKEN`             | The Sagittarius token cannot be used to log in                                                                                                                                         |
@@ -1087,6 +1113,7 @@ Documented error codes:
 | `INVALID_TAX_CALCULATION`               | Stripe rejected the tax calculation                                                                                                                                                    |
 | `INVALID_USER`                          | The local user derived from Sagittarius is invalid                                                                                                                                     |
 | `MISSING_PERMISSION`                    | The user does not have the required permission                                                                                                                                         |
+| `PAYMENT_METHOD_IN_USE`                 | The payment method is the default for an active subscription and cannot be removed                                                                                                     |
 | `SAGITTARIUS_UNAVAILABLE`               | Sagittarius could not be reached or returned an unexpected response                                                                                                                    |
 | `UNABLE_TO_LIST_PRICES`                 | Active recurring Stripe prices could not be retrieved                                                                                                                                  |
 

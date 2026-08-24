@@ -37,6 +37,20 @@ export const Errors: GlobalConfig = {
             defaultValue: localizedDefault("The payment method could not be updated.", "Die Zahlungsmethode konnte nicht aktualisiert werden."),
         },
         {
+            name: "paymentMethodRemove",
+            type: "text",
+            required: true,
+            localized: true,
+            defaultValue: localizedDefault("The payment method could not be removed.", "Die Zahlungsmethode konnte nicht entfernt werden."),
+        },
+        {
+            name: "paymentMethodAssign",
+            type: "text",
+            required: true,
+            localized: true,
+            defaultValue: localizedDefault("The payment method could not be assigned to this license.", "Die Zahlungsmethode konnte dieser Lizenz nicht zugewiesen werden."),
+        },
+        {
             name: "licenseUpdate",
             type: "text",
             required: true,

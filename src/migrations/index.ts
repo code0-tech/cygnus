@@ -137,6 +137,7 @@ import * as migration_20260821_065512_plan_upgrade_banner from './20260821_06551
 import * as migration_20260821_142512_remove_checkout_stepper from './20260821_142512_remove_checkout_stepper';
 import * as migration_20260821_152105_add_send_offer_prompt from './20260821_152105_add_send_offer_prompt';
 import * as migration_20260821_162845_remove_unused_subscription_checkout_license_fields from './20260821_162845_remove_unused_subscription_checkout_license_fields';
+import * as migration_20260824_105607_payment_methods_content from './20260824_105607_payment_methods_content';
 
 export const migrations = [
   {
@@ -832,6 +833,11 @@ export const migrations = [
   {
     up: migration_20260821_162845_remove_unused_subscription_checkout_license_fields.up,
     down: migration_20260821_162845_remove_unused_subscription_checkout_license_fields.down,
-    name: '20260821_162845_remove_unused_subscription_checkout_license_fields'
+    name: '20260821_162845_remove_unused_subscription_checkout_license_fields',
+  },
+  {
+    up: migration_20260824_105607_payment_methods_content.up,
+    down: migration_20260824_105607_payment_methods_content.down,
+    name: '20260824_105607_payment_methods_content'
   },
 ];

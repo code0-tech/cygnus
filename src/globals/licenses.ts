@@ -321,6 +321,20 @@ export const Licenses: GlobalConfig = {
                         "Die Zahlungsmethode ist jetzt der Standard für zukünftige Rechnungen."
                     ),
                 },
+                { name: "noPaymentMethodsLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("No payment methods yet", "Noch keine Zahlungsmethoden") },
+                { name: "addPaymentMethodLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Add payment method", "Zahlungsmethode hinzufügen") },
+                { name: "removePaymentMethodLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Remove", "Entfernen") },
+                { name: "removingPaymentMethodLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Removing…", "Wird entfernt …") },
+                { name: "defaultPaymentMethodLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Default", "Standard") },
+                {
+                    name: "otherPaymentMethodsHeading",
+                    type: "text",
+                    required: true,
+                    localized: true,
+                    defaultValue: localizedDefault("Other payment methods", "Weitere Zahlungsmethoden"),
+                },
+                { name: "usePaymentMethodLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Use this", "Diese verwenden") },
+                { name: "settingPaymentMethodLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Assigning…", "Wird zugewiesen …") },
                 { name: "licenseTitle", type: "text", required: true, localized: true, defaultValue: localizedDefault("Edit license", "Lizenz bearbeiten") },
                 {
                     name: "licenseDescription",
