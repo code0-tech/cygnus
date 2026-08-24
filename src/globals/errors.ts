@@ -44,6 +44,16 @@ export const Errors: GlobalConfig = {
             defaultValue: localizedDefault("The payment method could not be removed.", "Die Zahlungsmethode konnte nicht entfernt werden."),
         },
         {
+            name: "paymentMethodInUse",
+            type: "text",
+            required: true,
+            localized: true,
+            defaultValue: localizedDefault(
+                "This payment method is still in use by the customer or one of their licenses. Assign a different one first.",
+                "Diese Zahlungsmethode wird noch verwendet, entweder als Standard des Kunden oder einer seiner Lizenzen. Weise zuerst eine andere zu."
+            ),
+        },
+        {
             name: "paymentMethodAssign",
             type: "text",
             required: true,
@@ -104,7 +114,10 @@ export const Errors: GlobalConfig = {
             type: "text",
             required: true,
             localized: true,
-            defaultValue: localizedDefault("Your checkout session could not be authenticated. Please try again.", "Deine Checkout-Sitzung konnte nicht authentifiziert werden. Bitte versuche es erneut."),
+            defaultValue: localizedDefault(
+                "Your checkout session could not be authenticated. Please try again.",
+                "Deine Checkout-Sitzung konnte nicht authentifiziert werden. Bitte versuche es erneut."
+            ),
         },
         {
             name: "customerCreation",
@@ -149,7 +162,10 @@ export const Errors: GlobalConfig = {
             type: "text",
             required: true,
             localized: true,
-            defaultValue: localizedDefault("The billing address could not be saved. Please check your details.", "Die Rechnungsadresse konnte nicht gespeichert werden. Bitte überprüfe deine Angaben."),
+            defaultValue: localizedDefault(
+                "The billing address could not be saved. Please check your details.",
+                "Die Rechnungsadresse konnte nicht gespeichert werden. Bitte überprüfe deine Angaben."
+            ),
         },
         {
             name: "emailUpdate",

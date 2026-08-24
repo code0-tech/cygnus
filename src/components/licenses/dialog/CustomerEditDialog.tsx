@@ -2,14 +2,15 @@
 
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
 import { LicenseDialog } from "@/components/licenses/dialog/LicenseDialog"
+import { CustomerPaymentMethodCard, type CustomerPaymentMethodSummary } from "@/components/licenses/dialog/CustomerPaymentMethodCard"
 import { PaymentMethodSetupDialog } from "@/components/licenses/dialog/PaymentMethodSetupDialog"
 import { ButtonLoader } from "@/components/ui/Loader"
 import type { CheckoutData, ErrorsContent, LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { decodeLicenseRouteId } from "@/lib/licenses/licenseRoute"
 import { cn } from "@/lib/utils"
-import { Badge, Button, DialogFooter, EmailInput, ScrollArea, ScrollAreaScrollbar, ScrollAreaThumb, ScrollAreaViewport, Text, TextInput } from "@code0-tech/pictor"
-import { IconCreditCard, IconTrash } from "@tabler/icons-react"
+import { Button, DialogFooter, EmailInput, ScrollArea, ScrollAreaScrollbar, ScrollAreaThumb, ScrollAreaViewport, Text, TextInput } from "@code0-tech/pictor"
+import { IconTrash } from "@tabler/icons-react"
 import { useRouter } from "next/navigation"
 import { type SyntheticEvent, useCallback, useEffect, useState } from "react"
 
@@ -22,16 +23,6 @@ interface CustomerEditDialogProps {
 }
 
 type CustomerEditSection = "general" | "paymentMethods"
-
-interface CustomerPaymentMethodSummary {
-    brand: string | null
-    expiresMonth: number | null
-    expiresYear: number | null
-    id: string
-    isDefault: boolean
-    last4: string | null
-    type: string
-}
 
 export function CustomerEditDialog({ checkoutForm, content, customerId, errors, locale }: CustomerEditDialogProps) {
     const router = useRouter()
@@ -55,6 +46,7 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
     const [isLoadingPaymentMethods, setIsLoadingPaymentMethods] = useState(false)
     const [paymentMethodsRefreshKey, setPaymentMethodsRefreshKey] = useState(0)
     const [removingPaymentMethodId, setRemovingPaymentMethodId] = useState<string | null>(null)
+    const [removePaymentMethodError, setRemovePaymentMethodError] = useState<string | null>(null)
     const close = () => router.replace(`/${locale}/licenses/customer/${encodeURIComponent(resolvedCustomerId)}`)
 
     useEffect(() => {
@@ -82,6 +74,7 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
         url.searchParams.set("customerId", customer.id)
         setIsLoadingPaymentMethods(true)
         setPaymentMethodsError(false)
+        setRemovePaymentMethodError(null)
 
         void fetch(url, { cache: "no-store", credentials: "same-origin", signal: controller.signal })
             .then(async (response) => {
@@ -107,7 +100,7 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
     const removePaymentMethod = async (paymentMethodId: string) => {
         if (!customer || removingPaymentMethodId) return
         setRemovingPaymentMethodId(paymentMethodId)
-        setPaymentMethodsError(false)
+        setRemovePaymentMethodError(null)
 
         try {
             const response = await fetch("/api/crater/customer/payment-methods/detach", {
@@ -116,11 +109,15 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
                 headers: { "content-type": "application/json" },
                 body: JSON.stringify({ customerId: customer.id, paymentMethodId }),
             })
-            if (!response.ok) throw new Error(errors.paymentMethodRemove)
+            if (!response.ok) {
+                const result: unknown = await response.json().catch(() => null)
+                const errorCode = result && typeof result === "object" && "errorCode" in result ? result.errorCode : null
+                throw new Error(errorCode === "PAYMENT_METHOD_IN_USE" ? errors.paymentMethodInUse : errors.paymentMethodRemove)
+            }
 
             setPaymentMethods((current) => current?.filter((method) => method.id !== paymentMethodId) ?? null)
-        } catch {
-            setPaymentMethodsError(true)
+        } catch (removeError) {
+            setRemovePaymentMethodError(removeError instanceof Error ? removeError.message : errors.paymentMethodRemove)
         } finally {
             setRemovingPaymentMethodId(null)
         }
@@ -316,7 +313,7 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
                 </div>
             ) : (
                 <div className="space-y-6" role="tabpanel">
-                    <ScrollArea h="22rem" type="scroll" className="rounded-2xl">
+                    <ScrollArea h="32rem" type="scroll">
                         <ScrollAreaViewport className="h-full! w-full!">
                             <div className="space-y-3 pr-3">
                                 {isLoadingPaymentMethods ? (
@@ -335,28 +332,12 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
                                         </Button>
                                     </div>
                                 ) : paymentMethods && paymentMethods.length > 0 ? (
-                                    paymentMethods.map((method) => {
-                                        const title = method.brand?.trim() || method.type.replaceAll("_", " ")
-                                        const expiry = method.expiresMonth && method.expiresYear ? `${String(method.expiresMonth).padStart(2, "0")}/${method.expiresYear}` : null
-
-                                        return (
-                                            <div key={method.id} className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/3 p-4">
-                                                <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-white/7 text-brand">
-                                                    <IconCreditCard aria-hidden="true" size={20} />
-                                                </div>
-                                                <div className="min-w-0 flex-1">
-                                                    <div className="flex flex-wrap items-center gap-2">
-                                                        <Text size="sm" fw={500} className="capitalize">
-                                                            {[title, method.last4 ? `•••• ${method.last4}` : null].filter(Boolean).join(" · ")}
-                                                        </Text>
-                                                        {method.isDefault && <Badge color="success">{content.editor.defaultPaymentMethodLabel}</Badge>}
-                                                    </div>
-                                                    {expiry ? (
-                                                        <Text size="sm" hierarchy="tertiary">
-                                                            {expiry}
-                                                        </Text>
-                                                    ) : null}
-                                                </div>
+                                    paymentMethods.map((method) => (
+                                        <CustomerPaymentMethodCard
+                                            key={method.id}
+                                            defaultLabel={content.editor.defaultPaymentMethodLabel}
+                                            method={method}
+                                            action={
                                                 <Button
                                                     type="button"
                                                     variant="none"
@@ -371,9 +352,9 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
                                                         <IconTrash aria-hidden="true" size={16} />
                                                     )}
                                                 </Button>
-                                            </div>
-                                        )
-                                    })
+                                            }
+                                        />
+                                    ))
                                 ) : (
                                     <Text size="sm" hierarchy="tertiary">
                                         {content.editor.noPaymentMethodsLabel}
@@ -385,6 +366,12 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
                             <ScrollAreaThumb className="bg-white/15! hover:bg-white/25!" />
                         </ScrollAreaScrollbar>
                     </ScrollArea>
+
+                    {removePaymentMethodError && (
+                        <Text role="alert" size="sm" className="text-error!">
+                            {removePaymentMethodError}
+                        </Text>
+                    )}
 
                     {customer && (
                         <PaymentMethodSetupDialog
