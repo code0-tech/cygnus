@@ -2108,7 +2108,7 @@ test("license namespace callback requires a namespace selected by Sagittarius", 
     assert.equal(response.headers.get("location"), `https://code0.example${returnPath}?namespaceError=selection`)
 })
 
-test("license namespace callback rejects return paths that are not exact license edit routes", async () => {
+test("license namespace callback rejects return paths that are not exact license routes", async () => {
     const response = await selectLicenseNamespace(
         new Request(
             `https://code0.example/api/crater/licenses/namespace/callback?returnPath=${encodeURIComponent("https://evil.example/collect")}&namespace=${encodeURIComponent("gid://sagittarius/Namespace/9")}&token=sagittarius-secret`
@@ -2118,4 +2118,14 @@ test("license namespace callback rejects return paths that are not exact license
     assert.equal(response.status, 307)
     assert.equal(response.headers.get("location"), "https://code0.example/")
     assert.doesNotMatch(response.headers.get("location") ?? "", /token|namespace/)
+})
+
+test("license namespace callback accepts an exact license detail return path", async () => {
+    const returnPath = "/en/licenses/customer/gid%3A%2F%2Fcrater%2FCustomer%2F3/license/gid%3A%2F%2Fcrater%2FLicense%2F9"
+    const response = await selectLicenseNamespace(
+        new Request(`https://code0.example/api/crater/licenses/namespace/callback?returnPath=${encodeURIComponent(returnPath)}&token=sagittarius-secret`)
+    )
+
+    assert.equal(response.status, 307)
+    assert.equal(response.headers.get("location"), `https://code0.example${returnPath}?namespaceError=selection`)
 })

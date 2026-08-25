@@ -18,7 +18,7 @@ import type { AppLocale } from "@/lib/i18n"
 import { decodeLicenseRouteId } from "@/lib/licenses/licenseRoute"
 import { formatLicenseDisplayValue } from "@/lib/licenses/licenseDisplayValues"
 import { downloadLicenseFile } from "@/lib/licenses/downloadLicenseFile"
-import { Button, Card, Flex, Spacing, Text } from "@code0-tech/pictor"
+import { Alert, Button, Card, Flex, Spacing, Text } from "@code0-tech/pictor"
 import { IconDownload } from "@tabler/icons-react"
 import { useRouter } from "next/navigation"
 import { Fragment, useState } from "react"
@@ -29,11 +29,12 @@ interface LicenseDetailPageProps {
     customerId: string
     licenseId: string
     locale: AppLocale
+    namespaceHref: string
     subscriptionConfig?: SubscriptionConfigData | null
     upgradeBanner?: UpgradeBannerData | null
 }
 
-export function LicenseDetailPage({ content, customerId, licenseId, locale, subscriptionConfig, upgradeBanner }: LicenseDetailPageProps) {
+export function LicenseDetailPage({ content, customerId, licenseId, locale, namespaceHref, subscriptionConfig, upgradeBanner }: LicenseDetailPageProps) {
     const router = useRouter()
     const { customers, isLoading, licenses, loadMore, loadingMore, pagination } = useLicenseData()
     const resolvedCustomerId = decodeLicenseRouteId(customerId)
@@ -47,6 +48,7 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, subs
         timeZone: "UTC",
     })
     const accessEndDate = license?.endDate ?? license?.cancelAt
+    const showNamespaceWarning = license?.deploymentType === "cloud" && !license.namespaceId
     const licenseDetails = license
         ? [
               { label: content.dashboard.statusLabel, value: formatLicenseDisplayValue(license.status, "status", content.values), showStatusDot: true },
@@ -164,6 +166,25 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, subs
                         <Text role="alert" size="sm" hierarchy="tertiary" className="text-error!">
                             {content.invoices.unavailableLabel}
                         </Text>
+                    </>
+                ) : null}
+                {showNamespaceWarning ? (
+                    <>
+                        <Spacing spacing="xs" />
+                        <Alert color="warning" role="alert">
+                            <div className="flex min-w-0 flex-1 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                <span>{content.editor.licenseDescription}</span>
+                                <Button
+                                    type="button"
+                                    variant="none"
+                                    paddingSize="xs"
+                                    className="shrink-0 bg-white/80! text-primary! hover:bg-white! transition-colors! py-1! px-2! rounded-lg!"
+                                    onClick={() => window.location.assign(namespaceHref)}
+                                >
+                                    {content.editor.changeNamespaceLabel}
+                                </Button>
+                            </div>
+                        </Alert>
                     </>
                 ) : null}
                 <Spacing spacing="md" />

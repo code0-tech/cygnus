@@ -39,6 +39,13 @@ test("does not encode license route parameters a second time", () => {
     )
 })
 
+test("can return namespace selection directly to the license detail", () => {
+    assert.equal(
+        createLicenseNamespaceReturnPath("en", "gid://crater/Customer/3", "gid://crater/License/9", "detail"),
+        "/en/licenses/customer/gid%3A%2F%2Fcrater%2FCustomer%2F3/license/gid%3A%2F%2Fcrater%2FLicense%2F9"
+    )
+})
+
 test("appends the absolute checkout and cancellation URLs to the configured login URL", () => {
     const result = createMainAppLoginUrl("https://app.example/login?source=pricing", "https://code0.example/de/checkout?plan=custom", "https://code0.example/de/subscription?plan=custom")
 
