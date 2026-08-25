@@ -175,6 +175,7 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ homeHref, items: 
                                     delay={40}
                                     closeDelay={80}
                                     align="start"
+                                    alignOffset={-128}
                                     className="hidden md:flex max-w-none flex-none"
                                 >
                                     <NavigationMenuList className="gap-2">
@@ -258,12 +259,7 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ homeHref, items: 
                                     className="overflow-hidden"
                                 >
                                     <div ref={submenuContentRef} className="pt-1">
-                                        <NavigationSubMenu
-                                            embedded
-                                            groups={activeSubMenu.subMenuGroups}
-                                            shortLinkGroups={activeSubMenu.shortLinkGroups}
-                                            onSelect={() => setActiveMenuValue(null)}
-                                        />
+                                        <NavigationSubMenu embedded groups={activeSubMenu.subMenuGroups} shortLinkGroups={activeSubMenu.shortLinkGroups} onSelect={() => setActiveMenuValue(null)} />
                                     </div>
                                 </motion.div>
                             )}

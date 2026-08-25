@@ -2,11 +2,17 @@ import { NavigationMenu as NavigationMenuPrimitive } from "@base-ui/react/naviga
 import { cn } from "@/lib/utils"
 import { IconChevronUp } from "@tabler/icons-react"
 
-function NavigationMenu({ align = "start", className, children, ...props }: NavigationMenuPrimitive.Root.Props & Pick<NavigationMenuPrimitive.Positioner.Props, "align">) {
+function NavigationMenu({
+    align = "start",
+    alignOffset = 0,
+    className,
+    children,
+    ...props
+}: NavigationMenuPrimitive.Root.Props & Pick<NavigationMenuPrimitive.Positioner.Props, "align" | "alignOffset">) {
     return (
         <NavigationMenuPrimitive.Root data-slot="navigation-menu" className={cn("group/navigation-menu relative flex max-w-max flex-1 items-center justify-center", className)} {...props}>
             {children}
-            <NavigationMenuPositioner align={align} />
+            <NavigationMenuPositioner align={align} alignOffset={alignOffset} />
         </NavigationMenuPrimitive.Root>
     )
 }
