@@ -129,7 +129,7 @@ export function LicenseBillingDialog({ content, customerId, errors, licenseId, l
     const periodLabelFor = (value: PaymentPeriod) => subscriptionConfig.paymentPeriod[`${value}Text`]
 
     return (
-        <LicenseDialog backLabel={content.editor.cancelLabel} description={content.billing.description} onClose={close} title={content.billing.title}>
+        <LicenseDialog backLabel={content.editor.closeLabel} description={content.billing.description} onClose={close} title={content.billing.title}>
             <div className="space-y-4">
                 {license && (
                     <div className="grid grid-cols-2 gap-4 text-sm">
@@ -195,7 +195,7 @@ export function LicenseBillingDialog({ content, customerId, errors, licenseId, l
 
                 <DialogFooter className="gap-3! pt-2!">
                     <Button type="button" variant="none" onClick={close}>
-                        {content.editor.cancelLabel}
+                        {content.editor.closeLabel}
                     </Button>
                     <Button type="button" variant="filled" disabled={!hasChange || isSaving || isLoadingPreview} onClick={() => void save()}>
                         {isSaving ? <ButtonLoader label={content.editor.saveLabel} /> : content.editor.saveLabel}

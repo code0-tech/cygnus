@@ -244,7 +244,6 @@ export const Licenses: GlobalConfig = {
                     fields: [
                         { name: "draft", type: "text", required: true, localized: true, defaultValue: localizedDefault("Draft", "Entwurf") },
                         { name: "open", type: "text", required: true, localized: true, defaultValue: localizedDefault("Open", "Offen") },
-                        { name: "paid", type: "text", required: true, localized: true, defaultValue: localizedDefault("Paid", "Bezahlt") },
                         { name: "uncollectible", type: "text", required: true, localized: true, defaultValue: localizedDefault("Uncollectible", "Uneinbringlich") },
                         { name: "void", type: "text", required: true, localized: true, defaultValue: localizedDefault("Void", "Storniert") },
                     ],
@@ -344,8 +343,10 @@ export const Licenses: GlobalConfig = {
                     defaultValue: localizedDefault("Link this cloud license to a namespace.", "Verknüpfe diese Cloud-Lizenz mit einem Namespace."),
                 },
                 { name: "namespaceLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Namespace ID", "Namespace-ID") },
+                { name: "changeNamespaceLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Change namespace", "Namespace ändern") },
+                { name: "namespaceConnectedLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Connected", "Verbunden") },
+                { name: "namespaceNotConnectedLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Not connected", "Nicht verbunden") },
                 { name: "saveLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Save", "Speichern") },
-                { name: "cancelLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Cancel", "Abbrechen") },
                 { name: "closeLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Close", "Schließen") },
             ],
         },
@@ -419,7 +420,6 @@ export const Licenses: GlobalConfig = {
             name: "cancel",
             type: "group",
             fields: [
-                { name: "title", type: "text", required: true, localized: true, defaultValue: localizedDefault("Cancel subscription", "Abonnement kündigen") },
                 {
                     name: "description",
                     type: "textarea",

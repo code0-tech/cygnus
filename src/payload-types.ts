@@ -3271,7 +3271,6 @@ export interface License {
     invoiceStatuses: {
       draft: string;
       open: string;
-      paid: string;
       uncollectible: string;
       void: string;
     };
@@ -3318,8 +3317,10 @@ export interface License {
     licenseTitle: string;
     licenseDescription: string;
     namespaceLabel: string;
+    changeNamespaceLabel: string;
+    namespaceConnectedLabel: string;
+    namespaceNotConnectedLabel: string;
     saveLabel: string;
-    cancelLabel: string;
     closeLabel: string;
   };
   /**
@@ -3349,7 +3350,6 @@ export interface License {
     pendingChangeLabel: string;
   };
   cancel: {
-    title: string;
     description: string;
     confirmLabel: string;
     pendingHeading: string;
@@ -4035,7 +4035,6 @@ export interface LicensesSelect<T extends boolean = true> {
           | {
               draft?: T;
               open?: T;
-              paid?: T;
               uncollectible?: T;
               void?: T;
             };
@@ -4090,8 +4089,10 @@ export interface LicensesSelect<T extends boolean = true> {
         licenseTitle?: T;
         licenseDescription?: T;
         namespaceLabel?: T;
+        changeNamespaceLabel?: T;
+        namespaceConnectedLabel?: T;
+        namespaceNotConnectedLabel?: T;
         saveLabel?: T;
-        cancelLabel?: T;
         closeLabel?: T;
       };
   subscriptionPreview?:
@@ -4120,7 +4121,6 @@ export interface LicensesSelect<T extends boolean = true> {
   cancel?:
     | T
     | {
-        title?: T;
         description?: T;
         confirmLabel?: T;
         pendingHeading?: T;

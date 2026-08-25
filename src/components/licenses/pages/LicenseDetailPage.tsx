@@ -15,7 +15,7 @@ import { ButtonLoader } from "@/components/ui/Loader"
 import type { LicenseContent, SubscriptionConfigData, UpgradeBannerData } from "@/lib/cms"
 import { formatCompactNumber, formatMinorCurrency } from "@/lib/formatters"
 import type { AppLocale } from "@/lib/i18n"
-import { decodeLicenseRouteId, getNamespaceDisplayId } from "@/lib/licenses/licenseRoute"
+import { decodeLicenseRouteId } from "@/lib/licenses/licenseRoute"
 import { formatLicenseDisplayValue } from "@/lib/licenses/licenseDisplayValues"
 import { downloadLicenseFile } from "@/lib/licenses/downloadLicenseFile"
 import { Button, Card, Flex, Spacing, Text } from "@code0-tech/pictor"
@@ -86,7 +86,10 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, subs
                         { label: content.dashboard.aiTokensLabel, value: license.aiTokens === undefined ? "—" : formatCompactNumber(license.aiTokens) },
                     ]
                   : []),
-              { label: content.editor.namespaceLabel, value: getNamespaceDisplayId(license.namespaceId) || "—" },
+              {
+                  label: content.editor.namespaceLabel,
+                  value: license.namespaceId ? content.editor.namespaceConnectedLabel : content.editor.namespaceNotConnectedLabel,
+              },
               {
                   label: content.dashboard.lastEditedLabel,
                   value: license.updatedAt ? dateFormatter.format(new Date(license.updatedAt)) : "—",

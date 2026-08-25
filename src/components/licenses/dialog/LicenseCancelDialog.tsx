@@ -87,10 +87,10 @@ export function LicenseCancelDialog({ content, customerId, errors, licenseId, lo
 
     return (
         <LicenseDialog
-            backLabel={content.editor.cancelLabel}
+            backLabel={content.editor.closeLabel}
             description={isPending ? content.cancel.pendingDescription : content.cancel.description}
             onClose={close}
-            title={isPending ? content.cancel.pendingHeading : content.cancel.title}
+            title={isPending ? content.cancel.pendingHeading : content.cancel.confirmLabel}
         >
             <div className="space-y-4">
                 {isPending && license?.cancelAt && (
@@ -108,7 +108,7 @@ export function LicenseCancelDialog({ content, customerId, errors, licenseId, lo
 
                 <DialogFooter className="gap-3! pt-2!">
                     <Button type="button" variant="none" onClick={close}>
-                        {content.editor.cancelLabel}
+                        {content.editor.closeLabel}
                     </Button>
                     {isPending ? (
                         <Button type="button" variant="filled" disabled={!license || isSubmitting} onClick={() => void resume()}>

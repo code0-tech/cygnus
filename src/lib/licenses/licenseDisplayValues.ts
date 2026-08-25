@@ -24,7 +24,7 @@ export function formatLicenseDisplayValue(value: string | null | undefined, cate
         invoiceStatus: {
             draft: labels.invoiceStatuses.draft,
             open: labels.invoiceStatuses.open,
-            paid: labels.invoiceStatuses.paid,
+            paid: labels.statuses.paid,
             uncollectible: labels.invoiceStatuses.uncollectible,
             void: labels.invoiceStatuses.void,
         },

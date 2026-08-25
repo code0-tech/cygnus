@@ -1,5 +1,5 @@
 import { createApolloClient } from "@/lib/apolloClient"
-import { craterJson, craterMutationErrorResponse, craterTransportErrorResponse, optionalString, readJsonObject, requireCraterSession } from "@/lib/checkout/craterApi"
+import { craterJson, craterTransportErrorResponse, requireCraterSession } from "@/lib/checkout/craterApi"
 import { setCraterSessionCookie } from "@/lib/checkout/craterSession"
 import { isLicenseId } from "@/lib/licenses/craterLicenseRequest"
 import type {
@@ -9,7 +9,7 @@ import type {
     LicenseDashboardLicense,
     LicenseDashboardPendingUpdate,
 } from "@/lib/licenses/licenseTypes"
-import type { Customer, Invoice, License, Mutation, MutationLicensesLinkNamespaceArgs, Query, Scalars, Subscription, SubscriptionPendingUpdate, User } from "@code0-tech/crater-graphql-types"
+import type { Customer, Invoice, License, Query, Scalars, Subscription, SubscriptionPendingUpdate, User } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 
 export const runtime = "nodejs"
@@ -18,7 +18,6 @@ export const dynamic = "force-dynamic"
 type LicenseDashboardQuery = Pick<Query, "currentUser">
 type CustomerPageVariables = { customerAfter?: string | null }
 type LicenseDetailVariables = { customerAfter?: string | null; invoiceAfter?: string | null; licenseAfter?: string | null }
-type LinkLicenseNamespaceData = Pick<Mutation, "licensesLinkNamespace">
 
 const PAGE_SIZE = 25
 const RECENT_LICENSES_PER_CUSTOMER = 5
@@ -282,32 +281,6 @@ const LICENSE_CUSTOMER_DETAIL: TypedDocumentNode<LicenseDashboardQuery, LicenseD
                             endCursor
                             hasNextPage
                         }
-                    }
-                }
-            }
-        }
-    }
-`
-
-const LINK_LICENSE_NAMESPACE: TypedDocumentNode<LinkLicenseNamespaceData, MutationLicensesLinkNamespaceArgs> = gql`
-    mutation LicensesLinkNamespace($input: LicensesLinkNamespaceInput!) {
-        licensesLinkNamespace(input: $input) {
-            license {
-                deploymentType
-                id
-                namespaceId
-                updatedAt
-            }
-            errors {
-                errorCode
-                details {
-                    __typename
-                    ... on ActiveModelError {
-                        attribute
-                        type
-                    }
-                    ... on MessageError {
-                        message
                     }
                 }
             }
@@ -662,39 +635,5 @@ export async function GET(request: Request) {
 
         console.error("Crater license dashboard error:", error)
         return craterJson({ error: "Could not load license dashboard data from Crater." }, 502)
-    }
-}
-
-export async function PATCH(request: Request) {
-    const session = requireCraterSession(request)
-    if (session.response) return session.response
-
-    const body = await readJsonObject(request)
-    const id = optionalString(body?.id)
-    const namespaceId = optionalString(body?.namespaceId)
-
-    if (!id || !isLicenseId(id) || !namespaceId) {
-        return craterJson({ error: "A valid Crater license id and namespaceId are required." }, 400)
-    }
-
-    try {
-        const result = await createApolloClient(session.token).mutate({
-            mutation: LINK_LICENSE_NAMESPACE,
-            variables: { input: { id, namespaceId } },
-        })
-        const payload = result.data?.licensesLinkNamespace
-        if (!payload) throw new Error("Crater returned no license namespace payload.")
-
-        const errorResponse = craterMutationErrorResponse(payload.errors, "Crater could not link the license namespace.")
-        if (errorResponse) return errorResponse
-        if (!payload.license) throw new Error("Crater returned no linked license.")
-
-        return craterJson(payload.license)
-    } catch (error) {
-        const transportResponse = craterTransportErrorResponse(error)
-        if (transportResponse) return transportResponse
-
-        console.error("Crater license namespace error:", error)
-        return craterJson({ error: "Could not link the Crater license namespace." }, 502)
     }
 }

@@ -9,9 +9,9 @@ import type { ErrorsContent, LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { decodeLicenseRouteId } from "@/lib/licenses/licenseRoute"
 import { cn } from "@/lib/utils"
-import { Button, DialogFooter, ScrollArea, ScrollAreaScrollbar, ScrollAreaThumb, ScrollAreaViewport, Text, TextInput } from "@code0-tech/pictor"
-import { useRouter } from "next/navigation"
-import { type SyntheticEvent, useCallback, useEffect, useState } from "react"
+import { Button, ScrollArea, ScrollAreaScrollbar, ScrollAreaThumb, ScrollAreaViewport, Text } from "@code0-tech/pictor"
+import { useRouter, useSearchParams } from "next/navigation"
+import { useCallback, useEffect, useState } from "react"
 
 interface LicenseEditDialogProps {
     content: LicenseContent
@@ -19,6 +19,7 @@ interface LicenseEditDialogProps {
     errors: ErrorsContent
     licenseId: string
     locale: AppLocale
+    namespaceHref: string
 }
 
 type LicenseEditSection = "license" | "payment"
@@ -31,15 +32,13 @@ interface PaymentMethodSummary {
     type: string
 }
 
-export function LicenseEditDialog({ content, customerId, errors, licenseId, locale }: LicenseEditDialogProps) {
+export function LicenseEditDialog({ content, customerId, errors, licenseId, locale, namespaceHref }: LicenseEditDialogProps) {
     const router = useRouter()
-    const { licenses, updateLicense } = useLicenseData()
+    const searchParams = useSearchParams()
+    const { licenses } = useLicenseData()
     const resolvedCustomerId = decodeLicenseRouteId(customerId)
     const resolvedLicenseId = decodeLicenseRouteId(licenseId)
     const license = licenses.find((candidate) => candidate.id === resolvedLicenseId && candidate.customerId === resolvedCustomerId)
-    const [namespaceId, setNamespaceId] = useState("")
-    const [error, setError] = useState<string | null>(null)
-    const [isSaving, setIsSaving] = useState(false)
     const [section, setSection] = useState<LicenseEditSection>("license")
     const [paymentMethod, setPaymentMethod] = useState<PaymentMethodSummary | null>(null)
     const [paymentMethodError, setPaymentMethodError] = useState(false)
@@ -51,10 +50,6 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
     const [assigningPaymentMethodId, setAssigningPaymentMethodId] = useState<string | null>(null)
     const [assignPaymentMethodError, setAssignPaymentMethodError] = useState(false)
     const close = () => router.replace(`/${locale}/licenses/customer/${encodeURIComponent(resolvedCustomerId)}/license/${encodeURIComponent(resolvedLicenseId)}`)
-
-    useEffect(() => {
-        if (license?.namespaceId) setNamespaceId(license.namespaceId)
-    }, [license?.namespaceId])
 
     useEffect(() => {
         if (new URL(window.location.href).searchParams.has("setup_intent")) setSection("payment")
@@ -138,33 +133,8 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
         }
     }
 
-    const save = async (event: SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
-        event.preventDefault()
-        if (!license || license.deploymentType !== "cloud" || !namespaceId.trim() || isSaving) return
-        setIsSaving(true)
-        setError(null)
-
-        try {
-            const response = await fetch("/api/crater/licenses", {
-                method: "PATCH",
-                credentials: "same-origin",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify({ id: license.id, namespaceId: namespaceId.trim() }),
-            })
-            if (!response.ok) throw new Error(errors.licenseUpdate)
-            const updated: unknown = await response.json()
-            const updatedAt = updated && typeof updated === "object" && "updatedAt" in updated && typeof updated.updatedAt === "string" ? updated.updatedAt : undefined
-
-            updateLicense(license.id, { namespaceId: namespaceId.trim(), ...(updatedAt ? { updatedAt } : {}) })
-            close()
-        } catch (saveError) {
-            setError(saveError instanceof Error ? saveError.message : errors.licenseUpdate)
-        } finally {
-            setIsSaving(false)
-        }
-    }
-
     const isCloud = license?.deploymentType === "cloud"
+    const namespaceSelectionFailed = searchParams.has("namespaceError")
     const sidebar = license?.subscriptionId ? (
         <div role="tablist" aria-label={content.editor.licenseTitle} className="flex flex-col gap-2">
             {(["license", "payment"] as const).map((option) => {
@@ -192,40 +162,42 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
         </div>
     ) : null
     return (
-        <LicenseDialog
-            backLabel={content.editor.cancelLabel}
-            description={license && isCloud ? content.editor.licenseDescription : undefined}
-            onClose={close}
-            sidebar={sidebar}
-            title={content.editor.licenseTitle}
-        >
+        <LicenseDialog backLabel={content.editor.closeLabel} onClose={close} sidebar={sidebar} title={content.editor.licenseTitle}>
             {section === "license" || !license?.subscriptionId ? (
-                <form onSubmit={save} className="space-y-4" role="tabpanel">
-                    {license && isCloud && <TextInput label={content.editor.namespaceLabel} value={namespaceId} onChange={(event) => setNamespaceId(event.currentTarget.value)} className="w-full!" />}
-                    {error && (
+                <div className="space-y-4" role="tabpanel">
+                    {namespaceSelectionFailed && (
                         <p role="alert" className="text-sm text-error">
-                            {error}
+                            {errors.licenseUpdate}
                         </p>
                     )}
-                    <DialogFooter className="gap-3! pt-2! justify-between!">
-                        {license?.subscriptionId && (
-                            <Button
-                                type="button"
-                                variant="normal"
-                                onClick={() => router.push(`/${locale}/licenses/customer/${encodeURIComponent(license.customerId)}/license/${encodeURIComponent(license.id)}/cancel`)}
-                            >
-                                {content.cancel.confirmLabel}
-                            </Button>
-                        )}
-                        <div className="flex gap-3">
-                            {(!license || isCloud) && (
-                                <Button type="submit" variant="filled" disabled={!license || !namespaceId.trim() || isSaving}>
-                                    {isSaving ? <ButtonLoader label={content.editor.saveLabel} /> : content.editor.saveLabel}
+                    <div className="space-y-6 pt-2">
+                        {license && isCloud && (
+                            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                                <Text size="sm" hierarchy="tertiary" className="max-w-xl!">
+                                    {content.editor.licenseDescription}
+                                </Text>
+                                <Button type="button" variant="normal" className="shrink-0" onClick={() => window.location.assign(namespaceHref)}>
+                                    {content.editor.changeNamespaceLabel}
                                 </Button>
-                            )}
-                        </div>
-                    </DialogFooter>
-                </form>
+                            </div>
+                        )}
+                        {license?.subscriptionId && (
+                            <div className="flex flex-col gap-4 border-t border-white/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
+                                <Text size="sm" hierarchy="tertiary" className="max-w-xl!">
+                                    {content.cancel.description}
+                                </Text>
+                                <Button
+                                    type="button"
+                                    variant="normal"
+                                    className="shrink-0"
+                                    onClick={() => router.push(`/${locale}/licenses/customer/${encodeURIComponent(license.customerId)}/license/${encodeURIComponent(license.id)}/cancel`)}
+                                >
+                                    {content.cancel.confirmLabel}
+                                </Button>
+                            </div>
+                        )}
+                    </div>
+                </div>
             ) : (
                 <div role="tabpanel" className="space-y-6">
                     <div>

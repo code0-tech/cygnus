@@ -384,7 +384,7 @@ export interface LicenseContent {
         deploymentTypes: { cloud: string; selfHosted: string }
         paymentPeriods: { weekly: string; monthly: string; quarterly: string; yearly: string }
         statuses: { active: string; paid: string; paymentFailed: string; canceled: string; expired: string }
-        invoiceStatuses: { draft: string; open: string; paid: string; uncollectible: string; void: string }
+        invoiceStatuses: { draft: string; open: string; uncollectible: string; void: string }
         plans: { pro: string; max: string; custom: string }
         unknown: string
     }
@@ -424,8 +424,10 @@ export interface LicenseContent {
         licenseTitle: string
         licenseDescription: string
         namespaceLabel: string
+        changeNamespaceLabel: string
+        namespaceConnectedLabel: string
+        namespaceNotConnectedLabel: string
         saveLabel: string
-        cancelLabel: string
         closeLabel: string
     }
     subscriptionPreview: {
@@ -446,7 +448,6 @@ export interface LicenseContent {
         pendingChangeLabel: string
     }
     cancel: {
-        title: string
         description: string
         confirmLabel: string
         pendingHeading: string

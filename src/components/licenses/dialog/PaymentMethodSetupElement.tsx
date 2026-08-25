@@ -227,7 +227,7 @@ function PaymentMethodSetupForm({ content, errorMessage, onCancel, onSuccess, ow
             ) : null}
             <div className="flex flex-wrap justify-end gap-3">
                 <Button type="button" variant="none" disabled={isConfirming} onClick={onCancel}>
-                    {content.cancelLabel}
+                    {content.closeLabel}
                 </Button>
                 <Button type="button" variant="filled" disabled={!stripe || !elements || !isReady || isConfirming} onClick={() => void confirm()}>
                     {isConfirming ? <ButtonLoader label={content.savingPaymentMethodLabel} /> : content.savePaymentMethodLabel}
