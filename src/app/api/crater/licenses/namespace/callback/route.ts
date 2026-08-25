@@ -51,12 +51,12 @@ function resolveLicenseReturn(requestUrl: URL) {
         returnUrl.origin !== requestUrl.origin ||
         returnUrl.search ||
         returnUrl.hash ||
-        segments.length !== 7 ||
+        (segments.length !== 6 && segments.length !== 7) ||
         !isSupportedLocale(segments[0]) ||
         segments[1] !== "licenses" ||
         segments[2] !== "customer" ||
         segments[4] !== "license" ||
-        segments[6] !== "edit"
+        (segments.length === 7 && segments[6] !== "edit")
     ) {
         return null
     }
