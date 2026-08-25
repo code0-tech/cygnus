@@ -23,9 +23,9 @@ const NavigationSubMenu: React.FC<NavigationSubMenuProps> = ({ embedded = false,
     const hasShortLinks = visibleShortLinkGroups.length > 0
 
     return (
-        <div className={cn("flex w-full flex-col overflow-hidden rounded-xl", hasNavigationItems && hasShortLinks && "md:min-w-[52rem] md:flex-row md:gap-4")}>
+        <div className={cn("flex w-full flex-col rounded-xl", embedded ? "overflow-hidden" : "overflow-visible", hasNavigationItems && hasShortLinks && "md:min-200 md:flex-row md:gap-2")}>
             {hasNavigationItems && (
-                <div className={cn("flex-1 space-y-5", embedded ? "py-2 md:pb-0 md:pt-4" : "p-2 md:p-4", hasShortLinks ? "md:min-w-[36rem]" : "md:min-w-[32rem]")}>
+                <div className={cn("flex-1 space-y-5", embedded ? "py-2 md:pb-0 md:pt-4" : "p-2 md:p-4", hasShortLinks ? "md:min-w-xl" : "md:min-w-lg")}>
                     {visibleGroups.map((group) => (
                         <section key={group.key} aria-label={group.title} className="space-y-1.5">
                             {showGroupHeadings && <p className={GROUP_HEADING_CLASS}>{group.title}</p>}
@@ -41,7 +41,7 @@ const NavigationSubMenu: React.FC<NavigationSubMenuProps> = ({ embedded = false,
                                             {subItem.icon}
                                         </div>
                                         <div className="flex min-w-0 flex-col">
-                                            <p className="truncate text-sm font-semibold text-white">{subItem.title}</p>
+                                            <p className="truncate text-sm text-white">{subItem.title}</p>
                                             <p className="truncate text-xs text-secondary">{subItem.description}</p>
                                         </div>
                                     </Link>
@@ -53,7 +53,7 @@ const NavigationSubMenu: React.FC<NavigationSubMenuProps> = ({ embedded = false,
             )}
 
             {hasShortLinks && (
-                <aside className={"mt-4 space-y-5 p-4 md:w-64 md:shrink-0 md:border border-white/5 rounded-xl"}>
+                <aside className={cn("space-y-5 px-2 md:w-64 md:shrink-0 md:px-4", embedded ? "my-4" : "-my-2 py-6 md:border-l border-white/10")}>
                     {visibleShortLinkGroups.map((group) => (
                         <section key={group.key} aria-label={group.title} className="space-y-1.5">
                             <p className={GROUP_HEADING_CLASS}>{group.title}</p>
@@ -65,7 +65,7 @@ const NavigationSubMenu: React.FC<NavigationSubMenuProps> = ({ embedded = false,
                                         target={link.newTab ? "_blank" : undefined}
                                         rel={link.newTab ? "noreferrer" : undefined}
                                         onClick={() => onSelect?.(link)}
-                                        className="group flex items-center justify-between gap-3 rounded-lg p-1 pl-2 text-sm font-medium text-secondary transition-colors hover:bg-light hover:text-white"
+                                        className="group flex items-center justify-between gap-3 rounded-lg p-1 pl-2 text-sm font-medium text-white transition-colors hover:bg-light hover:text-white"
                                     >
                                         <span>{link.title}</span>
                                         {link.newTab && <IconArrowUpRight aria-hidden="true" className="opacity-60" size={15} />}
