@@ -8,7 +8,7 @@ const labels = {
     deploymentTypes: { cloud: "Cloud", selfHosted: "Eigenbetrieb" },
     paymentPeriods: { weekly: "Wöchentlich", monthly: "Monatlich", quarterly: "Vierteljährlich", yearly: "Jährlich" },
     statuses: { active: "Aktiv", paid: "Bezahlt", paymentFailed: "Zahlung fehlgeschlagen", canceled: "Gekündigt", expired: "Abgelaufen" },
-    invoiceStatuses: { draft: "Entwurf", open: "Offen", paid: "Bezahlt", uncollectible: "Uneinbringlich", void: "Storniert" },
+    invoiceStatuses: { draft: "Entwurf", open: "Offen", uncollectible: "Uneinbringlich", void: "Storniert" },
     plans: { pro: "Pro", max: "Max", custom: "Individuell" },
     unknown: "Unbekannt",
 } satisfies LicenseContent["values"]

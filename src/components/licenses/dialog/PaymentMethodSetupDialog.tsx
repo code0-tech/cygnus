@@ -87,7 +87,7 @@ export function PaymentMethodSetupDialog({ content, disabled = false, errors, on
                 {triggerLabel}
             </Button>
 
-            <LicenseDialog backLabel={content.editor.cancelLabel} description={content.editor.paymentMethodDescription} onClose={close} open={open} title={content.editor.paymentMethodHeading}>
+            <LicenseDialog backLabel={content.editor.closeLabel} description={content.editor.paymentMethodDescription} onClose={close} open={open} title={content.editor.paymentMethodHeading}>
                 <div>
                     {isLoading ? (
                         <div role="status" className="space-y-4 animate-pulse motion-reduce:animate-none">

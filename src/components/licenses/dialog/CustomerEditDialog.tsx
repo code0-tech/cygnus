@@ -201,7 +201,7 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
 
     return (
         <LicenseDialog
-            backLabel={content.editor.cancelLabel}
+            backLabel={content.editor.closeLabel}
             description={section === "general" ? content.editor.customerDescription : content.editor.paymentMethodDescription}
             onClose={close}
             sidebar={sidebar}
@@ -304,7 +304,7 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
                     )}
                     <DialogFooter className="gap-3! pt-2!">
                         <Button type="button" variant="none" onClick={close}>
-                            {content.editor.cancelLabel}
+                            {content.editor.closeLabel}
                         </Button>
                         <Button form="customer-details-form" type="submit" variant="filled" disabled={!customer || isSaving}>
                             {isSaving ? <ButtonLoader label={content.editor.saveLabel} /> : content.editor.saveLabel}

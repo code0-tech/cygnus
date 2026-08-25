@@ -8,8 +8,9 @@ import { POST as calculateTax } from "../../src/app/api/crater/checkout/tax/rout
 import { POST as createSession } from "../../src/app/api/crater/login/route"
 import { DELETE as deleteSession, GET as getSessionStatus } from "../../src/app/api/crater/auth/session/route"
 import { GET as completeCraterLogin } from "../../src/app/api/crater/auth/callback/route"
-import { GET as getLicenseDashboard, PATCH as linkLicenseNamespace } from "../../src/app/api/crater/licenses/route"
+import { GET as getLicenseDashboard } from "../../src/app/api/crater/licenses/route"
 import { GET as accessLicenseDashboard } from "../../src/app/api/crater/licenses/access/route"
+import { GET as selectLicenseNamespace } from "../../src/app/api/crater/licenses/namespace/callback/route"
 import { GET as getCheckoutLicenseStatus } from "../../src/app/api/crater/checkout/status/route"
 import { GET as getSubscriptionPaymentMethod } from "../../src/app/api/crater/subscriptions/payment-method/route"
 import { GET as getSubscriptionPaymentMethodSetupStatus, POST as createSubscriptionPaymentMethodSetup } from "../../src/app/api/crater/subscriptions/payment-method-setup/route"
@@ -2041,17 +2042,28 @@ test("finds a license customer beyond the first Crater cursor page", async () =>
     }
 })
 
-test("links a cloud license to a namespace", async () => {
+test("links a cloud license through the authenticated namespace selection callback", async () => {
     const graphQLServer = await createGraphQLTestServer([
+        {
+            data: {
+                usersLogin: {
+                    errors: [],
+                    userSession: {
+                        active: true,
+                        createdAt: "2026-08-12T10:00:00Z",
+                        id: "gid://crater/UserSession/9",
+                        token: "namespace-callback-session",
+                        updatedAt: "2026-08-12T10:00:00Z",
+                    },
+                },
+            },
+        },
         {
             data: {
                 licensesLinkNamespace: {
                     errors: [],
                     license: {
-                        deploymentType: "cloud",
                         id: "gid://crater/License/9",
-                        namespaceId: "namespace-9",
-                        updatedAt: "2026-08-12T11:00:00Z",
                     },
                 },
             },
@@ -2061,29 +2073,49 @@ test("links a cloud license to a namespace", async () => {
     process.env.CRATER_GRAPHQL_URL = graphQLServer.url
 
     try {
-        const response = await linkLicenseNamespace(
-            new Request("https://example.com/api/crater/licenses", {
-                method: "PATCH",
-                headers: sessionHeaders,
-                body: JSON.stringify({ id: "gid://crater/License/9", namespaceId: "namespace-9" }),
-            })
+        const returnPath = "/en/licenses/customer/gid%3A%2F%2Fcrater%2FCustomer%2F3/license/gid%3A%2F%2Fcrater%2FLicense%2F9/edit"
+        const response = await selectLicenseNamespace(
+            new Request(
+                `https://code0.example/api/crater/licenses/namespace/callback?returnPath=${encodeURIComponent(returnPath)}&namespace=${encodeURIComponent("gid://sagittarius/Namespace/9")}&token=sagittarius-secret`
+            )
         )
 
-        assert.equal(response.status, 200)
-        assert.equal(graphQLServer.requests[0].authorization, "Session c_ust_example")
-        assert.equal(graphQLServer.requests[0].body.operationName, "LicensesLinkNamespace")
+        assert.equal(response.status, 307)
+        assert.equal(response.headers.get("location"), `https://code0.example${returnPath}`)
+        assert.match(response.headers.get("set-cookie") ?? "", /crater_session=namespace-callback-session/)
         assert.deepEqual(graphQLServer.requests[0].body.variables, {
-            input: { id: "gid://crater/License/9", namespaceId: "namespace-9" },
+            input: { sagittariusToken: "sagittarius-secret" },
         })
-        assert.deepEqual(await response.json(), {
-            deploymentType: "cloud",
-            id: "gid://crater/License/9",
-            namespaceId: "namespace-9",
-            updatedAt: "2026-08-12T11:00:00Z",
+        assert.equal(graphQLServer.requests[1].authorization, "Session namespace-callback-session")
+        assert.equal(graphQLServer.requests[1].body.operationName, "LicensesLinkNamespace")
+        assert.deepEqual(graphQLServer.requests[1].body.variables, {
+            input: { id: "gid://crater/License/9", namespaceId: "gid://sagittarius/Namespace/9" },
         })
     } finally {
         if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
         else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
         await graphQLServer.close()
     }
+})
+
+test("license namespace callback requires a namespace selected by Sagittarius", async () => {
+    const returnPath = "/de/licenses/customer/gid%3A%2F%2Fcrater%2FCustomer%2F3/license/gid%3A%2F%2Fcrater%2FLicense%2F9/edit"
+    const response = await selectLicenseNamespace(
+        new Request(`https://code0.example/api/crater/licenses/namespace/callback?returnPath=${encodeURIComponent(returnPath)}&token=sagittarius-secret`)
+    )
+
+    assert.equal(response.status, 307)
+    assert.equal(response.headers.get("location"), `https://code0.example${returnPath}?namespaceError=selection`)
+})
+
+test("license namespace callback rejects return paths that are not exact license edit routes", async () => {
+    const response = await selectLicenseNamespace(
+        new Request(
+            `https://code0.example/api/crater/licenses/namespace/callback?returnPath=${encodeURIComponent("https://evil.example/collect")}&namespace=${encodeURIComponent("gid://sagittarius/Namespace/9")}&token=sagittarius-secret`
+        )
+    )
+
+    assert.equal(response.status, 307)
+    assert.equal(response.headers.get("location"), "https://code0.example/")
+    assert.doesNotMatch(response.headers.get("location") ?? "", /token|namespace/)
 })

@@ -210,7 +210,7 @@ export function LicenseUpgradeDialog({ content, customerId, errors, licenseId, l
         }) ?? []
 
     return (
-        <LicenseDialog backLabel={content.editor.cancelLabel} description={content.upgrade.description} onClose={close} title={content.upgrade.title} sidebar={planSelection}>
+        <LicenseDialog backLabel={content.editor.closeLabel} description={content.upgrade.description} onClose={close} title={content.upgrade.title} sidebar={planSelection}>
             <div className="space-y-4">
                 {plan === "custom" && (
                     <div className="space-y-4">
@@ -286,7 +286,7 @@ export function LicenseUpgradeDialog({ content, customerId, errors, licenseId, l
 
                 <DialogFooter className="gap-3! pt-2!">
                     <Button type="button" variant="none" onClick={close}>
-                        {content.editor.cancelLabel}
+                        {content.editor.closeLabel}
                     </Button>
                     <Button type="button" variant="filled" disabled={!hasChange || isSaving || isLoadingPreview || !preview || Boolean(previewError) || !acceptedTerms} onClick={() => void save()}>
                         {isSaving ? <ButtonLoader label={content.editor.saveLabel} /> : content.editor.saveLabel}
