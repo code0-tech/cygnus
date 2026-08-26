@@ -100,8 +100,6 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
         : []
     const invoices = license?.invoices ?? []
 
-    // Statutory 14-day withdrawal right for consumers (§ 355 BGB); business customers (§ 14 BGB) have no such
-    // right, so this is display-only for personal accounts and only while the window is still running.
     const withdrawalDeadline = license?.startDate ? new Date(new Date(license.startDate).getTime() + 14 * 24 * 60 * 60 * 1000) : null
     const showWithdrawalNotice = (customer?.customerType ?? license?.customerType) === "personal" && withdrawalDeadline !== null && withdrawalDeadline.getTime() > Date.now()
     const [withdrawalTextBeforeDate, withdrawalTextAfterDate] = content.withdrawal.text.split("{date}")
