@@ -4,7 +4,7 @@ import type { SubscriptionConfigData, UpgradeBannerData } from "@/lib/cms"
 import { Card } from "../ui/Card"
 import { Button } from "@code0-tech/pictor"
 
-export type SubscriptionPlan = "pro" | "max" | "custom"
+type SubscriptionPlan = "pro" | "max" | "custom"
 
 interface UpgradePlanBannerProps {
     content?: UpgradeBannerData | null

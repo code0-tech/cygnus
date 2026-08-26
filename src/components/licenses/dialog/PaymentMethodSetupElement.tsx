@@ -51,7 +51,7 @@ const appearance = {
 
 export type PaymentMethodSetupOwner = { customerId: string; type: "customer" } | { subscriptionId: string; type: "subscription" }
 
-export function paymentMethodSetupStatusUrl(owner: PaymentMethodSetupOwner, setupIntentId: string) {
+function paymentMethodSetupStatusUrl(owner: PaymentMethodSetupOwner, setupIntentId: string) {
     const statusUrl = new URL(owner.type === "customer" ? "/api/crater/customer/payment-method-setup" : "/api/crater/subscriptions/payment-method-setup", window.location.origin)
     statusUrl.searchParams.set(owner.type === "customer" ? "customerId" : "subscriptionId", owner.type === "customer" ? owner.customerId : owner.subscriptionId)
     statusUrl.searchParams.set("setupIntentId", setupIntentId)

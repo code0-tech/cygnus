@@ -2,7 +2,7 @@ import type { SubscriptionConfiguratorContent } from "@/lib/cms"
 import type { PaymentPeriod, UsageRange } from "@/lib/subscriptionCalculator"
 import type { SubscriptionSelectionCatalog } from "@/lib/subscriptionCatalog"
 
-export type SubscriptionConfiguratorPlan = "pro" | "max" | "custom"
+type SubscriptionConfiguratorPlan = "pro" | "max" | "custom"
 type SubscriptionDeploymentMode = "self_hosted" | "cloud"
 export type SubscriptionCustomerType = "b2b" | "b2c"
 
