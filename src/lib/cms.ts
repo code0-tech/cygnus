@@ -338,7 +338,7 @@ export interface CheckoutData {
     }
 }
 
-export interface UpgradeBannerPlanContent {
+interface UpgradeBannerPlanContent {
     buttonLabel: string
     gradientFrom: string
     gradientTo: string

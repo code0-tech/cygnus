@@ -9,7 +9,7 @@ import { formatDiscountBadge } from "@/lib/subscriptionCalculator"
 import { Card } from "@code0-tech/pictor"
 import NumberFlow from "@number-flow/react"
 
-export interface CheckoutPricingOverviewData {
+interface CheckoutPricingOverviewData {
     aiTokenPrice: number
     aiTokens: number
     currency?: string
@@ -30,7 +30,7 @@ export interface CheckoutPricingOverviewData {
     workflowExecutions: number
 }
 
-export interface CheckoutConfirmedPricingOverviewData {
+interface CheckoutConfirmedPricingOverviewData {
     aiTokens: number | null
     currency: string
     customerType: string | null
