@@ -90,7 +90,7 @@ const subscriptionConfig = {
         max: { title: "Max", icon: "max", color: "magenta" },
         custom: { title: "Custom", icon: "custom", color: "yellow" },
     },
-    paymentPeriod: { weeklyPeriodSuffix: "/ week", monthlyPeriodSuffix: "/ month", quarterlyPeriodSuffix: "/ quarter", yearlyPeriodSuffix: "/ year" },
+    paymentPeriod: { monthlyPeriodSuffix: "/ month", quarterlyPeriodSuffix: "/ quarter", yearlyPeriodSuffix: "/ year" },
 } as never
 const completedConfiguration = {
     aiTokens: null,

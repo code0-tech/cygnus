@@ -2870,7 +2870,7 @@ export interface SubscriptionConfig {
     customerType?: ('b2b' | 'b2c') | null;
     paymentPeriod?: {
       b2b?: ('monthly' | 'quarterly' | 'yearly') | null;
-      b2c?: ('weekly' | 'monthly' | 'yearly') | null;
+      b2c?: ('monthly' | 'quarterly' | 'yearly') | null;
     };
   };
   deployment: {
@@ -2963,18 +2963,12 @@ export interface SubscriptionConfig {
   paymentPeriod?: {
     label?: string | null;
     description?: string | null;
-    weeklyText?: string | null;
     monthlyText?: string | null;
     quarterlyText?: string | null;
     yearlyText?: string | null;
-    weeklyPeriodSuffix?: string | null;
     monthlyPeriodSuffix?: string | null;
     quarterlyPeriodSuffix?: string | null;
     yearlyPeriodSuffix?: string | null;
-    /**
-     * Shown next to the price when weekly billing is selected.
-     */
-    weeklyPaidLabel?: string | null;
     /**
      * Shown next to the price when quarterly billing is selected.
      */
@@ -2983,7 +2977,6 @@ export interface SubscriptionConfig {
      * Shown next to the price when yearly billing is selected.
      */
     yearlyPaidLabel?: string | null;
-    weeklyColor?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
     monthlyColor?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
     quarterlyColor?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
     yearlyColor?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
@@ -3256,7 +3249,6 @@ export interface License {
       selfHosted: string;
     };
     paymentPeriods: {
-      weekly: string;
       monthly: string;
       quarterly: string;
       yearly: string;
@@ -3713,18 +3705,14 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
     | {
         label?: T;
         description?: T;
-        weeklyText?: T;
         monthlyText?: T;
         quarterlyText?: T;
         yearlyText?: T;
-        weeklyPeriodSuffix?: T;
         monthlyPeriodSuffix?: T;
         quarterlyPeriodSuffix?: T;
         yearlyPeriodSuffix?: T;
-        weeklyPaidLabel?: T;
         quarterlyPaidLabel?: T;
         yearlyPaidLabel?: T;
-        weeklyColor?: T;
         monthlyColor?: T;
         quarterlyColor?: T;
         yearlyColor?: T;
@@ -4016,7 +4004,6 @@ export interface LicensesSelect<T extends boolean = true> {
         paymentPeriods?:
           | T
           | {
-              weekly?: T;
               monthly?: T;
               quarterly?: T;
               yearly?: T;

@@ -7,7 +7,7 @@ function createPrices(): CheckoutPrice[] {
     return SUBSCRIPTION_PRICE_LOOKUP_KEYS.map((lookupKey) => ({
         currency: "eur",
         id: `price_${lookupKey}`,
-        interval: lookupKey.endsWith("weekly") ? "week" : lookupKey.endsWith("yearly") ? "year" : "month",
+        interval: lookupKey.endsWith("yearly") ? "year" : "month",
         intervalCount: lookupKey.endsWith("quarterly") ? 3 : 1,
         lookupKey,
         productName: lookupKey,
@@ -25,7 +25,7 @@ test("normalizes the complete Crater subscription price list by lookup key", () 
     assert.deepEqual(Object.keys(catalog), [...SUBSCRIPTION_PRICE_LOOKUP_KEYS])
     assert.equal(catalog.ai_token_b2b_quarterly.intervalCount, 3)
     assert.equal(catalog.pro_b2b_quarterly.intervalCount, 3)
-    assert.equal(catalog.pro_b2c_weekly.interval, "week")
+    assert.equal(catalog.pro_b2c_quarterly.intervalCount, 3)
     assert.equal(catalog.max_b2c_yearly.interval, "year")
 })
 

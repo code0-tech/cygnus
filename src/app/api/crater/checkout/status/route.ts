@@ -35,7 +35,7 @@ const CHECKOUT_COMPLETION_STATUS: TypedDocumentNode<CheckoutCompletionStatusData
 `
 
 const COMPLETION_STATES = new Set<string>(["CHECKOUT_PENDING", "PAYMENT_PENDING", "FULFILLMENT_PENDING", "READY", "FAILED"])
-const PAYMENT_PERIODS = new Set<string>(["WEEKLY", "MONTHLY", "QUARTERLY", "YEARLY"])
+const PAYMENT_PERIODS = new Set<string>(["MONTHLY", "QUARTERLY", "YEARLY"])
 
 function validConfiguration(configuration: NonNullable<CheckoutCompletionStatusData["checkoutCompletionStatus"]>["configuration"]) {
     if (!configuration || typeof configuration.customerType !== "string" || typeof configuration.deploymentType !== "string") return false

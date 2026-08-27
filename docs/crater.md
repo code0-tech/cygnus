@@ -252,7 +252,7 @@ A `CheckoutSession` returns:
 Additional checkout features include:
 
 - previewing the tax Stripe would calculate for a plan
-- selecting the billing period of the customer's type: monthly, quarterly, or yearly for business customers, weekly, monthly, or yearly for personal ones
+- selecting the billing period of the customer's type: monthly, quarterly, or yearly, the same for business and personal customers
 - the same period rule for Pro, Max, and dynamic custom checkouts alike
 - quantity-based AI Token and Workflow Execution line items for dynamic custom checkouts
 - validating Stripe promotion codes
@@ -273,9 +273,9 @@ Which periods exist is a property of the **customer type**, not of the plan. It 
 | Customer type    | Payment periods                  |
 | ---------------- | -------------------------------- |
 | `business` (B2B) | `monthly`, `quarterly`, `yearly` |
-| `personal` (B2C) | `weekly`, `monthly`, `yearly`    |
+| `personal` (B2C) | `monthly`, `quarterly`, `yearly` |
 
-`CheckoutPaymentPeriod` still offers all four values, because both sets together need them. A period the selected customer's type is not billed in -- weekly for a business customer, quarterly for a personal one -- is rejected with `INVALID_CHECKOUT_SELECTION` before any Price is looked up, in `checkoutCreateSession` and in `checkoutCalculateTax` alike. `Subscription` validates the stored period against its customer's type with the same rule, so a projection can never hold a combination the checkout would refuse.
+`CheckoutPaymentPeriod` offers exactly these three values, and both customer types are billed in the same set. A payment period outside that set is rejected with `INVALID_CHECKOUT_SELECTION` before any Price is looked up, in `checkoutCreateSession` and in `checkoutCalculateTax` alike. `Subscription` validates the stored period against its customer's type with the same rule, so a projection can never hold a combination the checkout would refuse.
 
 **This section applies unchanged to changes of an existing subscription.** `subscriptionsUpdate` and `subscriptionsPreviewUpdate` resolve their target Price through the very same rules: the customer type is the stored `customerType` of the subscription's customer and never something the client sends, that type decides which periods exist at all, and a period outside the set is refused before Stripe is called. A subscription can therefore never be moved into a plan, period, or Price combination a fresh checkout would have rejected. The same rule also guards the pending half of a scheduled change, so a `pendingUpdate` is always a selection the checkout would accept.
 
@@ -608,7 +608,7 @@ Self-hosted licenses can be exported as a signed license file. Cloud licenses ca
 | -------------- | -------------------- | ----------------------------------------------------- |
 | `restrictions` | `aiTokens`           | AI Token quantity, only for the custom plan           |
 | `restrictions` | `workflowExecutions` | Workflow Execution quantity, only for the custom plan |
-| `options`      | `paymentPeriod`      | `weekly`, `monthly`, `quarterly`, or `yearly`         |
+| `options`      | `paymentPeriod`      | `monthly`, `quarterly`, or `yearly`                   |
 | `options`      | `customerType`       | `personal` or `business`                              |
 | `options`      | `plan`               | `PRO`, `MAX`, or `CUSTOM`                             |
 
@@ -935,20 +935,20 @@ pro_b2b_monthly                   max_b2b_monthly
 pro_b2b_quarterly                 max_b2b_quarterly
 pro_b2b_yearly                    max_b2b_yearly
 
-pro_b2c_weekly                    max_b2c_weekly
 pro_b2c_monthly                   max_b2c_monthly
+pro_b2c_quarterly                 max_b2c_quarterly
 pro_b2c_yearly                    max_b2c_yearly
 
 ai_token_b2b_monthly              workflow_execution_b2b_monthly
 ai_token_b2b_quarterly            workflow_execution_b2b_quarterly
 ai_token_b2b_yearly               workflow_execution_b2b_yearly
 
-ai_token_b2c_weekly               workflow_execution_b2c_weekly
 ai_token_b2c_monthly              workflow_execution_b2c_monthly
+ai_token_b2c_quarterly            workflow_execution_b2c_quarterly
 ai_token_b2c_yearly               workflow_execution_b2c_yearly
 ```
 
-Every key is `<plan or component>_<b2b|b2c>_<period>`, and the periods are exactly the ones that customer type is billed in: no `pro_b2b_weekly` and no `ai_token_b2c_quarterly` exists.
+Every key is `<plan or component>_<b2b|b2c>_<period>`, and the periods are exactly the ones that customer type is billed in: monthly, quarterly, and yearly for both B2B and B2C.
 
 The keys are assigned on the Price objects in Stripe; Crater reads them but never writes them.
 
@@ -1032,7 +1032,7 @@ For `checkoutCreateSession`:
 - The selected customer must be linked to the authenticated user through `CustomerUser`, which is the same membership rule `CustomerPolicy` uses for `read_customer`. A customer that does not exist and one belonging to somebody else are both answered with `INVALID_CHECKOUT_CUSTOMER` and an identical message, so the response never reveals whether an id exists. This applies to a draft of another user as well.
 - The selected customer may be a draft or an active customer; the customer type check, the custom configuration checks, and every other validation are identical for both. A repeated `checkoutCreateSession` for the same customer creates a new Stripe session but no additional customer.
 - With a `customCheckoutConfigurationId`, the configuration already names its customer. `customerId` must be that customer; a different one is rejected with `INVALID_CHECKOUT_CUSTOMER` rather than silently switching the checkout to another customer.
-- The selected customer's type picks the B2B or B2C Prices, for `plan: pro` and `plan: max` as well as for the `plan: custom` components, and decides which payment periods exist at all. `paymentPeriod` outside that set -- `WEEKLY` for a business customer, `QUARTERLY` for a personal one -- is rejected with `INVALID_CHECKOUT_SELECTION` before Stripe is called. If the Price itself is configured for the other customer type only, the request is rejected with `CUSTOMER_TYPE_MISMATCH` instead of a generic selection error.
+- The selected customer's type picks the B2B or B2C Prices, for `plan: pro` and `plan: max` as well as for the `plan: custom` components; both customer types are billed monthly, quarterly, or yearly. A `paymentPeriod` outside that set is rejected with `INVALID_CHECKOUT_SELECTION` before Stripe is called. If the Price itself is configured for the other customer type only, the request is rejected with `CUSTOMER_TYPE_MISMATCH` instead of a generic selection error.
 - The Stripe Checkout Session is created with the selected customer's `stripe_customer_id`, so the contact details, billing address, and tax ID that Stripe collects are synced back to exactly that customer. Its Crater customer ID is stored in the subscription metadata as `crater_customer_id`.
 - Crater never sends `customer_email`; the Stripe Customer is referenced by ID, and Stripe rejects both parameters together. An email already on the Stripe Customer is therefore never restated, and a missing one is collected by the client's `ContactDetailsElement`.
 - A regular checkout uses `plan`, `paymentPeriod`, and, where applicable, `deploymentType` and `namespaceId`. There is no `promotionCode` argument; see [discounts](#discounts-in-a-checkout).

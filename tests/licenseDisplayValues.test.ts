@@ -6,7 +6,7 @@ import { formatLicenseDisplayValue } from "../src/lib/licenses/licenseDisplayVal
 const labels = {
     customerTypes: { personal: "Privat", business: "Geschäftlich" },
     deploymentTypes: { cloud: "Cloud", selfHosted: "Eigenbetrieb" },
-    paymentPeriods: { weekly: "Wöchentlich", monthly: "Monatlich", quarterly: "Vierteljährlich", yearly: "Jährlich" },
+    paymentPeriods: { monthly: "Monatlich", quarterly: "Vierteljährlich", yearly: "Jährlich" },
     statuses: { active: "Aktiv", paid: "Bezahlt", paymentFailed: "Zahlung fehlgeschlagen", canceled: "Gekündigt", expired: "Abgelaufen" },
     invoiceStatuses: { draft: "Entwurf", open: "Offen", uncollectible: "Uneinbringlich", void: "Storniert" },
     plans: { pro: "Pro", max: "Max", custom: "Individuell" },

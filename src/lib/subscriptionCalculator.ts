@@ -4,11 +4,10 @@ import { getSubscriptionCatalog, type SubscriptionCatalog } from "@/lib/subscrip
 import { getSubscriptionPriceAmount, type SubscriptionPriceCatalog, type SubscriptionPriceLookupKey } from "@/lib/subscriptionPrices"
 import { resolveSubscriptionSelection, type SubscriptionCustomerType, type SubscriptionSelection } from "@/lib/subscriptionConfigurator"
 
-export type PaymentPeriod = "weekly" | "monthly" | "quarterly" | "yearly"
+export type PaymentPeriod = "monthly" | "quarterly" | "yearly"
 type SubscriptionPlan = "custom" | "pro" | "max"
 
-const AVERAGE_WEEKS_PER_MONTH = 4.35
-const PAYMENT_PERIODS = new Set<PaymentPeriod>(["weekly", "monthly", "quarterly", "yearly"])
+const PAYMENT_PERIODS = new Set<PaymentPeriod>(["monthly", "quarterly", "yearly"])
 
 export type UsageRange = {
     min: number
@@ -49,14 +48,12 @@ export function calculatePromotionDiscountAmount(
 }
 
 export function getPaymentPeriodMonths(period: PaymentPeriod) {
-    if (period === "weekly") return 1
     if (period === "quarterly") return 3
     if (period === "yearly") return 12
     return 1
 }
 
 export function getMonthlyEquivalentAmount(amount: number, period: PaymentPeriod) {
-    if (period === "weekly") return Math.round(amount * AVERAGE_WEEKS_PER_MONTH)
     return Math.round(amount / getPaymentPeriodMonths(period))
 }
 
@@ -68,7 +65,6 @@ export function getSubscriptionDisplayPrices(totalAmount: number, period: Paymen
 }
 
 export function getPaymentPeriodSuffix(period: PaymentPeriod, paymentPeriod: SubscriptionConfigData["paymentPeriod"]) {
-    if (period === "weekly") return paymentPeriod.weeklyPeriodSuffix
     if (period === "quarterly") return paymentPeriod.quarterlyPeriodSuffix
     if (period === "yearly") return paymentPeriod.yearlyPeriodSuffix
     return paymentPeriod.monthlyPeriodSuffix
@@ -88,12 +84,18 @@ function getPriceKey(component: "pro" | "max" | "ai_token" | "workflow_execution
     return `${component}_${customerType}_${period}` as SubscriptionPriceLookupKey
 }
 
+function getPrice(config: SubscriptionCatalog, lookupKey: SubscriptionPriceLookupKey) {
+    const price = config.subscriptionPrices[lookupKey]
+    if (!price) throw new Error(`The subscription price catalog is missing ${lookupKey}.`)
+    return price
+}
+
 export function calculateSubscriptionQuote(selection: SubscriptionSelection, config: SubscriptionCatalog): SubscriptionQuote {
     const months = getPaymentPeriodMonths(selection.paymentPeriod)
 
     if (selection.plan !== "custom") {
-        const total = getSubscriptionPriceAmount(config.subscriptionPrices[getPriceKey(selection.plan, selection.customerType, selection.paymentPeriod)])
-        const regularTotal = months > 1 ? getSubscriptionPriceAmount(config.subscriptionPrices[getPriceKey(selection.plan, selection.customerType, "monthly")]) * months : total
+        const total = getSubscriptionPriceAmount(getPrice(config, getPriceKey(selection.plan, selection.customerType, selection.paymentPeriod)))
+        const regularTotal = months > 1 ? getSubscriptionPriceAmount(getPrice(config, getPriceKey(selection.plan, selection.customerType, "monthly"))) * months : total
         const subtotal = Math.max(total, regularTotal)
         return {
             currency: "EUR",
@@ -104,9 +106,9 @@ export function calculateSubscriptionQuote(selection: SubscriptionSelection, con
         }
     }
 
-    const aiTokenAmount = getSubscriptionPriceAmount(config.subscriptionPrices[getPriceKey("ai_token", selection.customerType, selection.paymentPeriod)], selection.aiTokens)
+    const aiTokenAmount = getSubscriptionPriceAmount(getPrice(config, getPriceKey("ai_token", selection.customerType, selection.paymentPeriod)), selection.aiTokens)
     const workflowExecutionAmount = getSubscriptionPriceAmount(
-        config.subscriptionPrices[getPriceKey("workflow_execution", selection.customerType, selection.paymentPeriod)],
+        getPrice(config, getPriceKey("workflow_execution", selection.customerType, selection.paymentPeriod)),
         selection.workflowExecutions
     )
     const items: SubscriptionQuote["items"] = [
@@ -124,8 +126,8 @@ export function calculateSubscriptionQuote(selection: SubscriptionSelection, con
     const total = items.reduce((sum, item) => sum + item.amount, 0)
     const monthlyBaseline =
         months > 1
-            ? getSubscriptionPriceAmount(config.subscriptionPrices[getPriceKey("ai_token", selection.customerType, "monthly")], selection.aiTokens) * months +
-              getSubscriptionPriceAmount(config.subscriptionPrices[getPriceKey("workflow_execution", selection.customerType, "monthly")], selection.workflowExecutions) * months
+            ? getSubscriptionPriceAmount(getPrice(config, getPriceKey("ai_token", selection.customerType, "monthly")), selection.aiTokens) * months +
+              getSubscriptionPriceAmount(getPrice(config, getPriceKey("workflow_execution", selection.customerType, "monthly")), selection.workflowExecutions) * months
             : aiTokenAmount + workflowExecutionAmount
     const subtotal = Math.max(total, monthlyBaseline)
     return { currency: "EUR", items, subtotal, periodDiscount: subtotal - total, total }

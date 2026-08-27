@@ -29,7 +29,6 @@ export function formatLicenseDisplayValue(value: string | null | undefined, cate
             void: labels.invoiceStatuses.void,
         },
         paymentPeriod: {
-            weekly: labels.paymentPeriods.weekly,
             monthly: labels.paymentPeriods.monthly,
             quarterly: labels.paymentPeriods.quarterly,
             yearly: labels.paymentPeriods.yearly,

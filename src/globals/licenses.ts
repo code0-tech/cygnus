@@ -221,7 +221,6 @@ export const Licenses: GlobalConfig = {
                     name: "paymentPeriods",
                     type: "group",
                     fields: [
-                        { name: "weekly", type: "text", required: true, localized: true, defaultValue: localizedDefault("Weekly", "Wöchentlich") },
                         { name: "monthly", type: "text", required: true, localized: true, defaultValue: localizedDefault("Monthly", "Monatlich") },
                         { name: "quarterly", type: "text", required: true, localized: true, defaultValue: localizedDefault("Quarterly", "Vierteljährlich") },
                         { name: "yearly", type: "text", required: true, localized: true, defaultValue: localizedDefault("Yearly", "Jährlich") },

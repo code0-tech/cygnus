@@ -72,7 +72,7 @@ export const enum_footer_social_links_platform = pgEnum('enum_footer_social_link
 export const enum_subscription_config_defaults_deployment = pgEnum('enum_subscription_config_defaults_deployment', ['self_hosted', 'cloud'])
 export const enum_subscription_config_defaults_customer_type = pgEnum('enum_subscription_config_defaults_customer_type', ['b2b', 'b2c'])
 export const enum_subscription_config_defaults_payment_period_b2b = pgEnum('enum_subscription_config_defaults_payment_period_b2b', ['monthly', 'quarterly', 'yearly'])
-export const enum_subscription_config_defaults_payment_period_b2c = pgEnum('enum_subscription_config_defaults_payment_period_b2c', ['weekly', 'monthly', 'yearly'])
+export const enum_subscription_config_defaults_payment_period_b2c = pgEnum('enum_subscription_config_defaults_payment_period_b2c', ['monthly', 'quarterly', 'yearly'])
 export const enum_subscription_config_deployment_self_hosted_color = pgEnum('enum_subscription_config_deployment_self_hosted_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
 export const enum_subscription_config_deployment_cloud_color = pgEnum('enum_subscription_config_deployment_cloud_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
 export const enum_subscription_config_plan_pro_color = pgEnum('enum_subscription_config_plan_pro_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
@@ -80,7 +80,6 @@ export const enum_subscription_config_plan_max_color = pgEnum('enum_subscription
 export const enum_subscription_config_plan_custom_color = pgEnum('enum_subscription_config_plan_custom_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
 export const enum_subscription_config_customer_type_b2b_color = pgEnum('enum_subscription_config_customer_type_b2b_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
 export const enum_subscription_config_customer_type_b2c_color = pgEnum('enum_subscription_config_customer_type_b2c_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
-export const enum_subscription_config_payment_period_weekly_color = pgEnum('enum_subscription_config_payment_period_weekly_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
 export const enum_subscription_config_payment_period_monthly_color = pgEnum('enum_subscription_config_payment_period_monthly_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
 export const enum_subscription_config_payment_period_quarterly_color = pgEnum('enum_subscription_config_payment_period_quarterly_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
 export const enum_subscription_config_payment_period_yearly_color = pgEnum('enum_subscription_config_payment_period_yearly_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
@@ -2368,7 +2367,6 @@ export const subscription_config = pgTable('subscription_config', {
   customerType_b2c_image: integer('customer_type_b2c_image_id').references(() => media.id, {
       onDelete: 'set null'
   }),
-  paymentPeriod_weeklyColor: enum_subscription_config_payment_period_weekly_color('payment_period_weekly_color').default("lime"),
   paymentPeriod_monthlyColor: enum_subscription_config_payment_period_monthly_color('payment_period_monthly_color').default("brand"),
   paymentPeriod_quarterlyColor: enum_subscription_config_payment_period_quarterly_color('payment_period_quarterly_color').default("aqua"),
   paymentPeriod_yearlyColor: enum_subscription_config_payment_period_yearly_color('payment_period_yearly_color').default("magenta"),
@@ -2427,15 +2425,12 @@ export const subscription_config_locales = pgTable('subscription_config_locales'
   packages_custom_description: varchar('packages_custom_description').default("A tailored package for individual requirements."),
   paymentPeriod_label: varchar('payment_period_label').default("Choose how often you want to be billed."),
   paymentPeriod_description: varchar('payment_period_description'),
-  paymentPeriod_weeklyText: varchar('payment_period_weekly_text').default("Weekly"),
   paymentPeriod_monthlyText: varchar('payment_period_monthly_text').default("Monthly"),
   paymentPeriod_quarterlyText: varchar('payment_period_quarterly_text').default("Quarterly"),
   paymentPeriod_yearlyText: varchar('payment_period_yearly_text').default("Yearly"),
-  paymentPeriod_weeklyPeriodSuffix: varchar('payment_period_weekly_period_suffix').default("per week"),
   paymentPeriod_monthlyPeriodSuffix: varchar('payment_period_monthly_period_suffix').default("per month"),
   paymentPeriod_quarterlyPeriodSuffix: varchar('payment_period_quarterly_period_suffix').default("per quarter"),
   paymentPeriod_yearlyPeriodSuffix: varchar('payment_period_yearly_period_suffix').default("per year"),
-  paymentPeriod_weeklyPaidLabel: varchar('payment_period_weekly_paid_label').default("paid weekly"),
   paymentPeriod_quarterlyPaidLabel: varchar('payment_period_quarterly_paid_label').default("paid quarterly"),
   paymentPeriod_yearlyPaidLabel: varchar('payment_period_yearly_paid_label').default("paid yearly"),
   workflowExecutions_title: varchar('workflow_executions_title').default("How many workflow executions do you expect per month?"),
@@ -2635,7 +2630,6 @@ export const licenses_locales = pgTable('licenses_locales', {
   values_customerTypes_business: varchar('values_customer_types_business').notNull(),
   values_deploymentTypes_cloud: varchar('values_deployment_types_cloud').notNull(),
   values_deploymentTypes_selfHosted: varchar('values_deployment_types_self_hosted').notNull(),
-  values_paymentPeriods_weekly: varchar('values_payment_periods_weekly').notNull(),
   values_paymentPeriods_monthly: varchar('values_payment_periods_monthly').notNull(),
   values_paymentPeriods_quarterly: varchar('values_payment_periods_quarterly').notNull(),
   values_paymentPeriods_yearly: varchar('values_payment_periods_yearly').notNull(),
@@ -4252,7 +4246,6 @@ type DatabaseSchema = {
   enum_subscription_config_plan_custom_color: typeof enum_subscription_config_plan_custom_color
   enum_subscription_config_customer_type_b2b_color: typeof enum_subscription_config_customer_type_b2b_color
   enum_subscription_config_customer_type_b2c_color: typeof enum_subscription_config_customer_type_b2c_color
-  enum_subscription_config_payment_period_weekly_color: typeof enum_subscription_config_payment_period_weekly_color
   enum_subscription_config_payment_period_monthly_color: typeof enum_subscription_config_payment_period_monthly_color
   enum_subscription_config_payment_period_quarterly_color: typeof enum_subscription_config_payment_period_quarterly_color
   enum_subscription_config_payment_period_yearly_color: typeof enum_subscription_config_payment_period_yearly_color

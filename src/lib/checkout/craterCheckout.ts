@@ -2,7 +2,6 @@ import type { PaymentPeriod } from "@/lib/subscriptionCalculator"
 import type { CheckoutPaymentPeriod } from "@code0-tech/crater-graphql-types"
 
 const CRATER_PAYMENT_PERIODS = {
-    weekly: "WEEKLY" as CheckoutPaymentPeriod,
     monthly: "MONTHLY" as CheckoutPaymentPeriod,
     quarterly: "QUARTERLY" as CheckoutPaymentPeriod,
     yearly: "YEARLY" as CheckoutPaymentPeriod,

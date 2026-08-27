@@ -139,6 +139,7 @@ import * as migration_20260821_152105_add_send_offer_prompt from './20260821_152
 import * as migration_20260821_162845_remove_unused_subscription_checkout_license_fields from './20260821_162845_remove_unused_subscription_checkout_license_fields';
 import * as migration_20260824_105607_payment_methods_content from './20260824_105607_payment_methods_content';
 import * as migration_20260825_183644_consolidate_license_content_for_namespace_labels from './20260825_183644_consolidate_license_content_for_namespace_labels';
+import * as migration_20260827_114728_remove_weekly_payment_period from './20260827_114728_remove_weekly_payment_period';
 
 export const migrations = [
   {
@@ -844,6 +845,11 @@ export const migrations = [
   {
     up: migration_20260825_183644_consolidate_license_content_for_namespace_labels.up,
     down: migration_20260825_183644_consolidate_license_content_for_namespace_labels.down,
-    name: '20260825_183644_consolidate_license_content_for_namespace_labels'
+    name: '20260825_183644_consolidate_license_content_for_namespace_labels',
+  },
+  {
+    up: migration_20260827_114728_remove_weekly_payment_period.up,
+    down: migration_20260827_114728_remove_weekly_payment_period.down,
+    name: '20260827_114728_remove_weekly_payment_period'
   },
 ];
