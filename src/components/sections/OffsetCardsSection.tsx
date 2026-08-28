@@ -1,5 +1,6 @@
 import { StaggerContainer, StaggerItem } from "@/components/animations/Stagger"
 import { LinkButton } from "@/components/ui/LinkButton"
+import { PlaygroundFrame } from "@/components/ui/PlaygroundFrame"
 import { Section } from "@/components/ui/Section"
 import type { OffsetCardsLayoutBlock } from "@/lib/cms"
 import { getMediaUrl } from "@/lib/media"
@@ -37,6 +38,7 @@ export function OffsetCardsSection({ content }: OffsetCardsSectionProps) {
                     const animationPreset = OFFSET_CARD_ANIMATION_SEQUENCE[index % OFFSET_CARD_ANIMATION_SEQUENCE.length]
                     const image = item.image as Media
                     const imageUrl = getMediaUrl(image?.url)
+                    const isPlayground = item.mediaType === "playground"
                     const cardPlacement = content.cardPlacement ?? "alternate"
                     const isCardLeft = cardPlacement === "left" || (cardPlacement === "alternate" && index % 2 !== 0)
 
@@ -73,10 +75,16 @@ export function OffsetCardsSection({ content }: OffsetCardsSectionProps) {
                                 topline={item.showImageBorder ?? true}
                                 className={cn("relative aspect-video w-full overflow-hidden lg:w-2/3", item.showImageBorder === false && "border-0")}
                             >
-                                {imageUrl && <Image src={imageUrl} alt={image.alt ?? item.title} fill sizes="(min-width: 768px) 66vw, 100vw" className="object-fill" />}
-                                {item.mask?.map((side) => (
-                                    <div key={side} aria-hidden="true" className={cn("pointer-events-none absolute z-10", IMAGE_MASK_CLASSES[side])} />
-                                ))}
+                                {isPlayground ? (
+                                    <PlaygroundFrame url={item.playgroundUrl} title={`${item.title} playground`} />
+                                ) : (
+                                    <>
+                                        {imageUrl && <Image src={imageUrl} alt={image.alt ?? item.title} fill sizes="(min-width: 768px) 66vw, 100vw" className="object-fill" />}
+                                        {item.mask?.map((side) => (
+                                            <div key={side} aria-hidden="true" className={cn("pointer-events-none absolute z-10", IMAGE_MASK_CLASSES[side])} />
+                                        ))}
+                                    </>
+                                )}
                             </Card>
                             <StaggerContainer className="w-full px-2 pb-2 text-left lg:hidden lg:text-center" delayChildren={0.06} staggerChildren={0.08}>
                                 <StaggerItem as="p" y={14} duration={0.38} className="text-xl font-semibold tracking-tight text-white">

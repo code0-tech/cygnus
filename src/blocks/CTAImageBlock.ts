@@ -1,4 +1,5 @@
 import { buttonField } from "@/fields/buttonField"
+import { playgroundMediaFields } from "@/fields/playgroundMediaFields"
 import type { Block } from "payload"
 
 export const CTAImageBlock: Block = {
@@ -29,13 +30,7 @@ export const CTAImageBlock: Block = {
             ],
         },
         buttonField(3),
-        {
-            name: "image",
-            label: "Image",
-            type: "upload",
-            relationTo: "media",
-            required: false,
-        },
+        ...playgroundMediaFields(),
         {
             name: "showCard",
             label: "Show Card",

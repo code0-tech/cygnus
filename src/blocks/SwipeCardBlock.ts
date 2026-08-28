@@ -1,4 +1,5 @@
 import type { Block } from "payload"
+import { playgroundMediaFields } from "@/fields/playgroundMediaFields"
 
 export const SwipeCardBlock: Block = {
     slug: "swipeCards",
@@ -37,13 +38,7 @@ export const SwipeCardBlock: Block = {
                     required: true,
                     localized: true,
                 },
-                {
-                    name: "image",
-                    label: "Image",
-                    type: "upload",
-                    relationTo: "media",
-                    required: false,
-                },
+                ...playgroundMediaFields(),
                 {
                     name: "link",
                     label: "Link",

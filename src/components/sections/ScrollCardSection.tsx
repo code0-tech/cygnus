@@ -1,5 +1,6 @@
 import { StaggerContainer, StaggerItem } from "@/components/animations/Stagger"
 import { LinkButton } from "@/components/ui/LinkButton"
+import { PlaygroundFrame } from "@/components/ui/PlaygroundFrame"
 import { Section } from "@/components/ui/Section"
 import type { ScrollCardsLayoutBlock } from "@/lib/cms"
 import { getMediaUrl } from "@/lib/media"
@@ -60,6 +61,12 @@ export function ScrollCardSection({ content }: ScrollCardSectionProps) {
                 {items.map((item, index) => {
                     const image = getImage(item.image)
                     const imageUrl = getMediaUrl(image?.url)
+                    const isPlayground = item.mediaType === "playground"
+                    const media = isPlayground ? (
+                        <PlaygroundFrame url={item.playgroundUrl} title={`${item.title} playground`} />
+                    ) : (
+                        imageUrl && <Image src={imageUrl} alt={image?.alt ?? item.title} fill sizes="(min-width: 768px) 50vw, 100vw" className="object-contain object-center" />
+                    )
                     const itemSettings = item as {
                         sectionLayout?: "imageRight" | "imageLeft" | "imageFullscreen" | "imageRightFullscreen" | "imageLeftFullscreen" | null
                         showImageBorder?: boolean | null
@@ -93,7 +100,7 @@ export function ScrollCardSection({ content }: ScrollCardSectionProps) {
                             >
                                 {isFullscreen ? (
                                     <div className={cn("relative z-10 h-full w-full overflow-hidden rounded-3xl", showImageBorder && "border border-white/10")}>
-                                        {imageUrl && <Image src={imageUrl} alt={image?.alt ?? item.title} fill sizes="100vw" className="object-cover object-center" />}
+                                        {isPlayground ? media : imageUrl && <Image src={imageUrl} alt={image?.alt ?? item.title} fill sizes="100vw" className="object-cover object-center" />}
 
                                         <div className="absolute inset-0 z-20 flex items-center justify-center">
                                             <div className="mx-auto max-w-4xl px-6">
@@ -115,7 +122,7 @@ export function ScrollCardSection({ content }: ScrollCardSectionProps) {
                                                 isSideFullscreenRight && "border-l"
                                             )}
                                         >
-                                            {imageUrl && <Image src={imageUrl} alt={image?.alt ?? item.title} fill sizes="(min-width: 768px) 50vw, 100vw" className="object-cover object-center" />}
+                                            {isPlayground ? media : imageUrl && <Image src={imageUrl} alt={image?.alt ?? item.title} fill sizes="(min-width: 768px) 50vw, 100vw" className="object-cover object-center" />}
                                         </div>
                                     </>
                                 ) : (
@@ -131,7 +138,7 @@ export function ScrollCardSection({ content }: ScrollCardSectionProps) {
                                                 isImageLeft && "md:order-1"
                                             )}
                                         >
-                                            {imageUrl && <Image src={imageUrl} alt={image?.alt ?? item.title} fill sizes="(min-width: 768px) 50vw, 100vw" className="object-contain object-center" />}
+                                            {media}
                                         </div>
                                     </>
                                 )}

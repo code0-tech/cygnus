@@ -1,5 +1,6 @@
 import { StaggerContainer, StaggerItem } from "@/components/animations/Stagger"
 import { HapticButtonLink } from "@/components/ui/HapticButtonLink"
+import { PlaygroundFrame } from "@/components/ui/PlaygroundFrame"
 import { Section } from "@/components/ui/Section"
 import type { CTAImageLayoutBlock } from "@/lib/cms"
 import { getMediaUrl } from "@/lib/media"
@@ -30,6 +31,7 @@ export function CTAImageSection({ content }: CTAImageSectionProps) {
     const imageHeight = image?.height || 620
     const showCard = content.showCard !== false
     const showImageBorder = content.showImageBorder ?? true
+    const isPlayground = content.mediaType === "playground"
 
     return (
         <Section showFunnel={false} animation={{ preset: "none" }}>
@@ -82,17 +84,25 @@ export function CTAImageSection({ content }: CTAImageSectionProps) {
                     <div className={cn("h-auto w-full", showCard ? "lg:w-4/5 lg:-mr-56" : "lg:w-[58%]")}>
                         <div className={cn(showCard ? "rounded-[1.3rem] bg-white/10 p-1 lg:rounded-l-[1.3rem] lg:rounded-r-none" : "rounded-2xl", showImageBorder && "border border-white/20")}>
                             <div className={cn("relative overflow-hidden", showCard ? "rounded-2xl lg:rounded-l-2xl lg:rounded-r-none" : "rounded-2xl")}>
-                                <Image
-                                    src={imageUrl}
-                                    alt={image?.alt || content.title}
-                                    height={imageHeight}
-                                    width={imageWidth}
-                                    sizes="(min-width: 1024px) 60vw, 100vw"
-                                    className={cn("block h-auto w-full", showCard ? "rounded-2xl lg:rounded-l-2xl lg:rounded-r-none" : "rounded-2xl")}
-                                />
-                                {content.imageMask?.map((side) => (
-                                    <div key={side} aria-hidden="true" className={cn("pointer-events-none absolute z-10", IMAGE_MASK_CLASSES[side])} />
-                                ))}
+                                {isPlayground ? (
+                                    <div className="relative aspect-video w-full">
+                                        <PlaygroundFrame url={content.playgroundUrl} title={`${content.title} playground`} />
+                                    </div>
+                                ) : (
+                                    <>
+                                        <Image
+                                            src={imageUrl}
+                                            alt={image?.alt || content.title}
+                                            height={imageHeight}
+                                            width={imageWidth}
+                                            sizes="(min-width: 1024px) 60vw, 100vw"
+                                            className={cn("block h-auto w-full", showCard ? "rounded-2xl lg:rounded-l-2xl lg:rounded-r-none" : "rounded-2xl")}
+                                        />
+                                        {content.imageMask?.map((side) => (
+                                            <div key={side} aria-hidden="true" className={cn("pointer-events-none absolute z-10", IMAGE_MASK_CLASSES[side])} />
+                                        ))}
+                                    </>
+                                )}
                             </div>
                         </div>
                     </div>

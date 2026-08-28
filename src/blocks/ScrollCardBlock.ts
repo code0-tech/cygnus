@@ -1,5 +1,6 @@
 import { gradientFields } from "@/fields/gradientFields"
 import { linkField } from "@/fields/linkField"
+import { playgroundMediaFields } from "@/fields/playgroundMediaFields"
 import type { Block } from "payload"
 
 export const ScrollCardBlock: Block = {
@@ -71,13 +72,7 @@ export const ScrollCardBlock: Block = {
                     hasMany: true,
                     localized: true,
                 },
-                {
-                    name: "image",
-                    label: "Image",
-                    type: "upload",
-                    relationTo: "media",
-                    required: false,
-                },
+                ...playgroundMediaFields(),
                 linkField(),
             ],
         },

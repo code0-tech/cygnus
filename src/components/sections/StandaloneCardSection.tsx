@@ -1,5 +1,6 @@
 import { StaggerContainer, StaggerItem } from "@/components/animations/Stagger"
 import { LinkButton } from "@/components/ui/LinkButton"
+import { PlaygroundFrame } from "@/components/ui/PlaygroundFrame"
 import { Section } from "@/components/ui/Section"
 import type { StandaloneCardLayoutBlock } from "@/lib/cms"
 import { getMediaUrl } from "@/lib/media"
@@ -52,6 +53,12 @@ export function StandaloneCardSection({ content }: StandaloneCardSectionProps) {
 
     const image = getImage(content.image)
     const imageUrl = getMediaUrl(image?.url)
+    const isPlayground = content.mediaType === "playground"
+    const media = isPlayground ? (
+        <PlaygroundFrame url={content.playgroundUrl} title={`${content.title} playground`} />
+    ) : (
+        imageUrl && <Image src={imageUrl} alt={image?.alt ?? content.title} fill sizes="(min-width: 768px) 50vw, 100vw" className="object-contain object-center" />
+    )
     const isImageLeft = content.sectionLayout === "imageLeft"
     const isFullscreen = content.sectionLayout === "imageFullscreen"
     const isSideFullscreen = content.sectionLayout === "imageRightFullscreen" || content.sectionLayout === "imageLeftFullscreen"
@@ -73,7 +80,7 @@ export function StandaloneCardSection({ content }: StandaloneCardSectionProps) {
             >
                 {isFullscreen ? (
                     <div className={cn("relative z-10 h-full w-full overflow-hidden rounded-3xl", showImageBorder && "border border-white/10")}>
-                        {imageUrl && <Image src={imageUrl} alt={image?.alt ?? content.title} fill sizes="100vw" className="object-cover object-center" />}
+                        {isPlayground ? media : imageUrl && <Image src={imageUrl} alt={image?.alt ?? content.title} fill sizes="100vw" className="object-cover object-center" />}
 
                         <div className="absolute inset-0 z-20 flex items-center justify-center">
                             <div className="mx-auto max-w-4xl px-6">
@@ -95,7 +102,7 @@ export function StandaloneCardSection({ content }: StandaloneCardSectionProps) {
                                 isSideFullscreenRight && "border-l"
                             )}
                         >
-                            {imageUrl && <Image src={imageUrl} alt={image?.alt ?? content.title} fill sizes="(min-width: 768px) 50vw, 100vw" className="object-cover object-center" />}
+                            {isPlayground ? media : imageUrl && <Image src={imageUrl} alt={image?.alt ?? content.title} fill sizes="(min-width: 768px) 50vw, 100vw" className="object-cover object-center" />}
                         </div>
                     </>
                 ) : (
@@ -105,7 +112,7 @@ export function StandaloneCardSection({ content }: StandaloneCardSectionProps) {
                         </div>
 
                         <div className={cn("relative z-10 aspect-video w-full self-center overflow-hidden rounded-2xl", showImageBorder && "border border-white/10", isImageLeft && "md:order-1")}>
-                            {imageUrl && <Image src={imageUrl} alt={image?.alt ?? content.title} fill sizes="(min-width: 768px) 50vw, 100vw" className="object-contain object-center" />}
+                            {media}
                         </div>
                     </>
                 )}

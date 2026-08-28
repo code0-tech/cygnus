@@ -698,10 +698,6 @@ export async function getJobs(locale: AppLocale = DEFAULT_LOCALE): Promise<JobIt
     return getJobsCached(locale)
 }
 
-export async function getActions(locale: AppLocale = DEFAULT_LOCALE): Promise<ActionItem[]> {
-    return getActionsCached(locale)
-}
-
 export async function getPaginatedActions(
     locale: AppLocale = DEFAULT_LOCALE,
     options?: { page?: number; limit?: number; search?: string; tag?: ActionTag | null; sortOrder?: ActionSortOrder }
