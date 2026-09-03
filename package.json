@@ -67,7 +67,7 @@
         "@tailwindcss/postcss": "^4.3.3",
         "@types/node": "^25.9.5",
         "@types/react": "^19.2.18",
-        "@types/react-dom": "^19.2.4",
+        "@types/react-dom": "^19.2.5",
         "@types/sanitize-html": "^2.16.1",
         "postcss": "^8.5.26",
         "prettier": "^3.9.6",
