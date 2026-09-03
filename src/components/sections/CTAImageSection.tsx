@@ -89,20 +89,18 @@ export function CTAImageSection({ content }: CTAImageSectionProps) {
                                         <PlaygroundFrame url={content.playgroundUrl} title={`${content.title} playground`} />
                                     </div>
                                 ) : (
-                                    <>
-                                        <Image
-                                            src={imageUrl}
-                                            alt={image?.alt || content.title}
-                                            height={imageHeight}
-                                            width={imageWidth}
-                                            sizes="(min-width: 1024px) 60vw, 100vw"
-                                            className={cn("block h-auto w-full", showCard ? "rounded-2xl lg:rounded-l-2xl lg:rounded-r-none" : "rounded-2xl")}
-                                        />
-                                        {content.imageMask?.map((side) => (
-                                            <div key={side} aria-hidden="true" className={cn("pointer-events-none absolute z-10", IMAGE_MASK_CLASSES[side])} />
-                                        ))}
-                                    </>
+                                    <Image
+                                        src={imageUrl}
+                                        alt={image?.alt || content.title}
+                                        height={imageHeight}
+                                        width={imageWidth}
+                                        sizes="(min-width: 1024px) 60vw, 100vw"
+                                        className={cn("block h-auto w-full", showCard ? "rounded-2xl lg:rounded-l-2xl lg:rounded-r-none" : "rounded-2xl")}
+                                    />
                                 )}
+                                {content.imageMask?.map((side) => (
+                                    <div key={side} aria-hidden="true" className={cn("pointer-events-none absolute z-10", IMAGE_MASK_CLASSES[side])} />
+                                ))}
                             </div>
                         </div>
                     </div>

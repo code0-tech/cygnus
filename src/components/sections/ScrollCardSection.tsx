@@ -102,11 +102,13 @@ export function ScrollCardSection({ content }: ScrollCardSectionProps) {
                                     <div className={cn("relative z-10 h-full w-full overflow-hidden rounded-3xl", showImageBorder && "border border-white/10")}>
                                         {isPlayground ? media : imageUrl && <Image src={imageUrl} alt={image?.alt ?? item.title} fill sizes="100vw" className="object-cover object-center" />}
 
-                                        <div className="absolute inset-0 z-20 flex items-center justify-center">
-                                            <div className="mx-auto max-w-4xl px-6">
-                                                <ScrollCardContent item={item} centered />
+                                        {!isPlayground && (
+                                            <div className="absolute inset-0 z-20 flex items-center justify-center">
+                                                <div className="mx-auto max-w-4xl px-6">
+                                                    <ScrollCardContent item={item} centered />
+                                                </div>
                                             </div>
-                                        </div>
+                                        )}
                                     </div>
                                 ) : isSideFullscreen ? (
                                     <>

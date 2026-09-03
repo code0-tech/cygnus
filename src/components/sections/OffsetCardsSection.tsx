@@ -78,13 +78,11 @@ export function OffsetCardsSection({ content }: OffsetCardsSectionProps) {
                                 {isPlayground ? (
                                     <PlaygroundFrame url={item.playgroundUrl} title={`${item.title} playground`} />
                                 ) : (
-                                    <>
-                                        {imageUrl && <Image src={imageUrl} alt={image.alt ?? item.title} fill sizes="(min-width: 768px) 66vw, 100vw" className="object-fill" />}
-                                        {item.mask?.map((side) => (
-                                            <div key={side} aria-hidden="true" className={cn("pointer-events-none absolute z-10", IMAGE_MASK_CLASSES[side])} />
-                                        ))}
-                                    </>
+                                    imageUrl && <Image src={imageUrl} alt={image.alt ?? item.title} fill sizes="(min-width: 768px) 66vw, 100vw" className="object-fill" />
                                 )}
+                                {item.mask?.map((side) => (
+                                    <div key={side} aria-hidden="true" className={cn("pointer-events-none absolute z-10", IMAGE_MASK_CLASSES[side])} />
+                                ))}
                             </Card>
                             <StaggerContainer className="w-full px-2 pb-2 text-left lg:hidden lg:text-center" delayChildren={0.06} staggerChildren={0.08}>
                                 <StaggerItem as="p" y={14} duration={0.38} className="text-xl font-semibold tracking-tight text-white">

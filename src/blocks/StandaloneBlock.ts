@@ -27,6 +27,9 @@ export const StandaloneBlock: Block = {
             label: "Show Image Border",
             type: "checkbox",
             defaultValue: true,
+            admin: {
+                condition: (_, siblingData) => siblingData?.sectionLayout !== "imageFullscreen",
+            },
         },
         {
             name: "sectionLayout",
