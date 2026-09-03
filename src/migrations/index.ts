@@ -79,6 +79,8 @@ import * as migration_20260729_114646_pricing_whats_included_text from './202607
 import * as migration_20260729_115704_pricing_card_title_color from './20260729_115704_pricing_card_title_color';
 import * as migration_20260729_120627_pricing_highlighted_card_color from './20260729_120627_pricing_highlighted_card_color';
 import * as migration_20260806_122846_action_list_load_more_label from './20260806_122846_action_list_load_more_label';
+import * as migration_20260828_104452_add_playground_media_to_sections from './20260828_104452_add_playground_media_to_sections';
+import * as migration_20260903_110928_update_install_language_options from './20260903_110928_update_install_language_options';
 
 export const migrations = [
   {
@@ -484,6 +486,16 @@ export const migrations = [
   {
     up: migration_20260806_122846_action_list_load_more_label.up,
     down: migration_20260806_122846_action_list_load_more_label.down,
-    name: '20260806_122846_action_list_load_more_label'
+    name: '20260806_122846_action_list_load_more_label',
+  },
+  {
+    up: migration_20260828_104452_add_playground_media_to_sections.up,
+    down: migration_20260828_104452_add_playground_media_to_sections.down,
+    name: '20260828_104452_add_playground_media_to_sections',
+  },
+  {
+    up: migration_20260903_110928_update_install_language_options.up,
+    down: migration_20260903_110928_update_install_language_options.down,
+    name: '20260903_110928_update_install_language_options'
   },
 ];

@@ -1,5 +1,6 @@
 import { StaggerContainer, StaggerItem } from "@/components/animations/Stagger"
 import { LinkButton } from "@/components/ui/LinkButton"
+import { PlaygroundFrame } from "@/components/ui/PlaygroundFrame"
 import { Section } from "@/components/ui/Section"
 import type { CardRowLayoutBlock } from "@/lib/cms"
 import { getMediaUrl } from "@/lib/media"
@@ -35,6 +36,7 @@ export function CardRowSection({ content, children }: CardRowSectionProps) {
                     const mediaImage = typeof card.image === "object" ? card.image : null
                     const imageUrl = getImageUrl(card.image)
                     const fallbackImage = fallbackImages[index]
+                    const isPlayground = card.mediaType === "playground"
 
                     return (
                         <StaggerItem key={card.id ?? `${card.title}-${index}`} y={14} duration={0.48} className="h-full">
@@ -42,7 +44,11 @@ export function CardRowSection({ content, children }: CardRowSectionProps) {
                                 size={"lg"}
                                 className="group flex h-full p-2! transform-gpu flex-col will-change-transform before:pointer-events-none before:absolute before:inset-1px before:rounded-[calc(1.5rem-1px)] before:border before:border-white/5 before:content-['']"
                             >
-                                {imageUrl ? (
+                                {isPlayground ? (
+                                    <div className="relative aspect-[243.476/160] overflow-hidden rounded-2xl bg-primary/40">
+                                        <PlaygroundFrame url={card.playgroundUrl} title={`${card.title} playground`} />
+                                    </div>
+                                ) : imageUrl ? (
                                     <div className="relative aspect-[243.476/160] overflow-hidden rounded-2xl bg-primary/40">
                                         <Image src={imageUrl} alt={mediaImage?.alt ?? card.title ?? ""} fill sizes="(min-width: 1024px) 33vw, 100vw" className="object-cover" />
                                     </div>

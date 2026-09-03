@@ -6,11 +6,14 @@ import { Media } from "@/payload-types"
 import Image from "next/image"
 import { LinkButton } from "../ui/LinkButton"
 import { Card } from "../ui/Card"
+import { PlaygroundFrame } from "../ui/PlaygroundFrame"
 
 interface SwipeCardProps {
     title: string
     description: string
     image?: Media | number | null
+    mediaType?: "image" | "playground" | null
+    playgroundUrl?: string | null
     link?: {
         label?: string | null
         url?: string | null
@@ -19,8 +22,9 @@ interface SwipeCardProps {
     className?: string
 }
 
-export function SwipeCard({ title, description, image, link, className }: SwipeCardProps) {
+export function SwipeCard({ title, description, image, mediaType, playgroundUrl, link, className }: SwipeCardProps) {
     const imageUrl = typeof image === "object" ? getMediaUrl(image?.url) : ""
+    const isPlayground = mediaType === "playground"
 
     return (
         <Card
@@ -32,7 +36,11 @@ export function SwipeCard({ title, description, image, link, className }: SwipeC
         >
             <div className="relative flex flex-col items-stretch justify-start rounded-2xl">
                 <div className={"p-2"}>
-                    {imageUrl ? (
+                    {isPlayground ? (
+                        <div className="relative aspect-video w-full overflow-hidden rounded-2xl">
+                            <PlaygroundFrame url={playgroundUrl} title={`${title} playground`} />
+                        </div>
+                    ) : imageUrl ? (
                         <div className="relative overflow-hidden aspect-video w-full rounded-2xl">
                             <Image src={imageUrl} alt={title} fill sizes="(min-width: 768px) 66vw, 100vw" className="object-fill" />
                         </div>

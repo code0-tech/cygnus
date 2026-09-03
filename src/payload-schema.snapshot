@@ -16,33 +16,37 @@ export const enum_pages_blocks_hero_buttons_variant = pgEnum('enum_pages_blocks_
 export const enum_pages_blocks_bento_section_layout = pgEnum('enum_pages_blocks_bento_section_layout', ['center', 'left'])
 export const enum_pages_blocks_bento_variant = pgEnum('enum_pages_blocks_bento_variant', ['feature', 'runtime'])
 export const enum_pages_blocks_offset_cards_cards_mask = pgEnum('enum_pages_blocks_offset_cards_cards_mask', ['top', 'right', 'bottom', 'left'])
+export const enum_pages_blocks_offset_cards_cards_media_type = pgEnum('enum_pages_blocks_offset_cards_cards_media_type', ['image', 'playground'])
 export const enum_pages_blocks_offset_cards_section_layout = pgEnum('enum_pages_blocks_offset_cards_section_layout', ['center', 'left'])
 export const enum_pages_blocks_offset_cards_card_placement = pgEnum('enum_pages_blocks_offset_cards_card_placement', ['alternate', 'right', 'left'])
-export const enum_pages_blocks_install_language = pgEnum('enum_pages_blocks_install_language', ['bsl', 'sdbl', 'abap', 'actionscript-3', 'ada', 'angular-html', 'angular-ts', 'apache', 'apex', 'apl', 'applescript', 'ara', 'asciidoc', 'razor', 'asm', 'astro', 'awk', 'ballerina', 'bat', 'beancount', 'berry', 'bibtex', 'bicep', 'bird2', 'blade', 'c', 'csharp', 'cpp', 'c3', 'cadence', 'cairo', 'clarity', 'clojure', 'soy', 'cmake', 'cobol', 'codeowners', 'codeql', 'coffee', 'common-lisp', 'coq', 'crystal', 'css', 'csv', 'cue', 'cypher', 'd', 'dart', 'dax', 'desktop', 'diff', 'docker', 'dotenv', 'dream-maker', 'edge', 'elixir', 'elm', 'emacs-lisp', 'erb', 'erlang', 'fsharp', 'fennel', 'fish', 'fluent', 'fortran-fixed-form', 'fortran-free-form', 'gdresource', 'gdscript', 'gdshader', 'genie', 'po', 'gherkin', 'git-commit', 'git-rebase', 'gleam', 'glimmer-js', 'glimmer-ts', 'glsl', 'gn', 'gnuplot', 'go', 'graphql', 'groovy', 'hack', 'handlebars', 'hcl', 'haskell', 'haxe', 'hjson', 'hlsl', 'html', 'html-derivative', 'http', 'hurl', 'hxml', 'hy', 'imba', 'ini', 'java', 'javascript', 'jinja', 'jison', 'json', 'jsonl', 'jsonc', 'json5', 'jsonnet', 'jssm', 'jsx', 'julia', 'just', 'kdl', 'kotlin', 'kusto', 'latex', 'lean', 'less', 'liquid', 'llvm', 'log', 'logo', 'lua', 'luau', 'make', 'markdown', 'marko', 'matlab', 'mdc', 'mdx', 'mermaid', 'mipsasm', 'mojo', 'moonbit', 'move', 'narrat', 'nextflow', 'nextflow-groovy', 'nginx', 'nim', 'nix', 'nushell', 'objective-c', 'objective-cpp', 'ocaml', 'odin', 'openscad', 'pascal', 'perl', 'php', 'pkl', 'plsql', 'polar', 'postcss', 'powerquery', 'powershell', 'prisma', 'prolog', 'proto', 'pug', 'puppet', 'purescript', 'python', 'qml', 'qmldir', 'qss', 'r', 'racket', 'raku', 'regexp', 'rel', 'rst', 'riscv', 'ron', 'rosmsg', 'ruby', 'haml', 'rust', 'sas', 'sass', 'scala', 'scheme', 'scss', 'shaderlab', 'shellscript', 'shellsession', 'smalltalk', 'solidity', 'sparql', 'splunk', 'sql', 'ssh-config', 'stata', 'stylus', 'surrealql', 'svelte', 'swift', 'systemd', 'system-verilog', 'talonscript', 'tasl', 'tcl', 'templ', 'terraform', 'tex', 'toml', 'tsv', 'tsx', 'turtle', 'twig', 'typescript', 'ts-tags', 'typespec', 'typst', 'v', 'vala', 'verilog', 'vhdl', 'viml', 'vb', 'vue', 'vue-html', 'vue-vine', 'vyper', 'wasm', 'wit', 'wenyan', 'wgsl', 'wikitext', 'reg', 'wolfram', 'xml', 'xsl', 'yaml', 'zenscript', 'zig'])
+export const enum_pages_blocks_install_language = pgEnum('enum_pages_blocks_install_language', ['bsl', 'sdbl', 'abap', 'actionscript-3', 'ada', 'angular-html', 'angular-ts', 'apache', 'apex', 'apl', 'applescript', 'ara', 'asciidoc', 'razor', 'asm', 'astro', 'ahk', 'ahk2', 'awk', 'ballerina', 'bat', 'beancount', 'berry', 'bibtex', 'bicep', 'bird2', 'blade', 'c', 'csharp', 'cpp', 'c3', 'cadence', 'cairo', 'chapel', 'clarity', 'clojure', 'soy', 'cmake', 'cobol', 'codeowners', 'codeql', 'coffee', 'common-lisp', 'crystal', 'css', 'csv', 'cue', 'cypher', 'd', 'dart', 'dax', 'desktop', 'diff', 'docker', 'dotenv', 'dream-maker', 'edge', 'elixir', 'elm', 'emacs-lisp', 'erb', 'erlang', 'fsharp', 'fennel', 'fish', 'fluent', 'fortran-fixed-form', 'fortran-free-form', 'gdresource', 'gdscript', 'gdshader', 'genie', 'po', 'gherkin', 'git-commit', 'git-rebase', 'gleam', 'glimmer-js', 'glimmer-ts', 'glsl', 'gn', 'smalltalk', 'gnuplot', 'go', 'graphql', 'groovy', 'hack', 'handlebars', 'hcl', 'haskell', 'haxe', 'hjson', 'hlsl', 'html', 'html-derivative', 'http', 'hurl', 'hxml', 'hy', 'imba', 'ini', 'java', 'javascript', 'jinja', 'jison', 'json', 'jsonl', 'jsonc', 'json5', 'jsonnet', 'jssm', 'jsx', 'julia', 'just', 'kdl', 'kotlin', 'kusto', 'latex', 'lean', 'less', 'liquid', 'llvm', 'log', 'logo', 'lua', 'luau', 'make', 'markdown', 'marko', 'matlab', 'mdc', 'mdx', 'mermaid', 'mipsasm', 'mojo', 'moonbit', 'move', 'narrat', 'nextflow', 'nextflow-groovy', 'nginx', 'nim', 'nix', 'nsis', 'nushell', 'objective-c', 'objective-cpp', 'ocaml', 'odin', 'openscad', 'org', 'pascal', 'perl', 'php', 'pkl', 'plsql', 'polar', 'postcss', 'powerquery', 'powershell', 'prisma', 'prolog', 'proto', 'pug', 'puppet', 'purescript', 'python', 'qml', 'qmldir', 'qss', 'r', 'racket', 'raku', 'rbs', 'regexp', 'rel', 'rst', 'riscv', 'coq', 'ron', 'rosmsg', 'ruby', 'haml', 'rust', 'sas', 'sass', 'scala', 'scheme', 'scss', 'shaderlab', 'shellscript', 'shellsession', 'smithy', 'solidity', 'sparql', 'splunk', 'sql', 'ssh-config', 'stata', 'stylus', 'surrealql', 'svelte', 'swift', 'systemd', 'system-verilog', 'talonscript', 'tasl', 'tcl', 'templ', 'terraform', 'tex', 'toml', 'tsv', 'tsx', 'turtle', 'twig', 'typescript', 'ts-tags', 'typespec', 'typst', 'v', 'vala', 'verilog', 'vhdl', 'viml', 'vb', 'vue', 'vue-html', 'vue-vine', 'vyper', 'wasm', 'wit', 'wenyan', 'wgsl', 'wikitext', 'reg', 'wolfram', 'xml', 'xsl', 'yaml', 'zenscript', 'zig'])
+export const enum_pages_blocks_swipe_cards_cards_media_type = pgEnum('enum_pages_blocks_swipe_cards_cards_media_type', ['image', 'playground'])
 export const enum_pages_blocks_faq_section_layout = pgEnum('enum_pages_blocks_faq_section_layout', ['center', 'left'])
 export const enum_pages_blocks_cta_image_buttons_variant = pgEnum('enum_pages_blocks_cta_image_buttons_variant', ['none', 'normal', 'outlined', 'filled'])
 export const enum_pages_blocks_cta_image_image_mask = pgEnum('enum_pages_blocks_cta_image_image_mask', ['top', 'right', 'bottom', 'left'])
+export const enum_pages_blocks_cta_image_media_type = pgEnum('enum_pages_blocks_cta_image_media_type', ['image', 'playground'])
 export const enum_pages_blocks_blog_preview_section_layout = pgEnum('enum_pages_blocks_blog_preview_section_layout', ['imageCenter', 'imageLeft', 'imageRight'])
 export const enum_pages_blocks_action_hero_buttons_variant = pgEnum('enum_pages_blocks_action_hero_buttons_variant', ['none', 'normal', 'outlined', 'filled'])
 export const enum_pages_blocks_action_functions_section_layout = pgEnum('enum_pages_blocks_action_functions_section_layout', ['center', 'left'])
 export const enum_pages_blocks_action_events_section_layout = pgEnum('enum_pages_blocks_action_events_section_layout', ['center', 'left'])
 export const enum_pages_blocks_action_references_section_layout = pgEnum('enum_pages_blocks_action_references_section_layout', ['center', 'left'])
 export const enum_pages_blocks_action_list_section_layout = pgEnum('enum_pages_blocks_action_list_section_layout', ['center', 'left'])
+export const enum_pages_blocks_card_row_cards_media_type = pgEnum('enum_pages_blocks_card_row_cards_media_type', ['image', 'playground'])
 export const enum_pages_blocks_card_row_section_layout = pgEnum('enum_pages_blocks_card_row_section_layout', ['center', 'left'])
 export const enum_pages_blocks_roadmap_section_layout = pgEnum('enum_pages_blocks_roadmap_section_layout', ['center', 'left'])
 export const enum_pages_blocks_scroll_cards_items_section_layout = pgEnum('enum_pages_blocks_scroll_cards_items_section_layout', ['imageRight', 'imageLeft', 'imageFullscreen', 'imageRightFullscreen', 'imageLeftFullscreen'])
 export const enum_pages_blocks_scroll_cards_items_gradient = pgEnum('enum_pages_blocks_scroll_cards_items_gradient', ['blue', 'yellow', 'pink', 'aqua', 'brand', 'lime', 'magenta', 'neutral'])
 export const enum_pages_blocks_scroll_cards_items_gradient_direction = pgEnum('enum_pages_blocks_scroll_cards_items_gradient_direction', ['topLeft', 'topRight', 'bottomLeft', 'bottomRight'])
+export const enum_pages_blocks_scroll_cards_items_media_type = pgEnum('enum_pages_blocks_scroll_cards_items_media_type', ['image', 'playground'])
 export const enum_pages_blocks_standalone_card_section_layout = pgEnum('enum_pages_blocks_standalone_card_section_layout', ['imageRight', 'imageLeft', 'imageFullscreen', 'imageRightFullscreen', 'imageLeftFullscreen'])
 export const enum_pages_blocks_standalone_card_gradient = pgEnum('enum_pages_blocks_standalone_card_gradient', ['blue', 'yellow', 'pink', 'aqua', 'brand', 'lime', 'magenta', 'neutral'])
 export const enum_pages_blocks_standalone_card_gradient_direction = pgEnum('enum_pages_blocks_standalone_card_gradient_direction', ['topLeft', 'topRight', 'bottomLeft', 'bottomRight'])
+export const enum_pages_blocks_standalone_card_media_type = pgEnum('enum_pages_blocks_standalone_card_media_type', ['image', 'playground'])
 export const enum_pages_blocks_video_source_type = pgEnum('enum_pages_blocks_video_source_type', ['url', 'media'])
 export const enum_pages_blocks_widehero_mask = pgEnum('enum_pages_blocks_widehero_mask', ['top', 'right', 'bottom', 'left'])
 export const enum_pages_blocks_widehero_buttons_variant = pgEnum('enum_pages_blocks_widehero_buttons_variant', ['none', 'normal', 'outlined', 'filled'])
 export const enum_pages_blocks_list_feature_section_layout = pgEnum('enum_pages_blocks_list_feature_section_layout', ['center', 'left'])
 export const enum_pages_blocks_stats_section_layout = pgEnum('enum_pages_blocks_stats_section_layout', ['center', 'left'])
-export const enum_pages_blocks_flow_example_flow_items_segments_type = pgEnum('enum_pages_blocks_flow_example_flow_items_segments_type', ['text', 'literal', 'reference', 'node'])
-export const enum_pages_blocks_flow_example_flow_items_color = pgEnum('enum_pages_blocks_flow_example_flow_items_color', ['brand', 'yellow', 'aqua', 'blue', 'pink', 'lime', 'magenta'])
 export const enum_pages_blocks_flow_example_section_layout = pgEnum('enum_pages_blocks_flow_example_section_layout', ['center', 'left'])
 export const enum_pages_blocks_flow_example_flow_layout = pgEnum('enum_pages_blocks_flow_example_flow_layout', ['left', 'right'])
 export const enum_pages_blocks_subscription_configurator_buttons_variant = pgEnum('enum_pages_blocks_subscription_configurator_buttons_variant', ['none', 'normal', 'outlined', 'filled'])
@@ -284,9 +288,11 @@ export const pages_blocks_offset_cards_cards = pgTable('pages_blocks_offset_card
   label: varchar('label').notNull(),
   title: varchar('title').notNull(),
   description: varchar('description').notNull(),
+  mediaType: enum_pages_blocks_offset_cards_cards_media_type('media_type').notNull().default("image"),
   image: integer('image_id').references(() => media.id, {
       onDelete: 'set null'
   }),
+  playgroundUrl: varchar('playground_url'),
   showImageBorder: boolean('show_image_border').default(true),
   link_label: varchar('link_label'),
   link_url: varchar('link_url'),
@@ -352,9 +358,11 @@ export const pages_blocks_swipe_cards_cards = pgTable('pages_blocks_swipe_cards_
   id: varchar('id').primaryKey(),
   title: varchar('title').notNull(),
   description: varchar('description').notNull(),
+  mediaType: enum_pages_blocks_swipe_cards_cards_media_type('media_type').notNull().default("image"),
   image: integer('image_id').references(() => media.id, {
       onDelete: 'set null'
   }),
+  playgroundUrl: varchar('playground_url'),
   link_label: varchar('link_label'),
   link_url: varchar('link_url'),
 }, (columns) => [
@@ -539,9 +547,11 @@ export const pages_blocks_cta_image = pgTable('pages_blocks_cta_image', {
   _locale: enum__locales('_locale').notNull(),
   id: varchar('id').primaryKey(),
   title: varchar('title').notNull(),
+  mediaType: enum_pages_blocks_cta_image_media_type('media_type').notNull().default("image"),
   image: integer('image_id').references(() => media.id, {
       onDelete: 'set null'
   }),
+  playgroundUrl: varchar('playground_url'),
   showCard: boolean('show_card').default(true),
   showImageBorder: boolean('show_image_border').default(true),
   blockName: varchar('block_name'),
@@ -873,9 +883,11 @@ export const pages_blocks_card_row_cards = pgTable('pages_blocks_card_row_cards'
   description: varchar('description'),
   link_label: varchar('link_label'),
   link_url: varchar('link_url'),
+  mediaType: enum_pages_blocks_card_row_cards_media_type('media_type').notNull().default("image"),
   image: integer('image_id').references(() => media.id, {
       onDelete: 'set null'
   }),
+  playgroundUrl: varchar('playground_url'),
 }, (columns) => [
     index('pages_blocks_card_row_cards_order_idx').on(columns._order), index('pages_blocks_card_row_cards_parent_id_idx').on(columns._parentID), index('pages_blocks_card_row_cards_locale_idx').on(columns._locale), index('pages_blocks_card_row_cards_image_idx').on(columns.image), foreignKey({
       columns: [columns['_parentID']],
@@ -959,9 +971,11 @@ export const pages_blocks_scroll_cards_items = pgTable('pages_blocks_scroll_card
   sectionLayout: enum_pages_blocks_scroll_cards_items_section_layout('section_layout').notNull().default("imageRight"),
   gradient: enum_pages_blocks_scroll_cards_items_gradient('gradient').default("blue"),
   gradientDirection: enum_pages_blocks_scroll_cards_items_gradient_direction('gradient_direction').default("topLeft"),
+  mediaType: enum_pages_blocks_scroll_cards_items_media_type('media_type').notNull().default("image"),
   image: integer('image_id').references(() => media.id, {
       onDelete: 'set null'
   }),
+  playgroundUrl: varchar('playground_url'),
   link_label: varchar('link_label'),
   link_url: varchar('link_url'),
 }, (columns) => [
@@ -1003,9 +1017,11 @@ export const pages_blocks_standalone_card = pgTable('pages_blocks_standalone_car
   sectionLayout: enum_pages_blocks_standalone_card_section_layout('section_layout').notNull().default("imageRight"),
   gradient: enum_pages_blocks_standalone_card_gradient('gradient').default("blue"),
   gradientDirection: enum_pages_blocks_standalone_card_gradient_direction('gradient_direction').default("topLeft"),
+  mediaType: enum_pages_blocks_standalone_card_media_type('media_type').notNull().default("image"),
   image: integer('image_id').references(() => media.id, {
       onDelete: 'set null'
   }),
+  playgroundUrl: varchar('playground_url'),
   link_label: varchar('link_label'),
   link_url: varchar('link_url'),
   blockName: varchar('block_name'),
@@ -1211,41 +1227,6 @@ export const pages_blocks_stats = pgTable('pages_blocks_stats', {
 )
 
 
-export const pages_blocks_flow_example_flow_items_segments = pgTable('pages_blocks_flow_example_flow_items_segments', {
-  _order: integer('_order').notNull(),
-  _parentID: varchar('_parent_id').notNull(),
-  _locale: enum__locales('_locale').notNull(),
-  id: varchar('id').primaryKey(),
-  type: enum_pages_blocks_flow_example_flow_items_segments_type('type').notNull().default("text"),
-  value: varchar('value').notNull(),
-}, (columns) => [
-    index('pages_blocks_flow_example_flow_items_segments_order_idx').on(columns._order), index('pages_blocks_flow_example_flow_items_segments_parent_id_idx').on(columns._parentID), index('pages_blocks_flow_example_flow_items_segments_locale_idx').on(columns._locale), foreignKey({
-      columns: [columns['_parentID']],
-      foreignColumns: [pages_blocks_flow_example_flow_items.id],
-      name: 'pages_blocks_flow_example_flow_items_segments_parent_id_fk'
-    }).onDelete('cascade'),
-]
-)
-
-
-export const pages_blocks_flow_example_flow_items = pgTable('pages_blocks_flow_example_flow_items', {
-  _order: integer('_order').notNull(),
-  _parentID: varchar('_parent_id').notNull(),
-  _locale: enum__locales('_locale').notNull(),
-  id: varchar('id').primaryKey(),
-  icon: varchar('icon').notNull(),
-  color: enum_pages_blocks_flow_example_flow_items_color('color').notNull().default("brand"),
-  outline: boolean('outline').default(true),
-}, (columns) => [
-    index('pages_blocks_flow_example_flow_items_order_idx').on(columns._order), index('pages_blocks_flow_example_flow_items_parent_id_idx').on(columns._parentID), index('pages_blocks_flow_example_flow_items_locale_idx').on(columns._locale), foreignKey({
-      columns: [columns['_parentID']],
-      foreignColumns: [pages_blocks_flow_example.id],
-      name: 'pages_blocks_flow_example_flow_items_parent_id_fk'
-    }).onDelete('cascade'),
-]
-)
-
-
 export const pages_blocks_flow_example = pgTable('pages_blocks_flow_example', {
   _order: integer('_order').notNull(),
   _parentID: integer('_parent_id').notNull(),
@@ -1260,8 +1241,7 @@ export const pages_blocks_flow_example = pgTable('pages_blocks_flow_example', {
   contentHeading: varchar('content_heading'),
   contentDescription: varchar('content_description'),
   flowLayout: enum_pages_blocks_flow_example_flow_layout('flow_layout').notNull().default("left"),
-  flow_trigger_icon: varchar('flow_trigger_icon').notNull(),
-  flow_trigger_name: varchar('flow_trigger_name').notNull(),
+  playgroundUrl: varchar('playground_url'),
   showBorder: boolean('show_border').default(false),
   blockName: varchar('block_name'),
 }, (columns) => [
@@ -3005,34 +2985,12 @@ export const relations_pages_blocks_stats = relations(pages_blocks_stats, ({ one
             relationName: 'items',
     }),
       }))
-export const relations_pages_blocks_flow_example_flow_items_segments = relations(pages_blocks_flow_example_flow_items_segments, ({ one }) => ({
-  _parentID: one(pages_blocks_flow_example_flow_items, {
-    
-    fields: [pages_blocks_flow_example_flow_items_segments._parentID],
-    references: [pages_blocks_flow_example_flow_items.id],
-    relationName: 'segments',
-    }),
-      }))
-export const relations_pages_blocks_flow_example_flow_items = relations(pages_blocks_flow_example_flow_items, ({ one, many }) => ({
-  _parentID: one(pages_blocks_flow_example, {
-    
-    fields: [pages_blocks_flow_example_flow_items._parentID],
-    references: [pages_blocks_flow_example.id],
-    relationName: 'flow_items',
-    }),
-    segments: many(pages_blocks_flow_example_flow_items_segments, {
-            relationName: 'segments',
-    }),
-      }))
-export const relations_pages_blocks_flow_example = relations(pages_blocks_flow_example, ({ one, many }) => ({
+export const relations_pages_blocks_flow_example = relations(pages_blocks_flow_example, ({ one }) => ({
   _parentID: one(pages, {
     
     fields: [pages_blocks_flow_example._parentID],
     references: [pages.id],
     relationName: '_blocks_flowExample',
-    }),
-    flow_items: many(pages_blocks_flow_example_flow_items, {
-            relationName: 'flow_items',
     }),
       }))
 export const relations_pages_blocks_subscription_configurator_feature_overview = relations(pages_blocks_subscription_configurator_feature_overview, ({ one }) => ({
@@ -3803,33 +3761,37 @@ type DatabaseSchema = {
   enum_pages_blocks_bento_section_layout: typeof enum_pages_blocks_bento_section_layout
   enum_pages_blocks_bento_variant: typeof enum_pages_blocks_bento_variant
   enum_pages_blocks_offset_cards_cards_mask: typeof enum_pages_blocks_offset_cards_cards_mask
+  enum_pages_blocks_offset_cards_cards_media_type: typeof enum_pages_blocks_offset_cards_cards_media_type
   enum_pages_blocks_offset_cards_section_layout: typeof enum_pages_blocks_offset_cards_section_layout
   enum_pages_blocks_offset_cards_card_placement: typeof enum_pages_blocks_offset_cards_card_placement
   enum_pages_blocks_install_language: typeof enum_pages_blocks_install_language
+  enum_pages_blocks_swipe_cards_cards_media_type: typeof enum_pages_blocks_swipe_cards_cards_media_type
   enum_pages_blocks_faq_section_layout: typeof enum_pages_blocks_faq_section_layout
   enum_pages_blocks_cta_image_buttons_variant: typeof enum_pages_blocks_cta_image_buttons_variant
   enum_pages_blocks_cta_image_image_mask: typeof enum_pages_blocks_cta_image_image_mask
+  enum_pages_blocks_cta_image_media_type: typeof enum_pages_blocks_cta_image_media_type
   enum_pages_blocks_blog_preview_section_layout: typeof enum_pages_blocks_blog_preview_section_layout
   enum_pages_blocks_action_hero_buttons_variant: typeof enum_pages_blocks_action_hero_buttons_variant
   enum_pages_blocks_action_functions_section_layout: typeof enum_pages_blocks_action_functions_section_layout
   enum_pages_blocks_action_events_section_layout: typeof enum_pages_blocks_action_events_section_layout
   enum_pages_blocks_action_references_section_layout: typeof enum_pages_blocks_action_references_section_layout
   enum_pages_blocks_action_list_section_layout: typeof enum_pages_blocks_action_list_section_layout
+  enum_pages_blocks_card_row_cards_media_type: typeof enum_pages_blocks_card_row_cards_media_type
   enum_pages_blocks_card_row_section_layout: typeof enum_pages_blocks_card_row_section_layout
   enum_pages_blocks_roadmap_section_layout: typeof enum_pages_blocks_roadmap_section_layout
   enum_pages_blocks_scroll_cards_items_section_layout: typeof enum_pages_blocks_scroll_cards_items_section_layout
   enum_pages_blocks_scroll_cards_items_gradient: typeof enum_pages_blocks_scroll_cards_items_gradient
   enum_pages_blocks_scroll_cards_items_gradient_direction: typeof enum_pages_blocks_scroll_cards_items_gradient_direction
+  enum_pages_blocks_scroll_cards_items_media_type: typeof enum_pages_blocks_scroll_cards_items_media_type
   enum_pages_blocks_standalone_card_section_layout: typeof enum_pages_blocks_standalone_card_section_layout
   enum_pages_blocks_standalone_card_gradient: typeof enum_pages_blocks_standalone_card_gradient
   enum_pages_blocks_standalone_card_gradient_direction: typeof enum_pages_blocks_standalone_card_gradient_direction
+  enum_pages_blocks_standalone_card_media_type: typeof enum_pages_blocks_standalone_card_media_type
   enum_pages_blocks_video_source_type: typeof enum_pages_blocks_video_source_type
   enum_pages_blocks_widehero_mask: typeof enum_pages_blocks_widehero_mask
   enum_pages_blocks_widehero_buttons_variant: typeof enum_pages_blocks_widehero_buttons_variant
   enum_pages_blocks_list_feature_section_layout: typeof enum_pages_blocks_list_feature_section_layout
   enum_pages_blocks_stats_section_layout: typeof enum_pages_blocks_stats_section_layout
-  enum_pages_blocks_flow_example_flow_items_segments_type: typeof enum_pages_blocks_flow_example_flow_items_segments_type
-  enum_pages_blocks_flow_example_flow_items_color: typeof enum_pages_blocks_flow_example_flow_items_color
   enum_pages_blocks_flow_example_section_layout: typeof enum_pages_blocks_flow_example_section_layout
   enum_pages_blocks_flow_example_flow_layout: typeof enum_pages_blocks_flow_example_flow_layout
   enum_pages_blocks_subscription_configurator_buttons_variant: typeof enum_pages_blocks_subscription_configurator_buttons_variant
@@ -3919,8 +3881,6 @@ type DatabaseSchema = {
   pages_blocks_list_feature: typeof pages_blocks_list_feature
   pages_blocks_stats_items: typeof pages_blocks_stats_items
   pages_blocks_stats: typeof pages_blocks_stats
-  pages_blocks_flow_example_flow_items_segments: typeof pages_blocks_flow_example_flow_items_segments
-  pages_blocks_flow_example_flow_items: typeof pages_blocks_flow_example_flow_items
   pages_blocks_flow_example: typeof pages_blocks_flow_example
   pages_blocks_subscription_configurator_feature_overview: typeof pages_blocks_subscription_configurator_feature_overview
   pages_blocks_subscription_configurator_buttons: typeof pages_blocks_subscription_configurator_buttons
@@ -4035,8 +3995,6 @@ type DatabaseSchema = {
   relations_pages_blocks_list_feature: typeof relations_pages_blocks_list_feature
   relations_pages_blocks_stats_items: typeof relations_pages_blocks_stats_items
   relations_pages_blocks_stats: typeof relations_pages_blocks_stats
-  relations_pages_blocks_flow_example_flow_items_segments: typeof relations_pages_blocks_flow_example_flow_items_segments
-  relations_pages_blocks_flow_example_flow_items: typeof relations_pages_blocks_flow_example_flow_items
   relations_pages_blocks_flow_example: typeof relations_pages_blocks_flow_example
   relations_pages_blocks_subscription_configurator_feature_overview: typeof relations_pages_blocks_subscription_configurator_feature_overview
   relations_pages_blocks_subscription_configurator_buttons: typeof relations_pages_blocks_subscription_configurator_buttons
