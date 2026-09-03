@@ -56,7 +56,7 @@
         "react-player": "^3.4.0",
         "sanitize-html": "^2.17.7",
         "sass": "^1.103.1",
-        "sharp": "^0.35.3",
+        "sharp": "^0.35.4",
         "shiki": "^4.4.3",
         "tailwind-merge": "^3.6.0",
         "web-haptics": "^0.0.6"
