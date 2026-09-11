@@ -93,3 +93,13 @@ test("clears the contact draft once the checkout settled", () => {
         null
     )
 })
+
+test("preserves contact details before a customer exists", () => {
+    const searchParams = new URLSearchParams("plan=pro")
+    saveCheckoutContactDraft({ billingAddress, customerId: null, email: "ada@example.com", searchParams, stage: "billingAddress" })
+    const restored = readCheckoutContactDraft(searchParams)
+    assert.ok(restored)
+    assert.equal(restored.customerId, null)
+    assert.deepEqual(restored.billingAddress, billingAddress)
+    assert.equal(restored.email, "ada@example.com")
+})

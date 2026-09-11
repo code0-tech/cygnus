@@ -9,7 +9,7 @@ export interface CheckoutContactDraft {
     billingAddress: StripeCheckoutContact | null
     billingAddressComplete: boolean
     configuration: string
-    customerId: string
+    customerId: string | null
     email: string | null
     emailComplete: boolean
     emailSyncedToStripe: boolean
@@ -64,7 +64,7 @@ export function saveCheckoutContactDraft({
 }: {
     billingAddress: StripeCheckoutContact | null
     billingAddressComplete?: boolean
-    customerId: string
+    customerId: string | null
     email: string | null
     emailComplete?: boolean
     emailSyncedToStripe?: boolean
@@ -102,7 +102,7 @@ export function readCheckoutContactDraft(searchParams: URLSearchParams): Checkou
         }
         const draft = value as Record<string, unknown>
         if (
-            typeof draft.customerId !== "string" ||
+            !optionalString(draft.customerId) ||
             draft.configuration !== getCheckoutContactDraftConfiguration(searchParams) ||
             typeof draft.expiresAt !== "number" ||
             draft.expiresAt <= Date.now() ||

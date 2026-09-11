@@ -195,6 +195,7 @@ test("customer creation requires a Crater session", async () => {
                 customerType: "personal",
                 email: "person@example.com",
                 name: "Example Person",
+                    address: { country: "DE" },
             }),
         })
     )
@@ -789,13 +790,13 @@ test("customer creation sends the CustomerType enum and nothing Crater no longer
                     cookie: "crater_session=c_ust_example",
                     "content-type": "application/json",
                 },
-                body: JSON.stringify({ checkoutKey: "3f456ad7-c94b-4a63-aea2-17bd9dcf65be", customerType: "business", draft: true, reuseExisting: false }),
+                body: JSON.stringify({ checkoutKey: "3f456ad7-c94b-4a63-aea2-17bd9dcf65be", customerType: "business", name: "Example", email: "a@example.com", address: { country: "DE" }, draft: true, reuseExisting: false }),
             })
         )
 
         assert.equal(response.status, 201)
         assert.equal(graphQLServer.requests[0].authorization, "Session c_ust_example")
-        assert.deepEqual(graphQLServer.requests[0].body.variables, { input: { customerType: "BUSINESS" } })
+        assert.deepEqual(graphQLServer.requests[0].body.variables, { input: { customerType: "BUSINESS", name: "Example", email: "a@example.com", address: { country: "DE" } } })
         assert.deepEqual(await response.json(), {
             id: "gid://crater/Customer/1",
             customerType: "business",
@@ -810,7 +811,7 @@ test("customer creation sends the CustomerType enum and nothing Crater no longer
     }
 })
 
-test("customer creation forwards the optional address, phone, and tax ID", async () => {
+test("customer creation forwards the required address and optional phone and tax ID", async () => {
     const graphQLServer = await createGraphQLTestServer([
         {
             data: {
@@ -870,6 +871,11 @@ test("customer creation requires the customer type Crater cannot infer", async (
     const invalidBodies = [
         { email: "billing@example.com", name: "Example GmbH" },
         { customerType: "unknown" },
+        { customerType: "personal" },
+        { customerType: "personal", name: "Ada", email: "ada@example.com" },
+        { customerType: "personal", name: "Ada", email: "ada@example.com", address: {} },
+        { customerType: "personal", name: " ", email: "ada@example.com", address: { country: "DE" } },
+        { customerType: "personal", name: "Ada", email: "invalid", address: { country: "DE" } },
         { address: "1 Main Street", customerType: "business" },
     ]
 
@@ -884,7 +890,7 @@ test("customer creation requires the customer type Crater cannot infer", async (
 
         assert.equal(response.status, 400)
         assert.deepEqual(await response.json(), {
-            error: "customerType is required; address must be an object when provided.",
+            error: "customerType, name, a valid email, and a non-empty address are required.",
         })
     }
 })
@@ -894,7 +900,7 @@ test("customer creation rejects incomplete tax ID fields", async () => {
         new Request("https://example.com/api/crater/customer", {
             method: "POST",
             headers: sessionHeaders,
-            body: JSON.stringify({ customerType: "business", taxIdType: "eu_vat" }),
+            body: JSON.stringify({ customerType: "business", name: "Example", email: "a@example.com", address: { country: "DE" }, taxIdType: "eu_vat" }),
         })
     )
 
@@ -933,6 +939,7 @@ test("customer creation surfaces Crater validation details", async () => {
                     customerType: "personal",
                     email: "person@example.com",
                     name: "Example Person",
+                    address: { country: "DE" },
                 }),
             })
         )
@@ -1200,6 +1207,7 @@ test("maps login, customer creation, and customer updates to Crater GraphQL inpu
                     email: "billing@example.com",
                     name: "Example GmbH",
                     phone: "+49 123",
+                    address: { country: "DE" },
                     taxIdType: "eu_vat",
                     taxIdValue: "DE123456789",
                 }),
@@ -1247,6 +1255,7 @@ test("maps login, customer creation, and customer updates to Crater GraphQL inpu
                 email: "billing@example.com",
                 name: "Example GmbH",
                 phone: "+49 123",
+                    address: { country: "DE" },
                 taxIdType: "eu_vat",
                 taxIdValue: "DE123456789",
             },

@@ -1,3 +1,4 @@
+import type { StripeCheckoutContact } from "@stripe/stripe-js"
 import type { CraterCustomerType } from "@/lib/checkout/craterCustomer"
 import type { AppLocale } from "@/lib/i18n"
 
@@ -102,11 +103,12 @@ export async function getCheckoutCustomers() {
     return customers
 }
 
-export async function createCheckoutCustomer({ customerType }: { customerType: CraterCustomerType }) {
+export async function createCheckoutCustomer({ customerType, email, billingAddress }: { customerType: CraterCustomerType; email: string; billingAddress: StripeCheckoutContact }) {
+    const { postal_code, ...address } = billingAddress.address
     const customerResponse = await fetch("/api/crater/customer", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ customerType }),
+        body: JSON.stringify({ customerType, email, name: billingAddress.name, address: { ...address, postalCode: postal_code } }),
         credentials: "same-origin",
     })
     if (!customerResponse.ok) throw await createCheckoutSubmissionError(customerResponse, "Failed to create the billing customer.", "customer")
