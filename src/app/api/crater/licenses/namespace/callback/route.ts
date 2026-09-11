@@ -12,7 +12,12 @@ export const runtime = "nodejs"
 
 type LinkLicenseNamespaceData = Pick<Mutation, "licensesLinkNamespace">
 
-const LINK_LICENSE_NAMESPACE: TypedDocumentNode<LinkLicenseNamespaceData, MutationLicensesLinkNamespaceArgs> = gql`
+// NamespaceID accepts opaque Sagittarius identifiers; the package currently maps it to a Crater global ID.
+type LinkLicenseNamespaceVariables = {
+    input: Omit<MutationLicensesLinkNamespaceArgs["input"], "namespaceId"> & { namespaceId: string }
+}
+
+const LINK_LICENSE_NAMESPACE: TypedDocumentNode<LinkLicenseNamespaceData, LinkLicenseNamespaceVariables> = gql`
     ${CRATER_ERROR_FIELDS}
     mutation LicensesLinkNamespace($input: LicensesLinkNamespaceInput!) {
         licensesLinkNamespace(input: $input) {

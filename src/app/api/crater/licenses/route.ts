@@ -361,8 +361,7 @@ function mapPendingUpdate(pendingUpdate: SubscriptionPendingUpdate | null | unde
     }
 }
 
-// Subscription.paymentMethodId is not in the published Crater types yet.
-function mapSubscriptionFields(subscription: (Subscription & { paymentMethodId?: string | null }) | null | undefined): Partial<LicenseDashboardLicense> {
+function mapSubscriptionFields(subscription: Subscription | null | undefined): Partial<LicenseDashboardLicense> {
     if (!subscription?.id) return {}
 
     return {

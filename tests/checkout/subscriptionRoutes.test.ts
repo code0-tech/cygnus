@@ -113,7 +113,7 @@ test("upgrades a subscription to a higher plan", async () => {
             assert.equal(response.status, 200)
             assert.equal(graphQLServer.requests[0].authorization, "Session c_ust_example")
             assert.equal(graphQLServer.requests[0].body.operationName, "SubscriptionsUpdate")
-            assert.deepEqual(graphQLServer.requests[0].body.variables, { input: { id: subscriptionId, plan: "max" } })
+            assert.deepEqual(graphQLServer.requests[0].body.variables, { input: { id: subscriptionId, plan: "MAX" } })
             assert.deepEqual(await response.json(), {
                 aiTokens: null,
                 cancelAt: null,
@@ -168,7 +168,7 @@ test("increases custom plan quantities", async () => {
             )
 
             assert.equal(response.status, 200)
-            assert.deepEqual(graphQLServer.requests[0].body.variables, { input: { id: subscriptionId, plan: "custom", aiTokens: 500_000, workflowExecutions: 2_000 } })
+            assert.deepEqual(graphQLServer.requests[0].body.variables, { input: { id: subscriptionId, plan: "CUSTOM", aiTokens: 500_000, workflowExecutions: 2_000 } })
         }
     )
 })
@@ -309,4 +309,23 @@ test("resume requires a valid subscription id", async () => {
     )
 
     assert.equal(response.status, 400)
+})
+
+test("subscription changes reject unknown plans before calling Crater", async () => {
+    for (const [handler, method] of [[updateSubscription, "PATCH"], [previewSubscriptionUpdate, "POST"]] as const) {
+        const response = await handler(new Request("https://example.com/api/crater/subscriptions", {
+            method, headers: sessionHeaders, body: JSON.stringify({ id: subscriptionId, plan: "enterprise" }),
+        }))
+        assert.equal(response.status, 400)
+        assert.deepEqual(await response.json(), { error: "plan must be pro, max, or custom." })
+    }
+})
+
+test("subscription preview sends the generated plan enum", async () => {
+    await withGraphQLServer([{ data: { subscriptionsPreviewUpdate: { errors: [], preview: { plan: "PRO" } } } }], async (server) => {
+        await previewSubscriptionUpdate(new Request("https://example.com/api/crater/subscriptions/preview", {
+            method: "POST", headers: sessionHeaders, body: JSON.stringify({ id: subscriptionId, plan: "pro" }),
+        }))
+        assert.deepEqual(server.requests[0].body.variables, { input: { id: subscriptionId, plan: "PRO" } })
+    })
 })

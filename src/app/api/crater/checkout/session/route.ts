@@ -9,27 +9,21 @@ import {
     requireCraterSession,
     type JsonObject,
 } from "@/lib/checkout/craterApi"
-import { toCraterPaymentPeriod } from "@/lib/checkout/craterCheckout"
+import { toCraterPaymentPeriod, toCraterPlan } from "@/lib/checkout/craterCheckout"
 import { resolveSubscriptionSelection } from "@/lib/subscriptionConfigurator"
 import { resolveSiteUrl } from "@/lib/siteConfig"
 import { DEFAULT_LOCALE, isSupportedLocale } from "@/lib/i18n"
 import { enforceRateLimit } from "@/lib/security/rateLimiter"
-import type { Mutation, MutationCheckoutCreateSessionArgs, Scalars } from "@code0-tech/crater-graphql-types"
+import type { DeploymentType, Mutation, MutationCheckoutCreateSessionArgs, Scalars } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 
 export const runtime = "nodejs"
 
 type CheckoutCreateSessionData = Pick<Mutation, "checkoutCreateSession">
 
-// The published Crater types still describe the retired checkout input.
-// Keep this input aligned with Crater's current CreateSession mutation.
+// NamespaceID is opaque in Crater (Types::NamespaceIdType); the package incorrectly maps it to a Crater global ID.
 type CheckoutCreateSessionVariables = {
-    input: Omit<MutationCheckoutCreateSessionArgs["input"], "customCheckoutConfigurationId" | "customerId" | "deploymentType" | "plan" | "namespaceId"> & {
-        customerId?: Scalars["CustomerID"]["input"]
-        deploymentType: "SELF_HOSTED" | "CLOUD"
-        plan: "PRO" | "MAX" | "CUSTOM"
-        namespaceId?: string
-    }
+    input: Omit<MutationCheckoutCreateSessionArgs["input"], "namespaceId"> & { namespaceId?: string }
 }
 
 function parseQuantity(value: unknown): number | undefined {
@@ -158,8 +152,8 @@ export async function POST(request: Request) {
             ...(customerId && isCustomerId(customerId) ? { customerId } : {}),
             returnUrl: `${returnUrl.toString()}${returnUrl.search ? "&" : "?"}session_id={CHECKOUT_SESSION_ID}`,
             paymentPeriod: toCraterPaymentPeriod(normalizedSelection.paymentPeriod),
-            plan: ({ pro: "PRO", max: "MAX", custom: "CUSTOM" } as const)[normalizedSelection.plan],
-            deploymentType: deploymentType === "cloud" ? "CLOUD" : "SELF_HOSTED",
+            plan: toCraterPlan(normalizedSelection.plan),
+            deploymentType: (deploymentType === "cloud" ? "CLOUD" : "SELF_HOSTED") as DeploymentType,
             ...(namespaceId ? { namespaceId } : {}),
             ...(plan === "custom"
                 ? {
