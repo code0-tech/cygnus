@@ -1,4 +1,4 @@
-export type RateLimitPolicyName = "login" | "checkout" | "tax" | "discount"
+export type RateLimitPolicyName = "login" | "checkout" | "discount"
 
 interface RateLimitPolicyDefinition {
     maxEnvKey: string
@@ -24,12 +24,6 @@ const policyDefinitions = {
         defaultMax: 20,
         windowEnvKey: "CRATER_CHECKOUT_RATE_LIMIT_WINDOW_SECONDS",
         defaultWindowSeconds: 10 * 60,
-    },
-    tax: {
-        maxEnvKey: "CRATER_TAX_RATE_LIMIT_MAX",
-        defaultMax: 60,
-        windowEnvKey: "CRATER_TAX_RATE_LIMIT_WINDOW_SECONDS",
-        defaultWindowSeconds: 60,
     },
     discount: {
         maxEnvKey: "CRATER_DISCOUNT_RATE_LIMIT_MAX",

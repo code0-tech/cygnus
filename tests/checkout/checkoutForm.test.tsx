@@ -415,12 +415,6 @@ test("creates the customer and checkout session on mount before collecting Strip
             })
         }
 
-        if (String(input) === "/api/crater/checkout/tax") {
-            return new Response(JSON.stringify({ amountTotal: 11_900, currency: "eur", taxAmountExclusive: 1_900 }), {
-                status: 200,
-                headers: { "content-type": "application/json" },
-            })
-        }
 
         return new Response(JSON.stringify({ clientSecret: "cs_test_secret", expiresAt: 1_800_000_000, id: "cs_test" }), {
             status: 200,
@@ -432,10 +426,10 @@ test("creates the customer and checkout session on mount before collecting Strip
     assert.ok(screen.getByTestId("checkout-form-skeleton"))
     assert.ok(screen.getByTestId("checkout-customer-select-skeleton"))
 
-    await waitFor(() => assert.equal(requests.length, 4))
+    await waitFor(() => assert.equal(requests.length, 3))
     assert.deepEqual(
         requests.map((request) => request.url),
-        ["/api/crater/customer", "/api/crater/customer", "/api/crater/checkout/session", "/api/crater/checkout/tax"]
+        ["/api/crater/customer", "/api/crater/customer", "/api/crater/checkout/session"]
     )
     assert.equal(new Headers(requests[0].init?.headers).get("authorization"), null)
     assert.equal(requests[0].init?.credentials, "same-origin")
@@ -589,12 +583,6 @@ test("recreates the checkout session for a selected or newly created customer", 
             })
         }
 
-        if (url === "/api/crater/checkout/tax") {
-            return new Response(JSON.stringify({ amountTotal: 11_900, currency: "eur", taxAmountExclusive: 1_900 }), {
-                status: 200,
-                headers: { "content-type": "application/json" },
-            })
-        }
 
         sessionCount += 1
         return new Response(JSON.stringify({ clientSecret: `cs_customer_${sessionCount}`, expiresAt: 1_800_000_000, id: `cs_customer_${sessionCount}` }), {
@@ -658,12 +646,6 @@ test("replaces a checkout session shortly before it expires", async () => {
             })
         }
 
-        if (url === "/api/crater/checkout/tax") {
-            return new Response(JSON.stringify({ amountTotal: 11_900, currency: "eur", taxAmountExclusive: 1_900 }), {
-                status: 200,
-                headers: { "content-type": "application/json" },
-            })
-        }
 
         checkoutSessionCount += 1
         return new Response(
@@ -698,12 +680,6 @@ test("replaces an inactive Stripe checkout session only once", async () => {
             })
         }
 
-        if (url === "/api/crater/checkout/tax") {
-            return new Response(JSON.stringify({ amountTotal: 11_900, currency: "eur", taxAmountExclusive: 1_900 }), {
-                status: 200,
-                headers: { "content-type": "application/json" },
-            })
-        }
 
         checkoutSessionCount += 1
         return new Response(JSON.stringify({ clientSecret: `cs_inactive_${checkoutSessionCount}`, expiresAt: 1_800_000_000, id: `cs_inactive_${checkoutSessionCount}` }), {
@@ -733,12 +709,6 @@ test("recovers once when a newly created Stripe checkout session cannot be loade
             })
         }
 
-        if (url === "/api/crater/checkout/tax") {
-            return new Response(JSON.stringify({ amountTotal: 11_900, currency: "eur", taxAmountExclusive: 1_900 }), {
-                status: 200,
-                headers: { "content-type": "application/json" },
-            })
-        }
 
         checkoutSessionCount += 1
         return new Response(JSON.stringify({ clientSecret: `cs_recover_${checkoutSessionCount}`, expiresAt: 1_800_000_000, id: `cs_recover_${checkoutSessionCount}` }), {
@@ -770,9 +740,7 @@ test("shows only the configured error when Stripe cannot load the checkout sessi
             JSON.stringify(
                 url === "/api/crater/customer"
                     ? { customers: [{ customerType: "personal", email: "ada@example.com", id: "gid://crater/Customer/1", name: "Ada Lovelace" }] }
-                    : url === "/api/crater/checkout/tax"
-                      ? { amountTotal: 11_900, currency: "eur", taxAmountExclusive: 1_900 }
-                      : { clientSecret: `cs_load_error_${checkoutSessionCount}`, expiresAt: 1_800_000_000, id: `cs_load_error_${checkoutSessionCount}` }
+                    : { clientSecret: `cs_load_error_${checkoutSessionCount}`, expiresAt: 1_800_000_000, id: `cs_load_error_${checkoutSessionCount}` }
             ),
             { status: 200, headers: { "content-type": "application/json" } }
         )
@@ -821,9 +789,7 @@ test("renders Stripe's Tax ID Element for a business customer", async () => {
             JSON.stringify(
                 url === "/api/crater/customer"
                     ? { customers: [{ customerType: "business", email: "billing@example.com", id: "gid://crater/Customer/2", name: "Code0 GmbH" }] }
-                    : url === "/api/crater/checkout/tax"
-                      ? { amountTotal: 11_900, currency: "eur", taxAmountExclusive: 1_900 }
-                      : { clientSecret: "cs_test_business_secret", expiresAt: 1_800_000_000, id: "cs_test_business" }
+                    : { clientSecret: "cs_test_business_secret", expiresAt: 1_800_000_000, id: "cs_test_business" }
             ),
             { status: 200, headers: { "content-type": "application/json" } }
         )
@@ -831,7 +797,7 @@ test("renders Stripe's Tax ID Element for a business customer", async () => {
     const user = userEvent.setup()
     render(<CheckoutForm content={content} errors={errors} locale="en" />)
 
-    await waitFor(() => assert.equal(requests.length, 3))
+    await waitFor(() => assert.equal(requests.length, 2))
     assert.deepEqual(JSON.parse(String(requests[1].init?.body)), {
         customerId: "gid://crater/Customer/2",
         customerType: "b2b",
@@ -875,12 +841,6 @@ test("does not write a draft customer email again after restoring the payment st
         }
         if (url === "/api/crater/customer") {
             return new Response(JSON.stringify({ customerType: "personal", email: null, id: "gid://crater/Customer/1", name: null }), {
-                status: 200,
-                headers: { "content-type": "application/json" },
-            })
-        }
-        if (url === "/api/crater/checkout/tax") {
-            return new Response(JSON.stringify({ amountTotal: 10_710, currency: "eur", taxAmountExclusive: 1_710 }), {
                 status: 200,
                 headers: { "content-type": "application/json" },
             })
@@ -934,12 +894,6 @@ test("applies a promotion code inside the active Stripe session without reloadin
             })
         }
 
-        if (url === "/api/crater/checkout/tax") {
-            return new Response(JSON.stringify({ amountTotal: 11_900, currency: "eur", taxAmountExclusive: 1_900 }), {
-                status: 200,
-                headers: { "content-type": "application/json" },
-            })
-        }
 
         checkoutSessionCount += 1
         return new Response(JSON.stringify({ clientSecret: `cs_test_secret_${checkoutSessionCount}`, expiresAt: 1_800_000_000, id: `cs_test_${checkoutSessionCount}` }), {
@@ -978,7 +932,7 @@ test("applies a promotion code inside the active Stripe session without reloadin
             <PromotionCodeHarness />
         </CheckoutFormProvider>
     )
-    await waitFor(() => assert.equal(requests.length, 3))
+    await waitFor(() => assert.equal(requests.length, 2))
     assert.ok(screen.getByText("cs_test_secret_1"))
 
     await userEvent.setup().click(screen.getByRole("button", { name: "Apply SAVE10" }))

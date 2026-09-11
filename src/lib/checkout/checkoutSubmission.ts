@@ -2,7 +2,7 @@ import type { CraterCustomerType } from "@/lib/checkout/craterCustomer"
 import type { AppLocale } from "@/lib/i18n"
 
 type CheckoutErrorBody = { details?: unknown; error?: unknown; errorCode?: unknown }
-export type CheckoutSubmissionErrorKind = "customer" | "session" | "tax"
+export type CheckoutSubmissionErrorKind = "customer" | "session"
 
 export class CheckoutSubmissionError extends Error {
     constructor(
@@ -133,34 +133,4 @@ export async function createCheckoutSession({ customerId, locale, searchParams }
         expiresAt: "expiresAt" in checkout && typeof checkout.expiresAt === "number" ? checkout.expiresAt : null,
         id: "id" in checkout && typeof checkout.id === "string" ? checkout.id : null,
     } satisfies CheckoutSessionData
-}
-
-export async function calculateCheckoutTax({ searchParams }: { searchParams: URLSearchParams }) {
-    const taxResponse = await fetch("/api/crater/checkout/tax", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(Object.fromEntries(searchParams.entries())),
-        credentials: "same-origin",
-    })
-    if (!taxResponse.ok) throw await createCheckoutSubmissionError(taxResponse, "Failed to calculate checkout tax.", "tax")
-
-    const taxQuote: unknown = await taxResponse.json()
-    if (
-        !taxQuote ||
-        typeof taxQuote !== "object" ||
-        !("amountTotal" in taxQuote) ||
-        typeof taxQuote.amountTotal !== "number" ||
-        !("currency" in taxQuote) ||
-        typeof taxQuote.currency !== "string" ||
-        !("taxAmountExclusive" in taxQuote) ||
-        typeof taxQuote.taxAmountExclusive !== "number"
-    ) {
-        throw new CheckoutSubmissionError("tax", null, "Crater returned an invalid tax quote.")
-    }
-
-    return {
-        amountTotal: taxQuote.amountTotal,
-        currency: taxQuote.currency,
-        taxAmountExclusive: taxQuote.taxAmountExclusive,
-    } satisfies CheckoutTaxQuoteData
 }

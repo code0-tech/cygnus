@@ -33,10 +33,10 @@ test("builds route and session scoped keys without exposing tokens or addresses"
         },
     })
     const checkoutKey = createRateLimitKey("checkout", request)
-    const taxKey = createRateLimitKey("tax", request)
+    const discountKey = createRateLimitKey("discount", request)
 
     assert.match(checkoutKey, /^checkout:session:[A-Za-z0-9_-]+:network:[A-Za-z0-9_-]+$/)
-    assert.notEqual(checkoutKey, taxKey)
+    assert.notEqual(checkoutKey, discountKey)
     assert.doesNotMatch(checkoutKey, /secret-session-token|203\.0\.113\.10/)
 })
 
