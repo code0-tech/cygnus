@@ -11,8 +11,7 @@ import { GET as getLicenseDashboard } from "../../src/app/api/crater/licenses/ro
 import { GET as accessLicenseDashboard } from "../../src/app/api/crater/licenses/access/route"
 import { GET as selectLicenseNamespace } from "../../src/app/api/crater/licenses/namespace/callback/route"
 import { GET as getCheckoutLicenseStatus } from "../../src/app/api/crater/checkout/status/route"
-import { GET as getSubscriptionPaymentMethod } from "../../src/app/api/crater/subscriptions/payment-method/route"
-import { GET as getSubscriptionPaymentMethodSetupStatus, POST as createSubscriptionPaymentMethodSetup } from "../../src/app/api/crater/subscriptions/payment-method-setup/route"
+import { GET as getSubscriptionPaymentMethod, PATCH as setSubscriptionPaymentMethod } from "../../src/app/api/crater/subscriptions/payment-method/route"
 import { createGraphQLTestServer } from "./graphqlTestServer"
 
 const sessionHeaders = {
@@ -260,25 +259,13 @@ test("returns only the subscription payment method display summary from Crater",
     }
 })
 
-test("subscription payment method setup requires a Crater session", async () => {
-    const response = await createSubscriptionPaymentMethodSetup(
-        new Request("https://example.com/api/crater/subscriptions/payment-method-setup", {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({ subscriptionId: "gid://crater/Subscription/1" }),
-        })
-    )
-
-    assert.equal(response.status, 403)
-})
-
-test("creates a SetupIntent for the selected subscription", async () => {
+test("subscription payment method assignment goes through subscriptionsUpdate", async () => {
     const graphQLServer = await createGraphQLTestServer([
         {
             data: {
-                subscriptionPaymentMethodSetupCreate: {
+                subscriptionsUpdate: {
                     errors: [],
-                    session: { clientSecret: "seti_subscription_secret_test" },
+                    subscription: { id: "gid://crater/Subscription/1", paymentMethodId: "pm_new" },
                 },
             },
         },
@@ -287,19 +274,19 @@ test("creates a SetupIntent for the selected subscription", async () => {
     process.env.CRATER_GRAPHQL_URL = graphQLServer.url
 
     try {
-        const response = await createSubscriptionPaymentMethodSetup(
-            new Request("https://example.com/api/crater/subscriptions/payment-method-setup", {
-                method: "POST",
+        const response = await setSubscriptionPaymentMethod(
+            new Request("https://example.com/api/crater/subscriptions/payment-method", {
+                method: "PATCH",
                 headers: sessionHeaders,
-                body: JSON.stringify({ subscriptionId: "gid://crater/Subscription/1" }),
+                body: JSON.stringify({ subscriptionId: "gid://crater/Subscription/1", paymentMethodId: "pm_new" }),
             })
         )
 
-        assert.equal(response.status, 201)
-        assert.deepEqual(await response.json(), { clientSecret: "seti_subscription_secret_test" })
-        assert.equal(graphQLServer.requests[0].body.operationName, "SubscriptionPaymentMethodSetupCreate")
+        assert.equal(response.status, 200)
+        assert.deepEqual(await response.json(), { paymentMethodId: "pm_new" })
+        assert.match(graphQLServer.requests[0].body.query ?? "", /subscriptionsUpdate\(input: \$input\)/)
         assert.deepEqual(graphQLServer.requests[0].body.variables, {
-            input: { subscriptionId: "gid://crater/Subscription/1" },
+            input: { id: "gid://crater/Subscription/1", paymentMethodId: "pm_new" },
         })
     } finally {
         if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
@@ -308,29 +295,18 @@ test("creates a SetupIntent for the selected subscription", async () => {
     }
 })
 
-test("returns the verified subscription payment method setup status", async () => {
-    const graphQLServer = await createGraphQLTestServer([{ data: { subscriptionPaymentMethodSetupStatus: "READY" } }])
-    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
-    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
-
-    try {
-        const response = await getSubscriptionPaymentMethodSetupStatus(
-            new Request("https://example.com/api/crater/subscriptions/payment-method-setup?subscriptionId=gid%3A%2F%2Fcrater%2FSubscription%2F1&setupIntentId=seti_example", {
+test("subscription payment method assignment requires a subscription and a payment method", async () => {
+    for (const body of [{ paymentMethodId: "pm_new" }, { subscriptionId: "gid://crater/Subscription/1" }, { subscriptionId: "Subscription/1", paymentMethodId: "pm_new" }]) {
+        const response = await setSubscriptionPaymentMethod(
+            new Request("https://example.com/api/crater/subscriptions/payment-method", {
+                method: "PATCH",
                 headers: sessionHeaders,
+                body: JSON.stringify(body),
             })
         )
 
-        assert.equal(response.status, 200)
-        assert.deepEqual(await response.json(), { status: "ready" })
-        assert.equal(graphQLServer.requests[0].body.operationName, "SubscriptionPaymentMethodSetupStatus")
-        assert.deepEqual(graphQLServer.requests[0].body.variables, {
-            setupIntentId: "seti_example",
-            subscriptionId: "gid://crater/Subscription/1",
-        })
-    } finally {
-        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
-        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
-        await graphQLServer.close()
+        assert.equal(response.status, 400)
+        assert.deepEqual(await response.json(), { error: "A valid Crater subscription id and payment method id are required." })
     }
 })
 

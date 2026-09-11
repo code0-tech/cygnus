@@ -377,7 +377,7 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
                             content={content}
                             errors={errors}
                             onSuccess={paymentMethodAdded}
-                            owner={{ customerId: customer.id, type: "customer" }}
+                            owner={{ customerId: customer.id }}
                             returnPath={`/${locale}/licenses/customer/${encodeURIComponent(customer.id)}/edit`}
                             triggerLabel={content.editor.addPaymentMethodLabel}
                         />

@@ -58,7 +58,7 @@ test("keeps the payment method UI pending until Crater confirms webhook readines
             onSuccess={() => {
                 successCalls += 1
             }}
-            owner={{ subscriptionId: "gid://crater/Subscription/8", type: "subscription" }}
+            owner={{ customerId: "gid://crater/Customer/8" }}
             retryLabel="Try again"
             setupIntentId="seti_example"
         />

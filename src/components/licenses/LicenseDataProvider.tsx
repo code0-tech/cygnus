@@ -30,6 +30,7 @@ interface LicenseDataContextValue extends LicenseDashboardData {
             cancelAt?: string | null
             canceledAt?: string | null
             namespaceId?: string
+            paymentMethodId?: string
             paymentPeriod?: string
             pendingUpdate?: LicenseDashboardPendingUpdate | null
             plan?: string

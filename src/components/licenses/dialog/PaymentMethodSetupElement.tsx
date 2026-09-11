@@ -49,11 +49,13 @@ const appearance = {
     },
 } satisfies Appearance
 
-export type PaymentMethodSetupOwner = { customerId: string; type: "customer" } | { subscriptionId: string; type: "subscription" }
+// Crater retired the subscription-level SetupIntent: a payment method is always collected for the
+// customer, and a subscription is then pointed at one it already has through subscriptionsUpdate.
+export type PaymentMethodSetupOwner = { customerId: string }
 
 function paymentMethodSetupStatusUrl(owner: PaymentMethodSetupOwner, setupIntentId: string) {
-    const statusUrl = new URL(owner.type === "customer" ? "/api/crater/customer/payment-method-setup" : "/api/crater/subscriptions/payment-method-setup", window.location.origin)
-    statusUrl.searchParams.set(owner.type === "customer" ? "customerId" : "subscriptionId", owner.type === "customer" ? owner.customerId : owner.subscriptionId)
+    const statusUrl = new URL("/api/crater/customer/payment-method-setup", window.location.origin)
+    statusUrl.searchParams.set("customerId", owner.customerId)
     statusUrl.searchParams.set("setupIntentId", setupIntentId)
     return statusUrl
 }

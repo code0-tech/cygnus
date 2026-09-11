@@ -51,6 +51,7 @@ export interface LicenseDashboardLicense {
     invoices?: LicenseDashboardInvoice[]
     name: string
     namespaceId?: string
+    paymentMethodId?: string
     paymentPeriod?: string
     pendingUpdate?: LicenseDashboardPendingUpdate
     plan?: string
