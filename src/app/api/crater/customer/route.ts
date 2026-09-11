@@ -6,6 +6,8 @@ import { gql, type TypedDocumentNode } from "@apollo/client"
 export const runtime = "nodejs"
 
 type CustomersCreateData = Pick<Mutation, "customersCreate">
+type CustomersUpdateVariables = { input: MutationCustomersUpdateArgs["input"] & { paymentMethods?: string[] } }
+
 type CustomersUpdateData = Pick<Mutation, "customersUpdate">
 type CustomersQueryData = Pick<Query, "currentUser">
 type CustomersQueryVariables = { after?: string | null }
@@ -93,7 +95,7 @@ const CUSTOMERS_CREATE: TypedDocumentNode<CustomersCreateData, MutationCustomers
     ${ERROR_FIELDS}
 `
 
-const CUSTOMERS_UPDATE: TypedDocumentNode<CustomersUpdateData, MutationCustomersUpdateArgs> = gql`
+const CUSTOMERS_UPDATE: TypedDocumentNode<CustomersUpdateData, CustomersUpdateVariables> = gql`
     mutation CustomersUpdate($input: CustomersUpdateInput!) {
         customersUpdate(input: $input) {
             customer {
@@ -250,12 +252,16 @@ export async function PATCH(request: Request) {
     const name = nullableString(body?.name)
     const phone = nullableString(body?.phone)
     const address = readUpdateAddress(body?.address)
+    const paymentMethods = body?.paymentMethods
+    if (paymentMethods !== undefined && (!Array.isArray(paymentMethods) || !paymentMethods.every((id) => typeof id === "string" && id.trim().length > 0))) {
+        return craterJson({ error: "paymentMethods must be an array of non-empty payment method IDs." }, 400)
+    }
 
     if (!body || !id || !isCustomerId(id) || email === INVALID_UPDATE_VALUE || name === INVALID_UPDATE_VALUE || phone === INVALID_UPDATE_VALUE || address === INVALID_UPDATE_VALUE) {
         return craterJson({ error: "A valid Crater customer id is required and address must be valid when provided." }, 400)
     }
 
-    if (email === undefined && name === undefined && phone === undefined && address === undefined) {
+    if (email === undefined && name === undefined && phone === undefined && address === undefined && paymentMethods === undefined) {
         return craterJson({ error: "Provide at least one customer field to update." }, 400)
     }
 
@@ -265,6 +271,7 @@ export async function PATCH(request: Request) {
             variables: {
                 input: {
                     id,
+                    ...(paymentMethods !== undefined ? { paymentMethods: paymentMethods as string[] } : {}),
                     ...(address !== undefined ? { address } : {}),
                     ...(email !== undefined ? { email } : {}),
                     ...(name !== undefined ? { name } : {}),
