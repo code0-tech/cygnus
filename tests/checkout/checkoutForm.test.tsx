@@ -731,8 +731,12 @@ test("renders Stripe's Tax ID Element for a business customer", async () => {
     await user.click(screen.getByRole("button", { name: "Continue to payment" }))
 
     assert.ok(await screen.findByTestId("stripe-payment"))
+    assert.equal(screen.queryByTestId("stripe-tax-id"), null)
     assert.deepEqual(stripeEmailUpdates, [])
     assert.equal(screen.queryByRole("button", { name: content.sendOfferLabel }), null)
+    await user.click(screen.getByRole("button", { name: content.backToBillingLabel }))
+    assert.ok(screen.getByTestId("stripe-billing-address"))
+    assert.ok(screen.getByTestId("stripe-tax-id"))
 })
 
 test("does not write a draft customer email again after restoring the payment stage", async () => {

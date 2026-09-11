@@ -651,7 +651,6 @@ function CheckoutPaymentFields({
             ) : (
                 <>
                     <form id={paymentFormId} onSubmit={handleSubmit} className="w-full space-y-4">
-                        {collectTaxId && <TaxIdElement options={{ fields: { businessName: "never" }, visibility: "auto" }} />}
                         <PaymentElement
                             options={{ layout: "tabs", fields: { billingDetails: { name: "never", address: "never" } } }}
                             onLoaderStart={() => {
