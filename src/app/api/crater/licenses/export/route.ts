@@ -12,7 +12,6 @@ const LICENSES_EXPORT: TypedDocumentNode<LicensesExportData, MutationLicensesExp
     ${CRATER_ERROR_FIELDS}
     mutation LicensesExport($input: LicensesExportInput!) {
         licensesExport(input: $input) {
-            fileName
             licenseFile
             errors {
                 ...CraterErrorFields
@@ -21,18 +20,8 @@ const LICENSES_EXPORT: TypedDocumentNode<LicensesExportData, MutationLicensesExp
     }
 `
 
-function safeLicenseFileName(value: string) {
-    const suggestedName = value.split(/[\\/]/).at(-1) ?? value
-    const sanitizedName = suggestedName
-        .normalize("NFKD")
-        .replace(/[^A-Za-z0-9._-]+/g, "-")
-        .replace(/^[.-]+/, "")
-    const fileNameWithoutExtension = sanitizedName
-        .replace(/\.[A-Za-z0-9]+$/, "")
-        .replace(/[.-]+$/, "")
-        .slice(0, 175)
-
-    return `${fileNameWithoutExtension || "code0-license"}.czlc`
+function licenseFileName(id: string) {
+    return `code0-license-${id.split("/").at(-1)}.czlc`
 }
 
 export async function POST(request: Request) {
@@ -55,9 +44,9 @@ export async function POST(request: Request) {
 
         const errorResponse = craterMutationErrorResponse(payload.errors, "Crater could not export the license.")
         if (errorResponse) return errorResponse
-        if (!payload.licenseFile || !payload.fileName) throw new Error("Crater returned an incomplete license export.")
+        if (!payload.licenseFile) throw new Error("Crater returned an incomplete license export.")
 
-        const fileName = safeLicenseFileName(payload.fileName)
+        const fileName = licenseFileName(id)
         return new Response(payload.licenseFile, {
             status: 200,
             headers: {
