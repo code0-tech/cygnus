@@ -43,7 +43,7 @@ The GraphQL API additionally returns a global ID and creation and update timesta
 
 `taxIdType` and `taxIdValue` are optional, including for business customers, because Stripe Checkout can collect a tax ID through its `TaxIdElement`. When one of them is supplied, the other is required as well; a half-filled pair returns `INVALID_CUSTOMER`. A tax ID supplied up front is registered on the Stripe Customer immediately, and one collected during checkout is synced back from the completed session.
 
-`customersCreate` requires `customerType`, `name`, `email`, and a non-empty `address`. `phone` and the tax ID pair remain optional. A supplied email must be well formed. Cygnus collects contact details with an email input and a standalone Stripe Address Element, then creates the customer only when the user continues to the payment form. No customer ID or Checkout Session is needed to collect these details.
+`customersCreate` requires nothing but `customerType`. `name`, `email`, `address`, `phone`, and the tax ID pair are all optional, because the client collects contact and billing details during checkout through Stripe's `ContactDetailsElement` and `BillingAddressElement` and Crater syncs them back from the completed session. A supplied email must still be well formed.
 
 The columns themselves stay nullable, and `email` and `name` are still nullable in the GraphQL `Customer` type. Stripe Checkout collects contact and billing details of its own through `ContactDetailsElement` and `BillingAddressElement`, and Crater syncs those back from the completed session -- a sync that fills fields in, never blanks them out.
 
@@ -436,7 +436,21 @@ const { error } = await stripe.confirmSetup({
 
 `customerPaymentMethodSetupCreate` and the webhook above cover adding a payment method and promoting it to the default. Reading and removing them need no SetupIntent, because they act on payment methods Stripe has already collected and attached, and neither is a root operation of its own: both hang off the customer.
 
-`Customer.paymentMethods` is the list. It carries the Stripe PaymentMethod IDs stored on the customer, not only the current default, and nothing else -- brands, last four digits, and expiry dates are read where they are displayed, through `subscriptionPaymentMethod`. Crater stores none of the list: it comes from `payment_methods.list` on every request. A customer with no Stripe customer has an empty list rather than an error. A Stripe outage is `PAYMENT_METHOD_UNAVAILABLE`, deliberately never an empty list, because the list is what a client sends back to `customersUpdate`.
+`Customer.paymentMethods` is the list. It carries the Stripe PaymentMethod IDs stored on the customer, not only the current default, and nothing else -- brands, last four digits, and expiry dates are read where they are displayed, through `customerPaymentMethod(paymentMethodId)` for any id of the list and through `subscriptionPaymentMethod(subscriptionId)` for the current default of one subscription. Crater stores none of the list: it comes from `payment_methods.list` on every request. A customer with no Stripe customer has an empty list rather than an error. A Stripe outage is `PAYMENT_METHOD_UNAVAILABLE`, deliberately never an empty list, because the list is what a client sends back to `customersUpdate`.
+
+`customerPaymentMethod` describes one of them. It takes an id out of `Customer.paymentMethods` and answers with the same non-sensitive display details as `subscriptionPaymentMethod`, so a client never has to show a raw `pm_...` id:
+
+```graphql
+query {
+    customerPaymentMethod(paymentMethodId: "pm_...") {
+        type
+        brand
+        last4
+        expiresMonth
+        expiresYear
+    }
+}
+```
 
 `customersUpdate` removes them. Its optional `paymentMethods` argument names what the customer **keeps**: every stored payment method absent from the list is detached in Stripe, an id the customer does not have is nothing to act on, and omitting the argument entirely leaves all of them alone. Nothing is ever attached this way; collecting a payment method stays with the SetupIntent flow.
 
@@ -532,7 +546,7 @@ Only keys that have a value are written. A Pro or Max subscription carries no qu
 
 #### The license file
 
-`licensesExport` returns the signed file in `license: String` (formerly `licenseFile`), which is produced by the `code0-license` gem, not a hand-rolled payload, so it is the format the product already knows how to read. `Code0::License.load` verifies it against the matching public key and yields the licensee, the validity window, the restrictions, and the options.
+`licensesExport` returns a file produced by the `code0-license` gem, not a hand-rolled payload, so it is the format the product already knows how to read. `Code0::License.load` verifies it against the matching public key and yields the licensee, the validity window, the restrictions, and the options.
 
 - The file is signed with the RSA private key from `license.private_key`. Without that key the export is refused with `INVALID_LICENSE`; Crater never hands out an unsigned file.
 - `Code0::License.encryption_key` is process-wide state that `export` only reads, so Crater sets it exactly once at boot in an initializer. A malformed key fails the boot rather than degrading to unsigned output.
@@ -901,20 +915,20 @@ Almost all mutations optionally accept `clientMutationId` and return it so the c
 
 | Mutation                           | Key arguments                                                  | Result                                                                                                      |
 | ---------------------------------- | -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `customersCreate`                  | `customerType!`, `name!`, `email!`, `address!`, optional phone and tax ID | Created `Customer`                                                                                          |
+| `customersCreate`                  | `customerType!`, optional contact details, address, and tax ID | Created `Customer`                                                                                          |
 | `customersUpdate`                  | `id!`, optional contact details, address, and `paymentMethods` | Updated `Customer`; stored payment methods the `paymentMethods` list no longer names are detached in Stripe |
 | `customersDelete`                  | `id!`                                                          | Deleted `Customer`                                                                                          |
 | `customerPaymentMethodSetupCreate` | `customerId!`                                                  | Stripe SetupIntent `clientSecret` for collecting a new default payment method                               |
 
-`customersCreate` needs the customer type and billing contact details:
+`customersCreate` needs the customer type; everything else can follow later:
 
 ```graphql
 customersCreate(
   input: {
     customerType: CustomerType!      # PERSONAL or BUSINESS
-    name: String!                    # required
-    email: String!                   # required
-    address: CustomerAddressInput!   # required
+    name: String                     # optional
+    email: String                    # optional
+    address: CustomerAddressInput    # optional
     phone: String                    # optional
     taxIdType: String                # optional, only together with taxIdValue
     taxIdValue: String               # optional, only together with taxIdType
@@ -925,8 +939,8 @@ customersCreate(
 Its behaviour:
 
 - Every call creates a customer. Nothing is reused: a user that already has one and asks for another gets a second, distinct customer with its own Stripe Customer, and the existing one keeps its membership.
-- `customerType`, `name`, `email`, and `address` are non-null arguments. Blank names, malformed emails, and empty addresses are invalid.
-- The inner fields of `CustomerAddressInput` remain optional. Stripe validates the country-specific address requirements in the Address Element before Cygnus creates the customer. Stripe Checkout syncs completed billing details back to Crater.
+- `customerType` is the only non-null argument, so a customer can be created with nothing else at all. A malformed email is `INVALID_CUSTOMER`.
+- `address` is optional, and so are the inner fields of `CustomerAddressInput`. A missing address and an address object with nothing filled in both persist no `CustomerAddress` and send no address to Stripe. Stripe Checkout collects contact details and the billing address through its `ContactDetailsElement` and `BillingAddressElement`, and the completed session syncs them back.
 - There is no checkout-flow argument. The checkout runs for a customer that already exists; see [checkout and Stripe](#checkout-and-stripe).
 
 #### Checkout

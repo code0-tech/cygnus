@@ -29,7 +29,7 @@
         "@c15t/nextjs": "^2.1.0",
         "@c15t/react": "^2.1.0",
         "@c15t/scripts": "^2.1.0",
-        "@code0-tech/crater-graphql-types": "0.0.0-experimental-2840965169-7e0030fb150525136dd9c4a1fb487268b09ec452",
+        "@code0-tech/crater-graphql-types": "0.0.0-experimental-2842003747-96df59aaa4960190aecdfd166d2bdb20dfcb7f0a",
         "@code0-tech/pictor": "^0.14.0",
         "@icons-pack/react-simple-icons": "^13.13.0",
         "@mvriu5/payload-ai": "^1.6.3",

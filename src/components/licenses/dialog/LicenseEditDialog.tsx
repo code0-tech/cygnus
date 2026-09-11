@@ -7,6 +7,7 @@ import { PaymentMethodSetupDialog } from "@/components/licenses/dialog/PaymentMe
 import { ButtonLoader } from "@/components/ui/Loader"
 import type { ErrorsContent, LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
+import { type CustomerPaymentMethodSummary, fetchCustomerPaymentMethods, type PaymentMethodDisplayDetails } from "@/lib/licenses/customerPaymentMethods"
 import { decodeLicenseRouteId } from "@/lib/licenses/licenseRoute"
 import { cn } from "@/lib/utils"
 import { Button, ScrollArea, ScrollAreaScrollbar, ScrollAreaThumb, ScrollAreaViewport, Text } from "@code0-tech/pictor"
@@ -24,14 +25,6 @@ interface LicenseEditDialogProps {
 
 type LicenseEditSection = "license" | "payment"
 
-interface PaymentMethodSummary {
-    brand: string | null
-    expiresMonth: number | null
-    expiresYear: number | null
-    last4: string | null
-    type: string
-}
-
 export function LicenseEditDialog({ content, customerId, errors, licenseId, locale, namespaceHref }: LicenseEditDialogProps) {
     const router = useRouter()
     const searchParams = useSearchParams()
@@ -40,11 +33,11 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
     const resolvedLicenseId = decodeLicenseRouteId(licenseId)
     const license = licenses.find((candidate) => candidate.id === resolvedLicenseId && candidate.customerId === resolvedCustomerId)
     const [section, setSection] = useState<LicenseEditSection>("license")
-    const [paymentMethod, setPaymentMethod] = useState<PaymentMethodSummary | null>(null)
+    const [paymentMethod, setPaymentMethod] = useState<PaymentMethodDisplayDetails | null>(null)
     const [paymentMethodError, setPaymentMethodError] = useState(false)
     const [isLoadingPaymentMethod, setIsLoadingPaymentMethod] = useState(false)
     const [paymentMethodRefreshKey, setPaymentMethodRefreshKey] = useState(0)
-    const [customerPaymentMethods, setCustomerPaymentMethods] = useState<string[] | null>(null)
+    const [customerPaymentMethods, setCustomerPaymentMethods] = useState<CustomerPaymentMethodSummary[] | null>(null)
     const [customerPaymentMethodsError, setCustomerPaymentMethodsError] = useState(false)
     const [isLoadingCustomerPaymentMethods, setIsLoadingCustomerPaymentMethods] = useState(false)
     const [assigningPaymentMethodId, setAssigningPaymentMethodId] = useState<string | null>(null)
@@ -68,7 +61,7 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
             .then(async (response) => {
                 const result: unknown = await response.json()
                 if (!response.ok || !result || typeof result !== "object" || !("paymentMethod" in result)) throw new Error("Invalid payment method response.")
-                return result.paymentMethod as PaymentMethodSummary | null
+                return result.paymentMethod as PaymentMethodDisplayDetails | null
             })
             .then(setPaymentMethod)
             .catch((loadError) => {
@@ -89,17 +82,10 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
         if (section !== "payment" || !license?.customerId) return
 
         const controller = new AbortController()
-        const url = new URL("/api/crater/customer/payment-methods", window.location.origin)
-        url.searchParams.set("customerId", license.customerId)
         setIsLoadingCustomerPaymentMethods(true)
         setCustomerPaymentMethodsError(false)
 
-        void fetch(url, { cache: "no-store", credentials: "same-origin", signal: controller.signal })
-            .then(async (response) => {
-                const result: unknown = await response.json()
-                if (!response.ok || !result || typeof result !== "object" || !("paymentMethods" in result)) throw new Error("Invalid payment methods response.")
-                return result.paymentMethods as string[]
-            })
+        void fetchCustomerPaymentMethods(license.customerId, controller.signal)
             .then(setCustomerPaymentMethods)
             .catch((loadError) => {
                 if (!(loadError instanceof DOMException && loadError.name === "AbortError")) setCustomerPaymentMethodsError(true)
@@ -251,17 +237,17 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
                                     <div className="space-y-3 pr-3">
                                         {customerPaymentMethods.map((method) => (
                                             <CustomerPaymentMethodCard
-                                                key={method}
+                                                key={method.id}
                                                 method={method}
                                                 action={
                                                     <Button
                                                         type="button"
                                                         variant="normal"
                                                         paddingSize="xs"
-                                                        disabled={assigningPaymentMethodId === method || license.paymentMethodId === method}
-                                                        onClick={() => void assignPaymentMethod(method)}
+                                                        disabled={assigningPaymentMethodId === method.id || license.paymentMethodId === method.id}
+                                                        onClick={() => void assignPaymentMethod(method.id)}
                                                     >
-                                                        {assigningPaymentMethodId === method ? (
+                                                        {assigningPaymentMethodId === method.id ? (
                                                             <ButtonLoader label={content.editor.settingPaymentMethodLabel} />
                                                         ) : (
                                                             content.editor.usePaymentMethodLabel

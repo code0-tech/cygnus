@@ -2,6 +2,7 @@ import assert from "node:assert/strict"
 import test from "node:test"
 import { GET as listCustomers, PATCH as updateCustomer, POST as createOrGetCustomer } from "../../src/app/api/crater/customer/route"
 import { GET as getCustomerPaymentMethodSetupStatus, POST as createCustomerPaymentMethodSetup } from "../../src/app/api/crater/customer/payment-method-setup/route"
+import { GET as getCustomerPaymentMethods } from "../../src/app/api/crater/customer/payment-methods/route"
 import { POST as validateDiscount } from "../../src/app/api/crater/checkout/discount/route"
 import { POST as createCheckoutSession } from "../../src/app/api/crater/checkout/session/route"
 import { POST as createSession } from "../../src/app/api/crater/login/route"
@@ -213,6 +214,54 @@ test("payment method setup requires a Crater session", async () => {
     )
 
     assert.equal(response.status, 403)
+})
+
+test("customer payment methods carry the display details Crater resolves for every id", async () => {
+    const graphQLServer = await createGraphQLTestServer([
+        {
+            data: {
+                currentUser: {
+                    customers: {
+                        nodes: [{ id: "gid://crater/Customer/1", paymentMethods: ["pm_card", "pm_unavailable"] }],
+                        pageInfo: { endCursor: null, hasNextPage: false },
+                    },
+                },
+            },
+        },
+        { data: { customerPaymentMethod: { brand: "visa", expiresMonth: 12, expiresYear: 2030, last4: "4242", type: "card" } } },
+        { data: { customerPaymentMethod: null } },
+    ])
+    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
+    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
+
+    try {
+        const response = await getCustomerPaymentMethods(
+            new Request("https://example.com/api/crater/customer/payment-methods?customerId=gid%3A%2F%2Fcrater%2FCustomer%2F1", {
+                headers: sessionHeaders,
+            })
+        )
+
+        assert.equal(response.status, 200)
+        assert.deepEqual(await response.json(), {
+            paymentMethods: [
+                { id: "pm_card", brand: "visa", expiresMonth: 12, expiresYear: 2030, last4: "4242", type: "card" },
+                { id: "pm_unavailable", brand: null, expiresMonth: null, expiresYear: null, last4: null, type: null },
+            ],
+        })
+        assert.equal(response.headers.get("cache-control"), "no-store")
+        assert.deepEqual(
+            graphQLServer.requests.slice(1).map((request) => request.body.operationName),
+            ["CustomerPaymentMethod", "CustomerPaymentMethod"]
+        )
+        assert.deepEqual(
+            graphQLServer.requests.slice(1).map((request) => request.body.variables),
+            [{ paymentMethodId: "pm_card" }, { paymentMethodId: "pm_unavailable" }]
+        )
+    } finally {
+        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
+        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
+        await graphQLServer.close()
+    }
 })
 
 test("subscription payment method summary requires a Crater session", async () => {
