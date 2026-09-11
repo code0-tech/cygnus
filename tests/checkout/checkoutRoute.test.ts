@@ -28,6 +28,46 @@ mock.method(Date, "now", () => 1_800_000_000_000)
 
 const { POST } = await import("../../src/app/api/crater/checkout/session/route")
 
+test("forwards custom quantities unchanged for backend limits and supports the customer's default checkout", async () => {
+    const graphQLServer = await createGraphQLTestServer([{ data: { checkoutCreateSession: { errors: [], session: { clientSecret: "cs_limits", id: "cs_limits" } } } }])
+    const previousUrl = process.env.CRATER_GRAPHQL_URL
+    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
+    try {
+        const response = await POST(
+            new Request("https://example.com/api/crater/checkout/session", {
+                method: "POST",
+                headers: { authorization: "Session limits-test", "content-type": "application/json" },
+                body: JSON.stringify({ plan: "custom", deploymentType: "cloud", namespaceId: "opaque-namespace", aiTokens: 5_000_001 }),
+            })
+        )
+        assert.equal(response.status, 200)
+        const { input } = graphQLServer.requests[0].body.variables as { input: Record<string, unknown> }
+        assert.equal(input.aiTokens, 5_000_001)
+        assert.equal(input.plan, "CUSTOM")
+        assert.equal(input.deploymentType, "CLOUD")
+        assert.equal(input.namespaceId, "opaque-namespace")
+        assert.equal("workflowExecutions" in input, false)
+        assert.equal("customerId" in input, false)
+    } finally {
+        if (previousUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
+        else process.env.CRATER_GRAPHQL_URL = previousUrl
+        await graphQLServer.close()
+    }
+})
+
+test("rejects invalid custom GraphQL quantities and oversized namespace identifiers", async () => {
+    for (const extra of [{ aiTokens: 0 }, { aiTokens: -1 }, { aiTokens: 1.5 }, { aiTokens: 2_147_483_648 }, { aiTokens: {} }, { aiTokens: 1, namespaceId: "ü".repeat(251) }]) {
+        const response = await POST(
+            new Request("https://example.com/api/crater/checkout/session", {
+                method: "POST",
+                headers: { authorization: "Session invalid-limits-test", "content-type": "application/json" },
+                body: JSON.stringify({ plan: "custom", deploymentType: "cloud", ...extra }),
+            })
+        )
+        assert.equal(response.status, 400)
+    }
+})
+
 test("checkout rejects requests without a Crater session", async () => {
     const response = await POST(
         new Request("https://example.com/api/crater/checkout/session", {
@@ -74,7 +114,7 @@ test("checkout requires a deployment type for regular plans", async () => {
 
     assert.equal(response.status, 400)
     assert.deepEqual(await response.json(), {
-        error: "deploymentType must be cloud or self_hosted for a regular checkout.",
+        error: "deploymentType must be cloud or self_hosted for checkout.",
     })
 })
 
@@ -96,7 +136,7 @@ test("checkout rejects unsupported return locales", async () => {
     })
 })
 
-test("checkout rejects malformed custom checkout configuration ids", async () => {
+test("checkout rejects legacy configuration-only requests", async () => {
     const response = await POST(
         new Request("https://example.com/api/crater/checkout/session", {
             method: "POST",
@@ -110,11 +150,11 @@ test("checkout rejects malformed custom checkout configuration ids", async () =>
 
     assert.equal(response.status, 400)
     assert.deepEqual(await response.json(), {
-        error: "customCheckoutConfigurationId must be a valid Crater global ID.",
+        error: "plan is required.",
     })
 })
 
-test("checkout requires exactly one regular plan or custom checkout configuration", async () => {
+test("checkout requires a plan and rejects retired configuration ids", async () => {
     const headers = {
         authorization: "Session c_ust_example",
         "content-type": "application/json",
@@ -141,10 +181,10 @@ test("checkout requires exactly one regular plan or custom checkout configuratio
     assert.equal(missingResponse.status, 400)
     assert.equal(combinedResponse.status, 400)
     assert.deepEqual(await missingResponse.json(), {
-        error: "Provide either plan or customCheckoutConfigurationId.",
+        error: "plan is required.",
     })
     assert.deepEqual(await combinedResponse.json(), {
-        error: "Provide either plan or customCheckoutConfigurationId.",
+        error: "customCheckoutConfigurationId is no longer supported.",
     })
 })
 
@@ -267,9 +307,9 @@ test("accepts quarterly and rejects removed weekly periods even when sent direct
         assert.deepEqual(graphQLServer.requests[0].body.variables, {
             input: {
                 customerId: "gid://crater/Customer/1",
-                deploymentType: "self_hosted",
+                deploymentType: "SELF_HOSTED",
                 paymentPeriod: "QUARTERLY",
-                plan: "pro",
+                plan: "PRO",
                 returnUrl: "https://code0.example/en/checkout/success?plan=pro&customerType=b2b&deploymentType=self_hosted&paymentPeriod=quarterly&session_id={CHECKOUT_SESSION_ID}",
             },
         })
@@ -354,7 +394,8 @@ test("creates regular and custom checkout sessions with the expected Crater inpu
                 },
                 body: JSON.stringify({
                     customerId: "gid://crater/Customer/2",
-                    customCheckoutConfigurationId: "gid://crater/CustomCheckoutConfiguration/4",
+                    plan: "max",
+                    deploymentType: "cloud",
                 }),
             })
         )
@@ -393,9 +434,9 @@ test("creates regular and custom checkout sessions with the expected Crater inpu
         assert.deepEqual(graphQLServer.requests[0].body.variables, {
             input: {
                 customerId: "gid://crater/Customer/1",
-                deploymentType: "self_hosted",
+                deploymentType: "SELF_HOSTED",
                 paymentPeriod: "MONTHLY",
-                plan: "pro",
+                plan: "PRO",
                 returnUrl: "https://code0.example/de/checkout/success?plan=pro&customerType=b2c&deploymentType=self_hosted&paymentPeriod=monthly&session_id={CHECKOUT_SESSION_ID}",
             },
         })
@@ -403,9 +444,10 @@ test("creates regular and custom checkout sessions with the expected Crater inpu
         assert.deepEqual(graphQLServer.requests[1].body.variables, {
             input: {
                 customerId: "gid://crater/Customer/2",
-                customCheckoutConfigurationId: "gid://crater/CustomCheckoutConfiguration/4",
+                plan: "MAX",
+                deploymentType: "CLOUD",
                 paymentPeriod: "MONTHLY",
-                returnUrl: "https://code0.example/en/checkout/success?session_id={CHECKOUT_SESSION_ID}",
+                returnUrl: "https://code0.example/en/checkout/success?plan=max&customerType=b2c&deploymentType=cloud&paymentPeriod=monthly&session_id={CHECKOUT_SESSION_ID}",
             },
         })
         assert.equal(graphQLServer.requests[2].authorization, "Session dynamic-custom-token")
@@ -413,10 +455,10 @@ test("creates regular and custom checkout sessions with the expected Crater inpu
             input: {
                 aiTokens: 30_000,
                 customerId: "gid://crater/Customer/3",
-                deploymentType: "cloud",
+                deploymentType: "CLOUD",
                 namespaceId: "gid://sagittarius/Namespace/1",
                 paymentPeriod: "QUARTERLY",
-                plan: "custom",
+                plan: "CUSTOM",
                 returnUrl:
                     "https://code0.example/en/checkout/success?plan=custom&customerType=b2c&deploymentType=cloud&paymentPeriod=quarterly&aiTokens=30000&workflowExecutions=200&session_id={CHECKOUT_SESSION_ID}",
                 workflowExecutions: 200,
