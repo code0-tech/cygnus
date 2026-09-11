@@ -1,6 +1,7 @@
 import { createApolloClient } from "@/lib/apolloClient"
 import { craterJson, craterTransportErrorResponse, requireCraterSession } from "@/lib/checkout/craterApi"
 import { parseCheckoutSessionId } from "@/lib/checkout/checkoutReturn"
+import { normalizeCraterCustomerType } from "@/lib/checkout/craterCustomer"
 import type { Query, QueryCheckoutCompletionStatusArgs } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 import { CombinedGraphQLErrors } from "@apollo/client/errors"
@@ -87,11 +88,16 @@ export async function GET(request: Request) {
             return craterJson({ error: "Could not check the checkout completion status." }, 502)
         }
 
+        // Crater answers with the CustomerType enum; the success page reads the lowercase value it also
+        // carries in the checkout return URL.
+        const customerType = normalizeCraterCustomerType(status.configuration?.customerType)
+        const configuration = status.configuration ? { ...status.configuration, ...(customerType ? { customerType } : {}) } : null
+
         return craterJson({
             state,
             customerId: status.customerId,
             licenseId: status.licenseId ?? null,
-            configuration: status.configuration ?? null,
+            configuration,
             pricing: status.pricing ?? null,
         })
     } catch (error) {

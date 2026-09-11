@@ -43,7 +43,7 @@ The GraphQL API additionally returns a global ID and creation and update timesta
 
 `taxIdType` and `taxIdValue` are optional, including for business customers, because Stripe Checkout can collect a tax ID through its `TaxIdElement`. When one of them is supplied, the other is required as well; a half-filled pair returns `INVALID_CUSTOMER`. A tax ID supplied up front is registered on the Stripe Customer immediately, and one collected during checkout is synced back from the completed session.
 
-`customersCreate` requires `name`, `email`, and `address`: a customer is created deliberately, with the data a billing customer needs, before any checkout runs for it. Only `phone` and the tax ID pair stay optional. A supplied email must be well formed.
+`customersCreate` requires nothing but `customerType`. `name`, `email`, `address`, `phone`, and the tax ID pair are all optional, because the client collects contact and billing details during checkout through Stripe's `ContactDetailsElement` and `BillingAddressElement` and Crater syncs them back from the completed session. A supplied email must still be well formed.
 
 The columns themselves stay nullable, and `email` and `name` are still nullable in the GraphQL `Customer` type. Stripe Checkout collects contact and billing details of its own through `ContactDetailsElement` and `BillingAddressElement`, and Crater syncs those back from the completed session -- a sync that fills fields in, never blanks them out.
 
@@ -899,22 +899,22 @@ Almost all mutations optionally accept `clientMutationId` and return it so the c
 
 #### Customers
 
-| Mutation                           | Key arguments                                                               | Result                                                                                                      |
-| ---------------------------------- | --------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `customersCreate`                  | `customerType!`, `name!`, `email!`, `address!`, optional `phone` and tax ID | Created `Customer`                                                                                          |
-| `customersUpdate`                  | `id!`, optional contact details, address, and `paymentMethods`              | Updated `Customer`; stored payment methods the `paymentMethods` list no longer names are detached in Stripe |
-| `customersDelete`                  | `id!`                                                                       | Deleted `Customer`                                                                                          |
-| `customerPaymentMethodSetupCreate` | `customerId!`                                                               | Stripe SetupIntent `clientSecret` for collecting a new default payment method                               |
+| Mutation                           | Key arguments                                                  | Result                                                                                                      |
+| ---------------------------------- | -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `customersCreate`                  | `customerType!`, optional contact details, address, and tax ID | Created `Customer`                                                                                          |
+| `customersUpdate`                  | `id!`, optional contact details, address, and `paymentMethods` | Updated `Customer`; stored payment methods the `paymentMethods` list no longer names are detached in Stripe |
+| `customersDelete`                  | `id!`                                                          | Deleted `Customer`                                                                                          |
+| `customerPaymentMethodSetupCreate` | `customerId!`                                                  | Stripe SetupIntent `clientSecret` for collecting a new default payment method                               |
 
-`customersCreate` takes the data a billing customer needs, and the schema enforces it:
+`customersCreate` needs the customer type; everything else can follow later:
 
 ```graphql
 customersCreate(
   input: {
     customerType: CustomerType!      # PERSONAL or BUSINESS
-    name: String!
-    email: String!
-    address: CustomerAddressInput!
+    name: String                     # optional
+    email: String                    # optional
+    address: CustomerAddressInput    # optional
     phone: String                    # optional
     taxIdType: String                # optional, only together with taxIdValue
     taxIdValue: String               # optional, only together with taxIdType
@@ -925,8 +925,8 @@ customersCreate(
 Its behaviour:
 
 - Every call creates a customer. Nothing is reused: a user that already has one and asks for another gets a second, distinct customer with its own Stripe Customer, and the existing one keeps its membership.
-- `name`, `email`, `address`, and `customerType` are non-null in the schema, so a request missing one is rejected before the resolver runs. A malformed email is `INVALID_CUSTOMER`.
-- The inner fields of `CustomerAddressInput` all stay optional. An address object with nothing filled in persists no `CustomerAddress` and sends no address to Stripe.
+- `customerType` is the only non-null argument, so a customer can be created with nothing else at all. A malformed email is `INVALID_CUSTOMER`.
+- `address` is optional, and so are the inner fields of `CustomerAddressInput`. A missing address and an address object with nothing filled in both persist no `CustomerAddress` and send no address to Stripe. Stripe Checkout collects contact details and the billing address through its `ContactDetailsElement` and `BillingAddressElement`, and the completed session syncs them back.
 - There is no checkout-flow argument. The checkout runs for a customer that already exists; see [checkout and Stripe](#checkout-and-stripe).
 
 #### Checkout

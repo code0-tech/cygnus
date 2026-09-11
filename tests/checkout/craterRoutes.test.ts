@@ -466,14 +466,15 @@ test("checkout completion status requires a valid Stripe Checkout Session id", a
 test("checkout completion status is bound to Crater's server-resolved customer, payment, and license", async () => {
     const customerId = "gid://crater/Customer/1"
     const sessionId = "cs_test_checkout123"
-    const configuration = {
+    const craterConfiguration = {
         aiTokens: null,
-        customerType: "business",
+        customerType: "BUSINESS",
         deploymentType: "cloud",
         paymentPeriod: "MONTHLY",
         plan: "pro",
         workflowExecutions: null,
     }
+    const configuration = { ...craterConfiguration, customerType: "business" }
     const pricing = { currency: "eur", discount: 1_000, subtotal: 10_000, tax: 1_710, total: 10_710 }
     const graphQLServer = await createGraphQLTestServer([
         {
@@ -482,7 +483,7 @@ test("checkout completion status is bound to Crater's server-resolved customer, 
                     state: "PAYMENT_PENDING",
                     customerId,
                     licenseId: null,
-                    configuration,
+                    configuration: craterConfiguration,
                     pricing,
                 },
             },
@@ -493,7 +494,7 @@ test("checkout completion status is bound to Crater's server-resolved customer, 
                     state: "READY",
                     customerId,
                     licenseId: "gid://crater/License/2",
-                    configuration,
+                    configuration: craterConfiguration,
                     pricing,
                 },
             },
@@ -638,7 +639,7 @@ test("lists the authenticated user's checkout customers", async () => {
                             {
                                 address: null,
                                 createdAt: "2026-08-12T12:00:00Z",
-                                customerType: "personal",
+                                customerType: "PERSONAL",
                                 email: "ada@example.com",
                                 id: "gid://crater/Customer/1",
                                 name: "Ada Lovelace",
@@ -693,7 +694,7 @@ test("paginates checkout customers with Crater's cursor", async () => {
             data: {
                 currentUser: {
                     customers: {
-                        nodes: [{ customerType: "business", id: "gid://crater/Customer/51" }],
+                        nodes: [{ customerType: "BUSINESS", id: "gid://crater/Customer/51" }],
                         pageInfo: { endCursor: "customer-100", hasNextPage: true },
                     },
                 },
@@ -785,7 +786,7 @@ test("logout keeps the local session available for retry when Crater rejects rev
     }
 })
 
-test("business customer creation allows omitted contact and tax fields", async () => {
+test("customer creation sends the CustomerType enum and nothing Crater no longer accepts", async () => {
     const graphQLServer = await createGraphQLTestServer([
         {
             data: {
@@ -793,7 +794,7 @@ test("business customer creation allows omitted contact and tax fields", async (
                     errors: [],
                     customer: {
                         id: "gid://crater/Customer/1",
-                        customerType: "business",
+                        customerType: "BUSINESS",
                         email: null,
                         name: null,
                     },
@@ -812,13 +813,20 @@ test("business customer creation allows omitted contact and tax fields", async (
                     cookie: "crater_session=c_ust_example",
                     "content-type": "application/json",
                 },
-                body: JSON.stringify({ customerType: "business" }),
+                body: JSON.stringify({ checkoutKey: "3f456ad7-c94b-4a63-aea2-17bd9dcf65be", customerType: "business", draft: true, reuseExisting: false }),
             })
         )
 
         assert.equal(response.status, 201)
         assert.equal(graphQLServer.requests[0].authorization, "Session c_ust_example")
-        assert.deepEqual(graphQLServer.requests[0].body.variables, { input: { customerType: "business" } })
+        assert.deepEqual(graphQLServer.requests[0].body.variables, { input: { customerType: "BUSINESS" } })
+        assert.deepEqual(await response.json(), {
+            id: "gid://crater/Customer/1",
+            customerType: "business",
+            email: null,
+            name: null,
+        })
+        assert.doesNotMatch(graphQLServer.requests[0].body.query ?? "", /status/)
     } finally {
         if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
         else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
@@ -826,7 +834,7 @@ test("business customer creation allows omitted contact and tax fields", async (
     }
 })
 
-test("customer creation forwards the explicit reuseExisting choice", async () => {
+test("customer creation forwards the optional address, phone, and tax ID", async () => {
     const graphQLServer = await createGraphQLTestServer([
         {
             data: {
@@ -834,9 +842,9 @@ test("customer creation forwards the explicit reuseExisting choice", async () =>
                     errors: [],
                     customer: {
                         id: "gid://crater/Customer/2",
-                        customerType: "personal",
-                        email: null,
-                        name: null,
+                        customerType: "PERSONAL",
+                        email: "ada@example.com",
+                        name: "Ada Lovelace",
                     },
                 },
             },
@@ -850,14 +858,31 @@ test("customer creation forwards the explicit reuseExisting choice", async () =>
             new Request("https://example.com/api/crater/customer", {
                 method: "POST",
                 headers: sessionHeaders,
-                body: JSON.stringify({ customerType: "personal", reuseExisting: false }),
+                body: JSON.stringify({
+                    address: { city: "London", country: "GB", line1: "1 Main Street", postalCode: "E1 6AN" },
+                    customerType: "personal",
+                    email: "ada@example.com",
+                    name: "Ada Lovelace",
+                    phone: "+44 20 7946 0958",
+                    taxIdType: "eu_vat",
+                    taxIdValue: "DE123456789",
+                }),
             })
         )
 
         assert.equal(response.status, 201)
         assert.deepEqual(graphQLServer.requests[0].body.variables, {
-            input: { customerType: "personal", reuseExisting: false },
+            input: {
+                address: { city: "London", country: "GB", line1: "1 Main Street", postalCode: "E1 6AN" },
+                customerType: "PERSONAL",
+                email: "ada@example.com",
+                name: "Ada Lovelace",
+                phone: "+44 20 7946 0958",
+                taxIdType: "eu_vat",
+                taxIdValue: "DE123456789",
+            },
         })
+        assert.equal(((await response.json()) as { customerType: string }).customerType, "personal")
     } finally {
         if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
         else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
@@ -865,99 +890,26 @@ test("customer creation forwards the explicit reuseExisting choice", async () =>
     }
 })
 
-test("draft customer creation forwards its idempotent checkout key", async () => {
-    const graphQLServer = await createGraphQLTestServer([
-        {
-            data: {
-                customersCreate: {
-                    errors: [],
-                    customer: {
-                        id: "gid://crater/Customer/3",
-                        customerType: "personal",
-                        email: null,
-                        name: null,
-                        status: "draft",
-                    },
-                },
-            },
-        },
-    ])
-    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
-    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
+test("customer creation requires the customer type Crater cannot infer", async () => {
+    const invalidBodies = [
+        { email: "billing@example.com", name: "Example GmbH" },
+        { customerType: "unknown" },
+        { address: "1 Main Street", customerType: "business" },
+    ]
 
-    try {
+    for (const body of invalidBodies) {
         const response = await createOrGetCustomer(
             new Request("https://example.com/api/crater/customer", {
                 method: "POST",
                 headers: sessionHeaders,
-                body: JSON.stringify({ checkoutKey: "3f456ad7-c94b-4a63-aea2-17bd9dcf65be", customerType: "personal", draft: true }),
+                body: JSON.stringify(body),
             })
         )
 
-        assert.equal(response.status, 201)
-        assert.deepEqual(graphQLServer.requests[0].body.variables, {
-            input: { checkoutKey: "3f456ad7-c94b-4a63-aea2-17bd9dcf65be", customerType: "personal", draft: true },
-        })
-    } finally {
-        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
-        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
-        await graphQLServer.close()
-    }
-})
-
-test("draft customer creation requires a checkout key", async () => {
-    const response = await createOrGetCustomer(
-        new Request("https://example.com/api/crater/customer", {
-            method: "POST",
-            headers: sessionHeaders,
-            body: JSON.stringify({ customerType: "personal", draft: true }),
-        })
-    )
-
-    assert.equal(response.status, 400)
-    assert.deepEqual(await response.json(), {
-        error: "checkoutKey is required for draft customers and is only allowed with draft: true.",
-    })
-})
-
-test("customer creation rejects an existing customer with a different type", async () => {
-    const graphQLServer = await createGraphQLTestServer([
-        {
-            data: {
-                customersCreate: {
-                    errors: [],
-                    customer: {
-                        id: "gid://crater/Customer/1",
-                        customerType: "personal",
-                        email: null,
-                        name: null,
-                    },
-                },
-            },
-        },
-    ])
-    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
-    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
-
-    try {
-        const response = await createOrGetCustomer(
-            new Request("https://example.com/api/crater/customer", {
-                method: "POST",
-                headers: sessionHeaders,
-                body: JSON.stringify({ customerType: "business" }),
-            })
-        )
-
-        assert.equal(response.status, 409)
+        assert.equal(response.status, 400)
         assert.deepEqual(await response.json(), {
-            error: "The existing customer type does not match the requested checkout customer type.",
-            errorCode: "CUSTOMER_TYPE_MISMATCH",
-            details: [],
+            error: "customerType is required; address must be an object when provided.",
         })
-    } finally {
-        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
-        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
-        await graphQLServer.close()
     }
 })
 
@@ -1315,7 +1267,7 @@ test("maps login, customer creation, and customer updates to Crater GraphQL inpu
         assert.equal(graphQLServer.requests[1].authorization, "Session c_ust_example")
         assert.deepEqual(graphQLServer.requests[1].body.variables, {
             input: {
-                customerType: "business",
+                customerType: "BUSINESS",
                 email: "billing@example.com",
                 name: "Example GmbH",
                 phone: "+49 123",
@@ -1974,7 +1926,7 @@ test("finds a license customer beyond the first Crater cursor page", async () =>
             data: {
                 currentUser: {
                     customers: {
-                        edges: [{ cursor: "customer-26", node: { id: "gid://crater/Customer/26", customerType: "business", licenses: { edges: [] } } }],
+                        edges: [{ cursor: "customer-26", node: { id: "gid://crater/Customer/26", customerType: "BUSINESS", licenses: { edges: [] } } }],
                         pageInfo: { endCursor: "customer-26", hasNextPage: false },
                     },
                 },
@@ -1986,7 +1938,7 @@ test("finds a license customer beyond the first Crater cursor page", async () =>
                     customers: {
                         nodes: [
                             {
-                                customerType: "business",
+                                customerType: "BUSINESS",
                                 id: "gid://crater/Customer/26",
                                 licenses: { count: 0, nodes: [], pageInfo: { endCursor: null, hasNextPage: false } },
                             },

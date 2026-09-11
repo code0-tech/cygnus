@@ -102,11 +102,11 @@ export async function getCheckoutCustomers() {
     return customers
 }
 
-export async function createCheckoutCustomer({ checkoutKey, customerType }: { checkoutKey: string; customerType: CraterCustomerType }) {
+export async function createCheckoutCustomer({ customerType }: { customerType: CraterCustomerType }) {
     const customerResponse = await fetch("/api/crater/customer", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ checkoutKey, customerType, draft: true }),
+        body: JSON.stringify({ customerType }),
         credentials: "same-origin",
     })
     if (!customerResponse.ok) throw await createCheckoutSubmissionError(customerResponse, "Failed to create the billing customer.", "customer")

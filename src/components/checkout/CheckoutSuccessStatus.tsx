@@ -3,7 +3,7 @@
 import { LinkButton } from "@/components/ui/LinkButton"
 import { ButtonLoader } from "@/components/ui/Loader"
 import { CheckoutPricingOverview } from "@/components/checkout/CheckoutPricingOverview"
-import { clearCheckoutDraftKeys } from "@/lib/checkout/checkoutDraft"
+import { clearCheckoutContactDraft } from "@/lib/checkout/checkoutDraft"
 import { getCheckoutStatusPollDelay, hasCheckoutStatusPollingExpired } from "@/lib/checkout/checkoutStatusPolling"
 import type { CheckoutData, SubscriptionConfigData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
@@ -147,7 +147,7 @@ export function CheckoutSuccessStatus({ checkoutSearchParams, content, errorMess
 
             setCompletion(nextCompletion)
             setStatus(nextCompletion.state)
-            if (SETTLED_STATES.has(nextCompletion.state)) clearCheckoutDraftKeys()
+            if (SETTLED_STATES.has(nextCompletion.state)) clearCheckoutContactDraft()
 
             if (nextCompletion.state === "CHECKOUT_PENDING" || nextCompletion.state === "PAYMENT_PENDING" || nextCompletion.state === "FULFILLMENT_PENDING") {
                 if (hasCheckoutStatusPollingExpired(pollingStartedAtRef.current, Date.now())) {

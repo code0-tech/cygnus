@@ -4,7 +4,7 @@ import { useCraterSession } from "@/components/checkout/CraterSessionProvider"
 import { useCheckoutStage } from "@/components/checkout/CheckoutStage"
 import type { CheckoutData, ErrorsContent } from "@/lib/cms"
 import { resolveCraterCustomerType } from "@/lib/checkout/craterCustomer"
-import { getOrCreateCheckoutDraftKey, readCheckoutContactDraft, saveCheckoutContactDraft } from "@/lib/checkout/checkoutDraft"
+import { readCheckoutContactDraft, saveCheckoutContactDraft } from "@/lib/checkout/checkoutDraft"
 import { replaceCheckoutPage } from "@/lib/checkout/checkoutNavigation"
 import {
     CheckoutSubmissionError,
@@ -272,12 +272,10 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, errors: Errors
                 const matchingCustomers = availableCustomers.filter((candidate) => candidate.customerType === customerType)
                 const restoredCustomerId = restoredContactDraft?.customerId ?? null
                 setHasExistingCustomers(matchingCustomers.length > 0)
-                let customer = restoredCustomerId ? matchingCustomers.find((candidate) => candidate.id === restoredCustomerId) : undefined
-                if (!customer && restoredCustomerId) {
-                    const restoredDraftCustomer = await createCheckoutCustomer({ checkoutKey: getOrCreateCheckoutDraftKey(customerType), customerType })
-                    if (restoredDraftCustomer.id === restoredCustomerId) customer = restoredDraftCustomer
-                }
-                customer ??= matchingCustomers[0] ?? (await createCheckoutCustomer({ checkoutKey: getOrCreateCheckoutDraftKey(customerType), customerType }))
+                // A restored customer that Crater no longer lists is gone for good; creating one again
+                // would only add a second customer, because Crater never reuses on customersCreate.
+                const restoredCustomer = restoredCustomerId ? matchingCustomers.find((candidate) => candidate.id === restoredCustomerId) : undefined
+                const customer = restoredCustomer ?? matchingCustomers[0] ?? (await createCheckoutCustomer({ customerType }))
                 if (requestId !== sessionRefreshRequestRef.current) return
                 setCustomers(matchingCustomers)
                 selectedCustomerIdRef.current = customer.id
@@ -331,7 +329,7 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, errors: Errors
             try {
                 const customer = customerId
                     ? customers.find((candidate) => candidate.id === customerId)
-                    : await createCheckoutCustomer({ checkoutKey: getOrCreateCheckoutDraftKey(customerType), customerType })
+                    : await createCheckoutCustomer({ customerType })
                 if (!customer) throw new CheckoutSubmissionError("customer", "INVALID_CHECKOUT_CUSTOMER", "The selected customer is unavailable.")
 
                 selectedCustomerIdRef.current = customer.id
