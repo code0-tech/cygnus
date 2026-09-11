@@ -49,7 +49,10 @@ function discountResponse(code: string, percentOff: number) {
             code,
             currency: null,
             duration: "forever",
+            durationInMonths: null,
+            maxRedemptions: 100,
             percentOff,
+            timesRedeemed: 0,
         }),
         {
             status: 200,
@@ -98,6 +101,9 @@ test("opens, applies, and removes a discount code", async () => {
     await user.type(input, "SAVE10")
     await user.click(applyButton)
     await waitFor(() => assert.equal(appliedValues.at(-1)?.code, "SAVE10"))
+    assert.equal(appliedValues.at(-1)?.durationInMonths, null)
+    assert.equal(appliedValues.at(-1)?.maxRedemptions, 100)
+    assert.equal(appliedValues.at(-1)?.timesRedeemed, 0)
     assert.deepEqual(requestedCodes, ["SAVE10"])
     assert.equal(window.location.pathname + window.location.search, "/en/checkout?promotionCode=SAVE10")
     assert.ok(screen.getByText("SAVE10"))
