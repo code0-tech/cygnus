@@ -4,18 +4,13 @@ import { Button, TextInput } from "@code0-tech/pictor"
 import { useCraterSession } from "@/components/checkout/CraterSessionProvider"
 import { ButtonLoader } from "@/components/ui/Loader"
 import { Dialog } from "@base-ui/react/dialog"
-import type { CheckoutDiscount as CraterCheckoutDiscount } from "@code0-tech/crater-graphql-types"
+import type { CheckoutDiscountData } from "@/lib/checkout/checkoutDiscount"
 import { IconX } from "@tabler/icons-react"
 import { usePathname, useSearchParams } from "next/navigation"
 import { createPortal } from "react-dom"
 import { useCallback, useEffect, useRef, useState } from "react"
 
-type CheckoutDiscountFields = Required<Pick<CraterCheckoutDiscount, "amountOff" | "code" | "currency" | "duration" | "percentOff">>
-
-export type CheckoutDiscountValue = Omit<CheckoutDiscountFields, "code" | "duration"> & {
-    code: NonNullable<CraterCheckoutDiscount["code"]>
-    duration: NonNullable<CraterCheckoutDiscount["duration"]>
-}
+export type CheckoutDiscountValue = CheckoutDiscountData
 
 interface CheckoutDiscountProps {
     authenticated?: boolean
