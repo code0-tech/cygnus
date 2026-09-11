@@ -7,7 +7,6 @@ import { resolveCraterCustomerType } from "@/lib/checkout/craterCustomer"
 import { getOrCreateCheckoutDraftKey, readCheckoutContactDraft, saveCheckoutContactDraft } from "@/lib/checkout/checkoutDraft"
 import { replaceCheckoutPage } from "@/lib/checkout/checkoutNavigation"
 import {
-    calculateCheckoutTax,
     CheckoutSubmissionError,
     createCheckoutCustomer,
     createCheckoutSession,
@@ -147,13 +146,6 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, errors: Errors
                 if (requestId !== sessionRefreshRequestRef.current) return false
                 setCheckoutSession(session)
                 setCheckoutSessionPromotionCode(null)
-                void calculateCheckoutTax({ searchParams: checkoutSearchParams })
-                    .then((quote) => {
-                        if (requestId === sessionRefreshRequestRef.current) setTaxQuote(quote)
-                    })
-                    .catch(() => {
-                        if (requestId === sessionRefreshRequestRef.current) setTaxQuote(null)
-                    })
                 return true
             })
             .catch((error) => {
@@ -308,15 +300,6 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, errors: Errors
                 setCheckoutSession(session)
                 expiredRefreshAttemptsRef.current = 0
                 setCheckoutSessionPromotionCode(null)
-                void calculateCheckoutTax({ searchParams: checkoutSearchParams })
-                    .then((quote) => {
-                        if (requestId === sessionRefreshRequestRef.current) setTaxQuote(quote)
-                    })
-                    .catch((error) => {
-                        if (requestId !== sessionRefreshRequestRef.current) return
-                        console.warn("Could not load the non-binding checkout tax preview:", error)
-                        setTaxQuote(null)
-                    })
             } catch (error) {
                 if (requestId !== sessionRefreshRequestRef.current) return
                 console.error("Failed to start Crater checkout:", error)
@@ -371,13 +354,6 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, errors: Errors
                 setCheckoutSession(session)
                 expiredRefreshAttemptsRef.current = 0
                 setCheckoutSessionPromotionCode(null)
-                void calculateCheckoutTax({ searchParams: checkoutSearchParams })
-                    .then((quote) => {
-                        if (requestId === sessionRefreshRequestRef.current) setTaxQuote(quote)
-                    })
-                    .catch(() => {
-                        if (requestId === sessionRefreshRequestRef.current) setTaxQuote(null)
-                    })
             } catch (error) {
                 if (requestId !== sessionRefreshRequestRef.current) return
                 console.error("Failed to select the Crater checkout customer:", error)

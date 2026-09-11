@@ -4,7 +4,6 @@ import { GET as listCustomers, PATCH as updateCustomer, POST as createOrGetCusto
 import { GET as getCustomerPaymentMethodSetupStatus, POST as createCustomerPaymentMethodSetup } from "../../src/app/api/crater/customer/payment-method-setup/route"
 import { POST as validateDiscount } from "../../src/app/api/crater/checkout/discount/route"
 import { POST as createCheckoutSession } from "../../src/app/api/crater/checkout/session/route"
-import { POST as calculateTax } from "../../src/app/api/crater/checkout/tax/route"
 import { POST as createSession } from "../../src/app/api/crater/login/route"
 import { DELETE as deleteSession, GET as getSessionStatus } from "../../src/app/api/crater/auth/session/route"
 import { GET as completeCraterLogin } from "../../src/app/api/crater/auth/callback/route"
@@ -1043,21 +1042,6 @@ test("customer updates require a valid Crater customer id", async () => {
     })
 })
 
-test("tax calculation requires a plan", async () => {
-    const response = await calculateTax(
-        new Request("https://example.com/api/crater/checkout/tax", {
-            method: "POST",
-            headers: sessionHeaders,
-            body: JSON.stringify({}),
-        })
-    )
-
-    assert.equal(response.status, 400)
-    assert.deepEqual(await response.json(), {
-        error: "plan is required.",
-    })
-})
-
 test("discount validation requires a code", async () => {
     const response = await validateDiscount(
         new Request("https://example.com/api/crater/checkout/discount", {
@@ -1073,12 +1057,10 @@ test("discount validation requires a code", async () => {
     })
 })
 
-test("checkout, tax, and discount enforce independent route limits", async () => {
+test("checkout and discount enforce independent route limits", async () => {
     const environmentKeys = [
         "CRATER_CHECKOUT_RATE_LIMIT_MAX",
         "CRATER_CHECKOUT_RATE_LIMIT_WINDOW_SECONDS",
-        "CRATER_TAX_RATE_LIMIT_MAX",
-        "CRATER_TAX_RATE_LIMIT_WINDOW_SECONDS",
         "CRATER_DISCOUNT_RATE_LIMIT_MAX",
         "CRATER_DISCOUNT_RATE_LIMIT_WINDOW_SECONDS",
         "CRATER_RATE_LIMIT_TRUSTED_PROXY_HOPS",
@@ -1087,8 +1069,6 @@ test("checkout, tax, and discount enforce independent route limits", async () =>
 
     process.env.CRATER_CHECKOUT_RATE_LIMIT_MAX = "1"
     process.env.CRATER_CHECKOUT_RATE_LIMIT_WINDOW_SECONDS = "90"
-    process.env.CRATER_TAX_RATE_LIMIT_MAX = "1"
-    process.env.CRATER_TAX_RATE_LIMIT_WINDOW_SECONDS = "90"
     process.env.CRATER_DISCOUNT_RATE_LIMIT_MAX = "1"
     process.env.CRATER_DISCOUNT_RATE_LIMIT_WINDOW_SECONDS = "90"
     process.env.CRATER_RATE_LIMIT_TRUSTED_PROXY_HOPS = "1"
@@ -1110,12 +1090,10 @@ test("checkout, tax, and discount enforce independent route limits", async () =>
 
     try {
         assert.equal((await createCheckoutSession(request("/api/crater/checkout/session"))).status, 400)
-        assert.equal((await calculateTax(request("/api/crater/checkout/tax"))).status, 400)
         assert.equal((await validateDiscount(request("/api/crater/checkout/discount"))).status, 400)
 
         const limitedResponses = await Promise.all([
             createCheckoutSession(request("/api/crater/checkout/session")),
-            calculateTax(request("/api/crater/checkout/tax")),
             validateDiscount(request("/api/crater/checkout/discount")),
         ])
 
@@ -1126,7 +1104,7 @@ test("checkout, tax, and discount enforce independent route limits", async () =>
             assert.equal(response.headers.get("ratelimit-remaining"), "0")
         }
 
-        assert.deepEqual(warnings.map((message) => (JSON.parse(message) as { policy: string }).policy).sort(), ["checkout", "discount", "tax"])
+        assert.deepEqual(warnings.map((message) => (JSON.parse(message) as { policy: string }).policy).sort(), ["checkout", "discount"])
     } finally {
         console.warn = originalWarn
         for (const key of environmentKeys) {
