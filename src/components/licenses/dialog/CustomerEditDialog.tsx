@@ -2,7 +2,7 @@
 
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
 import { LicenseDialog } from "@/components/licenses/dialog/LicenseDialog"
-import { CustomerPaymentMethodCard, type CustomerPaymentMethodSummary } from "@/components/licenses/dialog/CustomerPaymentMethodCard"
+import { CustomerPaymentMethodCard } from "@/components/licenses/dialog/CustomerPaymentMethodCard"
 import { PaymentMethodSetupDialog } from "@/components/licenses/dialog/PaymentMethodSetupDialog"
 import { ButtonLoader } from "@/components/ui/Loader"
 import type { CheckoutData, ErrorsContent, LicenseContent } from "@/lib/cms"
@@ -41,7 +41,7 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
     const [error, setError] = useState<string | null>(null)
     const [isSaving, setIsSaving] = useState(false)
     const [section, setSection] = useState<CustomerEditSection>("general")
-    const [paymentMethods, setPaymentMethods] = useState<CustomerPaymentMethodSummary[] | null>(null)
+    const [paymentMethods, setPaymentMethods] = useState<string[] | null>(null)
     const [paymentMethodsError, setPaymentMethodsError] = useState(false)
     const [isLoadingPaymentMethods, setIsLoadingPaymentMethods] = useState(false)
     const [paymentMethodsRefreshKey, setPaymentMethodsRefreshKey] = useState(0)
@@ -80,7 +80,7 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
             .then(async (response) => {
                 const result: unknown = await response.json()
                 if (!response.ok || !result || typeof result !== "object" || !("paymentMethods" in result)) throw new Error("Invalid payment methods response.")
-                return result.paymentMethods as CustomerPaymentMethodSummary[]
+                return result.paymentMethods as string[]
             })
             .then(setPaymentMethods)
             .catch((loadError) => {
@@ -98,16 +98,16 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
     }, [])
 
     const removePaymentMethod = async (paymentMethodId: string) => {
-        if (!customer || removingPaymentMethodId) return
+        if (!customer || !paymentMethods || removingPaymentMethodId) return
         setRemovingPaymentMethodId(paymentMethodId)
         setRemovePaymentMethodError(null)
 
         try {
-            const response = await fetch("/api/crater/customer/payment-methods/detach", {
-                method: "POST",
+            const response = await fetch("/api/crater/customer", {
+                method: "PATCH",
                 credentials: "same-origin",
                 headers: { "content-type": "application/json" },
-                body: JSON.stringify({ customerId: customer.id, paymentMethodId }),
+                body: JSON.stringify({ id: customer.id, paymentMethods: paymentMethods.filter((id) => id !== paymentMethodId) }),
             })
             if (!response.ok) {
                 const result: unknown = await response.json().catch(() => null)
@@ -115,7 +115,7 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
                 throw new Error(errorCode === "PAYMENT_METHOD_IN_USE" ? errors.paymentMethodInUse : errors.paymentMethodRemove)
             }
 
-            setPaymentMethods((current) => current?.filter((method) => method.id !== paymentMethodId) ?? null)
+            setPaymentMethods((current) => current?.filter((method) => method !== paymentMethodId) ?? null)
         } catch (removeError) {
             setRemovePaymentMethodError(removeError instanceof Error ? removeError.message : errors.paymentMethodRemove)
         } finally {
@@ -334,19 +334,18 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
                                 ) : paymentMethods && paymentMethods.length > 0 ? (
                                     paymentMethods.map((method) => (
                                         <CustomerPaymentMethodCard
-                                            key={method.id}
-                                            defaultLabel={content.editor.defaultPaymentMethodLabel}
-                                            method={method}
+                                            key={method}
+                                                        method={method}
                                             action={
                                                 <Button
                                                     type="button"
                                                     variant="none"
                                                     paddingSize="xs"
-                                                    disabled={removingPaymentMethodId === method.id}
-                                                    onClick={() => void removePaymentMethod(method.id)}
+                                                    disabled={removingPaymentMethodId === method}
+                                                    onClick={() => void removePaymentMethod(method)}
                                                     aria-label={content.editor.removePaymentMethodLabel}
                                                 >
-                                                    {removingPaymentMethodId === method.id ? (
+                                                    {removingPaymentMethodId === method ? (
                                                         <ButtonLoader label={content.editor.removingPaymentMethodLabel} />
                                                     ) : (
                                                         <IconTrash aria-hidden="true" size={16} />

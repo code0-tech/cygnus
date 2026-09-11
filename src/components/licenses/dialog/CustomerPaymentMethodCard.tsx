@@ -17,10 +17,19 @@ export interface CustomerPaymentMethodSummary {
 interface CustomerPaymentMethodCardProps {
     action?: ReactNode
     defaultLabel?: string
-    method: Pick<CustomerPaymentMethodSummary, "brand" | "expiresMonth" | "expiresYear" | "last4" | "type"> & Partial<Pick<CustomerPaymentMethodSummary, "id" | "isDefault">>
+    method: string | Pick<CustomerPaymentMethodSummary, "brand" | "expiresMonth" | "expiresYear" | "last4" | "type"> & Partial<Pick<CustomerPaymentMethodSummary, "id" | "isDefault">>
 }
 
 export function CustomerPaymentMethodCard({ action, defaultLabel, method }: CustomerPaymentMethodCardProps) {
+    if (typeof method === "string") {
+        return (
+            <Card className="flex items-center gap-4 bg-light!">
+                <IconCreditCard aria-hidden="true" size={20} className="shrink-0 text-brand" />
+                <Text size="sm" className="min-w-0 flex-1 break-all">{method}</Text>
+                {action}
+            </Card>
+        )
+    }
     const title = method.brand?.trim() || method.type.replaceAll("_", " ")
     const expiry = method.expiresMonth && method.expiresYear ? `${String(method.expiresMonth).padStart(2, "0")}/${method.expiresYear}` : null
 

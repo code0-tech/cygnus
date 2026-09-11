@@ -2,7 +2,7 @@
 
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
 import { LicenseDialog } from "@/components/licenses/dialog/LicenseDialog"
-import { CustomerPaymentMethodCard, type CustomerPaymentMethodSummary } from "@/components/licenses/dialog/CustomerPaymentMethodCard"
+import { CustomerPaymentMethodCard } from "@/components/licenses/dialog/CustomerPaymentMethodCard"
 import { PaymentMethodSetupDialog } from "@/components/licenses/dialog/PaymentMethodSetupDialog"
 import { ButtonLoader } from "@/components/ui/Loader"
 import type { ErrorsContent, LicenseContent } from "@/lib/cms"
@@ -44,7 +44,7 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
     const [paymentMethodError, setPaymentMethodError] = useState(false)
     const [isLoadingPaymentMethod, setIsLoadingPaymentMethod] = useState(false)
     const [paymentMethodRefreshKey, setPaymentMethodRefreshKey] = useState(0)
-    const [customerPaymentMethods, setCustomerPaymentMethods] = useState<CustomerPaymentMethodSummary[] | null>(null)
+    const [customerPaymentMethods, setCustomerPaymentMethods] = useState<string[] | null>(null)
     const [customerPaymentMethodsError, setCustomerPaymentMethodsError] = useState(false)
     const [isLoadingCustomerPaymentMethods, setIsLoadingCustomerPaymentMethods] = useState(false)
     const [assigningPaymentMethodId, setAssigningPaymentMethodId] = useState<string | null>(null)
@@ -98,7 +98,7 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
             .then(async (response) => {
                 const result: unknown = await response.json()
                 if (!response.ok || !result || typeof result !== "object" || !("paymentMethods" in result)) throw new Error("Invalid payment methods response.")
-                return result.paymentMethods as CustomerPaymentMethodSummary[]
+                return result.paymentMethods as string[]
             })
             .then(setCustomerPaymentMethods)
             .catch((loadError) => {
@@ -118,7 +118,7 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
 
         try {
             const response = await fetch("/api/crater/subscriptions/payment-method", {
-                method: "POST",
+                method: "PATCH",
                 credentials: "same-origin",
                 headers: { "content-type": "application/json" },
                 body: JSON.stringify({ subscriptionId: license.subscriptionId, paymentMethodId }),
@@ -250,17 +250,17 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
                                     <div className="space-y-3 pr-3">
                                         {customerPaymentMethods.map((method) => (
                                             <CustomerPaymentMethodCard
-                                                key={method.id}
+                                                key={method}
                                                 method={method}
                                                 action={
                                                     <Button
                                                         type="button"
                                                         variant="normal"
                                                         paddingSize="xs"
-                                                        disabled={assigningPaymentMethodId === method.id}
-                                                        onClick={() => void assignPaymentMethod(method.id)}
+                                                        disabled={assigningPaymentMethodId === method}
+                                                        onClick={() => void assignPaymentMethod(method)}
                                                     >
-                                                        {assigningPaymentMethodId === method.id ? (
+                                                        {assigningPaymentMethodId === method ? (
                                                             <ButtonLoader label={content.editor.settingPaymentMethodLabel} />
                                                         ) : (
                                                             content.editor.usePaymentMethodLabel
