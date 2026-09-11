@@ -218,12 +218,12 @@ const userEvent = (await import("@testing-library/user-event")).default
 const { CheckoutForm } = await import("../../src/components/checkout/CheckoutForm")
 const { getStripePricingFromSession } = await import("../../src/components/checkout/CheckoutPaymentForm")
 const { CheckoutFormProvider, useCheckoutFormState } = await import("../../src/components/checkout/CheckoutFormProvider")
-const { clearCheckoutDraftKeys, readCheckoutContactDraft, saveCheckoutContactDraft } = await import("../../src/lib/checkout/checkoutDraft")
+const { clearCheckoutContactDraft, readCheckoutContactDraft, saveCheckoutContactDraft } = await import("../../src/lib/checkout/checkoutDraft")
 
 const originalFetch = globalThis.fetch
 afterEach(() => {
     cleanup()
-    clearCheckoutDraftKeys()
+    clearCheckoutContactDraft()
     globalThis.fetch = originalFetch
     checkoutSearchParams.set("customerType", "b2c")
     checkoutSearchParams.delete("promotionCode")
@@ -434,10 +434,7 @@ test("creates the customer and checkout session on mount before collecting Strip
     assert.equal(new Headers(requests[0].init?.headers).get("authorization"), null)
     assert.equal(requests[0].init?.credentials, "same-origin")
     assert.equal(requests[2].init?.credentials, "same-origin")
-    const customerCreationBody = JSON.parse(String(requests[1].init?.body)) as Record<string, unknown>
-    assert.equal(customerCreationBody.customerType, "personal")
-    assert.equal(customerCreationBody.draft, true)
-    assert.match(String(customerCreationBody.checkoutKey), /^[0-9a-f-]{36}$/i)
+    assert.deepEqual(JSON.parse(String(requests[1].init?.body)), { customerType: "personal" })
     assert.deepEqual(JSON.parse(String(requests[2].init?.body)), {
         customerId: "gid://crater/Customer/1",
         customerType: "b2c",
@@ -626,10 +623,7 @@ test("recreates the checkout session for a selected or newly created customer", 
     )
     const customerCreationRequests = requests.filter((request) => request.url === "/api/crater/customer" && request.init?.method === "POST")
     assert.equal(customerCreationRequests.length, 1)
-    const customerCreationBody = JSON.parse(String(customerCreationRequests[0].init?.body)) as Record<string, unknown>
-    assert.equal(customerCreationBody.customerType, "personal")
-    assert.equal(customerCreationBody.draft, true)
-    assert.match(String(customerCreationBody.checkoutKey), /^[0-9a-f-]{36}$/i)
+    assert.deepEqual(JSON.parse(String(customerCreationRequests[0].init?.body)), { customerType: "personal" })
 })
 
 test("replaces a checkout session shortly before it expires", async () => {

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict"
 import test, { afterEach } from "node:test"
-import { clearCheckoutDraftKeys, getCheckoutContactDraftCustomerId, readCheckoutContactDraft, saveCheckoutContactDraft } from "../../src/lib/checkout/checkoutDraft"
+import { clearCheckoutContactDraft, getCheckoutContactDraftCustomerId, readCheckoutContactDraft, saveCheckoutContactDraft } from "../../src/lib/checkout/checkoutDraft"
 import { installDomTestEnvironment } from "./domTestEnvironment"
 
 installDomTestEnvironment()
@@ -77,7 +77,7 @@ test("binds restored contact details to their checkout configuration", () => {
     )
 })
 
-test("clears the contact draft together with the checkout draft keys", () => {
+test("clears the contact draft once the checkout settled", () => {
     saveCheckoutContactDraft({
         billingAddress,
         customerId: "gid://crater/Customer/1",
@@ -86,7 +86,7 @@ test("clears the contact draft together with the checkout draft keys", () => {
         stage: "billingAddress",
     })
 
-    clearCheckoutDraftKeys()
+    clearCheckoutContactDraft()
 
     assert.equal(
         readCheckoutContactDraft(new URLSearchParams("plan=pro&paymentPeriod=monthly")),

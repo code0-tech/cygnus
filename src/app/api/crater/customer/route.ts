@@ -1,11 +1,28 @@
 import { createApolloClient } from "@/lib/apolloClient"
 import { craterJson, craterMutationErrorResponse, craterTransportErrorResponse, optionalString, readJsonObject, readOptionalAddress, requireCraterSession } from "@/lib/checkout/craterApi"
-import type { CustomerAddressInput, Mutation, MutationCustomersCreateArgs, MutationCustomersUpdateArgs, Query, Scalars } from "@code0-tech/crater-graphql-types"
+import { normalizeCraterCustomerType, toCraterCustomerTypeEnum } from "@/lib/checkout/craterCustomer"
+import type { Customer, CustomerAddressInput, Mutation, MutationCustomersUpdateArgs, Query, Scalars } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 
 export const runtime = "nodejs"
 
 type CustomersCreateData = Pick<Mutation, "customersCreate">
+
+// The published Crater types still describe the retired checkout draft lifecycle.
+// Keep this input aligned with Crater's current CustomersCreate mutation, whose only required
+// argument is the customer type; everything else may follow later.
+type CustomersCreateVariables = {
+    input: {
+        address?: CustomerAddressInput
+        customerType: ReturnType<typeof toCraterCustomerTypeEnum>
+        email?: string
+        name?: string
+        phone?: string
+        taxIdType?: string
+        taxIdValue?: string
+    }
+}
+
 type CustomersUpdateVariables = { input: MutationCustomersUpdateArgs["input"] & { paymentMethods?: string[] } }
 
 type CustomersUpdateData = Pick<Mutation, "customersUpdate">
@@ -16,6 +33,12 @@ const CUSTOMER_PAGE_SIZE = 50
 
 function isCustomerId(value: string): value is Scalars["CustomerID"]["input"] {
     return /^gid:\/\/crater\/Customer\/\d+$/.test(value)
+}
+
+// Crater answers with the CustomerType enum; every consumer of these routes reads the lowercase value.
+function normalizeCustomer<T extends Pick<Customer, "customerType">>(customer: T): T {
+    const customerType = normalizeCraterCustomerType(customer.customerType)
+    return customerType ? { ...customer, customerType } : customer
 }
 
 const INVALID_UPDATE_VALUE = Symbol("invalid-update-value")
@@ -59,7 +82,6 @@ const CUSTOMER_FIELDS = gql`
         id
         name
         phone
-        status
         updatedAt
     }
 `
@@ -80,7 +102,7 @@ const ERROR_FIELDS = gql`
     }
 `
 
-const CUSTOMERS_CREATE: TypedDocumentNode<CustomersCreateData, MutationCustomersCreateArgs> = gql`
+const CUSTOMERS_CREATE: TypedDocumentNode<CustomersCreateData, CustomersCreateVariables> = gql`
     mutation CustomersCreate($input: CustomersCreateInput!) {
         customersCreate(input: $input) {
             customer {
@@ -146,7 +168,7 @@ export async function GET(request: Request) {
 
         const pageInfo = currentUser.customers?.pageInfo
         return craterJson({
-            customers: (currentUser.customers?.nodes ?? []).filter((customer) => Boolean(customer?.id)),
+            customers: (currentUser.customers?.nodes ?? []).flatMap((customer) => (customer?.id ? [normalizeCustomer(customer)] : [])),
             pageInfo: {
                 endCursor: pageInfo?.endCursor ?? null,
                 hasNextPage: pageInfo?.hasNextPage === true,
@@ -166,29 +188,16 @@ export async function POST(request: Request) {
     if (session.response) return session.response
 
     const body = await readJsonObject(request)
-    const customerType = optionalString(body?.customerType)
+    const customerType = normalizeCraterCustomerType(optionalString(body?.customerType))
     const email = optionalString(body?.email)
     const name = optionalString(body?.name)
     const phone = optionalString(body?.phone)
     const taxIdType = optionalString(body?.taxIdType)
     const taxIdValue = optionalString(body?.taxIdValue)
-    const checkoutKey = optionalString(body?.checkoutKey)
-    const draft = body?.draft
-    const reuseExisting = body?.reuseExisting
     const address = readOptionalAddress(body?.address)
 
-    if (
-        !body ||
-        (customerType !== "business" && customerType !== "personal") ||
-        address === null ||
-        (draft !== undefined && typeof draft !== "boolean") ||
-        (reuseExisting !== undefined && typeof reuseExisting !== "boolean")
-    ) {
-        return craterJson({ error: "customerType is required; address, draft, and reuseExisting must be valid when provided." }, 400)
-    }
-
-    if ((draft === true && !checkoutKey) || (draft !== true && Boolean(checkoutKey))) {
-        return craterJson({ error: "checkoutKey is required for draft customers and is only allowed with draft: true." }, 400)
+    if (!body || !customerType || address === null) {
+        return craterJson({ error: "customerType is required; address must be an object when provided." }, 400)
     }
 
     if (Boolean(taxIdType) !== Boolean(taxIdValue)) {
@@ -200,14 +209,11 @@ export async function POST(request: Request) {
             mutation: CUSTOMERS_CREATE,
             variables: {
                 input: {
-                    customerType,
+                    customerType: toCraterCustomerTypeEnum(customerType),
                     ...(address && Object.keys(address).length > 0 ? { address } : {}),
-                    ...(checkoutKey ? { checkoutKey } : {}),
-                    ...(typeof draft === "boolean" ? { draft } : {}),
                     ...(email ? { email } : {}),
                     ...(name ? { name } : {}),
                     ...(phone ? { phone } : {}),
-                    ...(typeof reuseExisting === "boolean" ? { reuseExisting } : {}),
                     ...(taxIdType ? { taxIdType } : {}),
                     ...(taxIdValue ? { taxIdValue } : {}),
                 },
@@ -221,18 +227,7 @@ export async function POST(request: Request) {
         if (errorResponse) return errorResponse
         if (!payload.customer) throw new Error("Crater returned no customer.")
 
-        if (payload.customer.customerType !== customerType) {
-            return craterJson(
-                {
-                    error: "The existing customer type does not match the requested checkout customer type.",
-                    errorCode: "CUSTOMER_TYPE_MISMATCH",
-                    details: [],
-                },
-                409
-            )
-        }
-
-        return craterJson(payload.customer, 201)
+        return craterJson(normalizeCustomer(payload.customer), 201)
     } catch (error) {
         const transportResponse = craterTransportErrorResponse(error)
         if (transportResponse) return transportResponse
@@ -287,7 +282,7 @@ export async function PATCH(request: Request) {
         if (errorResponse) return errorResponse
         if (!payload.customer) throw new Error("Crater returned no updated customer.")
 
-        return craterJson(payload.customer)
+        return craterJson(normalizeCustomer(payload.customer))
     } catch (error) {
         const transportResponse = craterTransportErrorResponse(error)
         if (transportResponse) return transportResponse

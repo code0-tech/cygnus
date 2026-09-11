@@ -1,5 +1,6 @@
 import { createApolloClient } from "@/lib/apolloClient"
 import { craterJson, craterTransportErrorResponse, requireCraterSession } from "@/lib/checkout/craterApi"
+import { normalizeCraterCustomerType } from "@/lib/checkout/craterCustomer"
 import { setCraterSessionCookie } from "@/lib/checkout/craterSession"
 import { isLicenseId } from "@/lib/licenses/craterLicenseRequest"
 import type {
@@ -305,6 +306,8 @@ function licenseName(plan: string | null | undefined, id: string) {
 function mapCustomer(customer: Customer): LicenseDashboardCustomer | null {
     if (!customer.id) return null
 
+    const customerType = normalizeCraterCustomerType(customer.customerType)
+
     return {
         id: customer.id,
         ...(customer.address
@@ -319,7 +322,7 @@ function mapCustomer(customer: Customer): LicenseDashboardCustomer | null {
                   },
               }
             : {}),
-        ...(customer.customerType ? { customerType: customer.customerType } : {}),
+        ...(customerType ? { customerType } : {}),
         ...(customer.email ? { email: customer.email } : {}),
         ...(customer.name ? { name: customer.name } : {}),
         ...(customer.phone ? { phone: customer.phone } : {}),
@@ -371,11 +374,13 @@ function mapSubscriptionFields(subscription: Subscription | null | undefined): P
 function mapLicense(license: License, customer: Customer): LicenseDashboardLicense | null {
     if (!customer.id || !license.id) return null
 
+    const customerType = normalizeCraterCustomerType(customer.customerType)
+
     return {
         ...(typeof license.aiTokens === "number" ? { aiTokens: license.aiTokens } : {}),
         customerId: customer.id,
         customerName: displayName(customer.name, customer.email, customer.id),
-        ...(customer.customerType ? { customerType: customer.customerType } : {}),
+        ...(customerType ? { customerType } : {}),
         id: license.id,
         ...(license.invoices?.nodes
             ? { invoices: license.invoices.nodes.flatMap((invoice) => (invoice ? [mapInvoice(invoice)].filter((mapped): mapped is LicenseDashboardInvoice => mapped !== null) : [])) }
