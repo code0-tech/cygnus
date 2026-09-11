@@ -1,5 +1,6 @@
 "use client"
 
+import { CheckoutContactForm } from "./CheckoutContactForm"
 import { CheckoutFormProvider, useCheckoutFormState } from "@/components/checkout/CheckoutFormProvider"
 import { CheckoutErrorState, CheckoutPaymentForm, CheckoutPaymentFormSkeleton } from "@/components/checkout/CheckoutPaymentForm"
 import { useCheckoutStage } from "@/components/checkout/CheckoutStage"
@@ -54,11 +55,11 @@ function CheckoutFormContent() {
     } = useCheckoutFormState()
     const selectedCustomer = customers.find((customer) => customer.id === selectedCustomerId)
     const customerSelect =
-        stage === "billingAddress" && hasExistingCustomers && selectedCustomerId && customers.length > 0 ? (
+        stage === "billingAddress" && hasExistingCustomers && customers.length > 0 ? (
             <div className="[&_.input__label]:leading-none [&_.input-wrapper]:mt-1">
                 <SelectInput
                     title={content.customerSelectLabel}
-                    value={selectedCustomer ? selectedCustomerId : NEW_CUSTOMER_VALUE}
+                    value={selectedCustomer ? selectedCustomer.id : NEW_CUSTOMER_VALUE}
                     onValueChange={(value) => void selectCheckoutCustomer(value === NEW_CUSTOMER_VALUE ? null : value)}
                 >
                     <SelectTrigger className="flex h-9! w-full! items-center gap-2 text-left! text-sm! outline-none! ring-0! focus:outline-none! focus:ring-0! focus-visible:outline-none! focus-visible:ring-0!">
@@ -117,6 +118,8 @@ function CheckoutFormContent() {
             onSessionReady={markCheckoutSessionReady}
             session={checkoutSession}
         />
+    ) : !isLoading && !isRefreshingSession && !isSessionLoading ? (
+        <CheckoutContactForm customerSelect={customerSelect} />
     ) : (
         <CheckoutPaymentFormSkeleton label={content.processingLabel} />
     )

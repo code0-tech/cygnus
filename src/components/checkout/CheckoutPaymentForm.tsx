@@ -16,9 +16,9 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState, type ReactNod
 type CheckoutFormContent = CheckoutData["form"]
 
 const stripePublicKey = process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY
-const stripePromise = stripePublicKey ? loadStripe(stripePublicKey, { betas: ["custom_checkout_tax_id_1"], locale: "en" }) : null
+export const stripePromise = stripePublicKey ? loadStripe(stripePublicKey, { betas: ["custom_checkout_tax_id_1"], locale: "en" }) : null
 const STRIPE_APPEARANCE_VERSION = "pictor-7"
-const stripeAppearance = {
+export const stripeAppearance = {
     theme: "night",
     labels: "above",
     variables: {
@@ -651,6 +651,7 @@ function CheckoutPaymentFields({
             ) : (
                 <>
                     <form id={paymentFormId} onSubmit={handleSubmit} className="w-full space-y-4">
+                        {collectTaxId && <TaxIdElement options={{ fields: { businessName: "never" }, visibility: "auto" }} />}
                         <PaymentElement
                             options={{ layout: "tabs", fields: { billingDetails: { name: "never", address: "never" } } }}
                             onLoaderStart={() => {

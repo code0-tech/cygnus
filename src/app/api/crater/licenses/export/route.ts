@@ -6,13 +6,16 @@ import { gql, type TypedDocumentNode } from "@apollo/client"
 
 export const runtime = "nodejs"
 
-type LicensesExportData = Pick<Mutation, "licensesExport">
+// The published package still names the signed file licenseFile.
+type LicensesExportData = {
+    licensesExport?: { license?: string | null; errors: NonNullable<NonNullable<Mutation["licensesExport"]>["errors"]> } | null
+}
 
 const LICENSES_EXPORT: TypedDocumentNode<LicensesExportData, MutationLicensesExportArgs> = gql`
     ${CRATER_ERROR_FIELDS}
     mutation LicensesExport($input: LicensesExportInput!) {
         licensesExport(input: $input) {
-            licenseFile
+            license
             errors {
                 ...CraterErrorFields
             }
@@ -44,10 +47,10 @@ export async function POST(request: Request) {
 
         const errorResponse = craterMutationErrorResponse(payload.errors, "Crater could not export the license.")
         if (errorResponse) return errorResponse
-        if (!payload.licenseFile) throw new Error("Crater returned an incomplete license export.")
+        if (!payload.license) throw new Error("Crater returned an incomplete license export.")
 
         const fileName = licenseFileName(id)
-        return new Response(payload.licenseFile, {
+        return new Response(payload.license, {
             status: 200,
             headers: {
                 "cache-control": "private, no-store",

@@ -49,7 +49,7 @@ test("license export requires a valid Crater license id", async () => {
 })
 
 test("license export returns the signed self-hosted license as a private download", async () => {
-    const licenseFile = "-----BEGIN CODE0 LICENSE-----\nsigned-license\n-----END CODE0 LICENSE-----\n"
+    const license = "-----BEGIN CODE0 LICENSE-----\nsigned-license\n-----END CODE0 LICENSE-----\n"
 
     await withGraphQLServer(
         [
@@ -57,7 +57,7 @@ test("license export returns the signed self-hosted license as a private downloa
                 data: {
                     licensesExport: {
                         errors: [],
-                        licenseFile,
+                        license,
                     },
                 },
             },
@@ -72,7 +72,7 @@ test("license export returns the signed self-hosted license as a private downloa
             )
 
             assert.equal(response.status, 200)
-            assert.equal(await response.text(), licenseFile)
+            assert.equal(await response.text(), license)
             assert.equal(response.headers.get("content-type"), "application/octet-stream")
             assert.equal(response.headers.get("content-disposition"), 'attachment; filename="code0-license-42.czlc"')
             assert.equal(response.headers.get("x-license-filename"), "code0-license-42.czlc")
@@ -80,7 +80,7 @@ test("license export returns the signed self-hosted license as a private downloa
             assert.equal(graphQLServer.requests[0]?.authorization, "Session c_ust_example")
             assert.equal(graphQLServer.requests[0]?.body.operationName, "LicensesExport")
             assert.deepEqual(graphQLServer.requests[0]?.body.variables, { input: { id: licenseId } })
-            assert.doesNotMatch(graphQLServer.requests[0]?.body.query ?? "", /fileName/)
+            assert.doesNotMatch(graphQLServer.requests[0]?.body.query ?? "", /fileName|licenseFile/)
         }
     )
 })
@@ -92,7 +92,7 @@ test("license export surfaces Crater domain errors", async () => {
                 data: {
                     licensesExport: {
                         errors: [{ errorCode: "INVALID_LICENSE", details: [] }],
-                        licenseFile: null,
+                        license: null,
                     },
                 },
             },

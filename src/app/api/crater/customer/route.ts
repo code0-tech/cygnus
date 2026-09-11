@@ -9,14 +9,13 @@ export const runtime = "nodejs"
 type CustomersCreateData = Pick<Mutation, "customersCreate">
 
 // The published Crater types still describe the retired checkout draft lifecycle.
-// Keep this input aligned with Crater's current CustomersCreate mutation, whose only required
-// argument is the customer type; everything else may follow later.
+// Keep the required contact fields aligned with Crater's current CustomersCreate mutation.
 type CustomersCreateVariables = {
     input: {
-        address?: CustomerAddressInput
+        address: CustomerAddressInput
         customerType: ReturnType<typeof toCraterCustomerTypeEnum>
-        email?: string
-        name?: string
+        email: string
+        name: string
         phone?: string
         taxIdType?: string
         taxIdValue?: string
@@ -196,8 +195,8 @@ export async function POST(request: Request) {
     const taxIdValue = optionalString(body?.taxIdValue)
     const address = readOptionalAddress(body?.address)
 
-    if (!body || !customerType || address === null) {
-        return craterJson({ error: "customerType is required; address must be an object when provided." }, 400)
+    if (!body || !customerType || !name || !email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !address || Object.keys(address).length === 0) {
+        return craterJson({ error: "customerType, name, a valid email, and a non-empty address are required." }, 400)
     }
 
     if (Boolean(taxIdType) !== Boolean(taxIdValue)) {
@@ -210,9 +209,9 @@ export async function POST(request: Request) {
             variables: {
                 input: {
                     customerType: toCraterCustomerTypeEnum(customerType),
-                    ...(address && Object.keys(address).length > 0 ? { address } : {}),
-                    ...(email ? { email } : {}),
-                    ...(name ? { name } : {}),
+                    address,
+                    email,
+                    name,
                     ...(phone ? { phone } : {}),
                     ...(taxIdType ? { taxIdType } : {}),
                     ...(taxIdValue ? { taxIdValue } : {}),

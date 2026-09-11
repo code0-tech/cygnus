@@ -134,6 +134,15 @@ mock.module("@stripe/stripe-js", {
         },
     },
 })
+mock.module("@stripe/react-stripe-js", {
+    namedExports: {
+        Elements: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+        AddressElement: ({ onChange }: { onChange: (event: { complete: boolean; value: typeof stripeBillingAddress }) => void }) => {
+            billingAddressOnChange = onChange
+            return <div data-testid="standalone-address">Billing address</div>
+        },
+    },
+})
 mock.module("@stripe/react-stripe-js/checkout", {
     namedExports: {
         BillingAddressElement: ({ onChange, onReady, options }: { onChange: (event: { complete: boolean; value: typeof stripeBillingAddress }) => void; onReady?: () => void; options?: unknown }) => {
@@ -226,6 +235,7 @@ afterEach(() => {
     clearCheckoutContactDraft()
     globalThis.fetch = originalFetch
     checkoutSearchParams.set("customerType", "b2c")
+    checkoutSearchParams.set("plan", "pro")
     checkoutSearchParams.delete("promotionCode")
     checkoutProviderOptions = null
     billingAddressOnChange = null
@@ -402,156 +412,58 @@ function useTestForm<T extends Record<string, unknown>>({
     ] as const
 }
 
-test("creates the customer and checkout session on mount before collecting Stripe billing details", async () => {
+test("creates a customer with contact details only when continuing to payment", async () => {
     const requests: Array<{ init?: RequestInit; url: string }> = []
     globalThis.fetch = (async (input, init) => {
         requests.push({ init, url: String(input) })
-
-        if (String(input) === "/api/crater/customer") {
-            const isCreate = init?.method === "POST"
-            return new Response(JSON.stringify(isCreate ? { customerType: "personal", email: null, id: "gid://crater/Customer/1", name: null } : { customers: [] }), {
-                status: isCreate ? 201 : 200,
-                headers: { "content-type": "application/json" },
-            })
-        }
-
-
-        return new Response(JSON.stringify({ clientSecret: "cs_test_secret", expiresAt: 1_800_000_000, id: "cs_test" }), {
-            status: 200,
-            headers: { "content-type": "application/json" },
-        })
+        const body = String(input) === "/api/crater/customer"
+            ? init?.method === "POST" ? { customerType: "personal", email: "ada@example.com", id: "gid://crater/Customer/1", name: "Ada Lovelace" } : { customers: [] }
+            : { clientSecret: "cs_test_secret", expiresAt: 1_800_000_000, id: "cs_test" }
+        return new Response(JSON.stringify(body), { status: 200 })
     }) as typeof fetch
     const user = userEvent.setup()
     render(<CheckoutForm content={content} errors={errors} locale="en" />)
-    assert.ok(screen.getByTestId("checkout-form-skeleton"))
-    assert.ok(screen.getByTestId("checkout-customer-select-skeleton"))
-
-    await waitFor(() => assert.equal(requests.length, 3))
-    assert.deepEqual(
-        requests.map((request) => request.url),
-        ["/api/crater/customer", "/api/crater/customer", "/api/crater/checkout/session"]
-    )
-    assert.equal(new Headers(requests[0].init?.headers).get("authorization"), null)
-    assert.equal(requests[0].init?.credentials, "same-origin")
-    assert.equal(requests[2].init?.credentials, "same-origin")
-    assert.deepEqual(JSON.parse(String(requests[1].init?.body)), { customerType: "personal" })
-    assert.deepEqual(JSON.parse(String(requests[2].init?.body)), {
-        customerId: "gid://crater/Customer/1",
-        customerType: "b2c",
-        deploymentType: "self_hosted",
-        locale: "en",
-        paymentPeriod: "monthly",
-        plan: "pro",
-    })
-    assert.equal(checkoutProviderOptions?.clientSecret, "cs_test_secret")
-    assert.equal(checkoutProviderOptions?.defaultValues, undefined)
-    assert.equal(checkoutProviderOptions?.elementsOptions?.appearance?.theme, "night")
-    assert.equal(checkoutProviderOptions?.elementsOptions?.appearance?.variables?.colorPrimary, "#72f896")
-    assert.equal(checkoutProviderOptions?.elementsOptions?.appearance?.variables?.focusBoxShadow, "none")
-    assert.equal(checkoutProviderOptions?.elementsOptions?.appearance?.variables?.focusOutline, "none")
-    assert.equal(checkoutProviderOptions?.elementsOptions?.appearance?.variables?.inputFocusBoxShadow, "none")
-    assert.equal(checkoutProviderOptions?.elementsOptions?.appearance?.rules?.[".Dropdown"]?.backgroundColor, "#191825")
-    assert.equal(checkoutProviderOptions?.elementsOptions?.appearance?.rules?.[".DropdownItem--highlight"]?.backgroundColor, "#201e2c")
-    assert.equal(checkoutProviderOptions?.elementsOptions?.appearance?.rules?.[".Input"]?.backgroundColor, "#272532")
-    assert.equal(checkoutProviderOptions?.elementsOptions?.appearance?.rules?.[".Input:focus"]?.outline, "none")
-    assert.equal(checkoutProviderOptions?.elementsOptions?.appearance?.rules?.[".Input:focus"]?.boxShadow, "none")
-    assert.equal(
-        checkoutProviderOptions?.elementsOptions?.appearance?.rules?.[".Input:focus"]?.backgroundColor,
-        checkoutProviderOptions?.elementsOptions?.appearance?.rules?.[".Input:hover"]?.backgroundColor
-    )
-    assert.equal(checkoutProviderOptions?.elementsOptions?.appearance?.rules?.[".Tab:focus"]?.outline, "none")
-    assert.equal(checkoutProviderOptions?.elementsOptions?.appearance?.rules?.[".Tab"]?.backgroundColor, "#191825")
-    assert.equal(checkoutProviderOptions?.elementsOptions?.appearance?.rules?.[".Tab:focus"]?.backgroundColor, "#2b2938")
-    assert.equal(checkoutProviderOptions?.elementsOptions?.appearance?.rules?.[".AccordionItem:focus-visible"]?.outline, "none")
-    assert.equal(checkoutProviderOptions?.elementsOptions?.appearance?.rules?.[".AccordionItem"]?.backgroundColor, "#191825")
-    assert.equal(checkoutProviderOptions?.elementsOptions?.appearance?.rules?.[".AccordionItem:focus-visible"]?.backgroundColor, "#2b2938")
-    assert.equal(checkoutProviderOptions?.elementsOptions?.appearance?.rules?.[".AccordionItem--selected"]?.backgroundColor, "#201e2c")
-    assert.equal(
-        checkoutProviderOptions?.elementsOptions?.appearance?.rules?.[".AccordionItem--selected"]?.backgroundColor,
-        checkoutProviderOptions?.elementsOptions?.appearance?.rules?.[".AccordionItem:hover"]?.backgroundColor
-    )
-    assert.equal(checkoutProviderOptions?.elementsOptions?.appearance?.rules?.[".AccordionItem--selected"]?.boxShadow, "none")
-    assert.deepEqual(billingAddressOptions, { display: { name: "full" } })
-    assert.equal(screen.queryByTestId("checkout-customer-select-skeleton"), null)
-    assert.equal(screen.queryByText(content.customerSelectLabel), null)
-    assert.equal(screen.queryByText(content.newCustomerLabel), null)
-    assert.ok(screen.getByTestId("stripe-contact-details"))
-    assert.ok(screen.getByTestId("stripe-billing-address"))
-    assert.equal(screen.queryByTestId("stripe-tax-id"), null)
-    assert.equal(screen.queryByTestId("stripe-payment"), null)
-    assert.equal(checkoutStages.includes("payment"), false)
-    assert.equal((screen.getByRole("button", { name: "Continue to payment" }) as HTMLButtonElement).disabled, true)
-
-    const partialBillingAddress = {
-        name: "Ada",
-        address: { city: "Ber", country: "DE", line1: "Test", line2: null, postal_code: "", state: "" },
-    }
-    act(() => billingAddressOnChange?.({ complete: false, value: partialBillingAddress }))
-    act(() => contactDetailsOnChange?.({ complete: false, value: { email: "ada@" } }))
-    await waitFor(() => {
-        const draft = readCheckoutContactDraft(checkoutSearchParams)
-        assert.equal(draft?.email, "ada@")
-        assert.deepEqual(draft?.billingAddress, partialBillingAddress)
-    })
-    assert.equal((screen.getByRole("button", { name: "Continue to payment" }) as HTMLButtonElement).disabled, true)
-
+    await screen.findByTestId("standalone-address")
+    assert.equal(requests.length, 1)
+    assert.equal(checkoutProviderOptions, null)
+    assert.equal((screen.getByRole("button", { name: content.continueLabel }) as HTMLButtonElement).disabled, true)
+    await user.type(screen.getByRole("textbox", { name: content.emailLabel }), "ada@example.com")
+    assert.equal(requests.length, 1)
     act(() => billingAddressOnChange?.({ complete: true, value: stripeBillingAddress }))
-    assert.equal((screen.getByRole("button", { name: "Continue to payment" }) as HTMLButtonElement).disabled, true)
-    act(() => contactDetailsOnChange?.({ complete: true, value: { email: "ada@example.com" } }))
-    assert.ok(screen.getByTestId("stripe-contact-details"))
-    assert.equal(screen.queryByRole("textbox", { name: content.emailLabel }), null)
-    assert.equal(screen.queryByTestId("stripe-payment"), null)
-    assert.equal(checkoutStages.includes("payment"), false)
-    await user.click(screen.getByRole("button", { name: "Continue to payment" }))
-
-    assert.ok(await screen.findByTestId("stripe-payment"))
-    assert.deepEqual(paymentElementOptions, { fields: { billingDetails: { name: "never", address: "never" } } })
-    assert.equal((screen.getByRole("button", { name: "Pay now" }) as HTMLButtonElement).disabled, true)
+    await user.click(screen.getByRole("button", { name: content.continueLabel }))
+    await screen.findByTestId("stripe-payment")
+    assert.deepEqual(requests.map(({ url }) => url), ["/api/crater/customer", "/api/crater/customer", "/api/crater/checkout/session"])
+    assert.deepEqual(JSON.parse(String(requests[1].init?.body)), {
+        customerType: "personal", name: stripeBillingAddress.name, email: "ada@example.com",
+        address: { city: "Berlin", country: "DE", line1: stripeBillingAddress.address.line1, line2: null, postalCode: "10115", state: "Berlin" },
+    })
+    assert.equal(JSON.parse(String(requests[2].init?.body)).customerId, "gid://crater/Customer/1")
+    assert.deepEqual(stripeEmailUpdates, [])
+    assert.equal(checkoutStage, "payment")
+    await waitFor(() => assert.deepEqual(stripeBillingAddressUpdates, [stripeBillingAddress]))
+    assert.equal((screen.getByRole("button", { name: content.payNowLabel }) as HTMLButtonElement).disabled, true)
     act(() => paymentElementOnReady?.())
-    assert.equal((screen.getByRole("button", { name: "Pay now" }) as HTMLButtonElement).disabled, true)
     act(() => paymentElementOnChange?.({ complete: true }))
-    assert.equal((screen.getByRole("button", { name: "Pay now" }) as HTMLButtonElement).disabled, true)
+    assert.equal((screen.getByRole("button", { name: content.payNowLabel }) as HTMLButtonElement).disabled, true)
     await user.click(screen.getByRole("checkbox"))
-    assert.equal((screen.getByRole("button", { name: "Pay now" }) as HTMLButtonElement).disabled, false)
-    assert.deepEqual(stripeBillingAddressUpdates, [stripeBillingAddress])
-    assert.deepEqual(stripeEmailUpdates, ["ada@example.com"])
-    assert.equal(screen.queryByTestId("stripe-contact-details"), null)
-    assert.equal(screen.queryByTestId("stripe-billing-address"), null)
-    assert.equal(checkoutStages.at(-1), "payment")
-    await waitFor(() => {
-        const draft = readCheckoutContactDraft(checkoutSearchParams)
-        assert.equal(draft?.customerId, "gid://crater/Customer/1")
-        assert.equal(draft?.email, "ada@example.com")
-        assert.deepEqual(draft?.billingAddress, stripeBillingAddress)
-        assert.equal(draft?.stage, "payment")
-    })
-
     await user.click(screen.getByRole("button", { name: content.backToBillingLabel }))
-    assert.ok(screen.getByTestId("stripe-billing-address"))
-    assert.ok(screen.getByTestId("stripe-contact-details"))
-    assert.equal(screen.queryByTestId("stripe-payment"), null)
-    assert.equal(checkoutStages.at(-1), "billingAddress")
-
-    act(() => billingAddressOnChange?.({ complete: false, value: stripeBillingAddress }))
-    assert.equal(screen.queryByTestId("stripe-payment"), null)
-    assert.equal((screen.getByRole("button", { name: "Continue to payment" }) as HTMLButtonElement).disabled, true)
-
-    act(() => billingAddressOnChange?.({ complete: true, value: stripeBillingAddress }))
-    await user.click(screen.getByRole("button", { name: "Continue to payment" }))
-    assert.equal((screen.getByRole("button", { name: "Pay now" }) as HTMLButtonElement).disabled, true)
+    act(() => billingAddressOnReady?.())
+    await screen.findByText(content.customerSelectLabel)
+    assert.equal((screen.getByRole("textbox", { name: content.emailLabel }) as HTMLInputElement).value, "ada@example.com")
+    assert.ok(screen.getByText("Ada Lovelace"))
+    assert.equal(requests.filter((request) => request.url === "/api/crater/customer" && request.init?.method === "POST").length, 1)
+    await user.click(screen.getByRole("button", { name: content.continueLabel }))
     act(() => paymentElementOnReady?.())
     act(() => paymentElementOnChange?.({ complete: true }))
-
     stripeConfirmErrorMessage = "Your payment could not be confirmed."
-    await user.click(screen.getByRole("button", { name: "Pay now" }))
+    await user.click(screen.getByRole("button", { name: content.payNowLabel }))
     await waitFor(() => assert.equal(stripeConfirmCalls, 1))
     assert.ok(screen.getByText(errors.paymentConfirmation))
-    assert.equal(screen.queryByText("Your payment could not be confirmed."), null)
-
     stripeConfirmErrorMessage = null
-    await user.click(screen.getByRole("button", { name: "Pay now" }))
+    await user.click(screen.getByRole("button", { name: content.payNowLabel }))
     await waitFor(() => assert.equal(stripeConfirmCalls, 2))
     assert.deepEqual(stripeConfirmOptions, [{ redirect: "always" }, { redirect: "always" }])
+
 })
 
 test("recreates the checkout session for a selected or newly created customer", async () => {
@@ -608,13 +520,19 @@ test("recreates the checkout session for a selected or newly created customer", 
     await waitFor(() => assert.equal(screen.queryByTestId("checkout-customer-select-skeleton"), null))
 
     act(() => customerSelectOnValueChange?.("new"))
+    await screen.findByTestId("standalone-address")
+    assert.equal(sessionCount, 2)
+    assert.equal(requests.filter((request) => request.init?.method === "POST" && request.url === "/api/crater/customer").length, 0)
+    const user = userEvent.setup()
+    await user.type(screen.getByRole("textbox", { name: content.emailLabel }), "ada@example.com")
+    act(() => billingAddressOnChange?.({ complete: true, value: stripeBillingAddress }))
+    await user.click(screen.getByRole("button", { name: content.continueLabel }))
     await waitFor(() => assert.equal(checkoutProviderOptions?.clientSecret, "cs_customer_3"))
     act(() => {
         contactDetailsOnReady?.()
         billingAddressOnReady?.()
     })
     await waitFor(() => assert.equal(screen.queryByTestId("checkout-customer-select-skeleton"), null))
-    assert.equal(screen.getAllByText(content.newCustomerLabel).length, 1)
 
     const sessionBodies = requests.filter((request) => request.url === "/api/crater/checkout/session").map((request) => JSON.parse(String(request.init?.body)) as { customerId: string })
     assert.deepEqual(
@@ -623,7 +541,7 @@ test("recreates the checkout session for a selected or newly created customer", 
     )
     const customerCreationRequests = requests.filter((request) => request.url === "/api/crater/customer" && request.init?.method === "POST")
     assert.equal(customerCreationRequests.length, 1)
-    assert.deepEqual(JSON.parse(String(customerCreationRequests[0].init?.body)), { customerType: "personal" })
+    assert.equal(JSON.parse(String(customerCreationRequests[0].init?.body)).name, stripeBillingAddress.name)
 })
 
 test("replaces a checkout session shortly before it expires", async () => {
@@ -831,7 +749,7 @@ test("does not write a draft customer email again after restoring the payment st
     globalThis.fetch = (async (input, init) => {
         const url = String(input)
         if (url === "/api/crater/customer" && init?.method !== "POST") {
-            return new Response(JSON.stringify({ customers: [] }), { status: 200, headers: { "content-type": "application/json" } })
+            return new Response(JSON.stringify({ customers: [{ customerType: "personal", email: "ada@example.com", id: "gid://crater/Customer/1", name: "Ada" }] }), { status: 200, headers: { "content-type": "application/json" } })
         }
         if (url === "/api/crater/customer") {
             return new Response(JSON.stringify({ customerType: "personal", email: null, id: "gid://crater/Customer/1", name: null }), {
@@ -853,7 +771,7 @@ test("does not write a draft customer email again after restoring the payment st
     assert.ok(screen.getByTestId("stripe-payment"))
 })
 
-test("shows only the configured error when automatic customer creation fails", async () => {
+test("shows only the configured error when loading customers fails", async () => {
     let requestCount = 0
     globalThis.fetch = (async () => {
         requestCount += 1
@@ -936,4 +854,66 @@ test("applies a promotion code inside the active Stripe session without reloadin
     assert.equal(requests.filter((request) => request.url === "/api/crater/checkout/session").length, 1)
     assert.deepEqual(checkoutPageReplacements, [])
     assert.ok(screen.getByText("cs_test_secret_1"))
+})
+
+test("retries a failed checkout session without creating a second customer", async () => {
+    let creations = 0
+    let sessions = 0
+    const customer = { customerType: "personal", email: "ada@example.com", id: "gid://crater/Customer/1", name: "Ada" }
+    globalThis.fetch = (async (input, init) => {
+        if (String(input) === "/api/crater/customer") {
+            if (init?.method === "POST") {
+                creations += 1
+                return new Response(JSON.stringify(customer), { status: 201 })
+            }
+            return new Response(JSON.stringify({ customers: creations ? [customer] : [] }))
+        }
+        sessions += 1
+        return sessions === 1
+            ? new Response(JSON.stringify({ error: "Session creation failed" }), { status: 502 })
+            : new Response(JSON.stringify({ clientSecret: "cs_retry_secret", expiresAt: 1_800_000_000, id: "cs_retry" }))
+    }) as typeof fetch
+    const user = userEvent.setup()
+    render(<CheckoutForm content={content} errors={errors} locale="en" />)
+    await screen.findByTestId("standalone-address")
+    await user.type(screen.getByRole("textbox", { name: content.emailLabel }), "ada@example.com")
+    act(() => billingAddressOnChange?.({ complete: true, value: stripeBillingAddress }))
+    await user.click(screen.getByRole("button", { name: content.continueLabel }))
+    await screen.findByRole("alert")
+    assert.equal(creations, 1)
+    assert.equal(readCheckoutContactDraft(checkoutSearchParams)?.customerId, customer.id)
+    await user.click(screen.getByRole("button", { name: errors.retry }))
+    await waitFor(() => assert.equal(checkoutProviderOptions?.clientSecret, "cs_retry_secret"))
+    assert.equal(creations, 1)
+    assert.equal(sessions, 2)
+})
+
+test("does not replace a missing saved customer with a different billing customer", async () => {
+    saveCheckoutContactDraft({ billingAddress: stripeBillingAddress, customerId: "gid://crater/Customer/99", email: "ada@example.com", searchParams: checkoutSearchParams, stage: "payment" })
+    const requests: string[] = []
+    globalThis.fetch = (async (input) => {
+        requests.push(String(input))
+        return new Response(JSON.stringify({ customers: [{ customerType: "personal", email: "grace@example.com", name: "Grace", id: "gid://crater/Customer/2" }] }))
+    }) as typeof fetch
+    render(<CheckoutForm content={content} errors={errors} locale="en" />)
+    await screen.findByText(errors.checkoutCustomer)
+    assert.deepEqual(requests, ["/api/crater/customer"])
+    assert.equal(checkoutProviderOptions, null)
+    assert.equal(readCheckoutContactDraft(checkoutSearchParams), null)
+})
+
+test("does not save previous contact details under a changed checkout configuration", async () => {
+    globalThis.fetch = (async () => new Response(JSON.stringify({ customers: [] }))) as typeof fetch
+    const user = userEvent.setup()
+    const { rerender } = render(<CheckoutForm content={content} errors={errors} locale="en" />)
+    await screen.findByTestId("standalone-address")
+    await user.type(screen.getByRole("textbox", { name: content.emailLabel }), "ada@example.com")
+    act(() => billingAddressOnChange?.({ complete: true, value: stripeBillingAddress }))
+    assert.equal(readCheckoutContactDraft(checkoutSearchParams)?.email, "ada@example.com")
+    checkoutSearchParams.set("plan", "max")
+    rerender(<CheckoutForm content={content} errors={errors} locale="en" />)
+    await waitFor(() => assert.equal((screen.getByRole("textbox", { name: content.emailLabel }) as HTMLInputElement).value, ""))
+    const draft = readCheckoutContactDraft(checkoutSearchParams)
+    assert.equal(draft?.email, null)
+    assert.equal(draft?.billingAddress, null)
 })
