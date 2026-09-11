@@ -57,7 +57,6 @@ test("license export returns the signed self-hosted license as a private downloa
                 data: {
                     licensesExport: {
                         errors: [],
-                        fileName: "code0-license-42.lic",
                         licenseFile,
                     },
                 },
@@ -81,35 +80,7 @@ test("license export returns the signed self-hosted license as a private downloa
             assert.equal(graphQLServer.requests[0]?.authorization, "Session c_ust_example")
             assert.equal(graphQLServer.requests[0]?.body.operationName, "LicensesExport")
             assert.deepEqual(graphQLServer.requests[0]?.body.variables, { input: { id: licenseId } })
-        }
-    )
-})
-
-test("license export sanitizes Crater's suggested download name", async () => {
-    await withGraphQLServer(
-        [
-            {
-                data: {
-                    licensesExport: {
-                        errors: [],
-                        fileName: '../../unsafe\r\n"name.lic',
-                        licenseFile: "signed-license",
-                    },
-                },
-            },
-        ],
-        async () => {
-            const response = await exportLicense(
-                new Request("https://example.com/api/crater/licenses/export", {
-                    method: "POST",
-                    headers: sessionHeaders,
-                    body: JSON.stringify({ id: licenseId }),
-                })
-            )
-
-            assert.equal(response.status, 200)
-            assert.equal(response.headers.get("x-license-filename"), "unsafe-name.czlc")
-            assert.doesNotMatch(response.headers.get("content-disposition") ?? "", /[\r\n]/)
+            assert.doesNotMatch(graphQLServer.requests[0]?.body.query ?? "", /fileName/)
         }
     )
 })
@@ -121,7 +92,6 @@ test("license export surfaces Crater domain errors", async () => {
                 data: {
                     licensesExport: {
                         errors: [{ errorCode: "INVALID_LICENSE", details: [] }],
-                        fileName: null,
                         licenseFile: null,
                     },
                 },
