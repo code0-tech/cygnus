@@ -7,8 +7,6 @@ const CRATER_PAYMENT_PERIODS = {
     yearly: "YEARLY" as CheckoutPaymentPeriod,
 } as const satisfies Record<PaymentPeriod, CheckoutPaymentPeriod>
 
-export const DEFAULT_CRATER_PAYMENT_PERIOD = "MONTHLY" as CheckoutPaymentPeriod
-
 export function toCraterPaymentPeriod(paymentPeriod: PaymentPeriod): CheckoutPaymentPeriod {
     return CRATER_PAYMENT_PERIODS[paymentPeriod]
 }

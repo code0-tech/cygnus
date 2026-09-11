@@ -4,7 +4,7 @@ import { Badge, Card, Text } from "@code0-tech/pictor"
 import { IconCreditCard } from "@tabler/icons-react"
 import type { ReactNode } from "react"
 
-export interface CustomerPaymentMethodSummary {
+interface CustomerPaymentMethodSummary {
     brand: string | null
     expiresMonth: number | null
     expiresYear: number | null

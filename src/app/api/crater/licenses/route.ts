@@ -57,6 +57,7 @@ const LICENSE_DASHBOARD: TypedDocumentNode<LicenseDashboardQuery, CustomerPageVa
                                 cancelAt
                                 canceledAt
                                 currentPeriodEnd
+                                paymentMethodId
                                 pendingUpdate {
                                     plan
                                     paymentPeriod
@@ -193,6 +194,7 @@ const LICENSE_NAVIGATION_PAGE: TypedDocumentNode<LicenseDashboardQuery, LicenseD
                                     cancelAt
                                     canceledAt
                                     currentPeriodEnd
+                                    paymentMethodId
                                     pendingUpdate {
                                         plan
                                         paymentPeriod
@@ -269,6 +271,7 @@ const LICENSE_CUSTOMER_DETAIL: TypedDocumentNode<LicenseDashboardQuery, LicenseD
                                 cancelAt
                                 canceledAt
                                 currentPeriodEnd
+                                paymentMethodId
                                 pendingUpdate {
                                     plan
                                     paymentPeriod
@@ -358,12 +361,14 @@ function mapPendingUpdate(pendingUpdate: SubscriptionPendingUpdate | null | unde
     }
 }
 
-function mapSubscriptionFields(subscription: Subscription | null | undefined): Partial<LicenseDashboardLicense> {
+// Subscription.paymentMethodId is not in the published Crater types yet.
+function mapSubscriptionFields(subscription: (Subscription & { paymentMethodId?: string | null }) | null | undefined): Partial<LicenseDashboardLicense> {
     if (!subscription?.id) return {}
 
     return {
         subscriptionId: subscription.id,
         ...(subscription.status ? { subscriptionStatus: subscription.status } : {}),
+        ...(subscription.paymentMethodId ? { paymentMethodId: subscription.paymentMethodId } : {}),
         ...(subscription.cancelAt ? { cancelAt: subscription.cancelAt } : {}),
         ...(subscription.canceledAt ? { canceledAt: subscription.canceledAt } : {}),
         ...(subscription.currentPeriodEnd ? { currentPeriodEnd: subscription.currentPeriodEnd } : {}),

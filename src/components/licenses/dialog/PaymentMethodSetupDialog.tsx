@@ -50,14 +50,11 @@ export function PaymentMethodSetupDialog({ content, disabled = false, errors, on
         setError(null)
         let active = true
 
-        const createUrl = owner.type === "customer" ? "/api/crater/customer/payment-method-setup" : "/api/crater/subscriptions/payment-method-setup"
-        const createBody = owner.type === "customer" ? { customerId: owner.customerId } : { subscriptionId: owner.subscriptionId }
-
-        void fetch(createUrl, {
+        void fetch("/api/crater/customer/payment-method-setup", {
             method: "POST",
             credentials: "same-origin",
             headers: { "content-type": "application/json" },
-            body: JSON.stringify(createBody),
+            body: JSON.stringify({ customerId: owner.customerId }),
         })
             .then(async (response) => {
                 const result: unknown = await response.json()

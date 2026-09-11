@@ -1,12 +1,19 @@
 import { createApolloClient } from "@/lib/apolloClient"
 import { CRATER_ERROR_FIELDS, craterJson, craterMutationErrorResponse, craterTransportErrorResponse, optionalString, readJsonObject, requireCraterSession } from "@/lib/checkout/craterApi"
-import type { Mutation, MutationSubscriptionsSetPaymentMethodArgs, Query, QuerySubscriptionPaymentMethodArgs } from "@code0-tech/crater-graphql-types"
+import { isSubscriptionId } from "@/lib/licenses/craterSubscriptionRequest"
+import type { Error as CraterError, Query, QuerySubscriptionPaymentMethodArgs, Scalars } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 
 export const runtime = "nodejs"
 
 type SubscriptionPaymentMethodData = Pick<Query, "subscriptionPaymentMethod">
-type SubscriptionsSetPaymentMethodData = Pick<Mutation, "subscriptionsSetPaymentMethod">
+
+// The published Crater types still describe the retired subscriptionsSetPaymentMethod mutation and
+// know neither the paymentMethodId argument of subscriptionsUpdate nor the field on Subscription.
+type SubscriptionsSetPaymentMethodData = {
+    subscriptionsUpdate: { errors: CraterError[]; subscription: { id: string; paymentMethodId: string | null } | null } | null
+}
+type SubscriptionsSetPaymentMethodVariables = { input: { id: Scalars["SubscriptionID"]["input"]; paymentMethodId: string } }
 
 const SUBSCRIPTION_PAYMENT_METHOD: TypedDocumentNode<SubscriptionPaymentMethodData, QuerySubscriptionPaymentMethodArgs> = gql`
     query SubscriptionPaymentMethod($subscriptionId: SubscriptionID!) {
@@ -20,16 +27,15 @@ const SUBSCRIPTION_PAYMENT_METHOD: TypedDocumentNode<SubscriptionPaymentMethodDa
     }
 `
 
-const SUBSCRIPTIONS_SET_PAYMENT_METHOD: TypedDocumentNode<SubscriptionsSetPaymentMethodData, MutationSubscriptionsSetPaymentMethodArgs> = gql`
+// Crater retired subscriptionsSetPaymentMethod; the payment method is now one more field of
+// subscriptionsUpdate. Sent on its own it skips the plan half entirely and applies immediately.
+const SUBSCRIPTIONS_SET_PAYMENT_METHOD: TypedDocumentNode<SubscriptionsSetPaymentMethodData, SubscriptionsSetPaymentMethodVariables> = gql`
     ${CRATER_ERROR_FIELDS}
-    mutation SubscriptionsSetPaymentMethod($input: SubscriptionsSetPaymentMethodInput!) {
-        subscriptionsSetPaymentMethod(input: $input) {
-            paymentMethod {
-                brand
-                expiresMonth
-                expiresYear
-                last4
-                type
+    mutation SubscriptionsSetPaymentMethod($input: SubscriptionsUpdateInput!) {
+        subscriptionsUpdate(input: $input) {
+            subscription {
+                id
+                paymentMethodId
             }
             errors {
                 ...CraterErrorFields
@@ -37,10 +43,6 @@ const SUBSCRIPTIONS_SET_PAYMENT_METHOD: TypedDocumentNode<SubscriptionsSetPaymen
         }
     }
 `
-
-function isSubscriptionId(value: string): value is QuerySubscriptionPaymentMethodArgs["subscriptionId"] {
-    return /^gid:\/\/crater\/Subscription\/\d+$/.test(value)
-}
 
 export async function GET(request: Request) {
     const session = requireCraterSession(request)
@@ -66,7 +68,7 @@ export async function GET(request: Request) {
     }
 }
 
-export async function POST(request: Request) {
+export async function PATCH(request: Request) {
     const session = requireCraterSession(request)
     if (session.response) return session.response
 
@@ -81,16 +83,16 @@ export async function POST(request: Request) {
     try {
         const result = await createApolloClient(session.token).mutate({
             mutation: SUBSCRIPTIONS_SET_PAYMENT_METHOD,
-            variables: { input: { subscriptionId, paymentMethodId } },
+            variables: { input: { id: subscriptionId, paymentMethodId } },
         })
-        const payload = result.data?.subscriptionsSetPaymentMethod
+        const payload = result.data?.subscriptionsUpdate
 
         if (!payload) throw new Error("Crater returned no subscription payment method payload.")
 
         const errorResponse = craterMutationErrorResponse(payload.errors, "Crater could not update the subscription's payment method.")
         if (errorResponse) return errorResponse
 
-        return craterJson({ paymentMethod: payload.paymentMethod ?? null })
+        return craterJson({ paymentMethodId: payload.subscription?.paymentMethodId ?? null })
     } catch (error) {
         const transportResponse = craterTransportErrorResponse(error)
         if (transportResponse) return transportResponse

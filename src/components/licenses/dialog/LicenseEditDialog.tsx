@@ -35,7 +35,7 @@ interface PaymentMethodSummary {
 export function LicenseEditDialog({ content, customerId, errors, licenseId, locale, namespaceHref }: LicenseEditDialogProps) {
     const router = useRouter()
     const searchParams = useSearchParams()
-    const { licenses } = useLicenseData()
+    const { licenses, updateLicense } = useLicenseData()
     const resolvedCustomerId = decodeLicenseRouteId(customerId)
     const resolvedLicenseId = decodeLicenseRouteId(licenseId)
     const license = licenses.find((candidate) => candidate.id === resolvedLicenseId && candidate.customerId === resolvedCustomerId)
@@ -125,6 +125,7 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
             })
             if (!response.ok) throw new Error(errors.paymentMethodAssign)
 
+            updateLicense(license.id, { paymentMethodId })
             paymentMethodUpdated()
         } catch {
             setAssignPaymentMethodError(true)
@@ -257,7 +258,7 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
                                                         type="button"
                                                         variant="normal"
                                                         paddingSize="xs"
-                                                        disabled={assigningPaymentMethodId === method}
+                                                        disabled={assigningPaymentMethodId === method || license.paymentMethodId === method}
                                                         onClick={() => void assignPaymentMethod(method)}
                                                     >
                                                         {assigningPaymentMethodId === method ? (
@@ -287,7 +288,7 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
                         content={content}
                         errors={errors}
                         onSuccess={paymentMethodUpdated}
-                        owner={{ subscriptionId: license.subscriptionId, type: "subscription" }}
+                        owner={{ customerId: license.customerId }}
                         returnPath={`/${locale}/licenses/customer/${encodeURIComponent(license.customerId)}/license/${encodeURIComponent(license.id)}/edit`}
                         triggerLabel={content.editor.changePaymentMethodLabel}
                     />
