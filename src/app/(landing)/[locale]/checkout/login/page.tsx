@@ -1,11 +1,13 @@
 import { CheckoutLogin } from "@/components/checkout/CheckoutLogin"
 import { CheckoutLegalFooter } from "@/components/checkout/CheckoutLegalFooter"
 import { getCheckoutContent, getFooter } from "@/lib/cms"
-import { createCheckoutQuery, createCraterLoginCallbackUrl, createMainAppLoginUrl, type CheckoutSearchParams } from "@/lib/checkout/checkoutLogin"
+import { canSkipCheckoutLogin, createCheckoutQuery, createCraterLoginCallbackUrl, createMainAppLoginUrl, type CheckoutSearchParams } from "@/lib/checkout/checkoutLogin"
+import { CRATER_USER_LOGIN_COOKIE_NAME, CRATER_USER_LOGIN_COOKIE_VALUE } from "@/lib/checkout/craterUserLogin"
 import { isSupportedLocale } from "@/lib/i18n"
 import { resolveSiteUrl } from "@/lib/siteConfig"
 import type { Metadata } from "next"
-import { notFound } from "next/navigation"
+import { cookies } from "next/headers"
+import { notFound, redirect } from "next/navigation"
 
 export const metadata: Metadata = { title: "Login" }
 
@@ -42,6 +44,9 @@ export default async function CheckoutLoginPage({ params, searchParams }: Checko
     const deploymentTypeParam = resolvedSearchParams.deploymentType
     const deploymentType = Array.isArray(deploymentTypeParam) ? deploymentTypeParam[0] : deploymentTypeParam
     const loginHref = createMainAppLoginUrl(content.login.loginUrl, callbackUrl, cancelUrl, deploymentType === "cloud")
+
+    const craterUserLogin = (await cookies()).get(CRATER_USER_LOGIN_COOKIE_NAME)?.value === CRATER_USER_LOGIN_COOKIE_VALUE
+    if (canSkipCheckoutLogin(craterUserLogin, deploymentType)) redirect(guestHref)
 
     return (
         <div className="flex min-h-full flex-col">

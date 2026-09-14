@@ -21,6 +21,14 @@ export function createCraterLoginCallbackUrl(siteUrl: URL, checkoutPath: string)
     return callbackUrl.toString()
 }
 
+// The checkout login step asks exactly one question: log in, or continue as a guest. A browser that
+// already completed the Sagittarius login has answered it, so the step is skipped for it. Cloud keeps the
+// step: its login link carries selectNamespace, and that round trip is what brings back the Sagittarius
+// namespace the checkout session is created with.
+export function canSkipCheckoutLogin(hasCraterUserLogin: boolean, deploymentType: string | undefined) {
+    return hasCraterUserLogin && deploymentType !== "cloud"
+}
+
 export function createMainAppLoginUrl(loginUrl: string, callbackUrl: string, cancelUrl: string, selectNamespace = false): string {
     const url = new URL(loginUrl)
     url.searchParams.set("callbackUrl", callbackUrl)
