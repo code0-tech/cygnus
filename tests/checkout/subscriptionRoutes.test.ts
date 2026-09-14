@@ -92,7 +92,7 @@ test("upgrades a subscription to a higher plan", async () => {
                             id: subscriptionId,
                             paymentPeriod: "MONTHLY",
                             pendingUpdate: null,
-                            plan: "max",
+                            plan: "MAX",
                             status: "active",
                             updatedAt: "2026-08-17T10:00:00Z",
                             workflowExecutions: null,
@@ -120,7 +120,7 @@ test("upgrades a subscription to a higher plan", async () => {
                 canceledAt: null,
                 currentPeriodEnd: "2026-09-01T00:00:00Z",
                 id: subscriptionId,
-                paymentPeriod: "MONTHLY",
+                paymentPeriod: "monthly",
                 pendingUpdate: null,
                 plan: "max",
                 status: "active",
@@ -133,7 +133,7 @@ test("upgrades a subscription to a higher plan", async () => {
 
 test("changes the billing period and converts it to Crater's uppercase enum", async () => {
     await withGraphQLServer(
-        [{ data: { subscriptionsUpdate: { errors: [], subscription: { id: subscriptionId, paymentPeriod: "QUARTERLY", plan: "pro", status: "active" } } } }],
+        [{ data: { subscriptionsUpdate: { errors: [], subscription: { id: subscriptionId, paymentPeriod: "QUARTERLY", plan: "PRO", status: "active" } } } }],
         async (graphQLServer) => {
             const response = await updateSubscription(
                 new Request("https://example.com/api/crater/subscriptions", {
@@ -154,7 +154,7 @@ test("increases custom plan quantities", async () => {
         [
             {
                 data: {
-                    subscriptionsUpdate: { errors: [], subscription: { aiTokens: 500_000, id: subscriptionId, plan: "custom", status: "active", workflowExecutions: 2_000 } },
+                    subscriptionsUpdate: { errors: [], subscription: { aiTokens: 500_000, id: subscriptionId, plan: "CUSTOM", status: "active", workflowExecutions: 2_000 } },
                 },
             },
         ],
@@ -174,22 +174,19 @@ test("increases custom plan quantities", async () => {
 })
 
 test("forwards a Crater subscription update error as 422", async () => {
-    await withGraphQLServer(
-        [{ data: { subscriptionsUpdate: { errors: [{ errorCode: "INVALID_CHECKOUT_SELECTION", details: [] }], subscription: null } } }],
-        async () => {
-            const response = await updateSubscription(
-                new Request("https://example.com/api/crater/subscriptions", {
-                    method: "PATCH",
-                    headers: sessionHeaders,
-                    body: JSON.stringify({ id: subscriptionId, plan: "max" }),
-                })
-            )
+    await withGraphQLServer([{ data: { subscriptionsUpdate: { errors: [{ errorCode: "INVALID_CHECKOUT_SELECTION", details: [] }], subscription: null } } }], async () => {
+        const response = await updateSubscription(
+            new Request("https://example.com/api/crater/subscriptions", {
+                method: "PATCH",
+                headers: sessionHeaders,
+                body: JSON.stringify({ id: subscriptionId, plan: "max" }),
+            })
+        )
 
-            assert.equal(response.status, 422)
-            const body = (await response.json()) as { errorCode: string }
-            assert.equal(body.errorCode, "INVALID_CHECKOUT_SELECTION")
-        }
-    )
+        assert.equal(response.status, 422)
+        const body = (await response.json()) as { errorCode: string }
+        assert.equal(body.errorCode, "INVALID_CHECKOUT_SELECTION")
+    })
 })
 
 test("previews a subscription change without applying it", async () => {
@@ -205,7 +202,7 @@ test("previews a subscription change without applying it", async () => {
                             effectiveAt: "2026-08-17T10:00:00Z",
                             immediate: true,
                             paymentPeriod: "MONTHLY",
-                            plan: "max",
+                            plan: "MAX",
                             prorationAmount: 1_200,
                             total: 3_000,
                             workflowExecutions: null,
@@ -225,9 +222,11 @@ test("previews a subscription change without applying it", async () => {
 
             assert.equal(response.status, 200)
             assert.equal(graphQLServer.requests[0].body.operationName, "SubscriptionsPreviewUpdate")
-            const body = (await response.json()) as { immediate: boolean; total: number }
+            const body = (await response.json()) as { immediate: boolean; paymentPeriod: string; plan: string; total: number }
             assert.equal(body.immediate, true)
             assert.equal(body.total, 3_000)
+            assert.equal(body.plan, "max")
+            assert.equal(body.paymentPeriod, "monthly")
         }
     )
 })
@@ -312,10 +311,17 @@ test("resume requires a valid subscription id", async () => {
 })
 
 test("subscription changes reject unknown plans before calling Crater", async () => {
-    for (const [handler, method] of [[updateSubscription, "PATCH"], [previewSubscriptionUpdate, "POST"]] as const) {
-        const response = await handler(new Request("https://example.com/api/crater/subscriptions", {
-            method, headers: sessionHeaders, body: JSON.stringify({ id: subscriptionId, plan: "enterprise" }),
-        }))
+    for (const [handler, method] of [
+        [updateSubscription, "PATCH"],
+        [previewSubscriptionUpdate, "POST"],
+    ] as const) {
+        const response = await handler(
+            new Request("https://example.com/api/crater/subscriptions", {
+                method,
+                headers: sessionHeaders,
+                body: JSON.stringify({ id: subscriptionId, plan: "enterprise" }),
+            })
+        )
         assert.equal(response.status, 400)
         assert.deepEqual(await response.json(), { error: "plan must be pro, max, or custom." })
     }
@@ -323,9 +329,13 @@ test("subscription changes reject unknown plans before calling Crater", async ()
 
 test("subscription preview sends the generated plan enum", async () => {
     await withGraphQLServer([{ data: { subscriptionsPreviewUpdate: { errors: [], preview: { plan: "PRO" } } } }], async (server) => {
-        await previewSubscriptionUpdate(new Request("https://example.com/api/crater/subscriptions/preview", {
-            method: "POST", headers: sessionHeaders, body: JSON.stringify({ id: subscriptionId, plan: "pro" }),
-        }))
+        await previewSubscriptionUpdate(
+            new Request("https://example.com/api/crater/subscriptions/preview", {
+                method: "POST",
+                headers: sessionHeaders,
+                body: JSON.stringify({ id: subscriptionId, plan: "pro" }),
+            })
+        )
         assert.deepEqual(server.requests[0].body.variables, { input: { id: subscriptionId, plan: "PRO" } })
     })
 })

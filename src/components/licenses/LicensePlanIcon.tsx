@@ -9,7 +9,7 @@ interface LicensePlanIconProps {
 export function LicensePlanIcon({ className, plan, size = 18 }: LicensePlanIconProps) {
     const iconProps = { "aria-hidden": true, className, size } as const
 
-    switch (plan?.toLowerCase()) {
+    switch (plan) {
         case "pro":
             return <IconSparkles {...iconProps} />
         case "max":

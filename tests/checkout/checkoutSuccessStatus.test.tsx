@@ -92,11 +92,12 @@ const subscriptionConfig = {
     },
     paymentPeriod: { monthlyPeriodSuffix: "/ month", quarterlyPeriodSuffix: "/ quarter", yearlyPeriodSuffix: "/ year" },
 } as never
+// The status route normalizes Crater's enums, so the component only ever sees the lowercase values.
 const completedConfiguration = {
     aiTokens: null,
     customerType: "business",
     deploymentType: "self_hosted",
-    paymentPeriod: "MONTHLY",
+    paymentPeriod: "monthly",
     plan: "pro",
     workflowExecutions: null,
 }

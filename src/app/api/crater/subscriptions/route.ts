@@ -1,5 +1,6 @@
 import { createApolloClient } from "@/lib/apolloClient"
 import { CRATER_ERROR_FIELDS, craterJson, craterMutationErrorResponse, craterTransportErrorResponse, optionalString, readJsonObject, requireCraterSession } from "@/lib/checkout/craterApi"
+import { normalizeCraterPaymentPeriod, normalizeCraterPlan } from "@/lib/checkout/craterCheckout"
 import { isSubscriptionId, parseSubscriptionChangeFields } from "@/lib/licenses/craterSubscriptionRequest"
 import type { Mutation, MutationSubscriptionsUpdateArgs } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
@@ -38,6 +39,23 @@ const SUBSCRIPTIONS_UPDATE: TypedDocumentNode<SubscriptionsUpdateData, MutationS
     }
 `
 
+// The dashboard updates its licenses straight from this payload, so the CheckoutPlan and
+// CheckoutPaymentPeriod enums are normalized here just like in the license dashboard route.
+function normalizeSubscriptionEnums(subscription: NonNullable<NonNullable<SubscriptionsUpdateData["subscriptionsUpdate"]>["subscription"]>) {
+    const plan = normalizeCraterPlan(subscription.plan)
+    const paymentPeriod = normalizeCraterPaymentPeriod(subscription.paymentPeriod)
+    const pendingUpdate = subscription.pendingUpdate
+    const pendingPlan = normalizeCraterPlan(pendingUpdate?.plan)
+    const pendingPaymentPeriod = normalizeCraterPaymentPeriod(pendingUpdate?.paymentPeriod)
+
+    return {
+        ...subscription,
+        plan: plan ?? null,
+        paymentPeriod: paymentPeriod ?? null,
+        ...(pendingUpdate ? { pendingUpdate: { ...pendingUpdate, plan: pendingPlan ?? null, paymentPeriod: pendingPaymentPeriod ?? null } } : {}),
+    }
+}
+
 export async function PATCH(request: Request) {
     const session = requireCraterSession(request)
     if (session.response) return session.response
@@ -63,7 +81,7 @@ export async function PATCH(request: Request) {
         if (errorResponse) return errorResponse
         if (!payload.subscription) throw new Error("Crater returned no updated subscription.")
 
-        return craterJson(payload.subscription)
+        return craterJson(normalizeSubscriptionEnums(payload.subscription))
     } catch (error) {
         const transportResponse = craterTransportErrorResponse(error)
         if (transportResponse) return transportResponse

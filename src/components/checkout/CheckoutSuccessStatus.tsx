@@ -8,8 +8,8 @@ import { getCheckoutStatusPollDelay, hasCheckoutStatusPollingExpired } from "@/l
 import type { CheckoutData, SubscriptionConfigData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { downloadLicenseFile } from "@/lib/licenses/downloadLicenseFile"
-import { getPaymentPeriodSuffix } from "@/lib/subscriptionCalculator"
-import type { CheckoutCompletionState, CheckoutPaymentPeriod } from "@code0-tech/crater-graphql-types"
+import { getPaymentPeriodSuffix, type PaymentPeriod } from "@/lib/subscriptionCalculator"
+import type { CheckoutCompletionState } from "@code0-tech/crater-graphql-types"
 import { Button } from "@code0-tech/pictor"
 import { IconCheck, IconCloud, IconDownload, IconX } from "@tabler/icons-react"
 import Link from "next/link"
@@ -26,7 +26,7 @@ type StatusResponse = {
         aiTokens: number | null
         customerType: string
         deploymentType: string
-        paymentPeriod: CheckoutPaymentPeriod | null
+        paymentPeriod: PaymentPeriod | null
         plan: string | null
         workflowExecutions: number | null
     } | null
@@ -53,7 +53,8 @@ interface CheckoutSuccessStatusProps {
 const REQUEST_TIMEOUT_MS = 10_000
 const VALID_STATES = new Set<string>(["CHECKOUT_PENDING", "PAYMENT_PENDING", "FULFILLMENT_PENDING", "READY", "FAILED"])
 const SETTLED_STATES = new Set<string>(["FULFILLMENT_PENDING", "READY"])
-const PAYMENT_PERIODS = new Set<string>(["MONTHLY", "QUARTERLY", "YEARLY"])
+// The status route normalizes Crater's enums, so everything below reads the lowercase values.
+const PAYMENT_PERIODS = new Set<string>(["monthly", "quarterly", "yearly"])
 
 function isNullablePositiveInteger(value: unknown) {
     return value === null || (Number.isInteger(value) && Number(value) > 0)
@@ -198,8 +199,8 @@ export function CheckoutSuccessStatus({ checkoutSearchParams, content, errorMess
     const licenseAccessUrl = licenseReturnPath ? `/api/crater/licenses/access?locale=${encodeURIComponent(locale)}&returnPath=${encodeURIComponent(licenseReturnPath)}` : null
     const confirmedConfiguration = fulfillmentConfirmed ? completion?.configuration : null
     const confirmedPricing = fulfillmentConfirmed ? completion?.pricing : null
-    const paymentPeriod = confirmedConfiguration?.paymentPeriod?.toLowerCase() as "monthly" | "quarterly" | "yearly" | undefined
-    const planKey = confirmedConfiguration?.plan?.toLowerCase()
+    const paymentPeriod = confirmedConfiguration?.paymentPeriod ?? undefined
+    const planKey = confirmedConfiguration?.plan
     const planTitle = planKey === "pro" || planKey === "max" || planKey === "custom" ? subscriptionConfig.packages[planKey].title : subscriptionConfig.packages.custom.title
     const currencyDivisor = confirmedPricing
         ? 10 **
