@@ -469,6 +469,7 @@ export interface ErrorsContent {
     dashboardLoad: string
     retry: string
     customerUpdate: string
+    paymentMethodLoad: string
     paymentMethodUpdate: string
     paymentMethodRemove: string
     paymentMethodInUse: string

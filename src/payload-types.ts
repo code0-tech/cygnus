@@ -3382,6 +3382,7 @@ export interface Error {
   dashboardLoad: string;
   retry: string;
   customerUpdate: string;
+  paymentMethodLoad: string;
   paymentMethodUpdate: string;
   paymentMethodRemove: string;
   paymentMethodInUse: string;
@@ -4150,6 +4151,7 @@ export interface ErrorsSelect<T extends boolean = true> {
   dashboardLoad?: T;
   retry?: T;
   customerUpdate?: T;
+  paymentMethodLoad?: T;
   paymentMethodUpdate?: T;
   paymentMethodRemove?: T;
   paymentMethodInUse?: T;

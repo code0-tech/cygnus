@@ -72,10 +72,6 @@ export function CraterSessionProvider({ children, errorMessage = "An unexpected 
                 throw new Error(await readError(statusResponse, "Failed to validate the Crater session."))
             }
 
-            // The login step forwards a browser that completed the Sagittarius login straight into the
-            // checkout. When that session turns out to be gone, the choice has to be offered again: creating
-            // a guest session here would silently buy the license under the shared guest user. The success
-            // page shares this provider and must never be sent back into the checkout.
             const checkoutPath = window.location.pathname.replace(/\/$/, "")
             if (checkoutPath.endsWith("/checkout") && hasCraterUserLoginMarker()) {
                 clearCraterUserLoginMarker()

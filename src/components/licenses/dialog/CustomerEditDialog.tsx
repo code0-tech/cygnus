@@ -319,7 +319,7 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
                                 ) : paymentMethodsError ? (
                                     <div className="space-y-3">
                                         <Text role="alert" size="sm" className="text-error!">
-                                            {errors.paymentMethodRemove}
+                                            {errors.paymentMethodLoad}
                                         </Text>
                                         <Button type="button" variant="normal" paddingSize="xs" onClick={() => setPaymentMethodsRefreshKey((value) => value + 1)}>
                                             {errors.retry}

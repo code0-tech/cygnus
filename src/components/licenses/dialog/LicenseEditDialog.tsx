@@ -207,7 +207,7 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
                     ) : paymentMethodError ? (
                         <div className="space-y-3 rounded-2xl border border-white/10 bg-white/3 p-4">
                             <Text role="alert" size="sm" className="text-error!">
-                                {errors.paymentMethodUpdate}
+                                {errors.paymentMethodLoad}
                             </Text>
                             <Button type="button" variant="normal" paddingSize="xs" onClick={() => setPaymentMethodRefreshKey((value) => value + 1)}>
                                 {errors.retry}
@@ -225,7 +225,7 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
 
                     {isLoadingCustomerPaymentMethods ? null : customerPaymentMethodsError ? (
                         <Text role="alert" size="sm" className="text-error!">
-                            {errors.paymentMethodAssign}
+                            {errors.paymentMethodLoad}
                         </Text>
                     ) : customerPaymentMethods && customerPaymentMethods.length > 0 ? (
                         <div className="space-y-3">
