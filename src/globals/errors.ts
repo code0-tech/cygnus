@@ -30,6 +30,13 @@ export const Errors: GlobalConfig = {
             defaultValue: localizedDefault("The customer could not be updated.", "Der Kunde konnte nicht aktualisiert werden."),
         },
         {
+            name: "paymentMethodLoad",
+            type: "text",
+            required: true,
+            localized: true,
+            defaultValue: localizedDefault("The payment methods could not be loaded.", "Die Zahlungsmethoden konnten nicht geladen werden."),
+        },
+        {
             name: "paymentMethodUpdate",
             type: "text",
             required: true,
