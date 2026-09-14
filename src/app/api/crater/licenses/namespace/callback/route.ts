@@ -1,7 +1,7 @@
 import { createApolloClient } from "@/lib/apolloClient"
 import { CRATER_ERROR_FIELDS, describeCraterError } from "@/lib/checkout/craterApi"
 import { createCraterUserSession } from "@/lib/checkout/craterLogin"
-import { setCraterSessionCookie } from "@/lib/checkout/craterSession"
+import { setCraterSessionCookie, setCraterUserLoginCookie } from "@/lib/checkout/craterSession"
 import { isSupportedLocale } from "@/lib/i18n"
 import { isLicenseId } from "@/lib/licenses/craterLicenseRequest"
 import type { Mutation, MutationLicensesLinkNamespaceArgs } from "@code0-tech/crater-graphql-types"
@@ -107,10 +107,11 @@ export async function GET(request: Request) {
         if (!payload?.license || (payload.errors?.length ?? 0) > 0) {
             const failure = describeCraterError(payload?.errors)
             console.error("Crater rejected the selected license namespace:", failure?.errorCode ?? "Crater returned no linked license.")
-            return setCraterSessionCookie(errorRedirect(resolvedReturn.returnUrl, "update"), sessionToken)
+            return setCraterUserLoginCookie(setCraterSessionCookie(errorRedirect(resolvedReturn.returnUrl, "update"), sessionToken))
         }
 
-        return setCraterSessionCookie(noStoreRedirect(resolvedReturn.returnUrl), sessionToken)
+        // This callback is the second Sagittarius login in the product, so it marks the browser too.
+        return setCraterUserLoginCookie(setCraterSessionCookie(noStoreRedirect(resolvedReturn.returnUrl), sessionToken))
     } catch (error) {
         console.error("Crater license namespace callback error:", error instanceof Error ? error.name : "Unknown error")
         return errorRedirect(resolvedReturn.returnUrl, "update")

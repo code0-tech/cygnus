@@ -1,6 +1,6 @@
 import assert from "node:assert/strict"
 import test from "node:test"
-import { createCheckoutQuery, createCraterLoginCallbackUrl, createMainAppLoginUrl } from "../../src/lib/checkout/checkoutLogin"
+import { canSkipCheckoutLogin, createCheckoutQuery, createCraterLoginCallbackUrl, createMainAppLoginUrl } from "../../src/lib/checkout/checkoutLogin"
 import {
     createLicenseNamespaceCallbackUrl,
     createLicenseNamespaceReturnPath,
@@ -74,4 +74,12 @@ test("does not request a namespace for non-cloud deployments", () => {
     )
 
     assert.equal(new URL(result).searchParams.has("selectNamespace"), false)
+})
+
+test("the checkout login step is skipped only for a browser that completed the Sagittarius login", () => {
+    assert.equal(canSkipCheckoutLogin(true, "self_hosted"), true)
+    assert.equal(canSkipCheckoutLogin(true, undefined), true)
+    assert.equal(canSkipCheckoutLogin(false, "self_hosted"), false)
+    // Cloud keeps the step: its login link is what selects the namespace the checkout session needs.
+    assert.equal(canSkipCheckoutLogin(true, "cloud"), false)
 })

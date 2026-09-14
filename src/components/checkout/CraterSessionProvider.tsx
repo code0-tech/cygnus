@@ -1,5 +1,6 @@
 "use client"
 
+import { clearCraterUserLoginMarker, hasCraterUserLoginMarker } from "@/lib/checkout/craterUserLogin"
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react"
 
 interface CraterSessionContextValue {
@@ -15,7 +16,7 @@ const CraterSessionContext = createContext<CraterSessionContextValue>({
 })
 
 export function CraterSessionProvider({ children, errorMessage = "An unexpected error occurred." }: { children: ReactNode; errorMessage?: string }) {
-    const sessionRequestRef = useRef<Promise<void> | null>(null)
+    const sessionRequestRef = useRef<Promise<"redirecting" | undefined> | null>(null)
     const [session, setSession] = useState<CraterSessionContextValue>({
         authenticated: false,
         error: null,
@@ -66,20 +67,32 @@ export function CraterSessionProvider({ children, errorMessage = "An unexpected 
                 credentials: "same-origin",
                 cache: "no-store",
             })
-            if (statusResponse.ok) return
+            if (statusResponse.ok) return undefined
             if (statusResponse.status !== 401 && statusResponse.status !== 403) {
                 throw new Error(await readError(statusResponse, "Failed to validate the Crater session."))
             }
 
+            // The login step forwards a browser that completed the Sagittarius login straight into the
+            // checkout. When that session turns out to be gone, the choice has to be offered again: creating
+            // a guest session here would silently buy the license under the shared guest user. The success
+            // page shares this provider and must never be sent back into the checkout.
+            const checkoutPath = window.location.pathname.replace(/\/$/, "")
+            if (checkoutPath.endsWith("/checkout") && hasCraterUserLoginMarker()) {
+                clearCraterUserLoginMarker()
+                window.location.assign(`${checkoutPath}/login${window.location.search}`)
+                return "redirecting" as const
+            }
+
             await createSession()
+            return undefined
         }
 
         const login = async () => {
             try {
                 sessionRequestRef.current ??= restoreOrCreateSession()
 
-                await sessionRequestRef.current
-                if (!active) return
+                const outcome = await sessionRequestRef.current
+                if (!active || outcome === "redirecting") return
 
                 setSession({ authenticated: true, error: null, isLoading: false })
             } catch (error) {

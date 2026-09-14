@@ -129,8 +129,17 @@ test("server-side login callback exchanges Sagittarius for an HttpOnly Crater co
         assert.equal(response.headers.get("location"), `https://code0.example${returnPath}`)
         assert.equal(response.headers.get("cache-control"), "no-store")
         assert.equal(response.headers.get("referrer-policy"), "no-referrer")
-        assert.match(response.headers.get("set-cookie") ?? "", /crater_session=crater-callback-session/)
-        assert.match(response.headers.get("set-cookie") ?? "", /HttpOnly/i)
+        const setCookies = response.headers.getSetCookie()
+        const sessionCookie = setCookies.find((cookie) => cookie.startsWith("crater_session=")) ?? ""
+        const loginMarker = setCookies.find((cookie) => cookie.startsWith("crater_user_login=")) ?? ""
+        assert.match(sessionCookie, /crater_session=crater-callback-session/)
+        assert.match(sessionCookie, /HttpOnly/i)
+        // The marker says "this browser completed the Sagittarius login" so the checkout can skip the login
+        // step. It holds no token, is readable by the checkout, and covers the whole site.
+        assert.match(loginMarker, /crater_user_login=1/)
+        assert.doesNotMatch(loginMarker, /HttpOnly/i)
+        assert.match(loginMarker, /Path=\//i)
+        assert.doesNotMatch(loginMarker, /crater-callback-session|sagittarius-secret/)
         assert.doesNotMatch(response.headers.get("location") ?? "", /sagittarius-secret|[?&]token=/)
         assert.deepEqual(graphQLServer.requests[0].body.variables, {
             input: { sagittariusToken: "sagittarius-secret" },
@@ -1397,8 +1406,14 @@ test("clears a malformed Crater session cookie", async () => {
     )
 
     assert.equal(response.status, 401)
-    assert.match(response.headers.get("set-cookie") ?? "", /crater_session=;/)
-    assert.match(response.headers.get("set-cookie") ?? "", /Max-Age=0/i)
+    const setCookies = response.headers.getSetCookie()
+    // A session that is gone must take the login marker with it, or the checkout keeps skipping its login
+    // step for a browser Crater no longer knows.
+    for (const name of ["crater_session", "crater_user_login"]) {
+        const cleared = setCookies.find((cookie) => cookie.startsWith(`${name}=`)) ?? ""
+        assert.match(cleared, new RegExp(`${name}=;`))
+        assert.match(cleared, /Max-Age=0/i)
+    }
 })
 
 test("license dashboard requires a Crater session", async () => {

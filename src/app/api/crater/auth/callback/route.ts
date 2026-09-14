@@ -1,6 +1,6 @@
 import { describeCraterError } from "@/lib/checkout/craterApi"
 import { createCraterUserSession } from "@/lib/checkout/craterLogin"
-import { setCraterSessionCookie } from "@/lib/checkout/craterSession"
+import { setCraterSessionCookie, setCraterUserLoginCookie } from "@/lib/checkout/craterSession"
 import { isSupportedLocale } from "@/lib/i18n"
 import { NextResponse } from "next/server"
 
@@ -51,7 +51,7 @@ export async function GET(request: Request) {
             return noStoreRedirect(returnUrl)
         }
 
-        return setCraterSessionCookie(noStoreRedirect(returnUrl), payload.userSession.token)
+        return setCraterUserLoginCookie(setCraterSessionCookie(noStoreRedirect(returnUrl), payload.userSession.token))
     } catch (error) {
         console.error("Crater server-side login callback error:", error instanceof Error ? error.name : "Unknown error")
         returnUrl.searchParams.set("authError", "session")
