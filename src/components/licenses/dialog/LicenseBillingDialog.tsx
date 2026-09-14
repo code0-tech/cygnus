@@ -43,7 +43,7 @@ export function LicenseBillingDialog({ content, customerId, errors, licenseId, l
 
     const customerType = resolveSubscriptionCustomerType(license?.customerType)
     const periodOptions = getPaymentPeriodOptions(customerType)
-    const currentPeriod = license?.paymentPeriod?.toLowerCase() as PaymentPeriod | undefined
+    const currentPeriod = license?.paymentPeriod as PaymentPeriod | undefined
     const [selectedPeriod, setSelectedPeriod] = useState<PaymentPeriod | null>(null)
     const period = selectedPeriod ?? currentPeriod ?? periodOptions[0]
     const hasChange = Boolean(license?.subscriptionId) && period !== currentPeriod
@@ -146,7 +146,7 @@ export function LicenseBillingDialog({ content, customerId, errors, licenseId, l
                                 <p className="text-tertiary">{content.billing.pendingChangeLabel}</p>
                                 <p className="mt-1 text-white">
                                     {license.pendingUpdate.paymentPeriod
-                                        ? periodLabelFor(license.pendingUpdate.paymentPeriod.toLowerCase() as PaymentPeriod)
+                                        ? periodLabelFor(license.pendingUpdate.paymentPeriod as PaymentPeriod)
                                         : formatLicenseDisplayValue(license.pendingUpdate.plan, "plan", content.values)}
                                     {" · "}
                                     {formatDate(license.pendingUpdate.effectiveAt)}

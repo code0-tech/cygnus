@@ -82,7 +82,7 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
                         },
                     ]
                   : []),
-              ...(license.plan?.toLowerCase() === "custom"
+              ...(license.plan === "custom"
                   ? [
                         { label: content.dashboard.workflowExecutionsLabel, value: license.workflowExecutions === undefined ? "—" : formatCompactNumber(license.workflowExecutions) },
                         { label: content.dashboard.aiTokensLabel, value: license.aiTokens === undefined ? "—" : formatCompactNumber(license.aiTokens) },

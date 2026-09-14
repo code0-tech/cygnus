@@ -1,5 +1,6 @@
 import { createApolloClient } from "@/lib/apolloClient"
 import { craterJson, craterTransportErrorResponse, requireCraterSession } from "@/lib/checkout/craterApi"
+import { normalizeCraterDeploymentType, normalizeCraterPaymentPeriod, normalizeCraterPlan } from "@/lib/checkout/craterCheckout"
 import { normalizeCraterCustomerType } from "@/lib/checkout/craterCustomer"
 import { setCraterSessionCookie } from "@/lib/checkout/craterSession"
 import { isLicenseId } from "@/lib/licenses/craterLicenseRequest"
@@ -352,9 +353,12 @@ function mapInvoice(invoice: Invoice): LicenseDashboardInvoice | null {
 function mapPendingUpdate(pendingUpdate: SubscriptionPendingUpdate | null | undefined): LicenseDashboardPendingUpdate | undefined {
     if (!pendingUpdate) return undefined
 
+    const plan = normalizeCraterPlan(pendingUpdate.plan)
+    const paymentPeriod = normalizeCraterPaymentPeriod(pendingUpdate.paymentPeriod)
+
     return {
-        ...(pendingUpdate.plan ? { plan: pendingUpdate.plan } : {}),
-        ...(pendingUpdate.paymentPeriod ? { paymentPeriod: pendingUpdate.paymentPeriod } : {}),
+        ...(plan ? { plan } : {}),
+        ...(paymentPeriod ? { paymentPeriod } : {}),
         ...(typeof pendingUpdate.aiTokens === "number" ? { aiTokens: pendingUpdate.aiTokens } : {}),
         ...(typeof pendingUpdate.workflowExecutions === "number" ? { workflowExecutions: pendingUpdate.workflowExecutions } : {}),
         ...(pendingUpdate.effectiveAt ? { effectiveAt: pendingUpdate.effectiveAt } : {}),
@@ -379,6 +383,9 @@ function mapLicense(license: License, customer: Customer): LicenseDashboardLicen
     if (!customer.id || !license.id) return null
 
     const customerType = normalizeCraterCustomerType(customer.customerType)
+    const deploymentType = normalizeCraterDeploymentType(license.deploymentType)
+    const paymentPeriod = normalizeCraterPaymentPeriod(license.paymentPeriod)
+    const plan = normalizeCraterPlan(license.plan)
 
     return {
         ...(typeof license.aiTokens === "number" ? { aiTokens: license.aiTokens } : {}),
@@ -389,12 +396,12 @@ function mapLicense(license: License, customer: Customer): LicenseDashboardLicen
         ...(license.invoices?.nodes
             ? { invoices: license.invoices.nodes.flatMap((invoice) => (invoice ? [mapInvoice(invoice)].filter((mapped): mapped is LicenseDashboardInvoice => mapped !== null) : [])) }
             : {}),
-        name: licenseName(license.plan, license.id),
-        ...(license.deploymentType ? { deploymentType: license.deploymentType } : {}),
+        name: licenseName(plan, license.id),
+        ...(deploymentType ? { deploymentType } : {}),
         ...(license.endDate ? { endDate: license.endDate } : {}),
         ...(license.namespaceId ? { namespaceId: license.namespaceId } : {}),
-        ...(license.paymentPeriod ? { paymentPeriod: license.paymentPeriod } : {}),
-        ...(license.plan ? { plan: license.plan } : {}),
+        ...(paymentPeriod ? { paymentPeriod } : {}),
+        ...(plan ? { plan } : {}),
         ...(license.startDate ? { startDate: license.startDate } : {}),
         ...(license.status ? { status: license.status } : {}),
         ...(license.updatedAt ? { updatedAt: license.updatedAt } : {}),

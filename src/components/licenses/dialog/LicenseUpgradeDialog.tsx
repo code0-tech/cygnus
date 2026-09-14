@@ -55,7 +55,7 @@ export function LicenseUpgradeDialog({ content, customerId, errors, licenseId, l
     const close = () => router.replace(`/${locale}/licenses/customer/${encodeURIComponent(resolvedCustomerId)}/license/${encodeURIComponent(resolvedLicenseId)}`)
 
     const customerType = resolveSubscriptionCustomerType(license?.customerType)
-    const currentPlan = ((license?.plan?.toLowerCase() as SubscriptionPlan | undefined) ?? "pro") satisfies SubscriptionPlan
+    const currentPlan = ((license?.plan as SubscriptionPlan | undefined) ?? "pro") satisfies SubscriptionPlan
     // Only plans strictly above the current one are real upgrade targets. With just one (or zero, already
     // on custom), there is nothing to choose between, so the picker collapses to a plain label.
     const upgradeTargets = PLANS.filter((candidate) => PLAN_ORDER[candidate] > PLAN_ORDER[currentPlan])
@@ -78,7 +78,7 @@ export function LicenseUpgradeDialog({ content, customerId, errors, licenseId, l
 
     // Computed entirely from the CMS/Stripe price catalog already on the client, so it updates on every slider
     // tick without waiting for the debounced Crater preview request below.
-    const paymentPeriod = getPaymentPeriodForCustomerType(customerType, (license?.paymentPeriod?.toLowerCase() as PaymentPeriod | undefined) ?? "monthly")
+    const paymentPeriod = getPaymentPeriodForCustomerType(customerType, (license?.paymentPeriod as PaymentPeriod | undefined) ?? "monthly")
     const catalog = useMemo(() => getSubscriptionCatalog(subscriptionConfig, subscriptionPrices), [subscriptionConfig, subscriptionPrices])
     const localQuote = useMemo(
         () => calculateSubscriptionQuote({ plan, deployment: "cloud", customerType, paymentPeriod, aiTokens: resolvedAiTokens, workflowExecutions: resolvedWorkflowExecutions }, catalog),

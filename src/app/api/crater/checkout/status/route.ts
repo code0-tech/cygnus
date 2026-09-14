@@ -1,6 +1,7 @@
 import { createApolloClient } from "@/lib/apolloClient"
 import { craterJson, craterTransportErrorResponse, requireCraterSession } from "@/lib/checkout/craterApi"
 import { parseCheckoutSessionId } from "@/lib/checkout/checkoutReturn"
+import { normalizeCraterDeploymentType, normalizeCraterPaymentPeriod, normalizeCraterPlan } from "@/lib/checkout/craterCheckout"
 import { normalizeCraterCustomerType } from "@/lib/checkout/craterCustomer"
 import type { Query, QueryCheckoutCompletionStatusArgs } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
@@ -88,10 +89,21 @@ export async function GET(request: Request) {
             return craterJson({ error: "Could not check the checkout completion status." }, 502)
         }
 
-        // Crater answers with the CustomerType enum; the success page reads the lowercase value it also
-        // carries in the checkout return URL.
+        // Crater answers with the CustomerType, DeploymentType, CheckoutPlan, and CheckoutPaymentPeriod
+        // enums; the success page reads the lowercase values it also carries in the checkout return URL.
         const customerType = normalizeCraterCustomerType(status.configuration?.customerType)
-        const configuration = status.configuration ? { ...status.configuration, ...(customerType ? { customerType } : {}) } : null
+        const deploymentType = normalizeCraterDeploymentType(status.configuration?.deploymentType)
+        const paymentPeriod = normalizeCraterPaymentPeriod(status.configuration?.paymentPeriod)
+        const plan = normalizeCraterPlan(status.configuration?.plan)
+        const configuration = status.configuration
+            ? {
+                  ...status.configuration,
+                  ...(customerType ? { customerType } : {}),
+                  ...(deploymentType ? { deploymentType } : {}),
+                  ...(paymentPeriod ? { paymentPeriod } : {}),
+                  ...(plan ? { plan } : {}),
+              }
+            : null
 
         return craterJson({
             state,
