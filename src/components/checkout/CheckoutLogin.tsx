@@ -1,3 +1,4 @@
+import { CheckoutGuestForm } from "@/components/checkout/CheckoutGuestForm"
 import { HapticButtonLink } from "@/components/ui/HapticButtonLink"
 import type { CheckoutData } from "@/lib/cms"
 import Image from "next/image"
@@ -5,11 +6,13 @@ import Link from "next/link"
 
 interface CheckoutLoginProps {
     content: CheckoutData["login"]
+    form: CheckoutData["form"]
+    guestError: string
     guestHref: string
     loginHref: string
 }
 
-export function CheckoutLogin({ content, guestHref, loginHref }: CheckoutLoginProps) {
+export function CheckoutLogin({ content, form, guestError, guestHref, loginHref }: CheckoutLoginProps) {
     return (
         <main className="flex flex-1 items-center justify-center py-8">
             <div className="w-full flex flex-col gap-8 max-w-3xl text-center">
@@ -34,9 +37,13 @@ export function CheckoutLogin({ content, guestHref, loginHref }: CheckoutLoginPr
                         <h2 className="text-balance text-2xl font-semibold text-white sm:text-3xl">{content.guestHeading}</h2>
                         <p className="mt-3 max-w-sm flex-1 text-sm leading-6 text-secondary">{content.guestDescription}</p>
                         <div className="mt-7 w-full">
-                            <HapticButtonLink href={guestHref} variant="normal" className="h-11! w-full! font-medium!">
-                                {content.guestLabel}
-                            </HapticButtonLink>
+                            <CheckoutGuestForm
+                                emailLabel={form.emailLabel}
+                                emailPlaceholder={form.emailPlaceholder}
+                                errorMessage={guestError}
+                                guestHref={guestHref}
+                                submitLabel={content.guestLabel}
+                            />
                         </div>
                     </section>
                 </div>

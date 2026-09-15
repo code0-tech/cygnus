@@ -71,6 +71,53 @@ A blank or rejected token returns `INVALID_SAGITTARIUS_TOKEN`. Connectivity prob
 
 Session lists follow the GraphQL connection model with `nodes`, `edges`, cursors, a total count, and `pageInfo`.
 
+#### Guest users
+
+Clients can start with an email address before the user has a complete Sagittarius profile. Both guest mutations can be called without a Crater session, each as the only top-level selection in its GraphQL operation.
+
+1. Call `usersCreateGuestUser(input: { email })`. Crater creates the guest in Sagittarius using its server-side service credential, finds or creates the local user by `sagittarius_id`, and creates a Crater session.
+2. Keep the returned `claimToken` for completing the profile. Use `userSession.token` with `Authorization: Session <token>` for protected Crater operations. These are separate credentials: the claim token is not a Crater session token.
+3. Call `usersCompleteGuestProfile` with the claim token, `username`, `password`, and `passwordRepeat`; `firstname` and `lastname` are optional. Sagittarius promotes the guest to a regular user. Crater finds or creates the local user by the Sagittarius ID returned from completion and issues a fresh Crater session.
+
+Neither mutation creates a Customer. The returned Crater session can be used for the separate customer and checkout mutations. Profile completion does not revoke existing Crater sessions; the returned token belongs to a newly created session and follows the normal expiry rules.
+
+```graphql
+mutation CreateGuest($email: String!) {
+    usersCreateGuestUser(input: { email: $email }) {
+        claimToken
+        userSession {
+            token
+            expiresAt
+            user {
+                id
+            }
+        }
+        errors {
+            errorCode
+        }
+    }
+}
+```
+
+```graphql
+mutation CompleteGuest($claimToken: String!, $username: String!, $password: String!, $passwordRepeat: String!, $firstname: String, $lastname: String) {
+    usersCompleteGuestProfile(input: { claimToken: $claimToken, username: $username, password: $password, passwordRepeat: $passwordRepeat, firstname: $firstname, lastname: $lastname }) {
+        userSession {
+            token
+            expiresAt
+            user {
+                id
+            }
+        }
+        errors {
+            errorCode
+        }
+    }
+}
+```
+
+Guest creation returns `INVALID_EMAIL` for a blank email and `GUEST_USER_CREATION_FAILED` when Sagittarius rejects the request or cannot complete it. Profile completion returns `INVALID_PASSWORD_REPEAT` when the passwords differ, `INVALID_CLAIM_TOKEN` for a blank claim token, and `GUEST_PROFILE_COMPLETION_FAILED` when Sagittarius rejects the claim or cannot complete the profile. Either mutation returns `INVALID_USER` if the local user cannot be persisted. Completion returns a session, not another claim token.
+
 #### The session lifecycle
 
 A session is usable while it is **neither revoked nor expired**. There is no stored `active` flag: a flag cannot express an expiry that passes on its own, and would drift out of sync with it. `UserSession#active?` and the `UserSession.active` scope both derive the answer from two columns:
@@ -436,21 +483,7 @@ const { error } = await stripe.confirmSetup({
 
 `customerPaymentMethodSetupCreate` and the webhook above cover adding a payment method and promoting it to the default. Reading and removing them need no SetupIntent, because they act on payment methods Stripe has already collected and attached, and neither is a root operation of its own: both hang off the customer.
 
-`Customer.paymentMethods` is the list. It carries the Stripe PaymentMethod IDs stored on the customer, not only the current default, and nothing else -- brands, last four digits, and expiry dates are read where they are displayed, through `customerPaymentMethod(paymentMethodId)` for any id of the list and through `subscriptionPaymentMethod(subscriptionId)` for the current default of one subscription. Crater stores none of the list: it comes from `payment_methods.list` on every request. A customer with no Stripe customer has an empty list rather than an error. A Stripe outage is `PAYMENT_METHOD_UNAVAILABLE`, deliberately never an empty list, because the list is what a client sends back to `customersUpdate`.
-
-`customerPaymentMethod` describes one of them. It takes an id out of `Customer.paymentMethods` and answers with the same non-sensitive display details as `subscriptionPaymentMethod`, so a client never has to show a raw `pm_...` id:
-
-```graphql
-query {
-    customerPaymentMethod(paymentMethodId: "pm_...") {
-        type
-        brand
-        last4
-        expiresMonth
-        expiresYear
-    }
-}
-```
+`Customer.paymentMethods` is the list. It carries the Stripe PaymentMethod IDs stored on the customer, not only the current default, and nothing else -- brands, last four digits, and expiry dates are read where they are displayed, through `subscriptionPaymentMethod`. Crater stores none of the list: it comes from `payment_methods.list` on every request. A customer with no Stripe customer has an empty list rather than an error. A Stripe outage is `PAYMENT_METHOD_UNAVAILABLE`, deliberately never an empty list, because the list is what a client sends back to `customersUpdate`.
 
 `customersUpdate` removes them. Its optional `paymentMethods` argument names what the customer **keeps**: every stored payment method absent from the list is detached in Stripe, an id the customer does not have is nothing to act on, and omitting the argument entirely leaves all of them alone. Nothing is ever attached this way; collecting a payment method stays with the SetupIntent flow.
 
@@ -891,12 +924,12 @@ Content-Type: application/json
 Authentication behavior:
 
 - Queries can be executed anonymously; this explicitly includes `subscriptionPrices`.
-- `usersLogin` is the only mutation that can be executed anonymously, and it must be the only top-level selection in that GraphQL operation.
+- `usersLogin`, `usersCreateGuestUser`, and `usersCompleteGuestProfile` can be executed anonymously. Each must be the only top-level selection in its GraphQL operation.
 - All other mutations, including `checkoutCreateSession`, require an active Crater `UserSession`.
 - A protected mutation without an `Authorization` header returns HTTP `403 Forbidden`.
 - An unknown authentication scheme returns HTTP `401 Unauthorized`, as does any token that does not resolve to a usable session. Revoked, expired, and entirely unknown tokens are answered identically, so the response never reveals whether a session exists.
 - Every session carries a server-set `expiresAt`; see [the session lifecycle](#the-session-lifecycle).
-- The session token is returned by `usersLogin` only when the new `UserSession` is created. `usersLogout` revokes it and returns neither the token nor the session ID.
+- `usersLogin`, `usersCreateGuestUser`, and `usersCompleteGuestProfile` return the session token only when the new `UserSession` is created. `usersLogout` revokes it and returns neither the token nor the session ID.
 - The Sagittarius login token and the resulting Crater session token are distinct credentials with different header schemes.
 
 ### Mutations
@@ -905,11 +938,15 @@ Almost all mutations optionally accept `clientMutationId` and return it so the c
 
 #### Authentication and access
 
-| Mutation      | Key arguments                                                                           | Result                                                                                          |
-| ------------- | --------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `usersLogin`  | `sagittariusToken: String!`, obtained from Sagittarius through `usersCreateCraterToken` | Newly created `UserSession` and its Crater session token                                        |
-| `usersLogout` | none                                                                                    | Revokes the session of the `Authorization` header; returns only `errors` and `clientMutationId` |
-| `echo`        | Optional message                                                                        | Returned message; verifies mutation access without changing data                                |
+| Mutation                    | Key arguments                                                                                                                   | Result                                                                                          |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `usersLogin`                | `sagittariusToken: String!`, obtained from Sagittarius through `usersCreateCraterToken`                                         | Newly created `UserSession` and its Crater session token                                        |
+| `usersCreateGuestUser`      | `email: String!`                                                                                                                | Creates a Sagittarius guest; returns `claimToken` and a new Crater `userSession`                |
+| `usersCompleteGuestProfile` | `claimToken: String!`, `username: String!`, `password: String!`, `passwordRepeat: String!`; optional `firstname` and `lastname` | Completes the Sagittarius guest profile; returns a new Crater `userSession`                     |
+| `usersLogout`               | none                                                                                                                            | Revokes the session of the `Authorization` header; returns only `errors` and `clientMutationId` |
+| `echo`                      | Optional message                                                                                                                | Returned message; verifies mutation access without changing data                                |
+
+Both guest mutations use the usual `input` object and return `errors`; see [guest users](#guest-users) for the client flow, complete examples, and error codes.
 
 #### Customers
 
@@ -1019,6 +1056,11 @@ Documented error codes:
 
 | Code                                    | Meaning                                                                                                                                                                                |
 | --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GUEST_USER_CREATION_FAILED`            | Sagittarius could not create the guest user                                                                                                                                            |
+| `GUEST_PROFILE_COMPLETION_FAILED`       | Sagittarius could not complete the guest profile, including a rejected claim token                                                                                                     |
+| `INVALID_EMAIL`                         | The email passed to guest creation is blank                                                                                                                                            |
+| `INVALID_CLAIM_TOKEN`                   | The claim token passed to profile completion is blank                                                                                                                                  |
+| `INVALID_PASSWORD_REPEAT`               | The supplied password and password repeat do not match                                                                                                                                 |
 | `CUSTOMER_TYPE_MISMATCH`                | The selected customer's type does not match the selected checkout                                                                                                                      |
 | `INVALID_CHECKOUT_CUSTOMER`             | The selected customer does not exist or is not accessible to the current user                                                                                                          |
 | `INVALID_CHECKOUT_SESSION`              | The checkout session could not be created                                                                                                                                              |
