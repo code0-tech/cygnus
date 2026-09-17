@@ -28,7 +28,7 @@ export function LicenseCancelDialog({ content, customerId, errors, licenseId, lo
 
     const [error, setError] = useState<string | null>(null)
     const [isSubmitting, setIsSubmitting] = useState(false)
-    const isPending = Boolean(license?.cancelAt)
+    const isPending = Boolean(license?.expireAt)
 
     const cancel = async () => {
         if (!license?.subscriptionId || isSubmitting) return
@@ -44,10 +44,10 @@ export function LicenseCancelDialog({ content, customerId, errors, licenseId, lo
             })
             if (!response.ok) throw new Error(errors.subscriptionCancel)
             const updated: unknown = await response.json()
-            const subscription = updated && typeof updated === "object" ? (updated as { cancelAt?: string; updatedAt?: string }) : {}
+            const subscription = updated && typeof updated === "object" ? (updated as { expireAt?: string; updatedAt?: string }) : {}
 
             updateLicense(license.id, {
-                ...(subscription.cancelAt ? { cancelAt: subscription.cancelAt } : {}),
+                ...(subscription.expireAt ? { expireAt: subscription.expireAt } : {}),
                 ...(subscription.updatedAt ? { updatedAt: subscription.updatedAt } : {}),
             })
             close()
@@ -74,7 +74,7 @@ export function LicenseCancelDialog({ content, customerId, errors, licenseId, lo
             const updated: unknown = await response.json()
             const subscription = updated && typeof updated === "object" ? (updated as { updatedAt?: string }) : {}
 
-            updateLicense(license.id, { cancelAt: null, canceledAt: null, ...(subscription.updatedAt ? { updatedAt: subscription.updatedAt } : {}) })
+            updateLicense(license.id, { expireAt: null, canceledAt: null, ...(subscription.updatedAt ? { updatedAt: subscription.updatedAt } : {}) })
             close()
         } catch (resumeError) {
             setError(resumeError instanceof Error ? resumeError.message : errors.subscriptionResume)
@@ -93,10 +93,10 @@ export function LicenseCancelDialog({ content, customerId, errors, licenseId, lo
             title={isPending ? content.cancel.pendingHeading : content.cancel.confirmLabel}
         >
             <div className="space-y-4">
-                {isPending && license?.cancelAt && (
+                {isPending && license?.expireAt && (
                     <div className="rounded-xl border border-white/10 bg-white/3 p-3 text-sm">
                         <p className="text-tertiary">{content.cancel.cancelAtLabel}</p>
-                        <p className="mt-1 text-white">{dateFormatter.format(new Date(license.cancelAt))}</p>
+                        <p className="mt-1 text-white">{dateFormatter.format(new Date(license.expireAt))}</p>
                     </div>
                 )}
 

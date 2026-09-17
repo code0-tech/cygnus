@@ -41,6 +41,7 @@ export function formatLicenseDisplayValue(value: string | null | undefined, cate
         },
         status: {
             active: labels.statuses.active,
+            pending: labels.statuses.pending,
             paid: labels.statuses.paid,
             payment_failed: labels.statuses.paymentFailed,
             canceled: labels.statuses.canceled,

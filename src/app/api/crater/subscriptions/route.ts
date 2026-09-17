@@ -15,18 +15,11 @@ const SUBSCRIPTIONS_UPDATE: TypedDocumentNode<SubscriptionsUpdateData, MutationS
         subscriptionsUpdate(input: $input) {
             subscription {
                 aiTokens
-                cancelAt
                 canceledAt
                 currentPeriodEnd
+                expireAt
                 id
                 paymentPeriod
-                pendingUpdate {
-                    aiTokens
-                    effectiveAt
-                    paymentPeriod
-                    plan
-                    workflowExecutions
-                }
                 plan
                 status
                 updatedAt
@@ -44,15 +37,11 @@ const SUBSCRIPTIONS_UPDATE: TypedDocumentNode<SubscriptionsUpdateData, MutationS
 function normalizeSubscriptionEnums(subscription: NonNullable<NonNullable<SubscriptionsUpdateData["subscriptionsUpdate"]>["subscription"]>) {
     const plan = normalizeCraterPlan(subscription.plan)
     const paymentPeriod = normalizeCraterPaymentPeriod(subscription.paymentPeriod)
-    const pendingUpdate = subscription.pendingUpdate
-    const pendingPlan = normalizeCraterPlan(pendingUpdate?.plan)
-    const pendingPaymentPeriod = normalizeCraterPaymentPeriod(pendingUpdate?.paymentPeriod)
 
     return {
         ...subscription,
         plan: plan ?? null,
         paymentPeriod: paymentPeriod ?? null,
-        ...(pendingUpdate ? { pendingUpdate: { ...pendingUpdate, plan: pendingPlan ?? null, paymentPeriod: pendingPaymentPeriod ?? null } } : {}),
     }
 }
 

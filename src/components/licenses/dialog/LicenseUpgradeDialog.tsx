@@ -155,7 +155,6 @@ export function LicenseUpgradeDialog({ content, customerId, errors, licenseId, l
             const subscription = updated as {
                 aiTokens?: number
                 paymentPeriod?: string
-                pendingUpdate?: { plan?: string; paymentPeriod?: string; aiTokens?: number; workflowExecutions?: number; effectiveAt?: string } | null
                 plan?: string
                 updatedAt?: string
                 workflowExecutions?: number
@@ -164,7 +163,6 @@ export function LicenseUpgradeDialog({ content, customerId, errors, licenseId, l
                 ...(subscription.plan ? { plan: subscription.plan } : {}),
                 ...(typeof subscription.aiTokens === "number" ? { aiTokens: subscription.aiTokens } : {}),
                 ...(typeof subscription.workflowExecutions === "number" ? { workflowExecutions: subscription.workflowExecutions } : {}),
-                pendingUpdate: subscription.pendingUpdate ?? null,
                 ...(subscription.updatedAt ? { updatedAt: subscription.updatedAt } : {}),
             })
             close()
