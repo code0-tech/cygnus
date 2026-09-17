@@ -1,12 +1,6 @@
 "use client"
 
-import {
-    EMPTY_LICENSE_DASHBOARD_DATA,
-    type LicenseDashboardCustomerAddress,
-    type LicenseDashboardData,
-    type LicenseDashboardLicense,
-    type LicenseDashboardPendingUpdate,
-} from "@/lib/licenses/licenseTypes"
+import { EMPTY_LICENSE_DASHBOARD_DATA, type LicenseDashboardCustomerAddress, type LicenseDashboardData, type LicenseDashboardLicense } from "@/lib/licenses/licenseTypes"
 import { decodeLicenseRouteId } from "@/lib/licenses/licenseRoute"
 import { usePathname } from "next/navigation"
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useRef, useState } from "react"
@@ -27,12 +21,11 @@ interface LicenseDataContextValue extends LicenseDashboardData {
         id: string,
         values: {
             aiTokens?: number
-            cancelAt?: string | null
             canceledAt?: string | null
+            expireAt?: string | null
             namespaceId?: string
             paymentMethodId?: string
             paymentPeriod?: string
-            pendingUpdate?: LicenseDashboardPendingUpdate | null
             plan?: string
             subscriptionStatus?: string
             updatedAt?: string
@@ -115,15 +108,14 @@ export function LicenseDataProvider({ children, loadError, redirectUrl }: { chil
     }
 
     const updateLicense: LicenseDataContextValue["updateLicense"] = (id, values) => {
-        // cancelAt/canceledAt/pendingUpdate use null to mean "clear this field", distinct from omitting the key
-        // (leave it untouched). LicenseDashboardLicense itself treats absence as undefined everywhere, so the
+        // expireAt/canceledAt use null to mean "clear this field", distinct from omitting the key (leave it
+        // untouched). LicenseDashboardLicense itself treats absence as undefined everywhere, so the
         // explicit-null case is normalized to undefined right before merging.
-        const { cancelAt, canceledAt, pendingUpdate, ...rest } = values
+        const { canceledAt, expireAt, ...rest } = values
         const patch: Partial<LicenseDashboardLicense> = {
             ...rest,
-            ...("cancelAt" in values ? { cancelAt: cancelAt ?? undefined } : {}),
+            ...("expireAt" in values ? { expireAt: expireAt ?? undefined } : {}),
             ...("canceledAt" in values ? { canceledAt: canceledAt ?? undefined } : {}),
-            ...("pendingUpdate" in values ? { pendingUpdate: pendingUpdate ?? undefined } : {}),
         }
         setData((current) => ({
             ...current,

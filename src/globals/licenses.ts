@@ -231,6 +231,8 @@ export const Licenses: GlobalConfig = {
                     type: "group",
                     fields: [
                         { name: "active", type: "text", required: true, localized: true, defaultValue: localizedDefault("Active", "Aktiv") },
+                        // LicenseStatus starts at PENDING, before the first invoice of a license is paid.
+                        { name: "pending", type: "text", required: true, localized: true, defaultValue: localizedDefault("Pending", "Ausstehend") },
                         { name: "paid", type: "text", required: true, localized: true, defaultValue: localizedDefault("Paid", "Bezahlt") },
                         { name: "paymentFailed", type: "text", required: true, localized: true, defaultValue: localizedDefault("Payment failed", "Zahlung fehlgeschlagen") },
                         { name: "canceled", type: "text", required: true, localized: true, defaultValue: localizedDefault("Canceled", "Gekündigt") },

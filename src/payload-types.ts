@@ -3255,6 +3255,7 @@ export interface License {
     };
     statuses: {
       active: string;
+      pending: string;
       paid: string;
       paymentFailed: string;
       canceled: string;
@@ -4013,6 +4014,7 @@ export interface LicensesSelect<T extends boolean = true> {
           | T
           | {
               active?: T;
+              pending?: T;
               paid?: T;
               paymentFailed?: T;
               canceled?: T;

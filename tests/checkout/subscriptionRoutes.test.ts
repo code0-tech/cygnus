@@ -86,12 +86,11 @@ test("upgrades a subscription to a higher plan", async () => {
                         errors: [],
                         subscription: {
                             aiTokens: null,
-                            cancelAt: null,
+                            expireAt: null,
                             canceledAt: null,
                             currentPeriodEnd: "2026-09-01T00:00:00Z",
                             id: subscriptionId,
                             paymentPeriod: "MONTHLY",
-                            pendingUpdate: null,
                             plan: "MAX",
                             status: "active",
                             updatedAt: "2026-08-17T10:00:00Z",
@@ -116,12 +115,11 @@ test("upgrades a subscription to a higher plan", async () => {
             assert.deepEqual(graphQLServer.requests[0].body.variables, { input: { id: subscriptionId, plan: "MAX" } })
             assert.deepEqual(await response.json(), {
                 aiTokens: null,
-                cancelAt: null,
+                expireAt: null,
                 canceledAt: null,
                 currentPeriodEnd: "2026-09-01T00:00:00Z",
                 id: subscriptionId,
                 paymentPeriod: "monthly",
-                pendingUpdate: null,
                 plan: "max",
                 status: "active",
                 updatedAt: "2026-08-17T10:00:00Z",
@@ -245,7 +243,7 @@ test("preview requires a valid subscription id", async () => {
 
 test("cancels a subscription at the end of the current period by default", async () => {
     await withGraphQLServer(
-        [{ data: { subscriptionsCancel: { errors: [], subscription: { cancelAt: "2026-09-01T00:00:00Z", canceledAt: "2026-08-17T10:00:00Z", id: subscriptionId, status: "active" } } } }],
+        [{ data: { subscriptionsCancel: { errors: [], subscription: { expireAt: "2026-09-01T00:00:00Z", canceledAt: "2026-08-17T10:00:00Z", id: subscriptionId, status: "active" } } } }],
         async (graphQLServer) => {
             const response = await cancelSubscription(
                 new Request("https://example.com/api/crater/subscriptions/cancel", {
@@ -257,15 +255,15 @@ test("cancels a subscription at the end of the current period by default", async
 
             assert.equal(response.status, 200)
             assert.deepEqual(graphQLServer.requests[0].body.variables, { input: { id: subscriptionId } })
-            const body = (await response.json()) as { cancelAt: string }
-            assert.equal(body.cancelAt, "2026-09-01T00:00:00Z")
+            const body = (await response.json()) as { expireAt: string }
+            assert.equal(body.expireAt, "2026-09-01T00:00:00Z")
         }
     )
 })
 
 test("cancels a subscription immediately when requested", async () => {
     await withGraphQLServer(
-        [{ data: { subscriptionsCancel: { errors: [], subscription: { cancelAt: "2026-08-17T10:00:00Z", canceledAt: "2026-08-17T10:00:00Z", id: subscriptionId, status: "canceled" } } } }],
+        [{ data: { subscriptionsCancel: { errors: [], subscription: { expireAt: "2026-08-17T10:00:00Z", canceledAt: "2026-08-17T10:00:00Z", id: subscriptionId, status: "canceled" } } } }],
         async (graphQLServer) => {
             const response = await cancelSubscription(
                 new Request("https://example.com/api/crater/subscriptions/cancel", {
@@ -282,7 +280,7 @@ test("cancels a subscription immediately when requested", async () => {
 })
 
 test("resumes a cancelled subscription", async () => {
-    await withGraphQLServer([{ data: { subscriptionsResume: { errors: [], subscription: { cancelAt: null, canceledAt: null, id: subscriptionId, status: "active" } } } }], async (graphQLServer) => {
+    await withGraphQLServer([{ data: { subscriptionsResume: { errors: [], subscription: { expireAt: null, canceledAt: null, id: subscriptionId, status: "active" } } } }], async (graphQLServer) => {
         const response = await resumeSubscription(
             new Request("https://example.com/api/crater/subscriptions/resume", {
                 method: "POST",
@@ -293,8 +291,8 @@ test("resumes a cancelled subscription", async () => {
 
         assert.equal(response.status, 200)
         assert.equal(graphQLServer.requests[0].body.operationName, "SubscriptionsResume")
-        const body = (await response.json()) as { cancelAt: null }
-        assert.equal(body.cancelAt, null)
+        const body = (await response.json()) as { expireAt: null }
+        assert.equal(body.expireAt, null)
     })
 })
 

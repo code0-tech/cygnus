@@ -2634,6 +2634,7 @@ export const licenses_locales = pgTable('licenses_locales', {
   values_paymentPeriods_quarterly: varchar('values_payment_periods_quarterly').notNull(),
   values_paymentPeriods_yearly: varchar('values_payment_periods_yearly').notNull(),
   values_statuses_active: varchar('values_statuses_active').notNull(),
+  values_statuses_pending: varchar('values_statuses_pending').notNull(),
   values_statuses_paid: varchar('values_statuses_paid').notNull(),
   values_statuses_paymentFailed: varchar('values_statuses_payment_failed').notNull(),
   values_statuses_canceled: varchar('values_statuses_canceled').notNull(),

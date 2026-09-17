@@ -13,7 +13,7 @@ const SUBSCRIPTIONS_CANCEL: TypedDocumentNode<SubscriptionsCancelData, MutationS
     mutation SubscriptionsCancel($input: SubscriptionsCancelInput!) {
         subscriptionsCancel(input: $input) {
             subscription {
-                cancelAt
+                expireAt
                 canceledAt
                 id
                 status

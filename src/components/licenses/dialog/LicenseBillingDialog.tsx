@@ -106,14 +106,9 @@ export function LicenseBillingDialog({ content, customerId, errors, licenseId, l
             const updated: unknown = await response.json()
             if (!updated || typeof updated !== "object") throw new Error(errors.billingUpdate)
 
-            const subscription = updated as {
-                paymentPeriod?: string
-                pendingUpdate?: { plan?: string; paymentPeriod?: string; aiTokens?: number; workflowExecutions?: number; effectiveAt?: string } | null
-                updatedAt?: string
-            }
+            const subscription = updated as { paymentPeriod?: string; updatedAt?: string }
             updateLicense(license.id, {
                 ...(subscription.paymentPeriod ? { paymentPeriod: subscription.paymentPeriod } : {}),
-                pendingUpdate: subscription.pendingUpdate ?? null,
                 ...(subscription.updatedAt ? { updatedAt: subscription.updatedAt } : {}),
             })
             close()
@@ -141,18 +136,6 @@ export function LicenseBillingDialog({ content, customerId, errors, licenseId, l
                             <p className="text-tertiary">{content.billing.currentPeriodEndLabel}</p>
                             <p className="mt-1 text-white">{formatDate(license.currentPeriodEnd)}</p>
                         </div>
-                        {license.pendingUpdate && (
-                            <div className="col-span-2 rounded-xl border border-white/10 bg-white/3 p-3">
-                                <p className="text-tertiary">{content.billing.pendingChangeLabel}</p>
-                                <p className="mt-1 text-white">
-                                    {license.pendingUpdate.paymentPeriod
-                                        ? periodLabelFor(license.pendingUpdate.paymentPeriod as PaymentPeriod)
-                                        : formatLicenseDisplayValue(license.pendingUpdate.plan, "plan", content.values)}
-                                    {" · "}
-                                    {formatDate(license.pendingUpdate.effectiveAt)}
-                                </p>
-                            </div>
-                        )}
                     </div>
                 )}
 

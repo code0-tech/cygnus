@@ -4,18 +4,18 @@ import { normalizeCraterDeploymentType, normalizeCraterPaymentPeriod, normalizeC
 import { normalizeCraterCustomerType } from "@/lib/checkout/craterCustomer"
 import { setCraterSessionCookie } from "@/lib/checkout/craterSession"
 import { isLicenseId } from "@/lib/licenses/craterLicenseRequest"
-import type {
-    LicenseDashboardCustomer,
-    LicenseDashboardData,
-    LicenseDashboardInvoice,
-    LicenseDashboardLicense,
-    LicenseDashboardPendingUpdate,
-} from "@/lib/licenses/licenseTypes"
-import type { Customer, Invoice, License, Query, Scalars, Subscription, SubscriptionPendingUpdate, User } from "@code0-tech/crater-graphql-types"
+import type { LicenseDashboardCustomer, LicenseDashboardData, LicenseDashboardInvoice, LicenseDashboardLicense } from "@/lib/licenses/licenseTypes"
+import type { Customer, Invoice, License, Query, Scalars, Subscription, User } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
+
+// Crater renamed Subscription.cancelAt to expireAt and dropped pendingUpdate entirely: a scheduled change
+// lives in Stripe alone now, and a local mirror of a selection Stripe can change on its own would drift.
+// @code0-tech/crater-graphql-types still describes the old shape, so the new one is declared here until the
+// package catches up.
+type CraterSubscription = Omit<Subscription, "cancelAt" | "pendingUpdate"> & { expireAt?: string | null }
 
 type LicenseDashboardQuery = Pick<Query, "currentUser">
 type CustomerPageVariables = { customerAfter?: string | null }
@@ -55,17 +55,10 @@ const LICENSE_DASHBOARD: TypedDocumentNode<LicenseDashboardQuery, CustomerPageVa
                             subscription {
                                 id
                                 status
-                                cancelAt
+                                expireAt
                                 canceledAt
                                 currentPeriodEnd
                                 paymentMethodId
-                                pendingUpdate {
-                                    plan
-                                    paymentPeriod
-                                    aiTokens
-                                    workflowExecutions
-                                    effectiveAt
-                                }
                             }
                         }
                     }
@@ -192,17 +185,10 @@ const LICENSE_NAVIGATION_PAGE: TypedDocumentNode<LicenseDashboardQuery, LicenseD
                                 subscription {
                                     id
                                     status
-                                    cancelAt
+                                    expireAt
                                     canceledAt
                                     currentPeriodEnd
                                     paymentMethodId
-                                    pendingUpdate {
-                                        plan
-                                        paymentPeriod
-                                        aiTokens
-                                        workflowExecutions
-                                        effectiveAt
-                                    }
                                 }
                                 invoices(after: $invoiceAfter, first: ${PAGE_SIZE}) {
                                     count
@@ -269,17 +255,10 @@ const LICENSE_CUSTOMER_DETAIL: TypedDocumentNode<LicenseDashboardQuery, LicenseD
                             subscription {
                                 id
                                 status
-                                cancelAt
+                                expireAt
                                 canceledAt
                                 currentPeriodEnd
                                 paymentMethodId
-                                pendingUpdate {
-                                    plan
-                                    paymentPeriod
-                                    aiTokens
-                                    workflowExecutions
-                                    effectiveAt
-                                }
                             }
                         }
                         pageInfo {
@@ -350,32 +329,16 @@ function mapInvoice(invoice: Invoice): LicenseDashboardInvoice | null {
     }
 }
 
-function mapPendingUpdate(pendingUpdate: SubscriptionPendingUpdate | null | undefined): LicenseDashboardPendingUpdate | undefined {
-    if (!pendingUpdate) return undefined
-
-    const plan = normalizeCraterPlan(pendingUpdate.plan)
-    const paymentPeriod = normalizeCraterPaymentPeriod(pendingUpdate.paymentPeriod)
-
-    return {
-        ...(plan ? { plan } : {}),
-        ...(paymentPeriod ? { paymentPeriod } : {}),
-        ...(typeof pendingUpdate.aiTokens === "number" ? { aiTokens: pendingUpdate.aiTokens } : {}),
-        ...(typeof pendingUpdate.workflowExecutions === "number" ? { workflowExecutions: pendingUpdate.workflowExecutions } : {}),
-        ...(pendingUpdate.effectiveAt ? { effectiveAt: pendingUpdate.effectiveAt } : {}),
-    }
-}
-
-function mapSubscriptionFields(subscription: Subscription | null | undefined): Partial<LicenseDashboardLicense> {
+function mapSubscriptionFields(subscription: CraterSubscription | null | undefined): Partial<LicenseDashboardLicense> {
     if (!subscription?.id) return {}
 
     return {
         subscriptionId: subscription.id,
         ...(subscription.status ? { subscriptionStatus: subscription.status } : {}),
         ...(subscription.paymentMethodId ? { paymentMethodId: subscription.paymentMethodId } : {}),
-        ...(subscription.cancelAt ? { cancelAt: subscription.cancelAt } : {}),
+        ...(subscription.expireAt ? { expireAt: subscription.expireAt } : {}),
         ...(subscription.canceledAt ? { canceledAt: subscription.canceledAt } : {}),
         ...(subscription.currentPeriodEnd ? { currentPeriodEnd: subscription.currentPeriodEnd } : {}),
-        ...(mapPendingUpdate(subscription.pendingUpdate) ? { pendingUpdate: mapPendingUpdate(subscription.pendingUpdate) } : {}),
     }
 }
 
@@ -406,7 +369,7 @@ function mapLicense(license: License, customer: Customer): LicenseDashboardLicen
         ...(license.status ? { status: license.status } : {}),
         ...(license.updatedAt ? { updatedAt: license.updatedAt } : {}),
         ...(typeof license.workflowExecutions === "number" ? { workflowExecutions: license.workflowExecutions } : {}),
-        ...mapSubscriptionFields(license.subscription),
+        ...mapSubscriptionFields(license.subscription as CraterSubscription | null | undefined),
     }
 }
 

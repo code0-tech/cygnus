@@ -8,6 +8,29 @@ The source documentation consists of:
 
 - the [GraphQL schema documentation](docs/graphql/index.md)
 - the [database ERD](docs/erd/database-erd.pdf)
+- the [migration history notes](db/README.md)
+
+## The schema
+
+The pre-production migration history was consolidated on 2026-09-16. Each application table now has exactly one creation migration carrying its current columns, indexes, and foreign keys, and `20260916000000_initial_migration.rb` is the empty baseline that migrating back to drops everything in reverse dependency order.
+
+The schema in `db/structure.sql` is fixed. It is what the domain description below follows, not the other way round: where the code and the schema disagreed during the reset, the code was adapted. Round-tripping the history -- migrate, roll back to the baseline, migrate again -- reproduces `structure.sql` byte for byte, and CI enforces that in `db:migrate` and `db:rollback-and-migrate`.
+
+What the reset removed from the schema, and therefore from the service:
+
+| Gone                                          | Consequence                                                                                                                        |
+| --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `custom_checkout_configurations`              | No negotiated-configuration model, policy, or GraphQL type. A negotiated subscription is now simply one carrying no checkout plan. |
+| `licenses.seats`, `licenses.runtime_minutes`  | `License.seats` and `License.runtimeMinutes` are gone from the schema                                                              |
+| `invoices.lexware_id`, `invoices.lexware_url` | No Lexware export fields on the invoice projection                                                                                 |
+| `subscriptions.pending_*`                     | No local mirror of a scheduled change, and no `Subscription.pendingUpdate`                                                         |
+
+And what it added or renamed:
+
+| Change                                           | Consequence                                                                      |
+| ------------------------------------------------ | -------------------------------------------------------------------------------- |
+| `subscriptions.cancel_at` renamed to `expire_at` | `Subscription.cancelAt` is now `Subscription.expireAt`                           |
+| `customers.payment_methods text[]`               | The customer's Stripe payment method ids are stored rather than fetched per read |
 
 ## Domain model
 
@@ -15,7 +38,7 @@ The source documentation consists of:
 
 The ERD describes the following relationships:
 
-- A `Customer` has an address and is associated with custom checkout configurations, invoices, subscriptions, and users.
+- A `Customer` has an address and is associated with invoices, subscriptions, and users.
 - `Customer` and `User` are connected through `CustomerUser`.
 - A `User` has `UserSession` records.
 - An `Invoice` consists of `InvoiceItem` entries and points at the `Subscription` it was issued for.
@@ -30,6 +53,7 @@ The ERD describes the following relationships:
 - name, email, and optional phone number
 - Stripe customer ID
 - Stripe tax ID
+- the IDs of the Stripe payment methods attached to it
 
 The GraphQL API additionally returns a global ID and creation and update timestamps.
 
@@ -233,9 +257,15 @@ Which periods exist is a property of the **customer type**, not of the plan. It 
 
 `CheckoutPaymentPeriod` offers exactly these three values, and both customer types are billed in the same set. A payment period outside that set is rejected with `INVALID_CHECKOUT_SELECTION` before any Price is looked up, in `checkoutCreateSession`. `Subscription` validates the stored period against its customer's type with the same rule, so a projection can never hold a combination the checkout would refuse.
 
-**This section applies unchanged to changes of an existing subscription.** `subscriptionsUpdate` and `subscriptionsPreviewUpdate` resolve their target Price through the very same rules: the customer type is the stored `customerType` of the subscription's customer and never something the client sends, that type decides which periods exist at all, and a period outside the set is refused before Stripe is called. A subscription can therefore never be moved into a plan, period, or Price combination a fresh checkout would have rejected. The same rule also guards the pending half of a scheduled change, so a `pendingUpdate` is always a selection the checkout would accept.
+**This section applies unchanged to changes of an existing subscription.** `subscriptionsUpdate` and `subscriptionsPreviewUpdate` resolve their target Price through the very same rules: the customer type is the stored `customerType` of the subscription's customer and never something the client sends, that type decides which periods exist at all, and a period outside the set is refused before Stripe is called. A subscription can therefore never be moved into a plan, period, or Price combination a fresh checkout would have rejected.
 
 A plan or component that is configured for the other customer type only is rejected with `CUSTOMER_TYPE_MISMATCH` rather than falling back to that type's Price; one configured for neither type is a plain `INVALID_CHECKOUT_SELECTION`.
+
+#### Custom quantity limits
+
+The maximum AI Token and Workflow Execution quantity a custom checkout accepts is configured per customer type under `checkout.quantity_limits`, defaulting to 1,000,000,000 and 10,000,000. `Checkout::PriceResolver.max_quantity` enforces it before Stripe is called, and `Subscription` enforces the same bound on every stored quantity, so a projection can never hold a quantity a checkout would have refused.
+
+The limits are **not** exposed through the API. A field on `Customer` suggested they were negotiable per customer; they are not -- they are configuration keyed on the customer type, identical for every customer of that type, and the shipped example config gives both types the same numbers. The server rejects an excessive quantity either way, and the rejection already names the concrete maximum, so nothing is discoverable only through a schema field.
 
 Monetary amounts are transferred as integers in the smallest currency unit.
 
@@ -251,22 +281,6 @@ A discount is validated by Crater and applied by the client, and the two steps a
 That is why `checkoutCreateSession` has no `promotionCode` argument. A discount entered, removed, and entered again is the same session throughout -- the user does not lose the address, tax ID, or payment details already filled in, and Crater does not create a Stripe session per attempt. Crater consequently never sends `discounts` when creating a session; Stripe rejects `discounts` and `allow_promotion_codes` together, and the client-side flow is the one that survives a change of mind.
 
 `checkoutValidateDiscount` stays available and unchanged. Validating a code is not the same as applying it: a code the client shows as valid is still applied through Stripe, and a code that Stripe refuses at that point leaves the session untouched.
-
-### Custom checkout configuration
-
-`CustomCheckoutConfiguration` records from earlier releases are retained for historical compatibility. New configurations cannot be created or supplied to checkout through GraphQL. See [the current checkout API](docs/checkout-api.md) for required enums, the `NamespaceID` scalar, and configurable customer-specific quantity limits. Legacy records contain:
-
-- the associated customer
-- a Stripe price ID
-- the deployment type
-- seats and runtime minutes
-- additional features
-- an optional expiration time
-- the time at which it was consumed
-- a calculated `available` status
-- a global ID and timestamps
-
-A configuration is no longer available after it has been consumed or has expired. Customer, deployment type, and Stripe price ID are required when creating one.
 
 ### The checkout completion status
 
@@ -308,7 +322,7 @@ The query needs an active `UserSession`; an anonymous request is refused. Beyond
 - `subscription.metadata.crater_customer_id` is present, numeric, and names an existing Crater customer.
 - That customer's `stripe_customer_id` is the session's Stripe customer.
 - That customer is linked to the authenticated user through `CustomerUser`, checked with the same `CustomerPolicy` used everywhere else. Being an admin grants nothing extra.
-- The remaining metadata Crater wrote is internally consistent and agrees with what Crater knows: `customer_type` matches the resolved customer, `deployment_type` is a known one, a `namespace_id` only appears for cloud, `plan` and `payment_period` appear together and the period is one the resolved customer's type is billed in, custom quantities appear only for the custom plan, and a negotiated `CustomCheckoutConfiguration` carries no plan at all. Where the local `Subscription` already exists, its deployment type, plan, and payment period must equal the metadata's.
+- The remaining metadata Crater wrote is internally consistent and agrees with what Crater knows: `customer_type` matches the resolved customer, `deployment_type` is a known one, a `namespace_id` only appears for cloud, `plan` and `payment_period` appear together and the period is one the resolved customer's type is billed in, custom quantities appear only for the custom plan, and a negotiated subscription billed on its own Stripe Price carries no plan at all. Where the local `Subscription` already exists, its deployment type, plan, and payment period must equal the metadata's.
 
 Because a session that does not exist, one belonging to somebody else, and one that contradicts itself are answered identically, the response never reveals which of the three it was.
 
@@ -343,13 +357,13 @@ Every amount is an integer in the smallest currency unit, the same convention th
 
 `configuration` is the checkout selection Crater wrote into the subscription metadata when it created the session, read back after the verification above has re-checked it. It is never taken from client arguments:
 
-| Field                            | Meaning                                                          |
-| -------------------------------- | ---------------------------------------------------------------- |
-| `customerType`                   | `BUSINESS` or `PERSONAL`, from the resolved Crater customer      |
-| `deploymentType`                 | `SELF_HOSTED` or `CLOUD`                                         |
-| `plan`                           | `PRO`, `MAX`, `CUSTOM`, or `null` for a negotiated configuration |
-| `paymentPeriod`                  | The billed period, or `null` for a negotiated configuration      |
-| `aiTokens`, `workflowExecutions` | Quantities, set only for `plan: custom`                          |
+| Field                            | Meaning                                                         |
+| -------------------------------- | --------------------------------------------------------------- |
+| `customerType`                   | `BUSINESS` or `PERSONAL`, from the resolved Crater customer     |
+| `deploymentType`                 | `SELF_HOSTED` or `CLOUD`                                        |
+| `plan`                           | `PRO`, `MAX`, `CUSTOM`, or `null` for a negotiated subscription |
+| `paymentPeriod`                  | The billed period, or `null` for a negotiated subscription      |
+| `aiTokens`, `workflowExecutions` | Quantities, set only for `plan: custom`                         |
 
 The metadata is used rather than the `Subscription` projection because it is already there in `FULFILLMENT_PENDING`, where no projection exists yet, and the two agree wherever both exist -- `local_subscription_matches?` refuses the session otherwise. A client polling from `FULFILLMENT_PENDING` to `READY` therefore sees the figures stand still while only the state moves, and the overview does not appear halfway through.
 
@@ -394,7 +408,7 @@ Crater never handles payment data:
 
 - No card numbers, expiry dates, CVCs, or bank details pass through Crater. There is no payment form of our own, and neither the Sources API, the Tokens API, nor the Cards API is used anywhere. The details go from the browser straight to Stripe.
 - The mutation returns the client secret and nothing else. Neither the SetupIntent nor the secret is written to the database, and neither appears in a log line. The secret is a credential and belongs in memory on the client only.
-- The resulting payment method exists solely in Stripe. Crater stores a pointer to nothing; the current default is read from Stripe when it is needed.
+- The payment method itself exists solely in Stripe. Crater records its ID on the customer and nothing else; card and bank details, and which of them is the current default, are read from Stripe where they are needed.
 
 The SetupIntent is created server-side with the customer's `stripe_customer_id`, `usage: off_session` — the point is charging later invoices without the customer present — and `automatic_payment_methods`, so Stripe offers whatever is enabled in the Dashboard. `payment_method_types` is deliberately never set: adding a payment method is a Dashboard setting, not a deployment.
 
@@ -423,7 +437,7 @@ Confirming the SetupIntent in the browser attaches the payment method to the Str
 - A SetupIntent whose `purpose` is not `default_payment_method` is not ours. It is ignored and the event is marked processed; other flows create SetupIntents on the same account.
 - The named `crater_customer_id` must resolve to a Crater customer, and that customer's `stripe_customer_id` must be the Stripe customer the SetupIntent was created for. A mismatch is refused and logged; the customer the metadata names is never changed on the strength of the metadata alone.
 - The SetupIntent must carry a payment method.
-- Only then is the payment method written to the Stripe customer's `invoice_settings.default_payment_method`. Nothing about it is stored in Crater.
+- Only then is the payment method written to the Stripe customer's `invoice_settings.default_payment_method`, and its ID recorded on the Crater customer. Nothing else about it is stored.
 
 Anything inconsistent leaves the event unprocessed, so it stays visible in the ledger instead of being silently accepted, and a Stripe redelivery can run it again. A redelivered event that was already processed is ignored, and setting the same default twice is a no-op in Stripe, so duplicates have no side effects either way. Logging is limited to the internal customer ID and the error class; client secrets and payment method data are never logged.
 
@@ -483,9 +497,28 @@ const { error } = await stripe.confirmSetup({
 
 `customerPaymentMethodSetupCreate` and the webhook above cover adding a payment method and promoting it to the default. Reading and removing them need no SetupIntent, because they act on payment methods Stripe has already collected and attached, and neither is a root operation of its own: both hang off the customer.
 
-`Customer.paymentMethods` is the list. It carries the Stripe PaymentMethod IDs stored on the customer, not only the current default, and nothing else -- brands, last four digits, and expiry dates are read where they are displayed, through `subscriptionPaymentMethod`. Crater stores none of the list: it comes from `payment_methods.list` on every request. A customer with no Stripe customer has an empty list rather than an error. A Stripe outage is `PAYMENT_METHOD_UNAVAILABLE`, deliberately never an empty list, because the list is what a client sends back to `customersUpdate`.
+`Customer.paymentMethods` is the list. It carries the Stripe PaymentMethod IDs attached to the customer, not only the current default, and nothing else -- brands, last four digits, and expiry dates are read where they are displayed, through `subscriptionPaymentMethod`. A customer with no billing relationship has an empty list rather than an error.
 
-`customersUpdate` removes them. Its optional `paymentMethods` argument names what the customer **keeps**: every stored payment method absent from the list is detached in Stripe, an id the customer does not have is nothing to act on, and omitting the argument entirely leaves all of them alone. Nothing is ever attached this way; collecting a payment method stays with the SetupIntent flow.
+The ids live in Crater's own `payment_methods` column and are served from there, so reading them costs no Stripe call at all. Previously the field ran `payment_methods.list` per customer, which turned a dashboard listing many customers into one Stripe request per node of the connection. Reading the list can consequently no longer fail on a Stripe outage.
+
+What keeps the column current:
+
+| Trigger                                 | Effect                                                   |
+| --------------------------------------- | -------------------------------------------------------- |
+| `payment_method.attached` webhook       | adds the id                                              |
+| `payment_method.detached` webhook       | removes the id                                           |
+| `setup_intent.succeeded` webhook        | adds the id it just promoted to the customer's default   |
+| `checkout.session.completed` webhook    | adds the subscription's default payment method           |
+| `subscriptionsUpdate(paymentMethodId:)` | adds the id Stripe confirmed is attached to the customer |
+| `customersUpdate(paymentMethods:)`      | replaces the list wholesale with a fresh Stripe read     |
+
+The two `payment_method.*` events are what catch an attach or detach that happened outside Crater, above all in the Stripe dashboard. Without them the column would drift, and a dead id in it would be worse than a missing one: the next `customersUpdate` that omits the id would try to detach it a second time and fail the whole mutation.
+
+`payment_method.detached` needs one special case. Stripe has already cleared the payment method's `customer` by the time it sends the event, and the ledger keeps only `event.data.object`, not `previous_attributes`, so the payload does not say whose it was. The stored ids are the only record of that, which is why the customer is resolved through them -- the column is its own reverse index. It is not indexed; a detach is a rare, per-event lookup.
+
+`customersUpdate` removes them. Its optional `paymentMethods` argument names what the customer **keeps**: every attached payment method absent from the list is detached in Stripe and dropped from the column, an id the customer does not have is nothing to act on, and omitting the argument entirely leaves all of them alone. Nothing is ever attached this way; collecting a payment method stays with the SetupIntent flow.
+
+The diff is taken against a fresh Stripe read rather than against the stored column, which reconciles the column as a side effect. The webhooks normally keep it current, but a detach whose event has not arrived yet would otherwise leave a stale id behind -- and the destructive mutation is exactly the wrong place to act on one.
 
 A removal is refused with `PAYMENT_METHOD_IN_USE` while the payment method is charged for anything:
 
@@ -500,7 +533,7 @@ Access is the same `CustomerPolicy` membership rule as the rest of this section:
 
 #### The payment method of a subscription
 
-`Subscription.paymentMethodId` is what the subscription is billed with. It carries the Stripe PaymentMethod ID and nothing else; the display details behind that id -- type, brand, last four digits, expiry -- are read with the `subscriptionPaymentMethod(subscriptionId)` query. Both read Stripe on every request, because Crater stores no payment method data and has no `default_payment_method` column. The id is `null` while the subscription has no default of its own, and a Stripe outage is `PAYMENT_METHOD_UNAVAILABLE` rather than a `null` that would read as "none set".
+`Subscription.paymentMethodId` is what the subscription is billed with. It carries the Stripe PaymentMethod ID and nothing else; the display details behind that id -- type, brand, last four digits, expiry -- are read with the `subscriptionPaymentMethod(subscriptionId)` query. Both read Stripe on every request. Crater stores payment method **ids** on the customer, but no card or bank data and no `default_payment_method` column, so which method a given subscription is billed with is only ever Stripe's answer. The id is `null` while the subscription has no default of its own, and a Stripe outage is `PAYMENT_METHOD_UNAVAILABLE` rather than a `null` that would read as "none set".
 
 `subscriptionsUpdate` changes it. Its optional `paymentMethodId` argument points the subscription at one of the customer's **already-stored** payment methods, so no SetupIntent, no client secret, and no round trip through Stripe Elements are involved. Collecting a new payment method stays with `customerPaymentMethodSetupCreate`, which attaches it to the customer; from there any subscription can be pointed at it.
 
@@ -509,7 +542,7 @@ Access is the same `CustomerPolicy` membership rule as the rest of this section:
 - It applies **immediately**, independently of when the plan half of the same request takes effect: the next invoice has to be charged to the new payment method whether the plan change is prorated now or scheduled for the end of the period.
 - It runs before the plan change, so a payment method Stripe refuses leaves the subscription untouched -- no proration, no schedule.
 - Supplying only `paymentMethodId` is a valid request: the plan half is then a no-op and costs no Stripe write of its own.
-- Nothing is stored locally, so the change is visible through `Subscription.paymentMethodId` on the next read.
+- The subscription's own default is not stored locally, so the change is visible through `Subscription.paymentMethodId` on the next read. The payment method's id is recorded on the customer, because Stripe has just confirmed it is attached to it -- an additive, self-healing write that makes a method attached outside Crater appear on first use.
 
 #### Checkout return URLs
 
@@ -517,11 +550,13 @@ The checkout is the only flow whose return URL passes through Crater. `Crater::R
 
 ### Subscriptions, invoices, and licenses
 
-`Subscription` stores the deployment type, Stripe status, unique Stripe subscription ID, optional Sagittarius namespace ID, plan, payment period, and optional AI Token and Workflow Execution quantities. The stored quantities are validated against the same customer-specific range (1 to 10,000,000 by default) the checkout enforces, and the stored payment period against the periods its customer's type is billed in.
+`Subscription` stores the deployment type, Stripe status, unique Stripe subscription ID, optional Sagittarius namespace ID, plan, payment period, and optional AI Token and Workflow Execution quantities. The stored quantities are validated against the same per-customer-type range the checkout enforces -- 1 to 1,000,000,000 for AI Tokens and 1 to 10,000,000 for Workflow Executions by default -- and the stored payment period against the periods its customer's type is billed in.
 
-It also projects the lifecycle Stripe reports: the current billing period (`current_period_start`, `current_period_end`), `cancel_at` and `canceled_at` for a cancellation, and the pending half of a scheduled change (`stripe_schedule_id` plus `pending_plan`, `pending_payment_period`, `pending_ai_tokens`, `pending_workflow_executions`, and `pending_effective_at`). The pending fields are validated exactly like the current ones, so a scheduled change can never describe a selection the checkout would refuse. Without an effective time there is no scheduled change and every pending field has to be empty.
+It also projects the lifecycle Stripe reports: the current billing period (`current_period_start`, `current_period_end`), `expire_at` and `canceled_at` for a cancellation, and `stripe_schedule_id` as the pointer to a Stripe subscription schedule.
 
-A subscription that came out of a negotiated `CustomCheckoutConfiguration` carries that configuration's own Stripe Price and therefore no plan, payment period, or quantities. A missing plan is what identifies it, and it is the reason such a subscription is excluded from `subscriptionsUpdate`.
+The future selection of a scheduled change is deliberately **not** mirrored locally. Stripe owns it, and the pointer is only what lets Crater release the schedule again. A second copy of a selection that Stripe can change on its own is a copy that drifts.
+
+A negotiated subscription is billed on its own Stripe Price and therefore carries no plan, payment period, or quantities. A missing plan is what identifies it, and it is the reason such a subscription is excluded from `subscriptionsUpdate`.
 
 `Invoice` contains:
 
@@ -531,7 +566,6 @@ A subscription that came out of a negotiated `CustomCheckoutConfiguration` carri
 - a unique Stripe invoice ID
 - an optional invoice number and Stripe PDF URL
 - an optional Stripe fee
-- optional Lexware ID and URL
 - the customer it was billed to and the subscription it was issued for
 
 The associated `InvoiceItem` entries contain an amount, description, and quantity.
@@ -553,11 +587,13 @@ The Rails mail bodies are currently placeholders, and automatic delivery of thes
 - global ID and status
 - start and end times
 - deployment type
-- seats and runtime minutes
+- AI Token and Workflow Execution entitlements
 - additional features
 - an optional Sagittarius namespace ID for cloud licenses
 - grace period, options, and restrictions in the data model
 - creation and update timestamps
+
+`status` is the `LicenseStatus` enum with `PENDING`, `PAID`, `PAYMENT_FAILED`, and `CANCELED`; `Invoice.status` is `InvoiceStatus`, mirroring Stripe's own invoice statuses. Both sit on Rails enums over integer columns, so the value set is closed in the database and the schema enum cannot meet a value from outside it -- which is what separates them from `Subscription.status`, see [the Subscription type](#the-subscription-type).
 
 Self-hosted licenses can be exported as a signed license file. Cloud licenses can be linked to a Sagittarius namespace or transferred to another namespace.
 
@@ -565,17 +601,30 @@ Self-hosted licenses can be exported as a signed license file. Cloud licenses ca
 
 `restrictions` and `options` are the two free-form hashes the `code0-license` format hands to the installation running on the license. Crater derives both from the subscription and stores them on the snapshot, so they describe what was in force when that snapshot was appended rather than what the subscription looks like now.
 
-| Hash           | Key                  | Value                                                 |
-| -------------- | -------------------- | ----------------------------------------------------- |
-| `restrictions` | `aiTokens`           | AI Token quantity, only for the custom plan           |
-| `restrictions` | `workflowExecutions` | Workflow Execution quantity, only for the custom plan |
-| `options`      | `paymentPeriod`      | `monthly`, `quarterly`, or `yearly`                   |
-| `options`      | `customerType`       | `personal` or `business`                              |
-| `options`      | `plan`               | `PRO`, `MAX`, or `CUSTOM`                             |
+| Hash           | Key                   | Value                                                 |
+| -------------- | --------------------- | ----------------------------------------------------- |
+| `restrictions` | `ai_tokens`           | AI Token quantity, only for the custom plan           |
+| `restrictions` | `workflow_executions` | Workflow Execution quantity, only for the custom plan |
+| `options`      | `payment_period`      | `monthly`, `quarterly`, or `yearly`                   |
+| `options`      | `customer_type`       | `personal` or `business`                              |
+| `options`      | `plan`                | `PRO`, `MAX`, or `CUSTOM`                             |
 
-The keys are camelCase because the product reads them, not Rails; `Code0::License.load` symbolizes them again on the consuming side. The plan is upper case there and lower case in Crater's own storage and GraphQL.
+The keys are snake_case strings, written by `Entitlements` through `stringify_keys`; `Code0::License.load` symbolizes them again on the consuming side. The **plan alone is upper case** -- `PLAN_NAMES` maps Crater's lower-case checkout key onto the spelling the product reads -- while the payment period and the customer type stay the lower-case checkout keys.
 
-Only keys that have a value are written. A Pro or Max subscription carries no quantity restriction at all rather than one set to null, so `restricted?(:aiTokens)` answers `false` for it, and a subscription from a negotiated `CustomCheckoutConfiguration` carries neither `plan` nor `paymentPeriod`.
+Only keys that have a value are written. A Pro or Max subscription carries no quantity restriction at all rather than one set to null, so `restricted?(:ai_tokens)` answers `false` for it, and a negotiated subscription carries neither `plan` nor `payment_period`.
+
+Both hashes are exposed on the GraphQL `License` as `restrictions` and `options`, in the shape Sagittarius describes them:
+
+| Field                  | Type                   | Fields                                  |
+| ---------------------- | ---------------------- | --------------------------------------- |
+| `License.restrictions` | `LicenseRestrictions!` | `aiTokens`, `workflowExecutions`        |
+| `License.options`      | `LicenseOptions!`      | `plan`, `paymentPeriod`, `customerType` |
+
+Both fields are non-null, because the columns are `jsonb DEFAULT '{}' NOT NULL` and an object is always there. Every field inside them is nullable, because only keys that have a value are written.
+
+`options` uses its own enums -- `LicensePlan`, `LicensePaymentPeriod`, and `LicenseCustomerType` -- rather than the checkout ones. They are not interchangeable: `LicensePlan` resolves `PRO`/`MAX`/`CUSTOM` against the upper-case values the snapshot stores, whereas `CheckoutPlan` resolves the same names against the lower-case checkout keys. Reusing the checkout enum here would raise on every read of `options.plan`.
+
+The flat `License.aiTokens`, `workflowExecutions`, `plan`, and `paymentPeriod` fields remain alongside them. They are Crater's own view of the snapshot; `restrictions` and `options` are the verbatim payload the installation reads.
 
 #### The license file
 
@@ -617,14 +666,14 @@ A change that only applies at the end of the period becomes a Stripe subscriptio
 
 The subscription metadata rides on the future phase, so Stripe's copy of the selection flips at the same moment its items do. This matters because `checkoutCompletionStatus` compares that metadata against the local projection and demands equality of deployment type, plan, and period; writing the new plan into the metadata while the subscription is still billing the old one would break the status of a later checkout session.
 
-The schedule is mirrored locally in the `pending_*` columns and exposed as `Subscription.pendingUpdate`, so the UI can say "Max applies from 1 October" instead of showing an unchanged subscription. Requesting another change replaces the schedule rather than queueing behind it: the old one is released first, which is also required because a subscription driven by a schedule cannot have its items updated directly. Cancelling releases it as well.
+Only the schedule's id is kept locally, in `stripe_schedule_id`. Stripe owns the future selection; Crater stores the pointer so it can release the schedule again, and nothing else. Requesting another change replaces the schedule rather than queueing behind it: the old one is released first, which is also required because a subscription driven by a schedule cannot have its items updated directly. Cancelling releases it as well.
 
 #### Consistency and safety
 
 - The row is locked for the whole exchange with Stripe, so two concurrent requests for the same subscription cannot both reach it.
 - Every Stripe write carries an idempotency key derived from the subscription and the exact target selection, so a retried request reuses Stripe's stored answer instead of prorating a second time, while a genuinely different request is still a new one.
 - An update that asks for the selection the subscription already has is a successful no-op: no Stripe call, no proration.
-- A subscription that is no longer active (`canceled`, `incomplete_expired`) and one from a `CustomCheckoutConfiguration` are refused with `INVALID_SUBSCRIPTION`. Cancelling a negotiated subscription is still allowed, because no plan catalogue is involved.
+- A subscription that is no longer active (`canceled`, `incomplete_expired`) and one carrying no checkout plan are refused with `INVALID_SUBSCRIPTION`. Cancelling a negotiated subscription is still allowed, because no plan catalogue is involved.
 
 #### What a change does to licenses
 
@@ -649,14 +698,16 @@ This allows Crater to track Stripe webhook processing and handle events idempote
 
 Only these event types are requested from Stripe and accepted by the webhook endpoint; anything else is answered with `200 OK` and discarded without a ledger entry.
 
-| Event                           | Handler                                           | Effect                                                                                                                                                                   |
-| ------------------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `checkout.session.completed`    | `Webhooks::HandleCheckoutSessionCompletedService` | Upserts the subscription projection and syncs contact details, address, and tax ID back to the customer. Grants no access.                                               |
-| `invoice.paid`                  | `Webhooks::HandleInvoicePaidService`              | Records the invoice locally and appends a `paid` license snapshot. This is the only event that grants paid access.                                                       |
-| `invoice.payment_failed`        | `Webhooks::HandleInvoicePaymentFailedService`     | Records the invoice locally and appends a `payment_failed` snapshot that carries the previous `end_date` and grace period forward.                                       |
-| `customer.subscription.updated` | `Webhooks::HandleSubscriptionUpdatedService`      | Syncs the projection: plan, period, quantities, status, `cancel_at`, and the billing period bounds. Grants no access and writes no license.                              |
-| `customer.subscription.deleted` | `Webhooks::HandleSubscriptionDeletedService`      | Sets the local Stripe status to `canceled` and appends a `canceled` snapshot.                                                                                            |
-| `setup_intent.succeeded`        | `Webhooks::HandleSetupIntentSucceededService`     | Promotes the collected payment method to the Stripe customer's `invoice_settings.default_payment_method`. Stores nothing locally and touches no license or subscription. |
+| Event                           | Handler                                           | Effect                                                                                                                                                                           |
+| ------------------------------- | ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `checkout.session.completed`    | `Webhooks::HandleCheckoutSessionCompletedService` | Upserts the subscription projection and syncs contact details, address, and tax ID back to the customer. Grants no access.                                                       |
+| `invoice.paid`                  | `Webhooks::HandleInvoicePaidService`              | Records the invoice locally and appends a `paid` license snapshot. This is the only event that grants paid access.                                                               |
+| `invoice.payment_failed`        | `Webhooks::HandleInvoicePaymentFailedService`     | Records the invoice locally and appends a `payment_failed` snapshot that carries the previous `end_date` and grace period forward.                                               |
+| `customer.subscription.updated` | `Webhooks::HandleSubscriptionUpdatedService`      | Syncs the projection: plan, period, quantities, status, `expire_at`, and the billing period bounds. Grants no access and writes no license.                                      |
+| `customer.subscription.deleted` | `Webhooks::HandleSubscriptionDeletedService`      | Sets the local Stripe status to `canceled` and appends a `canceled` snapshot.                                                                                                    |
+| `setup_intent.succeeded`        | `Webhooks::HandleSetupIntentSucceededService`     | Promotes the collected payment method to the Stripe customer's `invoice_settings.default_payment_method` and records its id on the customer. Touches no license or subscription. |
+| `payment_method.attached`       | `Webhooks::HandlePaymentMethodAttachedService`    | Records the payment method on the Crater customer it was attached to. An event for a Stripe customer Crater does not know is accepted and ignored.                               |
+| `payment_method.detached`       | `Webhooks::HandlePaymentMethodDetachedService`    | Drops the payment method from the customer that held it, resolved through the stored ids because Stripe has already cleared the payload's customer.                              |
 
 #### From checkout to license
 
@@ -685,10 +736,10 @@ The subscription an invoice belongs to is read from `parent.subscription_details
 
 `customer.subscription.updated` is the event that reports every plan, quantity, and interval change, as well as a cancellation being set or taken back. Without it the projection would only ever be correct until the first change, and `checkoutCompletionStatus` would start refusing sessions whose metadata had moved on. It covers changes Crater itself made through `subscriptionsUpdate` and changes somebody made in the Stripe dashboard alike.
 
-- The selection is read from the Stripe **metadata**, not from the line items. The metadata is what Crater writes on every change and what `checkoutCompletionStatus` compares the projection against, so the two cannot drift apart. A payload carrying no `plan` key at all -- a negotiated custom checkout configuration, or a subscription from before that metadata existed -- leaves the stored selection untouched instead of erasing it.
-- `cancel_at` and `canceled_at` are always written, including as `null`, because a resumed subscription has to lose the cancellation the projection still shows. Status and period bounds are only written when the payload carries them, so a partial payload never blanks out what Crater already knows.
+- The selection is read from the Stripe **metadata**, not from the line items. The metadata is what Crater writes on every change and what `checkoutCompletionStatus` compares the projection against, so the two cannot drift apart. A payload carrying no `plan` key at all -- a negotiated subscription, or one from before that metadata existed -- leaves the stored selection untouched instead of erasing it.
+- `expire_at` and `canceled_at` are always written, including as `null`, because a resumed subscription has to lose the cancellation the projection still shows. Status and period bounds are only written when the payload carries them, so a partial payload never blanks out what Crater already knows.
 - The billing period is read from the subscription items, where Stripe now reports it, and falls back to the subscription level for older payloads.
-- When the reported selection is the one the projection was waiting for, the scheduled change has arrived: the `pending_*` columns and the schedule pointer are cleared. A selection that is _not_ the pending one leaves the pending update in place.
+- The schedule pointer is written from the payload's `schedule`, so a schedule Stripe released on its own stops being referenced locally. There is no pending selection to reconcile: the event simply reports the current one.
 - A payload the projection would refuse -- a period the customer's type is not billed in, for instance -- returns an error, so the event stays unprocessed and Stripe's redelivery can run it again.
 - Like the license-relevant events it can arrive before `checkout.session.completed` created the projection. A missing local subscription is treated as temporary and retried with the same polynomial backoff.
 
@@ -735,22 +786,21 @@ All connections use the standard cursor pagination arguments (`first`, `after`, 
 
 `License` alone cannot carry this: licenses are append-only snapshots, several of them belong to the same subscription, and none of them can express "cancelled as of 30 September" or "moving to Max on 1 October". `Subscription` is the addressable thing the mutations take and the state the UI renders.
 
-| Field                                    | Type                        | Meaning                                                                            |
-| ---------------------------------------- | --------------------------- | ---------------------------------------------------------------------------------- |
-| `id`                                     | `SubscriptionID!`           | Global ID, the argument every subscription mutation takes                          |
-| `status`                                 | `String!`                   | The Stripe status, such as `active`, `past_due`, or `canceled`                     |
-| `plan`                                   | `String`                    | `pro`, `max`, or `custom`; `null` for a negotiated custom checkout configuration   |
-| `paymentPeriod`                          | `CheckoutPaymentPeriod`     | The period it is billed in; `null` for a negotiated configuration                  |
-| `deploymentType`                         | `String!`                   | `self_hosted` or `cloud`                                                           |
-| `namespaceId`                            | `String`                    | Linked Sagittarius namespace, cloud only                                           |
-| `aiTokens`, `workflowExecutions`         | `Int`                       | Quantities of the custom plan                                                      |
-| `currentPeriodStart`, `currentPeriodEnd` | `Time`                      | The billing period Stripe reports                                                  |
-| `cancelAt`                               | `Time`                      | When access ends because it was cancelled; `null` while no cancellation is pending |
-| `canceledAt`                             | `Time`                      | When the cancellation was requested                                                |
-| `pendingUpdate`                          | `SubscriptionPendingUpdate` | The change that applies at the end of the period; `null` while none is scheduled   |
-| `createdAt`, `updatedAt`                 | `Time!`                     | Timestamps                                                                         |
+| Field                                    | Type                    | Meaning                                                                            |
+| ---------------------------------------- | ----------------------- | ---------------------------------------------------------------------------------- |
+| `id`                                     | `SubscriptionID!`       | Global ID, the argument every subscription mutation takes                          |
+| `status`                                 | `String!`               | The Stripe status, such as `active`, `past_due`, or `canceled`                     |
+| `plan`                                   | `CheckoutPlan`          | `PRO`, `MAX`, or `CUSTOM`; `null` for a negotiated subscription                    |
+| `paymentPeriod`                          | `CheckoutPaymentPeriod` | The period it is billed in; `null` for a negotiated subscription                   |
+| `deploymentType`                         | `DeploymentType!`       | `SELF_HOSTED` or `CLOUD`                                                           |
+| `namespaceId`                            | `NamespaceID`           | Linked Sagittarius namespace, cloud only                                           |
+| `aiTokens`, `workflowExecutions`         | `Int`                   | Quantities of the custom plan                                                      |
+| `currentPeriodStart`, `currentPeriodEnd` | `Time`                  | The billing period Stripe reports                                                  |
+| `expireAt`                               | `Time`                  | When access ends because it was cancelled; `null` while no cancellation is pending |
+| `canceledAt`                             | `Time`                  | When the cancellation was requested                                                |
+| `createdAt`, `updatedAt`                 | `Time!`                 | Timestamps                                                                         |
 
-`SubscriptionPendingUpdate` carries `plan!`, `paymentPeriod!`, `aiTokens`, `workflowExecutions`, and `effectiveAt!`. It is Crater's projection of the Stripe subscription schedule, not a second source of truth: without it the UI could not tell the user what applies from when after a downgrade, and the subscription would simply look unchanged.
+`status` is the one status in the API that is **not** an enum. `stripe_status` is a free-text column written straight from the Stripe payload and validated only for presence, so a status Stripe adds later -- `paused` was added this way -- lands in it unchanged. A non-null enum over that column would raise while serializing and, because the field is non-null, take the whole surrounding query down with it rather than just that field. `Subscription#known_stripe_status?` names the set Crater knows; it is advisory and deliberately does not gate the write, because a projection that refuses an unknown status would keep reporting `active` while Stripe says otherwise.
 
 Reading requires `read_subscription`, which `SubscriptionPolicy` derives from `read_customer` on the subscription's customer, so membership stays defined in one place.
 
@@ -782,11 +832,7 @@ query LicenseDashboard {
                         id
                         status
                         plan
-                        pendingUpdate {
-                            plan
-                            paymentPeriod
-                            effectiveAt
-                        }
+                        expireAt
                         licenses(first: 20) {
                             count
                             nodes {
@@ -861,7 +907,7 @@ query LicenseInvoices {
 }
 ```
 
-The `Invoice` type maps onto the stored record: `total`, `net`, and `tax` are the stored `amount_total`, `net_amount`, and `tax_amount` as integers in the smallest currency unit, `billingPeriodStart` and `billingPeriodEnd` are the stored billing period, and `stripePdfUrl` is the stored Stripe PDF link. `invoiceNumber`, `net`, and `stripePdfUrl` are nullable, because Stripe reports them only once the invoice is finalized and its balance transaction is known. Nothing is recalculated on read, and Stripe is not called.
+The `Invoice` type maps onto the stored record: `status` is the `InvoiceStatus` enum, `total`, `net`, and `tax` are the stored `amount_total`, `net_amount`, and `tax_amount` as integers in the smallest currency unit, `billingPeriodStart` and `billingPeriodEnd` are the stored billing period, and `stripePdfUrl` is the stored Stripe PDF link. `invoiceNumber`, `net`, and `stripePdfUrl` are nullable, because Stripe reports them only once the invoice is finalized and its balance transaction is known. Nothing is recalculated on read, and Stripe is not called.
 
 Invoices are ordered by `period_start DESC`, then `created_at DESC`, then `id DESC`, so the newest billing period comes first and equal timestamps still produce a stable order.
 
@@ -950,12 +996,12 @@ Both guest mutations use the usual `input` object and return `errors`; see [gues
 
 #### Customers
 
-| Mutation                           | Key arguments                                                  | Result                                                                                                      |
-| ---------------------------------- | -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `customersCreate`                  | `customerType!`, optional contact details, address, and tax ID | Created `Customer`                                                                                          |
-| `customersUpdate`                  | `id!`, optional contact details, address, and `paymentMethods` | Updated `Customer`; stored payment methods the `paymentMethods` list no longer names are detached in Stripe |
-| `customersDelete`                  | `id!`                                                          | Deleted `Customer`                                                                                          |
-| `customerPaymentMethodSetupCreate` | `customerId!`                                                  | Stripe SetupIntent `clientSecret` for collecting a new default payment method                               |
+| Mutation                           | Key arguments                                                  | Result                                                                                                                                      |
+| ---------------------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `customersCreate`                  | `customerType!`, optional contact details, address, and tax ID | Created `Customer`                                                                                                                          |
+| `customersUpdate`                  | `id!`, optional contact details, address, and `paymentMethods` | Updated `Customer`; attached payment methods the `paymentMethods` list no longer names are detached in Stripe and dropped from the customer |
+| `customersDelete`                  | `id!`                                                          | Deleted `Customer`                                                                                                                          |
+| `customerPaymentMethodSetupCreate` | `customerId!`                                                  | Stripe SetupIntent `clientSecret` for collecting a new default payment method                                                               |
 
 `customersCreate` needs the customer type; everything else can follow later:
 
@@ -998,7 +1044,7 @@ For `checkoutCreateSession`:
 - Crater never sends `customer_email`; the Stripe Customer is referenced by ID, and Stripe rejects both parameters together. An email already on the Stripe Customer is therefore never restated, and a missing one is collected by the client's `ContactDetailsElement`.
 - A regular checkout uses `plan`, `paymentPeriod`, and, where applicable, `deploymentType` and `namespaceId`. There is no `promotionCode` argument; see [discounts](#discounts-in-a-checkout).
 - `plan: custom` accepts positive `aiTokens` and `workflowExecutions`; at least one quantity is required and the authenticated customer's stored type selects B2B or B2C Prices.
-- Each custom quantity must be a positive integer within its customer-specific limit (10,000,000 by default), which stays inside the signed 32-bit range of the GraphQL `Int` scalar and of the `integer` database columns. Anything outside that range, including zero, negative, decimal, and non-integer values, is rejected with `INVALID_CHECKOUT_SELECTION` before Stripe is called. Stripe documents no maximum for a line item's initial `quantity`; its `999999` cap applies to `adjustable_quantity.maximum`, which Crater does not use.
+- Each custom quantity must be a positive integer within the limit configured for the customer's type (1,000,000,000 for AI Tokens and 10,000,000 for Workflow Executions by default), which stays inside the signed 32-bit range of the GraphQL `Int` scalar and of the `integer` database columns. Anything outside that range, including zero, negative, decimal, and non-integer values, is rejected with `INVALID_CHECKOUT_SELECTION` before Stripe is called. Stripe documents no maximum for a line item's initial `quantity`; its `999999` cap applies to `adjustable_quantity.maximum`, which Crater does not use.
 - `namespaceId` is only relevant to cloud deployments.
 - `returnUrl` must have an origin listed in `checkout.allowed_return_origins`.
 - Stripe receives `ui_mode: elements`; the frontend initializes the custom checkout UI with the returned `clientSecret`.
@@ -1013,7 +1059,7 @@ For `checkoutCreateSession`:
 | ---------------------------- | ----------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
 | `subscriptionsPreviewUpdate` | `id: SubscriptionID!`, optional `plan`, `paymentPeriod`, `aiTokens`, `workflowExecutions` | `SubscriptionUpdatePreview` with the proration, the resulting invoice, and the effective moment |
 | `subscriptionsUpdate`        | the same arguments plus optional `paymentMethodId`                                        | Updated `Subscription`                                                                          |
-| `subscriptionsCancel`        | `id: SubscriptionID!`, optional `immediately: Boolean` (default `false`)                  | Updated `Subscription` with `cancelAt` set                                                      |
+| `subscriptionsCancel`        | `id: SubscriptionID!`, optional `immediately: Boolean` (default `false`)                  | Updated `Subscription` with `expireAt` set                                                      |
 | `subscriptionsResume`        | `id: SubscriptionID!`                                                                     | `Subscription` with the cancellation taken back                                                 |
 
 All four require an active session; an anonymous request is refused with HTTP `403` before the mutation runs.
@@ -1023,15 +1069,15 @@ For `subscriptionsUpdate` and `subscriptionsPreviewUpdate`:
 - At least one of `plan`, `paymentPeriod`, `aiTokens`, and `workflowExecutions` has to be supplied; all four missing is `INVALID_CHECKOUT_SELECTION`. For `subscriptionsUpdate` a `paymentMethodId` on its own is enough, and the plan half is then skipped entirely; see [the payment method of a subscription](#the-payment-method-of-a-subscription).
 - Arguments that are not supplied keep their current value. An interval change does not reset the quantities, and a quantity change does not move the plan.
 - Quantities only exist for `plan: custom`. Moving `custom -> pro`/`max` removes the quantity line items and sets the stored quantities to `null`; moving `pro`/`max` -> `custom` requires quantities to come with it, otherwise `INVALID_CHECKOUT_SELECTION`. A quantity supplied for a standard plan is refused the same way.
-- Each quantity is a positive integer within its customer-specific limit (10,000,000 by default), the same bound the checkout enforces. Zero, negative, and non-integer values are refused before Stripe is called.
+- Each quantity is a positive integer within the limit configured for the customer's type, the same bound the checkout enforces. Zero, negative, and non-integer values are refused before Stripe is called.
 - The customer type is the stored `customerType` of the subscription's customer and decides which periods exist; see [the payment periods of a customer type](#the-payment-periods-of-a-customer-type). A Price configured for the other type only is `CUSTOMER_TYPE_MISMATCH`.
-- A subscription from a `CustomCheckoutConfiguration` and one that is no longer active are `INVALID_SUBSCRIPTION`. Cancelling a negotiated subscription is still allowed.
+- A subscription carrying no checkout plan and one that is no longer active are `INVALID_SUBSCRIPTION`. Cancelling a negotiated subscription is still allowed.
 - An update that changes nothing succeeds without calling Stripe.
 - A subscription that does not exist and one belonging to somebody else are answered with the same `INVALID_SUBSCRIPTION` error and the same message, so the response never reveals which of the two it was -- the rule `checkoutCreateSession` already follows for `INVALID_CHECKOUT_CUSTOMER`.
 
 `subscriptionsPreviewUpdate` previews a change to an existing subscription: an upgrade is charged immediately with a proration, so the client has to be able to name the amount before the user clicks. It reads only -- it retrieves the subscription, asks Stripe to preview an invoice, and returns. `SubscriptionUpdatePreview` contains the resolved `plan`, `paymentPeriod`, `aiTokens`, and `workflowExecutions`, plus `effectiveAt`, `immediate`, `prorationAmount`, `total`, and `currency`. Amounts are integers in the smallest currency unit and the preview is non-binding. Because it runs the same planner as `subscriptionsUpdate`, the `effectiveAt` it reports is the moment the update then actually establishes.
 
-`subscriptionsCancel` defaults to `cancel_at_period_end`, so the user keeps the period they already paid for and `cancelAt` says when access ends. `subscriptionsResume` takes that back until it has happened; a subscription Stripe has already ended cannot be resumed and is `INVALID_SUBSCRIPTION`. Resuming a subscription with nothing to take back succeeds without calling Stripe, so a double click cannot produce an error.
+`subscriptionsCancel` defaults to `cancel_at_period_end`, so the user keeps the period they already paid for and `expireAt` says when access ends. `subscriptionsResume` takes that back until it has happened; a subscription Stripe has already ended cannot be resumed and is `INVALID_SUBSCRIPTION`. Resuming a subscription with nothing to take back succeeds without calling Stripe, so a double click cannot produce an error.
 
 #### Licenses
 
@@ -1054,31 +1100,31 @@ A GraphQL error object consists of:
 
 Documented error codes:
 
-| Code                                    | Meaning                                                                                                                                                                                |
-| --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GUEST_USER_CREATION_FAILED`            | Sagittarius could not create the guest user                                                                                                                                            |
-| `GUEST_PROFILE_COMPLETION_FAILED`       | Sagittarius could not complete the guest profile, including a rejected claim token                                                                                                     |
-| `INVALID_EMAIL`                         | The email passed to guest creation is blank                                                                                                                                            |
-| `INVALID_CLAIM_TOKEN`                   | The claim token passed to profile completion is blank                                                                                                                                  |
-| `INVALID_PASSWORD_REPEAT`               | The supplied password and password repeat do not match                                                                                                                                 |
-| `CUSTOMER_TYPE_MISMATCH`                | The selected customer's type does not match the selected checkout                                                                                                                      |
-| `INVALID_CHECKOUT_CUSTOMER`             | The selected customer does not exist or is not accessible to the current user                                                                                                          |
-| `INVALID_CHECKOUT_SESSION`              | The checkout session could not be created                                                                                                                                              |
-| `INVALID_CHECKOUT_SELECTION`            | The selected plan, payment period, quantity, or configured Price combination is invalid, in a checkout and in a change to an existing subscription alike                               |
-| `INVALID_CUSTOMER`                      | The customer is invalid                                                                                                                                                                |
-| `INVALID_DISCOUNT_CODE`                 | The discount code is invalid or inactive                                                                                                                                               |
-| `INVALID_INVOICE`                       | The invoice is invalid                                                                                                                                                                 |
-| `INVALID_LICENSE`                       | The license is invalid                                                                                                                                                                 |
-| `INVALID_PAYMENT_METHOD`                | The selected payment method does not exist or does not belong to this customer                                                                                                         |
-| `INVALID_PAYMENT_METHOD_SETUP_CUSTOMER` | The selected customer does not exist, is not accessible to the current user, or has no billing account to set a payment method up for                                                  |
-| `INVALID_PAYMENT_METHOD_SETUP_SESSION`  | The payment method setup could not be created                                                                                                                                          |
-| `INVALID_SAGITTARIUS_TOKEN`             | The Sagittarius token cannot be used to log in                                                                                                                                         |
-| `INVALID_SUBSCRIPTION`                  | The subscription is invalid, does not exist, is not accessible to the current user, is no longer active, or comes from a custom checkout configuration and therefore cannot be changed |
-| `INVALID_USER`                          | The local user derived from Sagittarius is invalid                                                                                                                                     |
-| `MISSING_PERMISSION`                    | The user does not have the required permission                                                                                                                                         |
-| `PAYMENT_METHOD_IN_USE`                 | The payment method is the default for an active subscription and cannot be removed                                                                                                     |
-| `SAGITTARIUS_UNAVAILABLE`               | Sagittarius could not be reached or returned an unexpected response                                                                                                                    |
-| `UNABLE_TO_LIST_PRICES`                 | Active recurring Stripe prices could not be retrieved                                                                                                                                  |
+| Code                                    | Meaning                                                                                                                                                              |
+| --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GUEST_USER_CREATION_FAILED`            | Sagittarius could not create the guest user                                                                                                                          |
+| `GUEST_PROFILE_COMPLETION_FAILED`       | Sagittarius could not complete the guest profile, including a rejected claim token                                                                                   |
+| `INVALID_EMAIL`                         | The email passed to guest creation is blank                                                                                                                          |
+| `INVALID_CLAIM_TOKEN`                   | The claim token passed to profile completion is blank                                                                                                                |
+| `INVALID_PASSWORD_REPEAT`               | The supplied password and password repeat do not match                                                                                                               |
+| `CUSTOMER_TYPE_MISMATCH`                | The selected customer's type does not match the selected checkout                                                                                                    |
+| `INVALID_CHECKOUT_CUSTOMER`             | The selected customer does not exist or is not accessible to the current user                                                                                        |
+| `INVALID_CHECKOUT_SESSION`              | The checkout session could not be created                                                                                                                            |
+| `INVALID_CHECKOUT_SELECTION`            | The selected plan, payment period, quantity, or configured Price combination is invalid, in a checkout and in a change to an existing subscription alike             |
+| `INVALID_CUSTOMER`                      | The customer is invalid                                                                                                                                              |
+| `INVALID_DISCOUNT_CODE`                 | The discount code is invalid or inactive                                                                                                                             |
+| `INVALID_INVOICE`                       | The invoice is invalid                                                                                                                                               |
+| `INVALID_LICENSE`                       | The license is invalid                                                                                                                                               |
+| `INVALID_PAYMENT_METHOD`                | The selected payment method does not exist or does not belong to this customer                                                                                       |
+| `INVALID_PAYMENT_METHOD_SETUP_CUSTOMER` | The selected customer does not exist, is not accessible to the current user, or has no billing account to set a payment method up for                                |
+| `INVALID_PAYMENT_METHOD_SETUP_SESSION`  | The payment method setup could not be created                                                                                                                        |
+| `INVALID_SAGITTARIUS_TOKEN`             | The Sagittarius token cannot be used to log in                                                                                                                       |
+| `INVALID_SUBSCRIPTION`                  | The subscription is invalid, does not exist, is not accessible to the current user, is no longer active, or carries no checkout plan and therefore cannot be changed |
+| `INVALID_USER`                          | The local user derived from Sagittarius is invalid                                                                                                                   |
+| `MISSING_PERMISSION`                    | The user does not have the required permission                                                                                                                       |
+| `PAYMENT_METHOD_IN_USE`                 | The payment method is the default for an active subscription and cannot be removed                                                                                   |
+| `SAGITTARIUS_UNAVAILABLE`               | Sagittarius could not be reached or returned an unexpected response                                                                                                  |
+| `UNABLE_TO_LIST_PRICES`                 | Active recurring Stripe prices could not be retrieved                                                                                                                |
 
 ## Types and conventions
 
@@ -1109,6 +1155,6 @@ Documented error codes:
 13. The dashboard reads the billing history of a license from that local projection through `License.invoices`.
 14. Once the relevant subscription and license data exists, a self-hosted license can be exported while a cloud license can be linked to a Sagittarius namespace.
 15. To change the payment method of an active customer later, the client calls `customerPaymentMethodSetupCreate`, confirms the returned SetupIntent with Stripe Elements, and reloads the customer data afterwards. The verified `setup_intent.succeeded` webhook is what makes the collected payment method the default, so the confirmation itself is not proof that it already is.
-16. To change the subscription later, the client reads it through `Customer.subscriptions` or `License.subscription`, calls `subscriptionsPreviewUpdate` to show the amount and the effective moment, and then `subscriptionsUpdate`. The same mutation moves the subscription to another stored payment method through `paymentMethodId`. An upgrade applies at once and is prorated; a downgrade or an interval change is reported back as `pendingUpdate` and applies at the end of the period. `subscriptionsCancel` ends the subscription at the end of the paid period, and `subscriptionsResume` takes that back. The verified `customer.subscription.updated` webhook is what makes the projection reflect the change, and the new entitlements arrive with the next `invoice.paid`.
+16. To change the subscription later, the client reads it through `Customer.subscriptions` or `License.subscription`, calls `subscriptionsPreviewUpdate` to show the amount and the effective moment, and then `subscriptionsUpdate`. The same mutation moves the subscription to another stored payment method through `paymentMethodId`. An upgrade applies at once and is prorated; a downgrade or an interval change becomes a Stripe subscription schedule and applies at the end of the period. `subscriptionsCancel` ends the subscription at the end of the paid period, and `subscriptionsResume` takes that back. The verified `customer.subscription.updated` webhook is what makes the projection reflect the change, and the new entitlements arrive with the next `invoice.paid`.
 
 If the user abandons the checkout at any point between steps 6 and 11, the customer stays as it was created; only the Stripe session expires.

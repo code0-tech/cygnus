@@ -47,7 +47,7 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
         dateStyle: "medium",
         timeZone: "UTC",
     })
-    const accessEndDate = license?.endDate ?? license?.cancelAt
+    const accessEndDate = license?.endDate ?? license?.expireAt
     const showNamespaceWarning = license?.deploymentType === "cloud" && !license.namespaceId
     const licenseDetails = license
         ? [
@@ -65,20 +65,6 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
                         {
                             label: content.cancel.cancelAtLabel,
                             value: dateFormatter.format(new Date(accessEndDate)),
-                        },
-                    ]
-                  : []),
-              ...(license.pendingUpdate
-                  ? [
-                        {
-                            label: content.billing.pendingChangeLabel,
-                            value: [
-                                license.pendingUpdate.plan ? formatLicenseDisplayValue(license.pendingUpdate.plan, "plan", content.values) : null,
-                                license.pendingUpdate.paymentPeriod ? formatLicenseDisplayValue(license.pendingUpdate.paymentPeriod, "paymentPeriod", content.values) : null,
-                                license.pendingUpdate.effectiveAt ? dateFormatter.format(new Date(license.pendingUpdate.effectiveAt)) : null,
-                            ]
-                                .filter(Boolean)
-                                .join(" · "),
                         },
                     ]
                   : []),

@@ -379,7 +379,7 @@ export interface LicenseContent {
         customerTypes: { personal: string; business: string }
         deploymentTypes: { cloud: string; selfHosted: string }
         paymentPeriods: { monthly: string; quarterly: string; yearly: string }
-        statuses: { active: string; paid: string; paymentFailed: string; canceled: string; expired: string }
+        statuses: { active: string; pending: string; paid: string; paymentFailed: string; canceled: string; expired: string }
         invoiceStatuses: { draft: string; open: string; uncollectible: string; void: string }
         plans: { pro: string; max: string; custom: string }
         unknown: string
