@@ -65,7 +65,7 @@
         "@ai-sdk/mistral": "^4.0.42",
         "@swc-node/register": "^1.12.1",
         "@tailwindcss/postcss": "^4.3.3",
-        "@types/node": "^25.9.5",
+        "@types/node": "^25.9.6",
         "@types/react": "^19.3.0",
         "@types/react-dom": "^19.3.0",
         "@types/sanitize-html": "^2.16.1",
