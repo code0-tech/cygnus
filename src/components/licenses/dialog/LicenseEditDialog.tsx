@@ -120,6 +120,7 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
         }
     }
 
+    const otherPaymentMethods = customerPaymentMethods?.filter((method) => method.id !== license?.paymentMethodId)
     const isCloud = license?.deploymentType === "cloud"
     const namespaceSelectionFailed = searchParams.has("namespaceError")
     const sidebar = license?.subscriptionId ? (
@@ -227,7 +228,7 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
                         <Text role="alert" size="sm" className="text-error!">
                             {errors.paymentMethodLoad}
                         </Text>
-                    ) : customerPaymentMethods && customerPaymentMethods.length > 0 ? (
+                    ) : otherPaymentMethods && otherPaymentMethods.length > 0 ? (
                         <div className="space-y-3">
                             <Text hierarchy="secondary" size="sm" fw={500}>
                                 {content.editor.otherPaymentMethodsHeading}
@@ -235,7 +236,7 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
                             <ScrollArea h="20rem" type="scroll">
                                 <ScrollAreaViewport className="h-full! w-full!">
                                     <div className="space-y-3 pr-3">
-                                        {customerPaymentMethods.map((method) => (
+                                        {otherPaymentMethods.map((method) => (
                                             <CustomerPaymentMethodCard
                                                 key={method.id}
                                                 method={method}
@@ -244,7 +245,7 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
                                                         type="button"
                                                         variant="normal"
                                                         paddingSize="xs"
-                                                        disabled={assigningPaymentMethodId === method.id || license.paymentMethodId === method.id}
+                                                        disabled={assigningPaymentMethodId === method.id}
                                                         onClick={() => void assignPaymentMethod(method.id)}
                                                     >
                                                         {assigningPaymentMethodId === method.id ? (
