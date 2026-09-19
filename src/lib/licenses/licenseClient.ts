@@ -23,6 +23,16 @@ export async function fetchCustomerPaymentMethods(customerId: string, signal: Ab
     return result.paymentMethods as CustomerPaymentMethodSummary[]
 }
 
+export async function fetchSubscriptionPaymentMethod(subscriptionId: string, signal: AbortSignal): Promise<PaymentMethodDisplayDetails | null> {
+    const url = new URL("/api/crater/subscriptions/payment-method", window.location.origin)
+    url.searchParams.set("subscriptionId", subscriptionId)
+
+    const response = await fetch(url, { cache: "no-store", credentials: "same-origin", signal })
+    const result: unknown = await response.json()
+    if (!response.ok || !result || typeof result !== "object" || !("paymentMethod" in result)) throw new Error("Invalid payment method response.")
+    return result.paymentMethod as PaymentMethodDisplayDetails | null
+}
+
 export async function downloadLicenseFile(licenseId: string, request: typeof fetch = fetch) {
     const response = await request("/api/crater/licenses/export", {
         method: "POST",

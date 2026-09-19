@@ -2068,16 +2068,6 @@ test("paginates licenses on a customer detail page", async () => {
             data: {
                 currentUser: {
                     customers: {
-                        edges: [{ cursor: "customer-1", node: { id: "gid://crater/Customer/1", customerType: "personal", licenses: { edges: [] } } }],
-                        pageInfo: { endCursor: "customer-1", hasNextPage: false },
-                    },
-                },
-            },
-        },
-        {
-            data: {
-                currentUser: {
-                    customers: {
                         nodes: [
                             {
                                 customerType: "personal",
@@ -2099,13 +2089,17 @@ test("paginates licenses on a customer detail page", async () => {
 
     try {
         const response = await getLicenseDashboard(
-            new Request("https://example.com/api/crater/licenses?view=customer&customerId=gid%3A%2F%2Fcrater%2FCustomer%2F1&licenseAfter=license-25", { headers: sessionHeaders })
+            new Request("https://example.com/api/crater/licenses?view=customer&customerId=gid%3A%2F%2Fcrater%2FCustomer%2F1&licenseAfter=license-25&includeNavigation=false", {
+                headers: sessionHeaders,
+            })
         )
 
         assert.equal(response.status, 200)
-        assert.deepEqual(graphQLServer.requests[1].body.variables, { licenseAfter: "license-25" })
+        assert.equal(graphQLServer.requests.length, 1)
+        assert.equal(graphQLServer.requests[0].body.operationName, "LicenseCustomerDetail")
+        assert.deepEqual(graphQLServer.requests[0].body.variables, { licenseAfter: "license-25" })
         const body = await response.json()
-        assert.deepEqual(body.pagination, { licenses: { endCursor: "license-50", hasNextPage: true, totalCount: 51 } })
+        assert.deepEqual(body.pagination, { licenses: { contextCursor: null, endCursor: "license-50", hasNextPage: true, totalCount: 51 } })
         assert.deepEqual(
             body.licenses.map((license: { id: string }) => license.id),
             ["gid://crater/License/26"]
@@ -2170,7 +2164,7 @@ test("finds a license customer beyond the first Crater cursor page", async () =>
             customers: [{ customerType: "business", id: "gid://crater/Customer/26", licenseCount: 0 }],
             licenses: [],
             navigationLicenses: [],
-            pagination: { licenses: { endCursor: null, hasNextPage: false, totalCount: 0 } },
+            pagination: { licenses: { contextCursor: "customer-25", endCursor: null, hasNextPage: false, totalCount: 0 } },
         })
     } finally {
         if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
