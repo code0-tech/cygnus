@@ -5,6 +5,7 @@ import { CraterSessionProvider } from "@/components/checkout/CraterSessionProvid
 import { Container } from "@code0-tech/pictor"
 import Image from "next/image"
 import Link from "next/link"
+import { useSearchParams } from "next/navigation"
 import type { ReactNode } from "react"
 import type { ErrorsContent } from "@/lib/cms"
 
@@ -14,6 +15,7 @@ interface CheckoutSessionLayoutClientProps {
 }
 
 export function CheckoutSessionLayoutClient({ children, errors }: CheckoutSessionLayoutClientProps) {
+    const guestCheckout = useSearchParams().get("guestCheckout")
     return (
         <>
             <div className="border-b border-white/10 bg-primary/50 py-3 backdrop-blur-sm">
@@ -23,7 +25,7 @@ export function CheckoutSessionLayoutClient({ children, errors }: CheckoutSessio
                     </Link>
                 </Container>
             </div>
-            <CraterSessionProvider errorMessage={errors?.sessionUnavailable ?? errors?.paymentFallback}>
+            <CraterSessionProvider key={guestCheckout ?? "account"} errorMessage={errors?.sessionUnavailable ?? errors?.paymentFallback}>
                 <LandingContainer className="min-h-0 flex-1 overflow-y-auto my-8">{children}</LandingContainer>
             </CraterSessionProvider>
         </>

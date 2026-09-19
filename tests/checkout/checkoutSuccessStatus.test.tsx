@@ -60,6 +60,7 @@ const content: CheckoutData["success"] = {
     licensePendingLabel: "Preparing license",
     licenseStatusRetryLabel: "Try again",
     receiptHint: "Stripe sends the receipt to your email address.",
+    guestAccountHint: "You will receive an email with a link to create your account. Complete your account setup using that link to continue.",
     failedHeading: "Payment failed",
     failedDescription: "Stripe could not process your payment.",
     invalidHeading: "Checkout link is no longer valid",
@@ -68,7 +69,7 @@ const content: CheckoutData["success"] = {
 }
 
 const errorMessage = "Could not confirm the license."
-const checkoutSearchParams = new URLSearchParams({ session_id: "cs_test", plan: "pro", customerType: "b2b", paymentPeriod: "monthly" })
+const checkoutSearchParams = new URLSearchParams({ session_id: "cs_test", plan: "pro", customerType: "b2b", paymentPeriod: "monthly" }).toString()
 const pricingContent = {
     deploymentIcons: { cloud: "cloud", selfHosted: "server" },
     deploymentIconColor: "aqua",
@@ -198,6 +199,7 @@ test("shows Crater's confirmed Stripe pricing once payment is confirmed", async 
     assert.ok(screen.getByText("€17.10"))
     assert.ok(screen.getByText("107.1"))
     assert.ok(screen.getByText(content.receiptHint))
+    assert.equal(screen.queryByText(content.guestAccountHint), null)
 })
 
 test("keeps polling the license when Crater has not exposed the optional pricing yet", async () => {
@@ -259,4 +261,39 @@ test("downloads the Crater license next to the dashboard for self-hosted", async
     await userEvent.setup().click(await screen.findByRole("button", { name: content.licenseDownloadLabel }))
     assert.deepEqual(downloadedLicenseIds, ["gid://crater/License/2"])
     assert.equal(screen.queryByRole("link", { name: content.sculptorLabel }), null)
+})
+
+test("guest confirmation accepts serialized query parameters and offers only the purchase download", async () => {
+    respondWith({ state: "READY", customerId: "gid://crater/Customer/1", licenseId: "gid://crater/License/2" })
+    render(
+        <CheckoutSuccessStatus
+            {...sharedProps}
+            checkoutSearchParams={`${checkoutSearchParams}&guestCheckout=purchase-one`}
+            content={content}
+            errorMessage={errorMessage}
+            locale="en"
+            sessionId="cs_test"
+        />
+    )
+    await userEvent.setup().click(await screen.findByRole("button", { name: content.licenseDownloadLabel }))
+    assert.deepEqual(downloadedLicenseIds, ["gid://crater/License/2"])
+    assert.equal(screen.queryByRole("link", { name: content.licenseDashboardLabel }), null)
+    assert.ok(screen.getByText(content.guestAccountHint))
+})
+
+test("failed guest checkout preserves the configuration when returning to the login choice", async () => {
+    respondWith({ state: "FAILED", customerId: "gid://crater/Customer/1", licenseId: null })
+    render(
+        <CheckoutSuccessStatus
+            {...sharedProps}
+            checkoutSearchParams={`${checkoutSearchParams}&guestCheckout=purchase-one`}
+            content={content}
+            errorMessage={errorMessage}
+            locale="en"
+            sessionId="cs_test"
+        />
+    )
+    await screen.findByText(content.failedHeading)
+    assert.equal(screen.queryByText(content.guestAccountHint), null)
+    assert.deepEqual(routerReplaceCalls, ["/en/checkout/login?plan=pro&customerType=b2b&paymentPeriod=monthly&paymentFailed=1"])
 })

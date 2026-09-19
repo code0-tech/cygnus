@@ -1,3 +1,4 @@
+import { readGuestCheckoutSession } from "@/lib/checkout/guestCheckoutSession"
 import { createApolloClient } from "@/lib/apolloClient"
 import { craterJson, craterMutationErrorResponse, craterTransportErrorResponse, optionalString, readJsonObject, readOptionalAddress, requireCraterSession } from "@/lib/checkout/craterApi"
 import { normalizeCraterCustomerType, toCraterCustomerTypeEnum } from "@/lib/checkout/craterCustomer"
@@ -161,7 +162,7 @@ export async function GET(request: Request) {
             },
         })
     } catch (error) {
-        const transportResponse = craterTransportErrorResponse(error)
+        const transportResponse = craterTransportErrorResponse(error, request)
         if (transportResponse) return transportResponse
 
         console.error("Crater customer list error:", error)
@@ -175,7 +176,7 @@ export async function POST(request: Request) {
 
     const body = await readJsonObject(request)
     const customerType = normalizeCraterCustomerType(optionalString(body?.customerType))
-    const email = optionalString(body?.email)
+    const email = readGuestCheckoutSession(request)?.email ?? optionalString(body?.email)
     const name = optionalString(body?.name)
     const phone = optionalString(body?.phone)
     const taxIdType = optionalString(body?.taxIdType)
@@ -215,7 +216,7 @@ export async function POST(request: Request) {
 
         return craterJson(normalizeCustomer(payload.customer), 201)
     } catch (error) {
-        const transportResponse = craterTransportErrorResponse(error)
+        const transportResponse = craterTransportErrorResponse(error, request)
         if (transportResponse) return transportResponse
 
         console.error("Crater customer creation error:", error)
@@ -270,7 +271,7 @@ export async function PATCH(request: Request) {
 
         return craterJson(normalizeCustomer(payload.customer))
     } catch (error) {
-        const transportResponse = craterTransportErrorResponse(error)
+        const transportResponse = craterTransportErrorResponse(error, request)
         if (transportResponse) return transportResponse
 
         console.error("Crater customer update error:", error)

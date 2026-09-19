@@ -134,3 +134,30 @@ test("appends Crater's validation details to the logged error", async () => {
     assert.ok(loggedError instanceof Error)
     assert.equal(loggedError.message, "Could not validate Crater session. (INVALID_USER: sagittarius_id: blank, user unavailable)")
 })
+
+
+test("expired guest receipt never logs in through the account or shared session", async () => {
+    window.history.replaceState({}, "", "/en/checkout/success?guestCheckout=expired-purchase")
+    const requests: string[] = []
+    console.error = () => {}
+    globalThis.fetch = (async (input, init) => {
+        requests.push(String(input))
+        assert.equal(new Headers(init?.headers).get("x-guest-checkout"), "expired-purchase")
+        return new Response("{}", { status: 401 })
+    }) as typeof fetch
+    render(<CraterSessionProvider errorMessage="Guest session expired"><SessionState /></CraterSessionProvider>)
+    assert.ok(await screen.findByText("Guest session expired"))
+    assert.deepEqual(requests, ["/api/crater/auth/session"])
+})
+
+
+test("restores the guest email from the purchase session after reload", async () => {
+    window.history.replaceState({}, "", "/en/checkout?guestCheckout=purchase-one")
+    globalThis.fetch = (async () => new Response(JSON.stringify({ authenticated: true, guestEmail: "guest@example.com" }), { status: 200 })) as typeof fetch
+    function GuestEmail() {
+        const session = useCraterSession()
+        return <span>{session.guestEmail}</span>
+    }
+    render(<CraterSessionProvider><GuestEmail /></CraterSessionProvider>)
+    assert.ok(await screen.findByText("guest@example.com"))
+})

@@ -1,3 +1,4 @@
+import { readGuestCheckoutSession } from "../../src/lib/checkout/guestCheckoutSession"
 import assert from "node:assert/strict"
 import test from "node:test"
 import { GET as listCustomers, PATCH as updateCustomer, POST as createOrGetCustomer } from "../../src/app/api/crater/customer/route"
@@ -114,6 +115,8 @@ test("continuing as a guest creates a Sagittarius guest user for the entered ema
             },
         },
     ])
+    const previousSecret = process.env.PAYLOAD_SECRET
+    process.env.PAYLOAD_SECRET = "test-only-checkout-cookie-secret"
     const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
     process.env.CRATER_GRAPHQL_URL = graphQLServer.url
 
@@ -127,19 +130,27 @@ test("continuing as a guest creates a Sagittarius guest user for the entered ema
         )
 
         assert.equal(response.status, 200)
-        assert.deepEqual(await response.json(), { authenticated: true })
+        const body = await response.json()
+        assert.equal(body.authenticated, true)
+        assert.match(body.checkoutId, /^[a-f0-9]{32}$/)
         assert.equal(graphQLServer.requests[0].body.operationName, "UsersCreateGuestUser")
         assert.deepEqual(graphQLServer.requests[0].body.variables, { input: { email: "guest@example.com" } })
 
         const setCookies = response.headers.getSetCookie()
-        const sessionCookie = setCookies.find((cookie) => cookie.startsWith("crater_session=")) ?? ""
-        const claimCookie = setCookies.find((cookie) => cookie.startsWith("crater_guest_claim=")) ?? ""
-        assert.match(sessionCookie, /crater_session=crater-guest-session/)
-        assert.match(sessionCookie, /HttpOnly/i)
-        assert.match(claimCookie, /crater_guest_claim=guest-claim-token/)
-        assert.match(claimCookie, /HttpOnly/i)
-        assert.match(claimCookie, /Path=\/api\/crater/i)
+        assert.equal(setCookies.length, 1)
+        const cookie = setCookies[0]
+        assert.match(cookie, /HttpOnly/i)
+        assert.match(cookie, /Path=\/api\/crater/i)
+        assert.doesNotMatch(cookie, /crater_session=|crater_user_login=|guest-claim-token|crater-guest-session|Max-Age|Expires/i)
+        const session = readGuestCheckoutSession(new Request("https://example.com/api/crater/customer", {
+            headers: { "x-guest-checkout": body.checkoutId, cookie: cookie.split(";")[0] },
+        }))
+        assert.equal(session?.token, "crater-guest-session")
+        assert.equal(session?.claimToken, "guest-claim-token")
+        assert.equal(session?.email, "guest@example.com")
     } finally {
+        if (previousSecret === undefined) delete process.env.PAYLOAD_SECRET
+        else process.env.PAYLOAD_SECRET = previousSecret
         if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
         else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
         await graphQLServer.close()

@@ -27,3 +27,12 @@ For every scenario, verify that the browser returns to the localized `/checkout/
 | Decline | Use card `4000 0000 0000 9995` and verify that Stripe's error is shown without advancing to success. |
 
 Finally, verify in Stripe and Crater that the completed Checkout Session, webhook event, subscription projection, and license state all reference the same customer and checkout configuration.
+# Guest checkout isolation
+
+The login choice is always displayed, including for signed-in self-hosted buyers. Guest creation never replaces the account session. Each purchase gets a random `guestCheckout` URL identifier and its own encrypted HttpOnly browser-session cookie. The identifier is not a credential. The existing `PAYLOAD_SECRET` seals the cookie; it must be configured and consistent across application instances.
+
+Guest checkout access has an absolute 24-hour deadline, even if the browser restores session cookies. Requests select the purchase explicitly, so account pages and other tabs retain their own identity. Missing or expired guest credentials never fall back to account credentials. Guest form drafts use sessionStorage, and contain no credentials.
+
+On Crater's verified `READY` response, the cookie loses its profile claim and checkout permissions. For at most another 30 minutes (bounded by the original deadline), it permits only the purchase confirmation and download of the returned license. Reloading does not extend this deadline. A `FAILED` checkout clears the guest cookie; expired cookies are cleared on the next request. No guest is automatically linked to the signed-in account, and the guest confirmation does not link to that account's license dashboard. Profile claiming/account linking remains a separate explicit flow.
+
+Manual checks: keep an account dashboard open, purchase as a guest in another tab, reload checkout, complete a redirect-based payment, download the license, and verify that the original dashboard still uses the account. Repeat with two guest purchases in separate tabs and with an expired guest cookie.

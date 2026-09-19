@@ -21,6 +21,7 @@ function resolveCheckoutReturnUrl(requestUrl: URL) {
     const segments = returnUrl.pathname.split("/").filter(Boolean)
     if (returnUrl.origin !== requestUrl.origin || segments.length !== 2 || !isSupportedLocale(segments[0]) || segments[1] !== "checkout") return null
 
+    returnUrl.searchParams.delete("guestCheckout")
     returnUrl.searchParams.delete("token")
     returnUrl.searchParams.delete("authError")
     return returnUrl

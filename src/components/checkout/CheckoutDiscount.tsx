@@ -1,5 +1,6 @@
 "use client"
 
+import { checkoutFetch } from "@/lib/checkout/checkoutFetch"
 import { Button, TextInput } from "@code0-tech/pictor"
 import { useCraterSession } from "@/components/checkout/CraterSessionProvider"
 import { ButtonLoader } from "@/components/ui/Loader"
@@ -82,7 +83,7 @@ export function CheckoutDiscount({
             setErrorMessage(null)
 
             try {
-                const response = await fetch("/api/crater/checkout/discount", {
+                const response = await checkoutFetch("/api/crater/checkout/discount", {
                     method: "POST",
                     headers: { "content-type": "application/json" },
                     body: JSON.stringify({ code: normalizedCode }),

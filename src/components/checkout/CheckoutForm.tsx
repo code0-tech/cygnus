@@ -29,6 +29,7 @@ function CheckoutFormContent() {
         customerType,
         errors,
         hasExistingCustomers,
+        guestEmail,
         isLoading,
         isRefreshingSession,
         isSessionLoading,
@@ -100,7 +101,7 @@ function CheckoutFormContent() {
             errors={errors}
             customerSelect={customerSelect}
             customerSelectSkeleton={customerSelect ? <CheckoutCustomerSelectSkeleton /> : null}
-            customerEmail={selectedCustomer?.email ?? null}
+            customerEmail={guestEmail ?? selectedCustomer?.email ?? null}
             email={stripeEmail}
             emailComplete={stripeEmailComplete}
             emailSyncedToStripe={stripeEmailSynced}

@@ -1,3 +1,4 @@
+import { readGuestCheckoutSession } from "@/lib/checkout/guestCheckoutSession"
 import { createApolloClient } from "@/lib/apolloClient"
 import { craterJson, craterMutationErrorResponse, craterTransportErrorResponse, requireCraterSession } from "@/lib/checkout/craterApi"
 import { clearCraterSessionCookie } from "@/lib/checkout/craterSession"
@@ -47,12 +48,13 @@ export async function GET(request: Request) {
             fetchPolicy: "no-cache",
         })
         if (!result.data?.currentUser?.id) {
-            return clearCraterSessionCookie(craterJson({ error: "The Crater session is invalid or expired." }, 401))
+            return clearCraterSessionCookie(craterJson({ error: "The Crater session is invalid or expired." }, 401), request)
         }
 
-        return craterJson({ authenticated: true })
+        const guestEmail = readGuestCheckoutSession(request)?.email
+        return craterJson({ authenticated: true, ...(guestEmail ? { guestEmail } : {}) })
     } catch (error) {
-        const transportResponse = craterTransportErrorResponse(error)
+        const transportResponse = craterTransportErrorResponse(error, request)
         if (transportResponse) return transportResponse
 
         console.error("Crater session status error:", error)
@@ -78,7 +80,7 @@ export async function DELETE(request: Request) {
 
         return clearCraterSessionCookie(craterJson({ authenticated: false }))
     } catch (error) {
-        const transportResponse = craterTransportErrorResponse(error)
+        const transportResponse = craterTransportErrorResponse(error, request)
         if (transportResponse) return transportResponse
 
         console.error("Crater session logout error:", error instanceof Error ? error.name : "UnknownError")

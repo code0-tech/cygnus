@@ -76,7 +76,7 @@ export function requireCraterSession(request: Request, authorizationHeaderOnly =
 
     if (authorization.status === "invalid") {
         return {
-            response: clearCraterSessionCookie(craterJson({ error: "Crater session authorization is invalid." }, 401)),
+            response: clearCraterSessionCookie(craterJson({ error: "Crater session authorization is invalid." }, 401), request),
         }
     }
 
@@ -113,7 +113,7 @@ export function craterMutationErrorResponse(errors: Error[] | null | undefined, 
     return craterJson({ error: message, ...described }, 422)
 }
 
-export function craterTransportErrorResponse(error: unknown) {
+export function craterTransportErrorResponse(error: unknown, request?: Request) {
     if (!ServerError.is(error) || (error.statusCode !== 401 && error.statusCode !== 403)) {
         return null
     }
@@ -124,5 +124,5 @@ export function craterTransportErrorResponse(error: unknown) {
         },
         error.statusCode
     )
-    return error.statusCode === 401 ? clearCraterSessionCookie(response) : response
+    return error.statusCode === 401 ? clearCraterSessionCookie(response, request) : response
 }

@@ -1,3 +1,4 @@
+import { checkoutFetch } from "@/lib/checkout/checkoutFetch"
 import type { StripeCheckoutContact } from "@stripe/stripe-js"
 import type { CraterCustomerType } from "@/lib/checkout/craterCustomer"
 import type { AppLocale } from "@/lib/i18n"
@@ -83,7 +84,7 @@ export async function getCheckoutCustomers() {
     do {
         const url = new URL("/api/crater/customer", window.location.origin)
         if (after) url.searchParams.set("after", after)
-        const response = await fetch(`${url.pathname}${url.search}`, { credentials: "same-origin" })
+        const response = await checkoutFetch(`${url.pathname}${url.search}`, { credentials: "same-origin" })
         if (!response.ok) throw await createCheckoutSubmissionError(response, "Failed to load billing customers.", "customer")
         const body: unknown = await response.json()
         const source = body && typeof body === "object" ? (body as Record<string, unknown>) : null
@@ -105,7 +106,7 @@ export async function getCheckoutCustomers() {
 
 export async function createCheckoutCustomer({ customerType, email, billingAddress }: { customerType: CraterCustomerType; email: string; billingAddress: StripeCheckoutContact }) {
     const { postal_code, ...address } = billingAddress.address
-    const customerResponse = await fetch("/api/crater/customer", {
+    const customerResponse = await checkoutFetch("/api/crater/customer", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ customerType, email, name: billingAddress.name, address: { ...address, postalCode: postal_code } }),
@@ -118,7 +119,7 @@ export async function createCheckoutCustomer({ customerType, email, billingAddre
 }
 
 export async function createCheckoutSession({ customerId, locale, searchParams }: { customerId: string; locale: AppLocale; searchParams: URLSearchParams }) {
-    const checkoutResponse = await fetch("/api/crater/checkout/session", {
+    const checkoutResponse = await checkoutFetch("/api/crater/checkout/session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...Object.fromEntries(searchParams.entries()), customerId, locale }),

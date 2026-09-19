@@ -11,6 +11,7 @@ const checkoutSearchParams = new URLSearchParams({
     paymentPeriod: "monthly",
     plan: "pro",
 })
+let guestEmail: string | null = null
 let checkoutProviderOptions: {
     clientSecret?: string
     defaultValues?: unknown
@@ -64,6 +65,7 @@ mock.module("@/components/checkout/CraterSessionProvider", {
     namedExports: {
         useCraterSession: () => ({
             authenticated: true,
+            guestEmail,
             error: null,
             isLoading: false,
         }),
@@ -232,6 +234,8 @@ const { clearCheckoutContactDraft, readCheckoutContactDraft, saveCheckoutContact
 const originalFetch = globalThis.fetch
 afterEach(() => {
     cleanup()
+    guestEmail = null
+    checkoutSearchParams.delete("guestCheckout")
     clearCheckoutContactDraft()
     globalThis.fetch = originalFetch
     checkoutSearchParams.set("customerType", "b2c")
@@ -920,4 +924,23 @@ test("does not save previous contact details under a changed checkout configurat
     const draft = readCheckoutContactDraft(checkoutSearchParams)
     assert.equal(draft?.email, null)
     assert.equal(draft?.billingAddress, null)
+})
+
+
+test("prefills and locks the guest email, ignoring a conflicting draft after reload", async () => {
+    guestEmail = "guest@example.com"
+    checkoutSearchParams.set("guestCheckout", "purchase-one")
+    globalThis.fetch = (async () => new Response(JSON.stringify({ customers: [] }), { status: 200 })) as typeof fetch
+    const first = render(<CheckoutForm content={content} errors={errors} locale="en" />)
+    await screen.findByTestId("standalone-address")
+    const input = screen.getByRole("textbox", { name: content.emailLabel }) as HTMLInputElement
+    assert.equal(input.value, "guest@example.com")
+    assert.equal(input.disabled, true)
+    first.unmount()
+    saveCheckoutContactDraft({ billingAddress: null, customerId: null, email: "other@example.com", searchParams: checkoutSearchParams, stage: "billingAddress" })
+    render(<CheckoutForm content={content} errors={errors} locale="en" />)
+    await screen.findByTestId("standalone-address")
+    const restoredInput = screen.getByRole("textbox", { name: content.emailLabel }) as HTMLInputElement
+    assert.equal(restoredInput.value, "guest@example.com")
+    assert.equal(restoredInput.disabled, true)
 })

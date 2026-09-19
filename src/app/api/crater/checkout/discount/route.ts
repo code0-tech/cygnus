@@ -58,7 +58,7 @@ export async function POST(request: Request) {
 
         return craterJson(payload.discount)
     } catch (error) {
-        const transportResponse = craterTransportErrorResponse(error)
+        const transportResponse = craterTransportErrorResponse(error, request)
         if (transportResponse) return transportResponse
 
         console.error("Crater discount validation error:", error)

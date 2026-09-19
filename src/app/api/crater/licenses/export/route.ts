@@ -1,3 +1,4 @@
+import { guestCheckoutId, readGuestCheckoutSession } from "@/lib/checkout/guestCheckoutSession"
 import { createApolloClient } from "@/lib/apolloClient"
 import { CRATER_ERROR_FIELDS, craterJson, craterMutationErrorResponse, craterTransportErrorResponse, optionalString, readJsonObject, requireCraterSession } from "@/lib/checkout/craterApi"
 import { isLicenseId } from "@/lib/licenses/craterLicenseRequest"
@@ -34,6 +35,10 @@ export async function POST(request: Request) {
         return craterJson({ error: "A valid Crater license id is required." }, 400)
     }
 
+    if (guestCheckoutId(request) !== null && readGuestCheckoutSession(request)?.receipt?.licenseId !== id) {
+        return craterJson({ error: "This guest purchase does not grant access to that license." }, 403)
+    }
+
     try {
         const result = await createApolloClient(session.token).mutate({
             mutation: LICENSES_EXPORT,
@@ -58,7 +63,7 @@ export async function POST(request: Request) {
             },
         })
     } catch (error) {
-        const transportResponse = craterTransportErrorResponse(error)
+        const transportResponse = craterTransportErrorResponse(error, request)
         if (transportResponse) return transportResponse
 
         console.error("Crater license export error:", error instanceof Error ? `${error.name}: ${error.message}` : "Unknown error")
