@@ -55,6 +55,7 @@ export interface LicenseDashboardLicense {
 }
 
 interface LicenseDashboardPageInfo {
+    contextCursor?: string | null
     endCursor: string | null
     hasNextPage: boolean
     totalCount?: number

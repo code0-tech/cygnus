@@ -5,9 +5,9 @@ import { LicenseDialog } from "@/components/licenses/dialog/LicenseDialog"
 import { CustomerPaymentMethodCard } from "@/components/licenses/dialog/CustomerPaymentMethodCard"
 import { PaymentMethodSetupDialog } from "@/components/licenses/dialog/PaymentMethodSetupDialog"
 import { ButtonLoader } from "@/components/ui/Loader"
+import { useCustomerPaymentMethods, useSubscriptionPaymentMethod } from "@/hooks/usePaymentMethods"
 import type { ErrorsContent, LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
-import { type CustomerPaymentMethodSummary, fetchCustomerPaymentMethods, type PaymentMethodDisplayDetails } from "@/lib/licenses/licenseClient"
 import { decodeLicenseRouteId } from "@/lib/licenses/licenseRoute"
 import { cn } from "@/lib/utils"
 import { Button, ScrollArea, ScrollAreaScrollbar, ScrollAreaThumb, ScrollAreaViewport, Text } from "@code0-tech/pictor"
@@ -33,13 +33,14 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
     const resolvedLicenseId = decodeLicenseRouteId(licenseId)
     const license = licenses.find((candidate) => candidate.id === resolvedLicenseId && candidate.customerId === resolvedCustomerId)
     const [section, setSection] = useState<LicenseEditSection>("license")
-    const [paymentMethod, setPaymentMethod] = useState<PaymentMethodDisplayDetails | null>(null)
-    const [paymentMethodError, setPaymentMethodError] = useState(false)
-    const [isLoadingPaymentMethod, setIsLoadingPaymentMethod] = useState(false)
-    const [paymentMethodRefreshKey, setPaymentMethodRefreshKey] = useState(0)
-    const [customerPaymentMethods, setCustomerPaymentMethods] = useState<CustomerPaymentMethodSummary[] | null>(null)
-    const [customerPaymentMethodsError, setCustomerPaymentMethodsError] = useState(false)
-    const [isLoadingCustomerPaymentMethods, setIsLoadingCustomerPaymentMethods] = useState(false)
+    const paymentSectionEnabled = section === "payment"
+    const { isLoadingPaymentMethod, paymentMethod, paymentMethodError, refreshPaymentMethod } = useSubscriptionPaymentMethod(license?.subscriptionId, paymentSectionEnabled)
+    const {
+        isLoadingPaymentMethods: isLoadingCustomerPaymentMethods,
+        paymentMethods: customerPaymentMethods,
+        paymentMethodsError: customerPaymentMethodsError,
+        refreshPaymentMethods: refreshCustomerPaymentMethods,
+    } = useCustomerPaymentMethods(license?.customerId, paymentSectionEnabled)
     const [assigningPaymentMethodId, setAssigningPaymentMethodId] = useState<string | null>(null)
     const [assignPaymentMethodError, setAssignPaymentMethodError] = useState(false)
     const close = () => router.replace(`/${locale}/licenses/customer/${encodeURIComponent(resolvedCustomerId)}/license/${encodeURIComponent(resolvedLicenseId)}`)
@@ -48,54 +49,10 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
         if (new URL(window.location.href).searchParams.has("setup_intent")) setSection("payment")
     }, [])
 
-    useEffect(() => {
-        if (section !== "payment" || !license?.subscriptionId) return
-
-        const controller = new AbortController()
-        const url = new URL("/api/crater/subscriptions/payment-method", window.location.origin)
-        url.searchParams.set("subscriptionId", license.subscriptionId)
-        setIsLoadingPaymentMethod(true)
-        setPaymentMethodError(false)
-
-        void fetch(url, { cache: "no-store", credentials: "same-origin", signal: controller.signal })
-            .then(async (response) => {
-                const result: unknown = await response.json()
-                if (!response.ok || !result || typeof result !== "object" || !("paymentMethod" in result)) throw new Error("Invalid payment method response.")
-                return result.paymentMethod as PaymentMethodDisplayDetails | null
-            })
-            .then(setPaymentMethod)
-            .catch((loadError) => {
-                if (!(loadError instanceof DOMException && loadError.name === "AbortError")) setPaymentMethodError(true)
-            })
-            .finally(() => {
-                if (!controller.signal.aborted) setIsLoadingPaymentMethod(false)
-            })
-
-        return () => controller.abort()
-    }, [license?.subscriptionId, paymentMethodRefreshKey, section])
-
     const paymentMethodUpdated = useCallback(() => {
-        setPaymentMethodRefreshKey((value) => value + 1)
-    }, [])
-
-    useEffect(() => {
-        if (section !== "payment" || !license?.customerId) return
-
-        const controller = new AbortController()
-        setIsLoadingCustomerPaymentMethods(true)
-        setCustomerPaymentMethodsError(false)
-
-        void fetchCustomerPaymentMethods(license.customerId, controller.signal)
-            .then(setCustomerPaymentMethods)
-            .catch((loadError) => {
-                if (!(loadError instanceof DOMException && loadError.name === "AbortError")) setCustomerPaymentMethodsError(true)
-            })
-            .finally(() => {
-                if (!controller.signal.aborted) setIsLoadingCustomerPaymentMethods(false)
-            })
-
-        return () => controller.abort()
-    }, [license?.customerId, paymentMethodRefreshKey, section])
+        refreshPaymentMethod()
+        refreshCustomerPaymentMethods()
+    }, [refreshCustomerPaymentMethods, refreshPaymentMethod])
 
     const assignPaymentMethod = async (paymentMethodId: string) => {
         if (!license?.subscriptionId || assigningPaymentMethodId) return
@@ -210,7 +167,7 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
                             <Text role="alert" size="sm" className="text-error!">
                                 {errors.paymentMethodLoad}
                             </Text>
-                            <Button type="button" variant="normal" paddingSize="xs" onClick={() => setPaymentMethodRefreshKey((value) => value + 1)}>
+                            <Button type="button" variant="normal" paddingSize="xs" onClick={refreshPaymentMethod}>
                                 {errors.retry}
                             </Button>
                         </div>

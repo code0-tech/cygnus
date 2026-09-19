@@ -5,15 +5,15 @@ import { LicenseDialog } from "@/components/licenses/dialog/LicenseDialog"
 import { CustomerPaymentMethodCard } from "@/components/licenses/dialog/CustomerPaymentMethodCard"
 import { PaymentMethodSetupDialog } from "@/components/licenses/dialog/PaymentMethodSetupDialog"
 import { ButtonLoader } from "@/components/ui/Loader"
+import { useCustomerPaymentMethods } from "@/hooks/usePaymentMethods"
 import type { CheckoutData, ErrorsContent, LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
-import { type CustomerPaymentMethodSummary, fetchCustomerPaymentMethods } from "@/lib/licenses/licenseClient"
 import { decodeLicenseRouteId } from "@/lib/licenses/licenseRoute"
 import { cn } from "@/lib/utils"
 import { Button, DialogFooter, EmailInput, ScrollArea, ScrollAreaScrollbar, ScrollAreaThumb, ScrollAreaViewport, Text, TextInput } from "@code0-tech/pictor"
 import { IconTrash } from "@tabler/icons-react"
 import { useRouter } from "next/navigation"
-import { type SyntheticEvent, useCallback, useEffect, useState } from "react"
+import { type SyntheticEvent, useEffect, useState } from "react"
 
 interface CustomerEditDialogProps {
     checkoutForm: CheckoutData["form"]
@@ -42,10 +42,10 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
     const [error, setError] = useState<string | null>(null)
     const [isSaving, setIsSaving] = useState(false)
     const [section, setSection] = useState<CustomerEditSection>("general")
-    const [paymentMethods, setPaymentMethods] = useState<CustomerPaymentMethodSummary[] | null>(null)
-    const [paymentMethodsError, setPaymentMethodsError] = useState(false)
-    const [isLoadingPaymentMethods, setIsLoadingPaymentMethods] = useState(false)
-    const [paymentMethodsRefreshKey, setPaymentMethodsRefreshKey] = useState(0)
+    const { isLoadingPaymentMethods, paymentMethods, paymentMethodsError, refreshPaymentMethods, removePaymentMethodLocally } = useCustomerPaymentMethods(
+        customer?.id,
+        section === "paymentMethods"
+    )
     const [removingPaymentMethodId, setRemovingPaymentMethodId] = useState<string | null>(null)
     const [removePaymentMethodError, setRemovePaymentMethodError] = useState<string | null>(null)
     const close = () => router.replace(`/${locale}/licenses/customer/${encodeURIComponent(resolvedCustomerId)}`)
@@ -67,29 +67,10 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
         if (new URL(window.location.href).searchParams.has("setup_intent")) setSection("paymentMethods")
     }, [])
 
-    useEffect(() => {
-        if (section !== "paymentMethods" || !customer) return
-
-        const controller = new AbortController()
-        setIsLoadingPaymentMethods(true)
-        setPaymentMethodsError(false)
+    const paymentMethodAdded = () => {
         setRemovePaymentMethodError(null)
-
-        void fetchCustomerPaymentMethods(customer.id, controller.signal)
-            .then(setPaymentMethods)
-            .catch((loadError) => {
-                if (!(loadError instanceof DOMException && loadError.name === "AbortError")) setPaymentMethodsError(true)
-            })
-            .finally(() => {
-                if (!controller.signal.aborted) setIsLoadingPaymentMethods(false)
-            })
-
-        return () => controller.abort()
-    }, [customer, paymentMethodsRefreshKey, section])
-
-    const paymentMethodAdded = useCallback(() => {
-        setPaymentMethodsRefreshKey((value) => value + 1)
-    }, [])
+        refreshPaymentMethods()
+    }
 
     const removePaymentMethod = async (paymentMethodId: string) => {
         if (!customer || !paymentMethods || removingPaymentMethodId) return
@@ -109,7 +90,7 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
                 throw new Error(errorCode === "PAYMENT_METHOD_IN_USE" ? errors.paymentMethodInUse : errors.paymentMethodRemove)
             }
 
-            setPaymentMethods((current) => current?.filter((method) => method.id !== paymentMethodId) ?? null)
+            removePaymentMethodLocally(paymentMethodId)
         } catch (removeError) {
             setRemovePaymentMethodError(removeError instanceof Error ? removeError.message : errors.paymentMethodRemove)
         } finally {
@@ -321,7 +302,7 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
                                         <Text role="alert" size="sm" className="text-error!">
                                             {errors.paymentMethodLoad}
                                         </Text>
-                                        <Button type="button" variant="normal" paddingSize="xs" onClick={() => setPaymentMethodsRefreshKey((value) => value + 1)}>
+                                        <Button type="button" variant="normal" paddingSize="xs" onClick={refreshPaymentMethods}>
                                             {errors.retry}
                                         </Button>
                                     </div>

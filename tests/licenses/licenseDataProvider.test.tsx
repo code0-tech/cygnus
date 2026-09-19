@@ -118,6 +118,6 @@ test("loads and merges the next customer cursor page", async () => {
     assert.ok(await screen.findByText("gid://crater/Customer/1"))
     fireEvent.click(screen.getByRole("button", { name: "More" }))
     assert.ok(await screen.findByText("gid://crater/Customer/1,gid://crater/Customer/2"))
-    assert.equal(requests[1], "https://code0.example/api/crater/licenses?customerAfter=customer-page-1")
+    assert.equal(requests[1], "https://code0.example/api/crater/licenses?customerAfter=customer-page-1&includeNavigation=false")
     assert.equal(screen.queryByRole("button", { name: "More" }), null)
 })

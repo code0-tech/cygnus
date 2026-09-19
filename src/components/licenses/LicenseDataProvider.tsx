@@ -55,6 +55,7 @@ function createLicenseDataUrl(pathname: string, origin: string, pagination?: { c
     if (pagination) {
         const cursorName = pagination.resource === "customers" ? "customerAfter" : pagination.resource === "licenses" ? "licenseAfter" : "invoiceAfter"
         dataUrl.searchParams.set(cursorName, pagination.cursor)
+        dataUrl.searchParams.set("includeNavigation", "false")
     }
 
     return dataUrl
@@ -195,6 +196,7 @@ export function LicenseDataProvider({ children, loadError, redirectUrl }: { chil
             setLoadingMore(resource)
             try {
                 const dataUrl = createLicenseDataUrl(pathname, window.location.origin, { cursor: pageInfo.endCursor, resource })
+                if (typeof pageInfo.contextCursor === "string") dataUrl.searchParams.set("customerContext", pageInfo.contextCursor)
                 const response = await fetch(dataUrl, { cache: "no-store", credentials: "same-origin" })
                 if (response.status === 401 || response.status === 403) {
                     window.location.replace(redirectUrl)
