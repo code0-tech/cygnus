@@ -1,3 +1,4 @@
+import { guestCheckoutId, readGuestCheckoutSession, guestCheckoutRequestAllowed, clearGuestCheckoutSession } from "@/lib/checkout/guestCheckoutSession"
 import { CRATER_USER_LOGIN_COOKIE_NAME, CRATER_USER_LOGIN_COOKIE_VALUE } from "@/lib/checkout/craterUserLogin"
 import type { NextResponse } from "next/server"
 
@@ -45,6 +46,11 @@ export function readCraterSessionAuthorization(request: Request, authorizationHe
         if (!authorization) return { status: "missing" }
         const match = CRATER_SESSION_AUTHORIZATION_PATTERN.exec(authorization)
         return match ? { status: "authenticated", token: match[1] } : { status: "invalid" }
+    }
+
+    if (guestCheckoutId(request) !== null) {
+        const guest = readGuestCheckoutSession(request)
+        return guest && guestCheckoutRequestAllowed(request, guest) ? { status: "authenticated", token: guest.token } : { status: "invalid" }
     }
 
     const cookieToken = readCookie(request, CRATER_SESSION_COOKIE_NAME)
@@ -100,7 +106,8 @@ export function setCraterGuestClaimCookie(response: NextResponse, claimToken: st
     return response
 }
 
-export function clearCraterSessionCookie(response: NextResponse) {
+export function clearCraterSessionCookie(response: NextResponse, request?: Request) {
+    if (request && guestCheckoutId(request) !== null) return clearGuestCheckoutSession(response, request)
     response.cookies.set(CRATER_SESSION_COOKIE_NAME, "", {
         httpOnly: true,
         maxAge: 0,
@@ -108,7 +115,7 @@ export function clearCraterSessionCookie(response: NextResponse) {
         sameSite: "lax",
         secure: process.env.NODE_ENV === "production",
     })
-    // The marker outlives nothing: a session that is gone must not keep skipping the checkout login step.
+    // Clear the account marker together with the account session.
     response.cookies.set(CRATER_USER_LOGIN_COOKIE_NAME, "", {
         httpOnly: false,
         maxAge: 0,

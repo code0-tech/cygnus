@@ -3149,6 +3149,10 @@ export interface Checkout {
      * Shown once the payment is confirmed. The exact amount is on the Stripe receipt, not on this page.
      */
     receiptHint: string;
+    /**
+     * Shown after payment confirmation for guest checkouts only.
+     */
+    guestAccountHint: string;
     failedHeading: string;
     failedDescription: string;
     invalidHeading: string;
@@ -3909,6 +3913,7 @@ export interface CheckoutSelect<T extends boolean = true> {
         licensePendingLabel?: T;
         licenseStatusRetryLabel?: T;
         receiptHint?: T;
+        guestAccountHint?: T;
         failedHeading?: T;
         failedDescription?: T;
         invalidHeading?: T;

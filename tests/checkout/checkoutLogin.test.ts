@@ -1,13 +1,13 @@
 import assert from "node:assert/strict"
 import test from "node:test"
-import { canSkipCheckoutLogin, createCheckoutQuery, createCraterLoginCallbackUrl, createMainAppLoginUrl } from "../../src/lib/checkout/checkoutLogin"
+import { createCheckoutQuery, createCraterLoginCallbackUrl, createMainAppLoginUrl } from "../../src/lib/checkout/checkoutLogin"
 import {
     createLicenseNamespaceCallbackUrl,
     createLicenseNamespaceReturnPath,
 } from "../../src/lib/licenses/licenseNamespaceSelection"
 
 test("preserves the subscription configuration for guest checkout", () => {
-    const query = createCheckoutQuery({ plan: "custom", tag: ["one", "two"], token: "secret", authError: "session", empty: undefined })
+    const query = createCheckoutQuery({ plan: "custom", tag: ["one", "two"], token: "secret", authError: "session", guestCheckout: "previous-purchase", empty: undefined })
 
     assert.equal(query, "plan=custom&tag=one&tag=two")
 })
@@ -66,6 +66,18 @@ test("requests a namespace from the main app login for cloud deployments", () =>
     assert.equal(new URL(result).searchParams.get("selectNamespace"), "true")
 })
 
+test("always enters Sculptor through login even when the CMS points to the consent page or app root", () => {
+    for (const configuredUrl of ["http://localhost:3001", "http://localhost:3001/redirect?source=checkout#consent"]) {
+        const url = new URL(createMainAppLoginUrl(configuredUrl, "https://code0.example/api/crater/auth/callback", "https://code0.example/en/subscription", true))
+        assert.equal(url.origin, "http://localhost:3001")
+        assert.equal(url.pathname, "/login")
+        assert.equal(url.hash, "")
+        assert.equal(url.searchParams.get("callbackUrl"), "https://code0.example/api/crater/auth/callback")
+        assert.equal(url.searchParams.get("cancelUrl"), "https://code0.example/en/subscription")
+        assert.equal(url.searchParams.get("selectNamespace"), "true")
+    }
+})
+
 test("does not request a namespace for non-cloud deployments", () => {
     const result = createMainAppLoginUrl(
         "https://app.example/login?source=pricing",
@@ -74,12 +86,4 @@ test("does not request a namespace for non-cloud deployments", () => {
     )
 
     assert.equal(new URL(result).searchParams.has("selectNamespace"), false)
-})
-
-test("the checkout login step is skipped only for a browser that completed the Sagittarius login", () => {
-    assert.equal(canSkipCheckoutLogin(true, "self_hosted"), true)
-    assert.equal(canSkipCheckoutLogin(true, undefined), true)
-    assert.equal(canSkipCheckoutLogin(false, "self_hosted"), false)
-    // Cloud keeps the step: its login link is what selects the namespace the checkout session needs.
-    assert.equal(canSkipCheckoutLogin(true, "cloud"), false)
 })

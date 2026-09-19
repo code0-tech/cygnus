@@ -85,7 +85,7 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, errors: Errors
     stripeEmailRef.current = stripeEmail
     stripeEmailCompleteRef.current = stripeEmailComplete
     stripeEmailSyncedRef.current = stripeEmailSynced
-    const { authenticated, error: sessionError, isLoading: isSessionLoading } = useCraterSession()
+    const { authenticated, guestEmail, error: sessionError, isLoading: isSessionLoading } = useCraterSession()
     const customerType = resolveCraterCustomerType(searchParams.get("customerType"))
     const searchParamsString = searchParams.toString()
     const resolvedError = errorMessage ?? sessionError ?? stripeSessionError
@@ -98,11 +98,13 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, errors: Errors
     }, [])
 
     const setStripeEmail = useCallback((email: string | null, complete: boolean) => {
-        stripeEmailRef.current = email
-        stripeEmailCompleteRef.current = complete
-        setStripeEmailState(email)
-        setStripeEmailComplete(complete)
-    }, [])
+        const resolvedEmail = guestEmail ?? email
+        const resolvedComplete = guestEmail ? true : complete
+        stripeEmailRef.current = resolvedEmail
+        stripeEmailCompleteRef.current = resolvedComplete
+        setStripeEmailState(resolvedEmail)
+        setStripeEmailComplete(resolvedComplete)
+    }, [guestEmail])
 
     const setStripeEmailSynced = useCallback((synced: boolean) => {
         stripeEmailSyncedRef.current = synced
@@ -237,6 +239,8 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, errors: Errors
         const requestId = ++sessionRefreshRequestRef.current
         const checkoutSearchParams = new URLSearchParams(searchParamsString)
         const restoredContactDraft = readCheckoutContactDraft(checkoutSearchParams)
+        const initialEmail = guestEmail ?? restoredContactDraft?.email ?? null
+        const initialEmailComplete = guestEmail ? true : restoredContactDraft?.emailComplete ?? false
         formDraftReadyRef.current = false
 
         setIsLoading(true)
@@ -246,7 +250,7 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, errors: Errors
         setTaxQuote(null)
         setStripePricing(null)
         setStripeBillingAddress(restoredContactDraft?.billingAddress ?? null, restoredContactDraft?.billingAddressComplete ?? false)
-        setStripeEmail(restoredContactDraft?.email ?? null, restoredContactDraft?.emailComplete ?? false)
+        setStripeEmail(initialEmail, initialEmailComplete)
         setStripeEmailSynced(restoredContactDraft?.emailSyncedToStripe ?? false)
         setStripeSessionError(null)
         setStage(restoredContactDraft?.stage ?? "billingAddress")
@@ -273,8 +277,8 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, errors: Errors
                     billingAddress: restoredContactDraft?.billingAddress ?? null,
                     billingAddressComplete: restoredContactDraft?.billingAddressComplete ?? false,
                     customerId: customer?.id ?? null,
-                    email: restoredContactDraft?.email ?? null,
-                    emailComplete: restoredContactDraft?.emailComplete ?? false,
+                    email: initialEmail,
+                    emailComplete: initialEmailComplete,
                     emailSyncedToStripe: restoredContactDraft?.emailSyncedToStripe ?? false,
                     searchParams: checkoutSearchParams,
                     stage: restoredContactDraft?.stage ?? "billingAddress",
@@ -298,7 +302,7 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, errors: Errors
                 if (requestId === sessionRefreshRequestRef.current) setIsLoading(false)
             }
         })()
-    }, [authenticated, content, customerType, errors, locale, preparationAttempt, searchParamsString, setStage])
+    }, [authenticated, content, customerType, errors, guestEmail, locale, preparationAttempt, searchParamsString, setStage])
 
     // Restore/reset the configuration above before persisting any form changes.
     useEffect(() => {
@@ -437,6 +441,7 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, errors: Errors
         errorMessage,
         errors,
         hasExistingCustomers,
+        guestEmail,
         isLoading,
         isConfirmingPayment,
         isRefreshingSession,

@@ -36,7 +36,7 @@ export default async function CheckoutSuccessPage({ params, searchParams }: Chec
         getLicenseContent(locale),
     ])
     const currentYear = new Date().getUTCFullYear()
-    const checkoutSearchParams = toSearchParams(query)
+    const checkoutSearchParams = toSearchParams(query).toString()
 
     return (
         <div className="flex min-h-full flex-col gap-8">

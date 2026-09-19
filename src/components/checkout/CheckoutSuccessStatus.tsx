@@ -1,5 +1,6 @@
 "use client"
 
+import { checkoutFetch } from "@/lib/checkout/checkoutFetch"
 import { LinkButton } from "@/components/ui/LinkButton"
 import { ButtonLoader } from "@/components/ui/Loader"
 import { CheckoutPricingOverview } from "@/components/checkout/CheckoutPricingOverview"
@@ -40,7 +41,7 @@ type StatusResponse = {
 }
 
 interface CheckoutSuccessStatusProps {
-    checkoutSearchParams: URLSearchParams
+    checkoutSearchParams: string
     content: SuccessContent
     errorMessage: string
     locale: AppLocale
@@ -92,6 +93,7 @@ function parseStatusResponse(value: unknown): StatusResponse | null {
 }
 
 export function CheckoutSuccessStatus({ checkoutSearchParams, content, errorMessage, locale, pricingContent, sculptorUrl, sessionId, subscriptionConfig }: CheckoutSuccessStatusProps) {
+    const isGuestCheckout = new URLSearchParams(checkoutSearchParams).has("guestCheckout")
     const router = useRouter()
     const [status, setStatus] = useState<CheckoutStatus>("LOADING")
     const [completion, setCompletion] = useState<StatusResponse | null>(null)
@@ -119,7 +121,7 @@ export function CheckoutSuccessStatus({ checkoutSearchParams, content, errorMess
             let response: Response
             let body: unknown
             try {
-                response = await fetch(statusUrl, { cache: "no-store", credentials: "same-origin", signal: requestController.signal })
+                response = await checkoutFetch(statusUrl, { cache: "no-store", credentials: "same-origin", signal: requestController.signal })
                 try {
                     body = await response.json()
                 } catch (error) {
@@ -186,8 +188,10 @@ export function CheckoutSuccessStatus({ checkoutSearchParams, content, errorMess
 
         const nextParams = new URLSearchParams(checkoutSearchParams)
         nextParams.delete("session_id")
+        const guest = nextParams.has("guestCheckout")
+        nextParams.delete("guestCheckout")
         nextParams.set("paymentFailed", "1")
-        router.replace(`/${locale}/checkout?${nextParams.toString()}`)
+        router.replace(`/${locale}/checkout${guest ? "/login" : ""}?${nextParams.toString()}`)
     }, [checkoutSearchParams, locale, router, status])
 
     const fulfillmentConfirmed = status === "FULFILLMENT_PENDING" || status === "READY"
@@ -203,8 +207,7 @@ export function CheckoutSuccessStatus({ checkoutSearchParams, content, errorMess
     const planKey = confirmedConfiguration?.plan
     const planTitle = planKey === "pro" || planKey === "max" || planKey === "custom" ? subscriptionConfig.packages[planKey].title : subscriptionConfig.packages.custom.title
     const currencyDivisor = confirmedPricing
-        ? 10 **
-          (new Intl.NumberFormat(locale === "de" ? "de-DE" : "en-US", { style: "currency", currency: confirmedPricing.currency.toUpperCase() }).resolvedOptions().maximumFractionDigits ?? 2)
+        ? 10 ** (new Intl.NumberFormat(locale === "de" ? "de-DE" : "en-US", { style: "currency", currency: confirmedPricing.currency.toUpperCase() }).resolvedOptions().maximumFractionDigits ?? 2)
         : 100
 
     const downloadSelfHostedLicense = async () => {
@@ -213,7 +216,7 @@ export function CheckoutSuccessStatus({ checkoutSearchParams, content, errorMess
         setIsDownloadingLicense(true)
         setLicenseDownloadError(false)
         try {
-            await downloadLicenseFile(completion.licenseId)
+            await downloadLicenseFile(completion.licenseId, checkoutFetch)
         } catch {
             setLicenseDownloadError(true)
         } finally {
@@ -230,8 +233,13 @@ export function CheckoutSuccessStatus({ checkoutSearchParams, content, errorMess
             ) : null}
             {heading && <h1 className="text-3xl font-semibold text-white">{heading}</h1>}
             {description && <p className="text-secondary max-w-lg">{description}</p>}
+            {fulfillmentConfirmed && isGuestCheckout && (
+                <p role="status" className="my-2 max-w-lg rounded-2xl border border-brand/10 bg-brand/5 p-4 text-sm text-brand">
+                    {content.guestAccountHint}
+                </p>
+            )}
             {confirmedConfiguration && confirmedPricing ? (
-                <div className="my-4 w-full text-left">
+                <div className="my-2 w-full text-left">
                     <CheckoutPricingOverview
                         confirmedPricing={{
                             aiTokens: confirmedConfiguration.aiTokens,
@@ -257,9 +265,11 @@ export function CheckoutSuccessStatus({ checkoutSearchParams, content, errorMess
             {status === "READY" && licenseAccessUrl ? (
                 <div className="flex flex-col items-center gap-2">
                     <div className="flex flex-wrap items-center justify-center gap-2">
-                        <Link href={licenseAccessUrl} target="_blank" rel="noreferrer">
-                            <Button>{content.licenseDashboardLabel}</Button>
-                        </Link>
+                        {!isGuestCheckout && (
+                            <Link href={licenseAccessUrl} target="_blank" rel="noreferrer">
+                                <Button>{content.licenseDashboardLabel}</Button>
+                            </Link>
+                        )}
                         {completion?.configuration?.deploymentType === "cloud" && sculptorUrl ? (
                             <Link href={sculptorUrl} target="_blank" rel="noreferrer">
                                 <Button variant="filled" className="bg-white/80! hover:bg-white! text-primary!">

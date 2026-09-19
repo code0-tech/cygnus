@@ -38,7 +38,11 @@ export function CheckoutGuestForm({ emailLabel, emailPlaceholder, errorMessage, 
             })
             if (!response.ok) throw new Error(errorMessage)
 
-            router.push(guestHref)
+            const result: unknown = await response.json()
+            if (!result || typeof result !== "object" || !("checkoutId" in result) || typeof result.checkoutId !== "string") throw new Error(errorMessage)
+            const target = new URL(guestHref, window.location.origin)
+            target.searchParams.set("guestCheckout", result.checkoutId)
+            router.push(`${target.pathname}${target.search}`)
         } catch {
             setError(errorMessage)
             setIsSubmitting(false)

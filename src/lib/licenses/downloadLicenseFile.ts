@@ -1,5 +1,5 @@
-export async function downloadLicenseFile(licenseId: string) {
-    const response = await fetch("/api/crater/licenses/export", {
+export async function downloadLicenseFile(licenseId: string, request: typeof fetch = fetch) {
+    const response = await request("/api/crater/licenses/export", {
         method: "POST",
         credentials: "same-origin",
         headers: { "content-type": "application/json" },

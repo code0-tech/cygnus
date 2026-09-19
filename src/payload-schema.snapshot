@@ -2542,6 +2542,7 @@ export const checkout_locales = pgTable('checkout_locales', {
   success_licensePendingLabel: varchar('success_license_pending_label').notNull().default("Your license is being prepared…"),
   success_licenseStatusRetryLabel: varchar('success_license_status_retry_label').notNull().default("Try again"),
   success_receiptHint: varchar('success_receipt_hint').notNull().default("Stripe sends the receipt to your email address."),
+  success_guestAccountHint: varchar('success_guest_account_hint').notNull(),
   success_failedHeading: varchar('success_failed_heading').notNull().default("Payment failed"),
   success_failedDescription: varchar('success_failed_description').notNull().default("Stripe could not process your payment. You have not been charged and no subscription was created."),
   success_invalidHeading: varchar('success_invalid_heading').notNull().default("This checkout link is no longer valid"),

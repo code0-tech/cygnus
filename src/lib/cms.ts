@@ -326,6 +326,7 @@ export interface CheckoutData {
         licensePendingLabel: string
         licenseStatusRetryLabel: string
         receiptHint: string
+        guestAccountHint: string
         failedHeading: string
         failedDescription: string
         invalidHeading: string

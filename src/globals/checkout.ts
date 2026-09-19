@@ -219,6 +219,17 @@ export const Checkout: GlobalConfig = {
                     defaultValue: "Stripe sends the receipt to your email address.",
                     admin: { description: "Shown once the payment is confirmed. The exact amount is on the Stripe receipt, not on this page." },
                 },
+                {
+                    name: "guestAccountHint",
+                    type: "textarea",
+                    required: true,
+                    localized: true,
+                    defaultValue: localizedDefault(
+                        "You will receive an email with a link to create your account. Complete your account setup using that link to continue.",
+                        "Du erhältst eine E-Mail mit einem Link zur Kontoerstellung. Richte darüber dein Konto ein, um anschließend fortzufahren."
+                    ),
+                    admin: { description: "Shown after payment confirmation for guest checkouts only." },
+                },
                 { name: "failedHeading", type: "text", required: true, localized: true, defaultValue: "Payment failed" },
                 {
                     name: "failedDescription",

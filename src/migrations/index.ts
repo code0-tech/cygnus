@@ -142,6 +142,7 @@ import * as migration_20260825_183644_consolidate_license_content_for_namespace_
 import * as migration_20260827_114728_remove_weekly_payment_period from './20260827_114728_remove_weekly_payment_period';
 import * as migration_20260914_170441_payment_method_load_error from './20260914_170441_payment_method_load_error';
 import * as migration_20260917_153155_license_pending_status from './20260917_153155_license_pending_status';
+import * as migration_20260919_124842_checkout_guest_account_hint from './20260919_124842_checkout_guest_account_hint';
 
 export const migrations = [
   {
@@ -862,6 +863,11 @@ export const migrations = [
   {
     up: migration_20260917_153155_license_pending_status.up,
     down: migration_20260917_153155_license_pending_status.down,
-    name: '20260917_153155_license_pending_status'
+    name: '20260917_153155_license_pending_status',
+  },
+  {
+    up: migration_20260919_124842_checkout_guest_account_hint.up,
+    down: migration_20260919_124842_checkout_guest_account_hint.down,
+    name: '20260919_124842_checkout_guest_account_hint'
   },
 ];

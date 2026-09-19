@@ -1,9 +1,11 @@
 "use client"
 
+import { checkoutFetch } from "@/lib/checkout/checkoutFetch"
 import { clearCraterUserLoginMarker, hasCraterUserLoginMarker } from "@/lib/checkout/craterUserLogin"
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react"
 
 interface CraterSessionContextValue {
+    guestEmail?: string | null
     authenticated: boolean
     error: string | null
     isLoading: boolean
@@ -16,7 +18,7 @@ const CraterSessionContext = createContext<CraterSessionContextValue>({
 })
 
 export function CraterSessionProvider({ children, errorMessage = "An unexpected error occurred." }: { children: ReactNode; errorMessage?: string }) {
-    const sessionRequestRef = useRef<Promise<"redirecting" | undefined> | null>(null)
+    const sessionRequestRef = useRef<Promise<"redirecting" | { guestEmail: string | null } | undefined> | null>(null)
     const [session, setSession] = useState<CraterSessionContextValue>({
         authenticated: false,
         error: null,
@@ -52,7 +54,7 @@ export function CraterSessionProvider({ children, errorMessage = "An unexpected 
         }
 
         const createSession = async () => {
-            const response = await fetch("/api/crater/login", {
+            const response = await checkoutFetch("/api/crater/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({}),
@@ -63,13 +65,28 @@ export function CraterSessionProvider({ children, errorMessage = "An unexpected 
         }
 
         const restoreOrCreateSession = async () => {
-            const statusResponse = await fetch("/api/crater/auth/session", {
+            const statusResponse = await checkoutFetch("/api/crater/auth/session", {
                 credentials: "same-origin",
                 cache: "no-store",
             })
-            if (statusResponse.ok) return undefined
+            if (statusResponse.ok) {
+                const body: unknown = await statusResponse.json()
+                const guestEmail = currentUrl.searchParams.has("guestCheckout") && body && typeof body === "object" && "guestEmail" in body && typeof body.guestEmail === "string" ? body.guestEmail : null
+                return { guestEmail }
+            }
             if (statusResponse.status !== 401 && statusResponse.status !== 403) {
                 throw new Error(await readError(statusResponse, "Failed to validate the Crater session."))
+            }
+
+            if (currentUrl.searchParams.has("guestCheckout")) {
+                // Never substitute an account or shared session for an expired guest purchase.
+                const checkoutPath = currentUrl.pathname.replace(/\/$/, "")
+                if (checkoutPath.endsWith("/checkout")) {
+                    currentUrl.searchParams.delete("guestCheckout")
+                    window.location.assign(`${checkoutPath}/login${currentUrl.search}`)
+                    return "redirecting" as const
+                }
+                throw new Error("The guest checkout session has expired.")
             }
 
             const checkoutPath = window.location.pathname.replace(/\/$/, "")
@@ -90,7 +107,7 @@ export function CraterSessionProvider({ children, errorMessage = "An unexpected 
                 const outcome = await sessionRequestRef.current
                 if (!active || outcome === "redirecting") return
 
-                setSession({ authenticated: true, error: null, isLoading: false })
+                setSession({ authenticated: true, guestEmail: outcome?.guestEmail ?? null, error: null, isLoading: false })
             } catch (error) {
                 if (!active) return
 

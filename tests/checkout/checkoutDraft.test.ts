@@ -103,3 +103,15 @@ test("preserves contact details before a customer exists", () => {
     assert.deepEqual(restored.billingAddress, billingAddress)
     assert.equal(restored.email, "ada@example.com")
 })
+
+
+test("guest drafts last only for the tab session and never persist the guest selection in localStorage", () => {
+    window.localStorage.clear()
+    const searchParams = new URLSearchParams("plan=pro&guestCheckout=purchase-one")
+    saveCheckoutContactDraft({ billingAddress, customerId: "guest-customer", email: "guest@example.com", searchParams, stage: "payment" })
+    assert.equal(window.localStorage.length, 0)
+    assert.equal(readCheckoutContactDraft(searchParams)?.customerId, "guest-customer")
+    assert.equal(readCheckoutContactDraft(new URLSearchParams("plan=pro")), null)
+    clearCheckoutContactDraft()
+    assert.equal(readCheckoutContactDraft(searchParams), null)
+})

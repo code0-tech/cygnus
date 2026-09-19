@@ -1,3 +1,4 @@
+import { guestCheckoutId } from "@/lib/checkout/guestCheckoutSession"
 import { createApolloClient } from "@/lib/apolloClient"
 import {
     CRATER_ERROR_FIELDS,
@@ -148,6 +149,8 @@ export async function POST(request: Request) {
                 if (workflowExecutions !== undefined) returnUrl.searchParams.set("workflowExecutions", String(workflowExecutions))
             }
         }
+        const guestId = guestCheckoutId(request)
+        if (guestId) returnUrl.searchParams.set("guestCheckout", guestId)
         const input: CheckoutCreateSessionVariables["input"] = {
             ...(customerId && isCustomerId(customerId) ? { customerId } : {}),
             returnUrl: `${returnUrl.toString()}${returnUrl.search ? "&" : "?"}session_id={CHECKOUT_SESSION_ID}`,
@@ -186,7 +189,7 @@ export async function POST(request: Request) {
             id: payload.session.id,
         })
     } catch (error) {
-        const transportResponse = craterTransportErrorResponse(error)
+        const transportResponse = craterTransportErrorResponse(error, request)
         if (transportResponse) return transportResponse
 
         console.error("Crater checkout session error:", error)

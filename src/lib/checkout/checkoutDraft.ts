@@ -1,7 +1,7 @@
 import type { StripeCheckoutContact } from "@stripe/stripe-js"
 
-// Local rather than session storage, so a closed tab no longer throws the entered contact details away and
-// a returning visitor picks the checkout back up. The TTL below still bounds how long they are kept.
+// Account drafts survive a closed tab for the TTL below. Guest drafts stay in sessionStorage,
+// so the purchase selection is never persisted as a browser-wide preference.
 const CHECKOUT_CONTACT_DRAFT_KEY = "code0.checkout.contactDraft"
 const CHECKOUT_CONTACT_DRAFT_TTL_MS = 30 * 60 * 1000
 
@@ -17,6 +17,10 @@ export interface CheckoutContactDraft {
     emailSyncedToStripe: boolean
     expiresAt: number
     stage: CheckoutContactDraftStage
+}
+
+function draftStorage(searchParams: URLSearchParams) {
+    return searchParams.has("guestCheckout") ? window.sessionStorage : window.localStorage
 }
 
 function getCheckoutContactDraftConfiguration(searchParams: URLSearchParams) {
@@ -86,7 +90,7 @@ export function saveCheckoutContactDraft({
     }
 
     try {
-        window.localStorage.setItem(CHECKOUT_CONTACT_DRAFT_KEY, JSON.stringify(draft))
+        draftStorage(searchParams).setItem(CHECKOUT_CONTACT_DRAFT_KEY, JSON.stringify(draft))
     } catch {
         // Checkout still works when storage is unavailable; only form recovery is disabled.
     }
@@ -94,12 +98,12 @@ export function saveCheckoutContactDraft({
 
 export function readCheckoutContactDraft(searchParams: URLSearchParams): CheckoutContactDraft | null {
     try {
-        const stored = window.localStorage.getItem(CHECKOUT_CONTACT_DRAFT_KEY)
+        const stored = draftStorage(searchParams).getItem(CHECKOUT_CONTACT_DRAFT_KEY)
         if (!stored) return null
 
         const value: unknown = JSON.parse(stored)
         if (!value || typeof value !== "object") {
-            window.localStorage.removeItem(CHECKOUT_CONTACT_DRAFT_KEY)
+            draftStorage(searchParams).removeItem(CHECKOUT_CONTACT_DRAFT_KEY)
             return null
         }
         const draft = value as Record<string, unknown>
@@ -111,13 +115,13 @@ export function readCheckoutContactDraft(searchParams: URLSearchParams): Checkou
             !optionalString(draft.email) ||
             (draft.stage !== "billingAddress" && draft.stage !== "payment")
         ) {
-            window.localStorage.removeItem(CHECKOUT_CONTACT_DRAFT_KEY)
+            draftStorage(searchParams).removeItem(CHECKOUT_CONTACT_DRAFT_KEY)
             return null
         }
 
         const billingAddress = draft.billingAddress === null ? null : parseBillingAddress(draft.billingAddress)
         if (draft.billingAddress !== null && !billingAddress) {
-            window.localStorage.removeItem(CHECKOUT_CONTACT_DRAFT_KEY)
+            draftStorage(searchParams).removeItem(CHECKOUT_CONTACT_DRAFT_KEY)
             return null
         }
 
@@ -140,7 +144,7 @@ export function readCheckoutContactDraft(searchParams: URLSearchParams): Checkou
         }
     } catch {
         try {
-            window.localStorage.removeItem(CHECKOUT_CONTACT_DRAFT_KEY)
+            draftStorage(searchParams).removeItem(CHECKOUT_CONTACT_DRAFT_KEY)
         } catch {
             // Nothing else is required when local storage is unavailable.
         }
@@ -153,9 +157,11 @@ export function getCheckoutContactDraftCustomerId(searchParams: URLSearchParams)
 }
 
 export function clearCheckoutContactDraft() {
-    try {
-        window.localStorage.removeItem(CHECKOUT_CONTACT_DRAFT_KEY)
-    } catch {
-        // Nothing else is required when local storage is unavailable.
+    for (const storage of ["localStorage", "sessionStorage"] as const) {
+        try {
+            window[storage].removeItem(CHECKOUT_CONTACT_DRAFT_KEY)
+        } catch {
+            // Storage is optional.
+        }
     }
 }
