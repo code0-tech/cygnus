@@ -50,7 +50,7 @@ export function CheckoutGuestForm({ emailLabel, emailPlaceholder, errorMessage, 
     }
 
     return (
-        <form onSubmit={(event) => void submit(event)} className="w-full space-y-3">
+        <form onSubmit={(event) => void submit(event)} className="w-full space-y-3 text-left">
             <EmailInput
                 title={emailLabel}
                 name="guest-email"
@@ -66,7 +66,7 @@ export function CheckoutGuestForm({ emailLabel, emailPlaceholder, errorMessage, 
                 {isSubmitting ? <ButtonLoader label={submitLabel} /> : submitLabel}
             </Button>
             {error && (
-                <p role="alert" className="text-sm text-error">
+                <p role="alert" className="text-sm text-error text-center">
                     {error}
                 </p>
             )}
