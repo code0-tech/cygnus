@@ -33,7 +33,7 @@ import { ContactSection } from "../sections/ContactSection"
 import { CompareApplicationSection } from "../sections/CompareApplicationSection"
 import { getIcon } from "@/components/ui/IconRenderer"
 import type { ActionItem, SubscriptionConfigData, SubscriptionConfiguratorBlockData } from "@/lib/cms"
-import type { SubscriptionPriceCatalog } from "@/lib/subscriptionPrices"
+import type { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
 
 type PageBlock = NonNullable<Page["layout"]>[number]
 

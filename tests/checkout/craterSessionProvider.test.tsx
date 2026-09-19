@@ -5,7 +5,7 @@ import { installDomTestEnvironment } from "./domTestEnvironment"
 
 installDomTestEnvironment()
 
-const { cleanup, render, screen } = await import("@testing-library/react")
+const { cleanup, render, screen, waitFor } = await import("@testing-library/react")
 const { CraterSessionProvider, useCraterSession } = await import("../../src/components/checkout/CraterSessionProvider")
 const originalFetch = globalThis.fetch
 const originalConsoleError = console.error
@@ -36,6 +36,27 @@ test("restores a Crater session from its HttpOnly cookie after reload", async ()
     )
 
     assert.ok(await screen.findByText("authenticated"))
+    assert.deepEqual(requests, [{ method: "GET", url: "/api/crater/auth/session" }])
+})
+
+test("returns an expired account session to the login choice without creating a shared session", async () => {
+    window.history.replaceState({}, "", "/en/checkout?plan=pro")
+    document.cookie = "crater_user_login=1; path=/; samesite=lax"
+    const requests: Array<{ method: string; url: string }> = []
+    globalThis.fetch = (async (input, init) => {
+        requests.push({ method: init?.method ?? "GET", url: String(input) })
+        return new Response("{}", { status: 401 })
+    }) as typeof fetch
+
+    render(
+        <CraterSessionProvider>
+            <SessionState />
+        </CraterSessionProvider>
+    )
+
+    await waitFor(() => assert.equal(window.location.pathname, "/en/checkout/login"))
+    assert.equal(window.location.search, "?plan=pro")
+    assert.doesNotMatch(document.cookie, /crater_user_login/)
     assert.deepEqual(requests, [{ method: "GET", url: "/api/crater/auth/session" }])
 })
 

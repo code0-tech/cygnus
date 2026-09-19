@@ -5,7 +5,7 @@ import { useCheckoutStage } from "@/components/checkout/CheckoutStage"
 import type { CheckoutData, ErrorsContent } from "@/lib/cms"
 import { resolveCraterCustomerType } from "@/lib/checkout/craterCustomer"
 import { clearCheckoutContactDraft, readCheckoutContactDraft, saveCheckoutContactDraft } from "@/lib/checkout/checkoutDraft"
-import { replaceCheckoutPage } from "@/lib/checkout/checkoutNavigation"
+import { replaceCheckoutPage } from "@/lib/checkout/checkoutClient"
 import {
     CheckoutSubmissionError,
     createCheckoutCustomer,

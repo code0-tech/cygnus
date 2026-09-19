@@ -1,6 +1,6 @@
 "use client"
 
-import type { PaymentMethodDisplayDetails } from "@/lib/licenses/customerPaymentMethods"
+import type { PaymentMethodDisplayDetails } from "@/lib/licenses/licenseClient"
 import { cn } from "@/lib/utils"
 import { Badge, Card, Text } from "@code0-tech/pictor"
 import { IconCreditCard } from "@tabler/icons-react"

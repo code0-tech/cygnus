@@ -96,16 +96,6 @@ export function setCraterUserLoginCookie(response: NextResponse) {
     return response
 }
 
-export function setCraterGuestClaimCookie(response: NextResponse, claimToken: string) {
-    response.cookies.set(CRATER_GUEST_CLAIM_COOKIE_NAME, claimToken, {
-        httpOnly: true,
-        path: CRATER_SESSION_COOKIE_PATH,
-        sameSite: "lax",
-        secure: process.env.NODE_ENV === "production",
-    })
-    return response
-}
-
 export function clearCraterSessionCookie(response: NextResponse, request?: Request) {
     if (request && guestCheckoutId(request) !== null) return clearGuestCheckoutSession(response, request)
     response.cookies.set(CRATER_SESSION_COOKIE_NAME, "", {

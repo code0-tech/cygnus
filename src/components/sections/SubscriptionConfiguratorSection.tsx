@@ -4,7 +4,7 @@ import { SubscriptionConfigurator, type SubscriptionIcons, type SubscriptionOpti
 import { SubscriptionContent } from "@/components/subscription/SubscriptionContent"
 import type { SubscriptionConfiguratorContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
-import type { SubscriptionPriceCatalog } from "@/lib/subscriptionPrices"
+import type { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
 import { useSearchParams } from "next/navigation"
 import { useState } from "react"
 

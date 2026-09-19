@@ -1,6 +1,6 @@
 import assert from "node:assert/strict"
 import test from "node:test"
-import { parseCheckoutSessionId } from "../../src/lib/checkout/checkoutReturn"
+import { parseCheckoutSessionId } from "../../src/lib/checkout/craterCheckout"
 
 test("accepts Stripe Checkout Session ids from the return URL", () => {
     assert.equal(parseCheckoutSessionId("cs_test_a1B2c3D4"), "cs_test_a1B2c3D4")

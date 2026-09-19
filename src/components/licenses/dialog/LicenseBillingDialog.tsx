@@ -4,25 +4,19 @@ import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
 import { LicenseDialog } from "@/components/licenses/dialog/LicenseDialog"
 import { Switch } from "@/components/ui/Switch"
 import { ButtonLoader } from "@/components/ui/Loader"
+import { useSubscriptionUpdatePreview } from "@/hooks/useSubscriptionUpdatePreview"
 import type { ErrorsContent, LicenseContent, SubscriptionConfigData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { formatMinorCurrency } from "@/lib/formatters"
 import { decodeLicenseRouteId } from "@/lib/licenses/licenseRoute"
 import { resolveSubscriptionCustomerType } from "@/lib/licenses/licenseSubscription"
 import { formatLicenseDisplayValue } from "@/lib/licenses/licenseDisplayValues"
-import type { PaymentPeriod } from "@/lib/subscriptionCalculator"
-import { getPaymentPeriodOptions } from "@/lib/subscriptionConfigurator"
+import { updateSubscription } from "@/lib/subscription/client"
+import type { PaymentPeriod } from "@/lib/subscription/calculator"
+import { getPaymentPeriodOptions } from "@/lib/subscription/configurator"
 import { Button, DialogFooter } from "@code0-tech/pictor"
 import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
-
-interface SubscriptionUpdatePreview {
-    currency: string
-    effectiveAt: string | null
-    immediate: boolean
-    prorationAmount: number
-    total: number
-}
+import { useState } from "react"
 
 interface LicenseBillingDialogProps {
     content: LicenseContent
@@ -48,47 +42,13 @@ export function LicenseBillingDialog({ content, customerId, errors, licenseId, l
     const period = selectedPeriod ?? currentPeriod ?? periodOptions[0]
     const hasChange = Boolean(license?.subscriptionId) && period !== currentPeriod
 
-    const [preview, setPreview] = useState<SubscriptionUpdatePreview | null>(null)
-    const [previewError, setPreviewError] = useState<string | null>(null)
-    const [isLoadingPreview, setIsLoadingPreview] = useState(false)
+    const { isLoadingPreview, preview, previewError } = useSubscriptionUpdatePreview(
+        hasChange ? license?.subscriptionId : undefined,
+        { paymentPeriod: period },
+        errors.subscriptionPreview
+    )
     const [saveError, setSaveError] = useState<string | null>(null)
     const [isSaving, setIsSaving] = useState(false)
-
-    useEffect(() => {
-        if (!hasChange || !license?.subscriptionId) {
-            setPreview(null)
-            setPreviewError(null)
-            return
-        }
-
-        let active = true
-        setIsLoadingPreview(true)
-        setPreviewError(null)
-
-        void fetch("/api/crater/subscriptions/preview", {
-            method: "POST",
-            credentials: "same-origin",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({ id: license.subscriptionId, paymentPeriod: period }),
-        })
-            .then(async (response) => {
-                if (!response.ok) throw new Error(errors.subscriptionPreview)
-                return (await response.json()) as SubscriptionUpdatePreview
-            })
-            .then((nextPreview) => {
-                if (active) setPreview(nextPreview)
-            })
-            .catch(() => {
-                if (active) setPreviewError(errors.subscriptionPreview)
-            })
-            .finally(() => {
-                if (active) setIsLoadingPreview(false)
-            })
-
-        return () => {
-            active = false
-        }
-    }, [errors.subscriptionPreview, hasChange, license?.subscriptionId, period])
 
     const save = async () => {
         if (!license?.subscriptionId || !hasChange || isSaving) return
@@ -96,17 +56,7 @@ export function LicenseBillingDialog({ content, customerId, errors, licenseId, l
         setSaveError(null)
 
         try {
-            const response = await fetch("/api/crater/subscriptions", {
-                method: "PATCH",
-                credentials: "same-origin",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify({ id: license.subscriptionId, paymentPeriod: period }),
-            })
-            if (!response.ok) throw new Error(errors.billingUpdate)
-            const updated: unknown = await response.json()
-            if (!updated || typeof updated !== "object") throw new Error(errors.billingUpdate)
-
-            const subscription = updated as { paymentPeriod?: string; updatedAt?: string }
+            const subscription = await updateSubscription({ id: license.subscriptionId, paymentPeriod: period }, errors.billingUpdate)
             updateLicense(license.id, {
                 ...(subscription.paymentPeriod ? { paymentPeriod: subscription.paymentPeriod } : {}),
                 ...(subscription.updatedAt ? { updatedAt: subscription.updatedAt } : {}),

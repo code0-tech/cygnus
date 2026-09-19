@@ -19,8 +19,10 @@
         "lint": "npm run typecheck",
         "typecheck": "tsc --noEmit",
         "knip": "node --import tsx ./node_modules/knip/bin/knip.js",
-        "test": "node --experimental-test-module-mocks --import tsx --test tests/*.test.ts tests/checkout/*.test.ts tests/checkout/*.test.tsx",
+        "test": "node --experimental-test-module-mocks --import tsx --test tests/*.test.ts tests/checkout/*.test.ts tests/checkout/*.test.tsx tests/licenses/*.test.ts tests/licenses/*.test.tsx tests/subscription/*.test.ts tests/subscription/*.test.tsx",
         "test:checkout": "node --experimental-test-module-mocks --import tsx --test tests/checkout/*.test.ts tests/checkout/*.test.tsx",
+        "test:licenses": "node --experimental-test-module-mocks --import tsx --test tests/licenses/*.test.ts tests/licenses/*.test.tsx",
+        "test:subscription": "node --experimental-test-module-mocks --import tsx --test tests/subscription/*.test.ts tests/subscription/*.test.tsx",
         "generate": "payload generate:types"
     },
     "dependencies": {
@@ -50,7 +52,6 @@
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "graphql": "^16.14.2",
-        "i18n-iso-countries": "^7.14.0",
         "knip": "^6.27.0",
         "motion": "^12.42.2",
         "next": "^16.2.10",

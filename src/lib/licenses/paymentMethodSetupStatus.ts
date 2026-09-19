@@ -13,7 +13,7 @@ function getStripeClient() {
 }
 
 function resourceId(resource: string | { id: string } | null) {
-    return typeof resource === "string" ? resource : resource?.id ?? null
+    return typeof resource === "string" ? resource : (resource?.id ?? null)
 }
 
 export function getPaymentMethodSetupStatus(
