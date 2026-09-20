@@ -112,6 +112,13 @@ export const Licenses: GlobalConfig = {
                     defaultValue: localizedDefault("Customers", "Kunden"),
                 },
                 {
+                    name: "customersDescription",
+                    type: "textarea",
+                    required: true,
+                    localized: true,
+                    defaultValue: localizedDefault("Manage the customers connected to your licenses.", "Verwalte die Kunden, die mit deinen Lizenzen verknüpft sind."),
+                },
+                {
                     name: "emptyCustomers",
                     type: "text",
                     required: true,
@@ -124,6 +131,13 @@ export const Licenses: GlobalConfig = {
                     required: true,
                     localized: true,
                     defaultValue: localizedDefault("Last edited licenses", "Zuletzt bearbeitete Lizenzen"),
+                },
+                {
+                    name: "recentLicensesDescription",
+                    type: "textarea",
+                    required: true,
+                    localized: true,
+                    defaultValue: localizedDefault("Quickly access the licenses that were edited most recently.", "Greife schnell auf die zuletzt bearbeiteten Lizenzen zu."),
                 },
                 {
                     name: "customerLabel",
@@ -336,7 +350,6 @@ export const Licenses: GlobalConfig = {
                 { name: "addPaymentMethodLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Add payment method", "Zahlungsmethode hinzufügen") },
                 { name: "removePaymentMethodLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Remove", "Entfernen") },
                 { name: "removingPaymentMethodLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Removing…", "Wird entfernt …") },
-                { name: "defaultPaymentMethodLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Default", "Standard") },
                 {
                     name: "otherPaymentMethodsHeading",
                     type: "text",
@@ -422,7 +435,6 @@ export const Licenses: GlobalConfig = {
                 },
                 { name: "periodLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Billing period", "Abrechnungsintervall") },
                 { name: "currentPeriodEndLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Current period ends", "Aktuelle Periode endet") },
-                { name: "pendingChangeLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Scheduled change", "Geplante Änderung") },
             ],
         },
         {

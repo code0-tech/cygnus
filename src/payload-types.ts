@@ -3230,8 +3230,10 @@ export interface License {
   };
   dashboard: {
     customers: string;
+    customersDescription: string;
     emptyCustomers: string;
     recentLicenses: string;
+    recentLicensesDescription: string;
     customerLabel: string;
     nameLabel: string;
     typeLabel: string;
@@ -3309,7 +3311,6 @@ export interface License {
     addPaymentMethodLabel: string;
     removePaymentMethodLabel: string;
     removingPaymentMethodLabel: string;
-    defaultPaymentMethodLabel: string;
     otherPaymentMethodsHeading: string;
     usePaymentMethodLabel: string;
     settingPaymentMethodLabel: string;
@@ -3344,7 +3345,6 @@ export interface License {
     description: string;
     periodLabel: string;
     currentPeriodEndLabel: string;
-    pendingChangeLabel: string;
   };
   cancel: {
     description: string;
@@ -3980,8 +3980,10 @@ export interface LicensesSelect<T extends boolean = true> {
     | T
     | {
         customers?: T;
+        customersDescription?: T;
         emptyCustomers?: T;
         recentLicenses?: T;
+        recentLicensesDescription?: T;
         customerLabel?: T;
         nameLabel?: T;
         typeLabel?: T;
@@ -4079,7 +4081,6 @@ export interface LicensesSelect<T extends boolean = true> {
         addPaymentMethodLabel?: T;
         removePaymentMethodLabel?: T;
         removingPaymentMethodLabel?: T;
-        defaultPaymentMethodLabel?: T;
         otherPaymentMethodsHeading?: T;
         usePaymentMethodLabel?: T;
         settingPaymentMethodLabel?: T;
@@ -4111,7 +4112,6 @@ export interface LicensesSelect<T extends boolean = true> {
         description?: T;
         periodLabel?: T;
         currentPeriodEndLabel?: T;
-        pendingChangeLabel?: T;
       };
   cancel?:
     | T

@@ -145,6 +145,7 @@ import * as migration_20260917_153155_license_pending_status from './20260917_15
 import * as migration_20260919_124842_checkout_guest_account_hint from './20260919_124842_checkout_guest_account_hint';
 import * as migration_20260920_112846_license_detail_descriptions from './20260920_112846_license_detail_descriptions';
 import * as migration_20260920_115610_license_editor_description from './20260920_115610_license_editor_description';
+import * as migration_20260920_121604_license_dashboard_descriptions from './20260920_121604_license_dashboard_descriptions';
 
 export const migrations = [
   {
@@ -881,5 +882,10 @@ export const migrations = [
     up: migration_20260920_115610_license_editor_description.up,
     down: migration_20260920_115610_license_editor_description.down,
     name: '20260920_115610_license_editor_description'
+  },
+  {
+    up: migration_20260920_121604_license_dashboard_descriptions.up,
+    down: migration_20260920_121604_license_dashboard_descriptions.down,
+    name: '20260920_121604_license_dashboard_descriptions'
   },
 ];
