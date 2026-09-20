@@ -3,17 +3,25 @@
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
 import { LicenseStatusDot } from "@/components/licenses/LicenseStatusDot"
 import { LicensePlanIcon } from "@/components/licenses/LicensePlanIcon"
-import {
-    LicenseDataTable as DataTable,
-    LicenseDataTableColumn as DataTableColumn,
-    LicenseDataTableHeader as DataTableHeader,
-    LicenseDataTableHeaderColumn as DataTableHeaderColumn,
-} from "@/components/licenses/LicenseDataTable"
 import type { LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { decodeLicenseRouteId } from "@/lib/licenses/licenseRoute"
 import { formatLicenseDisplayValue } from "@/lib/licenses/licenseDisplayValues"
-import { Button, Card, Flex, ScrollArea, ScrollAreaScrollbar, ScrollAreaThumb, ScrollAreaViewport, Spacing, Text } from "@code0-tech/pictor"
+import {
+    Button,
+    Card,
+    DataTable,
+    DataTableColumn,
+    DataTableHeader,
+    DataTableHeaderColumn,
+    Flex,
+    ScrollArea,
+    ScrollAreaScrollbar,
+    ScrollAreaThumb,
+    ScrollAreaViewport,
+    Spacing,
+    Text,
+} from "@code0-tech/pictor"
 import { useRouter } from "next/navigation"
 import { Fragment } from "react"
 import { LicenseLoadMoreButton } from "@/components/licenses/LicenseLoadMoreButton"
@@ -129,8 +137,9 @@ export function LicenseCustomerPage({ content, customerId, locale }: LicenseCust
                             <DataTable
                                 data={customerLicenses}
                                 loading={isLoading}
-                                onRowClick={(license) => router.push(`/${locale}/licenses/customer/${encodeURIComponent(resolvedCustomerId)}/license/${encodeURIComponent(license.id)}`)}
-                                rowKey={(license) => license.id}
+                                onSelect={(license) => {
+                                    if (license) router.push(`/${locale}/licenses/customer/${encodeURIComponent(resolvedCustomerId)}/license/${encodeURIComponent(license.id)}`)
+                                }}
                                 emptyComponent={
                                     <DataTableColumn colSpan={4}>
                                         <Text size="sm" hierarchy="tertiary">

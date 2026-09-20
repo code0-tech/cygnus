@@ -27,6 +27,13 @@ export const Licenses: GlobalConfig = {
             defaultValue: localizedDefault("License", "Lizenz"),
         },
         {
+            name: "licenseDescription",
+            type: "textarea",
+            required: true,
+            localized: true,
+            defaultValue: localizedDefault("View the license configuration and current access status.", "Sieh dir die Lizenzkonfiguration und den aktuellen Zugriffsstatus an."),
+        },
+        {
             name: "emptyLicenses",
             type: "text",
             required: true,
@@ -266,6 +273,13 @@ export const Licenses: GlobalConfig = {
             type: "group",
             fields: [
                 { name: "title", type: "text", required: true, localized: true, defaultValue: localizedDefault("Invoices", "Rechnungen") },
+                {
+                    name: "description",
+                    type: "textarea",
+                    required: true,
+                    localized: true,
+                    defaultValue: localizedDefault("View and download invoices issued for this license.", "Sieh dir die für diese Lizenz ausgestellten Rechnungen an und lade sie herunter."),
+                },
                 { name: "empty", type: "text", required: true, localized: true, defaultValue: localizedDefault("No invoices yet", "Noch keine Rechnungen") },
                 { name: "numberLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Invoice", "Rechnung") },
                 { name: "periodLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Billing period", "Abrechnungszeitraum") },
@@ -316,10 +330,7 @@ export const Licenses: GlobalConfig = {
                     type: "text",
                     required: true,
                     localized: true,
-                    defaultValue: localizedDefault(
-                        "The payment method is now the default for future invoices.",
-                        "Die Zahlungsmethode ist jetzt der Standard für zukünftige Rechnungen."
-                    ),
+                    defaultValue: localizedDefault("The payment method is now the default for future invoices.", "Die Zahlungsmethode ist jetzt der Standard für zukünftige Rechnungen."),
                 },
                 { name: "noPaymentMethodsLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("No payment methods yet", "Noch keine Zahlungsmethoden") },
                 { name: "addPaymentMethodLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Add payment method", "Zahlungsmethode hinzufügen") },
@@ -337,16 +348,20 @@ export const Licenses: GlobalConfig = {
                 { name: "settingPaymentMethodLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Assigning…", "Wird zugewiesen …") },
                 { name: "licenseTitle", type: "text", required: true, localized: true, defaultValue: localizedDefault("Edit license", "Lizenz bearbeiten") },
                 {
+                    name: "licenseEditDescription",
+                    type: "textarea",
+                    required: true,
+                    localized: true,
+                    defaultValue: localizedDefault("Manage the license, payment method, and billing period.", "Verwalte die Lizenz, Zahlungsmethode und den Abrechnungszeitraum."),
+                },
+                {
                     name: "licenseDescription",
                     type: "textarea",
                     required: true,
                     localized: true,
                     defaultValue: localizedDefault("Link this cloud license to a namespace.", "Verknüpfe diese Cloud-Lizenz mit einem Namespace."),
                 },
-                { name: "namespaceLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Namespace ID", "Namespace-ID") },
                 { name: "changeNamespaceLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Change namespace", "Namespace ändern") },
-                { name: "namespaceConnectedLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Connected", "Verbunden") },
-                { name: "namespaceNotConnectedLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Not connected", "Nicht verbunden") },
                 { name: "saveLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Save", "Speichern") },
                 { name: "closeLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Close", "Schließen") },
             ],
@@ -371,10 +386,7 @@ export const Licenses: GlobalConfig = {
                     type: "text",
                     required: true,
                     localized: true,
-                    defaultValue: localizedDefault(
-                        "This change applies at the end of your current billing period.",
-                        "Diese Änderung wird am Ende der aktuellen Abrechnungsperiode wirksam."
-                    ),
+                    defaultValue: localizedDefault("This change applies at the end of your current billing period.", "Diese Änderung wird am Ende der aktuellen Abrechnungsperiode wirksam."),
                 },
                 { name: "loadingLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Calculating…", "Wird berechnet …") },
             ],
@@ -383,8 +395,7 @@ export const Licenses: GlobalConfig = {
             name: "withdrawal",
             type: "group",
             admin: {
-                description:
-                    "Notice shown on the license detail page while the customer's statutory 14-day right of withdrawal is still running. Only shown for personal (B2C) customers.",
+                description: "Notice shown on the license detail page while the customer's statutory 14-day right of withdrawal is still running. Only shown for personal (B2C) customers.",
             },
             fields: [
                 {
@@ -392,10 +403,7 @@ export const Licenses: GlobalConfig = {
                     type: "text",
                     required: true,
                     localized: true,
-                    defaultValue: localizedDefault(
-                        "You can withdraw from this purchase free of charge until {date}.",
-                        "Du kannst diesen Kauf bis zum {date} kostenlos widerrufen."
-                    ),
+                    defaultValue: localizedDefault("You can withdraw from this purchase free of charge until {date}.", "Du kannst diesen Kauf bis zum {date} kostenlos widerrufen."),
                     admin: { description: "Use {date} as a placeholder for the withdrawal deadline." },
                 },
             ],
@@ -426,10 +434,7 @@ export const Licenses: GlobalConfig = {
                     type: "textarea",
                     required: true,
                     localized: true,
-                    defaultValue: localizedDefault(
-                        "You'll keep access until the end of the period you already paid for.",
-                        "Du behältst den Zugriff bis zum Ende der bereits bezahlten Periode."
-                    ),
+                    defaultValue: localizedDefault("You'll keep access until the end of the period you already paid for.", "Du behältst den Zugriff bis zum Ende der bereits bezahlten Periode."),
                 },
                 { name: "confirmLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Cancel subscription", "Abonnement kündigen") },
                 { name: "pendingHeading", type: "text", required: true, localized: true, defaultValue: localizedDefault("Your subscription is set to cancel", "Dein Abonnement wird gekündigt") },

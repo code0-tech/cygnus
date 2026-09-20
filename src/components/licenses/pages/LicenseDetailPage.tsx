@@ -1,28 +1,23 @@
 "use client"
 
+import { UpgradePlanBanner } from "@/components/checkout/UpgradePlanBanner"
+import { InvoiceStatusDot } from "@/components/licenses/InvoiceStatusDot"
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
+import { LicenseLoadMoreButton } from "@/components/licenses/LicenseLoadMoreButton"
 import { LicensePlanIcon } from "@/components/licenses/LicensePlanIcon"
 import { LicenseStatusDot } from "@/components/licenses/LicenseStatusDot"
-import { InvoiceStatusDot } from "@/components/licenses/InvoiceStatusDot"
-import {
-    LicenseDataTable as DataTable,
-    LicenseDataTableColumn as DataTableColumn,
-    LicenseDataTableHeader as DataTableHeader,
-    LicenseDataTableHeaderColumn as DataTableHeaderColumn,
-} from "@/components/licenses/LicenseDataTable"
-import { UpgradePlanBanner } from "@/components/checkout/UpgradePlanBanner"
 import { ButtonLoader } from "@/components/ui/Loader"
 import type { LicenseContent, SubscriptionConfigData, UpgradeBannerData } from "@/lib/cms"
-import { formatCompactNumber, formatMinorCurrency } from "@/lib/formatters"
+import { formatMinorCurrency } from "@/lib/formatters"
 import type { AppLocale } from "@/lib/i18n"
-import { decodeLicenseRouteId } from "@/lib/licenses/licenseRoute"
-import { formatLicenseDisplayValue } from "@/lib/licenses/licenseDisplayValues"
 import { downloadLicenseFile } from "@/lib/licenses/licenseClient"
-import { Alert, Button, Card, Flex, Spacing, Text } from "@code0-tech/pictor"
+import { formatLicenseDisplayValue } from "@/lib/licenses/licenseDisplayValues"
+import { decodeLicenseRouteId } from "@/lib/licenses/licenseRoute"
+import { cn } from "@/lib/utils"
+import { Alert, Badge, Button, Card, DataTable, DataTableColumn, DataTableHeader, DataTableHeaderColumn, Flex, Spacing, Text } from "@code0-tech/pictor"
 import { IconDownload } from "@tabler/icons-react"
 import { useRouter } from "next/navigation"
 import { Fragment, useState } from "react"
-import { LicenseLoadMoreButton } from "@/components/licenses/LicenseLoadMoreButton"
 
 interface LicenseDetailPageProps {
     content: LicenseContent
@@ -32,6 +27,14 @@ interface LicenseDetailPageProps {
     namespaceHref: string
     subscriptionConfig?: SubscriptionConfigData | null
     upgradeBanner?: UpgradeBannerData | null
+}
+
+interface LicenseDetailItem {
+    badge?: string
+    label: string
+    showPlanIcon?: boolean
+    showStatusDot?: boolean
+    value: string
 }
 
 export function LicenseDetailPage({ content, customerId, licenseId, locale, namespaceHref, subscriptionConfig, upgradeBanner }: LicenseDetailPageProps) {
@@ -47,41 +50,22 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
         dateStyle: "medium",
         timeZone: "UTC",
     })
-    const accessEndDate = license?.endDate ?? license?.expireAt
     const showNamespaceWarning = license?.deploymentType === "cloud" && !license.namespaceId
-    const licenseDetails = license
+    const licenseDetails: LicenseDetailItem[] = license
         ? [
               { label: content.dashboard.statusLabel, value: formatLicenseDisplayValue(license.status, "status", content.values), showStatusDot: true },
-              { label: content.dashboard.customerLabel, value: customer?.name?.trim() || customer?.email?.trim() || customer?.id || license.customerName || license.customerId },
               {
-                  label: content.dashboard.typeLabel,
-                  value: formatLicenseDisplayValue(customer?.customerType ?? license.customerType, "customerType", content.values),
+                  badge: formatLicenseDisplayValue(customer?.customerType ?? license.customerType, "customerType", content.values),
+                  label: content.dashboard.customerLabel,
+                  value: customer?.name?.trim() || customer?.email?.trim() || customer?.id || license.customerName || license.customerId,
               },
-              { label: content.dashboard.deploymentLabel, value: formatLicenseDisplayValue(license.deploymentType, "deploymentType", content.values) },
-              { label: content.licenses, value: formatLicenseDisplayValue(license.plan, "plan", content.values), showPlanIcon: true },
+              {
+                  badge: formatLicenseDisplayValue(license.deploymentType, "deploymentType", content.values),
+                  label: content.license,
+                  showPlanIcon: true,
+                  value: formatLicenseDisplayValue(license.plan, "plan", content.values),
+              },
               { label: content.dashboard.paymentPeriodLabel, value: formatLicenseDisplayValue(license.paymentPeriod, "paymentPeriod", content.values) },
-              ...(accessEndDate
-                  ? [
-                        {
-                            label: content.cancel.cancelAtLabel,
-                            value: dateFormatter.format(new Date(accessEndDate)),
-                        },
-                    ]
-                  : []),
-              ...(license.plan === "custom"
-                  ? [
-                        { label: content.dashboard.workflowExecutionsLabel, value: license.workflowExecutions === undefined ? "—" : formatCompactNumber(license.workflowExecutions) },
-                        { label: content.dashboard.aiTokensLabel, value: license.aiTokens === undefined ? "—" : formatCompactNumber(license.aiTokens) },
-                    ]
-                  : []),
-              {
-                  label: content.editor.namespaceLabel,
-                  value: license.namespaceId ? content.editor.namespaceConnectedLabel : content.editor.namespaceNotConnectedLabel,
-              },
-              {
-                  label: content.dashboard.lastEditedLabel,
-                  value: license.updatedAt ? dateFormatter.format(new Date(license.updatedAt)) : "—",
-              },
           ]
         : []
     const invoices = license?.invoices ?? []
@@ -116,14 +100,19 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
     return (
         <div>
             <section aria-labelledby="license-heading">
-                <Flex align="center" justify="space-between" style={{ gap: "1rem" }}>
-                    <Text id="license-heading" hierarchy="secondary" size="lg">
-                        {content.license}
-                    </Text>
+                <Flex align="start" justify="space-between" style={{ gap: "1rem" }}>
+                    <div className="min-w-0">
+                        <Text id="license-heading" hierarchy="secondary" size="xl">
+                            {content.license}
+                        </Text>
+                        <Text size="md" hierarchy="tertiary" className="mt-2!">
+                            {content.licenseDescription}
+                        </Text>
+                    </div>
                     {isLoading || license ? (
                         <Flex align="center" style={{ gap: "0.5rem" }} className="flex-wrap justify-end">
                             {license?.deploymentType === "self_hosted" ? (
-                                <Button type="button" variant="normal" paddingSize="xs" disabled={isDownloadingLicense} onClick={() => void downloadCurrentLicense()} className="shrink-0 text-sm!">
+                                <Button type="button" variant="normal" paddingSize="xxs" disabled={isDownloadingLicense} onClick={() => void downloadCurrentLicense()} className="shrink-0 text-sm!">
                                     {isDownloadingLicense ? <ButtonLoader label={content.invoices.downloadLabel} /> : <IconDownload aria-hidden="true" size={16} />}
                                     {!isDownloadingLicense ? content.invoices.downloadLabel : null}
                                 </Button>
@@ -131,11 +120,11 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
                             <Button
                                 type="button"
                                 variant="normal"
-                                paddingSize="xs"
+                                paddingSize="xxs"
                                 disabled={isLoading || !license}
                                 onClick={() => {
                                     if (!license) return
-                                    router.push(`/${locale}/licenses/customer/${encodeURIComponent(license.customerId)}/license/${encodeURIComponent(license.id)}/edit`)
+                                    router.push(`/${locale}/licenses/customer/${encodeURIComponent(license.customerId)}/license/${encodeURIComponent(license.id)}/edit?tab=license`)
                                 }}
                                 className="shrink-0 text-sm!"
                             >
@@ -172,19 +161,30 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
                     </>
                 ) : null}
                 <Spacing spacing="md" />
-                <Card color="secondary">
+                <Card color="secondary" className="overflow-hidden p-0!">
                     {license ? (
-                        <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
-                            {licenseDetails.map((detail) => (
-                                <div key={detail.label} className="min-w-0">
-                                    <Text size="sm" hierarchy="tertiary">
-                                        {detail.label}
-                                    </Text>
-                                    <Spacing spacing="xxs" />
-                                    <Flex align="center" style={{ gap: "0.25rem" }}>
-                                        {"showStatusDot" in detail ? <LicenseStatusDot aria-hidden="true" status={license.status} /> : null}
-                                        {"showPlanIcon" in detail ? <LicensePlanIcon className="shrink-0 text-brand" plan={license.plan} size={16} /> : null}
-                                        <Text size="sm" fw={500} className="wrap-break-word">
+                        <div className="grid sm:grid-cols-2 xl:grid-cols-4">
+                            {licenseDetails.map((detail, index) => (
+                                <div
+                                    key={detail.label}
+                                    className={cn(
+                                        "min-w-0 px-6 py-5",
+                                        index > 0 && "border-t border-white/10",
+                                        index === 1 && "sm:border-l sm:border-t-0",
+                                        index === 3 && "sm:border-l",
+                                        index > 0 && "xl:border-l xl:border-t-0"
+                                    )}
+                                >
+                                    <div className="flex min-w-0 items-center gap-2">
+                                        <Text size="sm" hierarchy="tertiary" className="truncate">
+                                            {detail.label}
+                                        </Text>
+                                        {detail.badge ? <Badge color="tertiary">{detail.badge}</Badge> : null}
+                                    </div>
+                                    <Flex align="center" style={{ gap: "0.5rem" }} className="mt-3 min-w-0">
+                                        {detail.showStatusDot ? <LicenseStatusDot aria-hidden="true" status={license.status} /> : null}
+                                        {detail.showPlanIcon ? <LicensePlanIcon className="shrink-0 text-brand" plan={license.plan} size={22} /> : null}
+                                        <Text fw={400} title={detail.value} className="truncate text-xl! leading-tight! text-white!">
                                             {detail.value}
                                         </Text>
                                     </Flex>
@@ -192,12 +192,20 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
                             ))}
                         </div>
                     ) : isLoading ? (
-                        <div aria-hidden="true" className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
-                            {Array.from({ length: 9 }, (_, index) => (
-                                <div key={index} className="min-w-0 animate-pulse motion-reduce:animate-none">
-                                    <div className={index % 3 === 0 ? "h-3 w-20 rounded-full bg-white/10" : "h-3 w-28 rounded-full bg-white/10"} />
-                                    <Spacing spacing="xxs" />
-                                    <div className={index % 2 === 0 ? "h-4 w-24 rounded-full bg-white/10" : "h-4 w-16 rounded-full bg-white/10"} />
+                        <div aria-hidden="true" className="grid sm:grid-cols-2 xl:grid-cols-4">
+                            {Array.from({ length: 4 }, (_, index) => (
+                                <div
+                                    key={index}
+                                    className={cn(
+                                        "min-w-0 animate-pulse px-6 py-5 motion-reduce:animate-none",
+                                        index > 0 && "border-t border-white/10",
+                                        index === 1 && "sm:border-l sm:border-t-0",
+                                        index === 3 && "sm:border-l",
+                                        index > 0 && "xl:border-l xl:border-t-0"
+                                    )}
+                                >
+                                    <div className={index % 2 === 0 ? "h-3 w-20 rounded-full bg-white/10" : "h-3 w-28 rounded-full bg-white/10"} />
+                                    <div className={index % 2 === 0 ? "mt-4 h-8 w-24 rounded-lg bg-white/10" : "mt-4 h-8 w-32 rounded-lg bg-white/10"} />
                                 </div>
                             ))}
                         </div>
@@ -233,21 +241,15 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
 
             <Spacing spacing="xl" />
             <section aria-labelledby="license-invoices-heading">
-                <Flex align="center" justify="space-between" style={{ gap: "1rem" }}>
-                    <Text id="license-invoices-heading" hierarchy="secondary" size="lg">
-                        {content.invoices.title}
-                    </Text>
-                    {license?.subscriptionId && (
-                        <Button
-                            type="button"
-                            variant="normal"
-                            paddingSize="xs"
-                            onClick={() => router.push(`/${locale}/licenses/customer/${encodeURIComponent(license.customerId)}/license/${encodeURIComponent(license.id)}/billing`)}
-                            className="shrink-0 text-sm!"
-                        >
-                            {content.billing.title}
-                        </Button>
-                    )}
+                <Flex align="start" justify="space-between" style={{ gap: "1rem" }}>
+                    <div className="min-w-0">
+                        <Text id="license-invoices-heading" hierarchy="secondary" size="xl">
+                            {content.invoices.title}
+                        </Text>
+                        <Text size="md" hierarchy="tertiary" className="mt-2!">
+                            {content.invoices.description}
+                        </Text>
+                    </div>
                 </Flex>
                 <Spacing spacing="md" />
 
@@ -255,7 +257,6 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
                     <DataTable
                         data={invoices}
                         loading={isLoading}
-                        rowKey={(invoice) => invoice.id}
                         emptyComponent={
                             <DataTableColumn colSpan={5}>
                                 <Text size="sm" hierarchy="tertiary">
@@ -265,10 +266,10 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
                         }
                     >
                         <DataTableHeader>
-                            <DataTableHeaderColumn>{content.invoices.numberLabel}</DataTableHeaderColumn>
-                            <DataTableHeaderColumn>{content.invoices.periodLabel}</DataTableHeaderColumn>
-                            <DataTableHeaderColumn>{content.invoices.amountLabel}</DataTableHeaderColumn>
-                            <DataTableHeaderColumn>{content.invoices.statusLabel}</DataTableHeaderColumn>
+                            <DataTableHeaderColumn className="font-normal text-tertiary text-xs">{content.invoices.numberLabel}</DataTableHeaderColumn>
+                            <DataTableHeaderColumn className="font-normal text-tertiary text-xs">{content.invoices.periodLabel}</DataTableHeaderColumn>
+                            <DataTableHeaderColumn className="font-normal text-tertiary text-xs">{content.invoices.amountLabel}</DataTableHeaderColumn>
+                            <DataTableHeaderColumn className="font-normal text-tertiary text-xs">{content.invoices.statusLabel}</DataTableHeaderColumn>
                             <DataTableHeaderColumn />
                         </DataTableHeader>
                         {(invoice) => (

@@ -143,6 +143,8 @@ import * as migration_20260827_114728_remove_weekly_payment_period from './20260
 import * as migration_20260914_170441_payment_method_load_error from './20260914_170441_payment_method_load_error';
 import * as migration_20260917_153155_license_pending_status from './20260917_153155_license_pending_status';
 import * as migration_20260919_124842_checkout_guest_account_hint from './20260919_124842_checkout_guest_account_hint';
+import * as migration_20260920_112846_license_detail_descriptions from './20260920_112846_license_detail_descriptions';
+import * as migration_20260920_115610_license_editor_description from './20260920_115610_license_editor_description';
 
 export const migrations = [
   {
@@ -868,6 +870,16 @@ export const migrations = [
   {
     up: migration_20260919_124842_checkout_guest_account_hint.up,
     down: migration_20260919_124842_checkout_guest_account_hint.down,
-    name: '20260919_124842_checkout_guest_account_hint'
+    name: '20260919_124842_checkout_guest_account_hint',
+  },
+  {
+    up: migration_20260920_112846_license_detail_descriptions.up,
+    down: migration_20260920_112846_license_detail_descriptions.down,
+    name: '20260920_112846_license_detail_descriptions',
+  },
+  {
+    up: migration_20260920_115610_license_editor_description.up,
+    down: migration_20260920_115610_license_editor_description.down,
+    name: '20260920_115610_license_editor_description'
   },
 ];

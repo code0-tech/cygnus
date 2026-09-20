@@ -1,17 +1,19 @@
 "use client"
 
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
+import { LicenseBillingSection } from "@/components/licenses/dialog/LicenseBillingSection"
 import { LicenseDialog } from "@/components/licenses/dialog/LicenseDialog"
 import { CustomerPaymentMethodCard } from "@/components/licenses/dialog/CustomerPaymentMethodCard"
 import { PaymentMethodSetupDialog } from "@/components/licenses/dialog/PaymentMethodSetupDialog"
 import { ButtonLoader } from "@/components/ui/Loader"
 import { useCustomerPaymentMethods, useSubscriptionPaymentMethod } from "@/hooks/usePaymentMethods"
-import type { ErrorsContent, LicenseContent } from "@/lib/cms"
+import type { ErrorsContent, LicenseContent, SubscriptionConfigData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { decodeLicenseRouteId } from "@/lib/licenses/licenseRoute"
 import { cn } from "@/lib/utils"
 import { Button, ScrollArea, ScrollAreaScrollbar, ScrollAreaThumb, ScrollAreaViewport, Text } from "@code0-tech/pictor"
-import { useRouter, useSearchParams } from "next/navigation"
+import { IconCalendarMonth, IconCreditCard, IconKey } from "@tabler/icons-react"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useCallback, useEffect, useState } from "react"
 
 interface LicenseEditDialogProps {
@@ -21,18 +23,28 @@ interface LicenseEditDialogProps {
     licenseId: string
     locale: AppLocale
     namespaceHref: string
+    subscriptionConfig: SubscriptionConfigData
 }
 
-type LicenseEditSection = "license" | "payment"
+type LicenseEditSection = "billing" | "license" | "payment"
 
-export function LicenseEditDialog({ content, customerId, errors, licenseId, locale, namespaceHref }: LicenseEditDialogProps) {
+export function LicenseEditDialog({ content, customerId, errors, licenseId, locale, namespaceHref, subscriptionConfig }: LicenseEditDialogProps) {
     const router = useRouter()
+    const pathname = usePathname()
     const searchParams = useSearchParams()
     const { licenses, updateLicense } = useLicenseData()
     const resolvedCustomerId = decodeLicenseRouteId(customerId)
     const resolvedLicenseId = decodeLicenseRouteId(licenseId)
     const license = licenses.find((candidate) => candidate.id === resolvedLicenseId && candidate.customerId === resolvedCustomerId)
-    const [section, setSection] = useState<LicenseEditSection>("license")
+    const requestedTab = searchParams.get("tab")
+    const section: LicenseEditSection =
+        requestedTab === "license" || requestedTab === "payment" || requestedTab === "billing"
+            ? requestedTab
+            : searchParams.has("setup_intent")
+              ? "payment"
+              : searchParams.get("section") === "billing"
+                ? "billing"
+                : "license"
     const paymentSectionEnabled = section === "payment"
     const { isLoadingPaymentMethod, paymentMethod, paymentMethodError, refreshPaymentMethod } = useSubscriptionPaymentMethod(license?.subscriptionId, paymentSectionEnabled)
     const {
@@ -45,9 +57,20 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
     const [assignPaymentMethodError, setAssignPaymentMethodError] = useState(false)
     const close = () => router.replace(`/${locale}/licenses/customer/${encodeURIComponent(resolvedCustomerId)}/license/${encodeURIComponent(resolvedLicenseId)}`)
 
+    const setSection = (nextSection: LicenseEditSection) => {
+        const nextSearchParams = new URLSearchParams(searchParams.toString())
+        nextSearchParams.set("tab", nextSection)
+        nextSearchParams.delete("section")
+        router.replace(`${pathname}?${nextSearchParams.toString()}`, { scroll: false })
+    }
+
     useEffect(() => {
-        if (new URL(window.location.href).searchParams.has("setup_intent")) setSection("payment")
-    }, [])
+        if (requestedTab === "license" || requestedTab === "payment" || requestedTab === "billing") return
+        const nextSearchParams = new URLSearchParams(searchParams.toString())
+        nextSearchParams.set("tab", section)
+        nextSearchParams.delete("section")
+        router.replace(`${pathname}?${nextSearchParams.toString()}`, { scroll: false })
+    }, [pathname, requestedTab, router, searchParams, section])
 
     const paymentMethodUpdated = useCallback(() => {
         refreshPaymentMethod()
@@ -81,35 +104,48 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
     const isCloud = license?.deploymentType === "cloud"
     const namespaceSelectionFailed = searchParams.has("namespaceError")
     const sidebar = license?.subscriptionId ? (
-        <div role="tablist" aria-label={content.editor.licenseTitle} className="flex flex-col gap-2">
-            {(["license", "payment"] as const).map((option) => {
-                const selected = section === option
-                const label = option === "license" ? content.editor.licenseTitle : content.editor.paymentMethodHeading
+        <div role="tablist" aria-label={content.editor.licenseTitle} className="flex flex-col gap-1">
+            {[
+                { icon: IconKey, label: content.editor.licenseTitle, value: "license" as const },
+                { icon: IconCreditCard, label: content.editor.paymentMethodHeading, value: "payment" as const },
+                { icon: IconCalendarMonth, label: content.billing.title, value: "billing" as const },
+            ].map((tab) => {
+                const selected = section === tab.value
+                const TabIcon = tab.icon
 
                 return (
                     <Button
-                        key={option}
+                        key={tab.value}
                         type="button"
                         role="tab"
+                        id={`license-edit-tab-${tab.value}`}
+                        aria-controls={`license-edit-panel-${tab.value}`}
                         aria-selected={selected}
                         active={selected}
                         variant={selected ? "normal" : "none"}
                         paddingSize="xxs"
                         w="100%"
                         justify="start"
-                        className={cn("text-base!", selected && "bg-white/5! shadow-[inset_0_1px_1px_#bfbfbf1a]!")}
-                        onClick={() => setSection(option)}
+                        className={cn(
+                            "relative text-sm! text-tertiary! transition-colors! hover:text-white! rounded-2xl!",
+                            selected &&
+                                "bg-white/10! text-white! shadow-[inset_0_1px_1px_#bfbfbf1a]! before:absolute before:-left-3 before:top-1/2 before:h-3 before:w-0.5 before:-translate-y-1/2 before:rounded-full before:bg-brand"
+                        )}
+                        onClick={() => setSection(tab.value)}
                     >
-                        {label}
+                        <TabIcon aria-hidden="true" size={16} className="text-tertiary" />
+                        <Text className="truncate" size="md">
+                            {tab.label}
+                        </Text>
                     </Button>
                 )
             })}
         </div>
     ) : null
     return (
-        <LicenseDialog backLabel={content.editor.closeLabel} onClose={close} sidebar={sidebar} title={content.editor.licenseTitle}>
+        <LicenseDialog backLabel={content.editor.closeLabel} description={content.editor.licenseEditDescription} onClose={close} sidebar={sidebar} title={content.editor.licenseTitle}>
             {section === "license" || !license?.subscriptionId ? (
-                <div className="space-y-4" role="tabpanel">
+                <div className="space-y-4" role="tabpanel" id="license-edit-panel-license" aria-labelledby="license-edit-tab-license">
                     {namespaceSelectionFailed && (
                         <p role="alert" className="text-sm text-error">
                             {errors.licenseUpdate}
@@ -143,8 +179,10 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
                         )}
                     </div>
                 </div>
+            ) : section === "billing" && license ? (
+                <LicenseBillingSection content={content} errors={errors} license={license} locale={locale} onClose={close} subscriptionConfig={subscriptionConfig} />
             ) : (
-                <div role="tabpanel" className="space-y-6">
+                <div role="tabpanel" id="license-edit-panel-payment" aria-labelledby="license-edit-tab-payment" className="space-y-6">
                     <div>
                         <Text hierarchy="secondary" size="lg">
                             {content.editor.paymentMethodHeading}
