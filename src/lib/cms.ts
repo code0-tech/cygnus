@@ -371,8 +371,10 @@ export interface LicenseContent {
     }
     dashboard: {
         customers: string
+        customersDescription: string
         emptyCustomers: string
         recentLicenses: string
+        recentLicensesDescription: string
         customerLabel: string
         nameLabel: string
         typeLabel: string
@@ -424,7 +426,6 @@ export interface LicenseContent {
         addPaymentMethodLabel: string
         removePaymentMethodLabel: string
         removingPaymentMethodLabel: string
-        defaultPaymentMethodLabel: string
         otherPaymentMethodsHeading: string
         usePaymentMethodLabel: string
         settingPaymentMethodLabel: string
@@ -450,7 +451,6 @@ export interface LicenseContent {
         description: string
         periodLabel: string
         currentPeriodEndLabel: string
-        pendingChangeLabel: string
     }
     cancel: {
         description: string

@@ -29,7 +29,7 @@ export function LicenseDashboardPage({ content, locale }: LicenseDashboardPagePr
         <>
             <section aria-labelledby="customers-heading">
                 <Flex align="center" style={{ gap: "0.5rem" }}>
-                    <Text id="customers-heading" hierarchy="secondary" size="lg">
+                    <Text id="customers-heading" hierarchy="secondary" size="xl">
                         {content.dashboard.customers}
                     </Text>
                     {isLoading ? (
@@ -40,6 +40,9 @@ export function LicenseDashboardPage({ content, locale }: LicenseDashboardPagePr
                         </span>
                     )}
                 </Flex>
+                <Text size="md" hierarchy="tertiary" className="mt-2!">
+                    {content.dashboard.customersDescription}
+                </Text>
                 <Spacing spacing="md" />
 
                 <Card color="secondary" className="pt-2!">
@@ -58,10 +61,10 @@ export function LicenseDashboardPage({ content, locale }: LicenseDashboardPagePr
                         }
                     >
                         <DataTableHeader>
-                            <DataTableHeaderColumn>{content.dashboard.customerLabel}</DataTableHeaderColumn>
-                            <DataTableHeaderColumn>{content.dashboard.typeLabel}</DataTableHeaderColumn>
-                            <DataTableHeaderColumn>{content.dashboard.emailLabel}</DataTableHeaderColumn>
-                            <DataTableHeaderColumn>{content.licenses}</DataTableHeaderColumn>
+                            <DataTableHeaderColumn className="font-normal text-tertiary text-xs">{content.dashboard.customerLabel}</DataTableHeaderColumn>
+                            <DataTableHeaderColumn className="font-normal text-tertiary text-xs">{content.dashboard.typeLabel}</DataTableHeaderColumn>
+                            <DataTableHeaderColumn className="font-normal text-tertiary text-xs">{content.dashboard.emailLabel}</DataTableHeaderColumn>
+                            <DataTableHeaderColumn className="font-normal text-tertiary text-xs">{content.licenses}</DataTableHeaderColumn>
                         </DataTableHeader>
                         {(customer) => (
                             <Fragment key={customer.id}>
@@ -91,8 +94,11 @@ export function LicenseDashboardPage({ content, locale }: LicenseDashboardPagePr
             <Spacing spacing="xl" />
 
             <section aria-labelledby="recent-licenses-heading">
-                <Text id="recent-licenses-heading" hierarchy="secondary" size="lg">
+                <Text id="recent-licenses-heading" hierarchy="secondary" size="xl">
                     {content.dashboard.recentLicenses}
+                </Text>
+                <Text size="md" hierarchy="tertiary" className="mt-2!">
+                    {content.dashboard.recentLicensesDescription}
                 </Text>
                 <Spacing spacing="md" />
 
@@ -112,11 +118,11 @@ export function LicenseDashboardPage({ content, locale }: LicenseDashboardPagePr
                         }
                     >
                         <DataTableHeader>
-                            <DataTableHeaderColumn>{content.licenses}</DataTableHeaderColumn>
-                            <DataTableHeaderColumn>{content.dashboard.customerLabel}</DataTableHeaderColumn>
-                            <DataTableHeaderColumn>{content.dashboard.typeLabel}</DataTableHeaderColumn>
-                            <DataTableHeaderColumn>{content.dashboard.deploymentLabel}</DataTableHeaderColumn>
-                            <DataTableHeaderColumn>{content.dashboard.lastEditedLabel}</DataTableHeaderColumn>
+                            <DataTableHeaderColumn className="font-normal text-tertiary text-xs">{content.licenses}</DataTableHeaderColumn>
+                            <DataTableHeaderColumn className="font-normal text-tertiary text-xs">{content.dashboard.customerLabel}</DataTableHeaderColumn>
+                            <DataTableHeaderColumn className="font-normal text-tertiary text-xs">{content.dashboard.typeLabel}</DataTableHeaderColumn>
+                            <DataTableHeaderColumn className="font-normal text-tertiary text-xs">{content.dashboard.deploymentLabel}</DataTableHeaderColumn>
+                            <DataTableHeaderColumn className="font-normal text-tertiary text-xs">{content.dashboard.lastEditedLabel}</DataTableHeaderColumn>
                         </DataTableHeader>
                         {(license) => (
                             <Fragment key={license.id}>
