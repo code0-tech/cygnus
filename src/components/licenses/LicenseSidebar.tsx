@@ -4,7 +4,7 @@ import { LicensePlanIcon } from "@/components/licenses/LicensePlanIcon"
 import { LicenseStatusDot } from "@/components/licenses/LicenseStatusDot"
 import { ButtonLoader } from "@/components/ui/Loader"
 import type { LicenseContent } from "@/lib/cms"
-import { AppLocale } from "@/lib/i18n"
+import type { AppLocale } from "@/lib/i18n"
 import type { LicenseDashboardLicense } from "@/lib/licenses/licenseTypes"
 import { formatLicenseDisplayValue } from "@/lib/licenses/licenseDisplayValues"
 import { getNamespaceDisplayId } from "@/lib/licenses/licenseRoute"
@@ -28,15 +28,16 @@ import { IconArrowAutofitLeftFilled, IconKey, IconLayoutDashboard, IconMenu2, Ic
 import Image from "next/image"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { useState } from "react"
 import { cn } from "@/lib/utils"
 
 interface LicenseSidebarProps {
-    content: Pick<LicenseContent, "emptyLicenses" | "licenses" | "redirectUrl" | "sidebar" | "values">
+    content: Pick<LicenseContent, "emptyLicenses" | "licenses" | "sidebar" | "values">
     isLoading: boolean
+    isLoggingOut: boolean
     isRefreshing: boolean
     locale: AppLocale
     licenses: LicenseDashboardLicense[]
+    onLogout: () => void
     onRefresh: () => void
 }
 
@@ -65,33 +66,15 @@ function LicenseSidebarSkeleton() {
     )
 }
 
-export function LicenseSidebar({ content, isLoading, isRefreshing, locale, licenses, onRefresh }: LicenseSidebarProps) {
+export function LicenseSidebar({ content, isLoading, isLoggingOut, isRefreshing, locale, licenses, onLogout, onRefresh }: LicenseSidebarProps) {
     const pathname = usePathname()
     const router = useRouter()
-    const [isLoggingOut, setIsLoggingOut] = useState(false)
     const dashboardHref = `/${locale}/licenses`
     const dashboardIsActive = pathname === dashboardHref || pathname === `${dashboardHref}/`
 
-    const logout = async () => {
-        if (isLoggingOut) return
-        setIsLoggingOut(true)
-
-        try {
-            const response = await fetch("/api/crater/auth/session", { method: "DELETE", credentials: "same-origin" })
-            if (!response.ok) {
-                setIsLoggingOut(false)
-                return
-            }
-
-            window.location.replace(content.redirectUrl)
-        } catch {
-            setIsLoggingOut(false)
-        }
-    }
-
     return (
         <div className="min-h-0 lg:h-full">
-            <header className="flex items-center justify-between bg-light pb-4 lg:hidden!">
+            <header className="flex items-center justify-between bg-transparent pb-4 lg:hidden!">
                 <Link href={`/${locale}`} className="inline-flex w-fit items-center rounded-lg p-2 outline-none focus-visible:ring-2 focus-visible:ring-brand/60">
                     <Image src="/code0_text_logo_white.png" alt="CodeZero" width={128} height={32} className="h-7 w-auto object-contain" priority />
                 </Link>
@@ -175,7 +158,7 @@ export function LicenseSidebar({ content, isLoading, isRefreshing, locale, licen
                                     </>
                                 )}
                             </MenuItem>
-                            <MenuItem disabled={isLoggingOut} onSelect={() => void logout()} className="w-full! justify-start! text-left!">
+                            <MenuItem disabled={isLoggingOut} onSelect={onLogout} className="w-full! justify-start! text-left!">
                                 {isLoggingOut ? (
                                     <ButtonLoader label={content.sidebar.loggingOut} />
                                 ) : (
@@ -190,15 +173,11 @@ export function LicenseSidebar({ content, isLoading, isRefreshing, locale, licen
                 </Menu>
             </header>
 
-            <aside className="hidden min-h-0 flex-col bg-light pr-4 backdrop-blur-xl lg:flex lg:h-full">
-                <Link href={`/${locale}`} className="inline-flex w-fit items-center rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-brand/60 p-2">
-                    <Image src="/code0_text_logo_white.png" alt="CodeZero" width={128} height={32} className="h-7 w-auto object-contain" priority />
-                </Link>
-
-                <nav aria-label={content.sidebar.dashboard} className="mt-8">
+            <aside className="hidden min-h-0 flex-col bg-transparent pr-4 lg:flex lg:h-full">
+                <nav aria-label={content.sidebar.dashboard}>
                     <Link href={dashboardHref} aria-current={dashboardIsActive ? "page" : undefined}>
                         <Button
-                            variant="normal"
+                            variant="none"
                             paddingSize={"xxs"}
                             className={cn("w-full! justify-start! shadow-none! hover:shadow-[inset_0_1px_1px_#bfbfbf1a]!", dashboardIsActive && "shadow-[inset_0_1px_1px_#bfbfbf1a]! bg-white/5!")}
                         >
@@ -246,7 +225,6 @@ export function LicenseSidebar({ content, isLoading, isRefreshing, locale, licen
                                         {licenses.map((license) => {
                                             const deployment = formatLicenseDisplayValue(license.deploymentType, "deploymentType", content.values)
                                             const status = formatLicenseDisplayValue(license.status, "status", content.values)
-                                            const identifier = getNamespaceDisplayId(license.namespaceId) || getShortLicenseId(license.id)
                                             const licenseHref = `/${locale}/licenses/customer/${encodeURIComponent(license.customerId)}/license/${encodeURIComponent(license.id)}`
                                             const licenseIsActive = pathname === licenseHref || pathname?.startsWith(`${licenseHref}/`)
 
@@ -254,7 +232,7 @@ export function LicenseSidebar({ content, isLoading, isRefreshing, locale, licen
                                                 <li key={license.id}>
                                                     <Link href={licenseHref} aria-current={licenseIsActive ? "page" : undefined}>
                                                         <Button
-                                                            variant="normal"
+                                                            variant="none"
                                                             paddingSize="xxs"
                                                             className={cn(
                                                                 "w-full! justify-start! shadow-none! hover:shadow-[inset_0_1px_1px_#bfbfbf1a]!",
@@ -291,24 +269,6 @@ export function LicenseSidebar({ content, isLoading, isRefreshing, locale, licen
                         </ScrollAreaScrollbar>
                     </ScrollArea>
                 </div>
-
-                <Button
-                    type="button"
-                    variant="normal"
-                    paddingSize="xxs"
-                    disabled={isLoggingOut}
-                    onClick={() => void logout()}
-                    className="mt-6 w-full! justify-start! shadow-none! hover:shadow-[inset_0_1px_1px_#bfbfbf1a]!"
-                >
-                    {isLoggingOut ? (
-                        <ButtonLoader label={content.sidebar.loggingOut} />
-                    ) : (
-                        <>
-                            <IconArrowAutofitLeftFilled aria-hidden="true" size={17} />
-                            {content.sidebar.logout}
-                        </>
-                    )}
-                </Button>
             </aside>
         </div>
     )
