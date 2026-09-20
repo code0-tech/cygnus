@@ -1,17 +1,10 @@
 "use client"
 
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
-import {
-    LicenseDataTable as DataTable,
-    LicenseDataTableColumn as DataTableColumn,
-    LicenseDataTableHeader as DataTableHeader,
-    LicenseDataTableHeaderColumn as DataTableHeaderColumn,
-} from "@/components/licenses/LicenseDataTable"
 import type { LicenseContent } from "@/lib/cms"
 import { AppLocale } from "@/lib/i18n"
 import { formatLicenseDisplayValue } from "@/lib/licenses/licenseDisplayValues"
-import { Card, Flex, Spacing, Text } from "@code0-tech/pictor"
-import { IconKey } from "@tabler/icons-react"
+import { Card, DataTable, DataTableColumn, DataTableHeader, DataTableHeaderColumn, Flex, Spacing, Text } from "@code0-tech/pictor"
 import { useRouter } from "next/navigation"
 import { Fragment } from "react"
 import { LicensePlanIcon } from "../LicensePlanIcon"
@@ -53,8 +46,9 @@ export function LicenseDashboardPage({ content, locale }: LicenseDashboardPagePr
                     <DataTable
                         data={customers}
                         loading={isLoading}
-                        onRowClick={(customer) => router.push(`/${locale}/licenses/customer/${encodeURIComponent(customer.id)}`)}
-                        rowKey={(customer) => customer.id}
+                        onSelect={(customer) => {
+                            if (customer) router.push(`/${locale}/licenses/customer/${encodeURIComponent(customer.id)}`)
+                        }}
                         emptyComponent={
                             <DataTableColumn colSpan={4}>
                                 <Text size="sm" hierarchy="tertiary">
@@ -91,9 +85,7 @@ export function LicenseDashboardPage({ content, locale }: LicenseDashboardPagePr
                         )}
                     </DataTable>
                 </Card>
-                {pagination?.customers?.hasNextPage ? (
-                    <LicenseLoadMoreButton loading={loadingMore === "customers"} labels={content.pagination} onClick={() => void loadMore("customers")} />
-                ) : null}
+                {pagination?.customers?.hasNextPage ? <LicenseLoadMoreButton loading={loadingMore === "customers"} labels={content.pagination} onClick={() => void loadMore("customers")} /> : null}
             </section>
 
             <Spacing spacing="xl" />
@@ -108,8 +100,9 @@ export function LicenseDashboardPage({ content, locale }: LicenseDashboardPagePr
                     <DataTable
                         data={recentlyEditedLicenses}
                         loading={isLoading}
-                        onRowClick={(license) => router.push(`/${locale}/licenses/customer/${encodeURIComponent(license.customerId)}/license/${encodeURIComponent(license.id)}`)}
-                        rowKey={(license) => license.id}
+                        onSelect={(license) => {
+                            if (license) router.push(`/${locale}/licenses/customer/${encodeURIComponent(license.customerId)}/license/${encodeURIComponent(license.id)}`)
+                        }}
                         emptyComponent={
                             <DataTableColumn colSpan={5}>
                                 <Text size="sm" hierarchy="tertiary">

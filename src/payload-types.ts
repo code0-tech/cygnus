@@ -3232,6 +3232,7 @@ export interface License {
   id: number;
   licenses: string;
   license: string;
+  licenseDescription: string;
   emptyLicenses: string;
   /**
    * Sculptor URL used when no valid Crater session token was supplied.
@@ -3297,6 +3298,7 @@ export interface License {
   };
   invoices: {
     title: string;
+    description: string;
     empty: string;
     numberLabel: string;
     periodLabel: string;
@@ -3329,11 +3331,9 @@ export interface License {
     usePaymentMethodLabel: string;
     settingPaymentMethodLabel: string;
     licenseTitle: string;
+    licenseEditDescription: string;
     licenseDescription: string;
-    namespaceLabel: string;
     changeNamespaceLabel: string;
-    namespaceConnectedLabel: string;
-    namespaceNotConnectedLabel: string;
     saveLabel: string;
     closeLabel: string;
   };
@@ -3981,6 +3981,7 @@ export interface UpgradeBannerSelect<T extends boolean = true> {
 export interface LicensesSelect<T extends boolean = true> {
   licenses?: T;
   license?: T;
+  licenseDescription?: T;
   emptyLicenses?: T;
   redirectUrl?: T;
   sidebar?:
@@ -4063,6 +4064,7 @@ export interface LicensesSelect<T extends boolean = true> {
     | T
     | {
         title?: T;
+        description?: T;
         empty?: T;
         numberLabel?: T;
         periodLabel?: T;
@@ -4099,11 +4101,9 @@ export interface LicensesSelect<T extends boolean = true> {
         usePaymentMethodLabel?: T;
         settingPaymentMethodLabel?: T;
         licenseTitle?: T;
+        licenseEditDescription?: T;
         licenseDescription?: T;
-        namespaceLabel?: T;
         changeNamespaceLabel?: T;
-        namespaceConnectedLabel?: T;
-        namespaceNotConnectedLabel?: T;
         saveLabel?: T;
         closeLabel?: T;
       };

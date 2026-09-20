@@ -358,6 +358,7 @@ export interface UpgradeBannerData {
 
 export interface LicenseContent {
     license: string
+    licenseDescription: string
     licenses: string
     emptyLicenses: string
     redirectUrl: string
@@ -395,6 +396,7 @@ export interface LicenseContent {
     }
     invoices: {
         title: string
+        description: string
         empty: string
         numberLabel: string
         periodLabel: string
@@ -427,11 +429,9 @@ export interface LicenseContent {
         usePaymentMethodLabel: string
         settingPaymentMethodLabel: string
         licenseTitle: string
+        licenseEditDescription: string
         licenseDescription: string
-        namespaceLabel: string
         changeNamespaceLabel: string
-        namespaceConnectedLabel: string
-        namespaceNotConnectedLabel: string
         saveLabel: string
         closeLabel: string
     }
