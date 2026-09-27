@@ -146,7 +146,7 @@ function LicenseWorkspaceMenu({
 }
 
 function LicenseUpgradeButton({ content, license, locale }: { content: LicenseSidebarProps["content"]; license?: LicenseDashboardLicense; locale: AppLocale }) {
-    const href = license?.subscriptionId ? `${createLicensePath(locale, license.customerId, license.id)}/upgrade` : null
+    const href = license?.subscriptionId ? `${createLicensePath(locale, license.customerId, license.id)}/edit?tab=upgrade` : null
     const beam = (
         <BorderBeam strength={1} size="sm" theme="dark" duration={5} active={Boolean(href)} style={{ display: "block" }}>
             <Button type="button" paddingSize="xxs" color="tertiary" disabled={!href} justify="center" w="100%">

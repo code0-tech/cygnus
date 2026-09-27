@@ -3,6 +3,7 @@
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
 import { LicenseBillingSection } from "@/components/licenses/dialog/LicenseBillingSection"
 import { LicenseDialog } from "@/components/licenses/dialog/LicenseDialog"
+import { LicenseUpgradeDialog } from "@/components/licenses/dialog/LicenseUpgradeDialog"
 import { CustomerPaymentMethodCard } from "@/components/licenses/dialog/CustomerPaymentMethodCard"
 import { PaymentMethodSetupDialog } from "@/components/licenses/dialog/PaymentMethodSetupDialog"
 import { ButtonLoader } from "@/components/ui/Loader"
@@ -11,8 +12,9 @@ import type { ErrorsContent, LicenseContent, SubscriptionConfigData } from "@/li
 import type { AppLocale } from "@/lib/i18n"
 import { createLicensePath, resolveCustomerRouteId, resolveLicenseRouteId } from "@/lib/licenses/licenseRoute"
 import { cn } from "@/lib/utils"
+import type { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
 import { Button, ScrollArea, ScrollAreaScrollbar, ScrollAreaThumb, ScrollAreaViewport, Text } from "@code0-tech/pictor"
-import { IconCalendarMonth, IconCreditCard, IconKey } from "@tabler/icons-react"
+import { IconCalendarMonth, IconCreditCard, IconKey, IconTrendingUp } from "@tabler/icons-react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useCallback, useEffect, useState } from "react"
 
@@ -24,11 +26,12 @@ interface LicenseEditDialogProps {
     locale: AppLocale
     namespaceHref: string
     subscriptionConfig: SubscriptionConfigData
+    subscriptionPrices: SubscriptionPriceCatalog
 }
 
-type LicenseEditSection = "billing" | "license" | "payment"
+type LicenseEditSection = "billing" | "license" | "payment" | "upgrade"
 
-export function LicenseEditDialog({ content, customerId, errors, licenseId, locale, namespaceHref, subscriptionConfig }: LicenseEditDialogProps) {
+export function LicenseEditDialog({ content, customerId, errors, licenseId, locale, namespaceHref, subscriptionConfig, subscriptionPrices }: LicenseEditDialogProps) {
     const router = useRouter()
     const pathname = usePathname()
     const searchParams = useSearchParams()
@@ -38,7 +41,7 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
     const license = licenses.find((candidate) => candidate.id === resolvedLicenseId && candidate.customerId === resolvedCustomerId)
     const requestedTab = searchParams.get("tab")
     const section: LicenseEditSection =
-        requestedTab === "license" || requestedTab === "payment" || requestedTab === "billing"
+        requestedTab === "license" || requestedTab === "payment" || requestedTab === "billing" || requestedTab === "upgrade"
             ? requestedTab
             : searchParams.has("setup_intent")
               ? "payment"
@@ -65,7 +68,7 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
     }
 
     useEffect(() => {
-        if (requestedTab === "license" || requestedTab === "payment" || requestedTab === "billing") return
+        if (requestedTab === "license" || requestedTab === "payment" || requestedTab === "billing" || requestedTab === "upgrade") return
         const nextSearchParams = new URLSearchParams(searchParams.toString())
         nextSearchParams.set("tab", section)
         nextSearchParams.delete("section")
@@ -109,6 +112,7 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
                 { icon: IconKey, label: content.editor.licenseTitle, value: "license" as const },
                 { icon: IconCreditCard, label: content.editor.paymentMethodHeading, value: "payment" as const },
                 { icon: IconCalendarMonth, label: content.billing.title, value: "billing" as const },
+                { icon: IconTrendingUp, label: content.upgrade.title, value: "upgrade" as const },
             ].map((tab) => {
                 const selected = section === tab.value
                 const TabIcon = tab.icon
@@ -176,6 +180,17 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
                 </div>
             ) : section === "billing" && license ? (
                 <LicenseBillingSection content={content} errors={errors} license={license} locale={locale} onClose={close} subscriptionConfig={subscriptionConfig} />
+            ) : section === "upgrade" ? (
+                <LicenseUpgradeDialog
+                    content={content}
+                    customerId={customerId}
+                    embedded
+                    errors={errors}
+                    licenseId={licenseId}
+                    locale={locale}
+                    subscriptionConfig={subscriptionConfig}
+                    subscriptionPrices={subscriptionPrices}
+                />
             ) : (
                 <div role="tabpanel" id="license-edit-panel-payment" aria-labelledby="license-edit-tab-payment" className="space-y-6">
                     <div>
