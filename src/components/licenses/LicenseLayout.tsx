@@ -17,7 +17,7 @@ interface LicenseLayoutProps {
 }
 
 function LicenseLayoutContent({ children, content, errors, locale }: LicenseLayoutProps) {
-    const { error, isRefreshing, isSidebarLoading, reload, sidebarLicenses } = useLicenseData()
+    const { error, isSidebarLoading, reload, sidebarLicenses } = useLicenseData()
     const [isLoggingOut, setIsLoggingOut] = useState(false)
 
     const openMainApplication = (path: string) => {
@@ -60,16 +60,7 @@ function LicenseLayoutContent({ children, content, errors, locale }: LicenseLayo
 
             <div className="relative z-10 grid h-full min-h-0 grid-cols-1 grid-rows-[auto_minmax(0,1fr)] lg:grid-cols-[3.5rem_18rem_minmax(0,1fr)] lg:grid-rows-1">
                 <LicensePrimarySidebar content={content.sidebar} isLoggingOut={isLoggingOut} locale={locale} onLogout={() => void logout()} onOpenMainApplication={openMainApplication} />
-                <LicenseSidebar
-                    content={content}
-                    isLoading={isSidebarLoading}
-                    isLoggingOut={isLoggingOut}
-                    isRefreshing={isRefreshing}
-                    locale={locale}
-                    licenses={sidebarLicenses}
-                    onLogout={() => void logout()}
-                    onRefresh={reload}
-                />
+                <LicenseSidebar content={content} isLoading={isSidebarLoading} isLoggingOut={isLoggingOut} locale={locale} licenses={sidebarLicenses} onLogout={() => void logout()} />
 
                 <main className="h-full min-h-0 w-[calc(100vw-2rem)] min-w-0 overflow-hidden rounded-2xl bg-transparent lg:w-auto">
                     <ScrollArea h="100%" type="scroll">
