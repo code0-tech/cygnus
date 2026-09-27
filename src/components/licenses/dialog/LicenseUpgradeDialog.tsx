@@ -32,13 +32,14 @@ interface LicenseUpgradeDialogProps {
     locale: AppLocale
     subscriptionConfig: SubscriptionConfigData
     subscriptionPrices: SubscriptionPriceCatalog
+    embedded?: boolean
 }
 
 // Custom counts as the top tier: it is reached by upgrading from pro or max, never the other way around here.
 const PLAN_ORDER: Record<SubscriptionPlan, number> = { pro: 0, max: 1, custom: 2 }
 const PLANS: SubscriptionPlan[] = ["pro", "max", "custom"]
 
-export function LicenseUpgradeDialog({ content, customerId, errors, licenseId, locale, subscriptionConfig, subscriptionPrices }: LicenseUpgradeDialogProps) {
+export function LicenseUpgradeDialog({ content, customerId, embedded = false, errors, licenseId, locale, subscriptionConfig, subscriptionPrices }: LicenseUpgradeDialogProps) {
     const router = useRouter()
     const { licenses, updateLicense } = useLicenseData()
     const resolvedCustomerId = resolveCustomerRouteId(customerId)
@@ -142,90 +143,113 @@ export function LicenseUpgradeDialog({ content, customerId, errors, licenseId, l
             return text ? [{ key: feature.id ?? `${index}-${text}`, text }] : []
         }) ?? []
 
-    return (
-        <LicenseDialog backLabel={content.editor.closeLabel} description={content.upgrade.description} onClose={close} title={content.upgrade.title} sidebar={planSelection}>
-            <div className="space-y-4">
-                {plan === "custom" && (
-                    <div className="space-y-4">
-                        <Slider
-                            min={aiTokensRange.min}
-                            max={aiTokensRange.max}
-                            step={aiTokensRange.step}
-                            value={resolvedAiTokens}
-                            onChange={setAiTokens}
-                            onValueCommit={setAiTokens}
-                            ariaLabel={content.dashboard.aiTokensLabel}
-                            className="rounded-2xl border border-white/10 p-4"
-                            variant="gradient"
-                            shape="cone-incline"
-                        />
-                        <Slider
-                            min={workflowExecutionsRange.min}
-                            max={workflowExecutionsRange.max}
-                            step={workflowExecutionsRange.step}
-                            value={resolvedWorkflowExecutions}
-                            onChange={setWorkflowExecutions}
-                            onValueCommit={setWorkflowExecutions}
-                            ariaLabel={content.dashboard.workflowExecutionsLabel}
-                            className="rounded-2xl border border-white/10 p-4"
-                            variant="gradient"
-                            shape="cone-incline"
-                        />
+    const upgradeContent = (
+        <div className="space-y-4">
+            {embedded ? (
+                <div className="space-y-4">
+                    <div>
+                        <h2 className="text-lg text-white">{content.upgrade.title}</h2>
+                        <p className="mt-2 text-sm text-tertiary">{content.upgrade.description}</p>
                     </div>
-                )}
-
-                {planFeatures.length > 0 && (
-                    <ul className="space-y-2 py-2">
-                        {planFeatures.map((feature) => (
-                            <li key={feature.key} className="flex items-start gap-2 text-sm text-secondary">
-                                <IconCheck aria-hidden="true" size={18} className="mt-0.5 shrink-0 text-brand" />
-                                <span>{feature.text}</span>
-                            </li>
-                        ))}
-                    </ul>
-                )}
-
-                <div className="space-y-1 rounded-xl border border-white/10 bg-white/3 p-3 text-sm">
-                    <div className="flex items-center justify-between">
-                        <span className="text-secondary">{content.subscriptionPreview.totalLabel}</span>
-                        <span className="text-white">{formatMinorCurrency(localQuote.total, "EUR", locale)}</span>
-                    </div>
-                    {isLoadingPreview ? (
-                        <p className="text-tertiary">{content.subscriptionPreview.loadingLabel}</p>
-                    ) : previewError ? (
-                        <p role="alert" className="text-error">
-                            {previewError}
-                        </p>
-                    ) : preview ? (
-                        <>
-                            {preview.prorationAmount > 0 && (
-                                <div className="flex items-center justify-between">
-                                    <span className="text-secondary">{content.subscriptionPreview.prorationLabel}</span>
-                                    <span className="text-white">{formatMinorCurrency(preview.prorationAmount, preview.currency, locale)}</span>
-                                </div>
-                            )}
-                            <p className="text-tertiary">{preview.immediate ? content.subscriptionPreview.immediateNote : content.subscriptionPreview.scheduledNote}</p>
-                        </>
-                    ) : null}
+                    {planSelection}
                 </div>
+            ) : null}
+            {plan === "custom" && (
+                <div className="space-y-4">
+                    <Slider
+                        min={aiTokensRange.min}
+                        max={aiTokensRange.max}
+                        step={aiTokensRange.step}
+                        value={resolvedAiTokens}
+                        onChange={setAiTokens}
+                        onValueCommit={setAiTokens}
+                        ariaLabel={content.dashboard.aiTokensLabel}
+                        className="rounded-2xl border border-white/10 p-4"
+                        variant="gradient"
+                        shape="cone-incline"
+                    />
+                    <Slider
+                        min={workflowExecutionsRange.min}
+                        max={workflowExecutionsRange.max}
+                        step={workflowExecutionsRange.step}
+                        value={resolvedWorkflowExecutions}
+                        onChange={setWorkflowExecutions}
+                        onValueCommit={setWorkflowExecutions}
+                        ariaLabel={content.dashboard.workflowExecutionsLabel}
+                        className="rounded-2xl border border-white/10 p-4"
+                        variant="gradient"
+                        shape="cone-incline"
+                    />
+                </div>
+            )}
 
-                {saveError && (
-                    <p role="alert" className="text-sm text-error">
-                        {saveError}
+            {planFeatures.length > 0 && (
+                <ul className="space-y-2 py-2">
+                    {planFeatures.map((feature) => (
+                        <li key={feature.key} className="flex items-start gap-2 text-sm text-secondary">
+                            <IconCheck aria-hidden="true" size={18} className="mt-0.5 shrink-0 text-brand" />
+                            <span>{feature.text}</span>
+                        </li>
+                    ))}
+                </ul>
+            )}
+
+            <div className="space-y-1 rounded-xl border border-white/10 bg-white/3 p-3 text-sm">
+                <div className="flex items-center justify-between">
+                    <span className="text-secondary">{content.subscriptionPreview.totalLabel}</span>
+                    <span className="text-white">{formatMinorCurrency(localQuote.total, "EUR", locale)}</span>
+                </div>
+                {isLoadingPreview ? (
+                    <p className="text-tertiary">{content.subscriptionPreview.loadingLabel}</p>
+                ) : previewError ? (
+                    <p role="alert" className="text-error">
+                        {previewError}
                     </p>
-                )}
+                ) : preview ? (
+                    <>
+                        {preview.prorationAmount > 0 && (
+                            <div className="flex items-center justify-between">
+                                <span className="text-secondary">{content.subscriptionPreview.prorationLabel}</span>
+                                <span className="text-white">{formatMinorCurrency(preview.prorationAmount, preview.currency, locale)}</span>
+                            </div>
+                        )}
+                        <p className="text-tertiary">{preview.immediate ? content.subscriptionPreview.immediateNote : content.subscriptionPreview.scheduledNote}</p>
+                    </>
+                ) : null}
+            </div>
 
-                <AcceptTermsCheckbox locale={locale} initialValue={false} formValidation={{ setValue: setAcceptedTerms, valid: true }} />
+            {saveError && (
+                <p role="alert" className="text-sm text-error">
+                    {saveError}
+                </p>
+            )}
 
-                <DialogFooter className="gap-3! pt-2!">
+            <AcceptTermsCheckbox locale={locale} initialValue={false} formValidation={{ setValue: setAcceptedTerms, valid: true }} />
+
+            <DialogFooter className="gap-3! pt-2!">
+                {!embedded ? (
                     <Button type="button" variant="none" onClick={close}>
                         {content.editor.closeLabel}
                     </Button>
-                    <Button type="button" variant="filled" disabled={!hasChange || isSaving || isLoadingPreview || !preview || Boolean(previewError) || !acceptedTerms} onClick={() => void save()}>
-                        {isSaving ? <ButtonLoader label={content.editor.saveLabel} /> : content.editor.saveLabel}
-                    </Button>
-                </DialogFooter>
+                ) : null}
+                <Button type="button" variant="filled" disabled={!hasChange || isSaving || isLoadingPreview || !preview || Boolean(previewError) || !acceptedTerms} onClick={() => void save()}>
+                    {isSaving ? <ButtonLoader label={content.editor.saveLabel} /> : content.editor.saveLabel}
+                </Button>
+            </DialogFooter>
+        </div>
+    )
+
+    if (embedded) {
+        return (
+            <div role="tabpanel" id="license-edit-panel-upgrade" aria-labelledby="license-edit-tab-upgrade">
+                {upgradeContent}
             </div>
+        )
+    }
+
+    return (
+        <LicenseDialog backLabel={content.editor.closeLabel} description={content.upgrade.description} onClose={close} title={content.upgrade.title} sidebar={planSelection}>
+            {upgradeContent}
         </LicenseDialog>
     )
 }
