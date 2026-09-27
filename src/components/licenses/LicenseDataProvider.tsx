@@ -250,7 +250,7 @@ export function LicenseDataProvider({ children, loadError, redirectUrl }: { chil
                 loadingMore,
                 loadMore,
                 reload,
-                sidebarLicenses: data.navigationLicenses ?? data.licenses,
+                sidebarLicenses: data.navigationLicenses ? mergeLicensePages(data.navigationLicenses, data.licenses) : data.licenses,
                 updateCustomer,
                 updateLicense,
             }}

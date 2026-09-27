@@ -1,6 +1,5 @@
 "use client"
 
-import { UpgradePlanBanner } from "@/components/checkout/UpgradePlanBanner"
 import { DataTableControls } from "@/components/licenses/DataTableControls"
 import { InvoiceStatusDot } from "@/components/licenses/InvoiceStatusDot"
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
@@ -304,16 +303,6 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
                 )}
             </section>
             <Spacing spacing="xl" />
-
-            {license?.subscriptionId && (
-                <UpgradePlanBanner
-                    content={upgradeBanner}
-                    currentPlan={license.plan}
-                    onUpgrade={() => router.push(`${createLicensePath(locale, license.customerId, license.id)}/upgrade`)}
-                    showPlanSpecificActions
-                    subscriptionConfig={subscriptionConfig}
-                />
-            )}
 
             <Spacing spacing="xl" />
             <section aria-labelledby="license-invoices-heading">
