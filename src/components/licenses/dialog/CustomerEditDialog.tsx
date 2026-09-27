@@ -11,7 +11,7 @@ import type { AppLocale } from "@/lib/i18n"
 import { createLicenseCustomerPath, resolveCustomerRouteId } from "@/lib/licenses/licenseRoute"
 import { cn } from "@/lib/utils"
 import { Button, DialogFooter, EmailInput, ScrollArea, ScrollAreaScrollbar, ScrollAreaThumb, ScrollAreaViewport, Text, TextInput } from "@code0-tech/pictor"
-import { IconTrash } from "@tabler/icons-react"
+import { IconCreditCard, IconTrash, IconUser } from "@tabler/icons-react"
 import { useRouter } from "next/navigation"
 import { type SyntheticEvent, useEffect, useState } from "react"
 
@@ -145,26 +145,38 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
     }
 
     const sidebar = (
-        <div role="tablist" aria-label={content.editor.customerTitle} className="flex flex-col gap-2">
-            {(["general", "paymentMethods"] as const).map((option) => {
-                const selected = section === option
-                const label = option === "general" ? content.editor.customerTitle : content.editor.paymentMethodHeading
+        <div role="tablist" aria-label={content.editor.customerTitle} className="flex flex-col gap-1">
+            {[
+                { icon: IconUser, label: content.editor.customerTitle, value: "general" as const },
+                { icon: IconCreditCard, label: content.editor.paymentMethodHeading, value: "paymentMethods" as const },
+            ].map((tab) => {
+                const selected = section === tab.value
+                const TabIcon = tab.icon
 
                 return (
                     <Button
-                        key={option}
+                        key={tab.value}
                         type="button"
                         role="tab"
+                        id={`customer-edit-tab-${tab.value}`}
+                        aria-controls={`customer-edit-panel-${tab.value}`}
                         aria-selected={selected}
                         active={selected}
                         variant={selected ? "normal" : "none"}
                         paddingSize="xxs"
                         w="100%"
                         justify="start"
-                        className={cn("text-base!", selected && "bg-white/5! shadow-[inset_0_1px_1px_#bfbfbf1a]!")}
-                        onClick={() => setSection(option)}
+                        className={cn(
+                            "relative rounded-2xl! text-sm! text-tertiary! transition-colors! hover:text-white!",
+                            selected &&
+                                "bg-white/10! text-white! shadow-[inset_0_1px_1px_#bfbfbf1a]! before:absolute before:-left-3 before:top-1/2 before:h-3 before:w-0.5 before:-translate-y-1/2 before:rounded-full before:bg-brand"
+                        )}
+                        onClick={() => setSection(tab.value)}
                     >
-                        {label}
+                        <TabIcon aria-hidden="true" size={16} className="text-tertiary" />
+                        <Text className="truncate" size="md">
+                            {tab.label}
+                        </Text>
                     </Button>
                 )
             })}
@@ -180,7 +192,7 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
             title={content.editor.customerTitle}
         >
             {section === "general" ? (
-                <div className="space-y-6" role="tabpanel">
+                <div className="space-y-6" role="tabpanel" id="customer-edit-panel-general" aria-labelledby="customer-edit-tab-general">
                     <form id="customer-details-form" onSubmit={save} className="space-y-6">
                         <fieldset className="space-y-4">
                             <legend>
@@ -275,16 +287,13 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
                         </p>
                     )}
                     <DialogFooter className="gap-3! pt-2!">
-                        <Button type="button" variant="none" onClick={close}>
-                            {content.editor.closeLabel}
-                        </Button>
                         <Button form="customer-details-form" type="submit" variant="filled" disabled={!customer || isSaving}>
                             {isSaving ? <ButtonLoader label={content.editor.saveLabel} /> : content.editor.saveLabel}
                         </Button>
                     </DialogFooter>
                 </div>
             ) : (
-                <div className="space-y-6" role="tabpanel">
+                <div className="space-y-6" role="tabpanel" id="customer-edit-panel-paymentMethods" aria-labelledby="customer-edit-tab-paymentMethods">
                     <ScrollArea h="32rem" type="scroll">
                         <ScrollAreaViewport className="h-full! w-full!">
                             <div className="space-y-3 pr-3">
