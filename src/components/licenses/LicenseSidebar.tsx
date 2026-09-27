@@ -25,7 +25,7 @@ import {
     ScrollAreaViewport,
     Text,
 } from "@code0-tech/pictor"
-import { IconArrowAutofitLeftFilled, IconKey, IconLayoutDashboard, IconMenu2, IconRefresh } from "@tabler/icons-react"
+import { IconArrowAutofitLeftFilled, IconKey, IconLayoutDashboard, IconMenu2 } from "@tabler/icons-react"
 import Image from "next/image"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
@@ -35,11 +35,9 @@ interface LicenseSidebarProps {
     content: Pick<LicenseContent, "emptyLicenses" | "licenses" | "sidebar" | "values">
     isLoading: boolean
     isLoggingOut: boolean
-    isRefreshing: boolean
     locale: AppLocale
     licenses: LicenseDashboardLicense[]
     onLogout: () => void
-    onRefresh: () => void
 }
 
 function getShortLicenseId(id: string) {
@@ -67,7 +65,7 @@ function LicenseSidebarSkeleton() {
     )
 }
 
-export function LicenseSidebar({ content, isLoading, isLoggingOut, isRefreshing, locale, licenses, onLogout, onRefresh }: LicenseSidebarProps) {
+export function LicenseSidebar({ content, isLoading, isLoggingOut, locale, licenses, onLogout }: LicenseSidebarProps) {
     const pathname = usePathname()
     const router = useRouter()
     const dashboardHref = `/${locale}/licenses`
@@ -149,16 +147,6 @@ export function LicenseSidebar({ content, isLoading, isLoggingOut, isRefreshing,
                             )}
 
                             <MenuSeparator />
-                            <MenuItem disabled={isLoading || isRefreshing} onSelect={onRefresh} className="w-full! justify-start! text-left!">
-                                {isRefreshing ? (
-                                    <ButtonLoader label={content.sidebar.refreshing} />
-                                ) : (
-                                    <>
-                                        <IconRefresh aria-hidden="true" size={16} />
-                                        <span>{content.sidebar.refresh}</span>
-                                    </>
-                                )}
-                            </MenuItem>
                             <MenuItem disabled={isLoggingOut} onSelect={onLogout} className="w-full! justify-start! text-left!">
                                 {isLoggingOut ? (
                                     <ButtonLoader label={content.sidebar.loggingOut} />
@@ -194,18 +182,6 @@ export function LicenseSidebar({ content, isLoading, isLoggingOut, isRefreshing,
                             {content.licenses}
                         </Text>
                         <Flex align="center" style={{ gap: "0.25rem" }}>
-                            <Button
-                                type="button"
-                                variant="none"
-                                paddingSize="xs"
-                                disabled={isLoading || isRefreshing}
-                                onClick={onRefresh}
-                                aria-label={isRefreshing ? content.sidebar.refreshing : content.sidebar.refresh}
-                                title={isRefreshing ? content.sidebar.refreshing : content.sidebar.refresh}
-                                className="size-7! p-0! text-tertiary! hover:text-white!"
-                            >
-                                {isRefreshing ? <ButtonLoader /> : <IconRefresh aria-hidden="true" size={14} />}
-                            </Button>
                             {isLoading ? (
                                 <span aria-hidden="true" className="h-5 w-6 animate-pulse rounded-full bg-white/10 motion-reduce:animate-none" />
                             ) : (

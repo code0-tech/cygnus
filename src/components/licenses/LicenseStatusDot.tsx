@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils"
 import type { HTMLAttributes } from "react"
 
 function getStatusColor(status?: string) {
-    switch (status) {
+    switch (status?.trim().toLowerCase().replaceAll("-", "_")) {
         case "active":
         case "paid":
             return "bg-brand"
