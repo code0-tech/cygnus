@@ -15,7 +15,7 @@ import { downloadLicenseFile } from "@/lib/licenses/licenseClient"
 import { formatLicenseDisplayValue } from "@/lib/licenses/licenseDisplayValues"
 import { createLicenseCustomerPath, createLicensePath, resolveCustomerRouteId, resolveLicenseRouteId } from "@/lib/licenses/licenseRoute"
 import { cn } from "@/lib/utils"
-import { Alert, Badge, Button, Card, DataTable, DataTableColumn, DataTableHeader, DataTableHeaderColumn, Flex, Spacing, Text, type DataTableFilterProps } from "@code0-tech/pictor"
+import { Alert, Badge, Button, ButtonGroup, Card, DataTable, DataTableColumn, DataTableHeader, DataTableHeaderColumn, Flex, Spacing, Text, type DataTableFilterProps } from "@code0-tech/pictor"
 import { IconArrowUpRight, IconDownload } from "@tabler/icons-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -105,32 +105,38 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
         }
     }
 
+    const editButton = (
+        <Button
+            type="button"
+            variant="normal"
+            paddingSize="xxs"
+            disabled={isLoading || !license}
+            onClick={() => {
+                if (!license) return
+                router.push(`${createLicensePath(locale, license.customerId, license.id)}/edit?tab=license`)
+            }}
+            className="shrink-0 text-sm!"
+        >
+            {content.dashboard.editLabel}
+        </Button>
+    )
+
     return (
         <div>
             <section aria-label={content.license}>
                 <Flex justify="end">
                     {isLoading || license ? (
-                        <Flex align="center" style={{ gap: "0.5rem" }} className="flex-wrap justify-end">
-                            {license?.deploymentType === "self_hosted" ? (
+                        license?.deploymentType === "self_hosted" ? (
+                            <ButtonGroup>
                                 <Button type="button" variant="normal" paddingSize="xxs" disabled={isDownloadingLicense} onClick={() => void downloadCurrentLicense()} className="shrink-0 text-sm!">
                                     {isDownloadingLicense ? <ButtonLoader label={content.invoices.downloadLabel} /> : <IconDownload aria-hidden="true" size={16} />}
                                     {!isDownloadingLicense ? content.invoices.downloadLabel : null}
                                 </Button>
-                            ) : null}
-                            <Button
-                                type="button"
-                                variant="normal"
-                                paddingSize="xxs"
-                                disabled={isLoading || !license}
-                                onClick={() => {
-                                    if (!license) return
-                                    router.push(`${createLicensePath(locale, license.customerId, license.id)}/edit?tab=license`)
-                                }}
-                                className="shrink-0 text-sm!"
-                            >
-                                {content.dashboard.editLabel}
-                            </Button>
-                        </Flex>
+                                {editButton}
+                            </ButtonGroup>
+                        ) : (
+                            editButton
+                        )
                     ) : null}
                 </Flex>
                 {licenseDownloadError ? (
