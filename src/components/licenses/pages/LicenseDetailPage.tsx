@@ -14,9 +14,38 @@ import type { AppLocale } from "@/lib/i18n"
 import { downloadLicenseFile } from "@/lib/licenses/licenseClient"
 import { formatLicenseDisplayValue } from "@/lib/licenses/licenseDisplayValues"
 import { createLicenseCustomerPath, createLicensePath, resolveCustomerRouteId, resolveLicenseRouteId } from "@/lib/licenses/licenseRoute"
+import type { LicenseDashboardInvoice } from "@/lib/licenses/licenseTypes"
 import { cn } from "@/lib/utils"
-import { Alert, Badge, Button, ButtonGroup, Card, DataTable, DataTableColumn, DataTableHeader, DataTableHeaderColumn, Flex, Spacing, Text, type DataTableFilterProps } from "@code0-tech/pictor"
-import { IconArrowUpRight, IconDownload } from "@tabler/icons-react"
+import {
+    Alert,
+    Badge,
+    Button,
+    ButtonGroup,
+    Card,
+    DataTable,
+    DataTableColumn,
+    DataTableHeader,
+    DataTableHeaderColumn,
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogOverlay,
+    DialogPortal,
+    DialogTitle,
+    Flex,
+    Menu,
+    MenuContent,
+    MenuItem,
+    MenuLabel,
+    MenuPortal,
+    MenuTrigger,
+    Spacing,
+    Text,
+    type DataTableFilterProps,
+} from "@code0-tech/pictor"
+import { IconArrowUpRight, IconDotsVertical, IconDownload, IconEye, IconX } from "@tabler/icons-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Fragment, useState } from "react"
@@ -33,7 +62,6 @@ interface LicenseDetailPageProps {
 
 interface LicenseDetailItem {
     badge?: string
-    href?: string
     label: string
     showPlanIcon?: boolean
     showStatusDot?: boolean
@@ -53,35 +81,6 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
         dateStyle: "medium",
         timeZone: "UTC",
     })
-    const showNamespaceWarning = license?.deploymentType === "cloud" && !license.namespaceId
-    const licenseDetails: LicenseDetailItem[] = license
-        ? [
-              { label: content.dashboard.statusLabel, value: formatLicenseDisplayValue(license.status, "status", content.values), showStatusDot: true },
-              {
-                  badge: formatLicenseDisplayValue(customer?.customerType ?? license.customerType, "customerType", content.values),
-                  href: createLicenseCustomerPath(locale, license.customerId),
-                  label: content.dashboard.customerLabel,
-                  value: customer?.name?.trim() || customer?.email?.trim() || customer?.id || license.customerName || license.customerId,
-              },
-              {
-                  badge: formatLicenseDisplayValue(license.deploymentType, "deploymentType", content.values),
-                  label: content.license,
-                  showPlanIcon: true,
-                  value: formatLicenseDisplayValue(license.plan, "plan", content.values),
-              },
-              { label: content.dashboard.paymentPeriodLabel, value: formatLicenseDisplayValue(license.paymentPeriod, "paymentPeriod", content.values) },
-          ]
-        : []
-    const invoices = license?.invoices ?? []
-    const [invoiceStatusFilters, setInvoiceStatusFilters] = useState<string[]>([])
-    const [invoiceSortDirection, setInvoiceSortDirection] = useState<"asc" | "desc">("desc")
-    const invoiceRows = invoices.map((invoice) => ({ ...invoice, tableStatus: invoice.status?.trim().toLowerCase().replaceAll("-", "_") }))
-    const invoiceFilter: DataTableFilterProps | undefined = invoiceStatusFilters.length ? { tableStatus: { operator: "isOneOf", value: invoiceStatusFilters } } : undefined
-
-    const withdrawalDeadline = license?.startDate ? new Date(new Date(license.startDate).getTime() + 14 * 24 * 60 * 60 * 1000) : null
-    const showWithdrawalNotice = (customer?.customerType ?? license?.customerType) === "personal" && withdrawalDeadline !== null && withdrawalDeadline.getTime() > Date.now()
-    const [withdrawalTextBeforeDate, withdrawalTextAfterDate] = content.withdrawal.text.split("{date}")
-
     const formatInvoicePeriod = (start?: string, end?: string) => {
         if (!start && !end) return "—"
         return [start, end]
@@ -89,6 +88,38 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
             .map((value) => dateFormatter.format(new Date(value!)))
             .join(" – ")
     }
+    const showNamespaceWarning = license?.deploymentType === "cloud" && !license.namespaceId
+    const customerDetail = license
+        ? {
+              badge: formatLicenseDisplayValue(customer?.customerType ?? license.customerType, "customerType", content.values),
+              href: createLicenseCustomerPath(locale, license.customerId),
+              label: content.dashboard.customerLabel,
+              value: customer?.name?.trim() || customer?.email?.trim() || customer?.id || license.customerName || license.customerId,
+          }
+        : null
+    const licenseDetails: LicenseDetailItem[] = license
+        ? [
+              { label: content.dashboard.statusLabel, value: formatLicenseDisplayValue(license.status, "status", content.values), showStatusDot: true },
+              {
+                  badge: formatLicenseDisplayValue(license.deploymentType, "deploymentType", content.values),
+                  label: content.license,
+                  showPlanIcon: true,
+                  value: formatLicenseDisplayValue(license.plan, "plan", content.values),
+              },
+              { label: content.dashboard.paymentPeriodLabel, value: formatLicenseDisplayValue(license.paymentPeriod, "paymentPeriod", content.values) },
+              { label: content.invoices.periodLabel, value: formatInvoicePeriod(license.currentPeriodStart, license.currentPeriodEnd) },
+          ]
+        : []
+    const invoices = license?.invoices ?? []
+    const [invoiceStatusFilters, setInvoiceStatusFilters] = useState<string[]>([])
+    const [invoiceSortDirection, setInvoiceSortDirection] = useState<"asc" | "desc">("desc")
+    const [selectedInvoice, setSelectedInvoice] = useState<LicenseDashboardInvoice | null>(null)
+    const invoiceRows = invoices.map((invoice) => ({ ...invoice, tableStatus: invoice.status?.trim().toLowerCase().replaceAll("-", "_") }))
+    const invoiceFilter: DataTableFilterProps | undefined = invoiceStatusFilters.length ? { tableStatus: { operator: "isOneOf", value: invoiceStatusFilters } } : undefined
+
+    const withdrawalDeadline = license?.startDate ? new Date(new Date(license.startDate).getTime() + 14 * 24 * 60 * 60 * 1000) : null
+    const showWithdrawalNotice = (customer?.customerType ?? license?.customerType) === "personal" && withdrawalDeadline !== null && withdrawalDeadline.getTime() > Date.now()
+    const [withdrawalTextBeforeDate, withdrawalTextAfterDate] = content.withdrawal.text.split("{date}")
 
     const downloadCurrentLicense = async () => {
         if (!license || license.deploymentType !== "self_hosted" || isDownloadingLicense) return
@@ -120,6 +151,9 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
             {content.dashboard.editLabel}
         </Button>
     )
+    const selectedInvoiceNumber = selectedInvoice?.invoiceNumber || selectedInvoice?.id.split("/").at(-1) || selectedInvoice?.id
+    const selectedInvoicePreviewUrl = selectedInvoice?.stripePdfUrl ? `/api/crater/invoices/preview?url=${encodeURIComponent(selectedInvoice.stripePdfUrl)}` : null
+    const viewInvoiceLabel = locale === "de" ? "Ansehen" : "View"
 
     return (
         <div>
@@ -169,36 +203,25 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
                 <Spacing spacing="md" />
                 <Card color="secondary" className="overflow-hidden p-0!">
                     {license ? (
-                        <div className="grid sm:grid-cols-2 xl:grid-cols-4">
-                            {licenseDetails.map((detail, index) => (
-                                <div
-                                    key={detail.label}
-                                    className={cn(
-                                        "min-w-0 px-6 py-5",
-                                        index > 0 && "border-t border-white/10",
-                                        index === 1 && "sm:border-l sm:border-t-0",
-                                        index === 3 && "sm:border-l",
-                                        index > 0 && "xl:border-l xl:border-t-0"
-                                    )}
-                                >
-                                    <div className="flex min-w-0 items-center gap-2">
-                                        <Text size="sm" hierarchy="tertiary" className="truncate">
-                                            {detail.label}
-                                        </Text>
-                                        {detail.badge ? <Badge color="tertiary">{detail.badge}</Badge> : null}
-                                    </div>
-                                    {detail.href ? (
-                                        <Link
-                                            href={detail.href}
-                                            aria-label={`${detail.label}: ${detail.value}`}
-                                            className="mt-3 flex min-w-0 items-center gap-2 rounded-md outline-none hover:text-brand focus-visible:ring-2 focus-visible:ring-brand/60"
-                                        >
-                                            <Text fw={400} title={detail.value} className="min-w-0 truncate text-xl! leading-tight! text-inherit!">
-                                                {detail.value}
+                        <div>
+                            <div className="grid sm:grid-cols-2 xl:grid-cols-4">
+                                {licenseDetails.map((detail, index) => (
+                                    <div
+                                        key={detail.label}
+                                        className={cn(
+                                            "min-w-0 px-6 py-5",
+                                            index > 0 && "border-t border-white/10",
+                                            index === 1 && "sm:border-l sm:border-t-0",
+                                            index === 3 && "sm:border-l",
+                                            index > 0 && "xl:border-l xl:border-t-0"
+                                        )}
+                                    >
+                                        <div className="flex min-w-0 items-center gap-2">
+                                            <Text size="sm" hierarchy="tertiary" className="truncate">
+                                                {detail.label}
                                             </Text>
-                                            <IconArrowUpRight aria-hidden="true" className="shrink-0" size={17} />
-                                        </Link>
-                                    ) : (
+                                            {detail.badge ? <Badge color="tertiary">{detail.badge}</Badge> : null}
+                                        </div>
                                         <Flex align="center" style={{ gap: "0.5rem" }} className="mt-3 min-w-0">
                                             {detail.showStatusDot ? <LicenseStatusDot aria-hidden="true" status={license.status} /> : null}
                                             {detail.showPlanIcon ? <LicensePlanIcon className="shrink-0 text-brand" plan={license.plan} size={22} /> : null}
@@ -206,27 +229,29 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
                                                 {detail.value}
                                             </Text>
                                         </Flex>
-                                    )}
-                                </div>
-                            ))}
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     ) : isLoading ? (
-                        <div aria-hidden="true" className="grid sm:grid-cols-2 xl:grid-cols-4">
-                            {Array.from({ length: 4 }, (_, index) => (
-                                <div
-                                    key={index}
-                                    className={cn(
-                                        "min-w-0 animate-pulse px-6 py-5 motion-reduce:animate-none",
-                                        index > 0 && "border-t border-white/10",
-                                        index === 1 && "sm:border-l sm:border-t-0",
-                                        index === 3 && "sm:border-l",
-                                        index > 0 && "xl:border-l xl:border-t-0"
-                                    )}
-                                >
-                                    <div className={index % 2 === 0 ? "h-3 w-20 rounded-full bg-white/10" : "h-3 w-28 rounded-full bg-white/10"} />
-                                    <div className={index % 2 === 0 ? "mt-4 h-8 w-24 rounded-lg bg-white/10" : "mt-4 h-8 w-32 rounded-lg bg-white/10"} />
-                                </div>
-                            ))}
+                        <div aria-hidden="true">
+                            <div className="grid sm:grid-cols-2 xl:grid-cols-4">
+                                {Array.from({ length: 4 }, (_, index) => (
+                                    <div
+                                        key={index}
+                                        className={cn(
+                                            "min-w-0 animate-pulse px-6 py-5 motion-reduce:animate-none",
+                                            index > 0 && "border-t border-white/10",
+                                            index === 1 && "sm:border-l sm:border-t-0",
+                                            index === 3 && "sm:border-l",
+                                            index > 0 && "xl:border-l xl:border-t-0"
+                                        )}
+                                    >
+                                        <div className={index % 2 === 0 ? "h-3 w-20 rounded-full bg-white/10" : "h-3 w-28 rounded-full bg-white/10"} />
+                                        <div className={index % 2 === 0 ? "mt-4 h-8 w-24 rounded-lg bg-white/10" : "mt-4 h-8 w-32 rounded-lg bg-white/10"} />
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     ) : (
                         <Text size="sm" hierarchy="tertiary">
@@ -234,6 +259,38 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
                         </Text>
                     )}
                 </Card>
+
+                {customerDetail ? (
+                    <>
+                        <Spacing spacing="md" />
+                        <Card color="secondary" className="min-w-0">
+                            <div className="flex min-w-0 items-center gap-2">
+                                <Text size="sm" hierarchy="tertiary" className="truncate">
+                                    {customerDetail.label}
+                                </Text>
+                                <Badge color="tertiary">{customerDetail.badge}</Badge>
+                            </div>
+                            <Link
+                                href={customerDetail.href}
+                                aria-label={`${customerDetail.label}: ${customerDetail.value}`}
+                                className="mt-3 flex w-fit max-w-full items-center gap-2 rounded-md outline-none hover:text-brand focus-visible:ring-2 focus-visible:ring-brand/60"
+                            >
+                                <Text fw={400} title={customerDetail.value} className="min-w-0 truncate text-xl! leading-tight! text-inherit!">
+                                    {customerDetail.value}
+                                </Text>
+                                <IconArrowUpRight aria-hidden="true" className="shrink-0" size={17} />
+                            </Link>
+                        </Card>
+                    </>
+                ) : isLoading ? (
+                    <>
+                        <Spacing spacing="md" />
+                        <Card color="secondary" aria-hidden="true" className="animate-pulse motion-reduce:animate-none">
+                            <div className="h-3 w-20 rounded-full bg-white/10" />
+                            <div className="mt-4 h-8 w-32 rounded-lg bg-white/10" />
+                        </Card>
+                    </>
+                ) : null}
 
                 {showWithdrawalNotice && withdrawalDeadline && (
                     <>
@@ -335,20 +392,40 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
                                     </Flex>
                                 </DataTableColumn>
                                 <DataTableColumn>
-                                    {invoice.stripePdfUrl ? (
-                                        <a
-                                            href={invoice.stripePdfUrl}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="inline-flex rounded-lg px-2 py-1 text-sm text-secondary transition-colors hover:bg-white/7 hover:text-white focus-visible:outline-2 focus-visible:outline-brand"
-                                        >
-                                            {content.invoices.downloadLabel}
-                                        </a>
-                                    ) : (
-                                        <Text size="sm" hierarchy="tertiary">
-                                            {content.invoices.unavailableLabel}
-                                        </Text>
-                                    )}
+                                    <Menu>
+                                        <MenuTrigger asChild>
+                                            <Button
+                                                type="button"
+                                                variant="none"
+                                                paddingSize="xxs"
+                                                aria-label={`${content.invoices.title}: ${invoice.invoiceNumber || invoice.id.split("/").at(-1) || invoice.id}`}
+                                            >
+                                                <IconDotsVertical aria-hidden="true" size={16} />
+                                            </Button>
+                                        </MenuTrigger>
+                                        <MenuPortal>
+                                            <MenuContent align="end" sideOffset={8}>
+                                                <MenuLabel>{content.invoices.title}</MenuLabel>
+                                                <MenuItem onSelect={() => setSelectedInvoice(invoice)}>
+                                                    <IconEye aria-hidden="true" size={15} />
+                                                    {viewInvoiceLabel}
+                                                </MenuItem>
+                                                {invoice.stripePdfUrl ? (
+                                                    <MenuItem asChild>
+                                                        <a href={invoice.stripePdfUrl} target="_blank" rel="noopener noreferrer">
+                                                            <IconDownload aria-hidden="true" size={15} />
+                                                            {content.invoices.downloadLabel}
+                                                        </a>
+                                                    </MenuItem>
+                                                ) : (
+                                                    <MenuItem disabled>
+                                                        <IconDownload aria-hidden="true" size={15} />
+                                                        {content.invoices.unavailableLabel}
+                                                    </MenuItem>
+                                                )}
+                                            </MenuContent>
+                                        </MenuPortal>
+                                    </Menu>
                                 </DataTableColumn>
                             </Fragment>
                         )}
@@ -356,6 +433,46 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
                 </Card>
                 {pagination?.invoices?.hasNextPage ? <LicenseLoadMoreButton loading={loadingMore === "invoices"} labels={content.pagination} onClick={() => void loadMore("invoices")} /> : null}
             </section>
+
+            <Dialog open={selectedInvoice !== null} onOpenChange={(open) => !open && setSelectedInvoice(null)}>
+                <DialogPortal>
+                    <DialogOverlay className="backdrop-blur-sm" />
+                    <DialogContent showCloseButton={false} className="h-[calc(100dvh-2rem)]! w-[calc(100vw-2rem)]! max-w-5xl! overflow-hidden! border border-white/5 bg-primary! p-4! sm:p-6!">
+                        <DialogHeader className="pr-10 text-left!">
+                            <DialogTitle className="font-normal! text-white!">
+                                {content.invoices.title} {selectedInvoiceNumber ? `#${selectedInvoiceNumber}` : ""}
+                            </DialogTitle>
+                            {selectedInvoice ? (
+                                <DialogDescription className="text-sm! text-secondary!">
+                                    {formatInvoicePeriod(selectedInvoice.billingPeriodStart, selectedInvoice.billingPeriodEnd)} ·{" "}
+                                    {typeof selectedInvoice.total === "number" && selectedInvoice.currency
+                                        ? formatMinorCurrency(selectedInvoice.total, selectedInvoice.currency, locale)
+                                        : content.invoices.unavailableLabel}
+                                    {selectedInvoice.status ? ` · ${formatLicenseDisplayValue(selectedInvoice.status, "invoiceStatus", content.values)}` : ""}
+                                </DialogDescription>
+                            ) : null}
+                        </DialogHeader>
+                        <div className="absolute right-4 top-4 z-10">
+                            <DialogClose asChild>
+                                <Button type="button" variant="none" paddingSize="xxs" aria-label={content.editor.closeLabel}>
+                                    <IconX aria-hidden="true" size={16} />
+                                </Button>
+                            </DialogClose>
+                        </div>
+                        <div className="mt-5 h-[calc(100%-4.5rem)] min-h-0 overflow-hidden rounded-xl border border-white/10 bg-white">
+                            {selectedInvoicePreviewUrl ? (
+                                <iframe src={selectedInvoicePreviewUrl} title={`${content.invoices.title} ${selectedInvoiceNumber ?? ""}`} className="h-full w-full border-0" />
+                            ) : (
+                                <div className="flex h-full items-center justify-center bg-primary p-6">
+                                    <Text size="sm" hierarchy="tertiary">
+                                        {content.invoices.unavailableLabel}
+                                    </Text>
+                                </div>
+                            )}
+                        </div>
+                    </DialogContent>
+                </DialogPortal>
+            </Dialog>
         </div>
     )
 }

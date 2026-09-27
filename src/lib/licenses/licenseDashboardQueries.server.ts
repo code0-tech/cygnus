@@ -38,6 +38,7 @@ export const LICENSE_DASHBOARD: TypedDocumentNode<LicenseDashboardQuery, Custome
                                 expireAt
                                 canceledAt
                                 currentPeriodEnd
+                                currentPeriodStart
                                 paymentMethodId
                             }
                         }
@@ -168,6 +169,7 @@ export const LICENSE_NAVIGATION_PAGE: TypedDocumentNode<LicenseDashboardQuery, L
                                     expireAt
                                     canceledAt
                                     currentPeriodEnd
+                                    currentPeriodStart
                                     paymentMethodId
                                 }
                                 invoices(after: $invoiceAfter, first: ${PAGE_SIZE}) {
@@ -238,6 +240,7 @@ export const LICENSE_CUSTOMER_DETAIL: TypedDocumentNode<LicenseDashboardQuery, L
                                 expireAt
                                 canceledAt
                                 currentPeriodEnd
+                                currentPeriodStart
                                 paymentMethodId
                             }
                         }
