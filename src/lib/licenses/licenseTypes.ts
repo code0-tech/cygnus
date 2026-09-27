@@ -34,6 +34,7 @@ export interface LicenseDashboardLicense {
     canceledAt?: string
     expireAt?: string
     currentPeriodEnd?: string
+    currentPeriodStart?: string
     customerId: string
     customerName: string
     customerType?: string

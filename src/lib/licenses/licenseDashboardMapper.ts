@@ -74,6 +74,7 @@ function mapSubscriptionFields(subscription: CraterSubscription | null | undefin
         ...(subscription.expireAt ? { expireAt: subscription.expireAt } : {}),
         ...(subscription.canceledAt ? { canceledAt: subscription.canceledAt } : {}),
         ...(subscription.currentPeriodEnd ? { currentPeriodEnd: subscription.currentPeriodEnd } : {}),
+        ...(subscription.currentPeriodStart ? { currentPeriodStart: subscription.currentPeriodStart } : {}),
     }
 }
 
@@ -140,4 +141,3 @@ export function mapPageInfo(pageInfo: { endCursor?: string | null; hasNextPage?:
 export function byMostRecentlyUpdated(left: LicenseDashboardLicense, right: LicenseDashboardLicense) {
     return Date.parse(right.updatedAt ?? "") - Date.parse(left.updatedAt ?? "")
 }
-
