@@ -48,16 +48,8 @@ export function LicenseCustomerPage({ content, customerId, locale }: LicenseCust
 
     return (
         <div>
-            <section aria-labelledby="customer-heading">
-                <Flex align="start" justify="space-between" style={{ gap: "1rem" }}>
-                    <div className="min-w-0">
-                        <Text id="customer-heading" hierarchy="secondary" size="xl">
-                            {content.dashboard.customerLabel}
-                        </Text>
-                        <Text size="md" hierarchy="tertiary" className="mt-2!">
-                            {content.editor.customerDescription}
-                        </Text>
-                    </div>
+            <section aria-label={content.dashboard.customerLabel}>
+                <Flex justify="end">
                     {isLoading || customer ? (
                         <Button
                             type="button"
