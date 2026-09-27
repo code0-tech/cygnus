@@ -25,7 +25,7 @@ import {
     ScrollAreaViewport,
     Text,
 } from "@code0-tech/pictor"
-import { IconArrowAutofitLeftFilled, IconKey, IconLayoutDashboard, IconMenu2 } from "@tabler/icons-react"
+import { IconArrowAutofitLeftFilled, IconKey, IconMenu2 } from "@tabler/icons-react"
 import Image from "next/image"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
@@ -68,9 +68,6 @@ function LicenseSidebarSkeleton() {
 export function LicenseSidebar({ content, isLoading, isLoggingOut, locale, licenses, onLogout }: LicenseSidebarProps) {
     const pathname = usePathname()
     const router = useRouter()
-    const dashboardHref = `/${locale}/licenses`
-    const dashboardIsActive = pathname === dashboardHref || pathname === `${dashboardHref}/`
-
     return (
         <div className="min-h-0 lg:h-full">
             <header className="flex items-center justify-between bg-transparent pb-4 lg:hidden!">
@@ -80,7 +77,7 @@ export function LicenseSidebar({ content, isLoading, isLoggingOut, locale, licen
 
                 <Menu>
                     <MenuTrigger asChild>
-                        <Button type="button" variant="normal" paddingSize="xs" aria-label={`${content.sidebar.dashboard} / ${content.licenses}`} className="size-9! justify-center! p-0!">
+                        <Button type="button" variant="normal" paddingSize="xs" aria-label={content.licenses} className="size-9! justify-center! p-0!">
                             <IconMenu2 aria-hidden="true" size={18} />
                         </Button>
                     </MenuTrigger>
@@ -90,12 +87,6 @@ export function LicenseSidebar({ content, isLoading, isLoggingOut, locale, licen
                             sideOffset={8}
                             className="z-100 max-h-[calc(100dvh-5rem)]! w-[calc(100vw-2rem)]! overflow-y-auto! [&>.scroll-area--auto]:w-full! [&>.scroll-area--auto]:min-w-0! [&>.scroll-area--auto]:self-stretch! [&_.scroll-area__viewport]:w-full! [&_.scroll-area__viewport>div]:w-full!"
                         >
-                            <MenuItem onSelect={() => router.push(dashboardHref)} className={dashboardIsActive ? "w-full! justify-start! bg-white/7! text-left!" : "w-full! justify-start! text-left!"}>
-                                <IconLayoutDashboard aria-hidden="true" size={17} />
-                                <span>{content.sidebar.dashboard}</span>
-                            </MenuItem>
-
-                            <MenuSeparator />
                             <MenuLabel className="flex w-full! items-center justify-between gap-3">
                                 <span>{content.licenses}</span>
                                 <span className="text-xs tabular-nums text-tertiary">{isLoading ? "…" : licenses.length}</span>
@@ -163,20 +154,7 @@ export function LicenseSidebar({ content, isLoading, isLoggingOut, locale, licen
             </header>
 
             <aside className="hidden min-h-0 flex-col bg-transparent pr-4 lg:flex lg:h-full">
-                <nav aria-label={content.sidebar.dashboard}>
-                    <Link href={dashboardHref} aria-current={dashboardIsActive ? "page" : undefined}>
-                        <Button
-                            variant="none"
-                            paddingSize={"xxs"}
-                            className={cn("w-full! justify-start! shadow-none! hover:shadow-[inset_0_1px_1px_#bfbfbf1a]!", dashboardIsActive && "shadow-[inset_0_1px_1px_#bfbfbf1a]! bg-white/5!")}
-                        >
-                            <IconLayoutDashboard aria-hidden="true" size={18} />
-                            <span className="truncate">{content.sidebar.dashboard}</span>
-                        </Button>
-                    </Link>
-                </nav>
-
-                <div className="mt-6 flex min-h-0 flex-1 flex-col">
+                <div className="flex min-h-0 flex-1 flex-col">
                     <Flex align="center" justify="space-between" className="mb-3 px-2">
                         <Text hierarchy="tertiary" className="text-xs! font-medium! tracking-[0.5px]">
                             {content.licenses}
