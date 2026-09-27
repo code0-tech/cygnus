@@ -12,7 +12,7 @@ import { formatMinorCurrency } from "@/lib/formatters"
 import type { AppLocale } from "@/lib/i18n"
 import { downloadLicenseFile } from "@/lib/licenses/licenseClient"
 import { formatLicenseDisplayValue } from "@/lib/licenses/licenseDisplayValues"
-import { decodeLicenseRouteId } from "@/lib/licenses/licenseRoute"
+import { createLicensePath, resolveCustomerRouteId, resolveLicenseRouteId } from "@/lib/licenses/licenseRoute"
 import { cn } from "@/lib/utils"
 import { Alert, Badge, Button, Card, DataTable, DataTableColumn, DataTableHeader, DataTableHeaderColumn, Flex, Spacing, Text } from "@code0-tech/pictor"
 import { IconDownload } from "@tabler/icons-react"
@@ -40,8 +40,8 @@ interface LicenseDetailItem {
 export function LicenseDetailPage({ content, customerId, licenseId, locale, namespaceHref, subscriptionConfig, upgradeBanner }: LicenseDetailPageProps) {
     const router = useRouter()
     const { customers, isLoading, licenses, loadMore, loadingMore, pagination } = useLicenseData()
-    const resolvedCustomerId = decodeLicenseRouteId(customerId)
-    const resolvedLicenseId = decodeLicenseRouteId(licenseId)
+    const resolvedCustomerId = resolveCustomerRouteId(customerId)
+    const resolvedLicenseId = resolveLicenseRouteId(licenseId)
     const license = licenses.find((candidate) => candidate.id === resolvedLicenseId && candidate.customerId === resolvedCustomerId)
     const customer = customers.find((candidate) => candidate.id === resolvedCustomerId)
     const [isDownloadingLicense, setIsDownloadingLicense] = useState(false)
@@ -124,7 +124,7 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
                                 disabled={isLoading || !license}
                                 onClick={() => {
                                     if (!license) return
-                                    router.push(`/${locale}/licenses/customer/${encodeURIComponent(license.customerId)}/license/${encodeURIComponent(license.id)}/edit?tab=license`)
+                                    router.push(`${createLicensePath(locale, license.customerId, license.id)}/edit?tab=license`)
                                 }}
                                 className="shrink-0 text-sm!"
                             >
@@ -233,7 +233,7 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
                 <UpgradePlanBanner
                     content={upgradeBanner}
                     currentPlan={license.plan}
-                    onUpgrade={() => router.push(`/${locale}/licenses/customer/${encodeURIComponent(license.customerId)}/license/${encodeURIComponent(license.id)}/upgrade`)}
+                    onUpgrade={() => router.push(`${createLicensePath(locale, license.customerId, license.id)}/upgrade`)}
                     showPlanSpecificActions
                     subscriptionConfig={subscriptionConfig}
                 />

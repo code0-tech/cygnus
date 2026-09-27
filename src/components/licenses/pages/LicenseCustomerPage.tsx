@@ -7,7 +7,7 @@ import { LicenseStatusDot } from "@/components/licenses/LicenseStatusDot"
 import type { LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { formatLicenseDisplayValue } from "@/lib/licenses/licenseDisplayValues"
-import { decodeLicenseRouteId } from "@/lib/licenses/licenseRoute"
+import { createLicenseCustomerPath, createLicensePath, resolveCustomerRouteId } from "@/lib/licenses/licenseRoute"
 import { cn } from "@/lib/utils"
 import { AutoScrollArea, Button, Card, DataTable, DataTableColumn, DataTableHeader, DataTableHeaderColumn, Flex, Spacing, Text } from "@code0-tech/pictor"
 import { useRouter } from "next/navigation"
@@ -22,7 +22,7 @@ interface LicenseCustomerPageProps {
 export function LicenseCustomerPage({ content, customerId, locale }: LicenseCustomerPageProps) {
     const router = useRouter()
     const { customers, isLoading, licenses, loadMore, loadingMore, pagination } = useLicenseData()
-    const resolvedCustomerId = decodeLicenseRouteId(customerId)
+    const resolvedCustomerId = resolveCustomerRouteId(customerId)
     const customer = customers.find((candidate) => candidate.id === resolvedCustomerId)
     const customerLicenses = licenses.filter((license) => license.customerId === resolvedCustomerId)
     const dateFormatter = new Intl.DateTimeFormat(locale, {
@@ -61,7 +61,7 @@ export function LicenseCustomerPage({ content, customerId, locale }: LicenseCust
                             disabled={isLoading || !customer}
                             onClick={() => {
                                 if (!customer) return
-                                router.push(`/${locale}/licenses/customer/${encodeURIComponent(customer.id)}/edit`)
+                                router.push(`${createLicenseCustomerPath(locale, customer.id)}/edit`)
                             }}
                             className="shrink-0 text-sm!"
                         >
@@ -148,7 +148,7 @@ export function LicenseCustomerPage({ content, customerId, locale }: LicenseCust
                             data={customerLicenses}
                             loading={isLoading}
                             onSelect={(license) => {
-                                if (license) router.push(`/${locale}/licenses/customer/${encodeURIComponent(resolvedCustomerId)}/license/${encodeURIComponent(license.id)}`)
+                                if (license) router.push(createLicensePath(locale, resolvedCustomerId, license.id))
                             }}
                             emptyComponent={
                                 <DataTableColumn colSpan={4}>

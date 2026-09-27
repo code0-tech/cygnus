@@ -5,7 +5,7 @@ import { LicenseDialog } from "@/components/licenses/dialog/LicenseDialog"
 import { ButtonLoader } from "@/components/ui/Loader"
 import type { ErrorsContent, LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
-import { decodeLicenseRouteId } from "@/lib/licenses/licenseRoute"
+import { createLicensePath, resolveCustomerRouteId, resolveLicenseRouteId } from "@/lib/licenses/licenseRoute"
 import { Button, DialogFooter } from "@code0-tech/pictor"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
@@ -21,10 +21,10 @@ interface LicenseCancelDialogProps {
 export function LicenseCancelDialog({ content, customerId, errors, licenseId, locale }: LicenseCancelDialogProps) {
     const router = useRouter()
     const { licenses, updateLicense } = useLicenseData()
-    const resolvedCustomerId = decodeLicenseRouteId(customerId)
-    const resolvedLicenseId = decodeLicenseRouteId(licenseId)
+    const resolvedCustomerId = resolveCustomerRouteId(customerId)
+    const resolvedLicenseId = resolveLicenseRouteId(licenseId)
     const license = licenses.find((candidate) => candidate.id === resolvedLicenseId && candidate.customerId === resolvedCustomerId)
-    const close = () => router.replace(`/${locale}/licenses/customer/${encodeURIComponent(resolvedCustomerId)}/license/${encodeURIComponent(resolvedLicenseId)}`)
+    const close = () => router.replace(createLicensePath(locale, resolvedCustomerId, resolvedLicenseId))
 
     const [error, setError] = useState<string | null>(null)
     const [isSubmitting, setIsSubmitting] = useState(false)

@@ -11,7 +11,7 @@ import { useSubscriptionUpdatePreview } from "@/hooks/useSubscriptionUpdatePrevi
 import type { ErrorsContent, LicenseContent, SubscriptionConfigData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { formatMinorCurrency } from "@/lib/formatters"
-import { decodeLicenseRouteId } from "@/lib/licenses/licenseRoute"
+import { createLicensePath, resolveCustomerRouteId, resolveLicenseRouteId } from "@/lib/licenses/licenseRoute"
 import { resolveSubscriptionCustomerType } from "@/lib/licenses/licenseSubscription"
 import { updateSubscription } from "@/lib/subscription/client"
 import { calculateSubscriptionQuote, type PaymentPeriod } from "@/lib/subscription/calculator"
@@ -41,10 +41,10 @@ const PLANS: SubscriptionPlan[] = ["pro", "max", "custom"]
 export function LicenseUpgradeDialog({ content, customerId, errors, licenseId, locale, subscriptionConfig, subscriptionPrices }: LicenseUpgradeDialogProps) {
     const router = useRouter()
     const { licenses, updateLicense } = useLicenseData()
-    const resolvedCustomerId = decodeLicenseRouteId(customerId)
-    const resolvedLicenseId = decodeLicenseRouteId(licenseId)
+    const resolvedCustomerId = resolveCustomerRouteId(customerId)
+    const resolvedLicenseId = resolveLicenseRouteId(licenseId)
     const license = licenses.find((candidate) => candidate.id === resolvedLicenseId && candidate.customerId === resolvedCustomerId)
-    const close = () => router.replace(`/${locale}/licenses/customer/${encodeURIComponent(resolvedCustomerId)}/license/${encodeURIComponent(resolvedLicenseId)}`)
+    const close = () => router.replace(createLicensePath(locale, resolvedCustomerId, resolvedLicenseId))
 
     const customerType = resolveSubscriptionCustomerType(license?.customerType)
     const currentPlan = ((license?.plan as SubscriptionPlan | undefined) ?? "pro") satisfies SubscriptionPlan

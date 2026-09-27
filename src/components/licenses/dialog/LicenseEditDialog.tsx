@@ -9,7 +9,7 @@ import { ButtonLoader } from "@/components/ui/Loader"
 import { useCustomerPaymentMethods, useSubscriptionPaymentMethod } from "@/hooks/usePaymentMethods"
 import type { ErrorsContent, LicenseContent, SubscriptionConfigData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
-import { decodeLicenseRouteId } from "@/lib/licenses/licenseRoute"
+import { createLicensePath, resolveCustomerRouteId, resolveLicenseRouteId } from "@/lib/licenses/licenseRoute"
 import { cn } from "@/lib/utils"
 import { Button, ScrollArea, ScrollAreaScrollbar, ScrollAreaThumb, ScrollAreaViewport, Text } from "@code0-tech/pictor"
 import { IconCalendarMonth, IconCreditCard, IconKey } from "@tabler/icons-react"
@@ -33,8 +33,8 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
     const pathname = usePathname()
     const searchParams = useSearchParams()
     const { licenses, updateLicense } = useLicenseData()
-    const resolvedCustomerId = decodeLicenseRouteId(customerId)
-    const resolvedLicenseId = decodeLicenseRouteId(licenseId)
+    const resolvedCustomerId = resolveCustomerRouteId(customerId)
+    const resolvedLicenseId = resolveLicenseRouteId(licenseId)
     const license = licenses.find((candidate) => candidate.id === resolvedLicenseId && candidate.customerId === resolvedCustomerId)
     const requestedTab = searchParams.get("tab")
     const section: LicenseEditSection =
@@ -55,7 +55,7 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
     } = useCustomerPaymentMethods(license?.customerId, paymentSectionEnabled)
     const [assigningPaymentMethodId, setAssigningPaymentMethodId] = useState<string | null>(null)
     const [assignPaymentMethodError, setAssignPaymentMethodError] = useState(false)
-    const close = () => router.replace(`/${locale}/licenses/customer/${encodeURIComponent(resolvedCustomerId)}/license/${encodeURIComponent(resolvedLicenseId)}`)
+    const close = () => router.replace(createLicensePath(locale, resolvedCustomerId, resolvedLicenseId))
 
     const setSection = (nextSection: LicenseEditSection) => {
         const nextSearchParams = new URLSearchParams(searchParams.toString())
@@ -167,12 +167,7 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
                                 <Text size="sm" hierarchy="tertiary" className="max-w-xl!">
                                     {content.cancel.description}
                                 </Text>
-                                <Button
-                                    type="button"
-                                    variant="normal"
-                                    className="shrink-0"
-                                    onClick={() => router.push(`/${locale}/licenses/customer/${encodeURIComponent(license.customerId)}/license/${encodeURIComponent(license.id)}/cancel`)}
-                                >
+                                <Button type="button" variant="normal" className="shrink-0" onClick={() => router.push(`${createLicensePath(locale, license.customerId, license.id)}/cancel`)}>
                                     {content.cancel.confirmLabel}
                                 </Button>
                             </div>
@@ -271,7 +266,7 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
                         errors={errors}
                         onSuccess={paymentMethodUpdated}
                         owner={{ customerId: license.customerId }}
-                        returnPath={`/${locale}/licenses/customer/${encodeURIComponent(license.customerId)}/license/${encodeURIComponent(license.id)}/edit`}
+                        returnPath={`${createLicensePath(locale, license.customerId, license.id)}/edit`}
                         triggerLabel={content.editor.changePaymentMethodLabel}
                     />
                 </div>

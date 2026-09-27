@@ -4,6 +4,7 @@ import { createCraterUserSession } from "@/lib/checkout/craterLogin"
 import { setCraterSessionCookie, setCraterUserLoginCookie } from "@/lib/checkout/craterSession"
 import { isSupportedLocale } from "@/lib/i18n"
 import { isLicenseId } from "@/lib/licenses/craterRequest"
+import { resolveCustomerRouteId, resolveLicenseRouteId } from "@/lib/licenses/licenseRoute"
 import type { Mutation, MutationLicensesLinkNamespaceArgs } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 import { NextResponse } from "next/server"
@@ -38,14 +39,6 @@ function noStoreRedirect(url: URL) {
     return response
 }
 
-function decodeRouteSegment(segment: string) {
-    try {
-        return decodeURIComponent(segment)
-    } catch {
-        return null
-    }
-}
-
 function resolveLicenseReturn(requestUrl: URL) {
     const returnPath = requestUrl.searchParams.get("returnPath")
     if (!returnPath?.startsWith("/")) return null
@@ -66,8 +59,8 @@ function resolveLicenseReturn(requestUrl: URL) {
         return null
     }
 
-    const customerId = decodeRouteSegment(segments[3])
-    const licenseId = decodeRouteSegment(segments[5])
+    const customerId = resolveCustomerRouteId(segments[3])
+    const licenseId = resolveLicenseRouteId(segments[5])
     if (!customerId || !/^gid:\/\/crater\/Customer\/\d+$/.test(customerId) || !licenseId || !isLicenseId(licenseId)) return null
 
     return { licenseId, returnUrl }

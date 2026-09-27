@@ -8,7 +8,7 @@ import { ButtonLoader } from "@/components/ui/Loader"
 import { useCustomerPaymentMethods } from "@/hooks/usePaymentMethods"
 import type { CheckoutData, ErrorsContent, LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
-import { decodeLicenseRouteId } from "@/lib/licenses/licenseRoute"
+import { createLicenseCustomerPath, resolveCustomerRouteId } from "@/lib/licenses/licenseRoute"
 import { cn } from "@/lib/utils"
 import { Button, DialogFooter, EmailInput, ScrollArea, ScrollAreaScrollbar, ScrollAreaThumb, ScrollAreaViewport, Text, TextInput } from "@code0-tech/pictor"
 import { IconTrash } from "@tabler/icons-react"
@@ -28,7 +28,7 @@ type CustomerEditSection = "general" | "paymentMethods"
 export function CustomerEditDialog({ checkoutForm, content, customerId, errors, locale }: CustomerEditDialogProps) {
     const router = useRouter()
     const { customers, updateCustomer } = useLicenseData()
-    const resolvedCustomerId = decodeLicenseRouteId(customerId)
+    const resolvedCustomerId = resolveCustomerRouteId(customerId)
     const customer = customers.find((candidate) => candidate.id === resolvedCustomerId)
     const [name, setName] = useState("")
     const [email, setEmail] = useState("")
@@ -42,13 +42,10 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
     const [error, setError] = useState<string | null>(null)
     const [isSaving, setIsSaving] = useState(false)
     const [section, setSection] = useState<CustomerEditSection>("general")
-    const { isLoadingPaymentMethods, paymentMethods, paymentMethodsError, refreshPaymentMethods, removePaymentMethodLocally } = useCustomerPaymentMethods(
-        customer?.id,
-        section === "paymentMethods"
-    )
+    const { isLoadingPaymentMethods, paymentMethods, paymentMethodsError, refreshPaymentMethods, removePaymentMethodLocally } = useCustomerPaymentMethods(customer?.id, section === "paymentMethods")
     const [removingPaymentMethodId, setRemovingPaymentMethodId] = useState<string | null>(null)
     const [removePaymentMethodError, setRemovePaymentMethodError] = useState<string | null>(null)
-    const close = () => router.replace(`/${locale}/licenses/customer/${encodeURIComponent(resolvedCustomerId)}`)
+    const close = () => router.replace(createLicenseCustomerPath(locale, resolvedCustomerId))
 
     useEffect(() => {
         if (!customer) return
@@ -353,7 +350,7 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
                             errors={errors}
                             onSuccess={paymentMethodAdded}
                             owner={{ customerId: customer.id }}
-                            returnPath={`/${locale}/licenses/customer/${encodeURIComponent(customer.id)}/edit`}
+                            returnPath={`${createLicenseCustomerPath(locale, customer.id)}/edit`}
                             triggerLabel={content.editor.addPaymentMethodLabel}
                         />
                     )}

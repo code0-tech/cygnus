@@ -5,6 +5,7 @@ import { LicenseStatusDot } from "@/components/licenses/LicenseStatusDot"
 import { ButtonLoader } from "@/components/ui/Loader"
 import type { LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
+import { createLicensePath } from "@/lib/licenses/licenseRoute"
 import type { LicenseDashboardLicense } from "@/lib/licenses/licenseTypes"
 import { formatLicenseDisplayValue } from "@/lib/licenses/licenseDisplayValues"
 import { getNamespaceDisplayId } from "@/lib/licenses/licenseRoute"
@@ -116,7 +117,7 @@ export function LicenseSidebar({ content, isLoading, isLoggingOut, isRefreshing,
                                     const deployment = formatLicenseDisplayValue(license.deploymentType, "deploymentType", content.values)
                                     const status = formatLicenseDisplayValue(license.status, "status", content.values)
                                     const identifier = getNamespaceDisplayId(license.namespaceId) || getShortLicenseId(license.id)
-                                    const licenseHref = `/${locale}/licenses/customer/${encodeURIComponent(license.customerId)}/license/${encodeURIComponent(license.id)}`
+                                    const licenseHref = createLicensePath(locale, license.customerId, license.id)
                                     const licenseIsActive = pathname === licenseHref || pathname?.startsWith(`${licenseHref}/`)
 
                                     return (
@@ -225,7 +226,7 @@ export function LicenseSidebar({ content, isLoading, isLoggingOut, isRefreshing,
                                         {licenses.map((license) => {
                                             const deployment = formatLicenseDisplayValue(license.deploymentType, "deploymentType", content.values)
                                             const status = formatLicenseDisplayValue(license.status, "status", content.values)
-                                            const licenseHref = `/${locale}/licenses/customer/${encodeURIComponent(license.customerId)}/license/${encodeURIComponent(license.id)}`
+                                            const licenseHref = createLicensePath(locale, license.customerId, license.id)
                                             const licenseIsActive = pathname === licenseHref || pathname?.startsWith(`${licenseHref}/`)
 
                                             return (

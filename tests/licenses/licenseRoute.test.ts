@@ -1,16 +1,30 @@
-import { decodeLicenseRouteId, getNamespaceDisplayId } from "@/lib/licenses/licenseRoute"
+import { canonicalizeLicensePathname, createLicenseCustomerPath, createLicensePath, getNamespaceDisplayId, resolveCustomerRouteId, resolveLicenseRouteId } from "@/lib/licenses/licenseRoute"
 import assert from "node:assert/strict"
 import test from "node:test"
 
-test("normalizes encoded and already decoded Crater route ids", () => {
+test("resolves short and legacy Crater route ids", () => {
     const customerId = "gid://crater/Customer/35"
+    const licenseId = "gid://crater/License/9"
 
-    assert.equal(decodeLicenseRouteId(encodeURIComponent(customerId)), customerId)
-    assert.equal(decodeLicenseRouteId(customerId), customerId)
+    assert.equal(resolveCustomerRouteId("35"), customerId)
+    assert.equal(resolveCustomerRouteId(encodeURIComponent(customerId)), customerId)
+    assert.equal(resolveCustomerRouteId(customerId), customerId)
+    assert.equal(resolveLicenseRouteId("9"), licenseId)
 })
 
 test("leaves malformed route encoding unchanged", () => {
-    assert.equal(decodeLicenseRouteId("gid%invalid"), "gid%invalid")
+    assert.equal(resolveLicenseRouteId("gid%invalid"), "gid%invalid")
+})
+
+test("builds license URLs with only numeric ids", () => {
+    assert.equal(createLicenseCustomerPath("de", "gid://crater/Customer/35"), "/de/licenses/customer/35")
+    assert.equal(createLicensePath("en", "gid://crater/Customer/35", "gid://crater/License/9"), "/en/licenses/customer/35/license/9")
+    assert.equal(createLicensePath("en", encodeURIComponent("gid://crater/Customer/35"), encodeURIComponent("gid://crater/License/9")), "/en/licenses/customer/35/license/9")
+})
+
+test("canonicalizes legacy license URLs while preserving their destination", () => {
+    assert.equal(canonicalizeLicensePathname("/en/licenses/customer/gid%3A%2F%2Fcrater%2FCustomer%2F35/license/gid%3A%2F%2Fcrater%2FLicense%2F9/edit"), "/en/licenses/customer/35/license/9/edit")
+    assert.equal(canonicalizeLicensePathname("/de/licenses/customer/35/license/9"), "/de/licenses/customer/35/license/9")
 })
 
 test("shows only the final namespace ID segment", () => {
