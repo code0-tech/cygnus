@@ -4,6 +4,7 @@ import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
 import type { LicenseContent } from "@/lib/cms"
 import { AppLocale } from "@/lib/i18n"
 import { formatLicenseDisplayValue } from "@/lib/licenses/licenseDisplayValues"
+import { createLicenseCustomerPath, createLicensePath } from "@/lib/licenses/licenseRoute"
 import { Card, DataTable, DataTableColumn, DataTableHeader, DataTableHeaderColumn, Flex, Spacing, Text } from "@code0-tech/pictor"
 import { useRouter } from "next/navigation"
 import { Fragment } from "react"
@@ -50,7 +51,7 @@ export function LicenseDashboardPage({ content, locale }: LicenseDashboardPagePr
                         data={customers}
                         loading={isLoading}
                         onSelect={(customer) => {
-                            if (customer) router.push(`/${locale}/licenses/customer/${encodeURIComponent(customer.id)}`)
+                            if (customer) router.push(createLicenseCustomerPath(locale, customer.id))
                         }}
                         emptyComponent={
                             <DataTableColumn colSpan={4}>
@@ -107,7 +108,7 @@ export function LicenseDashboardPage({ content, locale }: LicenseDashboardPagePr
                         data={recentlyEditedLicenses}
                         loading={isLoading}
                         onSelect={(license) => {
-                            if (license) router.push(`/${locale}/licenses/customer/${encodeURIComponent(license.customerId)}/license/${encodeURIComponent(license.id)}`)
+                            if (license) router.push(createLicensePath(locale, license.customerId, license.id))
                         }}
                         emptyComponent={
                             <DataTableColumn colSpan={5}>

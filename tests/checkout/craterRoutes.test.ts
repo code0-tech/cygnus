@@ -142,9 +142,11 @@ test("continuing as a guest creates a Sagittarius guest user for the entered ema
         assert.match(cookie, /HttpOnly/i)
         assert.match(cookie, /Path=\/api\/crater/i)
         assert.doesNotMatch(cookie, /crater_session=|crater_user_login=|guest-claim-token|crater-guest-session|Max-Age|Expires/i)
-        const session = readGuestCheckoutSession(new Request("https://example.com/api/crater/customer", {
-            headers: { "x-guest-checkout": body.checkoutId, cookie: cookie.split(";")[0] },
-        }))
+        const session = readGuestCheckoutSession(
+            new Request("https://example.com/api/crater/customer", {
+                headers: { "x-guest-checkout": body.checkoutId, cookie: cookie.split(";")[0] },
+            })
+        )
         assert.equal(session?.token, "crater-guest-session")
         assert.equal(session?.claimToken, "guest-claim-token")
         assert.equal(session?.email, "guest@example.com")
@@ -1593,7 +1595,7 @@ test("license dashboard access redirects without exposing the persisted session"
 })
 
 test("license dashboard access restores the requested license detail path", async () => {
-    const returnPath = "/en/licenses/customer/gid%3A%2F%2Fcrater%2FCustomer%2F35/license/gid%3A%2F%2Fcrater%2FLicense%2F3"
+    const returnPath = "/en/licenses/customer/35/license/3"
     const response = await accessLicenseDashboard(
         new Request(`https://code0.example/api/crater/licenses/access?locale=en&returnPath=${encodeURIComponent(returnPath)}`, {
             headers: { cookie: "crater_session=persisted-token" },
@@ -2204,7 +2206,7 @@ test("links a cloud license through the authenticated namespace selection callba
     process.env.CRATER_GRAPHQL_URL = graphQLServer.url
 
     try {
-        const returnPath = "/en/licenses/customer/gid%3A%2F%2Fcrater%2FCustomer%2F3/license/gid%3A%2F%2Fcrater%2FLicense%2F9/edit"
+        const returnPath = "/en/licenses/customer/3/license/9/edit"
         const response = await selectLicenseNamespace(
             new Request(
                 `https://code0.example/api/crater/licenses/namespace/callback?returnPath=${encodeURIComponent(returnPath)}&namespace=${encodeURIComponent("gid://sagittarius/Namespace/9")}&token=sagittarius-secret`
@@ -2230,7 +2232,7 @@ test("links a cloud license through the authenticated namespace selection callba
 })
 
 test("license namespace callback requires a namespace selected by Sagittarius", async () => {
-    const returnPath = "/de/licenses/customer/gid%3A%2F%2Fcrater%2FCustomer%2F3/license/gid%3A%2F%2Fcrater%2FLicense%2F9/edit"
+    const returnPath = "/de/licenses/customer/3/license/9/edit"
     const response = await selectLicenseNamespace(new Request(`https://code0.example/api/crater/licenses/namespace/callback?returnPath=${encodeURIComponent(returnPath)}&token=sagittarius-secret`))
 
     assert.equal(response.status, 307)
@@ -2250,7 +2252,7 @@ test("license namespace callback rejects return paths that are not exact license
 })
 
 test("license namespace callback accepts an exact license detail return path", async () => {
-    const returnPath = "/en/licenses/customer/gid%3A%2F%2Fcrater%2FCustomer%2F3/license/gid%3A%2F%2Fcrater%2FLicense%2F9"
+    const returnPath = "/en/licenses/customer/3/license/9"
     const response = await selectLicenseNamespace(new Request(`https://code0.example/api/crater/licenses/namespace/callback?returnPath=${encodeURIComponent(returnPath)}&token=sagittarius-secret`))
 
     assert.equal(response.status, 307)

@@ -1,7 +1,7 @@
 "use client"
 
 import { EMPTY_LICENSE_DASHBOARD_DATA, type LicenseDashboardCustomerAddress, type LicenseDashboardData, type LicenseDashboardLicense } from "@/lib/licenses/licenseTypes"
-import { decodeLicenseRouteId } from "@/lib/licenses/licenseRoute"
+import { resolveCustomerRouteId, resolveLicenseRouteId } from "@/lib/licenses/licenseRoute"
 import { usePathname } from "next/navigation"
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useRef, useState } from "react"
 
@@ -46,9 +46,9 @@ function createLicenseDataUrl(pathname: string, origin: string, pagination?: { c
 
     if (customerSegmentIndex >= 0 && pathSegments[customerSegmentIndex + 1]) {
         dataUrl.searchParams.set("view", licenseSegmentIndex >= 0 ? "license" : "customer")
-        dataUrl.searchParams.set("customerId", decodeLicenseRouteId(pathSegments[customerSegmentIndex + 1]))
+        dataUrl.searchParams.set("customerId", resolveCustomerRouteId(pathSegments[customerSegmentIndex + 1]))
         if (licenseSegmentIndex >= 0 && pathSegments[licenseSegmentIndex + 1]) {
-            dataUrl.searchParams.set("licenseId", decodeLicenseRouteId(pathSegments[licenseSegmentIndex + 1]))
+            dataUrl.searchParams.set("licenseId", resolveLicenseRouteId(pathSegments[licenseSegmentIndex + 1]))
         }
     }
 
@@ -136,7 +136,12 @@ export function LicenseDataProvider({ children, loadError, redirectUrl }: { chil
         else setIsRefreshing(true)
         const currentUrl = new URL(window.location.href)
 
-        if (currentUrl.searchParams.has("token") || currentUrl.searchParams.has("setup_intent") || currentUrl.searchParams.has("setup_intent_client_secret") || currentUrl.searchParams.has("redirect_status")) {
+        if (
+            currentUrl.searchParams.has("token") ||
+            currentUrl.searchParams.has("setup_intent") ||
+            currentUrl.searchParams.has("setup_intent_client_secret") ||
+            currentUrl.searchParams.has("redirect_status")
+        ) {
             const sanitizedUrl = new URL(currentUrl)
             sanitizedUrl.searchParams.delete("token")
             sanitizedUrl.searchParams.delete("setup_intent")
