@@ -1,6 +1,7 @@
 "use client"
 
 import { UpgradePlanBanner } from "@/components/checkout/UpgradePlanBanner"
+import { DataTableControls } from "@/components/licenses/DataTableControls"
 import { InvoiceStatusDot } from "@/components/licenses/InvoiceStatusDot"
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
 import { LicenseLoadMoreButton } from "@/components/licenses/LicenseLoadMoreButton"
@@ -14,7 +15,7 @@ import { downloadLicenseFile } from "@/lib/licenses/licenseClient"
 import { formatLicenseDisplayValue } from "@/lib/licenses/licenseDisplayValues"
 import { createLicensePath, resolveCustomerRouteId, resolveLicenseRouteId } from "@/lib/licenses/licenseRoute"
 import { cn } from "@/lib/utils"
-import { Alert, Badge, Button, Card, DataTable, DataTableColumn, DataTableHeader, DataTableHeaderColumn, Flex, Spacing, Text } from "@code0-tech/pictor"
+import { Alert, Badge, Button, Card, DataTable, DataTableColumn, DataTableHeader, DataTableHeaderColumn, Flex, Spacing, Text, type DataTableFilterProps } from "@code0-tech/pictor"
 import { IconDownload } from "@tabler/icons-react"
 import { useRouter } from "next/navigation"
 import { Fragment, useState } from "react"
@@ -69,6 +70,10 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
           ]
         : []
     const invoices = license?.invoices ?? []
+    const [invoiceStatusFilters, setInvoiceStatusFilters] = useState<string[]>([])
+    const [invoiceSortDirection, setInvoiceSortDirection] = useState<"asc" | "desc">("desc")
+    const invoiceRows = invoices.map((invoice) => ({ ...invoice, tableStatus: invoice.status?.trim().toLowerCase().replaceAll("-", "_") }))
+    const invoiceFilter: DataTableFilterProps | undefined = invoiceStatusFilters.length ? { tableStatus: { operator: "isOneOf", value: invoiceStatusFilters } } : undefined
 
     const withdrawalDeadline = license?.startDate ? new Date(new Date(license.startDate).getTime() + 14 * 24 * 60 * 60 * 1000) : null
     const showWithdrawalNotice = (customer?.customerType ?? license?.customerType) === "personal" && withdrawalDeadline !== null && withdrawalDeadline.getTime() > Date.now()
@@ -241,7 +246,7 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
 
             <Spacing spacing="xl" />
             <section aria-labelledby="license-invoices-heading">
-                <Flex align="start" justify="space-between" style={{ gap: "1rem" }}>
+                <Flex align="end" justify="space-between" style={{ gap: "1rem" }} className="flex-wrap">
                     <div className="min-w-0">
                         <Text id="license-invoices-heading" hierarchy="secondary" size="xl">
                             {content.invoices.title}
@@ -250,13 +255,31 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
                             {content.invoices.description}
                         </Text>
                     </div>
+                    <DataTableControls
+                        disabled={isLoading}
+                        filterLabel={content.invoices.statusLabel}
+                        filterOptions={[
+                            { value: "draft", label: content.values.invoiceStatuses.draft },
+                            { value: "open", label: content.values.invoiceStatuses.open },
+                            { value: "paid", label: content.values.statuses.paid },
+                            { value: "uncollectible", label: content.values.invoiceStatuses.uncollectible },
+                            { value: "void", label: content.values.invoiceStatuses.void },
+                        ]}
+                        selectedFilters={invoiceStatusFilters}
+                        onFilterChange={setInvoiceStatusFilters}
+                        sortDirection={invoiceSortDirection}
+                        sortLabel={content.invoices.periodLabel}
+                        onSortDirectionChange={setInvoiceSortDirection}
+                    />
                 </Flex>
                 <Spacing spacing="md" />
 
                 <Card color="secondary" className="pt-2!">
                     <DataTable
-                        data={invoices}
+                        data={invoiceRows}
+                        filter={invoiceFilter}
                         loading={isLoading}
+                        sort={{ billingPeriodStart: invoiceSortDirection }}
                         emptyComponent={
                             <DataTableColumn colSpan={5}>
                                 <Text size="sm" hierarchy="tertiary">

@@ -1,5 +1,6 @@
 "use client"
 
+import { DataTableControls } from "@/components/licenses/DataTableControls"
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
 import { LicenseLoadMoreButton } from "@/components/licenses/LicenseLoadMoreButton"
 import { LicensePlanIcon } from "@/components/licenses/LicensePlanIcon"
@@ -9,9 +10,9 @@ import type { AppLocale } from "@/lib/i18n"
 import { formatLicenseDisplayValue } from "@/lib/licenses/licenseDisplayValues"
 import { createLicenseCustomerPath, createLicensePath, resolveCustomerRouteId } from "@/lib/licenses/licenseRoute"
 import { cn } from "@/lib/utils"
-import { AutoScrollArea, Button, Card, DataTable, DataTableColumn, DataTableHeader, DataTableHeaderColumn, Flex, Spacing, Text } from "@code0-tech/pictor"
+import { AutoScrollArea, Button, Card, DataTable, DataTableColumn, DataTableHeader, DataTableHeaderColumn, Flex, Spacing, Text, type DataTableFilterProps } from "@code0-tech/pictor"
 import { useRouter } from "next/navigation"
-import { Fragment } from "react"
+import { Fragment, useState } from "react"
 
 interface LicenseCustomerPageProps {
     content: LicenseContent
@@ -25,6 +26,10 @@ export function LicenseCustomerPage({ content, customerId, locale }: LicenseCust
     const resolvedCustomerId = resolveCustomerRouteId(customerId)
     const customer = customers.find((candidate) => candidate.id === resolvedCustomerId)
     const customerLicenses = licenses.filter((license) => license.customerId === resolvedCustomerId)
+    const [statusFilters, setStatusFilters] = useState<string[]>([])
+    const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc")
+    const licenseRows = customerLicenses.map((license) => ({ ...license, tableStatus: license.status?.trim().toLowerCase().replaceAll("-", "_") }))
+    const tableFilter: DataTableFilterProps | undefined = statusFilters.length ? { tableStatus: { operator: "isOneOf", value: statusFilters } } : undefined
     const dateFormatter = new Intl.DateTimeFormat(locale, {
         dateStyle: "medium",
         timeZone: "UTC",
@@ -123,30 +128,51 @@ export function LicenseCustomerPage({ content, customerId, locale }: LicenseCust
             <Spacing spacing="xl" />
 
             <section aria-labelledby="customer-licenses-heading">
-                <div className="min-w-0">
-                    <Flex align="center" style={{ gap: "0.5rem" }}>
-                        <Text id="customer-licenses-heading" hierarchy="secondary" size="xl">
-                            {content.licenses}
+                <Flex align="end" justify="space-between" style={{ gap: "1rem" }} className="flex-wrap">
+                    <div className="min-w-0">
+                        <Flex align="center" style={{ gap: "0.5rem" }}>
+                            <Text id="customer-licenses-heading" hierarchy="secondary" size="xl">
+                                {content.licenses}
+                            </Text>
+                            {isLoading ? (
+                                <span aria-hidden="true" className="h-5 w-6 animate-pulse rounded-full bg-white/10 motion-reduce:animate-none" />
+                            ) : (
+                                <span className="inline-flex w-fit items-center rounded-full bg-[#191825] px-[0.35rem] py-[0.1167rem] text-[0.7rem] font-normal tracking-[-0.5px] text-white/75 shadow-[inset_0_1px_1px_rgba(191,191,191,0.1)]">
+                                    {customer?.licenseCount ?? customerLicenses.length}
+                                </span>
+                            )}
+                        </Flex>
+                        <Text size="md" hierarchy="tertiary" className="mt-2!">
+                            {content.licenseDescription}
                         </Text>
-                        {isLoading ? (
-                            <span aria-hidden="true" className="h-5 w-6 animate-pulse rounded-full bg-white/10 motion-reduce:animate-none" />
-                        ) : (
-                            <span className="inline-flex w-fit items-center rounded-full bg-[#191825] px-[0.35rem] py-[0.1167rem] text-[0.7rem] font-normal tracking-[-0.5px] text-white/75 shadow-[inset_0_1px_1px_rgba(191,191,191,0.1)]">
-                                {customer?.licenseCount ?? customerLicenses.length}
-                            </span>
-                        )}
-                    </Flex>
-                    <Text size="md" hierarchy="tertiary" className="mt-2!">
-                        {content.licenseDescription}
-                    </Text>
-                </div>
+                    </div>
+                    <DataTableControls
+                        disabled={isLoading}
+                        filterLabel={content.dashboard.statusLabel}
+                        filterOptions={[
+                            { value: "active", label: content.values.statuses.active },
+                            { value: "pending", label: content.values.statuses.pending },
+                            { value: "paid", label: content.values.statuses.paid },
+                            { value: "payment_failed", label: content.values.statuses.paymentFailed },
+                            { value: "canceled", label: content.values.statuses.canceled },
+                            { value: "expired", label: content.values.statuses.expired },
+                        ]}
+                        selectedFilters={statusFilters}
+                        onFilterChange={setStatusFilters}
+                        sortDirection={sortDirection}
+                        sortLabel={content.dashboard.lastEditedLabel}
+                        onSortDirectionChange={setSortDirection}
+                    />
+                </Flex>
                 <Spacing spacing="md" />
 
                 <Card color="secondary" className="pt-2!">
                     <AutoScrollArea mah="28rem" type="scroll">
                         <DataTable
-                            data={customerLicenses}
+                            data={licenseRows}
+                            filter={tableFilter}
                             loading={isLoading}
+                            sort={{ updatedAt: sortDirection }}
                             onSelect={(license) => {
                                 if (license) router.push(createLicensePath(locale, resolvedCustomerId, license.id))
                             }}
