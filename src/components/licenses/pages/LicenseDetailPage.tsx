@@ -104,16 +104,8 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
 
     return (
         <div>
-            <section aria-labelledby="license-heading">
-                <Flex align="start" justify="space-between" style={{ gap: "1rem" }}>
-                    <div className="min-w-0">
-                        <Text id="license-heading" hierarchy="secondary" size="xl">
-                            {content.license}
-                        </Text>
-                        <Text size="md" hierarchy="tertiary" className="mt-2!">
-                            {content.licenseDescription}
-                        </Text>
-                    </div>
+            <section aria-label={content.license}>
+                <Flex justify="end">
                     {isLoading || license ? (
                         <Flex align="center" style={{ gap: "0.5rem" }} className="flex-wrap justify-end">
                             {license?.deploymentType === "self_hosted" ? (
