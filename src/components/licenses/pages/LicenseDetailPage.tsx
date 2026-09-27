@@ -13,10 +13,11 @@ import { formatMinorCurrency } from "@/lib/formatters"
 import type { AppLocale } from "@/lib/i18n"
 import { downloadLicenseFile } from "@/lib/licenses/licenseClient"
 import { formatLicenseDisplayValue } from "@/lib/licenses/licenseDisplayValues"
-import { createLicensePath, resolveCustomerRouteId, resolveLicenseRouteId } from "@/lib/licenses/licenseRoute"
+import { createLicenseCustomerPath, createLicensePath, resolveCustomerRouteId, resolveLicenseRouteId } from "@/lib/licenses/licenseRoute"
 import { cn } from "@/lib/utils"
 import { Alert, Badge, Button, Card, DataTable, DataTableColumn, DataTableHeader, DataTableHeaderColumn, Flex, Spacing, Text, type DataTableFilterProps } from "@code0-tech/pictor"
-import { IconDownload } from "@tabler/icons-react"
+import { IconArrowUpRight, IconDownload } from "@tabler/icons-react"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Fragment, useState } from "react"
 
@@ -32,6 +33,7 @@ interface LicenseDetailPageProps {
 
 interface LicenseDetailItem {
     badge?: string
+    href?: string
     label: string
     showPlanIcon?: boolean
     showStatusDot?: boolean
@@ -57,6 +59,7 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
               { label: content.dashboard.statusLabel, value: formatLicenseDisplayValue(license.status, "status", content.values), showStatusDot: true },
               {
                   badge: formatLicenseDisplayValue(customer?.customerType ?? license.customerType, "customerType", content.values),
+                  href: createLicenseCustomerPath(locale, license.customerId),
                   label: content.dashboard.customerLabel,
                   value: customer?.name?.trim() || customer?.email?.trim() || customer?.id || license.customerName || license.customerId,
               },
@@ -178,13 +181,26 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
                                         </Text>
                                         {detail.badge ? <Badge color="tertiary">{detail.badge}</Badge> : null}
                                     </div>
-                                    <Flex align="center" style={{ gap: "0.5rem" }} className="mt-3 min-w-0">
-                                        {detail.showStatusDot ? <LicenseStatusDot aria-hidden="true" status={license.status} /> : null}
-                                        {detail.showPlanIcon ? <LicensePlanIcon className="shrink-0 text-brand" plan={license.plan} size={22} /> : null}
-                                        <Text fw={400} title={detail.value} className="truncate text-xl! leading-tight! text-white!">
-                                            {detail.value}
-                                        </Text>
-                                    </Flex>
+                                    {detail.href ? (
+                                        <Link
+                                            href={detail.href}
+                                            aria-label={`${detail.label}: ${detail.value}`}
+                                            className="mt-3 flex min-w-0 items-center gap-2 rounded-md outline-none hover:text-brand focus-visible:ring-2 focus-visible:ring-brand/60"
+                                        >
+                                            <Text fw={400} title={detail.value} className="min-w-0 truncate text-xl! leading-tight! text-inherit!">
+                                                {detail.value}
+                                            </Text>
+                                            <IconArrowUpRight aria-hidden="true" className="shrink-0" size={17} />
+                                        </Link>
+                                    ) : (
+                                        <Flex align="center" style={{ gap: "0.5rem" }} className="mt-3 min-w-0">
+                                            {detail.showStatusDot ? <LicenseStatusDot aria-hidden="true" status={license.status} /> : null}
+                                            {detail.showPlanIcon ? <LicensePlanIcon className="shrink-0 text-brand" plan={license.plan} size={22} /> : null}
+                                            <Text fw={400} title={detail.value} className="truncate text-xl! leading-tight! text-white!">
+                                                {detail.value}
+                                            </Text>
+                                        </Flex>
+                                    )}
                                 </div>
                             ))}
                         </div>
