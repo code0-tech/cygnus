@@ -3,6 +3,7 @@
 import { DataTableControls } from "@/components/licenses/DataTableControls"
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
 import { LicenseLoadMoreButton } from "@/components/licenses/LicenseLoadMoreButton"
+import { LICENSE_DATA_TABLE_PAGE_SIZE, LicenseDataTablePagination } from "@/components/licenses/LicenseDataTablePagination"
 import { LicensePlanIcon } from "@/components/licenses/LicensePlanIcon"
 import { LicenseStatusDot } from "@/components/licenses/LicenseStatusDot"
 import type { LicenseContent } from "@/lib/cms"
@@ -163,7 +164,9 @@ export function LicenseCustomerPage({ content, customerId, locale }: LicenseCust
                         <DataTable
                             data={licenseRows}
                             filter={tableFilter}
+                            limit={LICENSE_DATA_TABLE_PAGE_SIZE}
                             loading={isLoading}
+                            pagination
                             sort={{ updatedAt: sortDirection }}
                             onSelect={(license) => {
                                 if (license) router.push(createLicensePath(locale, resolvedCustomerId, license.id))
@@ -212,6 +215,7 @@ export function LicenseCustomerPage({ content, customerId, locale }: LicenseCust
                                     </DataTableColumn>
                                 </Fragment>
                             )}
+                            {licenseRows.length > LICENSE_DATA_TABLE_PAGE_SIZE ? <LicenseDataTablePagination locale={locale} /> : null}
                         </DataTable>
                     </AutoScrollArea>
                 </Card>
