@@ -4,6 +4,7 @@ import { DataTableControls } from "@/components/licenses/DataTableControls"
 import { InvoiceStatusDot } from "@/components/licenses/InvoiceStatusDot"
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
 import { LicenseLoadMoreButton } from "@/components/licenses/LicenseLoadMoreButton"
+import { LICENSE_DATA_TABLE_PAGE_SIZE, LicenseDataTablePagination } from "@/components/licenses/LicenseDataTablePagination"
 import { LicensePlanIcon } from "@/components/licenses/LicensePlanIcon"
 import { LicenseStatusDot } from "@/components/licenses/LicenseStatusDot"
 import { ButtonLoader } from "@/components/ui/Loader"
@@ -338,7 +339,9 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
                     <DataTable
                         data={invoiceRows}
                         filter={invoiceFilter}
+                        limit={LICENSE_DATA_TABLE_PAGE_SIZE}
                         loading={isLoading}
+                        pagination
                         sort={{ billingPeriodStart: invoiceSortDirection }}
                         emptyComponent={
                             <DataTableColumn colSpan={5}>
@@ -418,6 +421,7 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
                                 </DataTableColumn>
                             </Fragment>
                         )}
+                        {invoiceRows.length > LICENSE_DATA_TABLE_PAGE_SIZE ? <LicenseDataTablePagination locale={locale} /> : null}
                     </DataTable>
                 </Card>
                 {pagination?.invoices?.hasNextPage ? <LicenseLoadMoreButton loading={loadingMore === "invoices"} labels={content.pagination} onClick={() => void loadMore("invoices")} /> : null}
