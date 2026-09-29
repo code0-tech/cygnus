@@ -286,20 +286,9 @@ export function LicenseSidebar({ content, isLoading, isLoggingOut, locale, licen
 
             <aside className="hidden min-h-0 flex-col bg-transparent pr-4 lg:flex lg:h-full">
                 <div className="flex min-h-0 flex-1 flex-col">
-                    <Flex align="center" justify="space-between" className="mb-3 px-2">
-                        <Text hierarchy="tertiary" className="text-xs! font-medium! tracking-[0.5px]">
-                            {content.licenses}
-                        </Text>
-                        <Flex align="center" style={{ gap: "0.25rem" }}>
-                            {isLoading ? (
-                                <span aria-hidden="true" className="h-5 w-6 animate-pulse rounded-full bg-white/10 motion-reduce:animate-none" />
-                            ) : (
-                                <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-[#191825] px-1.5 py-[0.1167rem] text-[0.65rem] font-normal tracking-[-0.5px] text-secondary shadow-[inset_0_1px_1px_rgba(191,191,191,0.1)]">
-                                    {licenses.length}
-                                </span>
-                            )}
-                        </Flex>
-                    </Flex>
+                    <Text hierarchy="tertiary" className="text-xs! font-medium! tracking-[0.5px] mb-3">
+                        {content.licenses}
+                    </Text>
 
                     <ScrollArea type="auto" className="min-h-0 flex-1">
                         <ScrollAreaViewport className="h-full pr-2">

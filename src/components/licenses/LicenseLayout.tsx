@@ -58,7 +58,7 @@ function LicenseLayoutContent({ children, content, errors, locale }: LicenseLayo
                 <AuroraBackground />
             </div>
 
-            <div className="relative z-10 grid h-full min-h-0 grid-cols-1 grid-rows-[auto_minmax(0,1fr)] lg:grid-cols-[3.5rem_18rem_minmax(0,1fr)] lg:grid-rows-1">
+            <div className="relative z-10 grid h-full min-h-0 gap-4 grid-cols-1 grid-rows-[auto_minmax(0,1fr)] lg:grid-cols-[3.5rem_12rem_minmax(0,1fr)] lg:grid-rows-1">
                 <LicensePrimarySidebar content={content.sidebar} isLoggingOut={isLoggingOut} locale={locale} onLogout={() => void logout()} onOpenMainApplication={openMainApplication} />
                 <LicenseSidebar
                     content={content}
@@ -73,7 +73,7 @@ function LicenseLayoutContent({ children, content, errors, locale }: LicenseLayo
                 <main className="h-full min-h-0 w-[calc(100vw-2rem)] min-w-0 overflow-hidden rounded-2xl bg-transparent lg:w-auto">
                     <ScrollArea h="100%" type="scroll">
                         <ScrollAreaViewport>
-                            <div className="mx-auto box-border w-full min-w-0 max-w-[52rem] px-4 py-10 sm:py-16">
+                            <div className="mx-auto box-border w-full min-w-0 max-w-208 px-4 py-10 sm:py-16">
                                 {error ? (
                                     <Card color="secondary">
                                         <Flex align="center" justify="space-between" style={{ gap: "1rem" }}>
