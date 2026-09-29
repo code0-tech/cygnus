@@ -149,7 +149,7 @@ function LicenseUpgradeButton({ content, license, locale }: { content: LicenseSi
     const href = license?.subscriptionId ? `${createLicensePath(locale, license.customerId, license.id)}/edit?tab=upgrade` : null
     const beam = (
         <BorderBeam strength={1} size="sm" theme="dark" duration={5} active={Boolean(href)} style={{ display: "block" }}>
-            <Button type="button" paddingSize="xxs" color="tertiary" disabled={!href} justify="center" w="100%">
+            <Button type="button" paddingSize="xxs" color="tertiary" disabled={!href} justify="center" w="100%" className="rounded-2xl! text-xs!">
                 {content.upgrade.title}
             </Button>
         </BorderBeam>
@@ -285,8 +285,8 @@ export function LicenseSidebar({ content, isLoading, isLoggingOut, locale, licen
             </header>
 
             <aside className="hidden min-h-0 flex-col bg-transparent pr-4 lg:flex lg:h-full">
-                <div className="flex min-h-0 flex-1 flex-col">
-                    <Text hierarchy="tertiary" className="text-xs! font-medium! tracking-[0.5px] mb-3">
+                <div className="flex min-h-0 flex-1 flex-col pt-2">
+                    <Text hierarchy="tertiary" className="text-xs! font-medium! tracking-[0.5px] ml-2 mb-3">
                         {content.licenses}
                     </Text>
 
@@ -310,7 +310,7 @@ export function LicenseSidebar({ content, isLoading, isLoggingOut, locale, licen
                                                             variant="none"
                                                             paddingSize="xxs"
                                                             className={cn(
-                                                                "w-full! justify-start! shadow-none! hover:shadow-[inset_0_1px_1px_#bfbfbf1a]!",
+                                                                "w-full! justify-start! shadow-none! rounded-2xl! hover:shadow-[inset_0_1px_1px_#bfbfbf1a]!",
                                                                 licenseIsActive && "shadow-[inset_0_1px_1px_#bfbfbf1a]! bg-white/5!"
                                                             )}
                                                         >
@@ -323,8 +323,7 @@ export function LicenseSidebar({ content, isLoading, isLoggingOut, locale, licen
                                                                     className="absolute -bottom-0.5 -right-0.5 ring-2 ring-light"
                                                                 />
                                                             </span>
-                                                            {formatLicenseDisplayValue(license.plan, "plan", content.values)}
-                                                            {deployment ? <span className="shrink-0 text-xs text-tertiary">{`(${deployment})`}</span> : null}
+                                                            <Text size="md">{formatLicenseDisplayValue(license.plan, "plan", content.values)}</Text>
                                                         </Button>
                                                     </Link>
                                                 </li>

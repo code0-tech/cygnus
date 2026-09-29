@@ -6,7 +6,7 @@ interface LicensePlanIconProps {
     size?: number
 }
 
-export function LicensePlanIcon({ className, plan, size = 18 }: LicensePlanIconProps) {
+export function LicensePlanIcon({ className, plan, size = 16 }: LicensePlanIconProps) {
     const iconProps = { "aria-hidden": true, className, size } as const
 
     switch (plan) {
