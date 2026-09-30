@@ -2,6 +2,7 @@
 
 import { DataTableControls } from "@/components/licenses/DataTableControls"
 import { InvoiceStatusDot } from "@/components/licenses/InvoiceStatusDot"
+import { getLicenseDetailGridCellClassName } from "@/components/licenses/licenseDetailGrid"
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
 import { LicenseLoadMoreButton } from "@/components/licenses/LicenseLoadMoreButton"
 import { LICENSE_DATA_TABLE_PAGE_SIZE, LicenseDataTablePagination } from "@/components/licenses/LicenseDataTablePagination"
@@ -14,7 +15,6 @@ import { downloadLicenseFile } from "@/lib/licenses/licenseClient"
 import { formatLicenseDisplayValue } from "@/lib/licenses/licenseDisplayValues"
 import { createLicensePath, resolveCustomerRouteId, resolveLicenseRouteId } from "@/lib/licenses/licenseRoute"
 import type { LicenseDashboardInvoice } from "@/lib/licenses/licenseTypes"
-import { cn } from "@/lib/utils"
 import {
     Alert,
     Badge,
@@ -196,13 +196,7 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
                                 {licenseDetails.map((detail, index) => (
                                     <div
                                         key={detail.label}
-                                        className={cn(
-                                            "min-w-0 px-6 py-5",
-                                            index > 0 && "border-t border-white/10",
-                                            index === 1 && "sm:border-l sm:border-t-0",
-                                            index === 3 && "sm:border-l",
-                                            index > 0 && "xl:border-l xl:border-t-0"
-                                        )}
+                                        className={getLicenseDetailGridCellClassName(index)}
                                     >
                                         <div className="flex min-w-0 items-center gap-2">
                                             <Text size="sm" hierarchy="tertiary" className="truncate">
@@ -226,13 +220,7 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
                                 {Array.from({ length: 4 }, (_, index) => (
                                     <div
                                         key={index}
-                                        className={cn(
-                                            "min-w-0 animate-pulse px-6 py-5 motion-reduce:animate-none",
-                                            index > 0 && "border-t border-white/10",
-                                            index === 1 && "sm:border-l sm:border-t-0",
-                                            index === 3 && "sm:border-l",
-                                            index > 0 && "xl:border-l xl:border-t-0"
-                                        )}
+                                        className={getLicenseDetailGridCellClassName(index, "animate-pulse motion-reduce:animate-none")}
                                     >
                                         <div className={index % 2 === 0 ? "h-3 w-20 rounded-full bg-white/10" : "h-3 w-28 rounded-full bg-white/10"} />
                                         <div className={index % 2 === 0 ? "mt-4 h-8 w-24 rounded-lg bg-white/10" : "mt-4 h-8 w-32 rounded-lg bg-white/10"} />
