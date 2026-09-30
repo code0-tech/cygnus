@@ -13,7 +13,7 @@ import { formatMinorCurrency } from "@/lib/formatters"
 import type { AppLocale } from "@/lib/i18n"
 import { downloadLicenseFile } from "@/lib/licenses/licenseClient"
 import { formatLicenseDisplayValue } from "@/lib/licenses/licenseDisplayValues"
-import { createLicenseCustomerPath, createLicensePath, resolveCustomerRouteId, resolveLicenseRouteId } from "@/lib/licenses/licenseRoute"
+import { createLicensePath, resolveCustomerRouteId, resolveLicenseRouteId } from "@/lib/licenses/licenseRoute"
 import type { LicenseDashboardInvoice } from "@/lib/licenses/licenseTypes"
 import { cn } from "@/lib/utils"
 import {
@@ -45,8 +45,7 @@ import {
     Text,
     type DataTableFilterProps,
 } from "@code0-tech/pictor"
-import { IconArrowUpRight, IconDotsVertical, IconDownload, IconEye, IconX } from "@tabler/icons-react"
-import Link from "next/link"
+import { IconDotsVertical, IconDownload, IconEye, IconX } from "@tabler/icons-react"
 import { useRouter } from "next/navigation"
 import { Fragment, useState } from "react"
 
@@ -89,14 +88,6 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
             .join(" – ")
     }
     const showNamespaceWarning = license?.deploymentType === "cloud" && !license.namespaceId
-    const customerDetail = license
-        ? {
-              badge: formatLicenseDisplayValue(customer?.customerType ?? license.customerType, "customerType", content.values),
-              href: createLicenseCustomerPath(locale, license.customerId),
-              label: content.dashboard.customerLabel,
-              value: customer?.name?.trim() || customer?.email?.trim() || customer?.id || license.customerName || license.customerId,
-          }
-        : null
     const licenseDetails: LicenseDetailItem[] = license
         ? [
               { label: content.dashboard.statusLabel, value: formatLicenseDisplayValue(license.status, "status", content.values), showStatusDot: true },
@@ -259,38 +250,6 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
                         </Text>
                     )}
                 </Card>
-
-                {customerDetail ? (
-                    <>
-                        <Spacing spacing="md" />
-                        <Card color="secondary" className="min-w-0">
-                            <div className="flex min-w-0 items-center gap-2">
-                                <Text size="sm" hierarchy="tertiary" className="truncate">
-                                    {customerDetail.label}
-                                </Text>
-                                <Badge color="tertiary">{customerDetail.badge}</Badge>
-                            </div>
-                            <Link
-                                href={customerDetail.href}
-                                aria-label={`${customerDetail.label}: ${customerDetail.value}`}
-                                className="mt-3 flex w-fit max-w-full items-center gap-2 rounded-md outline-none hover:text-brand focus-visible:ring-2 focus-visible:ring-brand/60"
-                            >
-                                <Text fw={400} title={customerDetail.value} className="min-w-0 truncate text-xl! leading-tight! text-inherit!">
-                                    {customerDetail.value}
-                                </Text>
-                                <IconArrowUpRight aria-hidden="true" className="shrink-0" size={17} />
-                            </Link>
-                        </Card>
-                    </>
-                ) : isLoading ? (
-                    <>
-                        <Spacing spacing="md" />
-                        <Card color="secondary" aria-hidden="true" className="animate-pulse motion-reduce:animate-none">
-                            <div className="h-3 w-20 rounded-full bg-white/10" />
-                            <div className="mt-4 h-8 w-32 rounded-lg bg-white/10" />
-                        </Card>
-                    </>
-                ) : null}
 
                 {showWithdrawalNotice && withdrawalDeadline && (
                     <>
