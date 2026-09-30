@@ -1,8 +1,16 @@
 import { cn } from "@/lib/utils"
 import type { HTMLAttributes } from "react"
 
+function normalizeStatus(status?: string) {
+    return status?.trim().toLowerCase().replaceAll("-", "_")
+}
+
+export function isLicenseStatusError(status?: string) {
+    return normalizeStatus(status) === "payment_failed"
+}
+
 function getStatusColor(status?: string) {
-    switch (status?.trim().toLowerCase().replaceAll("-", "_")) {
+    switch (normalizeStatus(status)) {
         case "active":
         case "paid":
             return "bg-brand"

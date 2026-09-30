@@ -1,7 +1,7 @@
 "use client"
 
 import { LicenseDeploymentIcon } from "@/components/licenses/LicenseDeploymentIcon"
-import { LicenseStatusDot } from "@/components/licenses/LicenseStatusDot"
+import { isLicenseStatusError, LicenseStatusDot } from "@/components/licenses/LicenseStatusDot"
 import { ButtonLoader } from "@/components/ui/Loader"
 import type { LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
@@ -177,6 +177,13 @@ function LicenseBackToCustomerButton({ license, locale }: { license: LicenseDash
     )
 }
 
+// Cloud licenses are named after their namespace (ID as placeholder until a name is available); self-hosted licenses keep the plan name.
+function getLicenseSidebarName(license: LicenseDashboardLicense, values: LicenseContent["values"]) {
+    const planName = formatLicenseDisplayValue(license.plan, "plan", values)
+    if (license.deploymentType === "self_hosted") return planName
+    return getNamespaceDisplayId(license.namespaceId) || planName
+}
+
 function getShortLicenseId(id: string) {
     const identifier = id.split("/").at(-1)?.trim()
     return `#${identifier || id.slice(-6)}`
@@ -246,9 +253,7 @@ export function LicenseSidebar({ content, isLoading, isLoggingOut, locale, licen
                                     </div>
                                 ) : licenses.length > 0 ? (
                                     licenses.map((license) => {
-                                        const deployment = formatLicenseDisplayValue(license.deploymentType, "deploymentType", content.values)
                                         const status = formatLicenseDisplayValue(license.status, "status", content.values)
-                                        const identifier = getNamespaceDisplayId(license.namespaceId) || getShortLicenseId(license.id)
                                         const licenseHref = createLicensePath(locale, license.customerId, license.id)
                                         const licenseIsActive = pathname === licenseHref || pathname?.startsWith(`${licenseHref}/`)
 
@@ -260,14 +265,16 @@ export function LicenseSidebar({ content, isLoading, isLoggingOut, locale, licen
                                             >
                                                 <span className="relative shrink-0">
                                                     <LicenseDeploymentIcon deploymentType={license.deploymentType} size={16} />
-                                                    <LicenseStatusDot status={license.status} aria-label={status} title={status} className="absolute -bottom-0.5 -right-0.5 ring-2 ring-light" />
+                                                    {isLicenseStatusError(license.status) ? (
+                                                        <LicenseStatusDot status={license.status} aria-label={status} title={status} className="absolute -bottom-0.5 -right-0.5 ring-2 ring-light" />
+                                                    ) : null}
                                                 </span>
                                                 <span className="min-w-0 flex-1">
                                                     <span className="block truncate text-sm text-white">
-                                                        {formatLicenseDisplayValue(license.plan, "plan", content.values)} | {deployment}
+                                                        {getLicenseSidebarName(license, content.values)}
                                                     </span>
                                                     <span className="block truncate text-xs text-tertiary">
-                                                        {license.customerName} | {identifier}
+                                                        {license.customerName} | {getShortLicenseId(license.id)}
                                                     </span>
                                                 </span>
                                             </MenuItem>
@@ -311,7 +318,6 @@ export function LicenseSidebar({ content, isLoading, isLoggingOut, locale, licen
                                 ) : licenses.length > 0 ? (
                                     <ul className="space-y-1.5">
                                         {licenses.map((license) => {
-                                            const deployment = formatLicenseDisplayValue(license.deploymentType, "deploymentType", content.values)
                                             const status = formatLicenseDisplayValue(license.status, "status", content.values)
                                             const licenseHref = createLicensePath(locale, license.customerId, license.id)
                                             const licenseIsActive = pathname === licenseHref || pathname?.startsWith(`${licenseHref}/`)
@@ -329,14 +335,18 @@ export function LicenseSidebar({ content, isLoading, isLoggingOut, locale, licen
                                                         >
                                                             <span className="relative shrink-0">
                                                                 <LicenseDeploymentIcon deploymentType={license.deploymentType} />
-                                                                <LicenseStatusDot
-                                                                    status={license.status}
-                                                                    aria-label={status}
-                                                                    title={status}
-                                                                    className="absolute -bottom-0.5 -right-0.5 ring-2 ring-light"
-                                                                />
+                                                                {isLicenseStatusError(license.status) ? (
+                                                                    <LicenseStatusDot
+                                                                        status={license.status}
+                                                                        aria-label={status}
+                                                                        title={status}
+                                                                        className="absolute -bottom-0.5 -right-0.5 ring-2 ring-light"
+                                                                    />
+                                                                ) : null}
                                                             </span>
-                                                            <Text size="md">{formatLicenseDisplayValue(license.plan, "plan", content.values)}</Text>
+                                                            <Text size="md" className="truncate">
+                                                                {getLicenseSidebarName(license, content.values)}
+                                                            </Text>
                                                         </Button>
                                                     </Link>
                                                 </li>
