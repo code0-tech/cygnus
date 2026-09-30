@@ -1,6 +1,7 @@
 "use client"
 
 import { DataTableControls } from "@/components/licenses/DataTableControls"
+import { getLicenseDetailGridCellClassName } from "@/components/licenses/licenseDetailGrid"
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
 import { LicenseLoadMoreButton } from "@/components/licenses/LicenseLoadMoreButton"
 import { LICENSE_DATA_TABLE_PAGE_SIZE, LicenseDataTablePagination } from "@/components/licenses/LicenseDataTablePagination"
@@ -9,10 +10,15 @@ import type { LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { formatLicenseDisplayValue } from "@/lib/licenses/licenseDisplayValues"
 import { createLicenseCustomerPath, createLicensePath, resolveCustomerRouteId } from "@/lib/licenses/licenseRoute"
-import { cn } from "@/lib/utils"
 import { AutoScrollArea, Button, Card, DataTable, DataTableColumn, DataTableHeader, DataTableHeaderColumn, Flex, Spacing, Text, type DataTableFilterProps } from "@code0-tech/pictor"
 import { useRouter } from "next/navigation"
 import { Fragment, useState } from "react"
+
+function formatLicenseEdition(deploymentType?: string) {
+    if (deploymentType === "cloud") return "Cloud Edition"
+    if (deploymentType === "self_hosted") return "Enterprise Edition"
+    return "—"
+}
 
 interface LicenseCustomerPageProps {
     content: LicenseContent
@@ -74,13 +80,7 @@ export function LicenseCustomerPage({ content, customerId, locale }: LicenseCust
                             {customerDetails.map((detail, index) => (
                                 <div
                                     key={detail.label}
-                                    className={cn(
-                                        "min-w-0 px-6 py-5",
-                                        index > 0 && "border-t border-white/10",
-                                        index === 1 && "sm:border-l sm:border-t-0",
-                                        index === 3 && "sm:border-l",
-                                        index > 0 && "xl:border-l xl:border-t-0"
-                                    )}
+                                    className={getLicenseDetailGridCellClassName(index)}
                                 >
                                     <Text size="sm" hierarchy="tertiary" className="truncate">
                                         {detail.label}
@@ -96,13 +96,7 @@ export function LicenseCustomerPage({ content, customerId, locale }: LicenseCust
                             {Array.from({ length: 4 }, (_, index) => (
                                 <div
                                     key={index}
-                                    className={cn(
-                                        "min-w-0 animate-pulse px-6 py-5 motion-reduce:animate-none",
-                                        index > 0 && "border-t border-white/10",
-                                        index === 1 && "sm:border-l sm:border-t-0",
-                                        index === 3 && "sm:border-l",
-                                        index > 0 && "xl:border-l xl:border-t-0"
-                                    )}
+                                    className={getLicenseDetailGridCellClassName(index, "animate-pulse motion-reduce:animate-none")}
                                 >
                                     <div className={index % 2 === 0 ? "h-3 w-16 rounded-full bg-white/10" : "h-3 w-20 rounded-full bg-white/10"} />
                                     <div className={index === 1 ? "mt-4 h-8 w-32 rounded-lg bg-white/10" : "mt-4 h-8 w-20 rounded-lg bg-white/10"} />
@@ -181,7 +175,7 @@ export function LicenseCustomerPage({ content, customerId, locale }: LicenseCust
                             <DataTableHeader>
                                 <DataTableHeaderColumn className="text-xs font-normal text-tertiary">{content.licenses}</DataTableHeaderColumn>
                                 <DataTableHeaderColumn className="text-xs font-normal text-tertiary">{content.dashboard.statusLabel}</DataTableHeaderColumn>
-                                <DataTableHeaderColumn className="text-xs font-normal text-tertiary">{content.dashboard.deploymentLabel}</DataTableHeaderColumn>
+                                <DataTableHeaderColumn className="text-xs font-normal text-tertiary">Edition</DataTableHeaderColumn>
                                 <DataTableHeaderColumn className="text-xs font-normal text-tertiary">{content.dashboard.lastEditedLabel}</DataTableHeaderColumn>
                             </DataTableHeader>
                             {(license) => (
@@ -203,7 +197,7 @@ export function LicenseCustomerPage({ content, customerId, locale }: LicenseCust
                                     </DataTableColumn>
                                     <DataTableColumn>
                                         <Text size="sm" hierarchy="tertiary">
-                                            {formatLicenseDisplayValue(license.deploymentType, "deploymentType", content.values)}
+                                            {formatLicenseEdition(license.deploymentType)}
                                         </Text>
                                     </DataTableColumn>
                                     <DataTableColumn>
