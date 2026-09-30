@@ -2,7 +2,8 @@
 
 import type { PaymentMethodDisplayDetails } from "@/lib/licenses/licenseClient"
 import { cn } from "@/lib/utils"
-import { Badge, Card, Text } from "@code0-tech/pictor"
+import { Badge, Text } from "@code0-tech/pictor"
+import CardSection from "@code0-tech/pictor/dist/components/card/CardSection"
 import { IconCreditCard } from "@tabler/icons-react"
 import type { ReactNode } from "react"
 
@@ -19,7 +20,7 @@ export function CustomerPaymentMethodCard({ action, defaultLabel, method }: Cust
     const expiry = method.expiresMonth && method.expiresYear ? `${String(method.expiresMonth).padStart(2, "0")}/${method.expiresYear}` : null
 
     return (
-        <Card className="flex items-center gap-4 bg-light!">
+        <CardSection border className="flex items-center gap-4">
             <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-white/7 text-brand">
                 <IconCreditCard aria-hidden="true" size={20} />
             </div>
@@ -37,6 +38,24 @@ export function CustomerPaymentMethodCard({ action, defaultLabel, method }: Cust
                 ) : null}
             </div>
             {action}
-        </Card>
+        </CardSection>
+    )
+}
+
+// The loading label lives inside the row: any extra element before the first CardSection breaks Pictor's :first-child card styling.
+export function CustomerPaymentMethodCardSkeleton({ label }: { label?: string }) {
+    return (
+        <CardSection border className="flex animate-pulse items-center gap-4 motion-reduce:animate-none">
+            {label ? (
+                <span role="status" className="sr-only">
+                    {label}
+                </span>
+            ) : null}
+            <div aria-hidden="true" className="size-10 shrink-0 rounded-xl bg-white/7" />
+            <div aria-hidden="true" className="min-w-0 flex-1 space-y-2">
+                <div className="h-3.5 w-36 rounded-full bg-white/10" />
+                <div className="h-3 w-14 rounded-full bg-white/7" />
+            </div>
+        </CardSection>
     )
 }

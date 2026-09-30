@@ -2,7 +2,8 @@
 
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
 import { LicenseDialog } from "@/components/licenses/dialog/LicenseDialog"
-import { CustomerPaymentMethodCard } from "@/components/licenses/dialog/CustomerPaymentMethodCard"
+import { CustomerPaymentMethodCard, CustomerPaymentMethodCardSkeleton } from "@/components/licenses/dialog/CustomerPaymentMethodCard"
+import { LicenseTabAlert, LicenseTabHeader, LicenseTabRow, LicenseTabSaveButton, LicenseTabSection } from "@/components/licenses/dialog/LicenseTabLayout"
 import { PaymentMethodSetupDialog } from "@/components/licenses/dialog/PaymentMethodSetupDialog"
 import { ButtonLoader } from "@/components/ui/Loader"
 import { useCustomerPaymentMethods } from "@/hooks/usePaymentMethods"
@@ -10,11 +11,10 @@ import type { CheckoutData, ErrorsContent, LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { type CustomerEditSection, getCustomerEditSectionLabels } from "@/lib/licenses/customerEditSections"
 import { createLicenseCustomerPath, resolveCustomerRouteId } from "@/lib/licenses/licenseRoute"
-import { cn } from "@/lib/utils"
-import { Button, DialogFooter, EmailInput, ScrollArea, ScrollAreaScrollbar, ScrollAreaThumb, ScrollAreaViewport, Text, TextInput } from "@code0-tech/pictor"
-import { IconCreditCard, IconTrash, IconUser } from "@tabler/icons-react"
+import { Button, EmailInput, Spacing, TabContent, TabList, TabTrigger, Text, TextInput } from "@code0-tech/pictor"
+import { IconCreditCard, IconMail, IconPhone, IconTrash, IconUser } from "@tabler/icons-react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
-import { type SyntheticEvent, useEffect, useState } from "react"
+import { Fragment, type ReactNode, type SyntheticEvent, useEffect, useState } from "react"
 
 interface CustomerEditDialogProps {
     checkoutForm: CheckoutData["form"]
@@ -22,6 +22,21 @@ interface CustomerEditDialogProps {
     customerId: string
     errors: ErrorsContent
     locale: AppLocale
+}
+
+interface CustomerField {
+    autoComplete: string
+    className?: string
+    description: string
+    maxLength?: number
+    name: string
+    onChange: (value: string) => void
+    pattern?: string
+    title: string
+    type?: "email"
+    left?: ReactNode
+    leftType?: "icon"
+    value: string
 }
 
 export function CustomerEditDialog({ checkoutForm, content, customerId, errors, locale }: CustomerEditDialogProps) {
@@ -149,43 +164,102 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
         }
     }
 
+    const fieldDescriptions =
+        locale === "de"
+            ? {
+                  city: "Ort der Rechnungsadresse.",
+                  country: "Zweistelliger ISO-Ländercode, z. B. DE.",
+                  email: "Rechnungs-E-Mails werden an diese Adresse gesendet.",
+                  line1: "Straße und Hausnummer.",
+                  line2: "Adresszusatz wie Etage, Wohnung oder c/o.",
+                  name: "Name der Person oder Firma, an die Rechnungen adressiert werden.",
+                  phone: "Optionale Telefonnummer für Rückfragen zur Abrechnung.",
+                  postalCode: "Postleitzahl der Rechnungsadresse.",
+                  state: "Bundesland, Provinz oder Region, falls zutreffend.",
+              }
+            : {
+                  city: "City of the billing address.",
+                  country: "Two-letter ISO country code, e.g. DE.",
+                  email: "Invoice emails are sent to this address.",
+                  line1: "Street and house number.",
+                  line2: "Additional address details such as floor, suite or c/o.",
+                  name: "Name of the person or company invoices are addressed to.",
+                  phone: "Optional phone number for billing questions.",
+                  postalCode: "Postal code of the billing address.",
+                  state: "State, province or region, if applicable.",
+              }
+    const contactFields: CustomerField[] = [
+        { autoComplete: "name", description: fieldDescriptions.name, name: "name", onChange: setName, title: checkoutForm.nameLabel, value: name },
+        {
+            autoComplete: "email",
+            description: fieldDescriptions.email,
+            name: "email",
+            onChange: setEmail,
+            title: checkoutForm.emailLabel,
+            type: "email",
+            value: email,
+            left: <IconMail aria-hidden="true" size={16} />,
+            leftType: "icon",
+        },
+        {
+            autoComplete: "tel",
+            description: fieldDescriptions.phone,
+            name: "phone",
+            onChange: setPhone,
+            title: checkoutForm.phoneLabel,
+            value: phone,
+            left: <IconPhone aria-hidden="true" size={16} />,
+            leftType: "icon",
+        },
+    ]
+    const billingFields: CustomerField[] = [
+        { autoComplete: "address-line1", description: fieldDescriptions.line1, name: "address-line1", onChange: setLine1, title: checkoutForm.line1Label, value: line1 },
+        { autoComplete: "address-line2", description: fieldDescriptions.line2, name: "address-line2", onChange: setLine2, title: checkoutForm.line2Label, value: line2 },
+        { autoComplete: "postal-code", description: fieldDescriptions.postalCode, name: "postal-code", onChange: setPostalCode, title: checkoutForm.postalCodeLabel, value: postalCode },
+        { autoComplete: "address-level2", description: fieldDescriptions.city, name: "address-level2", onChange: setCity, title: checkoutForm.cityLabel, value: city },
+        { autoComplete: "address-level1", description: fieldDescriptions.state, name: "address-level1", onChange: setState, title: checkoutForm.stateLabel, value: state },
+        {
+            autoComplete: "country",
+            className: "uppercase",
+            description: fieldDescriptions.country,
+            maxLength: 2,
+            name: "country",
+            onChange: setCountry,
+            pattern: "[A-Za-z]{2}",
+            title: checkoutForm.countryLabel,
+            value: country,
+        },
+    ]
+    const renderFields = (fields: CustomerField[]) =>
+        fields.map(({ onChange, type, ...field }, index) => {
+            const Input = type === "email" ? EmailInput : TextInput
+
+            return (
+                <Fragment key={field.name}>
+                    {index > 0 ? <Spacing spacing="md" /> : null}
+                    <Input w="100%" {...field} onChange={(event) => onChange(event.currentTarget.value)} />
+                </Fragment>
+            )
+        })
+
+    const sectionIcons = { general: IconUser, paymentMethods: IconCreditCard } satisfies Record<CustomerEditSection, typeof IconUser>
     const sidebar = (
-        <div role="tablist" aria-label={content.editor.customerTitle} className="flex flex-col gap-1">
-            {[
-                { icon: IconUser, label: sectionLabels.general, value: "general" as const },
-                { icon: IconCreditCard, label: sectionLabels.paymentMethods, value: "paymentMethods" as const },
-            ].map((tab) => {
-                const selected = section === tab.value
-                const TabIcon = tab.icon
+        <TabList aria-label={content.editor.customerTitle}>
+            {(["general", "paymentMethods"] as const).map((value) => {
+                const TabIcon = sectionIcons[value]
 
                 return (
-                    <Button
-                        key={tab.value}
-                        type="button"
-                        role="tab"
-                        id={`customer-edit-tab-${tab.value}`}
-                        aria-controls={`customer-edit-panel-${tab.value}`}
-                        aria-selected={selected}
-                        active={selected}
-                        variant={selected ? "normal" : "none"}
-                        paddingSize="xxs"
-                        w="100%"
-                        justify="start"
-                        className={cn(
-                            "relative rounded-2xl! text-sm! text-tertiary! transition-colors! hover:text-white!",
-                            selected &&
-                                "bg-white/10! text-white! shadow-[inset_0_1px_1px_#bfbfbf1a]! before:absolute before:-left-3 before:top-1/2 before:h-3 before:w-0.5 before:-translate-y-1/2 before:rounded-full before:bg-brand"
-                        )}
-                        onClick={() => setSection(tab.value)}
-                    >
-                        <TabIcon aria-hidden="true" size={16} className="text-tertiary" />
-                        <Text className="truncate" size="md">
-                            {tab.label}
-                        </Text>
-                    </Button>
+                    <TabTrigger key={value} value={value} w="100%" asChild>
+                        <Button type="button" paddingSize="xxs" variant="none" justify="start" className="rounded-2xl! h-8!">
+                            <TabIcon aria-hidden="true" size={13} />
+                            <Text className="truncate" size="md">
+                                {sectionLabels[value]}
+                            </Text>
+                        </Button>
+                    </TabTrigger>
                 )
             })}
-        </div>
+        </TabList>
     )
 
     return (
@@ -193,183 +267,95 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
             backLabel={content.editor.closeLabel}
             description={section === "general" ? content.editor.customerDescription : content.editor.paymentMethodDescription}
             onClose={close}
+            onValueChange={(value) => (value === "general" || value === "paymentMethods") && setSection(value)}
             sidebar={sidebar}
             title={content.editor.customerTitle}
+            value={section}
         >
-            {section === "general" ? (
-                <div className="space-y-6" role="tabpanel" id="customer-edit-panel-general" aria-labelledby="customer-edit-tab-general">
-                    <form id="customer-details-form" onSubmit={save} className="space-y-6">
-                        <fieldset className="space-y-4">
-                            <legend>
-                                <Text size="sm" fw={500} hierarchy="secondary">
-                                    {content.editor.contactHeading}
-                                </Text>
-                            </legend>
-                            <div className="grid gap-4 sm:grid-cols-2">
-                                <TextInput title={checkoutForm.nameLabel} name="name" autoComplete="name" value={name} onChange={(event) => setName(event.currentTarget.value)} className="w-full!" />
-                                <EmailInput
-                                    title={checkoutForm.emailLabel}
-                                    name="email"
-                                    autoComplete="email"
-                                    value={email}
-                                    onChange={(event) => setEmail(event.currentTarget.value)}
-                                    className="w-full!"
-                                />
-                                <TextInput
-                                    title={checkoutForm.phoneLabel}
-                                    name="phone"
-                                    autoComplete="tel"
-                                    value={phone}
-                                    onChange={(event) => setPhone(event.currentTarget.value)}
-                                    className="w-full! sm:col-span-2"
-                                />
-                            </div>
-                        </fieldset>
-
-                        <fieldset className="space-y-4">
-                            <legend>
-                                <Text size="sm" fw={500} hierarchy="secondary">
-                                    {checkoutForm.billingHeading}
-                                </Text>
-                            </legend>
-                            <div className="grid gap-4 sm:grid-cols-2">
-                                <TextInput
-                                    title={checkoutForm.line1Label}
-                                    name="address-line1"
-                                    autoComplete="address-line1"
-                                    value={line1}
-                                    onChange={(event) => setLine1(event.currentTarget.value)}
-                                    className="w-full! sm:col-span-2"
-                                />
-                                <TextInput
-                                    title={checkoutForm.line2Label}
-                                    name="address-line2"
-                                    autoComplete="address-line2"
-                                    value={line2}
-                                    onChange={(event) => setLine2(event.currentTarget.value)}
-                                    className="w-full! sm:col-span-2"
-                                />
-                                <TextInput
-                                    title={checkoutForm.postalCodeLabel}
-                                    name="postal-code"
-                                    autoComplete="postal-code"
-                                    value={postalCode}
-                                    onChange={(event) => setPostalCode(event.currentTarget.value)}
-                                    className="w-full!"
-                                />
-                                <TextInput
-                                    title={checkoutForm.cityLabel}
-                                    name="address-level2"
-                                    autoComplete="address-level2"
-                                    value={city}
-                                    onChange={(event) => setCity(event.currentTarget.value)}
-                                    className="w-full!"
-                                />
-                                <TextInput
-                                    title={checkoutForm.stateLabel}
-                                    name="address-level1"
-                                    autoComplete="address-level1"
-                                    value={state}
-                                    onChange={(event) => setState(event.currentTarget.value)}
-                                    className="w-full!"
-                                />
-                                <TextInput
-                                    title={checkoutForm.countryLabel}
-                                    name="country"
-                                    autoComplete="country"
-                                    maxLength={2}
-                                    pattern="[A-Za-z]{2}"
-                                    value={country}
-                                    onChange={(event) => setCountry(event.currentTarget.value)}
-                                    className="w-full! uppercase"
-                                />
-                            </div>
-                        </fieldset>
-                    </form>
-                    {error && (
-                        <p role="alert" className="text-sm text-error">
-                            {error}
-                        </p>
-                    )}
-                    <DialogFooter className="gap-3! pt-2!">
-                        <Button form="customer-details-form" type="submit" variant="filled" disabled={!customer || isSaving}>
+            <TabContent value="general">
+                <LicenseTabHeader
+                    title={sectionLabels.general}
+                    description={content.editor.customerDescription}
+                    action={
+                        <LicenseTabSaveButton form="customer-details-form" type="submit" disabled={!customer || isSaving}>
                             {isSaving ? <ButtonLoader label={content.editor.saveLabel} /> : content.editor.saveLabel}
-                        </Button>
-                    </DialogFooter>
-                </div>
-            ) : (
-                <div className="space-y-6" role="tabpanel" id="customer-edit-panel-paymentMethods" aria-labelledby="customer-edit-tab-paymentMethods">
-                    <ScrollArea h="32rem" type="scroll">
-                        <ScrollAreaViewport className="h-full! w-full!">
-                            <div className="space-y-3 pr-3">
-                                {isLoadingPaymentMethods ? (
-                                    <div role="status" className="space-y-3 animate-pulse motion-reduce:animate-none">
-                                        <span className="sr-only">{content.editor.loadingPaymentMethodLabel}</span>
-                                        <div aria-hidden="true" className="h-14 rounded-2xl bg-white/8" />
-                                        <div aria-hidden="true" className="h-14 rounded-2xl bg-white/8" />
-                                    </div>
-                                ) : paymentMethodsError ? (
-                                    <div className="space-y-3">
-                                        <Text role="alert" size="sm" className="text-error!">
-                                            {errors.paymentMethodLoad}
-                                        </Text>
-                                        <Button type="button" variant="normal" paddingSize="xs" onClick={refreshPaymentMethods}>
-                                            {errors.retry}
-                                        </Button>
-                                    </div>
-                                ) : paymentMethods && paymentMethods.length > 0 ? (
-                                    paymentMethods.map((method) => (
-                                        <CustomerPaymentMethodCard
-                                            key={method.id}
-                                            method={method}
-                                            action={
-                                                <Button
-                                                    type="button"
-                                                    variant="none"
-                                                    paddingSize="xs"
-                                                    disabled={removingPaymentMethodId === method.id}
-                                                    onClick={() => void removePaymentMethod(method.id)}
-                                                    aria-label={content.editor.removePaymentMethodLabel}
-                                                >
-                                                    {removingPaymentMethodId === method.id ? (
-                                                        <ButtonLoader label={content.editor.removingPaymentMethodLabel} />
-                                                    ) : (
-                                                        <IconTrash aria-hidden="true" size={16} />
-                                                    )}
-                                                </Button>
-                                            }
-                                        />
-                                    ))
-                                ) : (
-                                    <Text size="sm" hierarchy="tertiary">
-                                        {content.editor.noPaymentMethodsLabel}
-                                    </Text>
-                                )}
-                            </div>
-                        </ScrollAreaViewport>
-                        <ScrollAreaScrollbar orientation="vertical" className="w-1.5!">
-                            <ScrollAreaThumb className="bg-white/15! hover:bg-white/25!" />
-                        </ScrollAreaScrollbar>
-                    </ScrollArea>
+                        </LicenseTabSaveButton>
+                    }
+                />
+                {error ? <LicenseTabAlert>{error}</LicenseTabAlert> : null}
+                <form id="customer-details-form" onSubmit={save}>
+                    <Spacing spacing="xl" />
+                    <Text size="md" hierarchy="secondary">
+                        {content.editor.contactHeading}
+                    </Text>
+                    <Spacing spacing="md" />
+                    {renderFields(contactFields)}
+                    <Spacing spacing="xl" />
+                    <Text size="md" hierarchy="secondary">
+                        {checkoutForm.billingHeading}
+                    </Text>
+                    <Spacing spacing="md" />
+                    {renderFields(billingFields)}
+                </form>
+            </TabContent>
+            <TabContent value="paymentMethods">
+                <LicenseTabHeader
+                    title={sectionLabels.paymentMethods}
+                    description={content.editor.paymentMethodDescription}
+                    action={
+                        customer ? (
+                            <PaymentMethodSetupDialog
+                                content={content}
+                                errors={errors}
+                                onSuccess={paymentMethodAdded}
+                                owner={{ customerId: customer.id }}
+                                returnPath={`${createLicenseCustomerPath(locale, customer.id)}/edit`}
+                                triggerLabel={content.editor.addPaymentMethodLabel}
+                            />
+                        ) : null
+                    }
+                />
+                {removePaymentMethodError ? <LicenseTabAlert>{removePaymentMethodError}</LicenseTabAlert> : null}
 
-                    {removePaymentMethodError && (
-                        <Text role="alert" size="sm" className="text-error!">
-                            {removePaymentMethodError}
-                        </Text>
-                    )}
-
-                    {customer && (
-                        <PaymentMethodSetupDialog
-                            content={content}
-                            errors={errors}
-                            onSuccess={paymentMethodAdded}
-                            owner={{ customerId: customer.id }}
-                            returnPath={`${createLicenseCustomerPath(locale, customer.id)}/edit`}
-                            triggerLabel={content.editor.addPaymentMethodLabel}
+                <LicenseTabSection>
+                    {isLoadingPaymentMethods ? (
+                        <>
+                            <CustomerPaymentMethodCardSkeleton label={content.editor.loadingPaymentMethodLabel} />
+                            <CustomerPaymentMethodCardSkeleton />
+                        </>
+                    ) : paymentMethodsError ? (
+                        <LicenseTabRow
+                            description={<span className="text-error">{errors.paymentMethodLoad}</span>}
+                            action={
+                                <Button type="button" variant="normal" paddingSize="xxs" onClick={refreshPaymentMethods}>
+                                    {errors.retry}
+                                </Button>
+                            }
                         />
+                    ) : paymentMethods && paymentMethods.length > 0 ? (
+                        paymentMethods.map((method) => (
+                            <CustomerPaymentMethodCard
+                                key={method.id}
+                                method={method}
+                                action={
+                                    <Button
+                                        type="button"
+                                        variant="none"
+                                        paddingSize="xxs"
+                                        disabled={removingPaymentMethodId === method.id}
+                                        onClick={() => void removePaymentMethod(method.id)}
+                                        aria-label={content.editor.removePaymentMethodLabel}
+                                    >
+                                        {removingPaymentMethodId === method.id ? <ButtonLoader label={content.editor.removingPaymentMethodLabel} /> : <IconTrash aria-hidden="true" size={16} />}
+                                    </Button>
+                                }
+                            />
+                        ))
+                    ) : (
+                        <LicenseTabRow description={content.editor.noPaymentMethodsLabel} />
                     )}
-                </div>
-            )}
+                </LicenseTabSection>
+            </TabContent>
         </LicenseDialog>
     )
 }

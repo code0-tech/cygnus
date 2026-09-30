@@ -80,7 +80,7 @@ export function PaymentMethodSetupDialog({ content, disabled = false, errors, on
 
     return (
         <>
-            <Button type="button" variant="normal" disabled={disabled} onClick={() => setOpen(true)}>
+            <Button type="button" variant="normal" paddingSize="xxs" disabled={disabled} onClick={() => setOpen(true)}>
                 {triggerLabel}
             </Button>
 

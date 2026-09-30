@@ -1,0 +1,160 @@
+"use client"
+
+import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
+import { LicenseStatusBadge } from "@/components/licenses/LicenseStatusBadge"
+import { LicenseTabAlert, LicenseTabHeader, LicenseTabRow, LicenseTabSaveButton, LicenseTabSection } from "@/components/licenses/dialog/LicenseTabLayout"
+import { ButtonLoader } from "@/components/ui/Loader"
+import { Switch } from "@/components/ui/Switch"
+import { useSubscriptionUpdatePreview } from "@/hooks/useSubscriptionUpdatePreview"
+import type { ErrorsContent, LicenseContent, SubscriptionConfigData } from "@/lib/cms"
+import { formatMinorCurrency } from "@/lib/formatters"
+import type { AppLocale } from "@/lib/i18n"
+import { formatLicenseDisplayValue } from "@/lib/licenses/licenseDisplayValues"
+import { createLicensePath, getNamespaceDisplayId } from "@/lib/licenses/licenseRoute"
+import type { LicenseDashboardLicense } from "@/lib/licenses/licenseTypes"
+import { resolveSubscriptionCustomerType } from "@/lib/licenses/licenseSubscription"
+import type { PaymentPeriod } from "@/lib/subscription/calculator"
+import { updateSubscription } from "@/lib/subscription/client"
+import { getPaymentPeriodOptions } from "@/lib/subscription/configurator"
+import { Badge, Button, Text } from "@code0-tech/pictor"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
+
+interface LicenseGeneralTabProps {
+    content: LicenseContent
+    errors: ErrorsContent
+    license?: LicenseDashboardLicense
+    locale: AppLocale
+    namespaceHref: string
+    namespaceSelectionFailed: boolean
+    onClose: () => void
+    subscriptionConfig: SubscriptionConfigData
+    title: string
+}
+
+export function LicenseGeneralTab({ content, errors, license, locale, namespaceHref, namespaceSelectionFailed, onClose, subscriptionConfig, title }: LicenseGeneralTabProps) {
+    const router = useRouter()
+    const { updateLicense } = useLicenseData()
+    const subscriptionId = license?.subscriptionId
+    const customerType = resolveSubscriptionCustomerType(license?.customerType)
+    const periodOptions = getPaymentPeriodOptions(customerType)
+    const currentPeriod = license?.paymentPeriod as PaymentPeriod | undefined
+    const [selectedPeriod, setSelectedPeriod] = useState<PaymentPeriod | null>(null)
+    const period = selectedPeriod ?? currentPeriod ?? periodOptions[0]
+    const hasChange = Boolean(subscriptionId) && period !== currentPeriod
+    const { isLoadingPreview, preview, previewError } = useSubscriptionUpdatePreview(hasChange ? subscriptionId : undefined, { paymentPeriod: period }, errors.subscriptionPreview)
+    const [saveError, setSaveError] = useState<string | null>(null)
+    const [isSaving, setIsSaving] = useState(false)
+    const labels = locale === "de" ? { cancellation: "Kündigung", namespace: "Namespace" } : { cancellation: "Cancellation", namespace: "Namespace" }
+
+    const save = async () => {
+        if (!license || !subscriptionId || !hasChange || isSaving) return
+        setIsSaving(true)
+        setSaveError(null)
+
+        try {
+            const subscription = await updateSubscription({ id: subscriptionId, paymentPeriod: period }, errors.billingUpdate)
+            updateLicense(license.id, {
+                ...(subscription.paymentPeriod ? { paymentPeriod: subscription.paymentPeriod } : {}),
+                ...(subscription.updatedAt ? { updatedAt: subscription.updatedAt } : {}),
+            })
+            onClose()
+        } catch (error) {
+            setSaveError(error instanceof Error ? error.message : errors.billingUpdate)
+        } finally {
+            setIsSaving(false)
+        }
+    }
+
+    const dateFormatter = new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeZone: "UTC" })
+    const formatDate = (value?: string | null) => (value ? dateFormatter.format(new Date(value)) : "—")
+    const periodLabelFor = (value: PaymentPeriod) => subscriptionConfig.paymentPeriod[`${value}Text`]
+
+    return (
+        <>
+            <LicenseTabHeader
+                title={title}
+                description={content.editor.licenseEditDescription}
+                action={
+                    subscriptionId ? (
+                        <LicenseTabSaveButton disabled={!hasChange || isSaving || isLoadingPreview} onClick={() => void save()}>
+                            {isSaving ? <ButtonLoader label={content.editor.saveLabel} /> : content.editor.saveLabel}
+                        </LicenseTabSaveButton>
+                    ) : null
+                }
+            />
+            {namespaceSelectionFailed ? <LicenseTabAlert>{errors.licenseUpdate}</LicenseTabAlert> : null}
+            {saveError ? <LicenseTabAlert>{saveError}</LicenseTabAlert> : null}
+
+            {license?.deploymentType === "cloud" ? (
+                <LicenseTabSection title={labels.namespace}>
+                    <LicenseTabRow
+                        title={getNamespaceDisplayId(license.namespaceId) ?? "—"}
+                        description={content.editor.licenseDescription}
+                        action={
+                            <Button type="button" variant="normal" paddingSize="xxs" onClick={() => window.location.assign(namespaceHref)}>
+                                {content.editor.changeNamespaceLabel}
+                            </Button>
+                        }
+                    />
+                </LicenseTabSection>
+            ) : null}
+
+            {license && subscriptionId ? (
+                <>
+                    <LicenseTabSection title={content.billing.title}>
+                        <LicenseTabRow
+                            title={content.dashboard.statusLabel}
+                            action={
+                                <LicenseStatusBadge status={license.subscriptionStatus ?? license.status}>
+                                    {formatLicenseDisplayValue(license.subscriptionStatus ?? license.status, "status", content.values)}
+                                </LicenseStatusBadge>
+                            }
+                        />
+                        <LicenseTabRow title={content.billing.currentPeriodEndLabel} action={<Badge color="tertiary">{formatDate(license.currentPeriodEnd)}</Badge>} />
+                        <LicenseTabRow title={content.billing.periodLabel} description={content.billing.description}>
+                            <Switch value={period} options={periodOptions.map((option) => ({ value: option, label: periodLabelFor(option) }))} onChange={setSelectedPeriod} />
+                        </LicenseTabRow>
+                        {hasChange ? (
+                            isLoadingPreview ? (
+                                <LicenseTabRow description={content.subscriptionPreview.loadingLabel} />
+                            ) : previewError ? (
+                                <LicenseTabRow>
+                                    <Text role="alert" size="sm" className="text-error!">
+                                        {previewError}
+                                    </Text>
+                                </LicenseTabRow>
+                            ) : preview ? (
+                                <>
+                                    <LicenseTabRow
+                                        title={content.subscriptionPreview.totalLabel}
+                                        description={preview.immediate ? content.subscriptionPreview.immediateNote : content.subscriptionPreview.scheduledNote}
+                                        action={<Text size="md">{formatMinorCurrency(preview.total, preview.currency, locale)}</Text>}
+                                    />
+                                    {preview.prorationAmount > 0 ? (
+                                        <LicenseTabRow
+                                            title={content.subscriptionPreview.prorationLabel}
+                                            action={<Text size="md">{formatMinorCurrency(preview.prorationAmount, preview.currency, locale)}</Text>}
+                                        />
+                                    ) : null}
+                                </>
+                            ) : null
+                        ) : null}
+                    </LicenseTabSection>
+
+                    <LicenseTabSection title={labels.cancellation}>
+                        <LicenseTabRow
+                            title={content.cancel.confirmLabel}
+                            description={content.cancel.description}
+                            action={
+                                <Button type="button" variant="normal" paddingSize="xxs" onClick={() => router.push(`${createLicensePath(locale, license.customerId, license.id)}/cancel`)}>
+                                    {content.cancel.confirmLabel}
+                                </Button>
+                            }
+                        />
+                    </LicenseTabSection>
+                </>
+            ) : null}
+        </>
+    )
+}
