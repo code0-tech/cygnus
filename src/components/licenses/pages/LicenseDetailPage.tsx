@@ -85,6 +85,11 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
             .map((value) => dateFormatter.format(new Date(value!)))
             .join(" – ")
     }
+    const formatDate = (value?: string) => (value ? dateFormatter.format(new Date(value)) : "—")
+    const billingDateLabel = locale === "de" ? "Rechnungsdatum" : "Billing date"
+    const nextBillingDateLabel = locale === "de" ? "Nächste Abrechnung" : "Next billing date"
+    // A canceled subscription, or one whose cancellation has been requested, is not billed again.
+    const hasNextBilling = Boolean(license && !license.canceledAt && license.status?.trim().toLowerCase() !== "canceled")
     const showNamespaceWarning = license?.deploymentType === "cloud" && !license.namespaceId
     const licenseDetails: LicenseDetailItem[] = license
         ? [
@@ -95,7 +100,7 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
                   value: formatLicenseDisplayValue(license.plan, "plan", content.values),
               },
               { label: content.dashboard.paymentPeriodLabel, value: formatLicenseDisplayValue(license.paymentPeriod, "paymentPeriod", content.values) },
-              { label: content.invoices.periodLabel, value: formatInvoicePeriod(license.currentPeriodStart, license.currentPeriodEnd) },
+              { label: nextBillingDateLabel, value: hasNextBilling ? formatDate(license.currentPeriodEnd) : "—" },
           ]
         : []
     const invoices = license?.invoices ?? []
@@ -272,7 +277,7 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
                         selectedFilters={invoiceStatusFilters}
                         onFilterChange={setInvoiceStatusFilters}
                         sortDirection={invoiceSortDirection}
-                        sortLabel={content.invoices.periodLabel}
+                        sortLabel={billingDateLabel}
                         onSortDirectionChange={setInvoiceSortDirection}
                     />
                 </Flex>
@@ -296,7 +301,7 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
                     >
                         <DataTableHeader>
                             <DataTableHeaderColumn className="font-normal text-tertiary text-xs">{content.invoices.numberLabel}</DataTableHeaderColumn>
-                            <DataTableHeaderColumn className="font-normal text-tertiary text-xs">{content.invoices.periodLabel}</DataTableHeaderColumn>
+                            <DataTableHeaderColumn className="font-normal text-tertiary text-xs">{billingDateLabel}</DataTableHeaderColumn>
                             <DataTableHeaderColumn className="font-normal text-tertiary text-xs">{content.invoices.amountLabel}</DataTableHeaderColumn>
                             <DataTableHeaderColumn className="font-normal text-tertiary text-xs">{content.invoices.statusLabel}</DataTableHeaderColumn>
                             <DataTableHeaderColumn />
@@ -310,7 +315,7 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
                                 </DataTableColumn>
                                 <DataTableColumn>
                                     <Text size="sm" hierarchy="tertiary">
-                                        {formatInvoicePeriod(invoice.billingPeriodStart, invoice.billingPeriodEnd)}
+                                        {formatDate(invoice.billingPeriodStart)}
                                     </Text>
                                 </DataTableColumn>
                                 <DataTableColumn>
