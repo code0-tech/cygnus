@@ -1,17 +1,13 @@
 "use client"
 
-import type { LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { Avatar, Button, Menu, MenuContent, MenuItem, MenuLabel, MenuPortal, MenuSeparator, MenuTrigger, Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from "@code0-tech/pictor"
-import { IconAdjustmentsFilled, IconApps, IconArrowAutofitLeftFilled, IconSettingsFilled, IconUser } from "@tabler/icons-react"
+import { IconAdjustmentsFilled, IconApps, IconSettingsFilled, IconUser } from "@tabler/icons-react"
 import Image from "next/image"
 import type { ReactNode } from "react"
 
 interface LicensePrimarySidebarProps {
-    content: Pick<LicenseContent["sidebar"], "logout" | "loggingOut">
-    isLoggingOut: boolean
     locale: AppLocale
-    onLogout: () => void
     onOpenMainApplication: (path: string) => void
 }
 
@@ -28,7 +24,7 @@ function NavigationTooltip({ children, label }: { children: ReactNode; label: st
     )
 }
 
-export function LicensePrimarySidebar({ content, isLoggingOut, locale, onLogout, onOpenMainApplication }: LicensePrimarySidebarProps) {
+export function LicensePrimarySidebar({ locale, onOpenMainApplication }: LicensePrimarySidebarProps) {
     const labels =
         locale === "de"
             ? {
@@ -74,19 +70,6 @@ export function LicensePrimarySidebar({ content, isLoggingOut, locale, onLogout,
                         className="size-8.5! justify-center! p-0! text-white! hover:bg-white/10! rounded-2xl!"
                     >
                         <IconSettingsFilled aria-hidden="true" size={16} />
-                    </Button>
-                </NavigationTooltip>
-
-                <NavigationTooltip label={isLoggingOut ? content.loggingOut : content.logout}>
-                    <Button
-                        type="button"
-                        variant="none"
-                        disabled={isLoggingOut}
-                        onClick={onLogout}
-                        aria-label={isLoggingOut ? content.loggingOut : content.logout}
-                        className="size-8.5! justify-center! p-0! text-white! hover:bg-white/10! rounded-2xl!"
-                    >
-                        <IconArrowAutofitLeftFilled aria-hidden="true" size={16} />
                     </Button>
                 </NavigationTooltip>
 
