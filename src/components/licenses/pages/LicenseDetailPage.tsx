@@ -1,7 +1,7 @@
 "use client"
 
 import { DataTableControls } from "@/components/licenses/DataTableControls"
-import { InvoiceStatusDot } from "@/components/licenses/InvoiceStatusDot"
+import { InvoiceStatusBadge } from "@/components/licenses/InvoiceStatusBadge"
 import { getLicenseDetailGridCellClassName } from "@/components/licenses/licenseDetailGrid"
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
 import { LicenseLoadMoreButton } from "@/components/licenses/LicenseLoadMoreButton"
@@ -317,12 +317,7 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
                                     </Text>
                                 </DataTableColumn>
                                 <DataTableColumn>
-                                    <Flex align="center" style={{ gap: "0.5rem" }}>
-                                        <InvoiceStatusDot aria-hidden="true" status={invoice.status} />
-                                        <Text size="sm" hierarchy="tertiary">
-                                            {formatLicenseDisplayValue(invoice.status, "invoiceStatus", content.values)}
-                                        </Text>
-                                    </Flex>
+                                    <InvoiceStatusBadge status={invoice.status}>{formatLicenseDisplayValue(invoice.status, "invoiceStatus", content.values)}</InvoiceStatusBadge>
                                 </DataTableColumn>
                                 <DataTableColumn>
                                     <Menu>

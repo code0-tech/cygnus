@@ -1,13 +1,18 @@
 "use client"
 
+import { ButtonLoader } from "@/components/ui/Loader"
+import type { LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { Avatar, Button, Menu, MenuContent, MenuItem, MenuLabel, MenuPortal, MenuSeparator, MenuTrigger, Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from "@code0-tech/pictor"
-import { IconAdjustmentsFilled, IconApps, IconSettingsFilled, IconUser } from "@tabler/icons-react"
+import { IconAdjustmentsFilled, IconApps, IconArrowAutofitLeftFilled, IconSettingsFilled, IconUser } from "@tabler/icons-react"
 import Image from "next/image"
 import type { ReactNode } from "react"
 
 interface LicensePrimarySidebarProps {
+    content: LicenseContent["sidebar"]
+    isLoggingOut: boolean
     locale: AppLocale
+    onLogout: () => void
     onOpenMainApplication: (path: string) => void
 }
 
@@ -24,7 +29,7 @@ function NavigationTooltip({ children, label }: { children: ReactNode; label: st
     )
 }
 
-export function LicensePrimarySidebar({ locale, onOpenMainApplication }: LicensePrimarySidebarProps) {
+export function LicensePrimarySidebar({ content, isLoggingOut, locale, onLogout, onOpenMainApplication }: LicensePrimarySidebarProps) {
     const labels =
         locale === "de"
             ? {
@@ -94,6 +99,24 @@ export function LicensePrimarySidebar({ locale, onOpenMainApplication }: License
                             <MenuItem onSelect={() => onOpenMainApplication("/")}>
                                 <IconApps aria-hidden="true" size={16} />
                                 {labels.workspaces}
+                            </MenuItem>
+                            <MenuSeparator />
+                            <MenuItem
+                                disabled={isLoggingOut}
+                                onSelect={(event) => {
+                                    // Keep the menu open so the loader stays visible until the redirect.
+                                    event.preventDefault()
+                                    onLogout()
+                                }}
+                            >
+                                {isLoggingOut ? (
+                                    <ButtonLoader label={content.loggingOut} />
+                                ) : (
+                                    <>
+                                        <IconArrowAutofitLeftFilled aria-hidden="true" size={16} />
+                                        {content.logout}
+                                    </>
+                                )}
                             </MenuItem>
                         </MenuContent>
                     </MenuPortal>

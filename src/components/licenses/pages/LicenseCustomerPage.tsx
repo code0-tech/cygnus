@@ -5,7 +5,7 @@ import { getLicenseDetailGridCellClassName } from "@/components/licenses/license
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
 import { LicenseLoadMoreButton } from "@/components/licenses/LicenseLoadMoreButton"
 import { LICENSE_DATA_TABLE_PAGE_SIZE, LicenseDataTablePagination } from "@/components/licenses/LicenseDataTablePagination"
-import { LicenseStatusDot } from "@/components/licenses/LicenseStatusDot"
+import { LicenseStatusBadge } from "@/components/licenses/LicenseStatusDot"
 import type { LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { formatLicenseDisplayValue } from "@/lib/licenses/licenseDisplayValues"
@@ -188,12 +188,7 @@ export function LicenseCustomerPage({ content, customerId, locale }: LicenseCust
                                         </Flex>
                                     </DataTableColumn>
                                     <DataTableColumn>
-                                        <Flex align="center" style={{ gap: "0.5rem" }}>
-                                            <LicenseStatusDot aria-hidden="true" status={license.status} />
-                                            <Text size="sm" hierarchy="tertiary">
-                                                {formatLicenseDisplayValue(license.status, "status", content.values)}
-                                            </Text>
-                                        </Flex>
+                                        <LicenseStatusBadge status={license.status}>{formatLicenseDisplayValue(license.status, "status", content.values)}</LicenseStatusBadge>
                                     </DataTableColumn>
                                     <DataTableColumn>
                                         <Text size="sm" hierarchy="tertiary">
