@@ -1,5 +1,7 @@
+import { STATUS_TONE_BADGE_COLOR, STATUS_TONE_DOT_CLASS, type StatusTone } from "@/components/licenses/statusTone"
 import { cn } from "@/lib/utils"
-import type { HTMLAttributes } from "react"
+import { Badge } from "@code0-tech/pictor"
+import type { HTMLAttributes, ReactNode } from "react"
 
 function normalizeStatus(status?: string) {
     return status?.trim().toLowerCase().replaceAll("-", "_")
@@ -9,18 +11,18 @@ export function isLicenseStatusError(status?: string) {
     return normalizeStatus(status) === "payment_failed"
 }
 
-function getStatusColor(status?: string) {
+function getStatusTone(status?: string): StatusTone {
     switch (normalizeStatus(status)) {
         case "active":
         case "paid":
-            return "bg-brand"
+            return "brand"
         case "payment_failed":
-            return "bg-error"
+            return "error"
         case "canceled":
         case "expired":
-            return "bg-tertiary"
+            return "muted"
         default:
-            return "bg-warning"
+            return "warning"
     }
 }
 
@@ -29,5 +31,9 @@ interface LicenseStatusDotProps extends HTMLAttributes<HTMLSpanElement> {
 }
 
 export function LicenseStatusDot({ className, status, ...props }: LicenseStatusDotProps) {
-    return <span {...props} className={cn("size-1.5 shrink-0 rounded-full", getStatusColor(status), className)} />
+    return <span {...props} className={cn("size-1.5 shrink-0 rounded-full", STATUS_TONE_DOT_CLASS[getStatusTone(status)], className)} />
+}
+
+export function LicenseStatusBadge({ children, status }: { children: ReactNode; status?: string }) {
+    return <Badge color={STATUS_TONE_BADGE_COLOR[getStatusTone(status)]}>{children}</Badge>
 }

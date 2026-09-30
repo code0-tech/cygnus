@@ -59,7 +59,7 @@ function LicenseLayoutContent({ children, content, errors, locale }: LicenseLayo
             </div>
 
             <div className="relative z-10 grid h-full min-h-0 gap-4 grid-cols-1 grid-rows-[auto_minmax(0,1fr)] lg:grid-cols-[3.5rem_12rem_minmax(0,1fr)] lg:grid-rows-1">
-                <LicensePrimarySidebar locale={locale} onOpenMainApplication={openMainApplication} />
+                <LicensePrimarySidebar content={content.sidebar} isLoggingOut={isLoggingOut} locale={locale} onLogout={() => void logout()} onOpenMainApplication={openMainApplication} />
                 <LicenseSidebar content={content} isLoading={isSidebarLoading} isLoggingOut={isLoggingOut} locale={locale} licenses={sidebarLicenses} onLogout={() => void logout()} />
 
                 <main className="h-full min-h-0 w-[calc(100vw-2rem)] min-w-0 overflow-hidden rounded-2xl bg-transparent lg:w-auto">
