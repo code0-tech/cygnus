@@ -5,7 +5,6 @@ import { InvoiceStatusDot } from "@/components/licenses/InvoiceStatusDot"
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
 import { LicenseLoadMoreButton } from "@/components/licenses/LicenseLoadMoreButton"
 import { LICENSE_DATA_TABLE_PAGE_SIZE, LicenseDataTablePagination } from "@/components/licenses/LicenseDataTablePagination"
-import { LicensePlanIcon } from "@/components/licenses/LicensePlanIcon"
 import { LicenseStatusDot } from "@/components/licenses/LicenseStatusDot"
 import { ButtonLoader } from "@/components/ui/Loader"
 import type { LicenseContent, SubscriptionConfigData, UpgradeBannerData } from "@/lib/cms"
@@ -62,7 +61,6 @@ interface LicenseDetailPageProps {
 interface LicenseDetailItem {
     badge?: string
     label: string
-    showPlanIcon?: boolean
     showStatusDot?: boolean
     value: string
 }
@@ -94,7 +92,6 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
               {
                   badge: formatLicenseDisplayValue(license.deploymentType, "deploymentType", content.values),
                   label: content.license,
-                  showPlanIcon: true,
                   value: formatLicenseDisplayValue(license.plan, "plan", content.values),
               },
               { label: content.dashboard.paymentPeriodLabel, value: formatLicenseDisplayValue(license.paymentPeriod, "paymentPeriod", content.values) },
@@ -215,7 +212,6 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
                                         </div>
                                         <Flex align="center" style={{ gap: "0.5rem" }} className="mt-3 min-w-0">
                                             {detail.showStatusDot ? <LicenseStatusDot aria-hidden="true" status={license.status} /> : null}
-                                            {detail.showPlanIcon ? <LicensePlanIcon className="shrink-0 text-brand" plan={license.plan} size={22} /> : null}
                                             <Text fw={400} title={detail.value} className="truncate text-xl! leading-tight! text-white!">
                                                 {detail.value}
                                             </Text>
