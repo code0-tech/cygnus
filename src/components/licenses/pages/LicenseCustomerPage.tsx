@@ -5,7 +5,7 @@ import { getLicenseDetailGridCellClassName } from "@/components/licenses/license
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
 import { LicenseLoadMoreButton } from "@/components/licenses/LicenseLoadMoreButton"
 import { LICENSE_DATA_TABLE_PAGE_SIZE, LicenseDataTablePagination } from "@/components/licenses/LicenseDataTablePagination"
-import { LicenseStatusBadge } from "@/components/licenses/LicenseStatusDot"
+import { LicenseStatusBadge } from "@/components/licenses/LicenseStatusBadge"
 import type { LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { formatLicenseDisplayValue } from "@/lib/licenses/licenseDisplayValues"

@@ -1,10 +1,11 @@
 "use client"
 
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
-import { LicenseBillingSection } from "@/components/licenses/dialog/LicenseBillingSection"
+import { LicenseGeneralTab } from "@/components/licenses/dialog/LicenseGeneralTab"
 import { LicenseDialog } from "@/components/licenses/dialog/LicenseDialog"
 import { LicenseUpgradeDialog } from "@/components/licenses/dialog/LicenseUpgradeDialog"
-import { CustomerPaymentMethodCard } from "@/components/licenses/dialog/CustomerPaymentMethodCard"
+import { CustomerPaymentMethodCard, CustomerPaymentMethodCardSkeleton } from "@/components/licenses/dialog/CustomerPaymentMethodCard"
+import { LicenseTabAlert, LicenseTabHeader, LicenseTabRow, LicenseTabSection } from "@/components/licenses/dialog/LicenseTabLayout"
 import { PaymentMethodSetupDialog } from "@/components/licenses/dialog/PaymentMethodSetupDialog"
 import { ButtonLoader } from "@/components/ui/Loader"
 import { useCustomerPaymentMethods, useSubscriptionPaymentMethod } from "@/hooks/usePaymentMethods"
@@ -12,9 +13,8 @@ import type { ErrorsContent, LicenseContent, SubscriptionConfigData } from "@/li
 import type { AppLocale } from "@/lib/i18n"
 import { getLicenseEditSectionLabels, isLicenseEditSection, LICENSE_EDIT_SECTIONS, type LicenseEditSection } from "@/lib/licenses/licenseEditSections"
 import { createLicensePath, resolveCustomerRouteId, resolveLicenseRouteId } from "@/lib/licenses/licenseRoute"
-import { cn } from "@/lib/utils"
 import type { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
-import { Button, ScrollArea, ScrollAreaScrollbar, ScrollAreaThumb, ScrollAreaViewport, Text } from "@code0-tech/pictor"
+import { Button, TabContent, TabList, TabTrigger, Text } from "@code0-tech/pictor"
 import { IconCreditCard, IconKey, IconTrendingUp } from "@tabler/icons-react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useCallback, useEffect, useState } from "react"
@@ -98,187 +98,124 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
     }
 
     const otherPaymentMethods = customerPaymentMethods?.filter((method) => method.id !== license?.paymentMethodId)
-    const isCloud = license?.deploymentType === "cloud"
     const namespaceSelectionFailed = searchParams.has("namespaceError")
     const sectionIcons = { general: IconKey, payment: IconCreditCard, upgrade: IconTrendingUp } satisfies Record<LicenseEditSection, typeof IconKey>
     const sidebar = license?.subscriptionId ? (
-        <div role="tablist" aria-label={content.editor.licenseTitle} className="flex flex-col gap-1">
-            {LICENSE_EDIT_SECTIONS.map((value) => ({ icon: sectionIcons[value], label: sectionLabels[value], value })).map((tab) => {
-                const selected = section === tab.value
-                const TabIcon = tab.icon
+        <TabList aria-label={content.editor.licenseTitle}>
+            {LICENSE_EDIT_SECTIONS.map((value) => {
+                const TabIcon = sectionIcons[value]
 
                 return (
-                    <Button
-                        key={tab.value}
-                        type="button"
-                        role="tab"
-                        id={`license-edit-tab-${tab.value}`}
-                        aria-controls={`license-edit-panel-${tab.value}`}
-                        aria-selected={selected}
-                        active={selected}
-                        variant={selected ? "normal" : "none"}
-                        paddingSize="xxs"
-                        w="100%"
-                        justify="start"
-                        className={cn(
-                            "relative text-sm! text-tertiary! transition-colors! hover:text-white! rounded-2xl!",
-                            selected &&
-                                "bg-white/10! text-white! shadow-[inset_0_1px_1px_#bfbfbf1a]! before:absolute before:-left-3 before:top-1/2 before:h-3 before:w-0.5 before:-translate-y-1/2 before:rounded-full before:bg-brand"
-                        )}
-                        onClick={() => setSection(tab.value)}
-                    >
-                        <TabIcon aria-hidden="true" size={16} className="text-tertiary" />
-                        <Text className="truncate" size="md">
-                            {tab.label}
-                        </Text>
-                    </Button>
+                    <TabTrigger key={value} value={value} w="100%" asChild>
+                        <Button type="button" paddingSize="xxs" variant="none" justify="start" className="rounded-2xl! h-8!">
+                            <TabIcon aria-hidden="true" size={13} />
+                            <Text className="truncate" size="md">
+                                {sectionLabels[value]}
+                            </Text>
+                        </Button>
+                    </TabTrigger>
                 )
             })}
-        </div>
+        </TabList>
     ) : null
     return (
-        <LicenseDialog backLabel={content.editor.closeLabel} description={content.editor.licenseEditDescription} onClose={close} sidebar={sidebar} title={content.editor.licenseTitle}>
-            {section === "general" || !license?.subscriptionId ? (
-                <div className="space-y-4" role="tabpanel" id="license-edit-panel-general" aria-labelledby="license-edit-tab-general">
-                    {namespaceSelectionFailed && (
-                        <p role="alert" className="text-sm text-error">
-                            {errors.licenseUpdate}
-                        </p>
-                    )}
-                    <div className="space-y-6 pt-2">
-                        {license && isCloud && (
-                            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                                <Text size="sm" hierarchy="tertiary" className="max-w-xl!">
-                                    {content.editor.licenseDescription}
-                                </Text>
-                                <Button type="button" variant="normal" className="shrink-0" onClick={() => window.location.assign(namespaceHref)}>
-                                    {content.editor.changeNamespaceLabel}
-                                </Button>
-                            </div>
-                        )}
-                        {license?.subscriptionId && (
-                            <div className={cn(isCloud && "border-t border-white/10 pt-6")}>
-                                <LicenseBillingSection content={content} errors={errors} license={license} locale={locale} onClose={close} subscriptionConfig={subscriptionConfig} />
-                            </div>
-                        )}
-                        {license?.subscriptionId && (
-                            <div className="flex flex-col gap-4 border-t border-white/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
-                                <Text size="sm" hierarchy="tertiary" className="max-w-xl!">
-                                    {content.cancel.description}
-                                </Text>
-                                <Button type="button" variant="normal" className="shrink-0" onClick={() => router.push(`${createLicensePath(locale, license.customerId, license.id)}/cancel`)}>
-                                    {content.cancel.confirmLabel}
-                                </Button>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            ) : section === "upgrade" ? (
-                <LicenseUpgradeDialog
+        <LicenseDialog
+            backLabel={content.editor.closeLabel}
+            description={content.editor.licenseEditDescription}
+            onClose={close}
+            onValueChange={(value) => isLicenseEditSection(value) && setSection(value)}
+            sidebar={sidebar}
+            title={content.editor.licenseTitle}
+            value={license?.subscriptionId ? section : "general"}
+        >
+            <TabContent value="general">
+                <LicenseGeneralTab
                     content={content}
-                    customerId={customerId}
-                    embedded
                     errors={errors}
-                    licenseId={licenseId}
+                    license={license}
                     locale={locale}
+                    namespaceHref={namespaceHref}
+                    namespaceSelectionFailed={namespaceSelectionFailed}
+                    onClose={close}
                     subscriptionConfig={subscriptionConfig}
-                    subscriptionPrices={subscriptionPrices}
+                    title={sectionLabels.general}
                 />
-            ) : (
-                <div role="tabpanel" id="license-edit-panel-payment" aria-labelledby="license-edit-tab-payment" className="space-y-6">
-                    <div>
-                        <Text hierarchy="secondary" size="lg">
-                            {sectionLabels.payment}
-                        </Text>
-                        <Text size="sm" hierarchy="tertiary" className="mt-2!">
-                            {content.editor.paymentMethodDescription}
-                        </Text>
-                    </div>
+            </TabContent>
+            {license?.subscriptionId ? (
+                <>
+                    <TabContent value="upgrade">
+                        <LicenseUpgradeDialog
+                            content={content}
+                            customerId={customerId}
+                            errors={errors}
+                            licenseId={licenseId}
+                            locale={locale}
+                            subscriptionConfig={subscriptionConfig}
+                            subscriptionPrices={subscriptionPrices}
+                        />
+                    </TabContent>
+                    <TabContent value="payment">
+                        <LicenseTabHeader
+                            title={sectionLabels.payment}
+                            description={content.editor.paymentMethodDescription}
+                            action={
+                                <PaymentMethodSetupDialog
+                                    content={content}
+                                    errors={errors}
+                                    onSuccess={paymentMethodUpdated}
+                                    owner={{ customerId: license.customerId }}
+                                    returnPath={`${createLicensePath(locale, license.customerId, license.id)}/edit`}
+                                    triggerLabel={content.editor.changePaymentMethodLabel}
+                                />
+                            }
+                        />
 
-                    {isLoadingPaymentMethod ? (
-                        <div className="rounded-2xl border border-white/10 bg-white/3 p-4">
-                            <div role="status" className="animate-pulse motion-reduce:animate-none">
-                                <span className="sr-only">{content.editor.loadingPaymentMethodLabel}</span>
-                                <div aria-hidden="true" className="h-5 w-40 rounded-full bg-white/10" />
-                                <div aria-hidden="true" className="mt-2 h-4 w-24 rounded-full bg-white/10" />
-                            </div>
-                        </div>
-                    ) : paymentMethodError ? (
-                        <div className="space-y-3 rounded-2xl border border-white/10 bg-white/3 p-4">
-                            <Text role="alert" size="sm" className="text-error!">
-                                {errors.paymentMethodLoad}
-                            </Text>
-                            <Button type="button" variant="normal" paddingSize="xs" onClick={refreshPaymentMethod}>
-                                {errors.retry}
-                            </Button>
-                        </div>
-                    ) : paymentMethod ? (
-                        <CustomerPaymentMethodCard method={paymentMethod} />
-                    ) : (
-                        <div className="rounded-2xl border border-white/10 bg-white/3 p-4">
-                            <Text size="sm" hierarchy="tertiary">
-                                {content.invoices.unavailableLabel}
-                            </Text>
-                        </div>
-                    )}
-
-                    {isLoadingCustomerPaymentMethods ? null : customerPaymentMethodsError ? (
-                        <Text role="alert" size="sm" className="text-error!">
-                            {errors.paymentMethodLoad}
-                        </Text>
-                    ) : otherPaymentMethods && otherPaymentMethods.length > 0 ? (
-                        <div className="space-y-3">
-                            <Text hierarchy="secondary" size="sm" fw={500}>
-                                {content.editor.otherPaymentMethodsHeading}
-                            </Text>
-                            <ScrollArea h="20rem" type="scroll">
-                                <ScrollAreaViewport className="h-full! w-full!">
-                                    <div className="space-y-3 pr-3">
-                                        {otherPaymentMethods.map((method) => (
-                                            <CustomerPaymentMethodCard
-                                                key={method.id}
-                                                method={method}
-                                                action={
-                                                    <Button
-                                                        type="button"
-                                                        variant="normal"
-                                                        paddingSize="xs"
-                                                        disabled={assigningPaymentMethodId === method.id}
-                                                        onClick={() => void assignPaymentMethod(method.id)}
-                                                    >
-                                                        {assigningPaymentMethodId === method.id ? (
-                                                            <ButtonLoader label={content.editor.settingPaymentMethodLabel} />
-                                                        ) : (
-                                                            content.editor.usePaymentMethodLabel
-                                                        )}
-                                                    </Button>
-                                                }
-                                            />
-                                        ))}
-                                    </div>
-                                </ScrollAreaViewport>
-                                <ScrollAreaScrollbar orientation="vertical" className="w-1.5!">
-                                    <ScrollAreaThumb className="bg-white/15! hover:bg-white/25!" />
-                                </ScrollAreaScrollbar>
-                            </ScrollArea>
-                            {assignPaymentMethodError && (
-                                <Text role="alert" size="sm" className="text-error!">
-                                    {errors.paymentMethodAssign}
-                                </Text>
+                        <LicenseTabSection title={content.editor.paymentMethodHeading}>
+                            {isLoadingPaymentMethod ? (
+                                <CustomerPaymentMethodCardSkeleton label={content.editor.loadingPaymentMethodLabel} />
+                            ) : paymentMethodError ? (
+                                <LicenseTabRow
+                                    description={<span className="text-error">{errors.paymentMethodLoad}</span>}
+                                    action={
+                                        <Button type="button" variant="normal" paddingSize="xxs" onClick={refreshPaymentMethod}>
+                                            {errors.retry}
+                                        </Button>
+                                    }
+                                />
+                            ) : paymentMethod ? (
+                                <CustomerPaymentMethodCard method={paymentMethod} />
+                            ) : (
+                                <LicenseTabRow description={content.invoices.unavailableLabel} />
                             )}
-                        </div>
-                    ) : null}
+                        </LicenseTabSection>
 
-                    <PaymentMethodSetupDialog
-                        content={content}
-                        errors={errors}
-                        onSuccess={paymentMethodUpdated}
-                        owner={{ customerId: license.customerId }}
-                        returnPath={`${createLicensePath(locale, license.customerId, license.id)}/edit`}
-                        triggerLabel={content.editor.changePaymentMethodLabel}
-                    />
-                </div>
-            )}
+                        {isLoadingCustomerPaymentMethods ? null : customerPaymentMethodsError ? (
+                            <LicenseTabAlert>{errors.paymentMethodLoad}</LicenseTabAlert>
+                        ) : otherPaymentMethods && otherPaymentMethods.length > 0 ? (
+                            <LicenseTabSection title={content.editor.otherPaymentMethodsHeading}>
+                                {otherPaymentMethods.map((method) => (
+                                    <CustomerPaymentMethodCard
+                                        key={method.id}
+                                        method={method}
+                                        action={
+                                            <Button
+                                                type="button"
+                                                variant="normal"
+                                                paddingSize="xxs"
+                                                disabled={assigningPaymentMethodId === method.id}
+                                                onClick={() => void assignPaymentMethod(method.id)}
+                                            >
+                                                {assigningPaymentMethodId === method.id ? <ButtonLoader label={content.editor.settingPaymentMethodLabel} /> : content.editor.usePaymentMethodLabel}
+                                            </Button>
+                                        }
+                                    />
+                                ))}
+                            </LicenseTabSection>
+                        ) : null}
+                        {assignPaymentMethodError ? <LicenseTabAlert>{errors.paymentMethodAssign}</LicenseTabAlert> : null}
+                    </TabContent>
+                </>
+            ) : null}
         </LicenseDialog>
     )
 }

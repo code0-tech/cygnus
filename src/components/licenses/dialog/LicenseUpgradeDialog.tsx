@@ -1,7 +1,7 @@
 "use client"
 
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
-import { LicenseDialog } from "@/components/licenses/dialog/LicenseDialog"
+import { LicenseTabAlert, LicenseTabHeader, LicenseTabRow, LicenseTabSaveButton, LicenseTabSection } from "@/components/licenses/dialog/LicenseTabLayout"
 import { AcceptTermsCheckbox } from "@/components/forms/AcceptTermsCheckbox"
 import { SummaryBadge } from "@/components/checkout/CheckoutSummaryBadge"
 import { Slider } from "@/components/ui/Slider"
@@ -18,7 +18,7 @@ import { calculateSubscriptionQuote, type PaymentPeriod } from "@/lib/subscripti
 import { getSubscriptionCatalog } from "@/lib/subscription/catalog"
 import { getPaymentPeriodForCustomerType, type SubscriptionPlan } from "@/lib/subscription/configurator"
 import type { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
-import { Button, DialogFooter } from "@code0-tech/pictor"
+import { Button, Spacing, Text } from "@code0-tech/pictor"
 import { IconCheck } from "@tabler/icons-react"
 import { useRouter } from "next/navigation"
 import { useMemo, useState } from "react"
@@ -32,14 +32,13 @@ interface LicenseUpgradeDialogProps {
     locale: AppLocale
     subscriptionConfig: SubscriptionConfigData
     subscriptionPrices: SubscriptionPriceCatalog
-    embedded?: boolean
 }
 
 // Custom counts as the top tier: it is reached by upgrading from pro or max, never the other way around here.
 const PLAN_ORDER: Record<SubscriptionPlan, number> = { pro: 0, max: 1, custom: 2 }
 const PLANS: SubscriptionPlan[] = ["pro", "max", "custom"]
 
-export function LicenseUpgradeDialog({ content, customerId, embedded = false, errors, licenseId, locale, subscriptionConfig, subscriptionPrices }: LicenseUpgradeDialogProps) {
+export function LicenseUpgradeDialog({ content, customerId, errors, licenseId, locale, subscriptionConfig, subscriptionPrices }: LicenseUpgradeDialogProps) {
     const router = useRouter()
     const { licenses, updateLicense } = useLicenseData()
     const resolvedCustomerId = resolveCustomerRouteId(customerId)
@@ -143,113 +142,88 @@ export function LicenseUpgradeDialog({ content, customerId, embedded = false, er
             return text ? [{ key: feature.id ?? `${index}-${text}`, text }] : []
         }) ?? []
 
-    const upgradeContent = (
-        <div className="space-y-4">
-            {embedded ? (
-                <div className="space-y-4">
-                    <div>
-                        <h2 className="text-lg text-white">{content.upgrade.title}</h2>
-                        <p className="mt-2 text-sm text-tertiary">{content.upgrade.description}</p>
-                    </div>
-                    {planSelection}
-                </div>
-            ) : null}
-            {plan === "custom" && (
-                <div className="space-y-4">
-                    <Slider
-                        min={aiTokensRange.min}
-                        max={aiTokensRange.max}
-                        step={aiTokensRange.step}
-                        value={resolvedAiTokens}
-                        onChange={setAiTokens}
-                        onValueCommit={setAiTokens}
-                        ariaLabel={content.dashboard.aiTokensLabel}
-                        className="rounded-2xl border border-white/10 p-4"
-                        variant="gradient"
-                        shape="cone-incline"
-                    />
-                    <Slider
-                        min={workflowExecutionsRange.min}
-                        max={workflowExecutionsRange.max}
-                        step={workflowExecutionsRange.step}
-                        value={resolvedWorkflowExecutions}
-                        onChange={setWorkflowExecutions}
-                        onValueCommit={setWorkflowExecutions}
-                        ariaLabel={content.dashboard.workflowExecutionsLabel}
-                        className="rounded-2xl border border-white/10 p-4"
-                        variant="gradient"
-                        shape="cone-incline"
-                    />
-                </div>
-            )}
-
-            {planFeatures.length > 0 && (
-                <ul className="space-y-2 py-2">
-                    {planFeatures.map((feature) => (
-                        <li key={feature.key} className="flex items-start gap-2 text-sm text-secondary">
-                            <IconCheck aria-hidden="true" size={18} className="mt-0.5 shrink-0 text-brand" />
-                            <span>{feature.text}</span>
-                        </li>
-                    ))}
-                </ul>
-            )}
-
-            <div className="space-y-1 rounded-xl border border-white/10 bg-white/3 p-3 text-sm">
-                <div className="flex items-center justify-between">
-                    <span className="text-secondary">{content.subscriptionPreview.totalLabel}</span>
-                    <span className="text-white">{formatMinorCurrency(localQuote.total, "EUR", locale)}</span>
-                </div>
-                {isLoadingPreview ? (
-                    <p className="text-tertiary">{content.subscriptionPreview.loadingLabel}</p>
-                ) : previewError ? (
-                    <p role="alert" className="text-error">
-                        {previewError}
-                    </p>
-                ) : preview ? (
-                    <>
-                        {preview.prorationAmount > 0 && (
-                            <div className="flex items-center justify-between">
-                                <span className="text-secondary">{content.subscriptionPreview.prorationLabel}</span>
-                                <span className="text-white">{formatMinorCurrency(preview.prorationAmount, preview.currency, locale)}</span>
-                            </div>
-                        )}
-                        <p className="text-tertiary">{preview.immediate ? content.subscriptionPreview.immediateNote : content.subscriptionPreview.scheduledNote}</p>
-                    </>
-                ) : null}
-            </div>
-
-            {saveError && (
-                <p role="alert" className="text-sm text-error">
-                    {saveError}
-                </p>
-            )}
-
-            <AcceptTermsCheckbox locale={locale} initialValue={false} formValidation={{ setValue: setAcceptedTerms, valid: true }} />
-
-            <DialogFooter className="gap-3! pt-2!">
-                {!embedded ? (
-                    <Button type="button" variant="none" onClick={close}>
-                        {content.editor.closeLabel}
-                    </Button>
-                ) : null}
-                <Button type="button" variant="filled" disabled={!hasChange || isSaving || isLoadingPreview || !preview || Boolean(previewError) || !acceptedTerms} onClick={() => void save()}>
-                    {isSaving ? <ButtonLoader label={content.editor.saveLabel} /> : content.editor.saveLabel}
-                </Button>
-            </DialogFooter>
-        </div>
-    )
-
-    if (embedded) {
-        return (
-            <div role="tabpanel" id="license-edit-panel-upgrade" aria-labelledby="license-edit-tab-upgrade">
-                {upgradeContent}
-            </div>
-        )
-    }
+    const labels = locale === "de" ? { plan: "Plan", preview: "Vorschau" } : { plan: "Plan", preview: "Preview" }
 
     return (
-        <LicenseDialog backLabel={content.editor.closeLabel} description={content.upgrade.description} onClose={close} title={content.upgrade.title} sidebar={planSelection}>
-            {upgradeContent}
-        </LicenseDialog>
+        <>
+            <LicenseTabHeader
+                title={content.upgrade.title}
+                description={content.upgrade.description}
+                action={
+                    <LicenseTabSaveButton disabled={!hasChange || isSaving || isLoadingPreview || !preview || Boolean(previewError) || !acceptedTerms} onClick={() => void save()}>
+                        {isSaving ? <ButtonLoader label={content.editor.saveLabel} /> : content.editor.saveLabel}
+                    </LicenseTabSaveButton>
+                }
+            />
+            {saveError ? <LicenseTabAlert>{saveError}</LicenseTabAlert> : null}
+
+            <LicenseTabSection title={labels.plan}>
+                <LicenseTabRow>{planSelection}</LicenseTabRow>
+                {plan === "custom" ? (
+                    <>
+                        <LicenseTabRow title={content.dashboard.aiTokensLabel}>
+                            <Slider
+                                min={aiTokensRange.min}
+                                max={aiTokensRange.max}
+                                step={aiTokensRange.step}
+                                value={resolvedAiTokens}
+                                onChange={setAiTokens}
+                                onValueCommit={setAiTokens}
+                                ariaLabel={content.dashboard.aiTokensLabel}
+                                variant="gradient"
+                                shape="cone-incline"
+                            />
+                        </LicenseTabRow>
+                        <LicenseTabRow title={content.dashboard.workflowExecutionsLabel}>
+                            <Slider
+                                min={workflowExecutionsRange.min}
+                                max={workflowExecutionsRange.max}
+                                step={workflowExecutionsRange.step}
+                                value={resolvedWorkflowExecutions}
+                                onChange={setWorkflowExecutions}
+                                onValueCommit={setWorkflowExecutions}
+                                ariaLabel={content.dashboard.workflowExecutionsLabel}
+                                variant="gradient"
+                                shape="cone-incline"
+                            />
+                        </LicenseTabRow>
+                    </>
+                ) : null}
+                {planFeatures.length > 0 ? (
+                    <LicenseTabRow>
+                        <ul className="space-y-2">
+                            {planFeatures.map((feature) => (
+                                <li key={feature.key} className="flex items-start gap-2 text-sm text-secondary">
+                                    <IconCheck aria-hidden="true" size={18} className="mt-0.5 shrink-0 text-brand" />
+                                    <span>{feature.text}</span>
+                                </li>
+                            ))}
+                        </ul>
+                    </LicenseTabRow>
+                ) : null}
+            </LicenseTabSection>
+
+            <LicenseTabSection title={labels.preview}>
+                <LicenseTabRow title={content.subscriptionPreview.totalLabel} action={<Text size="md">{formatMinorCurrency(localQuote.total, "EUR", locale)}</Text>} />
+                {isLoadingPreview ? (
+                    <LicenseTabRow description={content.subscriptionPreview.loadingLabel} />
+                ) : previewError ? (
+                    <LicenseTabRow>
+                        <Text role="alert" size="sm" className="text-error!">
+                            {previewError}
+                        </Text>
+                    </LicenseTabRow>
+                ) : preview ? (
+                    <LicenseTabRow
+                        title={preview.prorationAmount > 0 ? content.subscriptionPreview.prorationLabel : undefined}
+                        description={preview.immediate ? content.subscriptionPreview.immediateNote : content.subscriptionPreview.scheduledNote}
+                        action={preview.prorationAmount > 0 ? <Text size="md">{formatMinorCurrency(preview.prorationAmount, preview.currency, locale)}</Text> : undefined}
+                    />
+                ) : null}
+            </LicenseTabSection>
+
+            <Spacing spacing="lg" />
+            <AcceptTermsCheckbox locale={locale} initialValue={false} formValidation={{ setValue: setAcceptedTerms, valid: true }} />
+        </>
     )
 }

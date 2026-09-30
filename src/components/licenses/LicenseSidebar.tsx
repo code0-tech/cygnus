@@ -240,9 +240,7 @@ export function LicenseSidebar({ content, isLoading, isLoggingOut, locale, licen
                                                     ) : null}
                                                 </span>
                                                 <span className="min-w-0 flex-1">
-                                                    <span className="block truncate text-sm text-white">
-                                                        {getLicenseSidebarName(license, content.values)}
-                                                    </span>
+                                                    <span className="block truncate text-sm text-white">{getLicenseSidebarName(license, content.values)}</span>
                                                     <span className="block truncate text-xs text-tertiary">
                                                         {license.customerName} | {getShortLicenseId(license.id)}
                                                     </span>
@@ -286,7 +284,7 @@ export function LicenseSidebar({ content, isLoading, isLoggingOut, locale, licen
                                 {isLoading ? (
                                     <LicenseSidebarSkeleton />
                                 ) : licenses.length > 0 ? (
-                                    <ul className="space-y-1.5">
+                                    <ul className="">
                                         {licenses.map((license) => {
                                             const status = formatLicenseDisplayValue(license.status, "status", content.values)
                                             const licenseHref = createLicensePath(locale, license.customerId, license.id)
@@ -299,8 +297,8 @@ export function LicenseSidebar({ content, isLoading, isLoggingOut, locale, licen
                                                             variant="none"
                                                             paddingSize="xxs"
                                                             className={cn(
-                                                                "w-full! justify-start! shadow-none! rounded-2xl! hover:shadow-[inset_0_1px_1px_#bfbfbf1a]!",
-                                                                licenseIsActive && "shadow-[inset_0_1px_1px_#bfbfbf1a]! bg-white/5!"
+                                                                "w-full! justify-start! shadow-none! rounded-2xl! transition-colors!",
+                                                                licenseIsActive ? "bg-transparent! text-white!" : "text-tertiary! hover:shadow-[inset_0_1px_1px_#bfbfbf1a]!"
                                                             )}
                                                         >
                                                             <span className="relative shrink-0">
@@ -314,7 +312,7 @@ export function LicenseSidebar({ content, isLoading, isLoggingOut, locale, licen
                                                                     />
                                                                 ) : null}
                                                             </span>
-                                                            <Text size="md" className="truncate">
+                                                            <Text size="md" className="truncate text-inherit!">
                                                                 {getLicenseSidebarName(license, content.values)}
                                                             </Text>
                                                         </Button>

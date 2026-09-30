@@ -27,12 +27,14 @@ interface LicenseDialogProps {
     children: ReactNode
     description?: string
     onClose: () => void
+    onValueChange?: (value: string) => void
     open?: boolean
     sidebar?: ReactNode
     title: string
+    value?: string
 }
 
-export function LicenseDialog({ backLabel, children, description, onClose, open = true, sidebar, title }: LicenseDialogProps) {
+export function LicenseDialog({ backLabel, children, description, onClose, onValueChange, open = true, sidebar, title, value }: LicenseDialogProps) {
     return (
         <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && onClose()}>
             <DialogPortal>
@@ -41,23 +43,20 @@ export function LicenseDialog({ backLabel, children, description, onClose, open 
                     <DialogTitle className="sr-only">{title}</DialogTitle>
                     {description ? <DialogDescription className="sr-only">{description}</DialogDescription> : null}
 
-                    <Tab orientation="vertical" defaultValue="general" className="h-full! w-full!">
+                    <Tab orientation="vertical" value={value} defaultValue={value === undefined ? "general" : undefined} onValueChange={onValueChange} className="h-full! w-full!">
                         <Layout
                             layoutGap={0}
                             showLayoutSplitter={false}
                             className="h-full! w-full! [&_.d-layout__inner]:h-full [&_.d-layout__middle]:h-full [&_.d-layout__middle]:min-h-0 [&_.d-layout__middle]:flex-col sm:[&_.d-layout__middle]:flex-row [&_.d-layout__content]:min-h-0 [&_.d-layout__content]:min-w-0 [&_.d-layout__content]:flex-1"
                             leftContent={
                                 <div className="flex h-auto w-full flex-col p-4 sm:h-full sm:w-[clamp(12rem,20vw,18.75rem)] sm:p-8 lg:p-10">
-                                    <Text fz={2} hierarchy="primary">
+                                    <Text fz={2.25} hierarchy="primary" className="leading-none! text-3xl!">
                                         {title}
                                     </Text>
                                     {description ? (
-                                        <>
-                                            <Spacing spacing="xs" />
-                                            <Text maw="250px" hierarchy="tertiary" className="wrap-break-word">
-                                                {description}
-                                            </Text>
-                                        </>
+                                        <Text maw="250px" hierarchy="tertiary" className="mt-2 leading-snug! wrap-break-word">
+                                            {description}
+                                        </Text>
                                     ) : null}
                                     {sidebar ? (
                                         <>
@@ -66,7 +65,7 @@ export function LicenseDialog({ backLabel, children, description, onClose, open 
                                         </>
                                     ) : null}
                                     <DialogClose asChild>
-                                        <Button type="button" paddingSize="xxs" w="100%" variant="none" justify="start" className="mt-4! sm:mt-auto!">
+                                        <Button type="button" paddingSize="xxs" w="100%" variant="none" justify="start" className="rounded-2xl! h-8! mt-4! sm:mt-auto!">
                                             <IconArrowLeft aria-hidden="true" size={16} />
                                             <Text size="md">{backLabel}</Text>
                                         </Button>
