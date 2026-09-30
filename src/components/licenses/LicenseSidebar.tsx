@@ -5,7 +5,7 @@ import { LicenseStatusDot } from "@/components/licenses/LicenseStatusDot"
 import { ButtonLoader } from "@/components/ui/Loader"
 import type { LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
-import { createLicensePath } from "@/lib/licenses/licenseRoute"
+import { createLicenseCustomerPath, createLicensePath } from "@/lib/licenses/licenseRoute"
 import type { LicenseDashboardLicense } from "@/lib/licenses/licenseTypes"
 import { formatLicenseDisplayValue } from "@/lib/licenses/licenseDisplayValues"
 import { getNamespaceDisplayId } from "@/lib/licenses/licenseRoute"
@@ -30,7 +30,7 @@ import {
     ScrollAreaViewport,
     Text,
 } from "@code0-tech/pictor"
-import { IconArrowAutofitLeftFilled, IconCheck, IconChevronDown, IconChevronRight, IconKey, IconMenu2, IconServer, IconSettings, IconShieldLock, IconSwitch, IconUsers } from "@tabler/icons-react"
+import { IconArrowAutofitLeftFilled, IconArrowLeft,IconCheck, IconChevronDown, IconChevronRight, IconKey, IconMenu2, IconServer, IconSettings, IconShieldLock, IconSwitch, IconUsers } from "@tabler/icons-react"
 import BorderBeam from "border-beam"
 import Image from "next/image"
 import Link from "next/link"
@@ -164,6 +164,19 @@ function LicenseUpgradeButton({ content, license, locale }: { content: LicenseSi
     )
 }
 
+function LicenseBackToCustomerButton({ license, locale }: { license: LicenseDashboardLicense; locale: AppLocale }) {
+    const label = locale === "de" ? "Zurück zum Kunden" : "Back to customer"
+
+    return (
+        <Link href={createLicenseCustomerPath(locale, license.customerId)} className="block">
+            <Button type="button" paddingSize="xxs" variant="none" justify="start" w="100%" className="rounded-2xl! text-xs! hover:shadow-[inset_0_1px_1px_#bfbfbf1a]!">
+                <IconArrowLeft aria-hidden="true" size={16} />
+                <span className="min-w-0 truncate">{label}</span>
+            </Button>
+        </Link>
+    )
+}
+
 function getShortLicenseId(id: string) {
     const identifier = id.split("/").at(-1)?.trim()
     return `#${identifier || id.slice(-6)}`
@@ -192,11 +205,11 @@ function LicenseSidebarSkeleton() {
 export function LicenseSidebar({ content, isLoading, isLoggingOut, locale, licenses, onLogout, onOpenMainApplication }: LicenseSidebarProps) {
     const pathname = usePathname()
     const router = useRouter()
-    const currentLicense =
-        licenses.find((license) => {
-            const href = createLicensePath(locale, license.customerId, license.id)
-            return pathname === href || pathname?.startsWith(`${href}/`)
-        }) ?? licenses[0]
+    const activeLicense = licenses.find((license) => {
+        const href = createLicensePath(locale, license.customerId, license.id)
+        return pathname === href || pathname?.startsWith(`${href}/`)
+    })
+    const currentLicense = activeLicense ?? licenses[0]
     return (
         <div className="min-h-0 lg:h-full">
             <header className="bg-transparent pb-4 lg:hidden!">
@@ -344,6 +357,7 @@ export function LicenseSidebar({ content, isLoading, isLoggingOut, locale, licen
                     </ScrollArea>
                 </div>
                 <div className="mt-6 flex shrink-0 flex-col gap-2">
+                    {activeLicense ? <LicenseBackToCustomerButton license={activeLicense} locale={locale} /> : null}
                     <LicenseUpgradeButton content={content} license={currentLicense} locale={locale} />
                     <LicenseWorkspaceMenu content={content} currentLicense={currentLicense} licenses={licenses} locale={locale} onOpenMainApplication={onOpenMainApplication} />
                 </div>
