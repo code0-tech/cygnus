@@ -1,6 +1,6 @@
 "use client"
 
-import { LicensePlanIcon } from "@/components/licenses/LicensePlanIcon"
+import { LicenseDeploymentIcon } from "@/components/licenses/LicenseDeploymentIcon"
 import { LicenseStatusDot } from "@/components/licenses/LicenseStatusDot"
 import { ButtonLoader } from "@/components/ui/Loader"
 import type { LicenseContent } from "@/lib/cms"
@@ -30,7 +30,7 @@ import {
     ScrollAreaViewport,
     Text,
 } from "@code0-tech/pictor"
-import { IconArrowAutofitLeftFilled, IconArrowLeft,IconCheck, IconChevronDown, IconChevronRight, IconKey, IconMenu2, IconServer, IconSettings, IconShieldLock, IconSwitch, IconUsers } from "@tabler/icons-react"
+import { IconArrowAutofitLeftFilled, IconArrowLeft, IconCheck, IconChevronDown, IconChevronRight, IconKey, IconMenu2, IconServer, IconSettings, IconShieldLock, IconSwitch, IconUsers } from "@tabler/icons-react"
 import BorderBeam from "border-beam"
 import Image from "next/image"
 import Link from "next/link"
@@ -259,7 +259,7 @@ export function LicenseSidebar({ content, isLoading, isLoggingOut, locale, licen
                                                 className={licenseIsActive ? "w-full! justify-start! bg-white/7! text-left!" : "w-full! justify-start! text-left!"}
                                             >
                                                 <span className="relative shrink-0">
-                                                    <LicensePlanIcon plan={license.plan} size={16} />
+                                                    <LicenseDeploymentIcon deploymentType={license.deploymentType} size={16} />
                                                     <LicenseStatusDot status={license.status} aria-label={status} title={status} className="absolute -bottom-0.5 -right-0.5 ring-2 ring-light" />
                                                 </span>
                                                 <span className="min-w-0 flex-1">
@@ -328,7 +328,7 @@ export function LicenseSidebar({ content, isLoading, isLoggingOut, locale, licen
                                                             )}
                                                         >
                                                             <span className="relative shrink-0">
-                                                                <LicensePlanIcon plan={license.plan} />
+                                                                <LicenseDeploymentIcon deploymentType={license.deploymentType} />
                                                                 <LicenseStatusDot
                                                                     status={license.status}
                                                                     aria-label={status}

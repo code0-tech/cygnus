@@ -4,7 +4,6 @@ import { DataTableControls } from "@/components/licenses/DataTableControls"
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
 import { LicenseLoadMoreButton } from "@/components/licenses/LicenseLoadMoreButton"
 import { LICENSE_DATA_TABLE_PAGE_SIZE, LicenseDataTablePagination } from "@/components/licenses/LicenseDataTablePagination"
-import { LicensePlanIcon } from "@/components/licenses/LicensePlanIcon"
 import { LicenseStatusDot } from "@/components/licenses/LicenseStatusDot"
 import type { LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
@@ -189,7 +188,6 @@ export function LicenseCustomerPage({ content, customerId, locale }: LicenseCust
                                 <Fragment key={license.id}>
                                     <DataTableColumn>
                                         <Flex align="center" style={{ gap: "0.6rem" }}>
-                                            <LicensePlanIcon className="shrink-0 text-brand" plan={license.plan} size={16} />
                                             <Text size="sm" fw={500}>
                                                 {formatLicenseDisplayValue(license.plan, "plan", content.values)}
                                             </Text>
