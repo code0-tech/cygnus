@@ -5,14 +5,14 @@ import { isLicenseStatusError, LicenseStatusDot } from "@/components/licenses/Li
 import { ButtonLoader } from "@/components/ui/Loader"
 import type { LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
-import { createLicenseCustomerPath, createLicensePath } from "@/lib/licenses/licenseRoute"
+import { type CustomerEditSection, getCustomerEditSectionLabels } from "@/lib/licenses/customerEditSections"
+import { getLicenseEditSectionLabels, LICENSE_EDIT_SECTIONS, type LicenseEditSection } from "@/lib/licenses/licenseEditSections"
+import { createLicenseCustomerPath, createLicensePath, getNamespaceDisplayId, resolveCustomerRouteId } from "@/lib/licenses/licenseRoute"
 import type { LicenseDashboardLicense } from "@/lib/licenses/licenseTypes"
 import { formatLicenseDisplayValue } from "@/lib/licenses/licenseDisplayValues"
-import { getNamespaceDisplayId } from "@/lib/licenses/licenseRoute"
 import {
     Avatar,
     Button,
-    Flex,
     hashToColor,
     Menu,
     MenuContent,
@@ -20,9 +20,6 @@ import {
     MenuLabel,
     MenuPortal,
     MenuSeparator,
-    MenuSub,
-    MenuSubContent,
-    MenuSubTrigger,
     MenuTrigger,
     ScrollArea,
     ScrollAreaScrollbar,
@@ -30,7 +27,7 @@ import {
     ScrollAreaViewport,
     Text,
 } from "@code0-tech/pictor"
-import { IconArrowAutofitLeftFilled, IconArrowLeft, IconCheck, IconChevronDown, IconChevronRight, IconKey, IconMenu2, IconServer, IconSettings, IconShieldLock, IconSwitch, IconUsers } from "@tabler/icons-react"
+import { IconArrowAutofitLeftFilled, IconArrowLeft, IconChevronDown, IconCreditCard, IconKey, IconMenu2, IconTrendingUp, IconUser } from "@tabler/icons-react"
 import BorderBeam from "border-beam"
 import Image from "next/image"
 import Link from "next/link"
@@ -38,39 +35,21 @@ import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 
 interface LicenseSidebarProps {
-    content: Pick<LicenseContent, "emptyLicenses" | "licenses" | "sidebar" | "upgrade" | "values">
+    content: Pick<LicenseContent, "emptyLicenses" | "license" | "licenses" | "sidebar" | "upgrade" | "values">
     isLoading: boolean
     isLoggingOut: boolean
     locale: AppLocale
     licenses: LicenseDashboardLicense[]
     onLogout: () => void
-    onOpenMainApplication: (path: string) => void
 }
 
-function LicenseWorkspaceMenu({
-    content,
-    currentLicense,
-    licenses,
-    locale,
-    onOpenMainApplication,
-}: {
-    content: LicenseSidebarProps["content"]
-    currentLicense?: LicenseDashboardLicense
-    licenses: LicenseDashboardLicense[]
-    locale: AppLocale
-    onOpenMainApplication: LicenseSidebarProps["onOpenMainApplication"]
-}) {
-    const labels =
-        locale === "de"
-            ? { members: "Mitglieder", roles: "Rollen", servers: "Server", settings: "Einstellungen", switchWorkspace: "Workspace wechseln", workspace: "Workspace" }
-            : { members: "Members", roles: "Roles", servers: "Servers", settings: "Settings", switchWorkspace: "Switch workspace", workspace: "Workspace" }
-    const workspaceLicenses = licenses.filter((license) => getNamespaceDisplayId(license.namespaceId))
-    const selectedWorkspace = (currentLicense?.namespaceId ? currentLicense : undefined) ?? workspaceLicenses[0]
-    const namespaceId = getNamespaceDisplayId(selectedWorkspace?.namespaceId)
-    const name = selectedWorkspace?.customerName || (selectedWorkspace ? formatLicenseDisplayValue(selectedWorkspace.plan, "plan", content.values) : content.licenses)
-    const description = namespaceId || (selectedWorkspace ? formatLicenseDisplayValue(selectedWorkspace.deploymentType, "deploymentType", content.values) : "")
-    const workspaceSettingsPath = namespaceId ? `/namespace/${namespaceId}/settings` : "/settings"
+interface LicenseContextMenuItem {
+    href: string
+    icon: typeof IconUser
+    label: string
+}
 
+function LicenseContextMenu({ items, label, name }: { items: LicenseContextMenuItem[]; label: string; name: string }) {
     return (
         <Menu>
             <MenuTrigger asChild>
@@ -78,67 +57,25 @@ function LicenseWorkspaceMenu({
                     <Avatar bg="transparent" color={hashToColor(name, 200, 360)} identifier={name} size={16} />
                     <span className="min-w-0 text-left">
                         <Text className="block truncate">{name}</Text>
-                        {description ? (
-                            <Text hierarchy="tertiary" className="block truncate text-xs!">
-                                {description}
-                            </Text>
-                        ) : null}
                     </span>
                     <IconChevronDown aria-hidden="true" className="ml-auto shrink-0" size={16} />
                 </Button>
             </MenuTrigger>
             <MenuPortal>
                 <MenuContent sideOffset={8} align="start" w="var(--radix-popper-anchor-width)">
-                    <MenuLabel>{labels.workspace}</MenuLabel>
-                    <MenuItem onSelect={() => onOpenMainApplication(workspaceSettingsPath)}>
-                        <IconSettings aria-hidden="true" size={16} />
-                        {labels.settings}
-                    </MenuItem>
-                    <MenuItem onSelect={() => onOpenMainApplication(namespaceId ? `${workspaceSettingsPath}?tab=members` : "/")}>
-                        <IconUsers aria-hidden="true" size={16} />
-                        {labels.members}
-                    </MenuItem>
-                    <MenuItem onSelect={() => onOpenMainApplication(namespaceId ? `${workspaceSettingsPath}?tab=roles` : "/")}>
-                        <IconShieldLock aria-hidden="true" size={16} />
-                        {labels.roles}
-                    </MenuItem>
-                    <MenuItem onSelect={() => onOpenMainApplication(namespaceId ? `${workspaceSettingsPath}?tab=servers` : "/")}>
-                        <IconServer aria-hidden="true" size={16} />
-                        {labels.servers}
-                    </MenuItem>
-                    <MenuSeparator />
-                    {workspaceLicenses.length > 0 ? (
-                        <MenuSub>
-                            <MenuSubTrigger>
-                                <IconSwitch aria-hidden="true" size={16} />
-                                <Flex align="center" justify="space-between" w="100%">
-                                    {labels.switchWorkspace}
-                                    <IconChevronRight aria-hidden="true" size={16} />
-                                </Flex>
-                            </MenuSubTrigger>
-                            <MenuSubContent sideOffset={8} alignOffset={-4}>
-                                {workspaceLicenses.map((license) => {
-                                    const entryNamespaceId = getNamespaceDisplayId(license.namespaceId)!
-                                    const entryName = license.customerName || formatLicenseDisplayValue(license.plan, "plan", content.values)
+                    <MenuLabel>{label}</MenuLabel>
+                    {items.map((item) => {
+                        const ItemIcon = item.icon
 
-                                    return (
-                                        <MenuItem key={license.id} onSelect={() => onOpenMainApplication(`/namespace/${entryNamespaceId}`)}>
-                                            <Avatar bg="transparent" color={hashToColor(entryName, 200, 360)} identifier={entryName} size={16} />
-                                            <Flex align="center" justify="space-between" w="100%" style={{ gap: "0.7rem" }}>
-                                                <span className="truncate">{entryName}</span>
-                                                <IconCheck aria-hidden="true" size={16} color={license.id === currentLicense?.id ? undefined : "transparent"} />
-                                            </Flex>
-                                        </MenuItem>
-                                    )
-                                })}
-                            </MenuSubContent>
-                        </MenuSub>
-                    ) : (
-                        <MenuItem onSelect={() => onOpenMainApplication("/")}>
-                            <IconSwitch aria-hidden="true" size={16} />
-                            {labels.switchWorkspace}
-                        </MenuItem>
-                    )}
+                        return (
+                            <MenuItem key={item.href} asChild>
+                                <Link href={item.href}>
+                                    <ItemIcon aria-hidden="true" size={16} />
+                                    {item.label}
+                                </Link>
+                            </MenuItem>
+                        )
+                    })}
                 </MenuContent>
             </MenuPortal>
         </Menu>
@@ -209,14 +146,47 @@ function LicenseSidebarSkeleton() {
     )
 }
 
-export function LicenseSidebar({ content, isLoading, isLoggingOut, locale, licenses, onLogout, onOpenMainApplication }: LicenseSidebarProps) {
+function getCustomerContextMenu(customerEditPath: string, customerName: string | undefined, locale: AppLocale) {
+    const label = locale === "de" ? "Kunde" : "Customer"
+    const sectionLabels = getCustomerEditSectionLabels(locale)
+    const sectionIcons = { general: IconUser, paymentMethods: IconCreditCard } satisfies Record<CustomerEditSection, typeof IconUser>
+    const sections: CustomerEditSection[] = ["general", "paymentMethods"]
+
+    return {
+        items: sections.map((section) => ({ href: `${customerEditPath}?tab=${section}`, icon: sectionIcons[section], label: sectionLabels[section] })),
+        label,
+        name: customerName || label,
+    }
+}
+
+function getLicenseContextMenu(license: LicenseDashboardLicense, content: LicenseSidebarProps["content"], locale: AppLocale) {
+    const editPath = `${createLicensePath(locale, license.customerId, license.id)}/edit`
+    const sectionLabels = getLicenseEditSectionLabels(locale, content.upgrade.title)
+    const sectionIcons = { general: IconKey, payment: IconCreditCard, upgrade: IconTrendingUp } satisfies Record<LicenseEditSection, typeof IconKey>
+    // Without a subscription the edit dialog only offers the general section.
+    const sections: readonly LicenseEditSection[] = license.subscriptionId ? LICENSE_EDIT_SECTIONS : ["general"]
+
+    return {
+        items: sections.map((section) => ({ href: `${editPath}?tab=${section}`, icon: sectionIcons[section], label: sectionLabels[section] })),
+        label: content.license,
+        name: getLicenseSidebarName(license, content.values),
+    }
+}
+
+export function LicenseSidebar({ content, isLoading, isLoggingOut, locale, licenses, onLogout }: LicenseSidebarProps) {
     const pathname = usePathname()
     const router = useRouter()
     const activeLicense = licenses.find((license) => {
         const href = createLicensePath(locale, license.customerId, license.id)
         return pathname === href || pathname?.startsWith(`${href}/`)
     })
-    const currentLicense = activeLicense ?? licenses[0]
+    const customerRouteSegment = pathname?.match(/\/licenses\/customer\/([^/]+)/)?.[1]
+    const customerId = customerRouteSegment ? resolveCustomerRouteId(customerRouteSegment) : undefined
+    const contextMenu = activeLicense
+        ? getLicenseContextMenu(activeLicense, content, locale)
+        : customerRouteSegment
+          ? getCustomerContextMenu(`/${locale}/licenses/customer/${customerRouteSegment}/edit`, licenses.find((license) => license.customerId === customerId)?.customerName, locale)
+          : null
     return (
         <div className="min-h-0 lg:h-full">
             <header className="bg-transparent pb-4 lg:hidden!">
@@ -368,8 +338,8 @@ export function LicenseSidebar({ content, isLoading, isLoggingOut, locale, licen
                 </div>
                 <div className="mt-6 flex shrink-0 flex-col gap-2">
                     {activeLicense ? <LicenseBackToCustomerButton license={activeLicense} locale={locale} /> : null}
-                    <LicenseUpgradeButton content={content} license={currentLicense} locale={locale} />
-                    <LicenseWorkspaceMenu content={content} currentLicense={currentLicense} licenses={licenses} locale={locale} onOpenMainApplication={onOpenMainApplication} />
+                    {activeLicense ? <LicenseUpgradeButton content={content} license={activeLicense} locale={locale} /> : null}
+                    {contextMenu ? <LicenseContextMenu {...contextMenu} /> : null}
                 </div>
             </aside>
         </div>

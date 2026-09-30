@@ -137,7 +137,7 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
             disabled={isLoading || !license}
             onClick={() => {
                 if (!license) return
-                router.push(`${createLicensePath(locale, license.customerId, license.id)}/edit?tab=license`)
+                router.push(`${createLicensePath(locale, license.customerId, license.id)}/edit?tab=general`)
             }}
             className="shrink-0 text-sm!"
         >
