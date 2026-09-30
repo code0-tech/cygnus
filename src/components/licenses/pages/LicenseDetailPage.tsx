@@ -93,7 +93,7 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
     const showNamespaceWarning = license?.deploymentType === "cloud" && !license.namespaceId
     const licenseDetails: LicenseDetailItem[] = license
         ? [
-              { label: content.dashboard.statusLabel, value: formatLicenseDisplayValue(license.status, "status", content.values), showStatusDot: true },
+              { label: content.dashboard.statusLabel, value: formatLicenseDisplayValue(license.status, "status", content.values) },
               {
                   badge: formatLicenseDisplayValue(license.deploymentType, "deploymentType", content.values),
                   label: content.license,
@@ -199,15 +199,11 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
                         <div>
                             <div className="grid sm:grid-cols-2 xl:grid-cols-4">
                                 {licenseDetails.map((detail, index) => (
-                                    <div
-                                        key={detail.label}
-                                        className={getLicenseDetailGridCellClassName(index)}
-                                    >
+                                    <div key={detail.label} className={getLicenseDetailGridCellClassName(index)}>
                                         <div className="flex min-w-0 items-center gap-2">
                                             <Text size="sm" hierarchy="tertiary" className="truncate">
                                                 {detail.label}
                                             </Text>
-                                            {detail.badge ? <Badge color="tertiary">{detail.badge}</Badge> : null}
                                         </div>
                                         <Flex align="center" style={{ gap: "0.5rem" }} className="mt-3 min-w-0">
                                             {detail.showStatusDot ? <LicenseStatusDot aria-hidden="true" status={license.status} /> : null}
@@ -223,10 +219,7 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
                         <div aria-hidden="true">
                             <div className="grid sm:grid-cols-2 xl:grid-cols-4">
                                 {Array.from({ length: 4 }, (_, index) => (
-                                    <div
-                                        key={index}
-                                        className={getLicenseDetailGridCellClassName(index, "animate-pulse motion-reduce:animate-none")}
-                                    >
+                                    <div key={index} className={getLicenseDetailGridCellClassName(index, "animate-pulse motion-reduce:animate-none")}>
                                         <div className={index % 2 === 0 ? "h-3 w-20 rounded-full bg-white/10" : "h-3 w-28 rounded-full bg-white/10"} />
                                         <div className={index % 2 === 0 ? "mt-4 h-8 w-24 rounded-lg bg-white/10" : "mt-4 h-8 w-32 rounded-lg bg-white/10"} />
                                     </div>
