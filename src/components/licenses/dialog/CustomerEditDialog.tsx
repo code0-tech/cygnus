@@ -8,11 +8,12 @@ import { ButtonLoader } from "@/components/ui/Loader"
 import { useCustomerPaymentMethods } from "@/hooks/usePaymentMethods"
 import type { CheckoutData, ErrorsContent, LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
+import { type CustomerEditSection, getCustomerEditSectionLabels } from "@/lib/licenses/customerEditSections"
 import { createLicenseCustomerPath, resolveCustomerRouteId } from "@/lib/licenses/licenseRoute"
 import { cn } from "@/lib/utils"
 import { Button, DialogFooter, EmailInput, ScrollArea, ScrollAreaScrollbar, ScrollAreaThumb, ScrollAreaViewport, Text, TextInput } from "@code0-tech/pictor"
 import { IconCreditCard, IconTrash, IconUser } from "@tabler/icons-react"
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { type SyntheticEvent, useEffect, useState } from "react"
 
 interface CustomerEditDialogProps {
@@ -23,10 +24,10 @@ interface CustomerEditDialogProps {
     locale: AppLocale
 }
 
-type CustomerEditSection = "general" | "paymentMethods"
-
 export function CustomerEditDialog({ checkoutForm, content, customerId, errors, locale }: CustomerEditDialogProps) {
     const router = useRouter()
+    const pathname = usePathname()
+    const searchParams = useSearchParams()
     const { customers, updateCustomer } = useLicenseData()
     const resolvedCustomerId = resolveCustomerRouteId(customerId)
     const customer = customers.find((candidate) => candidate.id === resolvedCustomerId)
@@ -41,7 +42,9 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
     const [country, setCountry] = useState("")
     const [error, setError] = useState<string | null>(null)
     const [isSaving, setIsSaving] = useState(false)
-    const [section, setSection] = useState<CustomerEditSection>("general")
+    const requestedTab = searchParams.get("tab")
+    const section: CustomerEditSection = requestedTab === "paymentMethods" || (requestedTab !== "general" && searchParams.has("setup_intent")) ? "paymentMethods" : "general"
+    const sectionLabels = getCustomerEditSectionLabels(locale)
     const { isLoadingPaymentMethods, paymentMethods, paymentMethodsError, refreshPaymentMethods, removePaymentMethodLocally } = useCustomerPaymentMethods(customer?.id, section === "paymentMethods")
     const [removingPaymentMethodId, setRemovingPaymentMethodId] = useState<string | null>(null)
     const [removePaymentMethodError, setRemovePaymentMethodError] = useState<string | null>(null)
@@ -60,9 +63,11 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
         setCountry(customer.address?.country ?? "")
     }, [customer])
 
-    useEffect(() => {
-        if (new URL(window.location.href).searchParams.has("setup_intent")) setSection("paymentMethods")
-    }, [])
+    const setSection = (nextSection: CustomerEditSection) => {
+        const nextSearchParams = new URLSearchParams(searchParams.toString())
+        nextSearchParams.set("tab", nextSection)
+        router.replace(`${pathname}?${nextSearchParams.toString()}`, { scroll: false })
+    }
 
     const paymentMethodAdded = () => {
         setRemovePaymentMethodError(null)
@@ -147,8 +152,8 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
     const sidebar = (
         <div role="tablist" aria-label={content.editor.customerTitle} className="flex flex-col gap-1">
             {[
-                { icon: IconUser, label: content.editor.customerTitle, value: "general" as const },
-                { icon: IconCreditCard, label: content.editor.paymentMethodHeading, value: "paymentMethods" as const },
+                { icon: IconUser, label: sectionLabels.general, value: "general" as const },
+                { icon: IconCreditCard, label: sectionLabels.paymentMethods, value: "paymentMethods" as const },
             ].map((tab) => {
                 const selected = section === tab.value
                 const TabIcon = tab.icon

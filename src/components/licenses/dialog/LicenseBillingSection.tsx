@@ -61,7 +61,7 @@ export function LicenseBillingSection({ content, errors, license, locale, onClos
     const periodLabelFor = (value: PaymentPeriod) => subscriptionConfig.paymentPeriod[`${value}Text`]
 
     return (
-        <div role="tabpanel" id="license-edit-panel-billing" aria-labelledby="license-edit-tab-billing" className="space-y-6">
+        <div className="space-y-6">
             <div>
                 <Text hierarchy="secondary" size="lg">
                     {content.billing.title}

@@ -67,7 +67,6 @@ function LicenseLayoutContent({ children, content, errors, locale }: LicenseLayo
                     locale={locale}
                     licenses={sidebarLicenses}
                     onLogout={() => void logout()}
-                    onOpenMainApplication={openMainApplication}
                 />
 
                 <main className="h-full min-h-0 w-[calc(100vw-2rem)] min-w-0 overflow-hidden rounded-2xl bg-transparent lg:w-auto">

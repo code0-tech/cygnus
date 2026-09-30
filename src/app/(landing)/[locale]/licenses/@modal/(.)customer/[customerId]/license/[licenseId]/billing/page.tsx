@@ -5,5 +5,5 @@ import { notFound, redirect } from "next/navigation"
 export default async function InterceptedLicenseBillingPage({ params }: { params: Promise<{ customerId: string; licenseId: string; locale: string }> }) {
     const { customerId, licenseId, locale } = await params
     if (!isSupportedLocale(locale)) notFound()
-    redirect(`${createLicensePath(locale, customerId, licenseId)}/edit?tab=billing`)
+    redirect(`${createLicensePath(locale, customerId, licenseId)}/edit?tab=general`)
 }

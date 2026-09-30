@@ -10,11 +10,12 @@ import { ButtonLoader } from "@/components/ui/Loader"
 import { useCustomerPaymentMethods, useSubscriptionPaymentMethod } from "@/hooks/usePaymentMethods"
 import type { ErrorsContent, LicenseContent, SubscriptionConfigData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
+import { getLicenseEditSectionLabels, isLicenseEditSection, LICENSE_EDIT_SECTIONS, type LicenseEditSection } from "@/lib/licenses/licenseEditSections"
 import { createLicensePath, resolveCustomerRouteId, resolveLicenseRouteId } from "@/lib/licenses/licenseRoute"
 import { cn } from "@/lib/utils"
 import type { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
 import { Button, ScrollArea, ScrollAreaScrollbar, ScrollAreaThumb, ScrollAreaViewport, Text } from "@code0-tech/pictor"
-import { IconCalendarMonth, IconCreditCard, IconKey, IconTrendingUp } from "@tabler/icons-react"
+import { IconCreditCard, IconKey, IconTrendingUp } from "@tabler/icons-react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useCallback, useEffect, useState } from "react"
 
@@ -29,8 +30,6 @@ interface LicenseEditDialogProps {
     subscriptionPrices: SubscriptionPriceCatalog
 }
 
-type LicenseEditSection = "billing" | "license" | "payment" | "upgrade"
-
 export function LicenseEditDialog({ content, customerId, errors, licenseId, locale, namespaceHref, subscriptionConfig, subscriptionPrices }: LicenseEditDialogProps) {
     const router = useRouter()
     const pathname = usePathname()
@@ -40,14 +39,9 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
     const resolvedLicenseId = resolveLicenseRouteId(licenseId)
     const license = licenses.find((candidate) => candidate.id === resolvedLicenseId && candidate.customerId === resolvedCustomerId)
     const requestedTab = searchParams.get("tab")
-    const section: LicenseEditSection =
-        requestedTab === "license" || requestedTab === "payment" || requestedTab === "billing" || requestedTab === "upgrade"
-            ? requestedTab
-            : searchParams.has("setup_intent")
-              ? "payment"
-              : searchParams.get("section") === "billing"
-                ? "billing"
-                : "license"
+    // Legacy "license" and "billing" tabs were merged into "general".
+    const section: LicenseEditSection = isLicenseEditSection(requestedTab) ? requestedTab : searchParams.has("setup_intent") ? "payment" : "general"
+    const sectionLabels = getLicenseEditSectionLabels(locale, content.upgrade.title)
     const paymentSectionEnabled = section === "payment"
     const { isLoadingPaymentMethod, paymentMethod, paymentMethodError, refreshPaymentMethod } = useSubscriptionPaymentMethod(license?.subscriptionId, paymentSectionEnabled)
     const {
@@ -68,7 +62,7 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
     }
 
     useEffect(() => {
-        if (requestedTab === "license" || requestedTab === "payment" || requestedTab === "billing" || requestedTab === "upgrade") return
+        if (isLicenseEditSection(requestedTab)) return
         const nextSearchParams = new URLSearchParams(searchParams.toString())
         nextSearchParams.set("tab", section)
         nextSearchParams.delete("section")
@@ -106,14 +100,10 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
     const otherPaymentMethods = customerPaymentMethods?.filter((method) => method.id !== license?.paymentMethodId)
     const isCloud = license?.deploymentType === "cloud"
     const namespaceSelectionFailed = searchParams.has("namespaceError")
+    const sectionIcons = { general: IconKey, payment: IconCreditCard, upgrade: IconTrendingUp } satisfies Record<LicenseEditSection, typeof IconKey>
     const sidebar = license?.subscriptionId ? (
         <div role="tablist" aria-label={content.editor.licenseTitle} className="flex flex-col gap-1">
-            {[
-                { icon: IconKey, label: content.editor.licenseTitle, value: "license" as const },
-                { icon: IconCreditCard, label: content.editor.paymentMethodHeading, value: "payment" as const },
-                { icon: IconCalendarMonth, label: content.billing.title, value: "billing" as const },
-                { icon: IconTrendingUp, label: content.upgrade.title, value: "upgrade" as const },
-            ].map((tab) => {
+            {LICENSE_EDIT_SECTIONS.map((value) => ({ icon: sectionIcons[value], label: sectionLabels[value], value })).map((tab) => {
                 const selected = section === tab.value
                 const TabIcon = tab.icon
 
@@ -148,8 +138,8 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
     ) : null
     return (
         <LicenseDialog backLabel={content.editor.closeLabel} description={content.editor.licenseEditDescription} onClose={close} sidebar={sidebar} title={content.editor.licenseTitle}>
-            {section === "license" || !license?.subscriptionId ? (
-                <div className="space-y-4" role="tabpanel" id="license-edit-panel-license" aria-labelledby="license-edit-tab-license">
+            {section === "general" || !license?.subscriptionId ? (
+                <div className="space-y-4" role="tabpanel" id="license-edit-panel-general" aria-labelledby="license-edit-tab-general">
                     {namespaceSelectionFailed && (
                         <p role="alert" className="text-sm text-error">
                             {errors.licenseUpdate}
@@ -167,6 +157,11 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
                             </div>
                         )}
                         {license?.subscriptionId && (
+                            <div className={cn(isCloud && "border-t border-white/10 pt-6")}>
+                                <LicenseBillingSection content={content} errors={errors} license={license} locale={locale} onClose={close} subscriptionConfig={subscriptionConfig} />
+                            </div>
+                        )}
+                        {license?.subscriptionId && (
                             <div className="flex flex-col gap-4 border-t border-white/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
                                 <Text size="sm" hierarchy="tertiary" className="max-w-xl!">
                                     {content.cancel.description}
@@ -178,8 +173,6 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
                         )}
                     </div>
                 </div>
-            ) : section === "billing" && license ? (
-                <LicenseBillingSection content={content} errors={errors} license={license} locale={locale} onClose={close} subscriptionConfig={subscriptionConfig} />
             ) : section === "upgrade" ? (
                 <LicenseUpgradeDialog
                     content={content}
@@ -195,7 +188,7 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
                 <div role="tabpanel" id="license-edit-panel-payment" aria-labelledby="license-edit-tab-payment" className="space-y-6">
                     <div>
                         <Text hierarchy="secondary" size="lg">
-                            {content.editor.paymentMethodHeading}
+                            {sectionLabels.payment}
                         </Text>
                         <Text size="sm" hierarchy="tertiary" className="mt-2!">
                             {content.editor.paymentMethodDescription}
