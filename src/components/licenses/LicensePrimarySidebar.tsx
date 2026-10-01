@@ -2,7 +2,6 @@
 
 import { ButtonLoader } from "@/components/ui/Loader"
 import type { LicenseContent } from "@/lib/cms"
-import type { AppLocale } from "@/lib/i18n"
 import { Avatar, Button, Menu, MenuContent, MenuItem, MenuLabel, MenuPortal, MenuSeparator, MenuTrigger, Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from "@code0-tech/pictor"
 import { IconAdjustmentsFilled, IconApps, IconArrowAutofitLeftFilled, IconSettingsFilled, IconUser } from "@tabler/icons-react"
 import Image from "next/image"
@@ -11,7 +10,6 @@ import type { ReactNode } from "react"
 interface LicensePrimarySidebarProps {
     content: LicenseContent["sidebar"]
     isLoggingOut: boolean
-    locale: AppLocale
     onLogout: () => void
     onOpenMainApplication: (path: string) => void
 }
@@ -29,19 +27,16 @@ function NavigationTooltip({ children, label }: { children: ReactNode; label: st
     )
 }
 
-export function LicensePrimarySidebar({ content, isLoggingOut, locale, onLogout, onOpenMainApplication }: LicensePrimarySidebarProps) {
-    const labels =
-        locale === "de"
-            ? {
-                  applicationSettings: "Anwendungseinstellungen",
-                  home: "Startseite",
-                  profile: "Profil",
-                  settings: "Einstellungen",
-                  userMenu: "Benutzermenü",
-                  userSettings: "Benutzereinstellungen",
-                  workspaces: "Workspaces",
-              }
-            : { applicationSettings: "Application settings", home: "Home", profile: "Profile", settings: "Settings", userMenu: "User menu", userSettings: "User settings", workspaces: "Workspaces" }
+export function LicensePrimarySidebar({ content, isLoggingOut, onLogout, onOpenMainApplication }: LicensePrimarySidebarProps) {
+    const labels = {
+        applicationSettings: content.applicationSettingsLabel,
+        home: content.homeLabel,
+        profile: content.profileLabel,
+        settings: content.settingsLabel,
+        userMenu: content.userMenuLabel,
+        userSettings: content.userSettingsLabel,
+        workspaces: content.workspacesLabel,
+    }
 
     return (
         <aside className="hidden h-full min-h-0 flex-col items-center bg-transparent pr-5.5 lg:flex" aria-label="Code0">

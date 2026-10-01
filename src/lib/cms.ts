@@ -355,29 +355,30 @@ export interface LicenseContent {
     emptyLicenses: string
     redirectUrl: string
     sidebar: {
-        dashboard: string
         logout: string
         loggingOut: string
-        refresh: string
-        refreshing: string
+        backToCustomerLabel: string
+        homeLabel: string
+        applicationSettingsLabel: string
+        userSettingsLabel: string
+        userMenuLabel: string
+        profileLabel: string
+        settingsLabel: string
+        workspacesLabel: string
     }
     dashboard: {
-        customers: string
-        customersDescription: string
         emptyCustomers: string
-        recentLicenses: string
-        recentLicensesDescription: string
         customerLabel: string
         nameLabel: string
-        typeLabel: string
         emailLabel: string
         lastEditedLabel: string
         editLabel: string
         statusLabel: string
-        deploymentLabel: string
         paymentPeriodLabel: string
         workflowExecutionsLabel: string
         aiTokensLabel: string
+        editionLabel: string
+        nextBillingDateLabel: string
     }
     values: {
         customerTypes: { personal: string; business: string }
@@ -386,6 +387,7 @@ export interface LicenseContent {
         statuses: { active: string; pending: string; paid: string; paymentFailed: string; canceled: string; expired: string }
         invoiceStatuses: { draft: string; open: string; uncollectible: string; void: string }
         plans: { pro: string; max: string; custom: string }
+        editions: { cloud: string; selfHosted: string }
         unknown: string
     }
     invoices: {
@@ -393,15 +395,18 @@ export interface LicenseContent {
         description: string
         empty: string
         numberLabel: string
-        periodLabel: string
+        billingDateLabel: string
         amountLabel: string
         statusLabel: string
         downloadLabel: string
+        viewLabel: string
         unavailableLabel: string
     }
     pagination: {
         loadMoreLabel: string
         loadingLabel: string
+        previousPageLabel: string
+        nextPageLabel: string
     }
     editor: {
         customerTitle: string
@@ -409,7 +414,6 @@ export interface LicenseContent {
         contactHeading: string
         paymentMethodHeading: string
         paymentMethodDescription: string
-        changePaymentMethodLabel: string
         loadingPaymentMethodLabel: string
         savePaymentMethodLabel: string
         savingPaymentMethodLabel: string
@@ -427,6 +431,22 @@ export interface LicenseContent {
         changeNamespaceLabel: string
         saveLabel: string
         closeLabel: string
+        generalTabLabel: string
+        paymentMethodsTabLabel: string
+        paymentMethodTabLabel: string
+        namespaceHeading: string
+        cancellationHeading: string
+        fieldDescriptions: {
+            name: string
+            email: string
+            phone: string
+            line1: string
+            line2: string
+            postalCode: string
+            city: string
+            state: string
+            country: string
+        }
     }
     subscriptionPreview: {
         totalLabel: string
@@ -443,6 +463,7 @@ export interface LicenseContent {
         description: string
         periodLabel: string
         currentPeriodEndLabel: string
+        changePeriodLabel: string
     }
     cancel: {
         description: string
@@ -455,6 +476,9 @@ export interface LicenseContent {
     upgrade: {
         title: string
         description: string
+        planHeading: string
+        previewHeading: string
+        submitLabel: string
     }
 }
 
@@ -859,13 +883,28 @@ const getUpgradeBannerContentCached = cache(async (locale: AppLocale): Promise<U
     })
 })
 
+type LicenseDialogsContent = Pick<LicenseContent, "editor" | "subscriptionPreview" | "billing" | "cancel" | "upgrade">
+
+// The dialog texts live in their own global (see src/globals/licenseDialogs.ts) and are merged back here.
 const getLicenseContentCached = cache(async (locale: AppLocale): Promise<LicenseContent | null> => {
-    return cmsFindGlobal(`getLicenses(${locale})`, null, {
-        slug: "licenses",
-        locale,
-        fallbackLocale: DEFAULT_LOCALE,
-        depth: 0,
-    })
+    const [licenses, dialogs] = await Promise.all([
+        cmsFindGlobal<Omit<LicenseContent, keyof LicenseDialogsContent> | null>(`getLicenses(${locale})`, null, {
+            slug: "licenses",
+            locale,
+            fallbackLocale: DEFAULT_LOCALE,
+            depth: 0,
+        }),
+        cmsFindGlobal<LicenseDialogsContent | null>(`getLicenseDialogs(${locale})`, null, {
+            slug: "license-dialogs",
+            locale,
+            fallbackLocale: DEFAULT_LOCALE,
+            depth: 0,
+        }),
+    ])
+    if (!licenses || !dialogs) return null
+
+    const { editor, subscriptionPreview, billing, cancel, upgrade } = dialogs
+    return { ...licenses, editor, subscriptionPreview, billing, cancel, upgrade }
 })
 
 const getErrorsContentCached = cache(async (locale: AppLocale): Promise<ErrorsContent | null> => {

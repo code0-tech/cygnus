@@ -146,6 +146,7 @@ import * as migration_20260919_124842_checkout_guest_account_hint from './202609
 import * as migration_20260920_112846_license_detail_descriptions from './20260920_112846_license_detail_descriptions';
 import * as migration_20260920_115610_license_editor_description from './20260920_115610_license_editor_description';
 import * as migration_20260920_121604_license_dashboard_descriptions from './20260920_121604_license_dashboard_descriptions';
+import * as migration_20261001_175006_license_dashboard_cms_labels from './20261001_175006_license_dashboard_cms_labels';
 
 export const migrations = [
   {
@@ -881,11 +882,16 @@ export const migrations = [
   {
     up: migration_20260920_115610_license_editor_description.up,
     down: migration_20260920_115610_license_editor_description.down,
-    name: '20260920_115610_license_editor_description'
+    name: '20260920_115610_license_editor_description',
   },
   {
     up: migration_20260920_121604_license_dashboard_descriptions.up,
     down: migration_20260920_121604_license_dashboard_descriptions.down,
-    name: '20260920_121604_license_dashboard_descriptions'
+    name: '20260920_121604_license_dashboard_descriptions',
+  },
+  {
+    up: migration_20261001_175006_license_dashboard_cms_labels.up,
+    down: migration_20261001_175006_license_dashboard_cms_labels.down,
+    name: '20261001_175006_license_dashboard_cms_labels'
   },
 ];

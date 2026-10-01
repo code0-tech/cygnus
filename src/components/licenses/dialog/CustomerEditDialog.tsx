@@ -59,7 +59,7 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
     const [isSaving, setIsSaving] = useState(false)
     const requestedTab = searchParams.get("tab")
     const section: CustomerEditSection = requestedTab === "paymentMethods" || (requestedTab !== "general" && searchParams.has("setup_intent")) ? "paymentMethods" : "general"
-    const sectionLabels = getCustomerEditSectionLabels(locale)
+    const sectionLabels = getCustomerEditSectionLabels(content.editor)
     const { isLoadingPaymentMethods, paymentMethods, paymentMethodsError, refreshPaymentMethods, removePaymentMethodLocally } = useCustomerPaymentMethods(customer?.id, section === "paymentMethods")
     const [removingPaymentMethodId, setRemovingPaymentMethodId] = useState<string | null>(null)
     const [removePaymentMethodError, setRemovePaymentMethodError] = useState<string | null>(null)
@@ -164,30 +164,7 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
         }
     }
 
-    const fieldDescriptions =
-        locale === "de"
-            ? {
-                  city: "Ort der Rechnungsadresse.",
-                  country: "Zweistelliger ISO-Ländercode, z. B. DE.",
-                  email: "Rechnungs-E-Mails werden an diese Adresse gesendet.",
-                  line1: "Straße und Hausnummer.",
-                  line2: "Adresszusatz wie Etage, Wohnung oder c/o.",
-                  name: "Name der Person oder Firma, an die Rechnungen adressiert werden.",
-                  phone: "Optionale Telefonnummer für Rückfragen zur Abrechnung.",
-                  postalCode: "Postleitzahl der Rechnungsadresse.",
-                  state: "Bundesland, Provinz oder Region, falls zutreffend.",
-              }
-            : {
-                  city: "City of the billing address.",
-                  country: "Two-letter ISO country code, e.g. DE.",
-                  email: "Invoice emails are sent to this address.",
-                  line1: "Street and house number.",
-                  line2: "Additional address details such as floor, suite or c/o.",
-                  name: "Name of the person or company invoices are addressed to.",
-                  phone: "Optional phone number for billing questions.",
-                  postalCode: "Postal code of the billing address.",
-                  state: "State, province or region, if applicable.",
-              }
+    const fieldDescriptions = content.editor.fieldDescriptions
     const contactFields: CustomerField[] = [
         { autoComplete: "name", description: fieldDescriptions.name, name: "name", onChange: setName, title: checkoutForm.nameLabel, value: name },
         {

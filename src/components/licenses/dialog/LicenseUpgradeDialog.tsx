@@ -135,13 +135,11 @@ export function LicenseUpgradeDialog({ content, customerId, errors, licenseId, l
             return text ? [{ key: feature.id ?? `${index}-${text}`, text }] : []
         }) ?? []
 
-    const labels = locale === "de" ? { buy: "Jetzt upgraden", plan: "Plan", preview: "Vorschau" } : { buy: "Upgrade now", plan: "Plan", preview: "Preview" }
-
     return (
         <>
             <LicenseTabHeader title={content.upgrade.title} description={content.upgrade.description} />
 
-            <LicenseTabSection title={labels.plan}>
+            <LicenseTabSection title={content.upgrade.planHeading}>
                 {planSelection ? <LicenseTabRow>{planSelection}</LicenseTabRow> : null}
                 {plan === "custom" ? (
                     <>
@@ -189,7 +187,7 @@ export function LicenseUpgradeDialog({ content, customerId, errors, licenseId, l
                 ) : null}
             </LicenseTabSection>
 
-            <LicenseTabSection title={labels.preview}>
+            <LicenseTabSection title={content.upgrade.previewHeading}>
                 <LicenseTabRow title={content.subscriptionPreview.totalLabel} action={<Text size="md">{formatMinorCurrency(localQuote.total, "EUR", locale)}</Text>} />
                 {isLoadingPreview ? (
                     <LicenseTabRow description={content.subscriptionPreview.loadingLabel} />
@@ -214,7 +212,7 @@ export function LicenseUpgradeDialog({ content, customerId, errors, licenseId, l
             <Spacing spacing="lg" />
             <Flex justify="end">
                 <Button type="button" variant="filled" disabled={!hasChange || isSaving || isLoadingPreview || !preview || Boolean(previewError) || !acceptedTerms} onClick={() => void save()}>
-                    {isSaving ? <ButtonLoader label={labels.buy} /> : labels.buy}
+                    {isSaving ? <ButtonLoader label={content.upgrade.submitLabel} /> : content.upgrade.submitLabel}
                 </Button>
             </Flex>
         </>

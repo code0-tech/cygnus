@@ -86,8 +86,6 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
             .join(" – ")
     }
     const formatDate = (value?: string) => (value ? dateFormatter.format(new Date(value)) : "—")
-    const billingDateLabel = locale === "de" ? "Rechnungsdatum" : "Billing date"
-    const nextBillingDateLabel = locale === "de" ? "Nächste Abrechnung" : "Next billing date"
     // A canceled subscription, or one whose cancellation has been requested, is not billed again.
     const hasNextBilling = Boolean(license && !license.canceledAt && license.status?.trim().toLowerCase() !== "canceled")
     const showNamespaceWarning = license?.deploymentType === "cloud" && !license.namespaceId
@@ -100,7 +98,7 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
                   value: formatLicenseDisplayValue(license.plan, "plan", content.values),
               },
               { label: content.dashboard.paymentPeriodLabel, value: formatLicenseDisplayValue(license.paymentPeriod, "paymentPeriod", content.values) },
-              { label: nextBillingDateLabel, value: hasNextBilling ? formatDate(license.currentPeriodEnd) : "—" },
+              { label: content.dashboard.nextBillingDateLabel, value: hasNextBilling ? formatDate(license.currentPeriodEnd) : "—" },
           ]
         : []
     const invoices = license?.invoices ?? []
@@ -146,7 +144,6 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
     )
     const selectedInvoiceNumber = selectedInvoice?.invoiceNumber || selectedInvoice?.id.split("/").at(-1) || selectedInvoice?.id
     const selectedInvoicePreviewUrl = selectedInvoice?.stripePdfUrl ? `/api/crater/invoices/preview?url=${encodeURIComponent(selectedInvoice.stripePdfUrl)}` : null
-    const viewInvoiceLabel = locale === "de" ? "Ansehen" : "View"
 
     return (
         <div>
@@ -270,7 +267,7 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
                         selectedFilters={invoiceStatusFilters}
                         onFilterChange={setInvoiceStatusFilters}
                         sortDirection={invoiceSortDirection}
-                        sortLabel={billingDateLabel}
+                        sortLabel={content.invoices.billingDateLabel}
                         onSortDirectionChange={setInvoiceSortDirection}
                     />
                 </Flex>
@@ -294,7 +291,7 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
                     >
                         <DataTableHeader>
                             <DataTableHeaderColumn className="font-normal text-tertiary text-xs">{content.invoices.numberLabel}</DataTableHeaderColumn>
-                            <DataTableHeaderColumn className="font-normal text-tertiary text-xs">{billingDateLabel}</DataTableHeaderColumn>
+                            <DataTableHeaderColumn className="font-normal text-tertiary text-xs">{content.invoices.billingDateLabel}</DataTableHeaderColumn>
                             <DataTableHeaderColumn className="font-normal text-tertiary text-xs">{content.invoices.amountLabel}</DataTableHeaderColumn>
                             <DataTableHeaderColumn className="font-normal text-tertiary text-xs">{content.invoices.statusLabel}</DataTableHeaderColumn>
                             <DataTableHeaderColumn />
@@ -336,7 +333,7 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
                                                 <MenuLabel>{content.invoices.title}</MenuLabel>
                                                 <MenuItem onSelect={() => setSelectedInvoice(invoice)}>
                                                     <IconEye aria-hidden="true" size={15} />
-                                                    {viewInvoiceLabel}
+                                                    {content.invoices.viewLabel}
                                                 </MenuItem>
                                                 {invoice.stripePdfUrl ? (
                                                     <MenuItem asChild>
@@ -357,7 +354,7 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
                                 </DataTableColumn>
                             </Fragment>
                         )}
-                        {invoiceRows.length > LICENSE_DATA_TABLE_PAGE_SIZE ? <LicenseDataTablePagination locale={locale} /> : null}
+                        {invoiceRows.length > LICENSE_DATA_TABLE_PAGE_SIZE ? <LicenseDataTablePagination labels={content.pagination} /> : null}
                     </DataTable>
                 </Card>
                 {pagination?.invoices?.hasNextPage ? <LicenseLoadMoreButton loading={loadingMore === "invoices"} labels={content.pagination} onClick={() => void loadMore("invoices")} /> : null}

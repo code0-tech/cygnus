@@ -45,10 +45,6 @@ export function LicenseGeneralTab({ content, errors, license, locale, namespaceH
     const { isLoadingPreview, preview, previewError } = useSubscriptionUpdatePreview(hasChange ? subscriptionId : undefined, { paymentPeriod: period }, errors.subscriptionPreview)
     const [saveError, setSaveError] = useState<string | null>(null)
     const [isSaving, setIsSaving] = useState(false)
-    const labels =
-        locale === "de"
-            ? { cancellation: "Kündigung", namespace: "Namespace", changePeriod: "Zeitraum ändern" }
-            : { cancellation: "Cancellation", namespace: "Namespace", changePeriod: "Change period" }
 
     const save = async () => {
         if (!license || !subscriptionId || !hasChange || isSaving) return
@@ -79,7 +75,7 @@ export function LicenseGeneralTab({ content, errors, license, locale, namespaceH
             {namespaceSelectionFailed ? <LicenseTabAlert>{errors.licenseUpdate}</LicenseTabAlert> : null}
 
             {license?.deploymentType === "cloud" ? (
-                <LicenseTabSection title={labels.namespace}>
+                <LicenseTabSection title={content.editor.namespaceHeading}>
                     <LicenseTabRow
                         title={getNamespaceDisplayId(license.namespaceId) ?? "—"}
                         description={content.editor.licenseDescription}
@@ -129,7 +125,7 @@ export function LicenseGeneralTab({ content, errors, license, locale, namespaceH
                                         description={preview.immediate ? content.subscriptionPreview.immediateNote : content.subscriptionPreview.scheduledNote}
                                         action={
                                             <Button type="button" variant="normal" paddingSize="xxs" disabled={isSaving} onClick={() => void save()}>
-                                                {isSaving ? <ButtonLoader label={labels.changePeriod} /> : labels.changePeriod}
+                                                {isSaving ? <ButtonLoader label={content.billing.changePeriodLabel} /> : content.billing.changePeriodLabel}
                                             </Button>
                                         }
                                     >
@@ -144,7 +140,7 @@ export function LicenseGeneralTab({ content, errors, license, locale, namespaceH
                         ) : null}
                     </LicenseTabSection>
 
-                    <LicenseTabSection title={labels.cancellation}>
+                    <LicenseTabSection title={content.editor.cancellationHeading}>
                         <LicenseTabRow
                             title={content.cancel.confirmLabel}
                             description={content.cancel.description}

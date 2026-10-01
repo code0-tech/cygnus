@@ -1,4 +1,4 @@
-import type { AppLocale } from "@/lib/i18n"
+import type { LicenseContent } from "@/lib/cms"
 
 // Upgrade is always listed first.
 export const LICENSE_EDIT_SECTIONS = ["upgrade", "general", "payment"] as const
@@ -9,8 +9,6 @@ export function isLicenseEditSection(value: string | null): value is LicenseEdit
     return LICENSE_EDIT_SECTIONS.includes(value as LicenseEditSection)
 }
 
-export function getLicenseEditSectionLabels(locale: AppLocale, upgradeTitle: string): Record<LicenseEditSection, string> {
-    return locale === "de"
-        ? { upgrade: upgradeTitle, general: "Allgemein", payment: "Zahlungsmethode" }
-        : { upgrade: upgradeTitle, general: "General", payment: "Payment method" }
+export function getLicenseEditSectionLabels(content: Pick<LicenseContent, "editor" | "upgrade">): Record<LicenseEditSection, string> {
+    return { upgrade: content.upgrade.title, general: content.editor.generalTabLabel, payment: content.editor.paymentMethodTabLabel }
 }

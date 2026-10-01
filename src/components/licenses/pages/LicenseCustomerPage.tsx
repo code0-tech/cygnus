@@ -14,9 +14,9 @@ import { AutoScrollArea, Button, Card, DataTable, DataTableColumn, DataTableHead
 import { useRouter } from "next/navigation"
 import { Fragment, useState } from "react"
 
-function formatLicenseEdition(deploymentType?: string) {
-    if (deploymentType === "cloud") return "Cloud Edition"
-    if (deploymentType === "self_hosted") return "Enterprise Edition"
+function formatLicenseEdition(deploymentType: string | undefined, editions: LicenseContent["values"]["editions"]) {
+    if (deploymentType === "cloud") return editions.cloud
+    if (deploymentType === "self_hosted") return editions.selfHosted
     return "—"
 }
 
@@ -78,10 +78,7 @@ export function LicenseCustomerPage({ content, customerId, locale }: LicenseCust
                     {customer ? (
                         <div className="grid sm:grid-cols-2 xl:grid-cols-4">
                             {customerDetails.map((detail, index) => (
-                                <div
-                                    key={detail.label}
-                                    className={getLicenseDetailGridCellClassName(index)}
-                                >
+                                <div key={detail.label} className={getLicenseDetailGridCellClassName(index)}>
                                     <Text size="sm" hierarchy="tertiary" className="truncate">
                                         {detail.label}
                                     </Text>
@@ -94,10 +91,7 @@ export function LicenseCustomerPage({ content, customerId, locale }: LicenseCust
                     ) : isLoading ? (
                         <div aria-hidden="true" className="grid sm:grid-cols-2 xl:grid-cols-4">
                             {Array.from({ length: 4 }, (_, index) => (
-                                <div
-                                    key={index}
-                                    className={getLicenseDetailGridCellClassName(index, "animate-pulse motion-reduce:animate-none")}
-                                >
+                                <div key={index} className={getLicenseDetailGridCellClassName(index, "animate-pulse motion-reduce:animate-none")}>
                                     <div className={index % 2 === 0 ? "h-3 w-16 rounded-full bg-white/10" : "h-3 w-20 rounded-full bg-white/10"} />
                                     <div className={index === 1 ? "mt-4 h-8 w-32 rounded-lg bg-white/10" : "mt-4 h-8 w-20 rounded-lg bg-white/10"} />
                                 </div>
@@ -175,7 +169,7 @@ export function LicenseCustomerPage({ content, customerId, locale }: LicenseCust
                             <DataTableHeader>
                                 <DataTableHeaderColumn className="text-xs font-normal text-tertiary">{content.licenses}</DataTableHeaderColumn>
                                 <DataTableHeaderColumn className="text-xs font-normal text-tertiary">{content.dashboard.statusLabel}</DataTableHeaderColumn>
-                                <DataTableHeaderColumn className="text-xs font-normal text-tertiary">Edition</DataTableHeaderColumn>
+                                <DataTableHeaderColumn className="text-xs font-normal text-tertiary">{content.dashboard.editionLabel}</DataTableHeaderColumn>
                                 <DataTableHeaderColumn className="text-xs font-normal text-tertiary">{content.dashboard.lastEditedLabel}</DataTableHeaderColumn>
                             </DataTableHeader>
                             {(license) => (
@@ -192,7 +186,7 @@ export function LicenseCustomerPage({ content, customerId, locale }: LicenseCust
                                     </DataTableColumn>
                                     <DataTableColumn>
                                         <Text size="sm" hierarchy="tertiary">
-                                            {formatLicenseEdition(license.deploymentType)}
+                                            {formatLicenseEdition(license.deploymentType, content.values.editions)}
                                         </Text>
                                     </DataTableColumn>
                                     <DataTableColumn>
@@ -202,7 +196,7 @@ export function LicenseCustomerPage({ content, customerId, locale }: LicenseCust
                                     </DataTableColumn>
                                 </Fragment>
                             )}
-                            {licenseRows.length > LICENSE_DATA_TABLE_PAGE_SIZE ? <LicenseDataTablePagination locale={locale} /> : null}
+                            {licenseRows.length > LICENSE_DATA_TABLE_PAGE_SIZE ? <LicenseDataTablePagination labels={content.pagination} /> : null}
                         </DataTable>
                     </AutoScrollArea>
                 </Card>

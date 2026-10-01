@@ -107,6 +107,7 @@ export interface Config {
     checkout: Checkout;
     upgradeBanner: UpgradeBanner;
     licenses: License;
+    'license-dialogs': LicenseDialog;
     errors: Error;
   };
   globalsSelect: {
@@ -117,6 +118,7 @@ export interface Config {
     checkout: CheckoutSelect<false> | CheckoutSelect<true>;
     upgradeBanner: UpgradeBannerSelect<false> | UpgradeBannerSelect<true>;
     licenses: LicensesSelect<false> | LicensesSelect<true>;
+    'license-dialogs': LicenseDialogsSelect<false> | LicenseDialogsSelect<true>;
     errors: ErrorsSelect<false> | ErrorsSelect<true>;
   };
   locale: 'en' | 'de';
@@ -3222,29 +3224,30 @@ export interface License {
    */
   redirectUrl: string;
   sidebar: {
-    dashboard: string;
     logout: string;
     loggingOut: string;
-    refresh: string;
-    refreshing: string;
+    backToCustomerLabel: string;
+    homeLabel: string;
+    applicationSettingsLabel: string;
+    userSettingsLabel: string;
+    userMenuLabel: string;
+    profileLabel: string;
+    settingsLabel: string;
+    workspacesLabel: string;
   };
   dashboard: {
-    customers: string;
-    customersDescription: string;
     emptyCustomers: string;
-    recentLicenses: string;
-    recentLicensesDescription: string;
     customerLabel: string;
     nameLabel: string;
-    typeLabel: string;
     emailLabel: string;
     lastEditedLabel: string;
     editLabel: string;
     statusLabel: string;
-    deploymentLabel: string;
     paymentPeriodLabel: string;
     workflowExecutionsLabel: string;
     aiTokensLabel: string;
+    editionLabel: string;
+    nextBillingDateLabel: string;
   };
   values: {
     customerTypes: {
@@ -3279,6 +3282,10 @@ export interface License {
       max: string;
       custom: string;
     };
+    editions: {
+      cloud: string;
+      selfHosted: string;
+    };
     unknown: string;
   };
   invoices: {
@@ -3286,23 +3293,43 @@ export interface License {
     description: string;
     empty: string;
     numberLabel: string;
-    periodLabel: string;
+    billingDateLabel: string;
     amountLabel: string;
     statusLabel: string;
     downloadLabel: string;
+    viewLabel: string;
     unavailableLabel: string;
   };
   pagination: {
     loadMoreLabel: string;
     loadingLabel: string;
+    previousPageLabel: string;
+    nextPageLabel: string;
   };
+  /**
+   * Notice shown on the license detail page while the customer's statutory 14-day right of withdrawal is still running. Only shown for personal (B2C) customers.
+   */
+  withdrawal: {
+    /**
+     * Use {date} as a placeholder for the withdrawal deadline.
+     */
+    text: string;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "license-dialogs".
+ */
+export interface LicenseDialog {
+  id: number;
   editor: {
     customerTitle: string;
     customerDescription: string;
     contactHeading: string;
     paymentMethodHeading: string;
     paymentMethodDescription: string;
-    changePaymentMethodLabel: string;
     loadingPaymentMethodLabel: string;
     savePaymentMethodLabel: string;
     savingPaymentMethodLabel: string;
@@ -3320,6 +3347,25 @@ export interface License {
     changeNamespaceLabel: string;
     saveLabel: string;
     closeLabel: string;
+    generalTabLabel: string;
+    paymentMethodsTabLabel: string;
+    paymentMethodTabLabel: string;
+    namespaceHeading: string;
+    cancellationHeading: string;
+    /**
+     * Descriptions shown below the inputs of the customer edit dialog.
+     */
+    fieldDescriptions: {
+      name: string;
+      email: string;
+      phone: string;
+      line1: string;
+      line2: string;
+      postalCode: string;
+      city: string;
+      state: string;
+      country: string;
+    };
   };
   /**
    * Shared between the billing and upgrade dialogs, both of which preview a change through subscriptionsPreviewUpdate before applying it.
@@ -3331,20 +3377,12 @@ export interface License {
     scheduledNote: string;
     loadingLabel: string;
   };
-  /**
-   * Notice shown on the license detail page while the customer's statutory 14-day right of withdrawal is still running. Only shown for personal (B2C) customers.
-   */
-  withdrawal: {
-    /**
-     * Use {date} as a placeholder for the withdrawal deadline.
-     */
-    text: string;
-  };
   billing: {
     title: string;
     description: string;
     periodLabel: string;
     currentPeriodEndLabel: string;
+    changePeriodLabel: string;
   };
   cancel: {
     description: string;
@@ -3357,6 +3395,9 @@ export interface License {
   upgrade: {
     title: string;
     description: string;
+    planHeading: string;
+    previewHeading: string;
+    submitLabel: string;
   };
   updatedAt?: string | null;
   createdAt?: string | null;
@@ -3970,31 +4011,32 @@ export interface LicensesSelect<T extends boolean = true> {
   sidebar?:
     | T
     | {
-        dashboard?: T;
         logout?: T;
         loggingOut?: T;
-        refresh?: T;
-        refreshing?: T;
+        backToCustomerLabel?: T;
+        homeLabel?: T;
+        applicationSettingsLabel?: T;
+        userSettingsLabel?: T;
+        userMenuLabel?: T;
+        profileLabel?: T;
+        settingsLabel?: T;
+        workspacesLabel?: T;
       };
   dashboard?:
     | T
     | {
-        customers?: T;
-        customersDescription?: T;
         emptyCustomers?: T;
-        recentLicenses?: T;
-        recentLicensesDescription?: T;
         customerLabel?: T;
         nameLabel?: T;
-        typeLabel?: T;
         emailLabel?: T;
         lastEditedLabel?: T;
         editLabel?: T;
         statusLabel?: T;
-        deploymentLabel?: T;
         paymentPeriodLabel?: T;
         workflowExecutionsLabel?: T;
         aiTokensLabel?: T;
+        editionLabel?: T;
+        nextBillingDateLabel?: T;
       };
   values?:
     | T
@@ -4043,6 +4085,12 @@ export interface LicensesSelect<T extends boolean = true> {
               max?: T;
               custom?: T;
             };
+        editions?:
+          | T
+          | {
+              cloud?: T;
+              selfHosted?: T;
+            };
         unknown?: T;
       };
   invoices?:
@@ -4052,10 +4100,11 @@ export interface LicensesSelect<T extends boolean = true> {
         description?: T;
         empty?: T;
         numberLabel?: T;
-        periodLabel?: T;
+        billingDateLabel?: T;
         amountLabel?: T;
         statusLabel?: T;
         downloadLabel?: T;
+        viewLabel?: T;
         unavailableLabel?: T;
       };
   pagination?:
@@ -4063,7 +4112,23 @@ export interface LicensesSelect<T extends boolean = true> {
     | {
         loadMoreLabel?: T;
         loadingLabel?: T;
+        previousPageLabel?: T;
+        nextPageLabel?: T;
       };
+  withdrawal?:
+    | T
+    | {
+        text?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "license-dialogs_select".
+ */
+export interface LicenseDialogsSelect<T extends boolean = true> {
   editor?:
     | T
     | {
@@ -4072,7 +4137,6 @@ export interface LicensesSelect<T extends boolean = true> {
         contactHeading?: T;
         paymentMethodHeading?: T;
         paymentMethodDescription?: T;
-        changePaymentMethodLabel?: T;
         loadingPaymentMethodLabel?: T;
         savePaymentMethodLabel?: T;
         savingPaymentMethodLabel?: T;
@@ -4090,6 +4154,24 @@ export interface LicensesSelect<T extends boolean = true> {
         changeNamespaceLabel?: T;
         saveLabel?: T;
         closeLabel?: T;
+        generalTabLabel?: T;
+        paymentMethodsTabLabel?: T;
+        paymentMethodTabLabel?: T;
+        namespaceHeading?: T;
+        cancellationHeading?: T;
+        fieldDescriptions?:
+          | T
+          | {
+              name?: T;
+              email?: T;
+              phone?: T;
+              line1?: T;
+              line2?: T;
+              postalCode?: T;
+              city?: T;
+              state?: T;
+              country?: T;
+            };
       };
   subscriptionPreview?:
     | T
@@ -4100,11 +4182,6 @@ export interface LicensesSelect<T extends boolean = true> {
         scheduledNote?: T;
         loadingLabel?: T;
       };
-  withdrawal?:
-    | T
-    | {
-        text?: T;
-      };
   billing?:
     | T
     | {
@@ -4112,6 +4189,7 @@ export interface LicensesSelect<T extends boolean = true> {
         description?: T;
         periodLabel?: T;
         currentPeriodEndLabel?: T;
+        changePeriodLabel?: T;
       };
   cancel?:
     | T
@@ -4128,6 +4206,9 @@ export interface LicensesSelect<T extends boolean = true> {
     | {
         title?: T;
         description?: T;
+        planHeading?: T;
+        previewHeading?: T;
+        submitLabel?: T;
       };
   updatedAt?: T;
   createdAt?: T;

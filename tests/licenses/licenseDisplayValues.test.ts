@@ -10,6 +10,7 @@ const labels = {
     statuses: { active: "Aktiv", pending: "Ausstehend", paid: "Bezahlt", paymentFailed: "Zahlung fehlgeschlagen", canceled: "Gekündigt", expired: "Abgelaufen" },
     invoiceStatuses: { draft: "Entwurf", open: "Offen", uncollectible: "Uneinbringlich", void: "Storniert" },
     plans: { pro: "Pro", max: "Max", custom: "Individuell" },
+    editions: { cloud: "Cloud Edition", selfHosted: "Enterprise Edition" },
     unknown: "Unbekannt",
 } satisfies LicenseContent["values"]
 
