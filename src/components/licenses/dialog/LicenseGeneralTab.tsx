@@ -2,7 +2,7 @@
 
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
 import { LicenseStatusBadge } from "@/components/licenses/LicenseStatusBadge"
-import { LicenseTabAlert, LicenseTabHeader, LicenseTabRow, LicenseTabSaveButton, LicenseTabSection } from "@/components/licenses/dialog/LicenseTabLayout"
+import { LicenseTabAlert, LicenseTabHeader, LicenseTabRow, LicenseTabSection } from "@/components/licenses/dialog/LicenseTabLayout"
 import { ButtonLoader } from "@/components/ui/Loader"
 import { Switch } from "@/components/ui/Switch"
 import { useSubscriptionUpdatePreview } from "@/hooks/useSubscriptionUpdatePreview"
@@ -45,7 +45,10 @@ export function LicenseGeneralTab({ content, errors, license, locale, namespaceH
     const { isLoadingPreview, preview, previewError } = useSubscriptionUpdatePreview(hasChange ? subscriptionId : undefined, { paymentPeriod: period }, errors.subscriptionPreview)
     const [saveError, setSaveError] = useState<string | null>(null)
     const [isSaving, setIsSaving] = useState(false)
-    const labels = locale === "de" ? { cancellation: "Kündigung", namespace: "Namespace" } : { cancellation: "Cancellation", namespace: "Namespace" }
+    const labels =
+        locale === "de"
+            ? { cancellation: "Kündigung", namespace: "Namespace", changePeriod: "Zeitraum ändern" }
+            : { cancellation: "Cancellation", namespace: "Namespace", changePeriod: "Change period" }
 
     const save = async () => {
         if (!license || !subscriptionId || !hasChange || isSaving) return
@@ -72,19 +75,8 @@ export function LicenseGeneralTab({ content, errors, license, locale, namespaceH
 
     return (
         <>
-            <LicenseTabHeader
-                title={title}
-                description={content.editor.licenseEditDescription}
-                action={
-                    subscriptionId ? (
-                        <LicenseTabSaveButton disabled={!hasChange || isSaving || isLoadingPreview} onClick={() => void save()}>
-                            {isSaving ? <ButtonLoader label={content.editor.saveLabel} /> : content.editor.saveLabel}
-                        </LicenseTabSaveButton>
-                    ) : null
-                }
-            />
+            <LicenseTabHeader title={title} description={content.editor.licenseEditDescription} />
             {namespaceSelectionFailed ? <LicenseTabAlert>{errors.licenseUpdate}</LicenseTabAlert> : null}
-            {saveError ? <LicenseTabAlert>{saveError}</LicenseTabAlert> : null}
 
             {license?.deploymentType === "cloud" ? (
                 <LicenseTabSection title={labels.namespace}>
@@ -126,17 +118,27 @@ export function LicenseGeneralTab({ content, errors, license, locale, namespaceH
                                 </LicenseTabRow>
                             ) : preview ? (
                                 <>
-                                    <LicenseTabRow
-                                        title={content.subscriptionPreview.totalLabel}
-                                        description={preview.immediate ? content.subscriptionPreview.immediateNote : content.subscriptionPreview.scheduledNote}
-                                        action={<Text size="md">{formatMinorCurrency(preview.total, preview.currency, locale)}</Text>}
-                                    />
+                                    <LicenseTabRow title={content.subscriptionPreview.totalLabel} action={<Text size="md">{formatMinorCurrency(preview.total, preview.currency, locale)}</Text>} />
                                     {preview.prorationAmount > 0 ? (
                                         <LicenseTabRow
                                             title={content.subscriptionPreview.prorationLabel}
                                             action={<Text size="md">{formatMinorCurrency(preview.prorationAmount, preview.currency, locale)}</Text>}
                                         />
                                     ) : null}
+                                    <LicenseTabRow
+                                        description={preview.immediate ? content.subscriptionPreview.immediateNote : content.subscriptionPreview.scheduledNote}
+                                        action={
+                                            <Button type="button" variant="normal" paddingSize="xxs" disabled={isSaving} onClick={() => void save()}>
+                                                {isSaving ? <ButtonLoader label={labels.changePeriod} /> : labels.changePeriod}
+                                            </Button>
+                                        }
+                                    >
+                                        {saveError ? (
+                                            <Text role="alert" size="sm" className="text-error!">
+                                                {saveError}
+                                            </Text>
+                                        ) : null}
+                                    </LicenseTabRow>
                                 </>
                             ) : null
                         ) : null}

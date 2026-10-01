@@ -6,7 +6,6 @@ import { LicenseDialog } from "@/components/licenses/dialog/LicenseDialog"
 import { LicenseUpgradeDialog } from "@/components/licenses/dialog/LicenseUpgradeDialog"
 import { CustomerPaymentMethodCard, CustomerPaymentMethodCardSkeleton } from "@/components/licenses/dialog/CustomerPaymentMethodCard"
 import { LicenseTabAlert, LicenseTabHeader, LicenseTabRow, LicenseTabSection } from "@/components/licenses/dialog/LicenseTabLayout"
-import { PaymentMethodSetupDialog } from "@/components/licenses/dialog/PaymentMethodSetupDialog"
 import { ButtonLoader } from "@/components/ui/Loader"
 import { useCustomerPaymentMethods, useSubscriptionPaymentMethod } from "@/hooks/usePaymentMethods"
 import type { ErrorsContent, LicenseContent, SubscriptionConfigData } from "@/lib/cms"
@@ -155,20 +154,7 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
                         />
                     </TabContent>
                     <TabContent value="payment">
-                        <LicenseTabHeader
-                            title={sectionLabels.payment}
-                            description={content.editor.paymentMethodDescription}
-                            action={
-                                <PaymentMethodSetupDialog
-                                    content={content}
-                                    errors={errors}
-                                    onSuccess={paymentMethodUpdated}
-                                    owner={{ customerId: license.customerId }}
-                                    returnPath={`${createLicensePath(locale, license.customerId, license.id)}/edit`}
-                                    triggerLabel={content.editor.changePaymentMethodLabel}
-                                />
-                            }
-                        />
+                        <LicenseTabHeader title={sectionLabels.payment} description={content.editor.paymentMethodDescription} />
 
                         <LicenseTabSection title={content.editor.paymentMethodHeading}>
                             {isLoadingPaymentMethod ? (

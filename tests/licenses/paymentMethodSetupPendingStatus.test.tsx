@@ -9,8 +9,14 @@ installDomTestEnvironment("https://code0.example/en/licenses")
 mock.module("@code0-tech/pictor", {
     namedExports: {
         Button: ({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button {...props}>{children}</button>,
+        Card: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+        Flex: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+        Spacing: () => null,
         Text: ({ children, ...props }: React.HTMLAttributes<HTMLParagraphElement>) => <p {...props}>{children}</p>,
     },
+})
+mock.module("@code0-tech/pictor/dist/components/card/CardSection", {
+    defaultExport: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 })
 mock.module("@stripe/react-stripe-js", {
     namedExports: {
@@ -54,7 +60,6 @@ test("keeps the payment method UI pending until Crater confirms webhook readines
         <PaymentMethodSetupPendingStatus
             content={content}
             errorMessage={errorMessage}
-            onCancel={() => undefined}
             onSuccess={() => {
                 successCalls += 1
             }}
