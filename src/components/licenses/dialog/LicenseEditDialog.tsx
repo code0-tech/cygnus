@@ -40,7 +40,7 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
     const requestedTab = searchParams.get("tab")
     // Legacy "license" and "billing" tabs were merged into "general".
     const section: LicenseEditSection = isLicenseEditSection(requestedTab) ? requestedTab : searchParams.has("setup_intent") ? "payment" : "general"
-    const sectionLabels = getLicenseEditSectionLabels(locale, content.upgrade.title)
+    const sectionLabels = getLicenseEditSectionLabels(content)
     const paymentSectionEnabled = section === "payment"
     const { isLoadingPaymentMethod, paymentMethod, paymentMethodError, refreshPaymentMethod } = useSubscriptionPaymentMethod(license?.subscriptionId, paymentSectionEnabled)
     const {

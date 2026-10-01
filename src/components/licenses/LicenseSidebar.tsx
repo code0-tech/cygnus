@@ -35,7 +35,7 @@ import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 
 interface LicenseSidebarProps {
-    content: Pick<LicenseContent, "emptyLicenses" | "license" | "licenses" | "sidebar" | "upgrade" | "values">
+    content: Pick<LicenseContent, "dashboard" | "editor" | "emptyLicenses" | "license" | "licenses" | "sidebar" | "upgrade" | "values">
     isLoading: boolean
     isLoggingOut: boolean
     locale: AppLocale
@@ -101,9 +101,7 @@ function LicenseUpgradeButton({ content, license, locale }: { content: LicenseSi
     )
 }
 
-function LicenseBackToCustomerButton({ license, locale }: { license: LicenseDashboardLicense; locale: AppLocale }) {
-    const label = locale === "de" ? "Zurück zum Kunden" : "Back to customer"
-
+function LicenseBackToCustomerButton({ label, license, locale }: { label: string; license: LicenseDashboardLicense; locale: AppLocale }) {
     return (
         <Link href={createLicenseCustomerPath(locale, license.customerId)} className="block">
             <Button type="button" paddingSize="xxs" variant="none" justify="start" w="100%" className="rounded-2xl! text-xs! hover:shadow-[inset_0_1px_1px_#bfbfbf1a]!">
@@ -146,9 +144,9 @@ function LicenseSidebarSkeleton() {
     )
 }
 
-function getCustomerContextMenu(customerEditPath: string, customerName: string | undefined, locale: AppLocale) {
-    const label = locale === "de" ? "Kunde" : "Customer"
-    const sectionLabels = getCustomerEditSectionLabels(locale)
+function getCustomerContextMenu(customerEditPath: string, customerName: string | undefined, content: LicenseSidebarProps["content"]) {
+    const label = content.dashboard.customerLabel
+    const sectionLabels = getCustomerEditSectionLabels(content.editor)
     const sectionIcons = { general: IconUser, paymentMethods: IconCreditCard } satisfies Record<CustomerEditSection, typeof IconUser>
     const sections: CustomerEditSection[] = ["general", "paymentMethods"]
 
@@ -161,7 +159,7 @@ function getCustomerContextMenu(customerEditPath: string, customerName: string |
 
 function getLicenseContextMenu(license: LicenseDashboardLicense, content: LicenseSidebarProps["content"], locale: AppLocale) {
     const editPath = `${createLicensePath(locale, license.customerId, license.id)}/edit`
-    const sectionLabels = getLicenseEditSectionLabels(locale, content.upgrade.title)
+    const sectionLabels = getLicenseEditSectionLabels(content)
     const sectionIcons = { general: IconKey, payment: IconCreditCard, upgrade: IconTrendingUp } satisfies Record<LicenseEditSection, typeof IconKey>
     // Without a subscription the edit dialog only offers the general section.
     const sections: readonly LicenseEditSection[] = license.subscriptionId ? LICENSE_EDIT_SECTIONS : ["general"]
@@ -185,7 +183,7 @@ export function LicenseSidebar({ content, isLoading, isLoggingOut, locale, licen
     const contextMenu = activeLicense
         ? getLicenseContextMenu(activeLicense, content, locale)
         : customerRouteSegment
-          ? getCustomerContextMenu(`/${locale}/licenses/customer/${customerRouteSegment}/edit`, licenses.find((license) => license.customerId === customerId)?.customerName, locale)
+          ? getCustomerContextMenu(`/${locale}/licenses/customer/${customerRouteSegment}/edit`, licenses.find((license) => license.customerId === customerId)?.customerName, content)
           : null
     return (
         <div className="min-h-0 lg:h-full">
@@ -335,7 +333,7 @@ export function LicenseSidebar({ content, isLoading, isLoggingOut, locale, licen
                     </ScrollArea>
                 </div>
                 <div className="mt-6 flex shrink-0 flex-col gap-2">
-                    {activeLicense ? <LicenseBackToCustomerButton license={activeLicense} locale={locale} /> : null}
+                    {activeLicense ? <LicenseBackToCustomerButton label={content.sidebar.backToCustomerLabel} license={activeLicense} locale={locale} /> : null}
                     {activeLicense ? <LicenseUpgradeButton content={content} license={activeLicense} locale={locale} /> : null}
                     {contextMenu ? <LicenseContextMenu {...contextMenu} /> : null}
                 </div>
