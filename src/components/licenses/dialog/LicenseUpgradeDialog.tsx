@@ -1,12 +1,10 @@
 "use client"
 
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
-import { LicenseTabAlert, LicenseTabHeader, LicenseTabRow, LicenseTabSaveButton, LicenseTabSection } from "@/components/licenses/dialog/LicenseTabLayout"
+import { LicenseTabAlert, LicenseTabHeader, LicenseTabRow, LicenseTabSection } from "@/components/licenses/dialog/LicenseTabLayout"
 import { AcceptTermsCheckbox } from "@/components/forms/AcceptTermsCheckbox"
-import { SummaryBadge } from "@/components/checkout/CheckoutSummaryBadge"
 import { Slider } from "@/components/ui/Slider"
 import { ButtonLoader } from "@/components/ui/Loader"
-import { getIcon } from "@/components/ui/IconRenderer"
 import { useSubscriptionUpdatePreview } from "@/hooks/useSubscriptionUpdatePreview"
 import type { ErrorsContent, LicenseContent, SubscriptionConfigData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
@@ -18,7 +16,7 @@ import { calculateSubscriptionQuote, type PaymentPeriod } from "@/lib/subscripti
 import { getSubscriptionCatalog } from "@/lib/subscription/catalog"
 import { getPaymentPeriodForCustomerType, type SubscriptionPlan } from "@/lib/subscription/configurator"
 import type { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
-import { Button, Spacing, Text } from "@code0-tech/pictor"
+import { Button, Flex, Spacing, Text } from "@code0-tech/pictor"
 import { IconCheck } from "@tabler/icons-react"
 import { useRouter } from "next/navigation"
 import { useMemo, useState } from "react"
@@ -108,13 +106,10 @@ export function LicenseUpgradeDialog({ content, customerId, errors, licenseId, l
         }
     }
 
-    const planBadge = (option: SubscriptionPlan) => (
-        <SummaryBadge size="lg" icon={getIcon(subscriptionConfig.plan[option].icon, 18)} tone={subscriptionConfig.plan[option].color} value={subscriptionConfig.plan[option].title} />
-    )
-
+    // A single target (max -> custom) or none (already custom) leaves nothing to choose, so no picker is shown.
     const planSelection =
-        upgradeTargets.length > 0 ? (
-            <div role="radiogroup" aria-label={content.upgrade.title} className="flex flex-col gap-2">
+        upgradeTargets.length > 1 ? (
+            <div role="radiogroup" aria-label={content.upgrade.title} className="grid grid-cols-2 gap-2">
                 {upgradeTargets.map((option) => (
                     <Button
                         key={option}
@@ -125,40 +120,29 @@ export function LicenseUpgradeDialog({ content, customerId, errors, licenseId, l
                         variant={plan === option ? "normal" : "none"}
                         paddingSize="xxs"
                         w="100%"
-                        justify="start"
-                        className={cn("text-base!", plan === option && "shadow-[inset_0_1px_1px_#bfbfbf1a]! bg-white/5!")}
+                        justify="center"
+                        className={cn("text-sm!", plan === option && "shadow-[inset_0_1px_1px_#bfbfbf1a]! bg-white/5!")}
                         onClick={() => setSelectedPlan(option)}
                     >
                         {subscriptionConfig.plan[option].title}
                     </Button>
                 ))}
             </div>
-        ) : (
-            planBadge(plan)
-        )
+        ) : null
     const planFeatures =
         subscriptionConfig.plan[plan].features?.flatMap((feature, index) => {
             const text = feature.text?.trim()
             return text ? [{ key: feature.id ?? `${index}-${text}`, text }] : []
         }) ?? []
 
-    const labels = locale === "de" ? { plan: "Plan", preview: "Vorschau" } : { plan: "Plan", preview: "Preview" }
+    const labels = locale === "de" ? { buy: "Jetzt upgraden", plan: "Plan", preview: "Vorschau" } : { buy: "Upgrade now", plan: "Plan", preview: "Preview" }
 
     return (
         <>
-            <LicenseTabHeader
-                title={content.upgrade.title}
-                description={content.upgrade.description}
-                action={
-                    <LicenseTabSaveButton disabled={!hasChange || isSaving || isLoadingPreview || !preview || Boolean(previewError) || !acceptedTerms} onClick={() => void save()}>
-                        {isSaving ? <ButtonLoader label={content.editor.saveLabel} /> : content.editor.saveLabel}
-                    </LicenseTabSaveButton>
-                }
-            />
-            {saveError ? <LicenseTabAlert>{saveError}</LicenseTabAlert> : null}
+            <LicenseTabHeader title={content.upgrade.title} description={content.upgrade.description} />
 
             <LicenseTabSection title={labels.plan}>
-                <LicenseTabRow>{planSelection}</LicenseTabRow>
+                {planSelection ? <LicenseTabRow>{planSelection}</LicenseTabRow> : null}
                 {plan === "custom" ? (
                     <>
                         <LicenseTabRow title={content.dashboard.aiTokensLabel}>
@@ -170,6 +154,7 @@ export function LicenseUpgradeDialog({ content, customerId, errors, licenseId, l
                                 onChange={setAiTokens}
                                 onValueCommit={setAiTokens}
                                 ariaLabel={content.dashboard.aiTokensLabel}
+                                size="sm"
                                 variant="gradient"
                                 shape="cone-incline"
                             />
@@ -183,6 +168,7 @@ export function LicenseUpgradeDialog({ content, customerId, errors, licenseId, l
                                 onChange={setWorkflowExecutions}
                                 onValueCommit={setWorkflowExecutions}
                                 ariaLabel={content.dashboard.workflowExecutionsLabel}
+                                size="sm"
                                 variant="gradient"
                                 shape="cone-incline"
                             />
@@ -224,6 +210,13 @@ export function LicenseUpgradeDialog({ content, customerId, errors, licenseId, l
 
             <Spacing spacing="lg" />
             <AcceptTermsCheckbox locale={locale} initialValue={false} formValidation={{ setValue: setAcceptedTerms, valid: true }} />
+            {saveError ? <LicenseTabAlert>{saveError}</LicenseTabAlert> : null}
+            <Spacing spacing="lg" />
+            <Flex justify="end">
+                <Button type="button" variant="filled" disabled={!hasChange || isSaving || isLoadingPreview || !preview || Boolean(previewError) || !acceptedTerms} onClick={() => void save()}>
+                    {isSaving ? <ButtonLoader label={labels.buy} /> : labels.buy}
+                </Button>
+            </Flex>
         </>
     )
 }

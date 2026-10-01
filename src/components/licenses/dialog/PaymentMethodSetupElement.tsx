@@ -1,8 +1,9 @@
 "use client"
 
+import { LicenseTabAlert, LicenseTabHeader, LicenseTabSaveButton } from "@/components/licenses/dialog/LicenseTabLayout"
 import { ButtonLoader } from "@/components/ui/Loader"
 import type { LicenseContent } from "@/lib/cms"
-import { Button, Text } from "@code0-tech/pictor"
+import { Button, Spacing, Text } from "@code0-tech/pictor"
 import { Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js"
 import { loadStripe, type Appearance, type StripeElementsOptions } from "@stripe/stripe-js"
 import { useEffect, useMemo, useRef, useState } from "react"
@@ -64,7 +65,6 @@ interface PaymentMethodSetupElementProps {
     clientSecret: string
     content: LicenseContent["editor"]
     errorMessage: string
-    onCancel: () => void
     onSuccess: () => void
     owner: PaymentMethodSetupOwner
     retryLabel: string
@@ -74,14 +74,13 @@ interface PaymentMethodSetupElementProps {
 interface PaymentMethodSetupPendingStatusProps {
     content: LicenseContent["editor"]
     errorMessage: string
-    onCancel: () => void
     onSuccess: () => void
     owner: PaymentMethodSetupOwner
     retryLabel: string
     setupIntentId: string
 }
 
-export function PaymentMethodSetupPendingStatus({ content, errorMessage, onCancel, onSuccess, owner, retryLabel, setupIntentId }: PaymentMethodSetupPendingStatusProps) {
+export function PaymentMethodSetupPendingStatus({ content, errorMessage, onSuccess, owner, retryLabel, setupIntentId }: PaymentMethodSetupPendingStatusProps) {
     const [isComplete, setIsComplete] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [retryKey, setRetryKey] = useState(0)
@@ -126,52 +125,46 @@ export function PaymentMethodSetupPendingStatus({ content, errorMessage, onCance
         }
     }, [errorMessage, onSuccess, owner, retryKey, setupIntentId])
 
-    if (isComplete) {
-        return (
-            <div className="space-y-3">
+    return (
+        <>
+            <LicenseTabHeader
+                title={content.paymentMethodHeading}
+                description={content.paymentMethodDescription}
+                action={
+                    error ? (
+                        <Button
+                            type="button"
+                            variant="normal"
+                            paddingSize="xxs"
+                            onClick={() => {
+                                setError(null)
+                                setRetryKey((current) => current + 1)
+                            }}
+                        >
+                            {retryLabel}
+                        </Button>
+                    ) : null
+                }
+            />
+            <Spacing spacing="md" />
+            {isComplete ? (
                 <Text role="status" size="sm" className="text-brand!">
                     {content.paymentMethodSuccess}
                 </Text>
-                <Button type="button" variant="normal" onClick={onCancel}>
-                    {content.closeLabel}
-                </Button>
-            </div>
-        )
-    }
-
-    return (
-        <div className="space-y-3">
-            {error ? (
-                <p role="alert" className="text-sm text-error">
+            ) : error ? (
+                <Text role="alert" size="sm" className="text-error!">
                     {error}
-                </p>
+                </Text>
             ) : (
                 <div role="status">
                     <ButtonLoader label={content.savingPaymentMethodLabel} />
                 </div>
             )}
-            <div className="flex flex-wrap justify-end gap-3">
-                <Button type="button" variant="none" onClick={onCancel}>
-                    {content.closeLabel}
-                </Button>
-                {error ? (
-                    <Button
-                        type="button"
-                        variant="normal"
-                        onClick={() => {
-                            setError(null)
-                            setRetryKey((current) => current + 1)
-                        }}
-                    >
-                        {retryLabel}
-                    </Button>
-                ) : null}
-            </div>
-        </div>
+        </>
     )
 }
 
-function PaymentMethodSetupForm({ content, errorMessage, onCancel, onSuccess, owner, retryLabel, returnPath }: Omit<PaymentMethodSetupElementProps, "clientSecret">) {
+function PaymentMethodSetupForm({ content, errorMessage, onSuccess, owner, retryLabel, returnPath }: Omit<PaymentMethodSetupElementProps, "clientSecret">) {
     const stripe = useStripe()
     const elements = useElements()
     const [isReady, setIsReady] = useState(false)
@@ -211,7 +204,6 @@ function PaymentMethodSetupForm({ content, errorMessage, onCancel, onSuccess, ow
             <PaymentMethodSetupPendingStatus
                 content={content}
                 errorMessage={errorMessage}
-                onCancel={onCancel}
                 onSuccess={onSuccess}
                 owner={owner}
                 retryLabel={retryLabel}
@@ -220,26 +212,24 @@ function PaymentMethodSetupForm({ content, errorMessage, onCancel, onSuccess, ow
         )
 
     return (
-        <div className="space-y-4">
+        <>
+            <LicenseTabHeader
+                title={content.paymentMethodHeading}
+                description={content.paymentMethodDescription}
+                action={
+                    <LicenseTabSaveButton disabled={!stripe || !elements || !isReady || isConfirming} onClick={() => void confirm()}>
+                        {isConfirming ? <ButtonLoader label={content.savingPaymentMethodLabel} /> : content.savePaymentMethodLabel}
+                    </LicenseTabSaveButton>
+                }
+            />
+            {error ? <LicenseTabAlert>{error}</LicenseTabAlert> : null}
+            <Spacing spacing="md" />
             <PaymentElement onLoaderStart={() => setIsReady(false)} onReady={() => setIsReady(true)} />
-            {error ? (
-                <p role="alert" className="text-sm text-error">
-                    {error}
-                </p>
-            ) : null}
-            <div className="flex flex-wrap justify-end gap-3">
-                <Button type="button" variant="none" disabled={isConfirming} onClick={onCancel}>
-                    {content.closeLabel}
-                </Button>
-                <Button type="button" variant="filled" disabled={!stripe || !elements || !isReady || isConfirming} onClick={() => void confirm()}>
-                    {isConfirming ? <ButtonLoader label={content.savingPaymentMethodLabel} /> : content.savePaymentMethodLabel}
-                </Button>
-            </div>
-        </div>
+        </>
     )
 }
 
-export function PaymentMethodSetupElement({ clientSecret, content, errorMessage, onCancel, onSuccess, owner, retryLabel, returnPath }: PaymentMethodSetupElementProps) {
+export function PaymentMethodSetupElement({ clientSecret, content, errorMessage, onSuccess, owner, retryLabel, returnPath }: PaymentMethodSetupElementProps) {
     const stripeRef = useRef(stripePromise)
     const options = useMemo<StripeElementsOptions>(() => ({ appearance, clientSecret }), [clientSecret])
 
@@ -253,7 +243,7 @@ export function PaymentMethodSetupElement({ clientSecret, content, errorMessage,
 
     return (
         <Elements key={clientSecret} stripe={stripeRef.current} options={options}>
-            <PaymentMethodSetupForm content={content} errorMessage={errorMessage} onCancel={onCancel} onSuccess={onSuccess} owner={owner} retryLabel={retryLabel} returnPath={returnPath} />
+            <PaymentMethodSetupForm content={content} errorMessage={errorMessage} onSuccess={onSuccess} owner={owner} retryLabel={retryLabel} returnPath={returnPath} />
         </Elements>
     )
 }
