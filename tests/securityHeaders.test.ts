@@ -58,7 +58,7 @@ test("proxy keeps locale redirects and secures Payload admin pages", () => {
 })
 
 test("proxy redirects legacy GraphQL license paths to short ids", () => {
-    const response = proxy(new NextRequest("https://code0.example/en/licenses/customer/gid%3A%2F%2Fcrater%2FCustomer%2F35/license/gid%3A%2F%2Fcrater%2FLicense%2F9/edit?tab=payment"))
+    const response = proxy(new NextRequest("https://code0.example/en/licenses/customer/gid%3A%2F%2Fcrater%2FCustomer%2F35/license/gid%3A%2F%2Fcrater%2FSubscription%2F9/edit?tab=payment"))
 
     assert.equal(response.headers.get("location"), "https://code0.example/en/licenses/customer/35/license/9/edit?tab=payment")
     assert.ok(response.headers.has("content-security-policy"))

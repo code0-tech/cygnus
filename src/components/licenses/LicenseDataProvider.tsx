@@ -22,7 +22,7 @@ interface LicenseDataContextValue extends LicenseDashboardData {
         values: {
             aiTokens?: number
             canceledAt?: string | null
-            expireAt?: string | null
+            cancelAt?: string | null
             namespaceId?: string
             paymentMethodId?: string
             paymentPeriod?: string
@@ -109,13 +109,10 @@ export function LicenseDataProvider({ children, loadError, redirectUrl }: { chil
     }
 
     const updateLicense: LicenseDataContextValue["updateLicense"] = (id, values) => {
-        // expireAt/canceledAt use null to mean "clear this field", distinct from omitting the key (leave it
-        // untouched). LicenseDashboardLicense itself treats absence as undefined everywhere, so the
-        // explicit-null case is normalized to undefined right before merging.
-        const { canceledAt, expireAt, ...rest } = values
+        const { canceledAt, cancelAt, ...rest } = values
         const patch: Partial<LicenseDashboardLicense> = {
             ...rest,
-            ...("expireAt" in values ? { expireAt: expireAt ?? undefined } : {}),
+            ...("cancelAt" in values ? { cancelAt: cancelAt ?? undefined } : {}),
             ...("canceledAt" in values ? { canceledAt: canceledAt ?? undefined } : {}),
         }
         setData((current) => ({

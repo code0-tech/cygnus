@@ -2370,22 +2370,10 @@ export const subscription_config = pgTable('subscription_config', {
   paymentPeriod_monthlyColor: enum_subscription_config_payment_period_monthly_color('payment_period_monthly_color').default("brand"),
   paymentPeriod_quarterlyColor: enum_subscription_config_payment_period_quarterly_color('payment_period_quarterly_color').default("aqua"),
   paymentPeriod_yearlyColor: enum_subscription_config_payment_period_yearly_color('payment_period_yearly_color').default("magenta"),
-  workflowExecutions_b2b_default: numeric('workflow_executions_b2b_default', {mode: 'number'}).default(1000),
-  workflowExecutions_b2b_step: numeric('workflow_executions_b2b_step', {mode: 'number'}).default(100),
-  workflowExecutions_b2b_min: numeric('workflow_executions_b2b_min', {mode: 'number'}).default(200),
-  workflowExecutions_b2b_max: numeric('workflow_executions_b2b_max', {mode: 'number'}).default(10000),
-  workflowExecutions_b2c_default: numeric('workflow_executions_b2c_default', {mode: 'number'}).default(100),
-  workflowExecutions_b2c_step: numeric('workflow_executions_b2c_step', {mode: 'number'}).default(10),
-  workflowExecutions_b2c_min: numeric('workflow_executions_b2c_min', {mode: 'number'}).default(10),
-  workflowExecutions_b2c_max: numeric('workflow_executions_b2c_max', {mode: 'number'}).default(1000),
-  aiTokens_b2b_default: numeric('ai_tokens_b2b_default', {mode: 'number'}).default(1000000),
-  aiTokens_b2b_step: numeric('ai_tokens_b2b_step', {mode: 'number'}).default(100000),
-  aiTokens_b2b_min: numeric('ai_tokens_b2b_min', {mode: 'number'}).default(100000),
-  aiTokens_b2b_max: numeric('ai_tokens_b2b_max', {mode: 'number'}).default(10000000),
-  aiTokens_b2c_default: numeric('ai_tokens_b2c_default', {mode: 'number'}).default(100000),
-  aiTokens_b2c_step: numeric('ai_tokens_b2c_step', {mode: 'number'}).default(10000),
-  aiTokens_b2c_min: numeric('ai_tokens_b2c_min', {mode: 'number'}).default(10000),
-  aiTokens_b2c_max: numeric('ai_tokens_b2c_max', {mode: 'number'}).default(1000000),
+  workflowExecutions_b2b_default: numeric('workflow_executions_b2b_default', {mode: 'number'}).default(1000000),
+  workflowExecutions_b2c_default: numeric('workflow_executions_b2c_default', {mode: 'number'}).default(100000),
+  aiTokens_b2b_default: numeric('ai_tokens_b2b_default', {mode: 'number'}).default(100000000),
+  aiTokens_b2c_default: numeric('ai_tokens_b2c_default', {mode: 'number'}).default(10000000),
   contactSales_href: varchar('contact_sales_href').default("/contact"),
   subscribe_baseUrl: varchar('subscribe_base_url').default(""),
   updatedAt: timestamp('updated_at', {mode: 'string',withTimezone: true,precision: 3}),
@@ -2463,6 +2451,22 @@ export const subscription_config_locales = pgTable('subscription_config_locales'
       columns: [columns['_parentID']],
       foreignColumns: [subscription_config.id],
       name: 'subscription_config_locales_parent_id_fk'
+    }).onDelete('cascade'),
+]
+)
+
+
+export const subscription_config_numbers = pgTable('subscription_config_numbers', {
+  id: serial('id').primaryKey(),
+  number: numeric('number', {mode: 'number'}),
+  order: integer('order').notNull(),
+  parent: integer('parent_id').notNull(),
+  path: varchar('path').notNull(),
+}, (columns) => [
+    index('subscription_config_numbers_order_parent_idx').on(columns.order, columns.parent), foreignKey({
+      columns: [columns['parent']],
+      foreignColumns: [subscription_config.id],
+      name: 'subscription_config_numbers_parent_fk'
     }).onDelete('cascade'),
 ]
 )
@@ -4111,6 +4115,14 @@ export const relations_subscription_config_locales = relations(subscription_conf
     relationName: '_locales',
     }),
       }))
+export const relations_subscription_config_numbers = relations(subscription_config_numbers, ({ one }) => ({
+  parent: one(subscription_config, {
+    
+    fields: [subscription_config_numbers.parent],
+    references: [subscription_config.id],
+    relationName: '_numbers',
+    }),
+      }))
 export const relations_subscription_config = relations(subscription_config, ({ one, many }) => ({
   deployment_selfHosted_image: one(media, {
     
@@ -4168,6 +4180,9 @@ export const relations_subscription_config = relations(subscription_config, ({ o
     }),
     _locales: many(subscription_config_locales, {
             relationName: '_locales',
+    }),
+    _numbers: many(subscription_config_numbers, {
+            relationName: '_numbers',
     }),
       }))
 export const relations_checkout_locales = relations(checkout_locales, ({ one }) => ({
@@ -4427,6 +4442,7 @@ type DatabaseSchema = {
   subscription_config_workflow_calculator_business_types_locales: typeof subscription_config_workflow_calculator_business_types_locales
   subscription_config: typeof subscription_config
   subscription_config_locales: typeof subscription_config_locales
+  subscription_config_numbers: typeof subscription_config_numbers
   checkout: typeof checkout
   checkout_locales: typeof checkout_locales
   upgrade_banner: typeof upgrade_banner
@@ -4551,6 +4567,7 @@ type DatabaseSchema = {
   relations_subscription_config_workflow_calculator_business_types_locales: typeof relations_subscription_config_workflow_calculator_business_types_locales
   relations_subscription_config_workflow_calculator_business_types: typeof relations_subscription_config_workflow_calculator_business_types
   relations_subscription_config_locales: typeof relations_subscription_config_locales
+  relations_subscription_config_numbers: typeof relations_subscription_config_numbers
   relations_subscription_config: typeof relations_subscription_config
   relations_checkout_locales: typeof relations_checkout_locales
   relations_checkout: typeof relations_checkout

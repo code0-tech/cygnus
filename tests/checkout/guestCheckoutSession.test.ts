@@ -87,7 +87,7 @@ test("guest purchase isolation, expiry and completion", async (t) => {
             process.env.CRATER_GRAPHQL_URL = server.url
             try {
                 const result = await createCustomer(new Request(request(cookies, "/api/crater/customer", id, "POST"), {
-                    body: JSON.stringify({ customerType: "personal", email: "different@example.com", name: "Guest", address: { country: "DE", city: "Berlin" } }),
+                    body: JSON.stringify({ customerType: "personal", email: "different@example.com", name: "Guest", address: { country: "DE", city: "Berlin", line1: "Hauptstraße 1", postalCode: "10115" } }),
                 }))
                 assert.equal(result.status, 201)
                 assert.equal((server.requests[0].body.variables as { input: { email: string } }).input.email, "guest@example.com")

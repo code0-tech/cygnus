@@ -2983,20 +2983,28 @@ export interface SubscriptionConfig {
     quarterlyColor?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
     yearlyColor?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
   };
-  workflowExecutions?: {
+  workflowExecutions: {
     title?: string | null;
     description?: string | null;
-    b2b?: {
+    b2b: {
+      /**
+       * Selectable quantities in ascending order. Must match Crater's checkout.quantity_steps for this customer type.
+       */
+      packages: number[];
+      /**
+       * Must be one of the packages; otherwise the smallest package is preselected.
+       */
       default?: number | null;
-      step?: number | null;
-      min?: number | null;
-      max?: number | null;
     };
-    b2c?: {
+    b2c: {
+      /**
+       * Selectable quantities in ascending order. Must match Crater's checkout.quantity_steps for this customer type.
+       */
+      packages: number[];
+      /**
+       * Must be one of the packages; otherwise the smallest package is preselected.
+       */
       default?: number | null;
-      step?: number | null;
-      min?: number | null;
-      max?: number | null;
     };
     suffix?: string | null;
   };
@@ -3024,20 +3032,28 @@ export interface SubscriptionConfig {
         }[]
       | null;
   };
-  aiTokens?: {
+  aiTokens: {
     title?: string | null;
     description?: string | null;
-    b2b?: {
+    b2b: {
+      /**
+       * Selectable quantities in ascending order. Must match Crater's checkout.quantity_steps for this customer type.
+       */
+      packages: number[];
+      /**
+       * Must be one of the packages; otherwise the smallest package is preselected.
+       */
       default?: number | null;
-      step?: number | null;
-      min?: number | null;
-      max?: number | null;
     };
-    b2c?: {
+    b2c: {
+      /**
+       * Selectable quantities in ascending order. Must match Crater's checkout.quantity_steps for this customer type.
+       */
+      packages: number[];
+      /**
+       * Must be one of the packages; otherwise the smallest package is preselected.
+       */
       default?: number | null;
-      step?: number | null;
-      min?: number | null;
-      max?: number | null;
     };
     suffix?: string | null;
   };
@@ -3772,18 +3788,14 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
         b2b?:
           | T
           | {
+              packages?: T;
               default?: T;
-              step?: T;
-              min?: T;
-              max?: T;
             };
         b2c?:
           | T
           | {
+              packages?: T;
               default?: T;
-              step?: T;
-              min?: T;
-              max?: T;
             };
         suffix?: T;
       };
@@ -3821,18 +3833,14 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
         b2b?:
           | T
           | {
+              packages?: T;
               default?: T;
-              step?: T;
-              min?: T;
-              max?: T;
             };
         b2c?:
           | T
           | {
+              packages?: T;
               default?: T;
-              step?: T;
-              min?: T;
-              max?: T;
             };
         suffix?: T;
       };

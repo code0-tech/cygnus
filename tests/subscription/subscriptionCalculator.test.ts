@@ -193,8 +193,8 @@ test("prices a fixed plan from the b2b prices for a b2b customer", () => {
     const config = {
         aiTokenPriceFactor: 0.001,
         aiTokens: {
-            b2b: { default: 100, min: 100, max: 1_000, step: 100 },
-            b2c: { default: 10, min: 10, max: 100, step: 10 },
+            b2b: { default: 100, packages: [100, 1_000] },
+            b2c: { default: 10, packages: [10, 100] },
         },
         defaults: {
             customerType: "b2c",
@@ -207,8 +207,8 @@ test("prices a fixed plan from the b2b prices for a b2b customer", () => {
         paymentPeriod,
         workflowExecutionPriceFactor: 0.01,
         workflowExecutions: {
-            b2b: { default: 20, min: 20, max: 200, step: 10 },
-            b2c: { default: 10, min: 10, max: 100, step: 10 },
+            b2b: { default: 20, packages: [20, 200] },
+            b2c: { default: 10, packages: [10, 100] },
         },
     } as never
 
@@ -236,8 +236,8 @@ test("supports the same payment periods for both customer types in the checkout 
     const config = {
         aiTokenPriceFactor: 0.001,
         aiTokens: {
-            b2b: { default: 100, min: 100, max: 1_000, step: 100 },
-            b2c: { default: 10, min: 10, max: 100, step: 10 },
+            b2b: { default: 100, packages: [100, 1_000] },
+            b2c: { default: 10, packages: [10, 100] },
         },
         defaults: {
             customerType: "b2c",
@@ -249,8 +249,8 @@ test("supports the same payment periods for both customer types in the checkout 
         paymentPeriod,
         workflowExecutionPriceFactor: 0.01,
         workflowExecutions: {
-            b2b: { default: 20, min: 20, max: 200, step: 10 },
-            b2c: { default: 10, min: 10, max: 100, step: 10 },
+            b2b: { default: 20, packages: [20, 200] },
+            b2c: { default: 10, packages: [10, 100] },
         },
     } as never
 
@@ -278,12 +278,12 @@ test("supports the same payment periods for both customer types in the checkout 
     assert.equal(b2cQuarterly.paymentPeriod, "quarterly")
 })
 
-test("clamps manipulated custom-plan usage parameters before calculating the price", () => {
+test("snaps manipulated custom-plan usage parameters onto packages before calculating the price", () => {
     const config = {
         aiTokenPriceFactor: 0.001,
         aiTokens: {
-            b2b: { default: 100, min: 100, max: 1_000, step: 100 },
-            b2c: { default: 10, min: 10, max: 100, step: 10 },
+            b2b: { default: 100, packages: [100, 1_000] },
+            b2c: { default: 10, packages: [10, 100] },
         },
         defaults: {
             customerType: "b2b",
@@ -297,8 +297,8 @@ test("clamps manipulated custom-plan usage parameters before calculating the pri
         paymentPeriod,
         workflowExecutionPriceFactor: 0.01,
         workflowExecutions: {
-            b2b: { default: 20, min: 20, max: 200, step: 10 },
-            b2c: { default: 10, min: 10, max: 100, step: 10 },
+            b2b: { default: 20, packages: [20, 200] },
+            b2c: { default: 10, packages: [10, 100] },
         },
     } as never
 

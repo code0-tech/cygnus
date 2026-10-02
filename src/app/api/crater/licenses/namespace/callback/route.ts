@@ -3,26 +3,25 @@ import { CRATER_ERROR_FIELDS, describeCraterError } from "@/lib/checkout/craterA
 import { createCraterUserSession } from "@/lib/checkout/craterLogin"
 import { setCraterSessionCookie, setCraterUserLoginCookie } from "@/lib/checkout/craterSession"
 import { isSupportedLocale } from "@/lib/i18n"
-import { isLicenseId } from "@/lib/licenses/craterRequest"
+import { isSubscriptionId } from "@/lib/licenses/craterRequest"
 import { resolveCustomerRouteId, resolveLicenseRouteId } from "@/lib/licenses/licenseRoute"
-import type { Mutation, MutationLicensesLinkNamespaceArgs } from "@code0-tech/crater-graphql-types"
+import type { Mutation, MutationSubscriptionsLinkNamespaceArgs } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 import { NextResponse } from "next/server"
 
 export const runtime = "nodejs"
 
-type LinkLicenseNamespaceData = Pick<Mutation, "licensesLinkNamespace">
+type LinkSubscriptionNamespaceData = Pick<Mutation, "subscriptionsLinkNamespace">
 
-// NamespaceID accepts opaque Sagittarius identifiers; the package currently maps it to a Crater global ID.
-type LinkLicenseNamespaceVariables = {
-    input: Omit<MutationLicensesLinkNamespaceArgs["input"], "namespaceId"> & { namespaceId: string }
+type LinkSubscriptionNamespaceVariables = {
+    input: Omit<MutationSubscriptionsLinkNamespaceArgs["input"], "namespaceId"> & { namespaceId: string }
 }
 
-const LINK_LICENSE_NAMESPACE: TypedDocumentNode<LinkLicenseNamespaceData, LinkLicenseNamespaceVariables> = gql`
+const LINK_SUBSCRIPTION_NAMESPACE: TypedDocumentNode<LinkSubscriptionNamespaceData, LinkSubscriptionNamespaceVariables> = gql`
     ${CRATER_ERROR_FIELDS}
-    mutation LicensesLinkNamespace($input: LicensesLinkNamespaceInput!) {
-        licensesLinkNamespace(input: $input) {
-            license {
+    mutation SubscriptionsLinkNamespace($input: SubscriptionsLinkNamespaceInput!) {
+        subscriptionsLinkNamespace(input: $input) {
+            subscription {
                 id
             }
             errors {
@@ -60,10 +59,10 @@ function resolveLicenseReturn(requestUrl: URL) {
     }
 
     const customerId = resolveCustomerRouteId(segments[3])
-    const licenseId = resolveLicenseRouteId(segments[5])
-    if (!customerId || !/^gid:\/\/crater\/Customer\/\d+$/.test(customerId) || !licenseId || !isLicenseId(licenseId)) return null
+    const subscriptionId = resolveLicenseRouteId(segments[5])
+    if (!customerId || !/^gid:\/\/crater\/Customer\/\d+$/.test(customerId) || !subscriptionId || !isSubscriptionId(subscriptionId)) return null
 
-    return { licenseId, returnUrl }
+    return { subscriptionId, returnUrl }
 }
 
 function errorRedirect(returnUrl: URL, error: "selection" | "session" | "update") {
@@ -92,14 +91,14 @@ export async function GET(request: Request) {
 
         const sessionToken = loginPayload.userSession.token
         const result = await createApolloClient(sessionToken).mutate({
-            mutation: LINK_LICENSE_NAMESPACE,
-            variables: { input: { id: resolvedReturn.licenseId, namespaceId } },
+            mutation: LINK_SUBSCRIPTION_NAMESPACE,
+            variables: { input: { id: resolvedReturn.subscriptionId, namespaceId } },
         })
-        const payload = result.data?.licensesLinkNamespace
+        const payload = result.data?.subscriptionsLinkNamespace
 
-        if (!payload?.license || (payload.errors?.length ?? 0) > 0) {
+        if (!payload?.subscription || (payload.errors?.length ?? 0) > 0) {
             const failure = describeCraterError(payload?.errors)
-            console.error("Crater rejected the selected license namespace:", failure?.errorCode ?? "Crater returned no linked license.")
+            console.error("Crater rejected the selected subscription namespace:", failure?.errorCode ?? "Crater returned no linked subscription.")
             return setCraterUserLoginCookie(setCraterSessionCookie(errorRedirect(resolvedReturn.returnUrl, "update"), sessionToken))
         }
 

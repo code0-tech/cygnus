@@ -7,7 +7,7 @@ import { CheckoutPricingOverview } from "@/components/checkout/CheckoutPricingOv
 import { clearCheckoutContactDraft } from "@/lib/checkout/checkoutDraft"
 import type { CheckoutData, SubscriptionConfigData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
-import { createLicensePath } from "@/lib/licenses/licenseRoute"
+import { createLicenseCustomerPath } from "@/lib/licenses/licenseRoute"
 import { downloadLicenseFile } from "@/lib/licenses/licenseClient"
 import { getPaymentPeriodSuffix, type PaymentPeriod } from "@/lib/subscription/calculator"
 import type { CheckoutCompletionState } from "@code0-tech/crater-graphql-types"
@@ -198,7 +198,7 @@ export function CheckoutSuccessStatus({ checkoutSearchParams, content, errorMess
     const statusFailed = status === "FAILED" || status === "INVALID"
     const heading = status === "FAILED" ? content.failedHeading : status === "INVALID" ? content.invalidHeading : fulfillmentConfirmed ? content.heading : null
     const description = status === "FAILED" ? content.failedDescription : status === "INVALID" ? content.invalidDescription : fulfillmentConfirmed ? content.description : null
-    const licenseReturnPath = status === "READY" && completion?.licenseId ? createLicensePath(locale, completion.customerId, completion.licenseId) : null
+    const licenseReturnPath = status === "READY" && completion?.licenseId ? createLicenseCustomerPath(locale, completion.customerId) : null
     const licenseAccessUrl = licenseReturnPath ? `/api/crater/licenses/access?locale=${encodeURIComponent(locale)}&returnPath=${encodeURIComponent(licenseReturnPath)}` : null
     const confirmedConfiguration = fulfillmentConfirmed ? completion?.configuration : null
     const confirmedPricing = fulfillmentConfirmed ? completion?.pricing : null

@@ -5,16 +5,16 @@ import { createGraphQLTestServer } from "./graphqlTestServer"
 
 const subscriptionConfig = {
     aiTokens: {
-        b2b: { default: 200_000, min: 100_000, max: 1_000_000, step: 100_000 },
-        b2c: { default: 20_000, min: 10_000, max: 100_000, step: 10_000 },
+        b2b: { default: 100_000_000, packages: [10_000_000, 100_000_000, 500_000_000, 1_000_000_000] },
+        b2c: { default: 10_000_000, packages: [1_000_000, 10_000_000, 50_000_000, 100_000_000] },
     },
     defaults: {
         customerType: "b2c",
         paymentPeriod: { b2b: "monthly", b2c: "monthly" },
     },
     workflowExecutions: {
-        b2b: { default: 1_000, min: 200, max: 10_000, step: 100 },
-        b2c: { default: 100, min: 10, max: 1_000, step: 10 },
+        b2b: { default: 1_000_000, packages: [100_000, 1_000_000, 5_000_000, 10_000_000] },
+        b2c: { default: 100_000, packages: [10_000, 100_000, 500_000, 1_000_000] },
     },
 } as SubscriptionConfigData
 
@@ -28,7 +28,7 @@ mock.method(Date, "now", () => 1_800_000_000_000)
 
 const { POST } = await import("../../src/app/api/crater/checkout/session/route")
 
-test("forwards custom quantities unchanged for backend limits and supports the customer's default checkout", async () => {
+test("forwards both custom quantities unchanged so Crater can check them against the customer's packages", async () => {
     const graphQLServer = await createGraphQLTestServer([{ data: { checkoutCreateSession: { errors: [], session: { clientSecret: "cs_limits", id: "cs_limits" } } } }])
     const previousUrl = process.env.CRATER_GRAPHQL_URL
     process.env.CRATER_GRAPHQL_URL = graphQLServer.url
@@ -37,7 +37,14 @@ test("forwards custom quantities unchanged for backend limits and supports the c
             new Request("https://example.com/api/crater/checkout/session", {
                 method: "POST",
                 headers: { authorization: "Session limits-test", "content-type": "application/json" },
-                body: JSON.stringify({ plan: "custom", deploymentType: "cloud", namespaceId: "opaque-namespace", aiTokens: 5_000_001 }),
+                body: JSON.stringify({
+                    plan: "custom",
+                    customerId: "gid://crater/Customer/1",
+                    deploymentType: "cloud",
+                    namespaceId: "opaque-namespace",
+                    aiTokens: 5_000_001,
+                    workflowExecutions: 100_000,
+                }),
             })
         )
         assert.equal(response.status, 200)
@@ -46,8 +53,8 @@ test("forwards custom quantities unchanged for backend limits and supports the c
         assert.equal(input.plan, "CUSTOM")
         assert.equal(input.deploymentType, "CLOUD")
         assert.equal(input.namespaceId, "opaque-namespace")
-        assert.equal("workflowExecutions" in input, false)
-        assert.equal("customerId" in input, false)
+        assert.equal(input.workflowExecutions, 100_000)
+        assert.equal(input.customerId, "gid://crater/Customer/1")
     } finally {
         if (previousUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
         else process.env.CRATER_GRAPHQL_URL = previousUrl
@@ -55,16 +62,30 @@ test("forwards custom quantities unchanged for backend limits and supports the c
     }
 })
 
-test("rejects invalid custom GraphQL quantities and oversized namespace identifiers", async () => {
-    for (const extra of [{ aiTokens: 0 }, { aiTokens: -1 }, { aiTokens: 1.5 }, { aiTokens: 2_147_483_648 }, { aiTokens: {} }, { aiTokens: 1, namespaceId: "ü".repeat(251) }]) {
+test("rejects invalid or missing custom quantities and oversized namespace identifiers", async () => {
+    for (const extra of [{ aiTokens: 0 }, { aiTokens: -1 }, { aiTokens: 1.5 }, { aiTokens: 2_147_483_648 }, { aiTokens: {} }, { aiTokens: undefined }, { aiTokens: 1, namespaceId: "ü".repeat(251) }]) {
         const response = await POST(
             new Request("https://example.com/api/crater/checkout/session", {
                 method: "POST",
                 headers: { authorization: "Session invalid-limits-test", "content-type": "application/json" },
-                body: JSON.stringify({ plan: "custom", deploymentType: "cloud", ...extra }),
+                body: JSON.stringify({ plan: "custom", customerId: "gid://crater/Customer/1", deploymentType: "cloud", workflowExecutions: 100_000, ...extra }),
             })
         )
         assert.equal(response.status, 400)
+    }
+})
+
+test("checkout requires a valid customer id", async () => {
+    for (const customerId of [undefined, "", "42", "gid://crater/License/1"]) {
+        const response = await POST(
+            new Request("https://example.com/api/crater/checkout/session", {
+                method: "POST",
+                headers: { authorization: "Session customer-test", "content-type": "application/json" },
+                body: JSON.stringify({ plan: "pro", deploymentType: "self_hosted", customerId }),
+            })
+        )
+        assert.equal(response.status, 400)
+        assert.deepEqual(await response.json(), { error: "customerId is required and must be a valid Crater global ID." })
     }
 })
 

@@ -18,12 +18,12 @@ const content = {
         paymentPeriod: { b2b: "monthly", b2c: "monthly" },
     },
     workflowExecutions: {
-        b2b: { default: 200, min: 200, max: 10_000, step: 100 },
-        b2c: { default: 10, min: 10, max: 1_000, step: 10 },
+        b2b: { default: 1_000_000, packages: [100_000, 1_000_000, 5_000_000, 10_000_000] },
+        b2c: { default: 100_000, packages: [10_000, 100_000, 500_000, 1_000_000] },
     },
     aiTokens: {
-        b2b: { default: 100_000, min: 100_000, max: 1_000_000, step: 100_000 },
-        b2c: { default: 10_000, min: 10_000, max: 100_000, step: 10_000 },
+        b2b: { default: 100_000_000, packages: [10_000_000, 100_000_000, 500_000_000, 1_000_000_000] },
+        b2c: { default: 10_000_000, packages: [1_000_000, 10_000_000, 50_000_000, 100_000_000] },
     },
 } as SubscriptionConfiguratorContent
 
@@ -33,8 +33,8 @@ test("falls back to content defaults when the URL has no selection", () => {
         deployment: "self_hosted",
         customerType: "b2c",
         paymentPeriod: "monthly",
-        workflowExecutions: 10,
-        aiTokens: 10_000,
+        workflowExecutions: 100_000,
+        aiTokens: 10_000_000,
     })
 })
 
@@ -42,8 +42,8 @@ test("writes the resolved usage defaults back into the search params on a fresh 
     const selection = parseSubscriptionSelectionFromSearchParams(new URLSearchParams(), content)
     const params = buildSubscriptionSelectionSearchParams(selection)
 
-    assert.equal(params.get("workflowExecutions"), "10")
-    assert.equal(params.get("aiTokens"), "10000")
+    assert.equal(params.get("workflowExecutions"), "100000")
+    assert.equal(params.get("aiTokens"), "10000000")
 })
 
 test("restores a full selection from the URL", () => {
@@ -52,8 +52,8 @@ test("restores a full selection from the URL", () => {
         deploymentType: "cloud",
         customerType: "b2b",
         paymentPeriod: "yearly",
-        workflowExecutions: "500",
-        aiTokens: "200000",
+        workflowExecutions: "5000000",
+        aiTokens: "500000000",
     })
 
     assert.deepEqual(parseSubscriptionSelectionFromSearchParams(searchParams, content), {
@@ -61,8 +61,8 @@ test("restores a full selection from the URL", () => {
         deployment: "cloud",
         customerType: "b2b",
         paymentPeriod: "yearly",
-        workflowExecutions: 500,
-        aiTokens: 200_000,
+        workflowExecutions: 5_000_000,
+        aiTokens: 500_000_000,
     })
 })
 
@@ -71,11 +71,14 @@ test("keeps a fixed plan for b2b customers", () => {
     assert.equal(parseSubscriptionSelectionFromSearchParams(searchParams, content).plan, "pro")
 })
 
-test("clamps usage values restored from the URL to the customer type's range", () => {
+test("snaps usage values restored from the URL onto the customer type's packages", () => {
     const searchParams = new URLSearchParams({ customerType: "b2c", workflowExecutions: "999999", aiTokens: "1" })
     const selection = parseSubscriptionSelectionFromSearchParams(searchParams, content)
-    assert.equal(selection.workflowExecutions, 1_000)
-    assert.equal(selection.aiTokens, 10_000)
+    assert.equal(selection.workflowExecutions, 1_000_000)
+    assert.equal(selection.aiTokens, 1_000_000)
+
+    const beyondLargest = parseSubscriptionSelectionFromSearchParams(new URLSearchParams({ customerType: "b2c", aiTokens: "999999999" }), content)
+    assert.equal(beyondLargest.aiTokens, 100_000_000)
 })
 
 test("ignores malformed or unknown URL values", () => {
@@ -85,8 +88,8 @@ test("ignores malformed or unknown URL values", () => {
         deployment: "self_hosted",
         customerType: "b2c",
         paymentPeriod: "monthly",
-        workflowExecutions: 10,
-        aiTokens: 10_000,
+        workflowExecutions: 100_000,
+        aiTokens: 10_000_000,
     })
 })
 
@@ -113,10 +116,13 @@ test("builds checkout search params with usage only for the custom plan", () => 
         deployment: "cloud",
         customerType: "b2b",
         paymentPeriod: "yearly",
-        workflowExecutions: 500,
-        aiTokens: 200_000,
+        workflowExecutions: 5_000_000,
+        aiTokens: 500_000_000,
     }
-    assert.equal(buildSubscriptionSelectionSearchParams(customSelection).toString(), "plan=custom&deploymentType=cloud&customerType=b2b&paymentPeriod=yearly&workflowExecutions=500&aiTokens=200000")
+    assert.equal(
+        buildSubscriptionSelectionSearchParams(customSelection).toString(),
+        "plan=custom&deploymentType=cloud&customerType=b2b&paymentPeriod=yearly&workflowExecutions=5000000&aiTokens=500000000"
+    )
 
     const fixedSelection: SubscriptionSelection = {
         plan: "pro",
@@ -129,11 +135,19 @@ test("builds checkout search params with usage only for the custom plan", () => 
     assert.equal(buildSubscriptionSelectionSearchParams(fixedSelection).toString(), "plan=pro&deploymentType=self_hosted&customerType=b2c&paymentPeriod=monthly")
 })
 
-test("snaps manipulated usage to the configured step", () => {
-    const result = resolveSubscriptionSelection(new URLSearchParams({ customerType: "b2b", workflowExecutions: "251", aiTokens: "150000" }), content)
-    assert.equal(result.selection.workflowExecutions, 300)
-    assert.equal(result.selection.aiTokens, 200_000)
+test("snaps manipulated usage onto the next package and reports it", () => {
+    const result = resolveSubscriptionSelection(new URLSearchParams({ customerType: "b2b", workflowExecutions: "251", aiTokens: "150000000" }), content)
+    assert.equal(result.selection.workflowExecutions, 100_000)
+    assert.equal(result.selection.aiTokens, 500_000_000)
     assert.equal(result.issues.length, 2)
+})
+
+test("falls back to the smallest package when the configured default is not a package", () => {
+    const misconfigured = {
+        ...content,
+        aiTokens: { ...content.aiTokens, b2c: { default: 12_345, packages: [50_000_000, 1_000_000, 10_000_000] } },
+    } as SubscriptionConfiguratorContent
+    assert.equal(parseSubscriptionSelectionFromSearchParams(new URLSearchParams({ customerType: "b2c" }), misconfigured).aiTokens, 1_000_000)
 })
 
 test("applies dependent customer-type rules through the reducer", () => {
@@ -141,8 +155,8 @@ test("applies dependent customer-type rules through the reducer", () => {
     const next = reduceSubscriptionSelection(initial, { type: "customerTypeChanged", value: "b2b" }, content)
     assert.equal(next.plan, "pro")
     assert.equal(next.paymentPeriod, "quarterly")
-    assert.equal(next.workflowExecutions, 200)
-    assert.equal(next.aiTokens, 100_000)
+    assert.equal(next.workflowExecutions, 1_000_000)
+    assert.equal(next.aiTokens, 100_000_000)
 
     const backToB2c = reduceSubscriptionSelection({ ...next, paymentPeriod: "quarterly" }, { type: "customerTypeChanged", value: "b2c" }, content)
     assert.equal(backToB2c.paymentPeriod, "quarterly")

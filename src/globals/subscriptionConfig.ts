@@ -1,4 +1,5 @@
 import { iconField as payloadIconField } from "@mvriu5/payload-icon-picker"
+import { DEFAULT_USAGE_PACKAGES } from "@/lib/subscription/usagePackages"
 import type { Field, GlobalConfig } from "payload"
 
 type LocalizedFeature = { de: string; en: string }
@@ -40,11 +41,25 @@ const optionImageField = (): Field => ({
     required: false,
 })
 
-const usageRangeFields = (defaults: { default: number; min: number; max: number; step: number }): Field[] => [
-    { name: "default", label: "Default (shown when the slider opens)", type: "number", required: false, defaultValue: defaults.default },
-    { name: "step", type: "number", required: false, defaultValue: defaults.step },
-    { name: "min", type: "number", required: false, defaultValue: defaults.min },
-    { name: "max", type: "number", required: false, defaultValue: defaults.max },
+const usagePackageFields = (defaults: { default: number; packages: readonly number[] }): Field[] => [
+    {
+        name: "packages",
+        label: "Packages",
+        type: "number",
+        hasMany: true,
+        required: true,
+        minRows: 1,
+        defaultValue: [...defaults.packages],
+        admin: { description: "Selectable quantities in ascending order. Must match Crater's checkout.quantity_steps for this customer type." },
+    },
+    {
+        name: "default",
+        label: "Default (preselected package)",
+        type: "number",
+        required: false,
+        defaultValue: defaults.default,
+        admin: { description: "Must be one of the packages; otherwise the smallest package is preselected." },
+    },
 ]
 
 const planFeaturesField = (features: LocalizedFeature[]): Field => ({
@@ -413,13 +428,13 @@ export const SubscriptionCollection: GlobalConfig = {
                     name: "b2b",
                     label: "B2B",
                     type: "group",
-                    fields: usageRangeFields({ default: 1000, min: 200, max: 10000, step: 100 }),
+                    fields: usagePackageFields(DEFAULT_USAGE_PACKAGES.workflowExecutions.b2b),
                 },
                 {
                     name: "b2c",
                     label: "B2C",
                     type: "group",
-                    fields: usageRangeFields({ default: 100, min: 10, max: 1000, step: 10 }),
+                    fields: usagePackageFields(DEFAULT_USAGE_PACKAGES.workflowExecutions.b2c),
                 },
                 { name: "suffix", type: "text", required: false, localized: true, defaultValue: "exec" },
             ],
@@ -489,13 +504,13 @@ export const SubscriptionCollection: GlobalConfig = {
                     name: "b2b",
                     label: "B2B",
                     type: "group",
-                    fields: usageRangeFields({ default: 1000000, min: 100000, max: 10000000, step: 100000 }),
+                    fields: usagePackageFields(DEFAULT_USAGE_PACKAGES.aiTokens.b2b),
                 },
                 {
                     name: "b2c",
                     label: "B2C",
                     type: "group",
-                    fields: usageRangeFields({ default: 100000, min: 10000, max: 1000000, step: 10000 }),
+                    fields: usagePackageFields(DEFAULT_USAGE_PACKAGES.aiTokens.b2c),
                 },
                 { name: "suffix", type: "text", required: false, localized: true, defaultValue: "tokens" },
             ],

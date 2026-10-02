@@ -1,6 +1,6 @@
 "use client"
 
-import { CheckoutDiscount, type CheckoutDiscountValue } from "@/components/checkout/CheckoutDiscount"
+import { CheckoutDiscount } from "@/components/checkout/CheckoutDiscount"
 import { useOptionalCheckoutFormState } from "@/components/checkout/CheckoutFormProvider"
 import { CheckoutNextSteps } from "@/components/checkout/CheckoutNextSteps"
 import { CheckoutPricingOverview } from "@/components/checkout/CheckoutPricingOverview"
@@ -9,7 +9,7 @@ import { Switch } from "@/components/ui/Switch"
 import type { CheckoutStripePricingData, CheckoutTaxQuoteData } from "@/lib/checkout/checkoutSubmission"
 import type { CheckoutData, ErrorsContent, SubscriptionConfigData, UpgradeBannerData } from "@/lib/cms"
 import { formatCurrency } from "@/lib/formatters"
-import { calculateExclusiveTaxRate, calculatePromotionDiscountAmount, formatDiscountBadge, resolveCheckoutPricing, type PaymentPeriod } from "@/lib/subscription/calculator"
+import { calculateExclusiveTaxRate, formatDiscountBadge, resolveCheckoutPricing, type PaymentPeriod } from "@/lib/subscription/calculator"
 import { getPaymentPeriodOptions, type SubscriptionCustomerType } from "@/lib/subscription/configurator"
 import type { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
 import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation"
@@ -32,7 +32,6 @@ export function CheckoutSummary({ content, errors, nextSteps, stripePricing, sub
     const params = useParams<{ locale?: string }>()
     const { stage } = useCheckoutStage()
     const checkoutFormState = useOptionalCheckoutFormState()
-    const [promotionDiscount, setPromotionDiscount] = useState<CheckoutDiscountValue | null>(null)
     if (!content || !subscriptionConfig || !subscriptionPrices) return null
 
     const deployment = searchParams.get("deploymentType") ?? searchParams.get("deployment")
@@ -64,12 +63,11 @@ export function CheckoutSummary({ content, errors, nextSteps, stripePricing, sub
     const paymentPeriodDiscountPercentage = pricing.totalBeforeDiscount > 0 ? paymentPeriodDiscountAmount / pricing.totalBeforeDiscount : 0
     const paymentPeriodDiscountLabel = paymentPeriod === "quarterly" ? content.pricing.quarterlyDiscountLabel : paymentPeriod === "yearly" ? content.pricing.yearlyDiscountLabel : null
     const paymentPeriodTotalPrice = pricing.totalPrice
-    const previewPromotionDiscountAmount = calculatePromotionDiscountAmount(paymentPeriodTotalPrice, promotionDiscount)
-    const previewDiscountedPrice = Math.max(0, paymentPeriodTotalPrice - previewPromotionDiscountAmount)
+    const previewDiscountedPrice = paymentPeriodTotalPrice
     const previewTaxPercentage = taxQuote ? calculateExclusiveTaxRate(taxQuote.amountTotal, taxQuote.taxAmountExclusive) : 0
     const previewTaxAmount = taxQuote ? Math.round(previewDiscountedPrice * previewTaxPercentage * 100) / 100 : 0
     const currency = stripePricing?.currency ?? "EUR"
-    const promotionDiscountAmount = stripePricing?.discountAmount ?? previewPromotionDiscountAmount
+    const promotionDiscountAmount = stripePricing?.discountAmount ?? 0
     const taxAmount = stripePricing?.taxAmount ?? previewTaxAmount
     const taxPercentage = stripePricing ? calculateExclusiveTaxRate(stripePricing.totalPrice, stripePricing.taxAmount) : taxQuote ? previewTaxPercentage : null
     const totalPrice = stripePricing?.totalPrice ?? previewDiscountedPrice + previewTaxAmount
@@ -153,7 +151,6 @@ export function CheckoutSummary({ content, errors, nextSteps, stripePricing, sub
                     discountSessionRequiredError={errors.discountSessionRequired}
                     discountValidationError={errors.discountValidation}
                     inputPlaceholder={content.pricing.discountInputPlaceholder}
-                    onApplied={setPromotionDiscount}
                     onPromotionCodeChange={checkoutFormState?.updateCheckoutPromotionCode}
                     promptLabel={content.pricing.discountPromptLabel}
                     removeLabel={content.pricing.discountRemoveLabel}

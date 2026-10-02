@@ -8,12 +8,6 @@ export type PaymentPeriod = "monthly" | "quarterly" | "yearly"
 
 const PAYMENT_PERIODS = new Set<PaymentPeriod>(["monthly", "quarterly", "yearly"])
 
-export type UsageRange = {
-    min: number
-    max: number
-    step: number
-}
-
 export function formatDiscountBadge(discount: number, locale: AppLocale) {
     return new Intl.NumberFormat(locale === "de" ? "de-DE" : "en-US", {
         style: "percent",
