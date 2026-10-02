@@ -18,7 +18,7 @@ import { GET as getSubscriptionPaymentMethod, PATCH as setSubscriptionPaymentMet
 import { createGraphQLTestServer } from "./graphqlTestServer"
 
 // CustomerAddressCreateInput declares all six fields non-null; the optional line2 and state are forwarded as empty strings.
-const FULL_ADDRESS = { city: "Berlin", country: "DE", line1: "Hauptstraße 1", postalCode: "10115" }
+const FULL_ADDRESS = { city: "Berlin", country: "DE", line1: "HauptstraÃŸe 1", postalCode: "10115" }
 const FORWARDED_ADDRESS = { ...FULL_ADDRESS, line2: "", state: "" }
 
 const sessionHeaders = {
@@ -397,8 +397,8 @@ test("customer payment methods carry the display details Crater resolves for eve
                 },
             },
         },
-        { data: { customerPaymentMethod: { brand: "visa", expiresMonth: 12, expiresYear: 2030, last4: "4242", type: "card" } } },
-        { data: { customerPaymentMethod: null } },
+        { data: { paymentMethod: { brand: "visa", expiresMonth: 12, expiresYear: 2030, last4: "4242", type: "card" } } },
+        { data: { paymentMethod: null } },
     ])
     const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
     process.env.CRATER_GRAPHQL_URL = graphQLServer.url
@@ -444,7 +444,20 @@ test("returns only the subscription payment method display summary from Crater",
     const graphQLServer = await createGraphQLTestServer([
         {
             data: {
-                subscriptionPaymentMethod: {
+                currentUser: {
+                    customers: {
+                        nodes: [{ id: "gid://crater/Customer/1", subscriptions: {
+                            nodes: [{ id: "gid://crater/Subscription/1", paymentMethodId: "pm_card" }],
+                            pageInfo: { endCursor: null, hasNextPage: false },
+                        } }],
+                        pageInfo: { endCursor: null, hasNextPage: false },
+                    },
+                },
+            },
+        },
+        {
+            data: {
+                paymentMethod: {
                     brand: "visa",
                     expiresMonth: 12,
                     expiresYear: 2030,
@@ -470,7 +483,9 @@ test("returns only the subscription payment method display summary from Crater",
         })
         assert.equal(response.headers.get("cache-control"), "no-store")
         assert.equal(graphQLServer.requests[0].body.operationName, "SubscriptionPaymentMethod")
-        assert.deepEqual(graphQLServer.requests[0].body.variables, { subscriptionId: "gid://crater/Subscription/1" })
+        assert.deepEqual(graphQLServer.requests[0].body.variables, {})
+        assert.deepEqual(graphQLServer.requests[1].body.variables, { paymentMethodId: "pm_card" })
+        assert.match(graphQLServer.requests[1].body.query ?? "", /paymentMethod\(paymentMethodId:/)
     } finally {
         if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
         else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
@@ -1273,7 +1288,7 @@ test("checkout and discount enforce independent route limits", async () => {
     }
 })
 
-test("login and discount validation forward documented Crater domain error details", async () => {
+test("login forwards domain error details and retired discount validation avoids Crater", async () => {
     const graphQLServer = await createGraphQLTestServer([
         {
             data: {
@@ -1285,19 +1300,6 @@ test("login and discount validation forward documented Crater domain error detai
                         },
                     ],
                     userSession: null,
-                },
-            },
-        },
-        {
-            data: {
-                checkoutValidateDiscount: {
-                    discount: null,
-                    errors: [
-                        {
-                            errorCode: "INVALID_DISCOUNT_CODE",
-                            details: [{ __typename: "ActiveModelError", attribute: "code", type: "inactive" }],
-                        },
-                    ],
                 },
             },
         },
@@ -1330,14 +1332,12 @@ test("login and discount validation forward documented Crater domain error detai
             errorCode: "INVALID_SAGITTARIUS_TOKEN",
             details: ["The Sagittarius token was rejected."],
         })
-        assert.equal(discountResponse.status, 422)
+        assert.equal(discountResponse.status, 410)
         assert.deepEqual(await discountResponse.json(), {
-            error: "Crater could not validate the discount.",
-            errorCode: "INVALID_DISCOUNT_CODE",
-            details: ["code: inactive"],
+            error: "Apply promotion codes through the active checkout session.",
         })
         assert.match(graphQLServer.requests[0].body.query ?? "", /fragment CraterErrorFields on Error/)
-        assert.match(graphQLServer.requests[1].body.query ?? "", /fragment CraterErrorFields on Error/)
+        assert.equal(graphQLServer.requests.length, 1)
         assert.equal(warnings.length, 1)
         assert.match(warnings[0], /"event":"crater_login_failed"/)
         assert.match(warnings[0], /"errorCode":"INVALID_SAGITTARIUS_TOKEN"/)

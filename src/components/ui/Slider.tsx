@@ -37,6 +37,7 @@ type SliderProps = {
     showMajorLines?: boolean
     majorLines?: number[]
     animationSpeed?: number
+    smoothDrag?: boolean
 }
 
 function formatSliderLabel(value: number, suffix?: string, trailingSuffix = "") {
@@ -81,6 +82,7 @@ export function Slider({
     showMajorLines = true,
     majorLines,
     animationSpeed = 240,
+    smoothDrag = false,
 }: SliderProps) {
     const trackRef = useRef<HTMLDivElement>(null)
     const pointerStartXRef = useRef(0)
@@ -107,10 +109,12 @@ export function Slider({
     const springVelocityRef = useRef(0)
     const [animatedPosition, setAnimatedPosition] = useState(activePosition)
     const [isDragging, setIsDragging] = useState(false)
+    const [dragPosition, setDragPosition] = useState(activePosition)
     const [overscrollStretch, setOverscrollStretch] = useState(0)
     const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
     const shouldAnimate = !isDragging && !prefersReducedMotion
-    const visiblePosition = shouldAnimate ? animatedPosition : activePosition
+    const immediatePosition = smoothDrag && isDragging ? dragPosition : activePosition
+    const visiblePosition = shouldAnimate ? animatedPosition : immediatePosition
     const sizeStyles = SLIDER_SIZE_STYLES[size] ?? SLIDER_SIZE_STYLES.md
     const resolvedMajorLines = useMemo(() => {
         const defaultMajorLines = [0, Math.round((lineCount - 1) / 4), Math.round((lineCount - 1) / 2), Math.round(((lineCount - 1) * 3) / 4), lineCount - 1]
@@ -166,9 +170,9 @@ export function Slider({
     useEffect(() => {
         if (!shouldAnimate) {
             springVelocityRef.current = 0
-            if (animatedPositionRef.current !== activePosition) {
-                animatedPositionRef.current = activePosition
-                setAnimatedPosition(activePosition)
+            if (animatedPositionRef.current !== immediatePosition) {
+                animatedPositionRef.current = immediatePosition
+                setAnimatedPosition(immediatePosition)
             }
             return
         }
@@ -210,7 +214,7 @@ export function Slider({
 
         animationFrame = window.requestAnimationFrame(animate)
         return () => window.cancelAnimationFrame(animationFrame)
-    }, [activePosition, resolvedAnimationSpeed, shouldAnimate])
+    }, [activePosition, immediatePosition, resolvedAnimationSpeed, shouldAnimate])
 
     const updateValue = useCallback(
         (nextValue: number) => {
@@ -247,7 +251,7 @@ export function Slider({
             let nextPosition = rawPosition
             let releasedStickyLine = false
 
-            if (applyMajorLineStickiness && showMajorLines) {
+            if (applyMajorLineStickiness && showMajorLines && !smoothDrag) {
                 const stickyLine = stickyMajorLineRef.current
 
                 if (stickyLine !== null) {
@@ -281,9 +285,15 @@ export function Slider({
             }
 
             pointerPositionRef.current = rawPosition
+            if (smoothDrag && applyMajorLineStickiness) {
+                setDragPosition(rawPosition)
+                animatedPositionRef.current = rawPosition
+                setAnimatedPosition(rawPosition)
+                springVelocityRef.current = 0
+            }
             updateValue(resolvedMin + (nextPosition / (lineCount - 1)) * range)
         },
-        [lineCount, prefersReducedMotion, range, resolvedMajorLines, resolvedMin, showMajorLines, updateValue]
+        [lineCount, prefersReducedMotion, range, resolvedMajorLines, resolvedMin, showMajorLines, smoothDrag, updateValue]
     )
 
     return (
@@ -326,7 +336,7 @@ export function Slider({
                     if (disabled || !event.currentTarget.hasPointerCapture(event.pointerId)) return
 
                     const committedValue = pendingValueRef.current
-                    if (didDragRef.current) syncAnimatedPosition(committedValue)
+                    if (didDragRef.current && !smoothDrag) syncAnimatedPosition(committedValue)
                     setOverscrollStretch(0)
                     setIsDragging(false)
                     pointerPositionRef.current = null
@@ -337,7 +347,7 @@ export function Slider({
                 onPointerCancel={(event) => {
                     if (!event.currentTarget.hasPointerCapture(event.pointerId)) return
 
-                    syncAnimatedPosition(pendingValueRef.current)
+                    if (!smoothDrag) syncAnimatedPosition(pendingValueRef.current)
                     setOverscrollStretch(0)
                     setIsDragging(false)
                     pointerPositionRef.current = null
