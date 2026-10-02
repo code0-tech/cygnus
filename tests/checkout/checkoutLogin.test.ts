@@ -16,7 +16,7 @@ test("routes the Sagittarius login response through the server-side Crater callb
 })
 
 test("routes namespace selection back to one exact license", () => {
-    const returnPath = createLicenseNamespaceReturnPath("de", "gid://crater/Customer/3", "gid://crater/License/9")
+    const returnPath = createLicenseNamespaceReturnPath("de", "gid://crater/Customer/3", "gid://crater/Subscription/9")
     const callbackUrl = createLicenseNamespaceCallbackUrl(new URL("https://code0.example"), returnPath)
 
     assert.equal(returnPath, "/de/licenses/customer/3/license/9/edit")
@@ -25,13 +25,13 @@ test("routes namespace selection back to one exact license", () => {
 
 test("does not encode license route parameters a second time", () => {
     const customerId = encodeURIComponent("gid://crater/Customer/3")
-    const licenseId = encodeURIComponent("gid://crater/License/9")
+    const licenseId = encodeURIComponent("gid://crater/Subscription/9")
 
     assert.equal(createLicenseNamespaceReturnPath("en", customerId, licenseId), "/en/licenses/customer/3/license/9/edit")
 })
 
 test("can return namespace selection directly to the license detail", () => {
-    assert.equal(createLicenseNamespaceReturnPath("en", "gid://crater/Customer/3", "gid://crater/License/9", "detail"), "/en/licenses/customer/3/license/9")
+    assert.equal(createLicenseNamespaceReturnPath("en", "gid://crater/Customer/3", "gid://crater/Subscription/9", "detail"), "/en/licenses/customer/3/license/9")
 })
 
 test("appends the absolute checkout and cancellation URLs to the configured login URL", () => {

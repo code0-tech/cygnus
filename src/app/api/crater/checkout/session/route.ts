@@ -124,15 +124,16 @@ export async function POST(request: Request) {
 
         const normalizedSelection = resolvedSelection.selection
 
-        if (customerId && !isCustomerId(customerId)) {
-            return craterJson({ error: "customerId must be a valid Crater global ID." }, 400)
+        if (!customerId || !isCustomerId(customerId)) {
+            return craterJson({ error: "customerId is required and must be a valid Crater global ID." }, 400)
         }
 
         if (namespaceId && Buffer.byteLength(namespaceId, "utf8") > 500) {
             return craterJson({ error: "namespaceId must be at most 500 bytes." }, 400)
         }
-        if (plan === "custom" && (Number.isNaN(aiTokens) || Number.isNaN(workflowExecutions) || (aiTokens === undefined && workflowExecutions === undefined))) {
-            return craterJson({ error: "Custom checkout requires at least one positive GraphQL integer quantity." }, 400)
+
+        if (plan === "custom" && (aiTokens === undefined || workflowExecutions === undefined || Number.isNaN(aiTokens) || Number.isNaN(workflowExecutions))) {
+            return craterJson({ error: "Custom checkout requires both aiTokens and workflowExecutions as positive GraphQL integers." }, 400)
         }
 
         const siteUrl = resolveSiteUrl()
@@ -152,18 +153,13 @@ export async function POST(request: Request) {
         const guestId = guestCheckoutId(request)
         if (guestId) returnUrl.searchParams.set("guestCheckout", guestId)
         const input: CheckoutCreateSessionVariables["input"] = {
-            ...(customerId && isCustomerId(customerId) ? { customerId } : {}),
+            customerId,
             returnUrl: `${returnUrl.toString()}${returnUrl.search ? "&" : "?"}session_id={CHECKOUT_SESSION_ID}`,
             paymentPeriod: toCraterPaymentPeriod(normalizedSelection.paymentPeriod),
             plan: toCraterPlan(normalizedSelection.plan),
             deploymentType: (deploymentType === "cloud" ? "CLOUD" : "SELF_HOSTED") as DeploymentType,
             ...(namespaceId ? { namespaceId } : {}),
-            ...(plan === "custom"
-                ? {
-                      ...(aiTokens !== undefined ? { aiTokens } : {}),
-                      ...(workflowExecutions !== undefined ? { workflowExecutions } : {}),
-                  }
-                : {}),
+            ...(plan === "custom" ? { aiTokens, workflowExecutions } : {}),
         }
         const apolloClient = createApolloClient(authorization.token)
         const result = await apolloClient.mutate({

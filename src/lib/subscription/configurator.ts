@@ -1,6 +1,7 @@
 import type { SubscriptionConfiguratorContent } from "@/lib/cms"
-import type { PaymentPeriod, UsageRange } from "@/lib/subscription/calculator"
+import type { PaymentPeriod } from "@/lib/subscription/calculator"
 import type { SubscriptionSelectionCatalog } from "@/lib/subscription/catalog"
+import { getDefaultUsagePackage, isUsagePackage, normalizeUsagePackages, snapToUsagePackage, type UsagePackagesConfig } from "@/lib/subscription/usagePackages"
 
 export type SubscriptionPlan = "pro" | "max" | "custom"
 type SubscriptionDeploymentMode = "self_hosted" | "cloud"
@@ -48,22 +49,21 @@ export function getPaymentPeriodForCustomerType(_customerType: SubscriptionCusto
     return PAYMENT_PERIODS.has(period) ? period : "monthly"
 }
 
-function normalizeUsageValue(value: number, range: UsageRange) {
-    const bounded = Math.min(Math.max(Number.isFinite(value) ? value : range.min, range.min), range.max)
-    if (range.step <= 0) return bounded
-    return Math.min(range.max, range.min + Math.round((bounded - range.min) / range.step) * range.step)
+function normalizeUsageValue(value: number, config: UsagePackagesConfig) {
+    return snapToUsagePackage(value, normalizeUsagePackages(config.packages))
 }
 
-function parseUsage(raw: string | null | undefined, range: UsageRange & { default: number }, field: "workflowExecutions" | "aiTokens", issues: SubscriptionSelectionIssue[]) {
-    if (raw == null || raw === "") return normalizeUsageValue(range.default, range)
+function parseUsage(raw: string | null | undefined, config: UsagePackagesConfig, field: "workflowExecutions" | "aiTokens", issues: SubscriptionSelectionIssue[]) {
+    const fallback = getDefaultUsagePackage(config)
+    if (raw == null || raw === "") return fallback
     if (!/^\d+$/.test(raw) || !Number.isSafeInteger(Number(raw))) {
         issues.push({ field, message: `${field} must be a non-negative integer.` })
-        return normalizeUsageValue(range.default, range)
+        return fallback
     }
     const parsed = Number(raw)
-    if (parsed < range.min || parsed > range.max) issues.push({ field, message: `${field} must be between ${range.min} and ${range.max}.` })
-    else if (range.step <= 0 || (parsed - range.min) % range.step !== 0) issues.push({ field, message: `${field} must use increments of ${range.step} starting at ${range.min}.` })
-    return normalizeUsageValue(parsed, range)
+    const packages = normalizeUsagePackages(config.packages)
+    if (!isUsagePackage(parsed, packages)) issues.push({ field, message: `${field} must be one of ${packages.join(", ")}.` })
+    return snapToUsagePackage(parsed, packages)
 }
 
 export function resolveSubscriptionSelection(raw: RawSubscriptionSelection | URLSearchParams, config: SubscriptionSelectionCatalog) {
@@ -97,8 +97,8 @@ export function reduceSubscriptionSelection(selection: SubscriptionSelection, ac
     if (action.type === "customerTypeChanged") {
         next.customerType = action.value
         next.paymentPeriod = getPaymentPeriodForCustomerType(action.value, next.paymentPeriod)
-        next.workflowExecutions = normalizeUsageValue(config.workflowExecutions[action.value].default, config.workflowExecutions[action.value])
-        next.aiTokens = normalizeUsageValue(config.aiTokens[action.value].default, config.aiTokens[action.value])
+        next.workflowExecutions = getDefaultUsagePackage(config.workflowExecutions[action.value])
+        next.aiTokens = getDefaultUsagePackage(config.aiTokens[action.value])
     } else if (action.type === "planChanged") next.plan = action.value
     else if (action.type === "deploymentChanged") next.deployment = action.value
     else if (action.type === "paymentPeriodChanged") next.paymentPeriod = getPaymentPeriodForCustomerType(next.customerType, action.value)

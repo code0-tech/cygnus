@@ -3,11 +3,14 @@ import { gql, type TypedDocumentNode } from "@apollo/client"
 
 type LicenseDashboardQuery = Pick<Query, "currentUser">
 type CustomerPageVariables = { customerAfter?: string | null }
+// licenseAfter walks a customer's subscription connection: each dashboard entry is a subscription with its current license.
 type LicenseDetailVariables = { customerAfter?: string | null; invoiceAfter?: string | null; licenseAfter?: string | null }
 
 const PAGE_SIZE = 25
 const RECENT_LICENSES_PER_CUSTOMER = 5
 
+// Crater removed Customer.licenses: licenses are append-only snapshots of a subscription, so the dashboard lists
+// subscriptions and reads the newest snapshot through currentLicense.
 export const LICENSE_DASHBOARD: TypedDocumentNode<LicenseDashboardQuery, CustomerPageVariables> = gql`
     query LicenseDashboard($customerAfter: String) {
         currentUser {
@@ -16,30 +19,35 @@ export const LICENSE_DASHBOARD: TypedDocumentNode<LicenseDashboardQuery, Custome
                 nodes {
                     id
                     customerType
+                    checkoutLimits {
+                        aiTokens
+                        workflowExecutions
+                    }
                     name
                     email
                     updatedAt
-                    licenses(first: ${RECENT_LICENSES_PER_CUSTOMER}) {
+                    subscriptions(first: ${RECENT_LICENSES_PER_CUSTOMER}) {
                         count
                         nodes {
                             aiTokens
-                            id
-                            status
-                            plan
+                            cancelAt
+                            canceledAt
+                            createdAt
+                            currentPeriodEnd
+                            currentPeriodStart
                             deploymentType
-                            endDate
+                            id
                             namespaceId
+                            paymentMethodId
                             paymentPeriod
+                            plan
+                            status
                             updatedAt
                             workflowExecutions
-                            subscription {
+                            currentLicense {
+                                endDate
                                 id
-                                status
-                                expireAt
-                                canceledAt
-                                currentPeriodEnd
-                                currentPeriodStart
-                                paymentMethodId
+                                startDate
                             }
                         }
                     }
@@ -65,7 +73,7 @@ export const CUSTOMER_NAVIGATION_PAGE: TypedDocumentNode<LicenseDashboardQuery, 
                         name
                         email
                         updatedAt
-                        licenses(first: ${PAGE_SIZE}) {
+                        subscriptions(first: ${PAGE_SIZE}) {
                             count
                             edges {
                                 cursor
@@ -76,6 +84,9 @@ export const CUSTOMER_NAVIGATION_PAGE: TypedDocumentNode<LicenseDashboardQuery, 
                                     plan
                                     status
                                     updatedAt
+                                    currentLicense {
+                                        id
+                                    }
                                 }
                             }
                             pageInfo {
@@ -94,9 +105,9 @@ export const CUSTOMER_NAVIGATION_PAGE: TypedDocumentNode<LicenseDashboardQuery, 
     }
 `
 
-// Continues one customer's license connection past the first page. The sidebar lists every license the user
-// holds, so a customer with more licenses than fit in a single page has to be walked to the end rather than
-// truncated -- otherwise the sidebar count would depend on which page happens to be open.
+// Continues one customer's subscription connection past the first page. The sidebar lists every subscription the
+// user holds, so a customer with more subscriptions than fit in a single page has to be walked to the end rather
+// than truncated -- otherwise the sidebar count would depend on which page happens to be open.
 export const CUSTOMER_LICENSE_PAGE: TypedDocumentNode<LicenseDashboardQuery, LicenseDetailVariables> = gql`
     query CustomerLicensePage($customerAfter: String, $licenseAfter: String) {
         currentUser {
@@ -107,7 +118,7 @@ export const CUSTOMER_LICENSE_PAGE: TypedDocumentNode<LicenseDashboardQuery, Lic
                     name
                     email
                     updatedAt
-                    licenses(after: $licenseAfter, first: ${PAGE_SIZE}) {
+                    subscriptions(after: $licenseAfter, first: ${PAGE_SIZE}) {
                         count
                         edges {
                             cursor
@@ -118,6 +129,9 @@ export const CUSTOMER_LICENSE_PAGE: TypedDocumentNode<LicenseDashboardQuery, Lic
                                 plan
                                 status
                                 updatedAt
+                                currentLicense {
+                                    id
+                                }
                             }
                         }
                         pageInfo {
@@ -131,12 +145,11 @@ export const CUSTOMER_LICENSE_PAGE: TypedDocumentNode<LicenseDashboardQuery, Lic
     }
 `
 
-// Fetches full per-license detail (incl. invoices) directly during navigation, rather than trying to seek to one
-// already-known license via a second, separate "after this cursor" query: Crater's StableConnection resolves
-// "after" purely by comparing license ids, which silently diverges from the "most recently updated first" order
-// this connection is sorted by (see CustomerType#licenses), so a synthetic seek cursor can land on the wrong row
-// whenever any license anywhere has a higher id than the seek target. Walking the same connection page by page
-// with real, server-issued endCursor values (as this loop does) does not have that failure mode.
+// Fetches full per-subscription detail (incl. the current license's invoices) directly during navigation, rather
+// than seeking to one already-known subscription via a synthetic "after this cursor" query: Crater's
+// StableConnection resolves "after" by comparing ids, which diverges from the "most recently updated first" order
+// the connection is sorted by. Walking the same connection page by page with real, server-issued endCursor values
+// (as this loop does) does not have that failure mode.
 export const LICENSE_NAVIGATION_PAGE: TypedDocumentNode<LicenseDashboardQuery, LicenseDetailVariables> = gql`
     query LicenseNavigationPage($customerAfter: String, $licenseAfter: String, $invoiceAfter: String) {
         currentUser {
@@ -144,49 +157,52 @@ export const LICENSE_NAVIGATION_PAGE: TypedDocumentNode<LicenseDashboardQuery, L
                 nodes {
                     id
                     customerType
+                    checkoutLimits {
+                        aiTokens
+                        workflowExecutions
+                    }
                     name
                     email
                     updatedAt
-                    licenses(after: $licenseAfter, first: ${PAGE_SIZE}) {
+                    subscriptions(after: $licenseAfter, first: ${PAGE_SIZE}) {
                         count
                         edges {
                             cursor
                             node {
                                 aiTokens
+                                cancelAt
+                                canceledAt
+                                createdAt
+                                currentPeriodEnd
+                                currentPeriodStart
                                 deploymentType
-                                endDate
                                 id
                                 namespaceId
+                                paymentMethodId
                                 paymentPeriod
                                 plan
-                                startDate
                                 status
                                 updatedAt
                                 workflowExecutions
-                                subscription {
+                                currentLicense {
+                                    endDate
                                     id
-                                    status
-                                    expireAt
-                                    canceledAt
-                                    currentPeriodEnd
-                                    currentPeriodStart
-                                    paymentMethodId
-                                }
-                                invoices(after: $invoiceAfter, first: ${PAGE_SIZE}) {
-                                    count
-                                    nodes {
-                                        billingPeriodEnd
-                                        billingPeriodStart
-                                        currency
-                                        id
-                                        invoiceNumber
-                                        status
-                                        stripePdfUrl
-                                        total
-                                    }
-                                    pageInfo {
-                                        endCursor
-                                        hasNextPage
+                                    startDate
+                                    invoices(after: $invoiceAfter, first: ${PAGE_SIZE}) {
+                                        count
+                                        nodes {
+                                            createdAt
+                                            currency
+                                            id
+                                            invoiceNumber
+                                            status
+                                            stripePdfUrl
+                                            total
+                                        }
+                                        pageInfo {
+                                            endCursor
+                                            hasNextPage
+                                        }
                                     }
                                 }
                             }
@@ -217,31 +233,36 @@ export const LICENSE_CUSTOMER_DETAIL: TypedDocumentNode<LicenseDashboardQuery, L
                     }
                     id
                     customerType
+                    checkoutLimits {
+                        aiTokens
+                        workflowExecutions
+                    }
                     name
                     email
                     phone
                     updatedAt
-                    licenses(after: $licenseAfter, first: ${PAGE_SIZE}) {
+                    subscriptions(after: $licenseAfter, first: ${PAGE_SIZE}) {
                         count
                         nodes {
                             aiTokens
+                            cancelAt
+                            canceledAt
+                            createdAt
+                            currentPeriodEnd
+                            currentPeriodStart
                             deploymentType
-                            endDate
                             id
                             namespaceId
+                            paymentMethodId
                             paymentPeriod
                             plan
                             status
                             updatedAt
                             workflowExecutions
-                            subscription {
+                            currentLicense {
+                                endDate
                                 id
-                                status
-                                expireAt
-                                canceledAt
-                                currentPeriodEnd
-                                currentPeriodStart
-                                paymentMethodId
+                                startDate
                             }
                         }
                         pageInfo {

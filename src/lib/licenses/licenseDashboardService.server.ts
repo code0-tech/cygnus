@@ -1,13 +1,7 @@
 import { createApolloClient } from "@/lib/apolloClient"
-import { isLicenseId } from "@/lib/licenses/craterRequest"
-import { byMostRecentlyUpdated, mapCustomer, mapLicense, mapPageInfo, mapUserData } from "@/lib/licenses/licenseDashboardMapper"
-import {
-    CUSTOMER_LICENSE_PAGE,
-    CUSTOMER_NAVIGATION_PAGE,
-    LICENSE_CUSTOMER_DETAIL,
-    LICENSE_DASHBOARD,
-    LICENSE_NAVIGATION_PAGE,
-} from "@/lib/licenses/licenseDashboardQueries.server"
+import { isSubscriptionId } from "@/lib/licenses/craterRequest"
+import { byMostRecentlyUpdated, mapCustomer, mapPageInfo, mapSubscription, mapUserData } from "@/lib/licenses/licenseDashboardMapper"
+import { CUSTOMER_LICENSE_PAGE, CUSTOMER_NAVIGATION_PAGE, LICENSE_CUSTOMER_DETAIL, LICENSE_DASHBOARD, LICENSE_NAVIGATION_PAGE } from "@/lib/licenses/licenseDashboardQueries.server"
 import type { LicenseDashboardData, LicenseDashboardLicense } from "@/lib/licenses/licenseTypes"
 import type { Customer, Scalars } from "@code0-tech/crater-graphql-types"
 
@@ -24,23 +18,18 @@ function readCursor(requestUrl: URL, name: string) {
 }
 
 function appendNavigationLicenses(target: LicenseDashboardLicense[], customer: Customer) {
-    for (const license of customer.licenses?.edges ?? []) {
-        if (!license?.node) continue
-        const mappedLicense = mapLicense(license.node, customer)
+    for (const subscription of customer.subscriptions?.edges ?? []) {
+        if (!subscription?.node) continue
+        const mappedLicense = mapSubscription(subscription.node, customer)
         if (mappedLicense && !target.some((candidate) => candidate.id === mappedLicense.id)) target.push(mappedLicense)
     }
 }
 
 // Walks one customer's license connection to the end, so a customer holding more licenses than fit in a
 // single page still contributes all of them to the sidebar.
-async function appendRemainingLicenses(
-    client: ReturnType<typeof createApolloClient>,
-    target: LicenseDashboardLicense[],
-    customer: Customer,
-    customerAfter: string | null
-) {
+async function appendRemainingLicenses(client: ReturnType<typeof createApolloClient>, target: LicenseDashboardLicense[], customer: Customer, customerAfter: string | null) {
     const seenCursors = new Set<string>()
-    let pageInfo = mapPageInfo(customer.licenses?.pageInfo)
+    let pageInfo = mapPageInfo(customer.subscriptions?.pageInfo)
 
     while (pageInfo.hasNextPage) {
         if (!pageInfo.endCursor || seenCursors.has(pageInfo.endCursor)) throw new Error("Crater returned an invalid license pagination cursor.")
@@ -55,7 +44,7 @@ async function appendRemainingLicenses(
         if (!nextPage || nextPage.id !== customer.id) throw new Error("Crater returned an invalid customer while paginating licenses.")
 
         appendNavigationLicenses(target, nextPage)
-        pageInfo = mapPageInfo(nextPage.licenses?.pageInfo)
+        pageInfo = mapPageInfo(nextPage.subscriptions?.pageInfo)
     }
 }
 
@@ -116,13 +105,13 @@ async function findLicenseCursor(client: ReturnType<typeof createApolloClient>, 
         if (!customer) return { status: "missing" as const }
         if (customer.id !== customerId) return { status: "missing" as const }
 
-        const edges = customer.licenses?.edges ?? []
-        const matchedLicense = edges.find((edge) => edge?.node?.id === licenseId)?.node
-        if (matchedLicense) {
-            return { status: "found" as const, customer, license: matchedLicense }
+        const edges = customer.subscriptions?.edges ?? []
+        const matchedSubscription = edges.find((edge) => edge?.node?.id === licenseId)?.node
+        if (matchedSubscription) {
+            return { status: "found" as const, customer, subscription: matchedSubscription }
         }
 
-        const pageInfo = mapPageInfo(customer.licenses?.pageInfo)
+        const pageInfo = mapPageInfo(customer.subscriptions?.pageInfo)
         if (!pageInfo.hasNextPage) return { status: "missing" as const }
         if (!pageInfo.endCursor || seenCursors.has(pageInfo.endCursor)) throw new Error("Crater returned an invalid license pagination cursor.")
         seenCursors.add(pageInfo.endCursor)
@@ -144,7 +133,8 @@ export async function loadLicenseDashboardData(requestUrl: URL, sessionToken: st
         return { error: "view must be dashboard, customer, or license.", status: 400 }
     }
     if (view !== "dashboard" && !isCustomerId(customerId)) return { error: "A valid Crater customer id is required.", status: 400 }
-    if (view === "license" && !isLicenseId(licenseId)) return { error: "A valid Crater license id is required.", status: 400 }
+    // The license view addresses a subscription: its id stays stable while the current license snapshot changes.
+    if (view === "license" && !isSubscriptionId(licenseId)) return { error: "A valid Crater subscription id is required.", status: 400 }
     if (customerAfter === undefined || customerContext === undefined || licenseAfter === undefined || invoiceAfter === undefined) {
         return { error: "The pagination cursor is invalid.", status: 400 }
     }
@@ -187,7 +177,7 @@ export async function loadLicenseDashboardData(requestUrl: URL, sessionToken: st
         if (licenseLookup.status === "missing") return { error: "The requested license was not found.", status: 404 }
 
         const mappedCustomer = mapCustomer(licenseLookup.customer)
-        const mappedLicense = mapLicense(licenseLookup.license, licenseLookup.customer)
+        const mappedLicense = mapSubscription(licenseLookup.subscription, licenseLookup.customer)
         if (!mappedCustomer || !mappedLicense) return { error: "Crater returned incomplete license data.", status: 502 }
         if (navigationLicenses && !navigationLicenses.some((candidate) => candidate.id === mappedLicense.id)) {
             navigationLicenses.push(mappedLicense)
@@ -199,7 +189,9 @@ export async function loadLicenseDashboardData(requestUrl: URL, sessionToken: st
                 customers: [mappedCustomer],
                 licenses: [mappedLicense],
                 ...(navigationLicenses ? { navigationLicenses } : {}),
-                pagination: { invoices: mapPageInfo(licenseLookup.license.invoices?.pageInfo, licenseLookup.license.invoices?.count, selectedCustomerAfter) },
+                pagination: {
+                    invoices: mapPageInfo(licenseLookup.subscription.currentLicense?.invoices?.pageInfo, licenseLookup.subscription.currentLicense?.invoices?.count, selectedCustomerAfter),
+                },
             },
             status: 200,
         }
@@ -224,9 +216,8 @@ export async function loadLicenseDashboardData(requestUrl: URL, sessionToken: st
         data: {
             ...detailData,
             ...(navigationLicenses ? { navigationLicenses } : {}),
-            pagination: { licenses: mapPageInfo(detailCustomer?.licenses?.pageInfo, detailCustomer?.licenses?.count, selectedCustomerAfter) },
+            pagination: { licenses: mapPageInfo(detailCustomer?.subscriptions?.pageInfo, detailCustomer?.subscriptions?.count, selectedCustomerAfter) },
         },
         status: 200,
     }
 }
-

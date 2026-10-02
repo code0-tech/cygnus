@@ -13,7 +13,7 @@ const SUBSCRIPTIONS_RESUME: TypedDocumentNode<SubscriptionsResumeData, MutationS
     mutation SubscriptionsResume($input: SubscriptionsResumeInput!) {
         subscriptionsResume(input: $input) {
             subscription {
-                expireAt
+                cancelAt
                 canceledAt
                 id
                 status

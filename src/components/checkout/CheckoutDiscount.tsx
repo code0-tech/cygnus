@@ -1,20 +1,13 @@
 "use client"
 
-import { checkoutFetch } from "@/lib/checkout/checkoutClient"
 import { Button, TextInput } from "@code0-tech/pictor"
 import { useCraterSession } from "@/components/checkout/CraterSessionProvider"
 import { ButtonLoader } from "@/components/ui/Loader"
 import { Dialog } from "@base-ui/react/dialog"
-import type { CheckoutDiscount } from "@code0-tech/crater-graphql-types"
 import { IconX } from "@tabler/icons-react"
 import { usePathname, useSearchParams } from "next/navigation"
 import { createPortal } from "react-dom"
 import { useCallback, useEffect, useRef, useState } from "react"
-
-export type CheckoutDiscountValue = Required<Omit<CheckoutDiscount, "__typename" | "code" | "duration">> & {
-    code: NonNullable<CheckoutDiscount["code"]>
-    duration: NonNullable<CheckoutDiscount["duration"]>
-}
 
 interface CheckoutDiscountProps {
     authenticated?: boolean
@@ -24,7 +17,7 @@ interface CheckoutDiscountProps {
     discountSessionRequiredError: string
     discountValidationError: string
     inputPlaceholder: string
-    onApplied?: (discount: CheckoutDiscountValue | null) => void
+    onApplied?: (code: string | null) => void
     onPromotionCodeChange?: (code: string | null) => Promise<"updated" | void>
     promptLabel: string
     removeLabel: string
@@ -86,40 +79,24 @@ export function CheckoutDiscount({
             setErrorMessage(null)
 
             try {
-                const response = await checkoutFetch("/api/crater/checkout/discount", {
-                    method: "POST",
-                    headers: { "content-type": "application/json" },
-                    body: JSON.stringify({ code: normalizedCode }),
-                    credentials: "same-origin",
-                })
-                const result = await response.json()
-
-                if (!response.ok) {
-                    const details = Array.isArray(result.details) ? result.details.filter((detail: unknown) => typeof detail === "string").join(" ") : ""
-                    console.error("Crater discount validation failed:", details || result.error)
-                    throw new Error("Discount validation failed")
-                }
-
+                await onPromotionCodeChange?.(normalizedCode)
                 if (requestId !== validationRequestRef.current) return
 
-                const discount = result as CheckoutDiscountValue
-                await onPromotionCodeChange?.(discount.code)
-                if (requestId !== validationRequestRef.current) return
-
-                replacePromotionCode(discount.code)
-                setCode((currentCode) => (currentCode.trim() === normalizedCode ? discount.code : currentCode))
-                setAppliedCode(discount.code)
+                replacePromotionCode(normalizedCode)
+                setCode(normalizedCode)
+                setAppliedCode(normalizedCode)
                 setIsEditing(false)
                 setIsMobileDialogOpen(false)
-                onApplied?.(discount)
+                onApplied?.(normalizedCode)
             } catch (error) {
                 if (requestId !== validationRequestRef.current) return
 
                 replacePromotionCode(null)
                 setAppliedCode(null)
                 onApplied?.(null)
-                console.error("Failed to validate the checkout discount:", error)
-                setErrorMessage(discountValidationError)
+                console.error("Failed to apply the checkout discount:", error)
+                // Stripe's own message explains why a code was refused (expired, not applicable, ...).
+                setErrorMessage(error instanceof Error && error.message ? error.message : discountValidationError)
             } finally {
                 if (requestId === validationRequestRef.current) {
                     setIsApplying(false)
@@ -205,7 +182,12 @@ export function CheckoutDiscount({
             <div className="flex min-w-0 items-center justify-between gap-4 text-sm">
                 <div className="flex min-w-0 items-center gap-1">
                     <span className="min-w-0 truncate text-secondary">{appliedCode}</span>
-                    <button type="button" disabled={isApplying} onClick={() => void applyEmptyDiscount()} className="shrink-0 text-tertiary transition-colors hover:text-white disabled:cursor-wait disabled:opacity-60">
+                    <button
+                        type="button"
+                        disabled={isApplying}
+                        onClick={() => void applyEmptyDiscount()}
+                        className="shrink-0 text-tertiary transition-colors hover:text-white disabled:cursor-wait disabled:opacity-60"
+                    >
                         ({removeLabel})
                     </button>
                 </div>

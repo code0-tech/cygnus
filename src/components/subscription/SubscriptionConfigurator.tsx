@@ -2,24 +2,24 @@
 
 import { WorkflowCalculatorDialog } from "@/components/checkout/WorkflowCalculatorDialog"
 import { SubscriptionOptionCard } from "@/components/subscription/SubscriptionOptionCard"
-import { HapticButtonLink } from "@/components/ui/HapticButtonLink"
 import { FormattedText, hasHighlightedText } from "@/components/ui/FormattedText"
-import { Slider } from "@/components/ui/Slider"
+import { HapticButtonLink } from "@/components/ui/HapticButtonLink"
+import { PackageSlider } from "@/components/ui/PackageSlider"
 import type { SubscriptionConfiguratorContent } from "@/lib/cms"
-import { formatEuroCurrency } from "@/lib/formatters"
 import { localizeHref, type AppLocale } from "@/lib/i18n"
 import { calculateSubscriptionQuote, formatDiscountBadge, getPaymentPeriodSuffix, getSubscriptionDisplayPrices, getSubscriptionQuoteDiscountRate } from "@/lib/subscription/calculator"
 import { getSubscriptionCatalog } from "@/lib/subscription/catalog"
-import type { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
-import { cn } from "@/lib/utils"
 import {
     buildSubscriptionSelectionSearchParams,
     getPaymentPeriodOptions,
     parseSubscriptionSelectionFromSearchParams,
     reduceSubscriptionSelection,
-    type SubscriptionSelectionAction,
     type SubscriptionSelection,
+    type SubscriptionSelectionAction,
 } from "@/lib/subscription/configurator"
+import type { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
+import { normalizeUsagePackages } from "@/lib/subscription/usagePackages"
+import { cn } from "@/lib/utils"
 import NumberFlow from "@number-flow/react"
 import { IconCalendarMonth } from "@tabler/icons-react"
 import { usePathname, useSearchParams } from "next/navigation"
@@ -80,8 +80,8 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
     const [activeStepIndex, setActiveStepIndex] = useState(0)
     const [showBottomBlur, setShowBottomBlur] = useState(false)
     const [showStepIndicator, setShowStepIndicator] = useState(false)
-    const workflowExecutionRange = workflowExecutions[selection.customerType]
-    const aiTokenRange = aiTokens[selection.customerType]
+    const workflowExecutionPackages = normalizeUsagePackages(workflowExecutions[selection.customerType].packages)
+    const aiTokenPackages = normalizeUsagePackages(aiTokens[selection.customerType].packages)
     const pendingScrollStepKeyRef = useRef<string | null>(null)
     const dispatch = (action: SubscriptionSelectionAction) => setSelection((current) => reduceSubscriptionSelection(current, action, catalog))
     const selectOption = (action: SubscriptionSelectionAction, imageKey: SubscriptionOptionImageKey, stepKey: string) => {
@@ -260,10 +260,8 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                 {selection.plan === "custom" && (
                     <div className="space-y-8 scroll-mt-48" data-subscription-step="aiTokens">
                         <SubscriptionOptionCategoryLabel label={aiTokens.title} description={aiTokens.description} />
-                        <Slider
-                            min={aiTokenRange.min}
-                            max={aiTokenRange.max}
-                            step={aiTokenRange.step}
+                        <PackageSlider
+                            packages={aiTokenPackages}
                             value={aiTokensPreview}
                             onChange={setAiTokensPreview}
                             onValueCommit={(aiTokensValue) => dispatch({ type: "aiTokensChanged", value: aiTokensValue })}
@@ -280,10 +278,8 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                 {selection.plan === "custom" && (
                     <div className="space-y-8 scroll-mt-48" data-subscription-step="workflowExecutions">
                         <SubscriptionOptionCategoryLabel label={workflowExecutions.title} description={workflowExecutions.description} />
-                        <Slider
-                            min={workflowExecutionRange.min}
-                            max={workflowExecutionRange.max}
-                            step={workflowExecutionRange.step}
+                        <PackageSlider
+                            packages={workflowExecutionPackages}
                             value={workflowExecutionsPreview}
                             onChange={setWorkflowExecutionsPreview}
                             onValueCommit={(workflowExecutionsValue) => dispatch({ type: "workflowExecutionsChanged", value: workflowExecutionsValue })}
@@ -300,9 +296,7 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                                 content={content.workflowCalculator}
                                 businessTypeIcons={icons.workflowBusinessTypes}
                                 value={selection.workflowExecutions}
-                                min={workflowExecutionRange.min}
-                                max={workflowExecutionRange.max}
-                                step={workflowExecutionRange.step}
+                                packages={workflowExecutionPackages}
                                 suffix={workflowExecutions.suffix}
                                 centerLabelSuffix={paymentPeriodSuffix}
                                 onApply={(workflowExecutionsValue) => dispatch({ type: "workflowExecutionsChanged", value: workflowExecutionsValue })}

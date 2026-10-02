@@ -17,7 +17,7 @@ const SUBSCRIPTIONS_UPDATE: TypedDocumentNode<SubscriptionsUpdateData, MutationS
                 aiTokens
                 canceledAt
                 currentPeriodEnd
-                expireAt
+                cancelAt
                 id
                 paymentPeriod
                 plan

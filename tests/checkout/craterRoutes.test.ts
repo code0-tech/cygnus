@@ -17,6 +17,10 @@ import { GET as getCheckoutLicenseStatus } from "../../src/app/api/crater/checko
 import { GET as getSubscriptionPaymentMethod, PATCH as setSubscriptionPaymentMethod } from "../../src/app/api/crater/subscriptions/payment-method/route"
 import { createGraphQLTestServer } from "./graphqlTestServer"
 
+// CustomerAddressCreateInput declares all six fields non-null; the optional line2 and state are forwarded as empty strings.
+const FULL_ADDRESS = { city: "Berlin", country: "DE", line1: "Hauptstraße 1", postalCode: "10115" }
+const FORWARDED_ADDRESS = { ...FULL_ADDRESS, line2: "", state: "" }
+
 const sessionHeaders = {
     authorization: "Session c_ust_example",
     "content-type": "application/json",
@@ -361,7 +365,7 @@ test("customer creation requires a Crater session", async () => {
                 customerType: "personal",
                 email: "person@example.com",
                 name: "Example Person",
-                address: { country: "DE" },
+                address: FULL_ADDRESS,
             }),
         })
     )
@@ -1008,7 +1012,7 @@ test("customer creation sends the CustomerType enum and nothing Crater no longer
                     customerType: "business",
                     name: "Example",
                     email: "a@example.com",
-                    address: { country: "DE" },
+                    address: FULL_ADDRESS,
                     draft: true,
                     reuseExisting: false,
                 }),
@@ -1017,7 +1021,7 @@ test("customer creation sends the CustomerType enum and nothing Crater no longer
 
         assert.equal(response.status, 201)
         assert.equal(graphQLServer.requests[0].authorization, "Session c_ust_example")
-        assert.deepEqual(graphQLServer.requests[0].body.variables, { input: { customerType: "BUSINESS", name: "Example", email: "a@example.com", address: { country: "DE" } } })
+        assert.deepEqual(graphQLServer.requests[0].body.variables, { input: { customerType: "BUSINESS", name: "Example", email: "a@example.com", address: FORWARDED_ADDRESS } })
         assert.deepEqual(await response.json(), {
             id: "gid://crater/Customer/1",
             customerType: "business",
@@ -1071,7 +1075,7 @@ test("customer creation forwards the required address and optional phone and tax
         assert.equal(response.status, 201)
         assert.deepEqual(graphQLServer.requests[0].body.variables, {
             input: {
-                address: { city: "London", country: "GB", line1: "1 Main Street", postalCode: "E1 6AN" },
+                address: { city: "London", country: "GB", line1: "1 Main Street", line2: "", postalCode: "E1 6AN", state: "" },
                 customerType: "PERSONAL",
                 email: "ada@example.com",
                 name: "Ada Lovelace",
@@ -1095,8 +1099,9 @@ test("customer creation requires the customer type Crater cannot infer", async (
         { customerType: "personal" },
         { customerType: "personal", name: "Ada", email: "ada@example.com" },
         { customerType: "personal", name: "Ada", email: "ada@example.com", address: {} },
-        { customerType: "personal", name: " ", email: "ada@example.com", address: { country: "DE" } },
-        { customerType: "personal", name: "Ada", email: "invalid", address: { country: "DE" } },
+        { customerType: "personal", name: " ", email: "ada@example.com", address: FULL_ADDRESS },
+        { customerType: "personal", name: "Ada", email: "invalid", address: FULL_ADDRESS },
+        { customerType: "personal", name: "Ada", email: "ada@example.com", address: { country: "DE" } },
         { address: "1 Main Street", customerType: "business" },
     ]
 
@@ -1111,7 +1116,7 @@ test("customer creation requires the customer type Crater cannot infer", async (
 
         assert.equal(response.status, 400)
         assert.deepEqual(await response.json(), {
-            error: "customerType, name, a valid email, and a non-empty address are required.",
+            error: "customerType, name, a valid email, and an address with line1, city, postalCode, and country are required.",
         })
     }
 })
@@ -1121,7 +1126,7 @@ test("customer creation rejects incomplete tax ID fields", async () => {
         new Request("https://example.com/api/crater/customer", {
             method: "POST",
             headers: sessionHeaders,
-            body: JSON.stringify({ customerType: "business", name: "Example", email: "a@example.com", address: { country: "DE" }, taxIdType: "eu_vat" }),
+            body: JSON.stringify({ customerType: "business", name: "Example", email: "a@example.com", address: FULL_ADDRESS, taxIdType: "eu_vat" }),
         })
     )
 
@@ -1160,7 +1165,7 @@ test("customer creation surfaces Crater validation details", async () => {
                     customerType: "personal",
                     email: "person@example.com",
                     name: "Example Person",
-                    address: { country: "DE" },
+                    address: FULL_ADDRESS,
                 }),
             })
         )
@@ -1425,7 +1430,7 @@ test("maps login, customer creation, and customer updates to Crater GraphQL inpu
                     email: "billing@example.com",
                     name: "Example GmbH",
                     phone: "+49 123",
-                    address: { country: "DE" },
+                    address: FULL_ADDRESS,
                     taxIdType: "eu_vat",
                     taxIdValue: "DE123456789",
                 }),
@@ -1473,7 +1478,7 @@ test("maps login, customer creation, and customer updates to Crater GraphQL inpu
                 email: "billing@example.com",
                 name: "Example GmbH",
                 phone: "+49 123",
-                address: { country: "DE" },
+                address: FORWARDED_ADDRESS,
                 taxIdType: "eu_vat",
                 taxIdValue: "DE123456789",
             },
@@ -1644,14 +1649,15 @@ test("license dashboard loads from the HttpOnly Crater session cookie", async ()
                                     email: "billing@example.com",
                                     name: "Example GmbH",
                                     updatedAt: "2026-08-10T10:00:00Z",
-                                    licenses: {
+                                    subscriptions: {
                                         count: 2,
                                         edges: [
                                             {
                                                 cursor: "license-1",
                                                 node: {
-                                                    id: "gid://crater/License/1",
-                                                    status: "active",
+                                                    id: "gid://crater/Subscription/1",
+                                                    status: "ACTIVE",
+                                                    currentLicense: { id: "gid://crater/License/1" },
                                                     plan: "PRO",
                                                     deploymentType: "CLOUD",
                                                     namespaceId: "namespace-1",
@@ -1661,8 +1667,9 @@ test("license dashboard loads from the HttpOnly Crater session cookie", async ()
                                             {
                                                 cursor: "license-2",
                                                 node: {
-                                                    id: "gid://crater/License/2",
-                                                    status: "active",
+                                                    id: "gid://crater/Subscription/2",
+                                                    status: "ACTIVE",
+                                                    currentLicense: { id: "gid://crater/License/2" },
                                                     plan: "CUSTOM",
                                                     deploymentType: "SELF_HOSTED",
                                                     namespaceId: null,
@@ -1691,13 +1698,14 @@ test("license dashboard loads from the HttpOnly Crater session cookie", async ()
                                 email: "billing@example.com",
                                 name: "Example GmbH",
                                 updatedAt: "2026-08-10T10:00:00Z",
-                                licenses: {
+                                subscriptions: {
                                     count: 2,
                                     nodes: [
                                         {
                                             aiTokens: 500000000,
-                                            id: "gid://crater/License/1",
-                                            status: "active",
+                                            id: "gid://crater/Subscription/1",
+                                            status: "ACTIVE",
+                                            currentLicense: { id: "gid://crater/License/1" },
                                             plan: "PRO",
                                             deploymentType: "CLOUD",
                                             namespaceId: "namespace-1",
@@ -1707,8 +1715,9 @@ test("license dashboard loads from the HttpOnly Crater session cookie", async ()
                                         },
                                         {
                                             aiTokens: 100000000,
-                                            id: "gid://crater/License/2",
-                                            status: "active",
+                                            id: "gid://crater/Subscription/2",
+                                            status: "ACTIVE",
+                                            currentLicense: { id: "gid://crater/License/2" },
                                             plan: "CUSTOM",
                                             deploymentType: "SELF_HOSTED",
                                             namespaceId: null,
@@ -1741,7 +1750,7 @@ test("license dashboard loads from the HttpOnly Crater session cookie", async ()
         assert.equal(graphQLServer.requests[0].body.operationName, "CustomerNavigationPage")
         assert.equal(graphQLServer.requests[1].body.operationName, "LicenseDashboard")
         assert.match(graphQLServer.requests[1].body.query ?? "", /customers\(after: \$customerAfter, first: 25\)/)
-        assert.match(graphQLServer.requests[1].body.query ?? "", /licenses\(first: 5\)/)
+        assert.match(graphQLServer.requests[1].body.query ?? "", /subscriptions\(first: 5\)/)
         assert.deepEqual(await response.json(), {
             customers: [
                 {
@@ -1759,7 +1768,10 @@ test("license dashboard loads from the HttpOnly Crater session cookie", async ()
                     customerId: "gid://crater/Customer/7",
                     customerName: "Example GmbH",
                     customerType: "business",
-                    id: "gid://crater/License/2",
+                    id: "gid://crater/Subscription/2",
+                    licenseId: "gid://crater/License/2",
+                    subscriptionId: "gid://crater/Subscription/2",
+                    subscriptionStatus: "active",
                     name: "Custom",
                     deploymentType: "self_hosted",
                     paymentPeriod: "monthly",
@@ -1773,7 +1785,10 @@ test("license dashboard loads from the HttpOnly Crater session cookie", async ()
                     customerId: "gid://crater/Customer/7",
                     customerName: "Example GmbH",
                     customerType: "business",
-                    id: "gid://crater/License/1",
+                    id: "gid://crater/Subscription/1",
+                    licenseId: "gid://crater/License/1",
+                    subscriptionId: "gid://crater/Subscription/1",
+                    subscriptionStatus: "active",
                     name: "Pro",
                     deploymentType: "cloud",
                     namespaceId: "namespace-1",
@@ -1789,7 +1804,10 @@ test("license dashboard loads from the HttpOnly Crater session cookie", async ()
                     customerId: "gid://crater/Customer/7",
                     customerName: "Example GmbH",
                     customerType: "business",
-                    id: "gid://crater/License/2",
+                    id: "gid://crater/Subscription/2",
+                    licenseId: "gid://crater/License/2",
+                    subscriptionId: "gid://crater/Subscription/2",
+                    subscriptionStatus: "active",
                     name: "Custom",
                     deploymentType: "self_hosted",
                     plan: "custom",
@@ -1800,7 +1818,10 @@ test("license dashboard loads from the HttpOnly Crater session cookie", async ()
                     customerId: "gid://crater/Customer/7",
                     customerName: "Example GmbH",
                     customerType: "business",
-                    id: "gid://crater/License/1",
+                    id: "gid://crater/Subscription/1",
+                    licenseId: "gid://crater/License/1",
+                    subscriptionId: "gid://crater/Subscription/1",
+                    subscriptionStatus: "active",
                     name: "Pro",
                     deploymentType: "cloud",
                     namespaceId: "namespace-1",
@@ -1831,12 +1852,12 @@ test("license dashboard navigation includes licenses beyond a customer's first C
                                     id: "gid://crater/Customer/1",
                                     customerType: "personal",
                                     name: "All Licenses",
-                                    licenses: {
+                                    subscriptions: {
                                         count: 26,
                                         edges: [
                                             {
                                                 cursor: "license-25",
-                                                node: { id: "gid://crater/License/25", plan: "PRO", updatedAt: "2026-08-10T10:00:00Z" },
+                                                node: { id: "gid://crater/Subscription/25", plan: "PRO", updatedAt: "2026-08-10T10:00:00Z" },
                                             },
                                         ],
                                         pageInfo: { endCursor: "license-25", hasNextPage: true },
@@ -1858,12 +1879,12 @@ test("license dashboard navigation includes licenses beyond a customer's first C
                                 id: "gid://crater/Customer/1",
                                 customerType: "personal",
                                 name: "All Licenses",
-                                licenses: {
+                                subscriptions: {
                                     count: 26,
                                     edges: [
                                         {
                                             cursor: "license-26",
-                                            node: { id: "gid://crater/License/26", plan: "MAX", updatedAt: "2026-08-11T10:00:00Z" },
+                                            node: { id: "gid://crater/Subscription/26", plan: "MAX", updatedAt: "2026-08-11T10:00:00Z" },
                                         },
                                     ],
                                     pageInfo: { endCursor: "license-26", hasNextPage: false },
@@ -1884,9 +1905,9 @@ test("license dashboard navigation includes licenses beyond a customer's first C
                                 id: "gid://crater/Customer/1",
                                 customerType: "personal",
                                 name: "All Licenses",
-                                licenses: {
+                                subscriptions: {
                                     count: 26,
-                                    nodes: [{ id: "gid://crater/License/26", plan: "MAX", updatedAt: "2026-08-11T10:00:00Z" }],
+                                    nodes: [{ id: "gid://crater/Subscription/26", plan: "MAX", updatedAt: "2026-08-11T10:00:00Z" }],
                                 },
                             },
                         ],
@@ -1910,7 +1931,7 @@ test("license dashboard navigation includes licenses beyond a customer's first C
         assert.equal(graphQLServer.requests[2].body.operationName, "LicenseDashboard")
         assert.deepEqual(
             body.navigationLicenses.map((license: { id: string }) => license.id),
-            ["gid://crater/License/26", "gid://crater/License/25"]
+            ["gid://crater/Subscription/26", "gid://crater/Subscription/25"]
         )
     } finally {
         if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
@@ -1933,9 +1954,9 @@ test("license detail loads lightweight navigation and forwards the invoice curso
                                     customerType: "personal",
                                     email: "first@example.com",
                                     name: "First",
-                                    licenses: {
+                                    subscriptions: {
                                         count: 1,
-                                        edges: [{ cursor: "license-7", node: { id: "gid://crater/License/7", plan: "PRO", updatedAt: "2026-08-10T10:00:00Z" } }],
+                                        edges: [{ cursor: "license-7", node: { id: "gid://crater/Subscription/7", plan: "PRO", updatedAt: "2026-08-10T10:00:00Z" } }],
                                     },
                                 },
                             },
@@ -1946,11 +1967,11 @@ test("license detail loads lightweight navigation and forwards the invoice curso
                                     customerType: "business",
                                     email: "second@example.com",
                                     name: "Second",
-                                    licenses: {
+                                    subscriptions: {
                                         count: 2,
                                         edges: [
-                                            { cursor: "license-8a", node: { id: "gid://crater/License/8", plan: "PRO", updatedAt: "2026-08-11T10:00:00Z" } },
-                                            { cursor: "license-8b", node: { id: "gid://crater/License/9", plan: "CUSTOM", updatedAt: "2026-08-12T10:00:00Z" } },
+                                            { cursor: "license-8a", node: { id: "gid://crater/Subscription/8", plan: "PRO", updatedAt: "2026-08-11T10:00:00Z" } },
+                                            { cursor: "license-8b", node: { id: "gid://crater/Subscription/9", plan: "CUSTOM", updatedAt: "2026-08-12T10:00:00Z" } },
                                         ],
                                     },
                                 },
@@ -1970,37 +1991,39 @@ test("license detail loads lightweight navigation and forwards the invoice curso
                                 customerType: "business",
                                 email: "second@example.com",
                                 name: "Second",
-                                licenses: {
+                                subscriptions: {
                                     count: 2,
                                     edges: [
-                                        { cursor: "license-8a", node: { id: "gid://crater/License/8", plan: "PRO", updatedAt: "2026-08-11T10:00:00Z" } },
+                                        { cursor: "license-8a", node: { id: "gid://crater/Subscription/8", plan: "PRO", updatedAt: "2026-08-11T10:00:00Z" } },
                                         {
                                             cursor: "license-8b",
                                             node: {
                                                 aiTokens: 500000000,
                                                 deploymentType: "SELF_HOSTED",
-                                                endDate: "2026-09-01T00:00:00Z",
-                                                id: "gid://crater/License/9",
+                                                id: "gid://crater/Subscription/9",
                                                 paymentPeriod: "MONTHLY",
                                                 plan: "CUSTOM",
-                                                status: "paid",
+                                                status: "ACTIVE",
                                                 updatedAt: "2026-08-12T10:00:00Z",
                                                 workflowExecutions: 250000,
-                                                invoices: {
-                                                    count: 1,
-                                                    nodes: [
-                                                        {
-                                                            billingPeriodEnd: "2026-09-01T00:00:00Z",
-                                                            billingPeriodStart: "2026-08-01T00:00:00Z",
-                                                            currency: "eur",
-                                                            id: "gid://crater/Invoice/12",
-                                                            invoiceNumber: "INV-0012",
-                                                            status: "paid",
-                                                            stripePdfUrl: "https://pay.stripe.com/invoice/example/pdf",
-                                                            total: 13500,
-                                                        },
-                                                    ],
-                                                    pageInfo: { endCursor: "invoice-25", hasNextPage: false },
+                                                currentLicense: {
+                                                    endDate: "2026-09-01T00:00:00Z",
+                                                    id: "gid://crater/License/9",
+                                                    invoices: {
+                                                        count: 1,
+                                                        nodes: [
+                                                            {
+                                                                createdAt: "2026-08-01T00:00:00Z",
+                                                                currency: "eur",
+                                                                id: "gid://crater/Invoice/12",
+                                                                invoiceNumber: "INV-0012",
+                                                                status: "paid",
+                                                                stripePdfUrl: "https://pay.stripe.com/invoice/example/pdf",
+                                                                total: 13500,
+                                                            },
+                                                        ],
+                                                        pageInfo: { endCursor: "invoice-25", hasNextPage: false },
+                                                    },
                                                 },
                                             },
                                         },
@@ -2019,7 +2042,7 @@ test("license detail loads lightweight navigation and forwards the invoice curso
 
     try {
         const response = await getLicenseDashboard(
-            new Request("https://example.com/api/crater/licenses?view=license&customerId=gid%3A%2F%2Fcrater%2FCustomer%2F8&licenseId=gid%3A%2F%2Fcrater%2FLicense%2F9&invoiceAfter=invoice-25", {
+            new Request("https://example.com/api/crater/licenses?view=license&customerId=gid%3A%2F%2Fcrater%2FCustomer%2F8&licenseId=gid%3A%2F%2Fcrater%2FSubscription%2F9&invoiceAfter=invoice-25", {
                 headers: sessionHeaders,
             })
         )
@@ -2035,13 +2058,14 @@ test("license detail loads lightweight navigation and forwards the invoice curso
         )
         assert.deepEqual(
             body.licenses.map((license: { id: string }) => license.id),
-            ["gid://crater/License/9"]
+            ["gid://crater/Subscription/9"]
         )
         assert.equal(body.licenses[0].endDate, "2026-09-01T00:00:00Z")
+        assert.equal(body.licenses[0].licenseId, "gid://crater/License/9")
+        assert.equal(body.licenses[0].status, "active")
         assert.deepEqual(body.licenses[0].invoices, [
             {
-                billingPeriodEnd: "2026-09-01T00:00:00Z",
-                billingPeriodStart: "2026-08-01T00:00:00Z",
+                createdAt: "2026-08-01T00:00:00Z",
                 currency: "eur",
                 id: "gid://crater/Invoice/12",
                 invoiceNumber: "INV-0012",
@@ -2054,7 +2078,7 @@ test("license detail loads lightweight navigation and forwards the invoice curso
         assert.match(graphQLServer.requests[1].body.query ?? "", /endDate/)
         assert.deepEqual(
             body.navigationLicenses.map((license: { id: string }) => license.id),
-            ["gid://crater/License/9", "gid://crater/License/8", "gid://crater/License/7"]
+            ["gid://crater/Subscription/9", "gid://crater/Subscription/8", "gid://crater/Subscription/7"]
         )
         assert.doesNotMatch(graphQLServer.requests[0].body.query ?? "", /aiTokens/)
     } finally {
@@ -2074,9 +2098,9 @@ test("paginates licenses on a customer detail page", async () => {
                             {
                                 customerType: "personal",
                                 id: "gid://crater/Customer/1",
-                                licenses: {
+                                subscriptions: {
                                     count: 51,
-                                    nodes: [{ id: "gid://crater/License/26", plan: "PRO" }],
+                                    nodes: [{ id: "gid://crater/Subscription/26", plan: "PRO" }],
                                     pageInfo: { endCursor: "license-50", hasNextPage: true },
                                 },
                             },
@@ -2104,7 +2128,7 @@ test("paginates licenses on a customer detail page", async () => {
         assert.deepEqual(body.pagination, { licenses: { contextCursor: null, endCursor: "license-50", hasNextPage: true, totalCount: 51 } })
         assert.deepEqual(
             body.licenses.map((license: { id: string }) => license.id),
-            ["gid://crater/License/26"]
+            ["gid://crater/Subscription/26"]
         )
     } finally {
         if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
@@ -2119,7 +2143,7 @@ test("finds a license customer beyond the first Crater cursor page", async () =>
             data: {
                 currentUser: {
                     customers: {
-                        edges: [{ cursor: "customer-25", node: { id: "gid://crater/Customer/25", licenses: { edges: [] } } }],
+                        edges: [{ cursor: "customer-25", node: { id: "gid://crater/Customer/25", subscriptions: { edges: [] } } }],
                         pageInfo: { endCursor: "customer-25", hasNextPage: true },
                     },
                 },
@@ -2129,7 +2153,7 @@ test("finds a license customer beyond the first Crater cursor page", async () =>
             data: {
                 currentUser: {
                     customers: {
-                        edges: [{ cursor: "customer-26", node: { id: "gid://crater/Customer/26", customerType: "BUSINESS", licenses: { edges: [] } } }],
+                        edges: [{ cursor: "customer-26", node: { id: "gid://crater/Customer/26", customerType: "BUSINESS", subscriptions: { edges: [] } } }],
                         pageInfo: { endCursor: "customer-26", hasNextPage: false },
                     },
                 },
@@ -2143,7 +2167,7 @@ test("finds a license customer beyond the first Crater cursor page", async () =>
                             {
                                 customerType: "BUSINESS",
                                 id: "gid://crater/Customer/26",
-                                licenses: { count: 0, nodes: [], pageInfo: { endCursor: null, hasNextPage: false } },
+                                subscriptions: { count: 0, nodes: [], pageInfo: { endCursor: null, hasNextPage: false } },
                             },
                         ],
                     },
@@ -2193,10 +2217,10 @@ test("links a cloud license through the authenticated namespace selection callba
         },
         {
             data: {
-                licensesLinkNamespace: {
+                subscriptionsLinkNamespace: {
                     errors: [],
-                    license: {
-                        id: "gid://crater/License/9",
+                    subscription: {
+                        id: "gid://crater/Subscription/9",
                     },
                 },
             },
@@ -2220,9 +2244,9 @@ test("links a cloud license through the authenticated namespace selection callba
             input: { sagittariusToken: "sagittarius-secret" },
         })
         assert.equal(graphQLServer.requests[1].authorization, "Session namespace-callback-session")
-        assert.equal(graphQLServer.requests[1].body.operationName, "LicensesLinkNamespace")
+        assert.equal(graphQLServer.requests[1].body.operationName, "SubscriptionsLinkNamespace")
         assert.deepEqual(graphQLServer.requests[1].body.variables, {
-            input: { id: "gid://crater/License/9", namespaceId: "gid://sagittarius/Namespace/9" },
+            input: { id: "gid://crater/Subscription/9", namespaceId: "gid://sagittarius/Namespace/9" },
         })
     } finally {
         if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL

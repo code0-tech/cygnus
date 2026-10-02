@@ -23,6 +23,7 @@ import {
     MenuTrigger,
 } from "@code0-tech/pictor"
 import { Slider } from "@/components/ui/Slider"
+import { snapToUsagePackage } from "@/lib/subscription/usagePackages"
 import { IconCheck, IconChevronDown, IconSearch, IconX } from "@tabler/icons-react"
 import { type ReactNode, useEffect, useState } from "react"
 
@@ -54,21 +55,13 @@ interface WorkflowCalculatorDialogProps {
     content: WorkflowCalculatorContent
     businessTypeIcons: ReactNode[]
     value: number
-    min: number
-    max: number
-    step: number
+    packages: readonly number[]
     suffix: string
     centerLabelSuffix?: string
     onApply: (value: number) => void
 }
 
-function clampToStep(value: number, min: number, max: number, step: number) {
-    const safeStep = Math.max(step, 1)
-    const steppedValue = Math.round((value - min) / safeStep) * safeStep + min
-    return Math.min(max, Math.max(min, steppedValue))
-}
-
-export function WorkflowCalculatorDialog({ locale, content, businessTypeIcons, value, min, max, step, suffix, centerLabelSuffix, onApply }: WorkflowCalculatorDialogProps) {
+export function WorkflowCalculatorDialog({ locale, content, businessTypeIcons, value, packages, suffix, centerLabelSuffix, onApply }: WorkflowCalculatorDialogProps) {
     const [businessTypeMenuOpen, setBusinessTypeMenuOpen] = useState(false)
     const [selectedBusinessTypeIndex, setSelectedBusinessTypeIndex] = useState(0)
     const [runsPerDay, setRunsPerDay] = useState(value)
@@ -76,7 +69,10 @@ export function WorkflowCalculatorDialog({ locale, content, businessTypeIcons, v
     const selectedBusinessType = content.businessTypes[selectedBusinessTypeIndex] ?? content.businessTypes[0]
     const rawEstimate = runsPerDay * (selectedBusinessType?.conversion_rate ?? 1)
     const estimatedExecutions = Math.max(0, Math.round(rawEstimate))
-    const applicableExecutions = clampToStep(estimatedExecutions, min, max, step)
+    const applicableExecutions = snapToUsagePackage(estimatedExecutions, packages)
+    const min = packages[0] ?? 0
+    const max = packages[packages.length - 1] ?? min
+    const step = Math.max(1, min)
     const formatterLocale = locale === "de" ? "de-DE" : "en-US"
     const unit = selectedBusinessType?.conversion_unit
     const unitLabel = unit ? `${unit.charAt(0).toUpperCase()}${unit.slice(1)} per month` : content.runsPerDayLabel

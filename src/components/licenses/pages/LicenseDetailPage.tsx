@@ -78,13 +78,6 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
         dateStyle: "medium",
         timeZone: "UTC",
     })
-    const formatInvoicePeriod = (start?: string, end?: string) => {
-        if (!start && !end) return "—"
-        return [start, end]
-            .filter(Boolean)
-            .map((value) => dateFormatter.format(new Date(value!)))
-            .join(" – ")
-    }
     const formatDate = (value?: string) => (value ? dateFormatter.format(new Date(value)) : "—")
     // A canceled subscription, or one whose cancellation has been requested, is not billed again.
     const hasNextBilling = Boolean(license && !license.canceledAt && license.status?.trim().toLowerCase() !== "canceled")
@@ -113,13 +106,13 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
     const [withdrawalTextBeforeDate, withdrawalTextAfterDate] = content.withdrawal.text.split("{date}")
 
     const downloadCurrentLicense = async () => {
-        if (!license || license.deploymentType !== "self_hosted" || isDownloadingLicense) return
+        if (!license?.licenseId || license.deploymentType !== "self_hosted" || isDownloadingLicense) return
 
         setIsDownloadingLicense(true)
         setLicenseDownloadError(false)
 
         try {
-            await downloadLicenseFile(license.id)
+            await downloadLicenseFile(license.licenseId)
         } catch {
             setLicenseDownloadError(true)
         } finally {
@@ -152,7 +145,14 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
                     {isLoading || license ? (
                         license?.deploymentType === "self_hosted" ? (
                             <ButtonGroup>
-                                <Button type="button" variant="normal" paddingSize="xxs" disabled={isDownloadingLicense} onClick={() => void downloadCurrentLicense()} className="shrink-0 text-sm!">
+                                <Button
+                                    type="button"
+                                    variant="normal"
+                                    paddingSize="xxs"
+                                    disabled={isDownloadingLicense || !license.licenseId}
+                                    onClick={() => void downloadCurrentLicense()}
+                                    className="shrink-0 text-sm!"
+                                >
                                     {isDownloadingLicense ? <ButtonLoader label={content.invoices.downloadLabel} /> : <IconDownload aria-hidden="true" size={16} />}
                                     {!isDownloadingLicense ? content.invoices.downloadLabel : null}
                                 </Button>
@@ -280,7 +280,7 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
                         limit={LICENSE_DATA_TABLE_PAGE_SIZE}
                         loading={isLoading}
                         pagination
-                        sort={{ billingPeriodStart: invoiceSortDirection }}
+                        sort={{ createdAt: invoiceSortDirection }}
                         emptyComponent={
                             <DataTableColumn colSpan={5}>
                                 <Text size="sm" hierarchy="tertiary">
@@ -305,7 +305,7 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
                                 </DataTableColumn>
                                 <DataTableColumn>
                                     <Text size="sm" hierarchy="tertiary">
-                                        {formatDate(invoice.billingPeriodStart)}
+                                        {formatDate(invoice.createdAt)}
                                     </Text>
                                 </DataTableColumn>
                                 <DataTableColumn>
@@ -370,7 +370,7 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
                             </DialogTitle>
                             {selectedInvoice ? (
                                 <DialogDescription className="text-sm! text-secondary!">
-                                    {formatInvoicePeriod(selectedInvoice.billingPeriodStart, selectedInvoice.billingPeriodEnd)} ·{" "}
+                                    {formatDate(selectedInvoice.createdAt)} ·{" "}
                                     {typeof selectedInvoice.total === "number" && selectedInvoice.currency
                                         ? formatMinorCurrency(selectedInvoice.total, selectedInvoice.currency, locale)
                                         : content.invoices.unavailableLabel}

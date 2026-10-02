@@ -4,6 +4,7 @@ import { extractActionModuleInfo, fetchMediaJson } from "@/lib/actionExtraction"
 import { DEFAULT_LOCALE, type AppLocale } from "@/lib/i18n"
 import type { NavigationData } from "@/lib/navigation"
 import { getPayloadClient } from "@/lib/payloadClient"
+import { DEFAULT_USAGE_PACKAGES, withDefaultUsagePackages } from "@/lib/subscription/usagePackages"
 import type { Action, Blog, CookieBanner, Footer, Job, Media, Navigation, Page, TeamMember } from "@/payload-types"
 import { cache } from "react"
 
@@ -60,11 +61,9 @@ export interface PaginatedActionsResult {
 }
 type ActionDetailItem = ActionItem
 
-interface SubscriptionUsageRange {
-    default: number
-    step: number
-    min: number
-    max: number
+interface SubscriptionUsagePackages {
+    default?: number | null
+    packages: number[]
 }
 
 export type JobItem = Pick<Job, "id" | "title" | "slug" | "category" | "type" | "location" | "description" | "order">
@@ -197,8 +196,8 @@ export interface SubscriptionConfigData {
     workflowExecutions: {
         title: string
         description?: string | null
-        b2b: SubscriptionUsageRange
-        b2c: SubscriptionUsageRange
+        b2b: SubscriptionUsagePackages
+        b2c: SubscriptionUsagePackages
         suffix: string
     }
     workflowCalculator: {
@@ -226,8 +225,8 @@ export interface SubscriptionConfigData {
     aiTokens: {
         title: string
         description?: string | null
-        b2b: SubscriptionUsageRange
-        b2c: SubscriptionUsageRange
+        b2b: SubscriptionUsagePackages
+        b2c: SubscriptionUsagePackages
         suffix: string
     }
     contactSales: {
@@ -927,12 +926,27 @@ const getBlogSlugsCached = cache(async (locale: AppLocale): Promise<string[]> =>
 })
 
 const getSubscriptionConfigCached = cache(async (locale: AppLocale): Promise<SubscriptionConfigData | null> => {
-    return cmsFindGlobal(`getSubscriptionConfig(${locale})`, null, {
+    const config = await cmsFindGlobal<SubscriptionConfigData>(`getSubscriptionConfig(${locale})`, null, {
         slug: "subscriptionConfig",
         locale,
         fallbackLocale: DEFAULT_LOCALE,
         depth: 1,
     })
+    if (!config) return null
+
+    return {
+        ...config,
+        aiTokens: {
+            ...config.aiTokens,
+            b2b: withDefaultUsagePackages(config.aiTokens?.b2b, DEFAULT_USAGE_PACKAGES.aiTokens.b2b),
+            b2c: withDefaultUsagePackages(config.aiTokens?.b2c, DEFAULT_USAGE_PACKAGES.aiTokens.b2c),
+        },
+        workflowExecutions: {
+            ...config.workflowExecutions,
+            b2b: withDefaultUsagePackages(config.workflowExecutions?.b2b, DEFAULT_USAGE_PACKAGES.workflowExecutions.b2b),
+            b2c: withDefaultUsagePackages(config.workflowExecutions?.b2c, DEFAULT_USAGE_PACKAGES.workflowExecutions.b2c),
+        },
+    }
 })
 
 const getCheckoutContentCached = cache(async (locale: AppLocale): Promise<CheckoutData | null> => {

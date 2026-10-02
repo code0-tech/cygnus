@@ -1,6 +1,6 @@
 import type { AppLocale } from "@/lib/i18n"
 
-type CraterRouteResource = "Customer" | "License"
+type CraterRouteResource = "Customer" | "Subscription"
 
 function decodeRouteValue(value: string) {
     try {
@@ -26,7 +26,7 @@ export function resolveCustomerRouteId(value: string) {
 }
 
 export function resolveLicenseRouteId(value: string) {
-    return resolveCraterRouteId(value, "License")
+    return resolveCraterRouteId(value, "Subscription")
 }
 
 export function createLicenseCustomerPath(locale: AppLocale, customerId: string) {
@@ -34,7 +34,7 @@ export function createLicenseCustomerPath(locale: AppLocale, customerId: string)
 }
 
 export function createLicensePath(locale: AppLocale, customerId: string, licenseId: string) {
-    return `${createLicenseCustomerPath(locale, customerId)}/license/${getCraterRouteSegment(licenseId, "License")}`
+    return `${createLicenseCustomerPath(locale, customerId)}/license/${getCraterRouteSegment(licenseId, "Subscription")}`
 }
 
 export function canonicalizeLicensePathname(pathname: string) {
@@ -51,7 +51,7 @@ export function canonicalizeLicensePathname(pathname: string) {
 
     const licenseMarker = segments.indexOf("license", customerMarker + 2)
     if (licenseMarker >= 0 && segments[licenseMarker + 1]) {
-        const licenseId = /^gid:\/\/crater\/License\/(\d+)$/.exec(decodeRouteValue(segments[licenseMarker + 1]))?.[1]
+        const licenseId = /^gid:\/\/crater\/Subscription\/(\d+)$/.exec(decodeRouteValue(segments[licenseMarker + 1]))?.[1]
         if (licenseId) {
             segments[licenseMarker + 1] = licenseId
             changed = true

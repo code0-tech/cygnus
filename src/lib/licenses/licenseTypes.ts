@@ -12,6 +12,7 @@ export interface LicenseDashboardCustomer {
     customerType?: string
     email?: string
     id: string
+    checkoutLimits?: { aiTokens: number[]; workflowExecutions: number[] }
     licenseCount: number
     name?: string
     phone?: string
@@ -19,8 +20,7 @@ export interface LicenseDashboardCustomer {
 }
 
 export interface LicenseDashboardInvoice {
-    billingPeriodEnd?: string
-    billingPeriodStart?: string
+    createdAt?: string
     currency?: string
     id: string
     invoiceNumber?: string
@@ -29,10 +29,11 @@ export interface LicenseDashboardInvoice {
     total?: number
 }
 
+// One entry per Crater subscription: id is the subscription id, licenseId the export id of its current license snapshot.
 export interface LicenseDashboardLicense {
     aiTokens?: number
     canceledAt?: string
-    expireAt?: string
+    cancelAt?: string
     currentPeriodEnd?: string
     currentPeriodStart?: string
     customerId: string
@@ -42,6 +43,7 @@ export interface LicenseDashboardLicense {
     endDate?: string
     id: string
     invoices?: LicenseDashboardInvoice[]
+    licenseId?: string
     name: string
     namespaceId?: string
     paymentMethodId?: string
@@ -50,6 +52,7 @@ export interface LicenseDashboardLicense {
     startDate?: string
     status?: string
     subscriptionId?: string
+    subscriptionCreatedAt?: string
     subscriptionStatus?: string
     updatedAt?: string
     workflowExecutions?: number

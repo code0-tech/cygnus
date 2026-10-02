@@ -2,7 +2,16 @@ import { readGuestCheckoutSession } from "@/lib/checkout/guestCheckoutSession"
 import { createApolloClient } from "@/lib/apolloClient"
 import { craterJson, craterMutationErrorResponse, craterTransportErrorResponse, optionalString, readJsonObject, readOptionalAddress, requireCraterSession } from "@/lib/checkout/craterApi"
 import { normalizeCraterCustomerType, toCraterCustomerTypeEnum } from "@/lib/checkout/craterCustomer"
-import type { Customer, CustomerAddressInput, Mutation, MutationCustomersCreateArgs, MutationCustomersUpdateArgs, Query, Scalars } from "@code0-tech/crater-graphql-types"
+import type {
+    Customer,
+    CustomerAddressCreateInput,
+    CustomerAddressUpdateInput,
+    Mutation,
+    MutationCustomersCreateArgs,
+    MutationCustomersUpdateArgs,
+    Query,
+    Scalars,
+} from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 
 export const runtime = "nodejs"
@@ -37,12 +46,26 @@ function nullableString(value: unknown) {
     return value.trim() || null
 }
 
-function readUpdateAddress(value: unknown): CustomerAddressInput | undefined | typeof INVALID_UPDATE_VALUE {
+function readCreateAddress(value: unknown): CustomerAddressCreateInput | null {
+    const address = readOptionalAddress(value)
+    if (!address?.line1 || !address.city || !address.postalCode || !address.country) return null
+
+    return {
+        city: address.city,
+        country: address.country,
+        line1: address.line1,
+        line2: address.line2 ?? "",
+        postalCode: address.postalCode,
+        state: address.state ?? "",
+    }
+}
+
+function readUpdateAddress(value: unknown): CustomerAddressUpdateInput | undefined | typeof INVALID_UPDATE_VALUE {
     if (value === undefined) return undefined
     if (!value || typeof value !== "object" || Array.isArray(value)) return INVALID_UPDATE_VALUE
 
     const source = value as Record<string, unknown>
-    const address: CustomerAddressInput = {}
+    const address: CustomerAddressUpdateInput = {}
 
     for (const field of ["city", "country", "line1", "line2", "postalCode", "state"] as const) {
         const nextValue = nullableString(source[field])
@@ -181,10 +204,10 @@ export async function POST(request: Request) {
     const phone = optionalString(body?.phone)
     const taxIdType = optionalString(body?.taxIdType)
     const taxIdValue = optionalString(body?.taxIdValue)
-    const address = readOptionalAddress(body?.address)
+    const address = readCreateAddress(body?.address)
 
-    if (!body || !customerType || !name || !email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !address || Object.keys(address).length === 0) {
-        return craterJson({ error: "customerType, name, a valid email, and a non-empty address are required." }, 400)
+    if (!body || !customerType || !name || !email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !address) {
+        return craterJson({ error: "customerType, name, a valid email, and an address with line1, city, postalCode, and country are required." }, 400)
     }
 
     if (Boolean(taxIdType) !== Boolean(taxIdValue)) {

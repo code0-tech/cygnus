@@ -3,7 +3,7 @@
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
 import { LicenseTabAlert, LicenseTabHeader, LicenseTabRow, LicenseTabSection } from "@/components/licenses/dialog/LicenseTabLayout"
 import { AcceptTermsCheckbox } from "@/components/forms/AcceptTermsCheckbox"
-import { Slider } from "@/components/ui/Slider"
+import { PackageSlider } from "@/components/ui/PackageSlider"
 import { ButtonLoader } from "@/components/ui/Loader"
 import { useSubscriptionUpdatePreview } from "@/hooks/useSubscriptionUpdatePreview"
 import type { ErrorsContent, LicenseContent, SubscriptionConfigData } from "@/lib/cms"
@@ -16,6 +16,7 @@ import { calculateSubscriptionQuote, type PaymentPeriod } from "@/lib/subscripti
 import { getSubscriptionCatalog } from "@/lib/subscription/catalog"
 import { getPaymentPeriodForCustomerType, type SubscriptionPlan } from "@/lib/subscription/configurator"
 import type { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
+import { getDefaultUsagePackage, normalizeUsagePackages, snapToUsagePackage } from "@/lib/subscription/usagePackages"
 import { Button, Flex, Spacing, Text } from "@code0-tech/pictor"
 import { IconCheck } from "@tabler/icons-react"
 import { useRouter } from "next/navigation"
@@ -38,7 +39,7 @@ const PLANS: SubscriptionPlan[] = ["pro", "max", "custom"]
 
 export function LicenseUpgradeDialog({ content, customerId, errors, licenseId, locale, subscriptionConfig, subscriptionPrices }: LicenseUpgradeDialogProps) {
     const router = useRouter()
-    const { licenses, updateLicense } = useLicenseData()
+    const { customers, licenses, updateLicense } = useLicenseData()
     const resolvedCustomerId = resolveCustomerRouteId(customerId)
     const resolvedLicenseId = resolveLicenseRouteId(licenseId)
     const license = licenses.find((candidate) => candidate.id === resolvedLicenseId && candidate.customerId === resolvedCustomerId)
@@ -46,17 +47,25 @@ export function LicenseUpgradeDialog({ content, customerId, errors, licenseId, l
 
     const customerType = resolveSubscriptionCustomerType(license?.customerType)
     const currentPlan = ((license?.plan as SubscriptionPlan | undefined) ?? "pro") satisfies SubscriptionPlan
-    // Only plans strictly above the current one are real upgrade targets. With just one (or zero, already
-    // on custom), there is nothing to choose between, so the picker collapses to a plain label.
+
     const upgradeTargets = PLANS.filter((candidate) => PLAN_ORDER[candidate] > PLAN_ORDER[currentPlan])
     const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(null)
     const plan = selectedPlan ?? upgradeTargets[0] ?? currentPlan
     const wasCustom = currentPlan === "custom"
 
-    const aiTokensRange = subscriptionConfig.aiTokens[customerType]
-    const workflowExecutionsRange = subscriptionConfig.workflowExecutions[customerType]
-    const aiTokensDefault = wasCustom && typeof license?.aiTokens === "number" ? license.aiTokens : aiTokensRange.default
-    const workflowExecutionsDefault = wasCustom && typeof license?.workflowExecutions === "number" ? license.workflowExecutions : workflowExecutionsRange.default
+    const checkoutLimits = customers.find((candidate) => candidate.id === license?.customerId)?.checkoutLimits
+    const aiTokenPackages = checkoutLimits?.aiTokens.length ? checkoutLimits.aiTokens : normalizeUsagePackages(subscriptionConfig.aiTokens[customerType].packages)
+    const workflowExecutionPackages = checkoutLimits?.workflowExecutions.length
+        ? checkoutLimits.workflowExecutions
+        : normalizeUsagePackages(subscriptionConfig.workflowExecutions[customerType].packages)
+    const aiTokensDefault = snapToUsagePackage(
+        wasCustom && typeof license?.aiTokens === "number" ? license.aiTokens : getDefaultUsagePackage(subscriptionConfig.aiTokens[customerType]),
+        aiTokenPackages
+    )
+    const workflowExecutionsDefault = snapToUsagePackage(
+        wasCustom && typeof license?.workflowExecutions === "number" ? license.workflowExecutions : getDefaultUsagePackage(subscriptionConfig.workflowExecutions[customerType]),
+        workflowExecutionPackages
+    )
 
     const [aiTokens, setAiTokens] = useState<number | null>(null)
     const [workflowExecutions, setWorkflowExecutions] = useState<number | null>(null)
@@ -144,10 +153,8 @@ export function LicenseUpgradeDialog({ content, customerId, errors, licenseId, l
                 {plan === "custom" ? (
                     <>
                         <LicenseTabRow title={content.dashboard.aiTokensLabel}>
-                            <Slider
-                                min={aiTokensRange.min}
-                                max={aiTokensRange.max}
-                                step={aiTokensRange.step}
+                            <PackageSlider
+                                packages={aiTokenPackages}
                                 value={resolvedAiTokens}
                                 onChange={setAiTokens}
                                 onValueCommit={setAiTokens}
@@ -158,10 +165,8 @@ export function LicenseUpgradeDialog({ content, customerId, errors, licenseId, l
                             />
                         </LicenseTabRow>
                         <LicenseTabRow title={content.dashboard.workflowExecutionsLabel}>
-                            <Slider
-                                min={workflowExecutionsRange.min}
-                                max={workflowExecutionsRange.max}
-                                step={workflowExecutionsRange.step}
+                            <PackageSlider
+                                packages={workflowExecutionPackages}
                                 value={resolvedWorkflowExecutions}
                                 onChange={setWorkflowExecutions}
                                 onValueCommit={setWorkflowExecutions}
