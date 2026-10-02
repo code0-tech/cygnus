@@ -1,67 +1,15 @@
-import { createApolloClient } from "@/lib/apolloClient"
-import { CRATER_ERROR_FIELDS, craterJson, craterMutationErrorResponse, craterTransportErrorResponse, optionalString, readJsonObject, requireCraterSession } from "@/lib/checkout/craterApi"
-import type { Mutation, MutationCheckoutValidateDiscountArgs } from "@code0-tech/crater-graphql-types"
-import { gql, type TypedDocumentNode } from "@apollo/client"
+import { craterJson, optionalString, readJsonObject, requireCraterSession } from "@/lib/checkout/craterApi"
 import { enforceRateLimit } from "@/lib/security/rateLimiter"
 
 export const runtime = "nodejs"
 
-type CheckoutValidateDiscountData = Pick<Mutation, "checkoutValidateDiscount">
-
-const CHECKOUT_VALIDATE_DISCOUNT: TypedDocumentNode<CheckoutValidateDiscountData, MutationCheckoutValidateDiscountArgs> = gql`
-    ${CRATER_ERROR_FIELDS}
-    mutation CheckoutValidateDiscount($input: CheckoutValidateDiscountInput!) {
-        checkoutValidateDiscount(input: $input) {
-            discount {
-                amountOff
-                code
-                currency
-                duration
-                durationInMonths
-                maxRedemptions
-                percentOff
-                timesRedeemed
-            }
-            errors {
-                ...CraterErrorFields
-            }
-        }
-    }
-`
-
+// Kept for older clients. Crater no longer validates discounts; the active Stripe checkout does.
 export async function POST(request: Request) {
     const session = requireCraterSession(request)
     if (session.response) return session.response
-
     const rateLimitResponse = enforceRateLimit("discount", request)
     if (rateLimitResponse) return rateLimitResponse
-
     const body = await readJsonObject(request)
-    const code = optionalString(body?.code)
-
-    if (!body || !code) {
-        return craterJson({ error: "code is required." }, 400)
-    }
-
-    try {
-        const result = await createApolloClient(session.token).mutate({
-            mutation: CHECKOUT_VALIDATE_DISCOUNT,
-            variables: { input: { code } },
-        })
-        const payload = result.data?.checkoutValidateDiscount
-
-        if (!payload) throw new Error("Crater returned no discount payload.")
-
-        const errorResponse = craterMutationErrorResponse(payload.errors, "Crater could not validate the discount.")
-        if (errorResponse) return errorResponse
-        if (!payload.discount?.code || !payload.discount.duration) throw new Error("Crater returned an incomplete discount.")
-
-        return craterJson(payload.discount)
-    } catch (error) {
-        const transportResponse = craterTransportErrorResponse(error, request)
-        if (transportResponse) return transportResponse
-
-        console.error("Crater discount validation error:", error)
-        return craterJson({ error: "Could not validate checkout discount." }, 502)
-    }
+    if (!optionalString(body?.code)) return craterJson({ error: "code is required." }, 400)
+    return craterJson({ error: "Apply promotion codes through the active checkout session." }, 410)
 }

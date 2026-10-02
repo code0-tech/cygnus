@@ -4,268 +4,101 @@ import React from "react"
 import { installDomTestEnvironment } from "./domTestEnvironment"
 
 installDomTestEnvironment()
-
 let currentSearchParams = new URLSearchParams()
-
-mock.module("next/navigation", {
-    namedExports: {
-        usePathname: () => "/en/checkout",
-        useSearchParams: () => currentSearchParams,
-    },
-})
+mock.module("next/navigation", { namedExports: { usePathname: () => "/en/checkout", useSearchParams: () => currentSearchParams } })
 mock.module("@code0-tech/pictor", {
     namedExports: {
         Button: ({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button {...props}>{children}</button>,
-        TextInput: (props: React.InputHTMLAttributes<HTMLInputElement>) => (
-            <div className="input">
-                <input {...props} />
-            </div>
-        ),
+        TextInput: (props: React.InputHTMLAttributes<HTMLInputElement>) => <div className="input"><input {...props} /></div>,
     },
 })
-
 const { cleanup, render, screen, waitFor } = await import("@testing-library/react")
 const userEvent = (await import("@testing-library/user-event")).default
 const { CheckoutDiscount } = await import("../../src/components/checkout/CheckoutDiscount")
-type CheckoutDiscountValue = import("../../src/components/checkout/CheckoutDiscount").CheckoutDiscountValue
-
-const originalFetch = globalThis.fetch
-const discountErrorProps = {
+const props = {
+    authenticated: true,
+    buttonLabel: "Apply",
+    inputPlaceholder: "Discount code",
+    promptLabel: "Have a discount?",
+    removeLabel: "Remove",
     discountSessionRequiredError: "A checkout session is required.",
     discountValidationError: "The discount code could not be validated.",
 }
-
 afterEach(() => {
     cleanup()
     currentSearchParams = new URLSearchParams()
     window.history.replaceState(null, "", "/en/checkout")
-    globalThis.fetch = originalFetch
 })
 
-function discountResponse(code: string, percentOff: number) {
-    return new Response(
-        JSON.stringify({
-            amountOff: null,
-            code,
-            currency: null,
-            duration: "forever",
-            durationInMonths: null,
-            maxRedemptions: 100,
-            percentOff,
-            timesRedeemed: 0,
-        }),
-        {
-            status: 200,
-            headers: { "content-type": "application/json" },
-        }
-    )
-}
-
-test("opens, applies, and removes a discount code", async () => {
-    const requestedCodes: string[] = []
-    globalThis.fetch = (async (_input, init) => {
-        const body = JSON.parse(String(init?.body))
-        requestedCodes.push(body.code)
-        return discountResponse(body.code, body.code === "SAVE20" ? 20 : 10)
-    }) as typeof fetch
-    const appliedValues: Array<CheckoutDiscountValue | null> = []
+test("applies and removes a promotion code through the active checkout callback", async () => {
+    const requestedCodes: Array<string | null> = []
+    const appliedValues: Array<string | null> = []
     const user = userEvent.setup()
-
-    render(
-        <>
-            <div id="applied-discount" data-testid="applied-discount" />
-            <CheckoutDiscount
-                {...discountErrorProps}
-                appliedContainerId="applied-discount"
-                buttonLabel="Apply"
-                inputPlaceholder="Discount code"
-                promptLabel="Have a discount?"
-                removeLabel="Remove"
-                authenticated
-                onApplied={(discount) => appliedValues.push(discount)}
-            />
-        </>
-    )
-
-    const promptButton = screen.getAllByRole("button", { name: "Have a discount?" }).at(-1)!
-    await user.click(promptButton)
-    assert.ok(screen.getByPlaceholderText("Discount code"))
-    await user.click(promptButton)
-    assert.equal(screen.queryByPlaceholderText("Discount code"), null)
-    await user.click(promptButton)
-
-    const input = screen.getByPlaceholderText("Discount code")
-    const applyButton = screen.getByRole("button", { name: "Apply" })
-    assert.ok(input.closest(".input"))
-
-    await user.type(input, "SAVE10")
-    await user.click(applyButton)
-    await waitFor(() => assert.equal(appliedValues.at(-1)?.code, "SAVE10"))
-    assert.equal(appliedValues.at(-1)?.durationInMonths, null)
-    assert.equal(appliedValues.at(-1)?.maxRedemptions, 100)
-    assert.equal(appliedValues.at(-1)?.timesRedeemed, 0)
+    render(<><div id="applied-discount" data-testid="applied-discount" /><CheckoutDiscount {...props} appliedContainerId="applied-discount" onApplied={(code) => appliedValues.push(code)} onPromotionCodeChange={async (code) => { requestedCodes.push(code) }} /></>)
+    const prompt = screen.getAllByRole("button", { name: props.promptLabel }).at(-1)!
+    await user.click(prompt)
+    await user.click(prompt)
+    assert.equal(screen.queryByPlaceholderText(props.inputPlaceholder), null)
+    await user.click(prompt)
+    await user.type(screen.getByPlaceholderText(props.inputPlaceholder), " SAVE10 ")
+    await user.click(screen.getByRole("button", { name: "Apply" }))
+    await waitFor(() => assert.equal(appliedValues.at(-1), "SAVE10"))
     assert.deepEqual(requestedCodes, ["SAVE10"])
-    assert.equal(window.location.pathname + window.location.search, "/en/checkout?promotionCode=SAVE10")
-    assert.ok(screen.getByText("SAVE10"))
+    assert.equal(window.location.search, "?promotionCode=SAVE10")
     assert.ok(screen.getByTestId("applied-discount").contains(screen.getByText("SAVE10")))
-
     await user.click(screen.getByRole("button", { name: "(Remove)" }))
     await waitFor(() => assert.equal(appliedValues.at(-1), null))
-    assert.deepEqual(requestedCodes, ["SAVE10"])
-    assert.equal(window.location.pathname + window.location.search, "/en/checkout")
-    assert.equal(screen.getAllByRole("button", { name: "Have a discount?" }).length, 2)
+    assert.deepEqual(requestedCodes, ["SAVE10", null])
+    assert.equal(window.location.search, "")
 })
 
-test("opens the discount input in a dialog on mobile", async () => {
-    globalThis.fetch = (async (_input, init) => {
-        const body = JSON.parse(String(init?.body))
-        return discountResponse(body.code, 10)
-    }) as typeof fetch
+test("applies a promotion code in the mobile dialog", async () => {
     const user = userEvent.setup()
-
-    render(<CheckoutDiscount {...discountErrorProps} authenticated buttonLabel="Apply" inputPlaceholder="Discount code" promptLabel="Have a discount?" removeLabel="Remove" />)
-
-    const mobilePrompt = screen.getAllByRole("button", { name: "Have a discount?" })[0]
-    await user.click(mobilePrompt)
-
-    const dialog = screen.getByRole("dialog", { name: "Have a discount?" })
-    const input = screen.getByPlaceholderText("Discount code")
-    assert.ok(dialog.contains(input))
-
-    await user.type(input, "SAVE10")
+    render(<CheckoutDiscount {...props} onPromotionCodeChange={async () => {}} />)
+    await user.click(screen.getAllByRole("button", { name: props.promptLabel })[0])
+    assert.ok(screen.getByRole("dialog").contains(screen.getByPlaceholderText(props.inputPlaceholder)))
+    await user.type(screen.getByPlaceholderText(props.inputPlaceholder), "SAVE10")
     await user.click(screen.getByRole("button", { name: "Apply" }))
-
-    await waitFor(() => assert.equal(screen.queryByRole("dialog", { name: "Have a discount?" }), null))
+    await waitFor(() => assert.equal(screen.queryByRole("dialog"), null))
     assert.ok(screen.getByText("SAVE10"))
 })
 
-test("validates and applies a promotion code already present in the URL", async () => {
+test("waits for the checkout session before applying a code from the URL", async () => {
     currentSearchParams = new URLSearchParams("plan=pro&promotionCode=WELCOME")
-    window.history.replaceState(null, "", "/en/checkout?plan=pro&promotionCode=WELCOME")
-    globalThis.fetch = (async () => discountResponse("WELCOME", 15)) as typeof fetch
-    const appliedValues: Array<CheckoutDiscountValue | null> = []
-
-    render(
-        <CheckoutDiscount
-            {...discountErrorProps}
-            buttonLabel="Apply"
-            inputPlaceholder="Discount code"
-            promptLabel="Have a discount?"
-            removeLabel="Remove"
-            authenticated
-            onApplied={(discount) => appliedValues.push(discount)}
-        />
-    )
-
-    await waitFor(() => assert.equal(appliedValues.at(-1)?.code, "WELCOME"))
-    assert.ok(screen.getByText("WELCOME"))
-    assert.ok(screen.getByRole("button", { name: "(Remove)" }))
-    assert.equal(window.location.pathname + window.location.search, "/en/checkout?plan=pro&promotionCode=WELCOME")
-})
-
-test("waits for the checkout session before validating a promotion code from the URL", async () => {
-    currentSearchParams = new URLSearchParams("plan=pro&promotionCode=WELCOME")
-    window.history.replaceState(null, "", "/en/checkout?plan=pro&promotionCode=WELCOME")
-    let validationRequests = 0
-    globalThis.fetch = (async () => {
-        validationRequests += 1
-        return discountResponse("WELCOME", 15)
-    }) as typeof fetch
-
-    const view = render(
-        <CheckoutDiscount
-            {...discountErrorProps}
-            authenticated
-            buttonLabel="Apply"
-            inputPlaceholder="Discount code"
-            promptLabel="Have a discount?"
-            removeLabel="Remove"
-            sessionReady={false}
-        />
-    )
-
-    await new Promise((resolve) => setTimeout(resolve, 0))
-    assert.equal(validationRequests, 0)
-
-    view.rerender(
-        <CheckoutDiscount
-            {...discountErrorProps}
-            authenticated
-            buttonLabel="Apply"
-            inputPlaceholder="Discount code"
-            promptLabel="Have a discount?"
-            removeLabel="Remove"
-            sessionReady
-        />
-    )
-
-    await waitFor(() => assert.equal(validationRequests, 1))
+    let requests = 0
+    const callback = async () => { requests += 1 }
+    const view = render(<CheckoutDiscount {...props} sessionReady={false} onPromotionCodeChange={callback} />)
+    assert.equal(requests, 0)
+    view.rerender(<CheckoutDiscount {...props} sessionReady onPromotionCodeChange={callback} />)
+    await waitFor(() => assert.equal(requests, 1))
     assert.ok(await screen.findByText("WELCOME"))
+    assert.equal(window.location.search, "?plan=pro&promotionCode=WELCOME")
 })
 
-test("shows a discount only after the replacement checkout session is ready", async () => {
-    globalThis.fetch = (async (_input, init) => {
-        const body = JSON.parse(String(init?.body))
-        return discountResponse(body.code, 10)
-    }) as typeof fetch
-    let finishSessionReplacement!: () => void
-    const sessionReplacement = new Promise<void>((resolve) => {
-        finishSessionReplacement = resolve
-    })
-    const appliedValues: Array<CheckoutDiscountValue | null> = []
+test("shows a discount only after the checkout confirms it", async () => {
+    let finish!: () => void
+    const pending = new Promise<void>((resolve) => { finish = resolve })
+    const applied: Array<string | null> = []
     const user = userEvent.setup()
-
-    render(
-        <CheckoutDiscount
-            {...discountErrorProps}
-            authenticated
-            buttonLabel="Apply"
-            inputPlaceholder="Discount code"
-            onApplied={(discount) => appliedValues.push(discount)}
-            onPromotionCodeChange={() => sessionReplacement}
-            promptLabel="Have a discount?"
-            removeLabel="Remove"
-        />
-    )
-
-    await user.click(screen.getAllByRole("button", { name: "Have a discount?" }).at(-1)!)
-    await user.type(screen.getByPlaceholderText("Discount code"), "SAVE10")
+    render(<CheckoutDiscount {...props} onApplied={(code) => applied.push(code)} onPromotionCodeChange={() => pending} />)
+    await user.click(screen.getAllByRole("button", { name: props.promptLabel }).at(-1)!)
+    await user.type(screen.getByPlaceholderText(props.inputPlaceholder), "SAVE10")
     await user.click(screen.getByRole("button", { name: "Apply" }))
-
-    await waitFor(() => assert.equal((screen.getByRole("button", { name: "Apply" }) as HTMLButtonElement).disabled, true))
-    assert.equal(appliedValues.length, 0)
+    assert.equal((screen.getByRole("button", { name: "Apply" }) as HTMLButtonElement).disabled, true)
+    assert.deepEqual(applied, [])
     assert.equal(screen.queryByText("SAVE10"), null)
-
-    finishSessionReplacement()
-
-    await waitFor(() => assert.equal(appliedValues.at(-1)?.code, "SAVE10"))
-    assert.ok(screen.getByText("SAVE10"))
+    finish()
+    await waitFor(() => assert.equal(applied.at(-1), "SAVE10"))
 })
 
-test("shows the configured CMS error instead of the Crater discount error", async () => {
-    globalThis.fetch = (async () =>
-        new Response(JSON.stringify({ error: "Raw Crater discount error", details: ["Raw validation detail"] }), {
-            status: 422,
-            headers: { "content-type": "application/json" },
-        })) as typeof fetch
-    const user = userEvent.setup()
-
-    render(
-        <CheckoutDiscount
-            {...discountErrorProps}
-            authenticated
-            buttonLabel="Apply"
-            inputPlaceholder="Discount code"
-            promptLabel="Have a discount?"
-            removeLabel="Remove"
-        />
-    )
-
-    await user.click(screen.getAllByRole("button", { name: "Have a discount?" }).at(-1)!)
-    await user.type(screen.getByPlaceholderText("Discount code"), "INVALID")
-    await user.click(screen.getByRole("button", { name: "Apply" }))
-
-    assert.ok(await screen.findByText(discountErrorProps.discountValidationError))
-    assert.equal(screen.queryByText("Raw Crater discount error"), null)
-    assert.equal(screen.queryByText("Raw validation detail"), null)
-})
+for (const [failure, message] of [[new Error("This promotion code has expired."), "This promotion code has expired."], [null, props.discountValidationError]] as const) {
+    test(`shows the checkout rejection: ${message}`, async () => {
+        const user = userEvent.setup()
+        render(<CheckoutDiscount {...props} onPromotionCodeChange={async () => { throw failure }} />)
+        await user.click(screen.getAllByRole("button", { name: props.promptLabel }).at(-1)!)
+        await user.type(screen.getByPlaceholderText(props.inputPlaceholder), "INVALID")
+        await user.click(screen.getByRole("button", { name: "Apply" }))
+        assert.ok(await screen.findByText(message))
+        assert.equal(window.location.search, "")
+    })
+}

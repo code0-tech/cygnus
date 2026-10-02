@@ -28,6 +28,8 @@ export function PackageSlider({ packages, value, onChange, onValueCommit, valueL
             min={0}
             max={lastIndex}
             step={1}
+            smoothDrag
+            disabled={props.disabled || packages.length < 2}
             value={index}
             onChange={(position) => onChange(toPackage(position))}
             onValueCommit={onValueCommit ? (position) => onValueCommit(toPackage(position)) : undefined}
