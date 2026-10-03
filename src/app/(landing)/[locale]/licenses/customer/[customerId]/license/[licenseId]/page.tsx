@@ -1,5 +1,5 @@
 import { LicenseDetailPage } from "@/components/licenses/pages/LicenseDetailPage"
-import { getCheckoutContent, getLicenseContent, getSubscriptionConfig, getUpgradeBannerContent } from "@/lib/cms"
+import { getCheckoutContent, getErrorsContent, getLicenseContent, getSubscriptionConfig, getUpgradeBannerContent } from "@/lib/cms"
 import { createMainAppLoginUrl } from "@/lib/checkout/checkoutLogin"
 import { isSupportedLocale } from "@/lib/i18n"
 import { createLicenseNamespaceCallbackUrl, createLicenseNamespaceReturnPath } from "@/lib/licenses/licenseRoute"
@@ -14,13 +14,14 @@ export default async function LicensePage({ params }: LicensePageProps) {
     const { customerId, licenseId, locale } = await params
     if (!isSupportedLocale(locale)) notFound()
 
-    const [content, checkoutContent, subscriptionConfig, upgradeBanner] = await Promise.all([
+    const [content, checkoutContent, subscriptionConfig, upgradeBanner, errors] = await Promise.all([
         getLicenseContent(locale),
         getCheckoutContent(locale),
         getSubscriptionConfig(locale),
         getUpgradeBannerContent(locale),
+        getErrorsContent(locale),
     ])
-    if (!content || !checkoutContent?.login) notFound()
+    if (!content || !checkoutContent?.login || !errors) notFound()
 
     const siteUrl = resolveSiteUrl()
     const returnPath = createLicenseNamespaceReturnPath(locale, customerId, licenseId, "detail")
@@ -31,6 +32,7 @@ export default async function LicensePage({ params }: LicensePageProps) {
     return (
         <LicenseDetailPage
             content={content}
+            errors={errors}
             customerId={customerId}
             licenseId={licenseId}
             locale={locale}

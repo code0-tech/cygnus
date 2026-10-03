@@ -495,6 +495,7 @@ export interface ErrorsContent {
     paymentMethodRemove: string
     paymentMethodInUse: string
     paymentMethodAssign: string
+    namespaceInUse: string
     licenseUpdate: string
     subscriptionPreview: string
     billingUpdate: string

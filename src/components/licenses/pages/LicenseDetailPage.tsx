@@ -2,6 +2,7 @@
 
 import { SubscriptionPendingUpdateNotice } from "@/components/licenses/SubscriptionPendingUpdateNotice"
 
+import { NamespaceSelectionError } from "@/components/licenses/NamespaceSelectionError"
 import { DataTableControls } from "@/components/licenses/DataTableControls"
 import { InvoiceStatusBadge } from "@/components/licenses/InvoiceStatusBadge"
 import { getLicenseDetailGridCellClassName } from "@/components/licenses/licenseDetailGrid"
@@ -10,7 +11,7 @@ import { LicenseLoadMoreButton } from "@/components/licenses/LicenseLoadMoreButt
 import { LICENSE_DATA_TABLE_PAGE_SIZE, LicenseDataTablePagination } from "@/components/licenses/LicenseDataTablePagination"
 import { LicenseStatusDot } from "@/components/licenses/LicenseStatusDot"
 import { ButtonLoader } from "@/components/ui/Loader"
-import type { LicenseContent, SubscriptionConfigData, UpgradeBannerData } from "@/lib/cms"
+import type { ErrorsContent, LicenseContent, SubscriptionConfigData, UpgradeBannerData } from "@/lib/cms"
 import { formatMinorCurrency } from "@/lib/formatters"
 import type { AppLocale } from "@/lib/i18n"
 import { downloadLicenseFile } from "@/lib/licenses/licenseClient"
@@ -47,11 +48,12 @@ import {
     type DataTableFilterProps,
 } from "@code0-tech/pictor"
 import { IconDotsVertical, IconDownload, IconEye, IconX } from "@tabler/icons-react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Fragment, useState } from "react"
 
 interface LicenseDetailPageProps {
     content: LicenseContent
+    errors: ErrorsContent
     customerId: string
     licenseId: string
     locale: AppLocale
@@ -67,8 +69,9 @@ interface LicenseDetailItem {
     value: string
 }
 
-export function LicenseDetailPage({ content, customerId, licenseId, locale, namespaceHref, subscriptionConfig, upgradeBanner }: LicenseDetailPageProps) {
+export function LicenseDetailPage({ content, errors, customerId, licenseId, locale, namespaceHref, subscriptionConfig, upgradeBanner }: LicenseDetailPageProps) {
     const router = useRouter()
+    const searchParams = useSearchParams()
     const { customers, isLoading, licenses, loadMore, loadingMore, pagination } = useLicenseData()
     const resolvedCustomerId = resolveCustomerRouteId(customerId)
     const resolvedLicenseId = resolveLicenseRouteId(licenseId)
@@ -142,6 +145,7 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
 
     return (
         <div>
+            <NamespaceSelectionError error={searchParams.get("namespaceError")} errors={errors} />
             <SubscriptionPendingUpdateNotice update={license?.pendingUpdate} content={content} locale={locale} />
             <section aria-label={content.license}>
                 <Flex justify="end">

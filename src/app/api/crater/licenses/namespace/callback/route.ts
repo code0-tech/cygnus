@@ -4,6 +4,7 @@ import { createCraterUserSession } from "@/lib/checkout/craterLogin"
 import { setCraterSessionCookie, setCraterUserLoginCookie } from "@/lib/checkout/craterSession"
 import { isSupportedLocale } from "@/lib/i18n"
 import { isSubscriptionId } from "@/lib/licenses/craterRequest"
+import { isNamespaceInUse } from "@/lib/licenses/namespaceSelection"
 import { resolveCustomerRouteId, resolveLicenseRouteId } from "@/lib/licenses/licenseRoute"
 import type { Mutation, MutationSubscriptionsLinkNamespaceArgs } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
@@ -65,7 +66,7 @@ function resolveLicenseReturn(requestUrl: URL) {
     return { subscriptionId, returnUrl }
 }
 
-function errorRedirect(returnUrl: URL, error: "selection" | "session" | "update") {
+function errorRedirect(returnUrl: URL, error: "selection" | "session" | "update" | "occupied") {
     const url = new URL(returnUrl)
     url.searchParams.set("namespaceError", error)
     return noStoreRedirect(url)
@@ -78,7 +79,7 @@ export async function GET(request: Request) {
 
     const namespaceId = requestUrl.searchParams.get("namespace")?.trim()
     const sagittariusToken = requestUrl.searchParams.get("token")?.trim()
-    if (!namespaceId) return errorRedirect(resolvedReturn.returnUrl, "selection")
+    if (!namespaceId || Buffer.byteLength(namespaceId, "utf8") > 500) return errorRedirect(resolvedReturn.returnUrl, "selection")
     if (!sagittariusToken) return errorRedirect(resolvedReturn.returnUrl, "session")
 
     try {
@@ -99,7 +100,7 @@ export async function GET(request: Request) {
         if (!payload?.subscription || (payload.errors?.length ?? 0) > 0) {
             const failure = describeCraterError(payload?.errors)
             console.error("Crater rejected the selected subscription namespace:", failure?.errorCode ?? "Crater returned no linked subscription.")
-            return setCraterUserLoginCookie(setCraterSessionCookie(errorRedirect(resolvedReturn.returnUrl, "update"), sessionToken))
+            return setCraterUserLoginCookie(setCraterSessionCookie(errorRedirect(resolvedReturn.returnUrl, isNamespaceInUse(payload?.errors) ? "occupied" : "update"), sessionToken))
         }
 
         // This callback is the second Sagittarius login in the product, so it marks the browser too.

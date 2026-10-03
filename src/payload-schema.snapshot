@@ -2791,6 +2791,7 @@ export const errors_locales = pgTable('errors_locales', {
   paymentMethodRemove: varchar('payment_method_remove').notNull(),
   paymentMethodInUse: varchar('payment_method_in_use').notNull(),
   paymentMethodAssign: varchar('payment_method_assign').notNull(),
+  namespaceInUse: varchar('namespace_in_use').notNull(),
   licenseUpdate: varchar('license_update').notNull(),
   subscriptionPreview: varchar('subscription_preview').notNull(),
   billingUpdate: varchar('billing_update').notNull(),

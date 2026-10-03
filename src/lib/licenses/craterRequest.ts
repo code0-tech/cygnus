@@ -23,8 +23,10 @@ export type SubscriptionChangeFields = {
     workflowExecutions?: number
 }
 
-// subscriptionsUpdate and subscriptionsPreviewUpdate take the same arguments and resolve them the same way.
-export function parseSubscriptionChangeFields(body: JsonObject | null): { error: string } | SubscriptionChangeFields {
+export function parseSubscriptionChangeFields(body: JsonObject | null, allowPaymentMethod = false): { error: string } | (SubscriptionChangeFields & { paymentMethodId?: string }) {
+    const paymentMethodId = allowPaymentMethod ? optionalString(body?.paymentMethodId) : undefined
+    if (allowPaymentMethod && body?.paymentMethodId !== undefined && !paymentMethodId) return { error: "A non-empty payment method id is required." }
+
     const planParam = optionalString(body?.plan)
     const plan = planParam ? parseCraterPlan(planParam) : undefined
     if (planParam && !plan) return { error: "plan must be pro, max, or custom." }
@@ -36,9 +38,15 @@ export function parseSubscriptionChangeFields(body: JsonObject | null): { error:
     const aiTokens = parseOptionalPositiveInt(body?.aiTokens)
     const workflowExecutions = parseOptionalPositiveInt(body?.workflowExecutions)
     if (aiTokens === null || workflowExecutions === null) return { error: "aiTokens and workflowExecutions must be positive integers when provided." }
-    if (!plan && !paymentPeriod && !aiTokens && !workflowExecutions) return { error: "At least one of plan, paymentPeriod, aiTokens, or workflowExecutions is required." }
+    if (!plan && !paymentPeriod && !aiTokens && !workflowExecutions && !paymentMethodId)
+        return {
+            error: allowPaymentMethod
+                ? "At least one of plan, paymentPeriod, aiTokens, workflowExecutions, or paymentMethodId is required."
+                : "At least one of plan, paymentPeriod, aiTokens, or workflowExecutions is required.",
+        }
 
     return {
+        ...(paymentMethodId ? { paymentMethodId } : {}),
         ...(plan ? { plan } : {}),
         ...(paymentPeriod ? { paymentPeriod } : {}),
         ...(aiTokens ? { aiTokens } : {}),

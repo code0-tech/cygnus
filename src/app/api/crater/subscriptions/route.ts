@@ -20,6 +20,7 @@ const SUBSCRIPTIONS_UPDATE: TypedDocumentNode<SubscriptionsUpdateData, MutationS
                 currentPeriodEnd
                 cancelAt
                 id
+                paymentMethodId
                 paymentPeriod
                 plan
                 status
@@ -58,7 +59,7 @@ export async function PATCH(request: Request) {
         return craterJson({ error: "A valid Crater subscription id is required." }, 400)
     }
 
-    const fields = parseSubscriptionChangeFields(body)
+    const fields = parseSubscriptionChangeFields(body, true)
     if ("error" in fields) return craterJson({ error: fields.error }, 400)
 
     try {

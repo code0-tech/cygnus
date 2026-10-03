@@ -22,6 +22,7 @@ export interface SubscriptionUpdatePreview {
 }
 
 export interface SubscriptionUpdateResult {
+    paymentMethodId?: string | null
     pendingUpdate?: SubscriptionPendingUpdate | null
     status?: DashboardSubscriptionStatus
     cancelAt?: string | null
@@ -52,6 +53,6 @@ export function previewSubscriptionUpdate(request: SubscriptionUpdateRequest, er
     return subscriptionRequest<SubscriptionUpdatePreview>("/api/crater/subscriptions/preview", "POST", request, errorMessage, signal)
 }
 
-export function updateSubscription(request: SubscriptionUpdateRequest, errorMessage: string) {
+export function updateSubscription(request: SubscriptionUpdateRequest & { paymentMethodId?: string }, errorMessage: string) {
     return subscriptionRequest<SubscriptionUpdateResult>("/api/crater/subscriptions", "PATCH", request, errorMessage)
 }

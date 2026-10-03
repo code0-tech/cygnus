@@ -13,7 +13,6 @@ import { GET as getLicenseDashboard } from "../../src/app/api/crater/licenses/ro
 import { GET as accessLicenseDashboard } from "../../src/app/api/crater/licenses/access/route"
 import { GET as selectLicenseNamespace } from "../../src/app/api/crater/licenses/namespace/callback/route"
 import { GET as getCheckoutLicenseStatus } from "../../src/app/api/crater/checkout/status/route"
-import { GET as getSubscriptionPaymentMethod, PATCH as setSubscriptionPaymentMethod } from "../../src/app/api/crater/subscriptions/payment-method/route"
 import { createGraphQLTestServer } from "./graphqlTestServer"
 
 // CustomerAddressCreateInput declares all six fields non-null; the optional line2 and state are forwarded as empty strings.
@@ -425,121 +424,14 @@ test("customer payment methods carry the display details Crater resolves for eve
             graphQLServer.requests.slice(1).map((request) => request.body.variables),
             [{ paymentMethodId: "pm_card" }, { paymentMethodId: "pm_unavailable" }]
         )
+        for (const request of graphQLServer.requests.slice(1)) {
+            assert.match(request.body.query ?? "", /paymentMethod\(paymentMethodId:/)
+            assert.doesNotMatch(request.body.query ?? "", /customerPaymentMethod\(/)
+        }
     } finally {
         if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
         else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
         await graphQLServer.close()
-    }
-})
-
-test("subscription payment method summary requires a Crater session", async () => {
-    const response = await getSubscriptionPaymentMethod(new Request("https://example.com/api/crater/subscriptions/payment-method?subscriptionId=gid%3A%2F%2Fcrater%2FSubscription%2F1"))
-
-    assert.equal(response.status, 403)
-    assert.equal(response.headers.get("cache-control"), "no-store")
-})
-
-test("returns only the subscription payment method display summary from Crater", async () => {
-    const graphQLServer = await createGraphQLTestServer([
-        {
-            data: {
-                currentUser: {
-                    customers: {
-                        nodes: [{ id: "gid://crater/Customer/1", subscriptions: {
-                            nodes: [{ id: "gid://crater/Subscription/1", paymentMethodId: "pm_card" }],
-                            pageInfo: { endCursor: null, hasNextPage: false },
-                        } }],
-                        pageInfo: { endCursor: null, hasNextPage: false },
-                    },
-                },
-            },
-        },
-        {
-            data: {
-                paymentMethod: {
-                    brand: "visa",
-                    expiresMonth: 12,
-                    expiresYear: 2030,
-                    last4: "4242",
-                    type: "card",
-                },
-            },
-        },
-    ])
-    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
-    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
-
-    try {
-        const response = await getSubscriptionPaymentMethod(
-            new Request("https://example.com/api/crater/subscriptions/payment-method?subscriptionId=gid%3A%2F%2Fcrater%2FSubscription%2F1", {
-                headers: sessionHeaders,
-            })
-        )
-
-        assert.equal(response.status, 200)
-        assert.deepEqual(await response.json(), {
-            paymentMethod: { brand: "visa", expiresMonth: 12, expiresYear: 2030, last4: "4242", type: "card" },
-        })
-        assert.equal(response.headers.get("cache-control"), "no-store")
-        assert.equal(graphQLServer.requests[0].body.operationName, "SubscriptionPaymentMethod")
-        assert.deepEqual(graphQLServer.requests[0].body.variables, {})
-        assert.deepEqual(graphQLServer.requests[1].body.variables, { paymentMethodId: "pm_card" })
-        assert.match(graphQLServer.requests[1].body.query ?? "", /paymentMethod\(paymentMethodId:/)
-    } finally {
-        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
-        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
-        await graphQLServer.close()
-    }
-})
-
-test("subscription payment method assignment goes through subscriptionsUpdate", async () => {
-    const graphQLServer = await createGraphQLTestServer([
-        {
-            data: {
-                subscriptionsUpdate: {
-                    errors: [],
-                    subscription: { id: "gid://crater/Subscription/1", paymentMethodId: "pm_new" },
-                },
-            },
-        },
-    ])
-    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
-    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
-
-    try {
-        const response = await setSubscriptionPaymentMethod(
-            new Request("https://example.com/api/crater/subscriptions/payment-method", {
-                method: "PATCH",
-                headers: sessionHeaders,
-                body: JSON.stringify({ subscriptionId: "gid://crater/Subscription/1", paymentMethodId: "pm_new" }),
-            })
-        )
-
-        assert.equal(response.status, 200)
-        assert.deepEqual(await response.json(), { paymentMethodId: "pm_new" })
-        assert.match(graphQLServer.requests[0].body.query ?? "", /subscriptionsUpdate\(input: \$input\)/)
-        assert.deepEqual(graphQLServer.requests[0].body.variables, {
-            input: { id: "gid://crater/Subscription/1", paymentMethodId: "pm_new" },
-        })
-    } finally {
-        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
-        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
-        await graphQLServer.close()
-    }
-})
-
-test("subscription payment method assignment requires a subscription and a payment method", async () => {
-    for (const body of [{ paymentMethodId: "pm_new" }, { subscriptionId: "gid://crater/Subscription/1" }, { subscriptionId: "Subscription/1", paymentMethodId: "pm_new" }]) {
-        const response = await setSubscriptionPaymentMethod(
-            new Request("https://example.com/api/crater/subscriptions/payment-method", {
-                method: "PATCH",
-                headers: sessionHeaders,
-                body: JSON.stringify(body),
-            })
-        )
-
-        assert.equal(response.status, 400)
-        assert.deepEqual(await response.json(), { error: "A valid Crater subscription id and payment method id are required." })
     }
 })
 
@@ -2252,4 +2144,30 @@ test("license namespace callback accepts an exact license detail return path", a
 
     assert.equal(response.status, 307)
     assert.equal(response.headers.get("location"), `https://code0.example${returnPath}?namespaceError=selection`)
+})
+
+
+test("returns a specific namespace conflict without changing the subscription or leaking login credentials", async () => {
+    const server = await createGraphQLTestServer([
+        { data: { usersLogin: { errors: [], userSession: { token: "namespace-conflict-session" } } } },
+        { data: { subscriptionsLinkNamespace: { subscription: null, errors: [{ errorCode: "INVALID_SUBSCRIPTION", details: [{ __typename: "MessageError", message: "Namespace is already linked to another subscription" }] }] } } },
+    ])
+    const previousUrl = process.env.CRATER_GRAPHQL_URL
+    process.env.CRATER_GRAPHQL_URL = server.url
+    try {
+        const returnPath = "/de/licenses/customer/3/license/9/edit"
+        const response = await selectLicenseNamespace(new Request(`https://code0.example/api/crater/licenses/namespace/callback?returnPath=${encodeURIComponent(returnPath)}&namespace=${encodeURIComponent("gid://sagittarius/Namespace/5")}&token=sagittarius-secret`))
+        assert.equal(response.status, 307)
+        const redirect = new URL(response.headers.get("location")!)
+        assert.equal(redirect.pathname, returnPath)
+        assert.equal(redirect.searchParams.get("namespaceError"), "occupied")
+        assert.equal(redirect.searchParams.has("token"), false)
+        assert.equal(response.headers.get("referrer-policy"), "no-referrer")
+        assert.match(response.headers.get("set-cookie") ?? "", /crater_session=namespace-conflict-session/)
+        assert.deepEqual(server.requests[1].body.variables, { input: { id: "gid://crater/Subscription/9", namespaceId: "gid://sagittarius/Namespace/5" } })
+    } finally {
+        if (previousUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
+        else process.env.CRATER_GRAPHQL_URL = previousUrl
+        await server.close()
+    }
 })
