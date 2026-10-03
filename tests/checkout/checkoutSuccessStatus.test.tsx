@@ -238,7 +238,11 @@ test("offers Sculptor next to the license dashboard for a cloud license", async 
         />
     )
 
-    assert.equal((await screen.findByRole("link", { name: content.licenseDashboardLabel })).getAttribute("href")?.startsWith("/api/crater/licenses/access"), true)
+    const dashboardUrl = new URL((await screen.findByRole("link", { name: content.licenseDashboardLabel })).getAttribute("href")!, window.location.origin)
+    assert.equal(dashboardUrl.pathname, "/api/crater/licenses/access")
+    assert.equal(dashboardUrl.searchParams.get("customerId"), "gid://crater/Customer/1")
+    assert.equal(dashboardUrl.searchParams.get("licenseId"), "gid://crater/License/2")
+    assert.equal(dashboardUrl.searchParams.has("returnPath"), false)
     assert.equal(screen.getByRole("link", { name: content.sculptorLabel }).getAttribute("href"), "https://sculptor.example/cloud")
     assert.equal(screen.queryByRole("button", { name: content.licenseDownloadLabel }), null)
 })
