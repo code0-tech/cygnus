@@ -3,7 +3,6 @@
 import { SubscriptionPendingUpdateNotice } from "@/components/licenses/SubscriptionPendingUpdateNotice"
 
 import { DataTableControls } from "@/components/licenses/DataTableControls"
-import { InvoiceDetails } from "@/components/licenses/InvoiceDetails"
 import { InvoiceStatusBadge } from "@/components/licenses/InvoiceStatusBadge"
 import { getLicenseDetailGridCellClassName } from "@/components/licenses/licenseDetailGrid"
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
@@ -367,7 +366,10 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
             <Dialog open={selectedInvoice !== null} onOpenChange={(open) => !open && setSelectedInvoice(null)}>
                 <DialogPortal>
                     <DialogOverlay className="backdrop-blur-sm" />
-                    <DialogContent showCloseButton={false} className="flex! flex-col! h-[calc(100dvh-2rem)]! w-[calc(100vw-2rem)]! max-w-5xl! overflow-hidden! border border-white/5 bg-primary! p-4! sm:p-6!">
+                    <DialogContent
+                        showCloseButton={false}
+                        className="flex! flex-col! h-[calc(100dvh-2rem)]! w-[calc(100vw-2rem)]! max-w-5xl! overflow-hidden! border border-white/5 bg-primary! p-4! sm:p-6!"
+                    >
                         <DialogHeader className="shrink-0 pr-10 text-left!">
                             <DialogTitle className="font-normal! text-white!">
                                 {content.invoices.title} {selectedInvoiceNumber ? `#${selectedInvoiceNumber}` : ""}
@@ -389,7 +391,6 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
                                 </Button>
                             </DialogClose>
                         </div>
-                        {selectedInvoice ? <InvoiceDetails invoice={selectedInvoice} labels={content.invoices} locale={locale} /> : null}
                         <div className="mt-5 flex-1 min-h-0 overflow-hidden rounded-xl border border-white/10 bg-white">
                             {selectedInvoicePreviewUrl ? (
                                 <iframe src={selectedInvoicePreviewUrl} title={`${content.invoices.title} ${selectedInvoiceNumber ?? ""}`} className="h-full w-full border-0" />
