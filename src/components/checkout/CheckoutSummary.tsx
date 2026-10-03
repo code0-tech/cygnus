@@ -13,7 +13,6 @@ import { calculateExclusiveTaxRate, formatDiscountBadge, resolveCheckoutPricing,
 import { getPaymentPeriodOptions, type SubscriptionCustomerType } from "@/lib/subscription/configurator"
 import type { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
 import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation"
-import { useState } from "react"
 
 interface CheckoutSummaryProps {
     content?: CheckoutData["summary"] | null
@@ -151,10 +150,11 @@ export function CheckoutSummary({ content, errors, nextSteps, stripePricing, sub
                     discountSessionRequiredError={errors.discountSessionRequired}
                     discountValidationError={errors.discountValidation}
                     inputPlaceholder={content.pricing.discountInputPlaceholder}
-                    onPromotionCodeChange={checkoutFormState?.updateCheckoutPromotionCode}
+                    checkoutRef={checkoutFormState?.stripeCheckoutRef}
+                    onSessionChange={checkoutFormState?.syncStripeCheckoutSession}
                     promptLabel={content.pricing.discountPromptLabel}
                     removeLabel={content.pricing.discountRemoveLabel}
-                    sessionReady={!checkoutFormState || Boolean(checkoutFormState.selectedCustomerId && checkoutFormState.checkoutSession && checkoutFormState.promotionCodeActionsReady)}
+                    sessionReady={Boolean(checkoutFormState?.selectedCustomerId && checkoutFormState.checkoutSession && checkoutFormState.stripeCheckoutReady)}
                 />
             )}
         </div>

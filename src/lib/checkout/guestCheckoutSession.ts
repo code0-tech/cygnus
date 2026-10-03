@@ -95,7 +95,6 @@ export function guestCheckoutRequestAllowed(request: Request, session: GuestChec
     return (
         (url.pathname === "/api/crater/customer" && ["GET", "POST"].includes(request.method)) ||
         (url.pathname === "/api/crater/checkout/session" && request.method === "POST") ||
-        (url.pathname === "/api/crater/checkout/discount" && request.method === "POST") ||
         (url.pathname === "/api/crater/checkout/status" && request.method === "GET")
     )
 }

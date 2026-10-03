@@ -35,7 +35,7 @@ function CheckoutFormContent() {
         isSessionLoading,
         markCheckoutSessionReady,
         retryCheckout,
-        setPromotionCodeActions,
+        setStripeCheckout,
         recoverCheckoutSessionLoad,
         refreshExpiredCheckoutSession,
         resolvedError,
@@ -112,7 +112,7 @@ function CheckoutFormContent() {
             onTaxQuoteChange={setTaxQuote}
             onPaymentConfirmationChange={setIsConfirmingPayment}
             onPricingChange={setStripePricing}
-            onPromotionCodeActionsChange={setPromotionCodeActions}
+            onStripeCheckoutChange={setStripeCheckout}
             onSessionExpired={refreshExpiredCheckoutSession}
             onSessionLoadError={recoverCheckoutSessionLoad}
             onSessionLoadErrorChange={setStripeSessionError}

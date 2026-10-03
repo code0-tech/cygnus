@@ -47,6 +47,7 @@ test("guest purchase isolation, expiry and completion", async (t) => {
                 assert.deepEqual(readCraterSessionAuthorization(candidate), { status: "invalid" })
             }
             assert.deepEqual(readCraterSessionAuthorization(request(cookies, "/api/crater/licenses")), { status: "invalid" })
+            assert.deepEqual(readCraterSessionAuthorization(request(cookies, "/api/crater/checkout/discount", id, "POST")), { status: "invalid" })
         })
 
         await t.test("expiry is absolute and clearing a guest leaves the account cookies alone", () => {

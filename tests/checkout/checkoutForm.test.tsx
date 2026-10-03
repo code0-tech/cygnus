@@ -54,6 +54,7 @@ process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY = "pk_test_example"
 
 mock.module("next/navigation", {
     namedExports: {
+        usePathname: () => "/en/checkout",
         useSearchParams: () => checkoutSearchParams,
         useParams: () => ({ locale: "en" }),
     },
@@ -227,8 +228,9 @@ mock.module("@stripe/react-stripe-js/checkout", {
 
 const { act, cleanup, render, screen, waitFor } = await import("@testing-library/react")
 const userEvent = (await import("@testing-library/user-event")).default
+const { CheckoutDiscount } = await import("../../src/components/checkout/CheckoutDiscount")
 const { CheckoutForm } = await import("../../src/components/checkout/CheckoutForm")
-const { getStripePricingFromSession } = await import("../../src/components/checkout/CheckoutPaymentForm")
+const { getStripePricingFromSession } = await import("../../src/lib/checkout/stripeCheckout")
 const { CheckoutFormProvider, useCheckoutFormState } = await import("../../src/components/checkout/CheckoutFormProvider")
 const { clearCheckoutContactDraft, readCheckoutContactDraft, saveCheckoutContactDraft } = await import("../../src/lib/checkout/checkoutDraft")
 
@@ -824,39 +826,39 @@ test("applies a promotion code inside the active Stripe session without reloadin
     }) as typeof fetch
 
     function PromotionCodeHarness() {
-        const { checkoutSession, setPromotionCodeActions, updateCheckoutPromotionCode } = useCheckoutFormState()
-
-        React.useEffect(() => {
-            setPromotionCodeActions({
-                apply: async (code) => {
-                    stripePromotionCodesApplied.push(code)
-                },
-                remove: async () => {
-                    stripePromotionCodesRemoved += 1
-                },
-            })
-            return () => setPromotionCodeActions(null)
-        }, [setPromotionCodeActions])
-
+        const { checkoutSession, stripeCheckoutReady, stripeCheckoutRef, syncStripeCheckoutSession } = useCheckoutFormState()
         return (
             <div>
                 {checkoutSession ? <span>{checkoutSession.clientSecret}</span> : <span>Replacing session</span>}
-                <button type="button" onClick={() => void updateCheckoutPromotionCode("SAVE10")}>
-                    Apply SAVE10
-                </button>
+                <CheckoutDiscount
+                    authenticated
+                    buttonLabel="Apply SAVE10"
+                    inputPlaceholder="Discount code"
+                    promptLabel="Have a discount?"
+                    removeLabel="Remove"
+                    discountSessionRequiredError={errors.discountSessionRequired}
+                    discountValidationError={errors.discountValidation}
+                    checkoutRef={stripeCheckoutRef}
+                    onSessionChange={syncStripeCheckoutSession}
+                    sessionReady={stripeCheckoutReady}
+                />
             </div>
         )
     }
 
     render(
         <CheckoutFormProvider content={content} errors={errors} locale="en">
+            <CheckoutForm />
             <PromotionCodeHarness />
         </CheckoutFormProvider>
     )
     await waitFor(() => assert.equal(requests.length, 2))
     assert.ok(screen.getByText("cs_test_secret_1"))
 
-    await userEvent.setup().click(screen.getByRole("button", { name: "Apply SAVE10" }))
+    const user = userEvent.setup()
+    await user.click(screen.getAllByRole("button", { name: "Have a discount?" }).at(-1)!)
+    await user.type(screen.getByPlaceholderText("Discount code"), "SAVE10")
+    await user.click(screen.getByRole("button", { name: "Apply SAVE10" }))
 
     await waitFor(() => assert.deepEqual(stripePromotionCodesApplied, ["SAVE10"]))
     assert.equal(requests.filter((request) => request.url === "/api/crater/customer").length, 1)

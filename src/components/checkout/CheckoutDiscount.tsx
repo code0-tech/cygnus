@@ -1,5 +1,7 @@
 "use client"
 
+import type { CheckoutPromotionCodeSdk } from "@/lib/checkout/stripeCheckout"
+import type { StripeCheckoutSession } from "@stripe/stripe-js"
 import { Button, TextInput } from "@code0-tech/pictor"
 import { useCraterSession } from "@/components/checkout/CraterSessionProvider"
 import { ButtonLoader } from "@/components/ui/Loader"
@@ -7,7 +9,7 @@ import { Dialog } from "@base-ui/react/dialog"
 import { IconX } from "@tabler/icons-react"
 import { usePathname, useSearchParams } from "next/navigation"
 import { createPortal } from "react-dom"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState, type RefObject } from "react"
 
 interface CheckoutDiscountProps {
     authenticated?: boolean
@@ -18,7 +20,8 @@ interface CheckoutDiscountProps {
     discountValidationError: string
     inputPlaceholder: string
     onApplied?: (code: string | null) => void
-    onPromotionCodeChange?: (code: string | null) => Promise<"updated" | void>
+    checkoutRef?: RefObject<CheckoutPromotionCodeSdk | null>
+    onSessionChange?: (session: StripeCheckoutSession) => void
     promptLabel: string
     removeLabel: string
     sessionReady?: boolean
@@ -33,7 +36,8 @@ export function CheckoutDiscount({
     discountValidationError,
     inputPlaceholder,
     onApplied,
-    onPromotionCodeChange,
+    checkoutRef,
+    onSessionChange,
     promptLabel,
     removeLabel,
     sessionReady = true,
@@ -48,8 +52,14 @@ export function CheckoutDiscount({
     const [isEditing, setIsEditing] = useState(Boolean(searchParams.get("promotionCode")))
     const [isMobileDialogOpen, setIsMobileDialogOpen] = useState(false)
     const isAuthenticated = authenticated ?? contextAuthenticated
-    const validationRequestRef = useRef(0)
-    const automaticallyValidatedCodeRef = useRef<string | null>(null)
+    const discountRequestRef = useRef(0)
+    const automaticallyAppliedCodeRef = useRef<string | null>(null)
+
+    const mountedRef = useRef(true)
+    useEffect(() => {
+        mountedRef.current = true
+        return () => { mountedRef.current = false }
+    }, [])
 
     const replacePromotionCode = useCallback(
         (nextCode: string | null) => {
@@ -67,20 +77,23 @@ export function CheckoutDiscount({
         [pathname, searchParams]
     )
 
-    const validateDiscount = useCallback(
+    const applyDiscount = useCallback(
         async (normalizedCode: string) => {
-            if (!isAuthenticated || !sessionReady) {
+            const checkout = checkoutRef?.current
+            if (!isAuthenticated || !sessionReady || !checkout) {
                 setErrorMessage(discountSessionRequiredError)
                 return
             }
 
-            const requestId = ++validationRequestRef.current
+            const requestId = ++discountRequestRef.current
             setIsApplying(true)
             setErrorMessage(null)
 
             try {
-                await onPromotionCodeChange?.(normalizedCode)
-                if (requestId !== validationRequestRef.current) return
+                const result = await checkout.applyPromotionCode(normalizedCode)
+                if (!mountedRef.current || requestId !== discountRequestRef.current) return
+                if (result.type === "error") throw new Error(result.error.message)
+                onSessionChange?.(result.session)
 
                 replacePromotionCode(normalizedCode)
                 setCode(normalizedCode)
@@ -89,7 +102,7 @@ export function CheckoutDiscount({
                 setIsMobileDialogOpen(false)
                 onApplied?.(normalizedCode)
             } catch (error) {
-                if (requestId !== validationRequestRef.current) return
+                if (!mountedRef.current || requestId !== discountRequestRef.current) return
 
                 replacePromotionCode(null)
                 setAppliedCode(null)
@@ -98,55 +111,62 @@ export function CheckoutDiscount({
                 // Stripe's own message explains why a code was refused (expired, not applicable, ...).
                 setErrorMessage(error instanceof Error && error.message ? error.message : discountValidationError)
             } finally {
-                if (requestId === validationRequestRef.current) {
+                if (mountedRef.current && requestId === discountRequestRef.current) {
                     setIsApplying(false)
                 }
             }
         },
-        [discountSessionRequiredError, discountValidationError, isAuthenticated, onApplied, onPromotionCodeChange, replacePromotionCode, sessionReady]
+        [discountSessionRequiredError, discountValidationError, isAuthenticated, onApplied, checkoutRef, onSessionChange, replacePromotionCode, sessionReady]
     )
 
     useEffect(() => {
         const promotionCode = searchParams.get("promotionCode")?.trim()
 
-        if (!isAuthenticated || !sessionReady || !promotionCode || appliedCode === promotionCode || automaticallyValidatedCodeRef.current === promotionCode) {
+        if (!isAuthenticated || !sessionReady || !checkoutRef?.current || !promotionCode || appliedCode === promotionCode || automaticallyAppliedCodeRef.current === promotionCode) {
             return
         }
 
-        automaticallyValidatedCodeRef.current = promotionCode
+        automaticallyAppliedCodeRef.current = promotionCode
         setCode(promotionCode)
-        void validateDiscount(promotionCode)
-    }, [appliedCode, isAuthenticated, searchParams, sessionReady, validateDiscount])
+        void applyDiscount(promotionCode)
+    }, [appliedCode, checkoutRef, isAuthenticated, searchParams, sessionReady, applyDiscount])
 
-    const applyEmptyDiscount = async () => {
+    const removeDiscount = async () => {
         if (isApplying) return
+        const checkout = checkoutRef?.current
+        if (!isAuthenticated || !sessionReady || !checkout) {
+            setErrorMessage(discountSessionRequiredError)
+            return
+        }
 
-        const requestId = ++validationRequestRef.current
+        const requestId = ++discountRequestRef.current
         setIsApplying(true)
         setErrorMessage(null)
 
         try {
-            await onPromotionCodeChange?.(null)
-            if (requestId !== validationRequestRef.current) return
+            const result = await checkout.removePromotionCode()
+            if (!mountedRef.current || requestId !== discountRequestRef.current) return
+            if (result.type === "error") throw new Error(result.error.message)
+            onSessionChange?.(result.session)
 
-            automaticallyValidatedCodeRef.current = null
+            automaticallyAppliedCodeRef.current = null
             setAppliedCode(null)
             setCode("")
             setIsEditing(false)
             replacePromotionCode(null)
             onApplied?.(null)
         } catch (error) {
-            if (requestId !== validationRequestRef.current) return
+            if (!mountedRef.current || requestId !== discountRequestRef.current) return
             console.error("Failed to remove the checkout discount:", error)
-            setErrorMessage(discountValidationError)
+            setErrorMessage(error instanceof Error && error.message ? error.message : discountValidationError)
         } finally {
-            if (requestId === validationRequestRef.current) setIsApplying(false)
+            if (mountedRef.current && requestId === discountRequestRef.current) setIsApplying(false)
         }
     }
 
     const clearUnappliedDiscount = () => {
-        validationRequestRef.current += 1
-        automaticallyValidatedCodeRef.current = searchParams.get("promotionCode")?.trim() ?? null
+        discountRequestRef.current += 1
+        automaticallyAppliedCodeRef.current = searchParams.get("promotionCode")?.trim() ?? null
         setAppliedCode(null)
         setCode("")
         setErrorMessage(null)
@@ -163,7 +183,7 @@ export function CheckoutDiscount({
         if (isApplying) return
 
         if (appliedCode && normalizedCode !== appliedCode) {
-            automaticallyValidatedCodeRef.current = searchParams.get("promotionCode")?.trim() ?? null
+            automaticallyAppliedCodeRef.current = searchParams.get("promotionCode")?.trim() ?? null
             setAppliedCode(null)
             replacePromotionCode(null)
             onApplied?.(null)
@@ -174,7 +194,7 @@ export function CheckoutDiscount({
             return
         }
 
-        void validateDiscount(normalizedCode)
+        void applyDiscount(normalizedCode)
     }
 
     if (appliedCode) {
@@ -185,13 +205,14 @@ export function CheckoutDiscount({
                     <button
                         type="button"
                         disabled={isApplying}
-                        onClick={() => void applyEmptyDiscount()}
+                        onClick={() => void removeDiscount()}
                         className="shrink-0 text-tertiary transition-colors hover:text-white disabled:cursor-wait disabled:opacity-60"
                     >
                         ({removeLabel})
                     </button>
                 </div>
                 {appliedAmount && <span className="shrink-0 tabular-nums text-white">-{appliedAmount}</span>}
+                {errorMessage && <p role="alert" className="text-error">{errorMessage}</p>}
             </div>
         )
         const appliedContainer = appliedContainerId ? document.getElementById(appliedContainerId) : null
