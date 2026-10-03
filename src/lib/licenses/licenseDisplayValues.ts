@@ -24,7 +24,7 @@ export function formatLicenseDisplayValue(value: string | null | undefined, cate
         invoiceStatus: {
             draft: labels.invoiceStatuses.draft,
             open: labels.invoiceStatuses.open,
-            paid: labels.statuses.paid,
+            paid: labels.invoiceStatuses.paid,
             uncollectible: labels.invoiceStatuses.uncollectible,
             void: labels.invoiceStatuses.void,
         },
@@ -42,10 +42,13 @@ export function formatLicenseDisplayValue(value: string | null | undefined, cate
         status: {
             active: labels.statuses.active,
             pending: labels.statuses.pending,
-            paid: labels.statuses.paid,
-            payment_failed: labels.statuses.paymentFailed,
+            incomplete: labels.statuses.incomplete,
+            incomplete_expired: labels.statuses.incompleteExpired,
+            past_due: labels.statuses.pastDue,
+            paused: labels.statuses.paused,
+            trialing: labels.statuses.trialing,
+            unpaid: labels.statuses.unpaid,
             canceled: labels.statuses.canceled,
-            expired: labels.statuses.expired,
         },
     }
 

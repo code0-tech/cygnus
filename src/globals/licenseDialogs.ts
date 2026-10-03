@@ -152,6 +152,7 @@ export const LicenseDialogs: GlobalConfig = {
             admin: { description: "Shared between the billing and upgrade dialogs, both of which preview a change through subscriptionsPreviewUpdate before applying it." },
             fields: [
                 { name: "totalLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("New total", "Neuer Gesamtbetrag") },
+                { name: "pendingChangeText", type: "text", required: true, localized: true, defaultValue: localizedDefault("Switch to {selection} on {date}.", "Wechsel auf {selection} am {date}."), admin: { description: "Use {selection} and {date} as placeholders." } },
                 { name: "prorationLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Charged today", "Heute berechnet") },
                 {
                     name: "immediateNote",

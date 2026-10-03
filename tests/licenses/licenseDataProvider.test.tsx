@@ -121,3 +121,34 @@ test("loads and merges the next customer cursor page", async () => {
     assert.equal(requests[1], "https://code0.example/api/crater/licenses?customerAfter=customer-page-1&includeNavigation=false")
     assert.equal(screen.queryByRole("button", { name: "More" }), null)
 })
+
+
+function UpdatedSubscriptionState() {
+    const { licenses, sidebarLicenses, updateLicense } = useLicenseData()
+    const license = licenses[0]
+    return <div>
+        <output>{JSON.stringify({ license, sidebar: sidebarLicenses[0] })}</output>
+        <button onClick={() => updateLicense("subscription-1", { pendingUpdate: { plan: "pro", effectiveAt: "2026-11-01T00:00:00Z" } })}>Schedule</button>
+        <button onClick={() => updateLicense("subscription-1", { pendingUpdate: null, cancelAt: "2026-11-01T00:00:00Z", subscriptionStatus: "ACTIVE" })}>Cancel</button>
+        <button onClick={() => updateLicense("subscription-1", { cancelAt: null, canceledAt: null, subscriptionStatus: "PAST_DUE" })}>Resume</button>
+    </div>
+}
+
+test("updates scheduled changes, cancellation dates and subscription status in detail and sidebar", async () => {
+    const license = { id: "subscription-1", licenseId: "snapshot-1", customerId: "customer-1", customerName: "Customer", name: "Max", plan: "max", status: "ACTIVE", invoices: [] }
+    globalThis.fetch = (async () => new Response(JSON.stringify({ customers: [], licenses: [license], navigationLicenses: [license] }), { status: 200 })) as typeof fetch
+    render(<LicenseDataProvider loadError="Error" redirectUrl="https://app.example/login"><UpdatedSubscriptionState /></LicenseDataProvider>)
+    await waitFor(() => assert.match(screen.getByRole("status").textContent ?? "", /snapshot-1/))
+    const state = () => JSON.parse(screen.getByRole("status").textContent!)
+    fireEvent.click(screen.getByRole("button", { name: "Schedule" }))
+    assert.equal(state().license.plan, "max")
+    assert.equal(state().license.pendingUpdate.plan, "pro")
+    assert.deepEqual(state().license, state().sidebar)
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }))
+    assert.equal(state().license.pendingUpdate, null)
+    assert.equal(state().license.cancelAt, "2026-11-01T00:00:00Z")
+    fireEvent.click(screen.getByRole("button", { name: "Resume" }))
+    assert.equal(state().license.cancelAt, undefined)
+    assert.equal(state().license.status, "PAST_DUE")
+    assert.deepEqual(state().license, state().sidebar)
+})

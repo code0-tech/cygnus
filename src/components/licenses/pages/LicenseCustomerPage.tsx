@@ -132,10 +132,13 @@ export function LicenseCustomerPage({ content, customerId, locale }: LicenseCust
                         filterOptions={[
                             { value: "active", label: content.values.statuses.active },
                             { value: "pending", label: content.values.statuses.pending },
-                            { value: "paid", label: content.values.statuses.paid },
-                            { value: "payment_failed", label: content.values.statuses.paymentFailed },
+                            { value: "incomplete", label: content.values.statuses.incomplete },
+                            { value: "incomplete_expired", label: content.values.statuses.incompleteExpired },
+                            { value: "past_due", label: content.values.statuses.pastDue },
+                            { value: "paused", label: content.values.statuses.paused },
+                            { value: "trialing", label: content.values.statuses.trialing },
+                            { value: "unpaid", label: content.values.statuses.unpaid },
                             { value: "canceled", label: content.values.statuses.canceled },
-                            { value: "expired", label: content.values.statuses.expired },
                         ]}
                         selectedFilters={statusFilters}
                         onFilterChange={setStatusFilters}

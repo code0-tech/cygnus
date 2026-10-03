@@ -1,3 +1,7 @@
+import type { SubscriptionStatus } from "@code0-tech/crater-graphql-types"
+
+export type DashboardSubscriptionStatus = `${SubscriptionStatus}`
+
 export interface LicenseDashboardCustomerAddress {
     city?: string
     country?: string
@@ -26,7 +30,18 @@ export interface LicenseDashboardInvoice {
     invoiceNumber?: string
     status?: string
     stripePdfUrl?: string
+    net?: number
+    tax?: number
+    lineItems?: { amount?: number; description?: string; quantity?: number }[]
     total?: number
+}
+
+export interface SubscriptionPendingUpdate {
+    plan?: string
+    paymentPeriod?: string
+    aiTokens?: number
+    workflowExecutions?: number
+    effectiveAt?: string
 }
 
 // One entry per Crater subscription: id is the subscription id, licenseId the export id of its current license snapshot.
@@ -48,12 +63,13 @@ export interface LicenseDashboardLicense {
     namespaceId?: string
     paymentMethodId?: string
     paymentPeriod?: string
+    pendingUpdate?: SubscriptionPendingUpdate | null
     plan?: string
     startDate?: string
-    status?: string
+    status?: DashboardSubscriptionStatus | "pending"
     subscriptionId?: string
     subscriptionCreatedAt?: string
-    subscriptionStatus?: string
+    subscriptionStatus?: DashboardSubscriptionStatus
     updatedAt?: string
     workflowExecutions?: number
 }

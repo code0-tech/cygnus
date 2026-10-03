@@ -3299,12 +3299,16 @@ export interface License {
     statuses: {
       active: string;
       pending: string;
-      paid: string;
-      paymentFailed: string;
+      incomplete: string;
+      paused: string;
+      trialing: string;
+      unpaid: string;
+      pastDue: string;
       canceled: string;
-      expired: string;
+      incompleteExpired: string;
     };
     invoiceStatuses: {
+      paid: string;
       draft: string;
       open: string;
       uncollectible: string;
@@ -3325,6 +3329,10 @@ export interface License {
     title: string;
     description: string;
     empty: string;
+    lineItemsLabel: string;
+    quantityLabel: string;
+    netLabel: string;
+    taxLabel: string;
     numberLabel: string;
     billingDateLabel: string;
     amountLabel: string;
@@ -3405,6 +3413,10 @@ export interface LicenseDialog {
    */
   subscriptionPreview: {
     totalLabel: string;
+    /**
+     * Use {selection} and {date} as placeholders.
+     */
+    pendingChangeText: string;
     prorationLabel: string;
     immediateNote: string;
     scheduledNote: string;
@@ -4090,14 +4102,18 @@ export interface LicensesSelect<T extends boolean = true> {
           | {
               active?: T;
               pending?: T;
-              paid?: T;
-              paymentFailed?: T;
+              incomplete?: T;
+              paused?: T;
+              trialing?: T;
+              unpaid?: T;
+              pastDue?: T;
               canceled?: T;
-              expired?: T;
+              incompleteExpired?: T;
             };
         invoiceStatuses?:
           | T
           | {
+              paid?: T;
               draft?: T;
               open?: T;
               uncollectible?: T;
@@ -4124,6 +4140,10 @@ export interface LicensesSelect<T extends boolean = true> {
         title?: T;
         description?: T;
         empty?: T;
+        lineItemsLabel?: T;
+        quantityLabel?: T;
+        netLabel?: T;
+        taxLabel?: T;
         numberLabel?: T;
         billingDateLabel?: T;
         amountLabel?: T;
@@ -4202,6 +4222,7 @@ export interface LicenseDialogsSelect<T extends boolean = true> {
     | T
     | {
         totalLabel?: T;
+        pendingChangeText?: T;
         prorationLabel?: T;
         immediateNote?: T;
         scheduledNote?: T;

@@ -1,6 +1,8 @@
 "use client"
 
 import { EMPTY_LICENSE_DASHBOARD_DATA, type LicenseDashboardCustomerAddress, type LicenseDashboardData, type LicenseDashboardLicense } from "@/lib/licenses/licenseTypes"
+import { deriveLicenseStatus } from "@/lib/licenses/licenseDashboardMapper"
+import type { DashboardSubscriptionStatus, SubscriptionPendingUpdate } from "@/lib/licenses/licenseTypes"
 import { resolveCustomerRouteId, resolveLicenseRouteId } from "@/lib/licenses/licenseRoute"
 import { usePathname } from "next/navigation"
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useRef, useState } from "react"
@@ -27,7 +29,8 @@ interface LicenseDataContextValue extends LicenseDashboardData {
             paymentMethodId?: string
             paymentPeriod?: string
             plan?: string
-            subscriptionStatus?: string
+            pendingUpdate?: SubscriptionPendingUpdate | null
+            subscriptionStatus?: DashboardSubscriptionStatus
             updatedAt?: string
             workflowExecutions?: number
         }
@@ -115,10 +118,12 @@ export function LicenseDataProvider({ children, loadError, redirectUrl }: { chil
             ...("cancelAt" in values ? { cancelAt: cancelAt ?? undefined } : {}),
             ...("canceledAt" in values ? { canceledAt: canceledAt ?? undefined } : {}),
         }
+        const applyPatch = (license: LicenseDashboardLicense) =>
+            license.id === id ? { ...license, ...patch, ...(values.subscriptionStatus ? { status: deriveLicenseStatus(values.subscriptionStatus, Boolean(license.licenseId)) } : {}) } : license
         setData((current) => ({
             ...current,
-            licenses: current.licenses.map((license) => (license.id === id ? { ...license, ...patch } : license)),
-            navigationLicenses: current.navigationLicenses?.map((license) => (license.id === id ? { ...license, ...patch } : license)),
+            licenses: current.licenses.map(applyPatch),
+            navigationLicenses: current.navigationLicenses?.map(applyPatch),
         }))
     }
 

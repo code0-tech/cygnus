@@ -44,6 +44,13 @@ export const LICENSE_DASHBOARD: TypedDocumentNode<LicenseDashboardQuery, Custome
                             status
                             updatedAt
                             workflowExecutions
+                            pendingUpdate {
+                                plan
+                                paymentPeriod
+                                aiTokens
+                                workflowExecutions
+                                effectiveAt
+                            }
                             currentLicense {
                                 endDate
                                 id
@@ -184,6 +191,13 @@ export const LICENSE_NAVIGATION_PAGE: TypedDocumentNode<LicenseDashboardQuery, L
                                 status
                                 updatedAt
                                 workflowExecutions
+                                pendingUpdate {
+                                    plan
+                                    paymentPeriod
+                                    aiTokens
+                                    workflowExecutions
+                                    effectiveAt
+                                }
                                 currentLicense {
                                     endDate
                                     id
@@ -197,6 +211,13 @@ export const LICENSE_NAVIGATION_PAGE: TypedDocumentNode<LicenseDashboardQuery, L
                                             invoiceNumber
                                             status
                                             stripePdfUrl
+                                            net
+                                            tax
+                                            lineItems {
+                                                amount
+                                                description
+                                                quantity
+                                            }
                                             total
                                         }
                                         pageInfo {
@@ -259,6 +280,13 @@ export const LICENSE_CUSTOMER_DETAIL: TypedDocumentNode<LicenseDashboardQuery, L
                             status
                             updatedAt
                             workflowExecutions
+                            pendingUpdate {
+                                plan
+                                paymentPeriod
+                                aiTokens
+                                workflowExecutions
+                                effectiveAt
+                            }
                             currentLicense {
                                 endDate
                                 id

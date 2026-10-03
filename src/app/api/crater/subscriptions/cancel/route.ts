@@ -16,6 +16,7 @@ const SUBSCRIPTIONS_CANCEL: TypedDocumentNode<SubscriptionsCancelData, MutationS
                 cancelAt
                 canceledAt
                 id
+                pendingUpdate { plan paymentPeriod aiTokens workflowExecutions effectiveAt }
                 status
                 updatedAt
             }
