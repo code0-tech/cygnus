@@ -151,6 +151,8 @@ import * as migration_20261002_181814_subscription_usage_packages from './202610
 import * as migration_20261003_074356_subscription_dashboard from './20261003_074356_subscription_dashboard';
 import * as migration_20261003_081159_namespace_in_use_error from './20261003_081159_namespace_in_use_error';
 
+import * as migration_20261003_084939_cancellation_period_texts from './20261003_084939_cancellation_period_texts';
+
 export const migrations = [
   {
     up: migration_20260317_192332_initial_schema.up,
@@ -911,5 +913,10 @@ export const migrations = [
     up: migration_20261003_081159_namespace_in_use_error.up,
     down: migration_20261003_081159_namespace_in_use_error.down,
     name: '20261003_081159_namespace_in_use_error'
+  },
+  {
+    up: migration_20261003_084939_cancellation_period_texts.up,
+    down: migration_20261003_084939_cancellation_period_texts.down,
+    name: '20261003_084939_cancellation_period_texts',
   },
 ];
