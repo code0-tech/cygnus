@@ -1,5 +1,7 @@
 "use client"
 
+import { SubscriptionPendingUpdateNotice } from "@/components/licenses/SubscriptionPendingUpdateNotice"
+
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
 import { LicenseTabAlert, LicenseTabHeader, LicenseTabRow, LicenseTabSection } from "@/components/licenses/dialog/LicenseTabLayout"
 import { AcceptTermsCheckbox } from "@/components/forms/AcceptTermsCheckbox"
@@ -102,6 +104,8 @@ export function LicenseUpgradeDialog({ content, customerId, errors, licenseId, l
         try {
             const subscription = await updateSubscription({ id: license.subscriptionId, ...changeFields }, errors.planUpgrade)
             updateLicense(license.id, {
+                pendingUpdate: subscription.pendingUpdate ?? null,
+                ...(subscription.status ? { subscriptionStatus: subscription.status } : {}),
                 ...(subscription.plan ? { plan: subscription.plan } : {}),
                 ...(typeof subscription.aiTokens === "number" ? { aiTokens: subscription.aiTokens } : {}),
                 ...(typeof subscription.workflowExecutions === "number" ? { workflowExecutions: subscription.workflowExecutions } : {}),
@@ -146,6 +150,7 @@ export function LicenseUpgradeDialog({ content, customerId, errors, licenseId, l
 
     return (
         <>
+            <SubscriptionPendingUpdateNotice update={license?.pendingUpdate} content={content} locale={locale} />
             <LicenseTabHeader title={content.upgrade.title} description={content.upgrade.description} />
 
             <LicenseTabSection title={content.upgrade.planHeading}>

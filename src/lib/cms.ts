@@ -383,13 +383,17 @@ export interface LicenseContent {
         customerTypes: { personal: string; business: string }
         deploymentTypes: { cloud: string; selfHosted: string }
         paymentPeriods: { monthly: string; quarterly: string; yearly: string }
-        statuses: { active: string; pending: string; paid: string; paymentFailed: string; canceled: string; expired: string }
-        invoiceStatuses: { draft: string; open: string; uncollectible: string; void: string }
+        statuses: { active: string; pending: string; incomplete: string; incompleteExpired: string; pastDue: string; paused: string; trialing: string; unpaid: string; canceled: string }
+        invoiceStatuses: { paid: string; draft: string; open: string; uncollectible: string; void: string }
         plans: { pro: string; max: string; custom: string }
         editions: { cloud: string; selfHosted: string }
         unknown: string
     }
     invoices: {
+        lineItemsLabel: string
+        quantityLabel: string
+        netLabel: string
+        taxLabel: string
         title: string
         description: string
         empty: string
@@ -448,6 +452,7 @@ export interface LicenseContent {
         }
     }
     subscriptionPreview: {
+        pendingChangeText: string
         totalLabel: string
         prorationLabel: string
         immediateNote: string

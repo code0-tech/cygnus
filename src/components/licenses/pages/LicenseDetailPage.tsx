@@ -1,6 +1,9 @@
 "use client"
 
+import { SubscriptionPendingUpdateNotice } from "@/components/licenses/SubscriptionPendingUpdateNotice"
+
 import { DataTableControls } from "@/components/licenses/DataTableControls"
+import { InvoiceDetails } from "@/components/licenses/InvoiceDetails"
 import { InvoiceStatusBadge } from "@/components/licenses/InvoiceStatusBadge"
 import { getLicenseDetailGridCellClassName } from "@/components/licenses/licenseDetailGrid"
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
@@ -80,7 +83,7 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
     })
     const formatDate = (value?: string) => (value ? dateFormatter.format(new Date(value)) : "—")
     // A canceled subscription, or one whose cancellation has been requested, is not billed again.
-    const hasNextBilling = Boolean(license && !license.canceledAt && license.status?.trim().toLowerCase() !== "canceled")
+    const hasNextBilling = Boolean(license && !license.cancelAt && !license.canceledAt && license.subscriptionStatus?.trim().toLowerCase() !== "canceled")
     const showNamespaceWarning = license?.deploymentType === "cloud" && !license.namespaceId
     const licenseDetails: LicenseDetailItem[] = license
         ? [
@@ -140,6 +143,7 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
 
     return (
         <div>
+            <SubscriptionPendingUpdateNotice update={license?.pendingUpdate} content={content} locale={locale} />
             <section aria-label={content.license}>
                 <Flex justify="end">
                     {isLoading || license ? (
@@ -260,7 +264,7 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
                         filterOptions={[
                             { value: "draft", label: content.values.invoiceStatuses.draft },
                             { value: "open", label: content.values.invoiceStatuses.open },
-                            { value: "paid", label: content.values.statuses.paid },
+                            { value: "paid", label: content.values.invoiceStatuses.paid },
                             { value: "uncollectible", label: content.values.invoiceStatuses.uncollectible },
                             { value: "void", label: content.values.invoiceStatuses.void },
                         ]}
@@ -363,8 +367,8 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
             <Dialog open={selectedInvoice !== null} onOpenChange={(open) => !open && setSelectedInvoice(null)}>
                 <DialogPortal>
                     <DialogOverlay className="backdrop-blur-sm" />
-                    <DialogContent showCloseButton={false} className="h-[calc(100dvh-2rem)]! w-[calc(100vw-2rem)]! max-w-5xl! overflow-hidden! border border-white/5 bg-primary! p-4! sm:p-6!">
-                        <DialogHeader className="pr-10 text-left!">
+                    <DialogContent showCloseButton={false} className="flex! flex-col! h-[calc(100dvh-2rem)]! w-[calc(100vw-2rem)]! max-w-5xl! overflow-hidden! border border-white/5 bg-primary! p-4! sm:p-6!">
+                        <DialogHeader className="shrink-0 pr-10 text-left!">
                             <DialogTitle className="font-normal! text-white!">
                                 {content.invoices.title} {selectedInvoiceNumber ? `#${selectedInvoiceNumber}` : ""}
                             </DialogTitle>
@@ -385,7 +389,8 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, name
                                 </Button>
                             </DialogClose>
                         </div>
-                        <div className="mt-5 h-[calc(100%-4.5rem)] min-h-0 overflow-hidden rounded-xl border border-white/10 bg-white">
+                        {selectedInvoice ? <InvoiceDetails invoice={selectedInvoice} labels={content.invoices} locale={locale} /> : null}
+                        <div className="mt-5 flex-1 min-h-0 overflow-hidden rounded-xl border border-white/10 bg-white">
                             {selectedInvoicePreviewUrl ? (
                                 <iframe src={selectedInvoicePreviewUrl} title={`${content.invoices.title} ${selectedInvoiceNumber ?? ""}`} className="h-full w-full border-0" />
                             ) : (

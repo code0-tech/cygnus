@@ -86,13 +86,13 @@ test("upgrades a subscription to a higher plan", async () => {
                         errors: [],
                         subscription: {
                             aiTokens: null,
-                            expireAt: null,
+                            cancelAt: null,
                             canceledAt: null,
                             currentPeriodEnd: "2026-09-01T00:00:00Z",
                             id: subscriptionId,
                             paymentPeriod: "MONTHLY",
                             plan: "MAX",
-                            status: "active",
+                            status: "ACTIVE",
                             updatedAt: "2026-08-17T10:00:00Z",
                             workflowExecutions: null,
                         },
@@ -115,13 +115,14 @@ test("upgrades a subscription to a higher plan", async () => {
             assert.deepEqual(graphQLServer.requests[0].body.variables, { input: { id: subscriptionId, plan: "MAX" } })
             assert.deepEqual(await response.json(), {
                 aiTokens: null,
-                expireAt: null,
+                cancelAt: null,
                 canceledAt: null,
                 currentPeriodEnd: "2026-09-01T00:00:00Z",
                 id: subscriptionId,
+                pendingUpdate: null,
                 paymentPeriod: "monthly",
                 plan: "max",
-                status: "active",
+                status: "ACTIVE",
                 updatedAt: "2026-08-17T10:00:00Z",
                 workflowExecutions: null,
             })
@@ -131,7 +132,7 @@ test("upgrades a subscription to a higher plan", async () => {
 
 test("changes the billing period and converts it to Crater's uppercase enum", async () => {
     await withGraphQLServer(
-        [{ data: { subscriptionsUpdate: { errors: [], subscription: { id: subscriptionId, paymentPeriod: "QUARTERLY", plan: "PRO", status: "active" } } } }],
+        [{ data: { subscriptionsUpdate: { errors: [], subscription: { id: subscriptionId, paymentPeriod: "QUARTERLY", plan: "PRO", status: "ACTIVE" } } } }],
         async (graphQLServer) => {
             const response = await updateSubscription(
                 new Request("https://example.com/api/crater/subscriptions", {
@@ -152,7 +153,7 @@ test("increases custom plan quantities", async () => {
         [
             {
                 data: {
-                    subscriptionsUpdate: { errors: [], subscription: { aiTokens: 500_000, id: subscriptionId, plan: "CUSTOM", status: "active", workflowExecutions: 2_000 } },
+                    subscriptionsUpdate: { errors: [], subscription: { aiTokens: 500_000, id: subscriptionId, plan: "CUSTOM", status: "ACTIVE", workflowExecutions: 2_000 } },
                 },
             },
         ],
@@ -243,7 +244,7 @@ test("preview requires a valid subscription id", async () => {
 
 test("cancels a subscription at the end of the current period by default", async () => {
     await withGraphQLServer(
-        [{ data: { subscriptionsCancel: { errors: [], subscription: { expireAt: "2026-09-01T00:00:00Z", canceledAt: "2026-08-17T10:00:00Z", id: subscriptionId, status: "active" } } } }],
+        [{ data: { subscriptionsCancel: { errors: [], subscription: { cancelAt: "2026-09-01T00:00:00Z", canceledAt: "2026-08-17T10:00:00Z", id: subscriptionId, status: "ACTIVE" } } } }],
         async (graphQLServer) => {
             const response = await cancelSubscription(
                 new Request("https://example.com/api/crater/subscriptions/cancel", {
@@ -255,15 +256,15 @@ test("cancels a subscription at the end of the current period by default", async
 
             assert.equal(response.status, 200)
             assert.deepEqual(graphQLServer.requests[0].body.variables, { input: { id: subscriptionId } })
-            const body = (await response.json()) as { expireAt: string }
-            assert.equal(body.expireAt, "2026-09-01T00:00:00Z")
+            const body = (await response.json()) as { cancelAt: string }
+            assert.equal(body.cancelAt, "2026-09-01T00:00:00Z")
         }
     )
 })
 
 test("cancels a subscription immediately when requested", async () => {
     await withGraphQLServer(
-        [{ data: { subscriptionsCancel: { errors: [], subscription: { expireAt: "2026-08-17T10:00:00Z", canceledAt: "2026-08-17T10:00:00Z", id: subscriptionId, status: "canceled" } } } }],
+        [{ data: { subscriptionsCancel: { errors: [], subscription: { cancelAt: "2026-08-17T10:00:00Z", canceledAt: "2026-08-17T10:00:00Z", id: subscriptionId, status: "CANCELED" } } } }],
         async (graphQLServer) => {
             const response = await cancelSubscription(
                 new Request("https://example.com/api/crater/subscriptions/cancel", {
@@ -280,7 +281,7 @@ test("cancels a subscription immediately when requested", async () => {
 })
 
 test("resumes a cancelled subscription", async () => {
-    await withGraphQLServer([{ data: { subscriptionsResume: { errors: [], subscription: { expireAt: null, canceledAt: null, id: subscriptionId, status: "active" } } } }], async (graphQLServer) => {
+    await withGraphQLServer([{ data: { subscriptionsResume: { errors: [], subscription: { cancelAt: null, canceledAt: null, id: subscriptionId, status: "ACTIVE" } } } }], async (graphQLServer) => {
         const response = await resumeSubscription(
             new Request("https://example.com/api/crater/subscriptions/resume", {
                 method: "POST",
@@ -291,8 +292,8 @@ test("resumes a cancelled subscription", async () => {
 
         assert.equal(response.status, 200)
         assert.equal(graphQLServer.requests[0].body.operationName, "SubscriptionsResume")
-        const body = (await response.json()) as { expireAt: null }
-        assert.equal(body.expireAt, null)
+        const body = (await response.json()) as { cancelAt: null }
+        assert.equal(body.cancelAt, null)
     })
 })
 
@@ -335,5 +336,18 @@ test("subscription preview sends the generated plan enum", async () => {
             })
         )
         assert.deepEqual(server.requests[0].body.variables, { input: { id: subscriptionId, plan: "PRO" } })
+    })
+})
+
+
+test("returns a scheduled update separately from the active configuration", async () => {
+    await withGraphQLServer([{ data: { subscriptionsUpdate: { errors: [], subscription: { id: subscriptionId, plan: "MAX", paymentPeriod: "MONTHLY", status: "ACTIVE", pendingUpdate: { plan: "PRO", paymentPeriod: "YEARLY", effectiveAt: "2026-11-01T00:00:00Z", aiTokens: null, workflowExecutions: null } } } } }], async (server) => {
+        const response = await updateSubscription(new Request("https://example.com/api/crater/subscriptions", { method: "PATCH", headers: sessionHeaders, body: JSON.stringify({ id: subscriptionId, plan: "pro", paymentPeriod: "yearly" }) }))
+        assert.equal(response.status, 200)
+        assert.deepEqual(await response.json(), { id: subscriptionId, plan: "max", paymentPeriod: "monthly", status: "ACTIVE", pendingUpdate: { plan: "pro", paymentPeriod: "yearly", effectiveAt: "2026-11-01T00:00:00Z" } })
+        const query = String(server.requests[0].body.query)
+        assert.match(query, /pendingUpdate/)
+        assert.match(query, /cancelAt/)
+        assert.doesNotMatch(query, /expireAt/)
     })
 })

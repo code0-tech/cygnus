@@ -1,3 +1,4 @@
+import type { DashboardSubscriptionStatus, SubscriptionPendingUpdate } from "@/lib/licenses/licenseTypes"
 import type { PaymentPeriod } from "@/lib/subscription/calculator"
 import type { SubscriptionPlan } from "@/lib/subscription/configurator"
 
@@ -21,6 +22,10 @@ export interface SubscriptionUpdatePreview {
 }
 
 export interface SubscriptionUpdateResult {
+    pendingUpdate?: SubscriptionPendingUpdate | null
+    status?: DashboardSubscriptionStatus
+    cancelAt?: string | null
+    canceledAt?: string | null
     aiTokens?: number
     paymentPeriod?: string
     plan?: string

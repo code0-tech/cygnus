@@ -7,8 +7,8 @@ const labels = {
     customerTypes: { personal: "Privat", business: "Geschäftlich" },
     deploymentTypes: { cloud: "Cloud", selfHosted: "Eigenbetrieb" },
     paymentPeriods: { monthly: "Monatlich", quarterly: "Vierteljährlich", yearly: "Jährlich" },
-    statuses: { active: "Aktiv", pending: "Ausstehend", paid: "Bezahlt", paymentFailed: "Zahlung fehlgeschlagen", canceled: "Gekündigt", expired: "Abgelaufen" },
-    invoiceStatuses: { draft: "Entwurf", open: "Offen", uncollectible: "Uneinbringlich", void: "Storniert" },
+    statuses: { active: "Aktiv", pending: "Ausstehend", incomplete: "Incomplete", incompleteExpired: "Expired", paused: "Paused", trialing: "Trial", unpaid: "Unpaid", pastDue: "Zahlung fehlgeschlagen", canceled: "Gekündigt" },
+    invoiceStatuses: { paid: "Bezahlt", draft: "Entwurf", open: "Offen", uncollectible: "Uneinbringlich", void: "Storniert" },
     plans: { pro: "Pro", max: "Max", custom: "Individuell" },
     editions: { cloud: "Cloud Edition", selfHosted: "Enterprise Edition" },
     unknown: "Unbekannt",
@@ -18,7 +18,7 @@ test("formats Crater license values with CMS labels", () => {
     assert.equal(formatLicenseDisplayValue("business", "customerType", labels), "Geschäftlich")
     assert.equal(formatLicenseDisplayValue("SELF_HOSTED", "deploymentType", labels), "Eigenbetrieb")
     assert.equal(formatLicenseDisplayValue("MONTHLY", "paymentPeriod", labels), "Monatlich")
-    assert.equal(formatLicenseDisplayValue("payment_failed", "status", labels), "Zahlung fehlgeschlagen")
+    assert.equal(formatLicenseDisplayValue("PAST_DUE", "status", labels), "Zahlung fehlgeschlagen")
     assert.equal(formatLicenseDisplayValue("custom", "plan", labels), "Individuell")
     assert.equal(formatLicenseDisplayValue("uncollectible", "invoiceStatus", labels), "Uneinbringlich")
 })

@@ -7,18 +7,19 @@ function normalizeStatus(status?: string) {
 }
 
 export function isLicenseStatusError(status?: string) {
-    return normalizeStatus(status) === "payment_failed"
+    return ["past_due", "unpaid"].includes(normalizeStatus(status) ?? "")
 }
 
 export function getLicenseStatusTone(status?: string): StatusTone {
     switch (normalizeStatus(status)) {
         case "active":
-        case "paid":
+        case "trialing":
             return "brand"
-        case "payment_failed":
+        case "past_due":
+        case "unpaid":
             return "error"
         case "canceled":
-        case "expired":
+        case "incomplete_expired":
             return "muted"
         default:
             return "warning"

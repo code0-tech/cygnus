@@ -1,5 +1,7 @@
 "use client"
 
+import { SubscriptionPendingUpdateNotice } from "@/components/licenses/SubscriptionPendingUpdateNotice"
+
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
 import { LicenseStatusBadge } from "@/components/licenses/LicenseStatusBadge"
 import { LicenseTabAlert, LicenseTabHeader, LicenseTabRow, LicenseTabSection } from "@/components/licenses/dialog/LicenseTabLayout"
@@ -54,6 +56,8 @@ export function LicenseGeneralTab({ content, errors, license, locale, namespaceH
         try {
             const subscription = await updateSubscription({ id: subscriptionId, paymentPeriod: period }, errors.billingUpdate)
             updateLicense(license.id, {
+                pendingUpdate: subscription.pendingUpdate ?? null,
+                ...(subscription.status ? { subscriptionStatus: subscription.status } : {}),
                 ...(subscription.paymentPeriod ? { paymentPeriod: subscription.paymentPeriod } : {}),
                 ...(subscription.updatedAt ? { updatedAt: subscription.updatedAt } : {}),
             })
@@ -72,6 +76,7 @@ export function LicenseGeneralTab({ content, errors, license, locale, namespaceH
     return (
         <>
             <LicenseTabHeader title={title} description={content.editor.licenseEditDescription} />
+            <SubscriptionPendingUpdateNotice update={license?.pendingUpdate} content={content} locale={locale} />
             {namespaceSelectionFailed ? <LicenseTabAlert>{errors.licenseUpdate}</LicenseTabAlert> : null}
 
             {license?.deploymentType === "cloud" ? (

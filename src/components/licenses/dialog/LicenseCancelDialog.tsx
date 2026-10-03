@@ -3,6 +3,7 @@
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
 import { LicenseDialog } from "@/components/licenses/dialog/LicenseDialog"
 import { ButtonLoader } from "@/components/ui/Loader"
+import type { SubscriptionUpdateResult } from "@/lib/subscription/client"
 import type { ErrorsContent, LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { createLicensePath, resolveCustomerRouteId, resolveLicenseRouteId } from "@/lib/licenses/licenseRoute"
@@ -44,10 +45,13 @@ export function LicenseCancelDialog({ content, customerId, errors, licenseId, lo
             })
             if (!response.ok) throw new Error(errors.subscriptionCancel)
             const updated: unknown = await response.json()
-            const subscription = updated && typeof updated === "object" ? (updated as { cancelAt?: string; updatedAt?: string }) : {}
+            const subscription = updated && typeof updated === "object" ? (updated as SubscriptionUpdateResult) : {}
 
             updateLicense(license.id, {
-                ...(subscription.cancelAt ? { cancelAt: subscription.cancelAt } : {}),
+                cancelAt: subscription.cancelAt ?? null,
+                canceledAt: subscription.canceledAt ?? null,
+                pendingUpdate: null,
+                ...(subscription.status ? { subscriptionStatus: subscription.status } : {}),
                 ...(subscription.updatedAt ? { updatedAt: subscription.updatedAt } : {}),
             })
             close()
@@ -72,9 +76,9 @@ export function LicenseCancelDialog({ content, customerId, errors, licenseId, lo
             })
             if (!response.ok) throw new Error(errors.subscriptionResume)
             const updated: unknown = await response.json()
-            const subscription = updated && typeof updated === "object" ? (updated as { updatedAt?: string }) : {}
+            const subscription = updated && typeof updated === "object" ? (updated as SubscriptionUpdateResult) : {}
 
-            updateLicense(license.id, { cancelAt: null, canceledAt: null, ...(subscription.updatedAt ? { updatedAt: subscription.updatedAt } : {}) })
+            updateLicense(license.id, { cancelAt: null, canceledAt: null, ...(subscription.status ? { subscriptionStatus: subscription.status } : {}), ...(subscription.updatedAt ? { updatedAt: subscription.updatedAt } : {}) })
             close()
         } catch (resumeError) {
             setError(resumeError instanceof Error ? resumeError.message : errors.subscriptionResume)

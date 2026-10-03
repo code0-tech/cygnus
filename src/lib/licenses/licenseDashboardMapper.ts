@@ -1,8 +1,15 @@
 import { normalizeCraterDeploymentType, normalizeCraterPaymentPeriod, normalizeCraterPlan } from "@/lib/checkout/craterCheckout"
 import { normalizeCraterCustomerType } from "@/lib/checkout/craterCustomer"
 import { normalizeUsagePackages } from "@/lib/subscription/usagePackages"
-import type { LicenseDashboardCustomer, LicenseDashboardData, LicenseDashboardInvoice, LicenseDashboardLicense } from "@/lib/licenses/licenseTypes"
-import type { Customer, Invoice, Subscription, User } from "@code0-tech/crater-graphql-types"
+import type {
+    DashboardSubscriptionStatus,
+    LicenseDashboardCustomer,
+    LicenseDashboardData,
+    LicenseDashboardInvoice,
+    LicenseDashboardLicense,
+    SubscriptionPendingUpdate,
+} from "@/lib/licenses/licenseTypes"
+import type { Customer, Invoice, Subscription, SubscriptionPendingUpdate as CraterPendingUpdate, User } from "@code0-tech/crater-graphql-types"
 
 function displayName(name: string | null | undefined, email: string | null | undefined, id: string) {
     return name?.trim() || email?.trim() || id
@@ -54,6 +61,19 @@ export function mapCustomer(customer: Customer): LicenseDashboardCustomer | null
     }
 }
 
+export function mapSubscriptionPendingUpdate(update: CraterPendingUpdate | null | undefined): SubscriptionPendingUpdate | null {
+    if (!update) return null
+    const plan = normalizeCraterPlan(update.plan)
+    const paymentPeriod = normalizeCraterPaymentPeriod(update.paymentPeriod)
+    return {
+        ...(plan ? { plan } : {}),
+        ...(paymentPeriod ? { paymentPeriod } : {}),
+        ...(typeof update.aiTokens === "number" ? { aiTokens: update.aiTokens } : {}),
+        ...(typeof update.workflowExecutions === "number" ? { workflowExecutions: update.workflowExecutions } : {}),
+        ...(update.effectiveAt ? { effectiveAt: update.effectiveAt } : {}),
+    }
+}
+
 function mapInvoice(invoice: Invoice): LicenseDashboardInvoice | null {
     if (!invoice.id) return null
 
@@ -64,20 +84,25 @@ function mapInvoice(invoice: Invoice): LicenseDashboardInvoice | null {
         ...(invoice.invoiceNumber ? { invoiceNumber: invoice.invoiceNumber } : {}),
         ...(invoice.status ? { status: invoice.status } : {}),
         ...(invoice.stripePdfUrl ? { stripePdfUrl: invoice.stripePdfUrl } : {}),
+        ...(typeof invoice.net === "number" ? { net: invoice.net } : {}),
+        ...(typeof invoice.tax === "number" ? { tax: invoice.tax } : {}),
+        ...(invoice.lineItems
+            ? {
+                  lineItems: invoice.lineItems.map((item) => ({
+                      ...(typeof item.amount === "number" ? { amount: item.amount } : {}),
+                      ...(item.description ? { description: item.description } : {}),
+                      ...(typeof item.quantity === "number" ? { quantity: item.quantity } : {}),
+                  })),
+              }
+            : {}),
         ...(typeof invoice.total === "number" ? { total: invoice.total } : {}),
     }
 }
 
-// Licenses lost their own status; the dashboard keeps its existing status vocabulary (and CMS labels) by deriving it
-// from the subscription. Without a paid-invoice snapshot a live subscription has not granted access yet.
-export function deriveLicenseStatus(subscriptionStatus: string | null | undefined, hasLicense: boolean) {
-    const status = subscriptionStatus?.trim().toLowerCase()
-    if (status === "canceled") return "canceled"
-    if (status === "incomplete_expired") return "expired"
-    if (status === "past_due" || status === "unpaid") return "payment_failed"
-    if (!hasLicense || status === "incomplete") return "pending"
-    if (status === "active" || status === "trialing") return "active"
-    return status || undefined
+// Keep Crater subscription statuses distinct. Without a paid-invoice snapshot access is still pending.
+export function deriveLicenseStatus(subscriptionStatus: string | null | undefined, hasLicense: boolean): LicenseDashboardLicense["status"] {
+    if (!hasLicense) return "pending"
+    return (subscriptionStatus?.trim().toUpperCase() || undefined) as DashboardSubscriptionStatus | undefined
 }
 
 // One dashboard entry per subscription. Its id is the subscription id, which stays stable across renewals; the
@@ -107,13 +132,14 @@ export function mapSubscription(subscription: Subscription, customer: Customer):
         ...(license?.endDate ? { endDate: license.endDate } : {}),
         ...(subscription.namespaceId ? { namespaceId: subscription.namespaceId } : {}),
         ...(paymentPeriod ? { paymentPeriod } : {}),
+        pendingUpdate: mapSubscriptionPendingUpdate(subscription.pendingUpdate),
         ...(plan ? { plan } : {}),
         ...(license?.startDate ? { startDate: license.startDate } : {}),
         ...(status ? { status } : {}),
         ...(subscription.updatedAt ? { updatedAt: subscription.updatedAt } : {}),
         ...(typeof subscription.workflowExecutions === "number" ? { workflowExecutions: subscription.workflowExecutions } : {}),
         subscriptionId: subscription.id,
-        ...(subscription.status ? { subscriptionStatus: subscription.status.toLowerCase() } : {}),
+        ...(subscription.status ? { subscriptionStatus: subscription.status } : {}),
         ...(subscription.createdAt ? { subscriptionCreatedAt: subscription.createdAt } : {}),
         ...(subscription.paymentMethodId ? { paymentMethodId: subscription.paymentMethodId } : {}),
         ...(subscription.cancelAt ? { cancelAt: subscription.cancelAt } : {}),
