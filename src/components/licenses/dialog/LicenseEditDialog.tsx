@@ -7,16 +7,18 @@ import { LicenseUpgradeDialog } from "@/components/licenses/dialog/LicenseUpgrad
 import { CustomerPaymentMethodCard, CustomerPaymentMethodCardSkeleton } from "@/components/licenses/dialog/CustomerPaymentMethodCard"
 import { LicenseTabAlert, LicenseTabHeader, LicenseTabRow, LicenseTabSection } from "@/components/licenses/dialog/LicenseTabLayout"
 import { ButtonLoader } from "@/components/ui/Loader"
-import { useCustomerPaymentMethods, useSubscriptionPaymentMethod } from "@/hooks/usePaymentMethods"
+import { useCustomerPaymentMethods } from "@/hooks/usePaymentMethods"
 import type { ErrorsContent, LicenseContent, SubscriptionConfigData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { getLicenseEditSectionLabels, isLicenseEditSection, LICENSE_EDIT_SECTIONS, type LicenseEditSection } from "@/lib/licenses/licenseEditSections"
 import { createLicensePath, resolveCustomerRouteId, resolveLicenseRouteId } from "@/lib/licenses/licenseRoute"
+import { updateSubscription } from "@/lib/subscription/client"
+import { NamespaceSelectionError } from "@/components/licenses/NamespaceSelectionError"
 import type { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
 import { Button, TabContent, TabList, TabTrigger, Text } from "@code0-tech/pictor"
 import { IconCreditCard, IconKey, IconTrendingUp } from "@tabler/icons-react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
-import { useCallback, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 
 interface LicenseEditDialogProps {
     content: LicenseContent
@@ -42,7 +44,6 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
     const section: LicenseEditSection = isLicenseEditSection(requestedTab) ? requestedTab : searchParams.has("setup_intent") ? "payment" : "general"
     const sectionLabels = getLicenseEditSectionLabels(content)
     const paymentSectionEnabled = section === "payment"
-    const { isLoadingPaymentMethod, paymentMethod, paymentMethodError, refreshPaymentMethod } = useSubscriptionPaymentMethod(license?.subscriptionId, paymentSectionEnabled)
     const {
         isLoadingPaymentMethods: isLoadingCustomerPaymentMethods,
         paymentMethods: customerPaymentMethods,
@@ -68,27 +69,17 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
         router.replace(`${pathname}?${nextSearchParams.toString()}`, { scroll: false })
     }, [pathname, requestedTab, router, searchParams, section])
 
-    const paymentMethodUpdated = useCallback(() => {
-        refreshPaymentMethod()
-        refreshCustomerPaymentMethods()
-    }, [refreshCustomerPaymentMethods, refreshPaymentMethod])
-
     const assignPaymentMethod = async (paymentMethodId: string) => {
         if (!license?.subscriptionId || assigningPaymentMethodId) return
         setAssigningPaymentMethodId(paymentMethodId)
         setAssignPaymentMethodError(false)
 
         try {
-            const response = await fetch("/api/crater/subscriptions/payment-method", {
-                method: "PATCH",
-                credentials: "same-origin",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify({ subscriptionId: license.subscriptionId, paymentMethodId }),
-            })
-            if (!response.ok) throw new Error(errors.paymentMethodAssign)
+            const subscription = await updateSubscription({ id: license.subscriptionId, paymentMethodId }, errors.paymentMethodAssign)
+            if (subscription.paymentMethodId !== paymentMethodId) throw new Error(errors.paymentMethodAssign)
 
             updateLicense(license.id, { paymentMethodId })
-            paymentMethodUpdated()
+            refreshCustomerPaymentMethods()
         } catch {
             setAssignPaymentMethodError(true)
         } finally {
@@ -97,7 +88,7 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
     }
 
     const otherPaymentMethods = customerPaymentMethods?.filter((method) => method.id !== license?.paymentMethodId)
-    const namespaceSelectionFailed = searchParams.has("namespaceError")
+    const paymentMethod = customerPaymentMethods?.find((method) => method.id === license?.paymentMethodId) ?? null
     const sectionIcons = { general: IconKey, payment: IconCreditCard, upgrade: IconTrendingUp } satisfies Record<LicenseEditSection, typeof IconKey>
     const sidebar = license?.subscriptionId ? (
         <TabList aria-label={content.editor.licenseTitle}>
@@ -127,6 +118,7 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
             title={content.editor.licenseTitle}
             value={license?.subscriptionId ? section : "general"}
         >
+            <NamespaceSelectionError error={searchParams.get("namespaceError")} errors={errors} />
             <TabContent value="general">
                 <LicenseGeneralTab
                     content={content}
@@ -134,7 +126,6 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
                     license={license}
                     locale={locale}
                     namespaceHref={namespaceHref}
-                    namespaceSelectionFailed={namespaceSelectionFailed}
                     onClose={close}
                     subscriptionConfig={subscriptionConfig}
                     title={sectionLabels.general}
@@ -157,13 +148,13 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
                         <LicenseTabHeader title={sectionLabels.payment} description={content.editor.paymentMethodDescription} />
 
                         <LicenseTabSection title={content.editor.paymentMethodHeading}>
-                            {isLoadingPaymentMethod ? (
+                            {isLoadingCustomerPaymentMethods ? (
                                 <CustomerPaymentMethodCardSkeleton label={content.editor.loadingPaymentMethodLabel} />
-                            ) : paymentMethodError ? (
+                            ) : customerPaymentMethodsError ? (
                                 <LicenseTabRow
                                     description={<span className="text-error">{errors.paymentMethodLoad}</span>}
                                     action={
-                                        <Button type="button" variant="normal" paddingSize="xxs" onClick={refreshPaymentMethod}>
+                                        <Button type="button" variant="normal" paddingSize="xxs" onClick={refreshCustomerPaymentMethods}>
                                             {errors.retry}
                                         </Button>
                                     }

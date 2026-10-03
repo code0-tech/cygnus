@@ -28,13 +28,12 @@ interface LicenseGeneralTabProps {
     license?: LicenseDashboardLicense
     locale: AppLocale
     namespaceHref: string
-    namespaceSelectionFailed: boolean
     onClose: () => void
     subscriptionConfig: SubscriptionConfigData
     title: string
 }
 
-export function LicenseGeneralTab({ content, errors, license, locale, namespaceHref, namespaceSelectionFailed, onClose, subscriptionConfig, title }: LicenseGeneralTabProps) {
+export function LicenseGeneralTab({ content, errors, license, locale, namespaceHref, onClose, subscriptionConfig, title }: LicenseGeneralTabProps) {
     const router = useRouter()
     const { updateLicense } = useLicenseData()
     const subscriptionId = license?.subscriptionId
@@ -77,7 +76,6 @@ export function LicenseGeneralTab({ content, errors, license, locale, namespaceH
         <>
             <LicenseTabHeader title={title} description={content.editor.licenseEditDescription} />
             <SubscriptionPendingUpdateNotice update={license?.pendingUpdate} content={content} locale={locale} />
-            {namespaceSelectionFailed ? <LicenseTabAlert>{errors.licenseUpdate}</LicenseTabAlert> : null}
 
             {license?.deploymentType === "cloud" ? (
                 <LicenseTabSection title={content.editor.namespaceHeading}>

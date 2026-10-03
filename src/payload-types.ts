@@ -3461,6 +3461,7 @@ export interface Error {
   paymentMethodRemove: string;
   paymentMethodInUse: string;
   paymentMethodAssign: string;
+  namespaceInUse: string;
   licenseUpdate: string;
   subscriptionPreview: string;
   billingUpdate: string;
@@ -4273,6 +4274,7 @@ export interface ErrorsSelect<T extends boolean = true> {
   paymentMethodRemove?: T;
   paymentMethodInUse?: T;
   paymentMethodAssign?: T;
+  namespaceInUse?: T;
   licenseUpdate?: T;
   subscriptionPreview?: T;
   billingUpdate?: T;

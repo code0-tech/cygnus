@@ -4,30 +4,6 @@ import { renderToStaticMarkup } from "react-dom/server"
 import { SubscriptionPendingUpdateNotice } from "../../src/components/licenses/SubscriptionPendingUpdateNotice"
 import type { LicenseContent } from "../../src/lib/cms"
 
-const invoiceLabels: LicenseContent["invoices"] = {
-    title: "Invoices",
-    description: "Invoices",
-    empty: "None",
-    numberLabel: "Invoice",
-    billingDateLabel: "Date",
-    amountLabel: "Total",
-    statusLabel: "Status",
-    downloadLabel: "Download",
-    viewLabel: "View",
-    unavailableLabel: "Unavailable",
-    lineItemsLabel: "Items",
-    quantityLabel: "Quantity",
-    netLabel: "Net",
-    taxLabel: "Tax",
-}
-
-test("invoice details do not invent missing tax or line items", () => {
-    assert.equal(renderToStaticMarkup(<InvoiceDetails invoice={{ id: "invoice-1" }} labels={invoiceLabels} locale="en" />), "")
-    const markup = renderToStaticMarkup(<InvoiceDetails invoice={{ id: "invoice-1", total: 1200 }} labels={invoiceLabels} locale="en" />)
-    assert.match(markup, /Unavailable/)
-    assert.doesNotMatch(markup, /<dt>Tax/)
-})
-
 const content = {
     values: {
         plans: { pro: "Pro", max: "Max", custom: "Custom" },

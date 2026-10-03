@@ -1,6 +1,6 @@
 "use client"
 
-import { fetchCustomerPaymentMethods, fetchSubscriptionPaymentMethod, type CustomerPaymentMethodSummary, type PaymentMethodDisplayDetails } from "@/lib/licenses/licenseClient"
+import { fetchCustomerPaymentMethods, type CustomerPaymentMethodSummary } from "@/lib/licenses/licenseClient"
 import { useCallback, useEffect, useState } from "react"
 
 function isAbortError(error: unknown) {
@@ -36,32 +36,4 @@ export function useCustomerPaymentMethods(customerId: string | undefined, enable
     }, [customerId, enabled, refreshKey])
 
     return { isLoadingPaymentMethods, paymentMethods, paymentMethodsError, refreshPaymentMethods, removePaymentMethodLocally }
-}
-
-export function useSubscriptionPaymentMethod(subscriptionId: string | undefined, enabled = true) {
-    const [paymentMethod, setPaymentMethod] = useState<PaymentMethodDisplayDetails | null>(null)
-    const [paymentMethodError, setPaymentMethodError] = useState(false)
-    const [isLoadingPaymentMethod, setIsLoadingPaymentMethod] = useState(false)
-    const [refreshKey, setRefreshKey] = useState(0)
-    const refreshPaymentMethod = useCallback(() => setRefreshKey((value) => value + 1), [])
-
-    useEffect(() => {
-        if (!enabled || !subscriptionId) return
-
-        const controller = new AbortController()
-        setIsLoadingPaymentMethod(true)
-        setPaymentMethodError(false)
-        void fetchSubscriptionPaymentMethod(subscriptionId, controller.signal)
-            .then(setPaymentMethod)
-            .catch((error) => {
-                if (!isAbortError(error)) setPaymentMethodError(true)
-            })
-            .finally(() => {
-                if (!controller.signal.aborted) setIsLoadingPaymentMethod(false)
-            })
-
-        return () => controller.abort()
-    }, [enabled, refreshKey, subscriptionId])
-
-    return { isLoadingPaymentMethod, paymentMethod, paymentMethodError, refreshPaymentMethod }
 }

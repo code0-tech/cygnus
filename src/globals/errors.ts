@@ -68,6 +68,13 @@ export const Errors: GlobalConfig = {
             defaultValue: localizedDefault("The payment method could not be assigned to this license.", "Die Zahlungsmethode konnte dieser Lizenz nicht zugewiesen werden."),
         },
         {
+            name: "namespaceInUse",
+            type: "text",
+            required: true,
+            localized: true,
+            defaultValue: localizedDefault("This namespace is already linked to another subscription. Choose a different namespace.", "Dieser Namespace ist bereits mit einem anderen Abonnement verknüpft. Wähle einen anderen Namespace."),
+        },
+        {
             name: "licenseUpdate",
             type: "text",
             required: true,
