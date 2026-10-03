@@ -1,3 +1,7 @@
+import { craterJson, craterTransportErrorResponse } from "@/lib/checkout/craterApi"
+import { isLicenseId } from "@/lib/licenses/craterRequest"
+import { findSubscriptionForLicenseSnapshot } from "@/lib/licenses/licenseSnapshotLookup.server"
+import { createLicensePath } from "@/lib/licenses/licenseRoute"
 import { clearCraterSessionCookie, readCraterSessionAuthorization } from "@/lib/checkout/craterSession"
 import { isSupportedLocale } from "@/lib/i18n"
 import { NextResponse } from "next/server"
@@ -33,6 +37,22 @@ export async function GET(request: Request) {
     const session = readCraterSessionAuthorization(request)
 
     if (session.status === "authenticated") {
+        if (requestUrl.searchParams.has("licenseId") || requestUrl.searchParams.has("customerId")) {
+            const customerId = requestUrl.searchParams.get("customerId") ?? ""
+            const licenseId = requestUrl.searchParams.get("licenseId") ?? ""
+            if (!/^gid:\/\/crater\/Customer\/\d+$/.test(customerId) || !isLicenseId(licenseId)) return craterJson({ error: "A valid Crater customer and license snapshot id are required." }, 400)
+            try {
+                const lookup = await findSubscriptionForLicenseSnapshot(session.token, customerId, licenseId)
+                if (lookup.status === "unauthenticated") return clearCraterSessionCookie(craterJson({ error: "The Crater session has no authenticated user." }, 401))
+                if (lookup.status === "missing") return craterJson({ error: "The requested license was not found." }, 404)
+                return noStoreRedirect(new URL(createLicensePath(locale, customerId, lookup.subscriptionId), requestUrl.origin))
+            } catch (error) {
+                const transportResponse = craterTransportErrorResponse(error, request)
+                if (transportResponse) return transportResponse
+                console.error("Crater license snapshot lookup error:", error instanceof Error ? error.name : "Unknown error")
+                return craterJson({ error: "Could not open the requested license." }, 502)
+            }
+        }
         const returnUrl = resolveLicenseReturnUrl(requestUrl, locale)
         return noStoreRedirect(returnUrl)
     }
