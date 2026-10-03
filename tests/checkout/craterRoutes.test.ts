@@ -4,7 +4,6 @@ import test from "node:test"
 import { GET as listCustomers, PATCH as updateCustomer, POST as createOrGetCustomer } from "../../src/app/api/crater/customer/route"
 import { GET as getCustomerPaymentMethodSetupStatus, POST as createCustomerPaymentMethodSetup } from "../../src/app/api/crater/customer/payment-method-setup/route"
 import { GET as getCustomerPaymentMethods } from "../../src/app/api/crater/customer/payment-methods/route"
-import { POST as validateDiscount } from "../../src/app/api/crater/checkout/discount/route"
 import { POST as createCheckoutSession } from "../../src/app/api/crater/checkout/session/route"
 import { POST as createGuestUser } from "../../src/app/api/crater/guest/route"
 import { POST as createSession } from "../../src/app/api/crater/login/route"
@@ -1218,35 +1217,16 @@ test("customer updates require a valid Crater customer id", async () => {
     })
 })
 
-test("discount validation requires a code", async () => {
-    const response = await validateDiscount(
-        new Request("https://example.com/api/crater/checkout/discount", {
-            method: "POST",
-            headers: sessionHeaders,
-            body: JSON.stringify({}),
-        })
-    )
-
-    assert.equal(response.status, 400)
-    assert.deepEqual(await response.json(), {
-        error: "code is required.",
-    })
-})
-
-test("checkout and discount enforce independent route limits", async () => {
+test("checkout enforces its route limit", async () => {
     const environmentKeys = [
         "CRATER_CHECKOUT_RATE_LIMIT_MAX",
         "CRATER_CHECKOUT_RATE_LIMIT_WINDOW_SECONDS",
-        "CRATER_DISCOUNT_RATE_LIMIT_MAX",
-        "CRATER_DISCOUNT_RATE_LIMIT_WINDOW_SECONDS",
         "CRATER_RATE_LIMIT_TRUSTED_PROXY_HOPS",
     ] as const
     const previousEnvironment = Object.fromEntries(environmentKeys.map((key) => [key, process.env[key]]))
 
     process.env.CRATER_CHECKOUT_RATE_LIMIT_MAX = "1"
     process.env.CRATER_CHECKOUT_RATE_LIMIT_WINDOW_SECONDS = "90"
-    process.env.CRATER_DISCOUNT_RATE_LIMIT_MAX = "1"
-    process.env.CRATER_DISCOUNT_RATE_LIMIT_WINDOW_SECONDS = "90"
     process.env.CRATER_RATE_LIMIT_TRUSTED_PROXY_HOPS = "1"
 
     const request = (path: string) =>
@@ -1266,9 +1246,8 @@ test("checkout and discount enforce independent route limits", async () => {
 
     try {
         assert.equal((await createCheckoutSession(request("/api/crater/checkout/session"))).status, 400)
-        assert.equal((await validateDiscount(request("/api/crater/checkout/discount"))).status, 400)
 
-        const limitedResponses = await Promise.all([createCheckoutSession(request("/api/crater/checkout/session")), validateDiscount(request("/api/crater/checkout/discount"))])
+        const limitedResponses = [await createCheckoutSession(request("/api/crater/checkout/session"))]
 
         for (const response of limitedResponses) {
             assert.equal(response.status, 429)
@@ -1277,7 +1256,7 @@ test("checkout and discount enforce independent route limits", async () => {
             assert.equal(response.headers.get("ratelimit-remaining"), "0")
         }
 
-        assert.deepEqual(warnings.map((message) => (JSON.parse(message) as { policy: string }).policy).sort(), ["checkout", "discount"])
+        assert.deepEqual(warnings.map((message) => (JSON.parse(message) as { policy: string }).policy).sort(), ["checkout"])
     } finally {
         console.warn = originalWarn
         for (const key of environmentKeys) {
@@ -1288,7 +1267,7 @@ test("checkout and discount enforce independent route limits", async () => {
     }
 })
 
-test("login forwards domain error details and retired discount validation avoids Crater", async () => {
+test("login forwards documented Crater domain error details", async () => {
     const graphQLServer = await createGraphQLTestServer([
         {
             data: {
@@ -1318,23 +1297,11 @@ test("login forwards domain error details and retired discount validation avoids
                 body: JSON.stringify({ sagittariusToken: "invalid-sagittarius-token" }),
             })
         )
-        const discountResponse = await validateDiscount(
-            new Request("https://example.com/api/crater/checkout/discount", {
-                method: "POST",
-                headers: sessionHeaders,
-                body: JSON.stringify({ code: "EXPIRED" }),
-            })
-        )
-
         assert.equal(loginResponse.status, 422)
         assert.deepEqual(await loginResponse.json(), {
             error: "Crater could not create a user session.",
             errorCode: "INVALID_SAGITTARIUS_TOKEN",
             details: ["The Sagittarius token was rejected."],
-        })
-        assert.equal(discountResponse.status, 410)
-        assert.deepEqual(await discountResponse.json(), {
-            error: "Apply promotion codes through the active checkout session.",
         })
         assert.match(graphQLServer.requests[0].body.query ?? "", /fragment CraterErrorFields on Error/)
         assert.equal(graphQLServer.requests.length, 1)
