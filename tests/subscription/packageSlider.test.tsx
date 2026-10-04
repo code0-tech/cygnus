@@ -1,7 +1,7 @@
 import assert from "node:assert/strict"
 import test, { afterEach } from "node:test"
 import React, { useState } from "react"
-import { installDomTestEnvironment } from "../checkout/domTestEnvironment"
+import { installDomTestEnvironment } from "../helpers/domTestEnvironment"
 
 const dom = installDomTestEnvironment()
 const { act, cleanup, fireEvent, render, screen } = await import("@testing-library/react")

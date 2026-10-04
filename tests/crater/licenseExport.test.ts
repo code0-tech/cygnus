@@ -1,7 +1,7 @@
 import assert from "node:assert/strict"
 import test from "node:test"
 import { POST as exportLicense } from "../../src/app/api/crater/licenses/export/route"
-import { createGraphQLTestServer } from "../checkout/graphqlTestServer"
+import { createGraphQLTestServer } from "../helpers/graphqlTestServer"
 
 const licenseId = "gid://crater/License/42"
 const sessionHeaders = {

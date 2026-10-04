@@ -2,7 +2,7 @@ import assert from "node:assert/strict"
 import test, { afterEach, mock } from "node:test"
 import React from "react"
 import type { CheckoutData, ErrorsContent } from "@/lib/cms"
-import { installDomTestEnvironment } from "./domTestEnvironment"
+import { installDomTestEnvironment } from "../helpers/domTestEnvironment"
 
 installDomTestEnvironment()
 const checkoutSearchParams = new URLSearchParams({

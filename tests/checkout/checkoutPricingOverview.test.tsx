@@ -2,7 +2,7 @@ import assert from "node:assert/strict"
 import test, { afterEach, mock } from "node:test"
 import type { CheckoutData, SubscriptionConfigData } from "@/lib/cms"
 import React from "react"
-import { installDomTestEnvironment } from "./domTestEnvironment"
+import { installDomTestEnvironment } from "../helpers/domTestEnvironment"
 
 installDomTestEnvironment()
 

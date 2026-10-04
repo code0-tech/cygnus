@@ -1,7 +1,7 @@
 import assert from "node:assert/strict"
 import test, { afterEach } from "node:test"
 import { clearCheckoutContactDraft, getCheckoutContactDraftCustomerId, readCheckoutContactDraft, saveCheckoutContactDraft } from "../../src/lib/checkout/checkoutDraft"
-import { installDomTestEnvironment } from "./domTestEnvironment"
+import { installDomTestEnvironment } from "../helpers/domTestEnvironment"
 
 installDomTestEnvironment()
 

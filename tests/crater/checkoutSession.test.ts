@@ -1,7 +1,7 @@
 import assert from "node:assert/strict"
 import test, { mock } from "node:test"
 import type { SubscriptionConfigData } from "@/lib/cms"
-import { createGraphQLTestServer } from "./graphqlTestServer"
+import { createGraphQLTestServer } from "../helpers/graphqlTestServer"
 
 const subscriptionConfig = {
     aiTokens: {

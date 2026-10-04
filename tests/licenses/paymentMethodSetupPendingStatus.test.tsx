@@ -2,7 +2,7 @@ import assert from "node:assert/strict"
 import test, { afterEach, mock } from "node:test"
 import React from "react"
 import type { LicenseContent } from "../../src/lib/cms"
-import { installDomTestEnvironment } from "../checkout/domTestEnvironment"
+import { installDomTestEnvironment } from "../helpers/domTestEnvironment"
 
 installDomTestEnvironment("https://code0.example/en/licenses")
 
