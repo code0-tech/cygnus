@@ -1,6 +1,6 @@
 "use client"
 
-import { SummaryBadge } from "@/components/checkout/CheckoutSummaryBadge"
+import { StableBadge } from "@/components/ui/StableBadge"
 import { getIcon } from "@/components/ui/IconRenderer"
 import type { CheckoutData, SubscriptionConfigData } from "@/lib/cms"
 import { formatCompactNumber, formatCurrency } from "@/lib/formatters"
@@ -8,6 +8,8 @@ import type { AppLocale } from "@/lib/i18n"
 import { formatDiscountBadge } from "@/lib/subscription/calculator"
 import { Card } from "@code0-tech/pictor"
 import NumberFlow from "@number-flow/react"
+import type { IconColor } from "@/lib/cms"
+import type { ReactNode } from "react"
 
 interface CheckoutPricingOverviewData {
     aiTokenPrice: number
@@ -48,6 +50,26 @@ interface CheckoutPricingOverviewBaseProps {
     content: CheckoutData["summary"]
     locale: AppLocale
     subscriptionConfig: SubscriptionConfigData
+}
+
+const TONE_CLASS_NAME: Record<IconColor, string> = {
+    neutral: "border-white/10! bg-white/10! text-white!",
+    brand: "border-brand/10! bg-brand/10! text-brand!",
+    aqua: "border-aqua/10! bg-aqua/10! text-aqua!",
+    blue: "border-blue/10! bg-blue/10! text-blue!",
+    pink: "border-pink/10! bg-pink/10! text-pink!",
+    yellow: "border-yellow/10! bg-yellow/10! text-yellow!",
+    lime: "border-lime/10! bg-lime/10! text-lime!",
+    magenta: "border-magenta/10! bg-magenta/10! text-magenta!",
+}
+
+function SummaryBadge({ icon, value, tone = "neutral" }: { icon: ReactNode; value: ReactNode; tone?: IconColor }) {
+    return (
+        <StableBadge color={tone} border className={`min-w-0! max-w-full! rounded-xl! gap-1.5! pl-1.5! pr-2.5! py-0.5! text-sm! ${TONE_CLASS_NAME[tone]}`}>
+            <span className="inline-flex shrink-0 text-current">{icon}</span>
+            <span className="min-w-0 truncate font-medium">{value}</span>
+        </StableBadge>
+    )
 }
 
 type CheckoutPricingOverviewProps = CheckoutPricingOverviewBaseProps & ((CheckoutPricingOverviewData & { confirmedPricing?: undefined }) | { confirmedPricing: CheckoutConfirmedPricingOverviewData })

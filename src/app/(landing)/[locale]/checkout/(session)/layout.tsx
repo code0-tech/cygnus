@@ -1,4 +1,4 @@
-import { CheckoutSessionLayoutClient } from "@/components/checkout/CheckoutSessionLayoutClient"
+import { CheckoutSessionLayoutClient } from "@/components/checkout/session/CheckoutSessionLayoutClient"
 import { getErrorsContent } from "@/lib/cms"
 import { isSupportedLocale } from "@/lib/i18n"
 import type { ReactNode } from "react"

@@ -6,17 +6,57 @@ import type { StripeCheckoutSession } from "@stripe/stripe-js"
 import { installDomTestEnvironment } from "../helpers/domTestEnvironment"
 
 installDomTestEnvironment()
+const DialogTestContext = React.createContext<{ open: boolean; setOpen: (open: boolean) => void } | null>(null)
+function TestDialog({ children, open = false, onOpenChange }: { children: React.ReactNode; open?: boolean; onOpenChange?: (open: boolean) => void }) {
+    return <DialogTestContext.Provider value={{ open, setOpen: onOpenChange ?? (() => {}) }}>{children}</DialogTestContext.Provider>
+}
+function TestDialogTrigger({ asChild, children }: { asChild?: boolean; children: React.ReactElement<{ onClick?: (event: React.MouseEvent<HTMLElement>) => void }> }) {
+    const dialog = React.useContext(DialogTestContext)
+    const onClick = (event: React.MouseEvent<HTMLElement>) => {
+        children.props.onClick?.(event)
+        dialog?.setOpen(true)
+    }
+    return asChild ? React.cloneElement(children, { onClick }) : <button type="button" onClick={onClick}>{children}</button>
+}
+function TestDialogPortal({ children }: { children: React.ReactNode }) {
+    return React.useContext(DialogTestContext)?.open ? <>{children}</> : null
+}
+function TestDialogClose({ asChild, children }: { asChild?: boolean; children: React.ReactElement<{ onClick?: (event: React.MouseEvent<HTMLElement>) => void }> }) {
+    const dialog = React.useContext(DialogTestContext)
+    const onClick = (event: React.MouseEvent<HTMLElement>) => {
+        children.props.onClick?.(event)
+        dialog?.setOpen(false)
+    }
+    return asChild ? React.cloneElement(children, { onClick }) : <button type="button" onClick={onClick}>{children}</button>
+}
 let currentSearchParams = new URLSearchParams()
-mock.module("next/navigation", { namedExports: { usePathname: () => "/en/checkout", useSearchParams: () => currentSearchParams } })
+mock.module("next/navigation", {
+    namedExports: {
+        useParams: () => ({ locale: "en" }),
+        usePathname: () => "/en/checkout",
+        useRouter: () => ({ replace: () => {} }),
+        useSearchParams: () => currentSearchParams,
+    },
+})
 mock.module("@code0-tech/pictor", {
     namedExports: {
         Button: ({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button {...props}>{children}</button>,
+        Dialog: TestDialog,
+        DialogClose: TestDialogClose,
+        DialogContent: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => <div role="dialog" {...props}>{children}</div>,
+        DialogHeader: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+        DialogOverlay: () => null,
+        DialogPortal: TestDialogPortal,
+        DialogTitle: ({ children }: { children: React.ReactNode }) => <h2>{children}</h2>,
+        DialogTrigger: TestDialogTrigger,
         TextInput: (props: React.InputHTMLAttributes<HTMLInputElement>) => <div className="input"><input {...props} /></div>,
     },
 })
+mock.module("@/components/ui/Switch", { namedExports: { Switch: () => null } })
+mock.module("@/components/checkout/summary/CheckoutPricingOverview", { namedExports: { CheckoutPricingOverview: () => null } })
 const { cleanup, render, screen, waitFor } = await import("@testing-library/react")
 const userEvent = (await import("@testing-library/user-event")).default
-const { CheckoutDiscount } = await import("../../src/components/checkout/CheckoutDiscount")
+const { CheckoutDiscount } = await import("../../src/components/checkout/summary/CheckoutSummary")
 const props = {
     authenticated: true,
     buttonLabel: "Apply",

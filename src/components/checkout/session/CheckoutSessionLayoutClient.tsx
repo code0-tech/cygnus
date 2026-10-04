@@ -1,7 +1,7 @@
 "use client"
 
 import { LandingContainer } from "@/components/ui/LandingContainer"
-import { CraterSessionProvider } from "@/components/checkout/CraterSessionProvider"
+import { CraterSessionProvider } from "@/components/checkout/session/CraterSessionProvider"
 import { Container } from "@code0-tech/pictor"
 import Image from "next/image"
 import Link from "next/link"

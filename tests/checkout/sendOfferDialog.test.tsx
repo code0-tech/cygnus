@@ -25,7 +25,7 @@ mock.module("@code0-tech/pictor", {
 
 const { render, screen } = await import("@testing-library/react")
 const userEvent = (await import("@testing-library/user-event")).default
-const { SendOfferDialog } = await import("../../src/components/checkout/SendOfferDialog")
+const { SendOfferDialog } = await import("../../src/components/checkout/shared/SendOfferDialog")
 
 const content = {
     emailLabel: "Email",

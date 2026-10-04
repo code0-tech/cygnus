@@ -1,7 +1,7 @@
 "use client"
 
-import { useCraterSession } from "@/components/checkout/CraterSessionProvider"
-import { useCheckoutStage } from "@/components/checkout/CheckoutStage"
+import { useCraterSession } from "@/components/checkout/session/CraterSessionProvider"
+import { useCheckoutStage } from "@/components/checkout/state/CheckoutStageProvider"
 import type { CheckoutData, ErrorsContent } from "@/lib/cms"
 import { resolveCraterCustomerType } from "@/lib/crater/values"
 import { clearCheckoutContactDraft, readCheckoutContactDraft, saveCheckoutContactDraft } from "@/lib/checkout/checkoutDraft"
@@ -20,7 +20,7 @@ import type { AppLocale } from "@/lib/i18n"
 import { getStripePricingFromSession, getTaxQuoteFromSession, type CheckoutPromotionCodeSdk } from "@/lib/checkout/stripeCheckout"
 import type { StripeCheckoutContact, StripeCheckoutSession } from "@stripe/stripe-js"
 import { useSearchParams } from "next/navigation"
-import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 
 type CheckoutFormContent = CheckoutData["form"]
 const CHECKOUT_SESSION_REFRESH_LEAD_MS = 60_000
@@ -39,7 +39,7 @@ function getPreparationErrorMessage(error: unknown, errors: ErrorsContent) {
     return error.kind === "customer" ? errors.customerCreation : errors.checkoutSession
 }
 
-function useCreateCheckoutFormState(content: CheckoutFormContent, errors: ErrorsContent, locale: AppLocale) {
+export function useCheckoutForm(content: CheckoutFormContent, errors: ErrorsContent, locale: AppLocale) {
     const searchParams = useSearchParams()
     const { stage, setStage, setHasError } = useCheckoutStage()
     const [isLoading, setIsLoading] = useState(false)
@@ -93,14 +93,17 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, errors: Errors
         setStripeBillingAddressComplete(complete)
     }, [])
 
-    const setStripeEmail = useCallback((email: string | null, complete: boolean) => {
-        const resolvedEmail = guestEmail ?? email
-        const resolvedComplete = guestEmail ? true : complete
-        stripeEmailRef.current = resolvedEmail
-        stripeEmailCompleteRef.current = resolvedComplete
-        setStripeEmailState(resolvedEmail)
-        setStripeEmailComplete(resolvedComplete)
-    }, [guestEmail])
+    const setStripeEmail = useCallback(
+        (email: string | null, complete: boolean) => {
+            const resolvedEmail = guestEmail ?? email
+            const resolvedComplete = guestEmail ? true : complete
+            stripeEmailRef.current = resolvedEmail
+            stripeEmailCompleteRef.current = resolvedComplete
+            setStripeEmailState(resolvedEmail)
+            setStripeEmailComplete(resolvedComplete)
+        },
+        [guestEmail]
+    )
 
     const setStripeEmailSynced = useCallback((synced: boolean) => {
         stripeEmailSyncedRef.current = synced
@@ -113,38 +116,41 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, errors: Errors
 
     useEffect(() => () => setHasError(false), [setHasError])
 
-    const startCheckoutSessionRefresh = useCallback((checkoutSearchParams: URLSearchParams) => {
-        const customerId = selectedCustomerIdRef.current
-        if (!customerId) return Promise.resolve(false)
-        const requestId = ++sessionRefreshRequestRef.current
-        setCheckoutSession(null)
-        setTaxQuote(null)
-        setStripePricing(null)
-        setIsRefreshingSession(true)
-        setErrorMessage(null)
-        setStripeSessionError(null)
+    const startCheckoutSessionRefresh = useCallback(
+        (checkoutSearchParams: URLSearchParams) => {
+            const customerId = selectedCustomerIdRef.current
+            if (!customerId) return Promise.resolve(false)
+            const requestId = ++sessionRefreshRequestRef.current
+            setCheckoutSession(null)
+            setTaxQuote(null)
+            setStripePricing(null)
+            setIsRefreshingSession(true)
+            setErrorMessage(null)
+            setStripeSessionError(null)
 
-        let request: Promise<boolean>
-        request = createCheckoutSession({ customerId, locale, searchParams: checkoutSearchParams })
-            .then((session) => {
-                if (requestId !== sessionRefreshRequestRef.current) return false
-                setCheckoutSession(session)
-                return true
-            })
-            .catch((error) => {
-                if (requestId !== sessionRefreshRequestRef.current) return false
-                console.error("Failed to refresh the Crater checkout session:", error)
-                setErrorMessage(getPreparationErrorMessage(error, errors))
-                return false
-            })
-            .finally(() => {
-                if (checkoutRefreshPromiseRef.current === request) checkoutRefreshPromiseRef.current = null
-                if (requestId === sessionRefreshRequestRef.current) setIsRefreshingSession(false)
-            })
+            let request: Promise<boolean>
+            request = createCheckoutSession({ customerId, locale, searchParams: checkoutSearchParams })
+                .then((session) => {
+                    if (requestId !== sessionRefreshRequestRef.current) return false
+                    setCheckoutSession(session)
+                    return true
+                })
+                .catch((error) => {
+                    if (requestId !== sessionRefreshRequestRef.current) return false
+                    console.error("Failed to refresh the Crater checkout session:", error)
+                    setErrorMessage(getPreparationErrorMessage(error, errors))
+                    return false
+                })
+                .finally(() => {
+                    if (checkoutRefreshPromiseRef.current === request) checkoutRefreshPromiseRef.current = null
+                    if (requestId === sessionRefreshRequestRef.current) setIsRefreshingSession(false)
+                })
 
-        checkoutRefreshPromiseRef.current = request
-        return request
-    }, [errors, locale])
+            checkoutRefreshPromiseRef.current = request
+            return request
+        },
+        [errors, locale]
+    )
 
     const refreshCheckoutSession = useCallback(() => {
         if (checkoutRefreshPromiseRef.current) return checkoutRefreshPromiseRef.current
@@ -175,14 +181,19 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, errors: Errors
 
         try {
             const stored: unknown = JSON.parse(window.sessionStorage.getItem(CHECKOUT_LOAD_RECOVERY_KEY) ?? "null")
-            if (stored && typeof stored === "object" && "recoveryId" in stored && "expiresAt" in stored && stored.recoveryId === recoveryId && typeof stored.expiresAt === "number" && stored.expiresAt > Date.now()) {
+            if (
+                stored &&
+                typeof stored === "object" &&
+                "recoveryId" in stored &&
+                "expiresAt" in stored &&
+                stored.recoveryId === recoveryId &&
+                typeof stored.expiresAt === "number" &&
+                stored.expiresAt > Date.now()
+            ) {
                 return Promise.resolve(false)
             }
 
-            window.sessionStorage.setItem(
-                CHECKOUT_LOAD_RECOVERY_KEY,
-                JSON.stringify({ recoveryId, expiresAt: Date.now() + CHECKOUT_LOAD_RECOVERY_TTL_MS })
-            )
+            window.sessionStorage.setItem(CHECKOUT_LOAD_RECOVERY_KEY, JSON.stringify({ recoveryId, expiresAt: Date.now() + CHECKOUT_LOAD_RECOVERY_TTL_MS }))
         } catch {
             // A reload still has a chance to recover Stripe when session storage is unavailable.
         }
@@ -224,7 +235,7 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, errors: Errors
         const checkoutSearchParams = new URLSearchParams(searchParamsString)
         const restoredContactDraft = readCheckoutContactDraft(checkoutSearchParams)
         const initialEmail = guestEmail ?? restoredContactDraft?.email ?? null
-        const initialEmailComplete = guestEmail ? true : restoredContactDraft?.emailComplete ?? false
+        const initialEmailComplete = guestEmail ? true : (restoredContactDraft?.emailComplete ?? false)
         formDraftReadyRef.current = false
 
         setIsLoading(true)
@@ -321,7 +332,16 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, errors: Errors
             selectedCustomerIdRef.current = customerId
             setSelectedCustomerId(customerId)
             // Persist the created ID before session creation so a failed session can be retried without creating another customer.
-            saveCheckoutContactDraft({ billingAddress: stripeBillingAddress, billingAddressComplete: true, customerId, email: stripeEmail, emailComplete: true, emailSyncedToStripe: true, searchParams: new URLSearchParams(searchParamsString), stage: "payment" })
+            saveCheckoutContactDraft({
+                billingAddress: stripeBillingAddress,
+                billingAddressComplete: true,
+                customerId,
+                email: stripeEmail,
+                emailComplete: true,
+                emailSyncedToStripe: true,
+                searchParams: new URLSearchParams(searchParamsString),
+                stage: "payment",
+            })
             setStripeEmailSynced(true)
             const session = await createCheckoutSession({ customerId, locale, searchParams: new URLSearchParams(searchParamsString) })
             if (requestId !== sessionRefreshRequestRef.current) return
@@ -333,7 +353,20 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, errors: Errors
             customerCreationPendingRef.current = false
             if (requestId === sessionRefreshRequestRef.current) setIsLoading(false)
         }
-    }, [customerType, errors, isLoading, isRefreshingSession, locale, searchParamsString, setStage, setStripeEmailSynced, stripeBillingAddress, stripeBillingAddressComplete, stripeEmail, stripeEmailComplete])
+    }, [
+        customerType,
+        errors,
+        isLoading,
+        isRefreshingSession,
+        locale,
+        searchParamsString,
+        setStage,
+        setStripeEmailSynced,
+        stripeBillingAddress,
+        stripeBillingAddressComplete,
+        stripeEmail,
+        stripeEmailComplete,
+    ])
 
     const selectCheckoutCustomer = useCallback(
         async (customerId: string | null) => {
@@ -354,9 +387,7 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, errors: Errors
             setStage("billingAddress")
 
             try {
-                const customer = customerId
-                    ? customers.find((candidate) => candidate.id === customerId)
-                    : undefined
+                const customer = customerId ? customers.find((candidate) => candidate.id === customerId) : undefined
                 if (customerId && !customer) throw new CheckoutSubmissionError("customer", "INVALID_CHECKOUT_CUSTOMER", "The selected customer is unavailable.")
 
                 selectedCustomerIdRef.current = customer?.id ?? null
@@ -455,33 +486,4 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, errors: Errors
         stripePricing,
         taxQuote,
     }
-}
-
-type CheckoutFormState = ReturnType<typeof useCreateCheckoutFormState>
-
-const CheckoutFormContext = createContext<CheckoutFormState | null>(null)
-
-export function CheckoutFormProvider({
-    children,
-    content,
-    errors,
-    locale,
-}: {
-    children: ReactNode
-    content: CheckoutFormContent
-    errors: ErrorsContent
-    locale: AppLocale
-}) {
-    const state = useCreateCheckoutFormState(content, errors, locale)
-    return <CheckoutFormContext.Provider value={state}>{children}</CheckoutFormContext.Provider>
-}
-
-export function useCheckoutFormState() {
-    const context = useContext(CheckoutFormContext)
-    if (!context) throw new Error("useCheckoutFormState must be used within a CheckoutFormProvider")
-    return context
-}
-
-export function useOptionalCheckoutFormState() {
-    return useContext(CheckoutFormContext)
 }

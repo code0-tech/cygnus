@@ -1,6 +1,7 @@
 "use client"
 
 import { ButtonLoader } from "@/components/ui/Loader"
+import { createGuestCheckout } from "@/lib/checkout/client"
 import { Button, EmailInput, emailValidation } from "@code0-tech/pictor"
 import { useRouter } from "next/navigation"
 import { type SyntheticEvent, useState } from "react"
@@ -29,19 +30,9 @@ export function CheckoutGuestForm({ emailLabel, emailPlaceholder, errorMessage, 
         setError(null)
 
         try {
-            const response = await fetch("/api/crater/guest", {
-                method: "POST",
-                credentials: "same-origin",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify({ email: normalizedEmail }),
-                referrerPolicy: "no-referrer",
-            })
-            if (!response.ok) throw new Error(errorMessage)
-
-            const result: unknown = await response.json()
-            if (!result || typeof result !== "object" || !("checkoutId" in result) || typeof result.checkoutId !== "string") throw new Error(errorMessage)
+            const checkoutId = await createGuestCheckout(normalizedEmail)
             const target = new URL(guestHref, window.location.origin)
-            target.searchParams.set("guestCheckout", result.checkoutId)
+            target.searchParams.set("guestCheckout", checkoutId)
             router.push(`${target.pathname}${target.search}`)
         } catch {
             setError(errorMessage)

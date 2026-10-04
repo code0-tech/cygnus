@@ -46,7 +46,7 @@ mock.module("@/lib/licenses/client", {
 
 const { cleanup, render, screen, waitFor } = await import("@testing-library/react")
 const userEvent = (await import("@testing-library/user-event")).default
-const { CheckoutSuccessStatus } = await import("../../src/components/checkout/CheckoutSuccessStatus")
+const { CheckoutSuccessStatus } = await import("../../src/components/checkout/success/CheckoutSuccessStatus")
 const originalFetch = globalThis.fetch
 const originalDateNow = Date.now
 

@@ -5,6 +5,7 @@ import type { AppLocale } from "@/lib/i18n"
 const INITIAL_POLL_DELAY_MS = 2_000
 const MAX_POLL_DELAY_MS = 10_000
 const MAX_POLLING_DURATION_MS = 5 * 60_000
+const CHECKOUT_STATUS_REQUEST_TIMEOUT_MS = 10_000
 
 export function checkoutFetch(input: RequestInfo | URL, init?: RequestInit) {
     const headers = new Headers(init?.headers)
@@ -15,6 +16,91 @@ export function checkoutFetch(input: RequestInfo | URL, init?: RequestInit) {
 
 export function replaceCheckoutPage(url: string) {
     window.location.replace(url)
+}
+
+export async function createGuestCheckout(email: string) {
+    const response = await checkoutFetch("/api/crater/guest", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+        referrerPolicy: "no-referrer",
+    })
+    if (!response.ok) throw new Error("Could not create a guest checkout.")
+
+    const result: unknown = await response.json()
+    if (!result || typeof result !== "object" || !("checkoutId" in result) || typeof result.checkoutId !== "string" || !result.checkoutId) {
+        throw new Error("Crater returned no guest checkout ID.")
+    }
+
+    return result.checkoutId
+}
+
+async function readCraterSessionError(response: Response, fallback: string) {
+    const body: unknown = await response.json().catch(() => null)
+    if (!body || typeof body !== "object") return fallback
+
+    const payload = body as Record<string, unknown>
+    const message = typeof payload.error === "string" ? payload.error : fallback
+    const errorCode = typeof payload.errorCode === "string" ? payload.errorCode : null
+    const details = Array.isArray(payload.details) ? payload.details.filter((detail): detail is string => typeof detail === "string") : []
+    const diagnostics = [errorCode, details.join(", ")].filter(Boolean)
+
+    return diagnostics.length ? `${message} (${diagnostics.join(": ")})` : message
+}
+
+export async function createCraterSession() {
+    const response = await checkoutFetch("/api/crater/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+        credentials: "same-origin",
+        referrerPolicy: "no-referrer",
+    })
+    if (!response.ok) throw new Error(await readCraterSessionError(response, "Failed to create a Crater session."))
+}
+
+export async function restoreCraterSession() {
+    const response = await checkoutFetch("/api/crater/auth/session", {
+        credentials: "same-origin",
+        cache: "no-store",
+    })
+    if (response.status === 401 || response.status === 403) return null
+    if (!response.ok) throw new Error(await readCraterSessionError(response, "Failed to validate the Crater session."))
+
+    const body: unknown = await response.json()
+    const guestEmail = body && typeof body === "object" && "guestEmail" in body && typeof body.guestEmail === "string" ? body.guestEmail : null
+    return { guestEmail }
+}
+
+export async function getCheckoutCompletionStatus(sessionId: string, signal: AbortSignal) {
+    const statusUrl = new URL("/api/crater/checkout/status", window.location.origin)
+    statusUrl.searchParams.set("sessionId", sessionId)
+    const requestController = new AbortController()
+    let timedOut = false
+    const abortRequest = () => requestController.abort()
+    if (signal.aborted) abortRequest()
+    else signal.addEventListener("abort", abortRequest, { once: true })
+    const requestTimeout = window.setTimeout(() => {
+        timedOut = true
+        abortRequest()
+    }, CHECKOUT_STATUS_REQUEST_TIMEOUT_MS)
+
+    try {
+        const response = await checkoutFetch(statusUrl, { cache: "no-store", credentials: "same-origin", signal: requestController.signal })
+        try {
+            return { body: await response.json(), ok: response.ok }
+        } catch (error) {
+            if (timedOut) throw error
+            return { body: null, ok: response.ok }
+        }
+    } catch (error) {
+        if (timedOut) throw new Error("The checkout status request timed out.")
+        throw error
+    } finally {
+        window.clearTimeout(requestTimeout)
+        signal.removeEventListener("abort", abortRequest)
+    }
 }
 
 export function getCheckoutStatusPollDelay(attempt: number) {

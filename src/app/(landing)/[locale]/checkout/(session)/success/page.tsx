@@ -1,5 +1,5 @@
-import { CheckoutLegalFooter } from "@/components/checkout/CheckoutLegalFooter"
-import { CheckoutSuccessStatus } from "@/components/checkout/CheckoutSuccessStatus"
+import { CheckoutLegalFooter } from "@/components/checkout/shared/CheckoutLegalFooter"
+import { CheckoutSuccessStatus } from "@/components/checkout/success/CheckoutSuccessStatus"
 import { parseCheckoutSessionId } from "@/lib/crater/values"
 import { getCheckoutContent, getErrorsContent, getFooter, getLicenseContent, getSubscriptionConfig } from "@/lib/cms"
 import { isSupportedLocale } from "@/lib/i18n"
