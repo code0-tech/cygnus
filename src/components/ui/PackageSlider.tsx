@@ -27,7 +27,7 @@ export function PackageSlider({ packages, value, onChange, onValueCommit, valueL
             {...props}
             min={0}
             max={lastIndex}
-            lines={36}
+            lines={props.lines ?? 36}
             step={1}
             smoothDrag
             disabled={props.disabled || packages.length < 2}
