@@ -1,7 +1,7 @@
 import assert from "node:assert/strict"
 import test from "node:test"
 import { renderToStaticMarkup } from "react-dom/server"
-import { SubscriptionPendingUpdateNotice } from "../../src/components/licenses/SubscriptionPendingUpdateNotice"
+import { SubscriptionPendingUpdateNotice } from "../../src/components/licenses/shared/SubscriptionPendingUpdateNotice"
 import type { LicenseContent } from "../../src/lib/cms"
 
 const content = {

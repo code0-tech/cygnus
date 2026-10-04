@@ -14,8 +14,6 @@ interface CustomerPaymentMethodCardProps {
 }
 
 export function CustomerPaymentMethodCard({ action, defaultLabel, method }: CustomerPaymentMethodCardProps) {
-    // Crater resolves the details from Stripe on every read, so they can be missing while Stripe is not
-    // answering. The payment method id is then the only thing left to show.
     const title = method.brand?.trim() || method.type?.replaceAll("_", " ") || null
     const expiry = method.expiresMonth && method.expiresYear ? `${String(method.expiresMonth).padStart(2, "0")}/${method.expiresYear}` : null
 
@@ -42,7 +40,6 @@ export function CustomerPaymentMethodCard({ action, defaultLabel, method }: Cust
     )
 }
 
-// The loading label lives inside the row: any extra element before the first CardSection breaks Pictor's :first-child card styling.
 export function CustomerPaymentMethodCardSkeleton({ label }: { label?: string }) {
     return (
         <CardSection border className="flex animate-pulse items-center gap-4 motion-reduce:animate-none">

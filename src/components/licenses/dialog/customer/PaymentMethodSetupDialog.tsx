@@ -1,8 +1,8 @@
 "use client"
 
-import { PaymentMethodSetupElement, PaymentMethodSetupPendingStatus, type PaymentMethodSetupOwner } from "@/components/licenses/dialog/PaymentMethodSetupElement"
-import { LicenseDialog } from "@/components/licenses/dialog/LicenseDialog"
-import { LicenseTabAlert, LicenseTabHeader } from "@/components/licenses/dialog/LicenseTabLayout"
+import { PaymentMethodSetupElement, PaymentMethodSetupPendingStatus, type PaymentMethodSetupOwner } from "@/components/licenses/dialog/customer/PaymentMethodSetupElement"
+import { LicenseDialog } from "@/components/licenses/dialog/shared/LicenseDialog"
+import { LicenseTabAlert, LicenseTabHeader } from "@/components/licenses/dialog/shared/LicenseTabLayout"
 import { createPaymentMethodSetup } from "@/lib/licenses/client"
 import type { ErrorsContent, LicenseContent } from "@/lib/cms"
 import { Button, Spacing } from "@code0-tech/pictor"

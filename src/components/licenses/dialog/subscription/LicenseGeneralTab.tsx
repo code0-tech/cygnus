@@ -1,11 +1,11 @@
 "use client"
 
+import { SubscriptionPendingUpdateNotice } from "@/components/licenses/shared/SubscriptionPendingUpdateNotice"
 import { type PaymentPeriod, PAYMENT_PERIOD_OPTIONS } from "@/lib/subscription/types"
-import { SubscriptionPendingUpdateNotice } from "@/components/licenses/SubscriptionPendingUpdateNotice"
 
-import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
-import { LicenseStatusBadge } from "@/components/licenses/LicenseStatusBadge"
-import { LicenseTabAlert, LicenseTabHeader, LicenseTabRow, LicenseTabSection } from "@/components/licenses/dialog/LicenseTabLayout"
+import { useLicenseData } from "@/components/licenses/data/LicenseDataProvider"
+import { getLicenseStatusBadgeColor } from "@/components/licenses/shared/LicenseStatusDot"
+import { LicenseTabHeader, LicenseTabRow, LicenseTabSection } from "@/components/licenses/dialog/shared/LicenseTabLayout"
 import { ButtonLoader } from "@/components/ui/Loader"
 import { Switch } from "@/components/ui/Switch"
 import { useSubscriptionUpdatePreview } from "@/hooks/useSubscriptionUpdatePreview"
@@ -15,10 +15,7 @@ import type { AppLocale } from "@/lib/i18n"
 import { formatLicenseDisplayValue } from "@/lib/licenses/displayValues"
 import { createLicensePath, getNamespaceDisplayId } from "@/lib/licenses/routes"
 import type { LicenseDashboardLicense } from "@/lib/licenses/types"
-import { resolveSubscriptionCustomerType } from "@/lib/crater/values"
-
 import { updateSubscription } from "@/lib/subscription/client"
-
 import { Badge, Button, Text } from "@code0-tech/pictor"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
@@ -38,7 +35,6 @@ export function LicenseGeneralTab({ content, errors, license, locale, namespaceH
     const router = useRouter()
     const { updateLicense } = useLicenseData()
     const subscriptionId = license?.subscriptionId
-    const customerType = resolveSubscriptionCustomerType(license?.customerType)
     const periodOptions = PAYMENT_PERIOD_OPTIONS
     const currentPeriod = license?.paymentPeriod as PaymentPeriod | undefined
     const [selectedPeriod, setSelectedPeriod] = useState<PaymentPeriod | null>(null)
@@ -98,9 +94,9 @@ export function LicenseGeneralTab({ content, errors, license, locale, namespaceH
                         <LicenseTabRow
                             title={content.dashboard.statusLabel}
                             action={
-                                <LicenseStatusBadge status={license.subscriptionStatus ?? license.status}>
+                                <Badge color={getLicenseStatusBadgeColor(license.subscriptionStatus ?? license.status)}>
                                     {formatLicenseDisplayValue(license.subscriptionStatus ?? license.status, "status", content.values)}
-                                </LicenseStatusBadge>
+                                </Badge>
                             }
                         />
                         <LicenseTabRow title={content.billing.currentPeriodEndLabel} action={<Badge color="tertiary">{formatDate(license.currentPeriodEnd)}</Badge>} />

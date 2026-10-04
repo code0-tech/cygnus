@@ -1,4 +1,4 @@
-import { LicenseLayout } from "@/components/licenses/LicenseLayout"
+import { LicenseLayout } from "@/components/licenses/layout/LicenseLayout"
 import { getErrorsContent, getLicenseContent } from "@/lib/cms"
 import { isSupportedLocale } from "@/lib/i18n"
 import { notFound } from "next/navigation"

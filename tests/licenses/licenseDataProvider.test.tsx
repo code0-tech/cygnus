@@ -12,7 +12,7 @@ mock.module("next/navigation", {
 })
 
 const { act, cleanup, fireEvent, render, screen, waitFor } = await import("@testing-library/react")
-const { LicenseDataProvider, useLicenseData } = await import("../../src/components/licenses/LicenseDataProvider")
+const { LicenseDataProvider, useLicenseData } = await import("../../src/components/licenses/data/LicenseDataProvider")
 const originalFetch = globalThis.fetch
 const originalDateNow = Date.now
 

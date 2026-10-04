@@ -1,7 +1,6 @@
 "use client"
 
-import { LicenseDeploymentIcon } from "@/components/licenses/LicenseDeploymentIcon"
-import { isLicenseStatusError, LicenseStatusDot } from "@/components/licenses/LicenseStatusDot"
+import { isLicenseStatusError, LicenseStatusDot } from "@/components/licenses/shared/LicenseStatusDot"
 import { ButtonLoader } from "@/components/ui/Loader"
 import { StableBadge } from "@/components/ui/StableBadge"
 import type { LicenseContent } from "@/lib/cms"
@@ -27,7 +26,7 @@ import {
     ScrollAreaViewport,
     Text,
 } from "@code0-tech/pictor"
-import { IconArrowAutofitLeftFilled, IconArrowLeft, IconChevronDown, IconCreditCard, IconKey, IconMenu2, IconTrendingUp, IconUser } from "@tabler/icons-react"
+import { IconArrowAutofitLeftFilled, IconArrowLeft, IconChevronDown, IconCloud, IconCreditCard, IconKey, IconMenu2, IconServer, IconTrendingUp, IconUser } from "@tabler/icons-react"
 import BorderBeam from "border-beam"
 import Image from "next/image"
 import Link from "next/link"
@@ -230,7 +229,7 @@ export function LicenseSidebar({ content, isLoading, isLoggingOut, locale, licen
                                                 className={licenseIsActive ? "w-full! justify-start! bg-white/7! text-left!" : "w-full! justify-start! text-left!"}
                                             >
                                                 <span className="relative shrink-0">
-                                                    <LicenseDeploymentIcon deploymentType={license.deploymentType} size={16} />
+                                                    {license.deploymentType === "self_hosted" ? <IconServer aria-hidden="true" size={16} /> : <IconCloud aria-hidden="true" size={16} />}
                                                     {isLicenseStatusError(license.status) ? (
                                                         <LicenseStatusDot status={license.status} aria-label={status} title={status} className="absolute -bottom-0.5 -right-0.5 ring-2 ring-light" />
                                                     ) : null}
@@ -303,7 +302,7 @@ export function LicenseSidebar({ content, isLoading, isLoggingOut, locale, licen
                                                             )}
                                                         >
                                                             <span className="relative shrink-0">
-                                                                <LicenseDeploymentIcon deploymentType={license.deploymentType} />
+                                                                {license.deploymentType === "self_hosted" ? <IconServer aria-hidden="true" size={16} /> : <IconCloud aria-hidden="true" size={16} />}
                                                                 {isLicenseStatusError(license.status) ? (
                                                                     <LicenseStatusDot
                                                                         status={license.status}

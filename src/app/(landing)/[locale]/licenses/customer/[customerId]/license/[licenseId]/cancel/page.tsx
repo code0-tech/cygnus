@@ -1,4 +1,4 @@
-import { LicenseCancelDialog } from "@/components/licenses/dialog/LicenseCancelDialog"
+import { LicenseCancelDialog } from "@/components/licenses/dialog/subscription/LicenseCancelDialog"
 import { getErrorsContent, getLicenseContent } from "@/lib/cms"
 import { isSupportedLocale } from "@/lib/i18n"
 import { notFound } from "next/navigation"

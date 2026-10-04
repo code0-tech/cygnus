@@ -33,7 +33,7 @@ mock.module("@stripe/stripe-js", {
 })
 
 const { cleanup, render, screen } = await import("@testing-library/react")
-const { PaymentMethodSetupPendingStatus } = await import("../../src/components/licenses/dialog/PaymentMethodSetupElement")
+const { PaymentMethodSetupPendingStatus } = await import("../../src/components/licenses/dialog/customer/PaymentMethodSetupElement")
 const originalFetch = globalThis.fetch
 
 const content = {

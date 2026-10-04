@@ -1,8 +1,8 @@
 "use client"
 
-import { LicenseDataProvider, useLicenseData } from "@/components/licenses/LicenseDataProvider"
-import { LicensePrimarySidebar } from "@/components/licenses/LicensePrimarySidebar"
-import { LicenseSidebar } from "@/components/licenses/LicenseSidebar"
+import { LicenseDataProvider, useLicenseData } from "@/components/licenses/data/LicenseDataProvider"
+import { LicensePrimarySidebar } from "@/components/licenses/layout/LicensePrimarySidebar"
+import { LicenseSidebar } from "@/components/licenses/layout/LicenseSidebar"
 import { logoutLicenseSession } from "@/lib/licenses/client"
 import type { ErrorsContent, LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
