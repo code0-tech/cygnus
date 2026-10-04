@@ -1,273 +1,16 @@
 "use client"
 
-import { getStripePricingFromSession, getTaxQuoteFromSession, type CheckoutPromotionCodeSdk } from "@/lib/checkout/stripeCheckout"
-import type { CheckoutData, ErrorsContent } from "@/lib/cms"
-import type { CheckoutSessionData, CheckoutStripePricingData, CheckoutTaxQuoteData } from "@/lib/checkout/client"
+import { getStripePricingFromSession, getTaxQuoteFromSession } from "@/lib/checkout/stripeCheckout"
 import { AcceptTermsCheckbox } from "@/components/forms/AcceptTermsCheckbox"
-import { useCheckoutStage } from "@/components/checkout/CheckoutStage"
+import { useCheckoutStage } from "@/components/checkout/state/CheckoutStageProvider"
 import { ButtonLoader } from "@/components/ui/Loader"
-import { SendOfferDialog } from "@/components/checkout/SendOfferDialog"
+import { SendOfferDialog } from "@/components/checkout/shared/SendOfferDialog"
 import { Button, EmailInput } from "@code0-tech/pictor"
 import { IconAlertTriangle } from "@tabler/icons-react"
-import { BillingAddressElement, CheckoutElementsProvider, ContactDetailsElement, PaymentElement, TaxIdElement, useCheckoutElements } from "@stripe/react-stripe-js/checkout"
-import { loadStripe, type StripeCheckoutContact, type StripeCheckoutElementsSdkOptions } from "@stripe/stripe-js"
+import { BillingAddressElement, ContactDetailsElement, PaymentElement, TaxIdElement, useCheckoutElements } from "@stripe/react-stripe-js/checkout"
 import { useParams } from "next/navigation"
-import { useCallback, useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react"
-
-type CheckoutFormContent = CheckoutData["form"]
-
-const stripePublicKey = process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY
-export const stripePromise = stripePublicKey ? loadStripe(stripePublicKey, { betas: ["custom_checkout_tax_id_1"], locale: "en" }) : null
-const STRIPE_APPEARANCE_VERSION = "pictor-7"
-export const stripeAppearance = {
-    theme: "night",
-    labels: "above",
-    variables: {
-        colorPrimary: "#72f896",
-        colorBackground: "#201e2c",
-        colorText: "#ffffff",
-        colorTextSecondary: "rgba(255, 255, 255, 0.5)",
-        colorTextPlaceholder: "rgba(255, 255, 255, 0.35)",
-        colorDanger: "#ef5b68",
-        tabIconColor: "rgba(255, 255, 255, 0.7)",
-        tabIconHoverColor: "#ffffff",
-        tabIconSelectedColor: "#ffffff",
-        tabIconMoreColor: "rgba(255, 255, 255, 0.7)",
-        tabIconMoreHoverColor: "#ffffff",
-        fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif",
-        fontSizeBase: "13px",
-        fontWeightNormal: "400",
-        fontWeightMedium: "400",
-        spacingUnit: "4px",
-        gridRowSpacing: "16px",
-        borderRadius: "16px",
-        focusBoxShadow: "none",
-        focusOutline: "none",
-        inputBoxShadow: "inset 0 1px 1px rgba(255, 255, 255, 0.1)",
-        inputFocusBoxShadow: "none",
-        inputFocusColorBorder: "transparent",
-        labelColorText: "rgba(255, 255, 255, 0.5)",
-        labelFontSize: "11px",
-        labelFontWeight: "400",
-        labelSpacing: "7px",
-    },
-    rules: {
-        ".Input": {
-            backgroundColor: "#272532",
-            border: "none",
-            boxShadow: "inset 0 1px 1px rgba(255, 255, 255, 0.1)",
-            padding: "11px",
-            letterSpacing: "-0.5px",
-        },
-        ".Input:hover": {
-            backgroundColor: "rgba(191, 191, 191, 0.15)",
-        },
-        ".Input:focus": {
-            backgroundColor: "rgba(191, 191, 191, 0.15)",
-            border: "none",
-            boxShadow: "none",
-            outline: "none",
-        },
-        ".Input--invalid": {
-            backgroundColor: "#1c0516",
-            border: "none",
-            boxShadow: "inset 0 1px 1px rgba(217, 4, 41, 0.1)",
-        },
-        ".Dropdown": {
-            backgroundColor: "#191825",
-            border: "none",
-            borderRadius: "16px",
-            boxShadow: "inset 0 1px 1px rgba(255, 255, 255, 0.1), 0 12px 32px rgba(0, 0, 0, 0.35)",
-        },
-        ".DropdownItem": {
-            backgroundColor: "transparent",
-            borderRadius: "10px",
-            color: "rgba(255, 255, 255, 0.75)",
-            fontSize: "13px",
-            margin: "4px",
-            padding: "10px 12px",
-        },
-        ".DropdownItem--highlight": {
-            backgroundColor: "#201e2c",
-            color: "#ffffff",
-        },
-        ".DropdownItem:active": {
-            backgroundColor: "rgba(191, 191, 191, 0.2)",
-            color: "#ffffff",
-        },
-        ".DropdownItem:focus": {
-            backgroundColor: "#201e2c",
-            color: "#ffffff",
-            outline: "none",
-        },
-        ".Label": {
-            color: "rgba(255, 255, 255, 0.5)",
-            fontSize: "11px",
-            fontWeight: "400",
-            letterSpacing: "-0.5px",
-            textTransform: "uppercase",
-        },
-        ".Block": {
-            backgroundColor: "#191825",
-            border: "none",
-            boxShadow: "inset 0 1px 1px rgba(191, 191, 191, 0.1)",
-            outline: "none",
-        },
-        ".PickerItem": {
-            backgroundColor: "#191825",
-            border: "none",
-            boxShadow: "inset 0 1px 1px rgba(191, 191, 191, 0.1)",
-            outline: "none",
-        },
-        ".PickerItem--selected": {
-            backgroundColor: "#191825",
-            border: "none",
-            boxShadow: "inset 0 1px 1px rgba(191, 191, 191, 0.1)",
-            outline: "none",
-        },
-        ".PickerItem:focus": {
-            border: "none",
-            boxShadow: "inset 0 1px 1px rgba(191, 191, 191, 0.1)",
-            outline: "none",
-        },
-        ".PickerItem:hover": {
-            border: "none",
-            boxShadow: "inset 0 1px 1px rgba(191, 191, 191, 0.1)",
-            outline: "none",
-        },
-        ".PickerItem--highlight": {
-            border: "none",
-            boxShadow: "inset 0 1px 1px rgba(191, 191, 191, 0.1)",
-            outline: "none",
-        },
-        ".PickerItem:active": {
-            border: "none",
-            boxShadow: "inset 0 1px 1px rgba(191, 191, 191, 0.1)",
-            outline: "none",
-        },
-        ".PickerItem--selected:hover": {
-            backgroundColor: "#191825",
-            border: "none",
-            borderColor: "transparent",
-            borderWidth: "0px",
-            boxShadow: "inset 0 1px 1px rgba(191, 191, 191, 0.1)",
-            outline: "none",
-            outlineOffset: "0px",
-        },
-        ".PickerItem--selected:focus": {
-            backgroundColor: "#191825",
-            border: "none",
-            boxShadow: "inset 0 1px 1px rgba(191, 191, 191, 0.1)",
-            outline: "none",
-        },
-        ".PickerItem--selected:active": {
-            backgroundColor: "#191825",
-            border: "none",
-            boxShadow: "inset 0 1px 1px rgba(191, 191, 191, 0.1)",
-            outline: "none",
-        },
-        ".PickerItem--highlight:hover": {
-            backgroundColor: "#191825",
-            border: "none",
-            borderColor: "transparent",
-            borderWidth: "0px",
-            boxShadow: "inset 0 1px 1px rgba(191, 191, 191, 0.1)",
-            outline: "none",
-            outlineOffset: "0px",
-        },
-        ".PickerItem--highlight:focus": {
-            backgroundColor: "#191825",
-            border: "none",
-            borderColor: "transparent",
-            borderWidth: "0px",
-            boxShadow: "inset 0 1px 1px rgba(191, 191, 191, 0.1)",
-            outline: "none",
-            outlineOffset: "0px",
-        },
-        ".PickerItem--highlight:active": {
-            backgroundColor: "#191825",
-            border: "none",
-            borderColor: "transparent",
-            borderWidth: "0px",
-            boxShadow: "inset 0 1px 1px rgba(191, 191, 191, 0.1)",
-            outline: "none",
-            outlineOffset: "0px",
-        },
-        ".Tab": {
-            backgroundColor: "#191825",
-            border: "none",
-            boxShadow: "inset 0 1px 1px rgba(255, 255, 255, 0.1)",
-            color: "rgba(255, 255, 255, 0.7)",
-            padding: "12px 14px",
-        },
-        ".Tab:hover": {
-            backgroundColor: "#201e2c",
-            color: "#ffffff",
-        },
-        ".Tab--selected": {
-            backgroundColor: "#302e3b",
-            border: "none",
-            boxShadow: "inset 0 1px 1px rgba(255, 255, 255, 0.12)",
-            color: "#ffffff",
-        },
-        ".Tab--selected:hover": {
-            backgroundColor: "#302e3b",
-            border: "none",
-            boxShadow: "inset 0 1px 1px rgba(255, 255, 255, 0.12)",
-            color: "#ffffff",
-        },
-        ".Tab:focus": {
-            backgroundColor: "#302e3b",
-            boxShadow: "inset 0 1px 1px rgba(255, 255, 255, 0.12)",
-            outline: "none",
-        },
-        ".AccordionItem": {
-            backgroundColor: "#191825",
-            border: "none",
-            boxShadow: "inset 0 1px 1px rgba(255, 255, 255, 0.1)",
-        },
-        ".AccordionItem:hover": {
-            backgroundColor: "#201e2c",
-        },
-        ".AccordionItem--selected": {
-            backgroundColor: "#201e2c",
-            border: "none",
-            boxShadow: "none",
-        },
-        ".AccordionItem:focus-visible": {
-            backgroundColor: "#2b2938",
-            boxShadow: "none",
-            outline: "none",
-        },
-    },
-} satisfies NonNullable<NonNullable<StripeCheckoutElementsSdkOptions["elementsOptions"]>["appearance"]>
-
-interface CheckoutPaymentFormProps {
-    billingAddress: StripeCheckoutContact | null
-    billingAddressComplete: boolean
-    collectTaxId: boolean
-    content: CheckoutFormContent
-    customerEmail: string | null
-    errors: ErrorsContent
-    customerSelect: ReactNode
-    customerSelectSkeleton: ReactNode
-    email: string | null
-    emailComplete: boolean
-    emailSyncedToStripe: boolean
-    isBusinessCustomer: boolean
-    onAddressChange: (address: StripeCheckoutContact | null, complete: boolean) => void
-    onEmailChange: (email: string | null, complete: boolean) => void
-    onEmailSyncedChange: (synced: boolean) => void
-    onTaxQuoteChange: (taxQuote: CheckoutTaxQuoteData | null) => void
-    onPaymentConfirmationChange: (confirming: boolean) => void
-    onPricingChange: (pricing: CheckoutStripePricingData | null) => void
-    onStripeCheckoutChange: (checkout: CheckoutPromotionCodeSdk | null) => void
-    onSessionExpired: () => Promise<boolean>
-    onSessionLoadError: () => Promise<boolean>
-    onSessionLoadErrorChange: (error: string | null) => void
-    onSessionReady: () => void
-    session: CheckoutSessionData
-}
+import { useCallback, useEffect, useId, useRef, useState } from "react"
+import type { CheckoutPaymentFormProps } from "./checkoutPayment.types"
 
 export function CheckoutErrorState({ message, onRetry, retryLabel }: { message: string; onRetry?: () => void; retryLabel?: string }) {
     return (
@@ -323,7 +66,7 @@ export function CheckoutPaymentFormSkeleton({ label }: { label: string }) {
     )
 }
 
-function CheckoutPaymentFields({
+export function CheckoutPaymentFields({
     billingAddress,
     billingAddressComplete,
     collectTaxId,
@@ -376,9 +119,6 @@ function CheckoutPaymentFields({
     const markAddressElementReady = useCallback(() => setIsAddressElementReady(true), [])
     const markTaxIdElementReady = useCallback(() => setIsTaxIdElementReady(true), [])
 
-    // The success page redirects back here with this flag when Crater reports a failed payment, so the
-    // customer lands directly back in checkout with the failure explained instead of stuck on that page.
-    // Stripped via history.replaceState (not the router) so it doesn't re-trigger session preparation.
     useEffect(() => {
         const currentUrl = new URL(window.location.href)
         if (currentUrl.searchParams.get("paymentFailed") !== "1") return
@@ -451,8 +191,6 @@ function CheckoutPaymentFields({
                 }
                 let updatedSession = billingResult.session
 
-                // A restored payment stage means this checkout already wrote the entered email before
-                // the discount reload. Draft customers may not expose that Stripe email locally yet.
                 if (!emailSyncedToStripe && !customerEmail && !checkoutState.checkout.email) {
                     const emailResult = await checkoutState.checkout.updateEmail(email)
                     if (emailResult.type === "error") {
@@ -647,92 +385,5 @@ function CheckoutPaymentFields({
                 </>
             )}
         </div>
-    )
-}
-
-export function CheckoutPaymentForm({
-    billingAddress,
-    billingAddressComplete,
-    collectTaxId,
-    content,
-    customerEmail,
-    errors,
-    customerSelect,
-    customerSelectSkeleton,
-    email,
-    emailComplete,
-    emailSyncedToStripe,
-    isBusinessCustomer,
-    onAddressChange,
-    onEmailChange,
-    onEmailSyncedChange,
-    onTaxQuoteChange,
-    onPaymentConfirmationChange,
-    onPricingChange,
-    onStripeCheckoutChange,
-    onSessionExpired,
-    onSessionLoadError,
-    onSessionLoadErrorChange,
-    onSessionReady,
-    session,
-}: CheckoutPaymentFormProps) {
-    const stripeRef = useRef(stripePromise)
-    const defaultValuesRef = useRef<{
-        clientSecret: string
-        values: NonNullable<StripeCheckoutElementsSdkOptions["defaultValues"]>
-    } | null>(null)
-
-    if (defaultValuesRef.current?.clientSecret !== session.clientSecret) {
-        defaultValuesRef.current = {
-            clientSecret: session.clientSecret,
-            values: {
-                ...(billingAddress ? { billingAddress } : {}),
-                ...(email && !customerEmail && !emailSyncedToStripe ? { email } : {}),
-            },
-        }
-    }
-
-    const options = useMemo<StripeCheckoutElementsSdkOptions>(
-        () => ({
-            clientSecret: session.clientSecret,
-            ...(Object.keys(defaultValuesRef.current?.values ?? {}).length ? { defaultValues: defaultValuesRef.current?.values } : {}),
-            elementsOptions: { appearance: stripeAppearance },
-        }),
-        [session.clientSecret]
-    )
-
-    if (!stripeRef.current) {
-        return <CheckoutErrorState message="Stripe is not configured." />
-    }
-
-    return (
-        <CheckoutElementsProvider key={`${session.clientSecret}:${STRIPE_APPEARANCE_VERSION}`} stripe={stripeRef.current} options={options}>
-            <CheckoutPaymentFields
-                billingAddress={billingAddress}
-                billingAddressComplete={billingAddressComplete}
-                collectTaxId={collectTaxId}
-                content={content}
-                customerEmail={customerEmail}
-                errors={errors}
-                customerSelect={customerSelect}
-                customerSelectSkeleton={customerSelectSkeleton}
-                email={email}
-                emailComplete={emailComplete}
-                emailSyncedToStripe={emailSyncedToStripe}
-                isBusinessCustomer={isBusinessCustomer}
-                onAddressChange={onAddressChange}
-                onEmailChange={onEmailChange}
-                onEmailSyncedChange={onEmailSyncedChange}
-                onTaxQuoteChange={onTaxQuoteChange}
-                onPaymentConfirmationChange={onPaymentConfirmationChange}
-                onPricingChange={onPricingChange}
-                onStripeCheckoutChange={onStripeCheckoutChange}
-                onSessionExpired={onSessionExpired}
-                onSessionLoadError={onSessionLoadError}
-                onSessionLoadErrorChange={onSessionLoadErrorChange}
-                onSessionReady={onSessionReady}
-                sessionKey={session.clientSecret}
-            />
-        </CheckoutElementsProvider>
     )
 }

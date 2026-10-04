@@ -1,7 +1,7 @@
 "use client"
 
 import { PAYMENT_PERIOD_OPTIONS, type SubscriptionSelection, type SubscriptionSelectionAction } from "@/lib/subscription/types"
-import { WorkflowCalculatorDialog } from "@/components/checkout/WorkflowCalculatorDialog"
+import { WorkflowCalculatorDialog } from "@/components/subscription/WorkflowCalculatorDialog"
 import { SubscriptionOptionCard } from "@/components/subscription/SubscriptionOptionCard"
 import { FormattedText, hasHighlightedText } from "@/components/ui/FormattedText"
 import { HapticButtonLink } from "@/components/ui/HapticButtonLink"

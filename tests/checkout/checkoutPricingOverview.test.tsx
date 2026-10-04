@@ -22,7 +22,7 @@ mock.module("@code0-tech/pictor", {
 })
 
 const { cleanup, render } = await import("@testing-library/react")
-const { CheckoutPricingOverview } = await import("../../src/components/checkout/CheckoutPricingOverview")
+const { CheckoutPricingOverview } = await import("../../src/components/checkout/summary/CheckoutPricingOverview")
 
 const content = {
     eyebrow: "Order summary",

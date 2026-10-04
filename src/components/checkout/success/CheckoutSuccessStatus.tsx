@@ -1,10 +1,10 @@
 "use client"
 
 import type { PaymentPeriod } from "@/lib/subscription/types"
-import { checkoutFetch, getCheckoutStatusPollDelay, hasCheckoutStatusPollingExpired } from "@/lib/checkout/client"
+import { checkoutFetch, getCheckoutCompletionStatus, getCheckoutStatusPollDelay, hasCheckoutStatusPollingExpired } from "@/lib/checkout/client"
 import { LinkButton } from "@/components/ui/LinkButton"
 import { ButtonLoader } from "@/components/ui/Loader"
-import { CheckoutPricingOverview } from "@/components/checkout/CheckoutPricingOverview"
+import { CheckoutPricingOverview } from "@/components/checkout/summary/CheckoutPricingOverview"
 import { clearCheckoutContactDraft } from "@/lib/checkout/checkoutDraft"
 import type { CheckoutData, SubscriptionConfigData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
@@ -51,10 +51,8 @@ interface CheckoutSuccessStatusProps {
     subscriptionConfig: SubscriptionConfigData
 }
 
-const REQUEST_TIMEOUT_MS = 10_000
 const VALID_STATES = new Set<string>(["CHECKOUT_PENDING", "PAYMENT_PENDING", "FULFILLMENT_PENDING", "READY", "FAILED"])
 const SETTLED_STATES = new Set<string>(["FULFILLMENT_PENDING", "READY"])
-// The status route normalizes Crater's enums, so everything below reads the lowercase values.
 const PAYMENT_PERIODS = new Set<string>(["monthly", "quarterly", "yearly"])
 
 function isNullablePositiveInteger(value: unknown) {
@@ -106,37 +104,9 @@ export function CheckoutSuccessStatus({ checkoutSearchParams, content, errorMess
 
     const checkStatus = useCallback(
         async (signal: AbortSignal) => {
-            const statusUrl = new URL("/api/crater/checkout/status", window.location.origin)
-            statusUrl.searchParams.set("sessionId", sessionId)
-            const requestController = new AbortController()
-            let timedOut = false
-            const abortRequest = () => requestController.abort()
-            if (signal.aborted) abortRequest()
-            else signal.addEventListener("abort", abortRequest, { once: true })
-            const requestTimeout = window.setTimeout(() => {
-                timedOut = true
-                abortRequest()
-            }, REQUEST_TIMEOUT_MS)
+            const { body, ok } = await getCheckoutCompletionStatus(sessionId, signal)
 
-            let response: Response
-            let body: unknown
-            try {
-                response = await checkoutFetch(statusUrl, { cache: "no-store", credentials: "same-origin", signal: requestController.signal })
-                try {
-                    body = await response.json()
-                } catch (error) {
-                    if (timedOut) throw error
-                    body = null
-                }
-            } catch (error) {
-                if (timedOut) throw new Error("The checkout status request timed out.")
-                throw error
-            } finally {
-                window.clearTimeout(requestTimeout)
-                signal.removeEventListener("abort", abortRequest)
-            }
-
-            if (!response.ok) {
+            if (!ok) {
                 const errorCode = body && typeof body === "object" && "errorCode" in body ? body.errorCode : undefined
                 if (errorCode === "INVALID_CHECKOUT_STATUS_SESSION") {
                     setStatus("INVALID")
@@ -181,8 +151,6 @@ export function CheckoutSuccessStatus({ checkoutSearchParams, content, errorMess
         }
     }, [attempt, checkStatus])
 
-    // A declined or otherwise failed payment should drop the customer back into checkout with their
-    // configuration intact and the failure explained there, not leave them stranded on this status page.
     useEffect(() => {
         if (status !== "FAILED") return
 

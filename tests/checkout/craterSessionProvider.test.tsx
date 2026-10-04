@@ -6,7 +6,7 @@ import { installDomTestEnvironment } from "../helpers/domTestEnvironment"
 installDomTestEnvironment()
 
 const { cleanup, render, screen, waitFor } = await import("@testing-library/react")
-const { CraterSessionProvider, useCraterSession } = await import("../../src/components/checkout/CraterSessionProvider")
+const { CraterSessionProvider, useCraterSession } = await import("../../src/components/checkout/session/CraterSessionProvider")
 const originalFetch = globalThis.fetch
 const originalConsoleError = console.error
 

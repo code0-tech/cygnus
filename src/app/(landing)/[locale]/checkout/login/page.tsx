@@ -1,11 +1,14 @@
-import { CheckoutLogin } from "@/components/checkout/CheckoutLogin"
-import { CheckoutLegalFooter } from "@/components/checkout/CheckoutLegalFooter"
+import { CheckoutGuestForm } from "@/components/checkout/form/CheckoutGuestForm"
+import { CheckoutLegalFooter } from "@/components/checkout/shared/CheckoutLegalFooter"
+import { HapticButtonLink } from "@/components/ui/HapticButtonLink"
 import { getCheckoutContent, getErrorsContent, getFooter } from "@/lib/cms"
 import { createCheckoutQuery, createCraterLoginCallbackUrl, createMainAppLoginUrl, type CheckoutSearchParams } from "@/lib/checkout/checkoutLogin"
 import { isSupportedLocale } from "@/lib/i18n"
 import { resolveSiteUrl } from "@/lib/siteConfig"
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
+import Image from "next/image"
+import Link from "next/link"
 
 export const metadata: Metadata = { title: "Login" }
 
@@ -45,7 +48,41 @@ export default async function CheckoutLoginPage({ params, searchParams }: Checko
 
     return (
         <div className="flex min-h-full flex-col">
-            <CheckoutLogin content={content.login} form={content.form} guestError={errors.sessionUnavailable} guestHref={guestHref} loginHref={loginHref} />
+            <main className="flex flex-1 items-center justify-center py-8">
+                <div className="flex w-full max-w-3xl flex-col gap-8 text-center">
+                    <Link href="/" className="mx-auto flex w-fit">
+                        <Image src="/code0_text_logo_white.png" alt="code0" width={128} height={32} className="h-8 w-32 object-contain" priority />
+                    </Link>
+
+                    <div className="relative mt-10 grid gap-8 md:grid-cols-2 md:gap-0">
+                        <section className="flex flex-col items-center md:px-10">
+                            <h1 className="text-balance text-2xl font-semibold text-white sm:text-3xl">{content.login.heading}</h1>
+                            <p className="mt-3 max-w-sm flex-1 text-sm leading-6 text-secondary">{content.login.description}</p>
+                            <div className="mt-7 w-full">
+                                <HapticButtonLink href={loginHref} variant="filled" className="h-11! w-full! bg-white/90! font-semibold! text-primary! hover:bg-white!">
+                                    {content.login.loginLabel}
+                                </HapticButtonLink>
+                            </div>
+                        </section>
+
+                        <div aria-hidden="true" className="h-px bg-white/10 md:absolute md:inset-y-0 md:left-1/2 md:h-auto md:w-px" />
+
+                        <section className="flex flex-col items-center md:px-10">
+                            <h2 className="text-balance text-2xl font-semibold text-white sm:text-3xl">{content.login.guestHeading}</h2>
+                            <p className="mt-3 max-w-sm flex-1 text-sm leading-6 text-secondary">{content.login.guestDescription}</p>
+                            <div className="mt-7 w-full">
+                                <CheckoutGuestForm
+                                    emailLabel={content.form.emailLabel}
+                                    emailPlaceholder={content.form.emailPlaceholder}
+                                    errorMessage={errors.sessionUnavailable}
+                                    guestHref={guestHref}
+                                    submitLabel={content.login.guestLabel}
+                                />
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </main>
             <CheckoutLegalFooter className="shrink-0 justify-center pt-8" currentYear={new Date().getUTCFullYear()} footer={footer} locale={locale} />
         </div>
     )

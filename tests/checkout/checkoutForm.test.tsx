@@ -5,6 +5,29 @@ import type { CheckoutData, ErrorsContent } from "@/lib/cms"
 import { installDomTestEnvironment } from "../helpers/domTestEnvironment"
 
 installDomTestEnvironment()
+const DialogTestContext = React.createContext<{ open: boolean; setOpen: (open: boolean) => void } | null>(null)
+function TestDialog({ children, open = false, onOpenChange }: { children: React.ReactNode; open?: boolean; onOpenChange?: (open: boolean) => void }) {
+    return <DialogTestContext.Provider value={{ open, setOpen: onOpenChange ?? (() => {}) }}>{children}</DialogTestContext.Provider>
+}
+function TestDialogTrigger({ asChild, children }: { asChild?: boolean; children: React.ReactElement<{ onClick?: (event: React.MouseEvent<HTMLElement>) => void }> }) {
+    const dialog = React.useContext(DialogTestContext)
+    const onClick = (event: React.MouseEvent<HTMLElement>) => {
+        children.props.onClick?.(event)
+        dialog?.setOpen(true)
+    }
+    return asChild ? React.cloneElement(children, { onClick }) : <button type="button" onClick={onClick}>{children}</button>
+}
+function TestDialogPortal({ children }: { children: React.ReactNode }) {
+    return React.useContext(DialogTestContext)?.open ? <>{children}</> : null
+}
+function TestDialogClose({ asChild, children }: { asChild?: boolean; children: React.ReactElement<{ onClick?: (event: React.MouseEvent<HTMLElement>) => void }> }) {
+    const dialog = React.useContext(DialogTestContext)
+    const onClick = (event: React.MouseEvent<HTMLElement>) => {
+        children.props.onClick?.(event)
+        dialog?.setOpen(false)
+    }
+    return asChild ? React.cloneElement(children, { onClick }) : <button type="button" onClick={onClick}>{children}</button>
+}
 const checkoutSearchParams = new URLSearchParams({
     customerType: "b2c",
     deploymentType: "self_hosted",
@@ -55,6 +78,7 @@ process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY = "pk_test_example"
 mock.module("next/navigation", {
     namedExports: {
         usePathname: () => "/en/checkout",
+        useRouter: () => ({ replace: () => {} }),
         useSearchParams: () => checkoutSearchParams,
         useParams: () => ({ locale: "en" }),
     },
@@ -62,7 +86,7 @@ mock.module("next/navigation", {
 mock.module("next/link", {
     defaultExport: ({ children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => <a {...props}>{children}</a>,
 })
-mock.module("@/components/checkout/CraterSessionProvider", {
+mock.module("@/components/checkout/session/CraterSessionProvider", {
     namedExports: {
         useCraterSession: () => ({
             authenticated: true,
@@ -72,7 +96,7 @@ mock.module("@/components/checkout/CraterSessionProvider", {
         }),
     },
 })
-mock.module("@/components/checkout/CheckoutStage", {
+mock.module("@/components/checkout/state/CheckoutStageProvider", {
     namedExports: {
         useCheckoutStage: () => ({
             stage: React.useSyncExternalStore(
@@ -100,14 +124,24 @@ mock.module("@/lib/checkout/client", {
         },
     },
 })
-mock.module("@/components/checkout/SendOfferDialog", {
+mock.module("@/components/checkout/shared/SendOfferDialog", {
     namedExports: {
         SendOfferDialog: ({ content }: { content: CheckoutData["form"] }) => <button type="button">{content.sendOfferLabel}</button>,
     },
 })
+mock.module("@/components/ui/Switch", { namedExports: { Switch: () => null } })
+mock.module("@/components/checkout/summary/CheckoutPricingOverview", { namedExports: { CheckoutPricingOverview: () => null } })
 mock.module("@code0-tech/pictor", {
     namedExports: {
         Button: ({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button {...props}>{children}</button>,
+        Dialog: TestDialog,
+        DialogClose: TestDialogClose,
+        DialogContent: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => <div role="dialog" {...props}>{children}</div>,
+        DialogHeader: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+        DialogOverlay: () => null,
+        DialogPortal: TestDialogPortal,
+        DialogTitle: ({ children }: { children: React.ReactNode }) => <h2>{children}</h2>,
+        DialogTrigger: TestDialogTrigger,
         EmailInput: TestInput,
         TextInput: TestInput,
         CheckboxInput: TestCheckbox,
@@ -230,10 +264,10 @@ mock.module("@stripe/react-stripe-js/checkout", {
 
 const { act, cleanup, render, screen, waitFor } = await import("@testing-library/react")
 const userEvent = (await import("@testing-library/user-event")).default
-const { CheckoutDiscount } = await import("../../src/components/checkout/CheckoutDiscount")
-const { CheckoutForm } = await import("../../src/components/checkout/CheckoutForm")
+const { CheckoutDiscount } = await import("../../src/components/checkout/summary/CheckoutSummary")
+const { CheckoutForm } = await import("../../src/components/checkout/form/CheckoutForm")
 const { getStripePricingFromSession } = await import("../../src/lib/checkout/stripeCheckout")
-const { CheckoutFormProvider, useCheckoutFormState } = await import("../../src/components/checkout/CheckoutFormProvider")
+const { CheckoutFormProvider, useCheckoutFormState } = await import("../../src/components/checkout/form/CheckoutFormProvider")
 const { clearCheckoutContactDraft, readCheckoutContactDraft, saveCheckoutContactDraft } = await import("../../src/lib/checkout/checkoutDraft")
 
 const originalFetch = globalThis.fetch
