@@ -17,7 +17,7 @@ test("preserves every subscription status and marks absent snapshots pending", (
         assert.equal(deriveLicenseStatus(status, true), status)
         assert.equal(deriveLicenseStatus(status, false), "pending")
     }
-    assert.equal(mapCustomer(customer)?.licenseCount, 3)
+    assert.equal(mapCustomer(customer)?.subscriptionCount, 3)
 })
 
 test("renewals preserve the subscription route id and change only the export id", () => {

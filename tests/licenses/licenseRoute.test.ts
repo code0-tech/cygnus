@@ -1,4 +1,4 @@
-import { canonicalizeLicensePathname, createLicenseCustomerPath, createLicensePath, getNamespaceDisplayId, resolveCustomerRouteId, resolveLicenseRouteId } from "@/lib/licenses/licenseRoute"
+import { canonicalizeLicensePathname, createLicenseCustomerPath, createLicensePath, getNamespaceDisplayId, resolveCustomerRouteId, resolveSubscriptionRouteId } from "@/lib/licenses/licenseRoute"
 import assert from "node:assert/strict"
 import test from "node:test"
 
@@ -9,11 +9,11 @@ test("resolves short and legacy Crater route ids", () => {
     assert.equal(resolveCustomerRouteId("35"), customerId)
     assert.equal(resolveCustomerRouteId(encodeURIComponent(customerId)), customerId)
     assert.equal(resolveCustomerRouteId(customerId), customerId)
-    assert.equal(resolveLicenseRouteId("9"), licenseId)
+    assert.equal(resolveSubscriptionRouteId("9"), licenseId)
 })
 
 test("leaves malformed route encoding unchanged", () => {
-    assert.equal(resolveLicenseRouteId("gid%invalid"), "gid%invalid")
+    assert.equal(resolveSubscriptionRouteId("gid%invalid"), "gid%invalid")
 })
 
 test("builds license URLs with only numeric ids", () => {

@@ -17,7 +17,7 @@ export interface LicenseDashboardCustomer {
     email?: string
     id: string
     checkoutLimits?: { aiTokens: number[]; workflowExecutions: number[] }
-    licenseCount: number
+    subscriptionCount: number
     name?: string
     phone?: string
     updatedAt?: string

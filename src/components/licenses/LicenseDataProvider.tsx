@@ -3,7 +3,7 @@
 import { EMPTY_LICENSE_DASHBOARD_DATA, type LicenseDashboardCustomerAddress, type LicenseDashboardData, type LicenseDashboardLicense } from "@/lib/licenses/licenseTypes"
 import { deriveLicenseStatus } from "@/lib/licenses/licenseDashboardMapper"
 import type { DashboardSubscriptionStatus, SubscriptionPendingUpdate } from "@/lib/licenses/licenseTypes"
-import { resolveCustomerRouteId, resolveLicenseRouteId } from "@/lib/licenses/licenseRoute"
+import { resolveCustomerRouteId, resolveSubscriptionRouteId } from "@/lib/licenses/licenseRoute"
 import { usePathname } from "next/navigation"
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useRef, useState } from "react"
 
@@ -51,7 +51,7 @@ function createLicenseDataUrl(pathname: string, origin: string, pagination?: { c
         dataUrl.searchParams.set("view", licenseSegmentIndex >= 0 ? "license" : "customer")
         dataUrl.searchParams.set("customerId", resolveCustomerRouteId(pathSegments[customerSegmentIndex + 1]))
         if (licenseSegmentIndex >= 0 && pathSegments[licenseSegmentIndex + 1]) {
-            dataUrl.searchParams.set("licenseId", resolveLicenseRouteId(pathSegments[licenseSegmentIndex + 1]))
+            dataUrl.searchParams.set("licenseId", resolveSubscriptionRouteId(pathSegments[licenseSegmentIndex + 1]))
         }
     }
 

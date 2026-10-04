@@ -6,7 +6,7 @@ import { ButtonLoader } from "@/components/ui/Loader"
 import type { SubscriptionUpdateResult } from "@/lib/subscription/client"
 import type { ErrorsContent, LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
-import { createLicensePath, resolveCustomerRouteId, resolveLicenseRouteId } from "@/lib/licenses/licenseRoute"
+import { createLicensePath, resolveCustomerRouteId, resolveSubscriptionRouteId } from "@/lib/licenses/licenseRoute"
 import { Button, DialogFooter } from "@code0-tech/pictor"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
@@ -23,9 +23,9 @@ export function LicenseCancelDialog({ content, customerId, errors, licenseId, lo
     const router = useRouter()
     const { licenses, updateLicense } = useLicenseData()
     const resolvedCustomerId = resolveCustomerRouteId(customerId)
-    const resolvedLicenseId = resolveLicenseRouteId(licenseId)
-    const license = licenses.find((candidate) => candidate.id === resolvedLicenseId && candidate.customerId === resolvedCustomerId)
-    const close = () => router.replace(createLicensePath(locale, resolvedCustomerId, resolvedLicenseId))
+    const resolvedSubscriptionId = resolveSubscriptionRouteId(licenseId)
+    const license = licenses.find((candidate) => candidate.id === resolvedSubscriptionId && candidate.customerId === resolvedCustomerId)
+    const close = () => router.replace(createLicensePath(locale, resolvedCustomerId, resolvedSubscriptionId))
 
     const [error, setError] = useState<string | null>(null)
     const [isSubmitting, setIsSubmitting] = useState(false)

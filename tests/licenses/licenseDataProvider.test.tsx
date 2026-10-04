@@ -101,7 +101,7 @@ test("loads and merges the next customer cursor page", async () => {
         const secondPage = requests.length > 1
         return new Response(
             JSON.stringify({
-                customers: [{ id: `gid://crater/Customer/${secondPage ? 2 : 1}`, licenseCount: 0 }],
+                customers: [{ id: `gid://crater/Customer/${secondPage ? 2 : 1}`, subscriptionCount: 0 }],
                 licenses: [],
                 pagination: { customers: { endCursor: secondPage ? null : "customer-page-1", hasNextPage: !secondPage } },
             }),
