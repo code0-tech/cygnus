@@ -1,4 +1,4 @@
-import { describeCraterError } from "@/lib/checkout/craterApi"
+import { describeCraterError } from "@/lib/crater/errors"
 import { createCraterUserSession } from "@/lib/checkout/craterLogin"
 import { setCraterSessionCookie, setCraterUserLoginCookie } from "@/lib/checkout/craterSession"
 import { isSupportedLocale } from "@/lib/i18n"

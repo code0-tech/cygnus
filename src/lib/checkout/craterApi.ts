@@ -1,3 +1,4 @@
+import { describeCraterError } from "@/lib/crater/errors"
 import { clearCraterSessionCookie, readCraterSessionAuthorization } from "@/lib/checkout/craterSession"
 import type { Error } from "@code0-tech/crater-graphql-types"
 import { gql } from "@apollo/client"
@@ -81,29 +82,6 @@ export function requireCraterSession(request: Request, authorizationHeaderOnly =
     }
 
     return { token: authorization.token }
-}
-
-// Carries no token and no customer data, so it is safe to log as well as to return.
-export function describeCraterError(errors: Error[] | null | undefined) {
-    const error = errors?.[0]
-    if (!error) return null
-
-    const details =
-        error.details
-            ?.map((detail) => {
-                if (detail.__typename === "MessageError") {
-                    return detail.message ?? ""
-                }
-
-                if (detail.__typename === "ActiveModelError") {
-                    return `${detail.attribute ?? "base"}: ${detail.type ?? "invalid"}`
-                }
-
-                return ""
-            })
-            .filter(Boolean) ?? []
-
-    return { errorCode: error.errorCode ?? "UNKNOWN", details }
 }
 
 export function craterMutationErrorResponse(errors: Error[] | null | undefined, message: string) {
