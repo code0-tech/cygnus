@@ -2,7 +2,7 @@ import assert from "node:assert/strict"
 import test, { afterEach, mock } from "node:test"
 import React from "react"
 import type { CheckoutData } from "../../src/lib/cms"
-import { installDomTestEnvironment } from "./domTestEnvironment"
+import { installDomTestEnvironment } from "../helpers/domTestEnvironment"
 
 installDomTestEnvironment("https://code0.example/en/checkout/success?session_id=cs_test")
 

@@ -3,7 +3,7 @@ import test, { afterEach, mock } from "node:test"
 import React from "react"
 import type { CheckoutPromotionCodeSdk } from "../../src/lib/checkout/stripeCheckout"
 import type { StripeCheckoutSession } from "@stripe/stripe-js"
-import { installDomTestEnvironment } from "./domTestEnvironment"
+import { installDomTestEnvironment } from "../helpers/domTestEnvironment"
 
 installDomTestEnvironment()
 let currentSearchParams = new URLSearchParams()
@@ -119,12 +119,12 @@ for (const [failure, message] of [[new Error("This promotion code has expired.")
 test("forwards Stripe's success session and displays its supplied discount amount", async () => {
     const sessions: StripeCheckoutSession[] = []
     const user = userEvent.setup()
-    render(<CheckoutDiscount {...props} checkoutRef={sdk()} onSessionChange={(session) => sessions.push(session)} appliedAmount="€7.00" />)
+    render(<CheckoutDiscount {...props} checkoutRef={sdk()} onSessionChange={(session) => sessions.push(session)} appliedAmount="ï¿½7.00" />)
     await user.click(screen.getAllByRole("button", { name: props.promptLabel }).at(-1)!)
     await user.type(screen.getByPlaceholderText(props.inputPlaceholder), "SAVE")
     await user.click(screen.getByRole("button", { name: props.buttonLabel }))
     await waitFor(() => assert.deepEqual(sessions, [updatedSession]))
-    assert.ok(screen.getByText("-€7.00"))
+    assert.ok(screen.getByText("-ï¿½7.00"))
 })
 
 test("shows Stripe's returned validation error without applying the code", async () => {
@@ -146,7 +146,7 @@ test("keeps the code and amount when Stripe refuses removal and displays its err
     checkoutRef.current.removePromotionCode = async () => ({ type: "error", error: { code: null, message: "The checkout session could not be updated." } })
     const applied: Array<string | null> = []
     const user = userEvent.setup()
-    render(<CheckoutDiscount {...props} checkoutRef={checkoutRef} onApplied={(code) => applied.push(code)} appliedAmount="€7.00" />)
+    render(<CheckoutDiscount {...props} checkoutRef={checkoutRef} onApplied={(code) => applied.push(code)} appliedAmount="ï¿½7.00" />)
     await user.click(screen.getAllByRole("button", { name: props.promptLabel }).at(-1)!)
     await user.type(screen.getByPlaceholderText(props.inputPlaceholder), "SAVE")
     await user.click(screen.getByRole("button", { name: props.buttonLabel }))
@@ -154,7 +154,7 @@ test("keeps the code and amount when Stripe refuses removal and displays its err
     await user.click(screen.getByRole("button", { name: "(Remove)" }))
     assert.ok(await screen.findByRole("alert"))
     assert.ok(screen.getByText("The checkout session could not be updated."))
-    assert.ok(screen.getByText("-€7.00"))
+    assert.ok(screen.getByText("-ï¿½7.00"))
     assert.deepEqual(applied, ["SAVE"])
     assert.equal(window.location.search, "?promotionCode=SAVE")
 })

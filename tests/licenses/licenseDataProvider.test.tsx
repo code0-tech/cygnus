@@ -1,7 +1,7 @@
 import assert from "node:assert/strict"
 import test, { afterEach, mock } from "node:test"
 import React from "react"
-import { installDomTestEnvironment } from "../checkout/domTestEnvironment"
+import { installDomTestEnvironment } from "../helpers/domTestEnvironment"
 
 installDomTestEnvironment("https://code0.example/en/licenses?token=legacy-secret")
 

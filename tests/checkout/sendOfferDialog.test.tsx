@@ -1,7 +1,7 @@
 import assert from "node:assert/strict"
 import test, { mock } from "node:test"
 import React from "react"
-import { installDomTestEnvironment } from "./domTestEnvironment"
+import { installDomTestEnvironment } from "../helpers/domTestEnvironment"
 
 installDomTestEnvironment()
 

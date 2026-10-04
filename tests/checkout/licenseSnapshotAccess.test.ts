@@ -1,7 +1,7 @@
 import assert from "node:assert/strict"
 import test from "node:test"
 import { GET } from "../../src/app/api/crater/licenses/access/route"
-import { createGraphQLTestServer } from "./graphqlTestServer"
+import { createGraphQLTestServer } from "../helpers/graphqlTestServer"
 
 const customerId = "gid://crater/Customer/3"
 const snapshotId = "gid://crater/License/99"

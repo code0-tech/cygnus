@@ -6,7 +6,7 @@ import { readCraterSessionAuthorization, clearCraterSessionCookie } from "../../
 import { POST as exportLicense } from "../../src/app/api/crater/licenses/export/route"
 import { GET as checkoutStatus } from "../../src/app/api/crater/checkout/status/route"
 import { POST as createCustomer } from "../../src/app/api/crater/customer/route"
-import { createGraphQLTestServer } from "./graphqlTestServer"
+import { createGraphQLTestServer } from "../helpers/graphqlTestServer"
 
 const id = "a".repeat(32)
 const secondId = "b".repeat(32)

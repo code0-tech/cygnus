@@ -4,7 +4,7 @@ import { PATCH as updateSubscription } from "../../src/app/api/crater/subscripti
 import { POST as previewSubscriptionUpdate } from "../../src/app/api/crater/subscriptions/preview/route"
 import { POST as cancelSubscription } from "../../src/app/api/crater/subscriptions/cancel/route"
 import { POST as resumeSubscription } from "../../src/app/api/crater/subscriptions/resume/route"
-import { createGraphQLTestServer } from "../checkout/graphqlTestServer"
+import { createGraphQLTestServer } from "../helpers/graphqlTestServer"
 
 const sessionHeaders = {
     authorization: "Session c_ust_example",
