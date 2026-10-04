@@ -558,7 +558,9 @@ function CheckoutPaymentFields({
                 <>
                     <section className="w-full space-y-4">
                         {customerEmail ? (
-                            <EmailInput title={content.emailLabel} value={customerEmail} disabled className="w-full! bg-[#17151e]! hover:bg-[#17151e]! text-tertiary/50!" />
+                            <div className="w-full [&_.input-wrapper]:w-full! [&_.input-wrapper]:bg-[#17151e]! [&_.input-wrapper:hover]:bg-[#17151e]!">
+                                <EmailInput title={content.emailLabel} value={customerEmail} disabled className="text-tertiary/50!" />
+                            </div>
                         ) : (
                             <ContactDetailsElement
                                 onChange={(event) => {
