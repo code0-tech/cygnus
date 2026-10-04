@@ -1,6 +1,5 @@
 import { cn } from "@/lib/utils"
 
-// Cell of the 1/2/4-column detail grid. Dividers are inset pseudo-elements so they don't span the full cell height/width.
 export function getLicenseDetailGridCellClassName(index: number, className?: string) {
     return cn(
         "relative min-w-0 px-6 py-5",

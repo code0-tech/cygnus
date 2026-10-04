@@ -1,4 +1,4 @@
-import { LicenseStatusDot, getLicenseStatusTone, isLicenseStatusError } from "@/components/licenses/LicenseStatusDot"
+import { LicenseStatusDot, getLicenseStatusTone, isLicenseStatusError } from "@/components/licenses/shared/LicenseStatusDot"
 import assert from "node:assert/strict"
 import test from "node:test"
 import { renderToStaticMarkup } from "react-dom/server"

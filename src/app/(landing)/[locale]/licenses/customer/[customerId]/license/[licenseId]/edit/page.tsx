@@ -1,4 +1,4 @@
-import { LicenseEditDialog } from "@/components/licenses/dialog/LicenseEditDialog"
+import { LicenseEditDialog } from "@/components/licenses/dialog/subscription/LicenseEditDialog"
 import { getCheckoutContent, getErrorsContent, getLicenseContent, getSubscriptionConfig } from "@/lib/cms"
 import { createMainAppLoginUrl } from "@/lib/checkout/checkoutLogin"
 import { isSupportedLocale } from "@/lib/i18n"

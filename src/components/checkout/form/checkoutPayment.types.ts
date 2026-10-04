@@ -4,7 +4,7 @@ import type { CheckoutPromotionCodeSdk } from "@/lib/checkout/stripeCheckout"
 import type { StripeCheckoutContact } from "@stripe/stripe-js"
 import type { ReactNode } from "react"
 
-export type CheckoutFormContent = CheckoutData["form"]
+type CheckoutFormContent = CheckoutData["form"]
 
 export interface CheckoutPaymentFormProps {
     billingAddress: StripeCheckoutContact | null

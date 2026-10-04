@@ -5,6 +5,7 @@ import type { SubscriptionPendingUpdate } from "@/lib/licenses/types"
 
 export function SubscriptionPendingUpdateNotice({ update, content, locale }: { update?: SubscriptionPendingUpdate | null; content: LicenseContent; locale: AppLocale }) {
     if (!update) return null
+
     const selection = [
         update.plan ? formatLicenseDisplayValue(update.plan, "plan", content.values) : null,
         update.paymentPeriod ? formatLicenseDisplayValue(update.paymentPeriod, "paymentPeriod", content.values) : null,
@@ -15,6 +16,7 @@ export function SubscriptionPendingUpdateNotice({ update, content, locale }: { u
         .join(" · ")
     const effectiveAt = update.effectiveAt ? new Date(update.effectiveAt) : null
     const date = effectiveAt && Number.isFinite(effectiveAt.getTime()) ? new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeZone: "UTC" }).format(effectiveAt) : content.values.unknown
+
     return (
         <p role="status" className="my-4 rounded-lg border border-white/10 p-4 text-sm text-secondary">
             {content.subscriptionPreview.pendingChangeText.replaceAll("{selection}", selection || content.values.unknown).replaceAll("{date}", date)}

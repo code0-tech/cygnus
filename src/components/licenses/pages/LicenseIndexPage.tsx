@@ -1,6 +1,6 @@
 "use client"
 
-import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
+import { useLicenseData } from "@/components/licenses/data/LicenseDataProvider"
 import type { LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { createLicensePath } from "@/lib/licenses/routes"

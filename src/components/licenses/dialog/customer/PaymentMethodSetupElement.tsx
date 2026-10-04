@@ -1,6 +1,6 @@
 "use client"
 
-import { LicenseTabAlert, LicenseTabHeader, LicenseTabSaveButton } from "@/components/licenses/dialog/LicenseTabLayout"
+import { LicenseTabAlert, LicenseTabHeader, LicenseTabSaveButton } from "@/components/licenses/dialog/shared/LicenseTabLayout"
 import { ButtonLoader } from "@/components/ui/Loader"
 import { getPaymentMethodSetupStatus } from "@/lib/licenses/client"
 import type { LicenseContent } from "@/lib/cms"
@@ -51,8 +51,6 @@ const appearance = {
     },
 } satisfies Appearance
 
-// Crater retired the subscription-level SetupIntent: a payment method is always collected for the
-// customer, and a subscription is then pointed at one it already has through subscriptionsUpdate.
 export type PaymentMethodSetupOwner = { customerId: string }
 
 interface PaymentMethodSetupElementProps {
@@ -184,16 +182,7 @@ function PaymentMethodSetupForm({ content, errorMessage, onSuccess, owner, retry
     }
 
     if (setupIntentId)
-        return (
-            <PaymentMethodSetupPendingStatus
-                content={content}
-                errorMessage={errorMessage}
-                onSuccess={onSuccess}
-                owner={owner}
-                retryLabel={retryLabel}
-                setupIntentId={setupIntentId}
-            />
-        )
+        return <PaymentMethodSetupPendingStatus content={content} errorMessage={errorMessage} onSuccess={onSuccess} owner={owner} retryLabel={retryLabel} setupIntentId={setupIntentId} />
 
     return (
         <>

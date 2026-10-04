@@ -1,11 +1,11 @@
 "use client"
 
-import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
-import { LicenseGeneralTab } from "@/components/licenses/dialog/LicenseGeneralTab"
-import { LicenseDialog } from "@/components/licenses/dialog/LicenseDialog"
-import { LicenseUpgradeDialog } from "@/components/licenses/dialog/LicenseUpgradeDialog"
-import { CustomerPaymentMethodCard, CustomerPaymentMethodCardSkeleton } from "@/components/licenses/dialog/CustomerPaymentMethodCard"
-import { LicenseTabAlert, LicenseTabHeader, LicenseTabRow, LicenseTabSection } from "@/components/licenses/dialog/LicenseTabLayout"
+import { useLicenseData } from "@/components/licenses/data/LicenseDataProvider"
+import { LicenseGeneralTab } from "@/components/licenses/dialog/subscription/LicenseGeneralTab"
+import { LicenseDialog } from "@/components/licenses/dialog/shared/LicenseDialog"
+import { LicenseUpgradeDialog } from "@/components/licenses/dialog/subscription/LicenseUpgradeDialog"
+import { CustomerPaymentMethodCard, CustomerPaymentMethodCardSkeleton } from "@/components/licenses/dialog/customer/CustomerPaymentMethodCard"
+import { LicenseTabAlert, LicenseTabHeader, LicenseTabRow, LicenseTabSection } from "@/components/licenses/dialog/shared/LicenseTabLayout"
 import { ButtonLoader } from "@/components/ui/Loader"
 import { useCustomerPaymentMethods } from "@/hooks/usePaymentMethods"
 import type { ErrorsContent, LicenseContent, SubscriptionConfigData } from "@/lib/cms"
@@ -13,7 +13,6 @@ import type { AppLocale } from "@/lib/i18n"
 import { getLicenseEditSectionLabels, isLicenseEditSection, LICENSE_EDIT_SECTIONS, type LicenseEditSection } from "@/lib/licenses/editSections"
 import { createLicensePath, resolveCustomerRouteId, resolveSubscriptionRouteId } from "@/lib/licenses/routes"
 import { updateSubscription } from "@/lib/subscription/client"
-import { NamespaceSelectionError } from "@/components/licenses/NamespaceSelectionError"
 import type { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
 import { Button, TabContent, TabList, TabTrigger, Text } from "@code0-tech/pictor"
 import { IconCreditCard, IconKey, IconTrendingUp } from "@tabler/icons-react"
@@ -40,7 +39,6 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
     const resolvedSubscriptionId = resolveSubscriptionRouteId(licenseId)
     const license = licenses.find((candidate) => candidate.id === resolvedSubscriptionId && candidate.customerId === resolvedCustomerId)
     const requestedTab = searchParams.get("tab")
-    // Legacy "license" and "billing" tabs were merged into "general".
     const section: LicenseEditSection = isLicenseEditSection(requestedTab) ? requestedTab : searchParams.has("setup_intent") ? "payment" : "general"
     const sectionLabels = getLicenseEditSectionLabels(content)
     const paymentSectionEnabled = section === "payment"
@@ -118,7 +116,11 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
             title={content.editor.licenseTitle}
             value={license?.subscriptionId ? section : "general"}
         >
-            <NamespaceSelectionError error={searchParams.get("namespaceError")} errors={errors} />
+            {searchParams.get("namespaceError") ? (
+                <p role="alert" className="my-4 rounded-lg border border-error/30 p-4 text-sm text-error">
+                    {searchParams.get("namespaceError") === "occupied" ? errors.namespaceInUse : errors.licenseUpdate}
+                </p>
+            ) : null}
             <TabContent value="general">
                 <LicenseGeneralTab
                     content={content}

@@ -1,15 +1,13 @@
 "use client"
 
-import { SubscriptionPendingUpdateNotice } from "@/components/licenses/SubscriptionPendingUpdateNotice"
+import { SubscriptionPendingUpdateNotice } from "@/components/licenses/shared/SubscriptionPendingUpdateNotice"
 
-import { NamespaceSelectionError } from "@/components/licenses/NamespaceSelectionError"
-import { DataTableControls } from "@/components/licenses/DataTableControls"
-import { InvoiceStatusBadge } from "@/components/licenses/InvoiceStatusBadge"
-import { getLicenseDetailGridCellClassName } from "@/components/licenses/licenseDetailGrid"
-import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
-import { LicenseLoadMoreButton } from "@/components/licenses/LicenseLoadMoreButton"
-import { LICENSE_DATA_TABLE_PAGE_SIZE, LicenseDataTablePagination } from "@/components/licenses/LicenseDataTablePagination"
-import { LicenseStatusDot } from "@/components/licenses/LicenseStatusDot"
+import { DataTableControls } from "@/components/licenses/table/DataTableControls"
+import { getLicenseDetailGridCellClassName } from "@/components/licenses/shared/licenseDetailGrid"
+import { useLicenseData } from "@/components/licenses/data/LicenseDataProvider"
+import { LicenseLoadMoreButton } from "@/components/licenses/table/LicenseLoadMoreButton"
+import { LICENSE_DATA_TABLE_PAGE_SIZE, LicenseDataTablePagination } from "@/components/licenses/table/LicenseDataTablePagination"
+import { LicenseStatusDot } from "@/components/licenses/shared/LicenseStatusDot"
 import { ButtonLoader } from "@/components/ui/Loader"
 import type { ErrorsContent, LicenseContent, SubscriptionConfigData, UpgradeBannerData } from "@/lib/cms"
 import { formatMinorCurrency } from "@/lib/formatters"
@@ -69,6 +67,20 @@ interface LicenseDetailItem {
     value: string
 }
 
+function getInvoiceStatusBadgeColor(status?: string) {
+    switch (status?.toLowerCase()) {
+        case "paid":
+            return "info"
+        case "uncollectible":
+            return "error"
+        case "draft":
+        case "void":
+            return "tertiary"
+        default:
+            return "warning"
+    }
+}
+
 export function LicenseDetailPage({ content, errors, customerId, licenseId, locale, namespaceHref, subscriptionConfig, upgradeBanner }: LicenseDetailPageProps) {
     const router = useRouter()
     const searchParams = useSearchParams()
@@ -84,7 +96,6 @@ export function LicenseDetailPage({ content, errors, customerId, licenseId, loca
         timeZone: "UTC",
     })
     const formatDate = (value?: string) => (value ? dateFormatter.format(new Date(value)) : "—")
-    // A canceled subscription, or one whose cancellation has been requested, is not billed again.
     const hasNextBilling = Boolean(license && !license.cancelAt && !license.canceledAt && license.subscriptionStatus?.trim().toLowerCase() !== "canceled")
     const showNamespaceWarning = license?.deploymentType === "cloud" && !license.namespaceId
     const licenseDetails: LicenseDetailItem[] = license
@@ -145,7 +156,11 @@ export function LicenseDetailPage({ content, errors, customerId, licenseId, loca
 
     return (
         <div>
-            <NamespaceSelectionError error={searchParams.get("namespaceError")} errors={errors} />
+            {searchParams.get("namespaceError") ? (
+                <p role="alert" className="my-4 rounded-lg border border-error/30 p-4 text-sm text-error">
+                    {searchParams.get("namespaceError") === "occupied" ? errors.namespaceInUse : errors.licenseUpdate}
+                </p>
+            ) : null}
             <SubscriptionPendingUpdateNotice update={license?.pendingUpdate} content={content} locale={locale} />
             <section aria-label={content.license}>
                 <Flex justify="end">
@@ -321,7 +336,7 @@ export function LicenseDetailPage({ content, errors, customerId, licenseId, loca
                                     </Text>
                                 </DataTableColumn>
                                 <DataTableColumn>
-                                    <InvoiceStatusBadge status={invoice.status}>{formatLicenseDisplayValue(invoice.status, "invoiceStatus", content.values)}</InvoiceStatusBadge>
+                                    <Badge color={getInvoiceStatusBadgeColor(invoice.status)}>{formatLicenseDisplayValue(invoice.status, "invoiceStatus", content.values)}</Badge>
                                 </DataTableColumn>
                                 <DataTableColumn>
                                     <Menu>

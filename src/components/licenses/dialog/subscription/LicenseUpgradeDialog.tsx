@@ -1,10 +1,10 @@
 "use client"
 
 import type { PaymentPeriod, SubscriptionPlan } from "@/lib/subscription/types"
-import { SubscriptionPendingUpdateNotice } from "@/components/licenses/SubscriptionPendingUpdateNotice"
+import { SubscriptionPendingUpdateNotice } from "@/components/licenses/shared/SubscriptionPendingUpdateNotice"
 
-import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
-import { LicenseTabAlert, LicenseTabHeader, LicenseTabRow, LicenseTabSection } from "@/components/licenses/dialog/LicenseTabLayout"
+import { useLicenseData } from "@/components/licenses/data/LicenseDataProvider"
+import { LicenseTabAlert, LicenseTabHeader, LicenseTabRow, LicenseTabSection } from "@/components/licenses/dialog/shared/LicenseTabLayout"
 import { AcceptTermsCheckbox } from "@/components/forms/AcceptTermsCheckbox"
 import { PackageSlider } from "@/components/ui/PackageSlider"
 import { ButtonLoader } from "@/components/ui/Loader"
@@ -36,7 +36,6 @@ interface LicenseUpgradeDialogProps {
     subscriptionPrices: SubscriptionPriceCatalog
 }
 
-// Custom counts as the top tier: it is reached by upgrading from pro or max, never the other way around here.
 const PLAN_ORDER: Record<SubscriptionPlan, number> = { pro: 0, max: 1, custom: 2 }
 const PLANS: SubscriptionPlan[] = ["pro", "max", "custom"]
 
@@ -78,8 +77,6 @@ export function LicenseUpgradeDialog({ content, customerId, errors, licenseId, l
     const quantitiesChanged = plan === "custom" && (resolvedAiTokens !== aiTokensDefault || resolvedWorkflowExecutions !== workflowExecutionsDefault)
     const hasChange = Boolean(license?.subscriptionId) && (plan !== currentPlan || quantitiesChanged)
 
-    // Computed entirely from the CMS/Stripe price catalog already on the client, so it updates on every slider
-    // tick without waiting for the debounced Crater preview request below.
     const paymentPeriod = normalizePaymentPeriod((license?.paymentPeriod as PaymentPeriod | undefined) ?? "monthly")
     const catalog = useMemo(() => getSubscriptionCatalog(subscriptionConfig, subscriptionPrices), [subscriptionConfig, subscriptionPrices])
     const localQuote = useMemo(
@@ -120,7 +117,6 @@ export function LicenseUpgradeDialog({ content, customerId, errors, licenseId, l
         }
     }
 
-    // A single target (max -> custom) or none (already custom) leaves nothing to choose, so no picker is shown.
     const planSelection =
         upgradeTargets.length > 1 ? (
             <div role="radiogroup" aria-label={content.upgrade.title} className="grid grid-cols-2 gap-2">

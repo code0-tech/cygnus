@@ -1,7 +1,7 @@
 "use client"
 
-import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
-import { LicenseDialog } from "@/components/licenses/dialog/LicenseDialog"
+import { useLicenseData } from "@/components/licenses/data/LicenseDataProvider"
+import { LicenseDialog } from "@/components/licenses/dialog/shared/LicenseDialog"
 import { ButtonLoader } from "@/components/ui/Loader"
 
 import type { ErrorsContent, LicenseContent } from "@/lib/cms"

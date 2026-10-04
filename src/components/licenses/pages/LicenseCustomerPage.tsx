@@ -1,16 +1,16 @@
 "use client"
 
-import { DataTableControls } from "@/components/licenses/DataTableControls"
-import { getLicenseDetailGridCellClassName } from "@/components/licenses/licenseDetailGrid"
-import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
-import { LicenseLoadMoreButton } from "@/components/licenses/LicenseLoadMoreButton"
-import { LICENSE_DATA_TABLE_PAGE_SIZE, LicenseDataTablePagination } from "@/components/licenses/LicenseDataTablePagination"
-import { LicenseStatusBadge } from "@/components/licenses/LicenseStatusBadge"
+import { DataTableControls } from "@/components/licenses/table/DataTableControls"
+import { getLicenseDetailGridCellClassName } from "@/components/licenses/shared/licenseDetailGrid"
+import { useLicenseData } from "@/components/licenses/data/LicenseDataProvider"
+import { LicenseLoadMoreButton } from "@/components/licenses/table/LicenseLoadMoreButton"
+import { LICENSE_DATA_TABLE_PAGE_SIZE, LicenseDataTablePagination } from "@/components/licenses/table/LicenseDataTablePagination"
+import { getLicenseStatusBadgeColor } from "@/components/licenses/shared/LicenseStatusDot"
 import type { LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { formatLicenseDisplayValue } from "@/lib/licenses/displayValues"
 import { createLicenseCustomerPath, createLicensePath, resolveCustomerRouteId } from "@/lib/licenses/routes"
-import { AutoScrollArea, Button, Card, DataTable, DataTableColumn, DataTableHeader, DataTableHeaderColumn, Flex, Spacing, Text, type DataTableFilterProps } from "@code0-tech/pictor"
+import { AutoScrollArea, Badge, Button, Card, DataTable, DataTableColumn, DataTableHeader, DataTableHeaderColumn, Flex, Spacing, Text, type DataTableFilterProps } from "@code0-tech/pictor"
 import { useRouter } from "next/navigation"
 import { Fragment, useLayoutEffect, useRef, useState } from "react"
 
@@ -235,7 +235,7 @@ export function LicenseCustomerPage({ content, customerId, locale }: LicenseCust
                                         </Flex>
                                     </DataTableColumn>
                                     <DataTableColumn>
-                                        <LicenseStatusBadge status={license.status}>{formatLicenseDisplayValue(license.status, "status", content.values)}</LicenseStatusBadge>
+                                        <Badge color={getLicenseStatusBadgeColor(license.status)}>{formatLicenseDisplayValue(license.status, "status", content.values)}</Badge>
                                     </DataTableColumn>
                                     <DataTableColumn>
                                         <Text size="sm" hierarchy="tertiary">
