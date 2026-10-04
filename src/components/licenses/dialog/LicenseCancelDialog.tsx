@@ -1,6 +1,5 @@
 "use client"
 
-import type { SubscriptionUpdateResult } from "@/lib/subscription/types"
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
 import { LicenseDialog } from "@/components/licenses/dialog/LicenseDialog"
 import { ButtonLoader } from "@/components/ui/Loader"
@@ -8,6 +7,7 @@ import { ButtonLoader } from "@/components/ui/Loader"
 import type { ErrorsContent, LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { createLicensePath, resolveCustomerRouteId, resolveSubscriptionRouteId } from "@/lib/licenses/routes"
+import { cancelLicenseSubscription, resumeLicenseSubscription } from "@/lib/licenses/client"
 import { Button, DialogFooter } from "@code0-tech/pictor"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
@@ -38,15 +38,7 @@ export function LicenseCancelDialog({ content, customerId, errors, licenseId, lo
         setError(null)
 
         try {
-            const response = await fetch("/api/crater/subscriptions/cancel", {
-                method: "POST",
-                credentials: "same-origin",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify({ id: license.subscriptionId }),
-            })
-            if (!response.ok) throw new Error(errors.subscriptionCancel)
-            const updated: unknown = await response.json()
-            const subscription = updated && typeof updated === "object" ? (updated as SubscriptionUpdateResult) : {}
+            const subscription = await cancelLicenseSubscription(license.subscriptionId, errors.subscriptionCancel)
 
             updateLicense(license.id, {
                 cancelAt: subscription.cancelAt ?? null,
@@ -69,15 +61,7 @@ export function LicenseCancelDialog({ content, customerId, errors, licenseId, lo
         setError(null)
 
         try {
-            const response = await fetch("/api/crater/subscriptions/resume", {
-                method: "POST",
-                credentials: "same-origin",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify({ id: license.subscriptionId }),
-            })
-            if (!response.ok) throw new Error(errors.subscriptionResume)
-            const updated: unknown = await response.json()
-            const subscription = updated && typeof updated === "object" ? (updated as SubscriptionUpdateResult) : {}
+            const subscription = await resumeLicenseSubscription(license.subscriptionId, errors.subscriptionResume)
 
             updateLicense(license.id, {
                 cancelAt: null,

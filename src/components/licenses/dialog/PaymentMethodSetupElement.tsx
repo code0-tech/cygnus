@@ -2,6 +2,7 @@
 
 import { LicenseTabAlert, LicenseTabHeader, LicenseTabSaveButton } from "@/components/licenses/dialog/LicenseTabLayout"
 import { ButtonLoader } from "@/components/ui/Loader"
+import { getPaymentMethodSetupStatus } from "@/lib/licenses/client"
 import type { LicenseContent } from "@/lib/cms"
 import { Button, Spacing, Text } from "@code0-tech/pictor"
 import { Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js"
@@ -54,13 +55,6 @@ const appearance = {
 // customer, and a subscription is then pointed at one it already has through subscriptionsUpdate.
 export type PaymentMethodSetupOwner = { customerId: string }
 
-function paymentMethodSetupStatusUrl(owner: PaymentMethodSetupOwner, setupIntentId: string) {
-    const statusUrl = new URL("/api/crater/customer/payment-method-setup", window.location.origin)
-    statusUrl.searchParams.set("customerId", owner.customerId)
-    statusUrl.searchParams.set("setupIntentId", setupIntentId)
-    return statusUrl
-}
-
 interface PaymentMethodSetupElementProps {
     clientSecret: string
     content: LicenseContent["editor"]
@@ -91,26 +85,16 @@ export function PaymentMethodSetupPendingStatus({ content, errorMessage, onSucce
 
         const checkStatus = async () => {
             try {
-                const statusUrl = paymentMethodSetupStatusUrl(owner, setupIntentId)
-                const response = await fetch(statusUrl, {
-                    cache: "no-store",
-                    credentials: "same-origin",
-                    signal: controller.signal,
-                })
-                const result: unknown = await response.json()
-
-                if (!response.ok || !result || typeof result !== "object" || !("status" in result)) throw new Error("Invalid payment method setup status response.")
-                if (result.status === "ready") {
+                const status = await getPaymentMethodSetupStatus(owner.customerId, setupIntentId, controller.signal)
+                if (status === "ready") {
                     setIsComplete(true)
                     onSuccess()
                     return
                 }
-                if (result.status === "failed") {
+                if (status === "failed") {
                     setError(errorMessage)
                     return
                 }
-                if (result.status !== "pending") throw new Error("Invalid payment method setup status.")
-
                 timeout = setTimeout(() => void checkStatus(), 1_250)
             } catch (statusError) {
                 if (statusError instanceof DOMException && statusError.name === "AbortError") return

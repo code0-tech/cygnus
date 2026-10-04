@@ -10,6 +10,7 @@ import { useCustomerPaymentMethods } from "@/hooks/usePaymentMethods"
 import type { CheckoutData, ErrorsContent, LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { type CustomerEditSection, getCustomerEditSectionLabels } from "@/lib/licenses/editSections"
+import { removeLicenseCustomerPaymentMethod, updateLicenseCustomer } from "@/lib/licenses/client"
 import { createLicenseCustomerPath, resolveCustomerRouteId } from "@/lib/licenses/routes"
 import { Button, EmailInput, Spacing, TabContent, TabList, TabTrigger, Text, TextInput } from "@code0-tech/pictor"
 import { IconCreditCard, IconMail, IconPhone, IconTrash, IconUser } from "@tabler/icons-react"
@@ -95,17 +96,8 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
         setRemovePaymentMethodError(null)
 
         try {
-            const response = await fetch("/api/crater/customer", {
-                method: "PATCH",
-                credentials: "same-origin",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify({ id: customer.id, paymentMethods: paymentMethods.filter((method) => method.id !== paymentMethodId).map((method) => method.id) }),
-            })
-            if (!response.ok) {
-                const result: unknown = await response.json().catch(() => null)
-                const errorCode = result && typeof result === "object" && "errorCode" in result ? result.errorCode : null
-                throw new Error(errorCode === "PAYMENT_METHOD_IN_USE" ? errors.paymentMethodInUse : errors.paymentMethodRemove)
-            }
+            const errorCode = await removeLicenseCustomerPaymentMethod(customer.id, paymentMethods.filter((method) => method.id !== paymentMethodId).map((method) => method.id))
+            if (errorCode) throw new Error(errorCode === "PAYMENT_METHOD_IN_USE" ? errors.paymentMethodInUse : errors.paymentMethodRemove)
 
             removePaymentMethodLocally(paymentMethodId)
         } catch (removeError) {
@@ -122,11 +114,8 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
         setError(null)
 
         try {
-            const response = await fetch("/api/crater/customer", {
-                method: "PATCH",
-                credentials: "same-origin",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify({
+            await updateLicenseCustomer(
+                {
                     id: customer.id,
                     name: name.trim() || null,
                     email: email.trim() || null,
@@ -139,9 +128,9 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
                         postalCode: postalCode.trim() || null,
                         country: country.trim().toUpperCase() || null,
                     },
-                }),
-            })
-            if (!response.ok) throw new Error(errors.customerUpdate)
+                },
+                errors.customerUpdate
+            )
 
             updateCustomer(customer.id, {
                 address: {

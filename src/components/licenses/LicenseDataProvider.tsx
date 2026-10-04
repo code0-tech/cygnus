@@ -1,9 +1,9 @@
 "use client"
 
+import { fetchLicenseDashboard } from "@/lib/licenses/client"
 import { EMPTY_LICENSE_DASHBOARD_DATA, type LicenseDashboardCustomerAddress, type LicenseDashboardData, type LicenseDashboardLicense } from "@/lib/licenses/types"
 import { deriveLicenseStatus } from "@/lib/licenses/dashboardMapper"
 import type { DashboardSubscriptionStatus, SubscriptionPendingUpdate } from "@/lib/licenses/types"
-import { resolveCustomerRouteId, resolveSubscriptionRouteId } from "@/lib/licenses/routes"
 import { usePathname } from "next/navigation"
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useRef, useState } from "react"
 
@@ -40,29 +40,6 @@ interface LicenseDataContextValue extends LicenseDashboardData {
 const LicenseDataContext = createContext<LicenseDataContextValue | null>(null)
 
 type PaginatedResource = "customers" | "invoices" | "licenses"
-
-function createLicenseDataUrl(pathname: string, origin: string, pagination?: { cursor: string; resource: PaginatedResource }) {
-    const dataUrl = new URL("/api/crater/licenses", origin)
-    const pathSegments = pathname.split("/").filter(Boolean)
-    const customerSegmentIndex = pathSegments.indexOf("customer")
-    const licenseSegmentIndex = pathSegments.indexOf("license")
-
-    if (customerSegmentIndex >= 0 && pathSegments[customerSegmentIndex + 1]) {
-        dataUrl.searchParams.set("view", licenseSegmentIndex >= 0 ? "license" : "customer")
-        dataUrl.searchParams.set("customerId", resolveCustomerRouteId(pathSegments[customerSegmentIndex + 1]))
-        if (licenseSegmentIndex >= 0 && pathSegments[licenseSegmentIndex + 1]) {
-            dataUrl.searchParams.set("licenseId", resolveSubscriptionRouteId(pathSegments[licenseSegmentIndex + 1]))
-        }
-    }
-
-    if (pagination) {
-        const cursorName = pagination.resource === "customers" ? "customerAfter" : pagination.resource === "licenses" ? "licenseAfter" : "invoiceAfter"
-        dataUrl.searchParams.set(cursorName, pagination.cursor)
-        dataUrl.searchParams.set("includeNavigation", "false")
-    }
-
-    return dataUrl
-}
 
 function mergeById<T extends { id: string }>(current: T[], incoming: T[]) {
     const merged = new Map(current.map((item) => [item.id, item]))
@@ -152,23 +129,13 @@ export function LicenseDataProvider({ children, loadError, redirectUrl }: { chil
             window.history.replaceState(window.history.state, "", sanitizedUrl.toString())
         }
 
-        const dataUrl = createLicenseDataUrl(pathname, currentUrl.origin)
-
-        void fetch(dataUrl, {
-            cache: "no-store",
-            credentials: "same-origin",
-            signal: controller.signal,
-        })
-            .then(async (response) => {
-                if (response.status === 401 || response.status === 403) {
+        void fetchLicenseDashboard(pathname, { origin: currentUrl.origin, signal: controller.signal })
+            .then(({ data: nextData, status }) => {
+                if (status === 401 || status === 403) {
                     window.location.replace(redirectUrl)
                     return null
                 }
-                if (!response.ok) throw new Error(loadError)
-                return (await response.json()) as LicenseDashboardData
-            })
-            .then((nextData) => {
-                if (!nextData) return
+                if (!nextData) throw new Error(loadError)
                 setData(nextData)
                 setHasLoadedOnce(true)
                 loadedPathRef.current = pathname
@@ -202,15 +169,15 @@ export function LicenseDataProvider({ children, loadError, redirectUrl }: { chil
 
             setLoadingMore(resource)
             try {
-                const dataUrl = createLicenseDataUrl(pathname, window.location.origin, { cursor: pageInfo.endCursor, resource })
-                if (typeof pageInfo.contextCursor === "string") dataUrl.searchParams.set("customerContext", pageInfo.contextCursor)
-                const response = await fetch(dataUrl, { cache: "no-store", credentials: "same-origin" })
-                if (response.status === 401 || response.status === 403) {
+                const { data: nextData, status } = await fetchLicenseDashboard(pathname, {
+                    origin: window.location.origin,
+                    pagination: { cursor: pageInfo.endCursor, customerContext: typeof pageInfo.contextCursor === "string" ? pageInfo.contextCursor : undefined, resource },
+                })
+                if (status === 401 || status === 403) {
                     window.location.replace(redirectUrl)
                     return
                 }
-                if (!response.ok) throw new Error(loadError)
-                const nextData = (await response.json()) as LicenseDashboardData
+                if (!nextData) throw new Error(loadError)
                 setData((current) => ({
                     customers: mergeById(current.customers, nextData.customers),
                     licenses: mergeLicensePages(current.licenses, nextData.licenses),
