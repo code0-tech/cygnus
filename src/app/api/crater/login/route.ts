@@ -1,6 +1,7 @@
-import { craterJson, craterMutationErrorResponse, optionalString, readJsonObject } from "@/lib/checkout/craterApi"
-import { createCraterUserSession } from "@/lib/checkout/craterLogin"
-import { setCraterSessionCookie } from "@/lib/checkout/craterSession"
+import { craterJson, craterMutationErrorResponse } from "@/lib/crater/api.server"
+import { optionalString, readJsonObject } from "@/lib/crater/request"
+import { createCraterUserSession } from "@/lib/crater/login.server"
+import { setCraterSessionCookie } from "@/lib/crater/session.server"
 import { enforceRateLimit } from "@/lib/security/rateLimiter"
 import { logSecurityEvent } from "@/lib/security/securityLog"
 

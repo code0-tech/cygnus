@@ -1,6 +1,6 @@
 import { describeCraterError } from "@/lib/crater/errors"
-import { createCraterUserSession } from "@/lib/checkout/craterLogin"
-import { setCraterSessionCookie, setCraterUserLoginCookie } from "@/lib/checkout/craterSession"
+import { createCraterUserSession } from "@/lib/crater/login.server"
+import { setCraterSessionCookie, setCraterUserLoginCookie } from "@/lib/crater/session.server"
 import { isSupportedLocale } from "@/lib/i18n"
 import { NextResponse } from "next/server"
 

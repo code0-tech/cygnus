@@ -1,6 +1,7 @@
 import { readGuestCheckoutSession } from "@/lib/checkout/guestCheckoutSession"
 import { createApolloClient } from "@/lib/apolloClient"
-import { craterJson, craterMutationErrorResponse, craterTransportErrorResponse, optionalString, readJsonObject, readOptionalAddress, requireCraterSession } from "@/lib/checkout/craterApi"
+import { craterJson, craterMutationErrorResponse, craterTransportErrorResponse, requireCraterSession } from "@/lib/crater/api.server"
+import { optionalString, readJsonObject, readOptionalAddress } from "@/lib/crater/request"
 import { normalizeCraterCustomerType, toCraterCustomerTypeEnum } from "@/lib/crater/values"
 import type {
     Customer,

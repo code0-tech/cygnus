@@ -1,7 +1,7 @@
 "use client"
 
 import { checkoutFetch } from "@/lib/checkout/client"
-import { clearCraterUserLoginMarker, hasCraterUserLoginMarker } from "@/lib/checkout/craterUserLogin"
+import { clearCraterUserLoginMarker, hasCraterUserLoginMarker } from "@/lib/crater/userLogin.client"
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react"
 
 interface CraterSessionContextValue {

@@ -1,5 +1,5 @@
 import { createApolloClient } from "@/lib/apolloClient"
-import { craterJson, craterTransportErrorResponse, requireCraterSession } from "@/lib/checkout/craterApi"
+import { craterJson, craterTransportErrorResponse, requireCraterSession } from "@/lib/crater/api.server"
 import type { CustomerPaymentMethodSummary } from "@/lib/licenses/licenseClient"
 import type { Query, QueryPaymentMethodArgs, Scalars, PaymentMethodSummary } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"

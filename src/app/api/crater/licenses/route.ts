@@ -1,5 +1,5 @@
-import { craterJson, craterTransportErrorResponse, requireCraterSession } from "@/lib/checkout/craterApi"
-import { setCraterSessionCookie } from "@/lib/checkout/craterSession"
+import { craterJson, craterTransportErrorResponse, requireCraterSession } from "@/lib/crater/api.server"
+import { setCraterSessionCookie } from "@/lib/crater/session.server"
 import { loadLicenseDashboardData } from "@/lib/licenses/licenseDashboardService.server"
 
 export const runtime = "nodejs"

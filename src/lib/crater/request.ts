@@ -1,6 +1,41 @@
-import { optionalString, type JsonObject } from "@/lib/checkout/craterApi"
 import { parseCraterPaymentPeriod, parseCraterPlan } from "@/lib/crater/values"
 import type { CheckoutPaymentPeriod, CheckoutPlan, Scalars } from "@code0-tech/crater-graphql-types"
+
+export type JsonObject = Record<string, unknown>
+
+export async function readJsonObject(request: Request): Promise<JsonObject | null> {
+    try {
+        const body: unknown = await request.json()
+        return body !== null && typeof body === "object" && !Array.isArray(body) ? (body as JsonObject) : null
+    } catch {
+        return null
+    }
+}
+
+export function optionalString(value: unknown) {
+    return typeof value === "string" && value.trim() ? value.trim() : undefined
+}
+
+export function readOptionalAddress(value: unknown) {
+    if (value === undefined || value === null) {
+        return undefined
+    }
+
+    if (typeof value !== "object" || Array.isArray(value)) {
+        return null
+    }
+
+    const address = value as JsonObject
+
+    return {
+        ...(optionalString(address.city) ? { city: optionalString(address.city) } : {}),
+        ...(optionalString(address.country) ? { country: optionalString(address.country) } : {}),
+        ...(optionalString(address.line1) ? { line1: optionalString(address.line1) } : {}),
+        ...(optionalString(address.line2) ? { line2: optionalString(address.line2) } : {}),
+        ...(optionalString(address.postalCode) ? { postalCode: optionalString(address.postalCode) } : {}),
+        ...(optionalString(address.state) ? { state: optionalString(address.state) } : {}),
+    }
+}
 
 export function isLicenseId(value: string): value is Scalars["LicenseID"]["input"] {
     return /^gid:\/\/crater\/License\/\d+$/.test(value)
