@@ -1,5 +1,5 @@
 import { createApolloClient } from "@/lib/apolloClient"
-import { isSubscriptionId } from "@/lib/licenses/craterRequest"
+import { isSubscriptionId } from "@/lib/crater/request"
 import { byMostRecentlyUpdated, mapCustomer, mapPageInfo, mapSubscription, mapUserData } from "@/lib/licenses/licenseDashboardMapper"
 import { CUSTOMER_LICENSE_PAGE, CUSTOMER_NAVIGATION_PAGE, LICENSE_CUSTOMER_DETAIL, LICENSE_DASHBOARD, LICENSE_NAVIGATION_PAGE } from "@/lib/licenses/licenseDashboardQueries.server"
 import type { LicenseDashboardData, LicenseDashboardLicense } from "@/lib/licenses/licenseTypes"

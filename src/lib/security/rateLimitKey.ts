@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto"
 import { isIP } from "node:net"
-import { readCraterSessionAuthorization } from "@/lib/checkout/craterSession"
+import { readCraterSessionAuthorization } from "@/lib/crater/session.server"
 import type { RateLimitPolicyName } from "@/lib/security/rateLimitPolicies"
 
 const DEFAULT_TRUSTED_PROXY_HOPS = 1

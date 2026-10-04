@@ -1,5 +1,5 @@
 import { guestCheckoutId, readGuestCheckoutSession, guestCheckoutRequestAllowed, clearGuestCheckoutSession } from "@/lib/checkout/guestCheckoutSession"
-import { CRATER_USER_LOGIN_COOKIE_NAME, CRATER_USER_LOGIN_COOKIE_VALUE } from "@/lib/checkout/craterUserLogin"
+import { CRATER_USER_LOGIN_COOKIE_NAME, CRATER_USER_LOGIN_COOKIE_VALUE } from "@/lib/crater/sessionCookies"
 import type { NextResponse } from "next/server"
 
 export type CraterSessionAuthorization =

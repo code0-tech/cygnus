@@ -1,6 +1,6 @@
 import { completeGuestCheckoutSession, clearGuestCheckoutSession } from "@/lib/checkout/guestCheckoutSession"
 import { createApolloClient } from "@/lib/apolloClient"
-import { craterJson, craterTransportErrorResponse, requireCraterSession } from "@/lib/checkout/craterApi"
+import { craterJson, craterTransportErrorResponse, requireCraterSession } from "@/lib/crater/api.server"
 import { normalizeCraterDeploymentType, normalizeCraterPaymentPeriod, normalizeCraterPlan, parseCheckoutSessionId, normalizeCraterCustomerType } from "@/lib/crater/values"
 import type { Query, QueryCheckoutCompletionStatusArgs } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"

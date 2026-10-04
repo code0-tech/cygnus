@@ -1,5 +1,5 @@
 import { createApolloClient } from "@/lib/apolloClient"
-import { CRATER_ERROR_FIELDS } from "@/lib/checkout/craterApi"
+import { CRATER_ERROR_FIELDS } from "@/lib/crater/api.server"
 import type { Mutation, MutationUsersCreateGuestUserArgs, MutationUsersLoginArgs } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 

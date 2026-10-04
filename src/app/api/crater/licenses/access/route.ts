@@ -1,8 +1,8 @@
-import { craterJson, craterTransportErrorResponse } from "@/lib/checkout/craterApi"
-import { isLicenseId } from "@/lib/licenses/craterRequest"
+import { craterJson, craterTransportErrorResponse } from "@/lib/crater/api.server"
+import { isLicenseId } from "@/lib/crater/request"
 import { findSubscriptionForLicenseSnapshot } from "@/lib/licenses/licenseSnapshotLookup.server"
 import { createLicensePath } from "@/lib/licenses/licenseRoute"
-import { clearCraterSessionCookie, readCraterSessionAuthorization } from "@/lib/checkout/craterSession"
+import { clearCraterSessionCookie, readCraterSessionAuthorization } from "@/lib/crater/session.server"
 import { isSupportedLocale } from "@/lib/i18n"
 import { NextResponse } from "next/server"
 

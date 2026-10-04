@@ -1,5 +1,6 @@
 import { createApolloClient } from "@/lib/apolloClient"
-import { craterJson, craterMutationErrorResponse, craterTransportErrorResponse, optionalString, readJsonObject, requireCraterSession } from "@/lib/checkout/craterApi"
+import { craterJson, craterMutationErrorResponse, craterTransportErrorResponse, requireCraterSession } from "@/lib/crater/api.server"
+import { optionalString, readJsonObject } from "@/lib/crater/request"
 import { retrievePaymentMethodSetupStatus } from "@/lib/licenses/paymentMethodSetupStatus"
 import type { Mutation, MutationCustomerPaymentMethodSetupCreateArgs, Query, Scalars } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"

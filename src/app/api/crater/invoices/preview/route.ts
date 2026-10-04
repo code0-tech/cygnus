@@ -1,4 +1,4 @@
-import { craterJson, requireCraterSession } from "@/lib/checkout/craterApi"
+import { craterJson, requireCraterSession } from "@/lib/crater/api.server"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"

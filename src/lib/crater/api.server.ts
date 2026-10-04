@@ -1,11 +1,9 @@
 import { describeCraterError } from "@/lib/crater/errors"
-import { clearCraterSessionCookie, readCraterSessionAuthorization } from "@/lib/checkout/craterSession"
+import { clearCraterSessionCookie, readCraterSessionAuthorization } from "@/lib/crater/session.server"
 import type { Error } from "@code0-tech/crater-graphql-types"
 import { gql } from "@apollo/client"
 import { ServerError } from "@apollo/client/errors"
 import { NextResponse } from "next/server"
-
-export type JsonObject = Record<string, unknown>
 
 export const CRATER_ERROR_FIELDS = gql`
     fragment CraterErrorFields on Error {
@@ -30,40 +28,6 @@ export function craterJson(body: unknown, status = 200) {
             "cache-control": "no-store",
         },
     })
-}
-
-export async function readJsonObject(request: Request): Promise<JsonObject | null> {
-    try {
-        const body: unknown = await request.json()
-        return body !== null && typeof body === "object" && !Array.isArray(body) ? (body as JsonObject) : null
-    } catch {
-        return null
-    }
-}
-
-export function optionalString(value: unknown) {
-    return typeof value === "string" && value.trim() ? value.trim() : undefined
-}
-
-export function readOptionalAddress(value: unknown) {
-    if (value === undefined || value === null) {
-        return undefined
-    }
-
-    if (typeof value !== "object" || Array.isArray(value)) {
-        return null
-    }
-
-    const address = value as JsonObject
-
-    return {
-        ...(optionalString(address.city) ? { city: optionalString(address.city) } : {}),
-        ...(optionalString(address.country) ? { country: optionalString(address.country) } : {}),
-        ...(optionalString(address.line1) ? { line1: optionalString(address.line1) } : {}),
-        ...(optionalString(address.line2) ? { line2: optionalString(address.line2) } : {}),
-        ...(optionalString(address.postalCode) ? { postalCode: optionalString(address.postalCode) } : {}),
-        ...(optionalString(address.state) ? { state: optionalString(address.state) } : {}),
-    }
 }
 
 export function requireCraterSession(request: Request, authorizationHeaderOnly = false): { response: NextResponse; token?: never } | { response?: never; token: string } {

@@ -1,7 +1,7 @@
 import { readGuestCheckoutSession } from "@/lib/checkout/guestCheckoutSession"
 import { createApolloClient } from "@/lib/apolloClient"
-import { craterJson, craterMutationErrorResponse, craterTransportErrorResponse, requireCraterSession } from "@/lib/checkout/craterApi"
-import { clearCraterSessionCookie } from "@/lib/checkout/craterSession"
+import { craterJson, craterMutationErrorResponse, craterTransportErrorResponse, requireCraterSession } from "@/lib/crater/api.server"
+import { clearCraterSessionCookie } from "@/lib/crater/session.server"
 import type { Mutation, MutationUsersLogoutArgs, Query } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 

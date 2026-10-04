@@ -1,15 +1,7 @@
 import { guestCheckoutId } from "@/lib/checkout/guestCheckoutSession"
 import { createApolloClient } from "@/lib/apolloClient"
-import {
-    CRATER_ERROR_FIELDS,
-    craterJson,
-    craterMutationErrorResponse,
-    craterTransportErrorResponse,
-    optionalString,
-    readJsonObject,
-    requireCraterSession,
-    type JsonObject,
-} from "@/lib/checkout/craterApi"
+import { CRATER_ERROR_FIELDS, craterJson, craterMutationErrorResponse, craterTransportErrorResponse, requireCraterSession } from "@/lib/crater/api.server"
+import { optionalString, readJsonObject, type JsonObject } from "@/lib/crater/request"
 import { toCraterPaymentPeriod, toCraterPlan } from "@/lib/crater/values"
 import { resolveSubscriptionSelection } from "@/lib/subscription/configurator"
 import { resolveSiteUrl } from "@/lib/siteConfig"
