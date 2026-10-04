@@ -12,7 +12,54 @@ import { formatLicenseDisplayValue } from "@/lib/licenses/licenseDisplayValues"
 import { createLicenseCustomerPath, createLicensePath, resolveCustomerRouteId } from "@/lib/licenses/licenseRoute"
 import { AutoScrollArea, Button, Card, DataTable, DataTableColumn, DataTableHeader, DataTableHeaderColumn, Flex, Spacing, Text, type DataTableFilterProps } from "@code0-tech/pictor"
 import { useRouter } from "next/navigation"
-import { Fragment, useState } from "react"
+import { Fragment, useLayoutEffect, useRef, useState } from "react"
+
+function CustomerEmail({ email }: { email: string }) {
+    const containerRef = useRef<HTMLDivElement>(null)
+    const textRef = useRef<HTMLSpanElement>(null)
+
+    useLayoutEffect(() => {
+        const container = containerRef.current
+        const text = textRef.current
+        if (!container || !text) return
+        let disposed = false
+
+        const fit = () => {
+            if (disposed || container.clientWidth <= 0) return
+            text.style.fontSize = "1.25rem"
+            if (text.getBoundingClientRect().width <= container.clientWidth) return
+
+            let lower = 0
+            let upper = Number.parseFloat(getComputedStyle(text).fontSize)
+            for (let step = 0; step < 12; step++) {
+                const size = (lower + upper) / 2
+                text.style.fontSize = `${size}px`
+                if (text.getBoundingClientRect().width <= container.clientWidth) lower = size
+                else upper = size
+            }
+            text.style.fontSize = `${lower}px`
+        }
+
+        fit()
+        const observer = new ResizeObserver(fit)
+        observer.observe(container)
+        void document.fonts.ready.then(fit)
+        document.fonts.addEventListener("loadingdone", fit)
+        return () => {
+            disposed = true
+            observer.disconnect()
+            document.fonts.removeEventListener("loadingdone", fit)
+        }
+    }, [email])
+
+    return (
+        <div ref={containerRef} className="mt-3 w-full min-w-0 overflow-hidden leading-tight text-white">
+            <span ref={textRef} title={email} className="inline-block whitespace-nowrap font-normal" style={{ fontSize: "1.25rem" }}>
+                {email}
+            </span>
+        </div>
+    )
+}
 
 function formatLicenseEdition(deploymentType: string | undefined, editions: LicenseContent["values"]["editions"]) {
     if (deploymentType === "cloud") return editions.cloud
@@ -43,12 +90,11 @@ export function LicenseCustomerPage({ content, customerId, locale }: LicenseCust
     const customerDetails = customer
         ? [
               { label: content.dashboard.nameLabel, value: customer.name || "—" },
-              { label: content.dashboard.emailLabel, value: customer.email || "—" },
+              { label: content.dashboard.emailLabel, value: customer.email || "—", fitEmail: true },
               {
                   label: content.dashboard.customerLabel,
                   value: formatLicenseDisplayValue(customer.customerType, "customerType", content.values),
               },
-              { label: content.licenses, value: String(customer.licenseCount) },
           ]
         : []
 
@@ -76,22 +122,26 @@ export function LicenseCustomerPage({ content, customerId, locale }: LicenseCust
 
                 <Card color="secondary" className="overflow-hidden p-0!">
                     {customer ? (
-                        <div className="grid sm:grid-cols-2 xl:grid-cols-4">
+                        <div className="grid sm:grid-cols-2 xl:grid-cols-3">
                             {customerDetails.map((detail, index) => (
-                                <div key={detail.label} className={getLicenseDetailGridCellClassName(index)}>
+                                <div key={detail.label} className={getLicenseDetailGridCellClassName(index, index === 2 ? "sm:col-span-2 xl:col-span-1" : undefined)}>
                                     <Text size="sm" hierarchy="tertiary" className="truncate">
                                         {detail.label}
                                     </Text>
-                                    <Text fw={400} title={detail.value} className="mt-3! truncate text-xl! leading-tight! text-white!">
-                                        {detail.value}
-                                    </Text>
+                                    {detail.fitEmail ? (
+                                        <CustomerEmail email={detail.value} />
+                                    ) : (
+                                        <Text fw={400} title={detail.value} className="mt-3! truncate text-xl! leading-tight! text-white!">
+                                            {detail.value}
+                                        </Text>
+                                    )}
                                 </div>
                             ))}
                         </div>
                     ) : isLoading ? (
-                        <div aria-hidden="true" className="grid sm:grid-cols-2 xl:grid-cols-4">
-                            {Array.from({ length: 4 }, (_, index) => (
-                                <div key={index} className={getLicenseDetailGridCellClassName(index, "animate-pulse motion-reduce:animate-none")}>
+                        <div aria-hidden="true" className="grid sm:grid-cols-2 xl:grid-cols-3">
+                            {Array.from({ length: 3 }, (_, index) => (
+                                <div key={index} className={getLicenseDetailGridCellClassName(index, `animate-pulse motion-reduce:animate-none ${index === 2 ? "sm:col-span-2 xl:col-span-1" : ""}`)}>
                                     <div className={index % 2 === 0 ? "h-3 w-16 rounded-full bg-white/10" : "h-3 w-20 rounded-full bg-white/10"} />
                                     <div className={index === 1 ? "mt-4 h-8 w-32 rounded-lg bg-white/10" : "mt-4 h-8 w-20 rounded-lg bg-white/10"} />
                                 </div>

@@ -4,7 +4,7 @@ import { StableBadge } from "@/components/ui/StableBadge"
 import { cn } from "@/lib/utils"
 import { useLayoutEffect, useRef, useState } from "react"
 
-export interface SwitchOption<TValue extends string> {
+interface SwitchOption<TValue extends string> {
     value: TValue
     label: string
     badge?: string | null
