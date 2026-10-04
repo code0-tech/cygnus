@@ -1,4 +1,5 @@
-import { craterJson, craterMutationErrorResponse, describeCraterError, optionalString, readJsonObject } from "@/lib/checkout/craterApi"
+import { craterJson, craterMutationErrorResponse, optionalString, readJsonObject } from "@/lib/checkout/craterApi"
+import { describeCraterError } from "@/lib/crater/errors"
 import { createCraterGuestUser } from "@/lib/checkout/craterLogin"
 import { createGuestCheckoutSession } from "@/lib/checkout/guestCheckoutSession"
 import { randomBytes } from "node:crypto"

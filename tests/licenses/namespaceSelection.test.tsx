@@ -3,7 +3,7 @@ import test from "node:test"
 import { renderToStaticMarkup } from "react-dom/server"
 import type { Error as CraterError } from "@code0-tech/crater-graphql-types"
 import type { ErrorsContent } from "../../src/lib/cms"
-import { isNamespaceInUse } from "../../src/lib/licenses/namespaceSelection"
+import { isNamespaceInUse } from "../../src/lib/crater/errors"
 import { NamespaceSelectionError } from "../../src/components/licenses/NamespaceSelectionError"
 
 const conflict = { errorCode: "INVALID_SUBSCRIPTION", details: [{ __typename: "MessageError", message: "Namespace is already linked to another subscription" }] } as CraterError
