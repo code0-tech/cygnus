@@ -78,10 +78,11 @@ export function LicenseUpgradeDialog({ content, customerId, errors, licenseId, l
     const hasChange = Boolean(license?.subscriptionId) && (plan !== currentPlan || quantitiesChanged)
 
     const paymentPeriod = normalizePaymentPeriod((license?.paymentPeriod as PaymentPeriod | undefined) ?? "monthly")
+    const deployment = license?.deploymentType === "self_hosted" ? "self_hosted" : "cloud"
     const catalog = useMemo(() => getSubscriptionCatalog(subscriptionConfig, subscriptionPrices), [subscriptionConfig, subscriptionPrices])
     const localQuote = useMemo(
-        () => calculateSubscriptionQuote({ plan, deployment: "cloud", customerType, paymentPeriod, aiTokens: resolvedAiTokens, workflowExecutions: resolvedWorkflowExecutions }, catalog),
-        [catalog, customerType, paymentPeriod, plan, resolvedAiTokens, resolvedWorkflowExecutions]
+        () => calculateSubscriptionQuote({ plan, deployment, customerType, paymentPeriod, aiTokens: resolvedAiTokens, workflowExecutions: resolvedWorkflowExecutions }, catalog),
+        [catalog, customerType, deployment, paymentPeriod, plan, resolvedAiTokens, resolvedWorkflowExecutions]
     )
 
     const [saveError, setSaveError] = useState<string | null>(null)

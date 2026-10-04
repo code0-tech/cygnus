@@ -62,6 +62,7 @@ export function CheckoutSummary({ content, errors, nextSteps, stripePricing, sub
     const { aiTokens, isCustomPlan, paymentPeriod, periodSuffix, planPrice, planTitle, pricing, workflowExecutions } = resolveCheckoutPricing({
         aiTokensParam,
         customerTypeParam: customerType,
+        deploymentTypeParam: deployment,
         fallbackPeriodSuffix: content.pricing.perMonthSuffix,
         paymentPeriodParam,
         planParam,
@@ -130,6 +131,7 @@ export function CheckoutSummary({ content, errors, nextSteps, stripePricing, sub
                                 const { pricing: periodPricing } = resolveCheckoutPricing({
                                     aiTokensParam,
                                     customerTypeParam: customerType,
+                                    deploymentTypeParam: deployment,
                                     fallbackPeriodSuffix: content.pricing.perMonthSuffix,
                                     paymentPeriodParam: period,
                                     planParam,
