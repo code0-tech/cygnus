@@ -37,9 +37,9 @@ export function SmallPricingSection({ content, locale, subscriptionConfig, subsc
         })
 
     const periodSuffix = {
-        monthly: "/mo",
-        quarterly: "/qtr",
-        yearly: "/yr",
+        monthly: subscriptionConfig.paymentPeriod.monthlyPeriodSuffix,
+        quarterly: subscriptionConfig.paymentPeriod.quarterlyPeriodSuffix,
+        yearly: subscriptionConfig.paymentPeriod.yearlyPeriodSuffix,
     }[selectedPeriod]
 
     const proPricing = getPricingForPeriod("pro", selectedPeriod)
@@ -99,7 +99,10 @@ export function SmallPricingSection({ content, locale, subscriptionConfig, subsc
                                     <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,oklch(1_0_0/0.1),transparent_68%)] md:hidden" />
                                 )}
                                 <div className="flex items-start justify-between gap-2">
-                                    <h3 className="text-xl font-semibold text-white">{pricingPackage.title}</h3>
+                                    <div className="min-w-0">
+                                        <h3 className="text-xl font-semibold text-white">{pricingPackage.title}</h3>
+                                        {pricingPackage.description && <p className="text-sm leading-5 text-secondary">{pricingPackage.description}</p>}
+                                    </div>
                                     {discount > 0 && (
                                         <StableBadge border className="border! border-brand/10! bg-brand/10! px-3 py-1 text-sm font-medium text-brand!">
                                             <span className="inline-flex items-baseline gap-0">-{formatDiscountBadge(discount, locale)}</span>
@@ -115,13 +118,12 @@ export function SmallPricingSection({ content, locale, subscriptionConfig, subsc
                                             format={{ style: "currency", currency: "EUR", trailingZeroDisplay: "stripIfInteger" }}
                                             className="text-3xl font-semibold text-white"
                                         />
-                                        <span className="text-lg font-semibold text-tertiary">{periodSuffix}</span>
+                                        <span className="text-base text-tertiary">{periodSuffix}</span>
                                     </div>
                                 )}
-                                {pricingPackage.description && <p className="text-sm leading-5 text-secondary">{pricingPackage.description}</p>}
 
                                 {(features.length > 0 || missingFeatures.length > 0) && (
-                                    <ul className="mt-6 flex flex-col gap-1.5">
+                                    <ul className="mt-4 flex flex-col gap-1.5">
                                         {features.map((feature, featureIndex) => (
                                             <li key={feature.id ?? `feature-${featureIndex}`} className="flex items-start gap-2 text-sm text-white">
                                                 <IconCheck size={16} className="mt-0.5 shrink-0 text-brand" />

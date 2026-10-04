@@ -97,7 +97,7 @@ export function SwipeCardsClient({ cards }: SwipeCardsClientProps) {
                             <div className="invisible pointer-events-none grid w-full sm:w-[80%] lg:w-[60%]">
                                 {cards.map((card, index) => (
                                     <div key={card.id || index} className="col-start-1 row-start-1">
-                                        <SwipeCard title={card.title} description={card.description} image={card.image} link={card.link} isFocused className="h-auto" />
+                                        <SwipeCard title={card.title} description={card.description} image={card.image} mediaType={card.mediaType} playgroundUrl={card.playgroundUrl} link={card.link} isFocused className="h-auto" />
                                     </div>
                                 ))}
                             </div>
@@ -119,7 +119,15 @@ export function SwipeCardsClient({ cards }: SwipeCardsClientProps) {
                                             transform: `translateX(calc(-50% + ${offset * 104}%))`,
                                         }}
                                     >
-                                        <SwipeCard title={card.title} description={card.description} image={card.image} link={card.link} isFocused={index === focusedIndex} />
+                                        <SwipeCard
+                                            title={card.title}
+                                            description={card.description}
+                                            image={card.image}
+                                            mediaType={card.mediaType}
+                                            playgroundUrl={card.playgroundUrl}
+                                            link={card.link}
+                                            isFocused={index === focusedIndex}
+                                        />
                                     </div>
                                 )
                             })}

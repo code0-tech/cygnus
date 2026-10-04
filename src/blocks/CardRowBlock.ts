@@ -1,4 +1,5 @@
 import { linkField } from "@/fields/linkField"
+import { playgroundMediaFields } from "@/fields/playgroundMediaFields"
 import { sectionFields } from "@/fields/sectionFields"
 import type { Block } from "payload"
 
@@ -29,12 +30,7 @@ export const CardRowBlock: Block = {
                     localized: true,
                 },
                 linkField(),
-                {
-                    name: "image",
-                    type: "upload",
-                    relationTo: "media",
-                    required: false,
-                },
+                ...playgroundMediaFields(),
             ],
         },
     ],

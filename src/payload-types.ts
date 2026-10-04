@@ -365,7 +365,9 @@ export interface Page {
               label: string;
               title: string;
               description: string;
+              mediaType: 'image' | 'playground';
               image?: (number | null) | Media;
+              playgroundUrl?: string | null;
               showImageBorder?: boolean | null;
               mask?: ('top' | 'right' | 'bottom' | 'left')[] | null;
               bulletPoints?: string[] | null;
@@ -636,7 +638,9 @@ export interface Page {
             cards: {
               title: string;
               description: string;
+              mediaType: 'image' | 'playground';
               image?: (number | null) | Media;
+              playgroundUrl?: string | null;
               link?: {
                 label?: string | null;
                 url?: string | null;
@@ -703,7 +707,9 @@ export interface Page {
                   id?: string | null;
                 }[]
               | null;
+            mediaType: 'image' | 'playground';
             image?: (number | null) | Media;
+            playgroundUrl?: string | null;
             showCard?: boolean | null;
             showImageBorder?: boolean | null;
             imageMask?: ('top' | 'right' | 'bottom' | 'left')[] | null;
@@ -850,6 +856,7 @@ export interface Page {
             searchPlaceholder: string;
             sortNewestLabel: string;
             sortOldestLabel: string;
+            loadMoreLabel: string;
             noActionsFoundLabel: string;
             allCategoriesLabel: string;
             categoryLabels: {
@@ -922,7 +929,9 @@ export interface Page {
                     label?: string | null;
                     url?: string | null;
                   };
+                  mediaType: 'image' | 'playground';
                   image?: (number | null) | Media;
+                  playgroundUrl?: string | null;
                   id?: string | null;
                 }[]
               | null;
@@ -958,7 +967,9 @@ export interface Page {
               gradient?: ('blue' | 'yellow' | 'pink' | 'aqua' | 'brand' | 'lime' | 'magenta' | 'neutral') | null;
               gradientDirection?: ('topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight') | null;
               bulletPoints?: string[] | null;
+              mediaType: 'image' | 'playground';
               image?: (number | null) | Media;
+              playgroundUrl?: string | null;
               link?: {
                 label?: string | null;
                 url?: string | null;
@@ -978,7 +989,9 @@ export interface Page {
             gradient?: ('blue' | 'yellow' | 'pink' | 'aqua' | 'brand' | 'lime' | 'magenta' | 'neutral') | null;
             gradientDirection?: ('topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight') | null;
             bulletPoints?: string[] | null;
+            mediaType: 'image' | 'playground';
             image?: (number | null) | Media;
+            playgroundUrl?: string | null;
             link?: {
               label?: string | null;
               url?: string | null;
@@ -1087,25 +1100,7 @@ export interface Page {
             contentHeading?: string | null;
             contentDescription?: string | null;
             flowLayout: 'left' | 'right';
-            flow: {
-              trigger: {
-                icon: string;
-                name: string;
-              };
-              items?:
-                | {
-                    icon: string;
-                    color: 'brand' | 'yellow' | 'aqua' | 'blue' | 'pink' | 'lime' | 'magenta';
-                    outline?: boolean | null;
-                    segments: {
-                      type: 'text' | 'literal' | 'reference' | 'node';
-                      value: string;
-                      id?: string | null;
-                    }[];
-                    id?: string | null;
-                  }[]
-                | null;
-            };
+            playgroundUrl?: string | null;
             showBorder?: boolean | null;
             id?: string | null;
             blockName?: string | null;
@@ -1128,6 +1123,20 @@ export interface Page {
               label?: string | null;
               url?: string | null;
             };
+            popularPill?: {
+              icon?: string | null;
+              text?: string | null;
+              color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
+            };
+            whatsIncludedText?: string | null;
+            /**
+             * Optional color applied to all card titles. Leave empty to use white.
+             */
+            titleColor?: string | null;
+            /**
+             * Optional accent color for the highlighted card background. Leave empty to use the white gradient.
+             */
+            highlightedCardColor?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
             pro?: {
               features?:
                 | {
@@ -1806,7 +1815,9 @@ export interface PagesSelect<T extends boolean = true> {
                     label?: T;
                     title?: T;
                     description?: T;
+                    mediaType?: T;
                     image?: T;
+                    playgroundUrl?: T;
                     showImageBorder?: T;
                     mask?: T;
                     bulletPoints?: T;
@@ -1842,7 +1853,9 @@ export interface PagesSelect<T extends boolean = true> {
                 | {
                     title?: T;
                     description?: T;
+                    mediaType?: T;
                     image?: T;
+                    playgroundUrl?: T;
                     link?:
                       | T
                       | {
@@ -1921,7 +1934,9 @@ export interface PagesSelect<T extends boolean = true> {
                     variant?: T;
                     id?: T;
                   };
+              mediaType?: T;
               image?: T;
+              playgroundUrl?: T;
               showCard?: T;
               showImageBorder?: T;
               imageMask?: T;
@@ -2072,6 +2087,7 @@ export interface PagesSelect<T extends boolean = true> {
               searchPlaceholder?: T;
               sortNewestLabel?: T;
               sortOldestLabel?: T;
+              loadMoreLabel?: T;
               noActionsFoundLabel?: T;
               allCategoriesLabel?: T;
               categoryLabels?:
@@ -2140,7 +2156,9 @@ export interface PagesSelect<T extends boolean = true> {
                           label?: T;
                           url?: T;
                         };
+                    mediaType?: T;
                     image?: T;
+                    playgroundUrl?: T;
                     id?: T;
                   };
               id?: T;
@@ -2182,7 +2200,9 @@ export interface PagesSelect<T extends boolean = true> {
                     gradient?: T;
                     gradientDirection?: T;
                     bulletPoints?: T;
+                    mediaType?: T;
                     image?: T;
+                    playgroundUrl?: T;
                     link?:
                       | T
                       | {
@@ -2204,7 +2224,9 @@ export interface PagesSelect<T extends boolean = true> {
               gradient?: T;
               gradientDirection?: T;
               bulletPoints?: T;
+              mediaType?: T;
               image?: T;
+              playgroundUrl?: T;
               link?:
                 | T
                 | {
@@ -2332,31 +2354,7 @@ export interface PagesSelect<T extends boolean = true> {
               contentHeading?: T;
               contentDescription?: T;
               flowLayout?: T;
-              flow?:
-                | T
-                | {
-                    trigger?:
-                      | T
-                      | {
-                          icon?: T;
-                          name?: T;
-                        };
-                    items?:
-                      | T
-                      | {
-                          icon?: T;
-                          color?: T;
-                          outline?: T;
-                          segments?:
-                            | T
-                            | {
-                                type?: T;
-                                value?: T;
-                                id?: T;
-                              };
-                          id?: T;
-                        };
-                  };
+              playgroundUrl?: T;
               showBorder?: T;
               id?: T;
               blockName?: T;
@@ -2385,6 +2383,16 @@ export interface PagesSelect<T extends boolean = true> {
                     label?: T;
                     url?: T;
                   };
+              popularPill?:
+                | T
+                | {
+                    icon?: T;
+                    text?: T;
+                    color?: T;
+                  };
+              whatsIncludedText?: T;
+              titleColor?: T;
+              highlightedCardColor?: T;
               pro?:
                 | T
                 | {

@@ -1,7 +1,7 @@
 "use client"
 
 import { m as motion, type Variants } from "motion/react"
-import type { ReactNode } from "react"
+import type { CSSProperties, ReactNode } from "react"
 
 interface StaggerContainerProps {
     children: ReactNode
@@ -17,6 +17,7 @@ interface StaggerItemProps {
     as?: "div" | "h1" | "h2" | "p" | "ul"
     y?: number
     duration?: number
+    style?: CSSProperties
 }
 
 export function StaggerContainer({ children, className, delayChildren = 0, staggerChildren = 0.08, disabled = false }: StaggerContainerProps) {
@@ -26,13 +27,19 @@ export function StaggerContainer({ children, className, delayChildren = 0, stagg
     }
 
     return (
-        <motion.div className={className} variants={variants} initial={disabled ? false : "hidden"} whileInView={disabled ? undefined : "show"} viewport={disabled ? undefined : { once: true, amount: 0.25 }}>
+        <motion.div
+            className={className}
+            variants={variants}
+            initial={disabled ? false : "hidden"}
+            whileInView={disabled ? undefined : "show"}
+            viewport={disabled ? undefined : { once: true, amount: 0.25 }}
+        >
             {children}
         </motion.div>
     )
 }
 
-export function StaggerItem({ children, className, as = "div", y = 12, duration = 0.3 }: StaggerItemProps) {
+export function StaggerItem({ children, className, as = "div", y = 12, duration = 0.3, style }: StaggerItemProps) {
     const Component = motion[as]
     const variants: Variants = {
         hidden: { opacity: 0, y },
@@ -40,7 +47,7 @@ export function StaggerItem({ children, className, as = "div", y = 12, duration 
     }
 
     return (
-        <Component variants={variants} className={className}>
+        <Component variants={variants} className={className} style={style}>
             {children}
         </Component>
     )

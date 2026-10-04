@@ -5,8 +5,8 @@ import { Card, Flex, Text } from "@code0-tech/pictor"
 import { IconNote, IconVariable } from "@tabler/icons-react"
 import type { CSSProperties, ReactNode } from "react"
 
-export type NodeSegmentType = "text" | "literal" | "reference" | "node"
-export type NodeAccent = "brand" | "yellow" | "aqua" | "blue" | "pink" | "lime" | "magenta"
+type NodeSegmentType = "text" | "literal" | "reference" | "node"
+type NodeAccent = "brand" | "yellow" | "aqua" | "blue" | "pink" | "lime" | "magenta"
 
 const ICON_COLOR_MAP: Record<NodeAccent, string> = {
     brand: "var(--bg-brand)",
@@ -16,10 +16,6 @@ const ICON_COLOR_MAP: Record<NodeAccent, string> = {
     pink: "var(--bg-pink)",
     lime: "var(--bg-lime)",
     magenta: "var(--bg-magenta)",
-}
-
-export function getNodeAccentColor(accent: NodeAccent) {
-    return ICON_COLOR_MAP[accent]
 }
 
 export interface NodeSegment {

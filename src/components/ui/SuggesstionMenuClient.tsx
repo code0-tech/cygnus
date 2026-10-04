@@ -1,6 +1,5 @@
 "use client"
 
-import type { InputSuggestion } from "@code0-tech/pictor"
 import { Text } from "@code0-tech/pictor"
 import { IconBulb, IconChevronUp, IconCircleDot, IconNote, IconVariable } from "@tabler/icons-react"
 import type { ReactNode } from "react"
@@ -17,7 +16,16 @@ const FunctionSuggestionType = {
 
 type FunctionSuggestionType = (typeof FunctionSuggestionType)[keyof typeof FunctionSuggestionType]
 
-type SuggestionWithType = InputSuggestion & {
+interface SuggestionWithType {
+    children: ReactNode
+    value: string
+    valueData?: {
+        id: string
+        type: "action" | "variable"
+        label: string
+    }
+    groupBy?: string
+    insertMode: "insert"
     suggestionType: FunctionSuggestionType
 }
 

@@ -81,6 +81,11 @@ import * as migration_20260728_195348_checkout_summary_plan from './20260728_195
 import * as migration_20260729_025329_subscription_option_descriptions from './20260729_025329_subscription_option_descriptions';
 import * as migration_20260729_100227_checkout_discount_tax_labels from './20260729_100227_checkout_discount_tax_labels';
 import * as migration_20260729_105759_checkout_discount_form_labels from './20260729_105759_checkout_discount_form_labels';
+import * as migration_20260729_112540_pricing_popular_pill from './20260729_112540_pricing_popular_pill';
+import * as migration_20260729_113121_pricing_popular_pill_color from './20260729_113121_pricing_popular_pill_color';
+import * as migration_20260729_114646_pricing_whats_included_text from './20260729_114646_pricing_whats_included_text';
+import * as migration_20260729_115704_pricing_card_title_color from './20260729_115704_pricing_card_title_color';
+import * as migration_20260729_120627_pricing_highlighted_card_color from './20260729_120627_pricing_highlighted_card_color';
 import * as migration_20260729_132535_subscription_default_deployment_self_hosted from './20260729_132535_subscription_default_deployment_self_hosted';
 import * as migration_20260729_134832_checkout_customer_form from './20260729_134832_checkout_customer_form';
 import * as migration_20260729_160138_checkout_period_discount_labels from './20260729_160138_checkout_period_discount_labels';
@@ -105,6 +110,7 @@ import * as migration_20260804_194543_add_checkout_mobile_labels from './2026080
 import * as migration_20260805_031008_checkout_login_page from './20260805_031008_checkout_login_page';
 import * as migration_20260805_035510_remove_checkout_login_eyebrow from './20260805_035510_remove_checkout_login_eyebrow';
 import * as migration_20260806_094637_split_checkout_login_sections from './20260806_094637_split_checkout_login_sections';
+import * as migration_20260806_122846_action_list_load_more_label from './20260806_122846_action_list_load_more_label';
 import * as migration_20260811_145502_checkout_error_messages from './20260811_145502_checkout_error_messages';
 import * as migration_20260812_085100_licenses_content_fields from './20260812_085100_licenses_content_fields';
 import * as migration_20260812_090020_license_dashboard_tables from './20260812_090020_license_dashboard_tables';
@@ -140,6 +146,8 @@ import * as migration_20260821_162845_remove_unused_subscription_checkout_licens
 import * as migration_20260824_105607_payment_methods_content from './20260824_105607_payment_methods_content';
 import * as migration_20260825_183644_consolidate_license_content_for_namespace_labels from './20260825_183644_consolidate_license_content_for_namespace_labels';
 import * as migration_20260827_114728_remove_weekly_payment_period from './20260827_114728_remove_weekly_payment_period';
+import * as migration_20260828_104452_add_playground_media_to_sections from './20260828_104452_add_playground_media_to_sections';
+import * as migration_20260903_110928_update_install_language_options from './20260903_110928_update_install_language_options';
 import * as migration_20260914_170441_payment_method_load_error from './20260914_170441_payment_method_load_error';
 import * as migration_20260917_153155_license_pending_status from './20260917_153155_license_pending_status';
 import * as migration_20260919_124842_checkout_guest_account_hint from './20260919_124842_checkout_guest_account_hint';
@@ -150,7 +158,6 @@ import * as migration_20261001_175006_license_dashboard_cms_labels from './20261
 import * as migration_20261002_181814_subscription_usage_packages from './20261002_181814_subscription_usage_packages';
 import * as migration_20261003_074356_subscription_dashboard from './20261003_074356_subscription_dashboard';
 import * as migration_20261003_081159_namespace_in_use_error from './20261003_081159_namespace_in_use_error';
-
 import * as migration_20261003_084939_cancellation_period_texts from './20261003_084939_cancellation_period_texts';
 
 export const migrations = [
@@ -570,6 +577,31 @@ export const migrations = [
     name: '20260729_105759_checkout_discount_form_labels',
   },
   {
+    up: migration_20260729_112540_pricing_popular_pill.up,
+    down: migration_20260729_112540_pricing_popular_pill.down,
+    name: '20260729_112540_pricing_popular_pill',
+  },
+  {
+    up: migration_20260729_113121_pricing_popular_pill_color.up,
+    down: migration_20260729_113121_pricing_popular_pill_color.down,
+    name: '20260729_113121_pricing_popular_pill_color',
+  },
+  {
+    up: migration_20260729_114646_pricing_whats_included_text.up,
+    down: migration_20260729_114646_pricing_whats_included_text.down,
+    name: '20260729_114646_pricing_whats_included_text',
+  },
+  {
+    up: migration_20260729_115704_pricing_card_title_color.up,
+    down: migration_20260729_115704_pricing_card_title_color.down,
+    name: '20260729_115704_pricing_card_title_color',
+  },
+  {
+    up: migration_20260729_120627_pricing_highlighted_card_color.up,
+    down: migration_20260729_120627_pricing_highlighted_card_color.down,
+    name: '20260729_120627_pricing_highlighted_card_color',
+  },
+  {
     up: migration_20260729_132535_subscription_default_deployment_self_hosted.up,
     down: migration_20260729_132535_subscription_default_deployment_self_hosted.down,
     name: '20260729_132535_subscription_default_deployment_self_hosted',
@@ -688,6 +720,11 @@ export const migrations = [
     up: migration_20260806_094637_split_checkout_login_sections.up,
     down: migration_20260806_094637_split_checkout_login_sections.down,
     name: '20260806_094637_split_checkout_login_sections',
+  },
+  {
+    up: migration_20260806_122846_action_list_load_more_label.up,
+    down: migration_20260806_122846_action_list_load_more_label.down,
+    name: '20260806_122846_action_list_load_more_label',
   },
   {
     up: migration_20260811_145502_checkout_error_messages.up,
@@ -865,6 +902,16 @@ export const migrations = [
     name: '20260827_114728_remove_weekly_payment_period',
   },
   {
+    up: migration_20260828_104452_add_playground_media_to_sections.up,
+    down: migration_20260828_104452_add_playground_media_to_sections.down,
+    name: '20260828_104452_add_playground_media_to_sections',
+  },
+  {
+    up: migration_20260903_110928_update_install_language_options.up,
+    down: migration_20260903_110928_update_install_language_options.down,
+    name: '20260903_110928_update_install_language_options',
+  },
+  {
     up: migration_20260914_170441_payment_method_load_error.up,
     down: migration_20260914_170441_payment_method_load_error.down,
     name: '20260914_170441_payment_method_load_error',
@@ -912,7 +959,7 @@ export const migrations = [
   {
     up: migration_20261003_081159_namespace_in_use_error.up,
     down: migration_20261003_081159_namespace_in_use_error.down,
-    name: '20261003_081159_namespace_in_use_error'
+    name: '20261003_081159_namespace_in_use_error',
   },
   {
     up: migration_20261003_084939_cancellation_period_texts.up,

@@ -32,7 +32,7 @@ import { SmallPricingSection } from "../sections/SmallPricingSection"
 import { ContactSection } from "../sections/ContactSection"
 import { CompareApplicationSection } from "../sections/CompareApplicationSection"
 import { getIcon } from "@/components/ui/IconRenderer"
-import type { ActionItem, SubscriptionConfigData, SubscriptionConfiguratorBlockData } from "@/lib/cms"
+import type { ActionItem, PaginatedActionsResult, SubscriptionConfigData, SubscriptionConfiguratorBlockData } from "@/lib/cms"
 import type { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
 
 type PageBlock = NonNullable<Page["layout"]>[number]
@@ -40,6 +40,7 @@ type PageBlock = NonNullable<Page["layout"]>[number]
 interface PageBlocksRendererProps {
     blocks?: PageBlock[] | null
     actions?: ActionItem[]
+    paginatedActions?: PaginatedActionsResult
     cardRowChildren?: ReactNode
     ctaFloating?: boolean
     locale?: AppLocale
@@ -52,7 +53,7 @@ interface PageBlocksRendererProps {
 
 type PageBlockRenderOptions = Pick<
     PageBlocksRendererProps,
-    "actions" | "cardRowChildren" | "ctaFloating" | "locale" | "action" | "actionModuleJson" | "actionReferences" | "subscriptionConfig" | "subscriptionPrices"
+    "actions" | "paginatedActions" | "cardRowChildren" | "ctaFloating" | "locale" | "action" | "actionModuleJson" | "actionReferences" | "subscriptionConfig" | "subscriptionPrices"
 >
 type BlockRenderer = (block: PageBlock, options: PageBlockRenderOptions) => ReactNode
 
@@ -125,7 +126,13 @@ const pageBlockRenderers: Partial<Record<PageBlock["blockType"], BlockRenderer>>
             />
         )
     },
-    actionList: (block, options) => <ActionListSection actions={options.actions ?? []} locale={options.locale ?? "en"} content={block as Extract<PageBlock, { blockType: "actionList" }>} />,
+    actionList: (block, options) => (
+        <ActionListSection
+            initialResult={options.paginatedActions ?? { actions: options.actions ?? [], hasNextPage: false, nextPage: null, totalDocs: options.actions?.length ?? 0 }}
+            locale={options.locale ?? "en"}
+            content={block as Extract<PageBlock, { blockType: "actionList" }>}
+        />
+    ),
     subscriptionConfigurator: (block, options) => {
         const config = options.subscriptionConfig
         const subscriptionPrices = options.subscriptionPrices
@@ -192,6 +199,7 @@ function renderPageBlock(block: PageBlock, options: PageBlockRenderOptions) {
 export function PageBlocks({
     blocks,
     actions,
+    paginatedActions,
     cardRowChildren,
     ctaFloating = false,
     locale,
@@ -203,7 +211,7 @@ export function PageBlocks({
 }: PageBlocksRendererProps) {
     const renderableBlocks =
         blocks?.flatMap((block) => {
-            const element = renderPageBlock(block, { actions, cardRowChildren, ctaFloating, locale, action, actionModuleJson, actionReferences, subscriptionConfig, subscriptionPrices })
+            const element = renderPageBlock(block, { actions, paginatedActions, cardRowChildren, ctaFloating, locale, action, actionModuleJson, actionReferences, subscriptionConfig, subscriptionPrices })
             return element ? [{ block, element }] : []
         }) ?? []
 

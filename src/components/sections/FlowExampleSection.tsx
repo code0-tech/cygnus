@@ -1,45 +1,22 @@
-import { getIcon } from "@/components/ui/IconRenderer"
 import { StaggerContainer, StaggerItem } from "@/components/animations/Stagger"
 import { Card } from "@/components/ui/Card"
-import { DotBackground } from "@/components/ui/DotBackground"
+import { PlaygroundFrame } from "@/components/ui/PlaygroundFrame"
 import { Section } from "@/components/ui/Section"
 import type { FlowExampleLayoutBlock } from "@/lib/cms"
 import { cn } from "@/lib/utils"
-import type { NodeAccent, NodeSegmentType } from "@/components/nodes/NodeDisplay"
-import { FlowExampleDiagram, type FlowDiagramItem, type FlowDiagramNode } from "./client/FlowExampleDiagram"
 
 interface FlowExampleSectionProps {
     content?: FlowExampleLayoutBlock | null
 }
 
 export function FlowExampleSection({ content }: FlowExampleSectionProps) {
-    const trigger = content?.flow?.trigger
-    if (!content || !trigger?.name) return null
+    if (!content?.playgroundUrl) return null
 
-    const triggerNode: FlowDiagramNode = {
-        id: "trigger",
-        icon: getIcon(trigger.icon, 20),
-        text: trigger.name,
-    }
-    const items: FlowDiagramItem[] =
-        content.flow?.items?.map((item, index) => ({
-            id: String(item.id ?? index),
-            node: {
-                icon: getIcon(item.icon, 16),
-                color: item.color as NodeAccent,
-                outline: item.outline !== false,
-                segments: item.segments.map((segment) => ({
-                    type: segment.type as NodeSegmentType,
-                    value: segment.value,
-                })),
-            },
-        })) ?? []
     const isFlowRight = content.flowLayout === "right"
     const showBorder = Boolean(content.showBorder)
     const flow = (
         <div className={cn("relative m-2 min-h-72 min-w-0 overflow-hidden rounded-2xl border border-white/10 bg-light/50 lg:min-h-96", isFlowRight && "lg:order-2")}>
-            <DotBackground className="opacity-50 mask-[radial-gradient(ellipse_at_center,black_35%,transparent_85%)]" dotColor="rgba(255,255,255,0.14)" dotSize={1} spacing={18} />
-            <FlowExampleDiagram trigger={triggerNode} items={items} />
+            <PlaygroundFrame url={content.playgroundUrl} title={`${content.contentHeading || content.sectionHeading || "Flow example"} playground`} />
         </div>
     )
     const body = (
