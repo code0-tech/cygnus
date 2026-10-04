@@ -1,5 +1,5 @@
 import type { StripeCheckoutLoadActionsSuccess, StripeCheckoutSession } from "@stripe/stripe-js"
-import type { CheckoutStripePricingData, CheckoutTaxQuoteData } from "@/lib/checkout/checkoutSubmission"
+import type { CheckoutStripePricingData, CheckoutTaxQuoteData } from "@/lib/checkout/client"
 
 export type CheckoutPromotionCodeSdk = Pick<StripeCheckoutLoadActionsSuccess, "applyPromotionCode" | "removePromotionCode">
 

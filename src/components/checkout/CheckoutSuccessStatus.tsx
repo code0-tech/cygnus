@@ -1,6 +1,6 @@
 "use client"
 
-import { checkoutFetch, getCheckoutStatusPollDelay, hasCheckoutStatusPollingExpired } from "@/lib/checkout/checkoutClient"
+import { checkoutFetch, getCheckoutStatusPollDelay, hasCheckoutStatusPollingExpired } from "@/lib/checkout/client"
 import { LinkButton } from "@/components/ui/LinkButton"
 import { ButtonLoader } from "@/components/ui/Loader"
 import { CheckoutPricingOverview } from "@/components/checkout/CheckoutPricingOverview"

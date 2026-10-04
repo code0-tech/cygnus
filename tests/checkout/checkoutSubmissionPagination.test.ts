@@ -1,6 +1,6 @@
 import assert from "node:assert/strict"
 import test, { afterEach } from "node:test"
-import { getCheckoutCustomers } from "../../src/lib/checkout/checkoutSubmission"
+import { getCheckoutCustomers } from "../../src/lib/checkout/client"
 import { installDomTestEnvironment } from "./domTestEnvironment"
 
 installDomTestEnvironment()
