@@ -3,7 +3,7 @@
 import { Button, ButtonGroup, Menu, MenuContent, MenuItem, MenuLabel, MenuPortal, MenuTrigger } from "@code0-tech/pictor"
 import { IconAdjustmentsHorizontal, IconArrowsSort, IconCheck } from "@tabler/icons-react"
 
-export interface DataTableFilterOption {
+interface DataTableFilterOption {
     label: string
     value: string
 }
