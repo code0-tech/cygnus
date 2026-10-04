@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { DEFAULT_LOCALE, SUPPORTED_LOCALES } from "@/lib/i18n"
-import { canonicalizeLicensePathname } from "@/lib/licenses/licenseRoute"
+import { canonicalizeLicensePathname } from "@/lib/licenses/routes"
 import { createContentSecurityPolicy } from "@/lib/security/contentSecurityPolicy"
 
 function secureResponse(request: NextRequest, response?: NextResponse) {

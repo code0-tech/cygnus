@@ -1,39 +1,4 @@
-import type { DashboardSubscriptionStatus, SubscriptionPendingUpdate } from "@/lib/licenses/licenseTypes"
-import type { PaymentPeriod } from "@/lib/subscription/calculator"
-import type { SubscriptionPlan } from "@/lib/subscription/configurator"
-
-export interface SubscriptionUpdateFields {
-    aiTokens?: number
-    paymentPeriod?: PaymentPeriod
-    plan?: SubscriptionPlan
-    workflowExecutions?: number
-}
-
-export interface SubscriptionUpdateRequest extends SubscriptionUpdateFields {
-    id: string
-}
-
-export interface SubscriptionUpdatePreview {
-    currency: string
-    effectiveAt: string | null
-    immediate: boolean
-    prorationAmount: number
-    total: number
-}
-
-export interface SubscriptionUpdateResult {
-    paymentMethodId?: string | null
-    pendingUpdate?: SubscriptionPendingUpdate | null
-    status?: DashboardSubscriptionStatus
-    cancelAt?: string | null
-    canceledAt?: string | null
-    aiTokens?: number
-    paymentPeriod?: string
-    plan?: string
-    updatedAt?: string
-    workflowExecutions?: number
-}
-
+import type { SubscriptionUpdateRequest, SubscriptionUpdatePreview, SubscriptionUpdateResult } from "@/lib/subscription/types"
 async function subscriptionRequest<T extends object>(path: string, method: "PATCH" | "POST", request: SubscriptionUpdateRequest, errorMessage: string, signal?: AbortSignal): Promise<T> {
     const response = await fetch(path, {
         method,

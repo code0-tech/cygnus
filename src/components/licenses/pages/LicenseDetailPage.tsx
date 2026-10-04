@@ -14,10 +14,10 @@ import { ButtonLoader } from "@/components/ui/Loader"
 import type { ErrorsContent, LicenseContent, SubscriptionConfigData, UpgradeBannerData } from "@/lib/cms"
 import { formatMinorCurrency } from "@/lib/formatters"
 import type { AppLocale } from "@/lib/i18n"
-import { downloadLicenseFile } from "@/lib/licenses/licenseClient"
-import { formatLicenseDisplayValue } from "@/lib/licenses/licenseDisplayValues"
-import { createLicensePath, resolveCustomerRouteId, resolveSubscriptionRouteId } from "@/lib/licenses/licenseRoute"
-import type { LicenseDashboardInvoice } from "@/lib/licenses/licenseTypes"
+import { downloadLicenseFile } from "@/lib/licenses/client"
+import { formatLicenseDisplayValue } from "@/lib/licenses/displayValues"
+import { createLicensePath, resolveCustomerRouteId, resolveSubscriptionRouteId } from "@/lib/licenses/routes"
+import type { LicenseDashboardInvoice } from "@/lib/licenses/types"
 import {
     Alert,
     Badge,

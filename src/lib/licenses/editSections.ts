@@ -6,7 +6,6 @@ export function getCustomerEditSectionLabels(editor: LicenseContent["editor"]): 
     return { general: editor.generalTabLabel, paymentMethods: editor.paymentMethodsTabLabel }
 }
 
-// Upgrade is always listed first.
 export const LICENSE_EDIT_SECTIONS = ["upgrade", "general", "payment"] as const
 
 export type LicenseEditSection = (typeof LICENSE_EDIT_SECTIONS)[number]

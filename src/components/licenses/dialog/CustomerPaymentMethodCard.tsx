@@ -1,6 +1,6 @@
 "use client"
 
-import type { PaymentMethodDisplayDetails } from "@/lib/licenses/licenseClient"
+import type { PaymentMethodDisplayDetails } from "@/lib/licenses/types"
 import { cn } from "@/lib/utils"
 import { Badge, Text } from "@code0-tech/pictor"
 import CardSection from "@code0-tech/pictor/dist/components/card/CardSection"

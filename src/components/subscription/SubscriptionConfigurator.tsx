@@ -1,5 +1,6 @@
 "use client"
 
+import { PAYMENT_PERIOD_OPTIONS, type SubscriptionSelection, type SubscriptionSelectionAction } from "@/lib/subscription/types"
 import { WorkflowCalculatorDialog } from "@/components/checkout/WorkflowCalculatorDialog"
 import { SubscriptionOptionCard } from "@/components/subscription/SubscriptionOptionCard"
 import { FormattedText, hasHighlightedText } from "@/components/ui/FormattedText"
@@ -9,14 +10,7 @@ import type { SubscriptionConfiguratorContent } from "@/lib/cms"
 import { localizeHref, type AppLocale } from "@/lib/i18n"
 import { calculateSubscriptionQuote, formatDiscountBadge, getPaymentPeriodSuffix, getSubscriptionDisplayPrices, getSubscriptionQuoteDiscountRate } from "@/lib/subscription/calculator"
 import { getSubscriptionCatalog } from "@/lib/subscription/catalog"
-import {
-    buildSubscriptionSelectionSearchParams,
-    getPaymentPeriodOptions,
-    parseSubscriptionSelectionFromSearchParams,
-    reduceSubscriptionSelection,
-    type SubscriptionSelection,
-    type SubscriptionSelectionAction,
-} from "@/lib/subscription/configurator"
+import { buildSubscriptionSelectionSearchParams, parseSubscriptionSelectionFromSearchParams, reduceSubscriptionSelection } from "@/lib/subscription/configurator"
 import type { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
 import { normalizeUsagePackages } from "@/lib/subscription/usagePackages"
 import { cn } from "@/lib/utils"
@@ -89,7 +83,7 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
         onActiveImageChangeAction?.(imageKey)
         pendingScrollStepKeyRef.current = stepKey
     }
-    const paymentPeriodOptions = getPaymentPeriodOptions(selection.customerType)
+    const paymentPeriodOptions = PAYMENT_PERIOD_OPTIONS
     const paymentPeriodSuffix = getPaymentPeriodSuffix(selection.paymentPeriod, content.paymentPeriod)
     const monthlyPeriodSuffix = getPaymentPeriodSuffix("monthly", content.paymentPeriod)
     const quote = calculateSubscriptionQuote(selection, catalog)

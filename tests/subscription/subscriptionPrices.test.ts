@@ -17,10 +17,7 @@ function createPrices(): CheckoutPrice[] {
 }
 
 test("normalizes the complete Crater subscription price list by lookup key", () => {
-    const catalog = normalizeSubscriptionPrices([
-        ...createPrices(),
-        { id: "price_unrelated", lookupKey: null, productName: "Unrelated" },
-    ])
+    const catalog = normalizeSubscriptionPrices([...createPrices(), { id: "price_unrelated", lookupKey: null, productName: "Unrelated" }])
 
     assert.deepEqual(Object.keys(catalog), [...SUBSCRIPTION_PRICE_LOOKUP_KEYS])
     assert.equal(catalog.ai_token_b2b_quarterly.intervalCount, 3)

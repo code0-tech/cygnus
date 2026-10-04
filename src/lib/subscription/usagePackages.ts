@@ -3,8 +3,6 @@ export interface UsagePackagesConfig {
     packages?: readonly (number | null | undefined)[] | null
 }
 
-// Crater's default checkout.quantity_steps per customer type (docs/crater.md). Used as the CMS default and as the
-// fallback while the CMS has no packages stored yet.
 export const DEFAULT_USAGE_PACKAGES = {
     aiTokens: {
         b2b: { default: 100_000_000, packages: [10_000_000, 100_000_000, 500_000_000, 1_000_000_000] },
@@ -16,7 +14,6 @@ export const DEFAULT_USAGE_PACKAGES = {
     },
 } as const satisfies Record<"aiTokens" | "workflowExecutions", Record<"b2b" | "b2c", { default: number; packages: readonly number[] }>>
 
-// Keeps a configured package list, or falls back to Crater's defaults when the CMS has none stored.
 export function withDefaultUsagePackages<T extends UsagePackagesConfig>(config: T | null | undefined, fallback: { default: number; packages: readonly number[] }): T {
     if (config && normalizeUsagePackages(config.packages).length > 0) return config
     return { ...config, default: fallback.default, packages: [...fallback.packages] } as unknown as T

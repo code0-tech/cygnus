@@ -1,9 +1,9 @@
 "use client"
 
-import { EMPTY_LICENSE_DASHBOARD_DATA, type LicenseDashboardCustomerAddress, type LicenseDashboardData, type LicenseDashboardLicense } from "@/lib/licenses/licenseTypes"
-import { deriveLicenseStatus } from "@/lib/licenses/licenseDashboardMapper"
-import type { DashboardSubscriptionStatus, SubscriptionPendingUpdate } from "@/lib/licenses/licenseTypes"
-import { resolveCustomerRouteId, resolveSubscriptionRouteId } from "@/lib/licenses/licenseRoute"
+import { EMPTY_LICENSE_DASHBOARD_DATA, type LicenseDashboardCustomerAddress, type LicenseDashboardData, type LicenseDashboardLicense } from "@/lib/licenses/types"
+import { deriveLicenseStatus } from "@/lib/licenses/dashboardMapper"
+import type { DashboardSubscriptionStatus, SubscriptionPendingUpdate } from "@/lib/licenses/types"
+import { resolveCustomerRouteId, resolveSubscriptionRouteId } from "@/lib/licenses/routes"
 import { usePathname } from "next/navigation"
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useRef, useState } from "react"
 

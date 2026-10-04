@@ -1,7 +1,7 @@
 import type { LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
-import { formatLicenseDisplayValue } from "@/lib/licenses/licenseDisplayValues"
-import type { SubscriptionPendingUpdate } from "@/lib/licenses/licenseTypes"
+import { formatLicenseDisplayValue } from "@/lib/licenses/displayValues"
+import type { SubscriptionPendingUpdate } from "@/lib/licenses/types"
 
 export function SubscriptionPendingUpdateNotice({ update, content, locale }: { update?: SubscriptionPendingUpdate | null; content: LicenseContent; locale: AppLocale }) {
     if (!update) return null

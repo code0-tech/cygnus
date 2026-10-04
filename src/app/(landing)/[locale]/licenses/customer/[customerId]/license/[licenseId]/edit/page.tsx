@@ -2,7 +2,7 @@ import { LicenseEditDialog } from "@/components/licenses/dialog/LicenseEditDialo
 import { getCheckoutContent, getErrorsContent, getLicenseContent, getSubscriptionConfig } from "@/lib/cms"
 import { createMainAppLoginUrl } from "@/lib/checkout/checkoutLogin"
 import { isSupportedLocale } from "@/lib/i18n"
-import { createLicenseNamespaceCallbackUrl, createLicenseNamespaceReturnPath } from "@/lib/licenses/licenseRoute"
+import { createLicenseNamespaceCallbackUrl, createLicenseNamespaceReturnPath } from "@/lib/licenses/routes"
 import { resolveSiteUrl } from "@/lib/siteConfig"
 import { getCraterSubscriptionPrices } from "@/lib/subscription/prices.server"
 import { notFound } from "next/navigation"

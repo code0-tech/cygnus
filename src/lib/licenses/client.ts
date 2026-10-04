@@ -1,14 +1,4 @@
-export interface PaymentMethodDisplayDetails {
-    brand: string | null
-    expiresMonth: number | null
-    expiresYear: number | null
-    last4: string | null
-    type: string | null
-}
-
-export interface CustomerPaymentMethodSummary extends PaymentMethodDisplayDetails {
-    id: string
-}
+import type { CustomerPaymentMethodSummary } from "@/lib/licenses/types"
 
 export async function fetchCustomerPaymentMethods(customerId: string, signal: AbortSignal): Promise<CustomerPaymentMethodSummary[]> {
     const url = new URL("/api/crater/customer/payment-methods", window.location.origin)

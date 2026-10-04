@@ -1,5 +1,6 @@
 "use client"
 
+import { type PaymentPeriod, PAYMENT_PERIOD_OPTIONS, type SubscriptionCustomerType } from "@/lib/subscription/types"
 import { CheckoutDiscount } from "@/components/checkout/CheckoutDiscount"
 import { useOptionalCheckoutFormState } from "@/components/checkout/CheckoutFormProvider"
 import { CheckoutNextSteps } from "@/components/checkout/CheckoutNextSteps"
@@ -9,8 +10,8 @@ import { Switch } from "@/components/ui/Switch"
 import type { CheckoutStripePricingData, CheckoutTaxQuoteData } from "@/lib/checkout/client"
 import type { CheckoutData, ErrorsContent, SubscriptionConfigData, UpgradeBannerData } from "@/lib/cms"
 import { formatCurrency } from "@/lib/formatters"
-import { calculateExclusiveTaxRate, formatDiscountBadge, resolveCheckoutPricing, type PaymentPeriod } from "@/lib/subscription/calculator"
-import { getPaymentPeriodOptions, type SubscriptionCustomerType } from "@/lib/subscription/configurator"
+import { calculateExclusiveTaxRate, formatDiscountBadge, resolveCheckoutPricing } from "@/lib/subscription/calculator"
+
 import type { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
 import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation"
 
@@ -36,7 +37,7 @@ export function CheckoutSummary({ content, errors, nextSteps, stripePricing, sub
     const deployment = searchParams.get("deploymentType") ?? searchParams.get("deployment")
     const customerType = searchParams.get("customerType")
     const resolvedCustomerType: SubscriptionCustomerType = customerType === "b2b" ? "b2b" : "b2c"
-    const periodOptions = getPaymentPeriodOptions(resolvedCustomerType)
+    const periodOptions = PAYMENT_PERIOD_OPTIONS
     const handlePeriodChange = (period: PaymentPeriod) => {
         const nextParams = new URLSearchParams(searchParams.toString())
         nextParams.set("paymentPeriod", period)

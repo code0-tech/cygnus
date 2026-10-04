@@ -1,5 +1,5 @@
 import { isSupportedLocale } from "@/lib/i18n"
-import { createLicensePath } from "@/lib/licenses/licenseRoute"
+import { createLicensePath } from "@/lib/licenses/routes"
 import { notFound, redirect } from "next/navigation"
 
 export default async function InterceptedLicenseBillingPage({ params }: { params: Promise<{ customerId: string; licenseId: string; locale: string }> }) {

@@ -1,13 +1,6 @@
 import { normalizeCraterDeploymentType, normalizeCraterPaymentPeriod, normalizeCraterPlan, normalizeCraterCustomerType } from "@/lib/crater/values"
 import { normalizeUsagePackages } from "@/lib/subscription/usagePackages"
-import type {
-    DashboardSubscriptionStatus,
-    LicenseDashboardCustomer,
-    LicenseDashboardData,
-    LicenseDashboardInvoice,
-    LicenseDashboardLicense,
-    SubscriptionPendingUpdate,
-} from "@/lib/licenses/licenseTypes"
+import type { DashboardSubscriptionStatus, LicenseDashboardCustomer, LicenseDashboardData, LicenseDashboardInvoice, LicenseDashboardLicense, SubscriptionPendingUpdate } from "@/lib/licenses/types"
 import type { Customer, Invoice, Subscription, SubscriptionPendingUpdate as CraterPendingUpdate, User } from "@code0-tech/crater-graphql-types"
 
 function displayName(name: string | null | undefined, email: string | null | undefined, id: string) {
@@ -98,14 +91,11 @@ function mapInvoice(invoice: Invoice): LicenseDashboardInvoice | null {
     }
 }
 
-// Keep Crater subscription statuses distinct. Without a paid-invoice snapshot access is still pending.
 export function deriveLicenseStatus(subscriptionStatus: string | null | undefined, hasLicense: boolean): LicenseDashboardLicense["status"] {
     if (!hasLicense) return "pending"
     return (subscriptionStatus?.trim().toUpperCase() || undefined) as DashboardSubscriptionStatus | undefined
 }
 
-// One dashboard entry per subscription. Its id is the subscription id, which stays stable across renewals; the
-// current license snapshot (whose id changes with every paid invoice) only supplies its dates, invoices, and export id.
 export function mapSubscription(subscription: Subscription, customer: Customer): LicenseDashboardLicense | null {
     if (!customer.id || !subscription.id) return null
 
@@ -164,7 +154,7 @@ export function mapUserData(currentUser: User): LicenseDashboardData {
         }
     }
 
-    licenses.sort((left, right) => Date.parse(right.updatedAt ?? "") - Date.parse(left.updatedAt ?? ""))
+    licenses.sort(byMostRecentlyUpdated)
     return { customers, licenses }
 }
 

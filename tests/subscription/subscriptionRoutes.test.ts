@@ -339,44 +339,102 @@ test("subscription preview sends the generated plan enum", async () => {
     })
 })
 
-
 test("returns a scheduled update separately from the active configuration", async () => {
-    await withGraphQLServer([{ data: { subscriptionsUpdate: { errors: [], subscription: { id: subscriptionId, plan: "MAX", paymentPeriod: "MONTHLY", status: "ACTIVE", pendingUpdate: { plan: "PRO", paymentPeriod: "YEARLY", effectiveAt: "2026-11-01T00:00:00Z", aiTokens: null, workflowExecutions: null } } } } }], async (server) => {
-        const response = await updateSubscription(new Request("https://example.com/api/crater/subscriptions", { method: "PATCH", headers: sessionHeaders, body: JSON.stringify({ id: subscriptionId, plan: "pro", paymentPeriod: "yearly" }) }))
-        assert.equal(response.status, 200)
-        assert.deepEqual(await response.json(), { id: subscriptionId, plan: "max", paymentPeriod: "monthly", status: "ACTIVE", pendingUpdate: { plan: "pro", paymentPeriod: "yearly", effectiveAt: "2026-11-01T00:00:00Z" } })
-        const query = String(server.requests[0].body.query)
-        assert.match(query, /pendingUpdate/)
-        assert.match(query, /cancelAt/)
-        assert.doesNotMatch(query, /expireAt/)
-    })
+    await withGraphQLServer(
+        [
+            {
+                data: {
+                    subscriptionsUpdate: {
+                        errors: [],
+                        subscription: {
+                            id: subscriptionId,
+                            plan: "MAX",
+                            paymentPeriod: "MONTHLY",
+                            status: "ACTIVE",
+                            pendingUpdate: { plan: "PRO", paymentPeriod: "YEARLY", effectiveAt: "2026-11-01T00:00:00Z", aiTokens: null, workflowExecutions: null },
+                        },
+                    },
+                },
+            },
+        ],
+        async (server) => {
+            const response = await updateSubscription(
+                new Request("https://example.com/api/crater/subscriptions", {
+                    method: "PATCH",
+                    headers: sessionHeaders,
+                    body: JSON.stringify({ id: subscriptionId, plan: "pro", paymentPeriod: "yearly" }),
+                })
+            )
+            assert.equal(response.status, 200)
+            assert.deepEqual(await response.json(), {
+                id: subscriptionId,
+                plan: "max",
+                paymentPeriod: "monthly",
+                status: "ACTIVE",
+                pendingUpdate: { plan: "pro", paymentPeriod: "yearly", effectiveAt: "2026-11-01T00:00:00Z" },
+            })
+            const query = String(server.requests[0].body.query)
+            assert.match(query, /pendingUpdate/)
+            assert.match(query, /cancelAt/)
+            assert.doesNotMatch(query, /expireAt/)
+        }
+    )
 })
 
-
 test("assigns an existing payment method through the shared subscription update route", async () => {
-    await withGraphQLServer([{ data: { subscriptionsUpdate: { errors: [], subscription: { id: subscriptionId, paymentMethodId: "pm_new", plan: "PRO", paymentPeriod: "MONTHLY", pendingUpdate: { plan: "MAX", effectiveAt: "2026-11-01T00:00:00Z" } } } } }], async (server) => {
-        const response = await updateSubscription(new Request("https://example.com/api/crater/subscriptions", { method: "PATCH", headers: sessionHeaders, body: JSON.stringify({ id: subscriptionId, paymentMethodId: " pm_new " }) }))
-        assert.equal(response.status, 200)
-        const result = await response.json()
-        assert.equal(result.paymentMethodId, "pm_new")
-        assert.equal(result.plan, "pro")
-        assert.equal(result.pendingUpdate.plan, "max")
-        assert.deepEqual(server.requests[0].body.variables, { input: { id: subscriptionId, paymentMethodId: "pm_new" } })
-        assert.match(String(server.requests[0].body.query), /paymentMethodId/)
-    })
+    await withGraphQLServer(
+        [
+            {
+                data: {
+                    subscriptionsUpdate: {
+                        errors: [],
+                        subscription: { id: subscriptionId, paymentMethodId: "pm_new", plan: "PRO", paymentPeriod: "MONTHLY", pendingUpdate: { plan: "MAX", effectiveAt: "2026-11-01T00:00:00Z" } },
+                    },
+                },
+            },
+        ],
+        async (server) => {
+            const response = await updateSubscription(
+                new Request("https://example.com/api/crater/subscriptions", { method: "PATCH", headers: sessionHeaders, body: JSON.stringify({ id: subscriptionId, paymentMethodId: " pm_new " }) })
+            )
+            assert.equal(response.status, 200)
+            const result = await response.json()
+            assert.equal(result.paymentMethodId, "pm_new")
+            assert.equal(result.plan, "pro")
+            assert.equal(result.pendingUpdate.plan, "max")
+            assert.deepEqual(server.requests[0].body.variables, { input: { id: subscriptionId, paymentMethodId: "pm_new" } })
+            assert.match(String(server.requests[0].body.query), /paymentMethodId/)
+        }
+    )
 })
 
 test("rejects empty or invalid payment method ids before contacting Crater", async () => {
     for (const paymentMethodId of [null, "", "  ", 42, {}]) {
-        const response = await updateSubscription(new Request("https://example.com/api/crater/subscriptions", { method: "PATCH", headers: sessionHeaders, body: JSON.stringify({ id: subscriptionId, paymentMethodId }) }))
+        const response = await updateSubscription(
+            new Request("https://example.com/api/crater/subscriptions", { method: "PATCH", headers: sessionHeaders, body: JSON.stringify({ id: subscriptionId, paymentMethodId }) })
+        )
         assert.equal(response.status, 400)
     }
 })
 
 test("preserves the domain error when Crater refuses a payment method assignment", async () => {
-    await withGraphQLServer([{ data: { subscriptionsUpdate: { errors: [{ errorCode: "INVALID_PAYMENT_METHOD", details: [{ __typename: "MessageError", message: "Payment method does not belong to this customer" }] }], subscription: null } } }], async () => {
-        const response = await updateSubscription(new Request("https://example.com/api/crater/subscriptions", { method: "PATCH", headers: sessionHeaders, body: JSON.stringify({ id: subscriptionId, paymentMethodId: "pm_other" }) }))
-        assert.equal(response.status, 422)
-        assert.equal((await response.json()).errorCode, "INVALID_PAYMENT_METHOD")
-    })
+    await withGraphQLServer(
+        [
+            {
+                data: {
+                    subscriptionsUpdate: {
+                        errors: [{ errorCode: "INVALID_PAYMENT_METHOD", details: [{ __typename: "MessageError", message: "Payment method does not belong to this customer" }] }],
+                        subscription: null,
+                    },
+                },
+            },
+        ],
+        async () => {
+            const response = await updateSubscription(
+                new Request("https://example.com/api/crater/subscriptions", { method: "PATCH", headers: sessionHeaders, body: JSON.stringify({ id: subscriptionId, paymentMethodId: "pm_other" }) })
+            )
+            assert.equal(response.status, 422)
+            assert.equal((await response.json()).errorCode, "INVALID_PAYMENT_METHOD")
+        }
+    )
 })

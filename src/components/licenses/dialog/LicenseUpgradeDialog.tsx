@@ -1,5 +1,6 @@
 "use client"
 
+import type { PaymentPeriod, SubscriptionPlan } from "@/lib/subscription/types"
 import { SubscriptionPendingUpdateNotice } from "@/components/licenses/SubscriptionPendingUpdateNotice"
 
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
@@ -11,12 +12,12 @@ import { useSubscriptionUpdatePreview } from "@/hooks/useSubscriptionUpdatePrevi
 import type { ErrorsContent, LicenseContent, SubscriptionConfigData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { formatMinorCurrency } from "@/lib/formatters"
-import { createLicensePath, resolveCustomerRouteId, resolveSubscriptionRouteId } from "@/lib/licenses/licenseRoute"
+import { createLicensePath, resolveCustomerRouteId, resolveSubscriptionRouteId } from "@/lib/licenses/routes"
 import { resolveSubscriptionCustomerType } from "@/lib/crater/values"
 import { updateSubscription } from "@/lib/subscription/client"
-import { calculateSubscriptionQuote, type PaymentPeriod } from "@/lib/subscription/calculator"
+import { calculateSubscriptionQuote } from "@/lib/subscription/calculator"
 import { getSubscriptionCatalog } from "@/lib/subscription/catalog"
-import { getPaymentPeriodForCustomerType, type SubscriptionPlan } from "@/lib/subscription/configurator"
+import { normalizePaymentPeriod } from "@/lib/subscription/configurator"
 import type { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
 import { getDefaultUsagePackage, normalizeUsagePackages, snapToUsagePackage } from "@/lib/subscription/usagePackages"
 import { Button, Flex, Spacing, Text } from "@code0-tech/pictor"
@@ -79,7 +80,7 @@ export function LicenseUpgradeDialog({ content, customerId, errors, licenseId, l
 
     // Computed entirely from the CMS/Stripe price catalog already on the client, so it updates on every slider
     // tick without waiting for the debounced Crater preview request below.
-    const paymentPeriod = getPaymentPeriodForCustomerType(customerType, (license?.paymentPeriod as PaymentPeriod | undefined) ?? "monthly")
+    const paymentPeriod = normalizePaymentPeriod((license?.paymentPeriod as PaymentPeriod | undefined) ?? "monthly")
     const catalog = useMemo(() => getSubscriptionCatalog(subscriptionConfig, subscriptionPrices), [subscriptionConfig, subscriptionPrices])
     const localQuote = useMemo(
         () => calculateSubscriptionQuote({ plan, deployment: "cloud", customerType, paymentPeriod, aiTokens: resolvedAiTokens, workflowExecutions: resolvedWorkflowExecutions }, catalog),

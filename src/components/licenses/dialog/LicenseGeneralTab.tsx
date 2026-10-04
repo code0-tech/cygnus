@@ -1,5 +1,6 @@
 "use client"
 
+import { type PaymentPeriod, PAYMENT_PERIOD_OPTIONS } from "@/lib/subscription/types"
 import { SubscriptionPendingUpdateNotice } from "@/components/licenses/SubscriptionPendingUpdateNotice"
 
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
@@ -11,13 +12,13 @@ import { useSubscriptionUpdatePreview } from "@/hooks/useSubscriptionUpdatePrevi
 import type { ErrorsContent, LicenseContent, SubscriptionConfigData } from "@/lib/cms"
 import { formatMinorCurrency } from "@/lib/formatters"
 import type { AppLocale } from "@/lib/i18n"
-import { formatLicenseDisplayValue } from "@/lib/licenses/licenseDisplayValues"
-import { createLicensePath, getNamespaceDisplayId } from "@/lib/licenses/licenseRoute"
-import type { LicenseDashboardLicense } from "@/lib/licenses/licenseTypes"
+import { formatLicenseDisplayValue } from "@/lib/licenses/displayValues"
+import { createLicensePath, getNamespaceDisplayId } from "@/lib/licenses/routes"
+import type { LicenseDashboardLicense } from "@/lib/licenses/types"
 import { resolveSubscriptionCustomerType } from "@/lib/crater/values"
-import type { PaymentPeriod } from "@/lib/subscription/calculator"
+
 import { updateSubscription } from "@/lib/subscription/client"
-import { getPaymentPeriodOptions } from "@/lib/subscription/configurator"
+
 import { Badge, Button, Text } from "@code0-tech/pictor"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
@@ -38,7 +39,7 @@ export function LicenseGeneralTab({ content, errors, license, locale, namespaceH
     const { updateLicense } = useLicenseData()
     const subscriptionId = license?.subscriptionId
     const customerType = resolveSubscriptionCustomerType(license?.customerType)
-    const periodOptions = getPaymentPeriodOptions(customerType)
+    const periodOptions = PAYMENT_PERIOD_OPTIONS
     const currentPeriod = license?.paymentPeriod as PaymentPeriod | undefined
     const [selectedPeriod, setSelectedPeriod] = useState<PaymentPeriod | null>(null)
     const period = selectedPeriod ?? currentPeriod ?? periodOptions[0]

@@ -1,5 +1,6 @@
 "use client"
 
+import type { PaymentPeriod } from "@/lib/subscription/types"
 import { StaggerContainer, StaggerItem } from "@/components/animations/Stagger"
 import { Card } from "@/components/ui/Card"
 import { HapticButtonLink } from "@/components/ui/HapticButtonLink"
@@ -8,7 +9,7 @@ import { StableBadge } from "@/components/ui/StableBadge"
 import type { SmallPricingLayoutBlock, SubscriptionConfigData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { formatDiscountBadge, resolveCheckoutPricing } from "@/lib/subscription/calculator"
-import { PricingPeriod, SubscriptionPriceCatalog } from "@/lib/subscription/prices"
+import { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
 import { cn } from "@/lib/utils"
 import NumberFlow from "@number-flow/react"
 import { IconCheck, IconX } from "@tabler/icons-react"
@@ -24,7 +25,7 @@ export function SmallPricingSection({ content, locale, subscriptionConfig, subsc
     if (!content || !subscriptionConfig || !subscriptionPrices) return null
     const selectedPeriod = content.pricingPeriod
 
-    const getPricingForPeriod = (plan: "pro" | "max", period: PricingPeriod) =>
+    const getPricingForPeriod = (plan: "pro" | "max", period: PaymentPeriod) =>
         resolveCheckoutPricing({
             aiTokensParam: null,
             customerTypeParam: "b2c",

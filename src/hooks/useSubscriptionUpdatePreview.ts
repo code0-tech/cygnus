@@ -1,6 +1,7 @@
 "use client"
 
-import { previewSubscriptionUpdate, type SubscriptionUpdateFields, type SubscriptionUpdatePreview } from "@/lib/subscription/client"
+import type { SubscriptionUpdateFields, SubscriptionUpdatePreview } from "@/lib/subscription/types"
+import { previewSubscriptionUpdate } from "@/lib/subscription/client"
 import { useEffect, useMemo, useState } from "react"
 
 export function useSubscriptionUpdatePreview(subscriptionId: string | undefined, fields: SubscriptionUpdateFields | null, errorMessage: string, delay = 0) {

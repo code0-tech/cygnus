@@ -1,12 +1,13 @@
 "use client"
 
+import type { SubscriptionUpdateResult } from "@/lib/subscription/types"
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
 import { LicenseDialog } from "@/components/licenses/dialog/LicenseDialog"
 import { ButtonLoader } from "@/components/ui/Loader"
-import type { SubscriptionUpdateResult } from "@/lib/subscription/client"
+
 import type { ErrorsContent, LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
-import { createLicensePath, resolveCustomerRouteId, resolveSubscriptionRouteId } from "@/lib/licenses/licenseRoute"
+import { createLicensePath, resolveCustomerRouteId, resolveSubscriptionRouteId } from "@/lib/licenses/routes"
 import { Button, DialogFooter } from "@code0-tech/pictor"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
@@ -78,7 +79,12 @@ export function LicenseCancelDialog({ content, customerId, errors, licenseId, lo
             const updated: unknown = await response.json()
             const subscription = updated && typeof updated === "object" ? (updated as SubscriptionUpdateResult) : {}
 
-            updateLicense(license.id, { cancelAt: null, canceledAt: null, ...(subscription.status ? { subscriptionStatus: subscription.status } : {}), ...(subscription.updatedAt ? { updatedAt: subscription.updatedAt } : {}) })
+            updateLicense(license.id, {
+                cancelAt: null,
+                canceledAt: null,
+                ...(subscription.status ? { subscriptionStatus: subscription.status } : {}),
+                ...(subscription.updatedAt ? { updatedAt: subscription.updatedAt } : {}),
+            })
             close()
         } catch (resumeError) {
             setError(resumeError instanceof Error ? resumeError.message : errors.subscriptionResume)

@@ -1,4 +1,4 @@
-import { canonicalizeLicensePathname, createLicenseCustomerPath, createLicensePath, getNamespaceDisplayId, resolveCustomerRouteId, resolveSubscriptionRouteId } from "@/lib/licenses/licenseRoute"
+import { canonicalizeLicensePathname, createLicenseCustomerPath, createLicensePath, getNamespaceDisplayId, resolveCustomerRouteId, resolveSubscriptionRouteId } from "@/lib/licenses/routes"
 import assert from "node:assert/strict"
 import test from "node:test"
 

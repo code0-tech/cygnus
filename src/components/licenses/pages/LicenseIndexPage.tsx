@@ -3,7 +3,7 @@
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
 import type { LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
-import { createLicensePath } from "@/lib/licenses/licenseRoute"
+import { createLicensePath } from "@/lib/licenses/routes"
 import { Text } from "@code0-tech/pictor"
 import { useRouter } from "next/navigation"
 import { useEffect, useMemo } from "react"

@@ -6,9 +6,9 @@ import { ButtonLoader } from "@/components/ui/Loader"
 import type { LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { type CustomerEditSection, getCustomerEditSectionLabels, getLicenseEditSectionLabels, LICENSE_EDIT_SECTIONS, type LicenseEditSection } from "@/lib/licenses/editSections"
-import { createLicenseCustomerPath, createLicensePath, getNamespaceDisplayId, resolveCustomerRouteId } from "@/lib/licenses/licenseRoute"
-import type { LicenseDashboardLicense } from "@/lib/licenses/licenseTypes"
-import { formatLicenseDisplayValue } from "@/lib/licenses/licenseDisplayValues"
+import { createLicenseCustomerPath, createLicensePath, getNamespaceDisplayId, resolveCustomerRouteId } from "@/lib/licenses/routes"
+import type { LicenseDashboardLicense } from "@/lib/licenses/types"
+import { formatLicenseDisplayValue } from "@/lib/licenses/displayValues"
 import {
     Avatar,
     Button,
