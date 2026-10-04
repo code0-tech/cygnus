@@ -2,7 +2,7 @@
 
 import { getStripePricingFromSession, getTaxQuoteFromSession, type CheckoutPromotionCodeSdk } from "@/lib/checkout/stripeCheckout"
 import type { CheckoutData, ErrorsContent } from "@/lib/cms"
-import type { CheckoutSessionData, CheckoutStripePricingData, CheckoutTaxQuoteData } from "@/lib/checkout/checkoutSubmission"
+import type { CheckoutSessionData, CheckoutStripePricingData, CheckoutTaxQuoteData } from "@/lib/checkout/client"
 import { AcceptTermsCheckbox } from "@/components/forms/AcceptTermsCheckbox"
 import { useCheckoutStage } from "@/components/checkout/CheckoutStage"
 import { ButtonLoader } from "@/components/ui/Loader"

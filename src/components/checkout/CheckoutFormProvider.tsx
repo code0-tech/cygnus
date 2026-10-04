@@ -5,9 +5,9 @@ import { useCheckoutStage } from "@/components/checkout/CheckoutStage"
 import type { CheckoutData, ErrorsContent } from "@/lib/cms"
 import { resolveCraterCustomerType } from "@/lib/crater/values"
 import { clearCheckoutContactDraft, readCheckoutContactDraft, saveCheckoutContactDraft } from "@/lib/checkout/checkoutDraft"
-import { replaceCheckoutPage } from "@/lib/checkout/checkoutClient"
 import {
     CheckoutSubmissionError,
+    replaceCheckoutPage,
     createCheckoutCustomer,
     createCheckoutSession,
     getCheckoutCustomers,
@@ -15,7 +15,7 @@ import {
     type CheckoutSessionData,
     type CheckoutStripePricingData,
     type CheckoutTaxQuoteData,
-} from "@/lib/checkout/checkoutSubmission"
+} from "@/lib/checkout/client"
 import type { AppLocale } from "@/lib/i18n"
 import { getStripePricingFromSession, getTaxQuoteFromSession, type CheckoutPromotionCodeSdk } from "@/lib/checkout/stripeCheckout"
 import type { StripeCheckoutContact, StripeCheckoutSession } from "@stripe/stripe-js"

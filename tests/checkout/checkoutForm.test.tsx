@@ -89,8 +89,10 @@ mock.module("@/components/checkout/CheckoutStage", {
         }),
     },
 })
-mock.module("@/lib/checkout/checkoutClient", {
+const checkoutClient = await import("@/lib/checkout/client")
+mock.module("@/lib/checkout/client", {
     namedExports: {
+        ...checkoutClient,
         checkoutFetch: (input: RequestInfo | URL, init?: RequestInit) => fetch(input, init),
         replaceCheckoutPage: (url: string) => {
             checkoutPageReplacements.push(url)
