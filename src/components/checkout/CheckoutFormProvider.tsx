@@ -3,7 +3,7 @@
 import { useCraterSession } from "@/components/checkout/CraterSessionProvider"
 import { useCheckoutStage } from "@/components/checkout/CheckoutStage"
 import type { CheckoutData, ErrorsContent } from "@/lib/cms"
-import { resolveCraterCustomerType } from "@/lib/checkout/craterCustomer"
+import { resolveCraterCustomerType } from "@/lib/crater/values"
 import { clearCheckoutContactDraft, readCheckoutContactDraft, saveCheckoutContactDraft } from "@/lib/checkout/checkoutDraft"
 import { replaceCheckoutPage } from "@/lib/checkout/checkoutClient"
 import {

@@ -1,4 +1,4 @@
-import { resolveSubscriptionCustomerType } from "@/lib/licenses/licenseSubscription"
+import { resolveSubscriptionCustomerType } from "@/lib/crater/values"
 import assert from "node:assert/strict"
 import test from "node:test"
 

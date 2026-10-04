@@ -1,5 +1,4 @@
-import { normalizeCraterDeploymentType, normalizeCraterPaymentPeriod, normalizeCraterPlan } from "@/lib/checkout/craterCheckout"
-import { normalizeCraterCustomerType } from "@/lib/checkout/craterCustomer"
+import { normalizeCraterDeploymentType, normalizeCraterPaymentPeriod, normalizeCraterPlan, normalizeCraterCustomerType } from "@/lib/crater/values"
 import { normalizeUsagePackages } from "@/lib/subscription/usagePackages"
 import type {
     DashboardSubscriptionStatus,

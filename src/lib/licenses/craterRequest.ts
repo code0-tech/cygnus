@@ -1,5 +1,5 @@
 import { optionalString, type JsonObject } from "@/lib/checkout/craterApi"
-import { parseCraterPaymentPeriod, parseCraterPlan } from "@/lib/checkout/craterCheckout"
+import { parseCraterPaymentPeriod, parseCraterPlan } from "@/lib/crater/values"
 import type { CheckoutPaymentPeriod, CheckoutPlan, Scalars } from "@code0-tech/crater-graphql-types"
 
 export function isLicenseId(value: string): value is Scalars["LicenseID"]["input"] {

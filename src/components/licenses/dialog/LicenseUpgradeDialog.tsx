@@ -12,7 +12,7 @@ import type { ErrorsContent, LicenseContent, SubscriptionConfigData } from "@/li
 import type { AppLocale } from "@/lib/i18n"
 import { formatMinorCurrency } from "@/lib/formatters"
 import { createLicensePath, resolveCustomerRouteId, resolveLicenseRouteId } from "@/lib/licenses/licenseRoute"
-import { resolveSubscriptionCustomerType } from "@/lib/licenses/licenseSubscription"
+import { resolveSubscriptionCustomerType } from "@/lib/crater/values"
 import { updateSubscription } from "@/lib/subscription/client"
 import { calculateSubscriptionQuote, type PaymentPeriod } from "@/lib/subscription/calculator"
 import { getSubscriptionCatalog } from "@/lib/subscription/catalog"
