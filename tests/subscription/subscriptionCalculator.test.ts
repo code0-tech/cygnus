@@ -13,24 +13,24 @@ import {
 import { SUBSCRIPTION_PRICE_LOOKUP_KEYS, type SubscriptionPriceCatalog, type SubscriptionPriceLookupKey } from "@/lib/subscription/prices"
 
 const stripeAmounts: Partial<Record<SubscriptionPriceLookupKey, string>> = {
-    pro_b2b_monthly: "1500",
-    pro_b2b_quarterly: "4050",
-    pro_b2b_yearly: "15000",
-    pro_b2c_monthly: "1500",
-    pro_b2c_quarterly: "4050",
-    pro_b2c_yearly: "15000",
-    max_b2b_monthly: "3000",
-    max_b2b_quarterly: "8100",
-    max_b2b_yearly: "30000",
-    max_b2c_monthly: "3000",
-    max_b2c_quarterly: "8100",
-    max_b2c_yearly: "30000",
+    pro_selfhosted_business_monthly: "1500",
+    pro_selfhosted_business_quarterly: "4050",
+    pro_selfhosted_business_yearly: "15000",
+    pro_selfhosted_personal_monthly: "1500",
+    pro_selfhosted_personal_quarterly: "4050",
+    pro_selfhosted_personal_yearly: "15000",
+    max_selfhosted_business_monthly: "3000",
+    max_selfhosted_business_quarterly: "8100",
+    max_selfhosted_business_yearly: "30000",
+    max_selfhosted_personal_monthly: "3000",
+    max_selfhosted_personal_quarterly: "8100",
+    max_selfhosted_personal_yearly: "30000",
 }
 
 function createSubscriptionPrices(overrides: Partial<Record<SubscriptionPriceLookupKey, string>> = {}): SubscriptionPriceCatalog {
     return Object.fromEntries(
         SUBSCRIPTION_PRICE_LOOKUP_KEYS.map((lookupKey) => {
-            const unitAmountDecimal = overrides[lookupKey] ?? stripeAmounts[lookupKey] ?? (lookupKey.startsWith("ai_token") ? "0.001" : "1")
+            const unitAmountDecimal = overrides[lookupKey] ?? stripeAmounts[lookupKey] ?? (lookupKey.startsWith("custom_ai_tokens") ? "0.001" : "1")
             const period = lookupKey.split("_").at(-1)
             return [
                 lookupKey,
@@ -49,6 +49,54 @@ function createSubscriptionPrices(overrides: Partial<Record<SubscriptionPriceLoo
 }
 
 const subscriptionPrices = createSubscriptionPrices()
+
+test("selects deployment, customer and period prices for standard and custom plans", () => {
+    const prices = createSubscriptionPrices()
+    SUBSCRIPTION_PRICE_LOOKUP_KEYS.forEach((key, index) => {
+        prices[key] = { ...prices[key], unitAmountDecimal: String(index + 1) }
+    })
+    const catalog = { subscriptionPrices: prices } as Parameters<typeof calculateSubscriptionQuote>[1]
+
+    for (const deployment of ["cloud", "self_hosted"] as const) {
+        for (const customerType of ["b2b", "b2c"] as const) {
+            for (const paymentPeriod of ["monthly", "quarterly", "yearly"] as const) {
+                const suffix = `${deployment === "cloud" ? "cloud" : "selfhosted"}_${customerType === "b2b" ? "business" : "personal"}_${paymentPeriod}`
+                const selection = { deployment, customerType, paymentPeriod, aiTokens: 2, workflowExecutions: 3 }
+                for (const plan of ["pro", "max"] as const) {
+                    const expected = Number(prices[`${plan}_${suffix}` as SubscriptionPriceLookupKey].unitAmountDecimal)
+                    assert.equal(calculateSubscriptionQuote({ ...selection, plan }, catalog).total, expected)
+                }
+                const expectedCustom =
+                    Number(prices[`custom_ai_tokens_${suffix}` as SubscriptionPriceLookupKey].unitAmountDecimal) * 2 +
+                    Number(prices[`custom_workflow_executions_${suffix}` as SubscriptionPriceLookupKey].unitAmountDecimal) * 3
+                assert.equal(calculateSubscriptionQuote({ ...selection, plan: "custom" }, catalog).total, expectedCustom)
+            }
+        }
+    }
+})
+
+test("keeps period discounts within the selected deployment and refuses missing prices", () => {
+    const prices = createSubscriptionPrices({
+        pro_cloud_business_monthly: "2000",
+        pro_cloud_business_quarterly: "5400",
+        pro_selfhosted_business_monthly: "1000",
+        pro_selfhosted_business_quarterly: "2700",
+    })
+    const catalog = { subscriptionPrices: prices } as Parameters<typeof calculateSubscriptionQuote>[1]
+    const selection = { deployment: "cloud", customerType: "b2b", paymentPeriod: "quarterly", plan: "pro", aiTokens: 0, workflowExecutions: 0 } as const
+    assert.deepEqual(calculateSubscriptionQuote(selection, catalog), {
+        currency: "EUR",
+        items: [{ id: "pro", type: "plan", amount: 5400 }],
+        subtotal: 6000,
+        periodDiscount: 600,
+        total: 5400,
+    })
+    const { pro_cloud_business_quarterly: removed, ...incomplete } = prices
+    assert.throws(
+        () => calculateSubscriptionQuote(selection, { ...catalog, subscriptionPrices: incomplete as SubscriptionPriceCatalog }),
+        /missing pro_cloud_business_quarterly/
+    )
+})
 
 const paymentPeriod = {
     description: "Choose how often to pay.",
@@ -179,6 +227,27 @@ test("preserves the regular fixed-plan price for period discount summaries", () 
 
     assert.equal(result.pricing.totalBeforeDiscount, 180)
     assert.equal(result.pricing.totalPrice, 150)
+})
+
+test("uses the checkout deployment parameter instead of the CMS default", () => {
+    const config = {
+        defaults: { customerType: "b2c", deployment: "self_hosted", paymentPeriod: { b2b: "monthly", b2c: "monthly" } },
+        paymentPeriod,
+        packages: { pro: { title: "Pro" } },
+    } as never
+    const result = resolveCheckoutPricing({
+        aiTokensParam: null,
+        customerTypeParam: "b2b",
+        deploymentTypeParam: "cloud",
+        fallbackPeriodSuffix: "/mo",
+        paymentPeriodParam: "monthly",
+        planParam: "pro",
+        subscriptionConfig: config,
+        subscriptionPrices: createSubscriptionPrices({ pro_cloud_business_monthly: "2500" }),
+        workflowExecutionsParam: null,
+    })
+    assert.equal(result.planPrice, 25)
+    assert.equal(result.pricing.totalPrice, 25)
 })
 
 test("prices a fixed plan from the b2b prices for a b2b customer", () => {

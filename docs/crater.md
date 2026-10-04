@@ -210,7 +210,29 @@ Additional checkout features include:
 - automatic synchronization of the customer's name and address back to Stripe
 - attaching the plan, payment period, resolved quantities, Crater customer ID, deployment type, customer type, optional namespace ID, and optional `referral` to the Stripe subscription metadata
 
-Stripe Price IDs are resolved exclusively on the server from `checkout.prices`. Every plan is priced per customer type: Pro, Max, and each dynamic custom component resolve their Price from the plan or component, the customer's type, and the payment period. The customer type is always the stored `customerType` of the selected customer, never something the client sends, so a B2C client cannot check out at a B2B price.
+Stripe Price IDs are resolved exclusively on the server from `checkout.prices`. Since commit `9ab1a2c`, Pro, Max, and each Custom component resolve their Price by deployment type (`cloud` or `self_hosted`), plan or component, customer type, and payment period. Cloud and self-hosted deployments have separate price catalogs. The customer type is always the stored `customerType` of the selected customer, never something the client sends.
+
+Standard-plan prices are configured at `checkout.prices.<deployment>.<pro|max>.<b2b|b2c>.<period>`. Custom prices use `checkout.prices.<deployment>.custom.<component>_<b2b|b2c>.<period>`, where the component is `ai_token` or `workflow_execution`. For example:
+
+```yaml
+checkout:
+    prices:
+        cloud:
+            pro:
+                b2b:
+                    monthly: price_cloud_pro_business_monthly
+            custom:
+                ai_token_b2b:
+                    monthly: price_cloud_ai_tokens_business_monthly
+        self_hosted:
+            pro:
+                b2b:
+                    monthly: price_selfhosted_pro_business_monthly
+```
+
+The example values above are placeholders for Stripe Price IDs. Environment overrides use deployment-prefixed names such as `STRIPE_PRICE_CLOUD_PRO_B2B_MONTHLY`, `STRIPE_PRICE_SELF_HOSTED_PRO_B2B_MONTHLY`, and `STRIPE_PRICE_CLOUD_AI_TOKEN_B2B_MONTHLY`. These names are derived from the catalog; the former names without a deployment prefix are no longer read. Existing flat price configuration must be moved under the deployment keys.
+
+Subscription updates and previews use the same resolver with the subscription's stored deployment type. They cannot switch deployment through an update argument, and the resolver never falls back to another deployment's prices. An unsupported deployment is rejected with `INVALID_CHECKOUT_SELECTION`; a customer-type mismatch is checked within the selected deployment's catalog.
 
 #### The payment periods of a customer type
 
@@ -893,33 +915,36 @@ Invoices are batched by `Sources::InvoicesBySubscription`, reached through `cust
 
 The query auto-paginates and returns every active recurring price, not just Stripe's default first page of ten. The result is sorted deterministically by `lookupKey` and then by price ID, with prices that have no lookup key last.
 
-Prices and products are managed in Stripe. The listing query fetches active recurring prices directly instead of mirroring a product catalog locally. Checkout creation still resolves its `plan` argument through the configured `checkout.prices` mapping, which is keyed by plan, customer type, and payment period. Stripe retrieval failures surface as a GraphQL execution error based on `UNABLE_TO_LIST_PRICES`.
+Prices and products are managed in Stripe. `subscriptionPrices` fetches all active recurring prices, including both deployment catalogs, without a deployment filter or a local product catalog. Checkout creation resolves Price IDs through `checkout.prices`, keyed by deployment, plan/component, customer type, and period. Stripe retrieval failures surface as a GraphQL execution error based on `UNABLE_TO_LIST_PRICES`.
 
 #### Lookup keys
 
-`lookupKey` is the stable technical identifier for matching a price. Product names must not be used for that: they are freely editable in Stripe and are currently spelled inconsistently. Every checkout price carries a unique lookup key following this scheme:
+`lookupKey` is the stable technical identifier the frontend can use to match prices from `subscriptionPrices`; product names are freely editable. The configured Stripe sandbox catalog was verified on 2026-10-04: all 48 configured Price IDs are active and use the following naming schemes:
 
 ```text
-pro_b2b_monthly                   max_b2b_monthly
-pro_b2b_quarterly                 max_b2b_quarterly
-pro_b2b_yearly                    max_b2b_yearly
+<pro|max>_<cloud|selfhosted>_<business|personal>_<monthly|quarterly|yearly>
+custom_<ai_tokens|workflow_executions>_<cloud|selfhosted>_<business|personal>_<monthly|quarterly|yearly>
 
-pro_b2c_monthly                   max_b2c_monthly
-pro_b2c_quarterly                 max_b2c_quarterly
-pro_b2c_yearly                    max_b2c_yearly
-
-ai_token_b2b_monthly              workflow_execution_b2b_monthly
-ai_token_b2b_quarterly            workflow_execution_b2b_quarterly
-ai_token_b2b_yearly               workflow_execution_b2b_yearly
-
-ai_token_b2c_monthly              workflow_execution_b2c_monthly
-ai_token_b2c_quarterly            workflow_execution_b2c_quarterly
-ai_token_b2c_yearly               workflow_execution_b2c_yearly
+pro_cloud_business_monthly
+max_selfhosted_personal_yearly
+custom_ai_tokens_cloud_business_quarterly
+custom_workflow_executions_selfhosted_personal_monthly
 ```
 
-Every key is `<plan or component>_<b2b|b2c>_<period>`, and the periods are exactly the ones that customer type is billed in: monthly, quarterly, and yearly for both B2B and B2C.
+Stripe lookup keys and configuration keys use different spellings:
 
-The keys are assigned on the Price objects in Stripe; Crater reads them but never writes them.
+| Meaning                             | Stripe lookup key            | Crater configuration key        |
+| ----------------------------------- | ---------------------------- | ------------------------------- |
+| Cloud deployment                    | `cloud`                      | `cloud`                         |
+| Self-hosted deployment              | `selfhosted`                 | `self_hosted`                   |
+| Business customer                   | `business`                   | `b2b`                           |
+| Personal customer                   | `personal`                   | `b2c`                           |
+| Custom AI Token component           | `custom_ai_tokens`           | `custom.ai_token_<b2b           | b2c>` |
+| Custom Workflow Execution component | `custom_workflow_executions` | `custom.workflow_execution_<b2b | b2c>` |
+
+Each deployment has 24 prices: twelve standard-plan combinations and twelve Custom-component combinations. Both customer types support monthly, quarterly, and yearly periods.
+
+Lookup keys are assigned on Stripe Price objects. Crater reads them but never writes them or derives checkout Price IDs from them. Commit `9ab1a2c` adds deployment-specific ID resolution and environment-variable names; the lookup-key naming is verified Stripe catalog data, not a naming rule enforced by that commit. Frontend price matching must include deployment type and use the Stripe spellings above.
 
 ### HTTP authentication
 
@@ -1000,7 +1025,7 @@ For `checkoutCreateSession`:
 - `customerId: CustomerID!` is required and must name a customer linked to the authenticated user. Create a customer first when necessary.
 - Membership uses the same rule as `CustomerPolicy.read_customer`. A nonexistent customer and one belonging to another user return identical `INVALID_CHECKOUT_CUSTOMER` responses.
 - A repeated `checkoutCreateSession` for the same customer creates a new Stripe session but no additional customer.
-- The selected customer's type picks the B2B or B2C Prices, for `plan: pro` and `plan: max` as well as for the `plan: custom` components; both customer types are billed monthly, quarterly, or yearly. A `paymentPeriod` outside that set is rejected with `INVALID_CHECKOUT_SELECTION` before Stripe is called. If the Price itself is configured for the other customer type only, the request is rejected with `CUSTOMER_TYPE_MISMATCH` instead of a generic selection error.
+- `deploymentType` selects the Cloud or Self-Hosted price catalog, and the customer's stored type selects its B2B or B2C Prices. This applies to Pro, Max, and Custom components. Both customer types support monthly, quarterly, and yearly periods. Invalid periods return `INVALID_CHECKOUT_SELECTION`; a Price available only for the other customer type within the chosen deployment returns `CUSTOMER_TYPE_MISMATCH`.
 - The Stripe Checkout Session is created with the selected customer's `stripe_customer_id`, so the contact details, billing address, and tax ID that Stripe collects are synced back to exactly that customer. Its Crater customer ID is stored in the subscription metadata as `crater_customer_id`.
 - Crater never sends `customer_email`; the Stripe Customer is referenced by ID, and Stripe rejects both parameters together. An email already on the Stripe Customer is therefore never restated, and a missing one is collected by the client's `ContactDetailsElement`.
 - A regular checkout uses `plan`, `paymentPeriod`, and, where applicable, `deploymentType` and `namespaceId`. There is no `promotionCode` argument; see [discounts](#discounts-in-a-checkout).
@@ -1032,7 +1057,7 @@ For `subscriptionsUpdate` and `subscriptionsPreviewUpdate`:
 - Arguments that are not supplied keep their current value. An interval change does not reset the quantities, and a quantity change does not move the plan.
 - Moving to Pro or Max replaces custom line items with a single plan line item and resolves the target plan's configured quantities. Explicit standard-plan quantities must match those entitlements. Moving from a standard plan to Custom requires both quantities; staying on Custom preserves unspecified current quantities.
 - Each custom quantity must match a package from the customer's `checkoutLimits`; the planner uses the same resolver as fresh checkout creation.
-- The customer type is the stored `customerType` of the subscription's customer and decides which periods exist; see [the payment periods of a customer type](#the-payment-periods-of-a-customer-type). A Price configured for the other type only is `CUSTOMER_TYPE_MISMATCH`.
+- Price resolution uses the subscription's stored deployment type and its customer's stored `customerType`. A Price configured only for the other customer type within the same deployment is `CUSTOMER_TYPE_MISMATCH`; there is no cross-deployment fallback. See [the payment periods of a customer type](#the-payment-periods-of-a-customer-type).
 - A subscription carrying no checkout plan and one that is no longer active are `INVALID_SUBSCRIPTION`. Cancelling a negotiated subscription is still allowed.
 - An update that changes nothing succeeds without calling Stripe.
 - A subscription that does not exist and one belonging to somebody else are answered with the same `INVALID_SUBSCRIPTION` error and the same message, so the response never reveals which of the two it was -- the rule `checkoutCreateSession` already follows for `INVALID_CHECKOUT_CUSTOMER`.

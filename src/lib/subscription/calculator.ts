@@ -1,4 +1,4 @@
-import type { PaymentPeriod, SubscriptionCustomerType, SubscriptionPlan, SubscriptionSelection } from "@/lib/subscription/types"
+import type { PaymentPeriod, SubscriptionCustomerType, SubscriptionDeploymentMode, SubscriptionPlan, SubscriptionSelection } from "@/lib/subscription/types"
 import type { SubscriptionConfigData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { getSubscriptionCatalog, type SubscriptionCatalog } from "@/lib/subscription/catalog"
@@ -50,8 +50,11 @@ export type SubscriptionQuote = {
     total: number
 }
 
-function getPriceKey(component: "pro" | "max" | "ai_token" | "workflow_execution", customerType: SubscriptionCustomerType, period: PaymentPeriod) {
-    return `${component}_${customerType}_${period}` as SubscriptionPriceLookupKey
+function getPriceKey(component: "pro" | "max" | "ai_token" | "workflow_execution", deployment: SubscriptionDeploymentMode, customerType: SubscriptionCustomerType, period: PaymentPeriod) {
+    const priceComponent = component === "ai_token" ? "custom_ai_tokens" : component === "workflow_execution" ? "custom_workflow_executions" : component
+    const priceDeployment = deployment === "self_hosted" ? "selfhosted" : "cloud"
+    const priceCustomerType = customerType === "b2b" ? "business" : "personal"
+    return `${priceComponent}_${priceDeployment}_${priceCustomerType}_${period}` as SubscriptionPriceLookupKey
 }
 
 function getPrice(config: SubscriptionCatalog, lookupKey: SubscriptionPriceLookupKey) {
@@ -64,8 +67,8 @@ export function calculateSubscriptionQuote(selection: SubscriptionSelection, con
     const months = getPaymentPeriodMonths(selection.paymentPeriod)
 
     if (selection.plan !== "custom") {
-        const total = getSubscriptionPriceAmount(getPrice(config, getPriceKey(selection.plan, selection.customerType, selection.paymentPeriod)))
-        const regularTotal = months > 1 ? getSubscriptionPriceAmount(getPrice(config, getPriceKey(selection.plan, selection.customerType, "monthly"))) * months : total
+        const total = getSubscriptionPriceAmount(getPrice(config, getPriceKey(selection.plan, selection.deployment, selection.customerType, selection.paymentPeriod)))
+        const regularTotal = months > 1 ? getSubscriptionPriceAmount(getPrice(config, getPriceKey(selection.plan, selection.deployment, selection.customerType, "monthly"))) * months : total
         const subtotal = Math.max(total, regularTotal)
         return {
             currency: "EUR",
@@ -76,8 +79,8 @@ export function calculateSubscriptionQuote(selection: SubscriptionSelection, con
         }
     }
 
-    const aiTokenAmount = getSubscriptionPriceAmount(getPrice(config, getPriceKey("ai_token", selection.customerType, selection.paymentPeriod)), selection.aiTokens)
-    const workflowExecutionAmount = getSubscriptionPriceAmount(getPrice(config, getPriceKey("workflow_execution", selection.customerType, selection.paymentPeriod)), selection.workflowExecutions)
+    const aiTokenAmount = getSubscriptionPriceAmount(getPrice(config, getPriceKey("ai_token", selection.deployment, selection.customerType, selection.paymentPeriod)), selection.aiTokens)
+    const workflowExecutionAmount = getSubscriptionPriceAmount(getPrice(config, getPriceKey("workflow_execution", selection.deployment, selection.customerType, selection.paymentPeriod)), selection.workflowExecutions)
     const items: SubscriptionQuote["items"] = [
         {
             id: "aiTokens",
@@ -93,8 +96,8 @@ export function calculateSubscriptionQuote(selection: SubscriptionSelection, con
     const total = items.reduce((sum, item) => sum + item.amount, 0)
     const monthlyBaseline =
         months > 1
-            ? getSubscriptionPriceAmount(getPrice(config, getPriceKey("ai_token", selection.customerType, "monthly")), selection.aiTokens) * months +
-              getSubscriptionPriceAmount(getPrice(config, getPriceKey("workflow_execution", selection.customerType, "monthly")), selection.workflowExecutions) * months
+            ? getSubscriptionPriceAmount(getPrice(config, getPriceKey("ai_token", selection.deployment, selection.customerType, "monthly")), selection.aiTokens) * months +
+              getSubscriptionPriceAmount(getPrice(config, getPriceKey("workflow_execution", selection.deployment, selection.customerType, "monthly")), selection.workflowExecutions) * months
             : aiTokenAmount + workflowExecutionAmount
     const subtotal = Math.max(total, monthlyBaseline)
     return { currency: "EUR", items, subtotal, periodDiscount: subtotal - total, total }
@@ -115,6 +118,7 @@ function parseNumber(value: string | null, fallback: number) {
 export function resolveCheckoutPricing({
     aiTokensParam,
     customerTypeParam,
+    deploymentTypeParam,
     fallbackPeriodSuffix,
     paymentPeriodParam,
     planParam,
@@ -124,6 +128,7 @@ export function resolveCheckoutPricing({
 }: {
     aiTokensParam: string | null
     customerTypeParam: string | null
+    deploymentTypeParam?: string | null
     fallbackPeriodSuffix: string
     paymentPeriodParam: string | null
     planParam: string | null
@@ -153,6 +158,7 @@ export function resolveCheckoutPricing({
         {
             aiTokens: aiTokensParam,
             customerType: customerTypeParam,
+            deploymentType: deploymentTypeParam,
             paymentPeriod: paymentPeriodParam,
             plan: planParam,
             workflowExecutions: workflowExecutionsParam,

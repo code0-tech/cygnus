@@ -11,8 +11,8 @@ function createPrices(): CheckoutPrice[] {
         intervalCount: lookupKey.endsWith("quarterly") ? 3 : 1,
         lookupKey,
         productName: lookupKey,
-        unitAmount: lookupKey.startsWith("ai_token") ? null : 1,
-        unitAmountDecimal: lookupKey.startsWith("ai_token") ? "0.001" : "1",
+        unitAmount: lookupKey.startsWith("custom_ai_tokens") ? null : 1,
+        unitAmountDecimal: lookupKey.startsWith("custom_ai_tokens") ? "0.001" : "1",
     }))
 }
 
@@ -20,15 +20,16 @@ test("normalizes the complete Crater subscription price list by lookup key", () 
     const catalog = normalizeSubscriptionPrices([...createPrices(), { id: "price_unrelated", lookupKey: null, productName: "Unrelated" }])
 
     assert.deepEqual(Object.keys(catalog), [...SUBSCRIPTION_PRICE_LOOKUP_KEYS])
-    assert.equal(catalog.ai_token_b2b_quarterly.intervalCount, 3)
-    assert.equal(catalog.pro_b2b_quarterly.intervalCount, 3)
-    assert.equal(catalog.pro_b2c_quarterly.intervalCount, 3)
-    assert.equal(catalog.max_b2c_yearly.interval, "year")
+    assert.equal(Object.keys(catalog).length, 48)
+    assert.equal(catalog.custom_ai_tokens_cloud_business_quarterly.intervalCount, 3)
+    assert.equal(catalog.pro_cloud_business_quarterly.intervalCount, 3)
+    assert.equal(catalog.pro_selfhosted_personal_quarterly.intervalCount, 3)
+    assert.equal(catalog.max_selfhosted_personal_yearly.interval, "year")
 })
 
 test("rejects missing and duplicate required subscription prices", () => {
     const prices = createPrices()
-    assert.throws(() => normalizeSubscriptionPrices(prices.slice(1)), /pro_b2b_monthly/)
+    assert.throws(() => normalizeSubscriptionPrices(prices.slice(1)), /pro_cloud_business_monthly/)
     assert.throws(() => normalizeSubscriptionPrices([...prices, prices[0]]), /more than once/)
 })
 
@@ -40,7 +41,7 @@ test("rejects a lookup key assigned to the wrong recurring interval", () => {
 })
 
 test("multiplies Stripe decimal minor units without floating-point price factors", () => {
-    const price = normalizeSubscriptionPrices(createPrices()).ai_token_b2b_monthly
+    const price = normalizeSubscriptionPrices(createPrices()).custom_ai_tokens_cloud_business_monthly
 
     assert.equal(getSubscriptionPriceAmount(price, 1_000), 1)
     assert.equal(getSubscriptionPriceAmount(price, 500_000_000), 500_000)
