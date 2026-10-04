@@ -1618,7 +1618,7 @@ test("license dashboard loads from the HttpOnly Crater session cookie", async ()
                     email: "billing@example.com",
                     name: "Example GmbH",
                     updatedAt: "2026-08-10T10:00:00Z",
-                    licenseCount: 2,
+                    subscriptionCount: 2,
                 },
             ],
             licenses: [
@@ -2050,7 +2050,7 @@ test("finds a license customer beyond the first Crater cursor page", async () =>
         assert.equal(graphQLServer.requests[2].body.operationName, "LicenseCustomerDetail")
         assert.deepEqual(graphQLServer.requests[2].body.variables, { customerAfter: "customer-25" })
         assert.deepEqual(await response.json(), {
-            customers: [{ customerType: "business", id: "gid://crater/Customer/26", licenseCount: 0 }],
+            customers: [{ customerType: "business", id: "gid://crater/Customer/26", subscriptionCount: 0 }],
             licenses: [],
             navigationLicenses: [],
             pagination: { licenses: { contextCursor: "customer-25", endCursor: null, hasNextPage: false, totalCount: 0 } },

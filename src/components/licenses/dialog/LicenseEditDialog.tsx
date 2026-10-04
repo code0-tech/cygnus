@@ -11,7 +11,7 @@ import { useCustomerPaymentMethods } from "@/hooks/usePaymentMethods"
 import type { ErrorsContent, LicenseContent, SubscriptionConfigData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { getLicenseEditSectionLabels, isLicenseEditSection, LICENSE_EDIT_SECTIONS, type LicenseEditSection } from "@/lib/licenses/editSections"
-import { createLicensePath, resolveCustomerRouteId, resolveLicenseRouteId } from "@/lib/licenses/licenseRoute"
+import { createLicensePath, resolveCustomerRouteId, resolveSubscriptionRouteId } from "@/lib/licenses/licenseRoute"
 import { updateSubscription } from "@/lib/subscription/client"
 import { NamespaceSelectionError } from "@/components/licenses/NamespaceSelectionError"
 import type { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
@@ -37,8 +37,8 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
     const searchParams = useSearchParams()
     const { licenses, updateLicense } = useLicenseData()
     const resolvedCustomerId = resolveCustomerRouteId(customerId)
-    const resolvedLicenseId = resolveLicenseRouteId(licenseId)
-    const license = licenses.find((candidate) => candidate.id === resolvedLicenseId && candidate.customerId === resolvedCustomerId)
+    const resolvedSubscriptionId = resolveSubscriptionRouteId(licenseId)
+    const license = licenses.find((candidate) => candidate.id === resolvedSubscriptionId && candidate.customerId === resolvedCustomerId)
     const requestedTab = searchParams.get("tab")
     // Legacy "license" and "billing" tabs were merged into "general".
     const section: LicenseEditSection = isLicenseEditSection(requestedTab) ? requestedTab : searchParams.has("setup_intent") ? "payment" : "general"
@@ -52,7 +52,7 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
     } = useCustomerPaymentMethods(license?.customerId, paymentSectionEnabled)
     const [assigningPaymentMethodId, setAssigningPaymentMethodId] = useState<string | null>(null)
     const [assignPaymentMethodError, setAssignPaymentMethodError] = useState(false)
-    const close = () => router.replace(createLicensePath(locale, resolvedCustomerId, resolvedLicenseId))
+    const close = () => router.replace(createLicensePath(locale, resolvedCustomerId, resolvedSubscriptionId))
 
     const setSection = (nextSection: LicenseEditSection) => {
         const nextSearchParams = new URLSearchParams(searchParams.toString())

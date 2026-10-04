@@ -25,7 +25,7 @@ export function resolveCustomerRouteId(value: string) {
     return resolveCraterRouteId(value, "Customer")
 }
 
-export function resolveLicenseRouteId(value: string) {
+export function resolveSubscriptionRouteId(value: string) {
     return resolveCraterRouteId(value, "Subscription")
 }
 

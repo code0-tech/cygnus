@@ -1,6 +1,6 @@
 import assert from "node:assert/strict"
 import test from "node:test"
-import { getPaymentMethodSetupStatus } from "../../src/lib/licenses/paymentMethodSetupStatus"
+import { getPaymentMethodSetupStatus } from "../../src/lib/licenses/paymentMethodSetupStatus.server"
 
 type SetupIntent = Parameters<typeof getPaymentMethodSetupStatus>[0]
 type Customer = NonNullable<Parameters<typeof getPaymentMethodSetupStatus>[1]>

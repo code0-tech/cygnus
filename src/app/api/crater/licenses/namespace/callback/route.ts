@@ -5,7 +5,7 @@ import { createCraterUserSession } from "@/lib/crater/login.server"
 import { setCraterSessionCookie, setCraterUserLoginCookie } from "@/lib/crater/session.server"
 import { isSupportedLocale } from "@/lib/i18n"
 import { isSubscriptionId } from "@/lib/crater/request"
-import { resolveCustomerRouteId, resolveLicenseRouteId } from "@/lib/licenses/licenseRoute"
+import { resolveCustomerRouteId, resolveSubscriptionRouteId } from "@/lib/licenses/licenseRoute"
 import type { Mutation, MutationSubscriptionsLinkNamespaceArgs } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 import { NextResponse } from "next/server"
@@ -60,7 +60,7 @@ function resolveLicenseReturn(requestUrl: URL) {
     }
 
     const customerId = resolveCustomerRouteId(segments[3])
-    const subscriptionId = resolveLicenseRouteId(segments[5])
+    const subscriptionId = resolveSubscriptionRouteId(segments[5])
     if (!customerId || !/^gid:\/\/crater\/Customer\/\d+$/.test(customerId) || !subscriptionId || !isSubscriptionId(subscriptionId)) return null
 
     return { subscriptionId, returnUrl }

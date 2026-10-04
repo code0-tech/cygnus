@@ -56,7 +56,7 @@ export function mapCustomer(customer: Customer): LicenseDashboardCustomer | null
         ...(customer.name ? { name: customer.name } : {}),
         ...(customer.phone ? { phone: customer.phone } : {}),
         ...(customer.updatedAt ? { updatedAt: customer.updatedAt } : {}),
-        licenseCount: customer.subscriptions?.count ?? 0,
+        subscriptionCount: customer.subscriptions?.count ?? 0,
     }
 }
 

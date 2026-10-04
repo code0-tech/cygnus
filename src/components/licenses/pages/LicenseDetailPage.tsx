@@ -16,7 +16,7 @@ import { formatMinorCurrency } from "@/lib/formatters"
 import type { AppLocale } from "@/lib/i18n"
 import { downloadLicenseFile } from "@/lib/licenses/licenseClient"
 import { formatLicenseDisplayValue } from "@/lib/licenses/licenseDisplayValues"
-import { createLicensePath, resolveCustomerRouteId, resolveLicenseRouteId } from "@/lib/licenses/licenseRoute"
+import { createLicensePath, resolveCustomerRouteId, resolveSubscriptionRouteId } from "@/lib/licenses/licenseRoute"
 import type { LicenseDashboardInvoice } from "@/lib/licenses/licenseTypes"
 import {
     Alert,
@@ -74,8 +74,8 @@ export function LicenseDetailPage({ content, errors, customerId, licenseId, loca
     const searchParams = useSearchParams()
     const { customers, isLoading, licenses, loadMore, loadingMore, pagination } = useLicenseData()
     const resolvedCustomerId = resolveCustomerRouteId(customerId)
-    const resolvedLicenseId = resolveLicenseRouteId(licenseId)
-    const license = licenses.find((candidate) => candidate.id === resolvedLicenseId && candidate.customerId === resolvedCustomerId)
+    const resolvedSubscriptionId = resolveSubscriptionRouteId(licenseId)
+    const license = licenses.find((candidate) => candidate.id === resolvedSubscriptionId && candidate.customerId === resolvedCustomerId)
     const customer = customers.find((candidate) => candidate.id === resolvedCustomerId)
     const [isDownloadingLicense, setIsDownloadingLicense] = useState(false)
     const [licenseDownloadError, setLicenseDownloadError] = useState(false)
