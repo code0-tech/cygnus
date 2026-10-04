@@ -3,6 +3,7 @@
 import { LicenseDataProvider, useLicenseData } from "@/components/licenses/LicenseDataProvider"
 import { LicensePrimarySidebar } from "@/components/licenses/LicensePrimarySidebar"
 import { LicenseSidebar } from "@/components/licenses/LicenseSidebar"
+import { logoutLicenseSession } from "@/lib/licenses/client"
 import type { ErrorsContent, LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { AuroraBackground, Button, Card, Flex, FullScreen, ScrollArea, ScrollAreaScrollbar, ScrollAreaThumb, ScrollAreaViewport, Text } from "@code0-tech/pictor"
@@ -29,12 +30,7 @@ function LicenseLayoutContent({ children, content, errors, locale }: LicenseLayo
         setIsLoggingOut(true)
 
         try {
-            const response = await fetch("/api/crater/auth/session", { method: "DELETE", credentials: "same-origin" })
-            if (!response.ok) {
-                setIsLoggingOut(false)
-                return
-            }
-
+            await logoutLicenseSession()
             window.location.replace(content.redirectUrl)
         } catch {
             setIsLoggingOut(false)

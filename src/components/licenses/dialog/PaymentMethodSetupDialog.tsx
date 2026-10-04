@@ -3,6 +3,7 @@
 import { PaymentMethodSetupElement, PaymentMethodSetupPendingStatus, type PaymentMethodSetupOwner } from "@/components/licenses/dialog/PaymentMethodSetupElement"
 import { LicenseDialog } from "@/components/licenses/dialog/LicenseDialog"
 import { LicenseTabAlert, LicenseTabHeader } from "@/components/licenses/dialog/LicenseTabLayout"
+import { createPaymentMethodSetup } from "@/lib/licenses/client"
 import type { ErrorsContent, LicenseContent } from "@/lib/cms"
 import { Button, Spacing } from "@code0-tech/pictor"
 import { useEffect, useRef, useState } from "react"
@@ -51,19 +52,7 @@ export function PaymentMethodSetupDialog({ content, disabled = false, errors, on
         setError(null)
         let active = true
 
-        void fetch("/api/crater/customer/payment-method-setup", {
-            method: "POST",
-            credentials: "same-origin",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({ customerId: owner.customerId }),
-        })
-            .then(async (response) => {
-                const result: unknown = await response.json()
-                if (!response.ok || !result || typeof result !== "object" || !("clientSecret" in result) || typeof result.clientSecret !== "string") {
-                    throw new Error(errors.paymentMethodUpdate)
-                }
-                return result.clientSecret
-            })
+        void createPaymentMethodSetup(owner.customerId, errors.paymentMethodUpdate)
             .then((nextClientSecret) => {
                 if (active) setClientSecret(nextClientSecret)
             })
