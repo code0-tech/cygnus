@@ -3,6 +3,7 @@
 import { LicenseDeploymentIcon } from "@/components/licenses/LicenseDeploymentIcon"
 import { isLicenseStatusError, LicenseStatusDot } from "@/components/licenses/LicenseStatusDot"
 import { ButtonLoader } from "@/components/ui/Loader"
+import { StableBadge } from "@/components/ui/StableBadge"
 import type { LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { type CustomerEditSection, getCustomerEditSectionLabels, getLicenseEditSectionLabels, LICENSE_EDIT_SECTIONS, type LicenseEditSection } from "@/lib/licenses/editSections"
@@ -111,7 +112,6 @@ function LicenseBackToCustomerButton({ label, license, locale }: { label: string
     )
 }
 
-// Cloud licenses are named after their namespace (ID as placeholder until a name is available); self-hosted licenses keep the plan name.
 function getLicenseSidebarName(license: LicenseDashboardLicense, values: LicenseContent["values"]) {
     const planName = formatLicenseDisplayValue(license.plan, "plan", values)
     if (license.deploymentType === "self_hosted") return planName
@@ -160,7 +160,6 @@ function getLicenseContextMenu(license: LicenseDashboardLicense, content: Licens
     const editPath = `${createLicensePath(locale, license.customerId, license.id)}/edit`
     const sectionLabels = getLicenseEditSectionLabels(content)
     const sectionIcons = { general: IconKey, payment: IconCreditCard, upgrade: IconTrendingUp } satisfies Record<LicenseEditSection, typeof IconKey>
-    // Without a subscription the edit dialog only offers the general section.
     const sections: readonly LicenseEditSection[] = license.subscriptionId ? LICENSE_EDIT_SECTIONS : ["general"]
 
     return {
@@ -271,9 +270,14 @@ export function LicenseSidebar({ content, isLoading, isLoggingOut, locale, licen
 
             <aside className="hidden min-h-0 flex-col bg-transparent pr-4 lg:flex lg:h-full">
                 <div className="flex min-h-0 flex-1 flex-col pt-2">
-                    <Text hierarchy="tertiary" className="text-xs! font-medium! tracking-[0.5px] ml-2 mb-3">
-                        {content.licenses}
-                    </Text>
+                    <div className="mb-1 ml-2 flex items-center gap-1.5">
+                        <Text hierarchy="tertiary" className="text-xs! font-medium! tracking-[0.5px]">
+                            {content.licenses}
+                        </Text>
+                        <StableBadge color="secondary" className="ml-auto rounded-full! tabular-nums text-[10px]! h-4.5!">
+                            {licenses.length}
+                        </StableBadge>
+                    </div>
 
                     <ScrollArea type="auto" className="min-h-0 flex-1">
                         <ScrollAreaViewport className="h-full pr-2">
@@ -331,7 +335,7 @@ export function LicenseSidebar({ content, isLoading, isLoggingOut, locale, licen
                         </ScrollAreaScrollbar>
                     </ScrollArea>
                 </div>
-                <div className="mt-6 flex shrink-0 flex-col gap-2">
+                <div className="mt-6 flex shrink-0 flex-col gap-3">
                     {activeLicense ? <LicenseBackToCustomerButton label={content.sidebar.backToCustomerLabel} license={activeLicense} locale={locale} /> : null}
                     {activeLicense ? <LicenseUpgradeButton content={content} license={activeLicense} locale={locale} /> : null}
                     {contextMenu ? <LicenseContextMenu {...contextMenu} /> : null}

@@ -80,24 +80,27 @@ export function LicensePrimarySidebar({ content, isLoggingOut, onLogout, onOpenM
                         </Button>
                     </MenuTrigger>
                     <MenuPortal>
-                        <MenuContent align="start" side="right" sideOffset={8}>
-                            <MenuLabel>{labels.userMenu}</MenuLabel>
-                            <MenuItem onSelect={() => onOpenMainApplication("/users/@me")}>
+                        <MenuContent align="start" side="right" sideOffset={8} className="w-44! p-0!">
+                            <MenuLabel className="px-1.5! pb-0.5! text-[9px]! font-medium! uppercase">{labels.userMenu}</MenuLabel>
+                            <MenuItem onSelect={() => onOpenMainApplication("/users/@me")} className="whitespace-nowrap text-xs!">
                                 <IconUser aria-hidden="true" size={16} />
                                 {labels.profile}
                             </MenuItem>
-                            <MenuItem onSelect={() => onOpenMainApplication("/users/@me/settings")}>
-                                <IconSettingsFilled aria-hidden="true" size={16} />
+                            <MenuItem onSelect={() => onOpenMainApplication("/users/@me/settings")} className="pl-8! whitespace-nowrap text-xs!">
                                 {labels.settings}
                             </MenuItem>
                             <MenuSeparator />
-                            <MenuItem onSelect={() => onOpenMainApplication("/")}>
+                            <MenuItem onSelect={() => onOpenMainApplication("/")} className="whitespace-nowrap text-xs!">
                                 <IconApps aria-hidden="true" size={16} />
                                 {labels.workspaces}
+                            </MenuItem>
+                            <MenuItem onSelect={() => onOpenMainApplication("/")} className="pl-8! whitespace-nowrap text-xs!">
+                                Personal Workspace
                             </MenuItem>
                             <MenuSeparator />
                             <MenuItem
                                 disabled={isLoggingOut}
+                                className="whitespace-nowrap text-xs!"
                                 onSelect={(event) => {
                                     // Keep the menu open so the loader stays visible until the redirect.
                                     event.preventDefault()
