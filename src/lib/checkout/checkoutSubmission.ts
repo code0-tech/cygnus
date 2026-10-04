@@ -1,6 +1,6 @@
 import { checkoutFetch } from "@/lib/checkout/checkoutClient"
 import type { StripeCheckoutContact } from "@stripe/stripe-js"
-import type { CraterCustomerType } from "@/lib/checkout/craterCustomer"
+import type { CraterCustomerType } from "@/lib/crater/values"
 import type { AppLocale } from "@/lib/i18n"
 
 type CheckoutErrorBody = { details?: unknown; error?: unknown; errorCode?: unknown }

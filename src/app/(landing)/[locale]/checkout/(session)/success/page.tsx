@@ -1,6 +1,6 @@
 import { CheckoutLegalFooter } from "@/components/checkout/CheckoutLegalFooter"
 import { CheckoutSuccessStatus } from "@/components/checkout/CheckoutSuccessStatus"
-import { parseCheckoutSessionId } from "@/lib/checkout/craterCheckout"
+import { parseCheckoutSessionId } from "@/lib/crater/values"
 import { getCheckoutContent, getErrorsContent, getFooter, getLicenseContent, getSubscriptionConfig } from "@/lib/cms"
 import { isSupportedLocale } from "@/lib/i18n"
 import type { Metadata } from "next"

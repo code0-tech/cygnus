@@ -10,7 +10,7 @@ import {
     requireCraterSession,
     type JsonObject,
 } from "@/lib/checkout/craterApi"
-import { toCraterPaymentPeriod, toCraterPlan } from "@/lib/checkout/craterCheckout"
+import { toCraterPaymentPeriod, toCraterPlan } from "@/lib/crater/values"
 import { resolveSubscriptionSelection } from "@/lib/subscription/configurator"
 import { resolveSiteUrl } from "@/lib/siteConfig"
 import { DEFAULT_LOCALE, isSupportedLocale } from "@/lib/i18n"
