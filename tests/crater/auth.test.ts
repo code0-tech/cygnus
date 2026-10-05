@@ -315,6 +315,45 @@ test("server-side login callback exchanges Sagittarius for an HttpOnly Crater co
     }
 })
 
+test("server-side login callback preserves the selected namespace for cloud checkout", async () => {
+    const graphQLServer = await createGraphQLTestServer([
+        {
+            data: {
+                usersLogin: {
+                    errors: [],
+                    userSession: {
+                        active: true,
+                        createdAt: "2026-08-15T10:00:00Z",
+                        id: "gid://crater/UserSession/1",
+                        token: "crater-callback-session",
+                        updatedAt: "2026-08-15T10:00:00Z",
+                    },
+                },
+            },
+        },
+    ])
+    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
+    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
+
+    try {
+        const returnPath = "/de/checkout?plan=pro&deploymentType=cloud"
+        const namespace = "gid://sagittarius/Namespace/9"
+        const response = await completeCraterLogin(
+            new Request(`https://code0.example/api/crater/auth/callback?returnPath=${encodeURIComponent(returnPath)}&namespace=${encodeURIComponent(namespace)}&token=sagittarius-secret`)
+        )
+
+        assert.equal(response.status, 307)
+        const location = new URL(response.headers.get("location") ?? "")
+        assert.equal(location.pathname, "/de/checkout")
+        assert.equal(location.searchParams.get("namespace"), namespace)
+        assert.equal(location.searchParams.get("token"), null)
+    } finally {
+        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
+        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
+        await graphQLServer.close()
+    }
+})
+
 
 test("server-side login callback logs why Crater rejected the login without leaking it to the user", async () => {
     const graphQLServer = await createGraphQLTestServer([
