@@ -73,14 +73,92 @@ import * as migration_20260727_210000_small_pricing_block from './20260727_21000
 import * as migration_20260727_220000_repair_actions_tags from './20260727_220000_repair_actions_tags';
 import * as migration_20260728_131500_bento_content_remove_features from './20260728_131500_bento_content_remove_features';
 import * as migration_20260728_140000_compare_application_block from './20260728_140000_compare_application_block';
+import * as migration_20260728_165042_checkout_licenses_globals from './20260728_165042_checkout_licenses_globals';
+import * as migration_20260728_191952_checkout_defaults from './20260728_191952_checkout_defaults';
+import * as migration_20260728_193456_checkout_summary_icons from './20260728_193456_checkout_summary_icons';
+import * as migration_20260728_194234_checkout_summary_ai_tokens from './20260728_194234_checkout_summary_ai_tokens';
+import * as migration_20260728_195348_checkout_summary_plan from './20260728_195348_checkout_summary_plan';
+import * as migration_20260729_025329_subscription_option_descriptions from './20260729_025329_subscription_option_descriptions';
+import * as migration_20260729_100227_checkout_discount_tax_labels from './20260729_100227_checkout_discount_tax_labels';
+import * as migration_20260729_105759_checkout_discount_form_labels from './20260729_105759_checkout_discount_form_labels';
 import * as migration_20260729_112540_pricing_popular_pill from './20260729_112540_pricing_popular_pill';
 import * as migration_20260729_113121_pricing_popular_pill_color from './20260729_113121_pricing_popular_pill_color';
 import * as migration_20260729_114646_pricing_whats_included_text from './20260729_114646_pricing_whats_included_text';
 import * as migration_20260729_115704_pricing_card_title_color from './20260729_115704_pricing_card_title_color';
 import * as migration_20260729_120627_pricing_highlighted_card_color from './20260729_120627_pricing_highlighted_card_color';
+import * as migration_20260729_132535_subscription_default_deployment_self_hosted from './20260729_132535_subscription_default_deployment_self_hosted';
+import * as migration_20260729_134832_checkout_customer_form from './20260729_134832_checkout_customer_form';
+import * as migration_20260729_160138_checkout_period_discount_labels from './20260729_160138_checkout_period_discount_labels';
+import * as migration_20260730_093447_checkout_country_label from './20260730_093447_checkout_country_label';
+import * as migration_20260730_161006_checkout_country_empty_label from './20260730_161006_checkout_country_empty_label';
+import * as migration_20260730_162523_checkout_discount_toggle_labels from './20260730_162523_checkout_discount_toggle_labels';
+import * as migration_20260731_112410_subscription_configurator_plan_options from './20260731_112410_subscription_configurator_plan_options';
+import * as migration_20260731_113312_subscription_configurator_wizard_navigation from './20260731_113312_subscription_configurator_wizard_navigation';
+import * as migration_20260731_120926_remove_subscription_configurator_features_buttons from './20260731_120926_remove_subscription_configurator_features_buttons';
+import * as migration_20260731_125552_subscription_configurator_payment_period_colors from './20260731_125552_subscription_configurator_payment_period_colors';
+import * as migration_20260731_183338_checkout_stepper_labels from './20260731_183338_checkout_stepper_labels';
+import * as migration_20260731_191239_checkout_summary_configuration_label from './20260731_191239_checkout_summary_configuration_label';
+import * as migration_20260801_063501_subscription_configurator_weekly_payment_period from './20260801_063501_subscription_configurator_weekly_payment_period';
+import * as migration_20260801_070112_subscription_configurator_usage_range_defaults from './20260801_070112_subscription_configurator_usage_range_defaults';
+import * as migration_20260801_191302_subscription_option_category_titles from './20260801_191302_subscription_option_category_titles';
+import * as migration_20260801_193034_remove_legacy_subscription_configurator_fields from './20260801_193034_remove_legacy_subscription_configurator_fields';
+import * as migration_20260802_060057_subscription_option_images from './20260802_060057_subscription_option_images';
+import * as migration_20260802_143935_subscription_configurator_category_descriptions from './20260802_143935_subscription_configurator_category_descriptions';
+import * as migration_20260802_190201_subscription_configurator_paid_labels from './20260802_190201_subscription_configurator_paid_labels';
+import * as migration_20260802_200739_subscription_configurator_weekly_price_factors from './20260802_200739_subscription_configurator_weekly_price_factors';
+import * as migration_20260804_194543_add_checkout_mobile_labels from './20260804_194543_add_checkout_mobile_labels';
+import * as migration_20260805_031008_checkout_login_page from './20260805_031008_checkout_login_page';
+import * as migration_20260805_035510_remove_checkout_login_eyebrow from './20260805_035510_remove_checkout_login_eyebrow';
+import * as migration_20260806_094637_split_checkout_login_sections from './20260806_094637_split_checkout_login_sections';
 import * as migration_20260806_122846_action_list_load_more_label from './20260806_122846_action_list_load_more_label';
+import * as migration_20260811_145502_checkout_error_messages from './20260811_145502_checkout_error_messages';
+import * as migration_20260812_085100_licenses_content_fields from './20260812_085100_licenses_content_fields';
+import * as migration_20260812_090020_license_dashboard_tables from './20260812_090020_license_dashboard_tables';
+import * as migration_20260812_101434_licenses_redirect_url from './20260812_101434_licenses_redirect_url';
+import * as migration_20260812_102600_checkout_success_license_dashboard_button from './20260812_102600_checkout_success_license_dashboard_button';
+import * as migration_20260812_110910_license_customer_edit_label from './20260812_110910_license_customer_edit_label';
+import * as migration_20260812_111357_license_detail_labels from './20260812_111357_license_detail_labels';
+import * as migration_20260812_112328_license_edit_dialogs from './20260812_112328_license_edit_dialogs';
+import * as migration_20260812_132026_checkout_customer_selection from './20260812_132026_checkout_customer_selection';
+import * as migration_20260813_054459_remove_unused_license_fields from './20260813_054459_remove_unused_license_fields';
+import * as migration_20260813_070321_license_dashboard_type_columns from './20260813_070321_license_dashboard_type_columns';
+import * as migration_20260813_070833_license_entitlement_labels from './20260813_070833_license_entitlement_labels';
+import * as migration_20260813_072557_license_sidebar_dashboard from './20260813_072557_license_sidebar_dashboard';
+import * as migration_20260813_092031_checkout_success_license_status from './20260813_092031_checkout_success_license_status';
+import * as migration_20260813_094509_license_cms_errors_and_value_labels from './20260813_094509_license_cms_errors_and_value_labels';
+import * as migration_20260813_095911_license_dashboard_refresh_labels from './20260813_095911_license_dashboard_refresh_labels';
+import * as migration_20260814_113937_license_invoice_history from './20260814_113937_license_invoice_history';
+import * as migration_20260814_133037_license_customer_billing_fields from './20260814_133037_license_customer_billing_fields';
+import * as migration_20260817_091125_add_plan_colors from './20260817_091125_add_plan_colors';
+import * as migration_20260817_124334_remove_subscription_prices from './20260817_124334_remove_subscription_prices';
+import * as migration_20260818_063753_upgrade_checkout_banner from './20260818_063753_upgrade_checkout_banner';
+import * as migration_20260818_065236_checkout_next_steps from './20260818_065236_checkout_next_steps';
+import * as migration_20260818_101759_checkout_send_offer_label from './20260818_101759_checkout_send_offer_label';
+import * as migration_20260819_150000_license_billing_title_change_period from './20260819_150000_license_billing_title_change_period';
+import * as migration_20260820_041742_license_withdrawal_notice from './20260820_041742_license_withdrawal_notice';
+import * as migration_20260820_061154_add_subscription_plan_features from './20260820_061154_add_subscription_plan_features';
+import * as migration_20260821_052749_checkout_success_actions from './20260821_052749_checkout_success_actions';
+import * as migration_20260821_055835_checkout_send_offer_dialog from './20260821_055835_checkout_send_offer_dialog';
+import * as migration_20260821_065512_plan_upgrade_banner from './20260821_065512_plan_upgrade_banner';
+import * as migration_20260821_142512_remove_checkout_stepper from './20260821_142512_remove_checkout_stepper';
+import * as migration_20260821_152105_add_send_offer_prompt from './20260821_152105_add_send_offer_prompt';
+import * as migration_20260821_162845_remove_unused_subscription_checkout_license_fields from './20260821_162845_remove_unused_subscription_checkout_license_fields';
+import * as migration_20260824_105607_payment_methods_content from './20260824_105607_payment_methods_content';
+import * as migration_20260825_183644_consolidate_license_content_for_namespace_labels from './20260825_183644_consolidate_license_content_for_namespace_labels';
+import * as migration_20260827_114728_remove_weekly_payment_period from './20260827_114728_remove_weekly_payment_period';
 import * as migration_20260828_104452_add_playground_media_to_sections from './20260828_104452_add_playground_media_to_sections';
 import * as migration_20260903_110928_update_install_language_options from './20260903_110928_update_install_language_options';
+import * as migration_20260914_170441_payment_method_load_error from './20260914_170441_payment_method_load_error';
+import * as migration_20260917_153155_license_pending_status from './20260917_153155_license_pending_status';
+import * as migration_20260919_124842_checkout_guest_account_hint from './20260919_124842_checkout_guest_account_hint';
+import * as migration_20260920_112846_license_detail_descriptions from './20260920_112846_license_detail_descriptions';
+import * as migration_20260920_115610_license_editor_description from './20260920_115610_license_editor_description';
+import * as migration_20260920_121604_license_dashboard_descriptions from './20260920_121604_license_dashboard_descriptions';
+import * as migration_20261001_175006_license_dashboard_cms_labels from './20261001_175006_license_dashboard_cms_labels';
+import * as migration_20261002_181814_subscription_usage_packages from './20261002_181814_subscription_usage_packages';
+import * as migration_20261003_074356_subscription_dashboard from './20261003_074356_subscription_dashboard';
+import * as migration_20261003_081159_namespace_in_use_error from './20261003_081159_namespace_in_use_error';
+import * as migration_20261003_084939_cancellation_period_texts from './20261003_084939_cancellation_period_texts';
 
 export const migrations = [
   {
@@ -459,6 +537,46 @@ export const migrations = [
     name: '20260728_140000_compare_application_block',
   },
   {
+    up: migration_20260728_165042_checkout_licenses_globals.up,
+    down: migration_20260728_165042_checkout_licenses_globals.down,
+    name: '20260728_165042_checkout_licenses_globals',
+  },
+  {
+    up: migration_20260728_191952_checkout_defaults.up,
+    down: migration_20260728_191952_checkout_defaults.down,
+    name: '20260728_191952_checkout_defaults',
+  },
+  {
+    up: migration_20260728_193456_checkout_summary_icons.up,
+    down: migration_20260728_193456_checkout_summary_icons.down,
+    name: '20260728_193456_checkout_summary_icons',
+  },
+  {
+    up: migration_20260728_194234_checkout_summary_ai_tokens.up,
+    down: migration_20260728_194234_checkout_summary_ai_tokens.down,
+    name: '20260728_194234_checkout_summary_ai_tokens',
+  },
+  {
+    up: migration_20260728_195348_checkout_summary_plan.up,
+    down: migration_20260728_195348_checkout_summary_plan.down,
+    name: '20260728_195348_checkout_summary_plan',
+  },
+  {
+    up: migration_20260729_025329_subscription_option_descriptions.up,
+    down: migration_20260729_025329_subscription_option_descriptions.down,
+    name: '20260729_025329_subscription_option_descriptions',
+  },
+  {
+    up: migration_20260729_100227_checkout_discount_tax_labels.up,
+    down: migration_20260729_100227_checkout_discount_tax_labels.down,
+    name: '20260729_100227_checkout_discount_tax_labels',
+  },
+  {
+    up: migration_20260729_105759_checkout_discount_form_labels.up,
+    down: migration_20260729_105759_checkout_discount_form_labels.down,
+    name: '20260729_105759_checkout_discount_form_labels',
+  },
+  {
     up: migration_20260729_112540_pricing_popular_pill.up,
     down: migration_20260729_112540_pricing_popular_pill.down,
     name: '20260729_112540_pricing_popular_pill',
@@ -484,9 +602,304 @@ export const migrations = [
     name: '20260729_120627_pricing_highlighted_card_color',
   },
   {
+    up: migration_20260729_132535_subscription_default_deployment_self_hosted.up,
+    down: migration_20260729_132535_subscription_default_deployment_self_hosted.down,
+    name: '20260729_132535_subscription_default_deployment_self_hosted',
+  },
+  {
+    up: migration_20260729_134832_checkout_customer_form.up,
+    down: migration_20260729_134832_checkout_customer_form.down,
+    name: '20260729_134832_checkout_customer_form',
+  },
+  {
+    up: migration_20260729_160138_checkout_period_discount_labels.up,
+    down: migration_20260729_160138_checkout_period_discount_labels.down,
+    name: '20260729_160138_checkout_period_discount_labels',
+  },
+  {
+    up: migration_20260730_093447_checkout_country_label.up,
+    down: migration_20260730_093447_checkout_country_label.down,
+    name: '20260730_093447_checkout_country_label',
+  },
+  {
+    up: migration_20260730_161006_checkout_country_empty_label.up,
+    down: migration_20260730_161006_checkout_country_empty_label.down,
+    name: '20260730_161006_checkout_country_empty_label',
+  },
+  {
+    up: migration_20260730_162523_checkout_discount_toggle_labels.up,
+    down: migration_20260730_162523_checkout_discount_toggle_labels.down,
+    name: '20260730_162523_checkout_discount_toggle_labels',
+  },
+  {
+    up: migration_20260731_112410_subscription_configurator_plan_options.up,
+    down: migration_20260731_112410_subscription_configurator_plan_options.down,
+    name: '20260731_112410_subscription_configurator_plan_options',
+  },
+  {
+    up: migration_20260731_113312_subscription_configurator_wizard_navigation.up,
+    down: migration_20260731_113312_subscription_configurator_wizard_navigation.down,
+    name: '20260731_113312_subscription_configurator_wizard_navigation',
+  },
+  {
+    up: migration_20260731_120926_remove_subscription_configurator_features_buttons.up,
+    down: migration_20260731_120926_remove_subscription_configurator_features_buttons.down,
+    name: '20260731_120926_remove_subscription_configurator_features_buttons',
+  },
+  {
+    up: migration_20260731_125552_subscription_configurator_payment_period_colors.up,
+    down: migration_20260731_125552_subscription_configurator_payment_period_colors.down,
+    name: '20260731_125552_subscription_configurator_payment_period_colors',
+  },
+  {
+    up: migration_20260731_183338_checkout_stepper_labels.up,
+    down: migration_20260731_183338_checkout_stepper_labels.down,
+    name: '20260731_183338_checkout_stepper_labels',
+  },
+  {
+    up: migration_20260731_191239_checkout_summary_configuration_label.up,
+    down: migration_20260731_191239_checkout_summary_configuration_label.down,
+    name: '20260731_191239_checkout_summary_configuration_label',
+  },
+  {
+    up: migration_20260801_063501_subscription_configurator_weekly_payment_period.up,
+    down: migration_20260801_063501_subscription_configurator_weekly_payment_period.down,
+    name: '20260801_063501_subscription_configurator_weekly_payment_period',
+  },
+  {
+    up: migration_20260801_070112_subscription_configurator_usage_range_defaults.up,
+    down: migration_20260801_070112_subscription_configurator_usage_range_defaults.down,
+    name: '20260801_070112_subscription_configurator_usage_range_defaults',
+  },
+  {
+    up: migration_20260801_191302_subscription_option_category_titles.up,
+    down: migration_20260801_191302_subscription_option_category_titles.down,
+    name: '20260801_191302_subscription_option_category_titles',
+  },
+  {
+    up: migration_20260801_193034_remove_legacy_subscription_configurator_fields.up,
+    down: migration_20260801_193034_remove_legacy_subscription_configurator_fields.down,
+    name: '20260801_193034_remove_legacy_subscription_configurator_fields',
+  },
+  {
+    up: migration_20260802_060057_subscription_option_images.up,
+    down: migration_20260802_060057_subscription_option_images.down,
+    name: '20260802_060057_subscription_option_images',
+  },
+  {
+    up: migration_20260802_143935_subscription_configurator_category_descriptions.up,
+    down: migration_20260802_143935_subscription_configurator_category_descriptions.down,
+    name: '20260802_143935_subscription_configurator_category_descriptions',
+  },
+  {
+    up: migration_20260802_190201_subscription_configurator_paid_labels.up,
+    down: migration_20260802_190201_subscription_configurator_paid_labels.down,
+    name: '20260802_190201_subscription_configurator_paid_labels',
+  },
+  {
+    up: migration_20260802_200739_subscription_configurator_weekly_price_factors.up,
+    down: migration_20260802_200739_subscription_configurator_weekly_price_factors.down,
+    name: '20260802_200739_subscription_configurator_weekly_price_factors',
+  },
+  {
+    up: migration_20260804_194543_add_checkout_mobile_labels.up,
+    down: migration_20260804_194543_add_checkout_mobile_labels.down,
+    name: '20260804_194543_add_checkout_mobile_labels',
+  },
+  {
+    up: migration_20260805_031008_checkout_login_page.up,
+    down: migration_20260805_031008_checkout_login_page.down,
+    name: '20260805_031008_checkout_login_page',
+  },
+  {
+    up: migration_20260805_035510_remove_checkout_login_eyebrow.up,
+    down: migration_20260805_035510_remove_checkout_login_eyebrow.down,
+    name: '20260805_035510_remove_checkout_login_eyebrow',
+  },
+  {
+    up: migration_20260806_094637_split_checkout_login_sections.up,
+    down: migration_20260806_094637_split_checkout_login_sections.down,
+    name: '20260806_094637_split_checkout_login_sections',
+  },
+  {
     up: migration_20260806_122846_action_list_load_more_label.up,
     down: migration_20260806_122846_action_list_load_more_label.down,
     name: '20260806_122846_action_list_load_more_label',
+  },
+  {
+    up: migration_20260811_145502_checkout_error_messages.up,
+    down: migration_20260811_145502_checkout_error_messages.down,
+    name: '20260811_145502_checkout_error_messages',
+  },
+  {
+    up: migration_20260812_085100_licenses_content_fields.up,
+    down: migration_20260812_085100_licenses_content_fields.down,
+    name: '20260812_085100_licenses_content_fields',
+  },
+  {
+    up: migration_20260812_090020_license_dashboard_tables.up,
+    down: migration_20260812_090020_license_dashboard_tables.down,
+    name: '20260812_090020_license_dashboard_tables',
+  },
+  {
+    up: migration_20260812_101434_licenses_redirect_url.up,
+    down: migration_20260812_101434_licenses_redirect_url.down,
+    name: '20260812_101434_licenses_redirect_url',
+  },
+  {
+    up: migration_20260812_102600_checkout_success_license_dashboard_button.up,
+    down: migration_20260812_102600_checkout_success_license_dashboard_button.down,
+    name: '20260812_102600_checkout_success_license_dashboard_button',
+  },
+  {
+    up: migration_20260812_110910_license_customer_edit_label.up,
+    down: migration_20260812_110910_license_customer_edit_label.down,
+    name: '20260812_110910_license_customer_edit_label',
+  },
+  {
+    up: migration_20260812_111357_license_detail_labels.up,
+    down: migration_20260812_111357_license_detail_labels.down,
+    name: '20260812_111357_license_detail_labels',
+  },
+  {
+    up: migration_20260812_112328_license_edit_dialogs.up,
+    down: migration_20260812_112328_license_edit_dialogs.down,
+    name: '20260812_112328_license_edit_dialogs',
+  },
+  {
+    up: migration_20260812_132026_checkout_customer_selection.up,
+    down: migration_20260812_132026_checkout_customer_selection.down,
+    name: '20260812_132026_checkout_customer_selection',
+  },
+  {
+    up: migration_20260813_054459_remove_unused_license_fields.up,
+    down: migration_20260813_054459_remove_unused_license_fields.down,
+    name: '20260813_054459_remove_unused_license_fields',
+  },
+  {
+    up: migration_20260813_070321_license_dashboard_type_columns.up,
+    down: migration_20260813_070321_license_dashboard_type_columns.down,
+    name: '20260813_070321_license_dashboard_type_columns',
+  },
+  {
+    up: migration_20260813_070833_license_entitlement_labels.up,
+    down: migration_20260813_070833_license_entitlement_labels.down,
+    name: '20260813_070833_license_entitlement_labels',
+  },
+  {
+    up: migration_20260813_072557_license_sidebar_dashboard.up,
+    down: migration_20260813_072557_license_sidebar_dashboard.down,
+    name: '20260813_072557_license_sidebar_dashboard',
+  },
+  {
+    up: migration_20260813_092031_checkout_success_license_status.up,
+    down: migration_20260813_092031_checkout_success_license_status.down,
+    name: '20260813_092031_checkout_success_license_status',
+  },
+  {
+    up: migration_20260813_094509_license_cms_errors_and_value_labels.up,
+    down: migration_20260813_094509_license_cms_errors_and_value_labels.down,
+    name: '20260813_094509_license_cms_errors_and_value_labels',
+  },
+  {
+    up: migration_20260813_095911_license_dashboard_refresh_labels.up,
+    down: migration_20260813_095911_license_dashboard_refresh_labels.down,
+    name: '20260813_095911_license_dashboard_refresh_labels',
+  },
+  {
+    up: migration_20260814_113937_license_invoice_history.up,
+    down: migration_20260814_113937_license_invoice_history.down,
+    name: '20260814_113937_license_invoice_history',
+  },
+  {
+    up: migration_20260814_133037_license_customer_billing_fields.up,
+    down: migration_20260814_133037_license_customer_billing_fields.down,
+    name: '20260814_133037_license_customer_billing_fields',
+  },
+  {
+    up: migration_20260817_091125_add_plan_colors.up,
+    down: migration_20260817_091125_add_plan_colors.down,
+    name: '20260817_091125_add_plan_colors',
+  },
+  {
+    up: migration_20260817_124334_remove_subscription_prices.up,
+    down: migration_20260817_124334_remove_subscription_prices.down,
+    name: '20260817_124334_remove_subscription_prices',
+  },
+  {
+    up: migration_20260818_063753_upgrade_checkout_banner.up,
+    down: migration_20260818_063753_upgrade_checkout_banner.down,
+    name: '20260818_063753_upgrade_checkout_banner',
+  },
+  {
+    up: migration_20260818_065236_checkout_next_steps.up,
+    down: migration_20260818_065236_checkout_next_steps.down,
+    name: '20260818_065236_checkout_next_steps',
+  },
+  {
+    up: migration_20260818_101759_checkout_send_offer_label.up,
+    down: migration_20260818_101759_checkout_send_offer_label.down,
+    name: '20260818_101759_checkout_send_offer_label',
+  },
+  {
+    up: migration_20260819_150000_license_billing_title_change_period.up,
+    down: migration_20260819_150000_license_billing_title_change_period.down,
+    name: '20260819_150000_license_billing_title_change_period',
+  },
+  {
+    up: migration_20260820_041742_license_withdrawal_notice.up,
+    down: migration_20260820_041742_license_withdrawal_notice.down,
+    name: '20260820_041742_license_withdrawal_notice',
+  },
+  {
+    up: migration_20260820_061154_add_subscription_plan_features.up,
+    down: migration_20260820_061154_add_subscription_plan_features.down,
+    name: '20260820_061154_add_subscription_plan_features',
+  },
+  {
+    up: migration_20260821_052749_checkout_success_actions.up,
+    down: migration_20260821_052749_checkout_success_actions.down,
+    name: '20260821_052749_checkout_success_actions',
+  },
+  {
+    up: migration_20260821_055835_checkout_send_offer_dialog.up,
+    down: migration_20260821_055835_checkout_send_offer_dialog.down,
+    name: '20260821_055835_checkout_send_offer_dialog',
+  },
+  {
+    up: migration_20260821_065512_plan_upgrade_banner.up,
+    down: migration_20260821_065512_plan_upgrade_banner.down,
+    name: '20260821_065512_plan_upgrade_banner',
+  },
+  {
+    up: migration_20260821_142512_remove_checkout_stepper.up,
+    down: migration_20260821_142512_remove_checkout_stepper.down,
+    name: '20260821_142512_remove_checkout_stepper',
+  },
+  {
+    up: migration_20260821_152105_add_send_offer_prompt.up,
+    down: migration_20260821_152105_add_send_offer_prompt.down,
+    name: '20260821_152105_add_send_offer_prompt',
+  },
+  {
+    up: migration_20260821_162845_remove_unused_subscription_checkout_license_fields.up,
+    down: migration_20260821_162845_remove_unused_subscription_checkout_license_fields.down,
+    name: '20260821_162845_remove_unused_subscription_checkout_license_fields',
+  },
+  {
+    up: migration_20260824_105607_payment_methods_content.up,
+    down: migration_20260824_105607_payment_methods_content.down,
+    name: '20260824_105607_payment_methods_content',
+  },
+  {
+    up: migration_20260825_183644_consolidate_license_content_for_namespace_labels.up,
+    down: migration_20260825_183644_consolidate_license_content_for_namespace_labels.down,
+    name: '20260825_183644_consolidate_license_content_for_namespace_labels',
+  },
+  {
+    up: migration_20260827_114728_remove_weekly_payment_period.up,
+    down: migration_20260827_114728_remove_weekly_payment_period.down,
+    name: '20260827_114728_remove_weekly_payment_period',
   },
   {
     up: migration_20260828_104452_add_playground_media_to_sections.up,
@@ -496,6 +909,61 @@ export const migrations = [
   {
     up: migration_20260903_110928_update_install_language_options.up,
     down: migration_20260903_110928_update_install_language_options.down,
-    name: '20260903_110928_update_install_language_options'
+    name: '20260903_110928_update_install_language_options',
+  },
+  {
+    up: migration_20260914_170441_payment_method_load_error.up,
+    down: migration_20260914_170441_payment_method_load_error.down,
+    name: '20260914_170441_payment_method_load_error',
+  },
+  {
+    up: migration_20260917_153155_license_pending_status.up,
+    down: migration_20260917_153155_license_pending_status.down,
+    name: '20260917_153155_license_pending_status',
+  },
+  {
+    up: migration_20260919_124842_checkout_guest_account_hint.up,
+    down: migration_20260919_124842_checkout_guest_account_hint.down,
+    name: '20260919_124842_checkout_guest_account_hint',
+  },
+  {
+    up: migration_20260920_112846_license_detail_descriptions.up,
+    down: migration_20260920_112846_license_detail_descriptions.down,
+    name: '20260920_112846_license_detail_descriptions',
+  },
+  {
+    up: migration_20260920_115610_license_editor_description.up,
+    down: migration_20260920_115610_license_editor_description.down,
+    name: '20260920_115610_license_editor_description',
+  },
+  {
+    up: migration_20260920_121604_license_dashboard_descriptions.up,
+    down: migration_20260920_121604_license_dashboard_descriptions.down,
+    name: '20260920_121604_license_dashboard_descriptions',
+  },
+  {
+    up: migration_20261001_175006_license_dashboard_cms_labels.up,
+    down: migration_20261001_175006_license_dashboard_cms_labels.down,
+    name: '20261001_175006_license_dashboard_cms_labels',
+  },
+  {
+    up: migration_20261002_181814_subscription_usage_packages.up,
+    down: migration_20261002_181814_subscription_usage_packages.down,
+    name: '20261002_181814_subscription_usage_packages',
+  },
+  {
+    up: migration_20261003_074356_subscription_dashboard.up,
+    down: migration_20261003_074356_subscription_dashboard.down,
+    name: '20261003_074356_subscription_dashboard',
+  },
+  {
+    up: migration_20261003_081159_namespace_in_use_error.up,
+    down: migration_20261003_081159_namespace_in_use_error.down,
+    name: '20261003_081159_namespace_in_use_error',
+  },
+  {
+    up: migration_20261003_084939_cancellation_period_texts.up,
+    down: migration_20261003_084939_cancellation_period_texts.down,
+    name: '20261003_084939_cancellation_period_texts',
   },
 ];

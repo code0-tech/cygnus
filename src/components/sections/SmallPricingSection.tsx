@@ -1,5 +1,6 @@
 "use client"
 
+import type { PaymentPeriod } from "@/lib/subscription/types"
 import { StaggerContainer, StaggerItem } from "@/components/animations/Stagger"
 import { Card } from "@/components/ui/Card"
 import { HapticButtonLink } from "@/components/ui/HapticButtonLink"
@@ -7,62 +8,69 @@ import { Section } from "@/components/ui/Section"
 import { StableBadge } from "@/components/ui/StableBadge"
 import type { SmallPricingLayoutBlock, SubscriptionConfigData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
+import { formatDiscountBadge, resolveCheckoutPricing } from "@/lib/subscription/calculator"
+import { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
 import { cn } from "@/lib/utils"
 import NumberFlow from "@number-flow/react"
 import { IconCheck, IconX } from "@tabler/icons-react"
 
-type PackageContent = NonNullable<SmallPricingLayoutBlock["pro"]>
-
 interface SmallPricingSectionProps {
     content?: SmallPricingLayoutBlock | null
     locale: AppLocale
-    packages: SubscriptionConfigData["packages"]
-    paymentPeriod: SubscriptionConfigData["paymentPeriod"]
+    subscriptionConfig: SubscriptionConfigData
+    subscriptionPrices: SubscriptionPriceCatalog
 }
 
-export function SmallPricingSection({ content, locale, packages, paymentPeriod }: SmallPricingSectionProps) {
-    if (!content) return null
-
+export function SmallPricingSection({ content, locale, subscriptionConfig, subscriptionPrices }: SmallPricingSectionProps) {
+    if (!content || !subscriptionConfig || !subscriptionPrices) return null
     const selectedPeriod = content.pricingPeriod
-    const periodMonths = selectedPeriod === "quarterly" ? 3 : selectedPeriod === "yearly" ? 12 : 1
+
+    const getPricingForPeriod = (plan: "pro" | "max", period: PaymentPeriod) =>
+        resolveCheckoutPricing({
+            aiTokensParam: null,
+            customerTypeParam: "b2c",
+            fallbackPeriodSuffix: subscriptionConfig.paymentPeriod.monthlyPeriodSuffix,
+            paymentPeriodParam: period,
+            planParam: plan,
+            subscriptionConfig,
+            subscriptionPrices,
+            workflowExecutionsParam: null,
+        })
+
     const periodSuffix = {
-        monthly: paymentPeriod.monthlyPeriodSuffix,
-        quarterly: paymentPeriod.quarterlyPeriodSuffix,
-        yearly: paymentPeriod.yearlyPeriodSuffix,
+        monthly: subscriptionConfig.paymentPeriod.monthlyPeriodSuffix,
+        quarterly: subscriptionConfig.paymentPeriod.quarterlyPeriodSuffix,
+        yearly: subscriptionConfig.paymentPeriod.yearlyPeriodSuffix,
     }[selectedPeriod]
+
+    const proPricing = getPricingForPeriod("pro", selectedPeriod)
+    const maxPricing = getPricingForPeriod("max", selectedPeriod)
     const pricingPackages = [
         {
             key: "pro",
-            title: packages.pro.title || "Pro",
-            description: packages.pro.description,
-            price: packages.pro.prices[selectedPeriod],
-            monthlyPrice: packages.pro.prices.monthly,
+            title: subscriptionConfig.packages.pro.title || "Pro",
+            description: subscriptionConfig.packages.pro.description,
+            price: proPricing.pricing.totalPrice,
+            pricing: proPricing.pricing,
             content: content.pro,
         },
         {
             key: "max",
-            title: packages.max.title || "Max",
-            description: packages.max.description,
-            price: packages.max.prices[selectedPeriod],
-            monthlyPrice: packages.max.prices.monthly,
+            title: subscriptionConfig.packages.max.title || "Max",
+            description: subscriptionConfig.packages.max.description,
+            price: maxPricing.pricing.totalPrice,
+            pricing: maxPricing.pricing,
             content: content.max,
         },
         {
             key: "custom",
-            title: packages.custom.title || "Custom",
-            description: packages.custom.description,
+            title: subscriptionConfig.packages.custom.title || "Custom",
+            description: subscriptionConfig.packages.custom.description,
             price: null,
-            monthlyPrice: null,
+            pricing: null,
             content: content.custom,
         },
-    ] satisfies {
-        key: "pro" | "max" | "custom"
-        title: string
-        description: string
-        price: number | null
-        monthlyPrice: number | null
-        content?: PackageContent
-    }[]
+    ]
 
     return (
         <Section
@@ -82,8 +90,8 @@ export function SmallPricingSection({ content, locale, packages, paymentPeriod }
                         const buttonUrl = pricingPackage.content?.button?.url?.trim()
                         const highlighted = pricingPackage.key === "max"
                         const discount =
-                            selectedPeriod !== "monthly" && pricingPackage.price !== null && pricingPackage.monthlyPrice !== null && pricingPackage.monthlyPrice > 0
-                                ? Math.max(0, Math.round((1 - pricingPackage.price / (pricingPackage.monthlyPrice * periodMonths)) * 100))
+                            pricingPackage.pricing && pricingPackage.pricing.totalBeforeDiscount > 0
+                                ? Math.max(0, (pricingPackage.pricing.totalBeforeDiscount - pricingPackage.pricing.totalPrice) / pricingPackage.pricing.totalBeforeDiscount)
                                 : 0
 
                         return (
@@ -97,8 +105,8 @@ export function SmallPricingSection({ content, locale, packages, paymentPeriod }
                                         {pricingPackage.description && <p className="text-sm leading-5 text-secondary">{pricingPackage.description}</p>}
                                     </div>
                                     {discount > 0 && (
-                                        <StableBadge border className="shrink-0 border-brand/25! bg-brand/15! px-2 py-1 text-xs font-semibold tracking-wider text-brand!">
-                                            -{discount}%
+                                        <StableBadge border className="border! border-brand/10! bg-brand/10! px-3 py-1 text-sm font-medium text-brand!">
+                                            <span className="inline-flex items-baseline gap-0">-{formatDiscountBadge(discount, locale)}</span>
                                         </StableBadge>
                                     )}
                                 </div>

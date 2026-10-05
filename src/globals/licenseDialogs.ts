@@ -1,0 +1,233 @@
+import type { DefaultValue, GlobalConfig } from "payload"
+
+const localizedDefault =
+    (en: string, de: string): DefaultValue =>
+    ({ locale }) =>
+        locale === "de" ? de : en
+
+// Split from the Licenses global: Payload reads all localized fields of a global through one json_build_array call,
+// and Postgres caps function calls at 100 arguments. getLicenseContent merges both globals back into LicenseContent.
+export const LicenseDialogs: GlobalConfig = {
+    slug: "license-dialogs",
+    label: "License Dialogs",
+    access: {
+        read: () => true,
+        update: ({ req }) => Boolean(req.user),
+    },
+    fields: [
+        {
+            name: "editor",
+            type: "group",
+            fields: [
+                { name: "customerTitle", type: "text", required: true, localized: true, defaultValue: localizedDefault("Edit customer", "Kunden bearbeiten") },
+                {
+                    name: "customerDescription",
+                    type: "textarea",
+                    required: true,
+                    localized: true,
+                    defaultValue: localizedDefault("Update the customer's contact and default billing details.", "Aktualisiere die Kontakt- und Standard-Rechnungsdaten des Kunden."),
+                },
+                { name: "contactHeading", type: "text", required: true, localized: true, defaultValue: localizedDefault("Contact information", "Kontaktinformationen") },
+                { name: "paymentMethodHeading", type: "text", required: true, localized: true, defaultValue: localizedDefault("Default payment method", "Standard-Zahlungsmethode") },
+                {
+                    name: "paymentMethodDescription",
+                    type: "textarea",
+                    required: true,
+                    localized: true,
+                    defaultValue: localizedDefault(
+                        "Manage the payment method used for future invoices securely through Stripe.",
+                        "Verwalte die Zahlungsmethode für zukünftige Rechnungen sicher über Stripe."
+                    ),
+                },
+                { name: "loadingPaymentMethodLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Loading payment form…", "Zahlungsformular wird geladen …") },
+                { name: "savePaymentMethodLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Save payment method", "Zahlungsmethode speichern") },
+                { name: "savingPaymentMethodLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Saving payment method…", "Zahlungsmethode wird gespeichert …") },
+                {
+                    name: "paymentMethodSuccess",
+                    type: "text",
+                    required: true,
+                    localized: true,
+                    defaultValue: localizedDefault("The payment method is now the default for future invoices.", "Die Zahlungsmethode ist jetzt der Standard für zukünftige Rechnungen."),
+                },
+                { name: "noPaymentMethodsLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("No payment methods yet", "Noch keine Zahlungsmethoden") },
+                { name: "addPaymentMethodLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Add payment method", "Zahlungsmethode hinzufügen") },
+                { name: "removePaymentMethodLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Remove", "Entfernen") },
+                { name: "removingPaymentMethodLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Removing…", "Wird entfernt …") },
+                {
+                    name: "otherPaymentMethodsHeading",
+                    type: "text",
+                    required: true,
+                    localized: true,
+                    defaultValue: localizedDefault("Other payment methods", "Weitere Zahlungsmethoden"),
+                },
+                { name: "usePaymentMethodLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Use this", "Diese verwenden") },
+                { name: "settingPaymentMethodLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Assigning…", "Wird zugewiesen …") },
+                { name: "licenseTitle", type: "text", required: true, localized: true, defaultValue: localizedDefault("Edit license", "Lizenz bearbeiten") },
+                {
+                    name: "licenseEditDescription",
+                    type: "textarea",
+                    required: true,
+                    localized: true,
+                    defaultValue: localizedDefault("Manage the license, payment method, and billing period.", "Verwalte die Lizenz, Zahlungsmethode und den Abrechnungszeitraum."),
+                },
+                {
+                    name: "licenseDescription",
+                    type: "textarea",
+                    required: true,
+                    localized: true,
+                    defaultValue: localizedDefault("Link this cloud license to a namespace.", "Verknüpfe diese Cloud-Lizenz mit einem Namespace."),
+                },
+                { name: "changeNamespaceLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Change namespace", "Namespace ändern") },
+                { name: "saveLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Save", "Speichern") },
+                { name: "closeLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Close", "Schließen") },
+                { name: "generalTabLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("General", "Allgemein") },
+                { name: "paymentMethodsTabLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Payment methods", "Zahlungsmethoden") },
+                { name: "paymentMethodTabLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Payment method", "Zahlungsmethode") },
+                { name: "namespaceHeading", type: "text", required: true, localized: true, defaultValue: localizedDefault("Namespace", "Namespace") },
+                { name: "cancellationHeading", type: "text", required: true, localized: true, defaultValue: localizedDefault("Cancellation", "Kündigung") },
+                {
+                    name: "fieldDescriptions",
+                    type: "group",
+                    admin: { description: "Descriptions shown below the inputs of the customer edit dialog." },
+                    fields: [
+                        {
+                            name: "name",
+                            type: "text",
+                            required: true,
+                            localized: true,
+                            defaultValue: localizedDefault("Name of the person or company invoices are addressed to.", "Name der Person oder Firma, an die Rechnungen adressiert werden."),
+                        },
+                        {
+                            name: "email",
+                            type: "text",
+                            required: true,
+                            localized: true,
+                            defaultValue: localizedDefault("Invoice emails are sent to this address.", "Rechnungs-E-Mails werden an diese Adresse gesendet."),
+                        },
+                        {
+                            name: "phone",
+                            type: "text",
+                            required: true,
+                            localized: true,
+                            defaultValue: localizedDefault("Optional phone number for billing questions.", "Optionale Telefonnummer für Rückfragen zur Abrechnung."),
+                        },
+                        { name: "line1", type: "text", required: true, localized: true, defaultValue: localizedDefault("Street and house number.", "Straße und Hausnummer.") },
+                        {
+                            name: "line2",
+                            type: "text",
+                            required: true,
+                            localized: true,
+                            defaultValue: localizedDefault("Additional address details such as floor, suite or c/o.", "Adresszusatz wie Etage, Wohnung oder c/o."),
+                        },
+                        {
+                            name: "postalCode",
+                            type: "text",
+                            required: true,
+                            localized: true,
+                            defaultValue: localizedDefault("Postal code of the billing address.", "Postleitzahl der Rechnungsadresse."),
+                        },
+                        { name: "city", type: "text", required: true, localized: true, defaultValue: localizedDefault("City of the billing address.", "Ort der Rechnungsadresse.") },
+                        {
+                            name: "state",
+                            type: "text",
+                            required: true,
+                            localized: true,
+                            defaultValue: localizedDefault("State, province or region, if applicable.", "Bundesland, Provinz oder Region, falls zutreffend."),
+                        },
+                        {
+                            name: "country",
+                            type: "text",
+                            required: true,
+                            localized: true,
+                            defaultValue: localizedDefault("Two-letter ISO country code, e.g. DE.", "Zweistelliger ISO-Ländercode, z. B. DE."),
+                        },
+                    ],
+                },
+            ],
+        },
+        {
+            name: "subscriptionPreview",
+            label: "Subscription Change Preview",
+            type: "group",
+            admin: { description: "Shared between the billing and upgrade dialogs, both of which preview a change through subscriptionsPreviewUpdate before applying it." },
+            fields: [
+                { name: "totalLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("New total", "Neuer Gesamtbetrag") },
+                { name: "pendingChangeText", type: "text", required: true, localized: true, defaultValue: localizedDefault("Switch to {selection} on {date}.", "Wechsel auf {selection} am {date}."), admin: { description: "Use {selection} and {date} as placeholders." } },
+                { name: "prorationLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Charged today", "Heute berechnet") },
+                {
+                    name: "immediateNote",
+                    type: "text",
+                    required: true,
+                    localized: true,
+                    defaultValue: localizedDefault("This change applies immediately.", "Diese Änderung wird sofort wirksam."),
+                },
+                {
+                    name: "scheduledNote",
+                    type: "text",
+                    required: true,
+                    localized: true,
+                    defaultValue: localizedDefault("This change applies at the end of your current billing period.", "Diese Änderung wird am Ende der aktuellen Abrechnungsperiode wirksam."),
+                },
+                { name: "loadingLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Calculating…", "Wird berechnet …") },
+            ],
+        },
+        {
+            name: "billing",
+            type: "group",
+            fields: [
+                { name: "title", type: "text", required: true, localized: true, defaultValue: localizedDefault("Change Period", "Zahlungsperiode ändern") },
+                {
+                    name: "description",
+                    type: "textarea",
+                    required: true,
+                    localized: true,
+                    defaultValue: localizedDefault("Review your subscription and change how often you're billed.", "Sieh dir dein Abonnement an und ändere, wie oft du abgerechnet wirst."),
+                },
+                { name: "periodLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Billing period", "Abrechnungsintervall") },
+                { name: "currentPeriodEndLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Current period ends", "Aktuelle Periode endet") },
+                { name: "changePeriodLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Change period", "Zeitraum ändern") },
+            ],
+        },
+        {
+            name: "cancel",
+            type: "group",
+            fields: [
+                {
+                    name: "description",
+                    type: "textarea",
+                    required: true,
+                    localized: true,
+                    defaultValue: localizedDefault("Cancellation takes effect at the end of the current billing period. Existing licenses remain valid for the periods already paid for.", "Die Kündigung wird zum Ende der aktuellen Abrechnungsperiode wirksam. Bereits bezahlte Lizenzzeiträume bleiben gültig."),
+                },
+                { name: "confirmLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Cancel at period end", "Zum Periodenende kündigen") },
+                { name: "pendingHeading", type: "text", required: true, localized: true, defaultValue: localizedDefault("Your subscription is set to cancel", "Dein Abonnement wird gekündigt") },
+                {
+                    name: "pendingDescription",
+                    type: "textarea",
+                    required: true,
+                    localized: true,
+                    defaultValue: localizedDefault("The subscription ends on the date below. Existing licenses remain valid for the periods already paid for.", "Das Abonnement endet zum unten stehenden Datum. Bereits bezahlte Lizenzzeiträume bleiben gültig."),
+                },
+                { name: "cancelAtLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Subscription ends", "Abonnement endet") },
+                { name: "resumeLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Keep my subscription", "Abonnement behalten") },
+            ],
+        },
+        {
+            name: "upgrade",
+            type: "group",
+            fields: [
+                { name: "title", type: "text", required: true, localized: true, defaultValue: localizedDefault("Upgrade plan", "Plan upgraden") },
+                {
+                    name: "description",
+                    type: "textarea",
+                    required: true,
+                    localized: true,
+                    defaultValue: localizedDefault("Move to a higher plan or increase your custom usage.", "Wechsle auf einen höheren Plan oder erhöhe deine individuelle Nutzung."),
+                },
+                { name: "planHeading", type: "text", required: true, localized: true, defaultValue: localizedDefault("Plan", "Plan") },
+                { name: "previewHeading", type: "text", required: true, localized: true, defaultValue: localizedDefault("Preview", "Vorschau") },
+                { name: "submitLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Upgrade now", "Jetzt upgraden") },
+            ],
+        },
+    ],
+}

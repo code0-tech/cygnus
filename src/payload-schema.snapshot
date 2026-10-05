@@ -49,7 +49,6 @@ export const enum_pages_blocks_list_feature_section_layout = pgEnum('enum_pages_
 export const enum_pages_blocks_stats_section_layout = pgEnum('enum_pages_blocks_stats_section_layout', ['center', 'left'])
 export const enum_pages_blocks_flow_example_section_layout = pgEnum('enum_pages_blocks_flow_example_section_layout', ['center', 'left'])
 export const enum_pages_blocks_flow_example_flow_layout = pgEnum('enum_pages_blocks_flow_example_flow_layout', ['left', 'right'])
-export const enum_pages_blocks_subscription_configurator_buttons_variant = pgEnum('enum_pages_blocks_subscription_configurator_buttons_variant', ['none', 'normal', 'outlined', 'filled'])
 export const enum_pages_blocks_pricing_section_layout = pgEnum('enum_pages_blocks_pricing_section_layout', ['center', 'left'])
 export const enum_pages_blocks_pricing_popular_pill_color = pgEnum('enum_pages_blocks_pricing_popular_pill_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
 export const enum_pages_blocks_pricing_highlighted_card_color = pgEnum('enum_pages_blocks_pricing_highlighted_card_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
@@ -76,15 +75,22 @@ export const enum_payload_ai_auditlog_action = pgEnum('enum_payload_ai_auditlog_
 export const enum_payload_ai_auditlog_target_type = pgEnum('enum_payload_ai_auditlog_target_type', ['collection', 'global'])
 export const enum_navigation_buttons_buttons_variant = pgEnum('enum_navigation_buttons_buttons_variant', ['none', 'normal', 'outlined', 'filled'])
 export const enum_footer_social_links_platform = pgEnum('enum_footer_social_links_platform', ['instagram', 'discord', 'x', 'linkedin', 'github'])
-export const enum_subscription_config_defaults_deployment = pgEnum('enum_subscription_config_defaults_deployment', ['self-hosted', 'cloud'])
+export const enum_subscription_config_defaults_deployment = pgEnum('enum_subscription_config_defaults_deployment', ['self_hosted', 'cloud'])
 export const enum_subscription_config_defaults_customer_type = pgEnum('enum_subscription_config_defaults_customer_type', ['b2b', 'b2c'])
-export const enum_subscription_config_defaults_payment_period = pgEnum('enum_subscription_config_defaults_payment_period', ['monthly', 'quarterly', 'yearly'])
+export const enum_subscription_config_defaults_payment_period_b2b = pgEnum('enum_subscription_config_defaults_payment_period_b2b', ['monthly', 'quarterly', 'yearly'])
+export const enum_subscription_config_defaults_payment_period_b2c = pgEnum('enum_subscription_config_defaults_payment_period_b2c', ['monthly', 'quarterly', 'yearly'])
 export const enum_subscription_config_deployment_self_hosted_color = pgEnum('enum_subscription_config_deployment_self_hosted_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
 export const enum_subscription_config_deployment_cloud_color = pgEnum('enum_subscription_config_deployment_cloud_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
+export const enum_subscription_config_plan_pro_color = pgEnum('enum_subscription_config_plan_pro_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
+export const enum_subscription_config_plan_max_color = pgEnum('enum_subscription_config_plan_max_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
+export const enum_subscription_config_plan_custom_color = pgEnum('enum_subscription_config_plan_custom_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
 export const enum_subscription_config_customer_type_b2b_color = pgEnum('enum_subscription_config_customer_type_b2b_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
 export const enum_subscription_config_customer_type_b2c_color = pgEnum('enum_subscription_config_customer_type_b2c_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
-export const enum_subscription_config_subscription_tier_pro_color = pgEnum('enum_subscription_config_subscription_tier_pro_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
-export const enum_subscription_config_subscription_tier_team_color = pgEnum('enum_subscription_config_subscription_tier_team_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
+export const enum_subscription_config_payment_period_monthly_color = pgEnum('enum_subscription_config_payment_period_monthly_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
+export const enum_subscription_config_payment_period_quarterly_color = pgEnum('enum_subscription_config_payment_period_quarterly_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
+export const enum_subscription_config_payment_period_yearly_color = pgEnum('enum_subscription_config_payment_period_yearly_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
+export const enum_checkout_summary_deployment_icon_color = pgEnum('enum_checkout_summary_deployment_icon_color', ['neutral', 'brand', 'aqua', 'blue', 'pink', 'yellow', 'lime', 'magenta'])
+export const enum_checkout_summary_customer_type_icon_color = pgEnum('enum_checkout_summary_customer_type_icon_color', ['neutral', 'brand', 'aqua', 'blue', 'pink', 'yellow', 'lime', 'magenta'])
 
 export const users_sessions = pgTable('users_sessions', {
   _order: integer('_order').notNull(),
@@ -1254,42 +1260,6 @@ export const pages_blocks_flow_example = pgTable('pages_blocks_flow_example', {
 )
 
 
-export const pages_blocks_subscription_configurator_feature_overview = pgTable('pages_blocks_subscription_configurator_feature_overview', {
-  _order: integer('_order').notNull(),
-  _parentID: varchar('_parent_id').notNull(),
-  _locale: enum__locales('_locale').notNull(),
-  id: varchar('id').primaryKey(),
-  title: varchar('title'),
-  description: varchar('description'),
-  icon: varchar('icon').notNull(),
-}, (columns) => [
-    index('pages_blocks_subscription_configurator_feature_overview_order_idx').on(columns._order), index('pages_blocks_subscription_configurator_feature_overview_parent_id_idx').on(columns._parentID), index('pages_blocks_subscription_configurator_feature_overview_locale_idx').on(columns._locale), foreignKey({
-      columns: [columns['_parentID']],
-      foreignColumns: [pages_blocks_subscription_configurator.id],
-      name: 'pages_blocks_subscription_configurator_feature_overview_parent_id_fk'
-    }).onDelete('cascade'),
-]
-)
-
-
-export const pages_blocks_subscription_configurator_buttons = pgTable('pages_blocks_subscription_configurator_buttons', {
-  _order: integer('_order').notNull(),
-  _parentID: varchar('_parent_id').notNull(),
-  _locale: enum__locales('_locale').notNull(),
-  id: varchar('id').primaryKey(),
-  label: varchar('label').notNull(),
-  url: varchar('url').notNull(),
-  variant: enum_pages_blocks_subscription_configurator_buttons_variant('variant').default("normal"),
-}, (columns) => [
-    index('pages_blocks_subscription_configurator_buttons_order_idx').on(columns._order), index('pages_blocks_subscription_configurator_buttons_parent_id_idx').on(columns._parentID), index('pages_blocks_subscription_configurator_buttons_locale_idx').on(columns._locale), foreignKey({
-      columns: [columns['_parentID']],
-      foreignColumns: [pages_blocks_subscription_configurator.id],
-      name: 'pages_blocks_subscription_configurator_buttons_parent_id_fk'
-    }).onDelete('cascade'),
-]
-)
-
-
 export const pages_blocks_subscription_configurator = pgTable('pages_blocks_subscription_configurator', {
   _order: integer('_order').notNull(),
   _parentID: integer('_parent_id').notNull(),
@@ -2197,6 +2167,7 @@ export const footer = pgTable('footer', {
   contactEmail: varchar('contact_email'),
   legalLinks_privacy_url: varchar('legal_links_privacy_url').notNull().default("/privacy"),
   legalLinks_legalNotice_url: varchar('legal_links_legal_notice_url').notNull().default("/legal-notice"),
+  legalLinks_terms_url: varchar('legal_links_terms_url').notNull().default("/terms"),
   updatedAt: timestamp('updated_at', {mode: 'string',withTimezone: true,precision: 3}),
   createdAt: timestamp('created_at', {mode: 'string',withTimezone: true,precision: 3}),
 }, (columns) => [
@@ -2210,6 +2181,7 @@ export const footer_locales = pgTable('footer_locales', {
   description: varchar('description'),
   legalLinks_privacy_label: varchar('legal_links_privacy_label').notNull().default("Privacy Policy"),
   legalLinks_legalNotice_label: varchar('legal_links_legal_notice_label').notNull().default("Legal Notice"),
+  legalLinks_terms_label: varchar('legal_links_terms_label').notNull().default("Terms & Conditions"),
   id: serial('id').primaryKey(),
   _locale: enum__locales('_locale').notNull(),
   _parentID: integer('_parent_id').notNull(),
@@ -2263,6 +2235,54 @@ export const cookie_banner_locales = pgTable('cookie_banner_locales', {
 )
 
 
+export const subscription_config_plan_pro_features = pgTable('subscription_config_plan_pro_features', {
+  _order: integer('_order').notNull(),
+  _parentID: integer('_parent_id').notNull(),
+  _locale: enum__locales('_locale').notNull(),
+  id: varchar('id').primaryKey(),
+  text: varchar('text').notNull(),
+}, (columns) => [
+    index('subscription_config_plan_pro_features_order_idx').on(columns._order), index('subscription_config_plan_pro_features_parent_id_idx').on(columns._parentID), index('subscription_config_plan_pro_features_locale_idx').on(columns._locale), foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [subscription_config.id],
+      name: 'subscription_config_plan_pro_features_parent_id_fk'
+    }).onDelete('cascade'),
+]
+)
+
+
+export const subscription_config_plan_max_features = pgTable('subscription_config_plan_max_features', {
+  _order: integer('_order').notNull(),
+  _parentID: integer('_parent_id').notNull(),
+  _locale: enum__locales('_locale').notNull(),
+  id: varchar('id').primaryKey(),
+  text: varchar('text').notNull(),
+}, (columns) => [
+    index('subscription_config_plan_max_features_order_idx').on(columns._order), index('subscription_config_plan_max_features_parent_id_idx').on(columns._parentID), index('subscription_config_plan_max_features_locale_idx').on(columns._locale), foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [subscription_config.id],
+      name: 'subscription_config_plan_max_features_parent_id_fk'
+    }).onDelete('cascade'),
+]
+)
+
+
+export const subscription_config_plan_custom_features = pgTable('subscription_config_plan_custom_features', {
+  _order: integer('_order').notNull(),
+  _parentID: integer('_parent_id').notNull(),
+  _locale: enum__locales('_locale').notNull(),
+  id: varchar('id').primaryKey(),
+  text: varchar('text').notNull(),
+}, (columns) => [
+    index('subscription_config_plan_custom_features_order_idx').on(columns._order), index('subscription_config_plan_custom_features_parent_id_idx').on(columns._parentID), index('subscription_config_plan_custom_features_locale_idx').on(columns._locale), foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [subscription_config.id],
+      name: 'subscription_config_plan_custom_features_parent_id_fk'
+    }).onDelete('cascade'),
+]
+)
+
+
 export const subscription_config_workflow_calculator_business_types = pgTable('subscription_config_workflow_calculator_business_types', {
   _order: integer('_order').notNull(),
   _parentID: integer('_parent_id').notNull(),
@@ -2295,123 +2315,103 @@ export const subscription_config_workflow_calculator_business_types_locales = pg
 )
 
 
-export const subscription_config_additional_features = pgTable('subscription_config_additional_features', {
-  _order: integer('_order').notNull(),
-  _parentID: integer('_parent_id').notNull(),
-  id: varchar('id').primaryKey(),
-  icon: varchar('icon').notNull(),
-  price: numeric('price', {mode: 'number'}).default(0),
-}, (columns) => [
-    index('subscription_config_additional_features_order_idx').on(columns._order), index('subscription_config_additional_features_parent_id_idx').on(columns._parentID), foreignKey({
-      columns: [columns['_parentID']],
-      foreignColumns: [subscription_config.id],
-      name: 'subscription_config_additional_features_parent_id_fk'
-    }).onDelete('cascade'),
-]
-)
-
-
-export const subscription_config_additional_features_locales = pgTable('subscription_config_additional_features_locales', {
-  title: varchar('title'),
-  description: varchar('description'),
-  id: serial('id').primaryKey(),
-  _locale: enum__locales('_locale').notNull(),
-  _parentID: varchar('_parent_id').notNull(),
-}, (columns) => [
-    uniqueIndex('subscription_config_additional_features_locales_locale_paren').on(columns._locale, columns._parentID), foreignKey({
-      columns: [columns['_parentID']],
-      foreignColumns: [subscription_config_additional_features.id],
-      name: 'subscription_config_additional_features_locales_parent_id_fk'
-    }).onDelete('cascade'),
-]
-)
-
-
 export const subscription_config = pgTable('subscription_config', {
   id: serial('id').primaryKey(),
-  title: varchar('title').default("Subscription Config"),
-  defaults_deployment: enum_subscription_config_defaults_deployment('defaults_deployment').default("self-hosted"),
+  defaults_deployment: enum_subscription_config_defaults_deployment('defaults_deployment').default("self_hosted"),
   defaults_customerType: enum_subscription_config_defaults_customer_type('defaults_customer_type').default("b2b"),
-  defaults_paymentPeriod: enum_subscription_config_defaults_payment_period('defaults_payment_period').default("monthly"),
-  defaults_workflowExecutions_b2b: numeric('defaults_workflow_executions_b2b', {mode: 'number'}).default(1000),
-  defaults_workflowExecutions_b2c: numeric('defaults_workflow_executions_b2c', {mode: 'number'}).default(100),
-  defaults_aiTokens_b2b: numeric('defaults_ai_tokens_b2b', {mode: 'number'}).default(1000000),
-  defaults_aiTokens_b2c: numeric('defaults_ai_tokens_b2c', {mode: 'number'}).default(100000),
+  defaults_paymentPeriod_b2b: enum_subscription_config_defaults_payment_period_b2b('defaults_payment_period_b2b').default("monthly"),
+  defaults_paymentPeriod_b2c: enum_subscription_config_defaults_payment_period_b2c('defaults_payment_period_b2c').default("monthly"),
   deployment_selfHosted_icon: varchar('deployment_self_hosted_icon').notNull().default("server"),
   deployment_selfHosted_color: enum_subscription_config_deployment_self_hosted_color('deployment_self_hosted_color').default("yellow"),
+  deployment_selfHosted_image: integer('deployment_self_hosted_image_id').references(() => media.id, {
+      onDelete: 'set null'
+  }),
   deployment_cloud_icon: varchar('deployment_cloud_icon').notNull().default("cloud"),
   deployment_cloud_color: enum_subscription_config_deployment_cloud_color('deployment_cloud_color').default("aqua"),
+  deployment_cloud_image: integer('deployment_cloud_image_id').references(() => media.id, {
+      onDelete: 'set null'
+  }),
+  plan_pro_icon: varchar('plan_pro_icon').notNull().default("sparkles"),
+  plan_pro_color: enum_subscription_config_plan_pro_color('plan_pro_color').default("lime"),
+  plan_pro_image: integer('plan_pro_image_id').references(() => media.id, {
+      onDelete: 'set null'
+  }),
+  plan_max_icon: varchar('plan_max_icon').notNull().default("rocket"),
+  plan_max_color: enum_subscription_config_plan_max_color('plan_max_color').default("magenta"),
+  plan_max_image: integer('plan_max_image_id').references(() => media.id, {
+      onDelete: 'set null'
+  }),
+  plan_custom_icon: varchar('plan_custom_icon').notNull().default("settings"),
+  plan_custom_color: enum_subscription_config_plan_custom_color('plan_custom_color').default("yellow"),
+  plan_custom_image: integer('plan_custom_image_id').references(() => media.id, {
+      onDelete: 'set null'
+  }),
   customerType_b2b_icon: varchar('customer_type_b2b_icon').notNull().default("briefcase-2"),
   customerType_b2b_color: enum_subscription_config_customer_type_b2b_color('customer_type_b2b_color').default("blue"),
+  customerType_b2b_image: integer('customer_type_b2b_image_id').references(() => media.id, {
+      onDelete: 'set null'
+  }),
   customerType_b2c_icon: varchar('customer_type_b2c_icon').notNull().default("building-store"),
   customerType_b2c_color: enum_subscription_config_customer_type_b2c_color('customer_type_b2c_color').default("pink"),
-  subscriptionTier_pro_icon: varchar('subscription_tier_pro_icon').notNull().default("sparkles"),
-  subscriptionTier_pro_color: enum_subscription_config_subscription_tier_pro_color('subscription_tier_pro_color').default("brand"),
-  subscriptionTier_team_icon: varchar('subscription_tier_team_icon').notNull().default("users-group"),
-  subscriptionTier_team_color: enum_subscription_config_subscription_tier_team_color('subscription_tier_team_color').default("aqua"),
-  packages_pro_prices_monthly: numeric('packages_pro_prices_monthly', {mode: 'number'}).default(0),
-  packages_pro_prices_quarterly: numeric('packages_pro_prices_quarterly', {mode: 'number'}).default(0),
-  packages_pro_prices_yearly: numeric('packages_pro_prices_yearly', {mode: 'number'}).default(0),
-  packages_max_prices_monthly: numeric('packages_max_prices_monthly', {mode: 'number'}).default(0),
-  packages_max_prices_quarterly: numeric('packages_max_prices_quarterly', {mode: 'number'}).default(0),
-  packages_max_prices_yearly: numeric('packages_max_prices_yearly', {mode: 'number'}).default(0),
-  paymentPeriod_quarterlyDiscount: numeric('payment_period_quarterly_discount', {mode: 'number'}).default(0),
-  paymentPeriod_yearlyDiscount: numeric('payment_period_yearly_discount', {mode: 'number'}).default(0),
-  workflowExecutions_b2b_step: numeric('workflow_executions_b2b_step', {mode: 'number'}).default(100),
-  workflowExecutions_b2b_min: numeric('workflow_executions_b2b_min', {mode: 'number'}).default(200),
-  workflowExecutions_b2b_max: numeric('workflow_executions_b2b_max', {mode: 'number'}).default(10000),
-  workflowExecutions_b2c_step: numeric('workflow_executions_b2c_step', {mode: 'number'}).default(10),
-  workflowExecutions_b2c_min: numeric('workflow_executions_b2c_min', {mode: 'number'}).default(10),
-  workflowExecutions_b2c_max: numeric('workflow_executions_b2c_max', {mode: 'number'}).default(1000),
-  workflowExecutionPriceFactor: numeric('workflow_execution_price_factor', {mode: 'number'}).default(0.001),
-  aiTokens_b2b_step: numeric('ai_tokens_b2b_step', {mode: 'number'}).default(100000),
-  aiTokens_b2b_min: numeric('ai_tokens_b2b_min', {mode: 'number'}).default(100000),
-  aiTokens_b2b_max: numeric('ai_tokens_b2b_max', {mode: 'number'}).default(10000000),
-  aiTokens_b2c_step: numeric('ai_tokens_b2c_step', {mode: 'number'}).default(10000),
-  aiTokens_b2c_min: numeric('ai_tokens_b2c_min', {mode: 'number'}).default(10000),
-  aiTokens_b2c_max: numeric('ai_tokens_b2c_max', {mode: 'number'}).default(1000000),
-  aiTokenPriceFactor: numeric('ai_token_price_factor', {mode: 'number'}).default(0.000001),
+  customerType_b2c_image: integer('customer_type_b2c_image_id').references(() => media.id, {
+      onDelete: 'set null'
+  }),
+  paymentPeriod_monthlyColor: enum_subscription_config_payment_period_monthly_color('payment_period_monthly_color').default("brand"),
+  paymentPeriod_quarterlyColor: enum_subscription_config_payment_period_quarterly_color('payment_period_quarterly_color').default("aqua"),
+  paymentPeriod_yearlyColor: enum_subscription_config_payment_period_yearly_color('payment_period_yearly_color').default("magenta"),
+  workflowExecutions_b2b_default: numeric('workflow_executions_b2b_default', {mode: 'number'}).default(1000000),
+  workflowExecutions_b2c_default: numeric('workflow_executions_b2c_default', {mode: 'number'}).default(100000),
+  aiTokens_b2b_default: numeric('ai_tokens_b2b_default', {mode: 'number'}).default(100000000),
+  aiTokens_b2c_default: numeric('ai_tokens_b2c_default', {mode: 'number'}).default(10000000),
   contactSales_href: varchar('contact_sales_href').default("/contact"),
   subscribe_baseUrl: varchar('subscribe_base_url').default(""),
   updatedAt: timestamp('updated_at', {mode: 'string',withTimezone: true,precision: 3}),
   createdAt: timestamp('created_at', {mode: 'string',withTimezone: true,precision: 3}),
-}
+}, (columns) => [
+    index('subscription_config_deployment_self_hosted_deployment_se_idx').on(columns.deployment_selfHosted_image), index('subscription_config_deployment_cloud_deployment_cloud_im_idx').on(columns.deployment_cloud_image), index('subscription_config_plan_pro_plan_pro_image_idx').on(columns.plan_pro_image), index('subscription_config_plan_max_plan_max_image_idx').on(columns.plan_max_image), index('subscription_config_plan_custom_plan_custom_image_idx').on(columns.plan_custom_image), index('subscription_config_customer_type_b2b_customer_type_b2b__idx').on(columns.customerType_b2b_image), index('subscription_config_customer_type_b2c_customer_type_b2c__idx').on(columns.customerType_b2c_image),
+]
 )
 
 
 export const subscription_config_locales = pgTable('subscription_config_locales', {
-  optionsPanelHeading: varchar('options_panel_heading').default("Build the subscription shape"),
-  deployment_label: varchar('deployment_label').default("Deployment"),
+  deployment_label: varchar('deployment_label').default("Choose where your code0 instance will run."),
+  deployment_description: varchar('deployment_description'),
   deployment_selfHosted_title: varchar('deployment_self_hosted_title').default("Self-hosted"),
   deployment_selfHosted_description: varchar('deployment_self_hosted_description').default("Deploy on your own infrastructure with full operational control."),
   deployment_cloud_title: varchar('deployment_cloud_title').default("Cloud"),
   deployment_cloud_description: varchar('deployment_cloud_description').default("Use managed infrastructure with selectable runtime consumption."),
-  customerType_label: varchar('customer_type_label').default("Customer Type"),
+  plan_title: varchar('plan_title').default("Choose the plan that best matches your requirements."),
+  plan_description: varchar('plan_description'),
+  plan_pro_title: varchar('plan_pro_title').default("Pro"),
+  plan_pro_description: varchar('plan_pro_description').default("A ready-to-use plan for individuals and smaller teams."),
+  plan_max_title: varchar('plan_max_title').default("Max"),
+  plan_max_description: varchar('plan_max_description').default("A ready-to-use plan for organizations with higher requirements."),
+  plan_custom_title: varchar('plan_custom_title').default("Custom"),
+  plan_custom_description: varchar('plan_custom_description').default("Configure usage for an individual setup."),
+  customerType_label: varchar('customer_type_label').default("Choose the customer model that best matches your use case."),
+  customerType_description: varchar('customer_type_description'),
   customerType_b2b_title: varchar('customer_type_b2b_title').default("B2B"),
   customerType_b2b_description: varchar('customer_type_b2b_description').default("Organization purchase flow with tailored commercial handling."),
   customerType_b2c_title: varchar('customer_type_b2c_title').default("B2C"),
   customerType_b2c_description: varchar('customer_type_b2c_description').default("Standardized subscription flow with directly selectable plans."),
-  subscriptionTier_label: varchar('subscription_tier_label').default("Subscription tier"),
-  subscriptionTier_pro_title: varchar('subscription_tier_pro_title').default("PRO"),
-  subscriptionTier_pro_description: varchar('subscription_tier_pro_description').default("Single-owner setup for advanced personal or expert workflows."),
-  subscriptionTier_team_title: varchar('subscription_tier_team_title').default("TEAM"),
-  subscriptionTier_team_description: varchar('subscription_tier_team_description').default("Shared workspace model with seat-based team access."),
   packages_pro_title: varchar('packages_pro_title').default("Pro"),
   packages_pro_description: varchar('packages_pro_description').default("For individuals and smaller teams."),
   packages_max_title: varchar('packages_max_title').default("Max"),
   packages_max_description: varchar('packages_max_description').default("For organizations with higher requirements."),
   packages_custom_title: varchar('packages_custom_title').default("Custom"),
   packages_custom_description: varchar('packages_custom_description').default("A tailored package for individual requirements."),
-  paymentPeriod_label: varchar('payment_period_label').default("Payment period"),
-  paymentPeriod_description: varchar('payment_period_description').default("Choose how often you want to be billed."),
+  paymentPeriod_label: varchar('payment_period_label').default("Choose how often you want to be billed."),
+  paymentPeriod_description: varchar('payment_period_description'),
   paymentPeriod_monthlyText: varchar('payment_period_monthly_text').default("Monthly"),
   paymentPeriod_quarterlyText: varchar('payment_period_quarterly_text').default("Quarterly"),
   paymentPeriod_yearlyText: varchar('payment_period_yearly_text').default("Yearly"),
   paymentPeriod_monthlyPeriodSuffix: varchar('payment_period_monthly_period_suffix').default("per month"),
   paymentPeriod_quarterlyPeriodSuffix: varchar('payment_period_quarterly_period_suffix').default("per quarter"),
   paymentPeriod_yearlyPeriodSuffix: varchar('payment_period_yearly_period_suffix').default("per year"),
-  workflowExecutions_title: varchar('workflow_executions_title').default("Workflow Executions"),
-  workflowExecutions_description: varchar('workflow_executions_description').default("How many workflow executions do you expect per month?"),
+  paymentPeriod_quarterlyPaidLabel: varchar('payment_period_quarterly_paid_label').default("paid quarterly"),
+  paymentPeriod_yearlyPaidLabel: varchar('payment_period_yearly_paid_label').default("paid yearly"),
+  workflowExecutions_title: varchar('workflow_executions_title').default("How many workflow executions do you expect per month?"),
+  workflowExecutions_description: varchar('workflow_executions_description'),
   workflowExecutions_suffix: varchar('workflow_executions_suffix').default("exec"),
   workflowCalculator_triggerLabel: varchar('workflow_calculator_trigger_label').default("Calculate"),
   workflowCalculator_title: varchar('workflow_calculator_title').default("Calculate workflow executions"),
@@ -2426,15 +2426,12 @@ export const subscription_config_locales = pgTable('subscription_config_locales'
   workflowCalculator_estimateLabel: varchar('workflow_calculator_estimate_label').default("Estimated monthly volume"),
   workflowCalculator_cancelLabel: varchar('workflow_calculator_cancel_label').default("Cancel"),
   workflowCalculator_applyLabel: varchar('workflow_calculator_apply_label').default("Apply value"),
-  aiTokens_title: varchar('ai_tokens_title').default("AI Tokens"),
-  aiTokens_description: varchar('ai_tokens_description').default("How many AI tokens do you expect to consume per month?"),
+  aiTokens_title: varchar('ai_tokens_title').default("How many AI tokens do you expect to consume per month?"),
+  aiTokens_description: varchar('ai_tokens_description'),
   aiTokens_suffix: varchar('ai_tokens_suffix').default("tokens"),
   contactSales_prompt: varchar('contact_sales_prompt').default("Need more?"),
   contactSales_label: varchar('contact_sales_label').default("Contact sales"),
   subscribe_label: varchar('subscribe_label').default("Buy now"),
-  price_heading: varchar('price_heading').default("Price"),
-  price_caption: varchar('price_caption').default("per month"),
-  additionalFeaturesLabel: varchar('additional_features_label'),
   id: serial('id').primaryKey(),
   _locale: enum__locales('_locale').notNull(),
   _parentID: integer('_parent_id').notNull(),
@@ -2443,6 +2440,376 @@ export const subscription_config_locales = pgTable('subscription_config_locales'
       columns: [columns['_parentID']],
       foreignColumns: [subscription_config.id],
       name: 'subscription_config_locales_parent_id_fk'
+    }).onDelete('cascade'),
+]
+)
+
+
+export const subscription_config_numbers = pgTable('subscription_config_numbers', {
+  id: serial('id').primaryKey(),
+  number: numeric('number', {mode: 'number'}),
+  order: integer('order').notNull(),
+  parent: integer('parent_id').notNull(),
+  path: varchar('path').notNull(),
+}, (columns) => [
+    index('subscription_config_numbers_order_parent_idx').on(columns.order, columns.parent), foreignKey({
+      columns: [columns['parent']],
+      foreignColumns: [subscription_config.id],
+      name: 'subscription_config_numbers_parent_fk'
+    }).onDelete('cascade'),
+]
+)
+
+
+export const checkout = pgTable('checkout', {
+  id: serial('id').primaryKey(),
+  login_loginUrl: varchar('login_login_url').notNull().default("https://app.code0.tech/login"),
+  summary_deploymentIcons_cloud: varchar('summary_deployment_icons_cloud').notNull().default("tabler:IconCloud"),
+  summary_deploymentIcons_selfHosted: varchar('summary_deployment_icons_self_hosted').notNull().default("tabler:IconServer"),
+  summary_deploymentIconColor: enum_checkout_summary_deployment_icon_color('summary_deployment_icon_color').notNull().default("aqua"),
+  summary_customerTypeIcons_b2b: varchar('summary_customer_type_icons_b2b').notNull().default("tabler:IconUsers"),
+  summary_customerTypeIcons_b2c: varchar('summary_customer_type_icons_b2c').notNull().default("tabler:IconBuildingStore"),
+  summary_customerTypeIconColor: enum_checkout_summary_customer_type_icon_color('summary_customer_type_icon_color').notNull().default("yellow"),
+  updatedAt: timestamp('updated_at', {mode: 'string',withTimezone: true,precision: 3}),
+  createdAt: timestamp('created_at', {mode: 'string',withTimezone: true,precision: 3}),
+}
+)
+
+
+export const checkout_locales = pgTable('checkout_locales', {
+  login_heading: varchar('login_heading').notNull().default("Sign in to CodeZero"),
+  login_description: varchar('login_description').notNull().default("Use your CodeZero account to continue with your configured subscription."),
+  login_loginLabel: varchar('login_login_label').notNull().default("Sign in"),
+  login_guestHeading: varchar('login_guest_heading').notNull().default("Continue as a guest"),
+  login_guestDescription: varchar('login_guest_description').notNull().default("Complete your subscription checkout without signing in."),
+  login_guestLabel: varchar('login_guest_label').notNull().default("Continue as guest"),
+  summary_eyebrow: varchar('summary_eyebrow').notNull().default("Order Summary"),
+  summary_heading: varchar('summary_heading').notNull().default("Review your configuration"),
+  summary_description: varchar('summary_description').notNull().default("This checkout reflects the subscription shape you configured, including runtime."),
+  summary_pricing_planLabel: varchar('summary_pricing_plan_label').notNull().default("Plan"),
+  summary_pricing_baseLabel: varchar('summary_pricing_base_label').notNull().default("AI Tokens"),
+  summary_pricing_workflowExecutionsLabel: varchar('summary_pricing_workflow_executions_label').notNull().default("Workflow Executions"),
+  summary_pricing_quarterlyDiscountLabel: varchar('summary_pricing_quarterly_discount_label').notNull().default("Quarterly discount"),
+  summary_pricing_yearlyDiscountLabel: varchar('summary_pricing_yearly_discount_label').notNull().default("Yearly discount"),
+  summary_pricing_discountInputPlaceholder: varchar('summary_pricing_discount_input_placeholder').notNull().default("Discount code"),
+  summary_pricing_discountButtonLabel: varchar('summary_pricing_discount_button_label').notNull().default("Apply"),
+  summary_pricing_discountPromptLabel: varchar('summary_pricing_discount_prompt_label').notNull().default("Have a discount?"),
+  summary_pricing_discountRemoveLabel: varchar('summary_pricing_discount_remove_label').notNull().default("Remove"),
+  summary_pricing_taxLabel: varchar('summary_pricing_tax_label').notNull().default("Tax"),
+  summary_pricing_totalLabel: varchar('summary_pricing_total_label').notNull().default("Total"),
+  summary_pricing_perMonthSuffix: varchar('summary_pricing_per_month_suffix').notNull().default("/mo"),
+  form_billingHeading: varchar('form_billing_heading').notNull().default("Billing Address"),
+  form_continueLabel: varchar('form_continue_label').notNull().default("Continue to Payment"),
+  form_backToBillingLabel: varchar('form_back_to_billing_label').notNull().default("Back to Billing"),
+  form_payNowLabel: varchar('form_pay_now_label').notNull().default("Pay now"),
+  form_sendOfferPrompt: varchar('form_send_offer_prompt').notNull(),
+  form_sendOfferLabel: varchar('form_send_offer_label').notNull().default("Send offer"),
+  form_sendOfferTitle: varchar('form_send_offer_title').notNull(),
+  form_sendOfferDescription: varchar('form_send_offer_description').notNull(),
+  form_processingLabel: varchar('form_processing_label').notNull().default("Processing..."),
+  form_customerSelectLabel: varchar('form_customer_select_label').notNull().default("Billing customer"),
+  form_newCustomerLabel: varchar('form_new_customer_label').notNull().default("Create new customer"),
+  form_nameLabel: varchar('form_name_label').notNull().default("Name"),
+  form_emailLabel: varchar('form_email_label').notNull().default("Email"),
+  form_emailPlaceholder: varchar('form_email_placeholder').notNull().default("billing@example.com"),
+  form_phoneLabel: varchar('form_phone_label').notNull().default("Phone"),
+  form_line1Label: varchar('form_line1_label').notNull().default("Address"),
+  form_line2Label: varchar('form_line2_label').notNull().default("Address line 2"),
+  form_cityLabel: varchar('form_city_label').notNull().default("City"),
+  form_stateLabel: varchar('form_state_label').notNull().default("State"),
+  form_postalCodeLabel: varchar('form_postal_code_label').notNull().default("Postal code"),
+  form_countryLabel: varchar('form_country_label').notNull().default("Country"),
+  nextSteps_heading: varchar('next_steps_heading').notNull().default("What happens next"),
+  nextSteps_step1Title: varchar('next_steps_step1_title').notNull().default("Payment confirmed"),
+  nextSteps_step1Description: varchar('next_steps_step1_description').notNull().default("Stripe securely confirms your payment."),
+  nextSteps_step2Title: varchar('next_steps_step2_title').notNull().default("License provisioned"),
+  nextSteps_step2Description: varchar('next_steps_step2_description').notNull().default("Your license is created automatically."),
+  nextSteps_step3Title: varchar('next_steps_step3_title').notNull().default("Get started"),
+  nextSteps_step3Description: varchar('next_steps_step3_description').notNull().default("Access your license dashboard and start building."),
+  success_heading: varchar('success_heading').notNull().default("Payment submitted"),
+  success_description: varchar('success_description').notNull().default("Stripe has received your payment confirmation. You can close this page or return to the site."),
+  success_licenseDashboardLabel: varchar('success_license_dashboard_label').notNull().default("Open license dashboard"),
+  success_sculptorLabel: varchar('success_sculptor_label').notNull(),
+  success_licenseDownloadLabel: varchar('success_license_download_label').notNull(),
+  success_licenseDownloadError: varchar('success_license_download_error').notNull(),
+  success_licensePendingLabel: varchar('success_license_pending_label').notNull().default("Your license is being prepared…"),
+  success_licenseStatusRetryLabel: varchar('success_license_status_retry_label').notNull().default("Try again"),
+  success_receiptHint: varchar('success_receipt_hint').notNull().default("Stripe sends the receipt to your email address."),
+  success_guestAccountHint: varchar('success_guest_account_hint').notNull(),
+  success_failedHeading: varchar('success_failed_heading').notNull().default("Payment failed"),
+  success_failedDescription: varchar('success_failed_description').notNull().default("Stripe could not process your payment. You have not been charged and no subscription was created."),
+  success_invalidHeading: varchar('success_invalid_heading').notNull().default("This checkout link is no longer valid"),
+  success_invalidDescription: varchar('success_invalid_description').notNull().default("The link has expired or belongs to another account. If your payment went through, you will find the license in your license dashboard."),
+  success_checkoutRetryLabel: varchar('success_checkout_retry_label').notNull().default("Back to checkout"),
+  id: serial('id').primaryKey(),
+  _locale: enum__locales('_locale').notNull(),
+  _parentID: integer('_parent_id').notNull(),
+}, (columns) => [
+    uniqueIndex('checkout_locales_locale_parent_id_unique').on(columns._locale, columns._parentID), foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [checkout.id],
+      name: 'checkout_locales_parent_id_fk'
+    }).onDelete('cascade'),
+]
+)
+
+
+export const upgrade_banner = pgTable('upgrade_banner', {
+  id: serial('id').primaryKey(),
+  pro_gradientFrom: varchar('pro_gradient_from').notNull().default("#7af69a"),
+  pro_gradientTo: varchar('pro_gradient_to').notNull().default("#13102d"),
+  max_gradientFrom: varchar('max_gradient_from').notNull().default("#72c9f8"),
+  max_gradientTo: varchar('max_gradient_to').notNull().default("#13102d"),
+  custom_gradientFrom: varchar('custom_gradient_from').notNull().default("#f872e2"),
+  custom_gradientTo: varchar('custom_gradient_to').notNull().default("#13102d"),
+  updatedAt: timestamp('updated_at', {mode: 'string',withTimezone: true,precision: 3}),
+  createdAt: timestamp('created_at', {mode: 'string',withTimezone: true,precision: 3}),
+}
+)
+
+
+export const upgrade_banner_locales = pgTable('upgrade_banner_locales', {
+  pro_text: varchar('pro_text').notNull(),
+  pro_buttonLabel: varchar('pro_button_label').notNull(),
+  max_text: varchar('max_text').notNull(),
+  max_buttonLabel: varchar('max_button_label').notNull(),
+  custom_text: varchar('custom_text').notNull(),
+  custom_buttonLabel: varchar('custom_button_label').notNull(),
+  id: serial('id').primaryKey(),
+  _locale: enum__locales('_locale').notNull(),
+  _parentID: integer('_parent_id').notNull(),
+}, (columns) => [
+    uniqueIndex('upgrade_banner_locales_locale_parent_id_unique').on(columns._locale, columns._parentID), foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [upgrade_banner.id],
+      name: 'upgrade_banner_locales_parent_id_fk'
+    }).onDelete('cascade'),
+]
+)
+
+
+export const licenses = pgTable('licenses', {
+  id: serial('id').primaryKey(),
+  redirectUrl: varchar('redirect_url').notNull().default("http://localhost:3001"),
+  updatedAt: timestamp('updated_at', {mode: 'string',withTimezone: true,precision: 3}),
+  createdAt: timestamp('created_at', {mode: 'string',withTimezone: true,precision: 3}),
+}
+)
+
+
+export const licenses_locales = pgTable('licenses_locales', {
+  licenses: varchar('licenses').notNull(),
+  license: varchar('license').notNull(),
+  licenseDescription: varchar('license_description').notNull(),
+  emptyLicenses: varchar('empty_licenses').notNull(),
+  sidebar_logout: varchar('sidebar_logout').notNull(),
+  sidebar_loggingOut: varchar('sidebar_logging_out').notNull(),
+  sidebar_backToCustomerLabel: varchar('sidebar_back_to_customer_label').notNull(),
+  sidebar_homeLabel: varchar('sidebar_home_label').notNull(),
+  sidebar_applicationSettingsLabel: varchar('sidebar_application_settings_label').notNull(),
+  sidebar_userSettingsLabel: varchar('sidebar_user_settings_label').notNull(),
+  sidebar_userMenuLabel: varchar('sidebar_user_menu_label').notNull(),
+  sidebar_profileLabel: varchar('sidebar_profile_label').notNull(),
+  sidebar_settingsLabel: varchar('sidebar_settings_label').notNull(),
+  sidebar_workspacesLabel: varchar('sidebar_workspaces_label').notNull(),
+  dashboard_emptyCustomers: varchar('dashboard_empty_customers').notNull(),
+  dashboard_customerLabel: varchar('dashboard_customer_label').notNull(),
+  dashboard_nameLabel: varchar('dashboard_name_label').notNull(),
+  dashboard_emailLabel: varchar('dashboard_email_label').notNull(),
+  dashboard_lastEditedLabel: varchar('dashboard_last_edited_label').notNull(),
+  dashboard_editLabel: varchar('dashboard_edit_label').notNull(),
+  dashboard_statusLabel: varchar('dashboard_status_label').notNull(),
+  dashboard_paymentPeriodLabel: varchar('dashboard_payment_period_label').notNull(),
+  dashboard_workflowExecutionsLabel: varchar('dashboard_workflow_executions_label').notNull(),
+  dashboard_aiTokensLabel: varchar('dashboard_ai_tokens_label').notNull(),
+  dashboard_editionLabel: varchar('dashboard_edition_label').notNull(),
+  dashboard_nextBillingDateLabel: varchar('dashboard_next_billing_date_label').notNull(),
+  values_customerTypes_personal: varchar('values_customer_types_personal').notNull(),
+  values_customerTypes_business: varchar('values_customer_types_business').notNull(),
+  values_deploymentTypes_cloud: varchar('values_deployment_types_cloud').notNull(),
+  values_deploymentTypes_selfHosted: varchar('values_deployment_types_self_hosted').notNull(),
+  values_paymentPeriods_monthly: varchar('values_payment_periods_monthly').notNull(),
+  values_paymentPeriods_quarterly: varchar('values_payment_periods_quarterly').notNull(),
+  values_paymentPeriods_yearly: varchar('values_payment_periods_yearly').notNull(),
+  values_statuses_active: varchar('values_statuses_active').notNull(),
+  values_statuses_pending: varchar('values_statuses_pending').notNull(),
+  values_statuses_incomplete: varchar('values_statuses_incomplete').notNull(),
+  values_statuses_paused: varchar('values_statuses_paused').notNull(),
+  values_statuses_trialing: varchar('values_statuses_trialing').notNull(),
+  values_statuses_unpaid: varchar('values_statuses_unpaid').notNull(),
+  values_statuses_pastDue: varchar('values_statuses_past_due').notNull(),
+  values_statuses_canceled: varchar('values_statuses_canceled').notNull(),
+  values_statuses_incompleteExpired: varchar('values_statuses_incomplete_expired').notNull(),
+  values_invoiceStatuses_paid: varchar('values_invoice_statuses_paid').notNull(),
+  values_invoiceStatuses_draft: varchar('values_invoice_statuses_draft').notNull(),
+  values_invoiceStatuses_open: varchar('values_invoice_statuses_open').notNull(),
+  values_invoiceStatuses_uncollectible: varchar('values_invoice_statuses_uncollectible').notNull(),
+  values_invoiceStatuses_void: varchar('values_invoice_statuses_void').notNull(),
+  values_plans_pro: varchar('values_plans_pro').notNull(),
+  values_plans_max: varchar('values_plans_max').notNull(),
+  values_plans_custom: varchar('values_plans_custom').notNull(),
+  values_editions_cloud: varchar('values_editions_cloud').notNull(),
+  values_editions_selfHosted: varchar('values_editions_self_hosted').notNull(),
+  values_unknown: varchar('values_unknown').notNull(),
+  invoices_title: varchar('invoices_title').notNull(),
+  invoices_description: varchar('invoices_description').notNull(),
+  invoices_empty: varchar('invoices_empty').notNull(),
+  invoices_lineItemsLabel: varchar('invoices_line_items_label').notNull(),
+  invoices_quantityLabel: varchar('invoices_quantity_label').notNull(),
+  invoices_netLabel: varchar('invoices_net_label').notNull(),
+  invoices_taxLabel: varchar('invoices_tax_label').notNull(),
+  invoices_numberLabel: varchar('invoices_number_label').notNull(),
+  invoices_billingDateLabel: varchar('invoices_billing_date_label').notNull(),
+  invoices_amountLabel: varchar('invoices_amount_label').notNull(),
+  invoices_statusLabel: varchar('invoices_status_label').notNull(),
+  invoices_downloadLabel: varchar('invoices_download_label').notNull(),
+  invoices_viewLabel: varchar('invoices_view_label').notNull(),
+  invoices_unavailableLabel: varchar('invoices_unavailable_label').notNull(),
+  pagination_loadMoreLabel: varchar('pagination_load_more_label').notNull(),
+  pagination_loadingLabel: varchar('pagination_loading_label').notNull(),
+  pagination_previousPageLabel: varchar('pagination_previous_page_label').notNull(),
+  pagination_nextPageLabel: varchar('pagination_next_page_label').notNull(),
+  withdrawal_text: varchar('withdrawal_text').notNull(),
+  id: serial('id').primaryKey(),
+  _locale: enum__locales('_locale').notNull(),
+  _parentID: integer('_parent_id').notNull(),
+}, (columns) => [
+    uniqueIndex('licenses_locales_locale_parent_id_unique').on(columns._locale, columns._parentID), foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [licenses.id],
+      name: 'licenses_locales_parent_id_fk'
+    }).onDelete('cascade'),
+]
+)
+
+
+export const license_dialogs = pgTable('license_dialogs', {
+  id: serial('id').primaryKey(),
+  updatedAt: timestamp('updated_at', {mode: 'string',withTimezone: true,precision: 3}),
+  createdAt: timestamp('created_at', {mode: 'string',withTimezone: true,precision: 3}),
+}
+)
+
+
+export const license_dialogs_locales = pgTable('license_dialogs_locales', {
+  editor_customerTitle: varchar('editor_customer_title').notNull(),
+  editor_customerDescription: varchar('editor_customer_description').notNull(),
+  editor_contactHeading: varchar('editor_contact_heading').notNull(),
+  editor_paymentMethodHeading: varchar('editor_payment_method_heading').notNull(),
+  editor_paymentMethodDescription: varchar('editor_payment_method_description').notNull(),
+  editor_loadingPaymentMethodLabel: varchar('editor_loading_payment_method_label').notNull(),
+  editor_savePaymentMethodLabel: varchar('editor_save_payment_method_label').notNull(),
+  editor_savingPaymentMethodLabel: varchar('editor_saving_payment_method_label').notNull(),
+  editor_paymentMethodSuccess: varchar('editor_payment_method_success').notNull(),
+  editor_noPaymentMethodsLabel: varchar('editor_no_payment_methods_label').notNull(),
+  editor_addPaymentMethodLabel: varchar('editor_add_payment_method_label').notNull(),
+  editor_removePaymentMethodLabel: varchar('editor_remove_payment_method_label').notNull(),
+  editor_removingPaymentMethodLabel: varchar('editor_removing_payment_method_label').notNull(),
+  editor_otherPaymentMethodsHeading: varchar('editor_other_payment_methods_heading').notNull(),
+  editor_usePaymentMethodLabel: varchar('editor_use_payment_method_label').notNull(),
+  editor_settingPaymentMethodLabel: varchar('editor_setting_payment_method_label').notNull(),
+  editor_licenseTitle: varchar('editor_license_title').notNull(),
+  editor_licenseEditDescription: varchar('editor_license_edit_description').notNull(),
+  editor_licenseDescription: varchar('editor_license_description').notNull(),
+  editor_changeNamespaceLabel: varchar('editor_change_namespace_label').notNull(),
+  editor_saveLabel: varchar('editor_save_label').notNull(),
+  editor_closeLabel: varchar('editor_close_label').notNull(),
+  editor_generalTabLabel: varchar('editor_general_tab_label').notNull(),
+  editor_paymentMethodsTabLabel: varchar('editor_payment_methods_tab_label').notNull(),
+  editor_paymentMethodTabLabel: varchar('editor_payment_method_tab_label').notNull(),
+  editor_namespaceHeading: varchar('editor_namespace_heading').notNull(),
+  editor_cancellationHeading: varchar('editor_cancellation_heading').notNull(),
+  editor_fieldDescriptions_name: varchar('editor_field_descriptions_name').notNull(),
+  editor_fieldDescriptions_email: varchar('editor_field_descriptions_email').notNull(),
+  editor_fieldDescriptions_phone: varchar('editor_field_descriptions_phone').notNull(),
+  editor_fieldDescriptions_line1: varchar('editor_field_descriptions_line1').notNull(),
+  editor_fieldDescriptions_line2: varchar('editor_field_descriptions_line2').notNull(),
+  editor_fieldDescriptions_postalCode: varchar('editor_field_descriptions_postal_code').notNull(),
+  editor_fieldDescriptions_city: varchar('editor_field_descriptions_city').notNull(),
+  editor_fieldDescriptions_state: varchar('editor_field_descriptions_state').notNull(),
+  editor_fieldDescriptions_country: varchar('editor_field_descriptions_country').notNull(),
+  subscriptionPreview_totalLabel: varchar('subscription_preview_total_label').notNull(),
+  subscriptionPreview_pendingChangeText: varchar('subscription_preview_pending_change_text').notNull(),
+  subscriptionPreview_prorationLabel: varchar('subscription_preview_proration_label').notNull(),
+  subscriptionPreview_immediateNote: varchar('subscription_preview_immediate_note').notNull(),
+  subscriptionPreview_scheduledNote: varchar('subscription_preview_scheduled_note').notNull(),
+  subscriptionPreview_loadingLabel: varchar('subscription_preview_loading_label').notNull(),
+  billing_title: varchar('billing_title').notNull(),
+  billing_description: varchar('billing_description').notNull(),
+  billing_periodLabel: varchar('billing_period_label').notNull(),
+  billing_currentPeriodEndLabel: varchar('billing_current_period_end_label').notNull(),
+  billing_changePeriodLabel: varchar('billing_change_period_label').notNull(),
+  cancel_description: varchar('cancel_description').notNull(),
+  cancel_confirmLabel: varchar('cancel_confirm_label').notNull(),
+  cancel_pendingHeading: varchar('cancel_pending_heading').notNull(),
+  cancel_pendingDescription: varchar('cancel_pending_description').notNull(),
+  cancel_cancelAtLabel: varchar('cancel_cancel_at_label').notNull(),
+  cancel_resumeLabel: varchar('cancel_resume_label').notNull(),
+  upgrade_title: varchar('upgrade_title').notNull(),
+  upgrade_description: varchar('upgrade_description').notNull(),
+  upgrade_planHeading: varchar('upgrade_plan_heading').notNull(),
+  upgrade_previewHeading: varchar('upgrade_preview_heading').notNull(),
+  upgrade_submitLabel: varchar('upgrade_submit_label').notNull(),
+  id: serial('id').primaryKey(),
+  _locale: enum__locales('_locale').notNull(),
+  _parentID: integer('_parent_id').notNull(),
+}, (columns) => [
+    uniqueIndex('license_dialogs_locales_locale_parent_id_unique').on(columns._locale, columns._parentID), foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [license_dialogs.id],
+      name: 'license_dialogs_locales_parent_id_fk'
+    }).onDelete('cascade'),
+]
+)
+
+
+export const errors = pgTable('errors', {
+  id: serial('id').primaryKey(),
+  updatedAt: timestamp('updated_at', {mode: 'string',withTimezone: true,precision: 3}),
+  createdAt: timestamp('created_at', {mode: 'string',withTimezone: true,precision: 3}),
+}
+)
+
+
+export const errors_locales = pgTable('errors_locales', {
+  dashboardLoad: varchar('dashboard_load').notNull(),
+  retry: varchar('retry').notNull(),
+  customerUpdate: varchar('customer_update').notNull(),
+  paymentMethodLoad: varchar('payment_method_load').notNull(),
+  paymentMethodUpdate: varchar('payment_method_update').notNull(),
+  paymentMethodRemove: varchar('payment_method_remove').notNull(),
+  paymentMethodInUse: varchar('payment_method_in_use').notNull(),
+  paymentMethodAssign: varchar('payment_method_assign').notNull(),
+  namespaceInUse: varchar('namespace_in_use').notNull(),
+  licenseUpdate: varchar('license_update').notNull(),
+  subscriptionPreview: varchar('subscription_preview').notNull(),
+  billingUpdate: varchar('billing_update').notNull(),
+  subscriptionCancel: varchar('subscription_cancel').notNull(),
+  subscriptionResume: varchar('subscription_resume').notNull(),
+  planUpgrade: varchar('plan_upgrade').notNull(),
+  paymentFallback: varchar('payment_fallback').notNull(),
+  sessionUnavailable: varchar('session_unavailable').notNull(),
+  customerCreation: varchar('customer_creation').notNull(),
+  customerTypeMismatch: varchar('customer_type_mismatch').notNull(),
+  checkoutCustomer: varchar('checkout_customer').notNull(),
+  checkoutSession: varchar('checkout_session').notNull(),
+  checkoutSessionExpired: varchar('checkout_session_expired').notNull(),
+  billingAddressUpdate: varchar('billing_address_update').notNull(),
+  emailUpdate: varchar('email_update').notNull(),
+  taxIdUpdate: varchar('tax_id_update').notNull(),
+  taxIdIncomplete: varchar('tax_id_incomplete').notNull(),
+  paymentConfirmation: varchar('payment_confirmation').notNull(),
+  discountSessionRequired: varchar('discount_session_required').notNull(),
+  discountValidation: varchar('discount_validation').notNull(),
+  checkoutLicenseStatus: varchar('checkout_license_status').notNull(),
+  id: serial('id').primaryKey(),
+  _locale: enum__locales('_locale').notNull(),
+  _parentID: integer('_parent_id').notNull(),
+}, (columns) => [
+    uniqueIndex('errors_locales_locale_parent_id_unique').on(columns._locale, columns._parentID), foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [errors.id],
+      name: 'errors_locales_parent_id_fk'
     }).onDelete('cascade'),
 ]
 )
@@ -2993,34 +3360,12 @@ export const relations_pages_blocks_flow_example = relations(pages_blocks_flow_e
     relationName: '_blocks_flowExample',
     }),
       }))
-export const relations_pages_blocks_subscription_configurator_feature_overview = relations(pages_blocks_subscription_configurator_feature_overview, ({ one }) => ({
-  _parentID: one(pages_blocks_subscription_configurator, {
-    
-    fields: [pages_blocks_subscription_configurator_feature_overview._parentID],
-    references: [pages_blocks_subscription_configurator.id],
-    relationName: 'featureOverview',
-    }),
-      }))
-export const relations_pages_blocks_subscription_configurator_buttons = relations(pages_blocks_subscription_configurator_buttons, ({ one }) => ({
-  _parentID: one(pages_blocks_subscription_configurator, {
-    
-    fields: [pages_blocks_subscription_configurator_buttons._parentID],
-    references: [pages_blocks_subscription_configurator.id],
-    relationName: 'buttons',
-    }),
-      }))
-export const relations_pages_blocks_subscription_configurator = relations(pages_blocks_subscription_configurator, ({ one, many }) => ({
+export const relations_pages_blocks_subscription_configurator = relations(pages_blocks_subscription_configurator, ({ one }) => ({
   _parentID: one(pages, {
     
     fields: [pages_blocks_subscription_configurator._parentID],
     references: [pages.id],
     relationName: '_blocks_subscriptionConfigurator',
-    }),
-    featureOverview: many(pages_blocks_subscription_configurator_feature_overview, {
-            relationName: 'featureOverview',
-    }),
-    buttons: many(pages_blocks_subscription_configurator_buttons, {
-            relationName: 'buttons',
     }),
       }))
 export const relations_pages_blocks_pricing_pro_features = relations(pages_blocks_pricing_pro_features, ({ one }) => ({
@@ -3173,7 +3518,7 @@ export const relations_pages_blocks_small_pricing = relations(pages_blocks_small
       }))
 export const relations_pages_blocks_compare_application_apps_features = relations(pages_blocks_compare_application_apps_features, ({ one }) => ({
   _parentID: one(pages_blocks_compare_application_apps, {
-
+    
     fields: [pages_blocks_compare_application_apps_features._parentID],
     references: [pages_blocks_compare_application_apps.id],
     relationName: 'features',
@@ -3181,13 +3526,13 @@ export const relations_pages_blocks_compare_application_apps_features = relation
       }))
 export const relations_pages_blocks_compare_application_apps = relations(pages_blocks_compare_application_apps, ({ one, many }) => ({
   _parentID: one(pages_blocks_compare_application, {
-
+    
     fields: [pages_blocks_compare_application_apps._parentID],
     references: [pages_blocks_compare_application.id],
     relationName: 'apps',
     }),
     logo: one(media, {
-
+    
     fields: [pages_blocks_compare_application_apps.logo],
     references: [media.id],
     relationName: 'logo',
@@ -3198,7 +3543,7 @@ export const relations_pages_blocks_compare_application_apps = relations(pages_b
       }))
 export const relations_pages_blocks_compare_application_buttons = relations(pages_blocks_compare_application_buttons, ({ one }) => ({
   _parentID: one(pages_blocks_compare_application, {
-
+    
     fields: [pages_blocks_compare_application_buttons._parentID],
     references: [pages_blocks_compare_application.id],
     relationName: 'buttons',
@@ -3206,7 +3551,7 @@ export const relations_pages_blocks_compare_application_buttons = relations(page
       }))
 export const relations_pages_blocks_compare_application = relations(pages_blocks_compare_application, ({ one, many }) => ({
   _parentID: one(pages, {
-
+    
     fields: [pages_blocks_compare_application._parentID],
     references: [pages.id],
     relationName: '_blocks_compareApplication',
@@ -3696,6 +4041,30 @@ export const relations_cookie_banner = relations(cookie_banner, ({ many }) => ({
             relationName: '_locales',
     }),
       }))
+export const relations_subscription_config_plan_pro_features = relations(subscription_config_plan_pro_features, ({ one }) => ({
+  _parentID: one(subscription_config, {
+    
+    fields: [subscription_config_plan_pro_features._parentID],
+    references: [subscription_config.id],
+    relationName: 'plan_pro_features',
+    }),
+      }))
+export const relations_subscription_config_plan_max_features = relations(subscription_config_plan_max_features, ({ one }) => ({
+  _parentID: one(subscription_config, {
+    
+    fields: [subscription_config_plan_max_features._parentID],
+    references: [subscription_config.id],
+    relationName: 'plan_max_features',
+    }),
+      }))
+export const relations_subscription_config_plan_custom_features = relations(subscription_config_plan_custom_features, ({ one }) => ({
+  _parentID: one(subscription_config, {
+    
+    fields: [subscription_config_plan_custom_features._parentID],
+    references: [subscription_config.id],
+    relationName: 'plan_custom_features',
+    }),
+      }))
 export const relations_subscription_config_workflow_calculator_business_types_locales = relations(subscription_config_workflow_calculator_business_types_locales, ({ one }) => ({
   _parentID: one(subscription_config_workflow_calculator_business_types, {
     
@@ -3715,25 +4084,6 @@ export const relations_subscription_config_workflow_calculator_business_types = 
             relationName: '_locales',
     }),
       }))
-export const relations_subscription_config_additional_features_locales = relations(subscription_config_additional_features_locales, ({ one }) => ({
-  _parentID: one(subscription_config_additional_features, {
-    
-    fields: [subscription_config_additional_features_locales._parentID],
-    references: [subscription_config_additional_features.id],
-    relationName: '_locales',
-    }),
-      }))
-export const relations_subscription_config_additional_features = relations(subscription_config_additional_features, ({ one, many }) => ({
-  _parentID: one(subscription_config, {
-    
-    fields: [subscription_config_additional_features._parentID],
-    references: [subscription_config.id],
-    relationName: 'additionalFeatures',
-    }),
-    _locales: many(subscription_config_additional_features_locales, {
-            relationName: '_locales',
-    }),
-      }))
 export const relations_subscription_config_locales = relations(subscription_config_locales, ({ one }) => ({
   _parentID: one(subscription_config, {
     
@@ -3742,14 +4092,138 @@ export const relations_subscription_config_locales = relations(subscription_conf
     relationName: '_locales',
     }),
       }))
-export const relations_subscription_config = relations(subscription_config, ({ many }) => ({
-  workflowCalculator_businessTypes: many(subscription_config_workflow_calculator_business_types, {
+export const relations_subscription_config_numbers = relations(subscription_config_numbers, ({ one }) => ({
+  parent: one(subscription_config, {
+    
+    fields: [subscription_config_numbers.parent],
+    references: [subscription_config.id],
+    relationName: '_numbers',
+    }),
+      }))
+export const relations_subscription_config = relations(subscription_config, ({ one, many }) => ({
+  deployment_selfHosted_image: one(media, {
+    
+    fields: [subscription_config.deployment_selfHosted_image],
+    references: [media.id],
+    relationName: 'deployment_selfHosted_image',
+    }),
+    deployment_cloud_image: one(media, {
+    
+    fields: [subscription_config.deployment_cloud_image],
+    references: [media.id],
+    relationName: 'deployment_cloud_image',
+    }),
+    plan_pro_features: many(subscription_config_plan_pro_features, {
+            relationName: 'plan_pro_features',
+    }),
+    plan_pro_image: one(media, {
+    
+    fields: [subscription_config.plan_pro_image],
+    references: [media.id],
+    relationName: 'plan_pro_image',
+    }),
+    plan_max_features: many(subscription_config_plan_max_features, {
+            relationName: 'plan_max_features',
+    }),
+    plan_max_image: one(media, {
+    
+    fields: [subscription_config.plan_max_image],
+    references: [media.id],
+    relationName: 'plan_max_image',
+    }),
+    plan_custom_features: many(subscription_config_plan_custom_features, {
+            relationName: 'plan_custom_features',
+    }),
+    plan_custom_image: one(media, {
+    
+    fields: [subscription_config.plan_custom_image],
+    references: [media.id],
+    relationName: 'plan_custom_image',
+    }),
+    customerType_b2b_image: one(media, {
+    
+    fields: [subscription_config.customerType_b2b_image],
+    references: [media.id],
+    relationName: 'customerType_b2b_image',
+    }),
+    customerType_b2c_image: one(media, {
+    
+    fields: [subscription_config.customerType_b2c_image],
+    references: [media.id],
+    relationName: 'customerType_b2c_image',
+    }),
+    workflowCalculator_businessTypes: many(subscription_config_workflow_calculator_business_types, {
             relationName: 'workflowCalculator_businessTypes',
     }),
-    additionalFeatures: many(subscription_config_additional_features, {
-            relationName: 'additionalFeatures',
-    }),
     _locales: many(subscription_config_locales, {
+            relationName: '_locales',
+    }),
+    _numbers: many(subscription_config_numbers, {
+            relationName: '_numbers',
+    }),
+      }))
+export const relations_checkout_locales = relations(checkout_locales, ({ one }) => ({
+  _parentID: one(checkout, {
+    
+    fields: [checkout_locales._parentID],
+    references: [checkout.id],
+    relationName: '_locales',
+    }),
+      }))
+export const relations_checkout = relations(checkout, ({ many }) => ({
+  _locales: many(checkout_locales, {
+            relationName: '_locales',
+    }),
+      }))
+export const relations_upgrade_banner_locales = relations(upgrade_banner_locales, ({ one }) => ({
+  _parentID: one(upgrade_banner, {
+    
+    fields: [upgrade_banner_locales._parentID],
+    references: [upgrade_banner.id],
+    relationName: '_locales',
+    }),
+      }))
+export const relations_upgrade_banner = relations(upgrade_banner, ({ many }) => ({
+  _locales: many(upgrade_banner_locales, {
+            relationName: '_locales',
+    }),
+      }))
+export const relations_licenses_locales = relations(licenses_locales, ({ one }) => ({
+  _parentID: one(licenses, {
+    
+    fields: [licenses_locales._parentID],
+    references: [licenses.id],
+    relationName: '_locales',
+    }),
+      }))
+export const relations_licenses = relations(licenses, ({ many }) => ({
+  _locales: many(licenses_locales, {
+            relationName: '_locales',
+    }),
+      }))
+export const relations_license_dialogs_locales = relations(license_dialogs_locales, ({ one }) => ({
+  _parentID: one(license_dialogs, {
+    
+    fields: [license_dialogs_locales._parentID],
+    references: [license_dialogs.id],
+    relationName: '_locales',
+    }),
+      }))
+export const relations_license_dialogs = relations(license_dialogs, ({ many }) => ({
+  _locales: many(license_dialogs_locales, {
+            relationName: '_locales',
+    }),
+      }))
+export const relations_errors_locales = relations(errors_locales, ({ one }) => ({
+  _parentID: one(errors, {
+    
+    fields: [errors_locales._parentID],
+    references: [errors.id],
+    relationName: '_locales',
+    }),
+      }))
+export const relations_errors = relations(errors, ({ many }) => ({
+  _locales: many(errors_locales, {
             relationName: '_locales',
     }),
       }))
@@ -3794,7 +4268,6 @@ type DatabaseSchema = {
   enum_pages_blocks_stats_section_layout: typeof enum_pages_blocks_stats_section_layout
   enum_pages_blocks_flow_example_section_layout: typeof enum_pages_blocks_flow_example_section_layout
   enum_pages_blocks_flow_example_flow_layout: typeof enum_pages_blocks_flow_example_flow_layout
-  enum_pages_blocks_subscription_configurator_buttons_variant: typeof enum_pages_blocks_subscription_configurator_buttons_variant
   enum_pages_blocks_pricing_section_layout: typeof enum_pages_blocks_pricing_section_layout
   enum_pages_blocks_pricing_popular_pill_color: typeof enum_pages_blocks_pricing_popular_pill_color
   enum_pages_blocks_pricing_highlighted_card_color: typeof enum_pages_blocks_pricing_highlighted_card_color
@@ -3823,13 +4296,20 @@ type DatabaseSchema = {
   enum_footer_social_links_platform: typeof enum_footer_social_links_platform
   enum_subscription_config_defaults_deployment: typeof enum_subscription_config_defaults_deployment
   enum_subscription_config_defaults_customer_type: typeof enum_subscription_config_defaults_customer_type
-  enum_subscription_config_defaults_payment_period: typeof enum_subscription_config_defaults_payment_period
+  enum_subscription_config_defaults_payment_period_b2b: typeof enum_subscription_config_defaults_payment_period_b2b
+  enum_subscription_config_defaults_payment_period_b2c: typeof enum_subscription_config_defaults_payment_period_b2c
   enum_subscription_config_deployment_self_hosted_color: typeof enum_subscription_config_deployment_self_hosted_color
   enum_subscription_config_deployment_cloud_color: typeof enum_subscription_config_deployment_cloud_color
+  enum_subscription_config_plan_pro_color: typeof enum_subscription_config_plan_pro_color
+  enum_subscription_config_plan_max_color: typeof enum_subscription_config_plan_max_color
+  enum_subscription_config_plan_custom_color: typeof enum_subscription_config_plan_custom_color
   enum_subscription_config_customer_type_b2b_color: typeof enum_subscription_config_customer_type_b2b_color
   enum_subscription_config_customer_type_b2c_color: typeof enum_subscription_config_customer_type_b2c_color
-  enum_subscription_config_subscription_tier_pro_color: typeof enum_subscription_config_subscription_tier_pro_color
-  enum_subscription_config_subscription_tier_team_color: typeof enum_subscription_config_subscription_tier_team_color
+  enum_subscription_config_payment_period_monthly_color: typeof enum_subscription_config_payment_period_monthly_color
+  enum_subscription_config_payment_period_quarterly_color: typeof enum_subscription_config_payment_period_quarterly_color
+  enum_subscription_config_payment_period_yearly_color: typeof enum_subscription_config_payment_period_yearly_color
+  enum_checkout_summary_deployment_icon_color: typeof enum_checkout_summary_deployment_icon_color
+  enum_checkout_summary_customer_type_icon_color: typeof enum_checkout_summary_customer_type_icon_color
   users_sessions: typeof users_sessions
   users: typeof users
   media: typeof media
@@ -3882,8 +4362,6 @@ type DatabaseSchema = {
   pages_blocks_stats_items: typeof pages_blocks_stats_items
   pages_blocks_stats: typeof pages_blocks_stats
   pages_blocks_flow_example: typeof pages_blocks_flow_example
-  pages_blocks_subscription_configurator_feature_overview: typeof pages_blocks_subscription_configurator_feature_overview
-  pages_blocks_subscription_configurator_buttons: typeof pages_blocks_subscription_configurator_buttons
   pages_blocks_subscription_configurator: typeof pages_blocks_subscription_configurator
   pages_blocks_pricing_pro_features: typeof pages_blocks_pricing_pro_features
   pages_blocks_pricing_pro_missing_features: typeof pages_blocks_pricing_pro_missing_features
@@ -3938,12 +4416,24 @@ type DatabaseSchema = {
   footer_locales: typeof footer_locales
   cookie_banner: typeof cookie_banner
   cookie_banner_locales: typeof cookie_banner_locales
+  subscription_config_plan_pro_features: typeof subscription_config_plan_pro_features
+  subscription_config_plan_max_features: typeof subscription_config_plan_max_features
+  subscription_config_plan_custom_features: typeof subscription_config_plan_custom_features
   subscription_config_workflow_calculator_business_types: typeof subscription_config_workflow_calculator_business_types
   subscription_config_workflow_calculator_business_types_locales: typeof subscription_config_workflow_calculator_business_types_locales
-  subscription_config_additional_features: typeof subscription_config_additional_features
-  subscription_config_additional_features_locales: typeof subscription_config_additional_features_locales
   subscription_config: typeof subscription_config
   subscription_config_locales: typeof subscription_config_locales
+  subscription_config_numbers: typeof subscription_config_numbers
+  checkout: typeof checkout
+  checkout_locales: typeof checkout_locales
+  upgrade_banner: typeof upgrade_banner
+  upgrade_banner_locales: typeof upgrade_banner_locales
+  licenses: typeof licenses
+  licenses_locales: typeof licenses_locales
+  license_dialogs: typeof license_dialogs
+  license_dialogs_locales: typeof license_dialogs_locales
+  errors: typeof errors
+  errors_locales: typeof errors_locales
   relations_users_sessions: typeof relations_users_sessions
   relations_users: typeof relations_users
   relations_media: typeof relations_media
@@ -3996,8 +4486,6 @@ type DatabaseSchema = {
   relations_pages_blocks_stats_items: typeof relations_pages_blocks_stats_items
   relations_pages_blocks_stats: typeof relations_pages_blocks_stats
   relations_pages_blocks_flow_example: typeof relations_pages_blocks_flow_example
-  relations_pages_blocks_subscription_configurator_feature_overview: typeof relations_pages_blocks_subscription_configurator_feature_overview
-  relations_pages_blocks_subscription_configurator_buttons: typeof relations_pages_blocks_subscription_configurator_buttons
   relations_pages_blocks_subscription_configurator: typeof relations_pages_blocks_subscription_configurator
   relations_pages_blocks_pricing_pro_features: typeof relations_pages_blocks_pricing_pro_features
   relations_pages_blocks_pricing_pro_missing_features: typeof relations_pages_blocks_pricing_pro_missing_features
@@ -4052,17 +4540,30 @@ type DatabaseSchema = {
   relations_footer: typeof relations_footer
   relations_cookie_banner_locales: typeof relations_cookie_banner_locales
   relations_cookie_banner: typeof relations_cookie_banner
+  relations_subscription_config_plan_pro_features: typeof relations_subscription_config_plan_pro_features
+  relations_subscription_config_plan_max_features: typeof relations_subscription_config_plan_max_features
+  relations_subscription_config_plan_custom_features: typeof relations_subscription_config_plan_custom_features
   relations_subscription_config_workflow_calculator_business_types_locales: typeof relations_subscription_config_workflow_calculator_business_types_locales
   relations_subscription_config_workflow_calculator_business_types: typeof relations_subscription_config_workflow_calculator_business_types
-  relations_subscription_config_additional_features_locales: typeof relations_subscription_config_additional_features_locales
-  relations_subscription_config_additional_features: typeof relations_subscription_config_additional_features
   relations_subscription_config_locales: typeof relations_subscription_config_locales
+  relations_subscription_config_numbers: typeof relations_subscription_config_numbers
   relations_subscription_config: typeof relations_subscription_config
+  relations_checkout_locales: typeof relations_checkout_locales
+  relations_checkout: typeof relations_checkout
+  relations_upgrade_banner_locales: typeof relations_upgrade_banner_locales
+  relations_upgrade_banner: typeof relations_upgrade_banner
+  relations_licenses_locales: typeof relations_licenses_locales
+  relations_licenses: typeof relations_licenses
+  relations_license_dialogs_locales: typeof relations_license_dialogs_locales
+  relations_license_dialogs: typeof relations_license_dialogs
+  relations_errors_locales: typeof relations_errors_locales
+  relations_errors: typeof relations_errors
 }
-
+    
 
 declare module '@payloadcms/db-postgres' {
   export interface GeneratedDatabaseSchema {
     schema: DatabaseSchema
   }
 }
+    

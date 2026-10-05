@@ -1,5 +1,8 @@
 import { iconField as payloadIconField } from "@mvriu5/payload-icon-picker"
+import { DEFAULT_USAGE_PACKAGES } from "@/lib/subscription/usagePackages"
 import type { Field, GlobalConfig } from "payload"
+
+type LocalizedFeature = { de: string; en: string }
 
 const accentColorOptions = [
     { label: "Brand", value: "brand" },
@@ -30,17 +33,45 @@ const colorField = {
     defaultValue: "aqua",
 } as const
 
-const usageRangeFields = (defaults: { min: number; max: number; step: number }): Field[] => [
-    { name: "step", type: "number", required: false, defaultValue: defaults.step },
-    { name: "min", type: "number", required: false, defaultValue: defaults.min },
-    { name: "max", type: "number", required: false, defaultValue: defaults.max },
+const optionImageField = (): Field => ({
+    name: "image",
+    label: "Image",
+    type: "upload",
+    relationTo: "media",
+    required: false,
+})
+
+const usagePackageFields = (defaults: { default: number; packages: readonly number[] }): Field[] => [
+    {
+        name: "packages",
+        label: "Packages",
+        type: "number",
+        hasMany: true,
+        required: true,
+        minRows: 1,
+        defaultValue: [...defaults.packages],
+        admin: { description: "Selectable quantities in ascending order. Must match Crater's checkout.quantity_steps for this customer type." },
+    },
+    {
+        name: "default",
+        label: "Default (preselected package)",
+        type: "number",
+        required: false,
+        defaultValue: defaults.default,
+        admin: { description: "Must be one of the packages; otherwise the smallest package is preselected." },
+    },
 ]
 
-const packagePriceFields = (): Field[] => [
-    { name: "monthly", label: "Monthly", type: "number", required: false, defaultValue: 0, min: 0 },
-    { name: "quarterly", label: "Quarterly", type: "number", required: false, defaultValue: 0, min: 0 },
-    { name: "yearly", label: "Yearly", type: "number", required: false, defaultValue: 0, min: 0 },
-]
+const planFeaturesField = (features: LocalizedFeature[]): Field => ({
+    name: "features",
+    label: "Features",
+    type: "array",
+    localized: true,
+    required: true,
+    minRows: 1,
+    defaultValue: ({ locale }) => features.map((feature) => ({ text: locale === "de" ? feature.de : feature.en })),
+    fields: [{ name: "text", label: "Feature", type: "text", required: true }],
+})
 
 export const SubscriptionCollection: GlobalConfig = {
     slug: "subscriptionConfig",
@@ -50,19 +81,6 @@ export const SubscriptionCollection: GlobalConfig = {
     },
     fields: [
         {
-            name: "title",
-            type: "text",
-            required: false,
-            defaultValue: "Subscription Config",
-        },
-        {
-            name: "optionsPanelHeading",
-            type: "text",
-            required: false,
-            localized: true,
-            defaultValue: "Build the subscription shape",
-        },
-        {
             name: "defaults",
             label: "Configurator Defaults",
             type: "group",
@@ -71,9 +89,9 @@ export const SubscriptionCollection: GlobalConfig = {
                     name: "deployment",
                     type: "select",
                     required: false,
-                    defaultValue: "self-hosted",
+                    defaultValue: "self_hosted",
                     options: [
-                        { label: "Self-hosted", value: "self-hosted" },
+                        { label: "Self-hosted", value: "self_hosted" },
                         { label: "Cloud", value: "cloud" },
                     ],
                 },
@@ -89,58 +107,32 @@ export const SubscriptionCollection: GlobalConfig = {
                 },
                 {
                     name: "paymentPeriod",
-                    type: "select",
-                    required: false,
-                    defaultValue: "monthly",
-                    options: [
-                        { label: "Monthly", value: "monthly" },
-                        { label: "Quarterly", value: "quarterly" },
-                        { label: "Yearly", value: "yearly" },
-                    ],
-                },
-                {
-                    name: "workflowExecutions",
-                    label: "Workflow Executions",
+                    label: "Payment Period",
                     type: "group",
                     fields: [
                         {
                             name: "b2b",
                             label: "B2B",
-                            type: "number",
+                            type: "select",
                             required: false,
-                            defaultValue: 1000,
-                            min: 0,
+                            defaultValue: "monthly",
+                            options: [
+                                { label: "Monthly", value: "monthly" },
+                                { label: "Quarterly", value: "quarterly" },
+                                { label: "Yearly", value: "yearly" },
+                            ],
                         },
                         {
                             name: "b2c",
                             label: "B2C",
-                            type: "number",
+                            type: "select",
                             required: false,
-                            defaultValue: 100,
-                            min: 0,
-                        },
-                    ],
-                },
-                {
-                    name: "aiTokens",
-                    label: "AI Tokens",
-                    type: "group",
-                    fields: [
-                        {
-                            name: "b2b",
-                            label: "B2B",
-                            type: "number",
-                            required: false,
-                            defaultValue: 1000000,
-                            min: 0,
-                        },
-                        {
-                            name: "b2c",
-                            label: "B2C",
-                            type: "number",
-                            required: false,
-                            defaultValue: 100000,
-                            min: 0,
+                            defaultValue: "monthly",
+                            options: [
+                                { label: "Monthly", value: "monthly" },
+                                { label: "Quarterly", value: "quarterly" },
+                                { label: "Yearly", value: "yearly" },
+                            ],
                         },
                     ],
                 },
@@ -155,8 +147,9 @@ export const SubscriptionCollection: GlobalConfig = {
                     type: "text",
                     required: false,
                     localized: true,
-                    defaultValue: "Deployment",
+                    defaultValue: "Choose where your code0 instance will run.",
                 },
+                { name: "description", type: "textarea", required: false, localized: true },
                 {
                     name: "selfHosted",
                     type: "group",
@@ -171,6 +164,7 @@ export const SubscriptionCollection: GlobalConfig = {
                         },
                         { ...iconField, defaultValue: "server" },
                         { ...colorField, defaultValue: "yellow" },
+                        optionImageField(),
                     ],
                 },
                 {
@@ -187,6 +181,91 @@ export const SubscriptionCollection: GlobalConfig = {
                         },
                         { ...iconField, defaultValue: "cloud" },
                         { ...colorField, defaultValue: "aqua" },
+                        optionImageField(),
+                    ],
+                },
+            ],
+        },
+        {
+            name: "plan",
+            label: "Plan",
+            type: "group",
+            fields: [
+                {
+                    name: "title",
+                    type: "text",
+                    required: false,
+                    localized: true,
+                    defaultValue: "Choose the plan that best matches your requirements.",
+                },
+                { name: "description", type: "textarea", required: false, localized: true },
+                {
+                    name: "pro",
+                    label: "Pro",
+                    type: "group",
+                    fields: [
+                        { name: "title", type: "text", required: false, localized: true, defaultValue: "Pro" },
+                        {
+                            name: "description",
+                            type: "textarea",
+                            required: false,
+                            localized: true,
+                            defaultValue: "A ready-to-use plan for individuals and smaller teams.",
+                        },
+                        planFeaturesField([
+                            { en: "Essential workflow automation", de: "Grundlegende Workflow-Automatisierung" },
+                            { en: "AI-assisted workflows", de: "KI-unterstützte Workflows" },
+                            { en: "Cloud or self-hosted deployment", de: "Cloud- oder Self-hosted-Bereitstellung" },
+                        ]),
+                        { ...iconField, defaultValue: "sparkles" },
+                        { ...colorField, defaultValue: "lime" },
+                        optionImageField(),
+                    ],
+                },
+                {
+                    name: "max",
+                    label: "Max",
+                    type: "group",
+                    fields: [
+                        { name: "title", type: "text", required: false, localized: true, defaultValue: "Max" },
+                        {
+                            name: "description",
+                            type: "textarea",
+                            required: false,
+                            localized: true,
+                            defaultValue: "A ready-to-use plan for organizations with higher requirements.",
+                        },
+                        planFeaturesField([
+                            { en: "Everything included in Pro", de: "Alle Funktionen aus Pro" },
+                            { en: "Advanced automation capabilities", de: "Erweiterte Automatisierungsfunktionen" },
+                            { en: "Designed for higher workflow demand", de: "Für einen höheren Workflow-Bedarf ausgelegt" },
+                        ]),
+                        { ...iconField, defaultValue: "rocket" },
+                        { ...colorField, defaultValue: "magenta" },
+                        optionImageField(),
+                    ],
+                },
+                {
+                    name: "custom",
+                    label: "Custom",
+                    type: "group",
+                    fields: [
+                        { name: "title", type: "text", required: false, localized: true, defaultValue: "Custom" },
+                        {
+                            name: "description",
+                            type: "textarea",
+                            required: false,
+                            localized: true,
+                            defaultValue: "Configure usage for an individual setup.",
+                        },
+                        planFeaturesField([
+                            { en: "Configurable AI token volume", de: "Konfigurierbares KI-Token-Volumen" },
+                            { en: "Configurable workflow executions", de: "Konfigurierbare Workflow-Ausführungen" },
+                            { en: "Tailored usage configuration", de: "Individuelle Nutzungskonfiguration" },
+                        ]),
+                        { ...iconField, defaultValue: "settings" },
+                        { ...colorField, defaultValue: "yellow" },
+                        optionImageField(),
                     ],
                 },
             ],
@@ -200,8 +279,9 @@ export const SubscriptionCollection: GlobalConfig = {
                     type: "text",
                     required: false,
                     localized: true,
-                    defaultValue: "Customer Type",
+                    defaultValue: "Choose the customer model that best matches your use case.",
                 },
+                { name: "description", type: "textarea", required: false, localized: true },
                 {
                     name: "b2b",
                     type: "group",
@@ -216,6 +296,7 @@ export const SubscriptionCollection: GlobalConfig = {
                         },
                         { ...iconField, defaultValue: "briefcase-2" },
                         { ...colorField, defaultValue: "blue" },
+                        optionImageField(),
                     ],
                 },
                 {
@@ -232,51 +313,7 @@ export const SubscriptionCollection: GlobalConfig = {
                         },
                         { ...iconField, defaultValue: "building-store" },
                         { ...colorField, defaultValue: "pink" },
-                    ],
-                },
-            ],
-        },
-        {
-            name: "subscriptionTier",
-            type: "group",
-            fields: [
-                {
-                    name: "label",
-                    type: "text",
-                    required: false,
-                    localized: true,
-                    defaultValue: "Subscription tier",
-                },
-                {
-                    name: "pro",
-                    type: "group",
-                    fields: [
-                        { name: "title", type: "text", required: false, localized: true, defaultValue: "PRO" },
-                        {
-                            name: "description",
-                            type: "textarea",
-                            required: false,
-                            localized: true,
-                            defaultValue: "Single-owner setup for advanced personal or expert workflows.",
-                        },
-                        { ...iconField, defaultValue: "sparkles" },
-                        { ...colorField, defaultValue: "brand" },
-                    ],
-                },
-                {
-                    name: "team",
-                    type: "group",
-                    fields: [
-                        { name: "title", type: "text", required: false, localized: true, defaultValue: "TEAM" },
-                        {
-                            name: "description",
-                            type: "textarea",
-                            required: false,
-                            localized: true,
-                            defaultValue: "Shared workspace model with seat-based team access.",
-                        },
-                        { ...iconField, defaultValue: "users-group" },
-                        { ...colorField, defaultValue: "aqua" },
+                        optionImageField(),
                     ],
                 },
             ],
@@ -299,12 +336,6 @@ export const SubscriptionCollection: GlobalConfig = {
                             localized: true,
                             defaultValue: "For individuals and smaller teams.",
                         },
-                        {
-                            name: "prices",
-                            label: "Prices",
-                            type: "group",
-                            fields: packagePriceFields(),
-                        },
                     ],
                 },
                 {
@@ -319,12 +350,6 @@ export const SubscriptionCollection: GlobalConfig = {
                             required: false,
                             localized: true,
                             defaultValue: "For organizations with higher requirements.",
-                        },
-                        {
-                            name: "prices",
-                            label: "Prices",
-                            type: "group",
-                            fields: packagePriceFields(),
                         },
                     ],
                 },
@@ -350,14 +375,14 @@ export const SubscriptionCollection: GlobalConfig = {
             label: "Payment Period",
             type: "group",
             fields: [
-                { name: "label", type: "text", required: false, localized: true, defaultValue: "Payment period" },
                 {
-                    name: "description",
-                    type: "textarea",
+                    name: "label",
+                    type: "text",
                     required: false,
                     localized: true,
                     defaultValue: "Choose how often you want to be billed.",
                 },
+                { name: "description", type: "textarea", required: false, localized: true },
                 { name: "monthlyText", type: "text", required: false, localized: true, defaultValue: "Monthly" },
                 { name: "quarterlyText", type: "text", required: false, localized: true, defaultValue: "Quarterly" },
                 { name: "yearlyText", type: "text", required: false, localized: true, defaultValue: "Yearly" },
@@ -365,48 +390,51 @@ export const SubscriptionCollection: GlobalConfig = {
                 { name: "quarterlyPeriodSuffix", type: "text", required: false, localized: true, defaultValue: "per quarter" },
                 { name: "yearlyPeriodSuffix", type: "text", required: false, localized: true, defaultValue: "per year" },
                 {
-                    name: "quarterlyDiscount",
-                    label: "Quarterly Discount",
-                    type: "number",
+                    name: "quarterlyPaidLabel",
+                    label: "Quarterly Paid Label",
+                    type: "text",
                     required: false,
-                    defaultValue: 0,
-                    min: 0,
-                    max: 1,
+                    localized: true,
+                    defaultValue: "paid quarterly",
+                    admin: { description: "Shown next to the price when quarterly billing is selected." },
                 },
                 {
-                    name: "yearlyDiscount",
-                    label: "Yearly Discount",
-                    type: "number",
+                    name: "yearlyPaidLabel",
+                    label: "Yearly Paid Label",
+                    type: "text",
                     required: false,
-                    defaultValue: 0,
-                    min: 0,
-                    max: 1,
+                    localized: true,
+                    defaultValue: "paid yearly",
+                    admin: { description: "Shown next to the price when yearly billing is selected." },
                 },
+                { ...colorField, name: "monthlyColor", defaultValue: "brand" },
+                { ...colorField, name: "quarterlyColor", defaultValue: "aqua" },
+                { ...colorField, name: "yearlyColor", defaultValue: "magenta" },
             ],
         },
         {
             name: "workflowExecutions",
             type: "group",
             fields: [
-                { name: "title", type: "text", required: false, localized: true, defaultValue: "Workflow Executions" },
                 {
-                    name: "description",
-                    type: "textarea",
+                    name: "title",
+                    type: "text",
                     required: false,
                     localized: true,
                     defaultValue: "How many workflow executions do you expect per month?",
                 },
+                { name: "description", type: "textarea", required: false, localized: true },
                 {
                     name: "b2b",
                     label: "B2B",
                     type: "group",
-                    fields: usageRangeFields({ min: 200, max: 10000, step: 100 }),
+                    fields: usagePackageFields(DEFAULT_USAGE_PACKAGES.workflowExecutions.b2b),
                 },
                 {
                     name: "b2c",
                     label: "B2C",
                     type: "group",
-                    fields: usageRangeFields({ min: 10, max: 1000, step: 10 }),
+                    fields: usagePackageFields(DEFAULT_USAGE_PACKAGES.workflowExecutions.b2c),
                 },
                 { name: "suffix", type: "text", required: false, localized: true, defaultValue: "exec" },
             ],
@@ -466,42 +494,26 @@ export const SubscriptionCollection: GlobalConfig = {
             ],
         },
         {
-            name: "workflowExecutionPriceFactor",
-            label: "Workflow Execution Price Factor",
-            type: "number",
-            required: false,
-            defaultValue: 0.001,
-            min: 0,
-        },
-        {
             name: "aiTokens",
             label: "AI Tokens",
             type: "group",
             fields: [
-                { name: "title", type: "text", required: false, localized: true, defaultValue: "AI Tokens" },
-                { name: "description", type: "textarea", required: false, localized: true, defaultValue: "How many AI tokens do you expect to consume per month?" },
+                { name: "title", type: "text", required: false, localized: true, defaultValue: "How many AI tokens do you expect to consume per month?" },
+                { name: "description", type: "textarea", required: false, localized: true },
                 {
                     name: "b2b",
                     label: "B2B",
                     type: "group",
-                    fields: usageRangeFields({ min: 100000, max: 10000000, step: 100000 }),
+                    fields: usagePackageFields(DEFAULT_USAGE_PACKAGES.aiTokens.b2b),
                 },
                 {
                     name: "b2c",
                     label: "B2C",
                     type: "group",
-                    fields: usageRangeFields({ min: 10000, max: 1000000, step: 10000 }),
+                    fields: usagePackageFields(DEFAULT_USAGE_PACKAGES.aiTokens.b2c),
                 },
                 { name: "suffix", type: "text", required: false, localized: true, defaultValue: "tokens" },
             ],
-        },
-        {
-            name: "aiTokenPriceFactor",
-            label: "AI Token Price Factor",
-            type: "number",
-            required: false,
-            defaultValue: 0.000001,
-            min: 0,
         },
         {
             name: "contactSales",
@@ -518,35 +530,6 @@ export const SubscriptionCollection: GlobalConfig = {
             fields: [
                 { name: "label", type: "text", required: false, localized: true, defaultValue: "Buy now" },
                 { name: "baseUrl", type: "text", required: false, defaultValue: "" },
-            ],
-        },
-        {
-            name: "price",
-            type: "group",
-            fields: [
-                { name: "heading", type: "text", required: false, localized: true, defaultValue: "Price" },
-                { name: "caption", type: "text", required: false, localized: true, defaultValue: "per month" },
-            ],
-        },
-        {
-            name: "additionalFeaturesLabel",
-            type: "text",
-            localized: true,
-            admin: {
-                description: "Optional section heading shown above the additional features list.",
-            },
-        },
-        {
-            name: "additionalFeatures",
-            type: "array",
-            admin: {
-                description: "Leave empty to hide the section entirely.",
-            },
-            fields: [
-                { name: "title", type: "text", required: false, localized: true },
-                { name: "description", type: "textarea", required: false, localized: true },
-                iconField,
-                { name: "price", type: "number", required: false, defaultValue: 0, admin: { description: "Monthly price in EUR." } },
             ],
         },
     ],

@@ -19,14 +19,20 @@
         "lint": "npm run typecheck",
         "typecheck": "tsc --noEmit",
         "knip": "node --import tsx ./node_modules/knip/bin/knip.js",
-        "test": "node --import tsx --test tests/*.test.ts",
+        "test": "node --experimental-test-module-mocks --import tsx --test tests/*.test.ts tests/crater/*.test.ts tests/checkout/*.test.ts tests/checkout/*.test.tsx tests/licenses/*.test.ts tests/licenses/*.test.tsx tests/subscription/*.test.ts tests/subscription/*.test.tsx",
+        "test:crater": "node --experimental-test-module-mocks --import tsx --test tests/crater/*.test.ts",
+        "test:checkout": "node --experimental-test-module-mocks --import tsx --test tests/checkout/*.test.ts tests/checkout/*.test.tsx",
+        "test:licenses": "node --experimental-test-module-mocks --import tsx --test tests/licenses/*.test.ts tests/licenses/*.test.tsx",
+        "test:subscription": "node --experimental-test-module-mocks --import tsx --test tests/subscription/*.test.ts tests/subscription/*.test.tsx",
         "generate": "payload generate:types"
     },
     "dependencies": {
+        "@apollo/client": "^4.2.8",
         "@base-ui/react": "^1.8.0",
         "@c15t/nextjs": "^2.2.1",
         "@c15t/react": "^2.2.1",
         "@c15t/scripts": "^2.2.0",
+        "@code0-tech/crater-graphql-types": "0.0.0-experimental-2903377348-a6a03474829aa833300861f51cb07a42946ab8ea",
         "@code0-tech/pictor": "^0.18.3",
         "@icons-pack/react-simple-icons": "^13.15.1",
         "@mvriu5/payload-ai": "^1.6.4",
@@ -40,6 +46,8 @@
         "@payloadcms/next": "3.88.0",
         "@payloadcms/plugin-seo": "3.88.0",
         "@payloadcms/richtext-lexical": "3.88.0",
+        "@stripe/react-stripe-js": "^6.8.0",
+        "@stripe/stripe-js": "^9.13.0",
         "@tabler/icons-react": "3.41.1",
         "border-beam": "^1.4.1",
         "class-variance-authority": "^0.7.1",
@@ -54,10 +62,12 @@
         "react": "^19.3.0",
         "react-dom": "^19.3.0",
         "react-player": "^3.4.0",
+        "rxjs": "^7.8.2",
         "sanitize-html": "^2.17.7",
         "sass": "^1.105.0",
         "sharp": "^0.35.4",
         "shiki": "^4.4.3",
+        "stripe": "^22.4.0",
         "tailwind-merge": "^3.6.0",
         "web-haptics": "^0.0.6"
     },
@@ -65,10 +75,13 @@
         "@ai-sdk/mistral": "^4.0.52",
         "@swc-node/register": "^1.12.1",
         "@tailwindcss/postcss": "^4.3.3",
+        "@testing-library/react": "^16.3.2",
+        "@testing-library/user-event": "^14.6.1",
         "@types/node": "^25.9.8",
         "@types/react": "^19.3.0",
         "@types/react-dom": "^19.3.0",
         "@types/sanitize-html": "^2.16.1",
+        "happy-dom": "^20.10.6",
         "postcss": "^8.5.28",
         "prettier": "^3.9.9",
         "tailwindcss": "^4.3.3",
@@ -76,9 +89,11 @@
         "typescript": "^6.0.3"
     },
     "knip": {
+        "entry": [
+            "tests/**/*.test.{ts,tsx}"
+        ],
         "ignoreFiles": [
-            "next-sitemap.config.cjs",
-            "src/payload-schema.snapshot"
+            "next-sitemap.config.cjs"
         ],
         "ignoreDependencies": [
             "@swc-node/register",
@@ -88,6 +103,9 @@
     },
     "overrides": {
         "postcss": "$postcss",
+        "sharp": "$sharp",
+        "fast-uri": "3.1.4",
+        "valibot": "1.4.2",
         "uuid": "14.0.2",
         "nodemailer": "9.1.1",
         "lodash": "4.18.1",
@@ -97,5 +115,12 @@
         "@esbuild-kit/core-utils": {
             "esbuild": "0.28.1"
         }
+    },
+    "allowScripts": {
+        "@parcel/watcher@2.5.6": true,
+        "@swc/core@1.15.43": true,
+        "esbuild@0.25.12": true,
+        "esbuild@0.28.1": true,
+        "sharp@0.35.3": true
     }
 }

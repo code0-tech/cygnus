@@ -1,0 +1,72 @@
+import { guestCheckoutId, readGuestCheckoutSession } from "@/lib/checkout/guestCheckoutSession"
+import { createApolloClient } from "@/lib/apolloClient"
+import { CRATER_ERROR_FIELDS, craterJson, craterMutationErrorResponse, craterTransportErrorResponse, requireCraterSession } from "@/lib/crater/api.server"
+import { optionalString, readJsonObject, isLicenseId } from "@/lib/crater/request"
+import type { Mutation, MutationLicensesExportArgs } from "@code0-tech/crater-graphql-types"
+import { gql, type TypedDocumentNode } from "@apollo/client"
+
+export const runtime = "nodejs"
+
+type LicensesExportData = Pick<Mutation, "licensesExport">
+
+const LICENSES_EXPORT: TypedDocumentNode<LicensesExportData, MutationLicensesExportArgs> = gql`
+    ${CRATER_ERROR_FIELDS}
+    mutation LicensesExport($input: LicensesExportInput!) {
+        licensesExport(input: $input) {
+            license
+            errors {
+                ...CraterErrorFields
+            }
+        }
+    }
+`
+
+function licenseFileName(id: string) {
+    return `code0-license-${id.split("/").at(-1)}.czlc`
+}
+
+export async function POST(request: Request) {
+    const session = requireCraterSession(request)
+    if (session.response) return session.response
+
+    const body = await readJsonObject(request)
+    const id = optionalString(body?.id)
+    if (!id || !isLicenseId(id)) {
+        return craterJson({ error: "A valid Crater license id is required." }, 400)
+    }
+
+    if (guestCheckoutId(request) !== null && readGuestCheckoutSession(request)?.receipt?.licenseId !== id) {
+        return craterJson({ error: "This guest purchase does not grant access to that license." }, 403)
+    }
+
+    try {
+        const result = await createApolloClient(session.token).mutate({
+            mutation: LICENSES_EXPORT,
+            variables: { input: { id } },
+        })
+        const payload = result.data?.licensesExport
+        if (!payload) throw new Error("Crater returned no license export payload.")
+
+        const errorResponse = craterMutationErrorResponse(payload.errors, "Crater could not export the license.")
+        if (errorResponse) return errorResponse
+        if (!payload.license) throw new Error("Crater returned an incomplete license export.")
+
+        const fileName = licenseFileName(id)
+        return new Response(payload.license, {
+            status: 200,
+            headers: {
+                "cache-control": "private, no-store",
+                "content-disposition": `attachment; filename="${fileName}"`,
+                "content-type": "application/octet-stream",
+                "x-content-type-options": "nosniff",
+                "x-license-filename": fileName,
+            },
+        })
+    } catch (error) {
+        const transportResponse = craterTransportErrorResponse(error, request)
+        if (transportResponse) return transportResponse
+
+        console.error("Crater license export error:", error instanceof Error ? `${error.name}: ${error.message}` : "Unknown error")
+        return craterJson({ error: "Could not export the Crater license." }, 502)
+    }
+}

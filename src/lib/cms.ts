@@ -2,9 +2,10 @@ import "server-only"
 
 import { extractActionModuleInfo, fetchMediaJson } from "@/lib/actionExtraction"
 import { DEFAULT_LOCALE, type AppLocale } from "@/lib/i18n"
+import type { NavigationData } from "@/lib/navigation"
 import { getPayloadClient } from "@/lib/payloadClient"
+import { DEFAULT_USAGE_PACKAGES, withDefaultUsagePackages } from "@/lib/subscription/usagePackages"
 import type { Action, Blog, CookieBanner, Footer, Job, Media, Navigation, Page, TeamMember } from "@/payload-types"
-import type { NavigationData, NavbarButtonData, NavbarItemData } from "@/lib/navigation"
 import { cache } from "react"
 
 const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build" || process.env.npm_lifecycle_event === "build"
@@ -60,10 +61,9 @@ export interface PaginatedActionsResult {
 }
 type ActionDetailItem = ActionItem
 
-interface SubscriptionUsageRange {
-    step: number
-    min: number
-    max: number
+interface SubscriptionUsagePackages {
+    default?: number | null
+    packages: number[]
 }
 
 export type JobItem = Pick<Job, "id" | "title" | "slug" | "category" | "type" | "location" | "description" | "order">
@@ -92,69 +92,86 @@ function sortBlogPosts(posts: BlogPostItem[]): BlogPostItem[] {
 
 export interface SubscriptionConfigData {
     id: number
-    title: string
-    optionsPanelHeading: string
     defaults: {
-        deployment: "self-hosted" | "cloud"
+        deployment: "self_hosted" | "cloud"
         customerType: "b2b" | "b2c"
-        paymentPeriod: "monthly" | "quarterly" | "yearly"
-        workflowExecutions: {
-            b2b: number
-            b2c: number
-        }
-        aiTokens: {
-            b2b: number
-            b2c: number
+        paymentPeriod: {
+            b2b: "monthly" | "quarterly" | "yearly"
+            b2c: "monthly" | "quarterly" | "yearly"
         }
     }
     deployment: {
         label: string
+        description?: string | null
         selfHosted: {
             title: string
             description: string
             icon: string
-            color: "brand" | "pink" | "yellow" | "aqua" | "blue" | "lime" | "magenta"
+            image?: number | Media | null
+            color: IconColor
         }
         cloud: {
             title: string
             description: string
             icon: string
-            color: "brand" | "pink" | "yellow" | "aqua" | "blue" | "lime" | "magenta"
+            image?: number | Media | null
+            color: IconColor
+        }
+    }
+    plan: {
+        title: string
+        description?: string | null
+        pro: {
+            title: string
+            description: string
+            features?: Array<{ id?: string | null; text?: string | null }> | null
+            icon: string
+            color: IconColor
+            image?: number | Media | null
+        }
+        max: {
+            title: string
+            description: string
+            features?: Array<{ id?: string | null; text?: string | null }> | null
+            icon: string
+            color: IconColor
+            image?: number | Media | null
+        }
+        custom: {
+            title: string
+            description: string
+            features?: Array<{ id?: string | null; text?: string | null }> | null
+            icon: string
+            color: IconColor
+            image?: number | Media | null
         }
     }
     customerType: {
         label: string
+        description?: string | null
         b2b: {
             title: string
             description: string
             icon: string
-            color: "brand" | "pink" | "yellow" | "aqua" | "blue" | "lime" | "magenta"
+            image?: number | Media | null
+            color: IconColor
         }
         b2c: {
             title: string
             description: string
             icon: string
-            color: "brand" | "pink" | "yellow" | "aqua" | "blue" | "lime" | "magenta"
+            image?: number | Media | null
+            color: IconColor
         }
     }
     packages: {
         pro: {
             title: string
             description: string
-            prices: {
-                monthly: number
-                quarterly: number
-                yearly: number
-            }
         }
         max: {
             title: string
             description: string
-            prices: {
-                monthly: number
-                quarterly: number
-                yearly: number
-            }
         }
         custom: {
             title: string
@@ -163,21 +180,24 @@ export interface SubscriptionConfigData {
     }
     paymentPeriod: {
         label: string
-        description: string
+        description?: string | null
         monthlyText: string
         quarterlyText: string
         yearlyText: string
         monthlyPeriodSuffix: string
         quarterlyPeriodSuffix: string
         yearlyPeriodSuffix: string
-        quarterlyDiscount: number
-        yearlyDiscount: number
+        quarterlyPaidLabel: string
+        yearlyPaidLabel: string
+        monthlyColor: IconColor
+        quarterlyColor: IconColor
+        yearlyColor: IconColor
     }
     workflowExecutions: {
         title: string
-        description: string
-        b2b: SubscriptionUsageRange
-        b2c: SubscriptionUsageRange
+        description?: string | null
+        b2b: SubscriptionUsagePackages
+        b2c: SubscriptionUsagePackages
         suffix: string
     }
     workflowCalculator: {
@@ -202,15 +222,13 @@ export interface SubscriptionConfigData {
             id?: string | null
         }[]
     }
-    workflowExecutionPriceFactor: number
     aiTokens: {
         title: string
-        description: string
-        b2b: SubscriptionUsageRange
-        b2c: SubscriptionUsageRange
+        description?: string | null
+        b2b: SubscriptionUsagePackages
+        b2c: SubscriptionUsagePackages
         suffix: string
     }
-    aiTokenPriceFactor: number
     contactSales: {
         prompt: string
         label: string
@@ -220,20 +238,6 @@ export interface SubscriptionConfigData {
         label: string
         baseUrl: string
     }
-    price: {
-        heading: string
-        caption: string
-    }
-    additionalFeaturesLabel?: string | null
-    additionalFeatures?:
-        | {
-              icon: string
-              title: string
-              description: string
-              price: number
-              id?: string | null
-          }[]
-        | null
 }
 
 export interface SubscriptionConfiguratorBlockData {
@@ -241,21 +245,287 @@ export interface SubscriptionConfiguratorBlockData {
         heading: string
         description: string
     }
-    featureOverview: {
-        title: string
-        description: string
-        icon: string
-        id?: string | null
-    }[]
-    buttons: {
-        label: string
-        url: string
-        variant?: "none" | "normal" | "outlined" | "filled" | null
-        id?: string | null
-    }[]
 }
 
 export type SubscriptionConfiguratorContent = SubscriptionConfigData & SubscriptionConfiguratorBlockData
+
+export type IconColor = "neutral" | "brand" | "aqua" | "blue" | "pink" | "yellow" | "lime" | "magenta"
+
+export interface CheckoutData {
+    id: number
+    login: {
+        heading: string
+        description: string
+        loginLabel: string
+        guestHeading: string
+        guestDescription: string
+        guestLabel: string
+        loginUrl: string
+    }
+    summary: {
+        eyebrow: string
+        heading: string
+        description: string
+        deploymentIcons: {
+            cloud: string
+            selfHosted: string
+        }
+        deploymentIconColor: IconColor
+        customerTypeIcons: {
+            b2b: string
+            b2c: string
+        }
+        customerTypeIconColor: IconColor
+        pricing: {
+            planLabel: string
+            baseLabel: string
+            workflowExecutionsLabel: string
+            quarterlyDiscountLabel: string
+            yearlyDiscountLabel: string
+            discountInputPlaceholder: string
+            discountButtonLabel: string
+            discountPromptLabel: string
+            discountRemoveLabel: string
+            taxLabel: string
+            totalLabel: string
+            perMonthSuffix: string
+        }
+    }
+    form: {
+        billingHeading: string
+        continueLabel: string
+        backToBillingLabel: string
+        payNowLabel: string
+        sendOfferPrompt: string
+        sendOfferLabel: string
+        sendOfferTitle: string
+        sendOfferDescription: string
+        processingLabel: string
+        customerSelectLabel: string
+        newCustomerLabel: string
+        nameLabel: string
+        emailLabel: string
+        emailPlaceholder: string
+        phoneLabel: string
+        line1Label: string
+        line2Label: string
+        cityLabel: string
+        stateLabel: string
+        postalCodeLabel: string
+        countryLabel: string
+    }
+    nextSteps: {
+        heading: string
+        step1Title: string
+        step1Description: string
+        step2Title: string
+        step2Description: string
+        step3Title: string
+        step3Description: string
+    }
+    success: {
+        heading: string
+        description: string
+        licenseDashboardLabel: string
+        sculptorLabel: string
+        licenseDownloadLabel: string
+        licenseDownloadError: string
+        licensePendingLabel: string
+        licenseStatusRetryLabel: string
+        receiptHint: string
+        guestAccountHint: string
+        failedHeading: string
+        failedDescription: string
+        invalidHeading: string
+        invalidDescription: string
+        checkoutRetryLabel: string
+    }
+}
+
+interface UpgradeBannerPlanContent {
+    buttonLabel: string
+    gradientFrom: string
+    gradientTo: string
+    text: string
+}
+
+export interface UpgradeBannerData {
+    pro: UpgradeBannerPlanContent
+    max: UpgradeBannerPlanContent
+    custom: UpgradeBannerPlanContent
+}
+
+export interface LicenseContent {
+    license: string
+    licenseDescription: string
+    licenses: string
+    emptyLicenses: string
+    redirectUrl: string
+    sidebar: {
+        logout: string
+        loggingOut: string
+        backToCustomerLabel: string
+        homeLabel: string
+        applicationSettingsLabel: string
+        userSettingsLabel: string
+        userMenuLabel: string
+        profileLabel: string
+        settingsLabel: string
+        workspacesLabel: string
+    }
+    dashboard: {
+        emptyCustomers: string
+        customerLabel: string
+        nameLabel: string
+        emailLabel: string
+        lastEditedLabel: string
+        editLabel: string
+        statusLabel: string
+        paymentPeriodLabel: string
+        workflowExecutionsLabel: string
+        aiTokensLabel: string
+        editionLabel: string
+        nextBillingDateLabel: string
+    }
+    values: {
+        customerTypes: { personal: string; business: string }
+        deploymentTypes: { cloud: string; selfHosted: string }
+        paymentPeriods: { monthly: string; quarterly: string; yearly: string }
+        statuses: { active: string; pending: string; incomplete: string; incompleteExpired: string; pastDue: string; paused: string; trialing: string; unpaid: string; canceled: string }
+        invoiceStatuses: { paid: string; draft: string; open: string; uncollectible: string; void: string }
+        plans: { pro: string; max: string; custom: string }
+        editions: { cloud: string; selfHosted: string }
+        unknown: string
+    }
+    invoices: {
+        lineItemsLabel: string
+        quantityLabel: string
+        netLabel: string
+        taxLabel: string
+        title: string
+        description: string
+        empty: string
+        numberLabel: string
+        billingDateLabel: string
+        amountLabel: string
+        statusLabel: string
+        downloadLabel: string
+        viewLabel: string
+        unavailableLabel: string
+    }
+    pagination: {
+        loadMoreLabel: string
+        loadingLabel: string
+        previousPageLabel: string
+        nextPageLabel: string
+    }
+    editor: {
+        customerTitle: string
+        customerDescription: string
+        contactHeading: string
+        paymentMethodHeading: string
+        paymentMethodDescription: string
+        loadingPaymentMethodLabel: string
+        savePaymentMethodLabel: string
+        savingPaymentMethodLabel: string
+        paymentMethodSuccess: string
+        noPaymentMethodsLabel: string
+        addPaymentMethodLabel: string
+        removePaymentMethodLabel: string
+        removingPaymentMethodLabel: string
+        otherPaymentMethodsHeading: string
+        usePaymentMethodLabel: string
+        settingPaymentMethodLabel: string
+        licenseTitle: string
+        licenseEditDescription: string
+        licenseDescription: string
+        changeNamespaceLabel: string
+        saveLabel: string
+        closeLabel: string
+        generalTabLabel: string
+        paymentMethodsTabLabel: string
+        paymentMethodTabLabel: string
+        namespaceHeading: string
+        cancellationHeading: string
+        fieldDescriptions: {
+            name: string
+            email: string
+            phone: string
+            line1: string
+            line2: string
+            postalCode: string
+            city: string
+            state: string
+            country: string
+        }
+    }
+    subscriptionPreview: {
+        pendingChangeText: string
+        totalLabel: string
+        prorationLabel: string
+        immediateNote: string
+        scheduledNote: string
+        loadingLabel: string
+    }
+    withdrawal: {
+        text: string
+    }
+    billing: {
+        title: string
+        description: string
+        periodLabel: string
+        currentPeriodEndLabel: string
+        changePeriodLabel: string
+    }
+    cancel: {
+        description: string
+        confirmLabel: string
+        pendingHeading: string
+        pendingDescription: string
+        cancelAtLabel: string
+        resumeLabel: string
+    }
+    upgrade: {
+        title: string
+        description: string
+        planHeading: string
+        previewHeading: string
+        submitLabel: string
+    }
+}
+
+export interface ErrorsContent {
+    dashboardLoad: string
+    retry: string
+    customerUpdate: string
+    paymentMethodLoad: string
+    paymentMethodUpdate: string
+    paymentMethodRemove: string
+    paymentMethodInUse: string
+    paymentMethodAssign: string
+    namespaceInUse: string
+    licenseUpdate: string
+    subscriptionPreview: string
+    billingUpdate: string
+    subscriptionCancel: string
+    subscriptionResume: string
+    planUpgrade: string
+    paymentFallback: string
+    sessionUnavailable: string
+    customerCreation: string
+    customerTypeMismatch: string
+    checkoutCustomer: string
+    checkoutSession: string
+    checkoutSessionExpired: string
+    billingAddressUpdate: string
+    emailUpdate: string
+    taxIdUpdate: string
+    taxIdIncomplete: string
+    paymentConfirmation: string
+    discountSessionRequired: string
+    discountValidation: string
+    checkoutLicenseStatus: string
+}
 
 function isMissingPayloadTablesError(error: unknown): boolean {
     if (!error || typeof error !== "object") {
@@ -337,7 +607,7 @@ async function cmsFindSlugs(operation: string, locale: AppLocale, collection: st
         fallbackLocale: DEFAULT_LOCALE,
         pagination: false,
         limit: 1000,
-        depth: 0,
+        depth: 1,
         select: { slug: true },
     })
     const slugs: string[] = []
@@ -662,8 +932,74 @@ const getBlogSlugsCached = cache(async (locale: AppLocale): Promise<string[]> =>
 })
 
 const getSubscriptionConfigCached = cache(async (locale: AppLocale): Promise<SubscriptionConfigData | null> => {
-    return cmsFindGlobal(`getSubscriptionConfig(${locale})`, null, {
+    const config = await cmsFindGlobal<SubscriptionConfigData>(`getSubscriptionConfig(${locale})`, null, {
         slug: "subscriptionConfig",
+        locale,
+        fallbackLocale: DEFAULT_LOCALE,
+        depth: 1,
+    })
+    if (!config) return null
+
+    return {
+        ...config,
+        aiTokens: {
+            ...config.aiTokens,
+            b2b: withDefaultUsagePackages(config.aiTokens?.b2b, DEFAULT_USAGE_PACKAGES.aiTokens.b2b),
+            b2c: withDefaultUsagePackages(config.aiTokens?.b2c, DEFAULT_USAGE_PACKAGES.aiTokens.b2c),
+        },
+        workflowExecutions: {
+            ...config.workflowExecutions,
+            b2b: withDefaultUsagePackages(config.workflowExecutions?.b2b, DEFAULT_USAGE_PACKAGES.workflowExecutions.b2b),
+            b2c: withDefaultUsagePackages(config.workflowExecutions?.b2c, DEFAULT_USAGE_PACKAGES.workflowExecutions.b2c),
+        },
+    }
+})
+
+const getCheckoutContentCached = cache(async (locale: AppLocale): Promise<CheckoutData | null> => {
+    return cmsFindGlobal(`getCheckout(${locale})`, null, {
+        slug: "checkout",
+        locale,
+        fallbackLocale: DEFAULT_LOCALE,
+        depth: 0,
+    })
+})
+
+const getUpgradeBannerContentCached = cache(async (locale: AppLocale): Promise<UpgradeBannerData | null> => {
+    return cmsFindGlobal(`getUpgradeBanner(${locale})`, null, {
+        slug: "upgradeBanner",
+        locale,
+        fallbackLocale: DEFAULT_LOCALE,
+        depth: 0,
+    })
+})
+
+type LicenseDialogsContent = Pick<LicenseContent, "editor" | "subscriptionPreview" | "billing" | "cancel" | "upgrade">
+
+// The dialog texts live in their own global (see src/globals/licenseDialogs.ts) and are merged back here.
+const getLicenseContentCached = cache(async (locale: AppLocale): Promise<LicenseContent | null> => {
+    const [licenses, dialogs] = await Promise.all([
+        cmsFindGlobal<Omit<LicenseContent, keyof LicenseDialogsContent> | null>(`getLicenses(${locale})`, null, {
+            slug: "licenses",
+            locale,
+            fallbackLocale: DEFAULT_LOCALE,
+            depth: 0,
+        }),
+        cmsFindGlobal<LicenseDialogsContent | null>(`getLicenseDialogs(${locale})`, null, {
+            slug: "license-dialogs",
+            locale,
+            fallbackLocale: DEFAULT_LOCALE,
+            depth: 0,
+        }),
+    ])
+    if (!licenses || !dialogs) return null
+
+    const { editor, subscriptionPreview, billing, cancel, upgrade } = dialogs
+    return { ...licenses, editor, subscriptionPreview, billing, cancel, upgrade }
+})
+
+const getErrorsContentCached = cache(async (locale: AppLocale): Promise<ErrorsContent | null> => {
+    return cmsFindGlobal(`getErrors(${locale})`, null, {
+        slug: "errors",
         locale,
         fallbackLocale: DEFAULT_LOCALE,
         depth: 0,
@@ -739,4 +1075,20 @@ export async function getBlogSlugs(locale: AppLocale = DEFAULT_LOCALE): Promise<
 
 export async function getSubscriptionConfig(locale: AppLocale = DEFAULT_LOCALE): Promise<SubscriptionConfigData | null> {
     return getSubscriptionConfigCached(locale)
+}
+
+export async function getCheckoutContent(locale: AppLocale = DEFAULT_LOCALE): Promise<CheckoutData | null> {
+    return getCheckoutContentCached(locale)
+}
+
+export async function getUpgradeBannerContent(locale: AppLocale = DEFAULT_LOCALE): Promise<UpgradeBannerData | null> {
+    return getUpgradeBannerContentCached(locale)
+}
+
+export async function getLicenseContent(locale: AppLocale = DEFAULT_LOCALE): Promise<LicenseContent | null> {
+    return getLicenseContentCached(locale)
+}
+
+export async function getErrorsContent(locale: AppLocale = DEFAULT_LOCALE): Promise<ErrorsContent | null> {
+    return getErrorsContentCached(locale)
 }

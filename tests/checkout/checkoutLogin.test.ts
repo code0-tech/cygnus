@@ -1,0 +1,77 @@
+import assert from "node:assert/strict"
+import test from "node:test"
+import { createCheckoutQuery, createCraterLoginCallbackUrl, createMainAppLoginUrl } from "../../src/lib/checkout/checkoutLogin"
+import { createLicenseNamespaceCallbackUrl, createLicenseNamespaceReturnPath } from "../../src/lib/licenses/routes"
+
+test("preserves the subscription configuration for guest checkout", () => {
+    const query = createCheckoutQuery({ plan: "custom", tag: ["one", "two"], token: "secret", authError: "session", guestCheckout: "previous-purchase", empty: undefined })
+
+    assert.equal(query, "plan=custom&tag=one&tag=two")
+})
+
+test("routes the Sagittarius login response through the server-side Crater callback", () => {
+    const result = createCraterLoginCallbackUrl(new URL("https://code0.example"), "/de/checkout?plan=custom")
+
+    assert.equal(result, "https://code0.example/api/crater/auth/callback?returnPath=%2Fde%2Fcheckout%3Fplan%3Dcustom")
+})
+
+test("routes namespace selection back to one exact license", () => {
+    const returnPath = createLicenseNamespaceReturnPath("de", "gid://crater/Customer/3", "gid://crater/Subscription/9")
+    const callbackUrl = createLicenseNamespaceCallbackUrl(new URL("https://code0.example"), returnPath)
+
+    assert.equal(returnPath, "/de/licenses/customer/3/license/9/edit")
+    assert.equal(callbackUrl, "https://code0.example/api/crater/licenses/namespace/callback?returnPath=%2Fde%2Flicenses%2Fcustomer%2F3%2Flicense%2F9%2Fedit")
+})
+
+test("does not encode license route parameters a second time", () => {
+    const customerId = encodeURIComponent("gid://crater/Customer/3")
+    const licenseId = encodeURIComponent("gid://crater/Subscription/9")
+
+    assert.equal(createLicenseNamespaceReturnPath("en", customerId, licenseId), "/en/licenses/customer/3/license/9/edit")
+})
+
+test("can return namespace selection directly to the license detail", () => {
+    assert.equal(createLicenseNamespaceReturnPath("en", "gid://crater/Customer/3", "gid://crater/Subscription/9", "detail"), "/en/licenses/customer/3/license/9")
+})
+
+test("appends the absolute checkout and cancellation URLs to the configured login URL", () => {
+    const result = createMainAppLoginUrl("https://app.example/login?source=pricing", "https://code0.example/de/checkout?plan=custom", "https://code0.example/de/subscription?plan=custom")
+
+    assert.equal(
+        result,
+        "https://app.example/login?source=pricing&callbackUrl=https%3A%2F%2Fcode0.example%2Fde%2Fcheckout%3Fplan%3Dcustom&cancelUrl=https%3A%2F%2Fcode0.example%2Fde%2Fsubscription%3Fplan%3Dcustom"
+    )
+})
+
+test("requests a namespace from the main app login for cloud deployments", () => {
+    const result = createMainAppLoginUrl(
+        "https://app.example/login?source=pricing",
+        "https://code0.example/de/checkout?deploymentType=cloud",
+        "https://code0.example/de/subscription?deploymentType=cloud",
+        true
+    )
+
+    assert.equal(new URL(result).searchParams.get("selectNamespace"), "true")
+})
+
+test("always enters Sculptor through login even when the CMS points to the consent page or app root", () => {
+    for (const configuredUrl of ["http://localhost:3001", "http://localhost:3001/redirect?source=checkout#consent"]) {
+        const url = new URL(createMainAppLoginUrl(configuredUrl, "https://code0.example/api/crater/auth/callback", "https://code0.example/en/subscription", true))
+        assert.equal(url.origin, "http://localhost:3001")
+        assert.equal(url.pathname, "/login")
+        assert.equal(url.hash, "")
+        assert.equal(url.searchParams.get("callbackUrl"), "https://code0.example/api/crater/auth/callback")
+        assert.equal(url.searchParams.get("cancelUrl"), "https://code0.example/en/subscription")
+        assert.equal(url.searchParams.get("selectNamespace"), "true")
+    }
+})
+
+test("does not request a namespace for non-cloud deployments", () => {
+    const result = createMainAppLoginUrl(
+        "https://app.example/login?source=pricing",
+        "https://code0.example/de/checkout?deploymentType=self_hosted",
+        "https://code0.example/de/subscription?deploymentType=self_hosted"
+    )
+
+    assert.equal(new URL(result).searchParams.has("selectNamespace"), false)
+})

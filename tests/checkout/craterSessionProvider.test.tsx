@@ -1,0 +1,184 @@
+import assert from "node:assert/strict"
+import test, { afterEach } from "node:test"
+import React from "react"
+import { installDomTestEnvironment } from "../helpers/domTestEnvironment"
+
+installDomTestEnvironment()
+
+const { cleanup, render, screen, waitFor } = await import("@testing-library/react")
+const { CraterSessionProvider, useCraterSession } = await import("../../src/components/checkout/session/CraterSessionProvider")
+const originalFetch = globalThis.fetch
+const originalConsoleError = console.error
+
+function SessionState() {
+    const session = useCraterSession()
+    return <span>{session.isLoading ? "loading" : session.authenticated ? "authenticated" : session.error}</span>
+}
+
+afterEach(() => {
+    cleanup()
+    globalThis.fetch = originalFetch
+    console.error = originalConsoleError
+    window.history.replaceState({}, "", "/en/checkout")
+})
+
+test("restores a Crater session from its HttpOnly cookie after reload", async () => {
+    const requests: Array<{ method: string; url: string }> = []
+    globalThis.fetch = (async (input, init) => {
+        requests.push({ method: init?.method ?? "GET", url: String(input) })
+        return new Response(JSON.stringify({ authenticated: true }), { status: 200, headers: { "content-type": "application/json" } })
+    }) as typeof fetch
+
+    render(
+        <CraterSessionProvider>
+            <SessionState />
+        </CraterSessionProvider>
+    )
+
+    assert.ok(await screen.findByText("authenticated"))
+    assert.deepEqual(requests, [{ method: "GET", url: "/api/crater/auth/session" }])
+})
+
+test("returns an expired account session to the login choice without creating a shared session", async () => {
+    window.history.replaceState({}, "", "/en/checkout?plan=pro")
+    document.cookie = "crater_user_login=1; path=/; samesite=lax"
+    const requests: Array<{ method: string; url: string }> = []
+    globalThis.fetch = (async (input, init) => {
+        requests.push({ method: init?.method ?? "GET", url: String(input) })
+        return new Response("{}", { status: 401 })
+    }) as typeof fetch
+
+    render(
+        <CraterSessionProvider>
+            <SessionState />
+        </CraterSessionProvider>
+    )
+
+    await waitFor(() => assert.equal(window.location.pathname, "/en/checkout/login"))
+    assert.equal(window.location.search, "?plan=pro")
+    assert.doesNotMatch(document.cookie, /crater_user_login/)
+    assert.deepEqual(requests, [{ method: "GET", url: "/api/crater/auth/session" }])
+})
+
+test("shows a safe error after a failed server-side login callback", async () => {
+    window.history.replaceState({}, "", "/en/checkout?plan=pro&authError=session")
+    const requests: string[] = []
+    globalThis.fetch = (async (input) => {
+        requests.push(String(input))
+        throw new Error("Unexpected request")
+    }) as typeof fetch
+
+    render(
+        <CraterSessionProvider errorMessage="Configured session error">
+            <SessionState />
+        </CraterSessionProvider>
+    )
+
+    assert.ok(await screen.findByText("Configured session error"))
+    assert.deepEqual(requests, [])
+    assert.equal(window.location.pathname, "/en/checkout")
+    assert.equal(window.location.search, "?plan=pro")
+})
+
+test("shows the configured CMS error instead of the Crater session error", async () => {
+    globalThis.fetch = (async (input) => {
+        if (String(input) === "/api/crater/auth/session") {
+            return new Response(JSON.stringify({ error: "Raw Crater session error" }), { status: 500, headers: { "content-type": "application/json" } })
+        }
+        throw new Error("Unexpected request")
+    }) as typeof fetch
+
+    render(
+        <CraterSessionProvider errorMessage="Configured session error">
+            <SessionState />
+        </CraterSessionProvider>
+    )
+
+    assert.ok(await screen.findByText("Configured session error"))
+    assert.equal(screen.queryByText("Raw Crater session error"), null)
+})
+
+test("logs Crater's error code for a rejected login without showing it to the user", async () => {
+    const loggedArguments: unknown[][] = []
+    console.error = (...args: unknown[]) => {
+        loggedArguments.push(args)
+    }
+    globalThis.fetch = (async (input, init) => {
+        if (String(input) === "/api/crater/auth/session") {
+            return new Response(JSON.stringify({ error: "Crater session authorization is required." }), { status: 403, headers: { "content-type": "application/json" } })
+        }
+        if (String(input) === "/api/crater/login" && init?.method === "POST") {
+            return new Response(JSON.stringify({ error: "Crater could not create a user session.", errorCode: "INVALID_SAGITTARIUS_TOKEN", details: [] }), {
+                status: 422,
+                headers: { "content-type": "application/json" },
+            })
+        }
+        throw new Error("Unexpected request")
+    }) as typeof fetch
+
+    render(
+        <CraterSessionProvider errorMessage="Configured session error">
+            <SessionState />
+        </CraterSessionProvider>
+    )
+
+    assert.ok(await screen.findByText("Configured session error"))
+    const loggedError = loggedArguments.at(-1)?.at(-1)
+    assert.ok(loggedError instanceof Error)
+    assert.equal(loggedError.message, "Crater could not create a user session. (INVALID_SAGITTARIUS_TOKEN)")
+    assert.equal(screen.queryByText(/INVALID_SAGITTARIUS_TOKEN/), null)
+})
+
+test("appends Crater's validation details to the logged error", async () => {
+    const loggedArguments: unknown[][] = []
+    console.error = (...args: unknown[]) => {
+        loggedArguments.push(args)
+    }
+    globalThis.fetch = (async (input) => {
+        if (String(input) === "/api/crater/auth/session") {
+            return new Response(JSON.stringify({ error: "Could not validate Crater session.", errorCode: "INVALID_USER", details: ["sagittarius_id: blank", "user unavailable"] }), {
+                status: 502,
+                headers: { "content-type": "application/json" },
+            })
+        }
+        throw new Error("Unexpected request")
+    }) as typeof fetch
+
+    render(
+        <CraterSessionProvider errorMessage="Configured session error">
+            <SessionState />
+        </CraterSessionProvider>
+    )
+
+    assert.ok(await screen.findByText("Configured session error"))
+    const loggedError = loggedArguments.at(-1)?.at(-1)
+    assert.ok(loggedError instanceof Error)
+    assert.equal(loggedError.message, "Could not validate Crater session. (INVALID_USER: sagittarius_id: blank, user unavailable)")
+})
+
+
+test("expired guest receipt never logs in through the account or shared session", async () => {
+    window.history.replaceState({}, "", "/en/checkout/success?guestCheckout=expired-purchase")
+    const requests: string[] = []
+    console.error = () => {}
+    globalThis.fetch = (async (input, init) => {
+        requests.push(String(input))
+        assert.equal(new Headers(init?.headers).get("x-guest-checkout"), "expired-purchase")
+        return new Response("{}", { status: 401 })
+    }) as typeof fetch
+    render(<CraterSessionProvider errorMessage="Guest session expired"><SessionState /></CraterSessionProvider>)
+    assert.ok(await screen.findByText("Guest session expired"))
+    assert.deepEqual(requests, ["/api/crater/auth/session"])
+})
+
+
+test("restores the guest email from the purchase session after reload", async () => {
+    window.history.replaceState({}, "", "/en/checkout?guestCheckout=purchase-one")
+    globalThis.fetch = (async () => new Response(JSON.stringify({ authenticated: true, guestEmail: "guest@example.com" }), { status: 200 })) as typeof fetch
+    function GuestEmail() {
+        const session = useCraterSession()
+        return <span>{session.guestEmail}</span>
+    }
+    render(<CraterSessionProvider><GuestEmail /></CraterSessionProvider>)
+    assert.ok(await screen.findByText("guest@example.com"))
+})

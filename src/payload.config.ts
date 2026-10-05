@@ -8,14 +8,19 @@ import sharp from "sharp"
 import { fileURLToPath } from "url"
 import { Actions } from "./collections/actions"
 import { Blog } from "./collections/blog"
+import { Checkout } from "./globals/checkout"
 import { CookieBanner } from "./globals/cookieBanner"
+import { Errors } from "./globals/errors"
 import { Footer } from "./globals/footer"
 import { Jobs } from "./collections/jobs"
+import { LicenseDialogs } from "./globals/licenseDialogs"
+import { Licenses } from "./globals/licenses"
 import { Media } from "./collections/media"
 import { Navigation } from "./globals/navigation"
 import { Pages } from "./collections/pages"
 import { SubscriptionCollection } from "./globals/subscriptionConfig"
 import { TeamMembers } from "./collections/teamMembers"
+import { UpgradeBanner } from "./globals/upgradeBanner"
 import { Users } from "./collections/users"
 import { GraphLexicalBlock, TriggerLexicalBlock } from "./lib/richText/customLexicalBlocks"
 import { payloadAiPlugin } from "@mvriu5/payload-ai"
@@ -32,12 +37,12 @@ const dirname = path.dirname(filename)
 const smtpHost = process.env.SMTP_HOST
 const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build" || process.env.npm_lifecycle_event === "build"
 const isDevelopment = process.env.NODE_ENV === "development"
-const appURL = (process.env.NEXT_PUBLIC_APP_URL?.trim() || (isDevelopment ? "http://localhost:3000" : "https://codezero.build")).replace(/\/$/, "")
-const allowedOrigins = Array.from(new Set([appURL, "http://localhost:3000", "https://localhost:3000", "https://codezero.build"]))
+const payloadServerURL = (process.env.PAYLOAD_SERVER_URL?.trim() || (isDevelopment ? "http://localhost:3000" : "https://codezero.build")).replace(/\/$/, "")
+const allowedOrigins = Array.from(new Set([payloadServerURL, "http://localhost:3000", "https://localhost:3000", "https://codezero.build"]))
 const shouldSkipEmailVerify = isDevelopment || isBuildPhase || process.env.PAYLOAD_SKIP_EMAIL_VERIFY === "true" || !smtpHost
 
 export default buildConfig({
-    serverURL: appURL,
+    serverURL: payloadServerURL,
     cors: allowedOrigins,
     csrf: allowedOrigins,
     admin: {
@@ -71,7 +76,7 @@ export default buildConfig({
         defaultLocale: "en",
     },
     collections: [Users, Media, Pages, Actions, Jobs, Blog, TeamMembers],
-    globals: [Navigation, Footer, CookieBanner, SubscriptionCollection],
+    globals: [Navigation, Footer, CookieBanner, SubscriptionCollection, Checkout, UpgradeBanner, Licenses, LicenseDialogs, Errors],
     jobs: {
         autoRun: [
             {
@@ -132,16 +137,13 @@ export default buildConfig({
             generateURL: ({ collectionConfig, doc, locale }) => {
                 if (!doc?.slug || !locale) return ""
 
-                const baseUrl = process.env.NEXT_PUBLIC_APP_URL?.trim() || "https://code0.tech"
-                const normalizedBaseUrl = baseUrl.replace(/\/$/, "")
-
                 if (collectionConfig?.slug === "blog") {
-                    return `${normalizedBaseUrl}/${locale}/blog/${doc.slug}`
+                    return `${payloadServerURL}/${locale}/blog/${doc.slug}`
                 }
 
                 if (collectionConfig?.slug === "pages") {
                     const pagePath = doc.slug === "main" ? `/${locale}` : `/${locale}/${doc.slug}`
-                    return `${normalizedBaseUrl}${pagePath}`
+                    return `${payloadServerURL}${pagePath}`
                 }
 
                 return ""

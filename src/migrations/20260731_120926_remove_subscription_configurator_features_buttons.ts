@@ -1,0 +1,41 @@
+import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres'
+
+export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
+  await db.execute(sql`
+   DROP TABLE "pages_blocks_subscription_configurator_feature_overview" CASCADE;
+  DROP TABLE "pages_blocks_subscription_configurator_buttons" CASCADE;
+  DROP TYPE "public"."enum_pages_blocks_subscription_configurator_buttons_variant";`)
+}
+
+export async function down({ db, payload, req }: MigrateDownArgs): Promise<void> {
+  await db.execute(sql`
+   CREATE TYPE "public"."enum_pages_blocks_subscription_configurator_buttons_variant" AS ENUM('none', 'normal', 'outlined', 'filled');
+  CREATE TABLE "pages_blocks_subscription_configurator_feature_overview" (
+  	"_order" integer NOT NULL,
+  	"_parent_id" varchar NOT NULL,
+  	"_locale" "_locales" NOT NULL,
+  	"id" varchar PRIMARY KEY NOT NULL,
+  	"title" varchar,
+  	"description" varchar,
+  	"icon" varchar NOT NULL
+  );
+  
+  CREATE TABLE "pages_blocks_subscription_configurator_buttons" (
+  	"_order" integer NOT NULL,
+  	"_parent_id" varchar NOT NULL,
+  	"_locale" "_locales" NOT NULL,
+  	"id" varchar PRIMARY KEY NOT NULL,
+  	"label" varchar NOT NULL,
+  	"url" varchar NOT NULL,
+  	"variant" "enum_pages_blocks_subscription_configurator_buttons_variant" DEFAULT 'normal'
+  );
+  
+  ALTER TABLE "pages_blocks_subscription_configurator_feature_overview" ADD CONSTRAINT "pages_blocks_subscription_configurator_feature_overview_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages_blocks_subscription_configurator"("id") ON DELETE cascade ON UPDATE no action;
+  ALTER TABLE "pages_blocks_subscription_configurator_buttons" ADD CONSTRAINT "pages_blocks_subscription_configurator_buttons_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages_blocks_subscription_configurator"("id") ON DELETE cascade ON UPDATE no action;
+  CREATE INDEX "pages_blocks_subscription_configurator_feature_overview_order_idx" ON "pages_blocks_subscription_configurator_feature_overview" USING btree ("_order");
+  CREATE INDEX "pages_blocks_subscription_configurator_feature_overview_parent_id_idx" ON "pages_blocks_subscription_configurator_feature_overview" USING btree ("_parent_id");
+  CREATE INDEX "pages_blocks_subscription_configurator_feature_overview_locale_idx" ON "pages_blocks_subscription_configurator_feature_overview" USING btree ("_locale");
+  CREATE INDEX "pages_blocks_subscription_configurator_buttons_order_idx" ON "pages_blocks_subscription_configurator_buttons" USING btree ("_order");
+  CREATE INDEX "pages_blocks_subscription_configurator_buttons_parent_id_idx" ON "pages_blocks_subscription_configurator_buttons" USING btree ("_parent_id");
+  CREATE INDEX "pages_blocks_subscription_configurator_buttons_locale_idx" ON "pages_blocks_subscription_configurator_buttons" USING btree ("_locale");`)
+}

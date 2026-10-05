@@ -1,0 +1,253 @@
+import { iconField } from "@mvriu5/payload-icon-picker"
+import type { DefaultValue, Field, GlobalConfig } from "payload"
+
+const localizedDefault =
+    (en: string, de: string): DefaultValue =>
+    ({ locale }) =>
+        locale === "de" ? de : en
+
+const iconColorOptions = [
+    { label: "Neutral", value: "neutral" },
+    { label: "Brand", value: "brand" },
+    { label: "Aqua", value: "aqua" },
+    { label: "Blue", value: "blue" },
+    { label: "Pink", value: "pink" },
+    { label: "Yellow", value: "yellow" },
+    { label: "Lime", value: "lime" },
+    { label: "Magenta", value: "magenta" },
+]
+
+const summaryIconField = (name: string, label: string, defaultValue: string): Field =>
+    iconField({
+        name,
+        label,
+        required: true,
+        defaultValue,
+        placeholder: "Search icons",
+        noResultsLabel: "No icons found",
+    })
+
+const summaryIconColorField = (name: string, defaultValue: string): Field => ({
+    name,
+    label: "Icon Color",
+    type: "select",
+    required: true,
+    defaultValue,
+    options: iconColorOptions,
+})
+
+export const Checkout: GlobalConfig = {
+    slug: "checkout",
+    access: {
+        read: () => true,
+        update: ({ req }) => Boolean(req.user),
+    },
+    fields: [
+        {
+            name: "login",
+            label: "Checkout Login",
+            type: "group",
+            fields: [
+                { name: "heading", label: "Login Heading", type: "text", required: true, localized: true, defaultValue: "Sign in to CodeZero" },
+                {
+                    name: "description",
+                    label: "Login Description",
+                    type: "textarea",
+                    required: true,
+                    localized: true,
+                    defaultValue: "Use your CodeZero account to continue with your configured subscription.",
+                },
+                { name: "loginLabel", type: "text", required: true, localized: true, defaultValue: "Sign in" },
+                { name: "guestHeading", type: "text", required: true, localized: true, defaultValue: "Continue as a guest" },
+                {
+                    name: "guestDescription",
+                    type: "textarea",
+                    required: true,
+                    localized: true,
+                    defaultValue: "Complete your subscription checkout without signing in.",
+                },
+                { name: "guestLabel", type: "text", required: true, localized: true, defaultValue: "Continue as guest" },
+                {
+                    name: "loginUrl",
+                    label: "Main App Login URL",
+                    type: "text",
+                    required: true,
+                    defaultValue: "https://app.code0.tech/login",
+                    admin: { description: "The checkout URL is appended in the callbackUrl query parameter." },
+                },
+            ],
+        },
+        {
+            name: "summary",
+            type: "group",
+            fields: [
+                { name: "eyebrow", type: "text", required: true, localized: true, defaultValue: "Order Summary" },
+                { name: "heading", type: "text", required: true, localized: true, defaultValue: "Review your configuration" },
+                {
+                    name: "description",
+                    type: "textarea",
+                    required: true,
+                    localized: true,
+                    defaultValue: "This checkout reflects the subscription shape you configured, including runtime.",
+                },
+                {
+                    name: "deploymentIcons",
+                    label: "Deployment Icons",
+                    type: "group",
+                    fields: [summaryIconField("cloud", "Cloud Icon", "tabler:IconCloud"), summaryIconField("selfHosted", "Self-hosted Icon", "tabler:IconServer")],
+                },
+                summaryIconColorField("deploymentIconColor", "aqua"),
+                {
+                    name: "customerTypeIcons",
+                    label: "Customer Type Icons",
+                    type: "group",
+                    fields: [summaryIconField("b2b", "B2B Icon", "tabler:IconUsers"), summaryIconField("b2c", "B2C Icon", "tabler:IconBuildingStore")],
+                },
+                summaryIconColorField("customerTypeIconColor", "yellow"),
+                {
+                    name: "pricing",
+                    type: "group",
+                    fields: [
+                        { name: "planLabel", type: "text", required: true, localized: true, defaultValue: "Plan" },
+                        { name: "baseLabel", type: "text", required: true, localized: true, defaultValue: "AI Tokens" },
+                        { name: "workflowExecutionsLabel", type: "text", required: true, localized: true, defaultValue: "Workflow Executions" },
+                        { name: "quarterlyDiscountLabel", type: "text", required: true, localized: true, defaultValue: "Quarterly discount" },
+                        { name: "yearlyDiscountLabel", type: "text", required: true, localized: true, defaultValue: "Yearly discount" },
+                        { name: "discountInputPlaceholder", type: "text", required: true, localized: true, defaultValue: "Discount code" },
+                        { name: "discountButtonLabel", type: "text", required: true, localized: true, defaultValue: "Apply" },
+                        { name: "discountPromptLabel", type: "text", required: true, localized: true, defaultValue: "Have a discount?" },
+                        { name: "discountRemoveLabel", type: "text", required: true, localized: true, defaultValue: "Remove" },
+                        { name: "taxLabel", type: "text", required: true, localized: true, defaultValue: "Tax" },
+                        { name: "totalLabel", type: "text", required: true, localized: true, defaultValue: "Total" },
+                        { name: "perMonthSuffix", type: "text", required: true, localized: true, defaultValue: "/mo" },
+                    ],
+                },
+            ],
+        },
+        {
+            name: "form",
+            type: "group",
+            fields: [
+                { name: "billingHeading", type: "text", required: true, localized: true, defaultValue: "Billing Address" },
+                { name: "continueLabel", type: "text", required: true, localized: true, defaultValue: "Continue to Payment" },
+                { name: "backToBillingLabel", type: "text", required: true, localized: true, defaultValue: "Back to Billing" },
+                { name: "payNowLabel", type: "text", required: true, localized: true, defaultValue: "Pay now" },
+                {
+                    name: "sendOfferPrompt",
+                    type: "text",
+                    required: true,
+                    localized: true,
+                    defaultValue: localizedDefault("Need an invoice or a quote first?", "Benötigst du zuerst eine Rechnung oder ein Angebot?"),
+                },
+                {
+                    name: "sendOfferLabel",
+                    type: "text",
+                    required: true,
+                    localized: true,
+                    defaultValue: "Send offer",
+                    admin: { description: "Shown below the primary billing button for business customers only." },
+                },
+                { name: "sendOfferTitle", type: "text", required: true, localized: true, defaultValue: localizedDefault("Send offer", "Angebot senden") },
+                {
+                    name: "sendOfferDescription",
+                    type: "textarea",
+                    required: true,
+                    localized: true,
+                    defaultValue: localizedDefault(
+                        "Enter the email address that should receive this configuration as an offer.",
+                        "Gib die E-Mail-Adresse ein, an die diese Konfiguration als Angebot gesendet werden soll."
+                    ),
+                },
+                { name: "processingLabel", type: "text", required: true, localized: true, defaultValue: "Processing..." },
+                { name: "customerSelectLabel", type: "text", required: true, localized: true, defaultValue: "Billing customer" },
+                { name: "newCustomerLabel", type: "text", required: true, localized: true, defaultValue: "Create new customer" },
+                { name: "nameLabel", type: "text", required: true, localized: true, defaultValue: "Name" },
+                { name: "emailLabel", type: "text", required: true, localized: true, defaultValue: "Email" },
+                { name: "emailPlaceholder", type: "text", required: true, localized: true, defaultValue: "billing@example.com" },
+                { name: "phoneLabel", type: "text", required: true, localized: true, defaultValue: "Phone" },
+                { name: "line1Label", type: "text", required: true, localized: true, defaultValue: "Address" },
+                { name: "line2Label", type: "text", required: true, localized: true, defaultValue: "Address line 2" },
+                { name: "cityLabel", type: "text", required: true, localized: true, defaultValue: "City" },
+                { name: "stateLabel", type: "text", required: true, localized: true, defaultValue: "State" },
+                { name: "postalCodeLabel", type: "text", required: true, localized: true, defaultValue: "Postal code" },
+                { name: "countryLabel", type: "text", required: true, localized: true, defaultValue: "Country" },
+            ],
+        },
+        {
+            name: "nextSteps",
+            type: "group",
+            admin: { description: "Vertical 3-step 'what happens after you pay' stepper shown in the summary once the payment step is reached, replacing the order summary heading and payment period switcher." },
+            fields: [
+                { name: "heading", type: "text", required: true, localized: true, defaultValue: "What happens next" },
+                { name: "step1Title", type: "text", required: true, localized: true, defaultValue: "Payment confirmed" },
+                { name: "step1Description", type: "text", required: true, localized: true, defaultValue: "Stripe securely confirms your payment." },
+                { name: "step2Title", type: "text", required: true, localized: true, defaultValue: "License provisioned" },
+                { name: "step2Description", type: "text", required: true, localized: true, defaultValue: "Your license is created automatically." },
+                { name: "step3Title", type: "text", required: true, localized: true, defaultValue: "Get started" },
+                { name: "step3Description", type: "text", required: true, localized: true, defaultValue: "Access your license dashboard and start building." },
+            ],
+        },
+        {
+            name: "success",
+            type: "group",
+            fields: [
+                { name: "heading", type: "text", required: true, localized: true, defaultValue: "Payment submitted" },
+                {
+                    name: "description",
+                    type: "textarea",
+                    required: true,
+                    localized: true,
+                    defaultValue: "Stripe has received your payment confirmation. You can close this page or return to the site.",
+                },
+                { name: "licenseDashboardLabel", type: "text", required: true, localized: true, defaultValue: "Open license dashboard" },
+                { name: "sculptorLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Open Sculptor", "Sculptor öffnen") },
+                { name: "licenseDownloadLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Download license", "Lizenz herunterladen") },
+                {
+                    name: "licenseDownloadError",
+                    type: "text",
+                    required: true,
+                    localized: true,
+                    defaultValue: localizedDefault("The license could not be downloaded.", "Die Lizenz konnte nicht heruntergeladen werden."),
+                },
+                { name: "licensePendingLabel", type: "text", required: true, localized: true, defaultValue: "Your license is being prepared…" },
+                { name: "licenseStatusRetryLabel", type: "text", required: true, localized: true, defaultValue: "Try again" },
+                {
+                    name: "receiptHint",
+                    type: "text",
+                    required: true,
+                    localized: true,
+                    defaultValue: "Stripe sends the receipt to your email address.",
+                    admin: { description: "Shown once the payment is confirmed. The exact amount is on the Stripe receipt, not on this page." },
+                },
+                {
+                    name: "guestAccountHint",
+                    type: "textarea",
+                    required: true,
+                    localized: true,
+                    defaultValue: localizedDefault(
+                        "You will receive an email with a link to create your account. Complete your account setup using that link to continue.",
+                        "Du erhältst eine E-Mail mit einem Link zur Kontoerstellung. Richte darüber dein Konto ein, um anschließend fortzufahren."
+                    ),
+                    admin: { description: "Shown after payment confirmation for guest checkouts only." },
+                },
+                { name: "failedHeading", type: "text", required: true, localized: true, defaultValue: "Payment failed" },
+                {
+                    name: "failedDescription",
+                    type: "textarea",
+                    required: true,
+                    localized: true,
+                    defaultValue: "Stripe could not process your payment. You have not been charged and no subscription was created.",
+                },
+                { name: "invalidHeading", type: "text", required: true, localized: true, defaultValue: "This checkout link is no longer valid" },
+                {
+                    name: "invalidDescription",
+                    type: "textarea",
+                    required: true,
+                    localized: true,
+                    defaultValue: "The link has expired or belongs to another account. If your payment went through, you will find the license in your license dashboard.",
+                },
+                { name: "checkoutRetryLabel", type: "text", required: true, localized: true, defaultValue: "Back to checkout" },
+            ],
+        },
+    ],
+}
