@@ -37,6 +37,9 @@ export async function GET(request: Request) {
     }
 
     const sagittariusToken = requestUrl.searchParams.get("token")?.trim()
+    const namespaceId = requestUrl.searchParams.get("namespace")?.trim()
+
+    if (namespaceId) returnUrl.searchParams.set("namespace", namespaceId)
 
     if (!sagittariusToken) {
         returnUrl.searchParams.set("authError", "session")
