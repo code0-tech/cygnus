@@ -95,7 +95,7 @@
         "undici": "8.10.2",
         "yaml": "2.9.1",
         "@esbuild-kit/core-utils": {
-            "esbuild": "0.28.1"
+            "esbuild": "0.28.2"
         }
     }
 }
