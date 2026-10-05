@@ -37,12 +37,12 @@ const dirname = path.dirname(filename)
 const smtpHost = process.env.SMTP_HOST
 const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build" || process.env.npm_lifecycle_event === "build"
 const isDevelopment = process.env.NODE_ENV === "development"
-const appURL = (process.env.NEXT_PUBLIC_APP_URL?.trim() || (isDevelopment ? "http://localhost:3000" : "https://codezero.build")).replace(/\/$/, "")
-const allowedOrigins = Array.from(new Set([appURL, "http://localhost:3000", "https://localhost:3000", "https://codezero.build"]))
+const payloadServerURL = (process.env.PAYLOAD_SERVER_URL?.trim() || (isDevelopment ? "http://localhost:3000" : "https://codezero.build")).replace(/\/$/, "")
+const allowedOrigins = Array.from(new Set([payloadServerURL, "http://localhost:3000", "https://localhost:3000", "https://codezero.build"]))
 const shouldSkipEmailVerify = isDevelopment || isBuildPhase || process.env.PAYLOAD_SKIP_EMAIL_VERIFY === "true" || !smtpHost
 
 export default buildConfig({
-    serverURL: appURL,
+    serverURL: payloadServerURL,
     cors: allowedOrigins,
     csrf: allowedOrigins,
     admin: {
@@ -137,16 +137,13 @@ export default buildConfig({
             generateURL: ({ collectionConfig, doc, locale }) => {
                 if (!doc?.slug || !locale) return ""
 
-                const baseUrl = process.env.NEXT_PUBLIC_APP_URL?.trim() || "https://code0.tech"
-                const normalizedBaseUrl = baseUrl.replace(/\/$/, "")
-
                 if (collectionConfig?.slug === "blog") {
-                    return `${normalizedBaseUrl}/${locale}/blog/${doc.slug}`
+                    return `${payloadServerURL}/${locale}/blog/${doc.slug}`
                 }
 
                 if (collectionConfig?.slug === "pages") {
                     const pagePath = doc.slug === "main" ? `/${locale}` : `/${locale}/${doc.slug}`
-                    return `${normalizedBaseUrl}${pagePath}`
+                    return `${payloadServerURL}${pagePath}`
                 }
 
                 return ""
