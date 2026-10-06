@@ -229,9 +229,9 @@ test("checkout forwards documented Crater domain error details", async () => {
         },
     ])
     const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
-    const previousAppUrl = process.env.NEXT_PUBLIC_APP_URL
+    const previousAppUrl = process.env.PAYLOAD_SERVER_URL
     process.env.CRATER_GRAPHQL_URL = graphQLServer.url
-    process.env.NEXT_PUBLIC_APP_URL = "https://code0.example"
+    process.env.PAYLOAD_SERVER_URL = "https://code0.example"
 
     try {
         const response = await POST(
@@ -263,8 +263,8 @@ test("checkout forwards documented Crater domain error details", async () => {
     } finally {
         if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
         else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
-        if (previousAppUrl === undefined) delete process.env.NEXT_PUBLIC_APP_URL
-        else process.env.NEXT_PUBLIC_APP_URL = previousAppUrl
+        if (previousAppUrl === undefined) delete process.env.PAYLOAD_SERVER_URL
+        else process.env.PAYLOAD_SERVER_URL = previousAppUrl
         await graphQLServer.close()
     }
 })
@@ -285,9 +285,9 @@ test("accepts quarterly and rejects removed weekly periods even when sent direct
         },
     ])
     const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
-    const previousAppUrl = process.env.NEXT_PUBLIC_APP_URL
+    const previousAppUrl = process.env.PAYLOAD_SERVER_URL
     process.env.CRATER_GRAPHQL_URL = graphQLServer.url
-    process.env.NEXT_PUBLIC_APP_URL = "https://code0.example"
+    process.env.PAYLOAD_SERVER_URL = "https://code0.example"
 
     try {
         const response = await POST(
@@ -338,8 +338,8 @@ test("accepts quarterly and rejects removed weekly periods even when sent direct
     } finally {
         if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
         else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
-        if (previousAppUrl === undefined) delete process.env.NEXT_PUBLIC_APP_URL
-        else process.env.NEXT_PUBLIC_APP_URL = previousAppUrl
+        if (previousAppUrl === undefined) delete process.env.PAYLOAD_SERVER_URL
+        else process.env.PAYLOAD_SERVER_URL = previousAppUrl
         await graphQLServer.close()
     }
 })
@@ -384,9 +384,9 @@ test("creates regular and custom checkout sessions with the expected Crater inpu
         },
     ])
     const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
-    const previousAppUrl = process.env.NEXT_PUBLIC_APP_URL
+    const previousAppUrl = process.env.PAYLOAD_SERVER_URL
     process.env.CRATER_GRAPHQL_URL = graphQLServer.url
-    process.env.NEXT_PUBLIC_APP_URL = "https://code0.example"
+    process.env.PAYLOAD_SERVER_URL = "https://code0.example"
 
     try {
         const regularResponse = await POST(
@@ -488,8 +488,8 @@ test("creates regular and custom checkout sessions with the expected Crater inpu
     } finally {
         if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
         else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
-        if (previousAppUrl === undefined) delete process.env.NEXT_PUBLIC_APP_URL
-        else process.env.NEXT_PUBLIC_APP_URL = previousAppUrl
+        if (previousAppUrl === undefined) delete process.env.PAYLOAD_SERVER_URL
+        else process.env.PAYLOAD_SERVER_URL = previousAppUrl
         await graphQLServer.close()
     }
 })

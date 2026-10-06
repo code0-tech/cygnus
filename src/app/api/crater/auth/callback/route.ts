@@ -2,6 +2,7 @@ import { describeCraterError } from "@/lib/crater/errors"
 import { createCraterUserSession } from "@/lib/crater/login.server"
 import { setCraterSessionCookie, setCraterUserLoginCookie } from "@/lib/crater/session.server"
 import { isSupportedLocale } from "@/lib/i18n"
+import { resolveSiteUrl } from "@/lib/siteConfig"
 import { NextResponse } from "next/server"
 
 export const runtime = "nodejs"
@@ -13,13 +14,13 @@ function noStoreRedirect(url: URL) {
     return response
 }
 
-function resolveCheckoutReturnUrl(requestUrl: URL) {
+function resolveCheckoutReturnUrl(requestUrl: URL, siteOrigin: string) {
     const returnPath = requestUrl.searchParams.get("returnPath")
     if (!returnPath?.startsWith("/")) return null
 
-    const returnUrl = new URL(returnPath, requestUrl.origin)
+    const returnUrl = new URL(returnPath, siteOrigin)
     const segments = returnUrl.pathname.split("/").filter(Boolean)
-    if (returnUrl.origin !== requestUrl.origin || segments.length !== 2 || !isSupportedLocale(segments[0]) || segments[1] !== "checkout") return null
+    if (returnUrl.origin !== siteOrigin || segments.length !== 2 || !isSupportedLocale(segments[0]) || segments[1] !== "checkout") return null
 
     returnUrl.searchParams.delete("guestCheckout")
     returnUrl.searchParams.delete("token")
@@ -29,9 +30,10 @@ function resolveCheckoutReturnUrl(requestUrl: URL) {
 
 export async function GET(request: Request) {
     const requestUrl = new URL(request.url)
-    const returnUrl = resolveCheckoutReturnUrl(requestUrl)
+    const siteOrigin = resolveSiteUrl().origin
+    const returnUrl = resolveCheckoutReturnUrl(requestUrl, siteOrigin)
     if (!returnUrl) {
-        const fallbackUrl = new URL("/", requestUrl.origin)
+        const fallbackUrl = new URL("/", siteOrigin)
         fallbackUrl.searchParams.set("authError", "session")
         return noStoreRedirect(fallbackUrl)
     }

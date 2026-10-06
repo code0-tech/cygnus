@@ -264,7 +264,7 @@ test("an exhausted guest budget leaves the plain session route usable", async ()
 })
 
 
-test("server-side login callback exchanges Sagittarius for an HttpOnly Crater cookie", async () => {
+test("server-side login callback redirects from the container to the configured origin with an HttpOnly Crater cookie", async () => {
     const graphQLServer = await createGraphQLTestServer([
         {
             data: {
@@ -282,11 +282,13 @@ test("server-side login callback exchanges Sagittarius for an HttpOnly Crater co
         },
     ])
     const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
+    const previousServerUrl = process.env.PAYLOAD_SERVER_URL
     process.env.CRATER_GRAPHQL_URL = graphQLServer.url
+    process.env.PAYLOAD_SERVER_URL = "https://code0.example"
 
     try {
         const returnPath = "/de/checkout?plan=pro&deploymentType=self_hosted"
-        const response = await completeCraterLogin(new Request(`https://code0.example/api/crater/auth/callback?returnPath=${encodeURIComponent(returnPath)}&token=sagittarius-secret`))
+        const response = await completeCraterLogin(new Request(`https://0.0.0.0:3000/api/crater/auth/callback?returnPath=${encodeURIComponent(returnPath)}&token=sagittarius-secret`))
 
         assert.equal(response.status, 307)
         assert.equal(response.headers.get("location"), `https://code0.example${returnPath}`)
@@ -311,6 +313,8 @@ test("server-side login callback exchanges Sagittarius for an HttpOnly Crater co
     } finally {
         if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
         else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
+        if (previousServerUrl === undefined) delete process.env.PAYLOAD_SERVER_URL
+        else process.env.PAYLOAD_SERVER_URL = previousServerUrl
         await graphQLServer.close()
     }
 })
@@ -333,23 +337,28 @@ test("server-side login callback preserves the selected namespace for cloud chec
         },
     ])
     const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
+    const previousServerUrl = process.env.PAYLOAD_SERVER_URL
     process.env.CRATER_GRAPHQL_URL = graphQLServer.url
+    process.env.PAYLOAD_SERVER_URL = "https://code0.example"
 
     try {
         const returnPath = "/de/checkout?plan=pro&deploymentType=cloud"
         const namespace = "gid://sagittarius/Namespace/9"
         const response = await completeCraterLogin(
-            new Request(`https://code0.example/api/crater/auth/callback?returnPath=${encodeURIComponent(returnPath)}&namespace=${encodeURIComponent(namespace)}&token=sagittarius-secret`)
+            new Request(`https://0.0.0.0:3000/api/crater/auth/callback?returnPath=${encodeURIComponent(returnPath)}&namespace=${encodeURIComponent(namespace)}&token=sagittarius-secret`)
         )
 
         assert.equal(response.status, 307)
         const location = new URL(response.headers.get("location") ?? "")
+        assert.equal(location.origin, "https://code0.example")
         assert.equal(location.pathname, "/de/checkout")
         assert.equal(location.searchParams.get("namespace"), namespace)
         assert.equal(location.searchParams.get("token"), null)
     } finally {
         if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
         else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
+        if (previousServerUrl === undefined) delete process.env.PAYLOAD_SERVER_URL
+        else process.env.PAYLOAD_SERVER_URL = previousServerUrl
         await graphQLServer.close()
     }
 })
@@ -367,7 +376,9 @@ test("server-side login callback logs why Crater rejected the login without leak
         },
     ])
     const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
+    const previousServerUrl = process.env.PAYLOAD_SERVER_URL
     process.env.CRATER_GRAPHQL_URL = graphQLServer.url
+    process.env.PAYLOAD_SERVER_URL = "https://code0.example"
     const originalConsoleError = console.error
     const loggedArguments: unknown[][] = []
     console.error = (...args: unknown[]) => {
@@ -375,7 +386,7 @@ test("server-side login callback logs why Crater rejected the login without leak
     }
 
     try {
-        const response = await completeCraterLogin(new Request("https://code0.example/api/crater/auth/callback?returnPath=%2Fde%2Fcheckout&token=sagittarius-secret"))
+        const response = await completeCraterLogin(new Request("https://0.0.0.0:3000/api/crater/auth/callback?returnPath=%2Fde%2Fcheckout&token=sagittarius-secret"))
 
         assert.equal(response.status, 307)
         assert.equal(response.headers.get("location"), "https://code0.example/de/checkout?authError=session")
@@ -386,17 +397,52 @@ test("server-side login callback logs why Crater rejected the login without leak
         console.error = originalConsoleError
         if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
         else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
+        if (previousServerUrl === undefined) delete process.env.PAYLOAD_SERVER_URL
+        else process.env.PAYLOAD_SERVER_URL = previousServerUrl
         await graphQLServer.close()
     }
 })
 
 
 test("server-side login callback rejects external return paths and never forwards the token", async () => {
-    const response = await completeCraterLogin(new Request("https://code0.example/api/crater/auth/callback?returnPath=https%3A%2F%2Fevil.example%2Fcollect&token=sagittarius-secret"))
+    const previousServerUrl = process.env.PAYLOAD_SERVER_URL
+    process.env.PAYLOAD_SERVER_URL = "https://code0.example"
 
-    assert.equal(response.status, 307)
-    assert.equal(response.headers.get("location"), "https://code0.example/?authError=session")
-    assert.doesNotMatch(response.headers.get("location") ?? "", /token=/)
+    try {
+        for (const returnPath of ["https://evil.example/collect", "//evil.example/de/checkout", "//0.0.0.0:3000/de/checkout", "/de/licenses"]) {
+            const response = await completeCraterLogin(
+                new Request(`https://0.0.0.0:3000/api/crater/auth/callback?returnPath=${encodeURIComponent(returnPath)}&token=sagittarius-secret`)
+            )
+
+            assert.equal(response.status, 307)
+            assert.equal(response.headers.get("location"), "https://code0.example/?authError=session")
+            assert.doesNotMatch(response.headers.get("location") ?? "", /token=/)
+        }
+    } finally {
+        if (previousServerUrl === undefined) delete process.env.PAYLOAD_SERVER_URL
+        else process.env.PAYLOAD_SERVER_URL = previousServerUrl
+    }
+})
+
+test("server-side login callback reads the public origin at runtime and ignores forwarded hosts when the token is missing", async () => {
+    const previousServerUrl = process.env.PAYLOAD_SERVER_URL
+
+    try {
+        for (const siteOrigin of ["https://staging.example.com", "https://production.example.com"]) {
+            process.env.PAYLOAD_SERVER_URL = siteOrigin
+            const response = await completeCraterLogin(
+                new Request("https://0.0.0.0:3000/api/crater/auth/callback?returnPath=%2Fen%2Fcheckout", {
+                    headers: { host: "evil.example", "x-forwarded-host": "evil.example" },
+                })
+            )
+
+            assert.equal(response.headers.get("location"), `${siteOrigin}/en/checkout?authError=session`)
+            assert.equal(response.headers.get("set-cookie"), null)
+        }
+    } finally {
+        if (previousServerUrl === undefined) delete process.env.PAYLOAD_SERVER_URL
+        else process.env.PAYLOAD_SERVER_URL = previousServerUrl
+    }
 })
 
 

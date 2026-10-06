@@ -4,6 +4,7 @@ import { findSubscriptionForLicenseSnapshot } from "@/lib/licenses/snapshotLooku
 import { createLicensePath } from "@/lib/licenses/routes"
 import { clearCraterSessionCookie, readCraterSessionAuthorization } from "@/lib/crater/session.server"
 import { isSupportedLocale } from "@/lib/i18n"
+import { resolveSiteUrl } from "@/lib/siteConfig"
 import { NextResponse } from "next/server"
 
 export const runtime = "nodejs"
@@ -14,14 +15,14 @@ function noStoreRedirect(url: URL) {
     return response
 }
 
-function resolveLicenseReturnUrl(requestUrl: URL, locale: string) {
-    const fallbackUrl = new URL(`/${locale}/licenses`, requestUrl.origin)
+function resolveLicenseReturnUrl(requestUrl: URL, locale: string, siteOrigin: string) {
+    const fallbackUrl = new URL(`/${locale}/licenses`, siteOrigin)
     const returnPath = requestUrl.searchParams.get("returnPath")
     if (!returnPath?.startsWith("/")) return fallbackUrl
 
-    const returnUrl = new URL(returnPath, requestUrl.origin)
+    const returnUrl = new URL(returnPath, siteOrigin)
     const licenseRoot = `/${locale}/licenses`
-    if (returnUrl.origin !== requestUrl.origin || (returnUrl.pathname !== licenseRoot && !returnUrl.pathname.startsWith(`${licenseRoot}/`))) return fallbackUrl
+    if (returnUrl.origin !== siteOrigin || (returnUrl.pathname !== licenseRoot && !returnUrl.pathname.startsWith(`${licenseRoot}/`))) return fallbackUrl
 
     returnUrl.searchParams.delete("token")
     return returnUrl
@@ -29,6 +30,7 @@ function resolveLicenseReturnUrl(requestUrl: URL, locale: string) {
 
 export async function GET(request: Request) {
     const requestUrl = new URL(request.url)
+    const siteOrigin = resolveSiteUrl().origin
     const locale = requestUrl.searchParams.get("locale")
     if (!locale || !isSupportedLocale(locale)) {
         return NextResponse.json({ error: "A supported locale is required." }, { status: 400, headers: { "cache-control": "no-store" } })
@@ -45,7 +47,7 @@ export async function GET(request: Request) {
                 const lookup = await findSubscriptionForLicenseSnapshot(session.token, customerId, licenseId)
                 if (lookup.status === "unauthenticated") return clearCraterSessionCookie(craterJson({ error: "The Crater session has no authenticated user." }, 401))
                 if (lookup.status === "missing") return craterJson({ error: "The requested license was not found." }, 404)
-                return noStoreRedirect(new URL(createLicensePath(locale, customerId, lookup.subscriptionId), requestUrl.origin))
+                return noStoreRedirect(new URL(createLicensePath(locale, customerId, lookup.subscriptionId), siteOrigin))
             } catch (error) {
                 const transportResponse = craterTransportErrorResponse(error, request)
                 if (transportResponse) return transportResponse
@@ -53,13 +55,13 @@ export async function GET(request: Request) {
                 return craterJson({ error: "Could not open the requested license." }, 502)
             }
         }
-        const returnUrl = resolveLicenseReturnUrl(requestUrl, locale)
+        const returnUrl = resolveLicenseReturnUrl(requestUrl, locale, siteOrigin)
         return noStoreRedirect(returnUrl)
     }
 
     const { getLicenseContent } = await import("@/lib/cms")
     const content = await getLicenseContent(locale)
-    const redirectUrl = new URL(content?.redirectUrl ?? `/${locale}`, requestUrl.origin)
+    const redirectUrl = new URL(content?.redirectUrl ?? `/${locale}`, siteOrigin)
     const response = noStoreRedirect(redirectUrl)
     return session.status === "invalid" ? clearCraterSessionCookie(response) : response
 }
