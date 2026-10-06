@@ -1,6 +1,6 @@
 import { readGuestCheckoutSession } from "../../src/lib/checkout/guestCheckoutSession"
 import assert from "node:assert/strict"
-import test from "node:test"
+import test, { mock } from "node:test"
 import { GET as listCustomers, PATCH as updateCustomer, POST as createOrGetCustomer } from "../../src/app/api/crater/customer/route"
 import { GET as getCustomerPaymentMethodSetupStatus, POST as createCustomerPaymentMethodSetup } from "../../src/app/api/crater/customer/payment-method-setup/route"
 import { GET as getCustomerPaymentMethods } from "../../src/app/api/crater/customer/payment-methods/route"
@@ -24,9 +24,23 @@ const sessionHeaders = {
     "content-type": "application/json",
 }
 
+const previousServerUrl = process.env.PAYLOAD_SERVER_URL
+test.before(() => {
+    process.env.PAYLOAD_SERVER_URL = "https://code0.example"
+})
+test.after(() => {
+    if (previousServerUrl === undefined) delete process.env.PAYLOAD_SERVER_URL
+    else process.env.PAYLOAD_SERVER_URL = previousServerUrl
+})
+
+let licenseRedirectUrl: string | undefined
+mock.module("@/lib/cms", {
+    namedExports: { getLicenseContent: async () => ({ redirectUrl: licenseRedirectUrl }) },
+})
+
 test("license dashboard access redirects without exposing the persisted session", async () => {
     const response = await accessLicenseDashboard(
-        new Request("https://code0.example/api/crater/licenses/access?locale=de", {
+        new Request("https://0.0.0.0:3000/api/crater/licenses/access?locale=de", {
             headers: { cookie: "crater_session=persisted-token" },
         })
     )
@@ -40,7 +54,7 @@ test("license dashboard access redirects without exposing the persisted session"
 test("license dashboard access restores the requested license detail path", async () => {
     const returnPath = "/en/licenses/customer/35/license/3"
     const response = await accessLicenseDashboard(
-        new Request(`https://code0.example/api/crater/licenses/access?locale=en&returnPath=${encodeURIComponent(returnPath)}`, {
+        new Request(`https://0.0.0.0:3000/api/crater/licenses/access?locale=en&returnPath=${encodeURIComponent(returnPath)}`, {
             headers: { cookie: "crater_session=persisted-token" },
         })
     )
@@ -51,27 +65,69 @@ test("license dashboard access restores the requested license detail path", asyn
 
 
 test("license dashboard access rejects return paths outside the localized dashboard", async () => {
-    const response = await accessLicenseDashboard(
-        new Request("https://code0.example/api/crater/licenses/access?locale=en&returnPath=https%3A%2F%2Fevil.example%2Fphishing", {
-            headers: { cookie: "crater_session=persisted-token" },
-        })
-    )
+    for (const returnPath of ["https://evil.example/phishing", "//evil.example/en/licenses", "//0.0.0.0:3000/en/licenses", "/en/checkout"]) {
+        const response = await accessLicenseDashboard(
+            new Request(`https://0.0.0.0:3000/api/crater/licenses/access?locale=en&returnPath=${encodeURIComponent(returnPath)}`, {
+                headers: { cookie: "crater_session=persisted-token" },
+            })
+        )
 
-    assert.equal(response.status, 307)
-    assert.equal(response.headers.get("location"), "https://code0.example/en/licenses")
+        assert.equal(response.status, 307)
+        assert.equal(response.headers.get("location"), "https://code0.example/en/licenses")
+    }
 })
 
 
 test("license dashboard access removes token parameters from its return path", async () => {
     const returnPath = "/en/licenses?token=must-not-survive&view=all"
     const response = await accessLicenseDashboard(
-        new Request(`https://code0.example/api/crater/licenses/access?locale=en&returnPath=${encodeURIComponent(returnPath)}`, {
+        new Request(`https://0.0.0.0:3000/api/crater/licenses/access?locale=en&returnPath=${encodeURIComponent(returnPath)}`, {
             headers: { cookie: "crater_session=persisted-token" },
         })
     )
 
     assert.equal(response.status, 307)
     assert.equal(response.headers.get("location"), "https://code0.example/en/licenses?view=all")
+})
+
+test("license access resolves anonymous login redirects against the configured public origin", async () => {
+    try {
+        for (const [redirectUrl, expected] of [
+            [undefined, "https://code0.example/de"],
+            ["/de/checkout/login", "https://code0.example/de/checkout/login"],
+            ["https://app.example/login", "https://app.example/login"],
+        ] as const) {
+            licenseRedirectUrl = redirectUrl
+            const response = await accessLicenseDashboard(new Request("https://0.0.0.0:3000/api/crater/licenses/access?locale=de"))
+            assert.equal(response.status, 307)
+            assert.equal(response.headers.get("location"), expected)
+        }
+    } finally {
+        licenseRedirectUrl = undefined
+    }
+})
+
+test("license access opens a purchased snapshot on the public origin after resolving its subscription", async () => {
+    const graphQLServer = await createGraphQLTestServer([
+        { data: { currentUser: { customers: { edges: [{ cursor: "customer-3", node: { id: "gid://crater/Customer/3" } }], pageInfo: { hasNextPage: false, endCursor: null } } } } },
+        { data: { currentUser: { customers: { nodes: [{ id: "gid://crater/Customer/3", subscriptions: { nodes: [{ id: "gid://crater/Subscription/9", currentLicense: { id: "gid://crater/License/7" } }], pageInfo: { hasNextPage: false, endCursor: null } } }] } } } },
+    ])
+    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
+    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
+
+    try {
+        const query = new URLSearchParams({ locale: "en", customerId: "gid://crater/Customer/3", licenseId: "gid://crater/License/7" })
+        const response = await accessLicenseDashboard(
+            new Request(`https://0.0.0.0:3000/api/crater/licenses/access?${query}`, { headers: { cookie: "crater_session=persisted-token" } })
+        )
+        assert.equal(response.status, 307)
+        assert.equal(response.headers.get("location"), "https://code0.example/en/licenses/customer/3/license/9")
+        assert.equal(graphQLServer.requests.length, 2)
+    } finally {
+        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
+        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
+        await graphQLServer.close()
+    }
 })
 
 
@@ -683,7 +739,7 @@ test("links a cloud license through the authenticated namespace selection callba
         const returnPath = "/en/licenses/customer/3/license/9/edit"
         const response = await selectLicenseNamespace(
             new Request(
-                `https://code0.example/api/crater/licenses/namespace/callback?returnPath=${encodeURIComponent(returnPath)}&namespace=${encodeURIComponent("gid://sagittarius/Namespace/9")}&token=sagittarius-secret`
+                `https://0.0.0.0:3000/api/crater/licenses/namespace/callback?returnPath=${encodeURIComponent(returnPath)}&namespace=${encodeURIComponent("gid://sagittarius/Namespace/9")}&token=sagittarius-secret`
             )
         )
 
@@ -708,7 +764,7 @@ test("links a cloud license through the authenticated namespace selection callba
 
 test("license namespace callback requires a namespace selected by Sagittarius", async () => {
     const returnPath = "/de/licenses/customer/3/license/9/edit"
-    const response = await selectLicenseNamespace(new Request(`https://code0.example/api/crater/licenses/namespace/callback?returnPath=${encodeURIComponent(returnPath)}&token=sagittarius-secret`))
+    const response = await selectLicenseNamespace(new Request(`https://0.0.0.0:3000/api/crater/licenses/namespace/callback?returnPath=${encodeURIComponent(returnPath)}&token=sagittarius-secret`))
 
     assert.equal(response.status, 307)
     assert.equal(response.headers.get("location"), `https://code0.example${returnPath}?namespaceError=selection`)
@@ -716,14 +772,16 @@ test("license namespace callback requires a namespace selected by Sagittarius", 
 
 
 test("license namespace callback rejects return paths that are not exact license routes", async () => {
-    const response = await selectLicenseNamespace(
-        new Request(
-            `https://code0.example/api/crater/licenses/namespace/callback?returnPath=${encodeURIComponent("https://evil.example/collect")}&namespace=${encodeURIComponent("gid://sagittarius/Namespace/9")}&token=sagittarius-secret`
+    for (const returnPath of ["https://evil.example/collect", "//evil.example/en/licenses/customer/3/license/9", "//0.0.0.0:3000/en/licenses/customer/3/license/9", "/en/licenses"]) {
+        const response = await selectLicenseNamespace(
+            new Request(
+                `https://0.0.0.0:3000/api/crater/licenses/namespace/callback?returnPath=${encodeURIComponent(returnPath)}&namespace=${encodeURIComponent("gid://sagittarius/Namespace/9")}&token=sagittarius-secret`
+            )
         )
-    )
 
-    assert.equal(response.status, 307)
-    assert.equal(response.headers.get("location"), "https://code0.example/")
-    assert.doesNotMatch(response.headers.get("location") ?? "", /token|namespace/)
+        assert.equal(response.status, 307)
+        assert.equal(response.headers.get("location"), "https://code0.example/")
+        assert.doesNotMatch(response.headers.get("location") ?? "", /token|namespace/)
+    }
 })
 

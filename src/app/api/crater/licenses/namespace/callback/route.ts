@@ -4,6 +4,7 @@ import { describeCraterError, isNamespaceInUse } from "@/lib/crater/errors"
 import { createCraterUserSession } from "@/lib/crater/login.server"
 import { setCraterSessionCookie, setCraterUserLoginCookie } from "@/lib/crater/session.server"
 import { isSupportedLocale } from "@/lib/i18n"
+import { resolveSiteUrl } from "@/lib/siteConfig"
 import { isSubscriptionId } from "@/lib/crater/request"
 import { resolveCustomerRouteId, resolveSubscriptionRouteId } from "@/lib/licenses/routes"
 import type { Mutation, MutationSubscriptionsLinkNamespaceArgs } from "@code0-tech/crater-graphql-types"
@@ -39,14 +40,14 @@ function noStoreRedirect(url: URL) {
     return response
 }
 
-function resolveLicenseReturn(requestUrl: URL) {
+function resolveLicenseReturn(requestUrl: URL, siteOrigin: string) {
     const returnPath = requestUrl.searchParams.get("returnPath")
     if (!returnPath?.startsWith("/")) return null
 
-    const returnUrl = new URL(returnPath, requestUrl.origin)
+    const returnUrl = new URL(returnPath, siteOrigin)
     const segments = returnUrl.pathname.split("/").filter(Boolean)
     if (
-        returnUrl.origin !== requestUrl.origin ||
+        returnUrl.origin !== siteOrigin ||
         returnUrl.search ||
         returnUrl.hash ||
         (segments.length !== 6 && segments.length !== 7) ||
@@ -74,8 +75,9 @@ function errorRedirect(returnUrl: URL, error: "selection" | "session" | "update"
 
 export async function GET(request: Request) {
     const requestUrl = new URL(request.url)
-    const resolvedReturn = resolveLicenseReturn(requestUrl)
-    if (!resolvedReturn) return noStoreRedirect(new URL("/", requestUrl.origin))
+    const siteOrigin = resolveSiteUrl().origin
+    const resolvedReturn = resolveLicenseReturn(requestUrl, siteOrigin)
+    if (!resolvedReturn) return noStoreRedirect(new URL("/", siteOrigin))
 
     const namespaceId = requestUrl.searchParams.get("namespace")?.trim()
     const sagittariusToken = requestUrl.searchParams.get("token")?.trim()
