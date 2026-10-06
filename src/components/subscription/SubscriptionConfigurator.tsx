@@ -76,12 +76,10 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
     const [showStepIndicator, setShowStepIndicator] = useState(false)
     const workflowExecutionPackages = normalizeUsagePackages(workflowExecutions[selection.customerType].packages)
     const aiTokenPackages = normalizeUsagePackages(aiTokens[selection.customerType].packages)
-    const pendingScrollStepKeyRef = useRef<string | null>(null)
     const dispatch = (action: SubscriptionSelectionAction) => setSelection((current) => reduceSubscriptionSelection(current, action, catalog))
-    const selectOption = (action: SubscriptionSelectionAction, imageKey: SubscriptionOptionImageKey, stepKey: string) => {
+    const selectOption = (action: SubscriptionSelectionAction, imageKey: SubscriptionOptionImageKey) => {
         dispatch(action)
         onActiveImageChangeAction?.(imageKey)
-        pendingScrollStepKeyRef.current = stepKey
     }
     const paymentPeriodOptions = PAYMENT_PERIOD_OPTIONS
     const paymentPeriodSuffix = getPaymentPeriodSuffix(selection.paymentPeriod, content.paymentPeriod)
@@ -117,18 +115,6 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
     useEffect(() => {
         setWorkflowExecutionsPreview(selection.workflowExecutions)
     }, [selection.workflowExecutions])
-
-    useEffect(() => {
-        const stepKey = pendingScrollStepKeyRef.current
-        pendingScrollStepKeyRef.current = null
-        if (!stepKey) return
-
-        const currentStep = configuratorRef.current?.querySelector<HTMLElement>(`[data-subscription-step="${stepKey}"]`)
-        const nextStep = currentStep?.nextElementSibling
-        if (nextStep instanceof HTMLElement && nextStep.hasAttribute("data-subscription-step")) {
-            nextStep.scrollIntoView({ behavior: "smooth", block: "start" })
-        }
-    }, [selection])
 
     useEffect(() => {
         const configurator = configuratorRef.current
@@ -186,7 +172,7 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                             icon={icons.customerType.b2b}
                             accent={content.customerType.b2b.color}
                             active={selection.customerType === "b2b"}
-                            onClick={() => selectOption({ type: "customerTypeChanged", value: "b2b" }, "b2b", "customerType")}
+                            onClick={() => selectOption({ type: "customerTypeChanged", value: "b2b" }, "b2b")}
                         />
                         <SubscriptionOptionCard
                             title={content.customerType.b2c.title}
@@ -194,7 +180,7 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                             icon={icons.customerType.b2c}
                             accent={content.customerType.b2c.color}
                             active={selection.customerType === "b2c"}
-                            onClick={() => selectOption({ type: "customerTypeChanged", value: "b2c" }, "b2c", "customerType")}
+                            onClick={() => selectOption({ type: "customerTypeChanged", value: "b2c" }, "b2c")}
                         />
                     </div>
                 </div>
@@ -208,7 +194,7 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                             icon={icons.plan.pro}
                             accent="brand"
                             active={selection.plan === "pro"}
-                            onClick={() => selectOption({ type: "planChanged", value: "pro" }, "pro", "plan")}
+                            onClick={() => selectOption({ type: "planChanged", value: "pro" }, "pro")}
                         />
                         <SubscriptionOptionCard
                             title={content.plan.max.title}
@@ -216,7 +202,7 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                             icon={icons.plan.max}
                             accent="magenta"
                             active={selection.plan === "max"}
-                            onClick={() => selectOption({ type: "planChanged", value: "max" }, "max", "plan")}
+                            onClick={() => selectOption({ type: "planChanged", value: "max" }, "max")}
                         />
                         <SubscriptionOptionCard
                             title={content.plan.custom.title}
@@ -224,7 +210,7 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                             icon={icons.plan.custom}
                             accent="aqua"
                             active={selection.plan === "custom"}
-                            onClick={() => selectOption({ type: "planChanged", value: "custom" }, "custom", "plan")}
+                            onClick={() => selectOption({ type: "planChanged", value: "custom" }, "custom")}
                         />
                     </div>
                 </div>
@@ -238,7 +224,7 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                             icon={icons.deployment.selfHosted}
                             accent={content.deployment.selfHosted.color}
                             active={selection.deployment === "self_hosted"}
-                            onClick={() => selectOption({ type: "deploymentChanged", value: "self_hosted" }, "selfHosted", "deployment")}
+                            onClick={() => selectOption({ type: "deploymentChanged", value: "self_hosted" }, "selfHosted")}
                         />
                         <SubscriptionOptionCard
                             title={content.deployment.cloud.title}
@@ -246,7 +232,7 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                             icon={icons.deployment.cloud}
                             accent={content.deployment.cloud.color}
                             active={selection.deployment === "cloud"}
-                            onClick={() => selectOption({ type: "deploymentChanged", value: "cloud" }, "cloud", "deployment")}
+                            onClick={() => selectOption({ type: "deploymentChanged", value: "cloud" }, "cloud")}
                         />
                     </div>
                 </div>
@@ -371,7 +357,7 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                         aria-label={step.replaceAll("**", "")}
                         onClick={() => configuratorRef.current?.querySelectorAll<HTMLElement>("[data-subscription-step]").item(index)?.scrollIntoView({ behavior: "smooth", block: "center" })}
                         className={cn(
-                            "block rounded-full transition-all duration-200 hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
+                            "block cursor-pointer rounded-full transition-all duration-200 hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
                             index === activeStepIndex ? "h-6 w-2 bg-white" : "size-2 bg-tertiary"
                         )}
                     />
