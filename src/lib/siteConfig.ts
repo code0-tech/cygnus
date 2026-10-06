@@ -8,7 +8,7 @@ const DEFAULT_BASE_URL = "https://code0.tech"
 const DEFAULT_KEYWORDS = ["Code0", "NoCode", "Backend", "CodeZero", "SEO"]
 
 export function resolveSiteUrl() {
-    const envUrl = process.env.NEXT_PUBLIC_APP_URL?.trim()
+    const envUrl = process.env.PAYLOAD_SERVER_URL?.trim()
 
     if (envUrl) {
         try {
