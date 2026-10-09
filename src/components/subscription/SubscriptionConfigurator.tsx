@@ -78,10 +78,14 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
     const workflowExecutionPackages = normalizeUsagePackages(checkoutPackages.quantitySteps[selection.customerType].workflowExecutions)
     const aiTokenPackages = normalizeUsagePackages(checkoutPackages.quantitySteps[selection.customerType].aiTokens)
     const formatQuantity = (value: number) => new Intl.NumberFormat(locale === "de" ? "de-DE" : "en-US").format(value)
-    const planDescription = (plan: "pro" | "max") => {
+    const planPackageSizes = (plan: "pro" | "max") => {
         const quantities = checkoutPackages.planQuantities[plan]
-        const inclusion = `${formatQuantity(quantities.aiTokens)} ${aiTokens.suffix} · ${formatQuantity(quantities.workflowExecutions)} ${workflowExecutions.suffix}`
-        return [content.plan[plan].description, inclusion].filter(Boolean).join(" · ")
+        return (
+            <div className="mt-2 space-y-1 text-base text-secondary">
+                <p>{formatQuantity(quantities.aiTokens)} AI Tokens</p>
+                <p>{formatQuantity(quantities.workflowExecutions)} Workflow Executions</p>
+            </div>
+        )
     }
     const dispatch = (action: SubscriptionSelectionAction) => setSelection((current) => reduceSubscriptionSelection(current, action, catalog))
     const selectOption = (action: SubscriptionSelectionAction, imageKey: SubscriptionOptionImageKey) => {
@@ -89,8 +93,7 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
         onActiveImageChangeAction?.(imageKey)
     }
     const paymentPeriodOptions = PAYMENT_PERIOD_OPTIONS
-    const paymentPeriodSuffix = getPaymentPeriodSuffix(selection.paymentPeriod, content.paymentPeriod)
-    const monthlyPeriodSuffix = getPaymentPeriodSuffix("monthly", content.paymentPeriod)
+    const monthlyPeriodSuffix = getPaymentPeriodSuffix("monthly", content.paymentPeriod) || (locale === "de" ? "pro Monat" : "per month")
     const quote = calculateSubscriptionQuote(selection, catalog)
     const { monthlyPrice, paymentPeriodPrice } = getSubscriptionDisplayPrices(quote.total, selection.paymentPeriod)
     const selectionSearchParamsString = buildSubscriptionSelectionSearchParams(selection).toString()
@@ -197,20 +200,24 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                     <div className="grid gap-3">
                         <SubscriptionOptionCard
                             title={content.plan.pro.title}
-                            description={planDescription("pro")}
+                            description={content.plan.pro.description}
                             icon={icons.plan.pro}
                             accent="brand"
                             active={selection.plan === "pro"}
                             onClick={() => selectOption({ type: "planChanged", value: "pro" }, "pro")}
-                        />
+                        >
+                            {planPackageSizes("pro")}
+                        </SubscriptionOptionCard>
                         <SubscriptionOptionCard
                             title={content.plan.max.title}
-                            description={planDescription("max")}
+                            description={content.plan.max.description}
                             icon={icons.plan.max}
                             accent="magenta"
                             active={selection.plan === "max"}
                             onClick={() => selectOption({ type: "planChanged", value: "max" }, "max")}
-                        />
+                        >
+                            {planPackageSizes("max")}
+                        </SubscriptionOptionCard>
                         <SubscriptionOptionCard
                             title={content.plan.custom.title}
                             description={content.plan.custom.description}
@@ -255,7 +262,7 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                             ariaLabel={aiTokens.title}
                             className="rounded-2xl border border-white/10 p-4"
                             valueLabelSuffix={aiTokens.suffix}
-                            centerLabelSuffix={paymentPeriodSuffix}
+                            centerLabelSuffix={monthlyPeriodSuffix}
                             variant="gradient"
                             shape="cone-incline"
                         />
@@ -273,7 +280,7 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                             ariaLabel={workflowExecutions.title}
                             className="rounded-2xl border border-white/10 p-4"
                             valueLabelSuffix={workflowExecutions.suffix}
-                            centerLabelSuffix={paymentPeriodSuffix}
+                            centerLabelSuffix={monthlyPeriodSuffix}
                             variant="gradient"
                             shape="cone-incline"
                         />
@@ -284,8 +291,8 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                                 businessTypeIcons={icons.workflowBusinessTypes}
                                 value={selection.workflowExecutions}
                                 packages={workflowExecutionPackages}
-                                suffix={workflowExecutions.suffix}
-                                centerLabelSuffix={paymentPeriodSuffix}
+                                suffix="Workflow Executions"
+                                centerLabelSuffix={monthlyPeriodSuffix}
                                 onApply={(workflowExecutionsValue) => dispatch({ type: "workflowExecutionsChanged", value: workflowExecutionsValue })}
                             />
                             <div className="flex flex-wrap items-start justify-end gap-2">

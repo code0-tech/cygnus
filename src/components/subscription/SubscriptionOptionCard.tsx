@@ -34,9 +34,10 @@ interface SubscriptionOptionCardProps {
     disabled?: boolean
     accent?: SubscriptionOptionAccent
     badge?: string
+    children?: ReactNode
 }
 
-export function SubscriptionOptionCard({ title, description, active, onClick, icon, disabled = false, accent = "aqua", badge }: SubscriptionOptionCardProps) {
+export function SubscriptionOptionCard({ title, description, active, onClick, icon, disabled = false, accent = "aqua", badge, children }: SubscriptionOptionCardProps) {
     return (
         <button
             type="button"
@@ -75,6 +76,7 @@ export function SubscriptionOptionCard({ title, description, active, onClick, ic
                     )}
                 </div>
                 <p className="text-base text-secondary">{description}</p>
+                {children}
             </div>
         </button>
     )
