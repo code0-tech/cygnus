@@ -4,7 +4,7 @@ export function getMediaUrl(url?: string | null) {
 
     try {
         const parsedUrl = new URL(url)
-        const appUrl = typeof window === "undefined" ? process.env.PAYLOAD_SERVER_URL : window.location.origin
+        const appUrl = typeof window === "undefined" ? process.env.SERVER_URL : window.location.origin
         const appOrigin = appUrl ? new URL(appUrl).origin : null
         const isLocalPayloadUrl = ["localhost", "127.0.0.1", "0.0.0.0"].includes(parsedUrl.hostname)
         const isAppPayloadUrl = appOrigin ? parsedUrl.origin === appOrigin : false
