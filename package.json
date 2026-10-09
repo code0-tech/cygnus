@@ -57,7 +57,7 @@
         "sanitize-html": "^2.18.0",
         "sass": "^1.105.1",
         "sharp": "^0.35.5",
-        "shiki": "^4.4.3",
+        "shiki": "^4.5.0",
         "tailwind-merge": "^3.7.0",
         "web-haptics": "^0.0.6"
     },
