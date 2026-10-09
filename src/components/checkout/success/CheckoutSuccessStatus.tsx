@@ -13,14 +13,15 @@ import { getPaymentPeriodSuffix } from "@/lib/subscription/calculator"
 import type { CheckoutCompletionState } from "@code0-tech/crater-graphql-types"
 import { Button } from "@code0-tech/pictor"
 import { IconCheck, IconCloud, IconDownload, IconX } from "@tabler/icons-react"
+import { AnimatePresence, m as motion, useReducedMotion, type Variants } from "motion/react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useCallback, useEffect, useRef, useState } from "react"
 
 type SuccessContent = CheckoutData["success"]
-type CheckoutStatus = CheckoutCompletionState | "LOADING" | "ERROR" | "INVALID"
+type CheckoutStatus = `${CheckoutCompletionState}` | "LOADING" | "ERROR" | "INVALID"
 type StatusResponse = {
-    state: CheckoutCompletionState
+    state: `${CheckoutCompletionState}`
     customerId: string
     licenseId: string | null
     configuration: {
@@ -49,6 +50,16 @@ interface CheckoutSuccessStatusProps {
     sculptorUrl?: string | null
     sessionId: string
     subscriptionConfig: SubscriptionConfigData
+}
+
+interface CheckoutSuccessStatusViewProps extends Omit<CheckoutSuccessStatusProps, "checkoutSearchParams" | "sessionId"> {
+    status: CheckoutStatus
+    completion: StatusResponse | null
+    isGuestCheckout: boolean
+    isDownloadingLicense: boolean
+    licenseDownloadError: boolean
+    onDownloadLicense: () => void
+    onRetry: () => void
 }
 
 const VALID_STATES = new Set<string>(["CHECKOUT_PENDING", "PAYMENT_PENDING", "FULFILLMENT_PENDING", "READY", "FAILED"])
@@ -81,7 +92,7 @@ function isPricing(value: unknown) {
 function parseStatusResponse(value: unknown): StatusResponse | null {
     if (!value || typeof value !== "object") return null
     const response = value as Record<string, unknown>
-    if (typeof response.state !== "string" || !VALID_STATES.has(response.state as CheckoutCompletionState) || typeof response.customerId !== "string") return null
+    if (typeof response.state !== "string" || !VALID_STATES.has(response.state) || typeof response.customerId !== "string") return null
     if (response.licenseId !== null && typeof response.licenseId !== "string") return null
     if (response.state === "READY" && !response.licenseId) return null
     if (response.configuration !== null && !isConfiguration(response.configuration)) return null
@@ -162,21 +173,6 @@ export function CheckoutSuccessStatus({ checkoutSearchParams, content, errorMess
         router.replace(`/${locale}/checkout${guest ? "/login" : ""}?${nextParams.toString()}`)
     }, [checkoutSearchParams, locale, router, status])
 
-    const fulfillmentConfirmed = status === "FULFILLMENT_PENDING" || status === "READY"
-    const statusFailed = status === "FAILED" || status === "INVALID"
-    const heading = status === "FAILED" ? content.failedHeading : status === "INVALID" ? content.invalidHeading : fulfillmentConfirmed ? content.heading : null
-    const description = status === "FAILED" ? content.failedDescription : status === "INVALID" ? content.invalidDescription : fulfillmentConfirmed ? content.description : null
-    const licenseAccessUrl =
-        status === "READY" && completion?.licenseId ? `/api/crater/licenses/access?${new URLSearchParams({ locale, customerId: completion.customerId, licenseId: completion.licenseId })}` : null
-    const confirmedConfiguration = fulfillmentConfirmed ? completion?.configuration : null
-    const confirmedPricing = fulfillmentConfirmed ? completion?.pricing : null
-    const paymentPeriod = confirmedConfiguration?.paymentPeriod ?? undefined
-    const planKey = confirmedConfiguration?.plan
-    const planTitle = planKey === "pro" || planKey === "max" || planKey === "custom" ? subscriptionConfig.packages[planKey].title : subscriptionConfig.packages.custom.title
-    const currencyDivisor = confirmedPricing
-        ? 10 ** (new Intl.NumberFormat(locale === "de" ? "de-DE" : "en-US", { style: "currency", currency: confirmedPricing.currency.toUpperCase() }).resolvedOptions().maximumFractionDigits ?? 2)
-        : 100
-
     const downloadSelfHostedLicense = async () => {
         if (!completion?.licenseId || isDownloadingLicense) return
 
@@ -192,99 +188,192 @@ export function CheckoutSuccessStatus({ checkoutSearchParams, content, errorMess
     }
 
     return (
-        <div className="flex flex-col items-center justify-center gap-2">
-            {status === "READY" || status === "ERROR" ? (
-                <div className="mb-2 flex size-12 items-center justify-center rounded-2xl bg-brand/10 text-brand shadow-[inset_0_1px_1px_#bfbfbf1a]">
-                    {status === "READY" ? <IconCheck aria-hidden="true" size={28} /> : <IconX aria-hidden="true" size={28} />}
-                </div>
-            ) : null}
-            {heading && <h1 className="text-3xl font-semibold text-white">{heading}</h1>}
-            {description && <p className="text-secondary max-w-lg">{description}</p>}
-            {fulfillmentConfirmed && isGuestCheckout && (
-                <p role="status" className="my-2 max-w-lg rounded-2xl border border-brand/10 bg-brand/5 p-4 text-sm text-brand">
-                    {content.guestAccountHint}
-                </p>
-            )}
-            {confirmedConfiguration && confirmedPricing ? (
-                <div className="my-2 w-full text-left">
-                    <CheckoutPricingOverview
-                        confirmedPricing={{
-                            aiTokens: confirmedConfiguration.aiTokens,
-                            currency: confirmedPricing.currency,
-                            customerType: confirmedConfiguration.customerType === "business" ? "b2b" : confirmedConfiguration.customerType === "personal" ? "b2c" : confirmedConfiguration.customerType,
-                            deployment: confirmedConfiguration.deploymentType,
-                            discountAmount: confirmedPricing.discount / currencyDivisor,
-                            periodSuffix: paymentPeriod ? getPaymentPeriodSuffix(paymentPeriod, subscriptionConfig.paymentPeriod) : "",
-                            planTitle,
-                            subtotalPrice: confirmedPricing.subtotal / currencyDivisor,
-                            taxAmount: confirmedPricing.tax / currencyDivisor,
-                            totalPrice: confirmedPricing.total / currencyDivisor,
-                            workflowExecutions: confirmedConfiguration.workflowExecutions,
-                        }}
-                        content={pricingContent}
-                        locale={locale}
-                        subscriptionConfig={subscriptionConfig}
-                    />
-                </div>
-            ) : null}
-            {fulfillmentConfirmed && <p className="text-sm text-tertiary mb-4">{content.receiptHint}</p>}
-            {status === "ERROR" && <p className="text-secondary">{errorMessage}</p>}
-            {status === "READY" && licenseAccessUrl ? (
-                <div className="flex flex-col items-center gap-2">
-                    <div className="flex flex-wrap items-center justify-center gap-2">
-                        {!isGuestCheckout && (
-                            <Link href={licenseAccessUrl} target="_blank" rel="noreferrer">
-                                <Button>{content.licenseDashboardLabel}</Button>
-                            </Link>
-                        )}
-                        {completion?.configuration?.deploymentType === "cloud" && sculptorUrl ? (
-                            <Link href={sculptorUrl} target="_blank" rel="noreferrer">
-                                <Button variant="filled" className="bg-white/80! hover:bg-white! text-primary!">
-                                    <IconCloud aria-hidden="true" size={17} />
-                                    {content.sculptorLabel}
-                                </Button>
-                            </Link>
-                        ) : completion?.configuration?.deploymentType === "self_hosted" ? (
-                            <Button
-                                type="button"
-                                variant="filled"
-                                className="bg-white/80! hover:bg-white! text-primary!"
-                                disabled={isDownloadingLicense}
-                                onClick={() => void downloadSelfHostedLicense()}
+        <CheckoutSuccessStatusView
+            completion={completion}
+            content={content}
+            errorMessage={errorMessage}
+            isDownloadingLicense={isDownloadingLicense}
+            isGuestCheckout={isGuestCheckout}
+            licenseDownloadError={licenseDownloadError}
+            locale={locale}
+            onDownloadLicense={() => void downloadSelfHostedLicense()}
+            onRetry={() => {
+                pollingStartedAtRef.current = Date.now()
+                pollAttemptRef.current = 0
+                setStatus("LOADING")
+                setAttempt((current) => current + 1)
+            }}
+            pricingContent={pricingContent}
+            sculptorUrl={sculptorUrl}
+            status={status}
+            subscriptionConfig={subscriptionConfig}
+        />
+    )
+}
+
+function CheckoutSuccessStatusView({
+    completion,
+    content,
+    errorMessage,
+    isDownloadingLicense,
+    isGuestCheckout,
+    licenseDownloadError,
+    locale,
+    onDownloadLicense,
+    onRetry,
+    pricingContent,
+    sculptorUrl,
+    status,
+    subscriptionConfig,
+}: CheckoutSuccessStatusViewProps) {
+    const reducedMotion = useReducedMotion()
+    const stagger: Variants = {
+        hidden: {},
+        show: { transition: { staggerChildren: reducedMotion ? 0 : 0.12, delayChildren: reducedMotion ? 0 : 0.08 } },
+    }
+    const reveal: Variants = {
+        hidden: { opacity: 0, y: reducedMotion ? 0 : 12, filter: reducedMotion ? "none" : "blur(4px)" },
+        show: { opacity: 1, y: 0, filter: "none", transition: { duration: reducedMotion ? 0.15 : 0.5, ease: [0.22, 1, 0.36, 1] } },
+    }
+    const fulfillmentConfirmed = status === "FULFILLMENT_PENDING" || status === "READY"
+    const statusFailed = status === "FAILED" || status === "INVALID"
+    const heading = status === "FAILED" ? content.failedHeading : status === "INVALID" ? content.invalidHeading : fulfillmentConfirmed ? content.heading : null
+    const description = status === "FAILED" ? content.failedDescription : status === "INVALID" ? content.invalidDescription : fulfillmentConfirmed ? content.description : null
+    const licenseAccessUrl =
+        status === "READY" && completion?.licenseId ? `/api/crater/licenses/access?${new URLSearchParams({ locale, customerId: completion.customerId, licenseId: completion.licenseId })}` : null
+    const confirmedConfiguration = fulfillmentConfirmed ? completion?.configuration : null
+    const confirmedPricing = fulfillmentConfirmed ? completion?.pricing : null
+    const paymentPeriod = confirmedConfiguration?.paymentPeriod ?? undefined
+    const planKey = confirmedConfiguration?.plan
+    const planTitle = planKey === "pro" || planKey === "max" || planKey === "custom" ? subscriptionConfig.packages[planKey].title : subscriptionConfig.packages.custom.title
+    const currencyDivisor = confirmedPricing
+        ? 10 ** (new Intl.NumberFormat(locale === "de" ? "de-DE" : "en-US", { style: "currency", currency: confirmedPricing.currency.toUpperCase() }).resolvedOptions().maximumFractionDigits ?? 2)
+        : 100
+
+    return (
+        <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+                key={fulfillmentConfirmed ? "confirmed" : status === "ERROR" ? "error" : statusFailed ? "failed" : "pending"}
+                variants={stagger}
+                initial="hidden"
+                animate="show"
+                exit={{ opacity: 0, transition: { duration: reducedMotion ? 0 : 0.2 } }}
+                className="flex flex-col items-center justify-center gap-2"
+            >
+                {fulfillmentConfirmed || status === "ERROR" ? (
+                    <div className="mb-2 size-12 shrink-0">
+                        {status === "READY" || status === "ERROR" ? (
+                            <motion.div
+                                initial={{ opacity: 0, scale: reducedMotion ? 1 : 0.85 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ type: "spring", stiffness: 180, damping: 18 }}
+                                className={`flex size-12 items-center justify-center rounded-2xl shadow-[inset_0_1px_1px_#bfbfbf1a] ${status === "READY" ? "bg-brand/10 text-brand" : "bg-error/10 text-error"}`}
                             >
-                                {isDownloadingLicense ? <ButtonLoader label={content.licenseDownloadLabel} /> : <IconDownload aria-hidden="true" size={17} />}
-                                {!isDownloadingLicense ? content.licenseDownloadLabel : null}
-                            </Button>
+                                {status === "READY" ? <IconCheck aria-hidden="true" size={28} /> : <IconX aria-hidden="true" size={28} />}
+                            </motion.div>
                         ) : null}
                     </div>
-                    {licenseDownloadError ? (
-                        <p role="alert" className="text-sm text-error">
-                            {content.licenseDownloadError}
-                        </p>
-                    ) : null}
-                </div>
-            ) : status === "ERROR" ? (
-                <Button
-                    type="button"
-                    variant="normal"
-                    onClick={() => {
-                        pollingStartedAtRef.current = Date.now()
-                        pollAttemptRef.current = 0
-                        setStatus("LOADING")
-                        setAttempt((current) => current + 1)
-                    }}
-                >
-                    {content.licenseStatusRetryLabel}
-                </Button>
-            ) : statusFailed ? (
-                <LinkButton href={`/${locale}/checkout`} showArrow={false} className="border-b-0">
-                    {content.checkoutRetryLabel}
-                </LinkButton>
-            ) : (
-                <Button type="button" variant="normal" disabled>
-                    <ButtonLoader label={content.licensePendingLabel} />
-                </Button>
-            )}
-        </div>
+                ) : null}
+                {heading && (
+                    <motion.h1 variants={reveal} className="text-3xl font-semibold text-white">
+                        {heading}
+                    </motion.h1>
+                )}
+                {description && (
+                    <motion.p variants={reveal} className="text-secondary max-w-lg">
+                        {description}
+                    </motion.p>
+                )}
+                {fulfillmentConfirmed && isGuestCheckout && (
+                    <motion.p variants={reveal} role="status" className="my-2 max-w-lg rounded-2xl border border-brand/10 bg-brand/5 p-4 text-sm text-brand">
+                        {content.guestAccountHint}
+                    </motion.p>
+                )}
+                {confirmedConfiguration && confirmedPricing ? (
+                    <motion.div variants={reveal} className="my-2 w-full text-left">
+                        <CheckoutPricingOverview
+                            confirmedPricing={{
+                                aiTokens: confirmedConfiguration.aiTokens,
+                                currency: confirmedPricing.currency,
+                                customerType:
+                                    confirmedConfiguration.customerType === "business" ? "b2b" : confirmedConfiguration.customerType === "personal" ? "b2c" : confirmedConfiguration.customerType,
+                                deployment: confirmedConfiguration.deploymentType,
+                                discountAmount: confirmedPricing.discount / currencyDivisor,
+                                periodSuffix: paymentPeriod ? getPaymentPeriodSuffix(paymentPeriod, subscriptionConfig.paymentPeriod) : "",
+                                planTitle,
+                                subtotalPrice: confirmedPricing.subtotal / currencyDivisor,
+                                taxAmount: confirmedPricing.tax / currencyDivisor,
+                                totalPrice: confirmedPricing.total / currencyDivisor,
+                                workflowExecutions: confirmedConfiguration.workflowExecutions,
+                            }}
+                            content={pricingContent}
+                            locale={locale}
+                            subscriptionConfig={subscriptionConfig}
+                        />
+                    </motion.div>
+                ) : null}
+                {fulfillmentConfirmed && (
+                    <motion.p variants={reveal} className="text-sm text-tertiary mb-4">
+                        {content.receiptHint}
+                    </motion.p>
+                )}
+                {status === "ERROR" && (
+                    <motion.p variants={reveal} className="text-secondary">
+                        {errorMessage}
+                    </motion.p>
+                )}
+                <motion.div variants={reveal}>
+                    <AnimatePresence mode="wait" initial={false}>
+                        {status === "READY" && licenseAccessUrl ? (
+                            <motion.div key="ready" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center gap-2">
+                                <div className="flex flex-wrap items-center justify-center gap-2">
+                                    {!isGuestCheckout && (
+                                        <Link href={licenseAccessUrl} target="_blank" rel="noreferrer">
+                                            <Button>{content.licenseDashboardLabel}</Button>
+                                        </Link>
+                                    )}
+                                    {completion?.configuration?.deploymentType === "cloud" && sculptorUrl ? (
+                                        <Link href={sculptorUrl} target="_blank" rel="noreferrer">
+                                            <Button variant="filled" className="bg-white/80! hover:bg-white! text-primary!">
+                                                <IconCloud aria-hidden="true" size={17} />
+                                                {content.sculptorLabel}
+                                            </Button>
+                                        </Link>
+                                    ) : completion?.configuration?.deploymentType === "self_hosted" ? (
+                                        <Button type="button" variant="filled" className="bg-white/80! hover:bg-white! text-primary!" disabled={isDownloadingLicense} onClick={onDownloadLicense}>
+                                            {isDownloadingLicense ? <ButtonLoader label={content.licenseDownloadLabel} /> : <IconDownload aria-hidden="true" size={17} />}
+                                            {!isDownloadingLicense ? content.licenseDownloadLabel : null}
+                                        </Button>
+                                    ) : null}
+                                </div>
+                                {licenseDownloadError ? (
+                                    <p role="alert" className="text-sm text-error">
+                                        {content.licenseDownloadError}
+                                    </p>
+                                ) : null}
+                            </motion.div>
+                        ) : status === "ERROR" ? (
+                            <motion.div key="retry" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                                <Button type="button" variant="normal" onClick={onRetry}>
+                                    {content.licenseStatusRetryLabel}
+                                </Button>
+                            </motion.div>
+                        ) : statusFailed ? (
+                            <motion.div key="failed" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                                <LinkButton href={`/${locale}/checkout`} showArrow={false} className="border-b-0">
+                                    {content.checkoutRetryLabel}
+                                </LinkButton>
+                            </motion.div>
+                        ) : (
+                            <motion.div key="pending" exit={{ opacity: 0, transition: { duration: reducedMotion ? 0 : 0.2 } }}>
+                                <Button type="button" variant="normal" disabled>
+                                    <ButtonLoader label={content.licensePendingLabel} />
+                                </Button>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </motion.div>
+            </motion.div>
+        </AnimatePresence>
     )
 }
