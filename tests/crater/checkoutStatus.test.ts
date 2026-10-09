@@ -2,7 +2,7 @@ import { readGuestCheckoutSession } from "../../src/lib/checkout/guestCheckoutSe
 import assert from "node:assert/strict"
 import test from "node:test"
 import { GET as listCustomers, PATCH as updateCustomer, POST as createOrGetCustomer } from "../../src/app/api/crater/customer/route"
-import { GET as getCustomerPaymentMethodSetupStatus, POST as createCustomerPaymentMethodSetup } from "../../src/app/api/crater/customer/payment-method-setup/route"
+import { POST as createCustomerPaymentMethodSetup } from "../../src/app/api/crater/customer/payment-method-setup/route"
 import { GET as getCustomerPaymentMethods } from "../../src/app/api/crater/customer/payment-methods/route"
 import { POST as createCheckoutSession } from "../../src/app/api/crater/checkout/session/route"
 import { POST as createGuestUser } from "../../src/app/api/crater/guest/route"

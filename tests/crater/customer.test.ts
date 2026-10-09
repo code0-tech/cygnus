@@ -2,7 +2,7 @@ import { readGuestCheckoutSession } from "../../src/lib/checkout/guestCheckoutSe
 import assert from "node:assert/strict"
 import test from "node:test"
 import { GET as listCustomers, PATCH as updateCustomer, POST as createOrGetCustomer } from "../../src/app/api/crater/customer/route"
-import { GET as getCustomerPaymentMethodSetupStatus, POST as createCustomerPaymentMethodSetup } from "../../src/app/api/crater/customer/payment-method-setup/route"
+import { POST as createCustomerPaymentMethodSetup } from "../../src/app/api/crater/customer/payment-method-setup/route"
 import { GET as getCustomerPaymentMethods } from "../../src/app/api/crater/customer/payment-methods/route"
 import { POST as createCheckoutSession } from "../../src/app/api/crater/checkout/session/route"
 import { POST as createGuestUser } from "../../src/app/api/crater/guest/route"
@@ -102,47 +102,6 @@ test("customer payment methods carry the display details Crater resolves for eve
             assert.match(request.body.query ?? "", /paymentMethod\(paymentMethodId:/)
             assert.doesNotMatch(request.body.query ?? "", /customerPaymentMethod\(/)
         }
-    } finally {
-        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
-        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
-        await graphQLServer.close()
-    }
-})
-
-
-test("payment method setup status requires a Crater session", async () => {
-    const response = await getCustomerPaymentMethodSetupStatus(
-        new Request("https://example.com/api/crater/customer/payment-method-setup?customerId=gid%3A%2F%2Fcrater%2FCustomer%2F1&setupIntentId=seti_example")
-    )
-
-    assert.equal(response.status, 403)
-    assert.equal(response.headers.get("cache-control"), "no-store")
-})
-
-
-test("payment method setup status rejects customers outside the Crater session", async () => {
-    const graphQLServer = await createGraphQLTestServer([
-        {
-            data: {
-                currentUser: {
-                    customers: { nodes: [{ id: "gid://crater/Customer/2" }] },
-                },
-            },
-        },
-    ])
-    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
-    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
-
-    try {
-        const response = await getCustomerPaymentMethodSetupStatus(
-            new Request("https://example.com/api/crater/customer/payment-method-setup?customerId=gid%3A%2F%2Fcrater%2FCustomer%2F1&setupIntentId=seti_example", {
-                headers: sessionHeaders,
-            })
-        )
-
-        assert.equal(response.status, 404)
-        assert.deepEqual(await response.json(), { error: "The payment method setup was not found." })
-        assert.equal(graphQLServer.requests[0].body.operationName, "CustomerPaymentMethodSetupStatus")
     } finally {
         if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
         else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl

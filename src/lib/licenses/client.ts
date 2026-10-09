@@ -124,18 +124,6 @@ export async function createPaymentMethodSetup(customerId: string, errorMessage:
     return result.clientSecret
 }
 
-export async function getPaymentMethodSetupStatus(customerId: string, setupIntentId: string, signal: AbortSignal) {
-    const statusUrl = new URL("/api/crater/customer/payment-method-setup", window.location.origin)
-    statusUrl.searchParams.set("customerId", customerId)
-    statusUrl.searchParams.set("setupIntentId", setupIntentId)
-    const response = await fetch(statusUrl, { cache: "no-store", credentials: "same-origin", signal })
-    const result: unknown = await response.json()
-    if (!response.ok || !result || typeof result !== "object" || !("status" in result) || (result.status !== "ready" && result.status !== "pending" && result.status !== "failed")) {
-        throw new Error("Invalid payment method setup status response.")
-    }
-    return result.status
-}
-
 export async function fetchCustomerPaymentMethods(customerId: string, signal: AbortSignal): Promise<CustomerPaymentMethodSummary[]> {
     const url = new URL("/api/crater/customer/payment-methods", window.location.origin)
     url.searchParams.set("customerId", customerId)

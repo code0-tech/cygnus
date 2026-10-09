@@ -28,33 +28,26 @@ mock.module("@stripe/react-stripe-js", {
 })
 mock.module("@stripe/stripe-js", {
     namedExports: {
-        loadStripe: () => null,
+        loadStripe: () => Promise.resolve({ retrieveSetupIntent: async () => ({ setupIntent: { status: "processing" } }) }),
     },
 })
 
 const { cleanup, render, screen } = await import("@testing-library/react")
 const { PaymentMethodSetupPendingStatus } = await import("../../src/components/licenses/dialog/customer/PaymentMethodSetupElement")
-const originalFetch = globalThis.fetch
 
 const content = {
     closeLabel: "Close",
-    paymentMethodSuccess: "Payment method updated.",
+    paymentMethodSuccess: "Payment method added successfully.",
     savingPaymentMethodLabel: "Waiting for confirmation…",
 } as LicenseContent["editor"]
 const errorMessage = "Could not update payment method."
 
 afterEach(() => {
     cleanup()
-    globalThis.fetch = originalFetch
 })
 
-test("keeps the payment method UI pending until Crater confirms webhook readiness", async () => {
+test("keeps the payment method UI pending while Stripe reports processing", async () => {
     let successCalls = 0
-    globalThis.fetch = (async () =>
-        new Response(JSON.stringify({ status: "pending" }), {
-            status: 200,
-            headers: { "content-type": "application/json" },
-        })) as typeof fetch
 
     render(
         <PaymentMethodSetupPendingStatus
@@ -63,9 +56,8 @@ test("keeps the payment method UI pending until Crater confirms webhook readines
             onSuccess={() => {
                 successCalls += 1
             }}
-            owner={{ customerId: "gid://crater/Customer/8" }}
             retryLabel="Try again"
-            setupIntentId="seti_example"
+            clientSecret="seti_example_secret_example"
         />
     )
 

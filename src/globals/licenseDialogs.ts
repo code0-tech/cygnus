@@ -47,10 +47,10 @@ export const LicenseDialogs: GlobalConfig = {
                     type: "text",
                     required: true,
                     localized: true,
-                    defaultValue: localizedDefault("The payment method is now the default for future invoices.", "Die Zahlungsmethode ist jetzt der Standard für zukünftige Rechnungen."),
+                    defaultValue: localizedDefault("Payment method added successfully.", "Zahlungsmethode erfolgreich hinzugefügt."),
                 },
                 { name: "noPaymentMethodsLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("No payment methods yet", "Noch keine Zahlungsmethoden") },
-                { name: "addPaymentMethodLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Add payment method", "Zahlungsmethode hinzufügen") },
+                { name: "addPaymentMethodLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Add new payment method", "Neue Zahlungsmethode hinzufügen") },
                 { name: "removePaymentMethodLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Remove", "Entfernen") },
                 { name: "removingPaymentMethodLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Removing…", "Wird entfernt …") },
                 {
