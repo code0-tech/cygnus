@@ -118,6 +118,32 @@ function respondWith(body: unknown, status = 200) {
 }
 const COMPLETED_TEST_STATES = new Set(["PAYMENT_PENDING", "FULFILLMENT_PENDING", "READY"])
 
+test("keeps the confirmed overview mounted when polling reports the license is ready", async () => {
+    const pendingCompletion = {
+        state: "FULFILLMENT_PENDING" as const,
+        customerId: "gid://crater/Customer/1",
+        licenseId: null,
+        configuration: { ...completedConfiguration, paymentPeriod: "monthly" as const },
+        pricing: completedPricing,
+    }
+    respondWith(pendingCompletion)
+    const { container } = render(<CheckoutSuccessStatus {...sharedProps} checkoutSearchParams={checkoutSearchParams} content={content} errorMessage={errorMessage} locale="en" sessionId="cs_test" />)
+    const heading = await screen.findByRole("heading", { name: content.heading })
+    const pricingOverview = container.querySelector("#checkout-applied-discount")
+    assert.ok(pricingOverview)
+    assert.equal(screen.queryByRole("link", { name: content.licenseDashboardLabel }), null)
+    assert.equal(screen.queryByRole("button", { name: content.licenseDownloadLabel }), null)
+
+    respondWith({ ...pendingCompletion, state: "READY", licenseId: "gid://crater/License/2" })
+    await screen.findByRole("link", { name: content.licenseDashboardLabel }, { timeout: 3000 })
+
+    assert.equal(screen.getByRole("heading", { name: content.heading }), heading)
+    assert.equal(container.querySelector("#checkout-applied-discount"), pricingOverview)
+    assert.ok(screen.getByRole("link", { name: content.licenseDashboardLabel }))
+    assert.ok(screen.getByRole("button", { name: content.licenseDownloadLabel }))
+    assert.equal(screen.queryByRole("button", { name: content.licensePendingLabel }), null)
+})
+
 afterEach(() => {
     cleanup()
     globalThis.fetch = originalFetch
@@ -182,16 +208,7 @@ test("explains a checkout session that cannot be verified", async () => {
 test("shows Crater's confirmed Stripe pricing once payment is confirmed", async () => {
     respondWith({ state: "FULFILLMENT_PENDING", customerId: "gid://crater/Customer/1", licenseId: null })
 
-    render(
-        <CheckoutSuccessStatus
-            {...sharedProps}
-            checkoutSearchParams={checkoutSearchParams}
-            content={content}
-            errorMessage={errorMessage}
-            locale="en"
-            sessionId="cs_test"
-        />
-    )
+    render(<CheckoutSuccessStatus {...sharedProps} checkoutSearchParams={checkoutSearchParams} content={content} errorMessage={errorMessage} locale="en" sessionId="cs_test" />)
 
     assert.ok(await screen.findByText(content.heading))
     assert.ok(screen.getByText("€100.00"))
