@@ -2,7 +2,7 @@ import { readGuestCheckoutSession } from "../../src/lib/checkout/guestCheckoutSe
 import assert from "node:assert/strict"
 import test from "node:test"
 import { GET as listCustomers, PATCH as updateCustomer, POST as createOrGetCustomer } from "../../src/app/api/crater/customer/route"
-import { GET as getCustomerPaymentMethodSetupStatus, POST as createCustomerPaymentMethodSetup } from "../../src/app/api/crater/customer/payment-method-setup/route"
+import { POST as createCustomerPaymentMethodSetup } from "../../src/app/api/crater/customer/payment-method-setup/route"
 import { GET as getCustomerPaymentMethods } from "../../src/app/api/crater/customer/payment-methods/route"
 import { POST as createCheckoutSession } from "../../src/app/api/crater/checkout/session/route"
 import { POST as createGuestUser } from "../../src/app/api/crater/guest/route"
@@ -26,7 +26,7 @@ const sessionHeaders = {
 
 test("Crater login requires a Sagittarius token", async () => {
     const configuredToken = process.env.CRATER_SAGITTARIUS_TOKEN
-    delete process.env.CRATER_SAGITTARIUS_TOKEN
+    process.env.CRATER_SAGITTARIUS_TOKEN = "legacy-fallback-token"
 
     try {
         const response = await createSession(
@@ -45,11 +45,8 @@ test("Crater login requires a Sagittarius token", async () => {
         })
         assert.equal(response.headers.get("cache-control"), "no-store")
     } finally {
-        if (configuredToken === undefined) {
-            delete process.env.CRATER_SAGITTARIUS_TOKEN
-        } else {
-            process.env.CRATER_SAGITTARIUS_TOKEN = configuredToken
-        }
+        if (configuredToken === undefined) delete process.env.CRATER_SAGITTARIUS_TOKEN
+        else process.env.CRATER_SAGITTARIUS_TOKEN = configuredToken
     }
 })
 
@@ -231,12 +228,11 @@ test("guest creation forwards the Crater error code without a session cookie", a
 
 
 test("an exhausted guest budget leaves the plain session route usable", async () => {
-    const environmentKeys = ["CRATER_GUEST_RATE_LIMIT_MAX", "CRATER_GUEST_RATE_LIMIT_WINDOW_SECONDS", "CRATER_RATE_LIMIT_TRUSTED_PROXY_HOPS", "CRATER_SAGITTARIUS_TOKEN"] as const
+    const environmentKeys = ["CRATER_GUEST_RATE_LIMIT_MAX", "CRATER_GUEST_RATE_LIMIT_WINDOW_SECONDS", "CRATER_RATE_LIMIT_TRUSTED_PROXY_HOPS"] as const
     const previousEnvironment = Object.fromEntries(environmentKeys.map((key) => [key, process.env[key]]))
     process.env.CRATER_GUEST_RATE_LIMIT_MAX = "1"
     process.env.CRATER_GUEST_RATE_LIMIT_WINDOW_SECONDS = "90"
     process.env.CRATER_RATE_LIMIT_TRUSTED_PROXY_HOPS = "1"
-    delete process.env.CRATER_SAGITTARIUS_TOKEN
 
     const request = (path: string) =>
         new Request(`https://example.com${path}`, {
@@ -282,9 +278,9 @@ test("server-side login callback redirects from the container to the configured 
         },
     ])
     const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
-    const previousServerUrl = process.env.PAYLOAD_SERVER_URL
+    const previousServerUrl = process.env.SERVER_URL
     process.env.CRATER_GRAPHQL_URL = graphQLServer.url
-    process.env.PAYLOAD_SERVER_URL = "https://code0.example"
+    process.env.SERVER_URL = "https://code0.example"
 
     try {
         const returnPath = "/de/checkout?plan=pro&deploymentType=self_hosted"
@@ -313,8 +309,8 @@ test("server-side login callback redirects from the container to the configured 
     } finally {
         if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
         else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
-        if (previousServerUrl === undefined) delete process.env.PAYLOAD_SERVER_URL
-        else process.env.PAYLOAD_SERVER_URL = previousServerUrl
+        if (previousServerUrl === undefined) delete process.env.SERVER_URL
+        else process.env.SERVER_URL = previousServerUrl
         await graphQLServer.close()
     }
 })
@@ -337,9 +333,9 @@ test("server-side login callback preserves the selected namespace for cloud chec
         },
     ])
     const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
-    const previousServerUrl = process.env.PAYLOAD_SERVER_URL
+    const previousServerUrl = process.env.SERVER_URL
     process.env.CRATER_GRAPHQL_URL = graphQLServer.url
-    process.env.PAYLOAD_SERVER_URL = "https://code0.example"
+    process.env.SERVER_URL = "https://code0.example"
 
     try {
         const returnPath = "/de/checkout?plan=pro&deploymentType=cloud"
@@ -357,8 +353,8 @@ test("server-side login callback preserves the selected namespace for cloud chec
     } finally {
         if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
         else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
-        if (previousServerUrl === undefined) delete process.env.PAYLOAD_SERVER_URL
-        else process.env.PAYLOAD_SERVER_URL = previousServerUrl
+        if (previousServerUrl === undefined) delete process.env.SERVER_URL
+        else process.env.SERVER_URL = previousServerUrl
         await graphQLServer.close()
     }
 })
@@ -376,9 +372,9 @@ test("server-side login callback logs why Crater rejected the login without leak
         },
     ])
     const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
-    const previousServerUrl = process.env.PAYLOAD_SERVER_URL
+    const previousServerUrl = process.env.SERVER_URL
     process.env.CRATER_GRAPHQL_URL = graphQLServer.url
-    process.env.PAYLOAD_SERVER_URL = "https://code0.example"
+    process.env.SERVER_URL = "https://code0.example"
     const originalConsoleError = console.error
     const loggedArguments: unknown[][] = []
     console.error = (...args: unknown[]) => {
@@ -397,16 +393,16 @@ test("server-side login callback logs why Crater rejected the login without leak
         console.error = originalConsoleError
         if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
         else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
-        if (previousServerUrl === undefined) delete process.env.PAYLOAD_SERVER_URL
-        else process.env.PAYLOAD_SERVER_URL = previousServerUrl
+        if (previousServerUrl === undefined) delete process.env.SERVER_URL
+        else process.env.SERVER_URL = previousServerUrl
         await graphQLServer.close()
     }
 })
 
 
 test("server-side login callback rejects external return paths and never forwards the token", async () => {
-    const previousServerUrl = process.env.PAYLOAD_SERVER_URL
-    process.env.PAYLOAD_SERVER_URL = "https://code0.example"
+    const previousServerUrl = process.env.SERVER_URL
+    process.env.SERVER_URL = "https://code0.example"
 
     try {
         for (const returnPath of ["https://evil.example/collect", "//evil.example/de/checkout", "//0.0.0.0:3000/de/checkout", "/de/licenses"]) {
@@ -419,17 +415,17 @@ test("server-side login callback rejects external return paths and never forward
             assert.doesNotMatch(response.headers.get("location") ?? "", /token=/)
         }
     } finally {
-        if (previousServerUrl === undefined) delete process.env.PAYLOAD_SERVER_URL
-        else process.env.PAYLOAD_SERVER_URL = previousServerUrl
+        if (previousServerUrl === undefined) delete process.env.SERVER_URL
+        else process.env.SERVER_URL = previousServerUrl
     }
 })
 
 test("server-side login callback reads the public origin at runtime and ignores forwarded hosts when the token is missing", async () => {
-    const previousServerUrl = process.env.PAYLOAD_SERVER_URL
+    const previousServerUrl = process.env.SERVER_URL
 
     try {
         for (const siteOrigin of ["https://staging.example.com", "https://production.example.com"]) {
-            process.env.PAYLOAD_SERVER_URL = siteOrigin
+            process.env.SERVER_URL = siteOrigin
             const response = await completeCraterLogin(
                 new Request("https://0.0.0.0:3000/api/crater/auth/callback?returnPath=%2Fen%2Fcheckout", {
                     headers: { host: "evil.example", "x-forwarded-host": "evil.example" },
@@ -440,8 +436,8 @@ test("server-side login callback reads the public origin at runtime and ignores 
             assert.equal(response.headers.get("set-cookie"), null)
         }
     } finally {
-        if (previousServerUrl === undefined) delete process.env.PAYLOAD_SERVER_URL
-        else process.env.PAYLOAD_SERVER_URL = previousServerUrl
+        if (previousServerUrl === undefined) delete process.env.SERVER_URL
+        else process.env.SERVER_URL = previousServerUrl
     }
 })
 

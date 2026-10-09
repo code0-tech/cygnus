@@ -2,7 +2,7 @@ import { readGuestCheckoutSession } from "../../src/lib/checkout/guestCheckoutSe
 import assert from "node:assert/strict"
 import test, { mock } from "node:test"
 import { GET as listCustomers, PATCH as updateCustomer, POST as createOrGetCustomer } from "../../src/app/api/crater/customer/route"
-import { GET as getCustomerPaymentMethodSetupStatus, POST as createCustomerPaymentMethodSetup } from "../../src/app/api/crater/customer/payment-method-setup/route"
+import { POST as createCustomerPaymentMethodSetup } from "../../src/app/api/crater/customer/payment-method-setup/route"
 import { GET as getCustomerPaymentMethods } from "../../src/app/api/crater/customer/payment-methods/route"
 import { POST as createCheckoutSession } from "../../src/app/api/crater/checkout/session/route"
 import { POST as createGuestUser } from "../../src/app/api/crater/guest/route"
@@ -24,13 +24,13 @@ const sessionHeaders = {
     "content-type": "application/json",
 }
 
-const previousServerUrl = process.env.PAYLOAD_SERVER_URL
+const previousServerUrl = process.env.SERVER_URL
 test.before(() => {
-    process.env.PAYLOAD_SERVER_URL = "https://code0.example"
+    process.env.SERVER_URL = "https://code0.example"
 })
 test.after(() => {
-    if (previousServerUrl === undefined) delete process.env.PAYLOAD_SERVER_URL
-    else process.env.PAYLOAD_SERVER_URL = previousServerUrl
+    if (previousServerUrl === undefined) delete process.env.SERVER_URL
+    else process.env.SERVER_URL = previousServerUrl
 })
 
 let licenseRedirectUrl: string | undefined

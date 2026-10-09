@@ -14,10 +14,7 @@ export function getClientIdentifier(request: Request) {
 
 export const escapeHtml = (value: string): string => value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;")
 
-export const getRateLimitConfig = (maxEnvKey: string, windowEnvKey: string, defaultMax = DEFAULT_RATE_LIMIT_MAX, defaultWindowSeconds = DEFAULT_RATE_LIMIT_WINDOW_SECONDS) => {
-    const maxRaw = process.env[maxEnvKey]
-    const windowRaw = process.env[windowEnvKey]
-
+export const getRateLimitConfig = (maxRaw: string | undefined, windowRaw: string | undefined, defaultMax = DEFAULT_RATE_LIMIT_MAX, defaultWindowSeconds = DEFAULT_RATE_LIMIT_WINDOW_SECONDS) => {
     const max = Number.parseInt(maxRaw ?? String(defaultMax), 10)
     const windowSeconds = Number.parseInt(windowRaw ?? String(defaultWindowSeconds), 10)
 

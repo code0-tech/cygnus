@@ -24,7 +24,7 @@ test("falls back invalid rate limit env values", () => {
     process.env.TEST_RATE_LIMIT_WINDOW = "nope"
 
     try {
-        assert.deepEqual(getRateLimitConfig("TEST_RATE_LIMIT_MAX", "TEST_RATE_LIMIT_WINDOW", 3, 20), {
+        assert.deepEqual(getRateLimitConfig(process.env.TEST_RATE_LIMIT_MAX, process.env.TEST_RATE_LIMIT_WINDOW, 3, 20), {
             max: 3,
             windowMs: 20_000,
         })

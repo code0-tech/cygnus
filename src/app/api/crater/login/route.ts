@@ -12,7 +12,7 @@ export async function POST(request: Request) {
     if (rateLimitResponse) return rateLimitResponse
 
     const body = await readJsonObject(request)
-    const sagittariusToken = optionalString(body?.sagittariusToken) ?? optionalString(process.env.CRATER_SAGITTARIUS_TOKEN)
+    const sagittariusToken = optionalString(body?.sagittariusToken)
     const clientMutationId = optionalString(body?.clientMutationId)
 
     if (!sagittariusToken) {
