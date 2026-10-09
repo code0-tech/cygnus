@@ -54,7 +54,7 @@
         "react": "^19.3.0",
         "react-dom": "^19.3.0",
         "react-player": "^3.4.0",
-        "sanitize-html": "^2.17.7",
+        "sanitize-html": "^2.18.0",
         "sass": "^1.105.1",
         "sharp": "^0.35.5",
         "shiki": "^4.4.3",
