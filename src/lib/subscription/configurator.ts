@@ -84,8 +84,8 @@ export function reduceSubscriptionSelection(selection: SubscriptionSelection, ac
     return next
 }
 
-export function parseSubscriptionSelectionFromSearchParams(searchParams: URLSearchParams, content: SubscriptionConfiguratorContent) {
-    return resolveSubscriptionSelection(searchParams, content).selection
+export function parseSubscriptionSelectionFromSearchParams(searchParams: URLSearchParams, config: SubscriptionSelectionCatalog) {
+    return resolveSubscriptionSelection(searchParams, config).selection
 }
 
 export function buildSubscriptionSelectionSearchParams(selection: SubscriptionSelection) {

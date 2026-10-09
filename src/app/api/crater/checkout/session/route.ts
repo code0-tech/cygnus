@@ -4,6 +4,8 @@ import { CRATER_ERROR_FIELDS, craterJson, craterMutationErrorResponse, craterTra
 import { optionalString, readJsonObject, type JsonObject } from "@/lib/crater/request"
 import { toCraterPaymentPeriod, toCraterPlan } from "@/lib/crater/values"
 import { resolveSubscriptionSelection } from "@/lib/subscription/configurator"
+import { getSubscriptionSelectionCatalog } from "@/lib/subscription/catalog"
+import { getCraterCheckoutPackages } from "@/lib/subscription/checkoutPackages.server"
 import { resolveSiteUrl } from "@/lib/siteConfig"
 import { DEFAULT_LOCALE, isSupportedLocale } from "@/lib/i18n"
 import { enforceRateLimit } from "@/lib/security/rateLimiter"
@@ -89,6 +91,7 @@ export async function POST(request: Request) {
 
         const { getSubscriptionConfig } = await import("@/lib/cms")
         const subscriptionConfig = await getSubscriptionConfig()
+        const checkoutPackages = await getCraterCheckoutPackages()
 
         if (!subscriptionConfig) {
             return craterJson({ error: "Subscription configuration is unavailable." }, 503)
@@ -101,7 +104,7 @@ export async function POST(request: Request) {
                 customerType,
                 paymentPeriod,
             },
-            subscriptionConfig
+            getSubscriptionSelectionCatalog(subscriptionConfig, checkoutPackages)
         )
 
         if (resolvedSelection.issues.length) {

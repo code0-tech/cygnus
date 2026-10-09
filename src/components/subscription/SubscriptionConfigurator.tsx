@@ -12,7 +12,7 @@ import { calculateSubscriptionQuote, formatDiscountBadge, getPaymentPeriodSuffix
 import { getSubscriptionCatalog } from "@/lib/subscription/catalog"
 import { buildSubscriptionSelectionSearchParams, parseSubscriptionSelectionFromSearchParams, reduceSubscriptionSelection } from "@/lib/subscription/configurator"
 import type { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
-import { normalizeUsagePackages } from "@/lib/subscription/usagePackages"
+import { normalizeUsagePackages, type CheckoutPackages } from "@/lib/subscription/usagePackages"
 import { cn } from "@/lib/utils"
 import NumberFlow from "@number-flow/react"
 import { IconCalendarMonth } from "@tabler/icons-react"
@@ -57,25 +57,32 @@ interface SubscriptionConfiguratorProps {
     icons: SubscriptionIcons
     onActiveImageChangeAction?: (key: SubscriptionOptionImageKey) => void
     subscriptionPrices: SubscriptionPriceCatalog
+    checkoutPackages: CheckoutPackages
 }
 
-export function SubscriptionConfigurator({ locale, content, icons, onActiveImageChangeAction, subscriptionPrices }: SubscriptionConfiguratorProps) {
+export function SubscriptionConfigurator({ locale, content, icons, onActiveImageChangeAction, subscriptionPrices, checkoutPackages }: SubscriptionConfiguratorProps) {
     const workflowExecutions = content.workflowExecutions
     const aiTokens = content.aiTokens
-    const catalog = getSubscriptionCatalog(content, subscriptionPrices)
+    const catalog = getSubscriptionCatalog(content, subscriptionPrices, checkoutPackages)
     const pathname = usePathname()
     const searchParams = useSearchParams()
     const configuratorRef = useRef<HTMLDivElement>(null)
     const configuratorEndRef = useRef<HTMLDivElement>(null)
 
-    const [selection, setSelection] = useState<SubscriptionSelection>(() => parseSubscriptionSelectionFromSearchParams(searchParams, content))
+    const [selection, setSelection] = useState<SubscriptionSelection>(() => parseSubscriptionSelectionFromSearchParams(searchParams, catalog))
     const [aiTokensPreview, setAiTokensPreview] = useState(selection.aiTokens)
     const [workflowExecutionsPreview, setWorkflowExecutionsPreview] = useState(selection.workflowExecutions)
     const [activeStepIndex, setActiveStepIndex] = useState(0)
     const [showBottomBlur, setShowBottomBlur] = useState(false)
     const [showStepIndicator, setShowStepIndicator] = useState(false)
-    const workflowExecutionPackages = normalizeUsagePackages(workflowExecutions[selection.customerType].packages)
-    const aiTokenPackages = normalizeUsagePackages(aiTokens[selection.customerType].packages)
+    const workflowExecutionPackages = normalizeUsagePackages(checkoutPackages.quantitySteps[selection.customerType].workflowExecutions)
+    const aiTokenPackages = normalizeUsagePackages(checkoutPackages.quantitySteps[selection.customerType].aiTokens)
+    const formatQuantity = (value: number) => new Intl.NumberFormat(locale === "de" ? "de-DE" : "en-US").format(value)
+    const planDescription = (plan: "pro" | "max") => {
+        const quantities = checkoutPackages.planQuantities[plan]
+        const inclusion = `${formatQuantity(quantities.aiTokens)} ${aiTokens.suffix} · ${formatQuantity(quantities.workflowExecutions)} ${workflowExecutions.suffix}`
+        return [content.plan[plan].description, inclusion].filter(Boolean).join(" · ")
+    }
     const dispatch = (action: SubscriptionSelectionAction) => setSelection((current) => reduceSubscriptionSelection(current, action, catalog))
     const selectOption = (action: SubscriptionSelectionAction, imageKey: SubscriptionOptionImageKey) => {
         dispatch(action)
@@ -190,7 +197,7 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                     <div className="grid gap-3">
                         <SubscriptionOptionCard
                             title={content.plan.pro.title}
-                            description={content.plan.pro.description}
+                            description={planDescription("pro")}
                             icon={icons.plan.pro}
                             accent="brand"
                             active={selection.plan === "pro"}
@@ -198,7 +205,7 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                         />
                         <SubscriptionOptionCard
                             title={content.plan.max.title}
-                            description={content.plan.max.description}
+                            description={planDescription("max")}
                             icon={icons.plan.max}
                             accent="magenta"
                             active={selection.plan === "max"}

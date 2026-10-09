@@ -1,22 +1,14 @@
+export type UsagePackageKind = "aiTokens" | "workflowExecutions"
+export type UsagePackageValues<T> = Record<UsagePackageKind, T>
+
+export interface CheckoutPackages {
+    quantitySteps: Record<"b2b" | "b2c", UsagePackageValues<number[]>>
+    planQuantities: Record<"pro" | "max", UsagePackageValues<number>>
+}
+
 export interface UsagePackagesConfig {
     default?: number | null
     packages?: readonly (number | null | undefined)[] | null
-}
-
-export const DEFAULT_USAGE_PACKAGES = {
-    aiTokens: {
-        b2b: { default: 100_000_000, packages: [10_000_000, 100_000_000, 500_000_000, 1_000_000_000] },
-        b2c: { default: 10_000_000, packages: [1_000_000, 10_000_000, 50_000_000, 100_000_000] },
-    },
-    workflowExecutions: {
-        b2b: { default: 1_000_000, packages: [100_000, 1_000_000, 5_000_000, 10_000_000] },
-        b2c: { default: 100_000, packages: [10_000, 100_000, 500_000, 1_000_000] },
-    },
-} as const satisfies Record<"aiTokens" | "workflowExecutions", Record<"b2b" | "b2c", { default: number; packages: readonly number[] }>>
-
-export function withDefaultUsagePackages<T extends UsagePackagesConfig>(config: T | null | undefined, fallback: { default: number; packages: readonly number[] }): T {
-    if (config && normalizeUsagePackages(config.packages).length > 0) return config
-    return { ...config, default: fallback.default, packages: [...fallback.packages] } as unknown as T
 }
 
 export function normalizeUsagePackages(packages: UsagePackagesConfig["packages"]): number[] {

@@ -4,23 +4,30 @@ import type { SubscriptionConfigData } from "@/lib/cms"
 import { createGraphQLTestServer } from "../helpers/graphqlTestServer"
 
 const subscriptionConfig = {
-    aiTokens: {
-        b2b: { default: 100_000_000, packages: [10_000_000, 100_000_000, 500_000_000, 1_000_000_000] },
-        b2c: { default: 10_000_000, packages: [1_000_000, 10_000_000, 50_000_000, 100_000_000] },
-    },
     defaults: {
         customerType: "b2c",
         paymentPeriod: { b2b: "monthly", b2c: "monthly" },
     },
-    workflowExecutions: {
-        b2b: { default: 1_000_000, packages: [100_000, 1_000_000, 5_000_000, 10_000_000] },
-        b2c: { default: 100_000, packages: [10_000, 100_000, 500_000, 1_000_000] },
-    },
-} as SubscriptionConfigData
+} as unknown as SubscriptionConfigData
 
 mock.module("@/lib/cms", {
     namedExports: {
         getSubscriptionConfig: async () => subscriptionConfig,
+    },
+})
+
+mock.module("@/lib/subscription/checkoutPackages.server", {
+    namedExports: {
+        getCraterCheckoutPackages: async () => ({
+            quantitySteps: {
+                b2b: { aiTokens: [10_000_000, 100_000_000, 500_000_000, 1_000_000_000], workflowExecutions: [100_000, 1_000_000, 5_000_000, 10_000_000] },
+                b2c: { aiTokens: [1_000_000, 10_000_000, 50_000_000, 100_000_000], workflowExecutions: [10_000, 100_000, 500_000, 1_000_000] },
+            },
+            planQuantities: {
+                pro: { aiTokens: 10_000_000, workflowExecutions: 100_000 },
+                max: { aiTokens: 100_000_000, workflowExecutions: 1_000_000 },
+            },
+        }),
     },
 })
 

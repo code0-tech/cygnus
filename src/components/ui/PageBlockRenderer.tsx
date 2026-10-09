@@ -34,6 +34,7 @@ import { CompareApplicationSection } from "../sections/CompareApplicationSection
 import { getIcon } from "@/components/ui/IconRenderer"
 import type { ActionItem, PaginatedActionsResult, SubscriptionConfigData, SubscriptionConfiguratorBlockData } from "@/lib/cms"
 import type { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
+import type { CheckoutPackages } from "@/lib/subscription/usagePackages"
 
 type PageBlock = NonNullable<Page["layout"]>[number]
 
@@ -49,11 +50,12 @@ interface PageBlocksRendererProps {
     actionReferences?: ActionItem[]
     subscriptionConfig?: SubscriptionConfigData | null
     subscriptionPrices?: SubscriptionPriceCatalog | null
+    checkoutPackages?: CheckoutPackages | null
 }
 
 type PageBlockRenderOptions = Pick<
     PageBlocksRendererProps,
-    "actions" | "paginatedActions" | "cardRowChildren" | "ctaFloating" | "locale" | "action" | "actionModuleJson" | "actionReferences" | "subscriptionConfig" | "subscriptionPrices"
+    "actions" | "paginatedActions" | "cardRowChildren" | "ctaFloating" | "locale" | "action" | "actionModuleJson" | "actionReferences" | "subscriptionConfig" | "subscriptionPrices" | "checkoutPackages"
 >
 type BlockRenderer = (block: PageBlock, options: PageBlockRenderOptions) => ReactNode
 
@@ -164,7 +166,9 @@ const pageBlockRenderers: Partial<Record<PageBlock["blockType"], BlockRenderer>>
             ),
         }
 
-        return <SubscriptionConfiguratorSection locale={options.locale ?? "en"} content={{ ...config, ...blockContent }} icons={icons} subscriptionPrices={subscriptionPrices} />
+        const checkoutPackages = options.checkoutPackages
+        if (!checkoutPackages) return null
+        return <SubscriptionConfiguratorSection locale={options.locale ?? "en"} content={{ ...config, ...blockContent }} icons={icons} subscriptionPrices={subscriptionPrices} checkoutPackages={checkoutPackages} />
     },
     pricing: (block, options) => {
         const config = options.subscriptionConfig
@@ -208,10 +212,11 @@ export function PageBlocks({
     actionReferences,
     subscriptionConfig,
     subscriptionPrices,
+    checkoutPackages,
 }: PageBlocksRendererProps) {
     const renderableBlocks =
         blocks?.flatMap((block) => {
-            const element = renderPageBlock(block, { actions, paginatedActions, cardRowChildren, ctaFloating, locale, action, actionModuleJson, actionReferences, subscriptionConfig, subscriptionPrices })
+            const element = renderPageBlock(block, { actions, paginatedActions, cardRowChildren, ctaFloating, locale, action, actionModuleJson, actionReferences, subscriptionConfig, subscriptionPrices, checkoutPackages })
             return element ? [{ block, element }] : []
         }) ?? []
 
