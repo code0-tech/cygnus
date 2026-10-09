@@ -22,14 +22,14 @@ export function PaymentMethodSetupDialog({ content, disabled = false, errors, on
     const requestStartedRef = useRef(false)
     const [open, setOpen] = useState(false)
     const [clientSecret, setClientSecret] = useState<string | null>(null)
-    const [pendingSetupIntentId, setPendingSetupIntentId] = useState<string | null>(null)
+    const [pendingSetupIntentClientSecret, setPendingSetupIntentClientSecret] = useState<string | null>(null)
     const [error, setError] = useState<string | null>(null)
     const [isLoading, setIsLoading] = useState(false)
 
     const close = () => {
         setOpen(false)
         setClientSecret(null)
-        setPendingSetupIntentId(null)
+        setPendingSetupIntentClientSecret(null)
         setError(null)
         setIsLoading(false)
         requestStartedRef.current = false
@@ -38,14 +38,19 @@ export function PaymentMethodSetupDialog({ content, disabled = false, errors, on
     useEffect(() => {
         const currentUrl = new URL(window.location.href)
         const setupIntentId = currentUrl.searchParams.get("setup_intent")
-        if (!setupIntentId || !/^seti_[A-Za-z0-9]+$/.test(setupIntentId)) return
+        const setupIntentClientSecret = currentUrl.searchParams.get("setup_intent_client_secret")
+        if (!setupIntentId || !/^seti_[A-Za-z0-9]+$/.test(setupIntentId) || !setupIntentClientSecret?.startsWith(`${setupIntentId}_secret_`)) return
 
-        setPendingSetupIntentId(setupIntentId)
+        setPendingSetupIntentClientSecret(setupIntentClientSecret)
         setOpen(true)
+        currentUrl.searchParams.delete("setup_intent")
+        currentUrl.searchParams.delete("setup_intent_client_secret")
+        currentUrl.searchParams.delete("redirect_status")
+        window.history.replaceState(window.history.state, "", `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`)
     }, [])
 
     useEffect(() => {
-        if (!open || pendingSetupIntentId || requestStartedRef.current) return
+        if (!open || pendingSetupIntentClientSecret || requestStartedRef.current) return
 
         requestStartedRef.current = true
         setIsLoading(true)
@@ -66,7 +71,7 @@ export function PaymentMethodSetupDialog({ content, disabled = false, errors, on
         return () => {
             active = false
         }
-    }, [errors.paymentMethodUpdate, open, owner, pendingSetupIntentId])
+    }, [errors.paymentMethodUpdate, open, owner, pendingSetupIntentClientSecret])
 
     return (
         <>
@@ -78,7 +83,7 @@ export function PaymentMethodSetupDialog({ content, disabled = false, errors, on
                 <div>
                     {isLoading ? (
                         <>
-                            <LicenseTabHeader title={content.editor.paymentMethodHeading} description={content.editor.paymentMethodDescription} />
+                            <LicenseTabHeader title={content.editor.addPaymentMethodLabel} description={content.editor.paymentMethodDescription} />
                             <Spacing spacing="md" />
                             <div role="status" className="space-y-4 animate-pulse motion-reduce:animate-none">
                                 <span className="sr-only">{content.editor.loadingPaymentMethodLabel}</span>
@@ -88,17 +93,16 @@ export function PaymentMethodSetupDialog({ content, disabled = false, errors, on
                         </>
                     ) : error ? (
                         <>
-                            <LicenseTabHeader title={content.editor.paymentMethodHeading} description={content.editor.paymentMethodDescription} />
+                            <LicenseTabHeader title={content.editor.addPaymentMethodLabel} description={content.editor.paymentMethodDescription} />
                             <LicenseTabAlert>{error}</LicenseTabAlert>
                         </>
-                    ) : pendingSetupIntentId ? (
+                    ) : pendingSetupIntentClientSecret ? (
                         <PaymentMethodSetupPendingStatus
                             content={content.editor}
                             errorMessage={errors.paymentMethodUpdate}
                             onSuccess={onSuccess}
-                            owner={owner}
                             retryLabel={errors.retry}
-                            setupIntentId={pendingSetupIntentId}
+                            clientSecret={pendingSetupIntentClientSecret}
                         />
                     ) : clientSecret ? (
                         <PaymentMethodSetupElement
@@ -106,7 +110,6 @@ export function PaymentMethodSetupDialog({ content, disabled = false, errors, on
                             content={content.editor}
                             errorMessage={errors.paymentMethodUpdate}
                             onSuccess={onSuccess}
-                            owner={owner}
                             retryLabel={errors.retry}
                             returnPath={returnPath}
                         />

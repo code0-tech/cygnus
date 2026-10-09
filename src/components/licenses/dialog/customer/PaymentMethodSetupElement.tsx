@@ -2,7 +2,6 @@
 
 import { LicenseTabAlert, LicenseTabHeader, LicenseTabSaveButton } from "@/components/licenses/dialog/shared/LicenseTabLayout"
 import { ButtonLoader } from "@/components/ui/Loader"
-import { getPaymentMethodSetupStatus } from "@/lib/licenses/client"
 import type { LicenseContent } from "@/lib/cms"
 import { Button, Spacing, Text } from "@code0-tech/pictor"
 import { Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js"
@@ -58,7 +57,6 @@ interface PaymentMethodSetupElementProps {
     content: LicenseContent["editor"]
     errorMessage: string
     onSuccess: () => void
-    owner: PaymentMethodSetupOwner
     retryLabel: string
     returnPath: string
 }
@@ -67,34 +65,43 @@ interface PaymentMethodSetupPendingStatusProps {
     content: LicenseContent["editor"]
     errorMessage: string
     onSuccess: () => void
-    owner: PaymentMethodSetupOwner
     retryLabel: string
-    setupIntentId: string
+    clientSecret: string
 }
 
-export function PaymentMethodSetupPendingStatus({ content, errorMessage, onSuccess, owner, retryLabel, setupIntentId }: PaymentMethodSetupPendingStatusProps) {
+export function PaymentMethodSetupPendingStatus({ content, errorMessage, onSuccess, retryLabel, clientSecret }: PaymentMethodSetupPendingStatusProps) {
     const [isComplete, setIsComplete] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [retryKey, setRetryKey] = useState(0)
+    const successHandledRef = useRef(false)
 
     useEffect(() => {
-        const controller = new AbortController()
         let timeout: ReturnType<typeof setTimeout> | undefined
+        let active = true
 
         const checkStatus = async () => {
             try {
-                const status = await getPaymentMethodSetupStatus(owner.customerId, setupIntentId, controller.signal)
-                if (status === "ready") {
+                const stripe = await stripePromise
+                if (!stripe) throw new Error("Stripe is not configured.")
+                const result = await stripe.retrieveSetupIntent(clientSecret)
+                if (!active) return
+                if (result.error || !result.setupIntent) throw new Error("Could not check the payment method setup.")
+
+                if (result.setupIntent.status === "succeeded") {
                     setIsComplete(true)
-                    onSuccess()
+                    if (!successHandledRef.current) {
+                        successHandledRef.current = true
+                        onSuccess()
+                    }
                     return
                 }
-                if (status === "failed") {
+                if (result.setupIntent.status === "canceled" || result.setupIntent.status === "requires_payment_method") {
                     setError(errorMessage)
                     return
                 }
                 timeout = setTimeout(() => void checkStatus(), 1_250)
             } catch (statusError) {
+                if (!active) return
                 if (statusError instanceof DOMException && statusError.name === "AbortError") return
                 setError(errorMessage)
             }
@@ -102,15 +109,15 @@ export function PaymentMethodSetupPendingStatus({ content, errorMessage, onSucce
 
         void checkStatus()
         return () => {
-            controller.abort()
+            active = false
             if (timeout) clearTimeout(timeout)
         }
-    }, [errorMessage, onSuccess, owner, retryKey, setupIntentId])
+    }, [clientSecret, errorMessage, onSuccess, retryKey])
 
     return (
         <>
             <LicenseTabHeader
-                title={content.paymentMethodHeading}
+                title={content.addPaymentMethodLabel}
                 description={content.paymentMethodDescription}
                 action={
                     error ? (
@@ -146,13 +153,13 @@ export function PaymentMethodSetupPendingStatus({ content, errorMessage, onSucce
     )
 }
 
-function PaymentMethodSetupForm({ content, errorMessage, onSuccess, owner, retryLabel, returnPath }: Omit<PaymentMethodSetupElementProps, "clientSecret">) {
+function PaymentMethodSetupForm({ clientSecret, content, errorMessage, onSuccess, retryLabel, returnPath }: PaymentMethodSetupElementProps) {
     const stripe = useStripe()
     const elements = useElements()
     const [isReady, setIsReady] = useState(false)
     const [isConfirming, setIsConfirming] = useState(false)
     const [error, setError] = useState<string | null>(null)
-    const [setupIntentId, setSetupIntentId] = useState<string | null>(null)
+    const [setupIntentClientSecret, setSetupIntentClientSecret] = useState<string | null>(null)
 
     const confirm = async () => {
         if (!stripe || !elements || !isReady || isConfirming) return
@@ -177,17 +184,17 @@ function PaymentMethodSetupForm({ content, errorMessage, onSuccess, owner, retry
             return
         }
 
-        setSetupIntentId(result.setupIntent.id)
+        setSetupIntentClientSecret(clientSecret)
         setIsConfirming(false)
     }
 
-    if (setupIntentId)
-        return <PaymentMethodSetupPendingStatus content={content} errorMessage={errorMessage} onSuccess={onSuccess} owner={owner} retryLabel={retryLabel} setupIntentId={setupIntentId} />
+    if (setupIntentClientSecret)
+        return <PaymentMethodSetupPendingStatus content={content} errorMessage={errorMessage} onSuccess={onSuccess} retryLabel={retryLabel} clientSecret={setupIntentClientSecret} />
 
     return (
         <>
             <LicenseTabHeader
-                title={content.paymentMethodHeading}
+                title={content.addPaymentMethodLabel}
                 description={content.paymentMethodDescription}
                 action={
                     <LicenseTabSaveButton disabled={!stripe || !elements || !isReady || isConfirming} onClick={() => void confirm()}>
@@ -202,7 +209,7 @@ function PaymentMethodSetupForm({ content, errorMessage, onSuccess, owner, retry
     )
 }
 
-export function PaymentMethodSetupElement({ clientSecret, content, errorMessage, onSuccess, owner, retryLabel, returnPath }: PaymentMethodSetupElementProps) {
+export function PaymentMethodSetupElement({ clientSecret, content, errorMessage, onSuccess, retryLabel, returnPath }: PaymentMethodSetupElementProps) {
     const stripeRef = useRef(stripePromise)
     const options = useMemo<StripeElementsOptions>(() => ({ appearance, clientSecret }), [clientSecret])
 
@@ -216,7 +223,7 @@ export function PaymentMethodSetupElement({ clientSecret, content, errorMessage,
 
     return (
         <Elements key={clientSecret} stripe={stripeRef.current} options={options}>
-            <PaymentMethodSetupForm content={content} errorMessage={errorMessage} onSuccess={onSuccess} owner={owner} retryLabel={retryLabel} returnPath={returnPath} />
+            <PaymentMethodSetupForm clientSecret={clientSecret} content={content} errorMessage={errorMessage} onSuccess={onSuccess} retryLabel={retryLabel} returnPath={returnPath} />
         </Elements>
     )
 }
