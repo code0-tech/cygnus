@@ -177,7 +177,7 @@ export function WorkflowCalculatorDialog({ locale, content, businessTypeIcons, v
                         <div className="min-w-0 text-left">
                             <p className="text-sm font-medium text-tertiary">{content.estimateLabel}</p>
                             <p className="mt-1 text-2xl font-semibold tabular-nums text-white">
-                                {estimatedExecutions.toLocaleString(formatterLocale)} {suffix}
+                                {estimatedExecutions.toLocaleString(formatterLocale)} {suffix} {centerLabelSuffix}
                             </p>
                         </div>
                         <DialogClose asChild>
