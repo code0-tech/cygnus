@@ -1,4 +1,5 @@
 import { getCookieBanner } from '@/lib/cms'
+import { getClientConfig } from '@/lib/clientConfig.server'
 import type { AppLocale } from '@/lib/i18n'
 import type { CookieBanner as CookieBannerContent } from '@/payload-types'
 import type { ReactNode } from 'react'
@@ -53,7 +54,7 @@ export default async function ConsentManager({ children, locale }: ConsentManage
         getCookieBanner("de"),
         getCookieBanner(locale),
     ])
-    const gaMeasurementId = getOptionalValue(process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID)
+    const { gaMeasurementId } = getClientConfig()
     const legalLinks = {
         privacyPolicy: {
             href: activeContent?.legalLinks?.privacyPolicy?.href ?? "",

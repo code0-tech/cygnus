@@ -15,7 +15,13 @@ function TestDialogTrigger({ asChild, children }: { asChild?: boolean; children:
         children.props.onClick?.(event)
         dialog?.setOpen(true)
     }
-    return asChild ? React.cloneElement(children, { onClick }) : <button type="button" onClick={onClick}>{children}</button>
+    return asChild ? (
+        React.cloneElement(children, { onClick })
+    ) : (
+        <button type="button" onClick={onClick}>
+            {children}
+        </button>
+    )
 }
 function TestDialogPortal({ children }: { children: React.ReactNode }) {
     return React.useContext(DialogTestContext)?.open ? <>{children}</> : null
@@ -26,7 +32,13 @@ function TestDialogClose({ asChild, children }: { asChild?: boolean; children: R
         children.props.onClick?.(event)
         dialog?.setOpen(false)
     }
-    return asChild ? React.cloneElement(children, { onClick }) : <button type="button" onClick={onClick}>{children}</button>
+    return asChild ? (
+        React.cloneElement(children, { onClick })
+    ) : (
+        <button type="button" onClick={onClick}>
+            {children}
+        </button>
+    )
 }
 const checkoutSearchParams = new URLSearchParams({
     customerType: "b2c",
@@ -72,8 +84,6 @@ const setCheckoutStage = (stage: string) => {
     checkoutStages.push(stage)
     checkoutStageListeners.forEach((listener) => listener())
 }
-
-process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY = "pk_test_example"
 
 mock.module("next/navigation", {
     namedExports: {
@@ -136,7 +146,11 @@ mock.module("@code0-tech/pictor", {
         Button: ({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button {...props}>{children}</button>,
         Dialog: TestDialog,
         DialogClose: TestDialogClose,
-        DialogContent: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => <div role="dialog" {...props}>{children}</div>,
+        DialogContent: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+            <div role="dialog" {...props}>
+                {children}
+            </div>
+        ),
         DialogHeader: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
         DialogOverlay: () => null,
         DialogPortal: TestDialogPortal,
@@ -166,7 +180,7 @@ mock.module("@code0-tech/pictor", {
         useForm: useTestForm,
     },
 })
-mock.module("@stripe/stripe-js", {
+mock.module("@stripe/stripe-js/pure", {
     namedExports: {
         loadStripe: (_publishableKey: string, options: unknown) => {
             stripeLoadOptions = options
@@ -210,15 +224,7 @@ mock.module("@stripe/react-stripe-js/checkout", {
             contactDetailsOnReady = onReady ?? null
             return <div data-testid="stripe-contact-details">Contact details</div>
         },
-        PaymentElement: ({
-            onChange,
-            onReady,
-            options,
-        }: {
-            onChange?: (event: { complete: boolean }) => void
-            onReady?: () => void
-            options?: unknown
-        }) => {
+        PaymentElement: ({ onChange, onReady, options }: { onChange?: (event: { complete: boolean }) => void; onReady?: () => void; options?: unknown }) => {
             paymentElementOptions = options
             paymentElementOnReady = onReady ?? null
             paymentElementOnChange = onChange ?? null
@@ -262,7 +268,11 @@ mock.module("@stripe/react-stripe-js/checkout", {
     },
 })
 
-const { act, cleanup, render, screen, waitFor } = await import("@testing-library/react")
+const { act, cleanup, render: renderComponent, screen, waitFor } = await import("@testing-library/react")
+const { StripeProvider } = await import("../../src/components/providers/StripeProvider")
+function render(ui: React.ReactNode) {
+    return renderComponent(ui, { wrapper: ({ children }) => <StripeProvider publicKey="pk_test_example">{children}</StripeProvider> })
+}
 const userEvent = (await import("@testing-library/user-event")).default
 const { CheckoutDiscount } = await import("../../src/components/checkout/summary/CheckoutSummary")
 const { CheckoutForm } = await import("../../src/components/checkout/form/CheckoutForm")
@@ -459,9 +469,12 @@ test("creates a customer with contact details only when continuing to payment", 
     const requests: Array<{ init?: RequestInit; url: string }> = []
     globalThis.fetch = (async (input, init) => {
         requests.push({ init, url: String(input) })
-        const body = String(input) === "/api/crater/customer"
-            ? init?.method === "POST" ? { customerType: "personal", email: "ada@example.com", id: "gid://crater/Customer/1", name: "Ada Lovelace" } : { customers: [] }
-            : { clientSecret: "cs_test_secret", expiresAt: 1_800_000_000, id: "cs_test" }
+        const body =
+            String(input) === "/api/crater/customer"
+                ? init?.method === "POST"
+                    ? { customerType: "personal", email: "ada@example.com", id: "gid://crater/Customer/1", name: "Ada Lovelace" }
+                    : { customers: [] }
+                : { clientSecret: "cs_test_secret", expiresAt: 1_800_000_000, id: "cs_test" }
         return new Response(JSON.stringify(body), { status: 200 })
     }) as typeof fetch
     const user = userEvent.setup()
@@ -475,9 +488,14 @@ test("creates a customer with contact details only when continuing to payment", 
     act(() => billingAddressOnChange?.({ complete: true, value: stripeBillingAddress }))
     await user.click(screen.getByRole("button", { name: content.continueLabel }))
     await screen.findByTestId("stripe-payment")
-    assert.deepEqual(requests.map(({ url }) => url), ["/api/crater/customer", "/api/crater/customer", "/api/crater/checkout/session"])
+    assert.deepEqual(
+        requests.map(({ url }) => url),
+        ["/api/crater/customer", "/api/crater/customer", "/api/crater/checkout/session"]
+    )
     assert.deepEqual(JSON.parse(String(requests[1].init?.body)), {
-        customerType: "personal", name: stripeBillingAddress.name, email: "ada@example.com",
+        customerType: "personal",
+        name: stripeBillingAddress.name,
+        email: "ada@example.com",
         address: { city: "Berlin", country: "DE", line1: stripeBillingAddress.address.line1, line2: null, postalCode: "10115", state: "Berlin" },
     })
     assert.equal(JSON.parse(String(requests[2].init?.body)).customerId, "gid://crater/Customer/1")
@@ -506,7 +524,6 @@ test("creates a customer with contact details only when continuing to payment", 
     await user.click(screen.getByRole("button", { name: content.payNowLabel }))
     await waitFor(() => assert.equal(stripeConfirmCalls, 2))
     assert.deepEqual(stripeConfirmOptions, [{ redirect: "always" }, { redirect: "always" }])
-
 })
 
 test("recreates the checkout session for a selected or newly created customer", async () => {
@@ -534,7 +551,6 @@ test("recreates the checkout session for a selected or newly created customer", 
                 headers: { "content-type": "application/json" },
             })
         }
-
 
         sessionCount += 1
         return new Response(JSON.stringify({ clientSecret: `cs_customer_${sessionCount}`, expiresAt: 1_800_000_000, id: `cs_customer_${sessionCount}` }), {
@@ -601,7 +617,6 @@ test("replaces a checkout session shortly before it expires", async () => {
             })
         }
 
-
         checkoutSessionCount += 1
         return new Response(
             JSON.stringify({
@@ -635,7 +650,6 @@ test("replaces an inactive Stripe checkout session only once", async () => {
             })
         }
 
-
         checkoutSessionCount += 1
         return new Response(JSON.stringify({ clientSecret: `cs_inactive_${checkoutSessionCount}`, expiresAt: 1_800_000_000, id: `cs_inactive_${checkoutSessionCount}` }), {
             status: 200,
@@ -664,7 +678,6 @@ test("recovers once when a newly created Stripe checkout session cannot be loade
             })
         }
 
-
         checkoutSessionCount += 1
         return new Response(JSON.stringify({ clientSecret: `cs_recover_${checkoutSessionCount}`, expiresAt: 1_800_000_000, id: `cs_recover_${checkoutSessionCount}` }), {
             status: 200,
@@ -683,10 +696,7 @@ test("recovers once when a newly created Stripe checkout session cannot be loade
 
 test("shows only the configured error when Stripe cannot load the checkout session", async () => {
     stripeCheckoutLoadErrorMessage = "The Checkout Session could not be loaded."
-    window.sessionStorage.setItem(
-        "code0.checkout.sessionLoadRecovery",
-        JSON.stringify({ recoveryId: checkoutSearchParams.toString(), expiresAt: Date.now() + 60_000 })
-    )
+    window.sessionStorage.setItem("code0.checkout.sessionLoadRecovery", JSON.stringify({ recoveryId: checkoutSearchParams.toString(), expiresAt: Date.now() + 60_000 }))
     let checkoutSessionCount = 0
     globalThis.fetch = (async (input) => {
         const url = String(input)
@@ -796,7 +806,10 @@ test("does not write a draft customer email again after restoring the payment st
     globalThis.fetch = (async (input, init) => {
         const url = String(input)
         if (url === "/api/crater/customer" && init?.method !== "POST") {
-            return new Response(JSON.stringify({ customers: [{ customerType: "personal", email: "ada@example.com", id: "gid://crater/Customer/1", name: "Ada" }] }), { status: 200, headers: { "content-type": "application/json" } })
+            return new Response(JSON.stringify({ customers: [{ customerType: "personal", email: "ada@example.com", id: "gid://crater/Customer/1", name: "Ada" }] }), {
+                status: 200,
+                headers: { "content-type": "application/json" },
+            })
         }
         if (url === "/api/crater/customer") {
             return new Response(JSON.stringify({ customerType: "personal", email: null, id: "gid://crater/Customer/1", name: null }), {
@@ -852,7 +865,6 @@ test("applies a promotion code inside the active Stripe session without reloadin
                 headers: { "content-type": "application/json" },
             })
         }
-
 
         checkoutSessionCount += 1
         return new Response(JSON.stringify({ clientSecret: `cs_test_secret_${checkoutSessionCount}`, expiresAt: 1_800_000_000, id: `cs_test_${checkoutSessionCount}` }), {
@@ -964,7 +976,6 @@ test("does not save previous contact details under a changed checkout configurat
     assert.equal(draft?.email, null)
     assert.equal(draft?.billingAddress, null)
 })
-
 
 test("prefills and locks the guest email, ignoring a conflicting draft after reload", async () => {
     guestEmail = "guest@example.com"

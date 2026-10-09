@@ -1,4 +1,6 @@
 import ConsentManager from "@/components/providers/ConsentManager"
+import { StripeProvider } from "@/components/providers/StripeProvider"
+import { getClientConfig } from "@/lib/clientConfig.server"
 import { isSupportedLocale } from "@/lib/i18n"
 import type { ReactNode } from "react"
 import { notFound } from "next/navigation"
@@ -16,14 +18,17 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
     if (!isSupportedLocale(locale)) {
         notFound()
     }
+    const { stripePublicKey } = getClientConfig()
 
     return (
         <ConsentManager locale={locale}>
-            <div className="relative bg-primary overflow-x-hidden">
-                <main id="main-content" className="bg-primary">
-                    {children}
-                </main>
-            </div>
+            <StripeProvider key={stripePublicKey} publicKey={stripePublicKey}>
+                <div className="relative bg-primary overflow-x-hidden">
+                    <main id="main-content" className="bg-primary">
+                        {children}
+                    </main>
+                </div>
+            </StripeProvider>
         </ConsentManager>
     )
 }
