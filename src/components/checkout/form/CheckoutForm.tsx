@@ -7,7 +7,8 @@ import { SendOfferDialog } from "@/components/checkout/shared/SendOfferDialog"
 import { useCheckoutStage } from "@/components/checkout/state/CheckoutStageProvider"
 import type { CheckoutData, ErrorsContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
-import { stripeAppearance, stripePromise } from "./stripeCheckout"
+import { stripeAppearance } from "./stripeCheckout"
+import { useStripePromise } from "@/components/providers/StripeProvider"
 import { AddressElement, Elements } from "@stripe/react-stripe-js"
 import { Button, EmailInput, emailValidation } from "@code0-tech/pictor"
 import { useRef } from "react"
@@ -22,6 +23,7 @@ function CheckoutCustomerSelectSkeleton() {
 }
 
 function CheckoutFormContent() {
+    const stripePromise = useStripePromise("checkout")
     const { stage } = useCheckoutStage()
     const {
         checkoutSession,

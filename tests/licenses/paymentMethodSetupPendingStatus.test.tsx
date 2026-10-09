@@ -26,7 +26,7 @@ mock.module("@stripe/react-stripe-js", {
         useStripe: () => null,
     },
 })
-mock.module("@stripe/stripe-js", {
+mock.module("@stripe/stripe-js/pure", {
     namedExports: {
         loadStripe: () => Promise.resolve({ retrieveSetupIntent: async () => ({ setupIntent: { status: "processing" } }) }),
     },
@@ -34,6 +34,7 @@ mock.module("@stripe/stripe-js", {
 
 const { cleanup, render, screen } = await import("@testing-library/react")
 const { PaymentMethodSetupPendingStatus } = await import("../../src/components/licenses/dialog/customer/PaymentMethodSetupElement")
+const { StripeProvider } = await import("../../src/components/providers/StripeProvider")
 
 const content = {
     closeLabel: "Close",
@@ -50,15 +51,17 @@ test("keeps the payment method UI pending while Stripe reports processing", asyn
     let successCalls = 0
 
     render(
-        <PaymentMethodSetupPendingStatus
-            content={content}
-            errorMessage={errorMessage}
-            onSuccess={() => {
-                successCalls += 1
-            }}
-            retryLabel="Try again"
-            clientSecret="seti_example_secret_example"
-        />
+        <StripeProvider publicKey="pk_test_example">
+            <PaymentMethodSetupPendingStatus
+                content={content}
+                errorMessage={errorMessage}
+                onSuccess={() => {
+                    successCalls += 1
+                }}
+                retryLabel="Try again"
+                clientSecret="seti_example_secret_example"
+            />
+        </StripeProvider>
     )
 
     assert.ok(await screen.findByText(content.savingPaymentMethodLabel))

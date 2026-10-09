@@ -2,14 +2,12 @@
 
 import { LicenseTabAlert, LicenseTabHeader, LicenseTabSaveButton } from "@/components/licenses/dialog/shared/LicenseTabLayout"
 import { ButtonLoader } from "@/components/ui/Loader"
+import { useStripePromise } from "@/components/providers/StripeProvider"
 import type { LicenseContent } from "@/lib/cms"
 import { Button, Spacing, Text } from "@code0-tech/pictor"
 import { Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js"
-import { loadStripe, type Appearance, type StripeElementsOptions } from "@stripe/stripe-js"
+import type { Appearance, StripeElementsOptions } from "@stripe/stripe-js"
 import { useEffect, useMemo, useRef, useState } from "react"
-
-const stripePublicKey = process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY
-const stripePromise = stripePublicKey ? loadStripe(stripePublicKey) : null
 
 const appearance = {
     theme: "night",
@@ -70,6 +68,7 @@ interface PaymentMethodSetupPendingStatusProps {
 }
 
 export function PaymentMethodSetupPendingStatus({ content, errorMessage, onSuccess, retryLabel, clientSecret }: PaymentMethodSetupPendingStatusProps) {
+    const stripePromise = useStripePromise()
     const [isComplete, setIsComplete] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [retryKey, setRetryKey] = useState(0)
@@ -112,7 +111,7 @@ export function PaymentMethodSetupPendingStatus({ content, errorMessage, onSucce
             active = false
             if (timeout) clearTimeout(timeout)
         }
-    }, [clientSecret, errorMessage, onSuccess, retryKey])
+    }, [clientSecret, errorMessage, onSuccess, retryKey, stripePromise])
 
     return (
         <>
@@ -210,10 +209,10 @@ function PaymentMethodSetupForm({ clientSecret, content, errorMessage, onSuccess
 }
 
 export function PaymentMethodSetupElement({ clientSecret, content, errorMessage, onSuccess, retryLabel, returnPath }: PaymentMethodSetupElementProps) {
-    const stripeRef = useRef(stripePromise)
+    const stripePromise = useStripePromise()
     const options = useMemo<StripeElementsOptions>(() => ({ appearance, clientSecret }), [clientSecret])
 
-    if (!stripeRef.current) {
+    if (!stripePromise) {
         return (
             <p role="alert" className="text-sm text-error">
                 {errorMessage}
@@ -222,7 +221,7 @@ export function PaymentMethodSetupElement({ clientSecret, content, errorMessage,
     }
 
     return (
-        <Elements key={clientSecret} stripe={stripeRef.current} options={options}>
+        <Elements key={clientSecret} stripe={stripePromise} options={options}>
             <PaymentMethodSetupForm clientSecret={clientSecret} content={content} errorMessage={errorMessage} onSuccess={onSuccess} retryLabel={retryLabel} returnPath={returnPath} />
         </Elements>
     )

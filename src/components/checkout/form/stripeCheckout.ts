@@ -1,10 +1,6 @@
 "use client"
 
-import { loadStripe, type StripeCheckoutElementsSdkOptions } from "@stripe/stripe-js"
-
-
-const stripePublicKey = process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY
-export const stripePromise = stripePublicKey ? loadStripe(stripePublicKey, { betas: ["custom_checkout_tax_id_1"], locale: "en" }) : null
+import type { StripeCheckoutElementsSdkOptions } from "@stripe/stripe-js"
 export const STRIPE_APPEARANCE_VERSION = "pictor-7"
 export const stripeAppearance = {
     theme: "night",
