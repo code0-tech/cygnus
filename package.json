@@ -26,7 +26,7 @@
         "@base-ui/react": "^1.8.0",
         "@c15t/nextjs": "^2.3.0",
         "@c15t/react": "^2.3.0",
-        "@c15t/scripts": "^2.2.0",
+        "@c15t/scripts": "^2.3.0",
         "@code0-tech/pictor": "^0.18.3",
         "@icons-pack/react-simple-icons": "^13.15.1",
         "@mvriu5/payload-ai": "^1.6.4",
