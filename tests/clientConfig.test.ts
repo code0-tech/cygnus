@@ -1,5 +1,5 @@
 import assert from "node:assert/strict"
-import test, { afterEach, mock } from "node:test"
+import test, { afterEach, beforeEach, mock } from "node:test"
 import { registerHooks } from "node:module"
 import { createElement } from "react"
 import { installDomTestEnvironment } from "./helpers/domTestEnvironment"
@@ -30,6 +30,14 @@ const { StripeProvider, useStripePromise } = await import("../src/components/pro
 const { cleanup, render } = await import("@testing-library/react")
 const originalGa = process.env.GA_MEASUREMENT_ID
 const originalStripe = process.env.STRIPE_PUBLIC_KEY
+const originalSculptor = process.env.SCULPTOR_URL
+const originalSculptorLogin = process.env.SCULPTOR_LOGIN_URL
+const sculptorConfig = { sculptorUrl: "https://app.example/", sculptorLoginUrl: "https://app.example/login" }
+
+beforeEach(() => {
+    process.env.SCULPTOR_URL = sculptorConfig.sculptorUrl
+    process.env.SCULPTOR_LOGIN_URL = sculptorConfig.sculptorLoginUrl
+})
 
 afterEach(() => {
     cleanup()
@@ -38,25 +46,29 @@ afterEach(() => {
     else process.env.GA_MEASUREMENT_ID = originalGa
     if (originalStripe === undefined) delete process.env.STRIPE_PUBLIC_KEY
     else process.env.STRIPE_PUBLIC_KEY = originalStripe
+    if (originalSculptor === undefined) delete process.env.SCULPTOR_URL
+    else process.env.SCULPTOR_URL = originalSculptor
+    if (originalSculptorLogin === undefined) delete process.env.SCULPTOR_LOGIN_URL
+    else process.env.SCULPTOR_LOGIN_URL = originalSculptorLogin
 })
 
 test("reads public client configuration from the current server environment on every call", () => {
     process.env.GA_MEASUREMENT_ID = " G-STAGING "
     process.env.STRIPE_PUBLIC_KEY = " pk_test_staging "
-    assert.deepEqual(getClientConfig(), { gaMeasurementId: "G-STAGING", stripePublicKey: "pk_test_staging" })
+    assert.deepEqual(getClientConfig(), { gaMeasurementId: "G-STAGING", stripePublicKey: "pk_test_staging", ...sculptorConfig })
 
     process.env.GA_MEASUREMENT_ID = "G-PRODUCTION"
     process.env.STRIPE_PUBLIC_KEY = "pk_live_production"
-    assert.deepEqual(getClientConfig(), { gaMeasurementId: "G-PRODUCTION", stripePublicKey: "pk_live_production" })
+    assert.deepEqual(getClientConfig(), { gaMeasurementId: "G-PRODUCTION", stripePublicKey: "pk_live_production", ...sculptorConfig })
 })
 
 test("does not expose a non-publishable Stripe key or blank configuration", () => {
     process.env.GA_MEASUREMENT_ID = " "
     process.env.STRIPE_PUBLIC_KEY = "rk_test_not_a_publishable_key"
-    assert.deepEqual(getClientConfig(), { gaMeasurementId: undefined, stripePublicKey: null })
+    assert.deepEqual(getClientConfig(), { gaMeasurementId: undefined, stripePublicKey: null, ...sculptorConfig })
     delete process.env.GA_MEASUREMENT_ID
     delete process.env.STRIPE_PUBLIC_KEY
-    assert.deepEqual(getClientConfig(), { gaMeasurementId: undefined, stripePublicKey: null })
+    assert.deepEqual(getClientConfig(), { gaMeasurementId: undefined, stripePublicKey: null, ...sculptorConfig })
 })
 
 test("passes the runtime Analytics measurement ID from the server into the consent client", async () => {

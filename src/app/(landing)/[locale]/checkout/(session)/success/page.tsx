@@ -1,7 +1,8 @@
 import { CheckoutLegalFooter } from "@/components/checkout/shared/CheckoutLegalFooter"
 import { CheckoutSuccessStatus } from "@/components/checkout/success/CheckoutSuccessStatus"
 import { parseCheckoutSessionId } from "@/lib/crater/values"
-import { getCheckoutContent, getErrorsContent, getFooter, getLicenseContent, getSubscriptionConfig } from "@/lib/cms"
+import { getCheckoutContent, getErrorsContent, getFooter, getSubscriptionConfig } from "@/lib/cms"
+import { getClientConfig } from "@/lib/clientConfig.server"
 import { isSupportedLocale } from "@/lib/i18n"
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
@@ -28,12 +29,11 @@ export default async function CheckoutSuccessPage({ params, searchParams }: Chec
     const checkoutSessionId = parseCheckoutSessionId(query.session_id)
     if (!checkoutSessionId) notFound()
 
-    const [checkoutContent, subscriptionConfig, footer, errors, licenseContent] = await Promise.all([
+    const [checkoutContent, subscriptionConfig, footer, errors] = await Promise.all([
         getCheckoutContent(locale),
         getSubscriptionConfig(locale),
         getFooter(locale),
         getErrorsContent(locale),
-        getLicenseContent(locale),
     ])
     const currentYear = new Date().getUTCFullYear()
     const checkoutSearchParams = toSearchParams(query).toString()
@@ -51,7 +51,7 @@ export default async function CheckoutSuccessPage({ params, searchParams }: Chec
                                 locale={locale}
                                 pricingContent={checkoutContent.summary}
                                 sessionId={checkoutSessionId}
-                                sculptorUrl={licenseContent?.redirectUrl}
+                                sculptorUrl={getClientConfig().sculptorUrl}
                                 subscriptionConfig={subscriptionConfig}
                             />
                         ) : null}

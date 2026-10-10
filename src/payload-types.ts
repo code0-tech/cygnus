@@ -3059,10 +3059,6 @@ export interface Checkout {
     guestHeading: string;
     guestDescription: string;
     guestLabel: string;
-    /**
-     * The checkout URL is appended in the callbackUrl query parameter.
-     */
-    loginUrl: string;
   };
   summary: {
     eyebrow: string;
@@ -3212,10 +3208,6 @@ export interface License {
   license: string;
   licenseDescription: string;
   emptyLicenses: string;
-  /**
-   * Sculptor URL used when no valid Crater session token was supplied.
-   */
-  redirectUrl: string;
   sidebar: {
     logout: string;
     loggingOut: string;
@@ -3841,7 +3833,6 @@ export interface CheckoutSelect<T extends boolean = true> {
         guestHeading?: T;
         guestDescription?: T;
         guestLabel?: T;
-        loginUrl?: T;
       };
   summary?:
     | T
@@ -3981,7 +3972,6 @@ export interface LicensesSelect<T extends boolean = true> {
   license?: T;
   licenseDescription?: T;
   emptyLicenses?: T;
-  redirectUrl?: T;
   sidebar?:
     | T
     | {

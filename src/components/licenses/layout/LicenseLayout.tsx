@@ -14,15 +14,16 @@ interface LicenseLayoutProps {
     content: LicenseContent
     errors: ErrorsContent
     locale: AppLocale
+    sculptorUrl: string
     modal?: ReactNode
 }
 
-function LicenseLayoutContent({ children, content, errors, locale }: LicenseLayoutProps) {
+function LicenseLayoutContent({ children, content, errors, locale, sculptorUrl }: LicenseLayoutProps) {
     const { error, isSidebarLoading, reload, sidebarLicenses } = useLicenseData()
     const [isLoggingOut, setIsLoggingOut] = useState(false)
 
     const openMainApplication = (path: string) => {
-        window.location.assign(new URL(path, content.redirectUrl).toString())
+        window.location.assign(new URL(path, sculptorUrl).toString())
     }
 
     const logout = async () => {
@@ -31,7 +32,7 @@ function LicenseLayoutContent({ children, content, errors, locale }: LicenseLayo
 
         try {
             await logoutLicenseSession()
-            window.location.replace(content.redirectUrl)
+            window.location.replace(sculptorUrl)
         } catch {
             setIsLoggingOut(false)
         }
@@ -90,7 +91,7 @@ function LicenseLayoutContent({ children, content, errors, locale }: LicenseLayo
 
 export function LicenseLayout(props: LicenseLayoutProps) {
     return (
-        <LicenseDataProvider loadError={props.errors.dashboardLoad} redirectUrl={props.content.redirectUrl}>
+        <LicenseDataProvider loadError={props.errors.dashboardLoad} redirectUrl={props.sculptorUrl}>
             <LicenseLayoutContent key="content" {...props} />
             <Fragment key="modal">{props.modal}</Fragment>
         </LicenseDataProvider>
