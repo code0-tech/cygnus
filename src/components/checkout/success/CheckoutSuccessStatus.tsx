@@ -1,6 +1,6 @@
 "use client"
 
-import type { PaymentPeriod } from "@/lib/subscription/types"
+import { parseCheckoutCompletionStatus, type CheckoutCompletionStatus } from "@/lib/checkout/completionStatus"
 import { checkoutFetch, getCheckoutCompletionStatus, getCheckoutStatusPollDelay, hasCheckoutStatusPollingExpired } from "@/lib/checkout/client"
 import { LinkButton } from "@/components/ui/LinkButton"
 import { ButtonLoader } from "@/components/ui/Loader"
@@ -10,7 +10,6 @@ import type { CheckoutData, SubscriptionConfigData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { downloadLicenseFile } from "@/lib/licenses/client"
 import { getPaymentPeriodSuffix } from "@/lib/subscription/calculator"
-import type { CheckoutCompletionState } from "@code0-tech/crater-graphql-types"
 import { Button } from "@code0-tech/pictor"
 import { IconCheck, IconCloud, IconDownload, IconX } from "@tabler/icons-react"
 import { AnimatePresence, m as motion, useReducedMotion, type Variants } from "motion/react"
@@ -19,27 +18,7 @@ import { useRouter } from "next/navigation"
 import { useCallback, useEffect, useRef, useState } from "react"
 
 type SuccessContent = CheckoutData["success"]
-type CheckoutStatus = `${CheckoutCompletionState}` | "LOADING" | "ERROR" | "INVALID"
-type StatusResponse = {
-    state: `${CheckoutCompletionState}`
-    customerId: string
-    licenseId: string | null
-    configuration: {
-        aiTokens: number | null
-        customerType: string
-        deploymentType: string
-        paymentPeriod: PaymentPeriod | null
-        plan: string | null
-        workflowExecutions: number | null
-    } | null
-    pricing: {
-        currency: string
-        discount: number
-        subtotal: number
-        tax: number
-        total: number
-    } | null
-}
+type CheckoutStatus = CheckoutCompletionStatus["state"] | "LOADING" | "ERROR" | "INVALID"
 
 interface CheckoutSuccessStatusProps {
     checkoutSearchParams: string
@@ -54,7 +33,7 @@ interface CheckoutSuccessStatusProps {
 
 interface CheckoutSuccessStatusViewProps extends Omit<CheckoutSuccessStatusProps, "checkoutSearchParams" | "sessionId"> {
     status: CheckoutStatus
-    completion: StatusResponse | null
+    completion: CheckoutCompletionStatus | null
     isGuestCheckout: boolean
     isDownloadingLicense: boolean
     licenseDownloadError: boolean
@@ -62,50 +41,13 @@ interface CheckoutSuccessStatusViewProps extends Omit<CheckoutSuccessStatusProps
     onRetry: () => void
 }
 
-const VALID_STATES = new Set<string>(["CHECKOUT_PENDING", "PAYMENT_PENDING", "FULFILLMENT_PENDING", "READY", "FAILED"])
 const SETTLED_STATES = new Set<string>(["FULFILLMENT_PENDING", "READY"])
-const PAYMENT_PERIODS = new Set<string>(["monthly", "quarterly", "yearly"])
-
-function isNullablePositiveInteger(value: unknown) {
-    return value === null || (Number.isInteger(value) && Number(value) > 0)
-}
-
-function isConfiguration(value: unknown) {
-    if (!value || typeof value !== "object") return false
-    const configuration = value as Record<string, unknown>
-    return (
-        typeof configuration.customerType === "string" &&
-        typeof configuration.deploymentType === "string" &&
-        (configuration.plan === null || typeof configuration.plan === "string") &&
-        (configuration.paymentPeriod === null || (typeof configuration.paymentPeriod === "string" && PAYMENT_PERIODS.has(configuration.paymentPeriod))) &&
-        isNullablePositiveInteger(configuration.aiTokens) &&
-        isNullablePositiveInteger(configuration.workflowExecutions)
-    )
-}
-
-function isPricing(value: unknown) {
-    if (!value || typeof value !== "object") return false
-    const pricing = value as Record<string, unknown>
-    return typeof pricing.currency === "string" && [pricing.discount, pricing.subtotal, pricing.tax, pricing.total].every((amount) => Number.isInteger(amount) && Number(amount) >= 0)
-}
-
-function parseStatusResponse(value: unknown): StatusResponse | null {
-    if (!value || typeof value !== "object") return null
-    const response = value as Record<string, unknown>
-    if (typeof response.state !== "string" || !VALID_STATES.has(response.state) || typeof response.customerId !== "string") return null
-    if (response.licenseId !== null && typeof response.licenseId !== "string") return null
-    if (response.state === "READY" && !response.licenseId) return null
-    if (response.configuration !== null && !isConfiguration(response.configuration)) return null
-    if (response.pricing !== null && !isPricing(response.pricing)) return null
-
-    return response as StatusResponse
-}
 
 export function CheckoutSuccessStatus({ checkoutSearchParams, content, errorMessage, locale, pricingContent, sculptorUrl, sessionId, subscriptionConfig }: CheckoutSuccessStatusProps) {
     const isGuestCheckout = new URLSearchParams(checkoutSearchParams).has("guestCheckout")
     const router = useRouter()
     const [status, setStatus] = useState<CheckoutStatus>("LOADING")
-    const [completion, setCompletion] = useState<StatusResponse | null>(null)
+    const [completion, setCompletion] = useState<CheckoutCompletionStatus | null>(null)
     const [attempt, setAttempt] = useState(0)
     const [isDownloadingLicense, setIsDownloadingLicense] = useState(false)
     const [licenseDownloadError, setLicenseDownloadError] = useState(false)
@@ -126,7 +68,7 @@ export function CheckoutSuccessStatus({ checkoutSearchParams, content, errorMess
                 throw new Error("Could not check the checkout completion status.")
             }
 
-            const nextCompletion = parseStatusResponse(body)
+            const nextCompletion = parseCheckoutCompletionStatus(body)
             if (!nextCompletion) throw new Error("Crater returned an invalid checkout completion status.")
 
             setCompletion(nextCompletion)

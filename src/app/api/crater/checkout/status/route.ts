@@ -1,3 +1,4 @@
+import { parseCheckoutCompletionStatus } from "@/lib/checkout/completionStatus"
 import { completeGuestCheckoutSession, clearGuestCheckoutSession } from "@/lib/checkout/guestCheckoutSession"
 import { createApolloClient } from "@/lib/apolloClient"
 import { craterJson, craterTransportErrorResponse, requireCraterSession } from "@/lib/crater/api.server"
@@ -35,23 +36,6 @@ const CHECKOUT_COMPLETION_STATUS: TypedDocumentNode<CheckoutCompletionStatusData
     }
 `
 
-const COMPLETION_STATES = new Set<string>(["CHECKOUT_PENDING", "PAYMENT_PENDING", "FULFILLMENT_PENDING", "READY", "FAILED"])
-const PAYMENT_PERIODS = new Set<string>(["MONTHLY", "QUARTERLY", "YEARLY"])
-
-function validConfiguration(configuration: NonNullable<CheckoutCompletionStatusData["checkoutCompletionStatus"]>["configuration"]) {
-    if (!configuration || typeof configuration.customerType !== "string" || typeof configuration.deploymentType !== "string") return false
-    if (configuration.paymentPeriod !== null && configuration.paymentPeriod !== undefined && !PAYMENT_PERIODS.has(configuration.paymentPeriod)) return false
-    if (configuration.plan !== null && configuration.plan !== undefined && typeof configuration.plan !== "string") return false
-    if (configuration.aiTokens !== null && configuration.aiTokens !== undefined && (!Number.isInteger(configuration.aiTokens) || configuration.aiTokens < 1)) return false
-    if (configuration.workflowExecutions !== null && configuration.workflowExecutions !== undefined && (!Number.isInteger(configuration.workflowExecutions) || configuration.workflowExecutions < 1)) return false
-    return true
-}
-
-function validPricing(pricing: NonNullable<CheckoutCompletionStatusData["checkoutCompletionStatus"]>["pricing"]) {
-    if (!pricing || typeof pricing.currency !== "string" || !pricing.currency.trim()) return false
-    return [pricing.discount, pricing.subtotal, pricing.tax, pricing.total].every((amount) => Number.isInteger(amount) && Number(amount) >= 0)
-}
-
 function graphQLErrorCode(error: unknown) {
     if (!CombinedGraphQLErrors.is(error)) return undefined
 
@@ -74,45 +58,36 @@ export async function GET(request: Request) {
             fetchPolicy: "no-cache",
         })
         const status = result.data?.checkoutCompletionStatus
-        const state = status?.state
 
-        if (
-            !state ||
-            !COMPLETION_STATES.has(state) ||
-            !status.customerId ||
-            (state === "READY" ? !status.licenseId : Boolean(status.licenseId)) ||
-            (status.configuration ? !validConfiguration(status.configuration) : false) ||
-            (status.pricing ? !validPricing(status.pricing) : false)
-        ) {
+        const rawConfiguration = status?.configuration
+        const configuration = rawConfiguration
+            ? {
+                  aiTokens: rawConfiguration.aiTokens ?? null,
+                  customerType: normalizeCraterCustomerType(rawConfiguration.customerType) ?? rawConfiguration.customerType,
+                  deploymentType: normalizeCraterDeploymentType(rawConfiguration.deploymentType) ?? rawConfiguration.deploymentType,
+                  paymentPeriod: rawConfiguration.paymentPeriod == null ? null : (normalizeCraterPaymentPeriod(rawConfiguration.paymentPeriod) ?? rawConfiguration.paymentPeriod),
+                  plan: rawConfiguration.plan == null ? null : (normalizeCraterPlan(rawConfiguration.plan) ?? rawConfiguration.plan),
+                  workflowExecutions: rawConfiguration.workflowExecutions ?? null,
+              }
+            : null
+        const completion = parseCheckoutCompletionStatus(
+            status && {
+                state: status.state,
+                customerId: status.customerId,
+                licenseId: status.licenseId ?? null,
+                configuration,
+                pricing: status.pricing ?? null,
+            }
+        )
+
+        if (!completion) {
             console.error("Crater returned an invalid checkout completion status.")
             return craterJson({ error: "Could not check the checkout completion status." }, 502)
         }
 
-        // Crater answers with the CustomerType, DeploymentType, CheckoutPlan, and CheckoutPaymentPeriod
-        // enums; the success page reads the lowercase values it also carries in the checkout return URL.
-        const customerType = normalizeCraterCustomerType(status.configuration?.customerType)
-        const deploymentType = normalizeCraterDeploymentType(status.configuration?.deploymentType)
-        const paymentPeriod = normalizeCraterPaymentPeriod(status.configuration?.paymentPeriod)
-        const plan = normalizeCraterPlan(status.configuration?.plan)
-        const configuration = status.configuration
-            ? {
-                  ...status.configuration,
-                  ...(customerType ? { customerType } : {}),
-                  ...(deploymentType ? { deploymentType } : {}),
-                  ...(paymentPeriod ? { paymentPeriod } : {}),
-                  ...(plan ? { plan } : {}),
-              }
-            : null
-
-        const response = craterJson({
-            state,
-            customerId: status.customerId,
-            licenseId: status.licenseId ?? null,
-            configuration,
-            pricing: status.pricing ?? null,
-        })
-        if (state === "READY" && status.licenseId) return completeGuestCheckoutSession(response, request, sessionId, status.licenseId)
-        if (state === "FAILED") return clearGuestCheckoutSession(response, request)
+        const response = craterJson(completion)
+        if (completion.state === "READY" && completion.licenseId) return completeGuestCheckoutSession(response, request, sessionId, completion.licenseId)
+        if (completion.state === "FAILED") return clearGuestCheckoutSession(response, request)
         return response
     } catch (error) {
         const transportResponse = craterTransportErrorResponse(error, request)
