@@ -33,11 +33,9 @@ jobs:
       - run: npm run build
       - run: >-
           docker build
-          -t ghcr.io/code0-tech/cygnus:${{ github.run_number }}
+          -t ghcr.io/code0-tech/cygnus:${{ github.run_number }}-crater-test
           -f Dockerfile
           .
       - run: echo ${{ secrets.GITHUB_TOKEN }} | docker login -u $ --password-stdin ghcr.io
         name: Login to registry
-        if: ${{ github.event_name == 'push' }}
-      - run: docker push ghcr.io/code0-tech/cygnus:${{ github.run_number }}
-        if: ${{ github.event_name == 'push' }}
+      - run: docker push ghcr.io/code0-tech/cygnus:${{ github.run_number }}-crater-test
