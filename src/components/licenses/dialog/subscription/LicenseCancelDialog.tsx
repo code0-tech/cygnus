@@ -2,13 +2,14 @@
 
 import { useLicenseData } from "@/components/licenses/data/LicenseDataProvider"
 import { LicenseDialog } from "@/components/licenses/dialog/shared/LicenseDialog"
+import { LicenseTabAlert, LicenseTabHeader, LicenseTabRow, LicenseTabSection } from "@/components/licenses/dialog/shared/LicenseTabLayout"
 import { ButtonLoader } from "@/components/ui/Loader"
 
 import type { ErrorsContent, LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { createLicensePath, resolveCustomerRouteId, resolveSubscriptionRouteId } from "@/lib/licenses/routes"
 import { cancelLicenseSubscription, resumeLicenseSubscription } from "@/lib/licenses/client"
-import { Button, DialogFooter } from "@code0-tech/pictor"
+import { Badge, Button } from "@code0-tech/pictor"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 
@@ -85,55 +86,65 @@ export function LicenseCancelDialog({ content, customerId, errors, licenseId, lo
     }
 
     const dateFormatter = new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeZone: "UTC" })
+    const title = isTerminal
+        ? subscriptionStatus === "canceled" ? content.values.statuses.canceled : content.values.statuses.incompleteExpired
+        : isPending ? content.cancel.pendingHeading : content.editor.cancellationHeading
+    const description = isPending || isTerminal ? content.cancel.pendingDescription : content.cancel.description
+    const cancellationDate = license?.cancelAt ?? license?.currentPeriodEnd
 
     return (
         <LicenseDialog
             backLabel={content.editor.closeLabel}
-            description={isTerminal ? undefined : isPending ? content.cancel.pendingDescription : content.cancel.description}
+            description={description}
             onClose={close}
-            title={isTerminal ? subscriptionStatus === "canceled" ? content.values.statuses.canceled : content.values.statuses.incompleteExpired : isPending ? content.cancel.pendingHeading : content.cancel.confirmLabel}
+            title={title}
         >
-            <div className="space-y-4">
-                {canCancelImmediately && license?.immediateCancellationUntil && (
-                    <div className="rounded-xl border border-white/10 bg-white/3 p-3 text-sm">
-                        <p className="text-secondary">{content.cancel.immediateDescription}</p>
-                        <p className="mt-3 text-tertiary">{content.cancel.immediateUntilLabel}</p>
-                        <p className="mt-1 text-white">{dateFormatter.format(new Date(license.immediateCancellationUntil))}</p>
-                    </div>
-                )}
-                {(isPending || isTerminal) && license?.cancelAt && (
-                    <div className="rounded-xl border border-white/10 bg-white/3 p-3 text-sm">
-                        <p className="text-tertiary">{content.cancel.cancelAtLabel}</p>
-                        <p className="mt-1 text-white">{dateFormatter.format(new Date(license.cancelAt))}</p>
-                    </div>
-                )}
+            <LicenseTabHeader title={title} description={description} />
+            {error ? <LicenseTabAlert>{error}</LicenseTabAlert> : null}
 
-                {error && (
-                    <p role="alert" className="text-sm text-error">
-                        {error}
-                    </p>
-                )}
+            <LicenseTabSection>
+                {cancellationDate ? (
+                    <LicenseTabRow
+                        title={content.cancel.cancelAtLabel}
+                        action={<Badge color="tertiary">{dateFormatter.format(new Date(cancellationDate))}</Badge>}
+                    />
+                ) : null}
+                {!isTerminal ? (
+                    <LicenseTabRow
+                        title={isPending ? content.cancel.resumeLabel : content.cancel.confirmLabel}
+                        action={
+                            isPending ? (
+                                <Button type="button" variant="normal" paddingSize="xxs" disabled={!license?.subscriptionId || isSubmitting} onClick={() => void resume()}>
+                                    {isSubmitting ? <ButtonLoader label={content.cancel.resumeLabel} /> : content.cancel.resumeLabel}
+                                </Button>
+                            ) : (
+                                <Button type="button" variant="normal" paddingSize="xxs" color="error" disabled={!license?.subscriptionId || isSubmitting} onClick={() => void cancel()}>
+                                    {isSubmitting ? <ButtonLoader label={content.cancel.confirmLabel} /> : content.cancel.confirmLabel}
+                                </Button>
+                            )
+                        }
+                    />
+                ) : null}
+            </LicenseTabSection>
 
-                <DialogFooter className="gap-3! pt-2!">
-                    <Button type="button" variant="none" onClick={close}>
-                        {content.editor.closeLabel}
-                    </Button>
-                    {canCancelImmediately && (
-                        <Button type="button" variant="normal" disabled={!license?.subscriptionId || isSubmitting} onClick={() => void cancel(true)}>
-                            {isSubmitting ? <ButtonLoader label={content.cancel.immediateConfirmLabel} /> : content.cancel.immediateConfirmLabel}
-                        </Button>
-                    )}
-                    {isTerminal ? null : isPending ? (
-                        <Button type="button" variant="filled" disabled={!license || isSubmitting} onClick={() => void resume()}>
-                            {isSubmitting ? <ButtonLoader label={content.cancel.resumeLabel} /> : content.cancel.resumeLabel}
-                        </Button>
-                    ) : (
-                        <Button type="button" variant="filled" disabled={!license?.subscriptionId || isSubmitting} onClick={() => void cancel()}>
-                            {isSubmitting ? <ButtonLoader label={content.cancel.confirmLabel} /> : content.cancel.confirmLabel}
-                        </Button>
-                    )}
-                </DialogFooter>
-            </div>
+            {canCancelImmediately ? (
+                <LicenseTabSection title={content.cancel.immediateConfirmLabel}>
+                    {license?.immediateCancellationUntil ? (
+                        <LicenseTabRow
+                            title={content.cancel.immediateUntilLabel}
+                            action={<Badge color="tertiary">{dateFormatter.format(new Date(license.immediateCancellationUntil))}</Badge>}
+                        />
+                    ) : null}
+                    <LicenseTabRow
+                        description={content.cancel.immediateDescription}
+                        action={
+                            <Button type="button" variant="normal" paddingSize="xxs" color="error" disabled={!license?.subscriptionId || isSubmitting} onClick={() => void cancel(true)}>
+                                {isSubmitting ? <ButtonLoader label={content.cancel.immediateConfirmLabel} /> : content.cancel.immediateConfirmLabel}
+                            </Button>
+                        }
+                    />
+                </LicenseTabSection>
+            ) : null}
         </LicenseDialog>
     )
 }
