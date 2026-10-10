@@ -117,8 +117,8 @@ export function LicenseDetailPage({ content, errors, customerId, licenseId, loca
     const invoiceRows = invoices.map((invoice) => ({ ...invoice, tableStatus: invoice.status?.trim().toLowerCase().replaceAll("-", "_") }))
     const invoiceFilter: DataTableFilterProps | undefined = invoiceStatusFilters.length ? { tableStatus: { operator: "isOneOf", value: invoiceStatusFilters } } : undefined
 
-    const withdrawalDeadline = license?.startDate ? new Date(new Date(license.startDate).getTime() + 14 * 24 * 60 * 60 * 1000) : null
-    const showWithdrawalNotice = (customer?.customerType ?? license?.customerType) === "personal" && withdrawalDeadline !== null && withdrawalDeadline.getTime() > Date.now()
+    const withdrawalDeadline = license?.immediateCancellationUntil ? new Date(license.immediateCancellationUntil) : null
+    const showWithdrawalNotice = (customer?.customerType ?? license?.customerType) === "personal" && license?.immediateCancellationAvailable === true && withdrawalDeadline !== null
     const [withdrawalTextBeforeDate, withdrawalTextAfterDate] = content.withdrawal.text.split("{date}")
 
     const downloadCurrentLicense = async () => {

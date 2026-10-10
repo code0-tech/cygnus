@@ -11,9 +11,9 @@ The source documentation consists of:
 
 ## The schema
 
-The current branch retains the incremental migrations beginning with `20260508194307_initial_migration.rb`; it does not contain the consolidated September migration baseline previously described here. `db/structure.sql` is the current schema dump.
+The current branch uses a consolidated migration baseline: twelve migrations from `20261002100000_create_users.rb` through `20261002100011_create_good_jobs.rb` replace the previous incremental history. `db/structure.sql` is the current schema dump.
 
-The latest migrations remove `licenses.seats`, `licenses.runtime_minutes`, and `licenses.status`, and introduce a separate `payment_methods` table for cached display details. The subscription keeps `cancel_at`, `stripe_schedule_id`, and the `pending_*` columns. `custom_checkout_configurations` and the invoice Lexware columns still exist in the database; their presence does not make them public GraphQL fields.
+The baseline omits `licenses.seats`, `licenses.runtime_minutes`, and `licenses.status`, and includes a separate `payment_methods` table for cached display details. The subscription keeps `cancel_at`, `stripe_schedule_id`, and the `pending_*` columns. Migration `20261008120000_add_stripe_created_at_to_subscriptions.rb` adds nullable `stripe_created_at`, projected from Stripe's subscription creation timestamp to anchor the immediate-cancellation deadline. Existing rows fall back to their local `created_at` until a Stripe projection supplies that timestamp. `custom_checkout_configurations` and the invoice Lexware columns still exist in the database; their presence does not make them public GraphQL fields.
 
 ## Domain model
 
@@ -645,7 +645,7 @@ Nothing directly. Licenses stay append-only, and a plan change rewrites no exist
 
 **A change never writes a license, not even an immediate upgrade.** The entitlements of the new plan reach the user through the next `invoice.paid` snapshot, which is the only event that grants paid access. This keeps a single writer for the license chain: a plan the user was upgraded to but has not been invoiced for yet does not silently become an entitlement, and there is no snapshot that would have to be revoked if the proration invoice then fails.
 
-On cancellation, existing license dates stay unchanged and no canceled snapshot is created. `immediately: true` cancels the Stripe subscription immediately only if the local subscription was created within the last fourteen days; outside that window it becomes a period-end cancellation. The code applies this age check to both customer types and makes no separate refund call or consumer-waiver check.
+On cancellation, existing license dates stay unchanged and no canceled snapshot is created. `immediately: true` cancels the Stripe subscription immediately only while `Subscription#immediate_cancellation_available?` is true; outside that window it becomes a period-end cancellation. The deadline is fourteen days after `stripe_created_at`, falling back to the local `created_at` until Stripe's creation timestamp is available. The deadline itself is inclusive; terminal subscriptions (`canceled`, `incomplete_expired`) are never eligible. GraphQL exposes the same calculation through `immediateCancellationAvailable` and `immediateCancellationUntil`, so the frontend can show the option and deadline before submitting a cancellation. The code applies this check to both customer types and makes no separate refund call or consumer-waiver check.
 
 ### Webhook processing
 
@@ -782,27 +782,50 @@ All connections use the standard cursor pagination arguments (`first`, `after`, 
 
 `License` alone cannot carry this: licenses are append-only snapshots, several of them belong to the same subscription, and none of them can express "cancelled as of 30 September" or "moving to Max on 1 October". `Subscription` is the addressable thing the mutations take and the state the UI renders.
 
-| Field                                    | Type                        | Meaning                                                                              |
-| ---------------------------------------- | --------------------------- | ------------------------------------------------------------------------------------ |
-| `id`                                     | `SubscriptionID!`           | Global ID, the argument every subscription mutation takes                            |
-| `status`                                 | `SubscriptionStatus!`       | Typed Stripe lifecycle status                                                        |
-| `plan`                                   | `CheckoutPlan`              | `PRO`, `MAX`, or `CUSTOM`; `null` for a negotiated subscription                      |
-| `paymentPeriod`                          | `CheckoutPaymentPeriod`     | The period it is billed in; `null` for a negotiated subscription                     |
-| `deploymentType`                         | `DeploymentType!`           | `SELF_HOSTED` or `CLOUD`                                                             |
-| `namespaceId`                            | `NamespaceID`               | Linked Sagittarius namespace, cloud only                                             |
-| `aiTokens`, `workflowExecutions`         | `Int`                       | Fixed standard-plan or selected custom quantities; null for negotiated subscriptions |
-| `currentPeriodStart`, `currentPeriodEnd` | `Time`                      | The billing period Stripe reports                                                    |
-| `cancelAt`                               | `Time`                      | Stripe cancellation date; null while no cancellation is pending                      |
-| `paymentMethodId`                        | `String`                    | Subscription default payment method ID, read from Stripe                             |
-| `pendingUpdate`                          | `SubscriptionPendingUpdate` | Locally stored future selection and effective time                                   |
-| `currentLicense`                         | `License`                   | Newest paid-invoice snapshot, null before the first one                              |
-| `licenses`                               | `LicenseConnection!`        | Snapshot history, newest first                                                       |
-| `canceledAt`                             | `Time`                      | When the cancellation was requested                                                  |
-| `createdAt`, `updatedAt`                 | `Time!`                     | Timestamps                                                                           |
+| Field                                    | Type                        | Meaning                                                                                       |
+| ---------------------------------------- | --------------------------- | --------------------------------------------------------------------------------------------- |
+| `id`                                     | `SubscriptionID!`           | Global ID, the argument every subscription mutation takes                                     |
+| `status`                                 | `SubscriptionStatus!`       | Typed Stripe lifecycle status                                                                 |
+| `plan`                                   | `CheckoutPlan`              | `PRO`, `MAX`, or `CUSTOM`; `null` for a negotiated subscription                               |
+| `paymentPeriod`                          | `CheckoutPaymentPeriod`     | The period it is billed in; `null` for a negotiated subscription                              |
+| `deploymentType`                         | `DeploymentType!`           | `SELF_HOSTED` or `CLOUD`                                                                      |
+| `namespace`                              | `Namespace`                 | Linked Sagittarius namespace projection; null when unlinked or unavailable                    |
+| `immediateCancellationAvailable`         | `Boolean!`                  | Whether immediate cancellation is available now; false for terminal subscriptions             |
+| `immediateCancellationUntil`             | `Time!`                     | Inclusive deadline: Stripe creation time (local creation time as fallback) plus fourteen days |
+| `aiTokens`, `workflowExecutions`         | `Int`                       | Fixed standard-plan or selected custom quantities; null for negotiated subscriptions          |
+| `currentPeriodStart`, `currentPeriodEnd` | `Time`                      | The billing period Stripe reports                                                             |
+| `cancelAt`                               | `Time`                      | Stripe cancellation date; null while no cancellation is pending                               |
+| `paymentMethodId`                        | `String`                    | Subscription default payment method ID, read from Stripe                                      |
+| `pendingUpdate`                          | `SubscriptionPendingUpdate` | Locally stored future selection and effective time                                            |
+| `currentLicense`                         | `License`                   | Newest paid-invoice snapshot, null before the first one                                       |
+| `licenses`                               | `LicenseConnection!`        | Snapshot history, newest first                                                                |
+| `canceledAt`                             | `Time`                      | When the cancellation was requested                                                           |
+| `createdAt`, `updatedAt`                 | `Time!`                     | Timestamps                                                                                    |
 
 `SubscriptionStatus` exposes `ACTIVE`, `CANCELED`, `INCOMPLETE`, `INCOMPLETE_EXPIRED`, `PAST_DUE`, `PAUSED`, `TRIALING`, and `UNPAID`. The underlying `stripe_status` column remains text and validates presence rather than enum membership; a future unknown Stripe status therefore needs an enum update before it can be serialized safely.
 
 Reading requires `read_subscription`, which `SubscriptionPolicy` derives from `read_customer` on the subscription's customer, so membership stays defined in one place.
+
+Both `Subscription.namespace` and `License.namespace` replace the previous GraphQL `namespaceId` field with a partial Sagittarius projection. `Namespace` contains an opaque `id: NamespaceID!` and a non-null `parent: NamespaceParent!` union. `NamespaceOrganization` exposes `name: String!`; `NamespaceUser` exposes `username: String!` and nullable `firstname` and `lastname`. A namespace has no name of its own: its display name comes from its parent.
+
+Namespace reads are fetched on demand from Sagittarius using Crater's service JWT and batched across subscriptions and licenses through a GraphQL Dataloader. An unlinked, unresolved, or inaccessible namespace returns `null`; Sagittarius request failures are logged and return `null` for the batch instead of failing the dashboard query. Crater still stores only the namespace ID, and checkout/link mutation arguments remain named `namespaceId`.
+
+```graphql
+fragment LinkedNamespace on Namespace {
+    id
+    parent {
+        __typename
+        ... on NamespaceOrganization {
+            name
+        }
+        ... on NamespaceUser {
+            username
+            firstname
+            lastname
+        }
+    }
+}
+```
 
 ```graphql
 query LicenseDashboard {
@@ -827,6 +850,22 @@ query LicenseDashboard {
                         status
                         plan
                         cancelAt
+                        immediateCancellationAvailable
+                        immediateCancellationUntil
+                        namespace {
+                            id
+                            parent {
+                                __typename
+                                ... on NamespaceOrganization {
+                                    name
+                                }
+                                ... on NamespaceUser {
+                                    username
+                                    firstname
+                                    lastname
+                                }
+                            }
+                        }
                         paymentMethodId
                         pendingUpdate {
                             plan

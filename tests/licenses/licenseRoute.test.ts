@@ -1,4 +1,4 @@
-import { canonicalizeLicensePathname, createLicenseCustomerPath, createLicensePath, getNamespaceDisplayId, resolveCustomerRouteId, resolveSubscriptionRouteId } from "@/lib/licenses/routes"
+import { canonicalizeLicensePathname, createLicenseCustomerPath, createLicensePath, resolveCustomerRouteId, resolveSubscriptionRouteId } from "@/lib/licenses/routes"
 import assert from "node:assert/strict"
 import test from "node:test"
 
@@ -25,10 +25,4 @@ test("builds license URLs with only numeric ids", () => {
 test("canonicalizes legacy license URLs while preserving their destination", () => {
     assert.equal(canonicalizeLicensePathname("/en/licenses/customer/gid%3A%2F%2Fcrater%2FCustomer%2F35/license/gid%3A%2F%2Fcrater%2FSubscription%2F9/edit"), "/en/licenses/customer/35/license/9/edit")
     assert.equal(canonicalizeLicensePathname("/de/licenses/customer/35/license/9"), "/de/licenses/customer/35/license/9")
-})
-
-test("shows only the final namespace ID segment", () => {
-    assert.equal(getNamespaceDisplayId("gid://sagittarius/Namespace/123"), "123")
-    assert.equal(getNamespaceDisplayId("namespace-9"), "namespace-9")
-    assert.equal(getNamespaceDisplayId(), undefined)
 })

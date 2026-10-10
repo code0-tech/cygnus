@@ -59,7 +59,10 @@ export interface LicenseDashboardLicense {
     invoices?: LicenseDashboardInvoice[]
     licenseId?: string
     name: string
-    namespaceId?: string
+    namespaceId?: string | null
+    namespaceName?: string | null
+    immediateCancellationAvailable?: boolean
+    immediateCancellationUntil?: string
     paymentMethodId?: string
     paymentPeriod?: string
     pendingUpdate?: SubscriptionPendingUpdate | null

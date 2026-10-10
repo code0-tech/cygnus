@@ -52,6 +52,8 @@ export interface SubscriptionUpdatePreview {
 }
 
 export interface SubscriptionUpdateResult {
+    immediateCancellationAvailable?: boolean
+    immediateCancellationUntil?: string
     paymentMethodId?: string | null
     pendingUpdate?: SubscriptionPendingUpdate | null
     status?: DashboardSubscriptionStatus

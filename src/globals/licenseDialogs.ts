@@ -200,6 +200,15 @@ export const LicenseDialogs: GlobalConfig = {
                     defaultValue: localizedDefault("Cancellation takes effect at the end of the current billing period. Existing licenses remain valid for the periods already paid for.", "Die Kündigung wird zum Ende der aktuellen Abrechnungsperiode wirksam. Bereits bezahlte Lizenzzeiträume bleiben gültig."),
                 },
                 { name: "confirmLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Cancel at period end", "Zum Periodenende kündigen") },
+                { name: "immediateConfirmLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Cancel immediately", "Sofort kündigen") },
+                {
+                    name: "immediateDescription",
+                    type: "textarea",
+                    required: true,
+                    localized: true,
+                    defaultValue: localizedDefault("You can also cancel immediately until the date below. Existing paid license periods remain valid.", "Bis zum unten stehenden Datum kannst du auch sofort kündigen. Bereits bezahlte Lizenzzeiträume bleiben gültig."),
+                },
+                { name: "immediateUntilLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Immediate cancellation available until", "Sofortkündigung möglich bis") },
                 { name: "pendingHeading", type: "text", required: true, localized: true, defaultValue: localizedDefault("Your subscription is set to cancel", "Dein Abonnement wird gekündigt") },
                 {
                     name: "pendingDescription",

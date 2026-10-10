@@ -13,7 +13,7 @@ import type { ErrorsContent, LicenseContent, SubscriptionConfigData } from "@/li
 import { formatMinorCurrency } from "@/lib/formatters"
 import type { AppLocale } from "@/lib/i18n"
 import { formatLicenseDisplayValue } from "@/lib/licenses/displayValues"
-import { createLicensePath, getNamespaceDisplayId } from "@/lib/licenses/routes"
+import { createLicensePath } from "@/lib/licenses/routes"
 import type { LicenseDashboardLicense } from "@/lib/licenses/types"
 import { updateSubscription } from "@/lib/subscription/client"
 import { Badge, Button, Text } from "@code0-tech/pictor"
@@ -77,7 +77,7 @@ export function LicenseGeneralTab({ content, errors, license, locale, namespaceH
             {license?.deploymentType === "cloud" ? (
                 <LicenseTabSection title={content.editor.namespaceHeading}>
                     <LicenseTabRow
-                        title={getNamespaceDisplayId(license.namespaceId) ?? "—"}
+                        title={license.namespaceName ?? "—"}
                         description={content.editor.licenseDescription}
                         action={
                             <Button type="button" variant="normal" paddingSize="xxs" onClick={() => window.location.assign(namespaceHref)}>

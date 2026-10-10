@@ -466,6 +466,9 @@ export interface LicenseContent {
         changePeriodLabel: string
     }
     cancel: {
+        immediateConfirmLabel: string
+        immediateDescription: string
+        immediateUntilLabel: string
         description: string
         confirmLabel: string
         pendingHeading: string

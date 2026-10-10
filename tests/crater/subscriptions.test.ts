@@ -264,7 +264,7 @@ test("cancels a subscription at the end of the current period by default", async
 
 test("cancels a subscription immediately when requested", async () => {
     await withGraphQLServer(
-        [{ data: { subscriptionsCancel: { errors: [], subscription: { cancelAt: "2026-08-17T10:00:00Z", canceledAt: "2026-08-17T10:00:00Z", id: subscriptionId, status: "CANCELED" } } } }],
+        [{ data: { subscriptionsCancel: { errors: [], subscription: { cancelAt: "2026-08-17T10:00:00Z", canceledAt: "2026-08-17T10:00:00Z", id: subscriptionId, status: "CANCELED", immediateCancellationAvailable: false, immediateCancellationUntil: "2026-08-31T10:00:00Z" } } } }],
         async (graphQLServer) => {
             const response = await cancelSubscription(
                 new Request("https://example.com/api/crater/subscriptions/cancel", {
@@ -276,6 +276,11 @@ test("cancels a subscription immediately when requested", async () => {
 
             assert.equal(response.status, 200)
             assert.deepEqual(graphQLServer.requests[0].body.variables, { input: { id: subscriptionId, immediately: true } })
+            assert.match(graphQLServer.requests[0].body.query ?? "", /immediateCancellationAvailable/)
+            assert.match(graphQLServer.requests[0].body.query ?? "", /immediateCancellationUntil/)
+            const body = await response.json()
+            assert.equal(body.immediateCancellationAvailable, false)
+            assert.equal(body.immediateCancellationUntil, "2026-08-31T10:00:00Z")
         }
     )
 })

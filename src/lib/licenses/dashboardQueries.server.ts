@@ -8,7 +8,23 @@ type LicenseDetailVariables = { customerAfter?: string | null; invoiceAfter?: st
 const PAGE_SIZE = 25
 const RECENT_LICENSES_PER_CUSTOMER = 5
 
+const NAMESPACE_FIELDS = gql`
+    fragment LicenseDashboardNamespaceFields on Namespace {
+        id
+        parent {
+            __typename
+            ... on NamespaceOrganization {
+                name
+            }
+            ... on NamespaceUser {
+                username
+            }
+        }
+    }
+`
+
 const SUBSCRIPTION_FIELDS = gql`
+    ${NAMESPACE_FIELDS}
     fragment LicenseDashboardSubscriptionFields on Subscription {
         aiTokens
         cancelAt
@@ -18,7 +34,11 @@ const SUBSCRIPTION_FIELDS = gql`
         currentPeriodStart
         deploymentType
         id
-        namespaceId
+        namespace {
+            ...LicenseDashboardNamespaceFields
+        }
+        immediateCancellationAvailable
+        immediateCancellationUntil
         paymentMethodId
         paymentPeriod
         plan
@@ -36,10 +56,13 @@ const SUBSCRIPTION_FIELDS = gql`
 `
 
 const NAVIGATION_SUBSCRIPTION_FIELDS = gql`
+    ${NAMESPACE_FIELDS}
     fragment LicenseNavigationSubscriptionFields on Subscription {
         deploymentType
         id
-        namespaceId
+        namespace {
+            ...LicenseDashboardNamespaceFields
+        }
         plan
         status
         updatedAt

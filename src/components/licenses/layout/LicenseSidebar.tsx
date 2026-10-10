@@ -6,7 +6,7 @@ import { StableBadge } from "@/components/ui/StableBadge"
 import type { LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { type CustomerEditSection, getCustomerEditSectionLabels, getLicenseEditSectionLabels, LICENSE_EDIT_SECTIONS, type LicenseEditSection } from "@/lib/licenses/editSections"
-import { createLicenseCustomerPath, createLicensePath, getNamespaceDisplayId, resolveCustomerRouteId } from "@/lib/licenses/routes"
+import { createLicenseCustomerPath, createLicensePath, resolveCustomerRouteId } from "@/lib/licenses/routes"
 import type { LicenseDashboardLicense } from "@/lib/licenses/types"
 import { formatLicenseDisplayValue } from "@/lib/licenses/displayValues"
 import {
@@ -114,7 +114,7 @@ function LicenseBackToCustomerButton({ label, license, locale }: { label: string
 function getLicenseSidebarName(license: LicenseDashboardLicense, values: LicenseContent["values"]) {
     const planName = formatLicenseDisplayValue(license.plan, "plan", values)
     if (license.deploymentType === "self_hosted") return planName
-    return getNamespaceDisplayId(license.namespaceId) || planName
+    return license.namespaceName || planName
 }
 
 function getShortLicenseId(id: string) {
