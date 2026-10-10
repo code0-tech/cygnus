@@ -2443,7 +2443,6 @@ export const subscription_config_locales = pgTable('subscription_config_locales'
 
 export const checkout = pgTable('checkout', {
   id: serial('id').primaryKey(),
-  login_loginUrl: varchar('login_login_url').notNull().default("https://app.code0.tech/login"),
   summary_deploymentIcons_cloud: varchar('summary_deployment_icons_cloud').notNull().default("tabler:IconCloud"),
   summary_deploymentIcons_selfHosted: varchar('summary_deployment_icons_self_hosted').notNull().default("tabler:IconServer"),
   summary_deploymentIconColor: enum_checkout_summary_deployment_icon_color('summary_deployment_icon_color').notNull().default("aqua"),
@@ -2570,7 +2569,6 @@ export const upgrade_banner_locales = pgTable('upgrade_banner_locales', {
 
 export const licenses = pgTable('licenses', {
   id: serial('id').primaryKey(),
-  redirectUrl: varchar('redirect_url').notNull().default("http://localhost:3001"),
   updatedAt: timestamp('updated_at', {mode: 'string',withTimezone: true,precision: 3}),
   createdAt: timestamp('created_at', {mode: 'string',withTimezone: true,precision: 3}),
 }

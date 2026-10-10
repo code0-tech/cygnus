@@ -1,6 +1,7 @@
 import { LicenseLayout } from "@/components/licenses/layout/LicenseLayout"
 import { getErrorsContent, getLicenseContent } from "@/lib/cms"
 import { isSupportedLocale } from "@/lib/i18n"
+import { getClientConfig } from "@/lib/clientConfig.server"
 import { notFound } from "next/navigation"
 import type { Metadata } from "next"
 import type { ReactNode } from "react"
@@ -23,7 +24,7 @@ export default async function LicensesLayout({ children, modal, params }: Licens
     if (!content || !errors) notFound()
 
     return (
-        <LicenseLayout content={content} errors={errors} locale={locale} modal={modal}>
+        <LicenseLayout content={content} errors={errors} locale={locale} modal={modal} sculptorUrl={getClientConfig().sculptorUrl}>
             {children}
         </LicenseLayout>
     )

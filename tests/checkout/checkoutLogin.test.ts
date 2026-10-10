@@ -54,7 +54,7 @@ test("requests a namespace from the main app login for cloud deployments", () =>
     assert.equal(new URL(result).searchParams.get("selectNamespace"), "true")
 })
 
-test("always enters Sculptor through login even when the CMS points to the consent page or app root", () => {
+test("always enters Sculptor through login even when the configured URL points to the consent page or app root", () => {
     for (const configuredUrl of ["http://localhost:3001", "http://localhost:3001/redirect?source=checkout#consent"]) {
         const url = new URL(createMainAppLoginUrl(configuredUrl, "https://code0.example/api/crater/auth/callback", "https://code0.example/en/subscription", true))
         assert.equal(url.origin, "http://localhost:3001")

@@ -67,14 +67,6 @@ export const Checkout: GlobalConfig = {
                     defaultValue: "Complete your subscription checkout without signing in.",
                 },
                 { name: "guestLabel", type: "text", required: true, localized: true, defaultValue: "Continue as guest" },
-                {
-                    name: "loginUrl",
-                    label: "Main App Login URL",
-                    type: "text",
-                    required: true,
-                    defaultValue: "https://app.code0.tech/login",
-                    admin: { description: "The checkout URL is appended in the callbackUrl query parameter." },
-                },
             ],
         },
         {

@@ -1,6 +1,7 @@
 import { readGuestCheckoutSession } from "../../src/lib/checkout/guestCheckoutSession"
 import assert from "node:assert/strict"
-import test, { mock } from "node:test"
+import test from "node:test"
+import { registerHooks } from "node:module"
 import { GET as listCustomers, PATCH as updateCustomer, POST as createOrGetCustomer } from "../../src/app/api/crater/customer/route"
 import { POST as createCustomerPaymentMethodSetup } from "../../src/app/api/crater/customer/payment-method-setup/route"
 import { GET as getCustomerPaymentMethods } from "../../src/app/api/crater/customer/payment-methods/route"
@@ -10,7 +11,6 @@ import { POST as createSession } from "../../src/app/api/crater/login/route"
 import { DELETE as deleteSession, GET as getSessionStatus } from "../../src/app/api/crater/auth/session/route"
 import { GET as completeCraterLogin } from "../../src/app/api/crater/auth/callback/route"
 import { GET as getLicenseDashboard } from "../../src/app/api/crater/licenses/route"
-import { GET as accessLicenseDashboard } from "../../src/app/api/crater/licenses/access/route"
 import { GET as selectLicenseNamespace } from "../../src/app/api/crater/licenses/namespace/callback/route"
 import { GET as getCheckoutLicenseStatus } from "../../src/app/api/crater/checkout/status/route"
 import { createGraphQLTestServer } from "../helpers/graphqlTestServer"
@@ -25,18 +25,25 @@ const sessionHeaders = {
 }
 
 const previousServerUrl = process.env.SERVER_URL
+const previousSculptorLoginUrl = process.env.SCULPTOR_LOGIN_URL
 test.before(() => {
     process.env.SERVER_URL = "https://code0.example"
+    process.env.SCULPTOR_LOGIN_URL = "https://app.example/login"
 })
 test.after(() => {
     if (previousServerUrl === undefined) delete process.env.SERVER_URL
     else process.env.SERVER_URL = previousServerUrl
+    if (previousSculptorLoginUrl === undefined) delete process.env.SCULPTOR_LOGIN_URL
+    else process.env.SCULPTOR_LOGIN_URL = previousSculptorLoginUrl
 })
 
-let licenseRedirectUrl: string | undefined
-mock.module("@/lib/cms", {
-    namedExports: { getLicenseContent: async () => ({ redirectUrl: licenseRedirectUrl }) },
+const serverOnlyHook = registerHooks({
+    resolve(specifier, context, nextResolve) {
+        return nextResolve(specifier === "server-only" ? "next/dist/compiled/server-only/empty.js" : specifier, context)
+    },
 })
+const { GET: accessLicenseDashboard } = await import("../../src/app/api/crater/licenses/access/route")
+serverOnlyHook.deregister()
 
 test("license dashboard access redirects without exposing the persisted session", async () => {
     const response = await accessLicenseDashboard(
@@ -90,20 +97,19 @@ test("license dashboard access removes token parameters from its return path", a
     assert.equal(response.headers.get("location"), "https://code0.example/en/licenses?view=all")
 })
 
-test("license access resolves anonymous login redirects against the configured public origin", async () => {
+test("license access reads anonymous redirects from the runtime Sculptor environment", async () => {
+    const previousSculptorUrl = process.env.SCULPTOR_URL
     try {
-        for (const [redirectUrl, expected] of [
-            [undefined, "https://code0.example/de"],
-            ["/de/checkout/login", "https://code0.example/de/checkout/login"],
-            ["https://app.example/login", "https://app.example/login"],
-        ] as const) {
-            licenseRedirectUrl = redirectUrl
+        for (const sculptorUrl of ["https://staging-app.example/", "https://app.example/login"]) {
+            process.env.SCULPTOR_URL = sculptorUrl
             const response = await accessLicenseDashboard(new Request("https://0.0.0.0:3000/api/crater/licenses/access?locale=de"))
             assert.equal(response.status, 307)
-            assert.equal(response.headers.get("location"), expected)
+            assert.equal(response.headers.get("location"), sculptorUrl)
+            assert.equal(response.headers.get("cache-control"), "no-store")
         }
     } finally {
-        licenseRedirectUrl = undefined
+        if (previousSculptorUrl === undefined) delete process.env.SCULPTOR_URL
+        else process.env.SCULPTOR_URL = previousSculptorUrl
     }
 })
 

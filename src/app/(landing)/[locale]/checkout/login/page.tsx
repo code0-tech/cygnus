@@ -5,6 +5,7 @@ import { getCheckoutContent, getErrorsContent, getFooter } from "@/lib/cms"
 import { createCheckoutQuery, createCraterLoginCallbackUrl, createMainAppLoginUrl, type CheckoutSearchParams } from "@/lib/checkout/checkoutLogin"
 import { isSupportedLocale } from "@/lib/i18n"
 import { resolveSiteUrl } from "@/lib/siteConfig"
+import { getClientConfig } from "@/lib/clientConfig.server"
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import Image from "next/image"
@@ -44,7 +45,7 @@ export default async function CheckoutLoginPage({ params, searchParams }: Checko
 
     const deploymentTypeParam = resolvedSearchParams.deploymentType
     const deploymentType = Array.isArray(deploymentTypeParam) ? deploymentTypeParam[0] : deploymentTypeParam
-    const loginHref = createMainAppLoginUrl(content.login.loginUrl, callbackUrl, cancelUrl, deploymentType === "cloud")
+    const loginHref = createMainAppLoginUrl(getClientConfig().sculptorLoginUrl, callbackUrl, cancelUrl, deploymentType === "cloud")
 
     return (
         <div className="flex min-h-full flex-col">

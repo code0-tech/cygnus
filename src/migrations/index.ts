@@ -162,6 +162,8 @@ import * as migration_20261003_084939_cancellation_period_texts from './20261003
 import * as migration_20261009_090000_payment_method_dialog_copy from './20261009_090000_payment_method_dialog_copy';
 import * as migration_20261009_194500_remove_subscription_cms_package_sizes from './20261009_194500_remove_subscription_cms_package_sizes';
 
+import * as migration_20261010_120000_remove_sculptor_cms_urls from './20261010_120000_remove_sculptor_cms_urls';
+
 export const migrations = [
   {
     up: migration_20260317_192332_initial_schema.up,
@@ -977,5 +979,10 @@ export const migrations = [
     up: migration_20261009_194500_remove_subscription_cms_package_sizes.up,
     down: migration_20261009_194500_remove_subscription_cms_package_sizes.down,
     name: '20261009_194500_remove_subscription_cms_package_sizes',
+  },
+  {
+    up: migration_20261010_120000_remove_sculptor_cms_urls.up,
+    down: migration_20261010_120000_remove_sculptor_cms_urls.down,
+    name: '20261010_120000_remove_sculptor_cms_urls',
   },
 ];

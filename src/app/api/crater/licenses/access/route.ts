@@ -5,6 +5,7 @@ import { createLicensePath } from "@/lib/licenses/routes"
 import { clearCraterSessionCookie, readCraterSessionAuthorization } from "@/lib/crater/session.server"
 import { isSupportedLocale } from "@/lib/i18n"
 import { resolveSiteUrl } from "@/lib/siteConfig"
+import { getClientConfig } from "@/lib/clientConfig.server"
 import { NextResponse } from "next/server"
 
 export const runtime = "nodejs"
@@ -59,9 +60,7 @@ export async function GET(request: Request) {
         return noStoreRedirect(returnUrl)
     }
 
-    const { getLicenseContent } = await import("@/lib/cms")
-    const content = await getLicenseContent(locale)
-    const redirectUrl = new URL(content?.redirectUrl ?? `/${locale}`, siteOrigin)
+    const redirectUrl = new URL(getClientConfig().sculptorUrl)
     const response = noStoreRedirect(redirectUrl)
     return session.status === "invalid" ? clearCraterSessionCookie(response) : response
 }

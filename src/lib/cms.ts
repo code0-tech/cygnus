@@ -250,7 +250,6 @@ export interface CheckoutData {
         guestHeading: string
         guestDescription: string
         guestLabel: string
-        loginUrl: string
     }
     summary: {
         eyebrow: string
@@ -350,7 +349,6 @@ export interface LicenseContent {
     licenseDescription: string
     licenses: string
     emptyLicenses: string
-    redirectUrl: string
     sidebar: {
         logout: string
         loggingOut: string
