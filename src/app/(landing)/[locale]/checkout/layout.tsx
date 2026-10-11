@@ -1,7 +1,12 @@
 import { CheckoutStageProvider } from "@/components/checkout/state/CheckoutStageProvider"
 import { isSupportedLocale } from "@/lib/i18n"
+import type { Metadata } from "next"
 import type { ReactNode } from "react"
 import { notFound } from "next/navigation"
+
+export const metadata: Metadata = {
+    robots: { index: false, follow: false },
+}
 
 interface CheckoutLayoutProps {
     children: ReactNode
