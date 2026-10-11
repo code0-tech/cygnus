@@ -5,6 +5,7 @@ import { checkoutFetch, getCheckoutCompletionStatus, getCheckoutStatusPollDelay,
 import { LinkButton } from "@/components/ui/LinkButton"
 import { ButtonLoader } from "@/components/ui/Loader"
 import { CheckoutPricingOverview } from "@/components/checkout/summary/CheckoutPricingOverview"
+import { CheckoutConfetti } from "@/components/checkout/success/CheckoutConfetti"
 import { clearCheckoutContactDraft } from "@/lib/checkout/checkoutDraft"
 import type { CheckoutData, SubscriptionConfigData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
@@ -193,129 +194,132 @@ function CheckoutSuccessStatusView({
         : 100
 
     return (
-        <AnimatePresence mode="wait" initial={false}>
-            <motion.div
-                key={fulfillmentConfirmed ? "confirmed" : status === "ERROR" ? "error" : statusFailed ? "failed" : "pending"}
-                variants={stagger}
-                initial="hidden"
-                animate="show"
-                exit={{ opacity: 0, transition: { duration: reducedMotion ? 0 : 0.2 } }}
-                className="flex flex-col items-center justify-center gap-2"
-            >
-                {fulfillmentConfirmed || status === "ERROR" ? (
-                    <div className="mb-2 size-12 shrink-0">
-                        {status === "READY" || status === "ERROR" ? (
-                            <motion.div
-                                initial={{ opacity: 0, scale: reducedMotion ? 1 : 0.85 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{ type: "spring", stiffness: 180, damping: 18 }}
-                                className={`flex size-12 items-center justify-center rounded-2xl shadow-[inset_0_1px_1px_#bfbfbf1a] ${status === "READY" ? "bg-brand/10 text-brand" : "bg-error/10 text-error"}`}
-                            >
-                                {status === "READY" ? <IconCheck aria-hidden="true" size={28} /> : <IconX aria-hidden="true" size={28} />}
-                            </motion.div>
-                        ) : null}
-                    </div>
-                ) : null}
-                {heading && (
-                    <motion.h1 variants={reveal} className="text-3xl font-semibold text-white">
-                        {heading}
-                    </motion.h1>
-                )}
-                {description && (
-                    <motion.p variants={reveal} className="text-secondary max-w-lg">
-                        {description}
-                    </motion.p>
-                )}
-                {fulfillmentConfirmed && isGuestCheckout && (
-                    <motion.p variants={reveal} role="status" className="my-2 max-w-lg rounded-2xl border border-brand/10 bg-brand/5 p-4 text-sm text-brand">
-                        {content.guestAccountHint}
-                    </motion.p>
-                )}
-                {confirmedConfiguration && confirmedPricing ? (
-                    <motion.div variants={reveal} className="my-2 w-full text-left">
-                        <CheckoutPricingOverview
-                            confirmedPricing={{
-                                aiTokens: confirmedConfiguration.aiTokens,
-                                currency: confirmedPricing.currency,
-                                customerType:
-                                    confirmedConfiguration.customerType === "business" ? "b2b" : confirmedConfiguration.customerType === "personal" ? "b2c" : confirmedConfiguration.customerType,
-                                deployment: confirmedConfiguration.deploymentType,
-                                discountAmount: confirmedPricing.discount / currencyDivisor,
-                                periodSuffix: paymentPeriod ? getPaymentPeriodSuffix(paymentPeriod, subscriptionConfig.paymentPeriod) : "",
-                                planTitle,
-                                subtotalPrice: confirmedPricing.subtotal / currencyDivisor,
-                                taxAmount: confirmedPricing.tax / currencyDivisor,
-                                totalPrice: confirmedPricing.total / currencyDivisor,
-                                workflowExecutions: confirmedConfiguration.workflowExecutions,
-                            }}
-                            content={pricingContent}
-                            locale={locale}
-                            subscriptionConfig={subscriptionConfig}
-                        />
-                    </motion.div>
-                ) : null}
-                {fulfillmentConfirmed && (
-                    <motion.p variants={reveal} className="text-sm text-tertiary mb-4">
-                        {content.receiptHint}
-                    </motion.p>
-                )}
-                {status === "ERROR" && (
-                    <motion.p variants={reveal} className="text-secondary">
-                        {errorMessage}
-                    </motion.p>
-                )}
-                <motion.div variants={reveal}>
-                    <AnimatePresence mode="wait" initial={false}>
-                        {status === "READY" && licenseAccessUrl ? (
-                            <motion.div key="ready" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center gap-2">
-                                <div className="flex flex-wrap items-center justify-center gap-2">
-                                    {!isGuestCheckout && (
-                                        <Link href={licenseAccessUrl} target="_blank" rel="noreferrer">
-                                            <Button>{content.licenseDashboardLabel}</Button>
-                                        </Link>
-                                    )}
-                                    {completion?.configuration?.deploymentType === "cloud" && sculptorUrl ? (
-                                        <Link href={sculptorUrl} target="_blank" rel="noreferrer">
-                                            <Button variant="filled" className="bg-white/80! hover:bg-white! text-primary!">
-                                                <IconCloud aria-hidden="true" size={17} />
-                                                {content.sculptorLabel}
+        <>
+            {status === "READY" && !reducedMotion ? <CheckoutConfetti /> : null}
+            <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                    key={fulfillmentConfirmed ? "confirmed" : status === "ERROR" ? "error" : statusFailed ? "failed" : "pending"}
+                    variants={stagger}
+                    initial="hidden"
+                    animate="show"
+                    exit={{ opacity: 0, transition: { duration: reducedMotion ? 0 : 0.2 } }}
+                    className="flex flex-col items-center justify-center gap-2"
+                >
+                    {fulfillmentConfirmed || status === "ERROR" ? (
+                        <div className="mb-2 size-12 shrink-0">
+                            {status === "READY" || status === "ERROR" ? (
+                                <motion.div
+                                    initial={{ opacity: 0, scale: reducedMotion ? 1 : 0.85 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{ type: "spring", stiffness: 180, damping: 18 }}
+                                    className={`flex size-12 items-center justify-center rounded-2xl shadow-[inset_0_1px_1px_#bfbfbf1a] ${status === "READY" ? "bg-brand/10 text-brand" : "bg-error/10 text-error"}`}
+                                >
+                                    {status === "READY" ? <IconCheck aria-hidden="true" size={28} /> : <IconX aria-hidden="true" size={28} />}
+                                </motion.div>
+                            ) : null}
+                        </div>
+                    ) : null}
+                    {heading && (
+                        <motion.h1 variants={reveal} className="text-3xl font-semibold text-white">
+                            {heading}
+                        </motion.h1>
+                    )}
+                    {description && (
+                        <motion.p variants={reveal} className="text-secondary max-w-lg">
+                            {description}
+                        </motion.p>
+                    )}
+                    {fulfillmentConfirmed && isGuestCheckout && (
+                        <motion.p variants={reveal} role="status" className="my-2 max-w-lg rounded-2xl border border-brand/10 bg-brand/5 p-4 text-sm text-brand">
+                            {content.guestAccountHint}
+                        </motion.p>
+                    )}
+                    {confirmedConfiguration && confirmedPricing ? (
+                        <motion.div variants={reveal} className="my-2 w-full text-left">
+                            <CheckoutPricingOverview
+                                confirmedPricing={{
+                                    aiTokens: confirmedConfiguration.aiTokens,
+                                    currency: confirmedPricing.currency,
+                                    customerType:
+                                        confirmedConfiguration.customerType === "business" ? "b2b" : confirmedConfiguration.customerType === "personal" ? "b2c" : confirmedConfiguration.customerType,
+                                    deployment: confirmedConfiguration.deploymentType,
+                                    discountAmount: confirmedPricing.discount / currencyDivisor,
+                                    periodSuffix: paymentPeriod ? getPaymentPeriodSuffix(paymentPeriod, subscriptionConfig.paymentPeriod) : "",
+                                    planTitle,
+                                    subtotalPrice: confirmedPricing.subtotal / currencyDivisor,
+                                    taxAmount: confirmedPricing.tax / currencyDivisor,
+                                    totalPrice: confirmedPricing.total / currencyDivisor,
+                                    workflowExecutions: confirmedConfiguration.workflowExecutions,
+                                }}
+                                content={pricingContent}
+                                locale={locale}
+                                subscriptionConfig={subscriptionConfig}
+                            />
+                        </motion.div>
+                    ) : null}
+                    {fulfillmentConfirmed && (
+                        <motion.p variants={reveal} className="text-sm text-tertiary mb-4">
+                            {content.receiptHint}
+                        </motion.p>
+                    )}
+                    {status === "ERROR" && (
+                        <motion.p variants={reveal} className="text-secondary">
+                            {errorMessage}
+                        </motion.p>
+                    )}
+                    <motion.div variants={reveal}>
+                        <AnimatePresence mode="wait" initial={false}>
+                            {status === "READY" && licenseAccessUrl ? (
+                                <motion.div key="ready" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center gap-2">
+                                    <div className="flex flex-wrap items-center justify-center gap-2">
+                                        {!isGuestCheckout && (
+                                            <Link href={licenseAccessUrl} target="_blank" rel="noreferrer">
+                                                <Button>{content.licenseDashboardLabel}</Button>
+                                            </Link>
+                                        )}
+                                        {completion?.configuration?.deploymentType === "cloud" && sculptorUrl ? (
+                                            <Link href={sculptorUrl} target="_blank" rel="noreferrer">
+                                                <Button variant="filled" className="bg-white/80! hover:bg-white! text-primary!">
+                                                    <IconCloud aria-hidden="true" size={17} />
+                                                    {content.sculptorLabel}
+                                                </Button>
+                                            </Link>
+                                        ) : completion?.configuration?.deploymentType === "self_hosted" ? (
+                                            <Button type="button" variant="filled" className="bg-white/80! hover:bg-white! text-primary!" disabled={isDownloadingLicense} onClick={onDownloadLicense}>
+                                                {isDownloadingLicense ? <ButtonLoader label={content.licenseDownloadLabel} /> : <IconDownload aria-hidden="true" size={17} />}
+                                                {!isDownloadingLicense ? content.licenseDownloadLabel : null}
                                             </Button>
-                                        </Link>
-                                    ) : completion?.configuration?.deploymentType === "self_hosted" ? (
-                                        <Button type="button" variant="filled" className="bg-white/80! hover:bg-white! text-primary!" disabled={isDownloadingLicense} onClick={onDownloadLicense}>
-                                            {isDownloadingLicense ? <ButtonLoader label={content.licenseDownloadLabel} /> : <IconDownload aria-hidden="true" size={17} />}
-                                            {!isDownloadingLicense ? content.licenseDownloadLabel : null}
-                                        </Button>
+                                        ) : null}
+                                    </div>
+                                    {licenseDownloadError ? (
+                                        <p role="alert" className="text-sm text-error">
+                                            {content.licenseDownloadError}
+                                        </p>
                                     ) : null}
-                                </div>
-                                {licenseDownloadError ? (
-                                    <p role="alert" className="text-sm text-error">
-                                        {content.licenseDownloadError}
-                                    </p>
-                                ) : null}
-                            </motion.div>
-                        ) : status === "ERROR" ? (
-                            <motion.div key="retry" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                                <Button type="button" variant="normal" onClick={onRetry}>
-                                    {content.licenseStatusRetryLabel}
-                                </Button>
-                            </motion.div>
-                        ) : statusFailed ? (
-                            <motion.div key="failed" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                                <LinkButton href={`/${locale}/checkout`} showArrow={false} className="border-b-0">
-                                    {content.checkoutRetryLabel}
-                                </LinkButton>
-                            </motion.div>
-                        ) : (
-                            <motion.div key="pending" exit={{ opacity: 0, transition: { duration: reducedMotion ? 0 : 0.2 } }}>
-                                <Button type="button" variant="normal" disabled>
-                                    <ButtonLoader label={content.licensePendingLabel} />
-                                </Button>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
+                                </motion.div>
+                            ) : status === "ERROR" ? (
+                                <motion.div key="retry" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                                    <Button type="button" variant="normal" onClick={onRetry}>
+                                        {content.licenseStatusRetryLabel}
+                                    </Button>
+                                </motion.div>
+                            ) : statusFailed ? (
+                                <motion.div key="failed" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                                    <LinkButton href={`/${locale}/checkout`} showArrow={false} className="border-b-0">
+                                        {content.checkoutRetryLabel}
+                                    </LinkButton>
+                                </motion.div>
+                            ) : (
+                                <motion.div key="pending" exit={{ opacity: 0, transition: { duration: reducedMotion ? 0 : 0.2 } }}>
+                                    <Button type="button" variant="normal" disabled>
+                                        <ButtonLoader label={content.licensePendingLabel} />
+                                    </Button>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </motion.div>
                 </motion.div>
-            </motion.div>
-        </AnimatePresence>
+            </AnimatePresence>
+        </>
     )
 }
