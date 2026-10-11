@@ -16,6 +16,14 @@ export function optionalString(value: unknown) {
     return typeof value === "string" && value.trim() ? value.trim() : undefined
 }
 
+const EMAIL_MAX_LENGTH = 254
+const EMAIL_LOCAL_PART_MAX_LENGTH = 64
+const EMAIL_PATTERN = /^[^\s@\p{Cc}]+@[^\s@\p{Cc}]+\.[^\s@\p{Cc}]+$/u
+
+export function isValidEmail(value: string) {
+    return value.length <= EMAIL_MAX_LENGTH && value.indexOf("@") <= EMAIL_LOCAL_PART_MAX_LENGTH && EMAIL_PATTERN.test(value)
+}
+
 export function readOptionalAddress(value: unknown) {
     if (value === undefined || value === null) {
         return undefined

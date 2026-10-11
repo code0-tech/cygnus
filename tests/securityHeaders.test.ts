@@ -5,11 +5,19 @@ import { createContentSecurityPolicy } from "../src/lib/security/contentSecurity
 import { staticSecurityHeaders } from "../src/lib/security/staticSecurityHeaders"
 import { proxy } from "../src/proxy"
 
-test("static security headers limit referrer data and disable MIME sniffing", () => {
+test("static security headers limit referrer data, disable MIME sniffing, enforce HTTPS and unused features", () => {
     assert.deepEqual(staticSecurityHeaders, [
         { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
         { key: "X-Content-Type-Options", value: "nosniff" },
+        { key: "Strict-Transport-Security", value: "max-age=63072000" },
+        { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), usb=(), midi=(), browsing-topics=()" },
     ])
+})
+
+test("Permissions-Policy keeps the features Stripe wallets and the playground rely on", () => {
+    const policy = staticSecurityHeaders.find((header) => header.key === "Permissions-Policy")?.value ?? ""
+
+    assert.doesNotMatch(policy, /payment|clipboard|fullscreen/)
 })
 
 test("production CSP permits Stripe Elements and only nonce-authorized inline scripts", () => {
