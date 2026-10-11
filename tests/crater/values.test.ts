@@ -1,5 +1,6 @@
 import assert from "node:assert/strict"
 import test from "node:test"
+import { isValidEmail } from "@/lib/crater/request"
 import { normalizeCountryCode, parseCheckoutSessionId, resolveCraterCustomerType, resolveSubscriptionCustomerType } from "@/lib/crater/values"
 
 test("maps checkout customer types to Crater customer types", () => {
@@ -40,4 +41,12 @@ test("defaults to b2c for unknown or missing values", () => {
     assert.equal(resolveSubscriptionCustomerType(null), "b2c")
     assert.equal(resolveSubscriptionCustomerType(""), "b2c")
     assert.equal(resolveSubscriptionCustomerType("enterprise"), "b2c")
+})
+
+test("accepts guest emails up to the RFC 5321 length limits", () => {
+    assert.equal(isValidEmail("guest@example.com"), true)
+    assert.equal(isValidEmail(`${"a".repeat(64)}@example.com`), true)
+    assert.equal(isValidEmail(`${"a".repeat(65)}@example.com`), false)
+    assert.equal(isValidEmail(`a@${"b".repeat(248)}.com`), true)
+    assert.equal(isValidEmail(`a@${"b".repeat(249)}.com`), false)
 })

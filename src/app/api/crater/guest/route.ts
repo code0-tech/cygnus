@@ -1,5 +1,5 @@
 import { craterJson, craterMutationErrorResponse } from "@/lib/crater/api.server"
-import { optionalString, readJsonObject } from "@/lib/crater/request"
+import { isValidEmail, optionalString, readJsonObject } from "@/lib/crater/request"
 import { describeCraterError } from "@/lib/crater/errors"
 import { createCraterGuestUser } from "@/lib/crater/login.server"
 import { createGuestCheckoutSession } from "@/lib/checkout/guestCheckoutSession"
@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     const email = optionalString(body?.email)
     const clientMutationId = optionalString(body?.clientMutationId)
 
-    if (!email) {
+    if (!email || !isValidEmail(email)) {
         return craterJson({ error: "A valid email is required to continue as a guest." }, 400)
     }
 

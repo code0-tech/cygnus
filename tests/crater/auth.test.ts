@@ -171,13 +171,26 @@ test("continuing as a guest creates a Sagittarius guest user for the entered ema
 })
 
 
-test("guest creation refuses a blank email before reaching Crater", async () => {
+test("guest creation refuses a blank, malformed or oversized email before reaching Crater", async () => {
     const graphQLServer = await createGraphQLTestServer([])
     const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
     process.env.CRATER_GRAPHQL_URL = graphQLServer.url
 
     try {
-        for (const email of [undefined, "", "   "]) {
+        for (const email of [
+            undefined,
+            "",
+            "   ",
+            "not-an-email",
+            "missing-domain@",
+            "@example.com",
+            "no-dot@example",
+            "two@at@example.com",
+            "space in@example.com",
+            "line\nbreak@example.com",
+            `${"a".repeat(65)}@example.com`,
+            `guest@${"a".repeat(250)}.com`,
+        ]) {
             const response = await createGuestUser(
                 new Request("https://example.com/api/crater/guest", {
                     method: "POST",
