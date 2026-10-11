@@ -8,7 +8,7 @@ test("writes structured security events without request secrets", () => {
     console.warn = (message) => messages.push(String(message))
 
     try {
-        logSecurityEvent({ event: "rate_limit_exceeded", policy: "login", limit: 5, retryAfterSeconds: 60 })
+        logSecurityEvent({ event: "rate_limit_exceeded", policy: "login", limit: 5, retryAfterSeconds: 60, network: "trusted" })
     } finally {
         console.warn = originalWarn
     }
@@ -19,6 +19,7 @@ test("writes structured security events without request secrets", () => {
     assert.equal(event.policy, "login")
     assert.equal(event.limit, 5)
     assert.equal(event.retryAfterSeconds, 60)
+    assert.equal(event.network, "trusted")
     assert.match(String(event.timestamp), /^\d{4}-\d{2}-\d{2}T/)
-    assert.deepEqual(Object.keys(event).sort(), ["event", "limit", "policy", "retryAfterSeconds", "timestamp"].sort())
+    assert.deepEqual(Object.keys(event).sort(), ["event", "limit", "policy", "retryAfterSeconds", "network", "timestamp"].sort())
 })

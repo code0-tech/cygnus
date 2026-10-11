@@ -4,6 +4,11 @@ type SecurityEvent =
           policy: string
           limit: number
           retryAfterSeconds: number
+          network: "trusted" | "untrusted"
+      }
+    | {
+          event: "rate_limit_untrusted_network"
+          policy: string
       }
     | {
           event: "crater_login_failed" | "crater_guest_user_failed"
