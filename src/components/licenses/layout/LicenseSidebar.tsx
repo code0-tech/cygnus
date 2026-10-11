@@ -61,7 +61,7 @@ function LicenseContextMenu({ items, label, name }: { items: LicenseContextMenuI
                 </Button>
             </MenuTrigger>
             <MenuPortal>
-                <MenuContent sideOffset={8} align="start" w="var(--radix-popper-anchor-width)">
+                <MenuContent sideOffset={8} align="start" className="min-w-(--radix-popper-anchor-width)! items-stretch!">
                     <MenuLabel>{label}</MenuLabel>
                     {items.map((item) => {
                         const ItemIcon = item.icon
