@@ -587,7 +587,7 @@ test("login forwards documented Crater domain error details", async () => {
         const loginResponse = await createSession(
             new Request("https://example.com/api/crater/login", {
                 method: "POST",
-                headers: { "content-type": "application/json" },
+                headers: { "content-type": "application/json", "x-forwarded-for": "192.0.2.241" },
                 body: JSON.stringify({ sagittariusToken: "invalid-sagittarius-token" }),
             })
         )

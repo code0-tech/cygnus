@@ -64,12 +64,23 @@ export class InMemoryRateLimiter {
 
 const limiter = new InMemoryRateLimiter()
 
+// Requests without a trusted client address share one bucket per policy. Its higher limit keeps a single
+// source from locking out every such user too quickly, while still capping abuse (e.g. guest e-mail spam)
+// when the deployment fails to surface a trusted IP.
+const UNTRUSTED_NETWORK_LIMIT_MULTIPLIER = 10
+const untrustedNetworkWarnings = new Set<RateLimitPolicyName>()
+
 export function enforceRateLimit(name: RateLimitPolicyName, request: Request) {
-    const key = createRateLimitKey(name, request)
+    const clientKey = createRateLimitKey(name, request)
+    const policy = getRateLimitPolicy(name)
+    const key = clientKey ?? `${name}:network:untrusted`
 
-    if (!key) return null
+    if (!clientKey && !untrustedNetworkWarnings.has(name)) {
+        untrustedNetworkWarnings.add(name)
+        logSecurityEvent({ event: "rate_limit_untrusted_network", policy: name })
+    }
 
-    const result = limiter.consume(key, getRateLimitPolicy(name))
+    const result = limiter.consume(key, clientKey ? policy : { ...policy, max: policy.max * UNTRUSTED_NETWORK_LIMIT_MULTIPLIER })
     if (result.allowed) return null
 
     if (result.shouldLog) {
@@ -78,6 +89,7 @@ export function enforceRateLimit(name: RateLimitPolicyName, request: Request) {
             policy: name,
             limit: result.limit,
             retryAfterSeconds: result.resetSeconds,
+            network: clientKey ? "trusted" : "untrusted",
         })
     }
 
