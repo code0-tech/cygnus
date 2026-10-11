@@ -2,10 +2,9 @@ import { CheckoutGuestForm } from "@/components/checkout/form/CheckoutGuestForm"
 import { CheckoutLegalFooter } from "@/components/checkout/shared/CheckoutLegalFooter"
 import { HapticButtonLink } from "@/components/ui/HapticButtonLink"
 import { getFooter, getGlobal } from "@/lib/cms"
-import { createCheckoutQuery, createCraterLoginCallbackUrl, createMainAppLoginUrl, type CheckoutSearchParams } from "@/lib/checkout/checkoutLogin"
+import { createCheckoutLoginStartPath, createCheckoutQuery, type CheckoutSearchParams } from "@/lib/checkout/checkoutLogin"
 import { isSupportedLocale } from "@/lib/i18n"
 import { resolveSiteUrl } from "@/lib/siteConfig"
-import { getClientConfig } from "@/lib/clientConfig.server"
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import Image from "next/image"
@@ -28,7 +27,6 @@ export default async function CheckoutLoginPage({ params, searchParams }: Checko
     const query = createCheckoutQuery(resolvedSearchParams)
     const guestHref = `/${locale}/checkout${query ? `?${query}` : ""}`
     const siteUrl = resolveSiteUrl()
-    const callbackUrl = createCraterLoginCallbackUrl(siteUrl, guestHref)
     const configurationUrlParam = resolvedSearchParams.configurationUrl
     const configurationUrlValue = Array.isArray(configurationUrlParam) ? configurationUrlParam[0] : configurationUrlParam
     const fallbackConfigurationUrl = new URL(`/${locale}/subscription`, siteUrl)
@@ -43,9 +41,7 @@ export default async function CheckoutLoginPage({ params, searchParams }: Checko
         }
     }
 
-    const deploymentTypeParam = resolvedSearchParams.deploymentType
-    const deploymentType = Array.isArray(deploymentTypeParam) ? deploymentTypeParam[0] : deploymentTypeParam
-    const loginHref = createMainAppLoginUrl(getClientConfig().sculptorLoginUrl, callbackUrl, cancelUrl, deploymentType === "cloud")
+    const loginHref = createCheckoutLoginStartPath(guestHref, cancelUrl)
 
     return (
         <div className="flex min-h-full flex-col">
@@ -60,7 +56,7 @@ export default async function CheckoutLoginPage({ params, searchParams }: Checko
                             <h1 className="text-balance text-2xl font-semibold text-white sm:text-3xl">{content.login.heading}</h1>
                             <p className="mt-3 max-w-sm flex-1 text-sm leading-6 text-secondary">{content.login.description}</p>
                             <div className="mt-7 w-full">
-                                <HapticButtonLink href={loginHref} variant="filled" className="h-11! w-full! bg-white/90! font-semibold! text-primary! hover:bg-white!">
+                                <HapticButtonLink href={loginHref} reloadDocument variant="filled" className="h-11! w-full! bg-white/90! font-semibold! text-primary! hover:bg-white!">
                                     {content.login.loginLabel}
                                 </HapticButtonLink>
                             </div>

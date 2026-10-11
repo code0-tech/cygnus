@@ -24,6 +24,16 @@ const sessionHeaders = {
     "content-type": "application/json",
 }
 
+
+const LOGIN_STATE = "s".repeat(43)
+
+// Callbacks only accept a login whose state matches the cookie set by /api/crater/auth/start.
+function startedLoginCallback(url: string, init: RequestInit = {}) {
+    const headers = new Headers(init.headers)
+    headers.set("cookie", `crater_login_state=${LOGIN_STATE}`)
+    return new Request(`${url}&state=${LOGIN_STATE}`, { ...init, headers })
+}
+
 test("Crater login requires a Sagittarius token", async () => {
     const configuredToken = process.env.CRATER_SAGITTARIUS_TOKEN
     process.env.CRATER_SAGITTARIUS_TOKEN = "legacy-fallback-token"
@@ -284,7 +294,7 @@ test("server-side login callback redirects from the container to the configured 
 
     try {
         const returnPath = "/de/checkout?plan=pro&deploymentType=self_hosted"
-        const response = await completeCraterLogin(new Request(`https://0.0.0.0:3000/api/crater/auth/callback?returnPath=${encodeURIComponent(returnPath)}&token=sagittarius-secret`))
+        const response = await completeCraterLogin(startedLoginCallback(`https://0.0.0.0:3000/api/crater/auth/callback?returnPath=${encodeURIComponent(returnPath)}&token=sagittarius-secret`))
 
         assert.equal(response.status, 307)
         assert.equal(response.headers.get("location"), `https://code0.example${returnPath}`)
@@ -341,7 +351,7 @@ test("server-side login callback preserves the selected namespace for cloud chec
         const returnPath = "/de/checkout?plan=pro&deploymentType=cloud"
         const namespace = "gid://sagittarius/Namespace/9"
         const response = await completeCraterLogin(
-            new Request(`https://0.0.0.0:3000/api/crater/auth/callback?returnPath=${encodeURIComponent(returnPath)}&namespace=${encodeURIComponent(namespace)}&token=sagittarius-secret`)
+            startedLoginCallback(`https://0.0.0.0:3000/api/crater/auth/callback?returnPath=${encodeURIComponent(returnPath)}&namespace=${encodeURIComponent(namespace)}&token=sagittarius-secret`)
         )
 
         assert.equal(response.status, 307)
@@ -350,6 +360,7 @@ test("server-side login callback preserves the selected namespace for cloud chec
         assert.equal(location.pathname, "/de/checkout")
         assert.equal(location.searchParams.get("namespace"), namespace)
         assert.equal(location.searchParams.get("token"), null)
+        assert.equal(location.searchParams.get("authError"), null)
     } finally {
         if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
         else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
@@ -382,11 +393,11 @@ test("server-side login callback logs why Crater rejected the login without leak
     }
 
     try {
-        const response = await completeCraterLogin(new Request("https://0.0.0.0:3000/api/crater/auth/callback?returnPath=%2Fde%2Fcheckout&token=sagittarius-secret"))
+        const response = await completeCraterLogin(startedLoginCallback("https://0.0.0.0:3000/api/crater/auth/callback?returnPath=%2Fde%2Fcheckout&token=sagittarius-secret"))
 
         assert.equal(response.status, 307)
         assert.equal(response.headers.get("location"), "https://code0.example/de/checkout?authError=session")
-        assert.equal(response.headers.get("set-cookie"), null)
+        assert.deepEqual(response.headers.getSetCookie().map((cookie) => cookie.split("=")[0]), ["crater_login_state"])
         assert.doesNotMatch(response.headers.get("location") ?? "", /INVALID_SAGITTARIUS_TOKEN|sagittarius-secret/)
         assert.deepEqual(loggedArguments, [["Crater rejected the server-side login callback:", "INVALID_SAGITTARIUS_TOKEN: The token was rejected."]])
     } finally {

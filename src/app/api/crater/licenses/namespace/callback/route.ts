@@ -2,11 +2,10 @@ import { createApolloClient } from "@/lib/apolloClient"
 import { CRATER_ERROR_FIELDS, noStoreRedirect as craterNoStoreRedirect } from "@/lib/crater/api.server"
 import { describeCraterError, isNamespaceInUse } from "@/lib/crater/errors"
 import { createCraterUserSession } from "@/lib/crater/login.server"
+import { clearCraterLoginStateCookie, verifyCraterLoginState } from "@/lib/crater/loginState.server"
 import { setCraterSessionCookie, setCraterUserLoginCookie } from "@/lib/crater/session.server"
-import { isSupportedLocale } from "@/lib/i18n"
 import { resolveSiteUrl } from "@/lib/siteConfig"
-import { isCustomerId, isSubscriptionId } from "@/lib/crater/request"
-import { resolveCustomerRouteId, resolveSubscriptionRouteId } from "@/lib/licenses/routes"
+import { resolveLicenseNamespaceReturn } from "@/lib/licenses/routes"
 import type { Mutation, MutationSubscriptionsLinkNamespaceArgs } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 
@@ -35,56 +34,30 @@ const LINK_SUBSCRIPTION_NAMESPACE: TypedDocumentNode<LinkSubscriptionNamespaceDa
 // The callback URL carries the Sagittarius token, so it must not leak as the referrer of the redirect target.
 const noStoreRedirect = (url: URL) => craterNoStoreRedirect(url, { noReferrer: true })
 
-function resolveLicenseReturn(requestUrl: URL, siteOrigin: string) {
-    const returnPath = requestUrl.searchParams.get("returnPath")
-    if (!returnPath?.startsWith("/")) return null
-
-    const returnUrl = new URL(returnPath, siteOrigin)
-    const segments = returnUrl.pathname.split("/").filter(Boolean)
-    if (
-        returnUrl.origin !== siteOrigin ||
-        returnUrl.search ||
-        returnUrl.hash ||
-        (segments.length !== 6 && segments.length !== 7) ||
-        !isSupportedLocale(segments[0]) ||
-        segments[1] !== "licenses" ||
-        segments[2] !== "customer" ||
-        segments[4] !== "license" ||
-        (segments.length === 7 && segments[6] !== "edit")
-    ) {
-        return null
-    }
-
-    const customerId = resolveCustomerRouteId(segments[3])
-    const subscriptionId = resolveSubscriptionRouteId(segments[5])
-    if (!customerId || !isCustomerId(customerId) ||!subscriptionId || !isSubscriptionId(subscriptionId)) return null
-
-    return { subscriptionId, returnUrl }
-}
-
-function errorRedirect(returnUrl: URL, error: "selection" | "session" | "update" | "occupied") {
+function errorRedirect(request: Request, returnUrl: URL, error: "selection" | "session" | "update" | "occupied") {
     const url = new URL(returnUrl)
     url.searchParams.set("namespaceError", error)
-    return noStoreRedirect(url)
+    return clearCraterLoginStateCookie(noStoreRedirect(url), request)
 }
 
 export async function GET(request: Request) {
     const requestUrl = new URL(request.url)
     const siteOrigin = resolveSiteUrl().origin
-    const resolvedReturn = resolveLicenseReturn(requestUrl, siteOrigin)
-    if (!resolvedReturn) return noStoreRedirect(new URL("/", siteOrigin))
+    const resolvedReturn = resolveLicenseNamespaceReturn(requestUrl.searchParams.get("returnPath"), siteOrigin)
+    if (!resolvedReturn) return clearCraterLoginStateCookie(noStoreRedirect(new URL("/", siteOrigin)), request)
 
     const namespaceId = requestUrl.searchParams.get("namespace")?.trim()
     const sagittariusToken = requestUrl.searchParams.get("token")?.trim()
-    if (!namespaceId || Buffer.byteLength(namespaceId, "utf8") > 500) return errorRedirect(resolvedReturn.returnUrl, "selection")
-    if (!sagittariusToken) return errorRedirect(resolvedReturn.returnUrl, "session")
+    // This GET links the namespace, so it must only run for a login this browser started.
+    if (!sagittariusToken || !verifyCraterLoginState(request, requestUrl)) return errorRedirect(request, resolvedReturn.returnUrl, "session")
+    if (!namespaceId || Buffer.byteLength(namespaceId, "utf8") > 500) return errorRedirect(request, resolvedReturn.returnUrl, "selection")
 
     try {
         const loginPayload = await createCraterUserSession(sagittariusToken)
         if (loginPayload.errors?.length || !loginPayload.userSession?.token) {
             const failure = describeCraterError(loginPayload.errors)
             console.error("Crater rejected the license namespace callback login:", failure?.errorCode ?? "Crater returned no user session token.")
-            return errorRedirect(resolvedReturn.returnUrl, "session")
+            return errorRedirect(request, resolvedReturn.returnUrl, "session")
         }
 
         const sessionToken = loginPayload.userSession.token
@@ -97,13 +70,13 @@ export async function GET(request: Request) {
         if (!payload?.subscription || (payload.errors?.length ?? 0) > 0) {
             const failure = describeCraterError(payload?.errors)
             console.error("Crater rejected the selected subscription namespace:", failure?.errorCode ?? "Crater returned no linked subscription.")
-            return setCraterUserLoginCookie(setCraterSessionCookie(errorRedirect(resolvedReturn.returnUrl, isNamespaceInUse(payload?.errors) ? "occupied" : "update"), sessionToken))
+            return setCraterUserLoginCookie(setCraterSessionCookie(errorRedirect(request, resolvedReturn.returnUrl, isNamespaceInUse(payload?.errors) ? "occupied" : "update"), sessionToken))
         }
 
         // This callback is the second Sagittarius login in the product, so it marks the browser too.
-        return setCraterUserLoginCookie(setCraterSessionCookie(noStoreRedirect(resolvedReturn.returnUrl), sessionToken))
+        return setCraterUserLoginCookie(setCraterSessionCookie(clearCraterLoginStateCookie(noStoreRedirect(resolvedReturn.returnUrl), request), sessionToken))
     } catch (error) {
         console.error("Crater license namespace callback error:", error instanceof Error ? error.name : "Unknown error")
-        return errorRedirect(resolvedReturn.returnUrl, "update")
+        return errorRedirect(request, resolvedReturn.returnUrl, "update")
     }
 }
