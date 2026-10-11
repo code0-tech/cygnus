@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils"
 import Link, { LinkProps } from "next/link"
 import { useWebHaptics } from "web-haptics/react"
 
-interface LinkButtonProps extends Omit<LinkProps, "href" | "locale"> {
+interface LinkButtonProps extends Omit<LinkProps, "href" | "locale">, Pick<React.AnchorHTMLAttributes<HTMLAnchorElement>, "target" | "rel"> {
     href: string
     children: React.ReactNode
     showArrow?: boolean

@@ -14,7 +14,6 @@ import { getPaymentPeriodSuffix } from "@/lib/subscription/calculator"
 import { Button } from "@code0-tech/pictor"
 import { IconCheck, IconCloud, IconDownload, IconX } from "@tabler/icons-react"
 import { AnimatePresence, m as motion, useReducedMotion, type Variants } from "motion/react"
-import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useCallback, useEffect, useRef, useState } from "react"
 
@@ -43,6 +42,7 @@ interface CheckoutSuccessStatusViewProps extends Omit<CheckoutSuccessStatusProps
 }
 
 const SETTLED_STATES = new Set<string>(["FULFILLMENT_PENDING", "READY"])
+const LINK_BUTTON_CLASS_NAME = "button button--secondary button--xs after:hidden"
 
 export function CheckoutSuccessStatus({ checkoutSearchParams, content, errorMessage, locale, pricingContent, sculptorUrl, sessionId, subscriptionConfig }: CheckoutSuccessStatusProps) {
     const isGuestCheckout = new URLSearchParams(checkoutSearchParams).has("guestCheckout")
@@ -273,17 +273,28 @@ function CheckoutSuccessStatusView({
                                 <motion.div key="ready" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center gap-2">
                                     <div className="flex flex-wrap items-center justify-center gap-2">
                                         {!isGuestCheckout && (
-                                            <Link href={licenseAccessUrl} target="_blank" rel="noreferrer">
-                                                <Button>{content.licenseDashboardLabel}</Button>
-                                            </Link>
+                                            <LinkButton
+                                                href={licenseAccessUrl}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                prefetch={false}
+                                                showArrow={false}
+                                                className={`${LINK_BUTTON_CLASS_NAME} button--normal`}
+                                            >
+                                                {content.licenseDashboardLabel}
+                                            </LinkButton>
                                         )}
                                         {completion?.configuration?.deploymentType === "cloud" && sculptorUrl ? (
-                                            <Link href={sculptorUrl} target="_blank" rel="noreferrer">
-                                                <Button variant="filled" className="bg-white/80! hover:bg-white! text-primary!">
-                                                    <IconCloud aria-hidden="true" size={17} />
-                                                    {content.sculptorLabel}
-                                                </Button>
-                                            </Link>
+                                            <LinkButton
+                                                href={sculptorUrl}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                showArrow={false}
+                                                className={`${LINK_BUTTON_CLASS_NAME} button--filled bg-white/80! hover:bg-white! text-primary!`}
+                                            >
+                                                <IconCloud aria-hidden="true" size={17} />
+                                                <span className="ml-1">{content.sculptorLabel}</span>
+                                            </LinkButton>
                                         ) : completion?.configuration?.deploymentType === "self_hosted" ? (
                                             <Button type="button" variant="filled" className="bg-white/80! hover:bg-white! text-primary!" disabled={isDownloadingLicense} onClick={onDownloadLicense}>
                                                 {isDownloadingLicense ? <ButtonLoader label={content.licenseDownloadLabel} /> : <IconDownload aria-hidden="true" size={17} />}

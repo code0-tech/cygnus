@@ -17,7 +17,7 @@ mock.module("@number-flow/react", {
     defaultExport: ({ value }: { value: number }) => <span>{value}</span>,
 })
 mock.module("next/link", {
-    defaultExport: ({ children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => <a {...props}>{children}</a>,
+    defaultExport: ({ children, prefetch: _prefetch, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { prefetch?: boolean | null }) => <a {...props}>{children}</a>,
 })
 let routerReplaceCalls: string[] = []
 mock.module("next/navigation", {
@@ -262,6 +262,16 @@ test("offers Sculptor next to the license dashboard for a cloud license", async 
     assert.equal(dashboardUrl.searchParams.has("returnPath"), false)
     assert.equal(screen.getByRole("link", { name: content.sculptorLabel }).getAttribute("href"), "https://sculptor.example/cloud")
     assert.equal(screen.queryByRole("button", { name: content.licenseDownloadLabel }), null)
+
+    // Each action is a single focusable link that opens in a new tab, without a nested <button>.
+    for (const name of [content.licenseDashboardLabel, content.sculptorLabel]) {
+        const link = screen.getByRole("link", { name })
+        assert.equal(link.querySelector("button"), null)
+        assert.equal(link.getAttribute("target"), "_blank")
+        assert.equal(link.getAttribute("rel"), "noreferrer")
+    }
+    assert.equal(screen.queryByRole("button", { name: content.licenseDashboardLabel }), null)
+    assert.equal(screen.queryByRole("button", { name: content.sculptorLabel }), null)
 })
 
 test("downloads the Crater license next to the dashboard for self-hosted", async () => {
