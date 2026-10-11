@@ -2882,164 +2882,162 @@ export interface CookieBanner {
  */
 export interface SubscriptionConfig {
   id: number;
-  defaults?: {
-    deployment?: ('self_hosted' | 'cloud') | null;
-    customerType?: ('b2b' | 'b2c') | null;
-    paymentPeriod?: {
-      b2b?: ('monthly' | 'quarterly' | 'yearly') | null;
-      b2c?: ('monthly' | 'quarterly' | 'yearly') | null;
+  defaults: {
+    deployment: 'self_hosted' | 'cloud';
+    customerType: 'b2b' | 'b2c';
+    paymentPeriod: {
+      b2b: 'monthly' | 'quarterly' | 'yearly';
+      b2c: 'monthly' | 'quarterly' | 'yearly';
     };
   };
   deployment: {
-    label?: string | null;
+    label: string;
     description?: string | null;
     selfHosted: {
-      title?: string | null;
-      description?: string | null;
+      title: string;
+      description: string;
       icon: string;
-      color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
+      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
       image?: (number | null) | Media;
     };
     cloud: {
-      title?: string | null;
-      description?: string | null;
+      title: string;
+      description: string;
       icon: string;
-      color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
+      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
       image?: (number | null) | Media;
     };
   };
   plan: {
-    title?: string | null;
+    title: string;
     description?: string | null;
     pro: {
-      title?: string | null;
-      description?: string | null;
+      title: string;
+      description: string;
       features: {
         text: string;
         id?: string | null;
       }[];
       icon: string;
-      color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
+      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
       image?: (number | null) | Media;
     };
     max: {
-      title?: string | null;
-      description?: string | null;
+      title: string;
+      description: string;
       features: {
         text: string;
         id?: string | null;
       }[];
       icon: string;
-      color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
+      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
       image?: (number | null) | Media;
     };
     custom: {
-      title?: string | null;
-      description?: string | null;
+      title: string;
+      description: string;
       features: {
         text: string;
         id?: string | null;
       }[];
       icon: string;
-      color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
+      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
       image?: (number | null) | Media;
     };
   };
   customerType: {
-    label?: string | null;
+    label: string;
     description?: string | null;
     b2b: {
-      title?: string | null;
-      description?: string | null;
+      title: string;
+      description: string;
       icon: string;
-      color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
+      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
       image?: (number | null) | Media;
     };
     b2c: {
-      title?: string | null;
-      description?: string | null;
+      title: string;
+      description: string;
       icon: string;
-      color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
+      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
       image?: (number | null) | Media;
     };
   };
-  packages?: {
-    pro?: {
-      title?: string | null;
-      description?: string | null;
+  packages: {
+    pro: {
+      title: string;
+      description: string;
     };
-    max?: {
-      title?: string | null;
-      description?: string | null;
+    max: {
+      title: string;
+      description: string;
     };
-    custom?: {
-      title?: string | null;
-      description?: string | null;
+    custom: {
+      title: string;
+      description: string;
     };
   };
-  paymentPeriod?: {
-    label?: string | null;
+  paymentPeriod: {
+    label: string;
     description?: string | null;
-    monthlyText?: string | null;
-    quarterlyText?: string | null;
-    yearlyText?: string | null;
-    monthlyPeriodSuffix?: string | null;
-    quarterlyPeriodSuffix?: string | null;
-    yearlyPeriodSuffix?: string | null;
+    monthlyText: string;
+    quarterlyText: string;
+    yearlyText: string;
+    monthlyPeriodSuffix: string;
+    quarterlyPeriodSuffix: string;
+    yearlyPeriodSuffix: string;
     /**
      * Shown next to the price when quarterly billing is selected.
      */
-    quarterlyPaidLabel?: string | null;
+    quarterlyPaidLabel: string;
     /**
      * Shown next to the price when yearly billing is selected.
      */
-    yearlyPaidLabel?: string | null;
-    monthlyColor?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
-    quarterlyColor?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
-    yearlyColor?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
+    yearlyPaidLabel: string;
+    monthlyColor: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
+    quarterlyColor: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
+    yearlyColor: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
   };
-  workflowExecutions?: {
-    title?: string | null;
+  workflowExecutions: {
+    title: string;
     description?: string | null;
-    suffix?: string | null;
+    suffix: string;
   };
-  workflowCalculator?: {
-    triggerLabel?: string | null;
-    title?: string | null;
+  workflowCalculator: {
+    triggerLabel: string;
+    title: string;
+    description: string;
+    closeLabel: string;
+    businessTypeLabel: string;
+    businessTypeSearchPlaceholder: string;
+    noBusinessTypesFoundLabel: string;
+    activeWorkflowsLabel: string;
+    runsPerDayLabel: string;
+    daysPerMonthLabel: string;
+    estimateLabel: string;
+    cancelLabel: string;
+    applyLabel: string;
+    businessTypes: {
+      name: string;
+      conversion_unit: string;
+      icon: string;
+      conversion_rate: number;
+      id?: string | null;
+    }[];
+  };
+  aiTokens: {
+    title: string;
     description?: string | null;
-    closeLabel?: string | null;
-    businessTypeLabel?: string | null;
-    businessTypeSearchPlaceholder?: string | null;
-    noBusinessTypesFoundLabel?: string | null;
-    activeWorkflowsLabel?: string | null;
-    runsPerDayLabel?: string | null;
-    daysPerMonthLabel?: string | null;
-    estimateLabel?: string | null;
-    cancelLabel?: string | null;
-    applyLabel?: string | null;
-    businessTypes?:
-      | {
-          name?: string | null;
-          conversion_unit?: string | null;
-          icon: string;
-          conversion_rate?: number | null;
-          id?: string | null;
-        }[]
-      | null;
+    suffix: string;
   };
-  aiTokens?: {
-    title?: string | null;
-    description?: string | null;
-    suffix?: string | null;
+  contactSales: {
+    prompt: string;
+    label: string;
+    href: string;
   };
-  contactSales?: {
-    prompt?: string | null;
-    label?: string | null;
-    href?: string | null;
-  };
-  subscribe?: {
-    label?: string | null;
-    baseUrl?: string | null;
+  subscribe: {
+    label: string;
+    baseUrl: string;
   };
   updatedAt?: string | null;
   createdAt?: string | null;

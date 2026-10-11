@@ -80,8 +80,8 @@ export const POST = withCraterSession({ log: "Crater checkout session error", er
         return craterJson({ error: "namespaceId is only allowed for cloud deployments." }, 400)
     }
 
-    const { getSubscriptionConfig } = await import("@/lib/cms")
-    const subscriptionConfig = await getSubscriptionConfig()
+    const { getGlobal } = await import("@/lib/cms")
+    const subscriptionConfig = await getGlobal("subscriptionConfig")
     const checkoutPackages = await getCraterCheckoutPackages()
 
     if (!subscriptionConfig) {

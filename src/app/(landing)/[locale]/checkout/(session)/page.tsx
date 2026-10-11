@@ -1,5 +1,5 @@
 import { CheckoutPageContent } from "@/components/checkout/CheckoutPageContent"
-import { getFooter, getGlobal, getSubscriptionConfig } from "@/lib/cms"
+import { getFooter, getGlobal } from "@/lib/cms"
 import { getCraterSubscriptionPrices } from "@/lib/subscription/prices.server"
 import { isSupportedLocale } from "@/lib/i18n"
 import type { Metadata } from "next"
@@ -13,7 +13,7 @@ export default async function CheckoutPage({ params }: { params: Promise<{ local
 
     const [checkoutContent, subscriptionConfig, subscriptionPrices, footer, errors] = await Promise.all([
         getGlobal("checkout", locale),
-        getSubscriptionConfig(locale),
+        getGlobal("subscriptionConfig", locale),
         getCraterSubscriptionPrices(),
         getFooter(locale),
         getGlobal("errors", locale),
