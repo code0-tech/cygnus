@@ -23,7 +23,6 @@ export function createCraterLoginCallbackUrl(siteUrl: URL, checkoutPath: string)
 
 export function createMainAppLoginUrl(loginUrl: string, callbackUrl: string, cancelUrl: string, selectNamespace = false): string {
     const url = new URL(loginUrl)
-    url.pathname = "/login"
     url.hash = ""
     url.searchParams.set("callbackUrl", callbackUrl)
     url.searchParams.set("cancelUrl", cancelUrl)

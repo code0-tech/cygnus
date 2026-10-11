@@ -34,12 +34,12 @@ test("includes both Sculptor URLs in the runtime client configuration", () => {
 
 test("keeps callback, cancellation and namespace selection on the environment-provided login URL", () => {
     process.env.SCULPTOR_URL = "https://staging-app.example/"
-    process.env.SCULPTOR_LOGIN_URL = "https://staging-app.example/login"
+    process.env.SCULPTOR_LOGIN_URL = "https://staging-app.example/redirect"
     const callback = "https://cygnus.example/api/crater/auth/callback?returnPath=%2Fen%2Fcheckout"
     const cancel = "https://cygnus.example/en/subscription"
     const url = new URL(createMainAppLoginUrl(getClientConfig().sculptorLoginUrl, callback, cancel, true))
     assert.equal(url.origin, "https://staging-app.example")
-    assert.equal(url.pathname, "/login")
+    assert.equal(url.pathname, "/redirect")
     assert.equal(url.searchParams.get("callbackUrl"), callback)
     assert.equal(url.searchParams.get("cancelUrl"), cancel)
     assert.equal(url.searchParams.get("selectNamespace"), "true")
