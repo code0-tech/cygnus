@@ -12,7 +12,7 @@ const subscriptionConfig = {
 
 mock.module("@/lib/cms", {
     namedExports: {
-        getSubscriptionConfig: async () => subscriptionConfig,
+        getGlobal: async (slug: string) => (slug === "subscriptionConfig" ? subscriptionConfig : null),
     },
 })
 

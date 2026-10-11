@@ -1,5 +1,5 @@
 import { LicenseDetailPage } from "@/components/licenses/pages/LicenseDetailPage"
-import { getGlobal, getLicenseContent, getSubscriptionConfig } from "@/lib/cms"
+import { getGlobal, getLicenseContent } from "@/lib/cms"
 import { createMainAppLoginUrl } from "@/lib/checkout/checkoutLogin"
 import { isSupportedLocale } from "@/lib/i18n"
 import { createLicenseNamespaceCallbackUrl, createLicenseNamespaceReturnPath } from "@/lib/licenses/routes"
@@ -17,7 +17,7 @@ export default async function LicensePage({ params }: LicensePageProps) {
 
     const [content, subscriptionConfig, upgradeBanner, errors] = await Promise.all([
         getLicenseContent(locale),
-        getSubscriptionConfig(locale),
+        getGlobal("subscriptionConfig", locale),
         getGlobal("upgradeBanner", locale),
         getGlobal("errors", locale),
     ])

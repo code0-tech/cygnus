@@ -1,7 +1,7 @@
 import { CheckoutLegalFooter } from "@/components/checkout/shared/CheckoutLegalFooter"
 import { CheckoutSuccessStatus } from "@/components/checkout/success/CheckoutSuccessStatus"
 import { parseCheckoutSessionId } from "@/lib/crater/values"
-import { getFooter, getGlobal, getSubscriptionConfig } from "@/lib/cms"
+import { getFooter, getGlobal } from "@/lib/cms"
 import { getClientConfig } from "@/lib/clientConfig.server"
 import { isSupportedLocale } from "@/lib/i18n"
 import type { Metadata } from "next"
@@ -31,7 +31,7 @@ export default async function CheckoutSuccessPage({ params, searchParams }: Chec
 
     const [checkoutContent, subscriptionConfig, footer, errors] = await Promise.all([
         getGlobal("checkout", locale),
-        getSubscriptionConfig(locale),
+        getGlobal("subscriptionConfig", locale),
         getFooter(locale),
         getGlobal("errors", locale),
     ])

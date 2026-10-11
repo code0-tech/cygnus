@@ -1,5 +1,6 @@
 import { iconField as payloadIconField } from "@mvriu5/payload-icon-picker"
 import type { Field, GlobalConfig } from "payload"
+import { localizedText } from "@/fields/localizedText"
 
 type LocalizedFeature = { de: string; en: string }
 
@@ -11,6 +12,12 @@ const accentColorOptions = [
     { label: "Blue", value: "blue" },
     { label: "Lime", value: "lime" },
     { label: "Magenta", value: "magenta" },
+]
+
+const paymentPeriodOptions = [
+    { label: "Monthly", value: "monthly" },
+    { label: "Quarterly", value: "quarterly" },
+    { label: "Yearly", value: "yearly" },
 ]
 
 const iconField = payloadIconField({
@@ -27,7 +34,7 @@ const iconField = payloadIconField({
 const colorField = {
     name: "color",
     type: "select",
-    required: false,
+    required: true,
     options: accentColorOptions,
     defaultValue: "aqua",
 } as const
@@ -39,6 +46,9 @@ const optionImageField = (): Field => ({
     relationTo: "media",
     required: false,
 })
+
+// Section descriptions are optional intro copy; everything else the configurator renders is required.
+const sectionDescriptionField: Field = { name: "description", type: "textarea", required: false, localized: true }
 
 const planFeaturesField = (features: LocalizedFeature[]): Field => ({
     name: "features",
@@ -66,7 +76,7 @@ export const SubscriptionCollection: GlobalConfig = {
                 {
                     name: "deployment",
                     type: "select",
-                    required: false,
+                    required: true,
                     defaultValue: "self_hosted",
                     options: [
                         { label: "Self-hosted", value: "self_hosted" },
@@ -76,7 +86,7 @@ export const SubscriptionCollection: GlobalConfig = {
                 {
                     name: "customerType",
                     type: "select",
-                    required: false,
+                    required: true,
                     defaultValue: "b2b",
                     options: [
                         { label: "B2B", value: "b2b" },
@@ -88,30 +98,8 @@ export const SubscriptionCollection: GlobalConfig = {
                     label: "Payment Period",
                     type: "group",
                     fields: [
-                        {
-                            name: "b2b",
-                            label: "B2B",
-                            type: "select",
-                            required: false,
-                            defaultValue: "monthly",
-                            options: [
-                                { label: "Monthly", value: "monthly" },
-                                { label: "Quarterly", value: "quarterly" },
-                                { label: "Yearly", value: "yearly" },
-                            ],
-                        },
-                        {
-                            name: "b2c",
-                            label: "B2C",
-                            type: "select",
-                            required: false,
-                            defaultValue: "monthly",
-                            options: [
-                                { label: "Monthly", value: "monthly" },
-                                { label: "Quarterly", value: "quarterly" },
-                                { label: "Yearly", value: "yearly" },
-                            ],
-                        },
+                        { name: "b2b", label: "B2B", type: "select", required: true, defaultValue: "monthly", options: paymentPeriodOptions },
+                        { name: "b2c", label: "B2C", type: "select", required: true, defaultValue: "monthly", options: paymentPeriodOptions },
                     ],
                 },
             ],
@@ -120,26 +108,21 @@ export const SubscriptionCollection: GlobalConfig = {
             name: "deployment",
             type: "group",
             fields: [
-                {
-                    name: "label",
-                    type: "text",
-                    required: false,
-                    localized: true,
-                    defaultValue: "Choose where your code0 instance will run.",
-                },
-                { name: "description", type: "textarea", required: false, localized: true },
+                localizedText("label", "Choose where your code0 instance will run.", "Wähle, wo deine code0-Instanz laufen soll."),
+                sectionDescriptionField,
                 {
                     name: "selfHosted",
                     type: "group",
                     fields: [
-                        { name: "title", type: "text", required: false, localized: true, defaultValue: "Self-hosted" },
-                        {
-                            name: "description",
-                            type: "textarea",
-                            required: false,
-                            localized: true,
-                            defaultValue: "Deploy on your own infrastructure with full operational control.",
-                        },
+                        localizedText("title", "Self-hosted", "Self-hosted"),
+                        localizedText(
+                            "description",
+                            "Deploy on your own infrastructure with full operational control.",
+                            "Betreibe code0 auf deiner eigenen Infrastruktur mit voller Kontrolle über den Betrieb.",
+                            {
+                                type: "textarea",
+                            }
+                        ),
                         { ...iconField, defaultValue: "server" },
                         { ...colorField, defaultValue: "yellow" },
                         optionImageField(),
@@ -149,14 +132,10 @@ export const SubscriptionCollection: GlobalConfig = {
                     name: "cloud",
                     type: "group",
                     fields: [
-                        { name: "title", type: "text", required: false, localized: true, defaultValue: "Cloud" },
-                        {
-                            name: "description",
+                        localizedText("title", "Cloud", "Cloud"),
+                        localizedText("description", "Use managed infrastructure with selectable runtime consumption.", "Nutze verwaltete Infrastruktur mit wählbarem Laufzeitverbrauch.", {
                             type: "textarea",
-                            required: false,
-                            localized: true,
-                            defaultValue: "Use managed infrastructure with selectable runtime consumption.",
-                        },
+                        }),
                         { ...iconField, defaultValue: "cloud" },
                         { ...colorField, defaultValue: "aqua" },
                         optionImageField(),
@@ -169,27 +148,17 @@ export const SubscriptionCollection: GlobalConfig = {
             label: "Plan",
             type: "group",
             fields: [
-                {
-                    name: "title",
-                    type: "text",
-                    required: false,
-                    localized: true,
-                    defaultValue: "Choose the plan that best matches your requirements.",
-                },
-                { name: "description", type: "textarea", required: false, localized: true },
+                localizedText("title", "Choose the plan that best matches your requirements.", "Wähle den Plan, der am besten zu deinen Anforderungen passt."),
+                sectionDescriptionField,
                 {
                     name: "pro",
                     label: "Pro",
                     type: "group",
                     fields: [
-                        { name: "title", type: "text", required: false, localized: true, defaultValue: "Pro" },
-                        {
-                            name: "description",
+                        localizedText("title", "Pro", "Pro"),
+                        localizedText("description", "A ready-to-use plan for individuals and smaller teams.", "Ein sofort nutzbarer Plan für Einzelpersonen und kleinere Teams.", {
                             type: "textarea",
-                            required: false,
-                            localized: true,
-                            defaultValue: "A ready-to-use plan for individuals and smaller teams.",
-                        },
+                        }),
                         planFeaturesField([
                             { en: "Essential workflow automation", de: "Grundlegende Workflow-Automatisierung" },
                             { en: "AI-assisted workflows", de: "KI-unterstützte Workflows" },
@@ -205,14 +174,10 @@ export const SubscriptionCollection: GlobalConfig = {
                     label: "Max",
                     type: "group",
                     fields: [
-                        { name: "title", type: "text", required: false, localized: true, defaultValue: "Max" },
-                        {
-                            name: "description",
+                        localizedText("title", "Max", "Max"),
+                        localizedText("description", "A ready-to-use plan for organizations with higher requirements.", "Ein sofort nutzbarer Plan für Organisationen mit höheren Anforderungen.", {
                             type: "textarea",
-                            required: false,
-                            localized: true,
-                            defaultValue: "A ready-to-use plan for organizations with higher requirements.",
-                        },
+                        }),
                         planFeaturesField([
                             { en: "Everything included in Pro", de: "Alle Funktionen aus Pro" },
                             { en: "Advanced automation capabilities", de: "Erweiterte Automatisierungsfunktionen" },
@@ -228,14 +193,8 @@ export const SubscriptionCollection: GlobalConfig = {
                     label: "Custom",
                     type: "group",
                     fields: [
-                        { name: "title", type: "text", required: false, localized: true, defaultValue: "Custom" },
-                        {
-                            name: "description",
-                            type: "textarea",
-                            required: false,
-                            localized: true,
-                            defaultValue: "Configure usage for an individual setup.",
-                        },
+                        localizedText("title", "Custom", "Custom"),
+                        localizedText("description", "Configure usage for an individual setup.", "Konfiguriere die Nutzung für ein individuelles Setup.", { type: "textarea" }),
                         planFeaturesField([
                             { en: "Configurable AI token volume", de: "Konfigurierbares KI-Token-Volumen" },
                             { en: "Configurable workflow executions", de: "Konfigurierbare Workflow-Ausführungen" },
@@ -252,26 +211,16 @@ export const SubscriptionCollection: GlobalConfig = {
             name: "customerType",
             type: "group",
             fields: [
-                {
-                    name: "label",
-                    type: "text",
-                    required: false,
-                    localized: true,
-                    defaultValue: "Choose the customer model that best matches your use case.",
-                },
-                { name: "description", type: "textarea", required: false, localized: true },
+                localizedText("label", "Choose the customer model that best matches your use case.", "Wähle das Kundenmodell, das am besten zu deinem Anwendungsfall passt."),
+                sectionDescriptionField,
                 {
                     name: "b2b",
                     type: "group",
                     fields: [
-                        { name: "title", type: "text", required: false, localized: true, defaultValue: "B2B" },
-                        {
-                            name: "description",
+                        localizedText("title", "B2B", "B2B"),
+                        localizedText("description", "Organization purchase flow with tailored commercial handling.", "Kaufprozess für Organisationen mit individueller kaufmännischer Abwicklung.", {
                             type: "textarea",
-                            required: false,
-                            localized: true,
-                            defaultValue: "Organization purchase flow with tailored commercial handling.",
-                        },
+                        }),
                         { ...iconField, defaultValue: "briefcase-2" },
                         { ...colorField, defaultValue: "blue" },
                         optionImageField(),
@@ -281,14 +230,10 @@ export const SubscriptionCollection: GlobalConfig = {
                     name: "b2c",
                     type: "group",
                     fields: [
-                        { name: "title", type: "text", required: false, localized: true, defaultValue: "B2C" },
-                        {
-                            name: "description",
+                        localizedText("title", "B2C", "B2C"),
+                        localizedText("description", "Standardized subscription flow with directly selectable plans.", "Standardisierter Abo-Prozess mit direkt wählbaren Plänen.", {
                             type: "textarea",
-                            required: false,
-                            localized: true,
-                            defaultValue: "Standardized subscription flow with directly selectable plans.",
-                        },
+                        }),
                         { ...iconField, defaultValue: "building-store" },
                         { ...colorField, defaultValue: "pink" },
                         optionImageField(),
@@ -305,30 +250,15 @@ export const SubscriptionCollection: GlobalConfig = {
                     name: "pro",
                     label: "Pro",
                     type: "group",
-                    fields: [
-                        { name: "title", type: "text", required: false, localized: true, defaultValue: "Pro" },
-                        {
-                            name: "description",
-                            type: "textarea",
-                            required: false,
-                            localized: true,
-                            defaultValue: "For individuals and smaller teams.",
-                        },
-                    ],
+                    fields: [localizedText("title", "Pro", "Pro"), localizedText("description", "For individuals and smaller teams.", "Für Einzelpersonen und kleinere Teams.", { type: "textarea" })],
                 },
                 {
                     name: "max",
                     label: "Max",
                     type: "group",
                     fields: [
-                        { name: "title", type: "text", required: false, localized: true, defaultValue: "Max" },
-                        {
-                            name: "description",
-                            type: "textarea",
-                            required: false,
-                            localized: true,
-                            defaultValue: "For organizations with higher requirements.",
-                        },
+                        localizedText("title", "Max", "Max"),
+                        localizedText("description", "For organizations with higher requirements.", "Für Organisationen mit höheren Anforderungen.", { type: "textarea" }),
                     ],
                 },
                 {
@@ -336,14 +266,8 @@ export const SubscriptionCollection: GlobalConfig = {
                     label: "Custom",
                     type: "group",
                     fields: [
-                        { name: "title", type: "text", required: false, localized: true, defaultValue: "Custom" },
-                        {
-                            name: "description",
-                            type: "textarea",
-                            required: false,
-                            localized: true,
-                            defaultValue: "A tailored package for individual requirements.",
-                        },
+                        localizedText("title", "Custom", "Custom"),
+                        localizedText("description", "A tailored package for individual requirements.", "Ein maßgeschneidertes Paket für individuelle Anforderungen.", { type: "textarea" }),
                     ],
                 },
             ],
@@ -353,38 +277,19 @@ export const SubscriptionCollection: GlobalConfig = {
             label: "Payment Period",
             type: "group",
             fields: [
-                {
-                    name: "label",
-                    type: "text",
-                    required: false,
-                    localized: true,
-                    defaultValue: "Choose how often you want to be billed.",
-                },
-                { name: "description", type: "textarea", required: false, localized: true },
-                { name: "monthlyText", type: "text", required: false, localized: true, defaultValue: "Monthly" },
-                { name: "quarterlyText", type: "text", required: false, localized: true, defaultValue: "Quarterly" },
-                { name: "yearlyText", type: "text", required: false, localized: true, defaultValue: "Yearly" },
-                { name: "monthlyPeriodSuffix", type: "text", required: false, localized: true, defaultValue: "per month" },
-                { name: "quarterlyPeriodSuffix", type: "text", required: false, localized: true, defaultValue: "per quarter" },
-                { name: "yearlyPeriodSuffix", type: "text", required: false, localized: true, defaultValue: "per year" },
-                {
-                    name: "quarterlyPaidLabel",
+                localizedText("label", "Choose how often you want to be billed.", "Wähle, wie oft du abgerechnet werden möchtest."),
+                sectionDescriptionField,
+                localizedText("monthlyText", "Monthly", "Monatlich"),
+                localizedText("quarterlyText", "Quarterly", "Vierteljährlich"),
+                localizedText("yearlyText", "Yearly", "Jährlich"),
+                localizedText("monthlyPeriodSuffix", "per month", "pro Monat"),
+                localizedText("quarterlyPeriodSuffix", "per quarter", "pro Quartal"),
+                localizedText("yearlyPeriodSuffix", "per year", "pro Jahr"),
+                localizedText("quarterlyPaidLabel", "paid quarterly", "vierteljährlich bezahlt", {
                     label: "Quarterly Paid Label",
-                    type: "text",
-                    required: false,
-                    localized: true,
-                    defaultValue: "paid quarterly",
-                    admin: { description: "Shown next to the price when quarterly billing is selected." },
-                },
-                {
-                    name: "yearlyPaidLabel",
-                    label: "Yearly Paid Label",
-                    type: "text",
-                    required: false,
-                    localized: true,
-                    defaultValue: "paid yearly",
-                    admin: { description: "Shown next to the price when yearly billing is selected." },
-                },
+                    description: "Shown next to the price when quarterly billing is selected.",
+                }),
+                localizedText("yearlyPaidLabel", "paid yearly", "jährlich bezahlt", { label: "Yearly Paid Label", description: "Shown next to the price when yearly billing is selected." }),
                 { ...colorField, name: "monthlyColor", defaultValue: "brand" },
                 { ...colorField, name: "quarterlyColor", defaultValue: "aqua" },
                 { ...colorField, name: "yearlyColor", defaultValue: "magenta" },
@@ -394,15 +299,9 @@ export const SubscriptionCollection: GlobalConfig = {
             name: "workflowExecutions",
             type: "group",
             fields: [
-                {
-                    name: "title",
-                    type: "text",
-                    required: false,
-                    localized: true,
-                    defaultValue: "How many workflow executions do you expect per month?",
-                },
-                { name: "description", type: "textarea", required: false, localized: true },
-                { name: "suffix", type: "text", required: false, localized: true, defaultValue: "exec" },
+                localizedText("title", "How many workflow executions do you expect per month?", "Wie viele Workflow-Ausführungen erwartest du pro Monat?"),
+                sectionDescriptionField,
+                localizedText("suffix", "exec", "Ausf."),
             ],
         },
         {
@@ -410,30 +309,29 @@ export const SubscriptionCollection: GlobalConfig = {
             label: "Workflow Calculator",
             type: "group",
             fields: [
-                { name: "triggerLabel", type: "text", required: false, localized: true, defaultValue: "Calculate" },
-                { name: "title", type: "text", required: false, localized: true, defaultValue: "Calculate workflow executions" },
-                {
-                    name: "description",
-                    type: "textarea",
-                    required: false,
-                    localized: true,
-                    defaultValue: "Estimate monthly volume from your active workflows and their average execution frequency.",
-                },
-                { name: "closeLabel", type: "text", required: false, localized: true, defaultValue: "Close dialog" },
-                { name: "businessTypeLabel", type: "text", required: false, localized: true, defaultValue: "Business type" },
-                { name: "businessTypeSearchPlaceholder", type: "text", required: false, localized: true, defaultValue: "Search business types" },
-                { name: "noBusinessTypesFoundLabel", type: "text", required: false, localized: true, defaultValue: "No business types found." },
-                { name: "activeWorkflowsLabel", type: "text", required: false, localized: true, defaultValue: "Active workflows" },
-                { name: "runsPerDayLabel", type: "text", required: false, localized: true, defaultValue: "Runs per month" },
-                { name: "daysPerMonthLabel", type: "text", required: false, localized: true, defaultValue: "Days per month" },
-                { name: "estimateLabel", type: "text", required: false, localized: true, defaultValue: "Estimated monthly volume" },
-                { name: "cancelLabel", type: "text", required: false, localized: true, defaultValue: "Cancel" },
-                { name: "applyLabel", type: "text", required: false, localized: true, defaultValue: "Apply value" },
+                localizedText("triggerLabel", "Calculate", "Berechnen"),
+                localizedText("title", "Calculate workflow executions", "Workflow-Ausführungen berechnen"),
+                localizedText(
+                    "description",
+                    "Estimate monthly volume from your active workflows and their average execution frequency.",
+                    "Schätze das monatliche Volumen anhand deiner aktiven Workflows und ihrer durchschnittlichen Ausführungshäufigkeit.",
+                    { type: "textarea" }
+                ),
+                localizedText("closeLabel", "Close dialog", "Dialog schließen"),
+                localizedText("businessTypeLabel", "Business type", "Geschäftsbereich"),
+                localizedText("businessTypeSearchPlaceholder", "Search business types", "Geschäftsbereiche durchsuchen"),
+                localizedText("noBusinessTypesFoundLabel", "No business types found.", "Keine Geschäftsbereiche gefunden."),
+                localizedText("activeWorkflowsLabel", "Active workflows", "Aktive Workflows"),
+                localizedText("runsPerDayLabel", "Runs per month", "Ausführungen pro Monat"),
+                localizedText("daysPerMonthLabel", "Days per month", "Tage pro Monat"),
+                localizedText("estimateLabel", "Estimated monthly volume", "Geschätztes monatliches Volumen"),
+                localizedText("cancelLabel", "Cancel", "Abbrechen"),
+                localizedText("applyLabel", "Apply value", "Wert übernehmen"),
                 {
                     name: "businessTypes",
                     label: "Business Types",
                     type: "array",
-                    required: false,
+                    required: true,
                     minRows: 1,
                     defaultValue: [
                         {
@@ -444,14 +342,14 @@ export const SubscriptionCollection: GlobalConfig = {
                         },
                     ],
                     fields: [
-                        { name: "name", type: "text", required: false, localized: true },
-                        { name: "conversion_unit", label: "Conversion Unit", type: "text", required: false, localized: true, defaultValue: "executions" },
+                        localizedText("name", "General", "Allgemein"),
+                        localizedText("conversion_unit", "executions", "Ausführungen", { label: "Conversion Unit" }),
                         { ...iconField, defaultValue: "building" },
                         {
                             name: "conversion_rate",
                             label: "Conversion Rate",
                             type: "number",
-                            required: false,
+                            required: true,
                             defaultValue: 1,
                             min: 0,
                         },
@@ -464,27 +362,24 @@ export const SubscriptionCollection: GlobalConfig = {
             label: "AI Tokens",
             type: "group",
             fields: [
-                { name: "title", type: "text", required: false, localized: true, defaultValue: "How many AI tokens do you expect to consume per month?" },
-                { name: "description", type: "textarea", required: false, localized: true },
-                { name: "suffix", type: "text", required: false, localized: true, defaultValue: "tokens" },
+                localizedText("title", "How many AI tokens do you expect to consume per month?", "Wie viele KI-Tokens erwartest du pro Monat zu verbrauchen?"),
+                sectionDescriptionField,
+                localizedText("suffix", "tokens", "Tokens"),
             ],
         },
         {
             name: "contactSales",
             type: "group",
             fields: [
-                { name: "prompt", type: "text", required: false, localized: true, defaultValue: "Need more?" },
-                { name: "label", type: "text", required: false, localized: true, defaultValue: "Contact sales" },
-                { name: "href", type: "text", required: false, defaultValue: "/contact" },
+                localizedText("prompt", "Need more?", "Du brauchst mehr?"),
+                localizedText("label", "Contact sales", "Vertrieb kontaktieren"),
+                { name: "href", type: "text", required: true, defaultValue: "/contact" },
             ],
         },
         {
             name: "subscribe",
             type: "group",
-            fields: [
-                { name: "label", type: "text", required: false, localized: true, defaultValue: "Buy now" },
-                { name: "baseUrl", type: "text", required: false, defaultValue: "" },
-            ],
+            fields: [localizedText("label", "Buy now", "Jetzt kaufen"), { name: "baseUrl", type: "text", required: true, defaultValue: "/checkout" }],
         },
     ],
 }

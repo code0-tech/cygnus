@@ -4,7 +4,7 @@ import { extractActionModuleInfo, fetchMediaJson } from "@/lib/actionExtraction"
 import { DEFAULT_LOCALE, type AppLocale } from "@/lib/i18n"
 import type { NavigationData } from "@/lib/navigation"
 import { getPayloadClient } from "@/lib/payloadClient"
-import type { Action, Blog, Checkout, Config, CookieBanner, Footer, Job, Media, Navigation, Page, TeamMember } from "@/payload-types"
+import type { Action, Blog, Checkout, Config, CookieBanner, Footer, Job, Media, Navigation, Page, SubscriptionConfig, TeamMember } from "@/payload-types"
 import { cache } from "react"
 
 const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build" || process.env.npm_lifecycle_event === "build"
@@ -84,151 +84,7 @@ function sortBlogPosts(posts: BlogPostItem[]): BlogPostItem[] {
     })
 }
 
-export interface SubscriptionConfigData {
-    id: number
-    defaults: {
-        deployment: "self_hosted" | "cloud"
-        customerType: "b2b" | "b2c"
-        paymentPeriod: {
-            b2b: "monthly" | "quarterly" | "yearly"
-            b2c: "monthly" | "quarterly" | "yearly"
-        }
-    }
-    deployment: {
-        label: string
-        description?: string | null
-        selfHosted: {
-            title: string
-            description: string
-            icon: string
-            image?: number | Media | null
-            color: IconColor
-        }
-        cloud: {
-            title: string
-            description: string
-            icon: string
-            image?: number | Media | null
-            color: IconColor
-        }
-    }
-    plan: {
-        title: string
-        description?: string | null
-        pro: {
-            title: string
-            description: string
-            features?: Array<{ id?: string | null; text?: string | null }> | null
-            icon: string
-            color: IconColor
-            image?: number | Media | null
-        }
-        max: {
-            title: string
-            description: string
-            features?: Array<{ id?: string | null; text?: string | null }> | null
-            icon: string
-            color: IconColor
-            image?: number | Media | null
-        }
-        custom: {
-            title: string
-            description: string
-            features?: Array<{ id?: string | null; text?: string | null }> | null
-            icon: string
-            color: IconColor
-            image?: number | Media | null
-        }
-    }
-    customerType: {
-        label: string
-        description?: string | null
-        b2b: {
-            title: string
-            description: string
-            icon: string
-            image?: number | Media | null
-            color: IconColor
-        }
-        b2c: {
-            title: string
-            description: string
-            icon: string
-            image?: number | Media | null
-            color: IconColor
-        }
-    }
-    packages: {
-        pro: {
-            title: string
-            description: string
-        }
-        max: {
-            title: string
-            description: string
-        }
-        custom: {
-            title: string
-            description: string
-        }
-    }
-    paymentPeriod: {
-        label: string
-        description?: string | null
-        monthlyText: string
-        quarterlyText: string
-        yearlyText: string
-        monthlyPeriodSuffix: string
-        quarterlyPeriodSuffix: string
-        yearlyPeriodSuffix: string
-        quarterlyPaidLabel: string
-        yearlyPaidLabel: string
-        monthlyColor: IconColor
-        quarterlyColor: IconColor
-        yearlyColor: IconColor
-    }
-    workflowExecutions: {
-        title: string
-        description?: string | null
-        suffix: string
-    }
-    workflowCalculator: {
-        triggerLabel: string
-        title: string
-        description: string
-        closeLabel: string
-        businessTypeLabel: string
-        businessTypeSearchPlaceholder: string
-        noBusinessTypesFoundLabel: string
-        activeWorkflowsLabel: string
-        runsPerDayLabel: string
-        daysPerMonthLabel: string
-        estimateLabel: string
-        cancelLabel: string
-        applyLabel: string
-        businessTypes: {
-            name: string
-            conversion_rate: number
-            conversion_unit: string
-            icon: string
-            id?: string | null
-        }[]
-    }
-    aiTokens: {
-        title: string
-        description?: string | null
-        suffix: string
-    }
-    contactSales: {
-        prompt: string
-        label: string
-        href: string
-    }
-    subscribe: {
-        label: string
-        baseUrl: string
-    }
-}
+export type SubscriptionConfigData = SubscriptionConfig
 
 export interface SubscriptionConfiguratorBlockData {
     pageIntro: {
@@ -647,24 +503,14 @@ const getBlogSlugsCached = cache(async (locale: AppLocale): Promise<string[]> =>
     return cmsFindSlugs(`getBlogSlugs(${locale})`, locale, "blog")
 })
 
-const getSubscriptionConfigCached = cache(async (locale: AppLocale): Promise<SubscriptionConfigData | null> => {
-    const config = await cmsFindGlobal<SubscriptionConfigData>(`getSubscriptionConfig(${locale})`, null, {
-        slug: "subscriptionConfig",
-        locale,
-        fallbackLocale: DEFAULT_LOCALE,
-        depth: 1,
-    })
-    if (!config) return null
-
-    return config
-})
+const GLOBAL_DEPTH: Partial<Record<GlobalSlug, number>> = { subscriptionConfig: 1 }
 
 const getGlobalCached = cache(async (slug: GlobalSlug, locale: AppLocale) => {
     return cmsFindGlobal<Config["globals"][GlobalSlug]>(`getGlobal(${slug}, ${locale})`, null, {
         slug,
         locale,
         fallbackLocale: DEFAULT_LOCALE,
-        depth: 0,
+        depth: GLOBAL_DEPTH[slug] ?? 0,
     })
 })
 
@@ -741,10 +587,6 @@ export async function getBlogPosts(locale: AppLocale = DEFAULT_LOCALE, options?:
 
 export async function getBlogSlugs(locale: AppLocale = DEFAULT_LOCALE): Promise<string[]> {
     return getBlogSlugsCached(locale)
-}
-
-export async function getSubscriptionConfig(locale: AppLocale = DEFAULT_LOCALE): Promise<SubscriptionConfigData | null> {
-    return getSubscriptionConfigCached(locale)
 }
 
 export async function getGlobal<S extends GlobalSlug>(slug: S, locale: AppLocale = DEFAULT_LOCALE): Promise<Config["globals"][S] | null> {

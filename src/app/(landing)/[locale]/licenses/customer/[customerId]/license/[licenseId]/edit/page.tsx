@@ -1,5 +1,5 @@
 import { LicenseEditDialog } from "@/components/licenses/dialog/subscription/LicenseEditDialog"
-import { getGlobal, getLicenseContent, getSubscriptionConfig } from "@/lib/cms"
+import { getGlobal, getLicenseContent } from "@/lib/cms"
 import { createMainAppLoginUrl } from "@/lib/checkout/checkoutLogin"
 import { isSupportedLocale } from "@/lib/i18n"
 import { createLicenseNamespaceCallbackUrl, createLicenseNamespaceReturnPath } from "@/lib/licenses/routes"
@@ -14,7 +14,7 @@ export default async function EditLicensePage({ params }: { params: Promise<{ cu
     const [content, errors, subscriptionConfig, subscriptionPrices] = await Promise.all([
         getLicenseContent(locale),
         getGlobal("errors", locale),
-        getSubscriptionConfig(locale),
+        getGlobal("subscriptionConfig", locale),
         getCraterSubscriptionPrices(),
     ])
     if (!content || !errors || !subscriptionConfig) notFound()
