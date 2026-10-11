@@ -1,7 +1,7 @@
 import { CheckoutLegalFooter } from "@/components/checkout/shared/CheckoutLegalFooter"
 import { CheckoutSuccessStatus } from "@/components/checkout/success/CheckoutSuccessStatus"
 import { parseCheckoutSessionId } from "@/lib/crater/values"
-import { getCheckoutContent, getErrorsContent, getFooter, getSubscriptionConfig } from "@/lib/cms"
+import { getFooter, getGlobal, getSubscriptionConfig } from "@/lib/cms"
 import { getClientConfig } from "@/lib/clientConfig.server"
 import { isSupportedLocale } from "@/lib/i18n"
 import type { Metadata } from "next"
@@ -30,10 +30,10 @@ export default async function CheckoutSuccessPage({ params, searchParams }: Chec
     if (!checkoutSessionId) notFound()
 
     const [checkoutContent, subscriptionConfig, footer, errors] = await Promise.all([
-        getCheckoutContent(locale),
+        getGlobal("checkout", locale),
         getSubscriptionConfig(locale),
         getFooter(locale),
-        getErrorsContent(locale),
+        getGlobal("errors", locale),
     ])
     const currentYear = new Date().getUTCFullYear()
     const checkoutSearchParams = toSearchParams(query).toString()
