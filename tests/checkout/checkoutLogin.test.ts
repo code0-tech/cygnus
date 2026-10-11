@@ -1,12 +1,19 @@
 import assert from "node:assert/strict"
 import test from "node:test"
-import { createCheckoutQuery, createCraterLoginCallbackUrl, createMainAppLoginUrl } from "../../src/lib/checkout/checkoutLogin"
+import { createCheckoutQuery, createCraterLoginCallbackUrl, createMainAppLoginUrl, hasCheckoutConfiguration } from "../../src/lib/checkout/checkoutLogin"
 import { createLicenseNamespaceCallbackUrl, createLicenseNamespaceReturnPath } from "../../src/lib/licenses/routes"
 
 test("preserves the subscription configuration for guest checkout", () => {
     const query = createCheckoutQuery({ plan: "custom", tag: ["one", "two"], token: "secret", authError: "session", guestCheckout: "previous-purchase", empty: undefined })
 
     assert.equal(query, "plan=custom&tag=one&tag=two")
+})
+
+test("detects whether the checkout query carries a subscription configuration", () => {
+    assert.equal(hasCheckoutConfiguration(new URLSearchParams("plan=pro")), true)
+    assert.equal(hasCheckoutConfiguration(new URLSearchParams("deployment=cloud&utm_source=mail")), true)
+    assert.equal(hasCheckoutConfiguration(new URLSearchParams("plan=&utm_source=mail")), false)
+    assert.equal(hasCheckoutConfiguration(new URLSearchParams()), false)
 })
 
 test("routes the Sagittarius login response through the server-side Crater callback", () => {

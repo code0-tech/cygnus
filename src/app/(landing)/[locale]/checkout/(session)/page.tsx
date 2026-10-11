@@ -1,15 +1,22 @@
 import { CheckoutPageContent } from "@/components/checkout/CheckoutPageContent"
+import { createCheckoutQuery, hasCheckoutConfiguration, type CheckoutSearchParams } from "@/lib/checkout/checkoutLogin"
 import { getFooter, getGlobal } from "@/lib/cms"
 import { getCraterSubscriptionPrices } from "@/lib/subscription/prices.server"
 import { isSupportedLocale } from "@/lib/i18n"
 import type { Metadata } from "next"
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 
 export const metadata: Metadata = { title: "Checkout" }
 
-export default async function CheckoutPage({ params }: { params: Promise<{ locale: string }> }) {
-    const { locale } = await params
+interface CheckoutPageProps {
+    params: Promise<{ locale: string }>
+    searchParams: Promise<CheckoutSearchParams>
+}
+
+export default async function CheckoutPage({ params, searchParams }: CheckoutPageProps) {
+    const [{ locale }, query] = await Promise.all([params, searchParams])
     if (!isSupportedLocale(locale)) notFound()
+    if (!hasCheckoutConfiguration(new URLSearchParams(createCheckoutQuery(query)))) redirect(`/${locale}/subscription`)
 
     const [checkoutContent, subscriptionConfig, subscriptionPrices, footer, errors] = await Promise.all([
         getGlobal("checkout", locale),
