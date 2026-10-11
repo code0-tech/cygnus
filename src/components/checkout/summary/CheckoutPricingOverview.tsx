@@ -40,7 +40,6 @@ interface CheckoutConfirmedPricingOverviewData {
     discountAmount: number
     periodSuffix: string
     planTitle: string
-    subtotalPrice: number
     taxAmount: number
     totalPrice: number
     workflowExecutions: number | null
@@ -90,7 +89,8 @@ export function CheckoutPricingOverview(props: CheckoutPricingOverviewProps) {
               paymentPeriodDiscountLabel: content.pricing.discountInputPlaceholder,
               paymentPeriodDiscountPercentage: 0,
               periodSuffix: confirmedPricing.periodSuffix,
-              planPrice: confirmedPricing.subtotalPrice,
+              // The plan is shown as a badge instead of a price line once the purchase is confirmed.
+              planPrice: null,
               planTitle: confirmedPricing.planTitle,
               taxAmount: confirmedPricing.taxAmount,
               taxPercentage: null,
@@ -128,7 +128,8 @@ export function CheckoutPricingOverview(props: CheckoutPricingOverviewProps) {
 
     return (
         <Card className="bg-light! p-4!">
-            <span className="flex items-center gap-2 text-sm text-secondary">
+            <span className="flex flex-wrap items-center gap-2 text-sm text-secondary">
+                {confirmedPricing && <SummaryBadge icon={getIcon(plan.icon, 16)} tone={plan.color} value={planTitle} />}
                 {deployment && (
                     <SummaryBadge
                         icon={getIcon(deployment === "cloud" ? content.deploymentIcons.cloud : content.deploymentIcons.selfHosted, 16)}
