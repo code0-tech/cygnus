@@ -17,8 +17,8 @@ const originalFetch = globalThis.fetch
 const originalDateNow = Date.now
 
 function LicenseState() {
-    const { isLoading } = useLicenseData()
-    return <span>{isLoading ? "loading" : "loaded"}</span>
+    const { error, isLoading, isSidebarLoading } = useLicenseData()
+    return <span>{error ?? (isLoading ? "loading" : isSidebarLoading ? "sidebar loading" : "loaded")}</span>
 }
 
 function PaginatedLicenseState() {
@@ -50,7 +50,7 @@ test("loads licenses through the HttpOnly cookie without exposing a session toke
     }) as typeof fetch
 
     render(
-        <LicenseDataProvider loadError="Could not load licenses." redirectUrl="https://app.example/login">
+        <LicenseDataProvider loadError="Could not load licenses." sessionError="Session unavailable">
             <LicenseState />
         </LicenseDataProvider>
     )
@@ -73,7 +73,7 @@ test("refreshes on focus only after the dashboard data is stale", async () => {
     }) as typeof fetch
 
     render(
-        <LicenseDataProvider loadError="Could not load licenses." redirectUrl="https://app.example/login">
+        <LicenseDataProvider loadError="Could not load licenses." sessionError="Session unavailable">
             <LicenseState />
         </LicenseDataProvider>
     )
@@ -110,7 +110,7 @@ test("loads and merges the next customer cursor page", async () => {
     }) as typeof fetch
 
     render(
-        <LicenseDataProvider loadError="Could not load licenses." redirectUrl="https://app.example/login">
+        <LicenseDataProvider loadError="Could not load licenses." sessionError="Session unavailable">
             <PaginatedLicenseState />
         </LicenseDataProvider>
     )
@@ -137,7 +137,7 @@ function UpdatedSubscriptionState() {
 test("updates scheduled changes, cancellation dates and subscription status in detail and sidebar", async () => {
     const license = { id: "subscription-1", licenseId: "snapshot-1", customerId: "customer-1", customerName: "Customer", name: "Max", plan: "max", status: "ACTIVE", invoices: [] }
     globalThis.fetch = (async () => new Response(JSON.stringify({ customers: [], licenses: [license], navigationLicenses: [license] }), { status: 200 })) as typeof fetch
-    render(<LicenseDataProvider loadError="Error" redirectUrl="https://app.example/login"><UpdatedSubscriptionState /></LicenseDataProvider>)
+    render(<LicenseDataProvider loadError="Error" sessionError="Session unavailable"><UpdatedSubscriptionState /></LicenseDataProvider>)
     await waitFor(() => assert.match(screen.getByRole("status").textContent ?? "", /snapshot-1/))
     const state = () => JSON.parse(screen.getByRole("status").textContent!)
     fireEvent.click(screen.getByRole("button", { name: "Schedule" }))
@@ -151,4 +151,41 @@ test("updates scheduled changes, cancellation dates and subscription status in d
     assert.equal(state().license.cancelAt, undefined)
     assert.equal(state().license.status, "PAST_DUE")
     assert.deepEqual(state().license, state().sidebar)
+})
+
+
+test("starts the Sculptor login instead of showing an empty dashboard without a session", async () => {
+    window.history.replaceState({}, "", "/en/licenses/customer/3/license/9")
+    globalThis.fetch = (async () => new Response(JSON.stringify({ error: "Crater session authorization is required." }), { status: 403 })) as typeof fetch
+
+    render(
+        <LicenseDataProvider loadError="Could not load licenses." sessionError="Session unavailable">
+            <LicenseState />
+        </LicenseDataProvider>
+    )
+
+    await waitFor(() => assert.equal(window.location.pathname, "/api/crater/auth/start"))
+    assert.equal(new URLSearchParams(window.location.search).get("flow"), "licenses")
+    assert.equal(new URLSearchParams(window.location.search).get("returnPath"), "/en/licenses/customer/3/license/9")
+    assert.ok(screen.getByText("loading"))
+})
+
+test("shows the session error instead of restarting a login that just failed", async () => {
+    window.history.replaceState({}, "", "/en/licenses?authError=session")
+    const requests: string[] = []
+    globalThis.fetch = (async (input) => {
+        requests.push(String(input))
+        return new Response("{}", { status: 403 })
+    }) as typeof fetch
+
+    render(
+        <LicenseDataProvider loadError="Could not load licenses." sessionError="Session unavailable">
+            <LicenseState />
+        </LicenseDataProvider>
+    )
+
+    assert.ok(await screen.findByText("Session unavailable"))
+    assert.equal(window.location.pathname, "/en/licenses")
+    assert.equal(window.location.search, "")
+    assert.equal(requests.length, 1)
 })

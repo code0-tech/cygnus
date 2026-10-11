@@ -156,3 +156,48 @@ test("a used login state is cleared so the callback link cannot be replayed", as
 
     assert.match(loginStateCookie(response), /^crater_login_state=;.*Max-Age=0/i)
 })
+
+
+test("starts a dashboard login that returns to the requested dashboard page", async () => {
+    const returnPath = "/de/licenses/customer/3/license/9?token=leaked"
+    const response = await startCraterLogin(new Request(`https://0.0.0.0:3000/api/crater/auth/start?${new URLSearchParams({ flow: "licenses", returnPath })}`))
+
+    const location = new URL(response.headers.get("location") ?? "")
+    const callbackUrl = new URL(location.searchParams.get("callbackUrl") ?? "")
+    assert.equal(`${callbackUrl.origin}${callbackUrl.pathname}`, "https://code0.example/api/crater/auth/callback")
+    assert.equal(callbackUrl.searchParams.get("returnPath"), "/de/licenses/customer/3/license/9")
+    assert.equal(location.searchParams.get("cancelUrl"), "https://code0.example/de")
+    assert.equal(location.searchParams.get("selectNamespace"), null)
+    assert.match(loginStateCookie(response), new RegExp(`^crater_login_state=${callbackUrl.searchParams.get("state")};`))
+})
+
+test("refuses dashboard logins for paths outside the dashboard", async () => {
+    for (const returnPath of ["/de/checkout", "/api/crater/licenses", "/api/crater/licenses/access?locale=xx", "//evil.example/de/licenses"]) {
+        const response = await startCraterLogin(new Request(`https://0.0.0.0:3000/api/crater/auth/start?${new URLSearchParams({ flow: "licenses", returnPath })}`))
+
+        assert.equal(response.headers.get("location"), "https://code0.example/")
+        assert.equal(loginStateCookie(response), "")
+    }
+})
+
+test("login callback creates the session for a dashboard login and returns to the dashboard", async () => {
+    const graphQLServer = await createGraphQLTestServer([
+        { data: { usersLogin: { errors: [], userSession: { active: true, createdAt: "2026-10-11T10:00:00Z", id: "gid://crater/UserSession/4", token: "dashboard-session", updatedAt: "2026-10-11T10:00:00Z" } } } },
+    ])
+    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
+    const state = "d".repeat(43)
+
+    try {
+        const returnPath = "/en/licenses/customer/3/license/9"
+        const response = await completeCraterLogin(
+            new Request(`https://0.0.0.0:3000/api/crater/auth/callback?returnPath=${encodeURIComponent(returnPath)}&token=sagittarius-secret&namespace=ignored&state=${state}`, {
+                headers: { cookie: `crater_login_state=${state}` },
+            })
+        )
+
+        assert.equal(response.headers.get("location"), `https://code0.example${returnPath}`)
+        assert.ok(sessionCookies(response).some((cookie) => cookie.startsWith("crater_session=dashboard-session")))
+    } finally {
+        await graphQLServer.close()
+    }
+})

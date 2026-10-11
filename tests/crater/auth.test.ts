@@ -429,7 +429,7 @@ test("server-side login callback rejects external return paths and never forward
     process.env.SERVER_URL = "https://code0.example"
 
     try {
-        for (const returnPath of ["https://evil.example/collect", "//evil.example/de/checkout", "//0.0.0.0:3000/de/checkout", "/de/licenses"]) {
+        for (const returnPath of ["https://evil.example/collect", "//evil.example/de/checkout", "//0.0.0.0:3000/de/checkout", "/de/subscription"]) {
             const response = await completeCraterLogin(
                 new Request(`https://0.0.0.0:3000/api/crater/auth/callback?returnPath=${encodeURIComponent(returnPath)}&token=sagittarius-secret`)
             )

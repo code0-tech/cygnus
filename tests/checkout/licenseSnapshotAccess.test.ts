@@ -3,6 +3,15 @@ import test from "node:test"
 import { GET } from "../../src/app/api/crater/licenses/access/route"
 import { createGraphQLTestServer } from "../helpers/graphqlTestServer"
 
+const previousServerUrl = process.env.SERVER_URL
+test.before(() => {
+    process.env.SERVER_URL = "https://code0.example"
+})
+test.after(() => {
+    if (previousServerUrl === undefined) delete process.env.SERVER_URL
+    else process.env.SERVER_URL = previousServerUrl
+})
+
 const customerId = "gid://crater/Customer/3"
 const snapshotId = "gid://crater/License/99"
 const subscriptionId = "gid://crater/Subscription/7"

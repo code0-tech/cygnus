@@ -107,20 +107,19 @@ test("license dashboard access removes token parameters from its return path", a
     assert.equal(response.headers.get("location"), "https://code0.example/en/licenses?view=all")
 })
 
-test("license access reads anonymous redirects from the runtime Sculptor environment", async () => {
-    const previousSculptorUrl = process.env.SCULPTOR_URL
-    try {
-        for (const sculptorUrl of ["https://staging-app.example/", "https://app.example/login"]) {
-            process.env.SCULPTOR_URL = sculptorUrl
-            const response = await accessLicenseDashboard(new Request("https://0.0.0.0:3000/api/crater/licenses/access?locale=de"))
-            assert.equal(response.status, 307)
-            assert.equal(response.headers.get("location"), sculptorUrl)
-            assert.equal(response.headers.get("cache-control"), "no-store")
-        }
-    } finally {
-        if (previousSculptorUrl === undefined) delete process.env.SCULPTOR_URL
-        else process.env.SCULPTOR_URL = previousSculptorUrl
-    }
+test("license access without a session starts the Sculptor login and returns to the same request", async () => {
+    const query = new URLSearchParams({ locale: "de", customerId: "gid://crater/Customer/3", licenseId: "gid://crater/License/7", token: "must-not-survive" })
+    const response = await accessLicenseDashboard(new Request(`https://0.0.0.0:3000/api/crater/licenses/access?${query}`))
+
+    assert.equal(response.status, 307)
+    assert.equal(response.headers.get("cache-control"), "no-store")
+    const location = new URL(response.headers.get("location") ?? "")
+    assert.equal(`${location.origin}${location.pathname}`, "https://code0.example/api/crater/auth/start")
+    assert.equal(location.searchParams.get("flow"), "licenses")
+    assert.equal(
+        location.searchParams.get("returnPath"),
+        `/api/crater/licenses/access?${new URLSearchParams({ locale: "de", customerId: "gid://crater/Customer/3", licenseId: "gid://crater/License/7" })}`
+    )
 })
 
 test("license access opens a purchased snapshot on the public origin after resolving its subscription", async () => {

@@ -91,7 +91,7 @@ function LicenseLayoutContent({ children, content, errors, locale, sculptorUrl }
 
 export function LicenseLayout(props: LicenseLayoutProps) {
     return (
-        <LicenseDataProvider loadError={props.errors.dashboardLoad} redirectUrl={props.sculptorUrl}>
+        <LicenseDataProvider loadError={props.errors.dashboardLoad} sessionError={props.errors.sessionUnavailable}>
             <LicenseLayoutContent key="content" {...props} />
             <Fragment key="modal">{props.modal}</Fragment>
         </LicenseDataProvider>
