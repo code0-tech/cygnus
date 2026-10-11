@@ -2,7 +2,7 @@ import { CRATER_USER_LOGIN_COOKIE_NAME, CRATER_USER_LOGIN_COOKIE_VALUE } from "@
 
 // The Crater session cookie is HttpOnly and scoped to /api/crater. This readable, token-free marker records
 // that the browser explicitly completed a Sagittarius account login. If that account session expires, the
-// checkout can return to the login choice instead of silently creating its shared fallback session. The
+// checkout clears the stale marker before returning to the login choice. The
 // marker is cleared wherever the Crater session cookie is cleared.
 
 export function hasCraterUserLoginMarker() {

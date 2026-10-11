@@ -1,5 +1,11 @@
 export type CheckoutSearchParams = Record<string, string | string[] | undefined>
 
+const CHECKOUT_CONFIGURATION_PARAMS = ["plan", "deploymentType", "deployment", "customerType", "paymentPeriod", "workflowExecutions", "aiTokens"]
+
+export function hasCheckoutConfiguration(searchParams: URLSearchParams) {
+    return CHECKOUT_CONFIGURATION_PARAMS.some((key) => Boolean(searchParams.get(key)))
+}
+
 export function createCheckoutQuery(searchParams: CheckoutSearchParams): string {
     const query = new URLSearchParams()
 

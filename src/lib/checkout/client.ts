@@ -49,17 +49,6 @@ async function readCraterSessionError(response: Response, fallback: string) {
     return diagnostics.length ? `${message} (${diagnostics.join(": ")})` : message
 }
 
-export async function createCraterSession() {
-    const response = await checkoutFetch("/api/crater/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
-        credentials: "same-origin",
-        referrerPolicy: "no-referrer",
-    })
-    if (!response.ok) throw new Error(await readCraterSessionError(response, "Failed to create a Crater session."))
-}
-
 export async function restoreCraterSession() {
     const response = await checkoutFetch("/api/crater/auth/session", {
         credentials: "same-origin",

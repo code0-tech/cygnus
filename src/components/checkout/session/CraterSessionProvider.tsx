@@ -1,6 +1,7 @@
 "use client"
 
-import { createCraterSession, restoreCraterSession } from "@/lib/checkout/client"
+import { hasCheckoutConfiguration } from "@/lib/checkout/checkoutLogin"
+import { restoreCraterSession } from "@/lib/checkout/client"
 import { clearCraterUserLoginMarker, hasCraterUserLoginMarker } from "@/lib/crater/userLogin.client"
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react"
 
@@ -52,15 +53,18 @@ export function CraterSessionProvider({ children, errorMessage = "An unexpected 
                 throw new Error("The guest checkout session has expired.")
             }
 
-            const checkoutPath = window.location.pathname.replace(/\/$/, "")
-            if (checkoutPath.endsWith("/checkout") && hasCraterUserLoginMarker()) {
-                clearCraterUserLoginMarker()
-                window.location.assign(`${checkoutPath}/login${window.location.search}`)
+            // Without a Crater session the checkout cannot continue: send the visitor to the login choice, or
+            // back to the subscription configurator when there is no configuration to check out.
+            if (hasCraterUserLoginMarker()) clearCraterUserLoginMarker()
+            const checkoutPath = currentUrl.pathname.replace(/\/$/, "")
+            if (checkoutPath.endsWith("/checkout")) {
+                const target = hasCheckoutConfiguration(currentUrl.searchParams)
+                    ? `${checkoutPath}/login${currentUrl.search}`
+                    : `${checkoutPath.slice(0, -"/checkout".length)}/subscription`
+                window.location.assign(target)
                 return "redirecting" as const
             }
-
-            await createCraterSession()
-            return undefined
+            throw new Error("The Crater checkout session is missing or has expired.")
         }
 
         const login = async () => {
