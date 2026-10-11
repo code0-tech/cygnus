@@ -115,6 +115,15 @@ export const LicenseDialogs: GlobalConfig = {
                     { type: "textarea" }
                 ),
                 localizedText("immediateUntilLabel", "Immediate cancellation available until", "Sofortkündigung möglich bis"),
+                localizedText("immediateConfirmHeading", "Cancel your subscription immediately?", "Abonnement sofort kündigen?"),
+                localizedText(
+                    "immediateConfirmDescription",
+                    "Your subscription ends right now instead of at the end of the billing period. This cannot be undone: the subscription cannot be resumed, and continuing requires a new checkout. Licenses already paid for remain valid until their end date.",
+                    "Dein Abonnement endet sofort statt zum Ende der Abrechnungsperiode. Das lässt sich nicht rückgängig machen: Das Abonnement kann nicht fortgesetzt werden, für eine weitere Nutzung ist ein neuer Checkout nötig. Bereits bezahlte Lizenzzeiträume bleiben bis zu ihrem Enddatum gültig.",
+                    { type: "textarea" }
+                ),
+                localizedText("immediateConfirmSubmitLabel", "Yes, cancel immediately", "Ja, sofort kündigen"),
+                localizedText("immediateConfirmBackLabel", "Go back", "Zurück"),
                 localizedText("pendingHeading", "Your subscription is set to cancel", "Dein Abonnement wird gekündigt"),
                 localizedText(
                     "pendingDescription",

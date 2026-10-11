@@ -13,6 +13,7 @@ mock.module("@code0-tech/pictor", {
     namedExports: {
         Button: ({ children, variant, paddingSize, color, ...props }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: string; paddingSize?: string; color?: string }) => <button data-variant={variant} data-padding={paddingSize} data-color={color} {...props}>{children}</button>,
         Badge: ({ children }: { children: ReactNode }) => <span>{children}</span>,
+        Flex: ({ children }: { children: ReactNode }) => <div>{children}</div>,
     },
 })
 mock.module("next/navigation", {
@@ -28,7 +29,7 @@ mock.module("@/components/licenses/dialog/shared/LicenseTabLayout", {
     namedExports: {
         LicenseTabHeader: ({ title, description }: { title: string; description: string }) => <header><h2>{title}</h2><p>{description}</p></header>,
         LicenseTabSection: ({ children, title }: { children: ReactNode; title?: string }) => <section>{title ? <h3>{title}</h3> : null}{children}</section>,
-        LicenseTabRow: ({ title, description, action }: { title?: ReactNode; description?: ReactNode; action?: ReactNode }) => <div>{title}{description}{action}</div>,
+        LicenseTabRow: ({ title, description, action, children }: { title?: ReactNode; description?: ReactNode; action?: ReactNode; children?: ReactNode }) => <div><span>{title}</span><span>{description}</span>{action}{children}</div>,
         LicenseTabAlert: ({ children }: { children: ReactNode }) => <p role="alert">{children}</p>,
     },
 })
@@ -44,6 +45,10 @@ const content = {
         immediateConfirmLabel: "Cancel immediately",
         immediateDescription: "Immediate cancellation is available.",
         immediateUntilLabel: "Available until",
+        immediateConfirmHeading: "Cancel your subscription immediately?",
+        immediateConfirmDescription: "Your subscription ends right now and cannot be resumed.",
+        immediateConfirmSubmitLabel: "Yes, cancel immediately",
+        immediateConfirmBackLabel: "Go back",
         description: "Cancellation takes effect at the end of your billing period.",
     },
 } as LicenseContent
@@ -81,11 +86,46 @@ test("offers immediate cancellation from Crater availability and submits its fla
     show(true)
     assert.ok(screen.getByText("Oct 15, 2026"))
     fireEvent.click(screen.getByRole("button", { name: "Cancel immediately" }))
+    fireEvent.click(screen.getByRole("button", { name: "Yes, cancel immediately" }))
     await waitFor(() => assert.equal(updates.length, 1))
     assert.deepEqual(request, { id: license.subscriptionId, immediately: true })
     assert.equal((updates[0] as LicenseDashboardLicense).immediateCancellationAvailable, false)
     assert.equal((updates[0] as LicenseDashboardLicense).subscriptionStatus, "CANCELED")
     assert.equal(navigation[0], "/en/licenses/customer/1/license/2")
+})
+
+test("asks for confirmation with the consequences before cancelling immediately", () => {
+    let requests = 0
+    globalThis.fetch = (async () => {
+        requests += 1
+        return new Response("{}")
+    }) as typeof fetch
+    show(true)
+
+    fireEvent.click(screen.getByRole("button", { name: "Cancel immediately" }))
+
+    assert.equal(requests, 0)
+    assert.ok(screen.getByText(content.cancel.immediateConfirmHeading))
+    assert.ok(screen.getByText(content.cancel.immediateConfirmDescription))
+    assert.equal(screen.getByRole("button", { name: "Yes, cancel immediately" }).getAttribute("data-color"), "error")
+    assert.equal(screen.queryByRole("button", { name: "Cancel immediately" }), null)
+})
+
+test("going back from the confirmation cancels nothing", () => {
+    let requests = 0
+    globalThis.fetch = (async () => {
+        requests += 1
+        return new Response("{}")
+    }) as typeof fetch
+    show(true)
+
+    fireEvent.click(screen.getByRole("button", { name: "Cancel immediately" }))
+    fireEvent.click(screen.getByRole("button", { name: "Go back" }))
+
+    assert.equal(requests, 0)
+    assert.equal(screen.queryByText(content.cancel.immediateConfirmHeading), null)
+    assert.ok(screen.getByRole("button", { name: "Cancel immediately" }))
+    assert.equal(updates.length, 0)
 })
 
 test("uses the shared dialog heading, description and compact buttons with one close action", () => {
@@ -134,6 +174,7 @@ test("keeps cancellation failures visible without updating local state", async (
     globalThis.fetch = (async () => new Response("{}", { status: 422 })) as typeof fetch
     show(true)
     fireEvent.click(screen.getByRole("button", { name: "Cancel immediately" }))
+    fireEvent.click(screen.getByRole("button", { name: "Yes, cancel immediately" }))
     await waitFor(() => assert.equal(screen.getByRole("alert").textContent, "Cancellation failed"))
     assert.equal(updates.length, 0)
     assert.equal(navigation.length, 0)

@@ -9,7 +9,7 @@ import type { ErrorsContent, LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { createLicensePath, resolveCustomerRouteId, resolveSubscriptionRouteId } from "@/lib/licenses/routes"
 import { cancelLicenseSubscription, resumeLicenseSubscription } from "@/lib/licenses/client"
-import { Badge, Button } from "@code0-tech/pictor"
+import { Badge, Button, Flex } from "@code0-tech/pictor"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 
@@ -31,13 +31,14 @@ export function LicenseCancelDialog({ content, customerId, errors, licenseId, lo
 
     const [error, setError] = useState<string | null>(null)
     const [isSubmitting, setIsSubmitting] = useState(false)
+    const [isConfirmingImmediate, setIsConfirmingImmediate] = useState(false)
     const subscriptionStatus = license?.subscriptionStatus?.toLowerCase()
     const isTerminal = subscriptionStatus === "canceled" || subscriptionStatus === "incomplete_expired"
     const isPending = !isTerminal && Boolean(license?.cancelAt)
     const canCancelImmediately = !isTerminal && license?.immediateCancellationAvailable === true
 
     const cancel = async (immediately = false) => {
-        if (!license?.subscriptionId || isTerminal || isSubmitting || (immediately && !canCancelImmediately)) return
+        if (!license?.subscriptionId || isTerminal || isSubmitting || (immediately && (!canCancelImmediately || !isConfirmingImmediate))) return
         setIsSubmitting(true)
         setError(null)
 
@@ -135,14 +136,27 @@ export function LicenseCancelDialog({ content, customerId, errors, licenseId, lo
                             action={<Badge color="tertiary">{dateFormatter.format(new Date(license.immediateCancellationUntil))}</Badge>}
                         />
                     ) : null}
-                    <LicenseTabRow
-                        description={content.cancel.immediateDescription}
-                        action={
-                            <Button type="button" variant="normal" paddingSize="xxs" color="error" disabled={!license?.subscriptionId || isSubmitting} onClick={() => void cancel(true)}>
-                                {isSubmitting ? <ButtonLoader label={content.cancel.immediateConfirmLabel} /> : content.cancel.immediateConfirmLabel}
-                            </Button>
-                        }
-                    />
+                    {isConfirmingImmediate ? (
+                        <LicenseTabRow title={content.cancel.immediateConfirmHeading} description={content.cancel.immediateConfirmDescription}>
+                            <Flex justify="flex-end" style={{ gap: "0.5rem" }}>
+                                <Button type="button" variant="normal" paddingSize="xxs" disabled={isSubmitting} onClick={() => setIsConfirmingImmediate(false)}>
+                                    {content.cancel.immediateConfirmBackLabel}
+                                </Button>
+                                <Button type="button" variant="normal" paddingSize="xxs" color="error" disabled={!license?.subscriptionId || isSubmitting} onClick={() => void cancel(true)}>
+                                    {isSubmitting ? <ButtonLoader label={content.cancel.immediateConfirmSubmitLabel} /> : content.cancel.immediateConfirmSubmitLabel}
+                                </Button>
+                            </Flex>
+                        </LicenseTabRow>
+                    ) : (
+                        <LicenseTabRow
+                            description={content.cancel.immediateDescription}
+                            action={
+                                <Button type="button" variant="normal" paddingSize="xxs" color="error" disabled={!license?.subscriptionId || isSubmitting} onClick={() => setIsConfirmingImmediate(true)}>
+                                    {content.cancel.immediateConfirmLabel}
+                                </Button>
+                            }
+                        />
+                    )}
                 </LicenseTabSection>
             ) : null}
         </LicenseDialog>
