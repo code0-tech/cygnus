@@ -1,5 +1,5 @@
 import { LicenseLayout } from "@/components/licenses/layout/LicenseLayout"
-import { getErrorsContent, getLicenseContent } from "@/lib/cms"
+import { getGlobal, getLicenseContent } from "@/lib/cms"
 import { isSupportedLocale } from "@/lib/i18n"
 import { getClientConfig } from "@/lib/clientConfig.server"
 import { notFound } from "next/navigation"
@@ -20,7 +20,7 @@ export default async function LicensesLayout({ children, modal, params }: Licens
     const { locale } = await params
     if (!isSupportedLocale(locale)) notFound()
 
-    const [content, errors] = await Promise.all([getLicenseContent(locale), getErrorsContent(locale)])
+    const [content, errors] = await Promise.all([getLicenseContent(locale), getGlobal("errors", locale)])
     if (!content || !errors) notFound()
 
     return (

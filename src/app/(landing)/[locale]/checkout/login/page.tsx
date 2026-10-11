@@ -1,7 +1,7 @@
 import { CheckoutGuestForm } from "@/components/checkout/form/CheckoutGuestForm"
 import { CheckoutLegalFooter } from "@/components/checkout/shared/CheckoutLegalFooter"
 import { HapticButtonLink } from "@/components/ui/HapticButtonLink"
-import { getCheckoutContent, getErrorsContent, getFooter } from "@/lib/cms"
+import { getFooter, getGlobal } from "@/lib/cms"
 import { createCheckoutQuery, createCraterLoginCallbackUrl, createMainAppLoginUrl, type CheckoutSearchParams } from "@/lib/checkout/checkoutLogin"
 import { isSupportedLocale } from "@/lib/i18n"
 import { resolveSiteUrl } from "@/lib/siteConfig"
@@ -22,7 +22,7 @@ export default async function CheckoutLoginPage({ params, searchParams }: Checko
     const [{ locale }, resolvedSearchParams] = await Promise.all([params, searchParams])
     if (!isSupportedLocale(locale)) notFound()
 
-    const [content, errors, footer] = await Promise.all([getCheckoutContent(locale), getErrorsContent(locale), getFooter(locale)])
+    const [content, errors, footer] = await Promise.all([getGlobal("checkout", locale), getGlobal("errors", locale), getFooter(locale)])
     if (!content?.login || !content.form || !errors) notFound()
 
     const query = createCheckoutQuery(resolvedSearchParams)
