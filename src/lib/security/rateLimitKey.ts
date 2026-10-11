@@ -1,6 +1,5 @@
 import { createHash } from "node:crypto"
 import { isIP } from "node:net"
-import { readCraterSessionAuthorization } from "@/lib/crater/session.server"
 import type { RateLimitPolicyName } from "@/lib/security/rateLimitPolicies"
 
 const DEFAULT_TRUSTED_PROXY_HOPS = 1
@@ -35,10 +34,6 @@ function digest(value: string) {
 }
 
 export function createRateLimitKey(name: RateLimitPolicyName, request: Request, environment: Readonly<Record<string, string | undefined>> = process.env) {
-    const session = readCraterSessionAuthorization(request)
-    const identity = session.status === "authenticated" ? `session:${digest(session.token)}` : "anonymous"
     const clientIp = getTrustedClientIp(request, environment)
-    const network = clientIp ? digest(clientIp) : "unknown"
-
-    return `${name}:${identity}:network:${network}`
+    return clientIp ? `${name}:network:${digest(clientIp)}` : null
 }
