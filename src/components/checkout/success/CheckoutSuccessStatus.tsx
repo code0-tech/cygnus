@@ -110,10 +110,8 @@ export function CheckoutSuccessStatus({ checkoutSearchParams, content, errorMess
 
         const nextParams = new URLSearchParams(checkoutSearchParams)
         nextParams.delete("session_id")
-        const guest = nextParams.has("guestCheckout")
-        nextParams.delete("guestCheckout")
         nextParams.set("paymentFailed", "1")
-        router.replace(`/${locale}/checkout${guest ? "/login" : ""}?${nextParams.toString()}`)
+        router.replace(`/${locale}/checkout?${nextParams.toString()}`)
     }, [checkoutSearchParams, locale, router, status])
 
     const downloadSelfHostedLicense = async () => {

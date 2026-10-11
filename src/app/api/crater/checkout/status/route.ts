@@ -1,5 +1,5 @@
 import { parseCheckoutCompletionStatus } from "@/lib/checkout/completionStatus"
-import { completeGuestCheckoutSession, clearGuestCheckoutSession } from "@/lib/checkout/guestCheckoutSession"
+import { completeGuestCheckoutSession } from "@/lib/checkout/guestCheckoutSession"
 import { createApolloClient } from "@/lib/apolloClient"
 import { craterJson, craterTransportErrorResponse, requireCraterSession } from "@/lib/crater/api.server"
 import { normalizeCraterDeploymentType, normalizeCraterPaymentPeriod, normalizeCraterPlan, parseCheckoutSessionId, normalizeCraterCustomerType } from "@/lib/crater/values"
@@ -87,7 +87,6 @@ export async function GET(request: Request) {
 
         const response = craterJson(completion)
         if (completion.state === "READY" && completion.licenseId) return completeGuestCheckoutSession(response, request, sessionId, completion.licenseId)
-        if (completion.state === "FAILED") return clearGuestCheckoutSession(response, request)
         return response
     } catch (error) {
         const transportResponse = craterTransportErrorResponse(error, request)
