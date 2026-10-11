@@ -211,7 +211,9 @@ test("shows Crater's confirmed Stripe pricing once payment is confirmed", async 
     render(<CheckoutSuccessStatus {...sharedProps} checkoutSearchParams={checkoutSearchParams} content={content} errorMessage={errorMessage} locale="en" sessionId="cs_test" />)
 
     assert.ok(await screen.findByText(content.heading))
-    assert.ok(screen.getByText("€100.00"))
+    // The plan appears as a badge; its subtotal is no longer a price line of its own.
+    assert.ok(screen.getByText("Pro"))
+    assert.equal(screen.queryByText("€100.00"), null)
     assert.ok(screen.getByText("-€10.00"))
     assert.ok(screen.getByText("€17.10"))
     assert.ok(screen.getByText("107.1"))

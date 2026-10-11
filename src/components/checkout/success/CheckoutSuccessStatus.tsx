@@ -244,7 +244,6 @@ function CheckoutSuccessStatusView({
                                     discountAmount: confirmedPricing.discount / currencyDivisor,
                                     periodSuffix: paymentPeriod ? getPaymentPeriodSuffix(paymentPeriod, subscriptionConfig.paymentPeriod) : "",
                                     planTitle,
-                                    subtotalPrice: confirmedPricing.subtotal / currencyDivisor,
                                     taxAmount: confirmedPricing.tax / currencyDivisor,
                                     totalPrice: confirmedPricing.total / currencyDivisor,
                                     workflowExecutions: confirmedConfiguration.workflowExecutions,

@@ -121,3 +121,32 @@ test("renders the fixed plan price", () => {
 
     assert.match(container.textContent ?? "", /Plan€99\.00/)
 })
+
+test("shows the purchased plan as a badge instead of a price line after checkout", () => {
+    const { container, getByText } = render(
+        <CheckoutPricingOverview
+            confirmedPricing={{
+                aiTokens: null,
+                currency: "eur",
+                customerType: "b2b",
+                deployment: "cloud",
+                discountAmount: 0,
+                periodSuffix: "/ month",
+                planTitle: "Pro",
+                taxAmount: 18.81,
+                totalPrice: 117.81,
+                workflowExecutions: null,
+            }}
+            content={content}
+            locale="en"
+            subscriptionConfig={subscriptionConfig}
+        />
+    )
+
+    const badges = container.querySelector("span.flex-wrap")
+    assert.equal(badges?.firstElementChild?.textContent, "Pro")
+    assert.ok(badges?.firstElementChild?.className.includes("text-yellow!"))
+    assert.ok(getByText("Pro"))
+    assert.doesNotMatch(container.textContent ?? "", /Plan€/)
+    assert.match(container.textContent ?? "", /Tax€18\.81/)
+})
