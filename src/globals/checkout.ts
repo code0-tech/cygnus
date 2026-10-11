@@ -1,10 +1,6 @@
 import { iconField } from "@mvriu5/payload-icon-picker"
-import type { DefaultValue, Field, GlobalConfig } from "payload"
-
-const localizedDefault =
-    (en: string, de: string): DefaultValue =>
-    ({ locale }) =>
-        locale === "de" ? de : en
+import type { Field, GlobalConfig } from "payload"
+import { localizedText } from "@/fields/localizedText"
 
 const iconColorOptions = [
     { label: "Neutral", value: "neutral" },
@@ -124,13 +120,7 @@ export const Checkout: GlobalConfig = {
                 { name: "continueLabel", type: "text", required: true, localized: true, defaultValue: "Continue to Payment" },
                 { name: "backToBillingLabel", type: "text", required: true, localized: true, defaultValue: "Back to Billing" },
                 { name: "payNowLabel", type: "text", required: true, localized: true, defaultValue: "Pay now" },
-                {
-                    name: "sendOfferPrompt",
-                    type: "text",
-                    required: true,
-                    localized: true,
-                    defaultValue: localizedDefault("Need an invoice or a quote first?", "Benötigst du zuerst eine Rechnung oder ein Angebot?"),
-                },
+                localizedText("sendOfferPrompt", "Need an invoice or a quote first?", "Benötigst du zuerst eine Rechnung oder ein Angebot?"),
                 {
                     name: "sendOfferLabel",
                     type: "text",
@@ -139,17 +129,13 @@ export const Checkout: GlobalConfig = {
                     defaultValue: "Send offer",
                     admin: { description: "Shown below the primary billing button for business customers only." },
                 },
-                { name: "sendOfferTitle", type: "text", required: true, localized: true, defaultValue: localizedDefault("Send offer", "Angebot senden") },
-                {
-                    name: "sendOfferDescription",
-                    type: "textarea",
-                    required: true,
-                    localized: true,
-                    defaultValue: localizedDefault(
-                        "Enter the email address that should receive this configuration as an offer.",
-                        "Gib die E-Mail-Adresse ein, an die diese Konfiguration als Angebot gesendet werden soll."
-                    ),
-                },
+                localizedText("sendOfferTitle", "Send offer", "Angebot senden"),
+                localizedText(
+                    "sendOfferDescription",
+                    "Enter the email address that should receive this configuration as an offer.",
+                    "Gib die E-Mail-Adresse ein, an die diese Konfiguration als Angebot gesendet werden soll.",
+                    { type: "textarea" }
+                ),
                 { name: "processingLabel", type: "text", required: true, localized: true, defaultValue: "Processing..." },
                 { name: "customerSelectLabel", type: "text", required: true, localized: true, defaultValue: "Billing customer" },
                 { name: "newCustomerLabel", type: "text", required: true, localized: true, defaultValue: "Create new customer" },
@@ -168,7 +154,10 @@ export const Checkout: GlobalConfig = {
         {
             name: "nextSteps",
             type: "group",
-            admin: { description: "Vertical 3-step 'what happens after you pay' stepper shown in the summary once the payment step is reached, replacing the order summary heading and payment period switcher." },
+            admin: {
+                description:
+                    "Vertical 3-step 'what happens after you pay' stepper shown in the summary once the payment step is reached, replacing the order summary heading and payment period switcher.",
+            },
             fields: [
                 { name: "heading", type: "text", required: true, localized: true, defaultValue: "What happens next" },
                 { name: "step1Title", type: "text", required: true, localized: true, defaultValue: "Payment confirmed" },
@@ -192,15 +181,9 @@ export const Checkout: GlobalConfig = {
                     defaultValue: "Stripe has received your payment confirmation. You can close this page or return to the site.",
                 },
                 { name: "licenseDashboardLabel", type: "text", required: true, localized: true, defaultValue: "Open license dashboard" },
-                { name: "sculptorLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Open Sculptor", "Sculptor öffnen") },
-                { name: "licenseDownloadLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Download license", "Lizenz herunterladen") },
-                {
-                    name: "licenseDownloadError",
-                    type: "text",
-                    required: true,
-                    localized: true,
-                    defaultValue: localizedDefault("The license could not be downloaded.", "Die Lizenz konnte nicht heruntergeladen werden."),
-                },
+                localizedText("sculptorLabel", "Open Sculptor", "Sculptor öffnen"),
+                localizedText("licenseDownloadLabel", "Download license", "Lizenz herunterladen"),
+                localizedText("licenseDownloadError", "The license could not be downloaded.", "Die Lizenz konnte nicht heruntergeladen werden."),
                 { name: "licensePendingLabel", type: "text", required: true, localized: true, defaultValue: "Your license is being prepared…" },
                 { name: "licenseStatusRetryLabel", type: "text", required: true, localized: true, defaultValue: "Try again" },
                 {
@@ -211,17 +194,12 @@ export const Checkout: GlobalConfig = {
                     defaultValue: "Stripe sends the receipt to your email address.",
                     admin: { description: "Shown once the payment is confirmed. The exact amount is on the Stripe receipt, not on this page." },
                 },
-                {
-                    name: "guestAccountHint",
-                    type: "textarea",
-                    required: true,
-                    localized: true,
-                    defaultValue: localizedDefault(
-                        "You will receive an email with a link to create your account. Complete your account setup using that link to continue.",
-                        "Du erhältst eine E-Mail mit einem Link zur Kontoerstellung. Richte darüber dein Konto ein, um anschließend fortzufahren."
-                    ),
-                    admin: { description: "Shown after payment confirmation for guest checkouts only." },
-                },
+                localizedText(
+                    "guestAccountHint",
+                    "You will receive an email with a link to create your account. Complete your account setup using that link to continue.",
+                    "Du erhältst eine E-Mail mit einem Link zur Kontoerstellung. Richte darüber dein Konto ein, um anschließend fortzufahren.",
+                    { type: "textarea", description: "Shown after payment confirmation for guest checkouts only." }
+                ),
                 { name: "failedHeading", type: "text", required: true, localized: true, defaultValue: "Payment failed" },
                 {
                     name: "failedDescription",
