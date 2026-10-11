@@ -80,7 +80,7 @@ export function LicensePrimarySidebar({ content, isLoggingOut, onLogout, onOpenM
                         </Button>
                     </MenuTrigger>
                     <MenuPortal>
-                        <MenuContent align="start" side="right" sideOffset={8} className="w-44! p-0!">
+                        <MenuContent align="start" side="right" sideOffset={8} className="min-w-44! p-0! items-stretch!">
                             <MenuLabel className="px-1.5! pb-0.5! text-[9px]! font-medium! uppercase">{labels.userMenu}</MenuLabel>
                             <MenuItem onSelect={() => onOpenMainApplication("/users/@me")} className="whitespace-nowrap text-xs!">
                                 <IconUser aria-hidden="true" size={16} />
