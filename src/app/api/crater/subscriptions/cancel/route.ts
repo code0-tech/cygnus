@@ -1,5 +1,4 @@
-import { createApolloClient } from "@/lib/apolloClient"
-import { CRATER_ERROR_FIELDS, craterJson, craterMutationErrorResponse, craterTransportErrorResponse, requireCraterSession } from "@/lib/crater/api.server"
+import { CRATER_ERROR_FIELDS, craterJson, runCraterMutation, withCraterSession } from "@/lib/crater/api.server"
 import { optionalString, readJsonObject, isSubscriptionId } from "@/lib/crater/request"
 import type { Mutation, MutationSubscriptionsCancelArgs } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
@@ -29,10 +28,7 @@ const SUBSCRIPTIONS_CANCEL: TypedDocumentNode<SubscriptionsCancelData, MutationS
     }
 `
 
-export async function POST(request: Request) {
-    const session = requireCraterSession(request)
-    if (session.response) return session.response
-
+export const POST = withCraterSession({ log: "Crater subscription cancellation error", error: "Could not cancel the Crater subscription." }, async (request, token) => {
     const body = await readJsonObject(request)
     const id = optionalString(body?.id)
     if (!id || !isSubscriptionId(id)) {
@@ -40,24 +36,15 @@ export async function POST(request: Request) {
     }
     const immediately = body?.immediately === true
 
-    try {
-        const result = await createApolloClient(session.token).mutate({
-            mutation: SUBSCRIPTIONS_CANCEL,
-            variables: { input: { id, ...(immediately ? { immediately } : {}) } },
-        })
-        const payload = result.data?.subscriptionsCancel
-        if (!payload) throw new Error("Crater returned no subscription cancellation payload.")
+    const mutation = await runCraterMutation(
+        token,
+        SUBSCRIPTIONS_CANCEL,
+        { input: { id, ...(immediately ? { immediately } : {}) } },
+        (data) => data.subscriptionsCancel,
+        "Crater could not cancel the subscription."
+    )
+    if (mutation.response) return mutation.response
+    if (!mutation.payload.subscription) throw new Error("Crater returned no cancelled subscription.")
 
-        const errorResponse = craterMutationErrorResponse(payload.errors, "Crater could not cancel the subscription.")
-        if (errorResponse) return errorResponse
-        if (!payload.subscription) throw new Error("Crater returned no cancelled subscription.")
-
-        return craterJson(payload.subscription)
-    } catch (error) {
-        const transportResponse = craterTransportErrorResponse(error)
-        if (transportResponse) return transportResponse
-
-        console.error("Crater subscription cancellation error:", error)
-        return craterJson({ error: "Could not cancel the Crater subscription." }, 502)
-    }
-}
+    return craterJson(mutation.payload.subscription)
+})

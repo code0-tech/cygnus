@@ -1,5 +1,4 @@
-import { createApolloClient } from "@/lib/apolloClient"
-import { CRATER_ERROR_FIELDS, craterJson, craterMutationErrorResponse, craterTransportErrorResponse, requireCraterSession } from "@/lib/crater/api.server"
+import { CRATER_ERROR_FIELDS, craterJson, runCraterMutation, withCraterSession } from "@/lib/crater/api.server"
 import { optionalString, readJsonObject, isSubscriptionId } from "@/lib/crater/request"
 import type { Mutation, MutationSubscriptionsResumeArgs } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
@@ -29,34 +28,16 @@ const SUBSCRIPTIONS_RESUME: TypedDocumentNode<SubscriptionsResumeData, MutationS
     }
 `
 
-export async function POST(request: Request) {
-    const session = requireCraterSession(request)
-    if (session.response) return session.response
-
+export const POST = withCraterSession({ log: "Crater subscription resume error", error: "Could not resume the Crater subscription." }, async (request, token) => {
     const body = await readJsonObject(request)
     const id = optionalString(body?.id)
     if (!id || !isSubscriptionId(id)) {
         return craterJson({ error: "A valid Crater subscription id is required." }, 400)
     }
 
-    try {
-        const result = await createApolloClient(session.token).mutate({
-            mutation: SUBSCRIPTIONS_RESUME,
-            variables: { input: { id } },
-        })
-        const payload = result.data?.subscriptionsResume
-        if (!payload) throw new Error("Crater returned no subscription resume payload.")
+    const mutation = await runCraterMutation(token, SUBSCRIPTIONS_RESUME, { input: { id } }, (data) => data.subscriptionsResume, "Crater could not resume the subscription.")
+    if (mutation.response) return mutation.response
+    if (!mutation.payload.subscription) throw new Error("Crater returned no resumed subscription.")
 
-        const errorResponse = craterMutationErrorResponse(payload.errors, "Crater could not resume the subscription.")
-        if (errorResponse) return errorResponse
-        if (!payload.subscription) throw new Error("Crater returned no resumed subscription.")
-
-        return craterJson(payload.subscription)
-    } catch (error) {
-        const transportResponse = craterTransportErrorResponse(error)
-        if (transportResponse) return transportResponse
-
-        console.error("Crater subscription resume error:", error)
-        return craterJson({ error: "Could not resume the Crater subscription." }, 502)
-    }
-}
+    return craterJson(mutation.payload.subscription)
+})

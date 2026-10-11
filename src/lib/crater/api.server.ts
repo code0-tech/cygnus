@@ -1,7 +1,8 @@
+import { createApolloClient } from "@/lib/apolloClient"
 import { describeCraterError } from "@/lib/crater/errors"
 import { clearCraterSessionCookie, readCraterSessionAuthorization } from "@/lib/crater/session.server"
 import type { Error } from "@code0-tech/crater-graphql-types"
-import { gql } from "@apollo/client"
+import { gql, type OperationVariables, type TypedDocumentNode } from "@apollo/client"
 import { ServerError } from "@apollo/client/errors"
 import { NextResponse } from "next/server"
 
@@ -46,6 +47,52 @@ export function requireCraterSession(request: Request, authorizationHeaderOnly =
     }
 
     return { token: authorization.token }
+}
+
+export function noStoreRedirect(url: URL, { noReferrer = false }: { noReferrer?: boolean } = {}) {
+    const response = NextResponse.redirect(url)
+    response.headers.set("cache-control", "no-store")
+    if (noReferrer) response.headers.set("referrer-policy", "no-referrer")
+    return response
+}
+
+type CraterRouteFailure = {
+    log: string
+    error: string
+}
+
+export function withCraterSession(failure: CraterRouteFailure, handler: (request: Request, token: string) => Promise<Response>) {
+    return async (request: Request): Promise<Response> => {
+        const session = requireCraterSession(request)
+        if (session.response) return session.response
+
+        try {
+            return await handler(request, session.token)
+        } catch (error) {
+            const transportResponse = craterTransportErrorResponse(error, request)
+            if (transportResponse) return transportResponse
+
+            console.error(`${failure.log}:`, error instanceof Error ? `${error.name}: ${error.message}` : "Unknown error")
+            return craterJson({ error: failure.error }, 502)
+        }
+    }
+}
+
+type CraterMutationPayload = { errors?: Error[] | null }
+
+export async function runCraterMutation<TData, TVariables extends OperationVariables, TPayload extends CraterMutationPayload>(
+    token: string,
+    mutation: TypedDocumentNode<TData, TVariables>,
+    variables: TVariables,
+    selectPayload: (data: TData) => TPayload | null | undefined,
+    rejectionMessage: string
+): Promise<{ payload: TPayload; response?: never } | { payload?: never; response: NextResponse }> {
+    const result = await createApolloClient(token).mutate<TData, TVariables>({ mutation, variables })
+    const payload = result.data ? selectPayload(result.data) : null
+    if (!payload) throw new Error("Crater returned no mutation payload.")
+
+    const response = craterMutationErrorResponse(payload.errors, rejectionMessage)
+    return response ? { response } : { payload }
 }
 
 export function craterMutationErrorResponse(errors: Error[] | null | undefined, message: string) {

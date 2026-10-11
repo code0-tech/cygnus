@@ -37,6 +37,10 @@ export function readOptionalAddress(value: unknown) {
     }
 }
 
+export function isCustomerId(value: string): value is Scalars["CustomerID"]["input"] {
+    return /^gid:\/\/crater\/Customer\/\d+$/.test(value)
+}
+
 export function isLicenseId(value: string): value is Scalars["LicenseID"]["input"] {
     return /^gid:\/\/crater\/License\/\d+$/.test(value)
 }
