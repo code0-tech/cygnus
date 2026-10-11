@@ -4,49 +4,11 @@ import { LicenseTabAlert, LicenseTabHeader, LicenseTabSaveButton } from "@/compo
 import { ButtonLoader } from "@/components/ui/Loader"
 import { useStripePromise } from "@/components/providers/StripeProvider"
 import type { LicenseContent } from "@/lib/cms"
+import { stripeAppearance } from "@/lib/stripeAppearance"
 import { Button, Spacing, Text } from "@code0-tech/pictor"
 import { Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js"
-import type { Appearance, StripeElementsOptions } from "@stripe/stripe-js"
+import type { StripeElementsOptions } from "@stripe/stripe-js"
 import { useEffect, useMemo, useRef, useState } from "react"
-
-const appearance = {
-    theme: "night",
-    labels: "above",
-    variables: {
-        colorPrimary: "#72f896",
-        colorBackground: "#201e2c",
-        colorText: "#ffffff",
-        colorTextSecondary: "rgba(255, 255, 255, 0.5)",
-        colorTextPlaceholder: "rgba(255, 255, 255, 0.35)",
-        colorDanger: "#ef5b68",
-        fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif",
-        fontSizeBase: "13px",
-        spacingUnit: "4px",
-        borderRadius: "16px",
-        focusBoxShadow: "none",
-        focusOutline: "none",
-    },
-    rules: {
-        ".Input": { backgroundColor: "#272532", border: "none", boxShadow: "inset 0 1px 1px rgba(255, 255, 255, 0.1)", padding: "11px" },
-        ".Input:hover": { backgroundColor: "rgba(191, 191, 191, 0.15)" },
-        ".Input:focus": { backgroundColor: "rgba(191, 191, 191, 0.15)", border: "none", boxShadow: "none", outline: "none" },
-        ".Input--invalid": { backgroundColor: "#1c0516", border: "none", boxShadow: "inset 0 1px 1px rgba(217, 4, 41, 0.1)" },
-        ".Dropdown": { backgroundColor: "#191825", border: "none", borderRadius: "16px", boxShadow: "inset 0 1px 1px rgba(255, 255, 255, 0.1), 0 12px 32px rgba(0, 0, 0, 0.35)" },
-        ".DropdownItem": { backgroundColor: "transparent", borderRadius: "10px", color: "rgba(255, 255, 255, 0.75)", fontSize: "13px", margin: "4px", padding: "10px 12px" },
-        ".DropdownItem--highlight": { backgroundColor: "#201e2c", color: "#ffffff" },
-        ".DropdownItem:active": { backgroundColor: "rgba(191, 191, 191, 0.2)", color: "#ffffff" },
-        ".DropdownItem:focus": { backgroundColor: "#201e2c", color: "#ffffff", outline: "none" },
-        ".Tab": { backgroundColor: "#191825", border: "none", boxShadow: "inset 0 1px 1px rgba(255, 255, 255, 0.1)" },
-        ".Tab:hover": { backgroundColor: "#201e2c" },
-        ".Tab--selected": { backgroundColor: "#201e2c", border: "none", boxShadow: "none" },
-        ".Tab:focus": { backgroundColor: "#2b2938", boxShadow: "none", outline: "none" },
-        ".AccordionItem": { backgroundColor: "#191825", border: "none", boxShadow: "inset 0 1px 1px rgba(255, 255, 255, 0.1)" },
-        ".AccordionItem:hover": { backgroundColor: "#201e2c" },
-        ".AccordionItem--selected": { backgroundColor: "#201e2c", border: "none", boxShadow: "none" },
-        ".AccordionItem:focus-visible": { backgroundColor: "#2b2938", boxShadow: "none", outline: "none" },
-        ".Label": { color: "rgba(255, 255, 255, 0.5)", fontSize: "11px", fontWeight: "400", textTransform: "uppercase" },
-    },
-} satisfies Appearance
 
 export type PaymentMethodSetupOwner = { customerId: string }
 
@@ -210,7 +172,7 @@ function PaymentMethodSetupForm({ clientSecret, content, errorMessage, onSuccess
 
 export function PaymentMethodSetupElement({ clientSecret, content, errorMessage, onSuccess, retryLabel, returnPath }: PaymentMethodSetupElementProps) {
     const stripePromise = useStripePromise()
-    const options = useMemo<StripeElementsOptions>(() => ({ appearance, clientSecret }), [clientSecret])
+    const options = useMemo<StripeElementsOptions>(() => ({ appearance: stripeAppearance, clientSecret }), [clientSecret])
 
     if (!stripePromise) {
         return (
