@@ -67,9 +67,7 @@ const limiter = new InMemoryRateLimiter()
 export function enforceRateLimit(name: RateLimitPolicyName, request: Request) {
     const key = createRateLimitKey(name, request)
 
-    // Without a trusted address or an authenticated session, a shared "unknown" bucket would let one
-    // request source deny service to every anonymous user. The deployment should surface a trusted IP.
-    if (key === `${name}:anonymous:network:unknown`) return null
+    if (!key) return null
 
     const result = limiter.consume(key, getRateLimitPolicy(name))
     if (result.allowed) return null
@@ -80,7 +78,6 @@ export function enforceRateLimit(name: RateLimitPolicyName, request: Request) {
             policy: name,
             limit: result.limit,
             retryAfterSeconds: result.resetSeconds,
-            scope: key.includes(":session:") ? "authenticated" : "anonymous",
         })
     }
 

@@ -90,7 +90,6 @@ test("Crater login returns retry guidance after its rate limit is exceeded", asy
             policy: "login",
             limit: 2,
             retryAfterSeconds: 60,
-            scope: "anonymous",
         })
     } finally {
         console.warn = originalWarn
