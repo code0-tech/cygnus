@@ -1,6 +1,7 @@
 "use client"
 
 import { fetchLicenseDashboard } from "@/lib/licenses/client"
+import { createLicenseDashboardLoginPath } from "@/lib/licenses/routes"
 import { EMPTY_LICENSE_DASHBOARD_DATA, type LicenseDashboardCustomerAddress, type LicenseDashboardData, type LicenseDashboardLicense } from "@/lib/licenses/types"
 import { deriveLicenseStatus } from "@/lib/licenses/dashboardMapper"
 import type { DashboardSubscriptionStatus, SubscriptionPendingUpdate } from "@/lib/licenses/types"
@@ -59,7 +60,11 @@ function mergeLicensePages(current: LicenseDashboardLicense[], incoming: License
     return [...merged.values()]
 }
 
-export function LicenseDataProvider({ children, loadError, redirectUrl }: { children: ReactNode; loadError: string; redirectUrl: string }) {
+function createDashboardLoginPath() {
+    return createLicenseDashboardLoginPath(`${window.location.pathname}${window.location.search}`)
+}
+
+export function LicenseDataProvider({ children, loadError, sessionError }: { children: ReactNode; loadError: string; sessionError: string }) {
     const pathname = usePathname()
     const loadedPathRef = useRef<string | null>(null)
     const lastRequestStartedAtRef = useRef(0)
@@ -72,6 +77,7 @@ export function LicenseDataProvider({ children, loadError, redirectUrl }: { chil
     const [isRefreshing, setIsRefreshing] = useState(false)
     const [loadingMore, setLoadingMore] = useState<PaginatedResource | null>(null)
     const [error, setError] = useState<string | null>(null)
+    const [needsLogin, setNeedsLogin] = useState(false)
     const [reloadKey, setReloadKey] = useState(0)
     const reload = useCallback(() => {
         if (requestInFlightRef.current) {
@@ -117,14 +123,18 @@ export function LicenseDataProvider({ children, loadError, redirectUrl }: { chil
         if (isInitialPathLoad) setIsLoading(true)
         else setIsRefreshing(true)
         const currentUrl = new URL(window.location.href)
+        const loginFailed = currentUrl.searchParams.get("authError") === "session"
+        let redirectingToLogin = false
 
         if (
+            currentUrl.searchParams.has("authError") ||
             currentUrl.searchParams.has("token") ||
             currentUrl.searchParams.has("setup_intent") ||
             currentUrl.searchParams.has("setup_intent_client_secret") ||
             currentUrl.searchParams.has("redirect_status")
         ) {
             const sanitizedUrl = new URL(currentUrl)
+            sanitizedUrl.searchParams.delete("authError")
             sanitizedUrl.searchParams.delete("token")
             sanitizedUrl.searchParams.delete("setup_intent")
             sanitizedUrl.searchParams.delete("setup_intent_client_secret")
@@ -135,10 +145,17 @@ export function LicenseDataProvider({ children, loadError, redirectUrl }: { chil
         void fetchLicenseDashboard(pathname, { origin: currentUrl.origin, signal: controller.signal })
             .then(({ data: nextData, status }) => {
                 if (status === 401 || status === 403) {
-                    window.location.replace(redirectUrl)
+                    setNeedsLogin(true)
+                    if (loginFailed) {
+                        setError(sessionError)
+                        return null
+                    }
+                    redirectingToLogin = true
+                    window.location.replace(createDashboardLoginPath())
                     return null
                 }
                 if (!nextData) throw new Error(loadError)
+                setNeedsLogin(false)
                 setData(nextData)
                 setHasLoadedOnce(true)
                 loadedPathRef.current = pathname
@@ -152,7 +169,7 @@ export function LicenseDataProvider({ children, loadError, redirectUrl }: { chil
                 if (requestId !== requestIdRef.current) return
 
                 requestInFlightRef.current = false
-                if (controller.signal.aborted) return
+                if (controller.signal.aborted || redirectingToLogin) return
 
                 setIsLoading(false)
                 setIsRefreshing(false)
@@ -163,7 +180,7 @@ export function LicenseDataProvider({ children, loadError, redirectUrl }: { chil
             })
 
         return () => controller.abort()
-    }, [loadError, pathname, redirectUrl, reloadKey])
+    }, [loadError, pathname, reloadKey, sessionError])
 
     const loadMore = useCallback(
         async (resource: PaginatedResource) => {
@@ -177,7 +194,8 @@ export function LicenseDataProvider({ children, loadError, redirectUrl }: { chil
                     pagination: { cursor: pageInfo.endCursor, customerContext: typeof pageInfo.contextCursor === "string" ? pageInfo.contextCursor : undefined, resource },
                 })
                 if (status === 401 || status === 403) {
-                    window.location.replace(redirectUrl)
+                    setNeedsLogin(true)
+                    window.location.replace(createDashboardLoginPath())
                     return
                 }
                 if (!nextData) throw new Error(loadError)
@@ -194,7 +212,7 @@ export function LicenseDataProvider({ children, loadError, redirectUrl }: { chil
                 setLoadingMore(null)
             }
         },
-        [data.pagination, loadError, loadingMore, pathname, redirectUrl]
+        [data.pagination, loadError, loadingMore, pathname]
     )
 
     useEffect(() => {
@@ -218,7 +236,7 @@ export function LicenseDataProvider({ children, loadError, redirectUrl }: { chil
                 error,
                 isLoading,
                 isRefreshing,
-                isSidebarLoading: isLoading && !hasLoadedOnce,
+                isSidebarLoading: (isLoading || needsLogin) && !hasLoadedOnce,
                 loadingMore,
                 loadMore,
                 reload,

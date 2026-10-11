@@ -104,3 +104,28 @@ export function resolveLicenseNamespaceReturn(returnPath: string | null, siteOri
 
     return { subscriptionId, returnUrl }
 }
+
+export function resolveLicenseDashboardReturnUrl(returnPath: string | null, siteOrigin: string) {
+    if (!returnPath?.startsWith("/")) return null
+
+    const returnUrl = new URL(returnPath, siteOrigin)
+    if (returnUrl.origin !== siteOrigin) return null
+
+    const segments = returnUrl.pathname.split("/").filter(Boolean)
+    const accessLocale = returnUrl.searchParams.get("locale")
+    const locale =
+        segments.length >= 2 && isSupportedLocale(segments[0]) && segments[1] === "licenses"
+            ? segments[0]
+            : returnUrl.pathname === "/api/crater/licenses/access" && accessLocale && isSupportedLocale(accessLocale)
+              ? accessLocale
+              : null
+    if (!locale) return null
+
+    returnUrl.searchParams.delete("token")
+    returnUrl.searchParams.delete("authError")
+    return { locale, returnUrl }
+}
+
+export function createLicenseDashboardLoginPath(returnPath: string) {
+    return `/api/crater/auth/start?${new URLSearchParams({ flow: "licenses", returnPath })}`
+}

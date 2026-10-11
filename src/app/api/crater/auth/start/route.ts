@@ -2,7 +2,7 @@ import { createCraterLoginCallbackUrl, createMainAppLoginUrl, resolveCheckoutRet
 import { getClientConfig } from "@/lib/clientConfig.server"
 import { noStoreRedirect } from "@/lib/crater/api.server"
 import { createCraterLoginState, setCraterLoginStateCookie } from "@/lib/crater/loginState.server"
-import { createLicenseNamespaceCallbackUrl, resolveLicenseNamespaceReturn } from "@/lib/licenses/routes"
+import { createLicenseNamespaceCallbackUrl, resolveLicenseDashboardReturnUrl, resolveLicenseNamespaceReturn } from "@/lib/licenses/routes"
 import { resolveSiteUrl } from "@/lib/siteConfig"
 
 export const runtime = "nodejs"
@@ -42,6 +42,17 @@ function resolveLoginTarget(requestUrl: URL, siteUrl: URL, state: string) {
             callbackUrl: createLicenseNamespaceCallbackUrl(siteUrl, resolvedReturn.returnUrl.pathname, state),
             cancelUrl: resolvedReturn.returnUrl.toString(),
             selectNamespace: true,
+        }
+    }
+
+    if (requestUrl.searchParams.get("flow") === "licenses") {
+        const resolvedReturn = resolveLicenseDashboardReturnUrl(returnPath, siteUrl.origin)
+        if (!resolvedReturn) return null
+
+        return {
+            callbackUrl: createCraterLoginCallbackUrl(siteUrl, `${resolvedReturn.returnUrl.pathname}${resolvedReturn.returnUrl.search}`, state),
+            cancelUrl: new URL(`/${resolvedReturn.locale}`, siteUrl).toString(),
+            selectNamespace: false,
         }
     }
 

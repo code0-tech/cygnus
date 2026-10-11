@@ -1,11 +1,10 @@
 import { craterJson, craterTransportErrorResponse, noStoreRedirect } from "@/lib/crater/api.server"
 import { isCustomerId, isLicenseId } from "@/lib/crater/request"
 import { findSubscriptionForLicenseSnapshot } from "@/lib/licenses/snapshotLookup.server"
-import { createLicensePath } from "@/lib/licenses/routes"
+import { createLicenseDashboardLoginPath, createLicensePath } from "@/lib/licenses/routes"
 import { clearCraterSessionCookie, readCraterSessionAuthorization } from "@/lib/crater/session.server"
 import { isSupportedLocale } from "@/lib/i18n"
 import { resolveSiteUrl } from "@/lib/siteConfig"
-import { getClientConfig } from "@/lib/clientConfig.server"
 import { NextResponse } from "next/server"
 
 export const runtime = "nodejs"
@@ -54,7 +53,8 @@ export async function GET(request: Request) {
         return noStoreRedirect(returnUrl)
     }
 
-    const redirectUrl = new URL(getClientConfig().sculptorUrl)
-    const response = noStoreRedirect(redirectUrl)
+    const accessParams = new URLSearchParams(requestUrl.searchParams)
+    accessParams.delete("token")
+    const response = noStoreRedirect(new URL(createLicenseDashboardLoginPath(`${requestUrl.pathname}?${accessParams}`), siteOrigin))
     return session.status === "invalid" ? clearCraterSessionCookie(response) : response
 }

@@ -1,5 +1,6 @@
 import { noStoreRedirect as craterNoStoreRedirect } from "@/lib/crater/api.server"
 import { resolveCheckoutReturnUrl } from "@/lib/checkout/checkoutLogin"
+import { resolveLicenseDashboardReturnUrl } from "@/lib/licenses/routes"
 import { describeCraterError } from "@/lib/crater/errors"
 import { createCraterUserSession } from "@/lib/crater/login.server"
 import { clearCraterLoginStateCookie, verifyCraterLoginState } from "@/lib/crater/loginState.server"
@@ -14,7 +15,9 @@ export async function GET(request: Request) {
     const requestUrl = new URL(request.url)
     const siteOrigin = resolveSiteUrl().origin
     const redirect = (url: URL) => clearCraterLoginStateCookie(noStoreRedirect(url), request)
-    const returnUrl = resolveCheckoutReturnUrl(requestUrl.searchParams.get("returnPath"), siteOrigin)
+    const returnPath = requestUrl.searchParams.get("returnPath")
+    const checkoutReturnUrl = resolveCheckoutReturnUrl(returnPath, siteOrigin)
+    const returnUrl = checkoutReturnUrl ?? resolveLicenseDashboardReturnUrl(returnPath, siteOrigin)?.returnUrl
     if (!returnUrl) {
         const fallbackUrl = new URL("/", siteOrigin)
         fallbackUrl.searchParams.set("authError", "session")
@@ -24,7 +27,7 @@ export async function GET(request: Request) {
     const sagittariusToken = requestUrl.searchParams.get("token")?.trim()
     const namespaceId = requestUrl.searchParams.get("namespace")?.trim()
 
-    if (namespaceId) returnUrl.searchParams.set("namespace", namespaceId)
+    if (namespaceId && checkoutReturnUrl) returnUrl.searchParams.set("namespace", namespaceId)
 
     // Only a login this browser started may create its session; anything else is a forged callback link.
     if (!sagittariusToken || !verifyCraterLoginState(request, requestUrl)) {
