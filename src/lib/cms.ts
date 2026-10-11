@@ -459,14 +459,13 @@ async function enrichActions(actions: Action[], sortByTitle = true): Promise<Act
     const enrichedActions = await Promise.all(actions.map((action) => enrichAction(action)))
     const enrichedActionsById = new Map(enrichedActions.map((action) => [action.id, action]))
 
-    const resolvedActions = enrichedActions
-        .map((action) => ({
-            ...action,
-            references:
-                action.references
-                    ?.map((reference) => enrichedActionsById.get(typeof reference === "number" ? reference : reference.id))
-                    .filter((reference): reference is ActionItem => Boolean(reference)) ?? null,
-        }))
+    const resolvedActions = enrichedActions.map((action) => ({
+        ...action,
+        references:
+            action.references
+                ?.map((reference) => enrichedActionsById.get(typeof reference === "number" ? reference : reference.id))
+                .filter((reference): reference is ActionItem => Boolean(reference)) ?? null,
+    }))
 
     return sortByTitle ? resolvedActions.sort((a, b) => a.title.localeCompare(b.title)) : resolvedActions
 }
@@ -491,66 +490,60 @@ const getActionsCached = cache(async (locale: AppLocale): Promise<ActionItem[]> 
     return enrichActions(actions)
 })
 
-const getPaginatedActionsCached = cache(
-    async (locale: AppLocale, page: number, limit: number, search: string, tag: ActionTag | null, sortOrder: ActionSortOrder): Promise<PaginatedActionsResult> => {
-        const normalizedSearch = search.trim().toLowerCase()
+const getPaginatedActionsCached = cache(async (locale: AppLocale, page: number, limit: number, search: string, tag: ActionTag | null, sortOrder: ActionSortOrder): Promise<PaginatedActionsResult> => {
+    const normalizedSearch = search.trim().toLowerCase()
 
-        if (normalizedSearch) {
-            const matchingActions = (await getActionsCached(locale))
-                .filter((action) => {
-                    const searchable = [action.title, action.shortDescription, action.description, ...(action.tags ?? [])].filter(Boolean).join(" ").toLowerCase()
-                    return searchable.includes(normalizedSearch) && (!tag || action.tags?.includes(tag))
-                })
-                .toSorted((left, right) => {
-                    const difference = new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
-                    return sortOrder === "newest" ? difference : -difference
-                })
-            const offset = (page - 1) * limit
-            const actions = matchingActions.slice(offset, offset + limit)
-            const nextPage = offset + actions.length < matchingActions.length ? page + 1 : null
+    if (normalizedSearch) {
+        const matchingActions = (await getActionsCached(locale))
+            .filter((action) => {
+                const searchable = [action.title, action.shortDescription, action.description, ...(action.tags ?? [])].filter(Boolean).join(" ").toLowerCase()
+                return searchable.includes(normalizedSearch) && (!tag || action.tags?.includes(tag))
+            })
+            .toSorted((left, right) => {
+                const difference = new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
+                return sortOrder === "newest" ? difference : -difference
+            })
+        const offset = (page - 1) * limit
+        const actions = matchingActions.slice(offset, offset + limit)
+        const nextPage = offset + actions.length < matchingActions.length ? page + 1 : null
 
-            return {
-                actions,
-                hasNextPage: nextPage !== null,
-                nextPage,
-                totalDocs: matchingActions.length,
-            }
+        return {
+            actions,
+            hasNextPage: nextPage !== null,
+            nextPage,
+            totalDocs: matchingActions.length,
         }
-
-        return withCmsFallback(
-            `getPaginatedActions(${locale}, ${page}, ${limit}, ${tag ?? "all"}, ${sortOrder})`,
-            { actions: [], hasNextPage: false, nextPage: null, totalDocs: 0 },
-            async () => {
-                const payload = await getPayloadClient()
-                const result = await payload.find({
-                    collection: "actions",
-                    locale,
-                    fallbackLocale: DEFAULT_LOCALE,
-                    sort: sortOrder === "newest" ? "-createdAt" : "createdAt",
-                    page,
-                    limit,
-                    pagination: true,
-                    depth: 1,
-                    where: tag ? { tags: { contains: tag } } : undefined,
-                    select: {
-                        module: true,
-                        identifier: true,
-                        tags: true,
-                        references: true,
-                        createdAt: true,
-                    },
-                })
-
-                return {
-                    actions: await enrichActions(result.docs as Action[], false),
-                    hasNextPage: result.hasNextPage,
-                    nextPage: result.nextPage ?? null,
-                    totalDocs: result.totalDocs,
-                }
-            }
-        )
     }
-)
+
+    return withCmsFallback(`getPaginatedActions(${locale}, ${page}, ${limit}, ${tag ?? "all"}, ${sortOrder})`, { actions: [], hasNextPage: false, nextPage: null, totalDocs: 0 }, async () => {
+        const payload = await getPayloadClient()
+        const result = await payload.find({
+            collection: "actions",
+            locale,
+            fallbackLocale: DEFAULT_LOCALE,
+            sort: sortOrder === "newest" ? "-createdAt" : "createdAt",
+            page,
+            limit,
+            pagination: true,
+            depth: 1,
+            where: tag ? { tags: { contains: tag } } : undefined,
+            select: {
+                module: true,
+                identifier: true,
+                tags: true,
+                references: true,
+                createdAt: true,
+            },
+        })
+
+        return {
+            actions: await enrichActions(result.docs as Action[], false),
+            hasNextPage: result.hasNextPage,
+            nextPage: result.nextPage ?? null,
+            totalDocs: result.totalDocs,
+        }
+    })
+})
 
 const getJobBySlugCached = cache(async (slug: string, locale: AppLocale): Promise<JobDetailItem | null> => {
     return cmsFindOne(`getJobBySlug(${slug}, ${locale})`, null, {
@@ -754,7 +747,6 @@ export async function getSubscriptionConfig(locale: AppLocale = DEFAULT_LOCALE):
     return getSubscriptionConfigCached(locale)
 }
 
-// Loads a Payload global without populating relations, typed from the generated Payload config.
 export async function getGlobal<S extends GlobalSlug>(slug: S, locale: AppLocale = DEFAULT_LOCALE): Promise<Config["globals"][S] | null> {
     return (await getGlobalCached(slug, locale)) as Config["globals"][S] | null
 }

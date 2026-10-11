@@ -1,34 +1,13 @@
 import { colorField } from "@mvriu5/payload-color-picker"
-import type { DefaultValue, Field, GlobalConfig } from "payload"
+import type { Field, GlobalConfig } from "payload"
+import { localizedText } from "@/fields/localizedText"
 
-const localizedDefault =
-    (en: string, de: string): DefaultValue =>
-    ({ locale }) =>
-        locale === "de" ? de : en
-
-const planBanner = (
-    name: "pro" | "max" | "custom",
-    defaults: { buttonEn: string; buttonDe: string; from: string; textEn: string; textDe: string; to: string }
-): Field => ({
+const planBanner = (name: "pro" | "max" | "custom", defaults: { buttonEn: string; buttonDe: string; from: string; textEn: string; textDe: string; to: string }): Field => ({
     name,
     type: "group",
     fields: [
-        {
-            name: "text",
-            type: "text",
-            required: true,
-            localized: true,
-            defaultValue: localizedDefault(defaults.textEn, defaults.textDe),
-            admin: { description: "Use {plan} as a placeholder for the suggested or current plan name." },
-        },
-        {
-            name: "buttonLabel",
-            type: "text",
-            required: true,
-            localized: true,
-            defaultValue: localizedDefault(defaults.buttonEn, defaults.buttonDe),
-            admin: { description: "Use {plan} as a placeholder for the suggested or current plan name." },
-        },
+        localizedText("text", defaults.textEn, defaults.textDe, { description: "Use {plan} as a placeholder for the suggested or current plan name." }),
+        localizedText("buttonLabel", defaults.buttonEn, defaults.buttonDe, { description: "Use {plan} as a placeholder for the suggested or current plan name." }),
         colorField({ name: "gradientFrom", label: "Gradient start", required: true, defaultValue: defaults.from }),
         colorField({ name: "gradientTo", label: "Gradient end", required: true, defaultValue: defaults.to }),
     ],
