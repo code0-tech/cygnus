@@ -1,5 +1,4 @@
-import { createApolloClient } from "@/lib/apolloClient"
-import { CRATER_ERROR_FIELDS, craterJson, craterMutationErrorResponse, craterTransportErrorResponse, requireCraterSession } from "@/lib/crater/api.server"
+import { CRATER_ERROR_FIELDS, craterJson, runCraterMutation, withCraterSession } from "@/lib/crater/api.server"
 import { optionalString, readJsonObject, isSubscriptionId, parseSubscriptionChangeFields } from "@/lib/crater/request"
 import { normalizeCraterPaymentPeriod, normalizeCraterPlan } from "@/lib/crater/values"
 import { mapSubscriptionPendingUpdate } from "@/lib/licenses/dashboardMapper"
@@ -49,10 +48,7 @@ function normalizeSubscriptionEnums(subscription: NonNullable<NonNullable<Subscr
     }
 }
 
-export async function PATCH(request: Request) {
-    const session = requireCraterSession(request)
-    if (session.response) return session.response
-
+export const PATCH = withCraterSession({ log: "Crater subscription update error", error: "Could not update the Crater subscription." }, async (request, token) => {
     const body = await readJsonObject(request)
     const id = optionalString(body?.id)
     if (!id || !isSubscriptionId(id)) {
@@ -62,24 +58,9 @@ export async function PATCH(request: Request) {
     const fields = parseSubscriptionChangeFields(body, true)
     if ("error" in fields) return craterJson({ error: fields.error }, 400)
 
-    try {
-        const result = await createApolloClient(session.token).mutate({
-            mutation: SUBSCRIPTIONS_UPDATE,
-            variables: { input: { id, ...fields } },
-        })
-        const payload = result.data?.subscriptionsUpdate
-        if (!payload) throw new Error("Crater returned no subscription update payload.")
+    const mutation = await runCraterMutation(token, SUBSCRIPTIONS_UPDATE, { input: { id, ...fields } }, (data) => data.subscriptionsUpdate, "Crater could not update the subscription.")
+    if (mutation.response) return mutation.response
+    if (!mutation.payload.subscription) throw new Error("Crater returned no updated subscription.")
 
-        const errorResponse = craterMutationErrorResponse(payload.errors, "Crater could not update the subscription.")
-        if (errorResponse) return errorResponse
-        if (!payload.subscription) throw new Error("Crater returned no updated subscription.")
-
-        return craterJson(normalizeSubscriptionEnums(payload.subscription))
-    } catch (error) {
-        const transportResponse = craterTransportErrorResponse(error)
-        if (transportResponse) return transportResponse
-
-        console.error("Crater subscription update error:", error)
-        return craterJson({ error: "Could not update the Crater subscription." }, 502)
-    }
-}
+    return craterJson(normalizeSubscriptionEnums(mutation.payload.subscription))
+})

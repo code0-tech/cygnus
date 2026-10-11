@@ -1,15 +1,14 @@
 import { createApolloClient } from "@/lib/apolloClient"
-import { CRATER_ERROR_FIELDS } from "@/lib/crater/api.server"
+import { CRATER_ERROR_FIELDS, noStoreRedirect as craterNoStoreRedirect } from "@/lib/crater/api.server"
 import { describeCraterError, isNamespaceInUse } from "@/lib/crater/errors"
 import { createCraterUserSession } from "@/lib/crater/login.server"
 import { setCraterSessionCookie, setCraterUserLoginCookie } from "@/lib/crater/session.server"
 import { isSupportedLocale } from "@/lib/i18n"
 import { resolveSiteUrl } from "@/lib/siteConfig"
-import { isSubscriptionId } from "@/lib/crater/request"
+import { isCustomerId, isSubscriptionId } from "@/lib/crater/request"
 import { resolveCustomerRouteId, resolveSubscriptionRouteId } from "@/lib/licenses/routes"
 import type { Mutation, MutationSubscriptionsLinkNamespaceArgs } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
-import { NextResponse } from "next/server"
 
 export const runtime = "nodejs"
 
@@ -33,12 +32,8 @@ const LINK_SUBSCRIPTION_NAMESPACE: TypedDocumentNode<LinkSubscriptionNamespaceDa
     }
 `
 
-function noStoreRedirect(url: URL) {
-    const response = NextResponse.redirect(url)
-    response.headers.set("cache-control", "no-store")
-    response.headers.set("referrer-policy", "no-referrer")
-    return response
-}
+// The callback URL carries the Sagittarius token, so it must not leak as the referrer of the redirect target.
+const noStoreRedirect = (url: URL) => craterNoStoreRedirect(url, { noReferrer: true })
 
 function resolveLicenseReturn(requestUrl: URL, siteOrigin: string) {
     const returnPath = requestUrl.searchParams.get("returnPath")
@@ -62,7 +57,7 @@ function resolveLicenseReturn(requestUrl: URL, siteOrigin: string) {
 
     const customerId = resolveCustomerRouteId(segments[3])
     const subscriptionId = resolveSubscriptionRouteId(segments[5])
-    if (!customerId || !/^gid:\/\/crater\/Customer\/\d+$/.test(customerId) || !subscriptionId || !isSubscriptionId(subscriptionId)) return null
+    if (!customerId || !isCustomerId(customerId) ||!subscriptionId || !isSubscriptionId(subscriptionId)) return null
 
     return { subscriptionId, returnUrl }
 }

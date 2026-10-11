@@ -1,5 +1,5 @@
-import { craterJson, craterTransportErrorResponse } from "@/lib/crater/api.server"
-import { isLicenseId } from "@/lib/crater/request"
+import { craterJson, craterTransportErrorResponse, noStoreRedirect } from "@/lib/crater/api.server"
+import { isCustomerId, isLicenseId } from "@/lib/crater/request"
 import { findSubscriptionForLicenseSnapshot } from "@/lib/licenses/snapshotLookup.server"
 import { createLicensePath } from "@/lib/licenses/routes"
 import { clearCraterSessionCookie, readCraterSessionAuthorization } from "@/lib/crater/session.server"
@@ -9,12 +9,6 @@ import { getClientConfig } from "@/lib/clientConfig.server"
 import { NextResponse } from "next/server"
 
 export const runtime = "nodejs"
-
-function noStoreRedirect(url: URL) {
-    const response = NextResponse.redirect(url)
-    response.headers.set("cache-control", "no-store")
-    return response
-}
 
 function resolveLicenseReturnUrl(requestUrl: URL, locale: string, siteOrigin: string) {
     const fallbackUrl = new URL(`/${locale}/licenses`, siteOrigin)
@@ -43,7 +37,7 @@ export async function GET(request: Request) {
         if (requestUrl.searchParams.has("licenseId") || requestUrl.searchParams.has("customerId")) {
             const customerId = requestUrl.searchParams.get("customerId") ?? ""
             const licenseId = requestUrl.searchParams.get("licenseId") ?? ""
-            if (!/^gid:\/\/crater\/Customer\/\d+$/.test(customerId) || !isLicenseId(licenseId)) return craterJson({ error: "A valid Crater customer and license snapshot id are required." }, 400)
+            if (!isCustomerId(customerId) || !isLicenseId(licenseId)) return craterJson({ error: "A valid Crater customer and license snapshot id are required." }, 400)
             try {
                 const lookup = await findSubscriptionForLicenseSnapshot(session.token, customerId, licenseId)
                 if (lookup.status === "unauthenticated") return clearCraterSessionCookie(craterJson({ error: "The Crater session has no authenticated user." }, 401))

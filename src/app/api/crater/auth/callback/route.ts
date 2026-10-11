@@ -1,18 +1,13 @@
+import { noStoreRedirect as craterNoStoreRedirect } from "@/lib/crater/api.server"
 import { describeCraterError } from "@/lib/crater/errors"
 import { createCraterUserSession } from "@/lib/crater/login.server"
 import { setCraterSessionCookie, setCraterUserLoginCookie } from "@/lib/crater/session.server"
 import { isSupportedLocale } from "@/lib/i18n"
 import { resolveSiteUrl } from "@/lib/siteConfig"
-import { NextResponse } from "next/server"
 
 export const runtime = "nodejs"
 
-function noStoreRedirect(url: URL) {
-    const response = NextResponse.redirect(url)
-    response.headers.set("cache-control", "no-store")
-    response.headers.set("referrer-policy", "no-referrer")
-    return response
-}
+const noStoreRedirect = (url: URL) => craterNoStoreRedirect(url, { noReferrer: true })
 
 function resolveCheckoutReturnUrl(requestUrl: URL, siteOrigin: string) {
     const returnPath = requestUrl.searchParams.get("returnPath")

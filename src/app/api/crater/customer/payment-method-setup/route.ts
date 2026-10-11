@@ -1,44 +1,27 @@
-import { createApolloClient } from "@/lib/apolloClient"
-import { craterJson, craterMutationErrorResponse, craterTransportErrorResponse, requireCraterSession } from "@/lib/crater/api.server"
-import { optionalString, readJsonObject } from "@/lib/crater/request"
-import type { Mutation, MutationCustomerPaymentMethodSetupCreateArgs, Scalars } from "@code0-tech/crater-graphql-types"
+import { CRATER_ERROR_FIELDS, craterJson, runCraterMutation, withCraterSession } from "@/lib/crater/api.server"
+import { isCustomerId, optionalString, readJsonObject } from "@/lib/crater/request"
+import type { Mutation, MutationCustomerPaymentMethodSetupCreateArgs } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 
 export const runtime = "nodejs"
 
 type CustomerPaymentMethodSetupCreateData = Pick<Mutation, "customerPaymentMethodSetupCreate">
 
-function isCustomerId(value: string): value is Scalars["CustomerID"]["input"] {
-    return /^gid:\/\/crater\/Customer\/\d+$/.test(value)
-}
-
 const CUSTOMER_PAYMENT_METHOD_SETUP_CREATE: TypedDocumentNode<CustomerPaymentMethodSetupCreateData, MutationCustomerPaymentMethodSetupCreateArgs> = gql`
+    ${CRATER_ERROR_FIELDS}
     mutation CustomerPaymentMethodSetupCreate($input: CustomerPaymentMethodSetupCreateInput!) {
         customerPaymentMethodSetupCreate(input: $input) {
             session {
                 clientSecret
             }
             errors {
-                errorCode
-                details {
-                    __typename
-                    ... on ActiveModelError {
-                        attribute
-                        type
-                    }
-                    ... on MessageError {
-                        message
-                    }
-                }
+                ...CraterErrorFields
             }
         }
     }
 `
 
-export async function POST(request: Request) {
-    const session = requireCraterSession(request)
-    if (session.response) return session.response
-
+export const POST = withCraterSession({ log: "Crater payment method setup error", error: "Could not create the payment method setup session." }, async (request, token) => {
     const body = await readJsonObject(request)
     const customerId = optionalString(body?.customerId)
 
@@ -46,27 +29,17 @@ export async function POST(request: Request) {
         return craterJson({ error: "A valid Crater customer id is required." }, 400)
     }
 
-    try {
-        const result = await createApolloClient(session.token).mutate({
-            mutation: CUSTOMER_PAYMENT_METHOD_SETUP_CREATE,
-            variables: { input: { customerId } },
-        })
-        const payload = result.data?.customerPaymentMethodSetupCreate
+    const mutation = await runCraterMutation(
+        token,
+        CUSTOMER_PAYMENT_METHOD_SETUP_CREATE,
+        { input: { customerId } },
+        (data) => data.customerPaymentMethodSetupCreate,
+        "Crater could not create the payment method setup session."
+    )
+    if (mutation.response) return mutation.response
 
-        if (!payload) throw new Error("Crater returned no payment method setup payload.")
+    const clientSecret = mutation.payload.session?.clientSecret
+    if (!clientSecret) throw new Error("Crater returned no SetupIntent client secret.")
 
-        const errorResponse = craterMutationErrorResponse(payload.errors, "Crater could not create the payment method setup session.")
-        if (errorResponse) return errorResponse
-
-        const clientSecret = payload.session?.clientSecret
-        if (!clientSecret) throw new Error("Crater returned no SetupIntent client secret.")
-
-        return craterJson({ clientSecret }, 201)
-    } catch (error) {
-        const transportResponse = craterTransportErrorResponse(error)
-        if (transportResponse) return transportResponse
-
-        console.error("Crater payment method setup error:", error instanceof Error ? error.name : "UnknownError")
-        return craterJson({ error: "Could not create the payment method setup session." }, 502)
-    }
-}
+    return craterJson({ clientSecret }, 201)
+})

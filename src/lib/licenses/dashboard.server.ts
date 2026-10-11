@@ -1,15 +1,11 @@
 import { createApolloClient } from "@/lib/apolloClient"
-import { isSubscriptionId } from "@/lib/crater/request"
+import { isCustomerId, isSubscriptionId } from "@/lib/crater/request"
 import { byMostRecentlyUpdated, mapCustomer, mapPageInfo, mapSubscription, mapUserData } from "@/lib/licenses/dashboardMapper"
 import { CUSTOMER_LICENSE_PAGE, CUSTOMER_NAVIGATION_PAGE, LICENSE_CUSTOMER_DETAIL, LICENSE_DASHBOARD, LICENSE_NAVIGATION_PAGE } from "@/lib/licenses/dashboardQueries.server"
 import type { LicenseDashboardData, LicenseDashboardLicense } from "@/lib/licenses/types"
-import type { Customer, Scalars } from "@code0-tech/crater-graphql-types"
+import type { Customer } from "@code0-tech/crater-graphql-types"
 
 export type LicenseDashboardLoadResult = { data: LicenseDashboardData; status: 200 } | { error: string; status: 400 | 401 | 404 | 502 }
-
-function isCustomerId(value: string): value is Scalars["CustomerID"]["input"] {
-    return /^gid:\/\/crater\/Customer\/\d+$/.test(value)
-}
 
 function readCursor(requestUrl: URL, name: string) {
     const value = requestUrl.searchParams.get(name)?.trim()
