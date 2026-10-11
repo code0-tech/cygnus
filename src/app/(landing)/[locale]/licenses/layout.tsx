@@ -8,6 +8,7 @@ import type { ReactNode } from "react"
 
 export const metadata: Metadata = {
     title: { absolute: "CodeZero | License Dashboard" },
+    robots: { index: false, follow: false },
 }
 
 interface LicensesLayoutProps {
