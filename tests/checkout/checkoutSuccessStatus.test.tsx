@@ -312,7 +312,7 @@ test("guest confirmation accepts serialized query parameters and offers only the
     assert.ok(screen.getByText(content.guestAccountHint))
 })
 
-test("failed guest checkout preserves the configuration when returning to the login choice", async () => {
+test("failed guest checkout returns to the checkout with the guest session and configuration", async () => {
     respondWith({ state: "FAILED", customerId: "gid://crater/Customer/1", licenseId: null })
     render(
         <CheckoutSuccessStatus
@@ -326,5 +326,5 @@ test("failed guest checkout preserves the configuration when returning to the lo
     )
     await screen.findByText(content.failedHeading)
     assert.equal(screen.queryByText(content.guestAccountHint), null)
-    assert.deepEqual(routerReplaceCalls, ["/en/checkout/login?plan=pro&customerType=b2b&paymentPeriod=monthly&paymentFailed=1"])
+    assert.deepEqual(routerReplaceCalls, ["/en/checkout?plan=pro&customerType=b2b&paymentPeriod=monthly&guestCheckout=purchase-one&paymentFailed=1"])
 })

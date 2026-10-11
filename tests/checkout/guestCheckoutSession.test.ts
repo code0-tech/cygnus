@@ -99,6 +99,24 @@ test("guest purchase isolation, expiry and completion", async (t) => {
             }
         })
 
+        await t.test("FAILED response keeps the guest session for a retry with the same email", async () => {
+            const server = await createGraphQLTestServer([
+                { data: { checkoutCompletionStatus: { state: "FAILED", customerId: "gid://crater/Customer/1", licenseId: null, configuration: null, pricing: null } } },
+            ])
+            const previousUrl = process.env.CRATER_GRAPHQL_URL
+            process.env.CRATER_GRAPHQL_URL = server.url
+            try {
+                const result = await checkoutStatus(request(cookies, `/api/crater/checkout/status?sessionId=${sessionId}`))
+                assert.equal(result.status, 200)
+                assert.deepEqual(result.headers.getSetCookie(), [])
+                assert.equal(readGuestCheckoutSession(request(cookies))?.email, "guest@example.com")
+            } finally {
+                if (previousUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
+                else process.env.CRATER_GRAPHQL_URL = previousUrl
+                await server.close()
+            }
+        })
+
         await t.test("verified READY response replaces checkout access with receipt access", async () => {
             const server = await createGraphQLTestServer([
                 { data: { checkoutCompletionStatus: { state: "READY", customerId: "gid://crater/Customer/1", licenseId, configuration: null, pricing: null } } },
