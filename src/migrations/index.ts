@@ -167,6 +167,7 @@ import * as migration_20261010_120000_remove_sculptor_cms_urls from './20261010_
 
 import * as migration_20261010_130000_immediate_cancellation_labels from './20261010_130000_immediate_cancellation_labels';
 import * as migration_20261011_120000_require_subscription_config_fields from './20261011_120000_require_subscription_config_fields';
+import * as migration_20261011_160000_immediate_cancellation_confirmation from './20261011_160000_immediate_cancellation_confirmation';
 
 export const migrations = [
   {
@@ -998,5 +999,10 @@ export const migrations = [
     up: migration_20261011_120000_require_subscription_config_fields.up,
     down: migration_20261011_120000_require_subscription_config_fields.down,
     name: '20261011_120000_require_subscription_config_fields',
+  },
+  {
+    up: migration_20261011_160000_immediate_cancellation_confirmation.up,
+    down: migration_20261011_160000_immediate_cancellation_confirmation.down,
+    name: '20261011_160000_immediate_cancellation_confirmation',
   },
 ];
