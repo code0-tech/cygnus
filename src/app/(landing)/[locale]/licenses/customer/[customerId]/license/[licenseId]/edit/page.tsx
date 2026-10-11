@@ -1,10 +1,7 @@
 import { LicenseEditDialog } from "@/components/licenses/dialog/subscription/LicenseEditDialog"
 import { getGlobal, getLicenseContent } from "@/lib/cms"
-import { createMainAppLoginUrl } from "@/lib/checkout/checkoutLogin"
 import { isSupportedLocale } from "@/lib/i18n"
-import { createLicenseNamespaceCallbackUrl, createLicenseNamespaceReturnPath } from "@/lib/licenses/routes"
-import { resolveSiteUrl } from "@/lib/siteConfig"
-import { getClientConfig } from "@/lib/clientConfig.server"
+import { createLicenseNamespaceReturnPath, createLicenseNamespaceStartPath } from "@/lib/licenses/routes"
 import { getCraterSubscriptionPrices } from "@/lib/subscription/prices.server"
 import { notFound } from "next/navigation"
 
@@ -19,11 +16,7 @@ export default async function EditLicensePage({ params }: { params: Promise<{ cu
     ])
     if (!content || !errors || !subscriptionConfig) notFound()
 
-    const siteUrl = resolveSiteUrl()
-    const returnPath = createLicenseNamespaceReturnPath(locale, customerId, licenseId)
-    const returnUrl = new URL(returnPath, siteUrl).toString()
-    const callbackUrl = createLicenseNamespaceCallbackUrl(siteUrl, returnPath)
-    const namespaceHref = createMainAppLoginUrl(getClientConfig().sculptorLoginUrl, callbackUrl, returnUrl, true)
+    const namespaceHref = createLicenseNamespaceStartPath(createLicenseNamespaceReturnPath(locale, customerId, licenseId))
 
     return (
         <LicenseEditDialog

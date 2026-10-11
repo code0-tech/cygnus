@@ -1,4 +1,5 @@
-import type { AppLocale } from "@/lib/i18n"
+import { isCustomerId, isSubscriptionId } from "@/lib/crater/request"
+import { isSupportedLocale, type AppLocale } from "@/lib/i18n"
 
 type CraterRouteResource = "Customer" | "Subscription"
 
@@ -66,8 +67,40 @@ export function createLicenseNamespaceReturnPath(locale: AppLocale, customerId: 
     return destination === "edit" ? `${licensePath}/edit` : licensePath
 }
 
-export function createLicenseNamespaceCallbackUrl(siteUrl: URL, returnPath: string) {
+export function createLicenseNamespaceCallbackUrl(siteUrl: URL, returnPath: string, state?: string) {
     const callbackUrl = new URL("/api/crater/licenses/namespace/callback", siteUrl)
     callbackUrl.searchParams.set("returnPath", returnPath)
+    if (state) callbackUrl.searchParams.set("state", state)
     return callbackUrl.toString()
+}
+
+// Namespace links point at the start route, which sets the login state cookie before leaving for Sculptor.
+export function createLicenseNamespaceStartPath(returnPath: string) {
+    return `/api/crater/auth/start?${new URLSearchParams({ flow: "namespace", returnPath })}`
+}
+
+export function resolveLicenseNamespaceReturn(returnPath: string | null, siteOrigin: string) {
+    if (!returnPath?.startsWith("/")) return null
+
+    const returnUrl = new URL(returnPath, siteOrigin)
+    const segments = returnUrl.pathname.split("/").filter(Boolean)
+    if (
+        returnUrl.origin !== siteOrigin ||
+        returnUrl.search ||
+        returnUrl.hash ||
+        (segments.length !== 6 && segments.length !== 7) ||
+        !isSupportedLocale(segments[0]) ||
+        segments[1] !== "licenses" ||
+        segments[2] !== "customer" ||
+        segments[4] !== "license" ||
+        (segments.length === 7 && segments[6] !== "edit")
+    ) {
+        return null
+    }
+
+    const customerId = resolveCustomerRouteId(segments[3])
+    const subscriptionId = resolveSubscriptionRouteId(segments[5])
+    if (!customerId || !isCustomerId(customerId) || !subscriptionId || !isSubscriptionId(subscriptionId)) return null
+
+    return { subscriptionId, returnUrl }
 }

@@ -1,3 +1,5 @@
+import { isSupportedLocale } from "@/lib/i18n"
+
 export type CheckoutSearchParams = Record<string, string | string[] | undefined>
 
 const CHECKOUT_CONFIGURATION_PARAMS = ["plan", "deploymentType", "deployment", "customerType", "paymentPeriod", "workflowExecutions", "aiTokens"]
@@ -21,10 +23,29 @@ export function createCheckoutQuery(searchParams: CheckoutSearchParams): string 
     return query.toString()
 }
 
-export function createCraterLoginCallbackUrl(siteUrl: URL, checkoutPath: string) {
+export function createCraterLoginCallbackUrl(siteUrl: URL, checkoutPath: string, state?: string) {
     const callbackUrl = new URL("/api/crater/auth/callback", siteUrl)
     callbackUrl.searchParams.set("returnPath", checkoutPath)
+    if (state) callbackUrl.searchParams.set("state", state)
     return callbackUrl.toString()
+}
+
+// Login links point at the start route, which sets the login state cookie before leaving for Sculptor.
+export function createCheckoutLoginStartPath(checkoutPath: string, cancelUrl: string) {
+    return `/api/crater/auth/start?${new URLSearchParams({ flow: "checkout", returnPath: checkoutPath, cancelUrl })}`
+}
+
+export function resolveCheckoutReturnUrl(returnPath: string | null, siteOrigin: string) {
+    if (!returnPath?.startsWith("/")) return null
+
+    const returnUrl = new URL(returnPath, siteOrigin)
+    const segments = returnUrl.pathname.split("/").filter(Boolean)
+    if (returnUrl.origin !== siteOrigin || segments.length !== 2 || !isSupportedLocale(segments[0]) || segments[1] !== "checkout") return null
+
+    returnUrl.searchParams.delete("guestCheckout")
+    returnUrl.searchParams.delete("token")
+    returnUrl.searchParams.delete("authError")
+    return returnUrl
 }
 
 export function createMainAppLoginUrl(loginUrl: string, callbackUrl: string, cancelUrl: string, selectNamespace = false): string {

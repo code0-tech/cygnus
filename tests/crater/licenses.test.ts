@@ -45,6 +45,16 @@ const serverOnlyHook = registerHooks({
 const { GET: accessLicenseDashboard } = await import("../../src/app/api/crater/licenses/access/route")
 serverOnlyHook.deregister()
 
+
+const LOGIN_STATE = "s".repeat(43)
+
+// Callbacks only accept a login whose state matches the cookie set by /api/crater/auth/start.
+function startedLoginCallback(url: string, init: RequestInit = {}) {
+    const headers = new Headers(init.headers)
+    headers.set("cookie", `crater_login_state=${LOGIN_STATE}`)
+    return new Request(`${url}&state=${LOGIN_STATE}`, { ...init, headers })
+}
+
 test("license dashboard access redirects without exposing the persisted session", async () => {
     const response = await accessLicenseDashboard(
         new Request("https://0.0.0.0:3000/api/crater/licenses/access?locale=de", {
@@ -750,7 +760,7 @@ test("links a cloud license through the authenticated namespace selection callba
     try {
         const returnPath = "/en/licenses/customer/3/license/9/edit"
         const response = await selectLicenseNamespace(
-            new Request(
+            startedLoginCallback(
                 `https://0.0.0.0:3000/api/crater/licenses/namespace/callback?returnPath=${encodeURIComponent(returnPath)}&namespace=${encodeURIComponent("gid://sagittarius/Namespace/9")}&token=sagittarius-secret`
             )
         )
@@ -776,7 +786,7 @@ test("links a cloud license through the authenticated namespace selection callba
 
 test("license namespace callback requires a namespace selected by Sagittarius", async () => {
     const returnPath = "/de/licenses/customer/3/license/9/edit"
-    const response = await selectLicenseNamespace(new Request(`https://0.0.0.0:3000/api/crater/licenses/namespace/callback?returnPath=${encodeURIComponent(returnPath)}&token=sagittarius-secret`))
+    const response = await selectLicenseNamespace(startedLoginCallback(`https://0.0.0.0:3000/api/crater/licenses/namespace/callback?returnPath=${encodeURIComponent(returnPath)}&token=sagittarius-secret`))
 
     assert.equal(response.status, 307)
     assert.equal(response.headers.get("location"), `https://code0.example${returnPath}?namespaceError=selection`)
