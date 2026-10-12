@@ -43,6 +43,7 @@ export const LicenseDialogs: GlobalConfig = {
                     type: "textarea",
                 }),
                 localizedText("licenseDescription", "Link this cloud license to a namespace.", "Verknüpfe diese Cloud-Lizenz mit einem Namespace.", { type: "textarea" }),
+                localizedText("noNamespaceLabel", "No linked workspace", "Kein verknüpfter Workspace"),
                 localizedText("changeNamespaceLabel", "Change namespace", "Namespace ändern"),
                 localizedText("saveLabel", "Save", "Speichern"),
                 localizedText("closeLabel", "Close", "Schließen"),

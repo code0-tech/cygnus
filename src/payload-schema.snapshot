@@ -2689,6 +2689,7 @@ export const license_dialogs_locales = pgTable('license_dialogs_locales', {
   editor_licenseTitle: varchar('editor_license_title').notNull(),
   editor_licenseEditDescription: varchar('editor_license_edit_description').notNull(),
   editor_licenseDescription: varchar('editor_license_description').notNull(),
+  editor_noNamespaceLabel: varchar('editor_no_namespace_label').notNull(),
   editor_changeNamespaceLabel: varchar('editor_change_namespace_label').notNull(),
   editor_saveLabel: varchar('editor_save_label').notNull(),
   editor_closeLabel: varchar('editor_close_label').notNull(),

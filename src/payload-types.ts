@@ -3335,6 +3335,7 @@ export interface LicenseDialog {
     licenseTitle: string;
     licenseEditDescription: string;
     licenseDescription: string;
+    noNamespaceLabel: string;
     changeNamespaceLabel: string;
     saveLabel: string;
     closeLabel: string;
@@ -4141,6 +4142,7 @@ export interface LicenseDialogsSelect<T extends boolean = true> {
         licenseTitle?: T;
         licenseEditDescription?: T;
         licenseDescription?: T;
+        noNamespaceLabel?: T;
         changeNamespaceLabel?: T;
         saveLabel?: T;
         closeLabel?: T;

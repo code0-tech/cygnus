@@ -85,7 +85,7 @@ export function LicenseGeneralTab({ content, errors, license, locale, namespaceH
                 {license?.deploymentType === "cloud" ? (
                     <LicenseTabRow
                         tone={license.namespaceName ? undefined : "warning"}
-                        title={license.namespaceName ?? "No linked workspace"}
+                        title={license.namespaceName ?? content.editor.noNamespaceLabel}
                         description={content.editor.licenseDescription}
                         action={
                             <Button paddingSize="xxs" color={"tertiary"} onClick={() => window.location.assign(namespaceHref)}>
