@@ -6,6 +6,7 @@ import { StableBadge } from "@/components/ui/StableBadge"
 import type { LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { type CustomerEditSection, getCustomerEditSectionLabels, getLicenseEditSectionLabels, LICENSE_EDIT_SECTIONS, type LicenseEditSection } from "@/lib/licenses/editSections"
+import { downloadLicenseFile } from "@/lib/licenses/client"
 import { createLicenseCustomerPath, createLicensePath, resolveCustomerRouteId } from "@/lib/licenses/routes"
 import type { LicenseDashboardLicense } from "@/lib/licenses/types"
 import { formatLicenseDisplayValue } from "@/lib/licenses/displayValues"
@@ -26,15 +27,28 @@ import {
     ScrollAreaViewport,
     Text,
 } from "@code0-tech/pictor"
-import { IconArrowAutofitLeftFilled, IconArrowLeft, IconChevronDown, IconCloud, IconCreditCard, IconKey, IconMenu2, IconServer, IconTrendingUp, IconUser } from "@tabler/icons-react"
+import {
+    IconArrowAutofitLeftFilled,
+    IconArrowLeft,
+    IconChevronDown,
+    IconCloud,
+    IconCreditCard,
+    IconDownload,
+    IconKey,
+    IconMenu2,
+    IconServer,
+    IconTrendingUp,
+    IconUser,
+} from "@tabler/icons-react"
 import BorderBeam from "border-beam"
 import Image from "next/image"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
+import { useState } from "react"
 import { cn } from "@/lib/utils"
 
 interface LicenseSidebarProps {
-    content: Pick<LicenseContent, "dashboard" | "editor" | "emptyLicenses" | "license" | "licenses" | "sidebar" | "upgrade" | "values">
+    content: Pick<LicenseContent, "dashboard" | "editor" | "emptyLicenses" | "invoices" | "license" | "licenses" | "sidebar" | "upgrade" | "values">
     isLoading: boolean
     isLoggingOut: boolean
     locale: AppLocale
@@ -97,6 +111,56 @@ function LicenseUpgradeButton({ content, license, locale }: { content: LicenseSi
         </Link>
     ) : (
         beam
+    )
+}
+
+// Self-hosted licenses are delivered as a file, so the sidebar keeps the download next to the plan actions.
+function LicenseDownloadButton({ content, license }: { content: LicenseSidebarProps["content"]; license: LicenseDashboardLicense }) {
+    const [isDownloading, setIsDownloading] = useState(false)
+    const [hasFailed, setHasFailed] = useState(false)
+
+    const download = async () => {
+        if (!license.licenseId || isDownloading) return
+
+        setIsDownloading(true)
+        setHasFailed(false)
+
+        try {
+            await downloadLicenseFile(license.licenseId)
+        } catch {
+            setHasFailed(true)
+        } finally {
+            setIsDownloading(false)
+        }
+    }
+
+    return (
+        <div>
+            <Button
+                type="button"
+                paddingSize="xxs"
+                variant="none"
+                justify="start"
+                w="100%"
+                disabled={isDownloading || !license.licenseId}
+                onClick={() => void download()}
+                className={cn("rounded-2xl! text-xs!", license.licenseId && "hover:shadow-[inset_0_1px_1px_#bfbfbf1a]!")}
+            >
+                {isDownloading ? (
+                    <ButtonLoader label={content.invoices.downloadLabel} />
+                ) : (
+                    <>
+                        <IconDownload aria-hidden="true" size={16} />
+                        <span className="min-w-0 truncate">{content.invoices.downloadLabel}</span>
+                    </>
+                )}
+            </Button>
+            {hasFailed ? (
+                <Text role="alert" size="sm" hierarchy="tertiary" display="block" className="mt-1! px-2 text-xs! text-error!">
+                    {content.invoices.unavailableLabel}
+                </Text>
+            ) : null}
+        </div>
     )
 }
 
@@ -363,6 +427,7 @@ export function LicenseSidebar({ content, isLoading, isLoggingOut, locale, licen
                 </div>
                 <div className="mt-6 flex shrink-0 flex-col gap-3">
                     {showLicenseActions ? <LicenseBackToCustomerButton label={content.sidebar.backToCustomerLabel} license={activeLicense} locale={locale} /> : null}
+                    {activeLicense?.deploymentType === "self_hosted" ? <LicenseDownloadButton content={content} license={activeLicense} /> : null}
                     {showLicenseActions ? <LicenseUpgradeButton content={content} license={activeLicense} locale={locale} /> : null}
                     {contextMenu ? <LicenseContextMenu {...contextMenu} /> : null}
                 </div>
