@@ -1,27 +1,29 @@
 "use client"
 
-import { DataTableControls } from "@/components/licenses/table/DataTableControls"
-import { getLicenseDetailGridCellClassName } from "@/components/licenses/shared/licenseDetailGrid"
-import { useLicenseData } from "@/components/licenses/data/LicenseDataProvider"
-import { LicenseLoadMoreButton } from "@/components/licenses/table/LicenseLoadMoreButton"
-import { LICENSE_DATA_TABLE_PAGE_SIZE, LicenseDataTablePagination } from "@/components/licenses/table/LicenseDataTablePagination"
-import { LicenseTabRow } from "@/components/licenses/dialog/shared/LicenseTabLayout"
-import { LicenseStatusDot } from "@/components/licenses/shared/LicenseStatusDot"
-import { ButtonLoader } from "@/components/ui/Loader"
-import type { ErrorsContent, LicenseContent, SubscriptionConfigData, UpgradeBannerData } from "@/lib/cms"
-import { formatMinorCurrency } from "@/lib/formatters"
-import type { AppLocale } from "@/lib/i18n"
-import { downloadLicenseFile } from "@/lib/licenses/client"
-import { formatLicenseDisplayValue } from "@/lib/licenses/displayValues"
-import { formatPendingUpdateSelection } from "@/lib/licenses/pendingUpdate"
-import { resolveCustomerRouteId, resolveSubscriptionRouteId } from "@/lib/licenses/routes"
-import type { LicenseDashboardInvoice } from "@/lib/licenses/types"
+import {DataTableControls} from "@/components/licenses/table/DataTableControls"
+import {getLicenseDetailGridCellClassName} from "@/components/licenses/shared/licenseDetailGrid"
+import {useLicenseData} from "@/components/licenses/data/LicenseDataProvider"
+import {LicenseLoadMoreButton} from "@/components/licenses/table/LicenseLoadMoreButton"
+import {
+    LICENSE_DATA_TABLE_PAGE_SIZE,
+    LicenseDataTablePagination
+} from "@/components/licenses/table/LicenseDataTablePagination"
+import {LicenseTabRow} from "@/components/licenses/dialog/shared/LicenseTabLayout"
+import {LicenseStatusDot} from "@/components/licenses/shared/LicenseStatusDot"
+import type {ErrorsContent, LicenseContent, SubscriptionConfigData, UpgradeBannerData} from "@/lib/cms"
+import {formatMinorCurrency} from "@/lib/formatters"
+import type {AppLocale} from "@/lib/i18n"
+import {formatLicenseDisplayValue} from "@/lib/licenses/displayValues"
+import {formatPendingUpdateSelection} from "@/lib/licenses/pendingUpdate"
+import {resolveCustomerRouteId, resolveSubscriptionRouteId} from "@/lib/licenses/routes"
+import type {LicenseDashboardInvoice} from "@/lib/licenses/types"
 import {
     Badge,
     Button,
     Card,
     DataTable,
     DataTableColumn,
+    type DataTableFilterProps,
     DataTableHeader,
     DataTableHeaderColumn,
     Dialog,
@@ -41,11 +43,10 @@ import {
     MenuTrigger,
     Spacing,
     Text,
-    type DataTableFilterProps,
 } from "@code0-tech/pictor"
-import { IconDotsVertical, IconDownload, IconEye, IconX } from "@tabler/icons-react"
-import { useSearchParams } from "next/navigation"
-import { Fragment, useState } from "react"
+import {IconDotsVertical, IconDownload, IconEye, IconX} from "@tabler/icons-react"
+import {useSearchParams} from "next/navigation"
+import {Fragment, useState} from "react"
 
 interface LicenseDetailPageProps {
     content: LicenseContent
@@ -80,15 +81,22 @@ function getInvoiceStatusBadgeColor(status?: string) {
     }
 }
 
-export function LicenseDetailPage({ content, errors, customerId, licenseId, locale, namespaceHref, subscriptionConfig, upgradeBanner }: LicenseDetailPageProps) {
+export function LicenseDetailPage({
+                                      content,
+                                      errors,
+                                      customerId,
+                                      licenseId,
+                                      locale,
+                                      namespaceHref,
+                                      subscriptionConfig,
+                                      upgradeBanner
+                                  }: LicenseDetailPageProps) {
     const searchParams = useSearchParams()
-    const { customers, isLoading, licenses, loadMore, loadingMore, pagination } = useLicenseData()
+    const {customers, isLoading, licenses, loadMore, loadingMore, pagination} = useLicenseData()
     const resolvedCustomerId = resolveCustomerRouteId(customerId)
     const resolvedSubscriptionId = resolveSubscriptionRouteId(licenseId)
     const license = licenses.find((candidate) => candidate.id === resolvedSubscriptionId && candidate.customerId === resolvedCustomerId)
     const customer = customers.find((candidate) => candidate.id === resolvedCustomerId)
-    const [isDownloadingLicense, setIsDownloadingLicense] = useState(false)
-    const [licenseDownloadError, setLicenseDownloadError] = useState(false)
     const dateFormatter = new Intl.DateTimeFormat(locale, {
         dateStyle: "medium",
         timeZone: "UTC",
@@ -99,101 +107,52 @@ export function LicenseDetailPage({ content, errors, customerId, licenseId, loca
     const pendingSelection = formatPendingUpdateSelection(license?.pendingUpdate, content, locale)
     const licenseDetails: LicenseDetailItem[] = license
         ? [
-              { label: content.dashboard.statusLabel, value: formatLicenseDisplayValue(license.status, "status", content.values) },
-              {
-                  badge: formatLicenseDisplayValue(license.deploymentType, "deploymentType", content.values),
-                  label: content.license,
-                  value: formatLicenseDisplayValue(license.plan, "plan", content.values),
-              },
-              { label: content.dashboard.paymentPeriodLabel, value: formatLicenseDisplayValue(license.paymentPeriod, "paymentPeriod", content.values) },
-              {
-                  label: content.dashboard.nextBillingDateLabel,
-                  value: hasNextBilling ? formatDate(license.currentPeriodEnd) : "—",
-                  // A scheduled change only matters while the subscription still renews.
-                  ...(hasNextBilling && pendingSelection ? { note: content.billing.pendingChangeNote.replaceAll("{selection}", pendingSelection) } : {}),
-              },
-          ]
+            {
+                label: content.dashboard.statusLabel,
+                value: formatLicenseDisplayValue(license.status, "status", content.values)
+            },
+            {
+                badge: formatLicenseDisplayValue(license.deploymentType, "deploymentType", content.values),
+                label: content.license,
+                value: formatLicenseDisplayValue(license.plan, "plan", content.values),
+            },
+            {
+                label: content.dashboard.paymentPeriodLabel,
+                value: formatLicenseDisplayValue(license.paymentPeriod, "paymentPeriod", content.values)
+            },
+            {
+                label: content.dashboard.nextBillingDateLabel,
+                value: hasNextBilling ? formatDate(license.currentPeriodEnd) : "—",
+                // A scheduled change only matters while the subscription still renews.
+                ...(hasNextBilling && pendingSelection ? {note: content.billing.pendingChangeNote.replaceAll("{selection}", pendingSelection)} : {}),
+            },
+        ]
         : []
     const invoices = license?.invoices ?? []
     const [invoiceStatusFilters, setInvoiceStatusFilters] = useState<string[]>([])
     const [invoiceSortDirection, setInvoiceSortDirection] = useState<"asc" | "desc">("desc")
     const [selectedInvoice, setSelectedInvoice] = useState<LicenseDashboardInvoice | null>(null)
-    const invoiceRows = invoices.map((invoice) => ({ ...invoice, tableStatus: invoice.status?.trim().toLowerCase().replaceAll("-", "_") }))
-    const invoiceFilter: DataTableFilterProps | undefined = invoiceStatusFilters.length ? { tableStatus: { operator: "isOneOf", value: invoiceStatusFilters } } : undefined
+    const invoiceRows = invoices.map((invoice) => ({
+        ...invoice,
+        tableStatus: invoice.status?.trim().toLowerCase().replaceAll("-", "_")
+    }))
+    const invoiceFilter: DataTableFilterProps | undefined = invoiceStatusFilters.length ? {
+        tableStatus: {
+            operator: "isOneOf",
+            value: invoiceStatusFilters
+        }
+    } : undefined
 
     const withdrawalDeadline = license?.immediateCancellationUntil ? new Date(license.immediateCancellationUntil) : null
     const showWithdrawalNotice = (customer?.customerType ?? license?.customerType) === "personal" && license?.immediateCancellationAvailable === true && withdrawalDeadline !== null
     const [withdrawalTextBeforeDate, withdrawalTextAfterDate] = content.withdrawal.text.split("{date}")
-
-    const downloadCurrentLicense = async () => {
-        if (!license?.licenseId || license.deploymentType !== "self_hosted" || isDownloadingLicense) return
-
-        setIsDownloadingLicense(true)
-        setLicenseDownloadError(false)
-
-        try {
-            await downloadLicenseFile(license.licenseId)
-        } catch {
-            setLicenseDownloadError(true)
-        } finally {
-            setIsDownloadingLicense(false)
-        }
-    }
 
     const selectedInvoiceNumber = selectedInvoice?.invoiceNumber || selectedInvoice?.id.split("/").at(-1) || selectedInvoice?.id
     const selectedInvoicePreviewUrl = selectedInvoice?.stripePdfUrl ? `/api/crater/invoices/preview?url=${encodeURIComponent(selectedInvoice.stripePdfUrl)}` : null
 
     return (
         <div>
-            {searchParams.get("namespaceError") ? (
-                <p role="alert" className="my-4 rounded-lg border border-error/30 p-4 text-sm text-error">
-                    {searchParams.get("namespaceError") === "occupied" ? errors.namespaceInUse : errors.licenseUpdate}
-                </p>
-            ) : null}
             <section aria-label={content.license}>
-                <Flex justify="end">
-                    {license?.deploymentType === "self_hosted" ? (
-                        <Button
-                            type="button"
-                            variant="normal"
-                            paddingSize="xxs"
-                            disabled={isDownloadingLicense || !license.licenseId}
-                            onClick={() => void downloadCurrentLicense()}
-                            className="shrink-0 text-sm!"
-                        >
-                            {isDownloadingLicense ? <ButtonLoader label={content.invoices.downloadLabel} /> : <IconDownload aria-hidden="true" size={16} />}
-                            {!isDownloadingLicense ? content.invoices.downloadLabel : null}
-                        </Button>
-                    ) : null}
-                </Flex>
-                {licenseDownloadError ? (
-                    <>
-                        <Spacing spacing="xs" />
-                        <Text role="alert" size="sm" hierarchy="tertiary" className="text-error!">
-                            {content.invoices.unavailableLabel}
-                        </Text>
-                    </>
-                ) : null}
-                {showNamespaceWarning ? (
-                    <>
-                        <Spacing spacing="xs" />
-                        <div role="alert">
-                            <Card color="secondary">
-                                <LicenseTabRow
-                                    tone="warning"
-                                    title={content.editor.noNamespaceLabel}
-                                    description={content.editor.licenseDescription}
-                                    action={
-                                        <Button type="button" paddingSize="xxs" color="tertiary" onClick={() => window.location.assign(namespaceHref)}>
-                                            {content.editor.changeNamespaceLabel}
-                                        </Button>
-                                    }
-                                />
-                            </Card>
-                        </div>
-                    </>
-                ) : null}
-                <Spacing spacing="md" />
                 <Card color="secondary" className="overflow-hidden p-0!">
                     {license ? (
                         <div>
@@ -205,14 +164,17 @@ export function LicenseDetailPage({ content, errors, customerId, licenseId, loca
                                                 {detail.label}
                                             </Text>
                                         </div>
-                                        <Flex align="center" style={{ gap: "0.5rem" }} className="mt-3 min-w-0">
-                                            {detail.showStatusDot ? <LicenseStatusDot aria-hidden="true" status={license.status} /> : null}
-                                            <Text fw={400} title={detail.value} className="truncate text-xl! leading-tight! text-white!">
+                                        <Flex align="center" style={{gap: "0.5rem"}} className="mt-3 min-w-0">
+                                            {detail.showStatusDot ?
+                                                <LicenseStatusDot aria-hidden="true" status={license.status}/> : null}
+                                            <Text fw={400} title={detail.value}
+                                                  className="truncate text-xl! leading-tight! text-white!">
                                                 {detail.value}
                                             </Text>
                                         </Flex>
                                         {detail.note ? (
-                                            <Text size="sm" hierarchy="tertiary" display="block" title={detail.note} className="mt-1! truncate">
+                                            <Text size="sm" hierarchy="tertiary" display="block" title={detail.note}
+                                                  className="mt-1! truncate">
                                                 {detail.note}
                                             </Text>
                                         ) : null}
@@ -223,10 +185,13 @@ export function LicenseDetailPage({ content, errors, customerId, licenseId, loca
                     ) : isLoading ? (
                         <div aria-hidden="true">
                             <div className="grid sm:grid-cols-2 xl:grid-cols-4">
-                                {Array.from({ length: 4 }, (_, index) => (
-                                    <div key={index} className={getLicenseDetailGridCellClassName(index, "animate-pulse motion-reduce:animate-none")}>
-                                        <div className={index % 2 === 0 ? "h-3 w-20 rounded-full bg-white/10" : "h-3 w-28 rounded-full bg-white/10"} />
-                                        <div className={index % 2 === 0 ? "mt-4 h-8 w-24 rounded-lg bg-white/10" : "mt-4 h-8 w-32 rounded-lg bg-white/10"} />
+                                {Array.from({length: 4}, (_, index) => (
+                                    <div key={index}
+                                         className={getLicenseDetailGridCellClassName(index, "animate-pulse motion-reduce:animate-none")}>
+                                        <div
+                                            className={index % 2 === 0 ? "h-3 w-20 rounded-full bg-white/10" : "h-3 w-28 rounded-full bg-white/10"}/>
+                                        <div
+                                            className={index % 2 === 0 ? "mt-4 h-8 w-24 rounded-lg bg-white/10" : "mt-4 h-8 w-32 rounded-lg bg-white/10"}/>
                                     </div>
                                 ))}
                             </div>
@@ -238,9 +203,36 @@ export function LicenseDetailPage({ content, errors, customerId, licenseId, loca
                     )}
                 </Card>
 
+                {searchParams.get("namespaceError") ? (
+                    <>
+                        <Spacing spacing="md"/>
+                        <p role="alert" className="rounded-lg border border-error/30 p-4 text-sm text-error">
+                            {searchParams.get("namespaceError") === "occupied" ? errors.namespaceInUse : errors.licenseUpdate}
+                        </p>
+                    </>
+                ) : null}
+                {showNamespaceWarning ? (
+                    <>
+                        <Spacing spacing="md"/>
+                        <Card color="secondary" role="alert">
+                            <LicenseTabRow
+                                tone="warning"
+                                title={content.editor.noNamespaceLabel}
+                                description={content.editor.licenseDescription}
+                                action={
+                                    <Button type="button" paddingSize="xxs" color="tertiary"
+                                            onClick={() => window.location.assign(namespaceHref)}>
+                                        {content.editor.changeNamespaceLabel}
+                                    </Button>
+                                }
+                            />
+                        </Card>
+                    </>
+                ) : null}
+
                 {showWithdrawalNotice && withdrawalDeadline && (
                     <>
-                        <Spacing spacing="md" />
+                        <Spacing spacing="md"/>
                         <Card color="secondary" className="text-sm text-secondary">
                             {withdrawalTextBeforeDate}
                             <span className="font-medium text-white">{dateFormatter.format(withdrawalDeadline)}</span>
@@ -249,11 +241,11 @@ export function LicenseDetailPage({ content, errors, customerId, licenseId, loca
                     </>
                 )}
             </section>
-            <Spacing spacing="xl" />
+            <Spacing spacing="xl"/>
 
-            <Spacing spacing="xl" />
+            <Spacing spacing="xl"/>
             <section aria-labelledby="license-invoices-heading">
-                <Flex align="end" justify="space-between" style={{ gap: "1rem" }} className="flex-wrap">
+                <Flex align="end" justify="space-between" style={{gap: "1rem"}} className="flex-wrap">
                     <div className="min-w-0">
                         <Text id="license-invoices-heading" hierarchy="secondary" size="xl">
                             {content.invoices.title}
@@ -266,11 +258,11 @@ export function LicenseDetailPage({ content, errors, customerId, licenseId, loca
                         disabled={isLoading}
                         filterLabel={content.invoices.statusLabel}
                         filterOptions={[
-                            { value: "draft", label: content.values.invoiceStatuses.draft },
-                            { value: "open", label: content.values.invoiceStatuses.open },
-                            { value: "paid", label: content.values.invoiceStatuses.paid },
-                            { value: "uncollectible", label: content.values.invoiceStatuses.uncollectible },
-                            { value: "void", label: content.values.invoiceStatuses.void },
+                            {value: "draft", label: content.values.invoiceStatuses.draft},
+                            {value: "open", label: content.values.invoiceStatuses.open},
+                            {value: "paid", label: content.values.invoiceStatuses.paid},
+                            {value: "uncollectible", label: content.values.invoiceStatuses.uncollectible},
+                            {value: "void", label: content.values.invoiceStatuses.void},
                         ]}
                         selectedFilters={invoiceStatusFilters}
                         onFilterChange={setInvoiceStatusFilters}
@@ -279,7 +271,7 @@ export function LicenseDetailPage({ content, errors, customerId, licenseId, loca
                         onSortDirectionChange={setInvoiceSortDirection}
                     />
                 </Flex>
-                <Spacing spacing="md" />
+                <Spacing spacing="md"/>
 
                 <Card color="secondary" className="pt-2!">
                     <DataTable
@@ -288,7 +280,7 @@ export function LicenseDetailPage({ content, errors, customerId, licenseId, loca
                         limit={LICENSE_DATA_TABLE_PAGE_SIZE}
                         loading={isLoading}
                         pagination
-                        sort={{ createdAt: invoiceSortDirection }}
+                        sort={{createdAt: invoiceSortDirection}}
                         emptyComponent={
                             <DataTableColumn colSpan={5}>
                                 <Text size="sm" hierarchy="tertiary">
@@ -298,11 +290,15 @@ export function LicenseDetailPage({ content, errors, customerId, licenseId, loca
                         }
                     >
                         <DataTableHeader>
-                            <DataTableHeaderColumn className="font-normal text-tertiary text-xs">{content.invoices.numberLabel}</DataTableHeaderColumn>
-                            <DataTableHeaderColumn className="font-normal text-tertiary text-xs">{content.invoices.billingDateLabel}</DataTableHeaderColumn>
-                            <DataTableHeaderColumn className="font-normal text-tertiary text-xs">{content.invoices.amountLabel}</DataTableHeaderColumn>
-                            <DataTableHeaderColumn className="font-normal text-tertiary text-xs">{content.invoices.statusLabel}</DataTableHeaderColumn>
-                            <DataTableHeaderColumn />
+                            <DataTableHeaderColumn
+                                className="font-normal text-tertiary text-xs">{content.invoices.numberLabel}</DataTableHeaderColumn>
+                            <DataTableHeaderColumn
+                                className="font-normal text-tertiary text-xs">{content.invoices.billingDateLabel}</DataTableHeaderColumn>
+                            <DataTableHeaderColumn
+                                className="font-normal text-tertiary text-xs">{content.invoices.amountLabel}</DataTableHeaderColumn>
+                            <DataTableHeaderColumn
+                                className="font-normal text-tertiary text-xs">{content.invoices.statusLabel}</DataTableHeaderColumn>
+                            <DataTableHeaderColumn/>
                         </DataTableHeader>
                         {(invoice) => (
                             <Fragment key={invoice.id}>
@@ -322,7 +318,8 @@ export function LicenseDetailPage({ content, errors, customerId, licenseId, loca
                                     </Text>
                                 </DataTableColumn>
                                 <DataTableColumn>
-                                    <Badge color={getInvoiceStatusBadgeColor(invoice.status)}>{formatLicenseDisplayValue(invoice.status, "invoiceStatus", content.values)}</Badge>
+                                    <Badge
+                                        color={getInvoiceStatusBadgeColor(invoice.status)}>{formatLicenseDisplayValue(invoice.status, "invoiceStatus", content.values)}</Badge>
                                 </DataTableColumn>
                                 <DataTableColumn>
                                     <Menu>
@@ -333,26 +330,27 @@ export function LicenseDetailPage({ content, errors, customerId, licenseId, loca
                                                 paddingSize="xxs"
                                                 aria-label={`${content.invoices.title}: ${invoice.invoiceNumber || invoice.id.split("/").at(-1) || invoice.id}`}
                                             >
-                                                <IconDotsVertical aria-hidden="true" size={16} />
+                                                <IconDotsVertical aria-hidden="true" size={16}/>
                                             </Button>
                                         </MenuTrigger>
                                         <MenuPortal>
                                             <MenuContent align="end" sideOffset={8}>
                                                 <MenuLabel>{content.invoices.title}</MenuLabel>
                                                 <MenuItem onSelect={() => setSelectedInvoice(invoice)}>
-                                                    <IconEye aria-hidden="true" size={15} />
+                                                    <IconEye aria-hidden="true" size={15}/>
                                                     {content.invoices.viewLabel}
                                                 </MenuItem>
                                                 {invoice.stripePdfUrl ? (
                                                     <MenuItem asChild>
-                                                        <a href={invoice.stripePdfUrl} target="_blank" rel="noopener noreferrer">
-                                                            <IconDownload aria-hidden="true" size={15} />
+                                                        <a href={invoice.stripePdfUrl} target="_blank"
+                                                           rel="noopener noreferrer">
+                                                            <IconDownload aria-hidden="true" size={15}/>
                                                             {content.invoices.downloadLabel}
                                                         </a>
                                                     </MenuItem>
                                                 ) : (
                                                     <MenuItem disabled>
-                                                        <IconDownload aria-hidden="true" size={15} />
+                                                        <IconDownload aria-hidden="true" size={15}/>
                                                         {content.invoices.unavailableLabel}
                                                     </MenuItem>
                                                 )}
@@ -362,15 +360,18 @@ export function LicenseDetailPage({ content, errors, customerId, licenseId, loca
                                 </DataTableColumn>
                             </Fragment>
                         )}
-                        {invoiceRows.length > LICENSE_DATA_TABLE_PAGE_SIZE ? <LicenseDataTablePagination labels={content.pagination} /> : null}
+                        {invoiceRows.length > LICENSE_DATA_TABLE_PAGE_SIZE ?
+                            <LicenseDataTablePagination labels={content.pagination}/> : null}
                     </DataTable>
                 </Card>
-                {pagination?.invoices?.hasNextPage ? <LicenseLoadMoreButton loading={loadingMore === "invoices"} labels={content.pagination} onClick={() => void loadMore("invoices")} /> : null}
+                {pagination?.invoices?.hasNextPage ?
+                    <LicenseLoadMoreButton loading={loadingMore === "invoices"} labels={content.pagination}
+                                           onClick={() => void loadMore("invoices")}/> : null}
             </section>
 
             <Dialog open={selectedInvoice !== null} onOpenChange={(open) => !open && setSelectedInvoice(null)}>
                 <DialogPortal>
-                    <DialogOverlay className="backdrop-blur-sm" />
+                    <DialogOverlay className="backdrop-blur-sm"/>
                     <DialogContent
                         showCloseButton={false}
                         className="flex! flex-col! h-[calc(100dvh-2rem)]! w-[calc(100vw-2rem)]! max-w-5xl! overflow-hidden! border border-white/5 bg-primary! p-4! sm:p-6!"
@@ -391,14 +392,17 @@ export function LicenseDetailPage({ content, errors, customerId, licenseId, loca
                         </DialogHeader>
                         <div className="absolute right-4 top-4 z-10">
                             <DialogClose asChild>
-                                <Button type="button" variant="none" paddingSize="xxs" aria-label={content.editor.closeLabel}>
-                                    <IconX aria-hidden="true" size={16} />
+                                <Button type="button" variant="none" paddingSize="xxs"
+                                        aria-label={content.editor.closeLabel}>
+                                    <IconX aria-hidden="true" size={16}/>
                                 </Button>
                             </DialogClose>
                         </div>
                         <div className="mt-5 flex-1 min-h-0 overflow-hidden rounded-xl border border-white/10 bg-white">
                             {selectedInvoicePreviewUrl ? (
-                                <iframe src={selectedInvoicePreviewUrl} title={`${content.invoices.title} ${selectedInvoiceNumber ?? ""}`} className="h-full w-full border-0" />
+                                <iframe src={selectedInvoicePreviewUrl}
+                                        title={`${content.invoices.title} ${selectedInvoiceNumber ?? ""}`}
+                                        className="h-full w-full border-0"/>
                             ) : (
                                 <div className="flex h-full items-center justify-center bg-primary p-6">
                                     <Text size="sm" hierarchy="tertiary">
