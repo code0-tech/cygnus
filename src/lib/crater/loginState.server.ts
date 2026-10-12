@@ -10,7 +10,7 @@ const CRATER_LOGIN_STATE_COOKIE_PATH = "/api/crater"
 const CRATER_LOGIN_STATE_MAX_AGE_SECONDS = 10 * 60
 const CRATER_LOGIN_STATE_PATTERN = /^[A-Za-z0-9_-]{43}$/
 
-export const CRATER_LOGIN_STATE_PARAM = "state"
+const CRATER_LOGIN_STATE_PARAM = "state"
 
 export function createCraterLoginState() {
     return randomBytes(32).toString("base64url")
@@ -28,7 +28,7 @@ function readLoginStateCookie(request: Request) {
     return null
 }
 
-export function hasCraterLoginStateCookie(request: Request) {
+function hasCraterLoginStateCookie(request: Request) {
     return readLoginStateCookie(request) !== null
 }
 
