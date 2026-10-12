@@ -1,7 +1,6 @@
 "use client"
 
 import type { PaymentPeriod, SubscriptionPlan } from "@/lib/subscription/types"
-import { SubscriptionPendingUpdateNotice } from "@/components/licenses/shared/SubscriptionPendingUpdateNotice"
 
 import { useLicenseData } from "@/components/licenses/data/LicenseDataProvider"
 import { LicenseTabAlert, LicenseTabHeader, LicenseTabRow, LicenseTabSection } from "@/components/licenses/dialog/shared/LicenseTabLayout"
@@ -146,7 +145,6 @@ export function LicenseUpgradeDialog({ content, customerId, errors, licenseId, l
 
     return (
         <>
-            <SubscriptionPendingUpdateNotice update={license?.pendingUpdate} content={content} locale={locale} />
             <LicenseTabHeader title={content.upgrade.title} description={content.upgrade.description} />
 
             <LicenseTabSection title={content.upgrade.planHeading}>

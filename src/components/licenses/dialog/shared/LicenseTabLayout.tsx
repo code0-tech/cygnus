@@ -1,8 +1,9 @@
 "use client"
 
-import { Button, Card, Flex, Spacing, Text } from "@code0-tech/pictor"
+import { Button, Card, Flex, type Sizes, Spacing, Text } from "@code0-tech/pictor"
 import CardSection from "@code0-tech/pictor/dist/components/card/CardSection"
 import { cn } from "@/lib/utils"
+import { IconAlertTriangle } from "@tabler/icons-react"
 import type { ComponentProps, ReactNode } from "react"
 
 export function LicenseTabHeader({ action, description, title }: { action?: ReactNode; description?: ReactNode; title: ReactNode }) {
@@ -30,13 +31,13 @@ export function LicenseTabSaveButton(props: Omit<ComponentProps<typeof Button>, 
 export function LicenseTabSection({ children, title }: { children: ReactNode; title?: ReactNode }) {
     return (
         <>
-            <Spacing spacing="xl" />
+            <Spacing spacing={"md"} />
             {title ? (
                 <>
                     <Text size="md" hierarchy="secondary">
                         {title}
                     </Text>
-                    <Spacing spacing="md" />
+                    <Spacing spacing={"lg"} />
                 </>
             ) : null}
             <Card color="secondary">{children}</Card>
@@ -44,29 +45,46 @@ export function LicenseTabSection({ children, title }: { children: ReactNode; ti
     )
 }
 
-export function LicenseTabRow({ action, children, description, title }: { action?: ReactNode; children?: ReactNode; description?: ReactNode; title?: ReactNode }) {
+export function LicenseTabRow({
+    action,
+    children,
+    contentSpacing = "xs",
+    description,
+    title,
+    tone,
+}: {
+    action?: ReactNode
+    children?: ReactNode
+    contentSpacing?: Sizes
+    description?: ReactNode
+    title?: ReactNode
+    tone?: "warning"
+}) {
     return (
-        <CardSection border>
+        <CardSection border className={tone === "warning" ? "bg-[#201813]" : undefined}>
             {title || description || action ? (
                 <Flex justify="space-between" align="center" style={{ gap: "1rem" }}>
-                    <Flex style={{ gap: "0.15rem", flexDirection: "column" }} className="min-w-0">
-                        {title ? (
-                            <Text size="md" hierarchy="primary">
-                                {title}
-                            </Text>
-                        ) : null}
-                        {description ? (
-                            <Text size="sm" hierarchy="tertiary">
-                                {description}
-                            </Text>
-                        ) : null}
+                    <Flex align="center" style={{ gap: "0.75rem" }} className="min-w-0">
+                        {tone === "warning" ? <IconAlertTriangle aria-hidden="true" size={16} color="#ffbe0b" className="shrink-0" /> : null}
+                        <Flex style={{ gap: "0.15rem", flexDirection: "column" }} className="min-w-0">
+                            {title ? (
+                                <Text size="md" hierarchy="primary">
+                                    {title}
+                                </Text>
+                            ) : null}
+                            {description ? (
+                                <Text size="md" hierarchy="tertiary">
+                                    {description}
+                                </Text>
+                            ) : null}
+                        </Flex>
                     </Flex>
                     {action ? <div className="shrink-0">{action}</div> : null}
                 </Flex>
             ) : null}
             {children ? (
                 <>
-                    {title || description || action ? <Spacing spacing="xs" /> : null}
+                    {title || description || action ? <Spacing spacing={contentSpacing} /> : null}
                     {children}
                 </>
             ) : null}

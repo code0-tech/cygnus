@@ -76,8 +76,9 @@ export const LicenseDialogs: GlobalConfig = {
             admin: { description: "Shared between the billing and upgrade dialogs, both of which preview a change through subscriptionsPreviewUpdate before applying it." },
             fields: [
                 localizedText("totalLabel", "New total", "Neuer Gesamtbetrag"),
-                localizedText("pendingChangeText", "Switch to {selection} on {date}.", "Wechsel auf {selection} am {date}.", { description: "Use {selection} and {date} as placeholders." }),
+                localizedText("totalDescription", "What you will be billed per period once this change applies.", "Was dir nach dieser Änderung pro Periode berechnet wird.", { type: "textarea" }),
                 localizedText("prorationLabel", "Charged today", "Heute berechnet"),
+                localizedText("prorationDescription", "The difference for the remainder of the current period.", "Die Differenz für den Rest der aktuellen Periode.", { type: "textarea" }),
                 localizedText("immediateNote", "This change applies immediately.", "Diese Änderung wird sofort wirksam."),
                 localizedText("scheduledNote", "This change applies at the end of your current billing period.", "Diese Änderung wird am Ende der aktuellen Abrechnungsperiode wirksam."),
                 localizedText("loadingLabel", "Calculating…", "Wird berechnet …"),
@@ -87,12 +88,38 @@ export const LicenseDialogs: GlobalConfig = {
             name: "billing",
             type: "group",
             fields: [
+                localizedText("heading", "Billing", "Abrechnung"),
                 localizedText("title", "Change Period", "Zahlungsperiode ändern"),
                 localizedText("description", "Review your subscription and change how often you're billed.", "Sieh dir dein Abonnement an und ändere, wie oft du abgerechnet wirst.", {
                     type: "textarea",
                 }),
+                localizedText("statusDescription", "The current state of this subscription and the access it grants.", "Der aktuelle Zustand dieses Abonnements und der Zugriff, den es gewährt.", {
+                    type: "textarea",
+                }),
                 localizedText("periodLabel", "Billing period", "Abrechnungsintervall"),
                 localizedText("currentPeriodEndLabel", "Current period ends", "Aktuelle Periode endet"),
+                localizedText("currentPeriodEndDescription", "The subscription renews on {date} unless it is canceled before.", "Das Abonnement verlängert sich am {date}, sofern es nicht vorher gekündigt wird.", {
+                    type: "textarea",
+                    description: "Use {date} as a placeholder for the end of the current period.",
+                }),
+                localizedText(
+                    "currentPeriodEndPendingDescription",
+                    "The subscription switches to {selection} on {date}.",
+                    "Das Abonnement wechselt am {date} auf {selection}.",
+                    {
+                        type: "textarea",
+                        description: "Replaces the renewal text while a change is scheduled. Use {selection} for the new plan and {date} for the day it applies.",
+                    }
+                ),
+                localizedText("pendingChangeNote", "Switches to {selection}", "Wechselt auf {selection}", {
+                    description: "Shown below the next billing date on the license page. Use {selection} as a placeholder for the scheduled change.",
+                }),
+                localizedText(
+                    "currentPeriodEndUnknownDescription",
+                    "This subscription has no scheduled renewal yet.",
+                    "Für dieses Abonnement steht noch keine Verlängerung an.",
+                    { type: "textarea" }
+                ),
                 localizedText("changePeriodLabel", "Change period", "Zeitraum ändern"),
             ],
         },

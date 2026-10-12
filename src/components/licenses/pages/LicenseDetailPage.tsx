@@ -1,7 +1,5 @@
 "use client"
 
-import { SubscriptionPendingUpdateNotice } from "@/components/licenses/shared/SubscriptionPendingUpdateNotice"
-
 import { DataTableControls } from "@/components/licenses/table/DataTableControls"
 import { getLicenseDetailGridCellClassName } from "@/components/licenses/shared/licenseDetailGrid"
 import { useLicenseData } from "@/components/licenses/data/LicenseDataProvider"
@@ -14,6 +12,7 @@ import { formatMinorCurrency } from "@/lib/formatters"
 import type { AppLocale } from "@/lib/i18n"
 import { downloadLicenseFile } from "@/lib/licenses/client"
 import { formatLicenseDisplayValue } from "@/lib/licenses/displayValues"
+import { formatPendingUpdateSelection } from "@/lib/licenses/pendingUpdate"
 import { createLicensePath, resolveCustomerRouteId, resolveSubscriptionRouteId } from "@/lib/licenses/routes"
 import type { LicenseDashboardInvoice } from "@/lib/licenses/types"
 import {
@@ -63,6 +62,7 @@ interface LicenseDetailPageProps {
 interface LicenseDetailItem {
     badge?: string
     label: string
+    note?: string
     showStatusDot?: boolean
     value: string
 }
@@ -98,6 +98,7 @@ export function LicenseDetailPage({ content, errors, customerId, licenseId, loca
     const formatDate = (value?: string) => (value ? dateFormatter.format(new Date(value)) : "—")
     const hasNextBilling = Boolean(license && !license.cancelAt && !license.canceledAt && license.subscriptionStatus?.trim().toLowerCase() !== "canceled")
     const showNamespaceWarning = license?.deploymentType === "cloud" && !license.namespaceId
+    const pendingSelection = formatPendingUpdateSelection(license?.pendingUpdate, content, locale)
     const licenseDetails: LicenseDetailItem[] = license
         ? [
               { label: content.dashboard.statusLabel, value: formatLicenseDisplayValue(license.status, "status", content.values) },
@@ -107,7 +108,12 @@ export function LicenseDetailPage({ content, errors, customerId, licenseId, loca
                   value: formatLicenseDisplayValue(license.plan, "plan", content.values),
               },
               { label: content.dashboard.paymentPeriodLabel, value: formatLicenseDisplayValue(license.paymentPeriod, "paymentPeriod", content.values) },
-              { label: content.dashboard.nextBillingDateLabel, value: hasNextBilling ? formatDate(license.currentPeriodEnd) : "—" },
+              {
+                  label: content.dashboard.nextBillingDateLabel,
+                  value: hasNextBilling ? formatDate(license.currentPeriodEnd) : "—",
+                  // A scheduled change only matters while the subscription still renews.
+                  ...(hasNextBilling && pendingSelection ? { note: content.billing.pendingChangeNote.replaceAll("{selection}", pendingSelection) } : {}),
+              },
           ]
         : []
     const invoices = license?.invoices ?? []
@@ -161,7 +167,6 @@ export function LicenseDetailPage({ content, errors, customerId, licenseId, loca
                     {searchParams.get("namespaceError") === "occupied" ? errors.namespaceInUse : errors.licenseUpdate}
                 </p>
             ) : null}
-            <SubscriptionPendingUpdateNotice update={license?.pendingUpdate} content={content} locale={locale} />
             <section aria-label={content.license}>
                 <Flex justify="end">
                     {isLoading || license ? (
@@ -230,6 +235,11 @@ export function LicenseDetailPage({ content, errors, customerId, licenseId, loca
                                                 {detail.value}
                                             </Text>
                                         </Flex>
+                                        {detail.note ? (
+                                            <Text size="sm" hierarchy="tertiary" display="block" title={detail.note} className="mt-1! truncate">
+                                                {detail.note}
+                                            </Text>
+                                        ) : null}
                                     </div>
                                 ))}
                             </div>

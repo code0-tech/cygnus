@@ -1,7 +1,6 @@
 import assert from "node:assert/strict"
 import test from "node:test"
-import { renderToStaticMarkup } from "react-dom/server"
-import { SubscriptionPendingUpdateNotice } from "../../src/components/licenses/shared/SubscriptionPendingUpdateNotice"
+import { formatPendingUpdateSelection, resolvePendingUpdateDate } from "../../src/lib/licenses/pendingUpdate"
 import type { LicenseContent } from "../../src/lib/cms"
 
 const content = {
@@ -15,21 +14,23 @@ const content = {
         unknown: "Unknown",
     },
     dashboard: { workflowExecutionsLabel: "Workflows", aiTokensLabel: "Tokens" },
-    subscriptionPreview: { pendingChangeText: "Switch to {selection} on {date}." },
 } as LicenseContent
 
-test("scheduled changes include selection, quantities and the effective date", () => {
-    const markup = renderToStaticMarkup(
-        <SubscriptionPendingUpdateNotice
-            update={{ plan: "max", paymentPeriod: "yearly", aiTokens: 0, workflowExecutions: 100000, effectiveAt: "2026-11-01T00:00:00Z" }}
-            content={content}
-            locale="en"
-        />
-    )
-    assert.match(markup, /Switch to Max/)
-    assert.match(markup, /Yearly/)
-    assert.match(markup, /100,000 Workflows/)
-    assert.match(markup, /0 Tokens/)
-    assert.match(markup, /Nov 1, 2026/)
-    assert.equal(renderToStaticMarkup(<SubscriptionPendingUpdateNotice update={null} content={content} locale="en" />), "")
+test("a scheduled change is summarized with plan, period and quantities", () => {
+    const selection = formatPendingUpdateSelection({ plan: "max", paymentPeriod: "yearly", aiTokens: 0, workflowExecutions: 100000 }, content, "en")
+
+    assert.equal(selection, "Max · Yearly · 100,000 Workflows · 0 Tokens")
+    assert.equal(formatPendingUpdateSelection({ paymentPeriod: "quarterly" }, content, "en"), "Quarterly")
+})
+
+test("without a scheduled change there is nothing to summarize", () => {
+    assert.equal(formatPendingUpdateSelection(null, content, "en"), null)
+    assert.equal(formatPendingUpdateSelection({}, content, "en"), null)
+})
+
+test("the effective date wins over the period end and invalid dates fall back", () => {
+    assert.equal(resolvePendingUpdateDate({ effectiveAt: "2026-11-01T00:00:00Z" }, "2026-12-01T00:00:00Z")?.toISOString(), "2026-11-01T00:00:00.000Z")
+    assert.equal(resolvePendingUpdateDate({}, "2026-12-01T00:00:00Z")?.toISOString(), "2026-12-01T00:00:00.000Z")
+    assert.equal(resolvePendingUpdateDate({ effectiveAt: "not a date" }, "2026-12-01T00:00:00Z")?.toISOString(), "2026-12-01T00:00:00.000Z")
+    assert.equal(resolvePendingUpdateDate({}, null), null)
 })

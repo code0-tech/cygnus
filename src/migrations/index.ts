@@ -167,6 +167,8 @@ import * as migration_20261010_120000_remove_sculptor_cms_urls from './20261010_
 import * as migration_20261010_130000_immediate_cancellation_labels from './20261010_130000_immediate_cancellation_labels';
 import * as migration_20261011_120000_require_subscription_config_fields from './20261011_120000_require_subscription_config_fields';
 import * as migration_20261011_160000_immediate_cancellation_confirmation from './20261011_160000_immediate_cancellation_confirmation';
+import * as migration_20261012_120000_license_row_descriptions from './20261012_120000_license_row_descriptions';
+import * as migration_20261012_150000_pending_change_period_row from './20261012_150000_pending_change_period_row';
 
 export const migrations = [
   {
@@ -1003,5 +1005,15 @@ export const migrations = [
     up: migration_20261011_160000_immediate_cancellation_confirmation.up,
     down: migration_20261011_160000_immediate_cancellation_confirmation.down,
     name: '20261011_160000_immediate_cancellation_confirmation',
+  },
+  {
+    up: migration_20261012_120000_license_row_descriptions.up,
+    down: migration_20261012_120000_license_row_descriptions.down,
+    name: '20261012_120000_license_row_descriptions',
+  },
+  {
+    up: migration_20261012_150000_pending_change_period_row.up,
+    down: migration_20261012_150000_pending_change_period_row.down,
+    name: '20261012_150000_pending_change_period_row',
   },
 ];
