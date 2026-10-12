@@ -14,12 +14,11 @@ import type { AppLocale } from "@/lib/i18n"
 import { downloadLicenseFile } from "@/lib/licenses/client"
 import { formatLicenseDisplayValue } from "@/lib/licenses/displayValues"
 import { formatPendingUpdateSelection } from "@/lib/licenses/pendingUpdate"
-import { createLicensePath, resolveCustomerRouteId, resolveSubscriptionRouteId } from "@/lib/licenses/routes"
+import { resolveCustomerRouteId, resolveSubscriptionRouteId } from "@/lib/licenses/routes"
 import type { LicenseDashboardInvoice } from "@/lib/licenses/types"
 import {
     Badge,
     Button,
-    ButtonGroup,
     Card,
     DataTable,
     DataTableColumn,
@@ -45,7 +44,7 @@ import {
     type DataTableFilterProps,
 } from "@code0-tech/pictor"
 import { IconDotsVertical, IconDownload, IconEye, IconX } from "@tabler/icons-react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useSearchParams } from "next/navigation"
 import { Fragment, useState } from "react"
 
 interface LicenseDetailPageProps {
@@ -82,7 +81,6 @@ function getInvoiceStatusBadgeColor(status?: string) {
 }
 
 export function LicenseDetailPage({ content, errors, customerId, licenseId, locale, namespaceHref, subscriptionConfig, upgradeBanner }: LicenseDetailPageProps) {
-    const router = useRouter()
     const searchParams = useSearchParams()
     const { customers, isLoading, licenses, loadMore, loadingMore, pagination } = useLicenseData()
     const resolvedCustomerId = resolveCustomerRouteId(customerId)
@@ -142,21 +140,6 @@ export function LicenseDetailPage({ content, errors, customerId, licenseId, loca
         }
     }
 
-    const editButton = (
-        <Button
-            type="button"
-            variant="normal"
-            paddingSize="xxs"
-            disabled={isLoading || !license}
-            onClick={() => {
-                if (!license) return
-                router.push(`${createLicensePath(locale, license.customerId, license.id)}/edit?tab=general`)
-            }}
-            className="shrink-0 text-sm!"
-        >
-            {content.dashboard.editLabel}
-        </Button>
-    )
     const selectedInvoiceNumber = selectedInvoice?.invoiceNumber || selectedInvoice?.id.split("/").at(-1) || selectedInvoice?.id
     const selectedInvoicePreviewUrl = selectedInvoice?.stripePdfUrl ? `/api/crater/invoices/preview?url=${encodeURIComponent(selectedInvoice.stripePdfUrl)}` : null
 
@@ -169,25 +152,18 @@ export function LicenseDetailPage({ content, errors, customerId, licenseId, loca
             ) : null}
             <section aria-label={content.license}>
                 <Flex justify="end">
-                    {isLoading || license ? (
-                        license?.deploymentType === "self_hosted" ? (
-                            <ButtonGroup>
-                                <Button
-                                    type="button"
-                                    variant="normal"
-                                    paddingSize="xxs"
-                                    disabled={isDownloadingLicense || !license.licenseId}
-                                    onClick={() => void downloadCurrentLicense()}
-                                    className="shrink-0 text-sm!"
-                                >
-                                    {isDownloadingLicense ? <ButtonLoader label={content.invoices.downloadLabel} /> : <IconDownload aria-hidden="true" size={16} />}
-                                    {!isDownloadingLicense ? content.invoices.downloadLabel : null}
-                                </Button>
-                                {editButton}
-                            </ButtonGroup>
-                        ) : (
-                            editButton
-                        )
+                    {license?.deploymentType === "self_hosted" ? (
+                        <Button
+                            type="button"
+                            variant="normal"
+                            paddingSize="xxs"
+                            disabled={isDownloadingLicense || !license.licenseId}
+                            onClick={() => void downloadCurrentLicense()}
+                            className="shrink-0 text-sm!"
+                        >
+                            {isDownloadingLicense ? <ButtonLoader label={content.invoices.downloadLabel} /> : <IconDownload aria-hidden="true" size={16} />}
+                            {!isDownloadingLicense ? content.invoices.downloadLabel : null}
+                        </Button>
                     ) : null}
                 </Flex>
                 {licenseDownloadError ? (
