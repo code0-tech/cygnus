@@ -6,6 +6,7 @@ import { useLicenseData } from "@/components/licenses/data/LicenseDataProvider"
 import { LicenseLoadMoreButton } from "@/components/licenses/table/LicenseLoadMoreButton"
 import { LICENSE_DATA_TABLE_PAGE_SIZE, LicenseDataTablePagination } from "@/components/licenses/table/LicenseDataTablePagination"
 import { getLicenseStatusBadgeColor } from "@/components/licenses/shared/LicenseStatusDot"
+import { PICTOR_BADGE_CLASS_NAME, StableBadge } from "@/components/ui/StableBadge"
 import type { LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { formatLicenseDisplayValue } from "@/lib/licenses/displayValues"
@@ -158,24 +159,19 @@ export function LicenseCustomerPage({ content, customerId, locale }: LicenseCust
             <Spacing spacing="xl" />
 
             <section aria-labelledby="customer-licenses-heading">
-                <Flex align="end" justify="space-between" style={{ gap: "1rem" }} className="flex-wrap">
-                    <div className="min-w-0">
-                        <Flex align="center" style={{ gap: "0.5rem" }}>
-                            <Text id="customer-licenses-heading" hierarchy="secondary" size="xl">
-                                {content.licenses}
-                            </Text>
-                            {isLoading ? (
-                                <span aria-hidden="true" className="h-5 w-6 animate-pulse rounded-full bg-white/10 motion-reduce:animate-none" />
-                            ) : (
-                                <span className="inline-flex w-fit items-center rounded-full bg-[#191825] px-[0.35rem] py-[0.1167rem] text-[0.7rem] font-normal tracking-[-0.5px] text-white/75 shadow-[inset_0_1px_1px_rgba(191,191,191,0.1)]">
-                                    {customer?.subscriptionCount ?? customerLicenses.length}
-                                </span>
-                            )}
-                        </Flex>
-                        <Text size="md" hierarchy="tertiary" className="mt-2!">
-                            {content.licenseDescription}
+                <Flex align="center" justify="space-between" style={{ gap: "0.5rem" }}>
+                    <Flex align="center" style={{ gap: "0.5rem" }}>
+                        <Text id="customer-licenses-heading" hierarchy="secondary" size="lg">
+                            {content.licenses}
                         </Text>
-                    </div>
+                        {isLoading ? (
+                            <span aria-hidden="true" className="h-5 w-6 animate-pulse rounded-full bg-white/10 motion-reduce:animate-none" />
+                        ) : (
+                            <StableBadge color="secondary" className={PICTOR_BADGE_CLASS_NAME}>
+                                {customer?.subscriptionCount ?? customerLicenses.length}
+                            </StableBadge>
+                        )}
+                    </Flex>
                     <DataTableControls
                         disabled={isLoading}
                         filterLabel={content.dashboard.statusLabel}
@@ -197,6 +193,10 @@ export function LicenseCustomerPage({ content, customerId, locale }: LicenseCust
                         onSortDirectionChange={setSortDirection}
                     />
                 </Flex>
+                <Spacing spacing="xs" />
+                <Text size="md" hierarchy="tertiary" maw="50%">
+                    {content.licenseDescription}
+                </Text>
                 <Spacing spacing="md" />
 
                 <Card color="secondary" className="pt-2!">

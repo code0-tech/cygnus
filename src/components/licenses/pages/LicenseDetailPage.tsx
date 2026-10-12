@@ -223,18 +223,11 @@ export function LicenseDetailPage({
                 ) : null}
             </section>
             <Spacing spacing="xl"/>
-
-            <Spacing spacing="xl"/>
             <section aria-labelledby="license-invoices-heading">
-                <Flex align="end" justify="space-between" style={{gap: "1rem"}} className="flex-wrap">
-                    <div className="min-w-0">
-                        <Text id="license-invoices-heading" hierarchy="secondary" size="xl">
-                            {content.invoices.title}
-                        </Text>
-                        <Text size="md" hierarchy="tertiary" className="mt-2!">
-                            {content.invoices.description}
-                        </Text>
-                    </div>
+                <Flex align="center" justify="space-between" style={{gap: "0.5rem"}}>
+                    <Text id="license-invoices-heading" hierarchy="secondary" size="lg">
+                        {content.invoices.title}
+                    </Text>
                     <DataTableControls
                         disabled={isLoading}
                         filterLabel={content.invoices.statusLabel}
@@ -252,6 +245,10 @@ export function LicenseDetailPage({
                         onSortDirectionChange={setInvoiceSortDirection}
                     />
                 </Flex>
+                <Spacing spacing="xs"/>
+                <Text size="md" hierarchy="tertiary" maw="50%">
+                    {content.invoices.description}
+                </Text>
                 <Spacing spacing="md"/>
 
                 <Card color="secondary" className="pt-2!">

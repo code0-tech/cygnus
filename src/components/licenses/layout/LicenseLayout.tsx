@@ -60,29 +60,31 @@ function LicenseLayoutContent({ children, content, errors, locale, sculptorUrl }
                 <LicenseSidebar content={content} isLoading={isSidebarLoading} isLoggingOut={isLoggingOut} locale={locale} licenses={sidebarLicenses} onLogout={() => void logout()} />
 
                 <main className="h-full min-h-0 w-[calc(100vw-2rem)] min-w-0 overflow-hidden rounded-2xl bg-transparent lg:w-auto">
-                    <ScrollArea h="100%" type="scroll">
-                        <ScrollAreaViewport>
-                            <div className="mx-auto box-border w-full min-w-0 max-w-208 px-4 py-10 sm:py-16">
-                                {error ? (
-                                    <Card color="secondary">
-                                        <Flex align="center" justify="space-between" style={{ gap: "1rem" }}>
-                                            <Text size="sm" hierarchy="secondary">
-                                                {error}
-                                            </Text>
-                                            <Button type="button" variant="normal" paddingSize="xs" onClick={reload}>
-                                                {errors.retry}
-                                            </Button>
-                                        </Flex>
-                                    </Card>
-                                ) : (
-                                    children
-                                )}
-                            </div>
-                        </ScrollAreaViewport>
-                        <ScrollAreaScrollbar orientation="vertical">
-                            <ScrollAreaThumb />
-                        </ScrollAreaScrollbar>
-                    </ScrollArea>
+                    <div style={{ height: "100%", position: "relative", boxSizing: "border-box" }}>
+                        <ScrollArea h={"100%"} type={"scroll"}>
+                            <ScrollAreaViewport>
+                                <div style={{ maxWidth: "52rem", margin: "0 auto", padding: "1rem 1rem" }}>
+                                    {error ? (
+                                        <Card color="secondary">
+                                            <Flex align="center" justify="space-between" style={{ gap: "1rem" }}>
+                                                <Text size="sm" hierarchy="secondary">
+                                                    {error}
+                                                </Text>
+                                                <Button type="button" variant="normal" paddingSize="xs" onClick={reload}>
+                                                    {errors.retry}
+                                                </Button>
+                                            </Flex>
+                                        </Card>
+                                    ) : (
+                                        children
+                                    )}
+                                </div>
+                            </ScrollAreaViewport>
+                            <ScrollAreaScrollbar orientation={"vertical"}>
+                                <ScrollAreaThumb />
+                            </ScrollAreaScrollbar>
+                        </ScrollArea>
+                    </div>
                 </main>
             </div>
         </FullScreen>

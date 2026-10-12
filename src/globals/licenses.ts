@@ -19,6 +19,7 @@ export const Licenses: GlobalConfig = {
                 localizedText("logout", "Log out", "Abmelden"),
                 localizedText("loggingOut", "Logging out…", "Wird abgemeldet …"),
                 localizedText("backToCustomerLabel", "Back to customer", "Zurück zum Kunden"),
+                localizedText("downloadLicenseLabel", "Download license", "Lizenz herunterladen"),
                 localizedText("homeLabel", "Home", "Startseite"),
                 localizedText("applicationSettingsLabel", "Application settings", "Anwendungseinstellungen"),
                 localizedText("userSettingsLabel", "User settings", "Benutzereinstellungen"),
@@ -111,8 +112,8 @@ export const Licenses: GlobalConfig = {
                 localizedText("title", "Invoices", "Rechnungen"),
                 localizedText(
                     "description",
-                    "View and download every invoice issued for this license, including earlier billing periods, and open any of them as a PDF.",
-                    "Sieh dir alle für diese Lizenz ausgestellten Rechnungen an, auch die vergangener Abrechnungszeiträume, und lade jede davon als PDF herunter.",
+                    "View and download every invoice issued for this license, or open any of them as a PDF.",
+                    "Sieh dir alle für diese Lizenz ausgestellten Rechnungen an und lade jede davon als PDF herunter.",
                     {
                         type: "textarea",
                     }
