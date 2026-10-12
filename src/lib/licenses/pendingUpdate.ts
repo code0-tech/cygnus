@@ -3,7 +3,8 @@ import type { AppLocale } from "@/lib/i18n"
 import { formatLicenseDisplayValue } from "@/lib/licenses/displayValues"
 import type { SubscriptionPendingUpdate } from "@/lib/licenses/types"
 
-export function SubscriptionPendingUpdateNotice({ update, content, locale }: { update?: SubscriptionPendingUpdate | null; content: LicenseContent; locale: AppLocale }) {
+// Crater only fills the fields of a scheduled change that actually differ, so the selection is assembled from whatever is present.
+export function formatPendingUpdateSelection(update: SubscriptionPendingUpdate | null | undefined, content: LicenseContent, locale: AppLocale) {
     if (!update) return null
 
     const selection = [
@@ -14,12 +15,18 @@ export function SubscriptionPendingUpdateNotice({ update, content, locale }: { u
     ]
         .filter(Boolean)
         .join(" · ")
-    const effectiveAt = update.effectiveAt ? new Date(update.effectiveAt) : null
-    const date = effectiveAt && Number.isFinite(effectiveAt.getTime()) ? new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeZone: "UTC" }).format(effectiveAt) : content.values.unknown
 
-    return (
-        <p role="status" className="my-4 rounded-lg border border-white/10 p-4 text-sm text-secondary">
-            {content.subscriptionPreview.pendingChangeText.replaceAll("{selection}", selection || content.values.unknown).replaceAll("{date}", date)}
-        </p>
-    )
+    return selection || null
+}
+
+export function parseLicenseDate(value?: string | null) {
+    if (!value) return null
+
+    const date = new Date(value)
+    return Number.isFinite(date.getTime()) ? date : null
+}
+
+// The scheduled change usually lands on the period end, but Crater may schedule it for another day.
+export function resolvePendingUpdateDate(update: SubscriptionPendingUpdate | null | undefined, fallback?: string | null) {
+    return parseLicenseDate(update?.effectiveAt) ?? parseLicenseDate(fallback)
 }

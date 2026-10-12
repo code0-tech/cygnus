@@ -3363,20 +3363,33 @@ export interface LicenseDialog {
    */
   subscriptionPreview: {
     totalLabel: string;
-    /**
-     * Use {selection} and {date} as placeholders.
-     */
-    pendingChangeText: string;
+    totalDescription: string;
     prorationLabel: string;
+    prorationDescription: string;
     immediateNote: string;
     scheduledNote: string;
     loadingLabel: string;
   };
   billing: {
+    heading: string;
     title: string;
     description: string;
+    statusDescription: string;
     periodLabel: string;
     currentPeriodEndLabel: string;
+    /**
+     * Use {date} as a placeholder for the end of the current period.
+     */
+    currentPeriodEndDescription: string;
+    /**
+     * Replaces the renewal text while a change is scheduled. Use {selection} for the new plan and {date} for the day it applies.
+     */
+    currentPeriodEndPendingDescription: string;
+    /**
+     * Shown below the next billing date on the license page. Use {selection} as a placeholder for the scheduled change.
+     */
+    pendingChangeNote: string;
+    currentPeriodEndUnknownDescription: string;
     changePeriodLabel: string;
   };
   cancel: {
@@ -4154,8 +4167,9 @@ export interface LicenseDialogsSelect<T extends boolean = true> {
     | T
     | {
         totalLabel?: T;
-        pendingChangeText?: T;
+        totalDescription?: T;
         prorationLabel?: T;
+        prorationDescription?: T;
         immediateNote?: T;
         scheduledNote?: T;
         loadingLabel?: T;
@@ -4163,10 +4177,16 @@ export interface LicenseDialogsSelect<T extends boolean = true> {
   billing?:
     | T
     | {
+        heading?: T;
         title?: T;
         description?: T;
+        statusDescription?: T;
         periodLabel?: T;
         currentPeriodEndLabel?: T;
+        currentPeriodEndDescription?: T;
+        currentPeriodEndPendingDescription?: T;
+        pendingChangeNote?: T;
+        currentPeriodEndUnknownDescription?: T;
         changePeriodLabel?: T;
       };
   cancel?:

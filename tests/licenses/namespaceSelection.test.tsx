@@ -16,12 +16,18 @@ mock.module("@code0-tech/pictor", {
         Button: ({ children }: { children: ReactNode }) => <button>{children}</button>,
         Badge: ({ children }: { children: ReactNode }) => <span>{children}</span>,
         Text: ({ children }: { children: ReactNode }) => <span>{children}</span>,
+        SelectInput: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+        SelectTrigger: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+        SelectValue: ({ children }: { children: ReactNode }) => <span>{children}</span>,
+        SelectPortal: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+        SelectContent: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+        SelectViewport: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+        SelectItem: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+        SelectItemText: ({ children }: { children: ReactNode }) => <span>{children}</span>,
     },
 })
 mock.module("@/components/licenses/data/LicenseDataProvider", { namedExports: { useLicenseData: () => ({ updateLicense: () => {} }) } })
 mock.module("@/hooks/useSubscriptionUpdatePreview", { namedExports: { useSubscriptionUpdatePreview: () => ({}) } })
-mock.module("@/components/ui/Switch", { namedExports: { Switch: () => null } })
-mock.module("@/components/licenses/shared/SubscriptionPendingUpdateNotice", { namedExports: { SubscriptionPendingUpdateNotice: () => null } })
 const Row = ({ children, title, action }: { children?: ReactNode; title?: ReactNode; action?: ReactNode }) => <div>{title}{children}{action}</div>
 mock.module("@/components/licenses/dialog/shared/LicenseTabLayout", {
     namedExports: { LicenseTabHeader: Row, LicenseTabRow: Row, LicenseTabSection: Row },
@@ -32,7 +38,10 @@ afterEach(cleanup)
 
 test("the edit dialog displays a namespace name and an unavailable namespace fallback", () => {
     const license = { id: "2", customerId: "1", customerName: "Customer", name: "Pro", deploymentType: "cloud", namespaceId: "opaque-id", namespaceName: "Example Workspace" } as LicenseDashboardLicense
-    const content = { editor: { namespaceHeading: "Namespace", changeNamespaceLabel: "Change namespace" } } as LicenseContent
+    const content = {
+        editor: { namespaceHeading: "Namespace", changeNamespaceLabel: "Change namespace" },
+        billing: { currentPeriodEndDescription: "Renews on {date}.", currentPeriodEndPendingDescription: "Switches to {selection} on {date}." },
+    } as LicenseContent
     const props = { content, license, errors: {} as import("../../src/lib/cms").ErrorsContent, locale: "en" as const, namespaceHref: "https://app.example/login", onClose: () => {}, subscriptionConfig: {} as SubscriptionConfigData, title: "Edit" }
     const { rerender } = render(<LicenseGeneralTab {...props} />)
     assert.ok(screen.getByText("Example Workspace"))
