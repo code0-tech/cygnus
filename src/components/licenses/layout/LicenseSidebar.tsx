@@ -100,14 +100,28 @@ function LicenseUpgradeButton({ content, license, locale }: { content: LicenseSi
     )
 }
 
-function LicenseBackToCustomerButton({ label, license, locale }: { label: string; license: LicenseDashboardLicense; locale: AppLocale }) {
-    return (
+function LicenseBackToCustomerButton({ label, license, locale }: { label: string; license?: LicenseDashboardLicense; locale: AppLocale }) {
+    const button = (
+        <Button
+            type="button"
+            paddingSize="xxs"
+            variant="none"
+            justify="start"
+            w="100%"
+            disabled={!license}
+            className={cn("rounded-2xl! text-xs!", license && "hover:shadow-[inset_0_1px_1px_#bfbfbf1a]!")}
+        >
+            <IconArrowLeft aria-hidden="true" size={16} />
+            <span className="min-w-0 truncate">{label}</span>
+        </Button>
+    )
+
+    return license ? (
         <Link href={createLicenseCustomerPath(locale, license.customerId)} className="block">
-            <Button type="button" paddingSize="xxs" variant="none" justify="start" w="100%" className="rounded-2xl! text-xs! hover:shadow-[inset_0_1px_1px_#bfbfbf1a]!">
-                <IconArrowLeft aria-hidden="true" size={16} />
-                <span className="min-w-0 truncate">{label}</span>
-            </Button>
+            {button}
         </Link>
+    ) : (
+        button
     )
 }
 
@@ -122,23 +136,39 @@ function getShortLicenseId(id: string) {
     return `#${identifier || id.slice(-6)}`
 }
 
+const SKELETON_NAME_WIDTHS = ["w-14", "w-20", "w-16"]
+
 function LicenseSidebarSkeleton() {
     return (
-        <ul aria-hidden="true" className="space-y-1.5">
-            {Array.from({ length: 3 }, (_, index) => (
-                <li key={index} className="flex animate-pulse items-center gap-3 rounded-xl px-2 py-2 motion-reduce:animate-none">
-                    <span className="size-4.5 shrink-0 rounded bg-white/10" />
-                    <span className="min-w-0 flex-1">
-                        <span className="flex h-5 items-center">
-                            <span className={index === 1 ? "block h-3 w-24 rounded-full bg-white/10" : "block h-3 w-32 rounded-full bg-white/10"} />
-                        </span>
-                        <span className="flex h-4 items-center">
-                            <span className="block h-2.5 w-36 rounded-full bg-white/[0.07]" />
-                        </span>
-                    </span>
+        <ul aria-hidden="true">
+            {SKELETON_NAME_WIDTHS.map((width) => (
+                <li key={width} className="flex h-9.5 animate-pulse items-center gap-2 px-2.25 motion-reduce:animate-none">
+                    <span className="size-4 shrink-0 rounded-[5px] bg-white/10" />
+                    <span className={cn("block h-3 max-w-full rounded-full bg-white/10", width)} />
                 </li>
             ))}
         </ul>
+    )
+}
+
+// Mirrors a mobile menu entry: name and "customer | id" stacked next to a 16px icon.
+function LicenseMenuSkeleton() {
+    return (
+        <div aria-hidden="true">
+            {SKELETON_NAME_WIDTHS.map((width) => (
+                <div key={width} className="flex animate-pulse items-center gap-2.25 px-2.25 py-1.75 motion-reduce:animate-none">
+                    <span className="size-4 shrink-0 rounded-[5px] bg-white/10" />
+                    <span className="min-w-0 flex-1">
+                        <span className="flex h-5 items-center">
+                            <span className={cn("block h-3 rounded-full bg-white/10", width)} />
+                        </span>
+                        <span className="flex h-4 items-center">
+                            <span className="block h-2.5 w-28 max-w-full rounded-full bg-white/[0.07]" />
+                        </span>
+                    </span>
+                </div>
+            ))}
+        </div>
     )
 }
 
@@ -176,6 +206,8 @@ export function LicenseSidebar({ content, isLoading, isLoggingOut, locale, licen
         return pathname === href || pathname?.startsWith(`${href}/`)
     })
     const customerRouteSegment = pathname?.match(/\/licenses\/customer\/([^/]+)/)?.[1]
+    // While a license page loads, its actions are already shown, disabled until the license is known.
+    const showLicenseActions = Boolean(activeLicense) || (isLoading && /\/licenses\/customer\/[^/]+\/license\/[^/]+/.test(pathname ?? ""))
     const customerId = customerRouteSegment ? resolveCustomerRouteId(customerRouteSegment) : undefined
     const contextMenu = activeLicense
         ? getLicenseContextMenu(activeLicense, content, locale)
@@ -204,18 +236,11 @@ export function LicenseSidebar({ content, isLoading, isLoggingOut, locale, licen
                             >
                                 <MenuLabel className="flex w-full! items-center justify-between gap-3">
                                     <span>{content.licenses}</span>
-                                    <span className="text-xs tabular-nums text-tertiary">{isLoading ? "…" : licenses.length}</span>
+                                    {isLoading ? null : <span className="text-xs tabular-nums text-tertiary">{licenses.length}</span>}
                                 </MenuLabel>
 
                                 {isLoading ? (
-                                    <div aria-hidden="true" className="space-y-1 px-2 py-1">
-                                        {Array.from({ length: 3 }, (_, index) => (
-                                            <div key={index} className="flex h-10 animate-pulse items-center gap-3 motion-reduce:animate-none">
-                                                <span className="size-4 rounded bg-white/10" />
-                                                <span className={index === 1 ? "h-3 w-24 rounded-full bg-white/10" : "h-3 w-32 rounded-full bg-white/10"} />
-                                            </div>
-                                        ))}
-                                    </div>
+                                    <LicenseMenuSkeleton />
                                 ) : licenses.length > 0 ? (
                                     licenses.map((license) => {
                                         const status = formatLicenseDisplayValue(license.status, "status", content.values)
@@ -273,9 +298,11 @@ export function LicenseSidebar({ content, isLoading, isLoggingOut, locale, licen
                         <Text hierarchy="tertiary" className="text-xs! font-medium! tracking-[0.5px]">
                             {content.licenses}
                         </Text>
-                        <StableBadge color="secondary" className="ml-auto rounded-full! tabular-nums text-[10px]! h-4.5!">
-                            {licenses.length}
-                        </StableBadge>
+                        {isLoading ? null : (
+                            <StableBadge color="secondary" className="ml-auto rounded-full! tabular-nums text-[10px]! h-4.5!">
+                                {licenses.length}
+                            </StableBadge>
+                        )}
                     </div>
 
                     <ScrollArea type="auto" className="min-h-0 flex-1">
@@ -335,8 +362,8 @@ export function LicenseSidebar({ content, isLoading, isLoggingOut, locale, licen
                     </ScrollArea>
                 </div>
                 <div className="mt-6 flex shrink-0 flex-col gap-3">
-                    {activeLicense ? <LicenseBackToCustomerButton label={content.sidebar.backToCustomerLabel} license={activeLicense} locale={locale} /> : null}
-                    {activeLicense ? <LicenseUpgradeButton content={content} license={activeLicense} locale={locale} /> : null}
+                    {showLicenseActions ? <LicenseBackToCustomerButton label={content.sidebar.backToCustomerLabel} license={activeLicense} locale={locale} /> : null}
+                    {showLicenseActions ? <LicenseUpgradeButton content={content} license={activeLicense} locale={locale} /> : null}
                     {contextMenu ? <LicenseContextMenu {...contextMenu} /> : null}
                 </div>
             </aside>
