@@ -169,6 +169,7 @@ import * as migration_20261011_120000_require_subscription_config_fields from '.
 import * as migration_20261011_160000_immediate_cancellation_confirmation from './20261011_160000_immediate_cancellation_confirmation';
 import * as migration_20261012_120000_license_row_descriptions from './20261012_120000_license_row_descriptions';
 import * as migration_20261012_150000_pending_change_period_row from './20261012_150000_pending_change_period_row';
+import * as migration_20261012_210000_no_namespace_label from './20261012_210000_no_namespace_label';
 
 export const migrations = [
   {
@@ -1015,5 +1016,10 @@ export const migrations = [
     up: migration_20261012_150000_pending_change_period_row.up,
     down: migration_20261012_150000_pending_change_period_row.down,
     name: '20261012_150000_pending_change_period_row',
+  },
+  {
+    up: migration_20261012_210000_no_namespace_label.up,
+    down: migration_20261012_210000_no_namespace_label.down,
+    name: '20261012_210000_no_namespace_label',
   },
 ];

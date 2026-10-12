@@ -5,6 +5,7 @@ import { getLicenseDetailGridCellClassName } from "@/components/licenses/shared/
 import { useLicenseData } from "@/components/licenses/data/LicenseDataProvider"
 import { LicenseLoadMoreButton } from "@/components/licenses/table/LicenseLoadMoreButton"
 import { LICENSE_DATA_TABLE_PAGE_SIZE, LicenseDataTablePagination } from "@/components/licenses/table/LicenseDataTablePagination"
+import { LicenseTabRow } from "@/components/licenses/dialog/shared/LicenseTabLayout"
 import { LicenseStatusDot } from "@/components/licenses/shared/LicenseStatusDot"
 import { ButtonLoader } from "@/components/ui/Loader"
 import type { ErrorsContent, LicenseContent, SubscriptionConfigData, UpgradeBannerData } from "@/lib/cms"
@@ -16,7 +17,6 @@ import { formatPendingUpdateSelection } from "@/lib/licenses/pendingUpdate"
 import { createLicensePath, resolveCustomerRouteId, resolveSubscriptionRouteId } from "@/lib/licenses/routes"
 import type { LicenseDashboardInvoice } from "@/lib/licenses/types"
 import {
-    Alert,
     Badge,
     Button,
     ButtonGroup,
@@ -201,20 +201,20 @@ export function LicenseDetailPage({ content, errors, customerId, licenseId, loca
                 {showNamespaceWarning ? (
                     <>
                         <Spacing spacing="xs" />
-                        <Alert color="warning" role="alert">
-                            <div className="flex min-w-0 flex-1 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                                <span>{content.editor.licenseDescription}</span>
-                                <Button
-                                    type="button"
-                                    variant="none"
-                                    paddingSize="xs"
-                                    className="shrink-0 bg-white/80! text-primary! hover:bg-white! transition-colors! py-1! px-2! rounded-lg!"
-                                    onClick={() => window.location.assign(namespaceHref)}
-                                >
-                                    {content.editor.changeNamespaceLabel}
-                                </Button>
-                            </div>
-                        </Alert>
+                        <div role="alert">
+                            <Card color="secondary">
+                                <LicenseTabRow
+                                    tone="warning"
+                                    title={content.editor.noNamespaceLabel}
+                                    description={content.editor.licenseDescription}
+                                    action={
+                                        <Button type="button" paddingSize="xxs" color="tertiary" onClick={() => window.location.assign(namespaceHref)}>
+                                            {content.editor.changeNamespaceLabel}
+                                        </Button>
+                                    }
+                                />
+                            </Card>
+                        </div>
                     </>
                 ) : null}
                 <Spacing spacing="md" />

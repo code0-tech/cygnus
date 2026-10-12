@@ -39,7 +39,7 @@ afterEach(cleanup)
 test("the edit dialog displays a namespace name and an unavailable namespace fallback", () => {
     const license = { id: "2", customerId: "1", customerName: "Customer", name: "Pro", deploymentType: "cloud", namespaceId: "opaque-id", namespaceName: "Example Workspace" } as LicenseDashboardLicense
     const content = {
-        editor: { namespaceHeading: "Namespace", changeNamespaceLabel: "Change namespace" },
+        editor: { namespaceHeading: "Namespace", noNamespaceLabel: "No linked workspace", changeNamespaceLabel: "Change namespace" },
         billing: { currentPeriodEndDescription: "Renews on {date}.", currentPeriodEndPendingDescription: "Switches to {selection} on {date}." },
     } as LicenseContent
     const props = { content, license, errors: {} as import("../../src/lib/cms").ErrorsContent, locale: "en" as const, namespaceHref: "https://app.example/login", onClose: () => {}, subscriptionConfig: {} as SubscriptionConfigData, title: "Edit" }
@@ -47,7 +47,7 @@ test("the edit dialog displays a namespace name and an unavailable namespace fal
     assert.ok(screen.getByText("Example Workspace"))
     assert.equal(screen.queryByText("opaque-id"), null)
     rerender(<LicenseGeneralTab {...props} license={{ ...license, namespaceId: null, namespaceName: null }} />)
-    assert.ok(screen.getByText("—"))
+    assert.ok(screen.getByText("No linked workspace"))
     assert.equal(screen.queryByText("Example Workspace"), null)
 })
 
