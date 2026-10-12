@@ -170,6 +170,9 @@ const withAlpha = (color: string, alpha: number) => {
 
 const isStableBadgeColor = (color: string): color is StableBadgeColor => color in badgeClassMap
 
+// Pictor's own Badge metrics (.badge in Badge.style.css); StableBadge otherwise renders the larger marketing variant.
+export const PICTOR_BADGE_CLASS_NAME = "gap-[0.422rem]! px-[0.422rem]! py-[0.1406666667rem]! text-[0.563rem]!"
+
 export function StableBadge({ children, color = "primary", border = false, className, style }: StableBadgeProps) {
     return (
         <span

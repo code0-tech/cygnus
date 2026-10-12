@@ -171,6 +171,7 @@ import * as migration_20261011_160000_immediate_cancellation_confirmation from '
 import * as migration_20261012_120000_license_row_descriptions from './20261012_120000_license_row_descriptions';
 import * as migration_20261012_150000_pending_change_period_row from './20261012_150000_pending_change_period_row';
 import * as migration_20261012_210000_no_namespace_label from './20261012_210000_no_namespace_label';
+import * as migration_20261013_100000_download_license_label from './20261013_100000_download_license_label';
 
 export const migrations = [
   {
@@ -1022,5 +1023,10 @@ export const migrations = [
     up: migration_20261012_210000_no_namespace_label.up,
     down: migration_20261012_210000_no_namespace_label.down,
     name: '20261012_210000_no_namespace_label',
+  },
+  {
+    up: migration_20261013_100000_download_license_label.up,
+    down: migration_20261013_100000_download_license_label.down,
+    name: '20261013_100000_download_license_label',
   },
 ];

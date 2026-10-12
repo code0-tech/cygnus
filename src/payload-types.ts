@@ -3210,6 +3210,7 @@ export interface License {
     logout: string;
     loggingOut: string;
     backToCustomerLabel: string;
+    downloadLicenseLabel: string;
     homeLabel: string;
     applicationSettingsLabel: string;
     userSettingsLabel: string;
@@ -3997,6 +3998,7 @@ export interface LicensesSelect<T extends boolean = true> {
         logout?: T;
         loggingOut?: T;
         backToCustomerLabel?: T;
+        downloadLicenseLabel?: T;
         homeLabel?: T;
         applicationSettingsLabel?: T;
         userSettingsLabel?: T;
