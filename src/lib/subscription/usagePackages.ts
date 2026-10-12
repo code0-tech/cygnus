@@ -1,5 +1,5 @@
-export type UsagePackageKind = "aiTokens" | "workflowExecutions"
-export type UsagePackageValues<T> = Record<UsagePackageKind, T>
+type UsagePackageKind = "aiTokens" | "workflowExecutions"
+type UsagePackageValues<T> = Record<UsagePackageKind, T>
 
 export interface CheckoutPackages {
     quantitySteps: Record<"b2b" | "b2c", UsagePackageValues<number[]>>
