@@ -109,9 +109,14 @@ export const Licenses: GlobalConfig = {
             type: "group",
             fields: [
                 localizedText("title", "Invoices", "Rechnungen"),
-                localizedText("description", "View and download invoices issued for this license.", "Sieh dir die für diese Lizenz ausgestellten Rechnungen an und lade sie herunter.", {
-                    type: "textarea",
-                }),
+                localizedText(
+                    "description",
+                    "View and download every invoice issued for this license, including earlier billing periods, and open any of them as a PDF.",
+                    "Sieh dir alle für diese Lizenz ausgestellten Rechnungen an, auch die vergangener Abrechnungszeiträume, und lade jede davon als PDF herunter.",
+                    {
+                        type: "textarea",
+                    }
+                ),
                 localizedText("empty", "No invoices yet", "Noch keine Rechnungen"),
                 localizedText("lineItemsLabel", "Line items", "Rechnungspositionen"),
                 localizedText("quantityLabel", "Quantity", "Menge"),

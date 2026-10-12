@@ -8,7 +8,7 @@ import {
     LICENSE_DATA_TABLE_PAGE_SIZE,
     LicenseDataTablePagination
 } from "@/components/licenses/table/LicenseDataTablePagination"
-import {LicenseTabRow} from "@/components/licenses/dialog/shared/LicenseTabLayout"
+import {LicenseAlert} from "@/components/licenses/shared/LicenseAlert"
 import {LicenseStatusDot} from "@/components/licenses/shared/LicenseStatusDot"
 import type {ErrorsContent, LicenseContent, SubscriptionConfigData, UpgradeBannerData} from "@/lib/cms"
 import {formatMinorCurrency} from "@/lib/formatters"
@@ -92,11 +92,10 @@ export function LicenseDetailPage({
                                       upgradeBanner
                                   }: LicenseDetailPageProps) {
     const searchParams = useSearchParams()
-    const {customers, isLoading, licenses, loadMore, loadingMore, pagination} = useLicenseData()
+    const {isLoading, licenses, loadMore, loadingMore, pagination} = useLicenseData()
     const resolvedCustomerId = resolveCustomerRouteId(customerId)
     const resolvedSubscriptionId = resolveSubscriptionRouteId(licenseId)
     const license = licenses.find((candidate) => candidate.id === resolvedSubscriptionId && candidate.customerId === resolvedCustomerId)
-    const customer = customers.find((candidate) => candidate.id === resolvedCustomerId)
     const dateFormatter = new Intl.DateTimeFormat(locale, {
         dateStyle: "medium",
         timeZone: "UTC",
@@ -142,10 +141,6 @@ export function LicenseDetailPage({
             value: invoiceStatusFilters
         }
     } : undefined
-
-    const withdrawalDeadline = license?.immediateCancellationUntil ? new Date(license.immediateCancellationUntil) : null
-    const showWithdrawalNotice = (customer?.customerType ?? license?.customerType) === "personal" && license?.immediateCancellationAvailable === true && withdrawalDeadline !== null
-    const [withdrawalTextBeforeDate, withdrawalTextAfterDate] = content.withdrawal.text.split("{date}")
 
     const selectedInvoiceNumber = selectedInvoice?.invoiceNumber || selectedInvoice?.id.split("/").at(-1) || selectedInvoice?.id
     const selectedInvoicePreviewUrl = selectedInvoice?.stripePdfUrl ? `/api/crater/invoices/preview?url=${encodeURIComponent(selectedInvoice.stripePdfUrl)}` : null
@@ -206,40 +201,26 @@ export function LicenseDetailPage({
                 {searchParams.get("namespaceError") ? (
                     <>
                         <Spacing spacing="md"/>
-                        <p role="alert" className="rounded-lg border border-error/30 p-4 text-sm text-error">
-                            {searchParams.get("namespaceError") === "occupied" ? errors.namespaceInUse : errors.licenseUpdate}
-                        </p>
+                        <LicenseAlert
+                            color="error"
+                            description={searchParams.get("namespaceError") === "occupied" ? errors.namespaceInUse : errors.licenseUpdate}
+                        />
                     </>
                 ) : null}
                 {showNamespaceWarning ? (
                     <>
                         <Spacing spacing="md"/>
-                        <Card color="secondary" role="alert">
-                            <LicenseTabRow
-                                tone="warning"
-                                title={content.editor.noNamespaceLabel}
-                                description={content.editor.licenseDescription}
-                                action={
-                                    <Button type="button" paddingSize="xxs" color="tertiary"
-                                            onClick={() => window.location.assign(namespaceHref)}>
-                                        {content.editor.changeNamespaceLabel}
-                                    </Button>
-                                }
-                            />
-                        </Card>
+                        <LicenseAlert
+                            description={content.editor.licenseDescription}
+                            action={
+                                <Button type="button" paddingSize="xxs" color="tertiary"
+                                        onClick={() => window.location.assign(namespaceHref)}>
+                                    {content.editor.changeNamespaceLabel}
+                                </Button>
+                            }
+                        />
                     </>
                 ) : null}
-
-                {showWithdrawalNotice && withdrawalDeadline && (
-                    <>
-                        <Spacing spacing="md"/>
-                        <Card color="secondary" className="text-sm text-secondary">
-                            {withdrawalTextBeforeDate}
-                            <span className="font-medium text-white">{dateFormatter.format(withdrawalDeadline)}</span>
-                            {withdrawalTextAfterDate}
-                        </Card>
-                    </>
-                )}
             </section>
             <Spacing spacing="xl"/>
 
