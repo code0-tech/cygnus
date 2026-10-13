@@ -4,9 +4,6 @@ import { useLicenseData } from "@/components/licenses/data/LicenseDataProvider"
 import { LicenseGeneralTab } from "@/components/licenses/dialog/subscription/LicenseGeneralTab"
 import { LicenseDialog } from "@/components/licenses/dialog/shared/LicenseDialog"
 import { LicenseUpgradeDialog } from "@/components/licenses/dialog/subscription/LicenseUpgradeDialog"
-import { CustomerPaymentMethodCard, CustomerPaymentMethodCardSkeleton } from "@/components/licenses/dialog/customer/CustomerPaymentMethodCard"
-import { LicenseTabAlert, LicenseTabHeader, LicenseTabRow, LicenseTabSection } from "@/components/licenses/dialog/shared/LicenseTabLayout"
-import { ButtonLoader } from "@/components/ui/Loader"
 import { useCustomerPaymentMethods } from "@/hooks/usePaymentMethods"
 import type { ErrorsContent, LicenseContent, SubscriptionConfigData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
@@ -15,7 +12,7 @@ import { createLicensePath, resolveCustomerRouteId, resolveSubscriptionRouteId }
 import { updateSubscription } from "@/lib/subscription/client"
 import type { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
 import { Button, TabContent, TabList, TabTrigger, Text } from "@code0-tech/pictor"
-import { IconCreditCard, IconKey, IconTrendingUp } from "@tabler/icons-react"
+import { IconKey, IconTrendingUp } from "@tabler/icons-react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useState } from "react"
 
@@ -39,15 +36,14 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
     const resolvedSubscriptionId = resolveSubscriptionRouteId(licenseId)
     const license = licenses.find((candidate) => candidate.id === resolvedSubscriptionId && candidate.customerId === resolvedCustomerId)
     const requestedTab = searchParams.get("tab")
-    const section: LicenseEditSection = isLicenseEditSection(requestedTab) ? requestedTab : searchParams.has("setup_intent") ? "payment" : "general"
+    const section: LicenseEditSection = isLicenseEditSection(requestedTab) ? requestedTab : "general"
     const sectionLabels = getLicenseEditSectionLabels(content)
-    const paymentSectionEnabled = section === "payment"
     const {
         isLoadingPaymentMethods: isLoadingCustomerPaymentMethods,
         paymentMethods: customerPaymentMethods,
         paymentMethodsError: customerPaymentMethodsError,
         refreshPaymentMethods: refreshCustomerPaymentMethods,
-    } = useCustomerPaymentMethods(license?.customerId, paymentSectionEnabled)
+    } = useCustomerPaymentMethods(license?.customerId, section === "general")
     const [assigningPaymentMethodId, setAssigningPaymentMethodId] = useState<string | null>(null)
     const [assignPaymentMethodError, setAssignPaymentMethodError] = useState(false)
     const close = () => router.replace(createLicensePath(locale, resolvedCustomerId, resolvedSubscriptionId))
@@ -85,9 +81,7 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
         }
     }
 
-    const otherPaymentMethods = customerPaymentMethods?.filter((method) => method.id !== license?.paymentMethodId)
-    const paymentMethod = customerPaymentMethods?.find((method) => method.id === license?.paymentMethodId) ?? null
-    const sectionIcons = { general: IconKey, payment: IconCreditCard, upgrade: IconTrendingUp } satisfies Record<LicenseEditSection, typeof IconKey>
+    const sectionIcons = { general: IconKey, upgrade: IconTrendingUp } satisfies Record<LicenseEditSection, typeof IconKey>
     const sidebar = license?.subscriptionId ? (
         <TabList aria-label={content.editor.licenseTitle}>
             {LICENSE_EDIT_SECTIONS.map((value) => {
@@ -125,10 +119,17 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
                 <LicenseGeneralTab
                     content={content}
                     errors={errors}
+                    assigningPaymentMethodId={assigningPaymentMethodId}
+                    assignPaymentMethodError={assignPaymentMethodError}
+                    isLoadingPaymentMethod={isLoadingCustomerPaymentMethods}
                     license={license}
                     locale={locale}
                     namespaceHref={namespaceHref}
+                    onAssignPaymentMethod={(paymentMethodId) => void assignPaymentMethod(paymentMethodId)}
                     onClose={close}
+                    onRetryPaymentMethod={refreshCustomerPaymentMethods}
+                    paymentMethodError={customerPaymentMethodsError}
+                    paymentMethods={customerPaymentMethods}
                     subscriptionConfig={subscriptionConfig}
                     title={sectionLabels.general}
                 />
@@ -145,53 +146,6 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
                             subscriptionConfig={subscriptionConfig}
                             subscriptionPrices={subscriptionPrices}
                         />
-                    </TabContent>
-                    <TabContent value="payment">
-                        <LicenseTabHeader title={sectionLabels.payment} description={content.editor.paymentMethodDescription} />
-
-                        <LicenseTabSection title={content.editor.paymentMethodHeading}>
-                            {isLoadingCustomerPaymentMethods ? (
-                                <CustomerPaymentMethodCardSkeleton label={content.editor.loadingPaymentMethodLabel} />
-                            ) : customerPaymentMethodsError ? (
-                                <LicenseTabRow
-                                    description={<span className="text-error">{errors.paymentMethodLoad}</span>}
-                                    action={
-                                        <Button type="button" variant="normal" paddingSize="xxs" onClick={refreshCustomerPaymentMethods}>
-                                            {errors.retry}
-                                        </Button>
-                                    }
-                                />
-                            ) : paymentMethod ? (
-                                <CustomerPaymentMethodCard method={paymentMethod} />
-                            ) : (
-                                <LicenseTabRow description={content.invoices.unavailableLabel} />
-                            )}
-                        </LicenseTabSection>
-
-                        {isLoadingCustomerPaymentMethods ? null : customerPaymentMethodsError ? (
-                            <LicenseTabAlert>{errors.paymentMethodLoad}</LicenseTabAlert>
-                        ) : otherPaymentMethods && otherPaymentMethods.length > 0 ? (
-                            <LicenseTabSection title={content.editor.otherPaymentMethodsHeading}>
-                                {otherPaymentMethods.map((method) => (
-                                    <CustomerPaymentMethodCard
-                                        key={method.id}
-                                        method={method}
-                                        action={
-                                            <Button
-                                                type="button"
-                                                variant="normal"
-                                                paddingSize="xxs"
-                                                disabled={assigningPaymentMethodId === method.id}
-                                                onClick={() => void assignPaymentMethod(method.id)}
-                                            >
-                                                {assigningPaymentMethodId === method.id ? <ButtonLoader label={content.editor.settingPaymentMethodLabel} /> : content.editor.usePaymentMethodLabel}
-                                            </Button>
-                                        }
-                                    />
-                                ))}
-                            </LicenseTabSection>
-                        ) : null}
-                        {assignPaymentMethodError ? <LicenseTabAlert>{errors.paymentMethodAssign}</LicenseTabAlert> : null}
                     </TabContent>
                 </>
             ) : null}

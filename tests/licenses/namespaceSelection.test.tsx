@@ -26,6 +26,7 @@ mock.module("@code0-tech/pictor", {
         SelectItemText: ({ children }: { children: ReactNode }) => <span>{children}</span>,
     },
 })
+mock.module("@code0-tech/pictor/dist/components/card/CardSection", { defaultExport: ({ children }: { children: ReactNode }) => <div>{children}</div> })
 mock.module("@/components/licenses/data/LicenseDataProvider", { namedExports: { useLicenseData: () => ({ updateLicense: () => {} }) } })
 mock.module("@/hooks/useSubscriptionUpdatePreview", { namedExports: { useSubscriptionUpdatePreview: () => ({}) } })
 const Row = ({ children, title, action }: { children?: ReactNode; title?: ReactNode; action?: ReactNode }) => <div>{title}{children}{action}</div>
