@@ -11,8 +11,8 @@ import { PICTOR_BADGE_CLASS_NAME, StableBadge } from "@/components/ui/StableBadg
 import type { LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { formatLicenseDisplayValue, formatLicenseEdition } from "@/lib/licenses/displayValues"
-import { createLicenseCustomerPath, createLicensePath, resolveCustomerRouteId } from "@/lib/licenses/routes"
-import { AutoScrollArea, Badge, Button, Card, DataTable, DataTableColumn, DataTableHeader, DataTableHeaderColumn, Flex, Spacing, Text, type DataTableFilterProps } from "@code0-tech/pictor"
+import { createLicensePath, resolveCustomerRouteId } from "@/lib/licenses/routes"
+import { AutoScrollArea, Badge, Card, DataTable, DataTableColumn, DataTableHeader, DataTableHeaderColumn, Flex, Spacing, Text, type DataTableFilterProps } from "@code0-tech/pictor"
 import { useRouter } from "next/navigation"
 import { Fragment, useLayoutEffect, useRef, useState } from "react"
 
@@ -106,24 +106,6 @@ export function LicenseCustomerPage({ content, customerId, locale }: LicenseCust
     return (
         <div>
             <section aria-label={content.dashboard.customerLabel}>
-                <Flex justify="end">
-                    {isLoading || customer ? (
-                        <Button
-                            type="button"
-                            variant="normal"
-                            paddingSize="xxs"
-                            disabled={isLoading || !customer}
-                            onClick={() => {
-                                if (!customer) return
-                                router.push(`${createLicenseCustomerPath(locale, customer.id)}/edit`)
-                            }}
-                            className="shrink-0 text-sm!"
-                        >
-                            {content.dashboard.editLabel}
-                        </Button>
-                    ) : null}
-                </Flex>
-                <Spacing spacing="md" />
 
                 <Card color="secondary" className="overflow-hidden p-0!">
                     {customer ? (
