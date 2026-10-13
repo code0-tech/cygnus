@@ -48,6 +48,7 @@ export function LicenseTabSection({ children, title }: { children: ReactNode; ti
 export function LicenseTabRow({
     action,
     children,
+    className,
     contentSpacing = "xs",
     description,
     title,
@@ -55,13 +56,14 @@ export function LicenseTabRow({
 }: {
     action?: ReactNode
     children?: ReactNode
+    className?: string
     contentSpacing?: Sizes
     description?: ReactNode
     title?: ReactNode
     tone?: "warning"
 }) {
     return (
-        <CardSection border className={tone === "warning" ? "bg-[#201813]" : undefined}>
+        <CardSection border className={cn(tone === "warning" && "bg-[#201813]", className)}>
             {title || description || action ? (
                 <Flex justify="space-between" align="center" style={{ gap: "1rem" }}>
                     <Flex align="center" style={{ gap: "0.75rem" }} className="min-w-0">

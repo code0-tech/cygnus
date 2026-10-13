@@ -44,11 +44,14 @@ export interface SubscriptionUpdateRequest extends SubscriptionUpdateFields {
 }
 
 export interface SubscriptionUpdatePreview {
+    // Crater resolves the quantities the change lands on; null unless the resolved plan carries them.
+    aiTokens: number | null
     currency: string
     effectiveAt: string | null
     immediate: boolean
     prorationAmount: number
     total: number
+    workflowExecutions: number | null
 }
 
 export interface SubscriptionUpdateResult {

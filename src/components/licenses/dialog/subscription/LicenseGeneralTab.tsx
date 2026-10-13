@@ -106,6 +106,9 @@ export function LicenseGeneralTab({
             : content.billing.currentPeriodEndDescription
     const [currentPeriodEndTextBeforeDate, currentPeriodEndTextAfterDate] = currentPeriodEndText.split("{date}")
     const periodLabelFor = (value: PaymentPeriod) => subscriptionConfig.paymentPeriod[`${value}Text`]
+    // Same rule as the upgrade preview: effectiveAt dates the charge, the new total is first billed with the next period.
+    const previewChargedOnDate = preview ? (preview.immediate ? new Date() : parseLicenseDate(preview.effectiveAt)) : null
+    const previewNextPeriodDate = parseLicenseDate(license?.currentPeriodEnd)
     const selectedPaymentMethod = paymentMethods?.find((method) => method.id === license?.paymentMethodId) ?? null
 
     return (
@@ -260,7 +263,16 @@ export function LicenseGeneralTab({
                                     <LicenseTabRow
                                         title={content.subscriptionPreview.totalLabel}
                                         description={content.subscriptionPreview.totalDescription}
-                                        action={<Text size="md">{formatMinorCurrency(preview.total, preview.currency, locale)}</Text>}
+                                        action={
+                                            <div className="text-right">
+                                                <Text size="md">{formatMinorCurrency(preview.total, preview.currency, locale)}</Text>
+                                                {previewNextPeriodDate ? (
+                                                    <Text size="sm" hierarchy="tertiary">
+                                                        {dateFormatter.format(previewNextPeriodDate)}
+                                                    </Text>
+                                                ) : null}
+                                            </div>
+                                        }
                                         contentSpacing="md"
                                     >
                                         <Button type="button" variant="normal" color="success" paddingSize="xxs" w="100%" justify="center" disabled={isSaving} onClick={() => void save()}>
@@ -276,7 +288,16 @@ export function LicenseGeneralTab({
                                         <LicenseTabRow
                                             title={content.subscriptionPreview.prorationLabel}
                                             description={content.subscriptionPreview.prorationDescription}
-                                            action={<Text size="md">{formatMinorCurrency(preview.prorationAmount, preview.currency, locale)}</Text>}
+                                            action={
+                                                <div className="text-right">
+                                                    <Text size="md">{formatMinorCurrency(preview.prorationAmount, preview.currency, locale)}</Text>
+                                                    {previewChargedOnDate ? (
+                                                        <Text size="sm" hierarchy="tertiary">
+                                                            {dateFormatter.format(previewChargedOnDate)}
+                                                        </Text>
+                                                    ) : null}
+                                                </div>
+                                            }
                                         />
                                     ) : null}
                                 </>
