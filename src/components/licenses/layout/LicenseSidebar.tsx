@@ -1,6 +1,6 @@
 "use client"
 
-import { isLicenseStatusError, LicenseStatusDot } from "@/components/licenses/shared/LicenseStatusDot"
+import { isLicenseStatusCanceled, isLicenseStatusError, LicenseStatusDot } from "@/components/licenses/shared/LicenseStatusDot"
 import { ButtonLoader } from "@/components/ui/Loader"
 import { PICTOR_BADGE_CLASS_NAME, StableBadge } from "@/components/ui/StableBadge"
 import type { LicenseContent } from "@/lib/cms"
@@ -73,6 +73,9 @@ function LicenseContextMenu({ icon: Icon, items, label, name, secondaryName }: {
 }
 
 function LicenseUpgradeButton({ content, license, locale }: { content: LicenseSidebarProps["content"]; license?: LicenseDashboardLicense; locale: AppLocale }) {
+    // Nothing can be upgraded once the subscription is canceled, so the button is left out entirely.
+    if (isLicenseStatusCanceled(license?.subscriptionStatus ?? license?.status)) return null
+
     const href = license?.subscriptionId ? `${createLicensePath(locale, license.customerId, license.id)}/edit?tab=upgrade` : null
     const beam = (
         <BorderBeam strength={1} size="sm" theme="dark" duration={5} active={Boolean(href)} style={{ display: "block" }}>
@@ -231,7 +234,9 @@ function getLicenseContextMenu(license: LicenseDashboardLicense, content: Licens
     const editPath = `${createLicensePath(locale, license.customerId, license.id)}/edit`
     const sectionLabels = getLicenseEditSectionLabels(content)
     const sectionIcons = { general: IconKey, upgrade: IconTrendingUp } satisfies Record<LicenseEditSection, typeof IconKey>
-    const sections: readonly LicenseEditSection[] = license.subscriptionId ? LICENSE_EDIT_SECTIONS : ["general"]
+    // A canceled subscription has no plan left to upgrade, so its entry drops the upgrade section.
+    const sections: readonly LicenseEditSection[] =
+        license.subscriptionId && !isLicenseStatusCanceled(license.subscriptionStatus ?? license.status) ? LICENSE_EDIT_SECTIONS : ["general"]
 
     return {
         icon: license.deploymentType === "self_hosted" ? IconServer : IconCloud,

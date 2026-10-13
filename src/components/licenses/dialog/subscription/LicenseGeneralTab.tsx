@@ -4,7 +4,7 @@ import { type PaymentPeriod, PAYMENT_PERIOD_OPTIONS } from "@/lib/subscription/t
 
 import { useLicenseData } from "@/components/licenses/data/LicenseDataProvider"
 import { CustomerPaymentMethodCardSkeleton } from "@/components/licenses/dialog/customer/CustomerPaymentMethodCard"
-import { getLicenseStatusBadgeColor } from "@/components/licenses/shared/LicenseStatusDot"
+import { getLicenseStatusBadgeColor, isLicenseStatusActive, isLicenseStatusCanceled } from "@/components/licenses/shared/LicenseStatusDot"
 import { LicenseTabHeader, LicenseTabRow, LicenseTabSection } from "@/components/licenses/dialog/shared/LicenseTabLayout"
 import { ButtonLoader } from "@/components/ui/Loader"
 import { useSubscriptionUpdatePreview } from "@/hooks/useSubscriptionUpdatePreview"
@@ -13,12 +13,11 @@ import { formatMinorCurrency } from "@/lib/formatters"
 import type { AppLocale } from "@/lib/i18n"
 import { formatLicenseDisplayValue } from "@/lib/licenses/displayValues"
 import { formatPendingUpdateSelection, parseLicenseDate, resolvePendingUpdateDate } from "@/lib/licenses/pendingUpdate"
-import { createLicensePath } from "@/lib/licenses/routes"
 import type { CustomerPaymentMethodSummary, LicenseDashboardLicense, PaymentMethodDisplayDetails } from "@/lib/licenses/types"
+import { cancelLicenseSubscription, resumeLicenseSubscription } from "@/lib/licenses/client"
 import { updateSubscription } from "@/lib/subscription/client"
 import { Badge, Button, SelectContent, SelectInput, SelectItem, SelectItemText, SelectPortal, SelectTrigger, SelectValue, SelectViewport, Text } from "@code0-tech/pictor"
 import { IconChevronDown } from "@tabler/icons-react"
-import { useRouter } from "next/navigation"
 import { useState } from "react"
 
 // The CMS texts mark their values with {selection} and {date}; keeping the markers as parts lets them be rendered with their own hierarchy.
@@ -67,7 +66,6 @@ export function LicenseGeneralTab({
     subscriptionConfig,
     title,
 }: LicenseGeneralTabProps) {
-    const router = useRouter()
     const { updateLicense } = useLicenseData()
     const subscriptionId = license?.subscriptionId
     const periodOptions = PAYMENT_PERIOD_OPTIONS
@@ -102,15 +100,20 @@ export function LicenseGeneralTab({
         }
     }
 
+    // Anything but a running subscription is a problem the customer has to act on, so the badge reads red unless the status is active.
+    const status = license?.subscriptionStatus ?? license?.status
+    const isCanceled = isLicenseStatusCanceled(status)
     const dateFormatter = new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeZone: "UTC" })
     const pendingSelection = formatPendingUpdateSelection(license?.pendingUpdate, content, locale)
     const pendingDate = pendingSelection ? resolvePendingUpdateDate(license?.pendingUpdate, license?.currentPeriodEnd) : null
-    const currentPeriodEndDate = pendingDate ?? parseLicenseDate(license?.currentPeriodEnd)
-    // Both texts mark the date with {date}; while a change is scheduled the date is the day it applies and the text also names the new selection.
-    const currentPeriodEndText =
-        pendingSelection && pendingDate
-            ? content.billing.currentPeriodEndPendingDescription.replaceAll("{selection}", pendingSelection)
-            : content.billing.currentPeriodEndDescription
+    // A canceled subscription has nothing scheduled any more, so its row dates the end of the period that is still paid for.
+    const currentPeriodEndDate = isCanceled ? parseLicenseDate(license?.currentPeriodEnd) : (pendingDate ?? parseLicenseDate(license?.currentPeriodEnd))
+    // All three texts mark the date with {date}; a canceled subscription does not renew, and while a change is scheduled the date is the day it applies and the text also names the new selection.
+    const currentPeriodEndText = isCanceled
+        ? content.billing.currentPeriodEndCanceledDescription
+        : pendingSelection && pendingDate
+          ? content.billing.currentPeriodEndPendingDescription.replaceAll("{selection}", pendingSelection)
+          : content.billing.currentPeriodEndDescription
     const [currentPeriodEndTextBeforeDate, currentPeriodEndTextAfterDate] = currentPeriodEndText.split("{date}")
     const periodLabelFor = (value: PaymentPeriod) => subscriptionConfig.paymentPeriod[`${value}Text`]
     // The period row has to say that a switch is already scheduled, otherwise the select reads like nothing is going to change.
@@ -127,6 +130,64 @@ export function LicenseGeneralTab({
               )
           )
         : null
+    // The cancellation rows below replace the former cancel dialog: both the period end and the immediate variant confirm in place, inside the cancellation card.
+    const [cancelError, setCancelError] = useState<string | null>(null)
+    const [isCanceling, setIsCanceling] = useState(false)
+    const [confirming, setConfirming] = useState<"immediate" | "periodEnd" | null>(null)
+    const isCancelPending = !isCanceled && Boolean(license?.cancelAt)
+    const canCancelImmediately = !isCanceled && license?.immediateCancellationAvailable === true
+    const cancellationDate = parseLicenseDate(license?.cancelAt ?? license?.currentPeriodEnd)
+    const immediateCancellationUntil = parseLicenseDate(license?.immediateCancellationUntil)
+
+    const cancel = async (immediately = false) => {
+        if (!license?.subscriptionId || isCanceled || isCanceling) return
+        setIsCanceling(true)
+        setCancelError(null)
+
+        try {
+            const subscription = await cancelLicenseSubscription(license.subscriptionId, errors.subscriptionCancel, immediately)
+
+            updateLicense(license.id, {
+                cancelAt: subscription.cancelAt ?? null,
+                canceledAt: subscription.canceledAt ?? null,
+                pendingUpdate: null,
+                immediateCancellationAvailable: subscription.immediateCancellationAvailable === true,
+                ...(subscription.immediateCancellationUntil ? { immediateCancellationUntil: subscription.immediateCancellationUntil } : {}),
+                ...(subscription.status ? { subscriptionStatus: subscription.status } : {}),
+                ...(subscription.updatedAt ? { updatedAt: subscription.updatedAt } : {}),
+            })
+            setConfirming(null)
+        } catch (error) {
+            setCancelError(error instanceof Error ? error.message : errors.subscriptionCancel)
+        } finally {
+            setIsCanceling(false)
+        }
+    }
+
+    const resume = async () => {
+        if (!license?.subscriptionId || !isCancelPending || isCanceling) return
+        setIsCanceling(true)
+        setCancelError(null)
+
+        try {
+            const subscription = await resumeLicenseSubscription(license.subscriptionId, errors.subscriptionResume)
+
+            updateLicense(license.id, {
+                cancelAt: null,
+                canceledAt: null,
+                immediateCancellationAvailable: subscription.immediateCancellationAvailable === true,
+                ...(subscription.immediateCancellationUntil ? { immediateCancellationUntil: subscription.immediateCancellationUntil } : {}),
+                ...(subscription.status ? { subscriptionStatus: subscription.status } : {}),
+                ...(subscription.updatedAt ? { updatedAt: subscription.updatedAt } : {}),
+            })
+            setConfirming(null)
+        } catch (error) {
+            setCancelError(error instanceof Error ? error.message : errors.subscriptionResume)
+        } finally {
+            setIsCanceling(false)
+        }
+    }
+
     // Same rule as the upgrade preview: effectiveAt dates the charge, the new total is first billed with the next period.
     const previewChargedOnDate = preview ? (preview.immediate ? new Date() : parseLicenseDate(preview.effectiveAt)) : null
     const previewNextPeriodDate = parseLicenseDate(license?.currentPeriodEnd)
@@ -156,8 +217,8 @@ export function LicenseGeneralTab({
                             title={content.dashboard.statusLabel}
                             description={content.billing.statusDescription}
                             action={
-                                <Badge color={getLicenseStatusBadgeColor(license.subscriptionStatus ?? license.status)}>
-                                    <Text c="inherit">{formatLicenseDisplayValue(license.subscriptionStatus ?? license.status, "status", content.values)}</Text>
+                                <Badge color={isLicenseStatusActive(status) ? getLicenseStatusBadgeColor(status) : "error"}>
+                                    <Text c="inherit">{formatLicenseDisplayValue(status, "status", content.values)}</Text>
                                 </Badge>
                             }
                         />
@@ -181,49 +242,99 @@ export function LicenseGeneralTab({
 
             {license && subscriptionId ? (
                 <>
-                    <LicenseTabSection title={content.billing.heading}>
-                        {isLoadingPaymentMethod ? (
-                            <CustomerPaymentMethodCardSkeleton label={content.editor.loadingPaymentMethodLabel} />
-                        ) : paymentMethodError ? (
-                            <LicenseTabRow
-                                title={content.editor.paymentMethodTabLabel}
-                                description={<span className="text-error">{errors.paymentMethodLoad}</span>}
-                                action={
-                                    <Button type="button" variant="normal" paddingSize="xxs" onClick={onRetryPaymentMethod}>
-                                        {errors.retry}
-                                    </Button>
-                                }
-                            />
-                        ) : (
-                            <LicenseTabRow
-                                title={content.editor.paymentMethodTabLabel}
-                                description={content.editor.paymentMethodDescription}
-                                action={
-                                    paymentMethods && paymentMethods.length > 0 ? (
+                    {/* A canceled subscription cannot change its payment method or period any more, so the billing card is hidden along with the cancellation action. */}
+                    {isCanceled ? null : (
+                        <>
+                            <LicenseTabSection title={content.billing.heading}>
+                                {isLoadingPaymentMethod ? (
+                                    <CustomerPaymentMethodCardSkeleton label={content.editor.loadingPaymentMethodLabel} />
+                                ) : paymentMethodError ? (
+                                    <LicenseTabRow
+                                        title={content.editor.paymentMethodTabLabel}
+                                        description={<span className="text-error">{errors.paymentMethodLoad}</span>}
+                                        action={
+                                            <Button type="button" variant="normal" paddingSize="xxs" onClick={onRetryPaymentMethod}>
+                                                {errors.retry}
+                                            </Button>
+                                        }
+                                    />
+                                ) : (
+                                    <LicenseTabRow
+                                        title={content.editor.paymentMethodTabLabel}
+                                        description={content.editor.paymentMethodDescription}
+                                        action={
+                                            paymentMethods && paymentMethods.length > 0 ? (
+                                                <div className="[&_.input-wrapper]:w-auto [&_.input-wrapper]:bg-transparent [&_.input-wrapper]:shadow-none [&_.input-wrapper>*]:pl-0">
+                                                    <SelectInput value={license.paymentMethodId ?? undefined} onValueChange={(value) => onAssignPaymentMethod?.(value)}>
+                                                        <SelectTrigger w="fit-content" asChild>
+                                                            <Button type="button" paddingSize="xxs" color="tertiary" disabled={Boolean(assigningPaymentMethodId)}>
+                                                                {assigningPaymentMethodId ? (
+                                                                    <ButtonLoader label={content.editor.settingPaymentMethodLabel} />
+                                                                ) : (
+                                                                    <>
+                                                                        <SelectValue placeholder={content.invoices.unavailableLabel}>
+                                                                            <span className="capitalize">
+                                                                                {selectedPaymentMethod ? formatPaymentMethodSummary(selectedPaymentMethod) : content.invoices.unavailableLabel}
+                                                                            </span>
+                                                                        </SelectValue>
+                                                                        <IconChevronDown aria-hidden="true" size={13} />
+                                                                    </>
+                                                                )}
+                                                            </Button>
+                                                        </SelectTrigger>
+                                                        <SelectPortal>
+                                                            <SelectContent position="popper" sideOffset={4}>
+                                                                <SelectViewport>
+                                                                    {paymentMethods.map((method) => (
+                                                                        <SelectItem key={method.id} value={method.id}>
+                                                                            <SelectItemText>
+                                                                                <span className="capitalize">{formatPaymentMethodSummary(method)}</span>
+                                                                            </SelectItemText>
+                                                                        </SelectItem>
+                                                                    ))}
+                                                                </SelectViewport>
+                                                            </SelectContent>
+                                                        </SelectPortal>
+                                                    </SelectInput>
+                                                </div>
+                                            ) : (
+                                                <Text size="md">{content.invoices.unavailableLabel}</Text>
+                                            )
+                                        }
+                                    >
+                                        {assignPaymentMethodError ? (
+                                            <Text role="alert" size="sm" className="text-error!">
+                                                {errors.paymentMethodAssign}
+                                            </Text>
+                                        ) : null}
+                                    </LicenseTabRow>
+                                )}
+                                <LicenseTabRow
+                                    title={content.billing.periodLabel}
+                                    description={
+                                        pendingPeriodNote ? (
+                                            <>
+                                                {content.billing.description} {pendingPeriodNote}
+                                            </>
+                                        ) : (
+                                            content.billing.description
+                                        )
+                                    }
+                                    action={
                                         <div className="[&_.input-wrapper]:w-auto [&_.input-wrapper]:bg-transparent [&_.input-wrapper]:shadow-none [&_.input-wrapper>*]:pl-0">
-                                            <SelectInput value={license.paymentMethodId ?? undefined} onValueChange={(value) => onAssignPaymentMethod?.(value)}>
+                                            <SelectInput value={period} onValueChange={(value) => setSelectedPeriod(value as PaymentPeriod)}>
                                                 <SelectTrigger w="fit-content" asChild>
-                                                    <Button type="button" paddingSize="xxs" color="tertiary" disabled={Boolean(assigningPaymentMethodId)}>
-                                                        {assigningPaymentMethodId ? (
-                                                            <ButtonLoader label={content.editor.settingPaymentMethodLabel} />
-                                                        ) : (
-                                                            <>
-                                                                <SelectValue placeholder={content.invoices.unavailableLabel}>
-                                                                    <span className="capitalize">{selectedPaymentMethod ? formatPaymentMethodSummary(selectedPaymentMethod) : content.invoices.unavailableLabel}</span>
-                                                                </SelectValue>
-                                                                <IconChevronDown aria-hidden="true" size={13} />
-                                                            </>
-                                                        )}
+                                                    <Button type="button" paddingSize="xxs" color="tertiary">
+                                                        <SelectValue>{periodLabelFor(period)}</SelectValue>
+                                                        <IconChevronDown aria-hidden="true" size={13} />
                                                     </Button>
                                                 </SelectTrigger>
                                                 <SelectPortal>
                                                     <SelectContent position="popper" sideOffset={4}>
                                                         <SelectViewport>
-                                                            {paymentMethods.map((method) => (
-                                                                <SelectItem key={method.id} value={method.id}>
-                                                                    <SelectItemText>
-                                                                        <span className="capitalize">{formatPaymentMethodSummary(method)}</span>
-                                                                    </SelectItemText>
+                                                            {periodOptions.map((option) => (
+                                                                <SelectItem key={option} value={option}>
+                                                                    <SelectItemText>{periodLabelFor(option)}</SelectItemText>
                                                                 </SelectItem>
                                                             ))}
                                                         </SelectViewport>
@@ -231,126 +342,148 @@ export function LicenseGeneralTab({
                                                 </SelectPortal>
                                             </SelectInput>
                                         </div>
-                                    ) : (
-                                        <Text size="md">{content.invoices.unavailableLabel}</Text>
-                                    )
-                                }
-                            >
-                                {assignPaymentMethodError ? (
-                                    <Text role="alert" size="sm" className="text-error!">
-                                        {errors.paymentMethodAssign}
-                                    </Text>
-                                ) : null}
-                            </LicenseTabRow>
-                        )}
-                        <LicenseTabRow
-                            title={content.billing.periodLabel}
-                            description={
-                                pendingPeriodNote ? (
-                                    <>
-                                        {content.billing.description} {pendingPeriodNote}
-                                    </>
-                                ) : (
-                                    content.billing.description
-                                )
-                            }
-                            action={
-                                <div className="[&_.input-wrapper]:w-auto [&_.input-wrapper]:bg-transparent [&_.input-wrapper]:shadow-none [&_.input-wrapper>*]:pl-0">
-                                    <SelectInput value={period} onValueChange={(value) => setSelectedPeriod(value as PaymentPeriod)}>
-                                        <SelectTrigger w="fit-content" asChild>
-                                            <Button type="button" paddingSize="xxs" color="tertiary">
-                                                <SelectValue>{periodLabelFor(period)}</SelectValue>
-                                                <IconChevronDown aria-hidden="true" size={13} />
-                                            </Button>
-                                        </SelectTrigger>
-                                        <SelectPortal>
-                                            <SelectContent position="popper" sideOffset={4}>
-                                                <SelectViewport>
-                                                    {periodOptions.map((option) => (
-                                                        <SelectItem key={option} value={option}>
-                                                            <SelectItemText>{periodLabelFor(option)}</SelectItemText>
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectViewport>
-                                            </SelectContent>
-                                        </SelectPortal>
-                                    </SelectInput>
-                                </div>
-                            }
-                        />
-                        {hasChange ? (
-                            isLoadingPreview ? (
-                                <LicenseTabRow title={content.subscriptionPreview.totalLabel} description={content.subscriptionPreview.loadingLabel} />
-                            ) : previewError ? (
-                                <LicenseTabRow>
-                                    <Text role="alert" size="sm" className="text-error!">
-                                        {previewError}
-                                    </Text>
-                                </LicenseTabRow>
-                            ) : preview ? (
-                                <>
-                                    <LicenseTabRow
-                                        title={content.subscriptionPreview.totalLabel}
-                                        description={content.subscriptionPreview.totalDescription}
-                                        action={
-                                            <div className="text-right">
-                                                <Text size="md">{formatMinorCurrency(preview.total, preview.currency, locale)}</Text>
-                                                {previewNextPeriodDate ? (
-                                                    <Text size="sm" hierarchy="tertiary">
-                                                        {dateFormatter.format(previewNextPeriodDate)}
+                                    }
+                                />
+                                {hasChange ? (
+                                    isLoadingPreview ? (
+                                        <LicenseTabRow title={content.subscriptionPreview.totalLabel} description={content.subscriptionPreview.loadingLabel} />
+                                    ) : previewError ? (
+                                        <LicenseTabRow>
+                                            <Text role="alert" size="sm" className="text-error!">
+                                                {previewError}
+                                            </Text>
+                                        </LicenseTabRow>
+                                    ) : preview ? (
+                                        <>
+                                            <LicenseTabRow
+                                                title={content.subscriptionPreview.totalLabel}
+                                                description={content.subscriptionPreview.totalDescription}
+                                                action={
+                                                    <div className="text-right">
+                                                        <Text size="md">{formatMinorCurrency(preview.total, preview.currency, locale)}</Text>
+                                                        {previewNextPeriodDate ? (
+                                                            <Text size="sm" hierarchy="tertiary">
+                                                                {dateFormatter.format(previewNextPeriodDate)}
+                                                            </Text>
+                                                        ) : null}
+                                                    </div>
+                                                }
+                                                contentSpacing="md"
+                                            >
+                                                <Button type="button" variant="normal" color="success" paddingSize="xxs" w="100%" justify="center" disabled={isSaving} onClick={() => void save()}>
+                                                    {isSaving ? <ButtonLoader label={content.billing.changePeriodLabel} /> : content.billing.changePeriodLabel}
+                                                </Button>
+                                                {saveError ? (
+                                                    <Text role="alert" size="sm" className="text-error! mt-2!">
+                                                        {saveError}
                                                     </Text>
                                                 ) : null}
-                                            </div>
-                                        }
-                                        contentSpacing="md"
-                                    >
-                                        <Button type="button" variant="normal" color="success" paddingSize="xxs" w="100%" justify="center" disabled={isSaving} onClick={() => void save()}>
-                                            {isSaving ? <ButtonLoader label={content.billing.changePeriodLabel} /> : content.billing.changePeriodLabel}
-                                        </Button>
-                                        {saveError ? (
-                                            <Text role="alert" size="sm" className="text-error! mt-2!">
-                                                {saveError}
-                                            </Text>
-                                        ) : null}
-                                    </LicenseTabRow>
-                                    {preview.prorationAmount > 0 ? (
+                                            </LicenseTabRow>
+                                            {preview.prorationAmount > 0 ? (
+                                                <LicenseTabRow
+                                                    title={content.subscriptionPreview.prorationLabel}
+                                                    description={content.subscriptionPreview.prorationDescription}
+                                                    action={
+                                                        <div className="text-right">
+                                                            <Text size="md">{formatMinorCurrency(preview.prorationAmount, preview.currency, locale)}</Text>
+                                                            {previewChargedOnDate ? (
+                                                                <Text size="sm" hierarchy="tertiary">
+                                                                    {dateFormatter.format(previewChargedOnDate)}
+                                                                </Text>
+                                                            ) : null}
+                                                        </div>
+                                                    }
+                                                />
+                                            ) : null}
+                                        </>
+                                    ) : null
+                                ) : null}
+                            </LicenseTabSection>
+
+                            <LicenseTabSection title={content.editor.cancellationHeading}>
+                                {isCancelPending ? (
+                                    <>
                                         <LicenseTabRow
-                                            title={content.subscriptionPreview.prorationLabel}
-                                            description={content.subscriptionPreview.prorationDescription}
+                                            title={content.cancel.pendingHeading}
+                                            description={content.cancel.pendingDescription}
+                                            action={cancellationDate ? <Badge color="tertiary">{dateFormatter.format(cancellationDate)}</Badge> : null}
+                                        />
+                                        <LicenseTabRow
+                                            title={content.cancel.resumeLabel}
                                             action={
-                                                <div className="text-right">
-                                                    <Text size="md">{formatMinorCurrency(preview.prorationAmount, preview.currency, locale)}</Text>
-                                                    {previewChargedOnDate ? (
-                                                        <Text size="sm" hierarchy="tertiary">
-                                                            {dateFormatter.format(previewChargedOnDate)}
-                                                        </Text>
-                                                    ) : null}
-                                                </div>
+                                                <Button type="button" variant="normal" color="tertiary" paddingSize="xxs" disabled={isCanceling} onClick={() => void resume()}>
+                                                    {isCanceling ? <ButtonLoader label={content.cancel.resumeLabel} /> : content.cancel.resumeLabel}
+                                                </Button>
                                             }
                                         />
-                                    ) : null}
-                                </>
-                            ) : null
-                        ) : null}
-                    </LicenseTabSection>
+                                    </>
+                                ) : (
+                                    <LicenseTabRow
+                                        title={content.cancel.confirmLabel}
+                                        description={content.cancel.description}
+                                        action={
+                                            confirming === "periodEnd" ? null : (
+                                                <Button type="button" variant="normal" color="tertiary" paddingSize="xxs" disabled={isCanceling} onClick={() => setConfirming("periodEnd")}>
+                                                    {content.cancel.confirmLabel}
+                                                </Button>
+                                            )
+                                        }
+                                    >
+                                        {/* The confirmation stays in this row instead of opening a dialog: the date it takes effect is right above it. */}
+                                        {confirming === "periodEnd" ? (
+                                            <div className="grid grid-cols-2 gap-2">
+                                                <Button type="button" variant="normal" paddingSize="xxs" w="100%" justify="center" disabled={isCanceling} onClick={() => setConfirming(null)}>
+                                                    {content.cancel.immediateConfirmBackLabel}
+                                                </Button>
+                                                <Button type="button" variant="normal" color="error" paddingSize="xxs" w="100%" justify="center" disabled={isCanceling} onClick={() => void cancel()}>
+                                                    {isCanceling ? <ButtonLoader label={content.cancel.confirmLabel} /> : content.cancel.confirmLabel}
+                                                </Button>
+                                            </div>
+                                        ) : null}
+                                    </LicenseTabRow>
+                                )}
 
-                    <LicenseTabSection title={content.editor.cancellationHeading}>
-                        <LicenseTabRow
-                            title={content.cancel.confirmLabel}
-                            description={content.cancel.description}
-                            action={
-                                <Button
-                                    type="button"
-                                    variant="normal"
-                                    color="tertiary"
-                                    paddingSize="xxs"
-                                    onClick={() => router.push(`${createLicensePath(locale, license.customerId, license.id)}/cancel`)}
-                                >
-                                    {content.cancel.confirmLabel}
-                                </Button>
-                            }
-                        />
-                    </LicenseTabSection>
+                                {canCancelImmediately ? (
+                                    <LicenseTabRow
+                                        title={content.cancel.immediateConfirmLabel}
+                                        description={
+                                            confirming === "immediate"
+                                                ? content.cancel.immediateConfirmDescription
+                                                : immediateCancellationUntil
+                                                  ? `${content.cancel.immediateDescription} ${content.cancel.immediateUntilLabel}: ${dateFormatter.format(immediateCancellationUntil)}`
+                                                  : content.cancel.immediateDescription
+                                        }
+                                        action={
+                                            confirming === "immediate" ? null : (
+                                                <Button type="button" variant="normal" color="tertiary" paddingSize="xxs" disabled={isCanceling} onClick={() => setConfirming("immediate")}>
+                                                    {content.cancel.immediateConfirmLabel}
+                                                </Button>
+                                            )
+                                        }
+                                    >
+                                        {confirming === "immediate" ? (
+                                            <div className="grid grid-cols-2 gap-2">
+                                                <Button type="button" variant="normal" paddingSize="xxs" w="100%" justify="center" disabled={isCanceling} onClick={() => setConfirming(null)}>
+                                                    {content.cancel.immediateConfirmBackLabel}
+                                                </Button>
+                                                <Button type="button" variant="normal" color="error" paddingSize="xxs" w="100%" justify="center" disabled={isCanceling} onClick={() => void cancel(true)}>
+                                                    {isCanceling ? <ButtonLoader label={content.cancel.immediateConfirmSubmitLabel} /> : content.cancel.immediateConfirmSubmitLabel}
+                                                </Button>
+                                            </div>
+                                        ) : null}
+                                    </LicenseTabRow>
+                                ) : null}
+
+                                {cancelError ? (
+                                    <LicenseTabRow>
+                                        <Text role="alert" size="sm" className="text-error!">
+                                            {cancelError}
+                                        </Text>
+                                    </LicenseTabRow>
+                                ) : null}
+                            </LicenseTabSection>
+                        </>
+                    )}
                 </>
             ) : null}
         </>

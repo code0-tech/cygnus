@@ -3394,6 +3394,10 @@ export interface LicenseDialog {
      */
     currentPeriodEndPendingDescription: string;
     /**
+     * Replaces the renewal text once the subscription is canceled. Use {date} for the day access ends.
+     */
+    currentPeriodEndCanceledDescription: string;
+    /**
      * Shown below the next billing date on the license page. Use {selection} as a placeholder for the scheduled change.
      */
     pendingChangeNote: string;
@@ -4201,6 +4205,7 @@ export interface LicenseDialogsSelect<T extends boolean = true> {
         currentPeriodEndLabel?: T;
         currentPeriodEndDescription?: T;
         currentPeriodEndPendingDescription?: T;
+        currentPeriodEndCanceledDescription?: T;
         pendingChangeNote?: T;
         currentPeriodEndUnknownDescription?: T;
         changePeriodLabel?: T;
