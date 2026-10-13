@@ -6,7 +6,7 @@ export function getCustomerEditSectionLabels(editor: LicenseContent["editor"]): 
     return { general: editor.generalTabLabel, paymentMethods: editor.paymentMethodsTabLabel }
 }
 
-export const LICENSE_EDIT_SECTIONS = ["upgrade", "general", "payment"] as const
+export const LICENSE_EDIT_SECTIONS = ["upgrade", "general"] as const
 
 export type LicenseEditSection = (typeof LICENSE_EDIT_SECTIONS)[number]
 
@@ -15,5 +15,5 @@ export function isLicenseEditSection(value: string | null): value is LicenseEdit
 }
 
 export function getLicenseEditSectionLabels(content: Pick<LicenseContent, "editor" | "upgrade">): Record<LicenseEditSection, string> {
-    return { upgrade: content.upgrade.title, general: content.editor.generalTabLabel, payment: content.editor.paymentMethodTabLabel }
+    return { upgrade: content.upgrade.title, general: content.editor.generalTabLabel }
 }

@@ -3,6 +3,7 @@
 import { type PaymentPeriod, PAYMENT_PERIOD_OPTIONS } from "@/lib/subscription/types"
 
 import { useLicenseData } from "@/components/licenses/data/LicenseDataProvider"
+import { CustomerPaymentMethodCardSkeleton } from "@/components/licenses/dialog/customer/CustomerPaymentMethodCard"
 import { getLicenseStatusBadgeColor } from "@/components/licenses/shared/LicenseStatusDot"
 import { LicenseTabHeader, LicenseTabRow, LicenseTabSection } from "@/components/licenses/dialog/shared/LicenseTabLayout"
 import { ButtonLoader } from "@/components/ui/Loader"
@@ -13,25 +14,54 @@ import type { AppLocale } from "@/lib/i18n"
 import { formatLicenseDisplayValue } from "@/lib/licenses/displayValues"
 import { formatPendingUpdateSelection, parseLicenseDate, resolvePendingUpdateDate } from "@/lib/licenses/pendingUpdate"
 import { createLicensePath } from "@/lib/licenses/routes"
-import type { LicenseDashboardLicense } from "@/lib/licenses/types"
+import type { CustomerPaymentMethodSummary, LicenseDashboardLicense, PaymentMethodDisplayDetails } from "@/lib/licenses/types"
 import { updateSubscription } from "@/lib/subscription/client"
 import { Badge, Button, SelectContent, SelectInput, SelectItem, SelectItemText, SelectPortal, SelectTrigger, SelectValue, SelectViewport, Text } from "@code0-tech/pictor"
 import { IconChevronDown } from "@tabler/icons-react"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 
+// The payment tab shows the full card; inside the billing rows the method is one line of text, like the other row descriptions.
+function formatPaymentMethodSummary(method: PaymentMethodDisplayDetails) {
+    const label = method.brand?.trim() || method.type?.replaceAll("_", " ") || null
+    return [label, method.last4 ? `•••• ${method.last4}` : null].filter(Boolean).join(" · ")
+}
+
 interface LicenseGeneralTabProps {
     content: LicenseContent
     errors: ErrorsContent
+    assigningPaymentMethodId?: string | null
+    assignPaymentMethodError?: boolean
+    isLoadingPaymentMethod?: boolean
     license?: LicenseDashboardLicense
     locale: AppLocale
     namespaceHref: string
+    onAssignPaymentMethod?: (paymentMethodId: string) => void
     onClose: () => void
+    onRetryPaymentMethod?: () => void
+    paymentMethodError?: boolean
+    paymentMethods?: CustomerPaymentMethodSummary[] | null
     subscriptionConfig: SubscriptionConfigData
     title: string
 }
 
-export function LicenseGeneralTab({ content, errors, license, locale, namespaceHref, onClose, subscriptionConfig, title }: LicenseGeneralTabProps) {
+export function LicenseGeneralTab({
+    assigningPaymentMethodId,
+    assignPaymentMethodError,
+    content,
+    errors,
+    isLoadingPaymentMethod,
+    license,
+    locale,
+    namespaceHref,
+    onAssignPaymentMethod,
+    onClose,
+    onRetryPaymentMethod,
+    paymentMethodError,
+    paymentMethods,
+    subscriptionConfig,
+    title,
+}: LicenseGeneralTabProps) {
     const router = useRouter()
     const { updateLicense } = useLicenseData()
     const subscriptionId = license?.subscriptionId
@@ -76,6 +106,7 @@ export function LicenseGeneralTab({ content, errors, license, locale, namespaceH
             : content.billing.currentPeriodEndDescription
     const [currentPeriodEndTextBeforeDate, currentPeriodEndTextAfterDate] = currentPeriodEndText.split("{date}")
     const periodLabelFor = (value: PaymentPeriod) => subscriptionConfig.paymentPeriod[`${value}Text`]
+    const selectedPaymentMethod = paymentMethods?.find((method) => method.id === license?.paymentMethodId) ?? null
 
     return (
         <>
@@ -127,6 +158,67 @@ export function LicenseGeneralTab({ content, errors, license, locale, namespaceH
             {license && subscriptionId ? (
                 <>
                     <LicenseTabSection title={content.billing.heading}>
+                        {isLoadingPaymentMethod ? (
+                            <CustomerPaymentMethodCardSkeleton label={content.editor.loadingPaymentMethodLabel} />
+                        ) : paymentMethodError ? (
+                            <LicenseTabRow
+                                title={content.editor.paymentMethodTabLabel}
+                                description={<span className="text-error">{errors.paymentMethodLoad}</span>}
+                                action={
+                                    <Button type="button" variant="normal" paddingSize="xxs" onClick={onRetryPaymentMethod}>
+                                        {errors.retry}
+                                    </Button>
+                                }
+                            />
+                        ) : (
+                            <LicenseTabRow
+                                title={content.editor.paymentMethodTabLabel}
+                                description={content.editor.paymentMethodDescription}
+                                action={
+                                    paymentMethods && paymentMethods.length > 0 ? (
+                                        <div className="[&_.input-wrapper]:w-auto [&_.input-wrapper]:bg-transparent [&_.input-wrapper]:shadow-none [&_.input-wrapper>*]:pl-0">
+                                            <SelectInput value={license.paymentMethodId ?? undefined} onValueChange={(value) => onAssignPaymentMethod?.(value)}>
+                                                <SelectTrigger w="fit-content" asChild>
+                                                    <Button type="button" paddingSize="xxs" color="tertiary" disabled={Boolean(assigningPaymentMethodId)}>
+                                                        {assigningPaymentMethodId ? (
+                                                            <ButtonLoader label={content.editor.settingPaymentMethodLabel} />
+                                                        ) : (
+                                                            <>
+                                                                <SelectValue placeholder={content.invoices.unavailableLabel}>
+                                                                    <span className="capitalize">{selectedPaymentMethod ? formatPaymentMethodSummary(selectedPaymentMethod) : content.invoices.unavailableLabel}</span>
+                                                                </SelectValue>
+                                                                <IconChevronDown aria-hidden="true" size={13} />
+                                                            </>
+                                                        )}
+                                                    </Button>
+                                                </SelectTrigger>
+                                                <SelectPortal>
+                                                    <SelectContent position="popper" sideOffset={4}>
+                                                        <SelectViewport>
+                                                            {paymentMethods.map((method) => (
+                                                                <SelectItem key={method.id} value={method.id}>
+                                                                    <SelectItemText>
+                                                                        <span className="capitalize">{formatPaymentMethodSummary(method)}</span>
+                                                                    </SelectItemText>
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectViewport>
+                                                    </SelectContent>
+                                                </SelectPortal>
+                                            </SelectInput>
+                                        </div>
+                                    ) : (
+                                        <Text size="md">{content.invoices.unavailableLabel}</Text>
+                                    )
+                                }
+                            >
+                                {assignPaymentMethodError ? (
+                                    <Text role="alert" size="sm" className="text-error!">
+                                        {errors.paymentMethodAssign}
+                                    </Text>
+                                ) : null}
+                            </LicenseTabRow>
+                        )}
                         <LicenseTabRow
                             title={content.billing.periodLabel}
                             description={content.billing.description}

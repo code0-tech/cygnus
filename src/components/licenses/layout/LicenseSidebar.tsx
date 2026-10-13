@@ -255,7 +255,7 @@ function getCustomerContextMenu(customerEditPath: string, customerName: string |
 function getLicenseContextMenu(license: LicenseDashboardLicense, content: LicenseSidebarProps["content"], locale: AppLocale) {
     const editPath = `${createLicensePath(locale, license.customerId, license.id)}/edit`
     const sectionLabels = getLicenseEditSectionLabels(content)
-    const sectionIcons = { general: IconKey, payment: IconCreditCard, upgrade: IconTrendingUp } satisfies Record<LicenseEditSection, typeof IconKey>
+    const sectionIcons = { general: IconKey, upgrade: IconTrendingUp } satisfies Record<LicenseEditSection, typeof IconKey>
     const sections: readonly LicenseEditSection[] = license.subscriptionId ? LICENSE_EDIT_SECTIONS : ["general"]
 
     return {
