@@ -11,7 +11,7 @@ interface LicensePrimarySidebarProps {
     content: LicenseContent["sidebar"]
     isLoggingOut: boolean
     onLogout: () => void
-    onOpenMainApplication: (path: string) => void
+    onOpenMainApplication: (path: string, newWindow?: boolean) => void
 }
 
 function NavigationTooltip({ children, label }: { children: ReactNode; label: string }) {
@@ -41,7 +41,7 @@ export function LicensePrimarySidebar({ content, isLoggingOut, onLogout, onOpenM
     return (
         <aside className="hidden h-full min-h-0 flex-col items-center bg-transparent pr-5.5 lg:flex" aria-label="Code0">
             <NavigationTooltip label={labels.home}>
-                <Button type="button" variant="none" onClick={() => onOpenMainApplication("/")} aria-label={labels.home} className="size-8.5! justify-center! p-0! hover:bg-white/10! rounded-2xl!">
+                <Button type="button" variant="none" onClick={() => onOpenMainApplication("/", true)} aria-label={labels.home} className="size-8.5! justify-center! p-0! hover:bg-white/10! rounded-2xl!">
                     <Image src="/favicons/android-chrome-192x192.png" alt="Code0" width={24} height={24} className="size-4 object-contain" priority />
                 </Button>
             </NavigationTooltip>
@@ -51,7 +51,7 @@ export function LicensePrimarySidebar({ content, isLoggingOut, onLogout, onOpenM
                     <Button
                         type="button"
                         variant="none"
-                        onClick={() => onOpenMainApplication("/settings")}
+                        onClick={() => onOpenMainApplication("/settings", true)}
                         aria-label={labels.applicationSettings}
                         className="size-8.5! justify-center! p-0! text-white! hover:bg-white/10! rounded-2xl!"
                     >
@@ -65,7 +65,7 @@ export function LicensePrimarySidebar({ content, isLoggingOut, onLogout, onOpenM
                     <Button
                         type="button"
                         variant="none"
-                        onClick={() => onOpenMainApplication("/users/@me/settings")}
+                        onClick={() => onOpenMainApplication("/users/@me/settings", true)}
                         aria-label={labels.userSettings}
                         className="size-8.5! justify-center! p-0! text-white! hover:bg-white/10! rounded-2xl!"
                     >
