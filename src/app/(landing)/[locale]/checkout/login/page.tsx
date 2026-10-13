@@ -3,7 +3,7 @@ import { CheckoutLoginSessionGate } from "@/components/checkout/login/CheckoutLo
 import { CheckoutLegalFooter } from "@/components/checkout/shared/CheckoutLegalFooter"
 import { HapticButtonLink } from "@/components/ui/HapticButtonLink"
 import { getFooter, getGlobal } from "@/lib/cms"
-import { createCheckoutLoginStartPath, createCheckoutQuery, type CheckoutSearchParams } from "@/lib/checkout/checkoutLogin"
+import { createCheckoutLoginStartPath, createCheckoutQuery, resolveCheckoutSessionHref, type CheckoutSearchParams } from "@/lib/checkout/checkoutLogin"
 import { CRATER_USER_LOGIN_COOKIE_NAME, CRATER_USER_LOGIN_COOKIE_VALUE } from "@/lib/crater/sessionCookies"
 import { isSupportedLocale } from "@/lib/i18n"
 import { resolveSiteUrl } from "@/lib/siteConfig"
@@ -46,10 +46,11 @@ export default async function CheckoutLoginPage({ params, searchParams }: Checko
 
     const loginHref = createCheckoutLoginStartPath(guestHref, cancelUrl)
     const hasAccountLogin = (await cookies()).get(CRATER_USER_LOGIN_COOKIE_NAME)?.value === CRATER_USER_LOGIN_COOKIE_VALUE
+    const sessionHref = resolveCheckoutSessionHref(new URLSearchParams(query), guestHref, loginHref)
 
     return (
         <div className="flex min-h-full flex-col">
-            <CheckoutLoginSessionGate checkoutHref={guestHref} checkSession={hasAccountLogin}>
+            <CheckoutLoginSessionGate sessionHref={sessionHref} checkSession={hasAccountLogin}>
                 <main className="flex flex-1 items-center justify-center py-8">
                     <div className="flex w-full max-w-3xl flex-col gap-8 text-center">
                         <Link href="/" className="mx-auto flex w-fit">

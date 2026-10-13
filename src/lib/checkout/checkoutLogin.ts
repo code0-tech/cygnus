@@ -35,6 +35,11 @@ export function createCheckoutLoginStartPath(checkoutPath: string, cancelUrl: st
     return `/api/crater/auth/start?${new URLSearchParams({ flow: "checkout", returnPath: checkoutPath, cancelUrl })}`
 }
 
+export function resolveCheckoutSessionHref(searchParams: URLSearchParams, checkoutHref: string, loginHref: string): string {
+    const deploymentType = searchParams.get("deploymentType") ?? searchParams.get("deployment")
+    return deploymentType === "cloud" && !searchParams.get("namespace")?.trim() ? loginHref : checkoutHref
+}
+
 export function resolveCheckoutReturnUrl(returnPath: string | null, siteOrigin: string) {
     if (!returnPath?.startsWith("/")) return null
 

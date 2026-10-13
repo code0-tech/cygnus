@@ -2,6 +2,7 @@ import assert from "node:assert/strict"
 import test, { afterEach } from "node:test"
 import React from "react"
 import { installDomTestEnvironment } from "../helpers/domTestEnvironment"
+import { createCheckoutLoginStartPath, resolveCheckoutSessionHref } from "../../src/lib/checkout/checkoutLogin"
 
 installDomTestEnvironment("https://example.com/en/checkout/login?plan=pro")
 
@@ -16,12 +17,36 @@ afterEach(() => {
     window.history.replaceState({}, "", "/en/checkout/login?plan=pro")
 })
 
-function renderGate(checkSession: boolean) {
+function renderGate(checkSession: boolean, sessionHref = "/en/checkout?plan=pro") {
     return render(
-        <CheckoutLoginSessionGate checkoutHref="/en/checkout?plan=pro" checkSession={checkSession}>
+        <CheckoutLoginSessionGate sessionHref={sessionHref} checkSession={checkSession}>
             <span>login choice</span>
         </CheckoutLoginSessionGate>
     )
+}
+
+for (const [query, needsNamespace] of [
+    ["plan=pro&deploymentType=cloud", true],
+    ["plan=pro&deployment=cloud", true],
+    ["plan=pro&deploymentType=cloud&namespace=", true],
+    ["plan=pro&deploymentType=cloud&namespace=%20", true],
+    ["plan=pro&deploymentType=cloud&namespace=selected-namespace", false],
+    ["plan=pro&deploymentType=self_hosted", false],
+    ["plan=pro&deployment=self_hosted", false],
+] as const) {
+    test(`routes a valid returning session correctly for ${query}`, async () => {
+        globalThis.fetch = (async () => new Response(JSON.stringify({ authenticated: true }), {
+            status: 200,
+            headers: { "content-type": "application/json" },
+        })) as typeof fetch
+        const checkoutHref = `/en/checkout?${query}`
+        const loginHref = createCheckoutLoginStartPath(checkoutHref, "https://example.com/en/subscription")
+
+        renderGate(true, resolveCheckoutSessionHref(new URLSearchParams(query), checkoutHref, loginHref))
+
+        await waitFor(() => assert.equal(`${window.location.pathname}${window.location.search}`, needsNamespace ? loginHref : checkoutHref))
+        assert.equal(screen.queryByText("login choice"), null)
+    })
 }
 
 test("sends a returning account customer with a valid session straight to the checkout", async () => {

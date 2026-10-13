@@ -30,7 +30,7 @@ function resolveLoginTarget(requestUrl: URL, siteUrl: URL, state: string) {
         return {
             callbackUrl: createCraterLoginCallbackUrl(siteUrl, checkoutPath, state),
             cancelUrl: cancelUrl.toString(),
-            selectNamespace: returnUrl.searchParams.get("deploymentType") === "cloud",
+            selectNamespace: (returnUrl.searchParams.get("deploymentType") ?? returnUrl.searchParams.get("deployment")) === "cloud",
         }
     }
 
