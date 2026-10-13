@@ -15,21 +15,21 @@ import { parseLicenseDate } from "@/lib/licenses/pendingUpdate"
 import { createLicensePath, resolveCustomerRouteId, resolveSubscriptionRouteId } from "@/lib/licenses/routes"
 import { resolveSubscriptionCustomerType } from "@/lib/crater/values"
 import { updateSubscription } from "@/lib/subscription/client"
-import { calculateSubscriptionQuote } from "@/lib/subscription/calculator"
+import { calculateSubscriptionQuote, formatDiscountBadge } from "@/lib/subscription/calculator"
 import { getSubscriptionCatalog } from "@/lib/subscription/catalog"
 import { normalizePaymentPeriod } from "@/lib/subscription/configurator"
 import type { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
-import { normalizeUsagePackages, snapToUsagePackage } from "@/lib/subscription/usagePackages"
+import { normalizeUsagePackages, snapToUsagePackage, type CheckoutPackages } from "@/lib/subscription/usagePackages"
 import { getLicenseBenefitGridCellClassName } from "@/components/licenses/shared/licenseDetailGrid"
-import { getIcon } from "@/components/ui/IconRenderer"
-import { TONE_CLASS_NAME } from "@/lib/subscription/tones"
 import { cn } from "@/lib/utils"
-import { Button, SelectContent, SelectInput, SelectItem, SelectItemText, SelectPortal, SelectTrigger, SelectValue, SelectViewport, Spacing, Text } from "@code0-tech/pictor"
-import { IconArrowRight, IconChevronDown } from "@tabler/icons-react"
+import { Badge, Button, Card, SegmentedControl, SegmentedControlItem, Spacing, Text } from "@code0-tech/pictor"
+import { IconArrowRight, IconTrendingUp } from "@tabler/icons-react"
+import BorderBeam, { type BorderBeamColorVariant } from "border-beam"
 import { useRouter } from "next/navigation"
 import { useMemo, useState } from "react"
 
 interface LicenseUpgradeDialogProps {
+    checkoutPackages: CheckoutPackages
     content: LicenseContent
     customerId: string
     errors: ErrorsContent
@@ -39,23 +39,45 @@ interface LicenseUpgradeDialogProps {
     subscriptionPrices: SubscriptionPriceCatalog
 }
 
-function PlanBadge({ config, muted }: { config: SubscriptionConfigData["plan"][SubscriptionPlan]; muted?: boolean }) {
+// Sculptor's cloud upgrade dialog heads itself with a beam-lit square card per plan; the upgrade preview marks its plans the same way.
+const PLAN_BEAM_COLOR_VARIANT: Record<SubscriptionPlan, BorderBeamColorVariant> = { pro: "mono", max: "sunset", custom: "colorful" }
+
+function PlanBadge({ config, muted, plan }: { config: SubscriptionConfigData["plan"][SubscriptionPlan]; muted?: boolean; plan: SubscriptionPlan }) {
     return (
-        <span className="inline-flex items-center gap-2">
-            <span className={cn("inline-flex size-5 items-center justify-center rounded-lg border", muted ? TONE_CLASS_NAME.neutral : TONE_CLASS_NAME[config.color])}>
-                {getIcon(config.icon, 13)}
-            </span>
-            <Text size="md" hierarchy={muted ? "tertiary" : "primary"}>
-                {config.title}
-            </Text>
-        </span>
+        <BorderBeam
+            active={!muted}
+            colorVariant={PLAN_BEAM_COLOR_VARIANT[plan]}
+            duration={5}
+            size="sm"
+            strength={1}
+            style={{ display: "inline-block" }}
+            theme="dark"
+        >
+            {/* The square is fixed and sized for the longest plan name, so every badge reads at the same scale. */}
+            <Card
+                bg={"transparent"}
+                h="1.75rem"
+                display="flex"
+                align="center"
+                justify="center"
+                style={{ flexShrink: 0, minWidth: "2rem", padding: "0 1rem" }}
+            >
+                <Text
+                    hierarchy={muted ? "tertiary" : "primary"}
+                    className="uppercase"
+                    style={{ fontSize: "0.75rem", fontWeight: 700, lineHeight: 1, letterSpacing: "0.02em" }}
+                >
+                    {config.title}
+                </Text>
+            </Card>
+        </BorderBeam>
     )
 }
 
 const PLAN_ORDER: Record<SubscriptionPlan, number> = { pro: 0, max: 1, custom: 2 }
 const PLANS: SubscriptionPlan[] = ["pro", "max", "custom"]
 
-export function LicenseUpgradeDialog({ content, customerId, errors, licenseId, locale, subscriptionConfig, subscriptionPrices }: LicenseUpgradeDialogProps) {
+export function LicenseUpgradeDialog({ checkoutPackages, content, customerId, errors, licenseId, locale, subscriptionConfig, subscriptionPrices }: LicenseUpgradeDialogProps) {
     const router = useRouter()
     const { customers, licenses, updateLicense } = useLicenseData()
     const resolvedCustomerId = resolveCustomerRouteId(customerId)
@@ -134,27 +156,23 @@ export function LicenseUpgradeDialog({ content, customerId, errors, licenseId, l
 
     const planSelection =
         upgradeTargets.length > 1 ? (
-            <div className="[&_.input-wrapper]:w-auto [&_.input-wrapper]:bg-transparent [&_.input-wrapper]:shadow-none [&_.input-wrapper>*]:pl-0">
-                <SelectInput value={plan} onValueChange={(value) => setSelectedPlan(value as SubscriptionPlan)}>
-                    <SelectTrigger w="fit-content" asChild>
-                        <Button type="button" paddingSize="xxs" color="tertiary">
-                            <SelectValue>{subscriptionConfig.plan[plan].title}</SelectValue>
-                            <IconChevronDown aria-hidden="true" size={13} />
-                        </Button>
-                    </SelectTrigger>
-                    <SelectPortal>
-                        <SelectContent position="popper" sideOffset={4}>
-                            <SelectViewport>
-                                {upgradeTargets.map((option) => (
-                                    <SelectItem key={option} value={option}>
-                                        <SelectItemText>{subscriptionConfig.plan[option].title}</SelectItemText>
-                                    </SelectItem>
-                                ))}
-                            </SelectViewport>
-                        </SelectContent>
-                    </SelectPortal>
-                </SelectInput>
-            </div>
+            <SegmentedControl
+                type="single"
+                color={"tertiary"}
+                value={plan}
+                onValueChange={(value: string) => {
+                    // Radix allows deselecting the active item; the upgrade always needs a target plan.
+                    if (value) setSelectedPlan(value as SubscriptionPlan)
+                }}
+            >
+                {upgradeTargets.map((option) => (
+                    <SegmentedControlItem style={{
+                        padding: ".422rem .563rem"
+                    }} key={option} value={option}>
+                            <Text>{subscriptionConfig.plan[option].title}</Text>
+                    </SegmentedControlItem>
+                ))}
+            </SegmentedControl>
         ) : (
             <Text size="md">{subscriptionConfig.plan[plan].title}</Text>
         )
@@ -172,12 +190,17 @@ export function LicenseUpgradeDialog({ content, customerId, errors, licenseId, l
     // Crater resolves the quantities the change lands on; the slider values stand in while the preview is still loading.
     const nextAiTokens = preview?.aiTokens ?? (plan === "custom" ? resolvedAiTokens : null)
     const nextWorkflowExecutions = preview?.workflowExecutions ?? (plan === "custom" ? resolvedWorkflowExecutions : null)
+    // A standard plan's quantities are its configured entitlement, so they describe the current state even when the subscription itself carries none.
+    const currentPlanQuantities = currentPlan === "custom" ? null : checkoutPackages.planQuantities[currentPlan]
+    const currentAiTokens = license?.aiTokens ?? currentPlanQuantities?.aiTokens
+    const currentWorkflowExecutions = license?.workflowExecutions ?? currentPlanQuantities?.workflowExecutions
     const usageComparisons = [
-        { current: license?.aiTokens, key: "aiTokens", label: content.dashboard.aiTokensLabel, next: nextAiTokens },
-        { current: license?.workflowExecutions, key: "workflowExecutions", label: content.dashboard.workflowExecutionsLabel, next: nextWorkflowExecutions },
+        { current: currentAiTokens, key: "aiTokens", label: content.dashboard.aiTokensLabel, next: nextAiTokens },
+        { current: currentWorkflowExecutions, key: "workflowExecutions", label: content.dashboard.workflowExecutionsLabel, next: nextWorkflowExecutions },
     ].flatMap((usage) => (typeof usage.next === "number" ? [{ ...usage, next: usage.next }] : []))
     const benefitCells = [
         {
+            badge: null,
             current: null,
             key: "plan",
             label: content.upgrade.planHeading,
@@ -186,23 +209,31 @@ export function LicenseUpgradeDialog({ content, customerId, errors, licenseId, l
                 <span className="flex flex-wrap items-center gap-2">
                     {plan === currentPlan ? null : (
                         <>
-                            <PlanBadge config={currentPlanConfig} muted />
+                            <PlanBadge config={currentPlanConfig} muted plan={currentPlan} />
                             <IconArrowRight aria-hidden="true" size={14} className="shrink-0 text-tertiary" />
                         </>
                     )}
-                    <PlanBadge config={planConfig} />
+                    <PlanBadge config={planConfig} plan={plan} />
                 </span>
             ),
         },
-        ...usageComparisons.map((usage) => ({
-            current: typeof usage.current === "number" && usage.current !== usage.next ? formatCompactNumber(usage.current) : null,
-            key: usage.key,
-            label: usage.label,
-            next: formatCompactNumber(usage.next),
-            value: null,
-        })),
+        ...usageComparisons.map((usage) => {
+            const current = typeof usage.current === "number" ? usage.current : null
+            // The badge quantifies the gain the way Sculptor's stat cards do: how much more the plan grants than the licence holds today.
+            const increase = current !== null && current > 0 && usage.next > current ? (usage.next - current) / current : null
+            return {
+                badge: increase === null ? null : `+${formatDiscountBadge(increase, locale)}`,
+                current: current === null ? null : formatCompactNumber(current),
+                key: usage.key,
+                label: usage.label,
+                next: formatCompactNumber(usage.next),
+                value: null,
+            }
+        }),
         // Without quantities from Crater the plan is described by its features instead.
-        ...(usageComparisons.length > 0 ? [] : planFeatures.slice(0, 2).map((feature) => ({ current: null, key: feature.key, label: null, next: feature.text, value: null }))),
+        ...(usageComparisons.length > 0
+            ? []
+            : planFeatures.slice(0, 2).map((feature) => ({ badge: null, current: null, key: feature.key, label: null, next: feature.text, value: null }))),
     ]
     return (
         <>
@@ -275,15 +306,24 @@ export function LicenseUpgradeDialog({ content, customerId, errors, licenseId, l
                         </Text>
                     ) : null}
                 </LicenseTabRow>
-                {benefitCells.length > 0 ? (
+                {/* While Crater is still quoting, the cells would describe the change with stale local values, so the grid stays out until the preview lands. */}
+                {!isLoadingPreview && benefitCells.length > 0 ? (
                     <LicenseTabRow className="p-0!">
                         <ul className={cn("grid grid-cols-1", benefitCells.length === 2 ? "sm:grid-cols-2" : "sm:grid-cols-3")}>
                             {benefitCells.map((cell, index) => (
                                 <li key={cell.key} className={getLicenseBenefitGridCellClassName(index)}>
                                     {cell.label ? (
-                                        <Text size="sm" hierarchy="tertiary" display="block" className="truncate">
-                                            {cell.label}
-                                        </Text>
+                                        <div className="flex items-center justify-between gap-2">
+                                            <Text size="sm" hierarchy="tertiary" display="block" className="truncate">
+                                                {cell.label}
+                                            </Text>
+                                            {cell.badge ? (
+                                                <Badge color="success" className="shrink-0">
+                                                    <IconTrendingUp aria-hidden="true" size={12} />
+                                                    {cell.badge}
+                                                </Badge>
+                                            ) : null}
+                                        </div>
                                     ) : null}
                                     <div className="mt-3 flex flex-wrap items-center gap-2">
                                         {cell.current ? (

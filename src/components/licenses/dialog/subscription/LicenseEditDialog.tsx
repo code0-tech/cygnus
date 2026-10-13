@@ -11,12 +11,14 @@ import { getLicenseEditSectionLabels, isLicenseEditSection, LICENSE_EDIT_SECTION
 import { createLicensePath, resolveCustomerRouteId, resolveSubscriptionRouteId } from "@/lib/licenses/routes"
 import { updateSubscription } from "@/lib/subscription/client"
 import type { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
+import type { CheckoutPackages } from "@/lib/subscription/usagePackages"
 import { Button, TabContent, TabList, TabTrigger, Text } from "@code0-tech/pictor"
 import { IconKey, IconTrendingUp } from "@tabler/icons-react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useState } from "react"
 
 interface LicenseEditDialogProps {
+    checkoutPackages: CheckoutPackages
     content: LicenseContent
     customerId: string
     errors: ErrorsContent
@@ -27,7 +29,7 @@ interface LicenseEditDialogProps {
     subscriptionPrices: SubscriptionPriceCatalog
 }
 
-export function LicenseEditDialog({ content, customerId, errors, licenseId, locale, namespaceHref, subscriptionConfig, subscriptionPrices }: LicenseEditDialogProps) {
+export function LicenseEditDialog({ checkoutPackages, content, customerId, errors, licenseId, locale, namespaceHref, subscriptionConfig, subscriptionPrices }: LicenseEditDialogProps) {
     const router = useRouter()
     const pathname = usePathname()
     const searchParams = useSearchParams()
@@ -138,6 +140,7 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
                 <>
                     <TabContent value="upgrade">
                         <LicenseUpgradeDialog
+                            checkoutPackages={checkoutPackages}
                             content={content}
                             customerId={customerId}
                             errors={errors}
