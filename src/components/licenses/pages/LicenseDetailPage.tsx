@@ -4,6 +4,7 @@ import {DataTableControls} from "@/components/licenses/table/DataTableControls"
 import {getLicenseDetailGridCellClassName} from "@/components/licenses/shared/licenseDetailGrid"
 import {useLicenseData} from "@/components/licenses/data/LicenseDataProvider"
 import {LicenseLoadMoreButton} from "@/components/licenses/table/LicenseLoadMoreButton"
+import { LicenseDataTableSkeleton } from "@/components/licenses/table/LicenseDataTableSkeleton"
 import {
     LICENSE_DATA_TABLE_PAGE_SIZE,
     LicenseDataTablePagination
@@ -145,6 +146,20 @@ export function LicenseDetailPage({
     const selectedInvoiceNumber = selectedInvoice?.invoiceNumber || selectedInvoice?.id.split("/").at(-1) || selectedInvoice?.id
     const selectedInvoicePreviewUrl = selectedInvoice?.stripePdfUrl ? `/api/crater/invoices/preview?url=${encodeURIComponent(selectedInvoice.stripePdfUrl)}` : null
 
+    const invoiceTableHeader = (
+        <DataTableHeader>
+            <DataTableHeaderColumn
+                className="font-normal text-tertiary text-xs">{content.invoices.numberLabel}</DataTableHeaderColumn>
+            <DataTableHeaderColumn
+                className="font-normal text-tertiary text-xs">{content.invoices.billingDateLabel}</DataTableHeaderColumn>
+            <DataTableHeaderColumn
+                className="font-normal text-tertiary text-xs">{content.invoices.amountLabel}</DataTableHeaderColumn>
+            <DataTableHeaderColumn
+                className="font-normal text-tertiary text-xs">{content.invoices.statusLabel}</DataTableHeaderColumn>
+            <DataTableHeaderColumn/>
+        </DataTableHeader>
+    )
+
     return (
         <div>
             <section aria-label={content.license}>
@@ -252,95 +267,88 @@ export function LicenseDetailPage({
                 <Spacing spacing="md"/>
 
                 <Card color="secondary" className="pt-2!">
-                    <DataTable
-                        data={invoiceRows}
-                        filter={invoiceFilter}
-                        limit={LICENSE_DATA_TABLE_PAGE_SIZE}
-                        loading={isLoading}
-                        pagination
-                        sort={{createdAt: invoiceSortDirection}}
-                        emptyComponent={
-                            <DataTableColumn colSpan={5}>
-                                <Text size="sm" hierarchy="tertiary">
-                                    {content.invoices.empty}
-                                </Text>
-                            </DataTableColumn>
-                        }
-                    >
-                        <DataTableHeader>
-                            <DataTableHeaderColumn
-                                className="font-normal text-tertiary text-xs">{content.invoices.numberLabel}</DataTableHeaderColumn>
-                            <DataTableHeaderColumn
-                                className="font-normal text-tertiary text-xs">{content.invoices.billingDateLabel}</DataTableHeaderColumn>
-                            <DataTableHeaderColumn
-                                className="font-normal text-tertiary text-xs">{content.invoices.amountLabel}</DataTableHeaderColumn>
-                            <DataTableHeaderColumn
-                                className="font-normal text-tertiary text-xs">{content.invoices.statusLabel}</DataTableHeaderColumn>
-                            <DataTableHeaderColumn/>
-                        </DataTableHeader>
-                        {(invoice) => (
-                            <Fragment key={invoice.id}>
-                                <DataTableColumn>
-                                    <Text size="sm" fw={500}>
-                                        {invoice.invoiceNumber || invoice.id.split("/").at(-1) || invoice.id}
-                                    </Text>
-                                </DataTableColumn>
-                                <DataTableColumn>
+                    {isLoading ? (
+                        <LicenseDataTableSkeleton cellHeight="h-[29.5px]" header={invoiceTableHeader} widths={["w-20", "w-20", "w-14", "w-12", "w-4"]} />
+                    ) : (
+                        <DataTable
+                            data={invoiceRows}
+                            filter={invoiceFilter}
+                            limit={LICENSE_DATA_TABLE_PAGE_SIZE}
+                            pagination
+                            sort={{createdAt: invoiceSortDirection}}
+                            emptyComponent={
+                                <DataTableColumn colSpan={5}>
                                     <Text size="sm" hierarchy="tertiary">
-                                        {formatDate(invoice.createdAt)}
+                                        {content.invoices.empty}
                                     </Text>
                                 </DataTableColumn>
-                                <DataTableColumn>
-                                    <Text size="sm" hierarchy="tertiary">
-                                        {typeof invoice.total === "number" && invoice.currency ? formatMinorCurrency(invoice.total, invoice.currency, locale) : "—"}
-                                    </Text>
-                                </DataTableColumn>
-                                <DataTableColumn>
-                                    <Badge
-                                        color={getInvoiceStatusBadgeColor(invoice.status)}>{formatLicenseDisplayValue(invoice.status, "invoiceStatus", content.values)}</Badge>
-                                </DataTableColumn>
-                                <DataTableColumn>
-                                    <Menu>
-                                        <MenuTrigger asChild>
-                                            <Button
-                                                type="button"
-                                                variant="none"
-                                                paddingSize="xxs"
-                                                aria-label={`${content.invoices.title}: ${invoice.invoiceNumber || invoice.id.split("/").at(-1) || invoice.id}`}
-                                            >
-                                                <IconDotsVertical aria-hidden="true" size={16}/>
-                                            </Button>
-                                        </MenuTrigger>
-                                        <MenuPortal>
-                                            <MenuContent align="end" sideOffset={8}>
-                                                <MenuLabel>{content.invoices.title}</MenuLabel>
-                                                <MenuItem onSelect={() => setSelectedInvoice(invoice)}>
-                                                    <IconEye aria-hidden="true" size={15}/>
-                                                    {content.invoices.viewLabel}
-                                                </MenuItem>
-                                                {invoice.stripePdfUrl ? (
-                                                    <MenuItem asChild>
-                                                        <a href={invoice.stripePdfUrl} target="_blank"
-                                                           rel="noopener noreferrer">
+                            }
+                        >
+                            {invoiceTableHeader}
+                            {(invoice) => (
+                                <Fragment key={invoice.id}>
+                                    <DataTableColumn>
+                                        <Text size="sm" fw={500}>
+                                            {invoice.invoiceNumber || invoice.id.split("/").at(-1) || invoice.id}
+                                        </Text>
+                                    </DataTableColumn>
+                                    <DataTableColumn>
+                                        <Text size="sm" hierarchy="tertiary">
+                                            {formatDate(invoice.createdAt)}
+                                        </Text>
+                                    </DataTableColumn>
+                                    <DataTableColumn>
+                                        <Text size="sm" hierarchy="tertiary">
+                                            {typeof invoice.total === "number" && invoice.currency ? formatMinorCurrency(invoice.total, invoice.currency, locale) : "—"}
+                                        </Text>
+                                    </DataTableColumn>
+                                    <DataTableColumn>
+                                        <Badge
+                                            color={getInvoiceStatusBadgeColor(invoice.status)}>{formatLicenseDisplayValue(invoice.status, "invoiceStatus", content.values)}</Badge>
+                                    </DataTableColumn>
+                                    <DataTableColumn>
+                                        <Menu>
+                                            <MenuTrigger asChild>
+                                                <Button
+                                                    type="button"
+                                                    variant="none"
+                                                    paddingSize="xxs"
+                                                    aria-label={`${content.invoices.title}: ${invoice.invoiceNumber || invoice.id.split("/").at(-1) || invoice.id}`}
+                                                >
+                                                    <IconDotsVertical aria-hidden="true" size={16}/>
+                                                </Button>
+                                            </MenuTrigger>
+                                            <MenuPortal>
+                                                <MenuContent align="end" sideOffset={8}>
+                                                    <MenuLabel>{content.invoices.title}</MenuLabel>
+                                                    <MenuItem onSelect={() => setSelectedInvoice(invoice)}>
+                                                        <IconEye aria-hidden="true" size={15}/>
+                                                        {content.invoices.viewLabel}
+                                                    </MenuItem>
+                                                    {invoice.stripePdfUrl ? (
+                                                        <MenuItem asChild>
+                                                            <a href={invoice.stripePdfUrl} target="_blank"
+                                                               rel="noopener noreferrer">
+                                                                <IconDownload aria-hidden="true" size={15}/>
+                                                                {content.invoices.downloadLabel}
+                                                            </a>
+                                                        </MenuItem>
+                                                    ) : (
+                                                        <MenuItem disabled>
                                                             <IconDownload aria-hidden="true" size={15}/>
-                                                            {content.invoices.downloadLabel}
-                                                        </a>
-                                                    </MenuItem>
-                                                ) : (
-                                                    <MenuItem disabled>
-                                                        <IconDownload aria-hidden="true" size={15}/>
-                                                        {content.invoices.unavailableLabel}
-                                                    </MenuItem>
-                                                )}
-                                            </MenuContent>
-                                        </MenuPortal>
-                                    </Menu>
-                                </DataTableColumn>
-                            </Fragment>
-                        )}
-                        {invoiceRows.length > LICENSE_DATA_TABLE_PAGE_SIZE ?
-                            <LicenseDataTablePagination labels={content.pagination}/> : null}
-                    </DataTable>
+                                                            {content.invoices.unavailableLabel}
+                                                        </MenuItem>
+                                                    )}
+                                                </MenuContent>
+                                            </MenuPortal>
+                                        </Menu>
+                                    </DataTableColumn>
+                                </Fragment>
+                            )}
+                            {invoiceRows.length > LICENSE_DATA_TABLE_PAGE_SIZE ?
+                                <LicenseDataTablePagination labels={content.pagination}/> : null}
+                        </DataTable>
+                    )}
                 </Card>
                 {pagination?.invoices?.hasNextPage ?
                     <LicenseLoadMoreButton loading={loadingMore === "invoices"} labels={content.pagination}

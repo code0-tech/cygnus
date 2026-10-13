@@ -4,6 +4,7 @@ import { DataTableControls } from "@/components/licenses/table/DataTableControls
 import { getLicenseDetailGridCellClassName } from "@/components/licenses/shared/licenseDetailGrid"
 import { useLicenseData } from "@/components/licenses/data/LicenseDataProvider"
 import { LicenseLoadMoreButton } from "@/components/licenses/table/LicenseLoadMoreButton"
+import { LicenseDataTableSkeleton } from "@/components/licenses/table/LicenseDataTableSkeleton"
 import { LICENSE_DATA_TABLE_PAGE_SIZE, LicenseDataTablePagination } from "@/components/licenses/table/LicenseDataTablePagination"
 import { getLicenseStatusBadgeColor } from "@/components/licenses/shared/LicenseStatusDot"
 import { PICTOR_BADGE_CLASS_NAME, StableBadge } from "@/components/ui/StableBadge"
@@ -92,6 +93,15 @@ export function LicenseCustomerPage({ content, customerId, locale }: LicenseCust
               },
           ]
         : []
+
+    const licenseTableHeader = (
+        <DataTableHeader>
+            <DataTableHeaderColumn className="text-xs font-normal text-tertiary">{content.licenses}</DataTableHeaderColumn>
+            <DataTableHeaderColumn className="text-xs font-normal text-tertiary">{content.dashboard.statusLabel}</DataTableHeaderColumn>
+            <DataTableHeaderColumn className="text-xs font-normal text-tertiary">{content.dashboard.editionLabel}</DataTableHeaderColumn>
+            <DataTableHeaderColumn className="text-xs font-normal text-tertiary">{content.dashboard.lastEditedLabel}</DataTableHeaderColumn>
+        </DataTableHeader>
+    )
 
     return (
         <div>
@@ -195,56 +205,54 @@ export function LicenseCustomerPage({ content, customerId, locale }: LicenseCust
 
                 <Card color="secondary" className="pt-2!">
                     <AutoScrollArea mah="28rem" type="scroll">
-                        <DataTable
-                            data={licenseRows}
-                            filter={tableFilter}
-                            limit={LICENSE_DATA_TABLE_PAGE_SIZE}
-                            loading={isLoading}
-                            pagination
-                            sort={{ updatedAt: sortDirection }}
-                            onSelect={(license) => {
-                                if (license) router.push(createLicensePath(locale, resolvedCustomerId, license.id))
-                            }}
-                            emptyComponent={
-                                <DataTableColumn colSpan={4}>
-                                    <Text size="sm" hierarchy="tertiary">
-                                        {content.emptyLicenses}
-                                    </Text>
-                                </DataTableColumn>
-                            }
-                        >
-                            <DataTableHeader>
-                                <DataTableHeaderColumn className="text-xs font-normal text-tertiary">{content.licenses}</DataTableHeaderColumn>
-                                <DataTableHeaderColumn className="text-xs font-normal text-tertiary">{content.dashboard.statusLabel}</DataTableHeaderColumn>
-                                <DataTableHeaderColumn className="text-xs font-normal text-tertiary">{content.dashboard.editionLabel}</DataTableHeaderColumn>
-                                <DataTableHeaderColumn className="text-xs font-normal text-tertiary">{content.dashboard.lastEditedLabel}</DataTableHeaderColumn>
-                            </DataTableHeader>
-                            {(license) => (
-                                <Fragment key={license.id}>
-                                    <DataTableColumn>
-                                        <Flex align="center" style={{ gap: "0.6rem" }}>
-                                            <Text size="sm" fw={500}>
-                                                {formatLicenseDisplayValue(license.plan, "plan", content.values)}
+                        {isLoading ? (
+                            <LicenseDataTableSkeleton header={licenseTableHeader} widths={["w-12", "w-14", "w-24", "w-20"]} />
+                        ) : (
+                            <DataTable
+                                data={licenseRows}
+                                filter={tableFilter}
+                                limit={LICENSE_DATA_TABLE_PAGE_SIZE}
+                                pagination
+                                sort={{ updatedAt: sortDirection }}
+                                onSelect={(license) => {
+                                    if (license) router.push(createLicensePath(locale, resolvedCustomerId, license.id))
+                                }}
+                                emptyComponent={
+                                    <DataTableColumn colSpan={4}>
+                                        <Text size="sm" hierarchy="tertiary">
+                                            {content.emptyLicenses}
+                                        </Text>
+                                    </DataTableColumn>
+                                }
+                            >
+                                {licenseTableHeader}
+                                {(license) => (
+                                    <Fragment key={license.id}>
+                                        <DataTableColumn>
+                                            <Flex align="center" style={{ gap: "0.6rem" }}>
+                                                <Text size="sm" fw={500}>
+                                                    {formatLicenseDisplayValue(license.plan, "plan", content.values)}
+                                                </Text>
+                                            </Flex>
+                                        </DataTableColumn>
+                                        <DataTableColumn>
+                                            <Badge color={getLicenseStatusBadgeColor(license.status)}>{formatLicenseDisplayValue(license.status, "status", content.values)}</Badge>
+                                        </DataTableColumn>
+                                        <DataTableColumn>
+                                            <Text size="sm" hierarchy="tertiary">
+                                                {formatLicenseEdition(license.deploymentType, content.values.editions)}
                                             </Text>
-                                        </Flex>
-                                    </DataTableColumn>
-                                    <DataTableColumn>
-                                        <Badge color={getLicenseStatusBadgeColor(license.status)}>{formatLicenseDisplayValue(license.status, "status", content.values)}</Badge>
-                                    </DataTableColumn>
-                                    <DataTableColumn>
-                                        <Text size="sm" hierarchy="tertiary">
-                                            {formatLicenseEdition(license.deploymentType, content.values.editions)}
-                                        </Text>
-                                    </DataTableColumn>
-                                    <DataTableColumn>
-                                        <Text size="sm" hierarchy="tertiary">
-                                            {license.updatedAt ? dateFormatter.format(new Date(license.updatedAt)) : "—"}
-                                        </Text>
-                                    </DataTableColumn>
-                                </Fragment>
-                            )}
-                            {licenseRows.length > LICENSE_DATA_TABLE_PAGE_SIZE ? <LicenseDataTablePagination labels={content.pagination} /> : null}
-                        </DataTable>
+                                        </DataTableColumn>
+                                        <DataTableColumn>
+                                            <Text size="sm" hierarchy="tertiary">
+                                                {license.updatedAt ? dateFormatter.format(new Date(license.updatedAt)) : "—"}
+                                            </Text>
+                                        </DataTableColumn>
+                                    </Fragment>
+                                )}
+                                {licenseRows.length > LICENSE_DATA_TABLE_PAGE_SIZE ? <LicenseDataTablePagination labels={content.pagination} /> : null}
+                            </DataTable>
+                        )}
                     </AutoScrollArea>
                 </Card>
                 {pagination?.licenses?.hasNextPage ? <LicenseLoadMoreButton loading={loadingMore === "licenses"} labels={content.pagination} onClick={() => void loadMore("licenses")} /> : null}

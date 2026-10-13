@@ -10,34 +10,8 @@ import { downloadLicenseFile } from "@/lib/licenses/client"
 import { createLicenseCustomerPath, createLicensePath, resolveCustomerRouteId } from "@/lib/licenses/routes"
 import type { LicenseDashboardLicense } from "@/lib/licenses/types"
 import { formatLicenseDisplayValue } from "@/lib/licenses/displayValues"
-import {
-    Avatar,
-    Button,
-    Flex,
-    hashToColor,
-    Menu,
-    MenuContent,
-    MenuItem,
-    MenuLabel,
-    MenuPortal,
-    MenuSeparator,
-    MenuTrigger,
-    Spacing,
-    Text,
-} from "@code0-tech/pictor"
-import {
-    IconArrowAutofitLeftFilled,
-    IconArrowLeft,
-    IconChevronDown,
-    IconCloud,
-    IconCreditCard,
-    IconDownload,
-    IconKey,
-    IconMenu2,
-    IconServer,
-    IconTrendingUp,
-    IconUser,
-} from "@tabler/icons-react"
+import { Avatar, Button, Flex, hashToColor, Menu, MenuContent, MenuItem, MenuLabel, MenuPortal, MenuSeparator, MenuTrigger, Spacing, Text } from "@code0-tech/pictor"
+import { IconArrowAutofitLeftFilled, IconArrowLeft, IconChevronDown, IconCloud, IconCreditCard, IconDownload, IconKey, IconMenu2, IconServer, IconTrendingUp, IconUser } from "@tabler/icons-react"
 import BorderBeam from "border-beam"
 import Image from "next/image"
 import Link from "next/link"
@@ -214,36 +188,26 @@ function getShortLicenseId(id: string) {
     return `#${identifier || id.slice(-6)}`
 }
 
-const SKELETON_NAME_WIDTHS = ["w-14", "w-20", "w-16"]
+const SKELETON_ENTRY_COUNT = 3
 
 function LicenseSidebarSkeleton() {
     return (
         <ul aria-hidden="true">
-            {SKELETON_NAME_WIDTHS.map((width) => (
-                <li key={width} className="flex h-7 animate-pulse items-center gap-2 px-2.25 motion-reduce:animate-none">
-                    <span className="size-3.25 shrink-0 rounded-[5px] bg-white/10" />
-                    <span className={cn("block h-3 max-w-full rounded-full bg-white/10", width)} />
+            {Array.from({ length: SKELETON_ENTRY_COUNT }, (_, index) => (
+                <li key={index} className="h-[31.5px] py-0.5">
+                    <span className="block h-full w-full animate-pulse rounded-2xl bg-white/[0.06] motion-reduce:animate-none" />
                 </li>
             ))}
         </ul>
     )
 }
 
-// Mirrors a mobile menu entry: name and "customer | id" stacked next to a 16px icon.
 function LicenseMenuSkeleton() {
     return (
         <div aria-hidden="true">
-            {SKELETON_NAME_WIDTHS.map((width) => (
-                <div key={width} className="flex animate-pulse items-center gap-2.25 px-2.25 py-1.75 motion-reduce:animate-none">
-                    <span className="size-4 shrink-0 rounded-[5px] bg-white/10" />
-                    <span className="min-w-0 flex-1">
-                        <span className="flex h-5 items-center">
-                            <span className={cn("block h-3 rounded-full bg-white/10", width)} />
-                        </span>
-                        <span className="flex h-4 items-center">
-                            <span className="block h-2.5 w-28 max-w-full rounded-full bg-white/[0.07]" />
-                        </span>
-                    </span>
+            {Array.from({ length: SKELETON_ENTRY_COUNT }, (_, index) => (
+                <div key={index} className="h-[49.5px] py-0.5">
+                    <span className="block h-full w-full animate-pulse rounded-[9px] bg-white/[0.06] motion-reduce:animate-none" />
                 </div>
             ))}
         </div>
