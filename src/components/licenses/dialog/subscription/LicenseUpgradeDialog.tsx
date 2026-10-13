@@ -3,14 +3,15 @@
 import type { PaymentPeriod, SubscriptionPlan } from "@/lib/subscription/types"
 
 import { useLicenseData } from "@/components/licenses/data/LicenseDataProvider"
-import { LicenseTabAlert, LicenseTabHeader, LicenseTabRow, LicenseTabSection } from "@/components/licenses/dialog/shared/LicenseTabLayout"
+import { LicenseTabHeader, LicenseTabRow, LicenseTabSection } from "@/components/licenses/dialog/shared/LicenseTabLayout"
 import { AcceptTermsCheckbox } from "@/components/forms/AcceptTermsCheckbox"
 import { PackageSlider } from "@/components/ui/PackageSlider"
 import { ButtonLoader } from "@/components/ui/Loader"
 import { useSubscriptionUpdatePreview } from "@/hooks/useSubscriptionUpdatePreview"
 import type { ErrorsContent, LicenseContent, SubscriptionConfigData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
-import { formatMinorCurrency } from "@/lib/formatters"
+import { formatCompactNumber, formatMinorCurrency } from "@/lib/formatters"
+import { parseLicenseDate } from "@/lib/licenses/pendingUpdate"
 import { createLicensePath, resolveCustomerRouteId, resolveSubscriptionRouteId } from "@/lib/licenses/routes"
 import { resolveSubscriptionCustomerType } from "@/lib/crater/values"
 import { updateSubscription } from "@/lib/subscription/client"
@@ -19,11 +20,14 @@ import { getSubscriptionCatalog } from "@/lib/subscription/catalog"
 import { normalizePaymentPeriod } from "@/lib/subscription/configurator"
 import type { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
 import { normalizeUsagePackages, snapToUsagePackage } from "@/lib/subscription/usagePackages"
-import { Button, Flex, Spacing, Text } from "@code0-tech/pictor"
-import { IconCheck } from "@tabler/icons-react"
+import { getLicenseBenefitGridCellClassName } from "@/components/licenses/shared/licenseDetailGrid"
+import { getIcon } from "@/components/ui/IconRenderer"
+import { TONE_CLASS_NAME } from "@/lib/subscription/tones"
+import { cn } from "@/lib/utils"
+import { Button, SelectContent, SelectInput, SelectItem, SelectItemText, SelectPortal, SelectTrigger, SelectValue, SelectViewport, Spacing, Text } from "@code0-tech/pictor"
+import { IconArrowRight, IconChevronDown } from "@tabler/icons-react"
 import { useRouter } from "next/navigation"
 import { useMemo, useState } from "react"
-import { cn } from "@/lib/utils"
 
 interface LicenseUpgradeDialogProps {
     content: LicenseContent
@@ -33,6 +37,19 @@ interface LicenseUpgradeDialogProps {
     locale: AppLocale
     subscriptionConfig: SubscriptionConfigData
     subscriptionPrices: SubscriptionPriceCatalog
+}
+
+function PlanBadge({ config, muted }: { config: SubscriptionConfigData["plan"][SubscriptionPlan]; muted?: boolean }) {
+    return (
+        <span className="inline-flex items-center gap-2">
+            <span className={cn("inline-flex size-5 items-center justify-center rounded-lg border", muted ? TONE_CLASS_NAME.neutral : TONE_CLASS_NAME[config.color])}>
+                {getIcon(config.icon, 13)}
+            </span>
+            <Text size="md" hierarchy={muted ? "tertiary" : "primary"}>
+                {config.title}
+            </Text>
+        </span>
+    )
 }
 
 const PLAN_ORDER: Record<SubscriptionPlan, number> = { pro: 0, max: 1, custom: 2 }
@@ -117,38 +134,82 @@ export function LicenseUpgradeDialog({ content, customerId, errors, licenseId, l
 
     const planSelection =
         upgradeTargets.length > 1 ? (
-            <div role="radiogroup" aria-label={content.upgrade.title} className="grid grid-cols-2 gap-2">
-                {upgradeTargets.map((option) => (
-                    <Button
-                        key={option}
-                        type="button"
-                        role="radio"
-                        aria-checked={plan === option}
-                        active={plan === option}
-                        variant={plan === option ? "normal" : "none"}
-                        paddingSize="xxs"
-                        w="100%"
-                        justify="center"
-                        className={cn("text-sm!", plan === option && "shadow-[inset_0_1px_1px_#bfbfbf1a]! bg-white/5!")}
-                        onClick={() => setSelectedPlan(option)}
-                    >
-                        {subscriptionConfig.plan[option].title}
-                    </Button>
-                ))}
+            <div className="[&_.input-wrapper]:w-auto [&_.input-wrapper]:bg-transparent [&_.input-wrapper]:shadow-none [&_.input-wrapper>*]:pl-0">
+                <SelectInput value={plan} onValueChange={(value) => setSelectedPlan(value as SubscriptionPlan)}>
+                    <SelectTrigger w="fit-content" asChild>
+                        <Button type="button" paddingSize="xxs" color="tertiary">
+                            <SelectValue>{subscriptionConfig.plan[plan].title}</SelectValue>
+                            <IconChevronDown aria-hidden="true" size={13} />
+                        </Button>
+                    </SelectTrigger>
+                    <SelectPortal>
+                        <SelectContent position="popper" sideOffset={4}>
+                            <SelectViewport>
+                                {upgradeTargets.map((option) => (
+                                    <SelectItem key={option} value={option}>
+                                        <SelectItemText>{subscriptionConfig.plan[option].title}</SelectItemText>
+                                    </SelectItem>
+                                ))}
+                            </SelectViewport>
+                        </SelectContent>
+                    </SelectPortal>
+                </SelectInput>
             </div>
-        ) : null
+        ) : (
+            <Text size="md">{subscriptionConfig.plan[plan].title}</Text>
+        )
+    const dateFormatter = new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeZone: "UTC" })
+    // effectiveAt is when the change takes effect, so it dates the charge; the new total is first billed with the next period.
+    const chargedOnDate = preview ? (preview.immediate ? new Date() : parseLicenseDate(preview.effectiveAt)) : null
+    const nextPeriodDate = parseLicenseDate(license?.currentPeriodEnd)
+    const planConfig = subscriptionConfig.plan[plan]
+    const currentPlanConfig = subscriptionConfig.plan[currentPlan]
     const planFeatures =
-        subscriptionConfig.plan[plan].features?.flatMap((feature, index) => {
+        planConfig.features?.flatMap((feature, index) => {
             const text = feature.text?.trim()
             return text ? [{ key: feature.id ?? `${index}-${text}`, text }] : []
         }) ?? []
-
+    // Crater resolves the quantities the change lands on; the slider values stand in while the preview is still loading.
+    const nextAiTokens = preview?.aiTokens ?? (plan === "custom" ? resolvedAiTokens : null)
+    const nextWorkflowExecutions = preview?.workflowExecutions ?? (plan === "custom" ? resolvedWorkflowExecutions : null)
+    const usageComparisons = [
+        { current: license?.aiTokens, key: "aiTokens", label: content.dashboard.aiTokensLabel, next: nextAiTokens },
+        { current: license?.workflowExecutions, key: "workflowExecutions", label: content.dashboard.workflowExecutionsLabel, next: nextWorkflowExecutions },
+    ].flatMap((usage) => (typeof usage.next === "number" ? [{ ...usage, next: usage.next }] : []))
+    const benefitCells = [
+        {
+            current: null,
+            key: "plan",
+            label: content.upgrade.planHeading,
+            next: null,
+            value: (
+                <span className="flex flex-wrap items-center gap-2">
+                    {plan === currentPlan ? null : (
+                        <>
+                            <PlanBadge config={currentPlanConfig} muted />
+                            <IconArrowRight aria-hidden="true" size={14} className="shrink-0 text-tertiary" />
+                        </>
+                    )}
+                    <PlanBadge config={planConfig} />
+                </span>
+            ),
+        },
+        ...usageComparisons.map((usage) => ({
+            current: typeof usage.current === "number" && usage.current !== usage.next ? formatCompactNumber(usage.current) : null,
+            key: usage.key,
+            label: usage.label,
+            next: formatCompactNumber(usage.next),
+            value: null,
+        })),
+        // Without quantities from Crater the plan is described by its features instead.
+        ...(usageComparisons.length > 0 ? [] : planFeatures.slice(0, 2).map((feature) => ({ current: null, key: feature.key, label: null, next: feature.text, value: null }))),
+    ]
     return (
         <>
             <LicenseTabHeader title={content.upgrade.title} description={content.upgrade.description} />
 
             <LicenseTabSection title={content.upgrade.planHeading}>
-                {planSelection ? <LicenseTabRow>{planSelection}</LicenseTabRow> : null}
+                <LicenseTabRow title={content.upgrade.planHeading} description={content.upgrade.description} action={planSelection} />
                 {plan === "custom" ? (
                     <>
                         <LicenseTabRow title={content.dashboard.aiTokensLabel}>
@@ -177,48 +238,112 @@ export function LicenseUpgradeDialog({ content, customerId, errors, licenseId, l
                         </LicenseTabRow>
                     </>
                 ) : null}
-                {planFeatures.length > 0 ? (
-                    <LicenseTabRow>
-                        <ul className="space-y-2">
-                            {planFeatures.map((feature) => (
-                                <li key={feature.key} className="flex items-start gap-2 text-sm text-secondary">
-                                    <IconCheck aria-hidden="true" size={18} className="mt-0.5 shrink-0 text-brand" />
-                                    <span>{feature.text}</span>
+            </LicenseTabSection>
+
+            <LicenseTabSection title={content.upgrade.previewHeading}>
+                <LicenseTabRow
+                    title={content.subscriptionPreview.prorationLabel}
+                    description={
+                        <>
+                            {content.subscriptionPreview.prorationDescription}
+                            {preview ? ` ${preview.immediate ? content.subscriptionPreview.immediateNote : content.subscriptionPreview.scheduledNote}` : null}
+                        </>
+                    }
+                    action={
+                        isLoadingPreview ? (
+                            <Text size="md" hierarchy="tertiary">
+                                {content.subscriptionPreview.loadingLabel}
+                            </Text>
+                        ) : preview ? (
+                            <div className="text-right">
+                                <Text size="md" hierarchy="primary" fw={500}>
+                                    {formatMinorCurrency(preview.prorationAmount, preview.currency, locale)}
+                                </Text>
+                                {chargedOnDate ? (
+                                    <Text size="sm" hierarchy="tertiary">
+                                        {dateFormatter.format(chargedOnDate)}
+                                    </Text>
+                                ) : null}
+                            </div>
+                        ) : null
+                    }
+                    contentSpacing="md"
+                >
+                    {previewError ? (
+                        <Text role="alert" size="sm" className="text-error!">
+                            {previewError}
+                        </Text>
+                    ) : null}
+                </LicenseTabRow>
+                {benefitCells.length > 0 ? (
+                    <LicenseTabRow className="p-0!">
+                        <ul className={cn("grid grid-cols-1", benefitCells.length === 2 ? "sm:grid-cols-2" : "sm:grid-cols-3")}>
+                            {benefitCells.map((cell, index) => (
+                                <li key={cell.key} className={getLicenseBenefitGridCellClassName(index)}>
+                                    {cell.label ? (
+                                        <Text size="sm" hierarchy="tertiary" display="block" className="truncate">
+                                            {cell.label}
+                                        </Text>
+                                    ) : null}
+                                    <div className="mt-3 flex flex-wrap items-center gap-2">
+                                        {cell.current ? (
+                                            <>
+                                                <Text size="md" hierarchy="tertiary" className="truncate line-through">
+                                                    {cell.current}
+                                                </Text>
+                                                <IconArrowRight aria-hidden="true" size={14} className="shrink-0 text-tertiary" />
+                                            </>
+                                        ) : null}
+                                        {cell.value ?? (
+                                            <Text fw={400} title={cell.next ?? undefined} className="truncate text-xl! leading-tight! text-white!">
+                                                {cell.next}
+                                            </Text>
+                                        )}
+                                    </div>
                                 </li>
                             ))}
                         </ul>
                     </LicenseTabRow>
                 ) : null}
-            </LicenseTabSection>
-
-            <LicenseTabSection title={content.upgrade.previewHeading}>
-                <LicenseTabRow title={content.subscriptionPreview.totalLabel} action={<Text size="md">{formatMinorCurrency(localQuote.total, "EUR", locale)}</Text>} />
-                {isLoadingPreview ? (
-                    <LicenseTabRow description={content.subscriptionPreview.loadingLabel} />
-                ) : previewError ? (
-                    <LicenseTabRow>
-                        <Text role="alert" size="sm" className="text-error!">
-                            {previewError}
+                <LicenseTabRow
+                    title={content.subscriptionPreview.totalLabel}
+                    description={content.subscriptionPreview.totalDescription}
+                    action={
+                        <div className="text-right">
+                            <Text size="md" hierarchy="tertiary">
+                                {formatMinorCurrency(localQuote.total, "EUR", locale)}
+                            </Text>
+                            {nextPeriodDate ? (
+                                <Text size="sm" hierarchy="tertiary">
+                                    {dateFormatter.format(nextPeriodDate)}
+                                </Text>
+                            ) : null}
+                        </div>
+                    }
+                />
+                <LicenseTabRow>
+                    <AcceptTermsCheckbox locale={locale} initialValue={false} formValidation={{ setValue: setAcceptedTerms, valid: true }} />
+                    <Spacing spacing="md" />
+                    <Button
+                        type="button"
+                        variant="normal"
+                        color="success"
+                        paddingSize="xxs"
+                        w="100%"
+                        justify="center"
+                        disabled={!hasChange || isSaving || isLoadingPreview || !preview || Boolean(previewError) || !acceptedTerms}
+                        onClick={() => void save()}
+                    >
+                        {isSaving ? <ButtonLoader label={content.upgrade.submitLabel} /> : content.upgrade.submitLabel}
+                    </Button>
+                    {saveError ? (
+                        <Text role="alert" size="sm" className="text-error! mt-2!">
+                            {saveError}
                         </Text>
-                    </LicenseTabRow>
-                ) : preview ? (
-                    <LicenseTabRow
-                        title={preview.prorationAmount > 0 ? content.subscriptionPreview.prorationLabel : undefined}
-                        description={preview.immediate ? content.subscriptionPreview.immediateNote : content.subscriptionPreview.scheduledNote}
-                        action={preview.prorationAmount > 0 ? <Text size="md">{formatMinorCurrency(preview.prorationAmount, preview.currency, locale)}</Text> : undefined}
-                    />
-                ) : null}
+                    ) : null}
+                </LicenseTabRow>
             </LicenseTabSection>
 
-            <Spacing spacing="lg" />
-            <AcceptTermsCheckbox locale={locale} initialValue={false} formValidation={{ setValue: setAcceptedTerms, valid: true }} />
-            {saveError ? <LicenseTabAlert>{saveError}</LicenseTabAlert> : null}
-            <Spacing spacing="lg" />
-            <Flex justify="end">
-                <Button type="button" variant="filled" disabled={!hasChange || isSaving || isLoadingPreview || !preview || Boolean(previewError) || !acceptedTerms} onClick={() => void save()}>
-                    {isSaving ? <ButtonLoader label={content.upgrade.submitLabel} /> : content.upgrade.submitLabel}
-                </Button>
-            </Flex>
         </>
     )
 }
