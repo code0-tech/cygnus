@@ -21,6 +21,11 @@ import { IconChevronDown } from "@tabler/icons-react"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 
+// The CMS texts mark their values with {selection} and {date}; keeping the markers as parts lets them be rendered with their own hierarchy.
+function splitTemplate(text: string) {
+    return text.split(/(\{selection\}|\{date\})/)
+}
+
 // The payment tab shows the full card; inside the billing rows the method is one line of text, like the other row descriptions.
 function formatPaymentMethodSummary(method: PaymentMethodDisplayDetails) {
     const label = method.brand?.trim() || method.type?.replaceAll("_", " ") || null
@@ -69,7 +74,9 @@ export function LicenseGeneralTab({
     const currentPeriod = license?.paymentPeriod as PaymentPeriod | undefined
     const [selectedPeriod, setSelectedPeriod] = useState<PaymentPeriod | null>(null)
     const period = selectedPeriod ?? currentPeriod ?? periodOptions[0]
-    const hasChange = Boolean(subscriptionId) && period !== currentPeriod
+    // A scheduled switch is not applied yet, so the select keeps showing the period that is billed today; picking the already scheduled one is no new change.
+    const pendingPeriod = (license?.pendingUpdate?.paymentPeriod as PaymentPeriod | undefined) ?? null
+    const hasChange = Boolean(subscriptionId) && period !== currentPeriod && period !== pendingPeriod
     const { isLoadingPreview, preview, previewError } = useSubscriptionUpdatePreview(hasChange ? subscriptionId : undefined, { paymentPeriod: period }, errors.subscriptionPreview)
     const [saveError, setSaveError] = useState<string | null>(null)
     const [isSaving, setIsSaving] = useState(false)
@@ -106,6 +113,20 @@ export function LicenseGeneralTab({
             : content.billing.currentPeriodEndDescription
     const [currentPeriodEndTextBeforeDate, currentPeriodEndTextAfterDate] = currentPeriodEndText.split("{date}")
     const periodLabelFor = (value: PaymentPeriod) => subscriptionConfig.paymentPeriod[`${value}Text`]
+    // The period row has to say that a switch is already scheduled, otherwise the select reads like nothing is going to change.
+    const pendingPeriodDate = pendingPeriod ? resolvePendingUpdateDate(license?.pendingUpdate, license?.currentPeriodEnd) : null
+    // The scheduled switch continues the row description, with the new period and its date lifted out of the tertiary text like the renewal date above.
+    const pendingPeriodNote = pendingPeriod
+        ? splitTemplate(pendingPeriodDate ? content.billing.currentPeriodEndPendingDescription : content.billing.pendingChangeNote).map((part, index) =>
+              part === "{selection}" || part === "{date}" ? (
+                  <span key={index} className="font-medium text-white">
+                      {part === "{selection}" ? periodLabelFor(pendingPeriod) : pendingPeriodDate ? dateFormatter.format(pendingPeriodDate) : ""}
+                  </span>
+              ) : (
+                  part
+              )
+          )
+        : null
     // Same rule as the upgrade preview: effectiveAt dates the charge, the new total is first billed with the next period.
     const previewChargedOnDate = preview ? (preview.immediate ? new Date() : parseLicenseDate(preview.effectiveAt)) : null
     const previewNextPeriodDate = parseLicenseDate(license?.currentPeriodEnd)
@@ -224,7 +245,15 @@ export function LicenseGeneralTab({
                         )}
                         <LicenseTabRow
                             title={content.billing.periodLabel}
-                            description={content.billing.description}
+                            description={
+                                pendingPeriodNote ? (
+                                    <>
+                                        {content.billing.description} {pendingPeriodNote}
+                                    </>
+                                ) : (
+                                    content.billing.description
+                                )
+                            }
                             action={
                                 <div className="[&_.input-wrapper]:w-auto [&_.input-wrapper]:bg-transparent [&_.input-wrapper]:shadow-none [&_.input-wrapper>*]:pl-0">
                                     <SelectInput value={period} onValueChange={(value) => setSelectedPeriod(value as PaymentPeriod)}>
