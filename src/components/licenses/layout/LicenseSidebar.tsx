@@ -418,6 +418,7 @@ export function LicenseSidebar({ content, isLoading, isLoggingOut, locale, licen
                 </Flex>
                 <div className="mt-6 flex shrink-0 flex-col gap-3">
                     {activeLicense?.deploymentType === "self_hosted" ? <LicenseDownloadButton content={content} license={activeLicense} /> : null}
+                    {showLicenseActions ? <LicenseBackToCustomerButton label={content.sidebar.backToCustomerLabel} locale={locale} license={activeLicense}/> : null}
                     {customerId && !isLicenseRoute ? <LicenseBackToCustomersButton label={content.sidebar.backToCustomersLabel} locale={locale} /> : null}
                     {showLicenseActions ? <LicenseUpgradeButton content={content} license={activeLicense} locale={locale} /> : null}
                     {contextMenu ? <LicenseContextMenu {...contextMenu} /> : null}
