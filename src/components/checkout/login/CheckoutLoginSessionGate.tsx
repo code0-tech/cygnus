@@ -6,12 +6,12 @@ import { clearCraterUserLoginMarker } from "@/lib/crater/userLogin.client"
 import { useEffect, useState, type ReactNode } from "react"
 
 interface CheckoutLoginSessionGateProps {
-    checkoutHref: string
+    sessionHref: string
     checkSession: boolean
     children: ReactNode
 }
 
-export function CheckoutLoginSessionGate({ checkoutHref, checkSession, children }: CheckoutLoginSessionGateProps) {
+export function CheckoutLoginSessionGate({ sessionHref, checkSession, children }: CheckoutLoginSessionGateProps) {
     const [checking, setChecking] = useState(checkSession)
 
     useEffect(() => {
@@ -22,7 +22,7 @@ export function CheckoutLoginSessionGate({ checkoutHref, checkSession, children 
             .then((session) => {
                 if (!active) return
                 if (session) {
-                    replaceCheckoutPage(checkoutHref)
+                    replaceCheckoutPage(sessionHref)
                     return
                 }
                 clearCraterUserLoginMarker()
@@ -35,7 +35,7 @@ export function CheckoutLoginSessionGate({ checkoutHref, checkSession, children 
         return () => {
             active = false
         }
-    }, [checkSession, checkoutHref])
+    }, [checkSession, sessionHref])
 
     if (checking) {
         return (

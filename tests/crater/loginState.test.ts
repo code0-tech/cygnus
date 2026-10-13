@@ -64,6 +64,20 @@ test("starts a checkout login with a state bound to an HttpOnly cookie", async (
     assert.match(cookie, /Max-Age=600/i)
 })
 
+test("requests cloud namespace selection with an existing session and the deployment alias", async () => {
+    const returnPath = "/de/checkout?plan=pro&deployment=cloud"
+    const response = await startCraterLogin(new Request(
+        `https://code0.example/api/crater/auth/start?${new URLSearchParams({ flow: "checkout", returnPath })}`,
+        { headers: { cookie: "crater_session=existing-session; crater_user_login=1" } }
+    ))
+
+    const location = new URL(response.headers.get("location") ?? "")
+    assert.equal(location.origin, "https://sculptor.example")
+    assert.equal(location.searchParams.get("selectNamespace"), "true")
+    assert.equal(new URL(location.searchParams.get("callbackUrl") ?? "").searchParams.get("returnPath"), returnPath)
+    assert.ok(loginStateCookie(response))
+})
+
 test("issues a fresh state for every login start", async () => {
     const start = () => startCraterLogin(new Request(`https://0.0.0.0:3000/api/crater/auth/start?${new URLSearchParams({ flow: "checkout", returnPath: "/en/checkout?plan=pro" })}`))
     const [first, second] = await Promise.all([start(), start()])
