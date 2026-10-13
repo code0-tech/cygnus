@@ -173,6 +173,7 @@ import * as migration_20261012_210000_no_namespace_label from './20261012_210000
 import * as migration_20261013_100000_download_license_label from './20261013_100000_download_license_label';
 import * as migration_20261013_120000_customer_overview_labels from './20261013_120000_customer_overview_labels';
 import * as migration_20261013_130000_recent_licenses_labels from './20261013_130000_recent_licenses_labels';
+import * as migration_20261013_140000_period_end_canceled_description from './20261013_140000_period_end_canceled_description';
 
 export const migrations = [
   {
@@ -1039,5 +1040,10 @@ export const migrations = [
     up: migration_20261013_130000_recent_licenses_labels.up,
     down: migration_20261013_130000_recent_licenses_labels.down,
     name: '20261013_130000_recent_licenses_labels',
+  },
+  {
+    up: migration_20261013_140000_period_end_canceled_description.up,
+    down: migration_20261013_140000_period_end_canceled_description.down,
+    name: '20261013_140000_period_end_canceled_description',
   },
 ];

@@ -22,6 +22,14 @@ function normalizeStatus(status?: string) {
     return status?.trim().toLowerCase().replaceAll("-", "_")
 }
 
+export function isLicenseStatusActive(status?: string) {
+    return ["active", "trialing"].includes(normalizeStatus(status) ?? "")
+}
+
+export function isLicenseStatusCanceled(status?: string) {
+    return ["canceled", "incomplete_expired"].includes(normalizeStatus(status) ?? "")
+}
+
 export function isLicenseStatusError(status?: string) {
     return ["past_due", "unpaid"].includes(normalizeStatus(status) ?? "")
 }

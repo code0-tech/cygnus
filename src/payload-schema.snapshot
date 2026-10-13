@@ -2729,6 +2729,7 @@ export const license_dialogs_locales = pgTable('license_dialogs_locales', {
   billing_currentPeriodEndLabel: varchar('billing_current_period_end_label').notNull(),
   billing_currentPeriodEndDescription: varchar('billing_current_period_end_description').notNull(),
   billing_currentPeriodEndPendingDescription: varchar('billing_current_period_end_pending_description').notNull(),
+  billing_currentPeriodEndCanceledDescription: varchar('billing_current_period_end_canceled_description').notNull(),
   billing_pendingChangeNote: varchar('billing_pending_change_note').notNull(),
   billing_currentPeriodEndUnknownDescription: varchar('billing_current_period_end_unknown_description').notNull(),
   billing_changePeriodLabel: varchar('billing_change_period_label').notNull(),

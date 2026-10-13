@@ -2,6 +2,7 @@
 
 import { useLicenseData } from "@/components/licenses/data/LicenseDataProvider"
 import { LicenseGeneralTab } from "@/components/licenses/dialog/subscription/LicenseGeneralTab"
+import { isLicenseStatusCanceled } from "@/components/licenses/shared/LicenseStatusDot"
 import { LicenseDialog } from "@/components/licenses/dialog/shared/LicenseDialog"
 import { LicenseUpgradeDialog } from "@/components/licenses/dialog/subscription/LicenseUpgradeDialog"
 import { useCustomerPaymentMethods } from "@/hooks/usePaymentMethods"
@@ -38,7 +39,11 @@ export function LicenseEditDialog({ checkoutPackages, content, customerId, error
     const resolvedSubscriptionId = resolveSubscriptionRouteId(licenseId)
     const license = licenses.find((candidate) => candidate.id === resolvedSubscriptionId && candidate.customerId === resolvedCustomerId)
     const requestedTab = searchParams.get("tab")
-    const section: LicenseEditSection = isLicenseEditSection(requestedTab) ? requestedTab : "general"
+    // A canceled subscription has no plan left to upgrade, so the upgrade section disappears and any link to it falls back to general.
+    const isCanceled = isLicenseStatusCanceled(license?.subscriptionStatus ?? license?.status)
+    const sections: readonly LicenseEditSection[] = isCanceled ? ["general"] : LICENSE_EDIT_SECTIONS
+    const requestedSection: LicenseEditSection | null = isLicenseEditSection(requestedTab) ? requestedTab : null
+    const section: LicenseEditSection = requestedSection && sections.includes(requestedSection) ? requestedSection : "general"
     const sectionLabels = getLicenseEditSectionLabels(content)
     const {
         isLoadingPaymentMethods: isLoadingCustomerPaymentMethods,
@@ -58,7 +63,7 @@ export function LicenseEditDialog({ checkoutPackages, content, customerId, error
     }
 
     useEffect(() => {
-        if (isLicenseEditSection(requestedTab)) return
+        if (requestedTab === section) return
         const nextSearchParams = new URLSearchParams(searchParams.toString())
         nextSearchParams.set("tab", section)
         nextSearchParams.delete("section")
@@ -86,7 +91,7 @@ export function LicenseEditDialog({ checkoutPackages, content, customerId, error
     const sectionIcons = { general: IconKey, upgrade: IconTrendingUp } satisfies Record<LicenseEditSection, typeof IconKey>
     const sidebar = license?.subscriptionId ? (
         <TabList aria-label={content.editor.licenseTitle}>
-            {LICENSE_EDIT_SECTIONS.map((value) => {
+            {sections.map((value) => {
                 const TabIcon = sectionIcons[value]
 
                 return (
@@ -136,7 +141,7 @@ export function LicenseEditDialog({ checkoutPackages, content, customerId, error
                     title={sectionLabels.general}
                 />
             </TabContent>
-            {license?.subscriptionId ? (
+            {license?.subscriptionId && !isCanceled ? (
                 <>
                     <TabContent value="upgrade">
                         <LicenseUpgradeDialog
