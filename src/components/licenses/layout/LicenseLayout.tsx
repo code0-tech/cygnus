@@ -22,8 +22,10 @@ function LicenseLayoutContent({ children, content, errors, locale, sculptorUrl }
     const { error, isSidebarLoading, reload, sidebarLicenses } = useLicenseData()
     const [isLoggingOut, setIsLoggingOut] = useState(false)
 
-    const openMainApplication = (path: string) => {
-        window.location.assign(new URL(path, sculptorUrl).toString())
+    const openMainApplication = (path: string, newWindow = false) => {
+        const url = new URL(path, sculptorUrl).toString()
+        if (newWindow) window.open(url, "_blank", "noopener,noreferrer")
+        else window.location.assign(url)
     }
 
     const logout = async () => {
