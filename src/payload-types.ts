@@ -3208,6 +3208,7 @@ export interface License {
     logout: string;
     loggingOut: string;
     backToCustomerLabel: string;
+    backToCustomersLabel: string;
     downloadLicenseLabel: string;
     homeLabel: string;
     applicationSettingsLabel: string;
@@ -3218,7 +3219,12 @@ export interface License {
     workspacesLabel: string;
   };
   dashboard: {
+    customersLabel: string;
+    customersDescription: string;
     emptyCustomers: string;
+    recentLicensesLabel: string;
+    recentLicensesDescription: string;
+    typeLabel: string;
     customerLabel: string;
     nameLabel: string;
     emailLabel: string;
@@ -3996,6 +4002,7 @@ export interface LicensesSelect<T extends boolean = true> {
         logout?: T;
         loggingOut?: T;
         backToCustomerLabel?: T;
+        backToCustomersLabel?: T;
         downloadLicenseLabel?: T;
         homeLabel?: T;
         applicationSettingsLabel?: T;
@@ -4008,7 +4015,12 @@ export interface LicensesSelect<T extends boolean = true> {
   dashboard?:
     | T
     | {
+        customersLabel?: T;
+        customersDescription?: T;
         emptyCustomers?: T;
+        recentLicensesLabel?: T;
+        recentLicensesDescription?: T;
+        typeLabel?: T;
         customerLabel?: T;
         nameLabel?: T;
         emailLabel?: T;

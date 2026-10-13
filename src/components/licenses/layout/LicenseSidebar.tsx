@@ -192,6 +192,17 @@ function LicenseBackToCustomerButton({ label, license, locale }: { label: string
     )
 }
 
+function LicenseBackToCustomersButton({ label, locale }: { label: string; locale: AppLocale }) {
+    return (
+        <Link href={`/${locale}/licenses`} className="block">
+            <Button type="button" paddingSize="xxs" variant="none" justify="start" w="100%" className="rounded-2xl! text-xs! hover:shadow-[inset_0_1px_1px_#bfbfbf1a]!">
+                <IconArrowLeft aria-hidden="true" size={16} />
+                <span className="min-w-0 truncate">{label}</span>
+            </Button>
+        </Link>
+    )
+}
+
 function getLicenseSidebarName(license: LicenseDashboardLicense, values: LicenseContent["values"]) {
     const planName = formatLicenseDisplayValue(license.plan, "plan", values)
     if (license.deploymentType === "self_hosted") return planName
@@ -275,9 +286,12 @@ export function LicenseSidebar({ content, isLoading, isLoggingOut, locale, licen
         return pathname === href || pathname?.startsWith(`${href}/`)
     })
     const customerRouteSegment = pathname?.match(/\/licenses\/customer\/([^/]+)/)?.[1]
+    const isLicenseRoute = /\/licenses\/customer\/[^/]+\/license\/[^/]+/.test(pathname ?? "")
     // While a license page loads, its actions are already shown, disabled until the license is known.
-    const showLicenseActions = Boolean(activeLicense) || (isLoading && /\/licenses\/customer\/[^/]+\/license\/[^/]+/.test(pathname ?? ""))
+    const showLicenseActions = Boolean(activeLicense) || (isLoading && isLicenseRoute)
     const customerId = customerRouteSegment ? resolveCustomerRouteId(customerRouteSegment) : undefined
+    // Licenses are listed per customer; the customer overview at /licenses has no license list.
+    const customerLicenses = customerId ? licenses.filter((license) => license.customerId === customerId) : []
     const contextMenu = activeLicense
         ? getLicenseContextMenu(activeLicense, content, locale)
         : customerRouteSegment
@@ -303,15 +317,24 @@ export function LicenseSidebar({ content, isLoading, isLoggingOut, locale, licen
                                 sideOffset={8}
                                 className="z-100 max-h-[calc(100dvh-5rem)]! w-[calc(100vw-2rem)]! overflow-y-auto! [&>.scroll-area--auto]:w-full! [&>.scroll-area--auto]:min-w-0! [&>.scroll-area--auto]:self-stretch! [&_.scroll-area__viewport]:w-full! [&_.scroll-area__viewport>div]:w-full!"
                             >
-                                <MenuLabel className="flex w-full! items-center justify-between gap-3">
-                                    <span>{content.licenses}</span>
-                                    {isLoading ? null : <span className="text-xs tabular-nums text-tertiary">{licenses.length}</span>}
-                                </MenuLabel>
+                                {customerId ? (
+                                    <>
+                                        <MenuItem onSelect={() => router.push(`/${locale}/licenses`)} className="w-full! justify-start! text-left!">
+                                            <IconArrowLeft aria-hidden="true" size={16} />
+                                            <span>{content.sidebar.backToCustomersLabel}</span>
+                                        </MenuItem>
+                                        <MenuSeparator />
+                                        <MenuLabel className="flex w-full! items-center justify-between gap-3">
+                                            <span>{content.licenses}</span>
+                                            {isLoading ? null : <span className="text-xs tabular-nums text-tertiary">{customerLicenses.length}</span>}
+                                        </MenuLabel>
+                                    </>
+                                ) : null}
 
-                                {isLoading ? (
+                                {!customerId ? null : isLoading ? (
                                     <LicenseMenuSkeleton />
-                                ) : licenses.length > 0 ? (
-                                    licenses.map((license) => {
+                                ) : customerLicenses.length > 0 ? (
+                                    customerLicenses.map((license) => {
                                         const status = formatLicenseDisplayValue(license.status, "status", content.values)
                                         const licenseHref = createLicensePath(locale, license.customerId, license.id)
                                         const licenseIsActive = pathname === licenseHref || pathname?.startsWith(`${licenseHref}/`)
@@ -344,7 +367,7 @@ export function LicenseSidebar({ content, isLoading, isLoggingOut, locale, licen
                                     </div>
                                 )}
 
-                                <MenuSeparator />
+                                {customerId ? <MenuSeparator /> : null}
                                 <MenuItem disabled={isLoggingOut} onSelect={onLogout} className="w-full! justify-start! text-left!">
                                     {isLoggingOut ? (
                                         <ButtonLoader label={content.sidebar.loggingOut} />
@@ -363,62 +386,72 @@ export function LicenseSidebar({ content, isLoading, isLoggingOut, locale, licen
 
             <aside className="hidden min-h-0 flex-col bg-transparent pr-4 lg:flex lg:h-full">
                 <Flex h="100%" pt={0.5} style={{ boxSizing: "border-box", flexDirection: "column", minHeight: 0 }}>
-                    <Flex align="center" justify="space-between">
-                        <Text pl={0.7} hierarchy="tertiary">
-                            {content.licenses}
-                        </Text>
-                        {isLoading ? null : (
-                            <StableBadge color="secondary" className={PICTOR_BADGE_CLASS_NAME}>
-                                {licenses.length}
-                            </StableBadge>
-                        )}
-                    </Flex>
-                    <Spacing spacing="xxs" />
-                    {/* A plain overflow container, not a ScrollArea: Radix wraps its viewport in a display:table div that collapses the rows to their text width. */}
-                    <nav aria-label={content.licenses} className="min-h-0 flex-1 overflow-y-auto">
-                        {isLoading ? (
-                            <LicenseSidebarSkeleton />
-                        ) : licenses.length > 0 ? (
-                            <ul className="flex flex-col">
-                                {licenses.map((license) => {
-                                    const status = formatLicenseDisplayValue(license.status, "status", content.values)
-                                    const licenseHref = createLicensePath(locale, license.customerId, license.id)
-                                    const licenseIsActive = pathname === licenseHref || pathname?.startsWith(`${licenseHref}/`)
+                    {customerId ? (
+                        <>
+                            <Flex align="center" justify="space-between">
+                                <Text pl={0.7} hierarchy="tertiary">
+                                    {content.licenses}
+                                </Text>
+                                {isLoading ? null : (
+                                    <StableBadge color="secondary" className={PICTOR_BADGE_CLASS_NAME}>
+                                        {customerLicenses.length}
+                                    </StableBadge>
+                                )}
+                            </Flex>
+                            <Spacing spacing="xxs" />
+                            {/* A plain overflow container, not a ScrollArea: Radix wraps its viewport in a display:table div that collapses the rows to their text width. */}
+                            <nav aria-label={content.licenses} className="min-h-0 flex-1 overflow-y-auto">
+                                {isLoading ? (
+                                    <LicenseSidebarSkeleton />
+                                ) : customerLicenses.length > 0 ? (
+                                    <ul className="flex flex-col">
+                                        {customerLicenses.map((license) => {
+                                            const status = formatLicenseDisplayValue(license.status, "status", content.values)
+                                            const licenseHref = createLicensePath(locale, license.customerId, license.id)
+                                            const licenseIsActive = pathname === licenseHref || pathname?.startsWith(`${licenseHref}/`)
 
-                                    return (
-                                        <li key={license.id}>
-                                            <Link href={licenseHref} aria-current={licenseIsActive ? "page" : undefined} className="block w-full" prefetch>
-                                                <Button variant="none" w="100%" justify="flex-start" paddingSize="xxs" active={licenseIsActive}>
-                                                    <span className="relative shrink-0">
-                                                        {license.deploymentType === "self_hosted" ? <IconServer aria-hidden="true" size={13} /> : <IconCloud aria-hidden="true" size={13} />}
-                                                        {isLicenseStatusError(license.status) ? (
-                                                            <LicenseStatusDot status={license.status} aria-label={status} title={status} className="absolute -bottom-0.5 -right-0.5 ring-2 ring-light" />
-                                                        ) : null}
-                                                    </span>
-                                                    <span className="flex min-w-0 items-center gap-1">
-                                                        <Text className="truncate">{getLicenseSidebarName(license, content.values)}</Text>
-                                                        <Text hierarchy="tertiary" className="shrink-0">
-                                                            {getShortLicenseId(license.id)}
-                                                        </Text>
-                                                    </span>
-                                                </Button>
-                                            </Link>
-                                        </li>
-                                    )
-                                })}
-                            </ul>
-                        ) : (
-                            <div className="flex items-center gap-2 rounded-xl border border-dashed border-white/10 p-2 text-tertiary">
-                                <IconKey aria-hidden="true" size={16} />
-                                <span className="text-xs">{content.emptyLicenses}</span>
-                            </div>
-                        )}
-                    </nav>
+                                            return (
+                                                <li key={license.id}>
+                                                    <Link href={licenseHref} aria-current={licenseIsActive ? "page" : undefined} className="block w-full" prefetch>
+                                                        <Button variant="none" w="100%" justify="flex-start" paddingSize="xxs" active={licenseIsActive}>
+                                                            <span className="relative shrink-0">
+                                                                {license.deploymentType === "self_hosted" ? <IconServer aria-hidden="true" size={13} /> : <IconCloud aria-hidden="true" size={13} />}
+                                                                {isLicenseStatusError(license.status) ? (
+                                                                    <LicenseStatusDot
+                                                                        status={license.status}
+                                                                        aria-label={status}
+                                                                        title={status}
+                                                                        className="absolute -bottom-0.5 -right-0.5 ring-2 ring-light"
+                                                                    />
+                                                                ) : null}
+                                                            </span>
+                                                            <span className="flex min-w-0 items-center gap-1">
+                                                                <Text className="truncate">{getLicenseSidebarName(license, content.values)}</Text>
+                                                                <Text hierarchy="tertiary" className="shrink-0">
+                                                                    {getShortLicenseId(license.id)}
+                                                                </Text>
+                                                            </span>
+                                                        </Button>
+                                                    </Link>
+                                                </li>
+                                            )
+                                        })}
+                                    </ul>
+                                ) : (
+                                    <div className="flex items-center gap-2 rounded-xl border border-dashed border-white/10 p-2 text-tertiary">
+                                        <IconKey aria-hidden="true" size={16} />
+                                        <span className="text-xs">{content.emptyLicenses}</span>
+                                    </div>
+                                )}
+                            </nav>
+                        </>
+                    ) : null}
                 </Flex>
                 <div className="mt-6 flex shrink-0 flex-col gap-3">
                     {showLicenseActions ? <LicenseUpgradeButton content={content} license={activeLicense} locale={locale} /> : null}
                     {activeLicense?.deploymentType === "self_hosted" ? <LicenseDownloadButton content={content} license={activeLicense} /> : null}
                     {showLicenseActions ? <LicenseBackToCustomerButton label={content.sidebar.backToCustomerLabel} license={activeLicense} locale={locale} /> : null}
+                    {customerId && !isLicenseRoute ? <LicenseBackToCustomersButton label={content.sidebar.backToCustomersLabel} locale={locale} /> : null}
                     {contextMenu ? <LicenseContextMenu {...contextMenu} /> : null}
                 </div>
             </aside>

@@ -54,3 +54,9 @@ export function formatLicenseDisplayValue(value: string | null | undefined, cate
 
     return mappings[category][normalizedValue] ?? labels.unknown
 }
+
+export function formatLicenseEdition(deploymentType: string | undefined, editions: LicenseContent["values"]["editions"]) {
+    if (deploymentType === "cloud") return editions.cloud
+    if (deploymentType === "self_hosted") return editions.selfHosted
+    return "—"
+}

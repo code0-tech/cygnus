@@ -9,7 +9,7 @@ import { getLicenseStatusBadgeColor } from "@/components/licenses/shared/License
 import { PICTOR_BADGE_CLASS_NAME, StableBadge } from "@/components/ui/StableBadge"
 import type { LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
-import { formatLicenseDisplayValue } from "@/lib/licenses/displayValues"
+import { formatLicenseDisplayValue, formatLicenseEdition } from "@/lib/licenses/displayValues"
 import { createLicenseCustomerPath, createLicensePath, resolveCustomerRouteId } from "@/lib/licenses/routes"
 import { AutoScrollArea, Badge, Button, Card, DataTable, DataTableColumn, DataTableHeader, DataTableHeaderColumn, Flex, Spacing, Text, type DataTableFilterProps } from "@code0-tech/pictor"
 import { useRouter } from "next/navigation"
@@ -60,12 +60,6 @@ function CustomerEmail({ email }: { email: string }) {
             </span>
         </div>
     )
-}
-
-function formatLicenseEdition(deploymentType: string | undefined, editions: LicenseContent["values"]["editions"]) {
-    if (deploymentType === "cloud") return editions.cloud
-    if (deploymentType === "self_hosted") return editions.selfHosted
-    return "—"
 }
 
 interface LicenseCustomerPageProps {
