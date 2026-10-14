@@ -6,7 +6,8 @@ import { LicenseSidebar } from "@/components/licenses/layout/LicenseSidebar"
 import { logoutLicenseSession } from "@/lib/licenses/client"
 import type { ErrorsContent, LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
-import { AuroraBackground, Button, Card, Flex, FullScreen, ScrollArea, ScrollAreaScrollbar, ScrollAreaThumb, ScrollAreaViewport, Text } from "@code0-tech/pictor"
+import { AuroraBackground, FullScreen, ScrollArea, ScrollAreaScrollbar, ScrollAreaThumb, ScrollAreaViewport } from "@code0-tech/pictor"
+import { notFound } from "next/navigation"
 import { Fragment, type ReactNode, useState } from "react"
 
 interface LicenseLayoutProps {
@@ -18,9 +19,11 @@ interface LicenseLayoutProps {
     modal?: ReactNode
 }
 
-function LicenseLayoutContent({ children, content, errors, locale, sculptorUrl }: LicenseLayoutProps) {
-    const { error, isSidebarLoading, reload, sidebarLicenses } = useLicenseData()
+function LicenseLayoutContent({ children, content, locale, sculptorUrl }: LicenseLayoutProps) {
+    const { error, isSidebarLoading, sidebarLicenses } = useLicenseData()
     const [isLoggingOut, setIsLoggingOut] = useState(false)
+
+    if (error) notFound()
 
     const openMainApplication = (path: string, newWindow = false) => {
         const url = new URL(path, sculptorUrl).toString()
@@ -66,20 +69,7 @@ function LicenseLayoutContent({ children, content, errors, locale, sculptorUrl }
                         <ScrollArea h={"100%"} type={"scroll"}>
                             <ScrollAreaViewport>
                                 <div style={{ maxWidth: "52rem", margin: "0 auto", padding: "1rem 1rem" }}>
-                                    {error ? (
-                                        <Card color="secondary">
-                                            <Flex align="center" justify="space-between" style={{ gap: "1rem" }}>
-                                                <Text size="sm" hierarchy="secondary">
-                                                    {error}
-                                                </Text>
-                                                <Button type="button" variant="normal" paddingSize="xs" onClick={reload}>
-                                                    {errors.retry}
-                                                </Button>
-                                            </Flex>
-                                        </Card>
-                                    ) : (
-                                        children
-                                    )}
+                                    {children}
                                 </div>
                             </ScrollAreaViewport>
                             <ScrollAreaScrollbar orientation={"vertical"}>
