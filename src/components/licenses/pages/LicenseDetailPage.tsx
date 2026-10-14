@@ -46,7 +46,6 @@ import {
     Text,
 } from "@code0-tech/pictor"
 import {IconDotsVertical, IconDownload, IconEye, IconX} from "@tabler/icons-react"
-import {useSearchParams} from "next/navigation"
 import {Fragment, useState} from "react"
 
 interface LicenseDetailPageProps {
@@ -92,7 +91,6 @@ export function LicenseDetailPage({
                                       subscriptionConfig,
                                       upgradeBanner
                                   }: LicenseDetailPageProps) {
-    const searchParams = useSearchParams()
     const {isLoading, licenses, loadMore, loadingMore, pagination} = useLicenseData()
     const resolvedCustomerId = resolveCustomerRouteId(customerId)
     const resolvedSubscriptionId = resolveSubscriptionRouteId(licenseId)
@@ -213,15 +211,6 @@ export function LicenseDetailPage({
                     )}
                 </Card>
 
-                {searchParams.get("namespaceError") ? (
-                    <>
-                        <Spacing spacing="md"/>
-                        <LicenseAlert
-                            color="error"
-                            description={searchParams.get("namespaceError") === "occupied" ? errors.namespaceInUse : errors.licenseUpdate}
-                        />
-                    </>
-                ) : null}
                 {showNamespaceWarning ? (
                     <>
                         <Spacing spacing="md"/>

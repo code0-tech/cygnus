@@ -2,16 +2,19 @@ import assert from "node:assert/strict"
 import test, { afterEach, mock } from "node:test"
 import React, { type ReactNode, type ButtonHTMLAttributes } from "react"
 import { installDomTestEnvironment } from "../helpers/domTestEnvironment"
+import { licenseToastContent } from "../helpers/licenseToasts"
 import type { LicenseDashboardLicense } from "../../src/lib/licenses/types"
 import type { ErrorsContent, LicenseContent, SubscriptionConfigData } from "../../src/lib/cms"
 
 installDomTestEnvironment()
 let license: LicenseDashboardLicense
 const updates: unknown[] = []
+const notifications: Array<{ title: string; color: string; children?: string }> = []
 const closes: string[] = []
 const passthrough = ({ children }: { children?: ReactNode }) => <div>{children}</div>
 mock.module("@code0-tech/pictor", {
     namedExports: {
+        toast: (value: typeof notifications[number]) => { notifications.push(value); return "test-toast" },
         Button: ({ children, variant, paddingSize, color, ...props }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: string; paddingSize?: string; color?: string }) => <button data-variant={variant} data-padding={paddingSize} data-color={color} {...props}>{children}</button>,
         Badge: ({ children }: { children: ReactNode }) => <span>{children}</span>,
         Flex: passthrough,
@@ -41,6 +44,8 @@ mock.module("@/components/licenses/dialog/shared/LicenseTabLayout", {
 })
 const { render, cleanup, screen, fireEvent, waitFor } = await import("@testing-library/react")
 const { LicenseGeneralTab } = await import("../../src/components/licenses/dialog/subscription/LicenseGeneralTab")
+const { LicenseToastsProvider } = await import("../../src/components/licenses/layout/LicenseNotifications")
+const wrapper = ({ children }: { children: ReactNode }) => <LicenseToastsProvider locale="en" toasts={licenseToastContent}>{children}</LicenseToastsProvider>
 const originalFetch = globalThis.fetch
 const content = {
     license: "License",
@@ -92,6 +97,7 @@ afterEach(() => {
     globalThis.fetch = originalFetch
     updates.length = 0
     closes.length = 0
+    notifications.length = 0
 })
 
 function show(available: boolean, cancelAt?: string, subscriptionStatus?: LicenseDashboardLicense["subscriptionStatus"]) {
@@ -118,7 +124,8 @@ function show(available: boolean, cancelAt?: string, subscriptionStatus?: Licens
             onClose={() => closes.push("close")}
             subscriptionConfig={subscriptionConfig}
             title="General"
-        />
+        />,
+        { wrapper }
     )
 }
 
@@ -136,6 +143,7 @@ test("offers immediate cancellation from Crater availability and submits its fla
     assert.deepEqual(request, { id: license.subscriptionId, immediately: true })
     assert.equal((updates[0] as LicenseDashboardLicense).immediateCancellationAvailable, false)
     assert.equal((updates[0] as LicenseDashboardLicense).subscriptionStatus, "CANCELED")
+    assert.equal(notifications[0].title, "Subscription canceled")
 })
 
 test("asks for confirmation with the consequences before cancelling immediately", () => {
@@ -212,6 +220,7 @@ test("keeps period-end cancellation when Crater refuses immediate cancellation",
     await waitFor(() => assert.equal(updates.length, 1))
     assert.deepEqual(request, { id: license.subscriptionId })
     assert.equal((updates[0] as LicenseDashboardLicense).cancelAt, "2026-11-01T00:00:00Z")
+    assert.deepEqual(notifications[0], { title: "Cancellation scheduled", color: "success", children: "Access ends on Nov 1, 2026." })
 })
 
 test("a pending cancellation can still be canceled immediately or resumed", () => {
@@ -238,6 +247,7 @@ test("resuming a pending cancellation clears its dates", async () => {
     await waitFor(() => assert.equal(updates.length, 1))
     assert.equal((updates[0] as LicenseDashboardLicense).cancelAt, null)
     assert.equal((updates[0] as LicenseDashboardLicense).canceledAt, null)
+    assert.equal(notifications[0].title, "Cancellation withdrawn")
 })
 
 test("keeps cancellation failures visible without updating local state", async () => {
@@ -248,4 +258,5 @@ test("keeps cancellation failures visible without updating local state", async (
     await waitFor(() => assert.equal(screen.getByRole("alert").textContent, "Cancellation failed"))
     assert.equal(updates.length, 0)
     assert.equal(closes.length, 0)
+    assert.deepEqual(notifications, [{ title: licenseToastContent.errorTitle, color: "error", children: "Cancellation failed" }])
 })

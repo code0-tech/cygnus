@@ -103,6 +103,7 @@ export type IconColor = Checkout["summary"]["deploymentIconColor"]
 export type CheckoutData = Checkout
 export type UpgradeBannerData = GlobalContent<"upgradeBanner">
 export type ErrorsContent = GlobalContent<"errors">
+export type LicenseToastsContent = GlobalContent<"license-toasts">
 type LicenseDialogsContent = GlobalContent<"license-dialogs">
 export type LicenseContent = GlobalContent<"licenses"> & LicenseDialogsContent
 

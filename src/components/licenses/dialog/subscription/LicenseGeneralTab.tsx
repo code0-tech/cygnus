@@ -1,5 +1,6 @@
 "use client"
 
+import { useLicenseToasts } from "@/components/licenses/layout/LicenseNotifications"
 import { type PaymentPeriod, PAYMENT_PERIOD_OPTIONS } from "@/lib/subscription/types"
 
 import { useLicenseData } from "@/components/licenses/data/LicenseDataProvider"
@@ -66,6 +67,7 @@ export function LicenseGeneralTab({
     subscriptionConfig,
     title,
 }: LicenseGeneralTabProps) {
+    const toasts = useLicenseToasts()
     const { updateLicense } = useLicenseData()
     const subscriptionId = license?.subscriptionId
     const periodOptions = PAYMENT_PERIOD_OPTIONS
@@ -92,9 +94,11 @@ export function LicenseGeneralTab({
                 ...(subscription.paymentPeriod ? { paymentPeriod: subscription.paymentPeriod } : {}),
                 ...(subscription.updatedAt ? { updatedAt: subscription.updatedAt } : {}),
             })
+            toasts.success(subscription.pendingUpdate ? "changeScheduled" : "periodUpdated", subscription.pendingUpdate?.effectiveAt)
             onClose()
         } catch (error) {
             setSaveError(error instanceof Error ? error.message : errors.billingUpdate)
+            toasts.error(error instanceof Error ? error.message : errors.billingUpdate)
         } finally {
             setIsSaving(false)
         }
@@ -157,8 +161,10 @@ export function LicenseGeneralTab({
                 ...(subscription.updatedAt ? { updatedAt: subscription.updatedAt } : {}),
             })
             setConfirming(null)
+            toasts.success(subscription.status === "CANCELED" ? "canceled" : "cancellationScheduled", subscription.cancelAt)
         } catch (error) {
             setCancelError(error instanceof Error ? error.message : errors.subscriptionCancel)
+            toasts.error(error instanceof Error ? error.message : errors.subscriptionCancel)
         } finally {
             setIsCanceling(false)
         }
@@ -181,8 +187,10 @@ export function LicenseGeneralTab({
                 ...(subscription.updatedAt ? { updatedAt: subscription.updatedAt } : {}),
             })
             setConfirming(null)
+            toasts.success("resumed")
         } catch (error) {
             setCancelError(error instanceof Error ? error.message : errors.subscriptionResume)
+            toasts.error(error instanceof Error ? error.message : errors.subscriptionResume)
         } finally {
             setIsCanceling(false)
         }

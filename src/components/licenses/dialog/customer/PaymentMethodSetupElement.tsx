@@ -1,5 +1,6 @@
 "use client"
 
+import { useLicenseToasts } from "@/components/licenses/layout/LicenseNotifications"
 import { LicenseTabAlert, LicenseTabHeader, LicenseTabSaveButton } from "@/components/licenses/dialog/shared/LicenseTabLayout"
 import { ButtonLoader } from "@/components/ui/Loader"
 import { useStripePromise } from "@/components/providers/StripeProvider"
@@ -30,6 +31,7 @@ interface PaymentMethodSetupPendingStatusProps {
 }
 
 export function PaymentMethodSetupPendingStatus({ content, errorMessage, onSuccess, retryLabel, clientSecret }: PaymentMethodSetupPendingStatusProps) {
+    const toasts = useLicenseToasts()
     const stripePromise = useStripePromise()
     const [isComplete, setIsComplete] = useState(false)
     const [error, setError] = useState<string | null>(null)
@@ -52,12 +54,14 @@ export function PaymentMethodSetupPendingStatus({ content, errorMessage, onSucce
                     setIsComplete(true)
                     if (!successHandledRef.current) {
                         successHandledRef.current = true
+                        toasts.success("paymentConfirmed")
                         onSuccess()
                     }
                     return
                 }
                 if (result.setupIntent.status === "canceled" || result.setupIntent.status === "requires_payment_method") {
                     setError(errorMessage)
+                    toasts.error(errorMessage)
                     return
                 }
                 timeout = setTimeout(() => void checkStatus(), 1_250)
@@ -65,6 +69,7 @@ export function PaymentMethodSetupPendingStatus({ content, errorMessage, onSucce
                 if (!active) return
                 if (statusError instanceof DOMException && statusError.name === "AbortError") return
                 setError(errorMessage)
+                toasts.error(errorMessage)
             }
         }
 
@@ -115,6 +120,7 @@ export function PaymentMethodSetupPendingStatus({ content, errorMessage, onSucce
 }
 
 function PaymentMethodSetupForm({ clientSecret, content, errorMessage, onSuccess, retryLabel, returnPath }: PaymentMethodSetupElementProps) {
+    const toasts = useLicenseToasts()
     const stripe = useStripe()
     const elements = useElements()
     const [isReady, setIsReady] = useState(false)
@@ -127,26 +133,20 @@ function PaymentMethodSetupForm({ clientSecret, content, errorMessage, onSuccess
         setIsConfirming(true)
         setError(null)
 
-        const result = await stripe.confirmSetup({
-            elements,
-            confirmParams: { return_url: new URL(returnPath, window.location.origin).toString() },
-            redirect: "if_required",
-        })
-
-        if (result.error) {
+        try {
+            const result = await stripe.confirmSetup({
+                elements,
+                confirmParams: { return_url: new URL(returnPath, window.location.origin).toString() },
+                redirect: "if_required",
+            })
+            if (result.error || !result.setupIntent?.id) throw new Error(errorMessage)
+            setSetupIntentClientSecret(clientSecret)
+        } catch {
             setError(errorMessage)
+            toasts.error(errorMessage)
+        } finally {
             setIsConfirming(false)
-            return
         }
-
-        if (!result.setupIntent?.id) {
-            setError(errorMessage)
-            setIsConfirming(false)
-            return
-        }
-
-        setSetupIntentClientSecret(clientSecret)
-        setIsConfirming(false)
     }
 
     if (setupIntentClientSecret)

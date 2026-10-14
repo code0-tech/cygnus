@@ -3,6 +3,9 @@ import test, { mock } from "node:test"
 import React, { type ReactNode } from "react"
 import { renderToString } from "react-dom/server"
 import type { ErrorsContent, LicenseContent } from "../../src/lib/cms"
+import { licenseToastContent } from "../helpers/licenseToasts"
+
+mock.module("@/components/licenses/layout/LicenseNotifications", { namedExports: { LicenseNotifications: ({ children }: { children?: ReactNode }) => <>{children}</> } })
 
 let dashboardError: string | null = null
 const Container = ({ children }: { children?: ReactNode }) => <div>{children}</div>
@@ -21,6 +24,7 @@ mock.module("@/components/licenses/layout/LicenseSidebar", {
 })
 mock.module("@code0-tech/pictor", {
     namedExports: {
+        toast: () => "test-toast",
         AuroraBackground: () => null,
         FullScreen: Container,
         ScrollArea: Container,
@@ -34,7 +38,7 @@ const { LicenseLayout } = await import("../../src/components/licenses/layout/Lic
 
 function renderLayout() {
     return renderToString(
-        <LicenseLayout content={{ sidebar: {} } as LicenseContent} errors={{} as ErrorsContent} locale="de" sculptorUrl="https://app.example">
+        <LicenseLayout content={{ sidebar: {} } as LicenseContent} errors={{} as ErrorsContent} locale="de" toasts={licenseToastContent} sculptorUrl="https://app.example">
             <span>Dashboard content</span>
         </LicenseLayout>
     )

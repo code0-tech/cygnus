@@ -21,11 +21,11 @@ export default async function LicensesLayout({ children, modal, params }: Licens
     const { locale } = await params
     if (!isSupportedLocale(locale)) notFound()
 
-    const [content, errors] = await Promise.all([getLicenseContent(locale), getGlobal("errors", locale)])
-    if (!content || !errors) notFound()
+    const [content, errors, toasts] = await Promise.all([getLicenseContent(locale), getGlobal("errors", locale), getGlobal("license-toasts", locale)])
+    if (!content || !errors || !toasts) notFound()
 
     return (
-        <LicenseLayout content={content} errors={errors} locale={locale} modal={modal} sculptorUrl={getClientConfig().sculptorUrl}>
+        <LicenseLayout content={content} errors={errors} locale={locale} modal={modal} toasts={toasts} sculptorUrl={getClientConfig().sculptorUrl}>
             {children}
         </LicenseLayout>
     )

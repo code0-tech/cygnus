@@ -108,6 +108,7 @@ export interface Config {
     upgradeBanner: UpgradeBanner;
     licenses: License;
     'license-dialogs': LicenseDialog;
+    'license-toasts': LicenseToast;
     errors: Error;
   };
   globalsSelect: {
@@ -119,6 +120,7 @@ export interface Config {
     upgradeBanner: UpgradeBannerSelect<false> | UpgradeBannerSelect<true>;
     licenses: LicensesSelect<false> | LicensesSelect<true>;
     'license-dialogs': LicenseDialogsSelect<false> | LicenseDialogsSelect<true>;
+    'license-toasts': LicenseToastsSelect<false> | LicenseToastsSelect<true>;
     errors: ErrorsSelect<false> | ErrorsSelect<true>;
   };
   locale: 'en' | 'de';
@@ -3428,6 +3430,65 @@ export interface LicenseDialog {
   createdAt?: string | null;
 }
 /**
+ * Use {date} in a description to insert the date the change takes effect.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "license-toasts".
+ */
+export interface LicenseToast {
+  id: number;
+  /**
+   * Title of every error toast; the specific error message from the Errors global is shown below it.
+   */
+  errorTitle: string;
+  customerSaved: {
+    title: string;
+    description: string;
+  };
+  planUpdated: {
+    title: string;
+    description: string;
+  };
+  changeScheduled: {
+    title: string;
+    description: string;
+  };
+  periodUpdated: {
+    title: string;
+    description: string;
+  };
+  canceled: {
+    title: string;
+    description: string;
+  };
+  cancellationScheduled: {
+    title: string;
+    description: string;
+  };
+  resumed: {
+    title: string;
+    description: string;
+  };
+  paymentAssigned: {
+    title: string;
+    description: string;
+  };
+  paymentRemoved: {
+    title: string;
+    description: string;
+  };
+  paymentConfirmed: {
+    title: string;
+    description: string;
+  };
+  namespaceLinked: {
+    title: string;
+    description: string;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "errors".
  */
@@ -4233,6 +4294,82 @@ export interface LicenseDialogsSelect<T extends boolean = true> {
         planHeading?: T;
         previewHeading?: T;
         submitLabel?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "license-toasts_select".
+ */
+export interface LicenseToastsSelect<T extends boolean = true> {
+  errorTitle?: T;
+  customerSaved?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  planUpdated?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  changeScheduled?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  periodUpdated?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  canceled?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  cancellationScheduled?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  resumed?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  paymentAssigned?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  paymentRemoved?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  paymentConfirmed?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  namespaceLinked?:
+    | T
+    | {
+        title?: T;
+        description?: T;
       };
   updatedAt?: T;
   createdAt?: T;

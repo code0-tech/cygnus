@@ -1,5 +1,6 @@
 "use client"
 
+import { useLicenseToasts } from "@/components/licenses/layout/LicenseNotifications"
 import { PaymentMethodSetupElement, PaymentMethodSetupPendingStatus, type PaymentMethodSetupOwner } from "@/components/licenses/dialog/customer/PaymentMethodSetupElement"
 import { LicenseDialog } from "@/components/licenses/dialog/shared/LicenseDialog"
 import { LicenseTabAlert, LicenseTabHeader } from "@/components/licenses/dialog/shared/LicenseTabLayout"
@@ -19,6 +20,7 @@ interface PaymentMethodSetupDialogProps {
 }
 
 export function PaymentMethodSetupDialog({ content, disabled = false, errors, onSuccess, owner, returnPath, triggerLabel }: PaymentMethodSetupDialogProps) {
+    const toasts = useLicenseToasts()
     const requestStartedRef = useRef(false)
     const [open, setOpen] = useState(false)
     const [clientSecret, setClientSecret] = useState<string | null>(null)
@@ -62,7 +64,10 @@ export function PaymentMethodSetupDialog({ content, disabled = false, errors, on
                 if (active) setClientSecret(nextClientSecret)
             })
             .catch(() => {
-                if (active) setError(errors.paymentMethodUpdate)
+                if (active) {
+                    setError(errors.paymentMethodUpdate)
+                    toasts.error(errors.paymentMethodUpdate)
+                }
             })
             .finally(() => {
                 if (active) setIsLoading(false)

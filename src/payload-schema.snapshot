@@ -2764,6 +2764,51 @@ export const license_dialogs_locales = pgTable('license_dialogs_locales', {
 )
 
 
+export const license_toasts = pgTable('license_toasts', {
+  id: serial('id').primaryKey(),
+  updatedAt: timestamp('updated_at', {mode: 'string',withTimezone: true,precision: 3}),
+  createdAt: timestamp('created_at', {mode: 'string',withTimezone: true,precision: 3}),
+}
+)
+
+
+export const license_toasts_locales = pgTable('license_toasts_locales', {
+  errorTitle: varchar('error_title').notNull(),
+  customerSaved_title: varchar('customer_saved_title').notNull(),
+  customerSaved_description: varchar('customer_saved_description').notNull(),
+  planUpdated_title: varchar('plan_updated_title').notNull(),
+  planUpdated_description: varchar('plan_updated_description').notNull(),
+  changeScheduled_title: varchar('change_scheduled_title').notNull(),
+  changeScheduled_description: varchar('change_scheduled_description').notNull(),
+  periodUpdated_title: varchar('period_updated_title').notNull(),
+  periodUpdated_description: varchar('period_updated_description').notNull(),
+  canceled_title: varchar('canceled_title').notNull(),
+  canceled_description: varchar('canceled_description').notNull(),
+  cancellationScheduled_title: varchar('cancellation_scheduled_title').notNull(),
+  cancellationScheduled_description: varchar('cancellation_scheduled_description').notNull(),
+  resumed_title: varchar('resumed_title').notNull(),
+  resumed_description: varchar('resumed_description').notNull(),
+  paymentAssigned_title: varchar('payment_assigned_title').notNull(),
+  paymentAssigned_description: varchar('payment_assigned_description').notNull(),
+  paymentRemoved_title: varchar('payment_removed_title').notNull(),
+  paymentRemoved_description: varchar('payment_removed_description').notNull(),
+  paymentConfirmed_title: varchar('payment_confirmed_title').notNull(),
+  paymentConfirmed_description: varchar('payment_confirmed_description').notNull(),
+  namespaceLinked_title: varchar('namespace_linked_title').notNull(),
+  namespaceLinked_description: varchar('namespace_linked_description').notNull(),
+  id: serial('id').primaryKey(),
+  _locale: enum__locales('_locale').notNull(),
+  _parentID: integer('_parent_id').notNull(),
+}, (columns) => [
+    uniqueIndex('license_toasts_locales_locale_parent_id_unique').on(columns._locale, columns._parentID), foreignKey({
+      columns: [columns['_parentID']],
+      foreignColumns: [license_toasts.id],
+      name: 'license_toasts_locales_parent_id_fk'
+    }).onDelete('cascade'),
+]
+)
+
+
 export const errors = pgTable('errors', {
   id: serial('id').primaryKey(),
   updatedAt: timestamp('updated_at', {mode: 'string',withTimezone: true,precision: 3}),
@@ -4204,6 +4249,19 @@ export const relations_license_dialogs = relations(license_dialogs, ({ many }) =
             relationName: '_locales',
     }),
       }))
+export const relations_license_toasts_locales = relations(license_toasts_locales, ({ one }) => ({
+  _parentID: one(license_toasts, {
+    
+    fields: [license_toasts_locales._parentID],
+    references: [license_toasts.id],
+    relationName: '_locales',
+    }),
+      }))
+export const relations_license_toasts = relations(license_toasts, ({ many }) => ({
+  _locales: many(license_toasts_locales, {
+            relationName: '_locales',
+    }),
+      }))
 export const relations_errors_locales = relations(errors_locales, ({ one }) => ({
   _parentID: one(errors, {
     
@@ -4421,6 +4479,8 @@ type DatabaseSchema = {
   licenses_locales: typeof licenses_locales
   license_dialogs: typeof license_dialogs
   license_dialogs_locales: typeof license_dialogs_locales
+  license_toasts: typeof license_toasts
+  license_toasts_locales: typeof license_toasts_locales
   errors: typeof errors
   errors_locales: typeof errors_locales
   relations_users_sessions: typeof relations_users_sessions
@@ -4544,6 +4604,8 @@ type DatabaseSchema = {
   relations_licenses: typeof relations_licenses
   relations_license_dialogs_locales: typeof relations_license_dialogs_locales
   relations_license_dialogs: typeof relations_license_dialogs
+  relations_license_toasts_locales: typeof relations_license_toasts_locales
+  relations_license_toasts: typeof relations_license_toasts
   relations_errors_locales: typeof relations_errors_locales
   relations_errors: typeof relations_errors
 }

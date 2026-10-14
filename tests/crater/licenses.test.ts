@@ -765,7 +765,7 @@ test("links a cloud license through the authenticated namespace selection callba
         )
 
         assert.equal(response.status, 307)
-        assert.equal(response.headers.get("location"), `https://code0.example${returnPath}`)
+        assert.equal(response.headers.get("location"), `https://code0.example${returnPath}?namespaceLinked=true`)
         assert.match(response.headers.get("set-cookie") ?? "", /crater_session=namespace-callback-session/)
         assert.deepEqual(graphQLServer.requests[0].body.variables, {
             input: { sagittariusToken: "sagittarius-secret" },
