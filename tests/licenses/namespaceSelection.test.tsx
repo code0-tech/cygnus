@@ -15,6 +15,7 @@ mock.module("@code0-tech/pictor", {
     namedExports: {
         Button: ({ children }: { children: ReactNode }) => <button>{children}</button>,
         Badge: ({ children }: { children: ReactNode }) => <span>{children}</span>,
+        Flex: ({ children }: { children: ReactNode }) => <div>{children}</div>,
         Text: ({ children }: { children: ReactNode }) => <span>{children}</span>,
         SelectInput: ({ children }: { children: ReactNode }) => <div>{children}</div>,
         SelectTrigger: ({ children }: { children: ReactNode }) => <div>{children}</div>,

@@ -276,15 +276,16 @@ export function LicenseDetailPage({
                             limit={LICENSE_DATA_TABLE_PAGE_SIZE}
                             pagination
                             sort={{createdAt: invoiceSortDirection}}
-                            emptyComponent={
-                                <DataTableColumn colSpan={5}>
-                                    <Text size="sm" hierarchy="tertiary">
-                                        {content.invoices.empty}
-                                    </Text>
-                                </DataTableColumn>
-                            }
-                        >
-                            {invoiceTableHeader}
+                            onSelect={(invoice) => invoice && setSelectedInvoice(invoice)}
+                        emptyComponent={
+                            <DataTableColumn colSpan={5}>
+                                <Text size="sm" hierarchy="tertiary">
+                                    {content.invoices.empty}
+                                </Text>
+                            </DataTableColumn>
+                        }
+                    >
+                        {invoiceTableHeader}
                             {(invoice) => (
                                 <Fragment key={invoice.id}>
                                     <DataTableColumn>
@@ -306,7 +307,8 @@ export function LicenseDetailPage({
                                         <Badge
                                             color={getInvoiceStatusBadgeColor(invoice.status)}>{formatLicenseDisplayValue(invoice.status, "invoiceStatus", content.values)}</Badge>
                                     </DataTableColumn>
-                                    <DataTableColumn>
+                                    {/* The row itself opens the invoice preview, so the action menu must not bubble. */}
+                                <DataTableColumn onClick={(event) => event.stopPropagation()}>
                                         <Menu>
                                             <MenuTrigger asChild>
                                                 <Button

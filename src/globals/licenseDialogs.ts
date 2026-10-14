@@ -112,6 +112,15 @@ export const LicenseDialogs: GlobalConfig = {
                         description: "Replaces the renewal text while a change is scheduled. Use {selection} for the new plan and {date} for the day it applies.",
                     }
                 ),
+                localizedText(
+                    "currentPeriodEndCanceledDescription",
+                    "The subscription is canceled, access ends on {date}.",
+                    "Das Abonnement ist gekündigt, der Zugriff endet am {date}.",
+                    {
+                        type: "textarea",
+                        description: "Replaces the renewal text once the subscription is canceled. Use {date} for the day access ends.",
+                    }
+                ),
                 localizedText("pendingChangeNote", "Switches to {selection}", "Wechselt auf {selection}", {
                     description: "Shown below the next billing date on the license page. Use {selection} as a placeholder for the scheduled change.",
                 }),

@@ -2,6 +2,7 @@
 
 import { useLicenseData } from "@/components/licenses/data/LicenseDataProvider"
 import { LicenseGeneralTab } from "@/components/licenses/dialog/subscription/LicenseGeneralTab"
+import { isLicenseStatusCanceled } from "@/components/licenses/shared/LicenseStatusDot"
 import { LicenseDialog } from "@/components/licenses/dialog/shared/LicenseDialog"
 import { LicenseUpgradeDialog } from "@/components/licenses/dialog/subscription/LicenseUpgradeDialog"
 import { useCustomerPaymentMethods } from "@/hooks/usePaymentMethods"
@@ -11,12 +12,14 @@ import { getLicenseEditSectionLabels, isLicenseEditSection, LICENSE_EDIT_SECTION
 import { createLicensePath, resolveCustomerRouteId, resolveSubscriptionRouteId } from "@/lib/licenses/routes"
 import { updateSubscription } from "@/lib/subscription/client"
 import type { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
+import type { CheckoutPackages } from "@/lib/subscription/usagePackages"
 import { Button, TabContent, TabList, TabTrigger, Text } from "@code0-tech/pictor"
 import { IconKey, IconTrendingUp } from "@tabler/icons-react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useState } from "react"
 
 interface LicenseEditDialogProps {
+    checkoutPackages: CheckoutPackages
     content: LicenseContent
     customerId: string
     errors: ErrorsContent
@@ -27,7 +30,7 @@ interface LicenseEditDialogProps {
     subscriptionPrices: SubscriptionPriceCatalog
 }
 
-export function LicenseEditDialog({ content, customerId, errors, licenseId, locale, namespaceHref, subscriptionConfig, subscriptionPrices }: LicenseEditDialogProps) {
+export function LicenseEditDialog({ checkoutPackages, content, customerId, errors, licenseId, locale, namespaceHref, subscriptionConfig, subscriptionPrices }: LicenseEditDialogProps) {
     const router = useRouter()
     const pathname = usePathname()
     const searchParams = useSearchParams()
@@ -36,7 +39,11 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
     const resolvedSubscriptionId = resolveSubscriptionRouteId(licenseId)
     const license = licenses.find((candidate) => candidate.id === resolvedSubscriptionId && candidate.customerId === resolvedCustomerId)
     const requestedTab = searchParams.get("tab")
-    const section: LicenseEditSection = isLicenseEditSection(requestedTab) ? requestedTab : "general"
+    // A canceled subscription has no plan left to upgrade, so the upgrade section disappears and any link to it falls back to general.
+    const isCanceled = isLicenseStatusCanceled(license?.subscriptionStatus ?? license?.status)
+    const sections: readonly LicenseEditSection[] = isCanceled ? ["general"] : LICENSE_EDIT_SECTIONS
+    const requestedSection: LicenseEditSection | null = isLicenseEditSection(requestedTab) ? requestedTab : null
+    const section: LicenseEditSection = requestedSection && sections.includes(requestedSection) ? requestedSection : "general"
     const sectionLabels = getLicenseEditSectionLabels(content)
     const {
         isLoadingPaymentMethods: isLoadingCustomerPaymentMethods,
@@ -56,7 +63,7 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
     }
 
     useEffect(() => {
-        if (isLicenseEditSection(requestedTab)) return
+        if (requestedTab === section) return
         const nextSearchParams = new URLSearchParams(searchParams.toString())
         nextSearchParams.set("tab", section)
         nextSearchParams.delete("section")
@@ -84,7 +91,7 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
     const sectionIcons = { general: IconKey, upgrade: IconTrendingUp } satisfies Record<LicenseEditSection, typeof IconKey>
     const sidebar = license?.subscriptionId ? (
         <TabList aria-label={content.editor.licenseTitle}>
-            {LICENSE_EDIT_SECTIONS.map((value) => {
+            {sections.map((value) => {
                 const TabIcon = sectionIcons[value]
 
                 return (
@@ -134,10 +141,11 @@ export function LicenseEditDialog({ content, customerId, errors, licenseId, loca
                     title={sectionLabels.general}
                 />
             </TabContent>
-            {license?.subscriptionId ? (
+            {license?.subscriptionId && !isCanceled ? (
                 <>
                     <TabContent value="upgrade">
                         <LicenseUpgradeDialog
+                            checkoutPackages={checkoutPackages}
                             content={content}
                             customerId={customerId}
                             errors={errors}
