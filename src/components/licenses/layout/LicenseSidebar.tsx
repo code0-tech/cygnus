@@ -195,7 +195,7 @@ function LicenseSidebarSkeleton() {
         <ul aria-hidden="true">
             {Array.from({ length: SKELETON_ENTRY_COUNT }, (_, index) => (
                 <li key={index} className="h-[31.5px] py-0.5">
-                    <span className="block h-full w-full animate-pulse rounded-2xl bg-white/[0.06] motion-reduce:animate-none" />
+                    <span className="block h-full w-full animate-pulse rounded-2xl bg-white/5 motion-reduce:animate-none" />
                 </li>
             ))}
         </ul>
@@ -207,7 +207,7 @@ function LicenseMenuSkeleton() {
         <div aria-hidden="true">
             {Array.from({ length: SKELETON_ENTRY_COUNT }, (_, index) => (
                 <div key={index} className="h-[49.5px] py-0.5">
-                    <span className="block h-full w-full animate-pulse rounded-[9px] bg-white/[0.06] motion-reduce:animate-none" />
+                    <span className="block h-full w-full animate-pulse rounded-[9px] bg-white/5 motion-reduce:animate-none" />
                 </div>
             ))}
         </div>
