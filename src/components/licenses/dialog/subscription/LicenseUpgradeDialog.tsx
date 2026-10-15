@@ -11,7 +11,8 @@ import { ButtonLoader } from "@/components/ui/Loader"
 import { useSubscriptionUpdatePreview } from "@/hooks/useSubscriptionUpdatePreview"
 import type { ErrorsContent, LicenseContent, SubscriptionConfigData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
-import { formatCompactNumber, formatMinorCurrency } from "@/lib/formatters"
+import { formatMinorCurrency } from "@/lib/formatters"
+import NumberFlow from "@number-flow/react"
 import { parseLicenseDate } from "@/lib/licenses/pendingUpdate"
 import { createLicensePath, resolveCustomerRouteId, resolveSubscriptionRouteId } from "@/lib/licenses/routes"
 import { resolveSubscriptionCustomerType } from "@/lib/crater/values"
@@ -227,10 +228,10 @@ export function LicenseUpgradeDialog({ checkoutPackages, content, customerId, er
             const increase = current !== null && current > 0 && usage.next > current ? (usage.next - current) / current : null
             return {
                 badge: increase === null ? null : `+${formatDiscountBadge(increase, locale)}`,
-                current: current === null ? null : formatCompactNumber(current),
+                current,
                 key: usage.key,
                 label: usage.label,
-                next: formatCompactNumber(usage.next),
+                next: usage.next,
                 value: null,
             }
         }),
@@ -286,9 +287,7 @@ export function LicenseUpgradeDialog({ checkoutPackages, content, customerId, er
                     }
                     action={
                         isLoadingPreview ? (
-                            <Text size="md" hierarchy="tertiary">
-                                {content.subscriptionPreview.loadingLabel}
-                            </Text>
+                            <span role="status" aria-label={content.subscriptionPreview.loadingLabel} className="inline-block h-5 w-20 animate-pulse rounded bg-white/10 motion-reduce:animate-none" />
                         ) : preview ? (
                             <div className="text-right">
                                 <Text size="md" hierarchy="primary" fw={500}>
@@ -310,8 +309,7 @@ export function LicenseUpgradeDialog({ checkoutPackages, content, customerId, er
                         </Text>
                     ) : null}
                 </LicenseTabRow>
-                {/* While Crater is still quoting, the cells would describe the change with stale local values, so the grid stays out until the preview lands. */}
-                {!isLoadingPreview && benefitCells.length > 0 ? (
+                {benefitCells.length > 0 ? (
                     <LicenseTabRow className="p-0!">
                         <ul className={cn("grid grid-cols-1", benefitCells.length === 2 ? "sm:grid-cols-2" : "sm:grid-cols-3")}>
                             {benefitCells.map((cell, index) => (
@@ -330,17 +328,19 @@ export function LicenseUpgradeDialog({ checkoutPackages, content, customerId, er
                                         </div>
                                     ) : null}
                                     <div className="mt-3 flex flex-wrap items-center gap-2">
-                                        {cell.current ? (
+                                        {cell.current !== null ? (
                                             <>
                                                 <Text size="md" hierarchy="tertiary" className="truncate line-through">
-                                                    {cell.current}
+                                                    <NumberFlow value={cell.current} locales="en-US" format={{ notation: "compact", maximumFractionDigits: 1 }} />
                                                 </Text>
                                                 <IconArrowRight aria-hidden="true" size={14} className="shrink-0 text-tertiary" />
                                             </>
                                         ) : null}
                                         {cell.value ?? (
-                                            <Text fw={400} title={cell.next ?? undefined} className="truncate text-xl! leading-tight! text-white!">
-                                                {cell.next}
+                                            <Text fw={400} title={cell.next === null ? undefined : String(cell.next)} className="truncate text-xl! leading-tight! text-white!">
+                                                {typeof cell.next === "number" ? (
+                                                    <NumberFlow value={cell.next} locales="en-US" format={{ notation: "compact", maximumFractionDigits: 1 }} />
+                                                ) : cell.next}
                                             </Text>
                                         )}
                                     </div>
@@ -354,9 +354,13 @@ export function LicenseUpgradeDialog({ checkoutPackages, content, customerId, er
                     description={content.subscriptionPreview.totalDescription}
                     action={
                         <div className="text-right">
-                            <Text size="md" hierarchy="tertiary">
-                                {formatMinorCurrency(localQuote.total, "EUR", locale)}
-                            </Text>
+                            {isLoadingPreview ? (
+                                <span role="status" aria-label={content.subscriptionPreview.loadingLabel} className="inline-block h-5 w-20 animate-pulse rounded bg-white/10 motion-reduce:animate-none" />
+                            ) : (
+                                <Text size="md" hierarchy="tertiary">
+                                    {formatMinorCurrency(localQuote.total, "EUR", locale)}
+                                </Text>
+                            )}
                             {nextPeriodDate ? (
                                 <Text size="sm" hierarchy="tertiary">
                                     {dateFormatter.format(nextPeriodDate)}
