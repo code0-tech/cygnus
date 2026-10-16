@@ -14,10 +14,9 @@ import { createLicensePath, resolveCustomerRouteId, resolveSubscriptionRouteId }
 import { updateSubscription } from "@/lib/subscription/client"
 import type { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
 import type { CheckoutPackages } from "@/lib/subscription/usagePackages"
-import { Button, TabContent, TabList, TabTrigger, Text } from "@code0-tech/pictor"
 import { IconKey, IconTrendingUp } from "@tabler/icons-react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
-import { useEffect, useState } from "react"
+import { type ReactNode, useEffect, useState } from "react"
 
 interface LicenseEditDialogProps {
     checkoutPackages: CheckoutPackages
@@ -93,69 +92,50 @@ export function LicenseEditDialog({ checkoutPackages, content, customerId, error
     }
 
     const sectionIcons = { general: IconKey, upgrade: IconTrendingUp } satisfies Record<LicenseEditSection, typeof IconKey>
-    const sidebar = license?.subscriptionId ? (
-        <TabList aria-label={content.editor.licenseTitle}>
-            {sections.map((value) => {
-                const TabIcon = sectionIcons[value]
+    const hasSubscription = Boolean(license?.subscriptionId)
+    const tabContent: Record<LicenseEditSection, ReactNode> = {
+        general: (
+            <LicenseGeneralTab
+                content={content}
+                errors={errors}
+                assigningPaymentMethodId={assigningPaymentMethodId}
+                assignPaymentMethodError={assignPaymentMethodError}
+                isLoadingPaymentMethod={isLoadingCustomerPaymentMethods}
+                license={license}
+                locale={locale}
+                namespaceHref={namespaceHref}
+                onAssignPaymentMethod={(paymentMethodId) => void assignPaymentMethod(paymentMethodId)}
+                onClose={close}
+                onRetryPaymentMethod={refreshCustomerPaymentMethods}
+                paymentMethodError={customerPaymentMethodsError}
+                paymentMethods={customerPaymentMethods}
+                subscriptionConfig={subscriptionConfig}
+                title={sectionLabels.general}
+            />
+        ),
+        upgrade: (
+            <LicenseUpgradeDialog
+                checkoutPackages={checkoutPackages}
+                content={content}
+                customerId={customerId}
+                errors={errors}
+                licenseId={licenseId}
+                locale={locale}
+                subscriptionConfig={subscriptionConfig}
+                subscriptionPrices={subscriptionPrices}
+            />
+        ),
+    }
 
-                return (
-                    <TabTrigger key={value} value={value} w="100%" asChild>
-                        <Button type="button" paddingSize="xxs" variant="none" justify="start" className="rounded-2xl! h-8!">
-                            <TabIcon aria-hidden="true" size={13} />
-                            <Text className="truncate" size="md">
-                                {sectionLabels[value]}
-                            </Text>
-                        </Button>
-                    </TabTrigger>
-                )
-            })}
-        </TabList>
-    ) : null
     return (
         <LicenseDialog
-            backLabel={content.editor.closeLabel}
+            closeLabel={content.editor.closeLabel}
             description={content.editor.licenseEditDescription}
             onClose={close}
             onValueChange={(value) => isLicenseEditSection(value) && setSection(value)}
-            sidebar={sidebar}
+            tabs={(hasSubscription ? sections : (["general"] as const)).map((value) => ({ value, label: sectionLabels[value], icon: sectionIcons[value], content: tabContent[value] }))}
             title={content.editor.licenseTitle}
-            value={license?.subscriptionId ? section : "general"}
-        >
-            <TabContent value="general">
-                <LicenseGeneralTab
-                    content={content}
-                    errors={errors}
-                    assigningPaymentMethodId={assigningPaymentMethodId}
-                    assignPaymentMethodError={assignPaymentMethodError}
-                    isLoadingPaymentMethod={isLoadingCustomerPaymentMethods}
-                    license={license}
-                    locale={locale}
-                    namespaceHref={namespaceHref}
-                    onAssignPaymentMethod={(paymentMethodId) => void assignPaymentMethod(paymentMethodId)}
-                    onClose={close}
-                    onRetryPaymentMethod={refreshCustomerPaymentMethods}
-                    paymentMethodError={customerPaymentMethodsError}
-                    paymentMethods={customerPaymentMethods}
-                    subscriptionConfig={subscriptionConfig}
-                    title={sectionLabels.general}
-                />
-            </TabContent>
-            {license?.subscriptionId && !isCanceled ? (
-                <>
-                    <TabContent value="upgrade">
-                        <LicenseUpgradeDialog
-                            checkoutPackages={checkoutPackages}
-                            content={content}
-                            customerId={customerId}
-                            errors={errors}
-                            licenseId={licenseId}
-                            locale={locale}
-                            subscriptionConfig={subscriptionConfig}
-                            subscriptionPrices={subscriptionPrices}
-                        />
-                    </TabContent>
-                </>
-            ) : null}
-        </LicenseDialog>
+            value={hasSubscription ? section : "general"}
+        />
     )
 }

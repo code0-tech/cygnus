@@ -20,8 +20,7 @@ const close = mock.fn()
 const Wrap = ({ children }: { children?: ReactNode }) => <div>{children}</div>
 const Input = ({ title, name, value, required, formValidation }: { title: string; name: string; value: string; required?: boolean; formValidation: { setValue: (value: string) => void; notValidMessage?: string } }) => <label>{title}<input aria-label={title} name={name} value={value} required={required} onChange={event => formValidation.setValue(event.target.value)} />{formValidation.notValidMessage && <span role="alert">{formValidation.notValidMessage}</span>}</label>
 mock.module("@code0-tech/pictor", { namedExports: {
-    useForm, TextInput: Input, EmailInput: Input, Text: Wrap, Spacing: () => null, TabList: Wrap, TabTrigger: Wrap,
-    TabContent: ({ value, children }: { value: string; children: ReactNode }) => value === "general" ? <>{children}</> : null,
+    useForm, TextInput: Input, EmailInput: Input, Text: Wrap, Spacing: () => null,
     Button: ({ children }: { children: ReactNode }) => <button>{children}</button>,
 } })
 mock.module("next/navigation", { namedExports: { useRouter: () => ({ replace: close }), usePathname: () => "/edit", useSearchParams: () => new URLSearchParams() } })
@@ -30,7 +29,9 @@ mock.module("@/lib/licenses/client", { namedExports: { updateLicenseCustomer: up
 mock.module("@/components/licenses/data/LicenseDataProvider", { namedExports: { useLicenseData: () => ({ customers: [customer], updateCustomer: () => {} }) } })
 mock.module("@/components/licenses/layout/LicenseNotifications", { namedExports: { useLicenseToasts: () => ({ success: () => {}, error: () => {} }) } })
 mock.module("@/hooks/usePaymentMethods", { namedExports: { useCustomerPaymentMethods: () => ({}) } })
-mock.module("@/components/licenses/dialog/shared/LicenseDialog", { namedExports: { LicenseDialog: Wrap } })
+// Renders only the active tab, like the real dialog's TabContent.
+const LicenseDialog = ({ tabs, value }: { tabs: { value: string; content: ReactNode }[]; value: string }) => <div>{tabs.find((tab) => tab.value === value)?.content}</div>
+mock.module("@/components/licenses/dialog/shared/LicenseDialog", { namedExports: { LicenseDialog } })
 mock.module("@/components/licenses/dialog/customer/CustomerPaymentMethodCard", { namedExports: { CustomerPaymentMethodCard: Wrap, CustomerPaymentMethodCardSkeleton: Wrap } })
 mock.module("@/components/licenses/dialog/customer/PaymentMethodSetupDialog", { namedExports: { PaymentMethodSetupDialog: Wrap } })
 mock.module("@/components/ui/Loader", { namedExports: { ButtonLoader: () => null } })
