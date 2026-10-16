@@ -23,7 +23,7 @@
         "generate": "payload generate:types"
     },
     "dependencies": {
-        "@base-ui/react": "^1.8.0",
+        "@base-ui/react": "^1.9.0",
         "@c15t/nextjs": "^2.3.0",
         "@c15t/react": "^2.3.0",
         "@c15t/scripts": "^2.3.0",
