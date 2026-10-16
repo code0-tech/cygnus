@@ -129,3 +129,33 @@ export function resolveLicenseDashboardReturnUrl(returnPath: string | null, site
 export function createLicenseDashboardLoginPath(returnPath: string) {
     return `/api/crater/auth/start?${new URLSearchParams({ flow: "licenses", returnPath })}`
 }
+
+export const LICENSE_DASHBOARD_ACTIONS = ["license", "upgrade", "customer"] as const
+
+export type LicenseDashboardAction = (typeof LICENSE_DASHBOARD_ACTIONS)[number]
+
+export function isLicenseDashboardAction(value: string | null | undefined): value is LicenseDashboardAction {
+    return LICENSE_DASHBOARD_ACTIONS.includes(value as LicenseDashboardAction)
+}
+
+export function createLicenseActionPath(locale: AppLocale, customerId: string, subscriptionId: string, action: LicenseDashboardAction | null) {
+    if (action === "customer") return `${createLicenseCustomerPath(locale, customerId)}/edit?tab=general`
+    if (action === "license") return `${createLicensePath(locale, customerId, subscriptionId)}/edit?tab=general`
+    if (action === "upgrade") return `${createLicensePath(locale, customerId, subscriptionId)}/edit?tab=upgrade`
+    return createLicensePath(locale, customerId, subscriptionId)
+}
+
+const LICENSE_ENTRY_PARAMS = ["token", "subscriptionId", "action"] as const
+
+export function createLicenseDashboardEntryPath(url: URL) {
+    const segments = url.pathname.split("/").filter(Boolean)
+    if (segments.length !== 2 || !isSupportedLocale(segments[0]) || segments[1] !== "licenses") return null
+    if (!LICENSE_ENTRY_PARAMS.some((key) => url.searchParams.has(key))) return null
+
+    const accessParams = new URLSearchParams({ locale: segments[0] })
+    for (const key of LICENSE_ENTRY_PARAMS) {
+        const value = url.searchParams.get(key)?.trim()
+        if (value) accessParams.set(key, value)
+    }
+    return `/api/crater/licenses/access?${accessParams}`
+}

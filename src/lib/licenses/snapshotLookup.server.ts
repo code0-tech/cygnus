@@ -57,6 +57,33 @@ const SNAPSHOT_SUBSCRIPTION: TypedDocumentNode<LookupData, LookupVariables> = gq
     }
 `
 
+type SubscriptionCustomerVariables = { customerAfter?: string; subscriptionAfter?: string }
+
+const SUBSCRIPTION_CUSTOMER: TypedDocumentNode<LookupData, SubscriptionCustomerVariables> = gql`
+    query LicenseSubscriptionCustomer($customerAfter: String, $subscriptionAfter: String) {
+        currentUser {
+            customers(first: 1, after: $customerAfter) {
+                nodes {
+                    id
+                    subscriptions(first: 50, after: $subscriptionAfter) {
+                        nodes {
+                            id
+                        }
+                        pageInfo {
+                            endCursor
+                            hasNextPage
+                        }
+                    }
+                }
+                pageInfo {
+                    endCursor
+                    hasNextPage
+                }
+            }
+        }
+    }
+`
+
 function nextCursor(pageInfo: { endCursor?: string | null; hasNextPage?: boolean | null } | null | undefined, seen: Set<string>) {
     if (!pageInfo?.hasNextPage) return undefined
     if (!pageInfo.endCursor || seen.has(pageInfo.endCursor)) throw new Error("Crater returned an invalid snapshot lookup cursor.")
@@ -110,5 +137,40 @@ export async function findSubscriptionForLicenseSnapshot(sessionToken: string, c
         if (!subscriptionAfter) return { status: "missing" as const }
         selectedSubscriptionId = undefined
         snapshotCursors.clear()
+    }
+}
+
+// Crater has no root subscription lookup, so the customer owning a subscription is found by walking the
+// customers of the current user one at a time and paging through each customer's subscriptions.
+export async function findCustomerForSubscription(sessionToken: string, subscriptionId: string) {
+    const client = createApolloClient(sessionToken)
+    const customerCursors = new Set<string>()
+    const subscriptionCursors = new Set<string>()
+    let customerAfter: string | undefined
+    let subscriptionAfter: string | undefined
+    let selectedCustomerId: string | undefined
+    while (true) {
+        const result = await client.query({
+            query: SUBSCRIPTION_CUSTOMER,
+            variables: { ...(customerAfter ? { customerAfter } : {}), ...(subscriptionAfter ? { subscriptionAfter } : {}) },
+            fetchPolicy: "no-cache",
+        })
+        const user = result.data?.currentUser
+        if (!user) return { status: "unauthenticated" as const }
+        const customer = user.customers?.nodes?.[0]
+        if (!customer?.id) return { status: "missing" as const }
+        if (selectedCustomerId && selectedCustomerId !== customer.id) throw new Error("Crater returned a different customer while locating a subscription.")
+        if (customer.subscriptions?.nodes?.some((subscription) => subscription?.id === subscriptionId)) {
+            return { status: "found" as const, customerId: customer.id }
+        }
+        subscriptionAfter = nextCursor(customer.subscriptions?.pageInfo, subscriptionCursors)
+        if (subscriptionAfter) {
+            selectedCustomerId = customer.id
+            continue
+        }
+        customerAfter = nextCursor(user.customers?.pageInfo, customerCursors)
+        if (!customerAfter) return { status: "missing" as const }
+        selectedCustomerId = undefined
+        subscriptionCursors.clear()
     }
 }
