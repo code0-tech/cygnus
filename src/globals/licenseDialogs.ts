@@ -3,6 +3,7 @@ import { localizedText } from "@/fields/localizedText"
 
 // Split from the Licenses global: Payload reads all localized fields of a global through one json_build_array call,
 // and Postgres caps function calls at 100 arguments. getLicenseContent merges both globals back into LicenseContent.
+// Tabs and collapsibles only group the admin view; the stored data keeps its shape.
 export const LicenseDialogs: GlobalConfig = {
     slug: "license-dialogs",
     label: "License Dialogs",
@@ -12,169 +13,259 @@ export const LicenseDialogs: GlobalConfig = {
     },
     fields: [
         {
-            name: "editor",
-            type: "group",
-            fields: [
-                localizedText("customerTitle", "Edit customer", "Kunden bearbeiten"),
-                localizedText("customerDescription", "Update the customer's contact and default billing details.", "Aktualisiere die Kontakt- und Standard-Rechnungsdaten des Kunden.", {
-                    type: "textarea",
-                }),
-                localizedText("contactHeading", "Contact information", "Kontaktinformationen"),
-                localizedText(
-                    "paymentMethodDescription",
-                    "Manage the payment method used for future invoices securely through Stripe.",
-                    "Verwalte die Zahlungsmethode für zukünftige Rechnungen sicher über Stripe.",
-                    { type: "textarea" }
-                ),
-                localizedText("loadingPaymentMethodLabel", "Loading payment form…", "Zahlungsformular wird geladen …"),
-                localizedText("savePaymentMethodLabel", "Save payment method", "Zahlungsmethode speichern"),
-                localizedText("savingPaymentMethodLabel", "Saving payment method…", "Zahlungsmethode wird gespeichert …"),
-                localizedText("paymentMethodSuccess", "Payment method added successfully.", "Zahlungsmethode erfolgreich hinzugefügt."),
-                localizedText("noPaymentMethodsLabel", "No payment methods yet", "Noch keine Zahlungsmethoden"),
-                localizedText("addPaymentMethodLabel", "Add new payment method", "Neue Zahlungsmethode hinzufügen"),
-                localizedText("removePaymentMethodLabel", "Remove", "Entfernen"),
-                localizedText("removingPaymentMethodLabel", "Removing…", "Wird entfernt …"),
-                localizedText("settingPaymentMethodLabel", "Assigning…", "Wird zugewiesen …"),
-                localizedText("licenseTitle", "Edit license", "Lizenz bearbeiten"),
-                localizedText("licenseEditDescription", "Manage the license, payment method, and billing period.", "Verwalte die Lizenz, Zahlungsmethode und den Abrechnungszeitraum.", {
-                    type: "textarea",
-                }),
-                localizedText("licenseDescription", "Link this cloud license to a namespace.", "Verknüpfe diese Cloud-Lizenz mit einem Namespace.", { type: "textarea" }),
-                localizedText("noNamespaceLabel", "No linked workspace", "Kein verknüpfter Workspace"),
-                localizedText("changeNamespaceLabel", "Change namespace", "Namespace ändern"),
-                localizedText("saveLabel", "Save", "Speichern"),
-                localizedText("closeLabel", "Close", "Schließen"),
-                localizedText("generalTabLabel", "General", "Allgemein"),
-                localizedText("paymentMethodsTabLabel", "Payment methods", "Zahlungsmethoden"),
-                localizedText("paymentMethodTabLabel", "Payment method", "Zahlungsmethode"),
-                localizedText("cancellationHeading", "Cancellation", "Kündigung"),
+            type: "tabs",
+            tabs: [
                 {
-                    name: "fieldDescriptions",
-                    type: "group",
-                    admin: { description: "Descriptions shown below the inputs of the customer edit dialog." },
+                    label: "Edit dialogs",
+                    description: "Customer and license edit dialogs, including payment methods.",
                     fields: [
-                        localizedText("name", "Name of the person or company invoices are addressed to.", "Name der Person oder Firma, an die Rechnungen adressiert werden."),
-                        localizedText("email", "Invoice emails are sent to this address.", "Rechnungs-E-Mails werden an diese Adresse gesendet."),
-                        localizedText("phone", "Optional phone number for billing questions.", "Optionale Telefonnummer für Rückfragen zur Abrechnung."),
-                        localizedText("line1", "Street and house number.", "Straße und Hausnummer."),
-                        localizedText("line2", "Additional address details such as floor, suite or c/o.", "Adresszusatz wie Etage, Wohnung oder c/o."),
-                        localizedText("postalCode", "Postal code of the billing address.", "Postleitzahl der Rechnungsadresse."),
-                        localizedText("city", "City of the billing address.", "Ort der Rechnungsadresse."),
-                        localizedText("state", "State, province or region, if applicable.", "Bundesland, Provinz oder Region, falls zutreffend."),
-                        localizedText("country", "Two-letter ISO country code, e.g. DE.", "Zweistelliger ISO-Ländercode, z. B. DE."),
+                        {
+                            name: "editor",
+                            type: "group",
+                            fields: [
+                                {
+                                    type: "collapsible",
+                                    label: "Customer dialog",
+                                    fields: [
+                                        localizedText("customerTitle", "Edit customer", "Kunden bearbeiten"),
+                                        localizedText(
+                                            "customerDescription",
+                                            "Update the customer's contact and default billing details.",
+                                            "Aktualisiere die Kontakt- und Standard-Rechnungsdaten des Kunden.",
+                                            {
+                                                type: "textarea",
+                                            }
+                                        ),
+                                        localizedText("contactHeading", "Contact information", "Kontaktinformationen"),
+                                        {
+                                            name: "fieldDescriptions",
+                                            type: "group",
+                                            admin: { description: "Descriptions shown below the inputs of the customer edit dialog." },
+                                            fields: [
+                                                localizedText("name", "Name of the person or company invoices are addressed to.", "Name der Person oder Firma, an die Rechnungen adressiert werden."),
+                                                localizedText("email", "Invoice emails are sent to this address.", "Rechnungs-E-Mails werden an diese Adresse gesendet."),
+                                                localizedText("phone", "Optional phone number for billing questions.", "Optionale Telefonnummer für Rückfragen zur Abrechnung."),
+                                                localizedText("line1", "Street and house number.", "Straße und Hausnummer."),
+                                                localizedText("line2", "Additional address details such as floor, suite or c/o.", "Adresszusatz wie Etage, Wohnung oder c/o."),
+                                                localizedText("postalCode", "Postal code of the billing address.", "Postleitzahl der Rechnungsadresse."),
+                                                localizedText("city", "City of the billing address.", "Ort der Rechnungsadresse."),
+                                                localizedText("state", "State, province or region, if applicable.", "Bundesland, Provinz oder Region, falls zutreffend."),
+                                                localizedText("country", "Two-letter ISO country code, e.g. DE.", "Zweistelliger ISO-Ländercode, z. B. DE."),
+                                            ],
+                                        },
+                                    ],
+                                },
+                                {
+                                    type: "collapsible",
+                                    label: "Payment methods",
+                                    fields: [
+                                        localizedText(
+                                            "paymentMethodDescription",
+                                            "Manage the payment method used for future invoices securely through Stripe.",
+                                            "Verwalte die Zahlungsmethode für zukünftige Rechnungen sicher über Stripe.",
+                                            { type: "textarea" }
+                                        ),
+                                        localizedText("loadingPaymentMethodLabel", "Loading payment form…", "Zahlungsformular wird geladen …"),
+                                        localizedText("savePaymentMethodLabel", "Save payment method", "Zahlungsmethode speichern"),
+                                        localizedText("savingPaymentMethodLabel", "Saving payment method…", "Zahlungsmethode wird gespeichert …"),
+                                        localizedText("paymentMethodSuccess", "Payment method added successfully.", "Zahlungsmethode erfolgreich hinzugefügt."),
+                                        localizedText("noPaymentMethodsLabel", "No payment methods yet", "Noch keine Zahlungsmethoden"),
+                                        localizedText("addPaymentMethodLabel", "Add new payment method", "Neue Zahlungsmethode hinzufügen"),
+                                        localizedText("removePaymentMethodLabel", "Remove", "Entfernen"),
+                                        localizedText("removingPaymentMethodLabel", "Removing…", "Wird entfernt …"),
+                                        localizedText("settingPaymentMethodLabel", "Assigning…", "Wird zugewiesen …"),
+                                    ],
+                                },
+                                {
+                                    type: "collapsible",
+                                    label: "License dialog",
+                                    fields: [
+                                        localizedText("licenseTitle", "Edit license", "Lizenz bearbeiten"),
+                                        localizedText(
+                                            "licenseEditDescription",
+                                            "Manage the license, payment method, and billing period.",
+                                            "Verwalte die Lizenz, Zahlungsmethode und den Abrechnungszeitraum.",
+                                            {
+                                                type: "textarea",
+                                            }
+                                        ),
+                                        localizedText("licenseDescription", "Link this cloud license to a namespace.", "Verknüpfe diese Cloud-Lizenz mit einem Namespace.", { type: "textarea" }),
+                                        localizedText("noNamespaceLabel", "No linked workspace", "Kein verknüpfter Workspace"),
+                                        localizedText("changeNamespaceLabel", "Change namespace", "Namespace ändern"),
+                                        localizedText("cancellationHeading", "Cancellation", "Kündigung"),
+                                    ],
+                                },
+                                {
+                                    type: "collapsible",
+                                    label: "Shared labels",
+                                    admin: { description: "Buttons and tab labels used by both edit dialogs." },
+                                    fields: [
+                                        localizedText("saveLabel", "Save", "Speichern"),
+                                        localizedText("closeLabel", "Close", "Schließen"),
+                                        localizedText("generalTabLabel", "General", "Allgemein"),
+                                        localizedText("paymentMethodsTabLabel", "Payment methods", "Zahlungsmethoden"),
+                                        localizedText("paymentMethodTabLabel", "Payment method", "Zahlungsmethode"),
+                                    ],
+                                },
+                            ],
+                        },
                     ],
                 },
-            ],
-        },
-        {
-            name: "subscriptionPreview",
-            label: "Subscription Change Preview",
-            type: "group",
-            admin: { description: "Shared between the billing and upgrade dialogs, both of which preview a change through subscriptionsPreviewUpdate before applying it." },
-            fields: [
-                localizedText("totalLabel", "New total", "Neuer Gesamtbetrag"),
-                localizedText("totalDescription", "What you will be billed per period once this change applies.", "Was dir nach dieser Änderung pro Periode berechnet wird.", { type: "textarea" }),
-                localizedText("prorationLabel", "Charged today", "Heute berechnet"),
-                localizedText("prorationDescription", "The difference for the remainder of the current period.", "Die Differenz für den Rest der aktuellen Periode.", { type: "textarea" }),
-                localizedText("immediateNote", "This change applies immediately.", "Diese Änderung wird sofort wirksam."),
-                localizedText("scheduledNote", "This change applies at the end of your current billing period.", "Diese Änderung wird am Ende der aktuellen Abrechnungsperiode wirksam."),
-                localizedText("loadingLabel", "Calculating…", "Wird berechnet …"),
-            ],
-        },
-        {
-            name: "billing",
-            type: "group",
-            fields: [
-                localizedText("heading", "Billing", "Abrechnung"),
-                localizedText("title", "Change Period", "Zahlungsperiode ändern"),
-                localizedText("description", "Review your subscription and change how often you're billed.", "Sieh dir dein Abonnement an und ändere, wie oft du abgerechnet wirst.", {
-                    type: "textarea",
-                }),
-                localizedText("statusDescription", "The current state of this subscription and the access it grants.", "Der aktuelle Zustand dieses Abonnements und der Zugriff, den es gewährt.", {
-                    type: "textarea",
-                }),
-                localizedText("periodLabel", "Billing period", "Abrechnungsintervall"),
-                localizedText("currentPeriodEndLabel", "Current period ends", "Aktuelle Periode endet"),
-                localizedText("currentPeriodEndDescription", "The subscription renews on {date} unless it is canceled before.", "Das Abonnement verlängert sich am {date}, sofern es nicht vorher gekündigt wird.", {
-                    type: "textarea",
-                    description: "Use {date} as a placeholder for the end of the current period.",
-                }),
-                localizedText(
-                    "currentPeriodEndPendingDescription",
-                    "The subscription switches to {selection} on {date}.",
-                    "Das Abonnement wechselt am {date} auf {selection}.",
-                    {
-                        type: "textarea",
-                        description: "Replaces the renewal text while a change is scheduled. Use {selection} for the new plan and {date} for the day it applies.",
-                    }
-                ),
-                localizedText(
-                    "currentPeriodEndCanceledDescription",
-                    "The subscription is canceled, access ends on {date}.",
-                    "Das Abonnement ist gekündigt, der Zugriff endet am {date}.",
-                    {
-                        type: "textarea",
-                        description: "Replaces the renewal text once the subscription is canceled. Use {date} for the day access ends.",
-                    }
-                ),
-                localizedText("pendingChangeNote", "Switches to {selection}", "Wechselt auf {selection}", {
-                    description: "Shown below the next billing date on the license page. Use {selection} as a placeholder for the scheduled change.",
-                }),
-                localizedText(
-                    "currentPeriodEndUnknownDescription",
-                    "This subscription has no scheduled renewal yet.",
-                    "Für dieses Abonnement steht noch keine Verlängerung an.",
-                    { type: "textarea" }
-                ),
-                localizedText("changePeriodLabel", "Change period", "Zeitraum ändern"),
-            ],
-        },
-        {
-            name: "cancel",
-            type: "group",
-            fields: [
-                localizedText(
-                    "description",
-                    "Cancellation takes effect at the end of the current billing period. Existing licenses remain valid for the periods already paid for.",
-                    "Die Kündigung wird zum Ende der aktuellen Abrechnungsperiode wirksam. Bereits bezahlte Lizenzzeiträume bleiben gültig.",
-                    { type: "textarea" }
-                ),
-                localizedText("confirmLabel", "Cancel at period end", "Zum Periodenende kündigen"),
-                localizedText("immediateConfirmLabel", "Cancel immediately", "Sofort kündigen"),
-                localizedText(
-                    "immediateDescription",
-                    "You can also cancel immediately until the date below. Existing paid license periods remain valid.",
-                    "Bis zum unten stehenden Datum kannst du auch sofort kündigen. Bereits bezahlte Lizenzzeiträume bleiben gültig.",
-                    { type: "textarea" }
-                ),
-                localizedText("immediateUntilLabel", "Immediate cancellation available until", "Sofortkündigung möglich bis"),
-                localizedText(
-                    "immediateConfirmDescription",
-                    "Your subscription ends right now instead of at the end of the billing period. This cannot be undone: the subscription cannot be resumed, and continuing requires a new checkout. Licenses already paid for remain valid until their end date.",
-                    "Dein Abonnement endet sofort statt zum Ende der Abrechnungsperiode. Das lässt sich nicht rückgängig machen: Das Abonnement kann nicht fortgesetzt werden, für eine weitere Nutzung ist ein neuer Checkout nötig. Bereits bezahlte Lizenzzeiträume bleiben bis zu ihrem Enddatum gültig.",
-                    { type: "textarea" }
-                ),
-                localizedText("immediateConfirmSubmitLabel", "Yes, cancel immediately", "Ja, sofort kündigen"),
-                localizedText("immediateConfirmBackLabel", "Go back", "Zurück"),
-                localizedText("pendingHeading", "Your subscription is set to cancel", "Dein Abonnement wird gekündigt"),
-                localizedText(
-                    "pendingDescription",
-                    "The subscription ends on the date below. Existing licenses remain valid for the periods already paid for.",
-                    "Das Abonnement endet zum unten stehenden Datum. Bereits bezahlte Lizenzzeiträume bleiben gültig.",
-                    { type: "textarea" }
-                ),
-                localizedText("resumeLabel", "Keep my subscription", "Abonnement behalten"),
-            ],
-        },
-        {
-            name: "upgrade",
-            type: "group",
-            fields: [
-                localizedText("title", "Upgrade plan", "Plan upgraden"),
-                localizedText("description", "Move to a higher plan or increase your custom usage.", "Wechsle auf einen höheren Plan oder erhöhe deine individuelle Nutzung.", { type: "textarea" }),
-                localizedText("planHeading", "Plan", "Plan"),
-                localizedText("previewHeading", "Preview", "Vorschau"),
-                localizedText("submitLabel", "Upgrade now", "Jetzt upgraden"),
+                {
+                    label: "Billing",
+                    description: "Billing section of the license page and the period change dialog.",
+                    fields: [
+                        {
+                            name: "billing",
+                            type: "group",
+                            fields: [
+                                localizedText("heading", "Billing", "Abrechnung"),
+                                localizedText("title", "Change Period", "Zahlungsperiode ändern"),
+                                localizedText(
+                                    "description",
+                                    "Review your subscription and change how often you're billed.",
+                                    "Sieh dir dein Abonnement an und ändere, wie oft du abgerechnet wirst.",
+                                    {
+                                        type: "textarea",
+                                    }
+                                ),
+                                localizedText(
+                                    "statusDescription",
+                                    "The current state of this subscription and the access it grants.",
+                                    "Der aktuelle Zustand dieses Abonnements und der Zugriff, den es gewährt.",
+                                    {
+                                        type: "textarea",
+                                    }
+                                ),
+                                localizedText("periodLabel", "Billing period", "Abrechnungsintervall"),
+                                localizedText("currentPeriodEndLabel", "Current period ends", "Aktuelle Periode endet"),
+                                localizedText(
+                                    "currentPeriodEndDescription",
+                                    "The subscription renews on {date} unless it is canceled before.",
+                                    "Das Abonnement verlängert sich am {date}, sofern es nicht vorher gekündigt wird.",
+                                    {
+                                        type: "textarea",
+                                        description: "Use {date} as a placeholder for the end of the current period.",
+                                    }
+                                ),
+                                localizedText(
+                                    "currentPeriodEndPendingDescription",
+                                    "The subscription switches to {selection} on {date}.",
+                                    "Das Abonnement wechselt am {date} auf {selection}.",
+                                    {
+                                        type: "textarea",
+                                        description: "Replaces the renewal text while a change is scheduled. Use {selection} for the new plan and {date} for the day it applies.",
+                                    }
+                                ),
+                                localizedText(
+                                    "currentPeriodEndCanceledDescription",
+                                    "The subscription is canceled, access ends on {date}.",
+                                    "Das Abonnement ist gekündigt, der Zugriff endet am {date}.",
+                                    {
+                                        type: "textarea",
+                                        description: "Replaces the renewal text once the subscription is canceled. Use {date} for the day access ends.",
+                                    }
+                                ),
+                                localizedText("pendingChangeNote", "Switches to {selection}", "Wechselt auf {selection}", {
+                                    description: "Shown below the next billing date on the license page. Use {selection} as a placeholder for the scheduled change.",
+                                }),
+                                localizedText(
+                                    "currentPeriodEndUnknownDescription",
+                                    "This subscription has no scheduled renewal yet.",
+                                    "Für dieses Abonnement steht noch keine Verlängerung an.",
+                                    { type: "textarea" }
+                                ),
+                                localizedText("changePeriodLabel", "Change period", "Zeitraum ändern"),
+                            ],
+                        },
+                    ],
+                },
+                {
+                    label: "Upgrade",
+                    description: "Plan upgrade dialog.",
+                    fields: [
+                        {
+                            name: "upgrade",
+                            type: "group",
+                            fields: [
+                                localizedText("title", "Upgrade plan", "Plan upgraden"),
+                                localizedText("description", "Move to a higher plan or increase your custom usage.", "Wechsle auf einen höheren Plan oder erhöhe deine individuelle Nutzung.", {
+                                    type: "textarea",
+                                }),
+                                localizedText("planHeading", "Plan", "Plan"),
+                                localizedText("previewHeading", "Preview", "Vorschau"),
+                                localizedText("submitLabel", "Upgrade now", "Jetzt upgraden"),
+                            ],
+                        },
+                    ],
+                },
+                {
+                    label: "Change preview",
+                    description: "Shared between the billing and upgrade dialogs, both of which preview a change through subscriptionsPreviewUpdate before applying it.",
+                    fields: [
+                        {
+                            name: "subscriptionPreview",
+                            label: "Subscription Change Preview",
+                            type: "group",
+                            fields: [
+                                localizedText("totalLabel", "New total", "Neuer Gesamtbetrag"),
+                                localizedText("totalDescription", "What you will be billed per period once this change applies.", "Was dir nach dieser Änderung pro Periode berechnet wird.", {
+                                    type: "textarea",
+                                }),
+                                localizedText("prorationLabel", "Charged today", "Heute berechnet"),
+                                localizedText("prorationDescription", "The difference for the remainder of the current period.", "Die Differenz für den Rest der aktuellen Periode.", {
+                                    type: "textarea",
+                                }),
+                                localizedText("immediateNote", "This change applies immediately.", "Diese Änderung wird sofort wirksam."),
+                                localizedText("scheduledNote", "This change applies at the end of your current billing period.", "Diese Änderung wird am Ende der aktuellen Abrechnungsperiode wirksam."),
+                                localizedText("loadingLabel", "Calculating…", "Wird berechnet …"),
+                            ],
+                        },
+                    ],
+                },
+                {
+                    label: "Cancellation",
+                    description: "Cancellation section of the license edit dialog.",
+                    fields: [
+                        {
+                            name: "cancel",
+                            type: "group",
+                            fields: [
+                                localizedText(
+                                    "description",
+                                    "Cancellation takes effect at the end of the current billing period. Existing licenses remain valid for the periods already paid for.",
+                                    "Die Kündigung wird zum Ende der aktuellen Abrechnungsperiode wirksam. Bereits bezahlte Lizenzzeiträume bleiben gültig.",
+                                    { type: "textarea" }
+                                ),
+                                localizedText("confirmLabel", "Cancel at period end", "Zum Periodenende kündigen"),
+                                localizedText("immediateConfirmLabel", "Cancel immediately", "Sofort kündigen"),
+                                localizedText(
+                                    "immediateDescription",
+                                    "You can also cancel immediately until the date below. Existing paid license periods remain valid.",
+                                    "Bis zum unten stehenden Datum kannst du auch sofort kündigen. Bereits bezahlte Lizenzzeiträume bleiben gültig.",
+                                    { type: "textarea" }
+                                ),
+                                localizedText("immediateUntilLabel", "Immediate cancellation available until", "Sofortkündigung möglich bis"),
+                                localizedText(
+                                    "immediateConfirmDescription",
+                                    "Your subscription ends right now instead of at the end of the billing period. This cannot be undone: the subscription cannot be resumed, and continuing requires a new checkout. Licenses already paid for remain valid until their end date.",
+                                    "Dein Abonnement endet sofort statt zum Ende der Abrechnungsperiode. Das lässt sich nicht rückgängig machen: Das Abonnement kann nicht fortgesetzt werden, für eine weitere Nutzung ist ein neuer Checkout nötig. Bereits bezahlte Lizenzzeiträume bleiben bis zu ihrem Enddatum gültig.",
+                                    { type: "textarea" }
+                                ),
+                                localizedText("immediateConfirmSubmitLabel", "Yes, cancel immediately", "Ja, sofort kündigen"),
+                                localizedText("immediateConfirmBackLabel", "Go back", "Zurück"),
+                                localizedText("pendingHeading", "Your subscription is set to cancel", "Dein Abonnement wird gekündigt"),
+                                localizedText(
+                                    "pendingDescription",
+                                    "The subscription ends on the date below. Existing licenses remain valid for the periods already paid for.",
+                                    "Das Abonnement endet zum unten stehenden Datum. Bereits bezahlte Lizenzzeiträume bleiben gültig.",
+                                    { type: "textarea" }
+                                ),
+                                localizedText("resumeLabel", "Keep my subscription", "Abonnement behalten"),
+                            ],
+                        },
+                    ],
+                },
             ],
         },
     ],
