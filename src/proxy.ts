@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { DEFAULT_LOCALE, SUPPORTED_LOCALES } from "@/lib/i18n"
-import { canonicalizeLicensePathname } from "@/lib/licenses/routes"
+import { canonicalizeLicensePathname, createLicenseDashboardEntryPath } from "@/lib/licenses/routes"
 import { createContentSecurityPolicy } from "@/lib/security/contentSecurityPolicy"
 
 function secureResponse(request: NextRequest, response?: NextResponse) {
@@ -23,6 +23,14 @@ export function proxy(request: NextRequest) {
         const url = request.nextUrl.clone()
         url.pathname = canonicalPath
         return secureResponse(request, NextResponse.redirect(url))
+    }
+
+    const licenseEntryPath = createLicenseDashboardEntryPath(request.nextUrl)
+    if (licenseEntryPath) {
+        const response = NextResponse.redirect(new URL(licenseEntryPath, request.nextUrl))
+        response.headers.set("cache-control", "no-store")
+        response.headers.set("referrer-policy", "no-referrer")
+        return secureResponse(request, response)
     }
 
     if (path === "/admin" || path.startsWith("/admin/") || SUPPORTED_LOCALES.some((locale) => path === `/${locale}` || path.startsWith(`/${locale}/`))) {
