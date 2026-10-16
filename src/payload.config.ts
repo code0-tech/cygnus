@@ -17,7 +17,7 @@ import { Pages } from "./collections/pages"
 import { SubscriptionCollection } from "./globals/subscriptionConfig"
 import { TeamMembers } from "./collections/teamMembers"
 import { Users } from "./collections/users"
-import { GraphLexicalBlock, TriggerLexicalBlock } from "./lib/richText/customLexicalBlocks"
+import { GraphLexicalBlock, PlaygroundLexicalBlock, TriggerLexicalBlock } from "./lib/richText/customLexicalBlocks"
 import { payloadAiPlugin } from "@mvriu5/payload-ai"
 import { payloadColorPlugin } from "@mvriu5/payload-color-picker"
 import { payloadIconPlugin } from "@mvriu5/payload-icon-picker"
@@ -85,7 +85,7 @@ export default buildConfig({
             ...defaultFeatures,
             FixedToolbarFeature(),
             BlocksFeature({
-                blocks: [CodeBlock(), TriggerLexicalBlock, GraphLexicalBlock],
+                blocks: [CodeBlock(), TriggerLexicalBlock, GraphLexicalBlock, PlaygroundLexicalBlock],
             }),
         ],
     }),

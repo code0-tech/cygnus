@@ -6,6 +6,11 @@ export const customLexicalHTMLConverters: HTMLConvertersFunctionAsync = ({ defau
     ...defaultConverters,
     blocks: {
         ...defaultConverters.blocks,
+        playground: ({ node }: { node: { fields: { blockName?: unknown; source?: unknown } } }) => {
+            const source = typeof node.fields.source === "string" ? node.fields.source : ""
+            const title = typeof node.fields.blockName === "string" ? node.fields.blockName : ""
+            return `<div data-lexical-custom-block="playground" data-source="${encodeAttribute(source)}" data-title="${encodeAttribute(title)}"></div>`
+        },
         graph: ({ node }: { node: { fields: { blockName?: unknown; source?: unknown } } }) => {
             const source = typeof node.fields.source === "string" ? node.fields.source : ""
             const title = typeof node.fields.blockName === "string" ? node.fields.blockName : ""

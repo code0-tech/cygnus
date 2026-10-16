@@ -1,4 +1,5 @@
 import { GraphMarkdownBlock } from "@/components/blog/GraphMarkdownBlock"
+import { PlaygroundMarkdownBlock } from "@/components/blog/PlaygroundMarkdownBlock"
 import { TriggerMarkdownBlock } from "@/components/blog/TriggerMarkdownBlock"
 import sanitizeHtml, { type IOptions } from "sanitize-html"
 
@@ -29,6 +30,7 @@ type MarkdownSegment = HtmlSegment | TagSegment | CustomBlockSegment
 const CUSTOM_TAG_COMPONENTS = {
     graph: GraphMarkdownBlock,
     trigger: TriggerMarkdownBlock,
+    playground: PlaygroundMarkdownBlock,
 } as const
 
 const SANITIZE_OPTIONS: IOptions = {
