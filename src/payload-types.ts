@@ -2890,6 +2890,15 @@ export interface SubscriptionConfig {
       b2c: 'monthly' | 'quarterly' | 'yearly';
     };
   };
+  subscribe: {
+    label: string;
+    baseUrl: string;
+  };
+  contactSales: {
+    prompt: string;
+    label: string;
+    href: string;
+  };
   deployment: {
     label: string;
     description?: string | null;
@@ -2907,6 +2916,41 @@ export interface SubscriptionConfig {
       color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
       image?: (number | null) | Media;
     };
+  };
+  customerType: {
+    label: string;
+    description?: string | null;
+    b2b: {
+      title: string;
+      description: string;
+      icon: string;
+      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
+      image?: (number | null) | Media;
+    };
+    b2c: {
+      title: string;
+      description: string;
+      icon: string;
+      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
+      image?: (number | null) | Media;
+    };
+  };
+  paymentPeriod: {
+    label: string;
+    description?: string | null;
+    monthlyText: string;
+    /**
+     * Text before the monthly savings amount in payment period badges, for example Save €2.50.
+     */
+    savingsLabel: string;
+    quarterlyText: string;
+    yearlyText: string;
+    monthlyPeriodSuffix: string;
+    quarterlyPeriodSuffix: string;
+    yearlyPeriodSuffix: string;
+    monthlyColor: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
+    quarterlyColor: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
+    yearlyColor: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
   };
   plan: {
     title: string;
@@ -2945,56 +2989,12 @@ export interface SubscriptionConfig {
       image?: (number | null) | Media;
     };
   };
-  customerType: {
-    label: string;
-    description?: string | null;
-    b2b: {
-      title: string;
-      description: string;
-      icon: string;
-      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
-      image?: (number | null) | Media;
-    };
-    b2c: {
-      title: string;
-      description: string;
-      icon: string;
-      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
-      image?: (number | null) | Media;
-    };
-  };
-  packages: {
-    pro: {
-      title: string;
-      description: string;
-    };
-    max: {
-      title: string;
-      description: string;
-    };
-    custom: {
-      title: string;
-      description: string;
-    };
-  };
-  paymentPeriod: {
-    label: string;
-    description?: string | null;
-    monthlyText: string;
-    /**
-     * Text before the monthly savings amount in payment period badges, for example Save €2.50.
-     */
-    savingsLabel: string;
-    quarterlyText: string;
-    yearlyText: string;
-    monthlyPeriodSuffix: string;
-    quarterlyPeriodSuffix: string;
-    yearlyPeriodSuffix: string;
-    monthlyColor: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
-    quarterlyColor: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
-    yearlyColor: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
-  };
   workflowExecutions: {
+    title: string;
+    description?: string | null;
+    suffix: string;
+  };
+  aiTokens: {
     title: string;
     description?: string | null;
     suffix: string;
@@ -3020,20 +3020,6 @@ export interface SubscriptionConfig {
       conversion_rate: number;
       id?: string | null;
     }[];
-  };
-  aiTokens: {
-    title: string;
-    description?: string | null;
-    suffix: string;
-  };
-  contactSales: {
-    prompt: string;
-    label: string;
-    href: string;
-  };
-  subscribe: {
-    label: string;
-    baseUrl: string;
   };
   updatedAt?: string | null;
   createdAt?: string | null;
@@ -3650,6 +3636,19 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
               b2c?: T;
             };
       };
+  subscribe?:
+    | T
+    | {
+        label?: T;
+        baseUrl?: T;
+      };
+  contactSales?:
+    | T
+    | {
+        prompt?: T;
+        label?: T;
+        href?: T;
+      };
   deployment?:
     | T
     | {
@@ -3673,6 +3672,46 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
               color?: T;
               image?: T;
             };
+      };
+  customerType?:
+    | T
+    | {
+        label?: T;
+        description?: T;
+        b2b?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              icon?: T;
+              color?: T;
+              image?: T;
+            };
+        b2c?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              icon?: T;
+              color?: T;
+              image?: T;
+            };
+      };
+  paymentPeriod?:
+    | T
+    | {
+        label?: T;
+        description?: T;
+        monthlyText?: T;
+        savingsLabel?: T;
+        quarterlyText?: T;
+        yearlyText?: T;
+        monthlyPeriodSuffix?: T;
+        quarterlyPeriodSuffix?: T;
+        yearlyPeriodSuffix?: T;
+        monthlyColor?: T;
+        quarterlyColor?: T;
+        yearlyColor?: T;
       };
   plan?:
     | T
@@ -3725,69 +3764,14 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
               image?: T;
             };
       };
-  customerType?:
-    | T
-    | {
-        label?: T;
-        description?: T;
-        b2b?:
-          | T
-          | {
-              title?: T;
-              description?: T;
-              icon?: T;
-              color?: T;
-              image?: T;
-            };
-        b2c?:
-          | T
-          | {
-              title?: T;
-              description?: T;
-              icon?: T;
-              color?: T;
-              image?: T;
-            };
-      };
-  packages?:
-    | T
-    | {
-        pro?:
-          | T
-          | {
-              title?: T;
-              description?: T;
-            };
-        max?:
-          | T
-          | {
-              title?: T;
-              description?: T;
-            };
-        custom?:
-          | T
-          | {
-              title?: T;
-              description?: T;
-            };
-      };
-  paymentPeriod?:
-    | T
-    | {
-        label?: T;
-        description?: T;
-        monthlyText?: T;
-        savingsLabel?: T;
-        quarterlyText?: T;
-        yearlyText?: T;
-        monthlyPeriodSuffix?: T;
-        quarterlyPeriodSuffix?: T;
-        yearlyPeriodSuffix?: T;
-        monthlyColor?: T;
-        quarterlyColor?: T;
-        yearlyColor?: T;
-      };
   workflowExecutions?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        suffix?: T;
+      };
+  aiTokens?:
     | T
     | {
         title?: T;
@@ -3819,26 +3803,6 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
               conversion_rate?: T;
               id?: T;
             };
-      };
-  aiTokens?:
-    | T
-    | {
-        title?: T;
-        description?: T;
-        suffix?: T;
-      };
-  contactSales?:
-    | T
-    | {
-        prompt?: T;
-        label?: T;
-        href?: T;
-      };
-  subscribe?:
-    | T
-    | {
-        label?: T;
-        baseUrl?: T;
       };
   updatedAt?: T;
   createdAt?: T;

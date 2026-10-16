@@ -11,6 +11,7 @@ import type { CheckoutData, SubscriptionConfigData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { downloadLicenseFile } from "@/lib/licenses/client"
 import { getPaymentPeriodSuffix } from "@/lib/subscription/calculator"
+import type { SubscriptionPlan } from "@/lib/subscription/types"
 import { Button } from "@code0-tech/pictor"
 import { IconCheck, IconCloud, IconDownload, IconX } from "@tabler/icons-react"
 import { AnimatePresence, m as motion, useReducedMotion, type Variants } from "motion/react"
@@ -186,7 +187,7 @@ function CheckoutSuccessStatusView({
     const confirmedPricing = fulfillmentConfirmed ? completion?.pricing : null
     const paymentPeriod = confirmedConfiguration?.paymentPeriod ?? undefined
     const planKey = confirmedConfiguration?.plan
-    const planTitle = planKey === "pro" || planKey === "max" || planKey === "custom" ? subscriptionConfig.packages[planKey].title : subscriptionConfig.packages.custom.title
+    const plan: SubscriptionPlan = planKey === "pro" || planKey === "max" ? planKey : "custom"
     const currencyDivisor = confirmedPricing
         ? 10 ** (new Intl.NumberFormat(locale === "de" ? "de-DE" : "en-US", { style: "currency", currency: confirmedPricing.currency.toUpperCase() }).resolvedOptions().maximumFractionDigits ?? 2)
         : 100
@@ -243,7 +244,7 @@ function CheckoutSuccessStatusView({
                                     deployment: confirmedConfiguration.deploymentType,
                                     discountAmount: confirmedPricing.discount / currencyDivisor,
                                     periodSuffix: paymentPeriod ? getPaymentPeriodSuffix(paymentPeriod, subscriptionConfig.paymentPeriod) : "",
-                                    planTitle,
+                                    plan,
                                     taxAmount: confirmedPricing.tax / currencyDivisor,
                                     totalPrice: confirmedPricing.total / currencyDivisor,
                                     workflowExecutions: confirmedConfiguration.workflowExecutions,

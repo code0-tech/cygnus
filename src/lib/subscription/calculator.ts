@@ -192,7 +192,7 @@ export function resolveCheckoutPricing({
         periodSuffix: getPaymentPeriodSuffix(selection.paymentPeriod, subscriptionConfig.paymentPeriod),
         plan: selection.plan,
         planPrice: selection.plan === "custom" ? null : fromCents(quote.total),
-        planTitle: subscriptionConfig.packages[selection.plan].title,
+        planTitle: subscriptionConfig.plan[selection.plan].title,
         pricing,
         workflowExecutions: selection.plan === "custom" ? selection.workflowExecutions : 0,
     }
