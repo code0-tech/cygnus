@@ -105,7 +105,6 @@ export interface Config {
     'cookie-banner': CookieBanner;
     subscriptionConfig: SubscriptionConfig;
     checkout: Checkout;
-    upgradeBanner: UpgradeBanner;
     licenses: License;
     'license-dialogs': LicenseDialog;
     'license-toasts': LicenseToast;
@@ -117,7 +116,6 @@ export interface Config {
     'cookie-banner': CookieBannerSelect<false> | CookieBannerSelect<true>;
     subscriptionConfig: SubscriptionConfigSelect<false> | SubscriptionConfigSelect<true>;
     checkout: CheckoutSelect<false> | CheckoutSelect<true>;
-    upgradeBanner: UpgradeBannerSelect<false> | UpgradeBannerSelect<true>;
     licenses: LicensesSelect<false> | LicensesSelect<true>;
     'license-dialogs': LicenseDialogsSelect<false> | LicenseDialogsSelect<true>;
     'license-toasts': LicenseToastsSelect<false> | LicenseToastsSelect<true>;
@@ -2994,14 +2992,6 @@ export interface SubscriptionConfig {
     monthlyPeriodSuffix: string;
     quarterlyPeriodSuffix: string;
     yearlyPeriodSuffix: string;
-    /**
-     * Shown next to the price when quarterly billing is selected.
-     */
-    quarterlyPaidLabel: string;
-    /**
-     * Shown next to the price when yearly billing is selected.
-     */
-    yearlyPaidLabel: string;
     monthlyColor: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
     quarterlyColor: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
     yearlyColor: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
@@ -3159,51 +3149,6 @@ export interface Checkout {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "upgradeBanner".
- */
-export interface UpgradeBanner {
-  id: number;
-  pro: {
-    /**
-     * Use {plan} as a placeholder for the suggested or current plan name.
-     */
-    text: string;
-    /**
-     * Use {plan} as a placeholder for the suggested or current plan name.
-     */
-    buttonLabel: string;
-    gradientFrom: string;
-    gradientTo: string;
-  };
-  max: {
-    /**
-     * Use {plan} as a placeholder for the suggested or current plan name.
-     */
-    text: string;
-    /**
-     * Use {plan} as a placeholder for the suggested or current plan name.
-     */
-    buttonLabel: string;
-    gradientFrom: string;
-    gradientTo: string;
-  };
-  custom: {
-    /**
-     * Use {plan} as a placeholder for the suggested or current plan name.
-     */
-    text: string;
-    /**
-     * Use {plan} as a placeholder for the suggested or current plan name.
-     */
-    buttonLabel: string;
-    gradientFrom: string;
-    gradientTo: string;
-  };
-  updatedAt?: string | null;
-  createdAt?: string | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "licenses".
  */
 export interface License {
@@ -3220,7 +3165,6 @@ export interface License {
     downloadLicenseLabel: string;
     homeLabel: string;
     applicationSettingsLabel: string;
-    userSettingsLabel: string;
     userMenuLabel: string;
     profileLabel: string;
     settingsLabel: string;
@@ -3237,7 +3181,6 @@ export interface License {
     nameLabel: string;
     emailLabel: string;
     lastEditedLabel: string;
-    editLabel: string;
     statusLabel: string;
     paymentPeriodLabel: string;
     workflowExecutionsLabel: string;
@@ -3292,9 +3235,6 @@ export interface License {
     title: string;
     description: string;
     empty: string;
-    lineItemsLabel: string;
-    quantityLabel: string;
-    netLabel: string;
     taxLabel: string;
     numberLabel: string;
     numberPendingLabel: string;
@@ -3333,7 +3273,6 @@ export interface LicenseDialog {
     customerTitle: string;
     customerDescription: string;
     contactHeading: string;
-    paymentMethodHeading: string;
     paymentMethodDescription: string;
     loadingPaymentMethodLabel: string;
     savePaymentMethodLabel: string;
@@ -3343,8 +3282,6 @@ export interface LicenseDialog {
     addPaymentMethodLabel: string;
     removePaymentMethodLabel: string;
     removingPaymentMethodLabel: string;
-    otherPaymentMethodsHeading: string;
-    usePaymentMethodLabel: string;
     settingPaymentMethodLabel: string;
     licenseTitle: string;
     licenseEditDescription: string;
@@ -3356,7 +3293,6 @@ export interface LicenseDialog {
     generalTabLabel: string;
     paymentMethodsTabLabel: string;
     paymentMethodTabLabel: string;
-    namespaceHeading: string;
     cancellationHeading: string;
     /**
      * Descriptions shown below the inputs of the customer edit dialog.
@@ -3417,13 +3353,11 @@ export interface LicenseDialog {
     immediateConfirmLabel: string;
     immediateDescription: string;
     immediateUntilLabel: string;
-    immediateConfirmHeading: string;
     immediateConfirmDescription: string;
     immediateConfirmSubmitLabel: string;
     immediateConfirmBackLabel: string;
     pendingHeading: string;
     pendingDescription: string;
-    cancelAtLabel: string;
     resumeLabel: string;
   };
   upgrade: {
@@ -3525,8 +3459,6 @@ export interface Error {
   checkoutSessionExpired: string;
   billingAddressUpdate: string;
   emailUpdate: string;
-  taxIdUpdate: string;
-  taxIdIncomplete: string;
   paymentConfirmation: string;
   discountSessionRequired: string;
   discountValidation: string;
@@ -3853,8 +3785,6 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
         monthlyPeriodSuffix?: T;
         quarterlyPeriodSuffix?: T;
         yearlyPeriodSuffix?: T;
-        quarterlyPaidLabel?: T;
-        yearlyPaidLabel?: T;
         monthlyColor?: T;
         quarterlyColor?: T;
         yearlyColor?: T;
@@ -4029,39 +3959,6 @@ export interface CheckoutSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "upgradeBanner_select".
- */
-export interface UpgradeBannerSelect<T extends boolean = true> {
-  pro?:
-    | T
-    | {
-        text?: T;
-        buttonLabel?: T;
-        gradientFrom?: T;
-        gradientTo?: T;
-      };
-  max?:
-    | T
-    | {
-        text?: T;
-        buttonLabel?: T;
-        gradientFrom?: T;
-        gradientTo?: T;
-      };
-  custom?:
-    | T
-    | {
-        text?: T;
-        buttonLabel?: T;
-        gradientFrom?: T;
-        gradientTo?: T;
-      };
-  updatedAt?: T;
-  createdAt?: T;
-  globalType?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "licenses_select".
  */
 export interface LicensesSelect<T extends boolean = true> {
@@ -4079,7 +3976,6 @@ export interface LicensesSelect<T extends boolean = true> {
         downloadLicenseLabel?: T;
         homeLabel?: T;
         applicationSettingsLabel?: T;
-        userSettingsLabel?: T;
         userMenuLabel?: T;
         profileLabel?: T;
         settingsLabel?: T;
@@ -4098,7 +3994,6 @@ export interface LicensesSelect<T extends boolean = true> {
         nameLabel?: T;
         emailLabel?: T;
         lastEditedLabel?: T;
-        editLabel?: T;
         statusLabel?: T;
         paymentPeriodLabel?: T;
         workflowExecutionsLabel?: T;
@@ -4171,9 +4066,6 @@ export interface LicensesSelect<T extends boolean = true> {
         title?: T;
         description?: T;
         empty?: T;
-        lineItemsLabel?: T;
-        quantityLabel?: T;
-        netLabel?: T;
         taxLabel?: T;
         numberLabel?: T;
         numberPendingLabel?: T;
@@ -4212,7 +4104,6 @@ export interface LicenseDialogsSelect<T extends boolean = true> {
         customerTitle?: T;
         customerDescription?: T;
         contactHeading?: T;
-        paymentMethodHeading?: T;
         paymentMethodDescription?: T;
         loadingPaymentMethodLabel?: T;
         savePaymentMethodLabel?: T;
@@ -4222,8 +4113,6 @@ export interface LicenseDialogsSelect<T extends boolean = true> {
         addPaymentMethodLabel?: T;
         removePaymentMethodLabel?: T;
         removingPaymentMethodLabel?: T;
-        otherPaymentMethodsHeading?: T;
-        usePaymentMethodLabel?: T;
         settingPaymentMethodLabel?: T;
         licenseTitle?: T;
         licenseEditDescription?: T;
@@ -4235,7 +4124,6 @@ export interface LicenseDialogsSelect<T extends boolean = true> {
         generalTabLabel?: T;
         paymentMethodsTabLabel?: T;
         paymentMethodTabLabel?: T;
-        namespaceHeading?: T;
         cancellationHeading?: T;
         fieldDescriptions?:
           | T
@@ -4286,13 +4174,11 @@ export interface LicenseDialogsSelect<T extends boolean = true> {
         immediateConfirmLabel?: T;
         immediateDescription?: T;
         immediateUntilLabel?: T;
-        immediateConfirmHeading?: T;
         immediateConfirmDescription?: T;
         immediateConfirmSubmitLabel?: T;
         immediateConfirmBackLabel?: T;
         pendingHeading?: T;
         pendingDescription?: T;
-        cancelAtLabel?: T;
         resumeLabel?: T;
       };
   upgrade?:
@@ -4413,8 +4299,6 @@ export interface ErrorsSelect<T extends boolean = true> {
   checkoutSessionExpired?: T;
   billingAddressUpdate?: T;
   emailUpdate?: T;
-  taxIdUpdate?: T;
-  taxIdIncomplete?: T;
   paymentConfirmation?: T;
   discountSessionRequired?: T;
   discountValidation?: T;

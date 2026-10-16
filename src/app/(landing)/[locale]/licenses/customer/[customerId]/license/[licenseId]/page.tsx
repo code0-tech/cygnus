@@ -12,10 +12,9 @@ export default async function LicensePage({ params }: LicensePageProps) {
     const { customerId, licenseId, locale } = await params
     if (!isSupportedLocale(locale)) notFound()
 
-    const [content, subscriptionConfig, upgradeBanner, errors] = await Promise.all([
+    const [content, subscriptionConfig, errors] = await Promise.all([
         getLicenseContent(locale),
         getGlobal("subscriptionConfig", locale),
-        getGlobal("upgradeBanner", locale),
         getGlobal("errors", locale),
     ])
     if (!content || !errors) notFound()
@@ -31,7 +30,6 @@ export default async function LicensePage({ params }: LicensePageProps) {
             locale={locale}
             namespaceHref={namespaceHref}
             subscriptionConfig={subscriptionConfig}
-            upgradeBanner={upgradeBanner}
         />
     )
 }

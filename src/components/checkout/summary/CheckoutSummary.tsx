@@ -8,7 +8,7 @@ import { useCheckoutStage } from "@/components/checkout/state/CheckoutStageProvi
 import { ButtonLoader } from "@/components/ui/Loader"
 import { Switch } from "@/components/ui/Switch"
 import type { CheckoutStripePricingData, CheckoutTaxQuoteData } from "@/lib/checkout/client"
-import type { CheckoutData, ErrorsContent, SubscriptionConfigData, UpgradeBannerData } from "@/lib/cms"
+import type { CheckoutData, ErrorsContent, SubscriptionConfigData } from "@/lib/cms"
 import type { CheckoutPromotionCodeSdk } from "@/lib/checkout/stripeCheckout"
 import { formatCurrency } from "@/lib/formatters"
 import { calculateExclusiveTaxRate, formatDiscountBadge, resolveCheckoutPricing } from "@/lib/subscription/calculator"

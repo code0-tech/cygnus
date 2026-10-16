@@ -21,7 +21,6 @@ import { Navigation } from "./globals/navigation"
 import { Pages } from "./collections/pages"
 import { SubscriptionCollection } from "./globals/subscriptionConfig"
 import { TeamMembers } from "./collections/teamMembers"
-import { UpgradeBanner } from "./globals/upgradeBanner"
 import { Users } from "./collections/users"
 import { GraphLexicalBlock, PlaygroundLexicalBlock, TriggerLexicalBlock } from "./lib/richText/customLexicalBlocks"
 import { payloadAiPlugin } from "@mvriu5/payload-ai"
@@ -77,7 +76,7 @@ export default buildConfig({
         defaultLocale: "en",
     },
     collections: [Users, Media, Pages, Actions, Jobs, Blog, TeamMembers],
-    globals: [Navigation, Footer, CookieBanner, SubscriptionCollection, Checkout, UpgradeBanner, Licenses, LicenseDialogs, LicenseToasts, Errors],
+    globals: [Navigation, Footer, CookieBanner, SubscriptionCollection, Checkout, Licenses, LicenseDialogs, LicenseToasts, Errors],
     jobs: {
         autoRun: [
             {

@@ -2405,8 +2405,6 @@ export const subscription_config_locales = pgTable('subscription_config_locales'
   paymentPeriod_monthlyPeriodSuffix: varchar('payment_period_monthly_period_suffix').notNull(),
   paymentPeriod_quarterlyPeriodSuffix: varchar('payment_period_quarterly_period_suffix').notNull(),
   paymentPeriod_yearlyPeriodSuffix: varchar('payment_period_yearly_period_suffix').notNull(),
-  paymentPeriod_quarterlyPaidLabel: varchar('payment_period_quarterly_paid_label').notNull(),
-  paymentPeriod_yearlyPaidLabel: varchar('payment_period_yearly_paid_label').notNull(),
   workflowExecutions_title: varchar('workflow_executions_title').notNull(),
   workflowExecutions_description: varchar('workflow_executions_description'),
   workflowExecutions_suffix: varchar('workflow_executions_suffix').notNull(),
@@ -2534,40 +2532,6 @@ export const checkout_locales = pgTable('checkout_locales', {
 )
 
 
-export const upgrade_banner = pgTable('upgrade_banner', {
-  id: serial('id').primaryKey(),
-  pro_gradientFrom: varchar('pro_gradient_from').notNull().default("#7af69a"),
-  pro_gradientTo: varchar('pro_gradient_to').notNull().default("#13102d"),
-  max_gradientFrom: varchar('max_gradient_from').notNull().default("#72c9f8"),
-  max_gradientTo: varchar('max_gradient_to').notNull().default("#13102d"),
-  custom_gradientFrom: varchar('custom_gradient_from').notNull().default("#f872e2"),
-  custom_gradientTo: varchar('custom_gradient_to').notNull().default("#13102d"),
-  updatedAt: timestamp('updated_at', {mode: 'string',withTimezone: true,precision: 3}),
-  createdAt: timestamp('created_at', {mode: 'string',withTimezone: true,precision: 3}),
-}
-)
-
-
-export const upgrade_banner_locales = pgTable('upgrade_banner_locales', {
-  pro_text: varchar('pro_text').notNull(),
-  pro_buttonLabel: varchar('pro_button_label').notNull(),
-  max_text: varchar('max_text').notNull(),
-  max_buttonLabel: varchar('max_button_label').notNull(),
-  custom_text: varchar('custom_text').notNull(),
-  custom_buttonLabel: varchar('custom_button_label').notNull(),
-  id: serial('id').primaryKey(),
-  _locale: enum__locales('_locale').notNull(),
-  _parentID: integer('_parent_id').notNull(),
-}, (columns) => [
-    uniqueIndex('upgrade_banner_locales_locale_parent_id_unique').on(columns._locale, columns._parentID), foreignKey({
-      columns: [columns['_parentID']],
-      foreignColumns: [upgrade_banner.id],
-      name: 'upgrade_banner_locales_parent_id_fk'
-    }).onDelete('cascade'),
-]
-)
-
-
 export const licenses = pgTable('licenses', {
   id: serial('id').primaryKey(),
   updatedAt: timestamp('updated_at', {mode: 'string',withTimezone: true,precision: 3}),
@@ -2588,7 +2552,6 @@ export const licenses_locales = pgTable('licenses_locales', {
   sidebar_downloadLicenseLabel: varchar('sidebar_download_license_label').notNull(),
   sidebar_homeLabel: varchar('sidebar_home_label').notNull(),
   sidebar_applicationSettingsLabel: varchar('sidebar_application_settings_label').notNull(),
-  sidebar_userSettingsLabel: varchar('sidebar_user_settings_label').notNull(),
   sidebar_userMenuLabel: varchar('sidebar_user_menu_label').notNull(),
   sidebar_profileLabel: varchar('sidebar_profile_label').notNull(),
   sidebar_settingsLabel: varchar('sidebar_settings_label').notNull(),
@@ -2603,7 +2566,6 @@ export const licenses_locales = pgTable('licenses_locales', {
   dashboard_nameLabel: varchar('dashboard_name_label').notNull(),
   dashboard_emailLabel: varchar('dashboard_email_label').notNull(),
   dashboard_lastEditedLabel: varchar('dashboard_last_edited_label').notNull(),
-  dashboard_editLabel: varchar('dashboard_edit_label').notNull(),
   dashboard_statusLabel: varchar('dashboard_status_label').notNull(),
   dashboard_paymentPeriodLabel: varchar('dashboard_payment_period_label').notNull(),
   dashboard_workflowExecutionsLabel: varchar('dashboard_workflow_executions_label').notNull(),
@@ -2640,9 +2602,6 @@ export const licenses_locales = pgTable('licenses_locales', {
   invoices_title: varchar('invoices_title').notNull(),
   invoices_description: varchar('invoices_description').notNull(),
   invoices_empty: varchar('invoices_empty').notNull(),
-  invoices_lineItemsLabel: varchar('invoices_line_items_label').notNull(),
-  invoices_quantityLabel: varchar('invoices_quantity_label').notNull(),
-  invoices_netLabel: varchar('invoices_net_label').notNull(),
   invoices_taxLabel: varchar('invoices_tax_label').notNull(),
   invoices_numberLabel: varchar('invoices_number_label').notNull(),
   invoices_numberPendingLabel: varchar('invoices_number_pending_label').notNull(),
@@ -2682,7 +2641,6 @@ export const license_dialogs_locales = pgTable('license_dialogs_locales', {
   editor_customerTitle: varchar('editor_customer_title').notNull(),
   editor_customerDescription: varchar('editor_customer_description').notNull(),
   editor_contactHeading: varchar('editor_contact_heading').notNull(),
-  editor_paymentMethodHeading: varchar('editor_payment_method_heading').notNull(),
   editor_paymentMethodDescription: varchar('editor_payment_method_description').notNull(),
   editor_loadingPaymentMethodLabel: varchar('editor_loading_payment_method_label').notNull(),
   editor_savePaymentMethodLabel: varchar('editor_save_payment_method_label').notNull(),
@@ -2692,8 +2650,6 @@ export const license_dialogs_locales = pgTable('license_dialogs_locales', {
   editor_addPaymentMethodLabel: varchar('editor_add_payment_method_label').notNull(),
   editor_removePaymentMethodLabel: varchar('editor_remove_payment_method_label').notNull(),
   editor_removingPaymentMethodLabel: varchar('editor_removing_payment_method_label').notNull(),
-  editor_otherPaymentMethodsHeading: varchar('editor_other_payment_methods_heading').notNull(),
-  editor_usePaymentMethodLabel: varchar('editor_use_payment_method_label').notNull(),
   editor_settingPaymentMethodLabel: varchar('editor_setting_payment_method_label').notNull(),
   editor_licenseTitle: varchar('editor_license_title').notNull(),
   editor_licenseEditDescription: varchar('editor_license_edit_description').notNull(),
@@ -2705,7 +2661,6 @@ export const license_dialogs_locales = pgTable('license_dialogs_locales', {
   editor_generalTabLabel: varchar('editor_general_tab_label').notNull(),
   editor_paymentMethodsTabLabel: varchar('editor_payment_methods_tab_label').notNull(),
   editor_paymentMethodTabLabel: varchar('editor_payment_method_tab_label').notNull(),
-  editor_namespaceHeading: varchar('editor_namespace_heading').notNull(),
   editor_cancellationHeading: varchar('editor_cancellation_heading').notNull(),
   editor_fieldDescriptions_name: varchar('editor_field_descriptions_name').notNull(),
   editor_fieldDescriptions_email: varchar('editor_field_descriptions_email').notNull(),
@@ -2740,13 +2695,11 @@ export const license_dialogs_locales = pgTable('license_dialogs_locales', {
   cancel_immediateConfirmLabel: varchar('cancel_immediate_confirm_label').notNull(),
   cancel_immediateDescription: varchar('cancel_immediate_description').notNull(),
   cancel_immediateUntilLabel: varchar('cancel_immediate_until_label').notNull(),
-  cancel_immediateConfirmHeading: varchar('cancel_immediate_confirm_heading').notNull(),
   cancel_immediateConfirmDescription: varchar('cancel_immediate_confirm_description').notNull(),
   cancel_immediateConfirmSubmitLabel: varchar('cancel_immediate_confirm_submit_label').notNull(),
   cancel_immediateConfirmBackLabel: varchar('cancel_immediate_confirm_back_label').notNull(),
   cancel_pendingHeading: varchar('cancel_pending_heading').notNull(),
   cancel_pendingDescription: varchar('cancel_pending_description').notNull(),
-  cancel_cancelAtLabel: varchar('cancel_cancel_at_label').notNull(),
   cancel_resumeLabel: varchar('cancel_resume_label').notNull(),
   upgrade_title: varchar('upgrade_title').notNull(),
   upgrade_description: varchar('upgrade_description').notNull(),
@@ -2844,8 +2797,6 @@ export const errors_locales = pgTable('errors_locales', {
   checkoutSessionExpired: varchar('checkout_session_expired').notNull(),
   billingAddressUpdate: varchar('billing_address_update').notNull(),
   emailUpdate: varchar('email_update').notNull(),
-  taxIdUpdate: varchar('tax_id_update').notNull(),
-  taxIdIncomplete: varchar('tax_id_incomplete').notNull(),
   paymentConfirmation: varchar('payment_confirmation').notNull(),
   discountSessionRequired: varchar('discount_session_required').notNull(),
   discountValidation: varchar('discount_validation').notNull(),
@@ -4212,19 +4163,6 @@ export const relations_checkout = relations(checkout, ({ many }) => ({
             relationName: '_locales',
     }),
       }))
-export const relations_upgrade_banner_locales = relations(upgrade_banner_locales, ({ one }) => ({
-  _parentID: one(upgrade_banner, {
-    
-    fields: [upgrade_banner_locales._parentID],
-    references: [upgrade_banner.id],
-    relationName: '_locales',
-    }),
-      }))
-export const relations_upgrade_banner = relations(upgrade_banner, ({ many }) => ({
-  _locales: many(upgrade_banner_locales, {
-            relationName: '_locales',
-    }),
-      }))
 export const relations_licenses_locales = relations(licenses_locales, ({ one }) => ({
   _parentID: one(licenses, {
     
@@ -4475,8 +4413,6 @@ type DatabaseSchema = {
   subscription_config_locales: typeof subscription_config_locales
   checkout: typeof checkout
   checkout_locales: typeof checkout_locales
-  upgrade_banner: typeof upgrade_banner
-  upgrade_banner_locales: typeof upgrade_banner_locales
   licenses: typeof licenses
   licenses_locales: typeof licenses_locales
   license_dialogs: typeof license_dialogs
@@ -4600,8 +4536,6 @@ type DatabaseSchema = {
   relations_subscription_config: typeof relations_subscription_config
   relations_checkout_locales: typeof relations_checkout_locales
   relations_checkout: typeof relations_checkout
-  relations_upgrade_banner_locales: typeof relations_upgrade_banner_locales
-  relations_upgrade_banner: typeof relations_upgrade_banner
   relations_licenses_locales: typeof relations_licenses_locales
   relations_licenses: typeof relations_licenses
   relations_license_dialogs_locales: typeof relations_license_dialogs_locales

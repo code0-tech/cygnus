@@ -20,7 +20,6 @@ export const LicenseDialogs: GlobalConfig = {
                     type: "textarea",
                 }),
                 localizedText("contactHeading", "Contact information", "Kontaktinformationen"),
-                localizedText("paymentMethodHeading", "Default payment method", "Standard-Zahlungsmethode"),
                 localizedText(
                     "paymentMethodDescription",
                     "Manage the payment method used for future invoices securely through Stripe.",
@@ -35,8 +34,6 @@ export const LicenseDialogs: GlobalConfig = {
                 localizedText("addPaymentMethodLabel", "Add new payment method", "Neue Zahlungsmethode hinzufügen"),
                 localizedText("removePaymentMethodLabel", "Remove", "Entfernen"),
                 localizedText("removingPaymentMethodLabel", "Removing…", "Wird entfernt …"),
-                localizedText("otherPaymentMethodsHeading", "Other payment methods", "Weitere Zahlungsmethoden"),
-                localizedText("usePaymentMethodLabel", "Use this", "Diese verwenden"),
                 localizedText("settingPaymentMethodLabel", "Assigning…", "Wird zugewiesen …"),
                 localizedText("licenseTitle", "Edit license", "Lizenz bearbeiten"),
                 localizedText("licenseEditDescription", "Manage the license, payment method, and billing period.", "Verwalte die Lizenz, Zahlungsmethode und den Abrechnungszeitraum.", {
@@ -50,7 +47,6 @@ export const LicenseDialogs: GlobalConfig = {
                 localizedText("generalTabLabel", "General", "Allgemein"),
                 localizedText("paymentMethodsTabLabel", "Payment methods", "Zahlungsmethoden"),
                 localizedText("paymentMethodTabLabel", "Payment method", "Zahlungsmethode"),
-                localizedText("namespaceHeading", "Namespace", "Namespace"),
                 localizedText("cancellationHeading", "Cancellation", "Kündigung"),
                 {
                     name: "fieldDescriptions",
@@ -152,7 +148,6 @@ export const LicenseDialogs: GlobalConfig = {
                     { type: "textarea" }
                 ),
                 localizedText("immediateUntilLabel", "Immediate cancellation available until", "Sofortkündigung möglich bis"),
-                localizedText("immediateConfirmHeading", "Cancel your subscription immediately?", "Abonnement sofort kündigen?"),
                 localizedText(
                     "immediateConfirmDescription",
                     "Your subscription ends right now instead of at the end of the billing period. This cannot be undone: the subscription cannot be resumed, and continuing requires a new checkout. Licenses already paid for remain valid until their end date.",
@@ -168,7 +163,6 @@ export const LicenseDialogs: GlobalConfig = {
                     "Das Abonnement endet zum unten stehenden Datum. Bereits bezahlte Lizenzzeiträume bleiben gültig.",
                     { type: "textarea" }
                 ),
-                localizedText("cancelAtLabel", "Subscription ends", "Abonnement endet"),
                 localizedText("resumeLabel", "Keep my subscription", "Abonnement behalten"),
             ],
         },

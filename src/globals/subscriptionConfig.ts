@@ -289,11 +289,6 @@ export const SubscriptionCollection: GlobalConfig = {
                 localizedText("monthlyPeriodSuffix", "per month", "pro Monat"),
                 localizedText("quarterlyPeriodSuffix", "per quarter", "pro Quartal"),
                 localizedText("yearlyPeriodSuffix", "per year", "pro Jahr"),
-                localizedText("quarterlyPaidLabel", "paid quarterly", "vierteljährlich bezahlt", {
-                    label: "Quarterly Paid Label",
-                    description: "Shown next to the price when quarterly billing is selected.",
-                }),
-                localizedText("yearlyPaidLabel", "paid yearly", "jährlich bezahlt", { label: "Yearly Paid Label", description: "Shown next to the price when yearly billing is selected." }),
                 { ...colorField, name: "monthlyColor", defaultValue: "brand" },
                 { ...colorField, name: "quarterlyColor", defaultValue: "aqua" },
                 { ...colorField, name: "yearlyColor", defaultValue: "magenta" },

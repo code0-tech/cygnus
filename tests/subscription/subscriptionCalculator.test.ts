@@ -130,12 +130,10 @@ const paymentPeriod = {
     savingsLabel: "Save",
     quarterlyColor: "aqua",
     quarterlyDiscount: 0.1,
-    quarterlyPaidLabel: "paid quarterly",
     quarterlyPeriodSuffix: "per quarter",
     quarterlyText: "Quarterly",
     yearlyColor: "magenta",
     yearlyDiscount: 0.2,
-    yearlyPaidLabel: "paid yearly",
     yearlyPeriodSuffix: "per year",
     yearlyText: "Yearly",
 } as const
