@@ -280,6 +280,10 @@ export const SubscriptionCollection: GlobalConfig = {
                 localizedText("label", "Choose how often you want to be billed.", "Wähle, wie oft du abgerechnet werden möchtest."),
                 sectionDescriptionField,
                 localizedText("monthlyText", "Monthly", "Monatlich"),
+                localizedText("savingsLabel", "Save", "Spare", {
+                    label: "Savings Label",
+                    description: "Text before the monthly savings amount in payment period badges, for example Save €2.50.",
+                }),
                 localizedText("quarterlyText", "Quarterly", "Vierteljährlich"),
                 localizedText("yearlyText", "Yearly", "Jährlich"),
                 localizedText("monthlyPeriodSuffix", "per month", "pro Monat"),

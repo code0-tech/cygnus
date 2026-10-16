@@ -2399,6 +2399,7 @@ export const subscription_config_locales = pgTable('subscription_config_locales'
   paymentPeriod_label: varchar('payment_period_label').notNull(),
   paymentPeriod_description: varchar('payment_period_description'),
   paymentPeriod_monthlyText: varchar('payment_period_monthly_text').notNull(),
+  paymentPeriod_savingsLabel: varchar('payment_period_savings_label').notNull(),
   paymentPeriod_quarterlyText: varchar('payment_period_quarterly_text').notNull(),
   paymentPeriod_yearlyText: varchar('payment_period_yearly_text').notNull(),
   paymentPeriod_monthlyPeriodSuffix: varchar('payment_period_monthly_period_suffix').notNull(),

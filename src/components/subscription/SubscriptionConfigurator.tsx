@@ -8,7 +8,8 @@ import { HapticButtonLink } from "@/components/ui/HapticButtonLink"
 import { PackageSlider } from "@/components/ui/PackageSlider"
 import type { SubscriptionConfiguratorContent } from "@/lib/cms"
 import { localizeHref, type AppLocale } from "@/lib/i18n"
-import { calculateSubscriptionQuote, formatDiscountBadge, getPaymentPeriodSuffix, getSubscriptionDisplayPrices, getSubscriptionQuoteDiscountRate } from "@/lib/subscription/calculator"
+import { calculateSubscriptionQuote, getPaymentPeriodSuffix, getSubscriptionDisplayPrices, getSubscriptionMonthlySavings } from "@/lib/subscription/calculator"
+import { formatMinorCurrency } from "@/lib/formatters"
 import { getSubscriptionCatalog } from "@/lib/subscription/catalog"
 import { buildSubscriptionSelectionSearchParams, parseSubscriptionSelectionFromSearchParams, reduceSubscriptionSelection } from "@/lib/subscription/configurator"
 import type { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
@@ -95,7 +96,8 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
     const paymentPeriodOptions = PAYMENT_PERIOD_OPTIONS
     const monthlyPeriodSuffix = getPaymentPeriodSuffix("monthly", content.paymentPeriod) || (locale === "de" ? "pro Monat" : "per month")
     const quote = calculateSubscriptionQuote(selection, catalog)
-    const { monthlyPrice, paymentPeriodPrice } = getSubscriptionDisplayPrices(quote.total, selection.paymentPeriod)
+    const { monthlyPrice } = getSubscriptionDisplayPrices(quote.total, selection.paymentPeriod)
+    const monthlyBaseline = calculateSubscriptionQuote({ ...selection, paymentPeriod: "monthly" }, catalog).total / 100
     const selectionSearchParamsString = buildSubscriptionSelectionSearchParams(selection).toString()
     const configurationUrl = `${pathname}?${selectionSearchParamsString}`
     const subscribeSearchParams = new URLSearchParams(selectionSearchParamsString)
@@ -309,7 +311,7 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                     <SubscriptionOptionCategoryLabel label={content.paymentPeriod.label} description={content.paymentPeriod.description} />
                     <div className="grid gap-3">
                         {paymentPeriodOptions.map((period) => {
-                            const discount = getSubscriptionQuoteDiscountRate({ ...selection, paymentPeriod: period }, catalog)
+                            const savings = getSubscriptionMonthlySavings({ ...selection, paymentPeriod: period }, catalog)
 
                             return (
                                 <SubscriptionOptionCard
@@ -318,7 +320,7 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                                     description={content.paymentPeriod[`${period}PeriodSuffix`]}
                                     icon={<IconCalendarMonth size={18} />}
                                     accent={content.paymentPeriod[`${period}Color`]}
-                                    badge={discount > 0 ? `-${formatDiscountBadge(discount, locale)}` : undefined}
+                                    badge={savings > 0 ? `${content.paymentPeriod.savingsLabel} ${formatMinorCurrency(savings, "EUR", locale)}` : undefined}
                                     active={selection.paymentPeriod === period}
                                     onClick={() => dispatch({ type: "paymentPeriodChanged", value: period })}
                                 />
@@ -330,19 +332,17 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
 
             <div ref={configuratorEndRef}>
                 <div className="mb-3 flex min-w-0 flex-col items-end text-right">
-                    <div className="flex h-5 min-w-0 items-baseline justify-end gap-2 text-sm text-tertiary">
-                        {selection.paymentPeriod !== "monthly" && (
-                            <>
+                    <div className="flex min-w-0 items-baseline justify-end gap-2">
+                        {selection.paymentPeriod !== "monthly" && monthlyBaseline !== monthlyPrice && (
+                            <span className="relative inline-flex text-sm text-tertiary">
                                 <NumberFlow
-                                    value={paymentPeriodPrice}
+                                    value={monthlyBaseline}
                                     locales={locale === "de" ? "de-DE" : "en-US"}
                                     format={{ style: "currency", currency: "EUR", trailingZeroDisplay: "stripIfInteger" }}
                                 />
-                                <span className="max-w-36 truncate">({content.paymentPeriod[`${selection.paymentPeriod}PaidLabel`]})</span>
-                            </>
+                                <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-1/2 h-px bg-current" />
+                            </span>
                         )}
-                    </div>
-                    <div className="flex min-w-0 items-baseline justify-end gap-2">
                         <NumberFlow
                             value={monthlyPrice}
                             locales={locale === "de" ? "de-DE" : "en-US"}

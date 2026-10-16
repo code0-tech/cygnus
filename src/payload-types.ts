@@ -2983,6 +2983,10 @@ export interface SubscriptionConfig {
     label: string;
     description?: string | null;
     monthlyText: string;
+    /**
+     * Text before the monthly savings amount in payment period badges, for example Save €2.50.
+     */
+    savingsLabel: string;
     quarterlyText: string;
     yearlyText: string;
     monthlyPeriodSuffix: string;
@@ -3840,6 +3844,7 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
         label?: T;
         description?: T;
         monthlyText?: T;
+        savingsLabel?: T;
         quarterlyText?: T;
         yearlyText?: T;
         monthlyPeriodSuffix?: T;
