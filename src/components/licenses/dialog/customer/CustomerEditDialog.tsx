@@ -13,10 +13,10 @@ import type { AppLocale } from "@/lib/i18n"
 import { type CustomerEditSection, getCustomerEditSectionLabels } from "@/lib/licenses/editSections"
 import { removeLicenseCustomerPaymentMethod, updateLicenseCustomer } from "@/lib/licenses/client"
 import { createLicenseCustomerPath, resolveCustomerRouteId } from "@/lib/licenses/routes"
-import { Button, EmailInput, Spacing, TabContent, TabList, TabTrigger, Text, TextInput } from "@code0-tech/pictor"
+import { Button, EmailInput, Spacing, TabContent, TabList, TabTrigger, Text, TextInput, useForm } from "@code0-tech/pictor"
 import { IconCreditCard, IconMail, IconPhone, IconTrash, IconUser } from "@tabler/icons-react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
-import { Fragment, type ReactNode, type SyntheticEvent, useEffect, useState } from "react"
+import { Fragment, type ReactNode, useMemo, useState } from "react"
 
 interface CustomerEditDialogProps {
     checkoutForm: CheckoutData["form"]
@@ -26,19 +26,29 @@ interface CustomerEditDialogProps {
     locale: AppLocale
 }
 
+interface CustomerFormValues {
+    name: string
+    email: string
+    phone: string
+    line1: string
+    line2: string
+    city: string
+    state: string
+    postalCode: string
+    country: string
+}
+
 interface CustomerField {
     autoComplete: string
     className?: string
     description: string
     maxLength?: number
-    name: string
-    onChange: (value: string) => void
+    name: keyof CustomerFormValues
     pattern?: string
     title: string
     type?: "email"
     left?: ReactNode
     leftType?: "icon"
-    value: string
 }
 
 export function CustomerEditDialog({ checkoutForm, content, customerId, errors, locale }: CustomerEditDialogProps) {
@@ -49,15 +59,6 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
     const { customers, updateCustomer } = useLicenseData()
     const resolvedCustomerId = resolveCustomerRouteId(customerId)
     const customer = customers.find((candidate) => candidate.id === resolvedCustomerId)
-    const [name, setName] = useState("")
-    const [email, setEmail] = useState("")
-    const [phone, setPhone] = useState("")
-    const [line1, setLine1] = useState("")
-    const [line2, setLine2] = useState("")
-    const [city, setCity] = useState("")
-    const [state, setState] = useState("")
-    const [postalCode, setPostalCode] = useState("")
-    const [country, setCountry] = useState("")
     const [error, setError] = useState<string | null>(null)
     const [isSaving, setIsSaving] = useState(false)
     const requestedTab = searchParams.get("tab")
@@ -68,18 +69,34 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
     const [removePaymentMethodError, setRemovePaymentMethodError] = useState<string | null>(null)
     const close = () => router.replace(createLicenseCustomerPath(locale, resolvedCustomerId))
 
-    useEffect(() => {
-        if (!customer) return
-        setName(customer.name ?? "")
-        setEmail(customer.email ?? "")
-        setPhone(customer.phone ?? "")
-        setLine1(customer.address?.line1 ?? "")
-        setLine2(customer.address?.line2 ?? "")
-        setCity(customer.address?.city ?? "")
-        setState(customer.address?.state ?? "")
-        setPostalCode(customer.address?.postalCode ?? "")
-        setCountry(customer.address?.country ?? "")
-    }, [customer])
+    const initialValues = useMemo<CustomerFormValues>(() => ({
+        name: customer?.name ?? "",
+        email: customer?.email ?? "",
+        phone: customer?.phone ?? "",
+        line1: customer?.address?.line1 ?? "",
+        line2: customer?.address?.line2 ?? "",
+        city: customer?.address?.city ?? "",
+        state: customer?.address?.state ?? "",
+        postalCode: customer?.address?.postalCode ?? "",
+        country: customer?.address?.country ?? "",
+    }), [customer])
+    const validation = useMemo(() => {
+        const required = (value: string) => value.trim() ? null : locale === "de" ? "Bitte fülle dieses Feld aus." : "Please fill out this field."
+        return {
+            name: required,
+            email: (value: string) => required(value) ?? (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim()) ? null : locale === "de" ? "Bitte gib eine gültige E-Mail-Adresse ein." : "Please enter a valid email address."),
+            line1: required,
+            city: required,
+            postalCode: required,
+            country: (value: string) => required(value) ?? (/^[A-Za-z]{2}$/.test(value.trim()) ? null : locale === "de" ? "Bitte gib einen zweistelligen Ländercode ein." : "Please enter a two-letter country code."),
+        }
+    }, [locale])
+    const [inputs, validate, values] = useForm<CustomerFormValues>({
+        initialValues,
+        validate: validation,
+        useInitialValidation: false,
+        onSubmit: (submittedValues) => { void save(submittedValues) },
+    })
 
     const setSection = (nextSection: CustomerEditSection) => {
         const nextSearchParams = new URLSearchParams(searchParams.toString())
@@ -111,8 +128,7 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
         }
     }
 
-    const save = async (event: SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
-        event.preventDefault()
+    const save = async ({ name, email, phone, line1, line2, city, state, postalCode, country }: CustomerFormValues) => {
         if (!customer || isSaving) return
         setIsSaving(true)
         setError(null)
@@ -161,15 +177,13 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
 
     const fieldDescriptions = content.editor.fieldDescriptions
     const contactFields: CustomerField[] = [
-        { autoComplete: "name", description: fieldDescriptions.name, name: "name", onChange: setName, title: checkoutForm.nameLabel, value: name },
+        { autoComplete: "name", description: fieldDescriptions.name, name: "name", title: checkoutForm.nameLabel },
         {
             autoComplete: "email",
             description: fieldDescriptions.email,
             name: "email",
-            onChange: setEmail,
             title: checkoutForm.emailLabel,
             type: "email",
-            value: email,
             left: <IconMail aria-hidden="true" size={16} />,
             leftType: "icon",
         },
@@ -177,39 +191,36 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
             autoComplete: "tel",
             description: fieldDescriptions.phone,
             name: "phone",
-            onChange: setPhone,
             title: checkoutForm.phoneLabel,
-            value: phone,
             left: <IconPhone aria-hidden="true" size={16} />,
             leftType: "icon",
         },
     ]
     const billingFields: CustomerField[] = [
-        { autoComplete: "address-line1", description: fieldDescriptions.line1, name: "address-line1", onChange: setLine1, title: checkoutForm.line1Label, value: line1 },
-        { autoComplete: "address-line2", description: fieldDescriptions.line2, name: "address-line2", onChange: setLine2, title: checkoutForm.line2Label, value: line2 },
-        { autoComplete: "postal-code", description: fieldDescriptions.postalCode, name: "postal-code", onChange: setPostalCode, title: checkoutForm.postalCodeLabel, value: postalCode },
-        { autoComplete: "address-level2", description: fieldDescriptions.city, name: "address-level2", onChange: setCity, title: checkoutForm.cityLabel, value: city },
-        { autoComplete: "address-level1", description: fieldDescriptions.state, name: "address-level1", onChange: setState, title: checkoutForm.stateLabel, value: state },
+        { autoComplete: "address-line1", description: fieldDescriptions.line1, name: "line1", title: checkoutForm.line1Label },
+        { autoComplete: "address-line2", description: fieldDescriptions.line2, name: "line2", title: checkoutForm.line2Label },
+        { autoComplete: "postal-code", description: fieldDescriptions.postalCode, name: "postalCode", title: checkoutForm.postalCodeLabel },
+        { autoComplete: "address-level2", description: fieldDescriptions.city, name: "city", title: checkoutForm.cityLabel },
+        { autoComplete: "address-level1", description: fieldDescriptions.state, name: "state", title: checkoutForm.stateLabel },
         {
             autoComplete: "country",
             className: "uppercase",
             description: fieldDescriptions.country,
             maxLength: 2,
             name: "country",
-            onChange: setCountry,
             pattern: "[A-Za-z]{2}",
             title: checkoutForm.countryLabel,
-            value: country,
         },
     ]
     const renderFields = (fields: CustomerField[]) =>
-        fields.map(({ onChange, type, ...field }, index) => {
+        fields.map(({ type, ...field }, index) => {
             const Input = type === "email" ? EmailInput : TextInput
+            const { formValidation, required } = inputs.getInputProps(field.name)
 
             return (
                 <Fragment key={field.name}>
                     {index > 0 ? <Spacing spacing="md" /> : null}
-                    <Input w="100%" {...field} onChange={(event) => onChange(event.currentTarget.value)} />
+                    <Input w="100%" {...field} formValidation={formValidation} required={required} value={values[field.name]} onBlur={() => validate(field.name, false)} />
                 </Fragment>
             )
         })
@@ -255,7 +266,7 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
                     }
                 />
                 {error ? <LicenseTabAlert>{error}</LicenseTabAlert> : null}
-                <form id="customer-details-form" onSubmit={save}>
+                <form id="customer-details-form" noValidate onSubmit={(event) => { event.preventDefault(); validate() }}>
                     <Spacing spacing="xl" />
                     <Text size="md" hierarchy="secondary">
                         {content.editor.contactHeading}
