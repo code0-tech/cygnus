@@ -3259,6 +3259,20 @@ export interface LicenseDialog {
     customerTitle: string;
     customerDescription: string;
     contactHeading: string;
+    /**
+     * Descriptions shown below the inputs of the customer edit dialog.
+     */
+    fieldDescriptions: {
+      name: string;
+      email: string;
+      phone: string;
+      line1: string;
+      line2: string;
+      postalCode: string;
+      city: string;
+      state: string;
+      country: string;
+    };
     paymentMethodDescription: string;
     loadingPaymentMethodLabel: string;
     savePaymentMethodLabel: string;
@@ -3274,38 +3288,12 @@ export interface LicenseDialog {
     licenseDescription: string;
     noNamespaceLabel: string;
     changeNamespaceLabel: string;
+    cancellationHeading: string;
     saveLabel: string;
     closeLabel: string;
     generalTabLabel: string;
     paymentMethodsTabLabel: string;
     paymentMethodTabLabel: string;
-    cancellationHeading: string;
-    /**
-     * Descriptions shown below the inputs of the customer edit dialog.
-     */
-    fieldDescriptions: {
-      name: string;
-      email: string;
-      phone: string;
-      line1: string;
-      line2: string;
-      postalCode: string;
-      city: string;
-      state: string;
-      country: string;
-    };
-  };
-  /**
-   * Shared between the billing and upgrade dialogs, both of which preview a change through subscriptionsPreviewUpdate before applying it.
-   */
-  subscriptionPreview: {
-    totalLabel: string;
-    totalDescription: string;
-    prorationLabel: string;
-    prorationDescription: string;
-    immediateNote: string;
-    scheduledNote: string;
-    loadingLabel: string;
   };
   billing: {
     heading: string;
@@ -3333,6 +3321,22 @@ export interface LicenseDialog {
     currentPeriodEndUnknownDescription: string;
     changePeriodLabel: string;
   };
+  upgrade: {
+    title: string;
+    description: string;
+    planHeading: string;
+    previewHeading: string;
+    submitLabel: string;
+  };
+  subscriptionPreview: {
+    totalLabel: string;
+    totalDescription: string;
+    prorationLabel: string;
+    prorationDescription: string;
+    immediateNote: string;
+    scheduledNote: string;
+    loadingLabel: string;
+  };
   cancel: {
     description: string;
     confirmLabel: string;
@@ -3345,13 +3349,6 @@ export interface LicenseDialog {
     pendingHeading: string;
     pendingDescription: string;
     resumeLabel: string;
-  };
-  upgrade: {
-    title: string;
-    description: string;
-    planHeading: string;
-    previewHeading: string;
-    submitLabel: string;
   };
   updatedAt?: string | null;
   createdAt?: string | null;
@@ -4068,6 +4065,19 @@ export interface LicenseDialogsSelect<T extends boolean = true> {
         customerTitle?: T;
         customerDescription?: T;
         contactHeading?: T;
+        fieldDescriptions?:
+          | T
+          | {
+              name?: T;
+              email?: T;
+              phone?: T;
+              line1?: T;
+              line2?: T;
+              postalCode?: T;
+              city?: T;
+              state?: T;
+              country?: T;
+            };
         paymentMethodDescription?: T;
         loadingPaymentMethodLabel?: T;
         savePaymentMethodLabel?: T;
@@ -4083,36 +4093,12 @@ export interface LicenseDialogsSelect<T extends boolean = true> {
         licenseDescription?: T;
         noNamespaceLabel?: T;
         changeNamespaceLabel?: T;
+        cancellationHeading?: T;
         saveLabel?: T;
         closeLabel?: T;
         generalTabLabel?: T;
         paymentMethodsTabLabel?: T;
         paymentMethodTabLabel?: T;
-        cancellationHeading?: T;
-        fieldDescriptions?:
-          | T
-          | {
-              name?: T;
-              email?: T;
-              phone?: T;
-              line1?: T;
-              line2?: T;
-              postalCode?: T;
-              city?: T;
-              state?: T;
-              country?: T;
-            };
-      };
-  subscriptionPreview?:
-    | T
-    | {
-        totalLabel?: T;
-        totalDescription?: T;
-        prorationLabel?: T;
-        prorationDescription?: T;
-        immediateNote?: T;
-        scheduledNote?: T;
-        loadingLabel?: T;
       };
   billing?:
     | T
@@ -4130,6 +4116,26 @@ export interface LicenseDialogsSelect<T extends boolean = true> {
         currentPeriodEndUnknownDescription?: T;
         changePeriodLabel?: T;
       };
+  upgrade?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        planHeading?: T;
+        previewHeading?: T;
+        submitLabel?: T;
+      };
+  subscriptionPreview?:
+    | T
+    | {
+        totalLabel?: T;
+        totalDescription?: T;
+        prorationLabel?: T;
+        prorationDescription?: T;
+        immediateNote?: T;
+        scheduledNote?: T;
+        loadingLabel?: T;
+      };
   cancel?:
     | T
     | {
@@ -4144,15 +4150,6 @@ export interface LicenseDialogsSelect<T extends boolean = true> {
         pendingHeading?: T;
         pendingDescription?: T;
         resumeLabel?: T;
-      };
-  upgrade?:
-    | T
-    | {
-        title?: T;
-        description?: T;
-        planHeading?: T;
-        previewHeading?: T;
-        submitLabel?: T;
       };
   updatedAt?: T;
   createdAt?: T;

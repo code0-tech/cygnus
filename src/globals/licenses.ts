@@ -8,14 +8,25 @@ export const Licenses: GlobalConfig = {
         update: ({ req }) => Boolean(req.user),
     },
     fields: [
-        localizedText("licenses", "Licenses", "Lizenzen"),
-        localizedText("license", "License", "Lizenz"),
-        localizedText("licenseDescription", "View the license configuration and current access status.", "Sieh dir die Lizenzkonfiguration und den aktuellen Zugriffsstatus an.", { type: "textarea" }),
-        localizedText("emptyLicenses", "No licenses yet", "Noch keine Lizenzen"),
         {
-            name: "sidebar",
-            type: "group",
-            fields: [
+            type: "tabs",
+            tabs: [
+                {
+                    label: "General",
+                    fields: [
+                        localizedText("licenses", "Licenses", "Lizenzen"),
+                        localizedText("license", "License", "Lizenz"),
+                        localizedText("licenseDescription", "View the license configuration and current access status.", "Sieh dir die Lizenzkonfiguration und den aktuellen Zugriffsstatus an.", { type: "textarea" }),
+                        localizedText("emptyLicenses", "No licenses yet", "Noch keine Lizenzen"),
+                    ],
+                },
+                {
+                    label: "Navigation",
+                    fields: [
+                        {
+                            name: "sidebar",
+                            type: "group",
+                            fields: [
                 localizedText("logout", "Log out", "Abmelden"),
                 localizedText("loggingOut", "Logging out…", "Wird abgemeldet …"),
                 localizedText("backToCustomerLabel", "Back to customer", "Zurück zum Kunden"),
@@ -27,12 +38,17 @@ export const Licenses: GlobalConfig = {
                 localizedText("profileLabel", "Profile", "Profil"),
                 localizedText("settingsLabel", "Settings", "Einstellungen"),
                 localizedText("workspacesLabel", "Workspaces", "Workspaces"),
-            ],
-        },
-        {
-            name: "dashboard",
-            type: "group",
-            fields: [
+                            ],
+                        },
+                    ],
+                },
+                {
+                    label: "Dashboard",
+                    fields: [
+                        {
+                            name: "dashboard",
+                            type: "group",
+                            fields: [
                 localizedText("customersLabel", "Customers", "Kunden"),
                 localizedText("customersDescription", "Select a customer to see its licenses.", "Wähle einen Kunden, um seine Lizenzen zu sehen.", { type: "textarea" }),
                 localizedText("emptyCustomers", "No customers yet", "Noch keine Kunden"),
@@ -49,12 +65,17 @@ export const Licenses: GlobalConfig = {
                 localizedText("aiTokensLabel", "AI tokens", "KI-Tokens"),
                 localizedText("editionLabel", "Edition", "Edition"),
                 localizedText("nextBillingDateLabel", "Next billing date", "Nächste Abrechnung"),
-            ],
-        },
-        {
-            name: "values",
-            type: "group",
-            fields: [
+                            ],
+                        },
+                    ],
+                },
+                {
+                    label: "Values",
+                    fields: [
+                        {
+                            name: "values",
+                            type: "group",
+                            fields: [
                 {
                     name: "customerTypes",
                     type: "group",
@@ -107,12 +128,17 @@ export const Licenses: GlobalConfig = {
                     fields: [localizedText("cloud", "Cloud Edition", "Cloud Edition"), localizedText("selfHosted", "Enterprise Edition", "Enterprise Edition")],
                 },
                 localizedText("unknown", "Unknown", "Unbekannt"),
-            ],
-        },
-        {
-            name: "invoices",
-            type: "group",
-            fields: [
+                            ],
+                        },
+                    ],
+                },
+                {
+                    label: "Invoices and withdrawal",
+                    fields: [
+                        {
+                            name: "invoices",
+                            type: "group",
+                            fields: [
                 localizedText("title", "Invoices", "Rechnungen"),
                 localizedText(
                     "description",
@@ -132,28 +158,32 @@ export const Licenses: GlobalConfig = {
                 localizedText("downloadLabel", "Download", "Herunterladen"),
                 localizedText("viewLabel", "View", "Ansehen"),
                 localizedText("unavailableLabel", "Not available", "Nicht verfügbar"),
-            ],
-        },
-        {
-            name: "pagination",
-            type: "group",
-            fields: [
+                            ],
+                        },
+                        {
+                            name: "pagination",
+                            type: "group",
+                            fields: [
                 localizedText("loadMoreLabel", "Load more", "Mehr laden"),
                 localizedText("loadingLabel", "Loading…", "Wird geladen …"),
                 localizedText("previousPageLabel", "Previous page", "Vorherige Seite"),
                 localizedText("nextPageLabel", "Next page", "Nächste Seite"),
-            ],
-        },
-        {
-            name: "withdrawal",
-            type: "group",
-            admin: {
-                description: "Notice shown on the license detail page while the customer's statutory 14-day right of withdrawal is still running. Only shown for personal (B2C) customers.",
-            },
-            fields: [
+                            ],
+                        },
+                        {
+                            name: "withdrawal",
+                            type: "group",
+                            admin: {
+                                description: "Notice shown on the license detail page while the customer's statutory 14-day right of withdrawal is still running. Only shown for personal (B2C) customers.",
+                            },
+                            fields: [
                 localizedText("text", "You can withdraw from this purchase free of charge until {date}.", "Du kannst diesen Kauf bis zum {date} kostenlos widerrufen.", {
                     description: "Use {date} as a placeholder for the withdrawal deadline.",
                 }),
+                            ],
+                        },
+                    ],
+                },
             ],
         },
     ],
