@@ -13,6 +13,7 @@ import type { CheckoutPromotionCodeSdk } from "@/lib/checkout/stripeCheckout"
 import { formatCurrency } from "@/lib/formatters"
 import { calculateExclusiveTaxRate, formatDiscountBadge, resolveCheckoutPricing } from "@/lib/subscription/calculator"
 import type { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
+import type { CheckoutPackages } from "@/lib/subscription/usagePackages"
 import { Button, Dialog, DialogClose, DialogContent, DialogHeader, DialogOverlay, DialogPortal, DialogTitle, DialogTrigger, TextInput } from "@code0-tech/pictor"
 import type { StripeCheckoutSession } from "@stripe/stripe-js"
 import { IconX } from "@tabler/icons-react"
@@ -22,6 +23,7 @@ import { createPortal } from "react-dom"
 import { useCallback, useEffect, useRef, useState, type RefObject } from "react"
 
 interface CheckoutSummaryProps {
+    checkoutPackages: CheckoutPackages
     content?: CheckoutData["summary"] | null
     errors?: ErrorsContent | null
     nextSteps?: CheckoutData["nextSteps"] | null
@@ -31,7 +33,7 @@ interface CheckoutSummaryProps {
     taxQuote?: CheckoutTaxQuoteData | null
 }
 
-export function CheckoutSummary({ content, errors, nextSteps, stripePricing, subscriptionConfig, subscriptionPrices, taxQuote }: CheckoutSummaryProps) {
+export function CheckoutSummary({ checkoutPackages, content, errors, nextSteps, stripePricing, subscriptionConfig, subscriptionPrices, taxQuote }: CheckoutSummaryProps) {
     const router = useRouter()
     const pathname = usePathname()
     const searchParams = useSearchParams()
@@ -61,6 +63,7 @@ export function CheckoutSummary({ content, errors, nextSteps, stripePricing, sub
     const aiTokensParam = searchParams.get("aiTokens")
     const { aiTokens, isCustomPlan, paymentPeriod, periodSuffix, planPrice, planTitle, pricing, workflowExecutions } = resolveCheckoutPricing({
         aiTokensParam,
+        checkoutPackages,
         customerTypeParam: customerType,
         deploymentTypeParam: deployment,
         fallbackPeriodSuffix: content.pricing.perMonthSuffix,
@@ -130,6 +133,7 @@ export function CheckoutSummary({ content, errors, nextSteps, stripePricing, sub
                             options={periodOptions.map((period) => {
                                 const { pricing: periodPricing } = resolveCheckoutPricing({
                                     aiTokensParam,
+                                    checkoutPackages,
                                     customerTypeParam: customerType,
                                     deploymentTypeParam: deployment,
                                     fallbackPeriodSuffix: content.pricing.perMonthSuffix,

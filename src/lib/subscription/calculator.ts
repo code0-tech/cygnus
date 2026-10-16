@@ -4,6 +4,7 @@ import type { AppLocale } from "@/lib/i18n"
 import { getSubscriptionCatalog, type SubscriptionCatalog } from "@/lib/subscription/catalog"
 import { normalizePaymentPeriod, resolveSubscriptionSelection } from "@/lib/subscription/configurator"
 import { getSubscriptionPriceAmount, type SubscriptionPriceCatalog, type SubscriptionPriceLookupKey } from "@/lib/subscription/prices"
+import type { CheckoutPackages } from "@/lib/subscription/usagePackages"
 
 export function formatDiscountBadge(discount: number, locale: AppLocale) {
     return new Intl.NumberFormat(locale === "de" ? "de-DE" : "en-US", {
@@ -80,7 +81,10 @@ export function calculateSubscriptionQuote(selection: SubscriptionSelection, con
     }
 
     const aiTokenAmount = getSubscriptionPriceAmount(getPrice(config, getPriceKey("ai_token", selection.deployment, selection.customerType, selection.paymentPeriod)), selection.aiTokens)
-    const workflowExecutionAmount = getSubscriptionPriceAmount(getPrice(config, getPriceKey("workflow_execution", selection.deployment, selection.customerType, selection.paymentPeriod)), selection.workflowExecutions)
+    const workflowExecutionAmount = getSubscriptionPriceAmount(
+        getPrice(config, getPriceKey("workflow_execution", selection.deployment, selection.customerType, selection.paymentPeriod)),
+        selection.workflowExecutions
+    )
     const items: SubscriptionQuote["items"] = [
         {
             id: "aiTokens",
@@ -123,6 +127,7 @@ function parseNumber(value: string | null, fallback: number) {
 
 export function resolveCheckoutPricing({
     aiTokensParam,
+    checkoutPackages,
     customerTypeParam,
     deploymentTypeParam,
     fallbackPeriodSuffix,
@@ -133,6 +138,7 @@ export function resolveCheckoutPricing({
     workflowExecutionsParam,
 }: {
     aiTokensParam: string | null
+    checkoutPackages?: CheckoutPackages | null
     customerTypeParam: string | null
     deploymentTypeParam?: string | null
     fallbackPeriodSuffix: string
@@ -159,7 +165,7 @@ export function resolveCheckoutPricing({
         }
     }
 
-    const catalog = getSubscriptionCatalog(subscriptionConfig, subscriptionPrices)
+    const catalog = getSubscriptionCatalog(subscriptionConfig, subscriptionPrices, checkoutPackages ?? undefined)
     const { selection } = resolveSubscriptionSelection(
         {
             aiTokens: aiTokensParam,
