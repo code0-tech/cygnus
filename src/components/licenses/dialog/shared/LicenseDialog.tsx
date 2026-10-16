@@ -57,13 +57,13 @@ export function LicenseDialog({ closeLabel, description, onClose, onValueChange,
                 <DialogContent
                     autoFocus
                     showCloseButton={false}
-                    className="h-[calc(100dvh-1rem)]! w-[calc(100vw-1rem)]! max-w-none! overflow-visible! border border-white/5 p-0.5! sm:h-[75dvh]! sm:w-[75vw]! sm:max-w-[1000px]!"
+                    className="h-[calc(100dvh-1rem)]! w-[calc(100vw-1rem)]! max-w-none! overflow-visible! border border-white/5 p-0.5! sm:h-[75dvh]! sm:w-[75vw]! sm:max-w-250!"
                 >
                     <DialogTitle className="sr-only">{title}</DialogTitle>
                     {description ? <DialogDescription className="sr-only">{description}</DialogDescription> : null}
 
                     <Tab orientation="vertical" value={activeTab} onValueChange={onValueChange} className="relative flex! h-full! w-full! flex-col!">
-                        <div className="flex items-center justify-between gap-2 p-2 sm:absolute sm:top-1/2 sm:left-0 sm:max-w-[300px] sm:-translate-x-full sm:-translate-y-1/2 sm:flex-col sm:items-end sm:p-10">
+                        <div className="flex items-center justify-between gap-2 p-2 sm:absolute sm:top-1/2 sm:left-0 sm:max-w-75 sm:-translate-x-full sm:-translate-y-1/2 sm:flex-col sm:items-end sm:p-10">
                             {showTabs ? (
                                 <SegmentedControl
                                     type="single"

@@ -1,29 +1,27 @@
 import { readGuestCheckoutSession } from "../../src/lib/checkout/guestCheckoutSession"
 import assert from "node:assert/strict"
 import test from "node:test"
-import { GET as listCustomers, PATCH as updateCustomer, POST as createOrGetCustomer } from "../../src/app/api/crater/customer/route"
-import { POST as createCustomerPaymentMethodSetup } from "../../src/app/api/crater/customer/payment-method-setup/route"
-import { GET as getCustomerPaymentMethods } from "../../src/app/api/crater/customer/payment-methods/route"
-import { POST as createCheckoutSession } from "../../src/app/api/crater/checkout/session/route"
+import { PATCH as updateCustomer } from "../../src/app/api/crater/customer/route"
 import { POST as createGuestUser } from "../../src/app/api/crater/guest/route"
 import { POST as createSession } from "../../src/app/api/crater/login/route"
 import { DELETE as deleteSession, GET as getSessionStatus } from "../../src/app/api/crater/auth/session/route"
 import { GET as completeCraterLogin } from "../../src/app/api/crater/auth/callback/route"
 import { GET as getLicenseDashboard } from "../../src/app/api/crater/licenses/route"
-import { GET as accessLicenseDashboard } from "../../src/app/api/crater/licenses/access/route"
-import { GET as selectLicenseNamespace } from "../../src/app/api/crater/licenses/namespace/callback/route"
-import { GET as getCheckoutLicenseStatus } from "../../src/app/api/crater/checkout/status/route"
-import { createGraphQLTestServer } from "../helpers/graphqlTestServer"
+import { createGraphQLTestServer, withGraphQLServer } from "../helpers/graphqlTestServer"
 
-// CustomerAddressCreateInput declares all six fields non-null; the optional line2 and state are forwarded as empty strings.
-const FULL_ADDRESS = { city: "Berlin", country: "DE", line1: "HauptstraÃŸe 1", postalCode: "10115" }
-const FORWARDED_ADDRESS = { ...FULL_ADDRESS, line2: "", state: "" }
+const previousServerUrl = process.env.SERVER_URL
+test.before(() => {
+    process.env.SERVER_URL = "https://code0.example"
+})
+test.after(() => {
+    if (previousServerUrl === undefined) delete process.env.SERVER_URL
+    else process.env.SERVER_URL = previousServerUrl
+})
 
 const sessionHeaders = {
     authorization: "Session c_ust_example",
     "content-type": "application/json",
 }
-
 
 const LOGIN_STATE = "s".repeat(43)
 
@@ -59,7 +57,6 @@ test("Crater login requires a Sagittarius token", async () => {
         else process.env.CRATER_SAGITTARIUS_TOKEN = configuredToken
     }
 })
-
 
 test("Crater login returns retry guidance after its rate limit is exceeded", async () => {
     const previousMax = process.env.CRATER_LOGIN_RATE_LIMIT_MAX
@@ -112,7 +109,6 @@ test("Crater login returns retry guidance after its rate limit is exceeded", asy
         else process.env.CRATER_RATE_LIMIT_TRUSTED_PROXY_HOPS = previousProxyHops
     }
 })
-
 
 test("continuing as a guest creates a Sagittarius guest user for the entered email", async () => {
     const graphQLServer = await createGraphQLTestServer([
@@ -170,13 +166,8 @@ test("continuing as a guest creates a Sagittarius guest user for the entered ema
     }
 })
 
-
 test("guest creation refuses a blank, malformed or oversized email before reaching Crater", async () => {
-    const graphQLServer = await createGraphQLTestServer([])
-    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
-    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
-
-    try {
+    await withGraphQLServer([], async (graphQLServer) => {
         for (const email of [
             undefined,
             "",
@@ -204,13 +195,8 @@ test("guest creation refuses a blank, malformed or oversized email before reachi
         }
 
         assert.equal(graphQLServer.requests.length, 0)
-    } finally {
-        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
-        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
-        await graphQLServer.close()
-    }
+    })
 })
-
 
 test("guest creation forwards the Crater error code without a session cookie", async () => {
     const graphQLServer = await createGraphQLTestServer([
@@ -249,7 +235,6 @@ test("guest creation forwards the Crater error code without a session cookie", a
     }
 })
 
-
 test("an exhausted guest budget leaves the plain session route usable", async () => {
     const environmentKeys = ["CRATER_GUEST_RATE_LIMIT_MAX", "CRATER_GUEST_RATE_LIMIT_WINDOW_SECONDS", "CRATER_RATE_LIMIT_TRUSTED_PROXY_HOPS"] as const
     const previousEnvironment = Object.fromEntries(environmentKeys.map((key) => [key, process.env[key]]))
@@ -282,9 +267,8 @@ test("an exhausted guest budget leaves the plain session route usable", async ()
     }
 })
 
-
 test("server-side login callback redirects from the container to the configured origin with an HttpOnly Crater cookie", async () => {
-    const graphQLServer = await createGraphQLTestServer([
+    await withGraphQLServer([
         {
             data: {
                 usersLogin: {
@@ -299,13 +283,7 @@ test("server-side login callback redirects from the container to the configured 
                 },
             },
         },
-    ])
-    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
-    const previousServerUrl = process.env.SERVER_URL
-    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
-    process.env.SERVER_URL = "https://code0.example"
-
-    try {
+    ], async (graphQLServer) => {
         const returnPath = "/de/checkout?plan=pro&deploymentType=self_hosted"
         const response = await completeCraterLogin(startedLoginCallback(`https://0.0.0.0:3000/api/crater/auth/callback?returnPath=${encodeURIComponent(returnPath)}&token=sagittarius-secret`))
 
@@ -329,17 +307,11 @@ test("server-side login callback redirects from the container to the configured 
         assert.deepEqual(graphQLServer.requests[0].body.variables, {
             input: { sagittariusToken: "sagittarius-secret" },
         })
-    } finally {
-        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
-        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
-        if (previousServerUrl === undefined) delete process.env.SERVER_URL
-        else process.env.SERVER_URL = previousServerUrl
-        await graphQLServer.close()
-    }
+    })
 })
 
 test("server-side login callback preserves the selected namespace for cloud checkout", async () => {
-    const graphQLServer = await createGraphQLTestServer([
+    await withGraphQLServer([
         {
             data: {
                 usersLogin: {
@@ -354,13 +326,7 @@ test("server-side login callback preserves the selected namespace for cloud chec
                 },
             },
         },
-    ])
-    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
-    const previousServerUrl = process.env.SERVER_URL
-    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
-    process.env.SERVER_URL = "https://code0.example"
-
-    try {
+    ], async (graphQLServer) => {
         const returnPath = "/de/checkout?plan=pro&deploymentType=cloud"
         const namespace = "gid://sagittarius/Namespace/9"
         const response = await completeCraterLogin(
@@ -374,15 +340,8 @@ test("server-side login callback preserves the selected namespace for cloud chec
         assert.equal(location.searchParams.get("namespace"), namespace)
         assert.equal(location.searchParams.get("token"), null)
         assert.equal(location.searchParams.get("authError"), null)
-    } finally {
-        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
-        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
-        if (previousServerUrl === undefined) delete process.env.SERVER_URL
-        else process.env.SERVER_URL = previousServerUrl
-        await graphQLServer.close()
-    }
+    })
 })
-
 
 test("server-side login callback logs why Crater rejected the login without leaking it to the user", async () => {
     const graphQLServer = await createGraphQLTestServer([
@@ -396,9 +355,7 @@ test("server-side login callback logs why Crater rejected the login without leak
         },
     ])
     const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
-    const previousServerUrl = process.env.SERVER_URL
     process.env.CRATER_GRAPHQL_URL = graphQLServer.url
-    process.env.SERVER_URL = "https://code0.example"
     const originalConsoleError = console.error
     const loggedArguments: unknown[][] = []
     console.error = (...args: unknown[]) => {
@@ -417,30 +374,19 @@ test("server-side login callback logs why Crater rejected the login without leak
         console.error = originalConsoleError
         if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
         else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
-        if (previousServerUrl === undefined) delete process.env.SERVER_URL
-        else process.env.SERVER_URL = previousServerUrl
         await graphQLServer.close()
     }
 })
 
-
 test("server-side login callback rejects external return paths and never forwards the token", async () => {
-    const previousServerUrl = process.env.SERVER_URL
-    process.env.SERVER_URL = "https://code0.example"
+    for (const returnPath of ["https://evil.example/collect", "//evil.example/de/checkout", "//0.0.0.0:3000/de/checkout", "/de/subscription"]) {
+        const response = await completeCraterLogin(
+            new Request(`https://0.0.0.0:3000/api/crater/auth/callback?returnPath=${encodeURIComponent(returnPath)}&token=sagittarius-secret`)
+        )
 
-    try {
-        for (const returnPath of ["https://evil.example/collect", "//evil.example/de/checkout", "//0.0.0.0:3000/de/checkout", "/de/subscription"]) {
-            const response = await completeCraterLogin(
-                new Request(`https://0.0.0.0:3000/api/crater/auth/callback?returnPath=${encodeURIComponent(returnPath)}&token=sagittarius-secret`)
-            )
-
-            assert.equal(response.status, 307)
-            assert.equal(response.headers.get("location"), "https://code0.example/?authError=session")
-            assert.doesNotMatch(response.headers.get("location") ?? "", /token=/)
-        }
-    } finally {
-        if (previousServerUrl === undefined) delete process.env.SERVER_URL
-        else process.env.SERVER_URL = previousServerUrl
+        assert.equal(response.status, 307)
+        assert.equal(response.headers.get("location"), "https://code0.example/?authError=session")
+        assert.doesNotMatch(response.headers.get("location") ?? "", /token=/)
     }
 })
 
@@ -465,13 +411,8 @@ test("server-side login callback reads the public origin at runtime and ignores 
     }
 })
 
-
 test("logout revokes the Crater session before clearing its persisted cookie", async () => {
-    const graphQLServer = await createGraphQLTestServer([{ data: { usersLogout: { errors: [] } } }])
-    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
-    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
-
-    try {
+    await withGraphQLServer([{ data: { usersLogout: { errors: [] } } }], async (graphQLServer) => {
         const response = await deleteSession(
             new Request("https://example.com/api/crater/auth/session", {
                 method: "DELETE",
@@ -486,16 +427,11 @@ test("logout revokes the Crater session before clearing its persisted cookie", a
         assert.equal(graphQLServer.requests[0].authorization, "Session c_ust_example")
         assert.deepEqual(graphQLServer.requests[0].body.variables, { input: {} })
         assert.match(graphQLServer.requests[0].body.query ?? "", /usersLogout/)
-    } finally {
-        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
-        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
-        await graphQLServer.close()
-    }
+    })
 })
 
-
 test("logout keeps the local session available for retry when Crater rejects revocation", async () => {
-    const graphQLServer = await createGraphQLTestServer([
+    await withGraphQLServer([
         {
             data: {
                 usersLogout: {
@@ -503,11 +439,7 @@ test("logout keeps the local session available for retry when Crater rejects rev
                 },
             },
         },
-    ])
-    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
-    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
-
-    try {
+    ], async (graphQLServer) => {
         const response = await deleteSession(
             new Request("https://example.com/api/crater/auth/session", {
                 method: "DELETE",
@@ -522,16 +454,11 @@ test("logout keeps the local session available for retry when Crater rejects rev
             details: ["Logout denied"],
         })
         assert.equal(response.headers.get("set-cookie"), null)
-    } finally {
-        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
-        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
-        await graphQLServer.close()
-    }
+    })
 })
 
-
-test("maps login, customer creation, and customer updates to Crater GraphQL inputs", async () => {
-    const graphQLServer = await createGraphQLTestServer([
+test("maps login and customer updates to Crater GraphQL inputs", async () => {
+    await withGraphQLServer([
         {
             data: {
                 usersLogin: {
@@ -542,19 +469,6 @@ test("maps login, customer creation, and customer updates to Crater GraphQL inpu
                         id: "gid://crater/UserSession/1",
                         token: "crater-session-token",
                         updatedAt: "2026-07-30T10:00:00Z",
-                    },
-                },
-            },
-        },
-        {
-            data: {
-                customersCreate: {
-                    errors: [],
-                    customer: {
-                        id: "gid://crater/Customer/7",
-                        customerType: "business",
-                        email: "billing@example.com",
-                        name: "Example GmbH",
                     },
                 },
             },
@@ -581,11 +495,7 @@ test("maps login, customer creation, and customer updates to Crater GraphQL inpu
                 },
             },
         },
-    ])
-    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
-    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
-
-    try {
+    ], async (graphQLServer) => {
         const loginResponse = await createSession(
             new Request("https://example.com/api/crater/login", {
                 method: "POST",
@@ -600,23 +510,6 @@ test("maps login, customer creation, and customer updates to Crater GraphQL inpu
         assert.deepEqual(await loginResponse.json(), { authenticated: true })
         assert.match(loginResponse.headers.get("set-cookie") ?? "", /crater_session=crater-session-token/)
         assert.match(loginResponse.headers.get("set-cookie") ?? "", /HttpOnly/i)
-
-        const createResponse = await createOrGetCustomer(
-            new Request("https://example.com/api/crater/customer", {
-                method: "POST",
-                headers: sessionHeaders,
-                body: JSON.stringify({
-                    customerType: "business",
-                    email: "billing@example.com",
-                    name: "Example GmbH",
-                    phone: "+49 123",
-                    address: FULL_ADDRESS,
-                    taxIdType: "eu_vat",
-                    taxIdValue: "DE123456789",
-                }),
-            })
-        )
-        assert.equal(createResponse.status, 201)
 
         const updateResponse = await updateCustomer(
             new Request("https://example.com/api/crater/customer", {
@@ -640,7 +533,7 @@ test("maps login, customer creation, and customer updates to Crater GraphQL inpu
         )
         assert.equal(updateResponse.status, 200)
 
-        assert.equal(graphQLServer.requests.length, 3)
+        assert.equal(graphQLServer.requests.length, 2)
         assert.equal(graphQLServer.requests[0].authorization, undefined)
         assert.equal(graphQLServer.requests[0].body.operationName, "UsersLogin")
         assert.deepEqual(graphQLServer.requests[0].body.variables, {
@@ -653,19 +546,6 @@ test("maps login, customer creation, and customer updates to Crater GraphQL inpu
 
         assert.equal(graphQLServer.requests[1].authorization, "Session c_ust_example")
         assert.deepEqual(graphQLServer.requests[1].body.variables, {
-            input: {
-                customerType: "BUSINESS",
-                email: "billing@example.com",
-                name: "Example GmbH",
-                phone: "+49 123",
-                address: FORWARDED_ADDRESS,
-                taxIdType: "eu_vat",
-                taxIdValue: "DE123456789",
-            },
-        })
-
-        assert.equal(graphQLServer.requests[2].authorization, "Session c_ust_example")
-        assert.deepEqual(graphQLServer.requests[2].body.variables, {
             input: {
                 id: "gid://crater/Customer/7",
                 email: "new@example.com",
@@ -681,20 +561,11 @@ test("maps login, customer creation, and customer updates to Crater GraphQL inpu
                 },
             },
         })
-    } finally {
-        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
-        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
-        await graphQLServer.close()
-    }
+    })
 })
 
-
 test("clears a Crater session that has no authenticated user", async () => {
-    const graphQLServer = await createGraphQLTestServer([{ data: { currentUser: null } }])
-    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
-    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
-
-    try {
+    await withGraphQLServer([{ data: { currentUser: null } }], async (graphQLServer) => {
         const response = await getSessionStatus(
             new Request("https://example.com/api/crater/auth/session", {
                 headers: { cookie: "crater_session=orphaned-token" },
@@ -704,13 +575,8 @@ test("clears a Crater session that has no authenticated user", async () => {
         assert.equal(response.status, 401)
         assert.match(response.headers.get("set-cookie") ?? "", /crater_session=;/)
         assert.match(response.headers.get("set-cookie") ?? "", /Max-Age=0/i)
-    } finally {
-        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
-        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
-        await graphQLServer.close()
-    }
+    })
 })
-
 
 test("clears a malformed Crater session cookie", async () => {
     const response = await getSessionStatus(
@@ -729,7 +595,6 @@ test("clears a malformed Crater session cookie", async () => {
         assert.match(cleared, /Max-Age=0/i)
     }
 })
-
 
 test("license dashboard requires a Crater session", async () => {
     const response = await getLicenseDashboard(new Request("https://example.com/api/crater/licenses"))

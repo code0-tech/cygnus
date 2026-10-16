@@ -1,7 +1,7 @@
 import assert from "node:assert/strict"
 import test from "node:test"
 import { GET } from "../../src/app/api/crater/licenses/access/route"
-import { createGraphQLTestServer } from "../helpers/graphqlTestServer"
+import { withGraphQLServer } from "../helpers/graphqlTestServer"
 
 const previousServerUrl = process.env.SERVER_URL
 test.before(() => {
@@ -47,21 +47,9 @@ function request(licenseId = snapshotId) {
         headers: { cookie: "crater_session=checkout-license-access" },
     })
 }
-async function withServer(responses: unknown[], run: (server: Awaited<ReturnType<typeof createGraphQLTestServer>>) => Promise<void>) {
-    const server = await createGraphQLTestServer(responses)
-    const previousUrl = process.env.CRATER_GRAPHQL_URL
-    process.env.CRATER_GRAPHQL_URL = server.url
-    try {
-        await run(server)
-    } finally {
-        if (previousUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
-        else process.env.CRATER_GRAPHQL_URL = previousUrl
-        await server.close()
-    }
-}
 
 test("opens the subscription detail belonging to the checkout snapshot", async () => {
-    await withServer([customers, subscriptionPage()], async (server) => {
+    await withGraphQLServer([customers, subscriptionPage()], async (server) => {
         const response = await GET(request())
         assert.equal(response.status, 307)
         assert.equal(response.headers.get("location"), "https://code0.example/de/licenses/customer/3/license/7")
@@ -75,7 +63,7 @@ test("resolves older snapshots after renewal across customer, subscription and s
     const otherCustomerPage = {
         data: { currentUser: { customers: { edges: [{ cursor: "customer-1", node: { id: "gid://crater/Customer/1" } }], pageInfo: { endCursor: "customer-1", hasNextPage: true } } } },
     }
-    await withServer(
+    await withGraphQLServer(
         [otherCustomerPage, customers, subscriptionPage("gid://crater/Subscription/6", [], null, "subscription-6"), subscriptionPage(subscriptionId, [], "snapshot-50"), subscriptionPage()],
         async (server) => {
             const response = await GET(request())
@@ -95,7 +83,7 @@ test("resolves older snapshots after renewal across customer, subscription and s
 })
 
 test("refuses snapshots outside the selected customer", async () => {
-    await withServer([customers, subscriptionPage(subscriptionId, [])], async () => {
+    await withGraphQLServer([customers, subscriptionPage(subscriptionId, [])], async () => {
         const response = await GET(request())
         assert.equal(response.status, 404)
         assert.equal(response.headers.get("location"), null)
@@ -103,7 +91,7 @@ test("refuses snapshots outside the selected customer", async () => {
 })
 
 test("stops repeated snapshot cursors instead of looping", async () => {
-    await withServer([customers, subscriptionPage(subscriptionId, [], "repeated"), subscriptionPage(subscriptionId, [], "repeated")], async (server) => {
+    await withGraphQLServer([customers, subscriptionPage(subscriptionId, [], "repeated"), subscriptionPage(subscriptionId, [], "repeated")], async (server) => {
         assert.equal((await GET(request())).status, 502)
         assert.equal(server.requests.length, 3)
     })
@@ -114,7 +102,7 @@ test("requires snapshot identifiers instead of interpreting their numbers as sub
 })
 
 test("clears an authenticated cookie when Crater no longer resolves its user", async () => {
-    await withServer([{ data: { currentUser: null } }], async () => {
+    await withGraphQLServer([{ data: { currentUser: null } }], async () => {
         const response = await GET(request())
         assert.equal(response.status, 401)
         assert.match(response.headers.get("set-cookie") ?? "", /crater_session=;/)

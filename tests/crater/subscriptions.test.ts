@@ -4,7 +4,7 @@ import { PATCH as updateSubscription } from "../../src/app/api/crater/subscripti
 import { POST as previewSubscriptionUpdate } from "../../src/app/api/crater/subscriptions/preview/route"
 import { POST as cancelSubscription } from "../../src/app/api/crater/subscriptions/cancel/route"
 import { POST as resumeSubscription } from "../../src/app/api/crater/subscriptions/resume/route"
-import { createGraphQLTestServer } from "../helpers/graphqlTestServer"
+import { withGraphQLServer } from "../helpers/graphqlTestServer"
 
 const sessionHeaders = {
     authorization: "Session c_ust_example",
@@ -12,69 +12,28 @@ const sessionHeaders = {
 }
 const subscriptionId = "gid://crater/Subscription/42"
 
-async function withGraphQLServer(responses: unknown[], run: (graphQLServer: Awaited<ReturnType<typeof createGraphQLTestServer>>) => Promise<void>) {
-    const graphQLServer = await createGraphQLTestServer(responses)
-    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
-    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
+test("subscription routes reject invalid requests before calling Crater", async () => {
+    const cases = [
+        { name: "update without session", handler: updateSubscription, method: "PATCH", headers: { "content-type": "application/json" }, body: { id: subscriptionId, plan: "max" }, status: 403 },
+        { name: "update without id", handler: updateSubscription, method: "PATCH", body: { plan: "max" }, status: 400, error: "A valid Crater subscription id is required." },
+        {
+            name: "update without changes",
+            handler: updateSubscription,
+            method: "PATCH",
+            body: { id: subscriptionId },
+            status: 400,
+            error: "At least one of plan, paymentPeriod, aiTokens, workflowExecutions, or paymentMethodId is required.",
+        },
+        { name: "update with unknown period", handler: updateSubscription, method: "PATCH", body: { id: subscriptionId, paymentPeriod: "biannual" }, status: 400, error: "paymentPeriod must be monthly, quarterly, or yearly." },
+        { name: "preview with invalid id", handler: previewSubscriptionUpdate, method: "POST", body: { id: "not-a-subscription-id", plan: "max" }, status: 400 },
+        { name: "resume without id", handler: resumeSubscription, method: "POST", body: {}, status: 400 },
+    ]
 
-    try {
-        await run(graphQLServer)
-    } finally {
-        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
-        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
-        await graphQLServer.close()
+    for (const { name, handler, method, headers = sessionHeaders, body, status, error } of cases) {
+        const response = await handler(new Request("https://example.com/api/crater/subscriptions", { method, headers, body: JSON.stringify(body) }))
+        assert.equal(response.status, status, name)
+        if (error) assert.deepEqual(await response.json(), { error }, name)
     }
-}
-
-test("subscription update requires a Crater session", async () => {
-    const response = await updateSubscription(
-        new Request("https://example.com/api/crater/subscriptions", {
-            method: "PATCH",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({ id: subscriptionId, plan: "max" }),
-        })
-    )
-
-    assert.equal(response.status, 403)
-})
-
-test("subscription update requires a valid subscription id", async () => {
-    const response = await updateSubscription(
-        new Request("https://example.com/api/crater/subscriptions", {
-            method: "PATCH",
-            headers: sessionHeaders,
-            body: JSON.stringify({ plan: "max" }),
-        })
-    )
-
-    assert.equal(response.status, 400)
-    assert.deepEqual(await response.json(), { error: "A valid Crater subscription id is required." })
-})
-
-test("subscription update requires at least one changed field", async () => {
-    const response = await updateSubscription(
-        new Request("https://example.com/api/crater/subscriptions", {
-            method: "PATCH",
-            headers: sessionHeaders,
-            body: JSON.stringify({ id: subscriptionId }),
-        })
-    )
-
-    assert.equal(response.status, 400)
-    assert.deepEqual(await response.json(), { error: "At least one of plan, paymentPeriod, aiTokens, workflowExecutions, or paymentMethodId is required." })
-})
-
-test("subscription update rejects an unknown payment period", async () => {
-    const response = await updateSubscription(
-        new Request("https://example.com/api/crater/subscriptions", {
-            method: "PATCH",
-            headers: sessionHeaders,
-            body: JSON.stringify({ id: subscriptionId, paymentPeriod: "biannual" }),
-        })
-    )
-
-    assert.equal(response.status, 400)
-    assert.deepEqual(await response.json(), { error: "paymentPeriod must be monthly, quarterly, or yearly." })
 })
 
 test("upgrades a subscription to a higher plan", async () => {
@@ -230,18 +189,6 @@ test("previews a subscription change without applying it", async () => {
     )
 })
 
-test("preview requires a valid subscription id", async () => {
-    const response = await previewSubscriptionUpdate(
-        new Request("https://example.com/api/crater/subscriptions/preview", {
-            method: "POST",
-            headers: sessionHeaders,
-            body: JSON.stringify({ id: "not-a-subscription-id", plan: "max" }),
-        })
-    )
-
-    assert.equal(response.status, 400)
-})
-
 test("cancels a subscription at the end of the current period by default", async () => {
     await withGraphQLServer(
         [{ data: { subscriptionsCancel: { errors: [], subscription: { cancelAt: "2026-09-01T00:00:00Z", canceledAt: "2026-08-17T10:00:00Z", id: subscriptionId, status: "ACTIVE" } } } }],
@@ -300,18 +247,6 @@ test("resumes a cancelled subscription", async () => {
         const body = (await response.json()) as { cancelAt: null }
         assert.equal(body.cancelAt, null)
     })
-})
-
-test("resume requires a valid subscription id", async () => {
-    const response = await resumeSubscription(
-        new Request("https://example.com/api/crater/subscriptions/resume", {
-            method: "POST",
-            headers: sessionHeaders,
-            body: JSON.stringify({}),
-        })
-    )
-
-    assert.equal(response.status, 400)
 })
 
 test("subscription changes reject unknown plans before calling Crater", async () => {

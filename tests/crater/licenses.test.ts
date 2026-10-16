@@ -1,23 +1,9 @@
-import { readGuestCheckoutSession } from "../../src/lib/checkout/guestCheckoutSession"
 import assert from "node:assert/strict"
 import test from "node:test"
 import { registerHooks } from "node:module"
-import { GET as listCustomers, PATCH as updateCustomer, POST as createOrGetCustomer } from "../../src/app/api/crater/customer/route"
-import { POST as createCustomerPaymentMethodSetup } from "../../src/app/api/crater/customer/payment-method-setup/route"
-import { GET as getCustomerPaymentMethods } from "../../src/app/api/crater/customer/payment-methods/route"
-import { POST as createCheckoutSession } from "../../src/app/api/crater/checkout/session/route"
-import { POST as createGuestUser } from "../../src/app/api/crater/guest/route"
-import { POST as createSession } from "../../src/app/api/crater/login/route"
-import { DELETE as deleteSession, GET as getSessionStatus } from "../../src/app/api/crater/auth/session/route"
-import { GET as completeCraterLogin } from "../../src/app/api/crater/auth/callback/route"
 import { GET as getLicenseDashboard } from "../../src/app/api/crater/licenses/route"
 import { GET as selectLicenseNamespace } from "../../src/app/api/crater/licenses/namespace/callback/route"
-import { GET as getCheckoutLicenseStatus } from "../../src/app/api/crater/checkout/status/route"
-import { createGraphQLTestServer } from "../helpers/graphqlTestServer"
-
-// CustomerAddressCreateInput declares all six fields non-null; the optional line2 and state are forwarded as empty strings.
-const FULL_ADDRESS = { city: "Berlin", country: "DE", line1: "HauptstraÃŸe 1", postalCode: "10115" }
-const FORWARDED_ADDRESS = { ...FULL_ADDRESS, line2: "", state: "" }
+import { withGraphQLServer } from "../helpers/graphqlTestServer"
 
 const sessionHeaders = {
     authorization: "Session c_ust_example",
@@ -45,7 +31,6 @@ const serverOnlyHook = registerHooks({
 const { GET: accessLicenseDashboard } = await import("../../src/app/api/crater/licenses/access/route")
 serverOnlyHook.deregister()
 
-
 const LOGIN_STATE = "s".repeat(43)
 
 // Callbacks only accept a login whose state matches the cookie set by /api/crater/auth/start.
@@ -67,7 +52,6 @@ test("license dashboard access redirects without exposing the persisted session"
     assert.equal(response.headers.get("cache-control"), "no-store")
 })
 
-
 test("license dashboard access restores the requested license detail path", async () => {
     const returnPath = "/en/licenses/customer/35/license/3"
     const response = await accessLicenseDashboard(
@@ -79,7 +63,6 @@ test("license dashboard access restores the requested license detail path", asyn
     assert.equal(response.status, 307)
     assert.equal(response.headers.get("location"), `https://code0.example${returnPath}`)
 })
-
 
 test("license dashboard access rejects return paths outside the localized dashboard", async () => {
     for (const returnPath of ["https://evil.example/phishing", "//evil.example/en/licenses", "//0.0.0.0:3000/en/licenses", "/en/checkout"]) {
@@ -93,7 +76,6 @@ test("license dashboard access rejects return paths outside the localized dashbo
         assert.equal(response.headers.get("location"), "https://code0.example/en/licenses")
     }
 })
-
 
 test("license dashboard access removes token parameters from its return path", async () => {
     const returnPath = "/en/licenses?token=must-not-survive&view=all"
@@ -122,32 +104,8 @@ test("license access without a session starts the Sculptor login and returns to 
     )
 })
 
-test("license access opens a purchased snapshot on the public origin after resolving its subscription", async () => {
-    const graphQLServer = await createGraphQLTestServer([
-        { data: { currentUser: { customers: { edges: [{ cursor: "customer-3", node: { id: "gid://crater/Customer/3" } }], pageInfo: { hasNextPage: false, endCursor: null } } } } },
-        { data: { currentUser: { customers: { nodes: [{ id: "gid://crater/Customer/3", subscriptions: { nodes: [{ id: "gid://crater/Subscription/9", currentLicense: { id: "gid://crater/License/7" } }], pageInfo: { hasNextPage: false, endCursor: null } } }] } } } },
-    ])
-    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
-    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
-
-    try {
-        const query = new URLSearchParams({ locale: "en", customerId: "gid://crater/Customer/3", licenseId: "gid://crater/License/7" })
-        const response = await accessLicenseDashboard(
-            new Request(`https://0.0.0.0:3000/api/crater/licenses/access?${query}`, { headers: { cookie: "crater_session=persisted-token" } })
-        )
-        assert.equal(response.status, 307)
-        assert.equal(response.headers.get("location"), "https://code0.example/en/licenses/customer/3/license/9")
-        assert.equal(graphQLServer.requests.length, 2)
-    } finally {
-        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
-        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
-        await graphQLServer.close()
-    }
-})
-
-
 test("license dashboard loads from the HttpOnly Crater session cookie", async () => {
-    const graphQLServer = await createGraphQLTestServer([
+    await withGraphQLServer([
         {
             data: {
                 currentUser: {
@@ -245,11 +203,7 @@ test("license dashboard loads from the HttpOnly Crater session cookie", async ()
                 },
             },
         },
-    ])
-    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
-    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
-
-    try {
+    ], async (graphQLServer) => {
         const response = await getLicenseDashboard(
             new Request("https://example.com/api/crater/licenses", {
                 headers: { cookie: "crater_session=persisted-token" },
@@ -354,16 +308,11 @@ test("license dashboard loads from the HttpOnly Crater session cookie", async ()
             ],
             pagination: { customers: { endCursor: null, hasNextPage: false } },
         })
-    } finally {
-        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
-        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
-        await graphQLServer.close()
-    }
+    })
 })
 
-
 test("license dashboard navigation includes licenses beyond a customer's first Crater page", async () => {
-    const graphQLServer = await createGraphQLTestServer([
+    await withGraphQLServer([
         {
             data: {
                 currentUser: {
@@ -439,11 +388,7 @@ test("license dashboard navigation includes licenses beyond a customer's first C
                 },
             },
         },
-    ])
-    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
-    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
-
-    try {
+    ], async (graphQLServer) => {
         const response = await getLicenseDashboard(new Request("https://example.com/api/crater/licenses", { headers: sessionHeaders }))
         const body = await response.json()
 
@@ -456,16 +401,11 @@ test("license dashboard navigation includes licenses beyond a customer's first C
             body.navigationLicenses.map((license: { id: string }) => license.id),
             ["gid://crater/Subscription/26", "gid://crater/Subscription/25"]
         )
-    } finally {
-        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
-        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
-        await graphQLServer.close()
-    }
+    })
 })
 
-
 test("license detail loads lightweight navigation and forwards the invoice cursor", async () => {
-    const graphQLServer = await createGraphQLTestServer([
+    await withGraphQLServer([
         {
             data: {
                 currentUser: {
@@ -560,11 +500,7 @@ test("license detail loads lightweight navigation and forwards the invoice curso
                 },
             },
         },
-    ])
-    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
-    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
-
-    try {
+    ], async (graphQLServer) => {
         const response = await getLicenseDashboard(
             new Request("https://example.com/api/crater/licenses?view=license&customerId=gid%3A%2F%2Fcrater%2FCustomer%2F8&licenseId=gid%3A%2F%2Fcrater%2FSubscription%2F9&invoiceAfter=invoice-25", {
                 headers: sessionHeaders,
@@ -605,16 +541,11 @@ test("license detail loads lightweight navigation and forwards the invoice curso
             ["gid://crater/Subscription/9", "gid://crater/Subscription/8", "gid://crater/Subscription/7"]
         )
         assert.doesNotMatch(graphQLServer.requests[0].body.query ?? "", /aiTokens/)
-    } finally {
-        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
-        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
-        await graphQLServer.close()
-    }
+    })
 })
 
-
 test("paginates licenses on a customer detail page", async () => {
-    const graphQLServer = await createGraphQLTestServer([
+    await withGraphQLServer([
         {
             data: {
                 currentUser: {
@@ -634,11 +565,7 @@ test("paginates licenses on a customer detail page", async () => {
                 },
             },
         },
-    ])
-    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
-    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
-
-    try {
+    ], async (graphQLServer) => {
         const response = await getLicenseDashboard(
             new Request("https://example.com/api/crater/licenses?view=customer&customerId=gid%3A%2F%2Fcrater%2FCustomer%2F1&licenseAfter=license-25&includeNavigation=false", {
                 headers: sessionHeaders,
@@ -655,16 +582,11 @@ test("paginates licenses on a customer detail page", async () => {
             body.licenses.map((license: { id: string }) => license.id),
             ["gid://crater/Subscription/26"]
         )
-    } finally {
-        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
-        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
-        await graphQLServer.close()
-    }
+    })
 })
 
-
 test("finds a license customer beyond the first Crater cursor page", async () => {
-    const graphQLServer = await createGraphQLTestServer([
+    await withGraphQLServer([
         {
             data: {
                 currentUser: {
@@ -700,11 +622,7 @@ test("finds a license customer beyond the first Crater cursor page", async () =>
                 },
             },
         },
-    ])
-    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
-    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
-
-    try {
+    ], async (graphQLServer) => {
         const response = await getLicenseDashboard(new Request("https://example.com/api/crater/licenses?view=customer&customerId=gid%3A%2F%2Fcrater%2FCustomer%2F26", { headers: sessionHeaders }))
 
         assert.equal(response.status, 200)
@@ -718,16 +636,11 @@ test("finds a license customer beyond the first Crater cursor page", async () =>
             navigationLicenses: [],
             pagination: { licenses: { contextCursor: "customer-25", endCursor: null, hasNextPage: false, totalCount: 0 } },
         })
-    } finally {
-        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
-        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
-        await graphQLServer.close()
-    }
+    })
 })
 
-
 test("links a cloud license through the authenticated namespace selection callback", async () => {
-    const graphQLServer = await createGraphQLTestServer([
+    await withGraphQLServer([
         {
             data: {
                 usersLogin: {
@@ -752,11 +665,7 @@ test("links a cloud license through the authenticated namespace selection callba
                 },
             },
         },
-    ])
-    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
-    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
-
-    try {
+    ], async (graphQLServer) => {
         const returnPath = "/en/licenses/customer/3/license/9/edit"
         const response = await selectLicenseNamespace(
             startedLoginCallback(
@@ -775,13 +684,8 @@ test("links a cloud license through the authenticated namespace selection callba
         assert.deepEqual(graphQLServer.requests[1].body.variables, {
             input: { id: "gid://crater/Subscription/9", namespaceId: "gid://sagittarius/Namespace/9" },
         })
-    } finally {
-        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
-        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
-        await graphQLServer.close()
-    }
+    })
 })
-
 
 test("license namespace callback requires a namespace selected by Sagittarius", async () => {
     const returnPath = "/de/licenses/customer/3/license/9/edit"
@@ -790,7 +694,6 @@ test("license namespace callback requires a namespace selected by Sagittarius", 
     assert.equal(response.status, 307)
     assert.equal(response.headers.get("location"), `https://code0.example${returnPath}?namespaceError=selection`)
 })
-
 
 test("license namespace callback rejects return paths that are not exact license routes", async () => {
     for (const returnPath of ["https://evil.example/collect", "//evil.example/en/licenses/customer/3/license/9", "//0.0.0.0:3000/en/licenses/customer/3/license/9", "/en/licenses"]) {
