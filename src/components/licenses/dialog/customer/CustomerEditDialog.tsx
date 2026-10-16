@@ -13,7 +13,7 @@ import type { AppLocale } from "@/lib/i18n"
 import { type CustomerEditSection, getCustomerEditSectionLabels } from "@/lib/licenses/editSections"
 import { removeLicenseCustomerPaymentMethod, updateLicenseCustomer } from "@/lib/licenses/client"
 import { createLicenseCustomerPath, resolveCustomerRouteId } from "@/lib/licenses/routes"
-import { Button, EmailInput, Spacing, TabContent, TabList, TabTrigger, Text, TextInput, useForm } from "@code0-tech/pictor"
+import { Button, EmailInput, Spacing, Text, TextInput, useForm } from "@code0-tech/pictor"
 import { IconCreditCard, IconMail, IconPhone, IconTrash, IconUser } from "@tabler/icons-react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { Fragment, type ReactNode, useMemo, useState } from "react"
@@ -226,119 +226,106 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
         })
 
     const sectionIcons = { general: IconUser, paymentMethods: IconCreditCard } satisfies Record<CustomerEditSection, typeof IconUser>
-    const sidebar = (
-        <TabList aria-label={content.editor.customerTitle}>
-            {(["general", "paymentMethods"] as const).map((value) => {
-                const TabIcon = sectionIcons[value]
+    const tabContent: Record<CustomerEditSection, ReactNode> = {
+        general: (
+            <>
+        <LicenseTabHeader
+            title={sectionLabels.general}
+            description={content.editor.customerDescription}
+            action={
+                <LicenseTabSaveButton form="customer-details-form" type="submit" disabled={!customer || isSaving}>
+                    {isSaving ? <ButtonLoader label={content.editor.saveLabel} /> : content.editor.saveLabel}
+                </LicenseTabSaveButton>
+            }
+        />
+        {error ? <LicenseTabAlert>{error}</LicenseTabAlert> : null}
+        <form id="customer-details-form" noValidate onSubmit={(event) => { event.preventDefault(); validate() }}>
+            <Spacing spacing="xl" />
+            <Text size="md" hierarchy="secondary">
+                {content.editor.contactHeading}
+            </Text>
+            <Spacing spacing="md" />
+            {renderFields(contactFields)}
+            <Spacing spacing="xl" />
+            <Text size="md" hierarchy="secondary">
+                {checkoutForm.billingHeading}
+            </Text>
+            <Spacing spacing="md" />
+            {renderFields(billingFields)}
+        </form>
+            </>
+        ),
+        paymentMethods: (
+            <>
+        <LicenseTabHeader
+            title={sectionLabels.paymentMethods}
+            description={content.editor.paymentMethodDescription}
+            action={
+                customer ? (
+                    <PaymentMethodSetupDialog
+                        content={content}
+                        errors={errors}
+                        onSuccess={paymentMethodAdded}
+                        owner={{ customerId: customer.id }}
+                        returnPath={`${createLicenseCustomerPath(locale, customer.id)}/edit`}
+                        triggerLabel={content.editor.addPaymentMethodLabel}
+                    />
+                ) : null
+            }
+        />
+        {removePaymentMethodError ? <LicenseTabAlert>{removePaymentMethodError}</LicenseTabAlert> : null}
 
-                return (
-                    <TabTrigger key={value} value={value} w="100%" asChild>
-                        <Button type="button" paddingSize="xxs" variant="none" justify="start" className="rounded-2xl! h-8!">
-                            <TabIcon aria-hidden="true" size={13} />
-                            <Text className="truncate" size="md">
-                                {sectionLabels[value]}
-                            </Text>
+        <LicenseTabSection>
+            {isLoadingPaymentMethods ? (
+                <>
+                    <CustomerPaymentMethodCardSkeleton label={content.editor.loadingPaymentMethodLabel} />
+                    <CustomerPaymentMethodCardSkeleton />
+                </>
+            ) : paymentMethodsError ? (
+                <LicenseTabRow
+                    description={<span className="text-error">{errors.paymentMethodLoad}</span>}
+                    action={
+                        <Button type="button" variant="normal" paddingSize="xxs" onClick={refreshPaymentMethods}>
+                            {errors.retry}
                         </Button>
-                    </TabTrigger>
-                )
-            })}
-        </TabList>
-    )
+                    }
+                />
+            ) : paymentMethods && paymentMethods.length > 0 ? (
+                paymentMethods.map((method) => (
+                    <CustomerPaymentMethodCard
+                        key={method.id}
+                        method={method}
+                        action={
+                            <Button
+                                type="button"
+                                variant="none"
+                                paddingSize="xxs"
+                                disabled={removingPaymentMethodId === method.id}
+                                onClick={() => void removePaymentMethod(method.id)}
+                                aria-label={content.editor.removePaymentMethodLabel}
+                            >
+                                {removingPaymentMethodId === method.id ? <ButtonLoader label={content.editor.removingPaymentMethodLabel} /> : <IconTrash aria-hidden="true" size={16} />}
+                            </Button>
+                        }
+                    />
+                ))
+            ) : (
+                <LicenseTabRow description={content.editor.noPaymentMethodsLabel} />
+            )}
+        </LicenseTabSection>
+            </>
+        ),
+    }
 
     return (
         <LicenseDialog
-            backLabel={content.editor.closeLabel}
+            closeLabel={content.editor.closeLabel}
             description={section === "general" ? content.editor.customerDescription : content.editor.paymentMethodDescription}
             onClose={close}
             onValueChange={(value) => (value === "general" || value === "paymentMethods") && setSection(value)}
-            sidebar={sidebar}
+            tabs={(["general", "paymentMethods"] as const).map((value) => ({ value, label: sectionLabels[value], icon: sectionIcons[value], content: tabContent[value] }))}
             title={content.editor.customerTitle}
             value={section}
-        >
-            <TabContent value="general">
-                <LicenseTabHeader
-                    title={sectionLabels.general}
-                    description={content.editor.customerDescription}
-                    action={
-                        <LicenseTabSaveButton form="customer-details-form" type="submit" disabled={!customer || isSaving}>
-                            {isSaving ? <ButtonLoader label={content.editor.saveLabel} /> : content.editor.saveLabel}
-                        </LicenseTabSaveButton>
-                    }
-                />
-                {error ? <LicenseTabAlert>{error}</LicenseTabAlert> : null}
-                <form id="customer-details-form" noValidate onSubmit={(event) => { event.preventDefault(); validate() }}>
-                    <Spacing spacing="xl" />
-                    <Text size="md" hierarchy="secondary">
-                        {content.editor.contactHeading}
-                    </Text>
-                    <Spacing spacing="md" />
-                    {renderFields(contactFields)}
-                    <Spacing spacing="xl" />
-                    <Text size="md" hierarchy="secondary">
-                        {checkoutForm.billingHeading}
-                    </Text>
-                    <Spacing spacing="md" />
-                    {renderFields(billingFields)}
-                </form>
-            </TabContent>
-            <TabContent value="paymentMethods">
-                <LicenseTabHeader
-                    title={sectionLabels.paymentMethods}
-                    description={content.editor.paymentMethodDescription}
-                    action={
-                        customer ? (
-                            <PaymentMethodSetupDialog
-                                content={content}
-                                errors={errors}
-                                onSuccess={paymentMethodAdded}
-                                owner={{ customerId: customer.id }}
-                                returnPath={`${createLicenseCustomerPath(locale, customer.id)}/edit`}
-                                triggerLabel={content.editor.addPaymentMethodLabel}
-                            />
-                        ) : null
-                    }
-                />
-                {removePaymentMethodError ? <LicenseTabAlert>{removePaymentMethodError}</LicenseTabAlert> : null}
-
-                <LicenseTabSection>
-                    {isLoadingPaymentMethods ? (
-                        <>
-                            <CustomerPaymentMethodCardSkeleton label={content.editor.loadingPaymentMethodLabel} />
-                            <CustomerPaymentMethodCardSkeleton />
-                        </>
-                    ) : paymentMethodsError ? (
-                        <LicenseTabRow
-                            description={<span className="text-error">{errors.paymentMethodLoad}</span>}
-                            action={
-                                <Button type="button" variant="normal" paddingSize="xxs" onClick={refreshPaymentMethods}>
-                                    {errors.retry}
-                                </Button>
-                            }
-                        />
-                    ) : paymentMethods && paymentMethods.length > 0 ? (
-                        paymentMethods.map((method) => (
-                            <CustomerPaymentMethodCard
-                                key={method.id}
-                                method={method}
-                                action={
-                                    <Button
-                                        type="button"
-                                        variant="none"
-                                        paddingSize="xxs"
-                                        disabled={removingPaymentMethodId === method.id}
-                                        onClick={() => void removePaymentMethod(method.id)}
-                                        aria-label={content.editor.removePaymentMethodLabel}
-                                    >
-                                        {removingPaymentMethodId === method.id ? <ButtonLoader label={content.editor.removingPaymentMethodLabel} /> : <IconTrash aria-hidden="true" size={16} />}
-                                    </Button>
-                                }
-                            />
-                        ))
-                    ) : (
-                        <LicenseTabRow description={content.editor.noPaymentMethodsLabel} />
-                    )}
-                </LicenseTabSection>
-            </TabContent>
-        </LicenseDialog>
+        />
     )
 }

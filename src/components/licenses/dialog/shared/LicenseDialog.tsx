@@ -14,76 +14,105 @@ import {
     ScrollAreaScrollbar,
     ScrollAreaThumb,
     ScrollAreaViewport,
-    Spacing,
+    SegmentedControl,
+    SegmentedControlItem,
+    Tab,
+    TabContent,
     Text,
+    Tooltip,
+    TooltipContent,
+    TooltipPortal,
+    TooltipTrigger,
 } from "@code0-tech/pictor"
-import { Layout } from "@code0-tech/pictor/dist/components/layout/Layout"
-import { Tab } from "@code0-tech/pictor/dist/components/tab/Tab"
-import { IconArrowLeft } from "@tabler/icons-react"
-import type { ReactNode } from "react"
+import { IconX } from "@tabler/icons-react"
+import type { ComponentType, CSSProperties, ReactNode } from "react"
+
+export interface LicenseDialogTab {
+    value: string
+    label: string
+    icon: ComponentType<{ "aria-hidden"?: boolean; size?: number; style?: CSSProperties }>
+    content: ReactNode
+}
 
 interface LicenseDialogProps {
-    backLabel: string
-    children: ReactNode
+    closeLabel: string
     description?: string
     onClose: () => void
     onValueChange?: (value: string) => void
     open?: boolean
-    sidebar?: ReactNode
+    tabs: (LicenseDialogTab | false | null | undefined)[]
     title: string
     value?: string
 }
 
-export function LicenseDialog({ backLabel, children, description, onClose, onValueChange, open = true, sidebar, title, value }: LicenseDialogProps) {
+export function LicenseDialog({ closeLabel, description, onClose, onValueChange, open = true, tabs, title, value }: LicenseDialogProps) {
+    const visibleTabs = tabs.filter((tab): tab is LicenseDialogTab => Boolean(tab))
+    const activeTab = value ?? visibleTabs[0]?.value
+    const showTabs = visibleTabs.length > 1
+
     return (
         <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && onClose()}>
             <DialogPortal>
                 <DialogOverlay className="backdrop-blur-sm" />
-                <DialogContent showCloseButton={false} className="h-[calc(100dvh-1rem)]! w-[calc(100vw-1rem)]! max-w-none! overflow-hidden! border border-white/5 p-0.5! sm:h-[75dvh]! sm:w-[75vw]!">
+                <DialogContent
+                    autoFocus
+                    showCloseButton={false}
+                    className="h-[calc(100dvh-1rem)]! w-[calc(100vw-1rem)]! max-w-none! overflow-visible! border border-white/5 p-0.5! sm:h-[75dvh]! sm:w-[75vw]! sm:max-w-[1000px]!"
+                >
                     <DialogTitle className="sr-only">{title}</DialogTitle>
                     {description ? <DialogDescription className="sr-only">{description}</DialogDescription> : null}
 
-                    <Tab orientation="vertical" value={value} defaultValue={value === undefined ? "general" : undefined} onValueChange={onValueChange} className="h-full! w-full!">
-                        <Layout
-                            layoutGap={0}
-                            showLayoutSplitter={false}
-                            className="h-full! w-full! [&_.d-layout__inner]:h-full [&_.d-layout__middle]:h-full [&_.d-layout__middle]:min-h-0 [&_.d-layout__middle]:flex-col sm:[&_.d-layout__middle]:flex-row [&_.d-layout__content]:min-h-0 [&_.d-layout__content]:min-w-0 [&_.d-layout__content]:flex-1"
-                            leftContent={
-                                <div className="flex h-auto w-full flex-col p-4 sm:h-full sm:w-[clamp(12rem,20vw,18.75rem)] sm:p-8 lg:p-10">
-                                    <Text fz={2.25} hierarchy="primary" className="leading-none! text-3xl!">
-                                        {title}
-                                    </Text>
-                                    {description ? (
-                                        <Text maw="250px" hierarchy="tertiary" className="mt-2 leading-snug! wrap-break-word">
-                                            {description}
-                                        </Text>
-                                    ) : null}
-                                    {sidebar ? (
-                                        <>
-                                            <Spacing spacing="xl" />
-                                            {sidebar}
-                                        </>
-                                    ) : null}
-                                    <DialogClose asChild>
-                                        <Button type="button" paddingSize="xxs" w="100%" variant="none" justify="start" className="rounded-2xl! h-8! mt-4! sm:mt-auto!">
-                                            <IconArrowLeft aria-hidden="true" size={16} />
-                                            <Text size="md">{backLabel}</Text>
-                                        </Button>
-                                    </DialogClose>
-                                </div>
-                            }
-                        >
-                            <Card color="primary" p="0" paddingSize="md" h="100%" w="100%" className="min-w-0 overflow-hidden!">
-                                <ScrollArea h="100%" type="scroll">
-                                    <ScrollAreaViewport className="h-full! w-full!">
-                                        <div className="mx-auto w-full max-w-4xl px-4 py-10 sm:w-3/4 sm:px-4 sm:py-16">{children}</div>
-                                    </ScrollAreaViewport>
-                                    <ScrollAreaScrollbar orientation="vertical" className="w-1.5!">
-                                        <ScrollAreaThumb className="bg-white/15! hover:bg-white/25!" />
-                                    </ScrollAreaScrollbar>
-                                </ScrollArea>
-                            </Card>
-                        </Layout>
+                    <Tab orientation="vertical" value={activeTab} onValueChange={onValueChange} className="relative flex! h-full! w-full! flex-col!">
+                        <div className="flex items-center justify-between gap-2 p-2 sm:absolute sm:top-1/2 sm:left-0 sm:max-w-[300px] sm:-translate-x-full sm:-translate-y-1/2 sm:flex-col sm:items-end sm:p-10">
+                            {showTabs ? (
+                                <SegmentedControl
+                                    type="single"
+                                    color="secondary"
+                                    aria-label={title}
+                                    className="sm:flex-col!"
+                                    value={activeTab}
+                                    onValueChange={(nextValue) => nextValue && onValueChange?.(nextValue)}
+                                >
+                                    {visibleTabs.map((tab) => (
+                                        <Tooltip key={tab.value}>
+                                            <TooltipTrigger asChild>
+                                                <SegmentedControlItem value={tab.value} aria-label={tab.label}>
+                                                    <tab.icon aria-hidden style={{ minWidth: "16px", minHeight: "16px" }} size={16} />
+                                                </SegmentedControlItem>
+                                            </TooltipTrigger>
+                                            <TooltipPortal>
+                                                <TooltipContent side="left" sideOffset={8} color="secondary">
+                                                    <Text size="sm">{tab.label}</Text>
+                                                </TooltipContent>
+                                            </TooltipPortal>
+                                        </Tooltip>
+                                    ))}
+                                </SegmentedControl>
+                            ) : (
+                                <span />
+                            )}
+                            <DialogClose asChild>
+                                <Button type="button" paddingSize="xxs" variant="none" aria-label={closeLabel} className="sm:hidden!">
+                                    <IconX aria-hidden="true" size={16} />
+                                </Button>
+                            </DialogClose>
+                        </div>
+                        <Card color="primary" p="0" paddingSize="md" h="100%" w="100%" className="min-h-0 min-w-0 flex-1 overflow-hidden!">
+                            <ScrollArea h="100%" type="scroll">
+                                <ScrollAreaViewport className="h-full! w-full!">
+                                    <div className="mx-auto w-full max-w-4xl px-4 py-10 sm:w-3/4 sm:px-4 sm:py-16">
+                                        {visibleTabs.map((tab) => (
+                                            <TabContent key={tab.value} tabIndex={-1} value={tab.value} className="overflow-hidden">
+                                                {tab.content}
+                                            </TabContent>
+                                        ))}
+                                    </div>
+                                </ScrollAreaViewport>
+                                <ScrollAreaScrollbar orientation="vertical" className="w-1.5!">
+                                    <ScrollAreaThumb className="bg-white/15! hover:bg-white/25!" />
+                                </ScrollAreaScrollbar>
+                            </ScrollArea>
+                        </Card>
                     </Tab>
                 </DialogContent>
             </DialogPortal>
