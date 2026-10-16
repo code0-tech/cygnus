@@ -108,6 +108,12 @@ export function getSubscriptionQuoteDiscountRate(selection: SubscriptionSelectio
     return quote.subtotal > 0 ? quote.periodDiscount / quote.subtotal : 0
 }
 
+export function getSubscriptionMonthlySavings(selection: SubscriptionSelection, config: SubscriptionCatalog) {
+    const monthlyQuote = calculateSubscriptionQuote({ ...selection, paymentPeriod: "monthly" }, config)
+    const quote = calculateSubscriptionQuote(selection, config)
+    return Math.max(0, monthlyQuote.total - getMonthlyEquivalentAmount(quote.total, selection.paymentPeriod))
+}
+
 function parseNumber(value: string | null, fallback: number) {
     if (value === null || value.trim() === "") return fallback
 

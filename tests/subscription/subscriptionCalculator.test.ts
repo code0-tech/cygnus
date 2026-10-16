@@ -8,6 +8,7 @@ import {
     getPaymentPeriodMonths,
     getPaymentPeriodSuffix,
     getSubscriptionDisplayPrices,
+    getSubscriptionMonthlySavings,
     resolveCheckoutPricing,
 } from "@/lib/subscription/calculator"
 import { SUBSCRIPTION_PRICE_LOOKUP_KEYS, type SubscriptionPriceCatalog, type SubscriptionPriceLookupKey } from "@/lib/subscription/prices"
@@ -49,6 +50,29 @@ function createSubscriptionPrices(overrides: Partial<Record<SubscriptionPriceLoo
 }
 
 const subscriptionPrices = createSubscriptionPrices()
+
+test("monthly savings compare equivalent months and never advertise a negative saving", () => {
+    const catalog = { subscriptionPrices } as Parameters<typeof calculateSubscriptionQuote>[1]
+    const selection = { deployment: "self_hosted", customerType: "b2b", plan: "pro", aiTokens: 0, workflowExecutions: 0 } as const
+    assert.equal(getSubscriptionMonthlySavings({ ...selection, paymentPeriod: "monthly" }, catalog), 0)
+    assert.equal(getSubscriptionMonthlySavings({ ...selection, paymentPeriod: "quarterly" }, catalog), 150)
+    assert.equal(getSubscriptionMonthlySavings({ ...selection, paymentPeriod: "yearly" }, catalog), 250)
+    const prices = createSubscriptionPrices({ pro_selfhosted_business_yearly: "18001" })
+    assert.equal(getSubscriptionMonthlySavings({ ...selection, paymentPeriod: "yearly" }, { subscriptionPrices: prices } as typeof catalog), 0)
+})
+
+test("custom monthly savings use both selected quantities and round the monthly price to cents", () => {
+    const prices = createSubscriptionPrices({
+        custom_ai_tokens_cloud_personal_monthly: "0.001",
+        custom_workflow_executions_cloud_personal_monthly: "1",
+        custom_ai_tokens_cloud_personal_quarterly: "0.002",
+        custom_workflow_executions_cloud_personal_quarterly: "2",
+    })
+    const catalog = { subscriptionPrices: prices } as Parameters<typeof calculateSubscriptionQuote>[1]
+    const selection = { deployment: "cloud", customerType: "b2c", plan: "custom", paymentPeriod: "quarterly", aiTokens: 1000, workflowExecutions: 100 } as const
+    assert.equal(getSubscriptionMonthlySavings(selection, catalog), 34)
+    assert.equal(getSubscriptionMonthlySavings({ ...selection, workflowExecutions: 200 }, catalog), 67)
+})
 
 test("selects deployment, customer and period prices for standard and custom plans", () => {
     const prices = createSubscriptionPrices()
@@ -106,6 +130,7 @@ const paymentPeriod = {
     monthlyDiscount: 0.05,
     monthlyPeriodSuffix: "per month",
     monthlyText: "Monthly",
+    savingsLabel: "Save",
     quarterlyColor: "aqua",
     quarterlyDiscount: 0.1,
     quarterlyPaidLabel: "paid quarterly",
