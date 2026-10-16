@@ -159,6 +159,7 @@ export interface User {
   resetPasswordExpiration?: string | null;
   salt?: string | null;
   hash?: string | null;
+  resetPasswordRequestedAt?: string | null;
   loginAttempts?: number | null;
   lockUntil?: string | null;
   sessions?:
@@ -396,6 +397,8 @@ export interface Page {
                   | 'razor'
                   | 'asm'
                   | 'astro'
+                  | 'ahk'
+                  | 'ahk2'
                   | 'awk'
                   | 'ballerina'
                   | 'bat'
@@ -411,6 +414,7 @@ export interface Page {
                   | 'c3'
                   | 'cadence'
                   | 'cairo'
+                  | 'chapel'
                   | 'clarity'
                   | 'clojure'
                   | 'soy'
@@ -420,7 +424,6 @@ export interface Page {
                   | 'codeql'
                   | 'coffee'
                   | 'common-lisp'
-                  | 'coq'
                   | 'crystal'
                   | 'css'
                   | 'csv'
@@ -459,6 +462,7 @@ export interface Page {
                   | 'glimmer-ts'
                   | 'glsl'
                   | 'gn'
+                  | 'smalltalk'
                   | 'gnuplot'
                   | 'go'
                   | 'graphql'
@@ -520,12 +524,14 @@ export interface Page {
                   | 'nginx'
                   | 'nim'
                   | 'nix'
+                  | 'nsis'
                   | 'nushell'
                   | 'objective-c'
                   | 'objective-cpp'
                   | 'ocaml'
                   | 'odin'
                   | 'openscad'
+                  | 'org'
                   | 'pascal'
                   | 'perl'
                   | 'php'
@@ -548,10 +554,12 @@ export interface Page {
                   | 'r'
                   | 'racket'
                   | 'raku'
+                  | 'rbs'
                   | 'regexp'
                   | 'rel'
                   | 'rst'
                   | 'riscv'
+                  | 'coq'
                   | 'ron'
                   | 'rosmsg'
                   | 'ruby'
@@ -565,7 +573,7 @@ export interface Page {
                   | 'shaderlab'
                   | 'shellscript'
                   | 'shellsession'
-                  | 'smalltalk'
+                  | 'smithy'
                   | 'solidity'
                   | 'sparql'
                   | 'splunk'
@@ -1607,6 +1615,7 @@ export interface UsersSelect<T extends boolean = true> {
   resetPasswordExpiration?: T;
   salt?: T;
   hash?: T;
+  resetPasswordRequestedAt?: T;
   loginAttempts?: T;
   lockUntil?: T;
   sessions?:

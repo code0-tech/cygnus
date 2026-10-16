@@ -27,12 +27,14 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
 
     return (
         <ConsentManager locale={locale}>
-            <div className="relative bg-primary overflow-x-hidden">
+            <div className="group/site relative bg-primary overflow-x-hidden">
                 <Navigation locale={locale} items={items} buttons={buttons} logo={navigation?.logo} />
                 <main id="main-content" className="bg-primary">
                     {children}
                 </main>
-                <FooterSection locale={locale} footer={footer} currentYear={currentYear} />
+                <div className="group-has-data-status-page/site:hidden">
+                    <FooterSection locale={locale} footer={footer} currentYear={currentYear} />
+                </div>
             </div>
         </ConsentManager>
     )
