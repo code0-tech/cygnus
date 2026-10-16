@@ -76,7 +76,13 @@ export function reduceSubscriptionSelection(selection: SubscriptionSelection, ac
         next.paymentPeriod = normalizePaymentPeriod(next.paymentPeriod)
         next.workflowExecutions = getDefaultUsagePackage(config.workflowExecutions[action.value])
         next.aiTokens = getDefaultUsagePackage(config.aiTokens[action.value])
-    } else if (action.type === "planChanged") next.plan = action.value
+    } else if (action.type === "planChanged") {
+        next.plan = action.value
+        if (next.plan === "custom") {
+            next.workflowExecutions = normalizeUsageValue(next.workflowExecutions, config.workflowExecutions[next.customerType])
+            next.aiTokens = normalizeUsageValue(next.aiTokens, config.aiTokens[next.customerType])
+        }
+    }
     else if (action.type === "deploymentChanged") next.deployment = action.value
     else if (action.type === "paymentPeriodChanged") next.paymentPeriod = normalizePaymentPeriod(action.value)
     else if (action.type === "workflowExecutionsChanged") next.workflowExecutions = normalizeUsageValue(action.value, config.workflowExecutions[next.customerType])

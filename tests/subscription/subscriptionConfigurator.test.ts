@@ -179,3 +179,32 @@ test("accepts every supported payment period for both customer types through the
     const b2c = resolveSubscriptionSelection(new URLSearchParams({ customerType: "b2c", plan: "pro" }), content).selection
     assert.equal(reduceSubscriptionSelection(b2c, { type: "paymentPeriodChanged", value: "quarterly" }, content).paymentPeriod, "quarterly")
 })
+
+test("switching a URL-initialized fixed plan to Custom resolves both quantities before building the checkout URL", () => {
+    for (const customerType of ["b2b", "b2c"] as const) {
+        for (const plan of ["pro", "max"] as const) {
+            const initial = parseSubscriptionSelectionFromSearchParams(new URLSearchParams({ plan, customerType, paymentPeriod: "yearly" }), content)
+            const custom = reduceSubscriptionSelection(initial, { type: "planChanged", value: "custom" }, content)
+            const workflowExecutions = content.workflowExecutions[customerType].packages[0]
+            const aiTokens = content.aiTokens[customerType].packages[0]
+            assert.equal(custom.workflowExecutions, workflowExecutions)
+            assert.equal(custom.aiTokens, aiTokens)
+            assert.equal(custom.paymentPeriod, "yearly")
+            const params = buildSubscriptionSelectionSearchParams(custom)
+            assert.equal(params.get("workflowExecutions"), String(workflowExecutions))
+            assert.equal(params.get("aiTokens"), String(aiTokens))
+            assert.deepEqual(resolveSubscriptionSelection(params, content).issues, [])
+        }
+    }
+})
+
+test("returning to Custom preserves previously selected valid packages", () => {
+    const initial = parseSubscriptionSelectionFromSearchParams(new URLSearchParams({
+        plan: "custom", customerType: "b2b", workflowExecutions: "5000000", aiTokens: "500000000",
+    }), content)
+    for (const plan of ["pro", "max"] as const) {
+        const fixed = reduceSubscriptionSelection(initial, { type: "planChanged", value: plan }, content)
+        const custom = reduceSubscriptionSelection(fixed, { type: "planChanged", value: "custom" }, content)
+        assert.deepEqual(custom, initial)
+    }
+})
