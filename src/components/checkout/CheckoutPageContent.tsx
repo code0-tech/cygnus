@@ -9,11 +9,13 @@ import { cn } from "@/lib/utils"
 import type { CheckoutData, ErrorsContent, SubscriptionConfigData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import type { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
+import type { CheckoutPackages } from "@/lib/subscription/usagePackages"
 import type { Footer } from "@/payload-types"
 import { IconArrowRight } from "@tabler/icons-react"
 import { useEffect, useState, type ComponentProps } from "react"
 
 interface CheckoutPageContentProps {
+    checkoutPackages: CheckoutPackages
     currentYear: number
     errors?: ErrorsContent | null
     footer?: Footer | null
@@ -30,7 +32,7 @@ function CheckoutSummaryWithTax(props: Omit<ComponentProps<typeof CheckoutSummar
     return <CheckoutSummary {...props} stripePricing={stripePricing} taxQuote={taxQuote} />
 }
 
-export function CheckoutPageContent({ currentYear, errors, footer, form, locale, nextSteps, subscriptionConfig, subscriptionPrices, summary }: CheckoutPageContentProps) {
+export function CheckoutPageContent({ checkoutPackages, currentYear, errors, footer, form, locale, nextSteps, subscriptionConfig, subscriptionPrices, summary }: CheckoutPageContentProps) {
     const [mobileCheckoutOpen, setMobileCheckoutOpen] = useState(false)
     const { hasError } = useCheckoutStage()
 
@@ -64,7 +66,7 @@ export function CheckoutPageContent({ currentYear, errors, footer, form, locale,
                 {form && errors ? (
                     <CheckoutFormProvider content={form} errors={errors} locale={locale}>
                         {!hasError && (
-                            <CheckoutSummaryWithTax content={summary} errors={errors} nextSteps={nextSteps} subscriptionConfig={subscriptionConfig} subscriptionPrices={subscriptionPrices} />
+                            <CheckoutSummaryWithTax checkoutPackages={checkoutPackages} content={summary} errors={errors} nextSteps={nextSteps} subscriptionConfig={subscriptionConfig} subscriptionPrices={subscriptionPrices} />
                         )}
                         <button
                             type="button"
@@ -105,7 +107,7 @@ export function CheckoutPageContent({ currentYear, errors, footer, form, locale,
                         </div>
                     </CheckoutFormProvider>
                 ) : (
-                    <CheckoutSummary content={summary} nextSteps={nextSteps} subscriptionConfig={subscriptionConfig} subscriptionPrices={subscriptionPrices} />
+                    <CheckoutSummary checkoutPackages={checkoutPackages} content={summary} nextSteps={nextSteps} subscriptionConfig={subscriptionConfig} subscriptionPrices={subscriptionPrices} />
                 )}
             </div>
 

@@ -116,10 +116,7 @@ test("keeps period discounts within the selected deployment and refuses missing 
         total: 5400,
     })
     const { pro_cloud_business_quarterly: removed, ...incomplete } = prices
-    assert.throws(
-        () => calculateSubscriptionQuote(selection, { ...catalog, subscriptionPrices: incomplete as SubscriptionPriceCatalog }),
-        /missing pro_cloud_business_quarterly/
-    )
+    assert.throws(() => calculateSubscriptionQuote(selection, { ...catalog, subscriptionPrices: incomplete as SubscriptionPriceCatalog }), /missing pro_cloud_business_quarterly/)
 })
 
 const paymentPeriod = {
@@ -365,12 +362,18 @@ test("supports the same payment periods for both customer types in the checkout 
 })
 
 test("snaps manipulated custom-plan usage parameters onto packages before calculating the price", () => {
+    const checkoutPackages = {
+        quantitySteps: {
+            b2b: { aiTokens: [100, 1_000], workflowExecutions: [20, 200] },
+            b2c: { aiTokens: [10, 100], workflowExecutions: [10, 100] },
+        },
+        planQuantities: {
+            pro: { aiTokens: 1_000, workflowExecutions: 100 },
+            max: { aiTokens: 10_000, workflowExecutions: 1_000 },
+        },
+    }
     const config = {
         aiTokenPriceFactor: 0.001,
-        aiTokens: {
-            b2b: { default: 100, packages: [100, 1_000] },
-            b2c: { default: 10, packages: [10, 100] },
-        },
         defaults: {
             customerType: "b2b",
             paymentPeriod: { b2b: "monthly", b2c: "monthly" },
@@ -382,14 +385,11 @@ test("snaps manipulated custom-plan usage parameters onto packages before calcul
         },
         paymentPeriod,
         workflowExecutionPriceFactor: 0.01,
-        workflowExecutions: {
-            b2b: { default: 20, packages: [20, 200] },
-            b2c: { default: 10, packages: [10, 100] },
-        },
     } as never
 
     const result = resolveCheckoutPricing({
         aiTokensParam: "1",
+        checkoutPackages,
         customerTypeParam: "b2b",
         fallbackPeriodSuffix: "/mo",
         paymentPeriodParam: "monthly",
