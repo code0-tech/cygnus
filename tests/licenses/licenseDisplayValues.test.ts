@@ -1,7 +1,7 @@
 import assert from "node:assert/strict"
 import test from "node:test"
 import type { LicenseContent } from "../../src/lib/cms"
-import { formatLicenseDisplayValue } from "../../src/lib/licenses/displayValues"
+import { formatInvoiceNumber, formatLicenseDisplayValue } from "../../src/lib/licenses/displayValues"
 
 const labels = {
     customerTypes: { personal: "Privat", business: "Geschäftlich" },
@@ -26,4 +26,13 @@ test("formats Crater license values with CMS labels", () => {
 test("uses the CMS fallback for missing or unknown values", () => {
     assert.equal(formatLicenseDisplayValue(undefined, "status", labels), "Unbekannt")
     assert.equal(formatLicenseDisplayValue("future_status", "status", labels), "Unbekannt")
+})
+
+test("shows the CMS placeholder instead of an internal ID while the invoice number is missing", () => {
+    const invoiceLabels = { numberPendingLabel: "Noch nicht verfügbar" } as LicenseContent["invoices"]
+
+    assert.equal(formatInvoiceNumber("INV-0001", invoiceLabels), "INV-0001")
+    assert.equal(formatInvoiceNumber(undefined, invoiceLabels), "Noch nicht verfügbar")
+    assert.equal(formatInvoiceNumber(null, invoiceLabels), "Noch nicht verfügbar")
+    assert.equal(formatInvoiceNumber("  ", invoiceLabels), "Noch nicht verfügbar")
 })

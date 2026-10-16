@@ -55,6 +55,10 @@ export function formatLicenseDisplayValue(value: string | null | undefined, cate
     return mappings[category][normalizedValue] ?? labels.unknown
 }
 
+export function formatInvoiceNumber(invoiceNumber: string | null | undefined, labels: LicenseContent["invoices"]) {
+    return invoiceNumber?.trim() || labels.numberPendingLabel
+}
+
 export function formatLicenseEdition(deploymentType: string | undefined, editions: LicenseContent["values"]["editions"]) {
     if (deploymentType === "cloud") return editions.cloud
     if (deploymentType === "self_hosted") return editions.selfHosted

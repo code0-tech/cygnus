@@ -130,6 +130,7 @@ export const Licenses: GlobalConfig = {
                 localizedText("netLabel", "Net", "Netto"),
                 localizedText("taxLabel", "Tax", "Steuer"),
                 localizedText("numberLabel", "Invoice", "Rechnung"),
+                localizedText("numberPendingLabel", "Not yet available", "Noch nicht verfügbar"),
                 localizedText("billingDateLabel", "Billing date", "Rechnungsdatum"),
                 localizedText("amountLabel", "Total", "Gesamt"),
                 localizedText("statusLabel", "Payment status", "Zahlungsstatus"),

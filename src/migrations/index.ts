@@ -177,6 +177,7 @@ import * as migration_20261013_140000_period_end_canceled_description from './20
 import * as migration_20261014_120000_license_toasts from './20261014_120000_license_toasts';
 import * as migration_20261015_190000_fix_canceled_description_table from './20261015_190000_fix_canceled_description_table';
 import * as migration_20261016_120000_subscription_savings_label from './20261016_120000_subscription_savings_label';
+import * as migration_20261016_150000_invoice_number_pending_label from './20261016_150000_invoice_number_pending_label';
 
 export const migrations = [
   {
@@ -1063,5 +1064,10 @@ export const migrations = [
     up: migration_20261016_120000_subscription_savings_label.up,
     down: migration_20261016_120000_subscription_savings_label.down,
     name: '20261016_120000_subscription_savings_label',
+  },
+  {
+    up: migration_20261016_150000_invoice_number_pending_label.up,
+    down: migration_20261016_150000_invoice_number_pending_label.down,
+    name: '20261016_150000_invoice_number_pending_label',
   },
 ];
