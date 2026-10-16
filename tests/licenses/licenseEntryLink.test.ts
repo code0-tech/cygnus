@@ -1,7 +1,7 @@
 import assert from "node:assert/strict"
 import test from "node:test"
 import { GET } from "../../src/app/api/crater/licenses/access/route"
-import { createGraphQLTestServer } from "../helpers/graphqlTestServer"
+import { withGraphQLServer } from "../helpers/graphqlTestServer"
 
 const previousServerUrl = process.env.SERVER_URL
 const previousSculptorLoginUrl = process.env.SCULPTOR_LOGIN_URL
@@ -45,21 +45,8 @@ function entryRequest(params: Record<string, string>, cookie?: string) {
     return new Request(`https://0.0.0.0:3000/api/crater/licenses/access?${new URLSearchParams({ locale: "en", ...params })}`, cookie ? { headers: { cookie } } : {})
 }
 
-async function withServer(responses: unknown[], run: (server: Awaited<ReturnType<typeof createGraphQLTestServer>>) => Promise<void>) {
-    const server = await createGraphQLTestServer(responses)
-    const previousUrl = process.env.CRATER_GRAPHQL_URL
-    process.env.CRATER_GRAPHQL_URL = server.url
-    try {
-        await run(server)
-    } finally {
-        if (previousUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
-        else process.env.CRATER_GRAPHQL_URL = previousUrl
-        await server.close()
-    }
-}
-
 test("a Sculptor link without a Crater session logs in with its token and opens the upgrade tab", async () => {
-    await withServer([login(), ownedSubscription], async (server) => {
+    await withGraphQLServer([login(), ownedSubscription], async (server) => {
         const response = await GET(entryRequest({ token: "sagittarius-secret", subscriptionId: "5", action: "upgrade" }))
 
         assert.equal(response.status, 307)
@@ -81,7 +68,7 @@ test("license and customer actions open the general tab of their dialog", async 
         ["customer", "https://code0.example/en/licenses/customer/3/edit?tab=general"],
         ["unknown", "https://code0.example/en/licenses/customer/3/license/5"],
     ]) {
-        await withServer([ownedSubscription], async () => {
+        await withGraphQLServer([ownedSubscription], async () => {
             const response = await GET(entryRequest({ subscriptionId: "5", action }, "crater_session=existing-session"))
             assert.equal(response.headers.get("location"), location)
         })
@@ -90,7 +77,7 @@ test("license and customer actions open the general tab of their dialog", async 
 
 test("an existing Crater session is reused and the link token is not exchanged", async () => {
     const otherCustomer = customerPage("gid://crater/Customer/1", ["gid://crater/Subscription/2"], "customer-1")
-    await withServer([otherCustomer, ownedSubscription], async (server) => {
+    await withGraphQLServer([otherCustomer, ownedSubscription], async (server) => {
         const response = await GET(entryRequest({ token: "sagittarius-secret", subscriptionId: "5", action: "license" }, "crater_session=existing-session"))
 
         assert.equal(response.headers.get("location"), "https://code0.example/en/licenses/customer/3/license/5/edit?tab=general")
@@ -102,7 +89,7 @@ test("an existing Crater session is reused and the link token is not exchanged",
 })
 
 test("an expired Crater session falls back to the link token", async () => {
-    await withServer([noUser, login("fresh-session"), ownedSubscription], async (server) => {
+    await withGraphQLServer([noUser, login("fresh-session"), ownedSubscription], async (server) => {
         const response = await GET(entryRequest({ token: "sagittarius-secret", subscriptionId: "5", action: "upgrade" }, "crater_session=expired-session"))
 
         assert.equal(response.headers.get("location"), "https://code0.example/en/licenses/customer/3/license/5/edit?tab=upgrade")
@@ -112,7 +99,7 @@ test("an expired Crater session falls back to the link token", async () => {
 })
 
 test("a rejected link token starts the Sculptor login without forwarding the token", async () => {
-    await withServer([rejectedLogin], async () => {
+    await withGraphQLServer([rejectedLogin], async () => {
         const response = await GET(entryRequest({ token: "sagittarius-secret", subscriptionId: "5", action: "customer" }))
 
         const location = new URL(response.headers.get("location") ?? "")
@@ -124,7 +111,7 @@ test("a rejected link token starts the Sculptor login without forwarding the tok
 })
 
 test("a subscription the user cannot see still opens the dashboard", async () => {
-    await withServer([login(), customerPage("gid://crater/Customer/1", [])], async () => {
+    await withGraphQLServer([login(), customerPage("gid://crater/Customer/1", [])], async () => {
         const response = await GET(entryRequest({ token: "sagittarius-secret", subscriptionId: "9", action: "upgrade" }))
 
         assert.equal(response.headers.get("location"), "https://code0.example/en/licenses")

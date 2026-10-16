@@ -36,3 +36,17 @@ export async function createGraphQLTestServer(responses: unknown[]) {
         close: () => new Promise<void>((resolve, reject) => server.close((error) => (error ? reject(error) : resolve()))),
     }
 }
+
+// Points the Crater client at a scripted GraphQL server for the duration of run and restores the previous URL afterwards.
+export async function withGraphQLServer(responses: unknown[], run: (server: Awaited<ReturnType<typeof createGraphQLTestServer>>) => Promise<void>) {
+    const server = await createGraphQLTestServer(responses)
+    const previousUrl = process.env.CRATER_GRAPHQL_URL
+    process.env.CRATER_GRAPHQL_URL = server.url
+    try {
+        await run(server)
+    } finally {
+        if (previousUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
+        else process.env.CRATER_GRAPHQL_URL = previousUrl
+        await server.close()
+    }
+}

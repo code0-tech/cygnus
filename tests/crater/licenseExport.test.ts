@@ -1,26 +1,12 @@
 import assert from "node:assert/strict"
 import test from "node:test"
 import { POST as exportLicense } from "../../src/app/api/crater/licenses/export/route"
-import { createGraphQLTestServer } from "../helpers/graphqlTestServer"
+import { withGraphQLServer } from "../helpers/graphqlTestServer"
 
 const licenseId = "gid://crater/License/42"
 const sessionHeaders = {
     authorization: "Session c_ust_example",
     "content-type": "application/json",
-}
-
-async function withGraphQLServer(responses: unknown[], run: (graphQLServer: Awaited<ReturnType<typeof createGraphQLTestServer>>) => Promise<void>) {
-    const graphQLServer = await createGraphQLTestServer(responses)
-    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
-    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
-
-    try {
-        await run(graphQLServer)
-    } finally {
-        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
-        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
-        await graphQLServer.close()
-    }
 }
 
 test("license export requires a Crater session", async () => {

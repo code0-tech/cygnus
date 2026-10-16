@@ -5,7 +5,7 @@ import { GET as listCustomers, PATCH as updateCustomer, POST as createOrGetCusto
 import { POST as createCustomerPaymentMethodSetup } from "../../src/app/api/crater/customer/payment-method-setup/route"
 import { GET as getCustomerPaymentMethods } from "../../src/app/api/crater/customer/payment-methods/route"
 import { POST as createSession } from "../../src/app/api/crater/login/route"
-import { createGraphQLTestServer } from "../helpers/graphqlTestServer"
+import { createGraphQLTestServer, withGraphQLServer } from "../helpers/graphqlTestServer"
 
 const serverOnlyHook = registerHooks({
     resolve(specifier, context, nextResolve) {
@@ -58,7 +58,7 @@ test("payment method setup requires a Crater session", async () => {
 
 
 test("customer payment methods carry the display details Crater resolves for every id", async () => {
-    const graphQLServer = await createGraphQLTestServer([
+    await withGraphQLServer([
         {
             data: {
                 currentUser: {
@@ -71,11 +71,7 @@ test("customer payment methods carry the display details Crater resolves for eve
         },
         { data: { paymentMethod: { brand: "visa", expiresMonth: 12, expiresYear: 2030, last4: "4242", type: "card" } } },
         { data: { paymentMethod: null } },
-    ])
-    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
-    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
-
-    try {
+    ], async (graphQLServer) => {
         const response = await getCustomerPaymentMethods(
             new Request("https://example.com/api/crater/customer/payment-methods?customerId=gid%3A%2F%2Fcrater%2FCustomer%2F1", {
                 headers: sessionHeaders,
@@ -102,16 +98,12 @@ test("customer payment methods carry the display details Crater resolves for eve
             assert.match(request.body.query ?? "", /paymentMethod\(paymentMethodId:/)
             assert.doesNotMatch(request.body.query ?? "", /customerPaymentMethod\(/)
         }
-    } finally {
-        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
-        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
-        await graphQLServer.close()
-    }
+    })
 })
 
 
 test("creates a Stripe payment method SetupIntent for the selected customer", async () => {
-    const graphQLServer = await createGraphQLTestServer([
+    await withGraphQLServer([
         {
             data: {
                 customerPaymentMethodSetupCreate: {
@@ -120,11 +112,7 @@ test("creates a Stripe payment method SetupIntent for the selected customer", as
                 },
             },
         },
-    ])
-    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
-    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
-
-    try {
+    ], async (graphQLServer) => {
         const response = await createCustomerPaymentMethodSetup(
             new Request("https://example.com/api/crater/customer/payment-method-setup", {
                 method: "POST",
@@ -139,16 +127,12 @@ test("creates a Stripe payment method SetupIntent for the selected customer", as
         assert.deepEqual(graphQLServer.requests[0].body.variables, {
             input: { customerId: "gid://crater/Customer/1" },
         })
-    } finally {
-        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
-        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
-        await graphQLServer.close()
-    }
+    })
 })
 
 
 test("surfaces Crater payment method setup domain errors", async () => {
-    const graphQLServer = await createGraphQLTestServer([
+    await withGraphQLServer([
         {
             data: {
                 customerPaymentMethodSetupCreate: {
@@ -157,11 +141,7 @@ test("surfaces Crater payment method setup domain errors", async () => {
                 },
             },
         },
-    ])
-    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
-    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
-
-    try {
+    ], async (graphQLServer) => {
         const response = await createCustomerPaymentMethodSetup(
             new Request("https://example.com/api/crater/customer/payment-method-setup", {
                 method: "POST",
@@ -176,16 +156,12 @@ test("surfaces Crater payment method setup domain errors", async () => {
             errorCode: "INVALID_PAYMENT_METHOD_SETUP_CUSTOMER",
             details: [],
         })
-    } finally {
-        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
-        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
-        await graphQLServer.close()
-    }
+    })
 })
 
 
 test("lists the authenticated user's checkout customers", async () => {
-    const graphQLServer = await createGraphQLTestServer([
+    await withGraphQLServer([
         {
             data: {
                 currentUser: {
@@ -206,11 +182,7 @@ test("lists the authenticated user's checkout customers", async () => {
                 },
             },
         },
-    ])
-    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
-    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
-
-    try {
+    ], async (graphQLServer) => {
         const response = await listCustomers(
             new Request("https://example.com/api/crater/customer", {
                 headers: { authorization: "Session customer-list-token" },
@@ -236,16 +208,12 @@ test("lists the authenticated user's checkout customers", async () => {
         assert.equal(graphQLServer.requests[0].authorization, "Session customer-list-token")
         assert.equal(graphQLServer.requests[0].body.operationName, "CheckoutCustomers")
         assert.match(graphQLServer.requests[0].body.query ?? "", /customers\(after: \$after, first: 50\)/)
-    } finally {
-        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
-        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
-        await graphQLServer.close()
-    }
+    })
 })
 
 
 test("paginates checkout customers with Crater's cursor", async () => {
-    const graphQLServer = await createGraphQLTestServer([
+    await withGraphQLServer([
         {
             data: {
                 currentUser: {
@@ -256,11 +224,7 @@ test("paginates checkout customers with Crater's cursor", async () => {
                 },
             },
         },
-    ])
-    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
-    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
-
-    try {
+    ], async (graphQLServer) => {
         const response = await listCustomers(
             new Request("https://example.com/api/crater/customer?after=customer-50", {
                 headers: sessionHeaders,
@@ -273,16 +237,12 @@ test("paginates checkout customers with Crater's cursor", async () => {
             customers: [{ customerType: "business", id: "gid://crater/Customer/51" }],
             pageInfo: { endCursor: "customer-100", hasNextPage: true },
         })
-    } finally {
-        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
-        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
-        await graphQLServer.close()
-    }
+    })
 })
 
 
 test("customer creation sends the CustomerType enum and nothing Crater no longer accepts", async () => {
-    const graphQLServer = await createGraphQLTestServer([
+    await withGraphQLServer([
         {
             data: {
                 customersCreate: {
@@ -296,11 +256,7 @@ test("customer creation sends the CustomerType enum and nothing Crater no longer
                 },
             },
         },
-    ])
-    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
-    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
-
-    try {
+    ], async (graphQLServer) => {
         const response = await createOrGetCustomer(
             new Request("https://example.com/api/crater/customer", {
                 method: "POST",
@@ -330,16 +286,12 @@ test("customer creation sends the CustomerType enum and nothing Crater no longer
             name: null,
         })
         assert.doesNotMatch(graphQLServer.requests[0].body.query ?? "", /status/)
-    } finally {
-        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
-        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
-        await graphQLServer.close()
-    }
+    })
 })
 
 
 test("customer creation forwards the required address and optional phone and tax ID", async () => {
-    const graphQLServer = await createGraphQLTestServer([
+    await withGraphQLServer([
         {
             data: {
                 customersCreate: {
@@ -353,11 +305,7 @@ test("customer creation forwards the required address and optional phone and tax
                 },
             },
         },
-    ])
-    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
-    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
-
-    try {
+    ], async (graphQLServer) => {
         const response = await createOrGetCustomer(
             new Request("https://example.com/api/crater/customer", {
                 method: "POST",
@@ -387,11 +335,7 @@ test("customer creation forwards the required address and optional phone and tax
             },
         })
         assert.equal(((await response.json()) as { customerType: string }).customerType, "personal")
-    } finally {
-        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
-        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
-        await graphQLServer.close()
-    }
+    })
 })
 
 
@@ -440,7 +384,7 @@ test("customer creation rejects incomplete tax ID fields", async () => {
 
 
 test("customer creation surfaces Crater validation details", async () => {
-    const graphQLServer = await createGraphQLTestServer([
+    await withGraphQLServer([
         {
             data: {
                 customersCreate: {
@@ -457,11 +401,7 @@ test("customer creation surfaces Crater validation details", async () => {
                 },
             },
         },
-    ])
-    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
-    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
-
-    try {
+    ], async (graphQLServer) => {
         const response = await createOrGetCustomer(
             new Request("https://example.com/api/crater/customer", {
                 method: "POST",
@@ -483,11 +423,7 @@ test("customer creation surfaces Crater validation details", async () => {
         })
         assert.match(graphQLServer.requests[0].body.query ?? "", /\.\.\. on ActiveModelError/)
         assert.match(graphQLServer.requests[0].body.query ?? "", /\.\.\. on MessageError/)
-    } finally {
-        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
-        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
-        await graphQLServer.close()
-    }
+    })
 })
 
 

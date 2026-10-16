@@ -1,7 +1,16 @@
 import assert from "node:assert/strict"
 import test, { mock } from "node:test"
 import type { SubscriptionConfigData } from "@/lib/cms"
-import { createGraphQLTestServer } from "../helpers/graphqlTestServer"
+import { withGraphQLServer } from "../helpers/graphqlTestServer"
+
+const previousServerUrl = process.env.SERVER_URL
+test.before(() => {
+    process.env.SERVER_URL = "https://code0.example"
+})
+test.after(() => {
+    if (previousServerUrl === undefined) delete process.env.SERVER_URL
+    else process.env.SERVER_URL = previousServerUrl
+})
 
 const subscriptionConfig = {
     defaults: {
@@ -36,10 +45,7 @@ mock.method(Date, "now", () => 1_800_000_000_000)
 const { POST } = await import("../../src/app/api/crater/checkout/session/route")
 
 test("forwards both custom quantities unchanged so Crater can check them against the customer's packages", async () => {
-    const graphQLServer = await createGraphQLTestServer([{ data: { checkoutCreateSession: { errors: [], session: { clientSecret: "cs_limits", id: "cs_limits" } } } }])
-    const previousUrl = process.env.CRATER_GRAPHQL_URL
-    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
-    try {
+    await withGraphQLServer([{ data: { checkoutCreateSession: { errors: [], session: { clientSecret: "cs_limits", id: "cs_limits" } } } }], async (graphQLServer) => {
         const response = await POST(
             new Request("https://example.com/api/crater/checkout/session", {
                 method: "POST",
@@ -62,11 +68,7 @@ test("forwards both custom quantities unchanged so Crater can check them against
         assert.equal(input.namespaceId, "opaque-namespace")
         assert.equal(input.workflowExecutions, 100_000)
         assert.equal(input.customerId, "gid://crater/Customer/1")
-    } finally {
-        if (previousUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
-        else process.env.CRATER_GRAPHQL_URL = previousUrl
-        await graphQLServer.close()
-    }
+    })
 })
 
 test("rejects invalid or missing custom quantities and oversized namespace identifiers", async () => {
@@ -82,142 +84,40 @@ test("rejects invalid or missing custom quantities and oversized namespace ident
     }
 })
 
-test("checkout requires a valid customer id", async () => {
-    for (const customerId of [undefined, "", "42", "gid://crater/License/1"]) {
-        const response = await POST(
-            new Request("https://example.com/api/crater/checkout/session", {
-                method: "POST",
-                headers: { authorization: "Session customer-test", "content-type": "application/json" },
-                body: JSON.stringify({ plan: "pro", deploymentType: "self_hosted", customerId }),
-            })
-        )
-        assert.equal(response.status, 400)
-        assert.deepEqual(await response.json(), { error: "customerId is required and must be a valid Crater global ID." })
+test("checkout rejects invalid requests before calling Crater", async () => {
+    const session = { authorization: "Session c_ust_example", "content-type": "application/json" }
+    const regular = { plan: "pro", deploymentType: "self_hosted" }
+    // headers: null sends no authorization at all; omitted headers use the valid session.
+    const cases: { name: string; headers?: Record<string, string> | null; body: Record<string, unknown>; status: number; error: string }[] = [
+        { name: "no session", headers: null, body: regular, status: 403, error: "Crater session authorization is required." },
+        { name: "bearer scheme", headers: { ...session, authorization: "Bearer c_ust_example" }, body: regular, status: 401, error: "Crater session authorization is invalid." },
+        ...[undefined, "", "42", "gid://crater/License/1"].map((customerId) => ({
+            name: `customer id ${String(customerId)}`,
+            body: { ...regular, customerId },
+            status: 400,
+            error: "customerId is required and must be a valid Crater global ID.",
+        })),
+        { name: "missing deployment type", body: { plan: "pro" }, status: 400, error: "deploymentType must be cloud or self_hosted for checkout." },
+        { name: "unsupported locale", body: { ...regular, locale: "fr" }, status: 400, error: "locale must be a supported locale." },
+        { name: "legacy configuration only", body: { customCheckoutConfigurationId: "123" }, status: 400, error: "plan is required." },
+        { name: "missing plan", body: { deploymentType: "self_hosted" }, status: 400, error: "plan is required." },
+        {
+            name: "retired configuration id",
+            body: { ...regular, customCheckoutConfigurationId: "gid://crater/CustomCheckoutConfiguration/4" },
+            status: 400,
+            error: "customCheckoutConfigurationId is no longer supported.",
+        },
+    ]
+
+    for (const { name, headers, body, status, error } of cases) {
+        const response = await POST(new Request("https://example.com/api/crater/checkout/session", { method: "POST", ...(headers === null ? {} : { headers: headers ?? session }), body: JSON.stringify(body) }))
+        assert.equal(response.status, status, name)
+        assert.deepEqual(await response.json(), { error }, name)
     }
-})
-
-test("checkout rejects requests without a Crater session", async () => {
-    const response = await POST(
-        new Request("https://example.com/api/crater/checkout/session", {
-            method: "POST",
-            body: JSON.stringify({ plan: "pro", deploymentType: "self_hosted" }),
-        })
-    )
-
-    assert.equal(response.status, 403)
-    assert.deepEqual(await response.json(), {
-        error: "Crater session authorization is required.",
-    })
-})
-
-test("checkout rejects authorization schemes other than Session", async () => {
-    const response = await POST(
-        new Request("https://example.com/api/crater/checkout/session", {
-            method: "POST",
-            headers: {
-                authorization: "Bearer c_ust_example",
-                "content-type": "application/json",
-            },
-            body: JSON.stringify({ plan: "pro", deploymentType: "self_hosted" }),
-        })
-    )
-
-    assert.equal(response.status, 401)
-    assert.deepEqual(await response.json(), {
-        error: "Crater session authorization is invalid.",
-    })
-})
-
-test("checkout requires a deployment type for regular plans", async () => {
-    const response = await POST(
-        new Request("https://example.com/api/crater/checkout/session", {
-            method: "POST",
-            headers: {
-                authorization: "Session c_ust_example",
-                "content-type": "application/json",
-            },
-            body: JSON.stringify({ plan: "pro" }),
-        })
-    )
-
-    assert.equal(response.status, 400)
-    assert.deepEqual(await response.json(), {
-        error: "deploymentType must be cloud or self_hosted for checkout.",
-    })
-})
-
-test("checkout rejects unsupported return locales", async () => {
-    const response = await POST(
-        new Request("https://example.com/api/crater/checkout/session", {
-            method: "POST",
-            headers: {
-                authorization: "Session c_ust_example",
-                "content-type": "application/json",
-            },
-            body: JSON.stringify({ deploymentType: "self_hosted", locale: "fr", plan: "pro" }),
-        })
-    )
-
-    assert.equal(response.status, 400)
-    assert.deepEqual(await response.json(), {
-        error: "locale must be a supported locale.",
-    })
-})
-
-test("checkout rejects legacy configuration-only requests", async () => {
-    const response = await POST(
-        new Request("https://example.com/api/crater/checkout/session", {
-            method: "POST",
-            headers: {
-                authorization: "Session c_ust_example",
-                "content-type": "application/json",
-            },
-            body: JSON.stringify({ customCheckoutConfigurationId: "123" }),
-        })
-    )
-
-    assert.equal(response.status, 400)
-    assert.deepEqual(await response.json(), {
-        error: "plan is required.",
-    })
-})
-
-test("checkout requires a plan and rejects retired configuration ids", async () => {
-    const headers = {
-        authorization: "Session c_ust_example",
-        "content-type": "application/json",
-    }
-    const missingResponse = await POST(
-        new Request("https://example.com/api/crater/checkout/session", {
-            method: "POST",
-            headers,
-            body: JSON.stringify({ deploymentType: "self_hosted" }),
-        })
-    )
-    const combinedResponse = await POST(
-        new Request("https://example.com/api/crater/checkout/session", {
-            method: "POST",
-            headers,
-            body: JSON.stringify({
-                plan: "pro",
-                customCheckoutConfigurationId: "gid://crater/CustomCheckoutConfiguration/4",
-                deploymentType: "self_hosted",
-            }),
-        })
-    )
-
-    assert.equal(missingResponse.status, 400)
-    assert.equal(combinedResponse.status, 400)
-    assert.deepEqual(await missingResponse.json(), {
-        error: "plan is required.",
-    })
-    assert.deepEqual(await combinedResponse.json(), {
-        error: "customCheckoutConfigurationId is no longer supported.",
-    })
 })
 
 test("checkout forwards documented Crater domain error details", async () => {
-    const graphQLServer = await createGraphQLTestServer([
+    await withGraphQLServer([
         {
             data: {
                 checkoutCreateSession: {
@@ -234,13 +134,7 @@ test("checkout forwards documented Crater domain error details", async () => {
                 },
             },
         },
-    ])
-    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
-    const previousAppUrl = process.env.SERVER_URL
-    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
-    process.env.SERVER_URL = "https://code0.example"
-
-    try {
+    ], async (graphQLServer) => {
         const response = await POST(
             new Request("https://example.com/api/crater/checkout/session", {
                 method: "POST",
@@ -267,17 +161,11 @@ test("checkout forwards documented Crater domain error details", async () => {
         assert.match(graphQLServer.requests[0].body.query ?? "", /fragment CraterErrorFields on Error/)
         assert.match(graphQLServer.requests[0].body.query ?? "", /\.\.\. on ActiveModelError/)
         assert.match(graphQLServer.requests[0].body.query ?? "", /\.\.\. on MessageError/)
-    } finally {
-        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
-        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
-        if (previousAppUrl === undefined) delete process.env.SERVER_URL
-        else process.env.SERVER_URL = previousAppUrl
-        await graphQLServer.close()
-    }
+    })
 })
 
 test("accepts quarterly and rejects removed weekly periods even when sent directly to the API", async () => {
-    const graphQLServer = await createGraphQLTestServer([
+    await withGraphQLServer([
         {
             data: {
                 checkoutCreateSession: {
@@ -290,13 +178,7 @@ test("accepts quarterly and rejects removed weekly periods even when sent direct
                 },
             },
         },
-    ])
-    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
-    const previousAppUrl = process.env.SERVER_URL
-    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
-    process.env.SERVER_URL = "https://code0.example"
-
-    try {
+    ], async (graphQLServer) => {
         const response = await POST(
             new Request("https://example.com/api/crater/checkout/session", {
                 method: "POST",
@@ -342,17 +224,11 @@ test("accepts quarterly and rejects removed weekly periods even when sent direct
             },
         })
         assert.equal(graphQLServer.requests.length, 1)
-    } finally {
-        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
-        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
-        if (previousAppUrl === undefined) delete process.env.SERVER_URL
-        else process.env.SERVER_URL = previousAppUrl
-        await graphQLServer.close()
-    }
+    })
 })
 
 test("creates regular and custom checkout sessions with the expected Crater inputs", async () => {
-    const graphQLServer = await createGraphQLTestServer([
+    await withGraphQLServer([
         {
             data: {
                 checkoutCreateSession: {
@@ -389,13 +265,7 @@ test("creates regular and custom checkout sessions with the expected Crater inpu
                 },
             },
         },
-    ])
-    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
-    const previousAppUrl = process.env.SERVER_URL
-    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
-    process.env.SERVER_URL = "https://code0.example"
-
-    try {
+    ], async (graphQLServer) => {
         const regularResponse = await POST(
             new Request("https://example.com/api/crater/checkout/session", {
                 method: "POST",
@@ -492,11 +362,5 @@ test("creates regular and custom checkout sessions with the expected Crater inpu
                 workflowExecutions: 200,
             },
         })
-    } finally {
-        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
-        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
-        if (previousAppUrl === undefined) delete process.env.SERVER_URL
-        else process.env.SERVER_URL = previousAppUrl
-        await graphQLServer.close()
-    }
+    })
 })
