@@ -14,7 +14,7 @@ import {LicenseStatusDot} from "@/components/licenses/shared/LicenseStatusDot"
 import type {ErrorsContent, LicenseContent, SubscriptionConfigData, UpgradeBannerData} from "@/lib/cms"
 import {formatMinorCurrency} from "@/lib/formatters"
 import type {AppLocale} from "@/lib/i18n"
-import {formatLicenseDisplayValue} from "@/lib/licenses/displayValues"
+import {formatInvoiceNumber, formatLicenseDisplayValue} from "@/lib/licenses/displayValues"
 import {formatPendingUpdateSelection} from "@/lib/licenses/pendingUpdate"
 import {resolveCustomerRouteId, resolveSubscriptionRouteId} from "@/lib/licenses/routes"
 import type {LicenseDashboardInvoice} from "@/lib/licenses/types"
@@ -141,7 +141,7 @@ export function LicenseDetailPage({
         }
     } : undefined
 
-    const selectedInvoiceNumber = selectedInvoice?.invoiceNumber || selectedInvoice?.id.split("/").at(-1) || selectedInvoice?.id
+    const selectedInvoiceNumber = selectedInvoice ? formatInvoiceNumber(selectedInvoice.invoiceNumber, content.invoices) : null
     const selectedInvoicePreviewUrl = selectedInvoice?.stripePdfUrl ? `/api/crater/invoices/preview?url=${encodeURIComponent(selectedInvoice.stripePdfUrl)}` : null
 
     const invoiceTableHeader = (
@@ -279,7 +279,7 @@ export function LicenseDetailPage({
                                 <Fragment key={invoice.id}>
                                     <DataTableColumn>
                                         <Text size="sm" fw={500}>
-                                            {invoice.invoiceNumber || invoice.id.split("/").at(-1) || invoice.id}
+                                            {formatInvoiceNumber(invoice.invoiceNumber, content.invoices)}
                                         </Text>
                                     </DataTableColumn>
                                     <DataTableColumn>
@@ -304,7 +304,7 @@ export function LicenseDetailPage({
                                                     type="button"
                                                     variant="none"
                                                     paddingSize="xxs"
-                                                    aria-label={`${content.invoices.title}: ${invoice.invoiceNumber || invoice.id.split("/").at(-1) || invoice.id}`}
+                                                    aria-label={`${content.invoices.title}: ${formatInvoiceNumber(invoice.invoiceNumber, content.invoices)}`}
                                                 >
                                                     <IconDotsVertical aria-hidden="true" size={16}/>
                                                 </Button>
@@ -355,7 +355,7 @@ export function LicenseDetailPage({
                     >
                         <DialogHeader className="shrink-0 pr-10 text-left!">
                             <DialogTitle className="font-normal! text-white!">
-                                {content.invoices.title} {selectedInvoiceNumber ? `#${selectedInvoiceNumber}` : ""}
+                                {content.invoices.title} {selectedInvoice?.invoiceNumber?.trim() ? `#${selectedInvoiceNumber}` : selectedInvoiceNumber ? `· ${selectedInvoiceNumber}` : ""}
                             </DialogTitle>
                             {selectedInvoice ? (
                                 <DialogDescription className="text-sm! text-secondary!">

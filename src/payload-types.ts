@@ -3297,6 +3297,7 @@ export interface License {
     netLabel: string;
     taxLabel: string;
     numberLabel: string;
+    numberPendingLabel: string;
     billingDateLabel: string;
     amountLabel: string;
     statusLabel: string;
@@ -4175,6 +4176,7 @@ export interface LicensesSelect<T extends boolean = true> {
         netLabel?: T;
         taxLabel?: T;
         numberLabel?: T;
+        numberPendingLabel?: T;
         billingDateLabel?: T;
         amountLabel?: T;
         statusLabel?: T;

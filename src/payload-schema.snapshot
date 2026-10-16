@@ -2645,6 +2645,7 @@ export const licenses_locales = pgTable('licenses_locales', {
   invoices_netLabel: varchar('invoices_net_label').notNull(),
   invoices_taxLabel: varchar('invoices_tax_label').notNull(),
   invoices_numberLabel: varchar('invoices_number_label').notNull(),
+  invoices_numberPendingLabel: varchar('invoices_number_pending_label').notNull(),
   invoices_billingDateLabel: varchar('invoices_billing_date_label').notNull(),
   invoices_amountLabel: varchar('invoices_amount_label').notNull(),
   invoices_statusLabel: varchar('invoices_status_label').notNull(),
