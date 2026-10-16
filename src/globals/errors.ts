@@ -54,8 +54,6 @@ export const Errors: GlobalConfig = {
             "Die Rechnungsadresse konnte nicht gespeichert werden. Bitte überprüfe deine Angaben."
         ),
         localizedText("emailUpdate", "The email address could not be saved. Please check your details.", "Die E-Mail-Adresse konnte nicht gespeichert werden. Bitte überprüfe deine Angaben."),
-        localizedText("taxIdUpdate", "The tax ID could not be saved. Please check your details.", "Die Steuernummer konnte nicht gespeichert werden. Bitte überprüfe deine Angaben."),
-        localizedText("taxIdIncomplete", "Tax ID type and Tax ID must be provided together.", "Steuernummer-Typ und Steuernummer müssen zusammen angegeben werden."),
         localizedText(
             "paymentConfirmation",
             "The payment could not be confirmed. Please check your payment details.",

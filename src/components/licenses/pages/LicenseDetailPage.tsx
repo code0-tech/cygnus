@@ -11,7 +11,7 @@ import {
 } from "@/components/licenses/table/LicenseDataTablePagination"
 import {LicenseAlert} from "@/components/licenses/shared/LicenseAlert"
 import {LicenseStatusDot} from "@/components/licenses/shared/LicenseStatusDot"
-import type {ErrorsContent, LicenseContent, SubscriptionConfigData, UpgradeBannerData} from "@/lib/cms"
+import type {ErrorsContent, LicenseContent, SubscriptionConfigData} from "@/lib/cms"
 import {formatMinorCurrency} from "@/lib/formatters"
 import type {AppLocale} from "@/lib/i18n"
 import {formatInvoiceNumber, formatLicenseDisplayValue} from "@/lib/licenses/displayValues"
@@ -56,7 +56,6 @@ interface LicenseDetailPageProps {
     locale: AppLocale
     namespaceHref: string
     subscriptionConfig?: SubscriptionConfigData | null
-    upgradeBanner?: UpgradeBannerData | null
 }
 
 interface LicenseDetailItem {
@@ -88,8 +87,7 @@ export function LicenseDetailPage({
                                       licenseId,
                                       locale,
                                       namespaceHref,
-                                      subscriptionConfig,
-                                      upgradeBanner
+                                      subscriptionConfig
                                   }: LicenseDetailPageProps) {
     const {isLoading, licenses, loadMore, loadingMore, pagination} = useLicenseData()
     const resolvedCustomerId = resolveCustomerRouteId(customerId)

@@ -324,8 +324,6 @@ const errors = {
     checkoutSessionExpired: "Checkout session expired",
     billingAddressUpdate: "Billing address update failed",
     emailUpdate: "Email update failed",
-    taxIdUpdate: "Tax ID update failed",
-    taxIdIncomplete: "Tax ID fields must be provided together",
     paymentConfirmation: "Payment confirmation failed",
     discountSessionRequired: "Discount session required",
     discountValidation: "Discount validation failed",
