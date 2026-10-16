@@ -49,7 +49,6 @@ const content = {
 } as CheckoutData["summary"]
 
 const subscriptionConfig = {
-    packages: { pro: { title: "Pro" }, max: { title: "Max" }, custom: { title: "Custom" } },
     plan: {
         pro: { title: "Pro", color: "yellow", icon: "pro" },
         max: { title: "Max", color: "aqua", icon: "max" },
@@ -132,7 +131,7 @@ test("shows the purchased plan as a badge instead of a price line after checkout
                 deployment: "cloud",
                 discountAmount: 0,
                 periodSuffix: "/ month",
-                planTitle: "Pro",
+                plan: "pro",
                 taxAmount: 18.81,
                 totalPrice: 117.81,
                 workflowExecutions: null,

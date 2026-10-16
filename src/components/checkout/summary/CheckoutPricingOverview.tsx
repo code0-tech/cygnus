@@ -10,6 +10,7 @@ import { Card } from "@code0-tech/pictor"
 import NumberFlow from "@number-flow/react"
 import type { IconColor } from "@/lib/cms"
 import { TONE_CLASS_NAME } from "@/lib/subscription/tones"
+import type { SubscriptionPlan } from "@/lib/subscription/types"
 import type { ReactNode } from "react"
 
 interface CheckoutPricingOverviewData {
@@ -40,7 +41,7 @@ interface CheckoutConfirmedPricingOverviewData {
     deployment: string | null
     discountAmount: number
     periodSuffix: string
-    planTitle: string
+    plan: SubscriptionPlan
     taxAmount: number
     totalPrice: number
     workflowExecutions: number | null
@@ -82,7 +83,7 @@ export function CheckoutPricingOverview(props: CheckoutPricingOverviewProps) {
               periodSuffix: confirmedPricing.periodSuffix,
               // The plan is shown as a badge instead of a price line once the purchase is confirmed.
               planPrice: null,
-              planTitle: confirmedPricing.planTitle,
+              planTitle: subscriptionConfig.plan[confirmedPricing.plan].title,
               taxAmount: confirmedPricing.taxAmount,
               taxPercentage: null,
               totalPrice: confirmedPricing.totalPrice,
@@ -110,12 +111,7 @@ export function CheckoutPricingOverview(props: CheckoutPricingOverviewProps) {
         workflowExecutionPrice,
         workflowExecutions,
     } = displayPricing
-    const plan =
-        planTitle === subscriptionConfig.packages.pro.title
-            ? subscriptionConfig.plan.pro
-            : planTitle === subscriptionConfig.packages.max.title
-              ? subscriptionConfig.plan.max
-              : subscriptionConfig.plan.custom
+    const plan = subscriptionConfig.plan[confirmedPricing?.plan ?? "custom"]
 
     return (
         <Card className="bg-light! p-4!">

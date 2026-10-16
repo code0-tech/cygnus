@@ -180,6 +180,7 @@ import * as migration_20261015_190000_fix_canceled_description_table from './202
 import * as migration_20261016_120000_subscription_savings_label from './20261016_120000_subscription_savings_label';
 import * as migration_20261016_150000_invoice_number_pending_label from './20261016_150000_invoice_number_pending_label';
 import * as migration_20261016_200000_remove_unused_globals from './20261016_200000_remove_unused_globals';
+import * as migration_20261016_210000_merge_pricing_packages_into_plans from './20261016_210000_merge_pricing_packages_into_plans';
 
 export const migrations = [
   {
@@ -1076,5 +1077,10 @@ export const migrations = [
     up: migration_20261016_200000_remove_unused_globals.up,
     down: migration_20261016_200000_remove_unused_globals.down,
     name: '20261016_200000_remove_unused_globals',
+  },
+  {
+    up: migration_20261016_210000_merge_pricing_packages_into_plans.up,
+    down: migration_20261016_210000_merge_pricing_packages_into_plans.down,
+    name: '20261016_210000_merge_pricing_packages_into_plans',
   },
 ];

@@ -9,7 +9,7 @@ export type SubscriptionSelectionCatalog = Pick<SubscriptionConfigData, "default
     aiTokens: Record<"b2b" | "b2c", UsagePackageConfig>
 }
 
-export type SubscriptionCatalog = SubscriptionSelectionCatalog & Pick<SubscriptionConfigData, "packages" | "paymentPeriod"> & {
+export type SubscriptionCatalog = SubscriptionSelectionCatalog & Pick<SubscriptionConfigData, "paymentPeriod"> & {
     subscriptionPrices: SubscriptionPriceCatalog
 }
 
@@ -26,5 +26,5 @@ export function getSubscriptionSelectionCatalog(config: SubscriptionConfigData, 
 }
 
 export function getSubscriptionCatalog(config: SubscriptionConfigData, subscriptionPrices: SubscriptionPriceCatalog, checkoutPackages?: CheckoutPackages): SubscriptionCatalog {
-    return { ...getSubscriptionSelectionCatalog(config, checkoutPackages), packages: config.packages, paymentPeriod: config.paymentPeriod, subscriptionPrices }
+    return { ...getSubscriptionSelectionCatalog(config, checkoutPackages), paymentPeriod: config.paymentPeriod, subscriptionPrices }
 }

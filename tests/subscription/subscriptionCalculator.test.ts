@@ -184,7 +184,6 @@ test("builds a cent-based custom subscription quote", () => {
         {
             aiTokens: {} as never,
             defaults: {} as never,
-            packages: {} as never,
             paymentPeriod,
             workflowExecutions: {} as never,
             subscriptionPrices,
@@ -200,7 +199,6 @@ test("uses Stripe component prices instead of CMS price factors", () => {
     const catalog = {
         aiTokens: {} as never,
         defaults: {} as never,
-        packages: {} as never,
         paymentPeriod,
         workflowExecutions: {} as never,
         subscriptionPrices,
@@ -226,7 +224,7 @@ test("preserves the regular fixed-plan price for period discount summaries", () 
     const config = {
         defaults: { customerType: "b2c", deployment: "self_hosted", paymentPeriod: { b2b: "monthly", b2c: "monthly" } },
         paymentPeriod,
-        packages: {
+        plan: {
             pro: {
                 prices: { monthly: 10, quarterly: 27, yearly: 96 },
                 title: "Pro",
@@ -253,7 +251,7 @@ test("uses the checkout deployment parameter instead of the CMS default", () => 
     const config = {
         defaults: { customerType: "b2c", deployment: "self_hosted", paymentPeriod: { b2b: "monthly", b2c: "monthly" } },
         paymentPeriod,
-        packages: { pro: { title: "Pro" } },
+        plan: { pro: { title: "Pro" } },
     } as never
     const result = resolveCheckoutPricing({
         aiTokensParam: null,
@@ -281,7 +279,7 @@ test("prices a fixed plan from the b2b prices for a b2b customer", () => {
             customerType: "b2c",
             paymentPeriod: { b2b: "monthly", b2c: "monthly" },
         },
-        packages: {
+        plan: {
             custom: { title: "Custom" },
             pro: { prices: { monthly: 10, quarterly: 27, yearly: 96 }, title: "Pro" },
         },
@@ -324,7 +322,7 @@ test("supports the same payment periods for both customer types in the checkout 
             customerType: "b2c",
             paymentPeriod: { b2b: "monthly", b2c: "monthly" },
         },
-        packages: {
+        plan: {
             custom: { title: "Custom" },
         },
         paymentPeriod,
@@ -376,7 +374,7 @@ test("snaps manipulated custom-plan usage parameters onto packages before calcul
             customerType: "b2b",
             paymentPeriod: { b2b: "monthly", b2c: "monthly" },
         },
-        packages: {
+        plan: {
             custom: {
                 title: "Custom",
             },
