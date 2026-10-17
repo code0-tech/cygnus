@@ -1,15 +1,15 @@
 import { createApolloClient } from "@/lib/apolloClient"
 import { craterJson, craterMutationErrorResponse, craterTransportErrorResponse, optionalString, readJsonObject, requireCraterSession, type JsonObject } from "@/lib/checkout/craterApi"
-import { toCraterPaymentPeriod, type CheckoutCalculateTaxVariables } from "@/lib/checkout/craterCheckoutSchema"
+import { toCraterPaymentPeriod } from "@/lib/checkout/craterCheckout"
 import { resolveSubscriptionSelection } from "@/lib/subscriptionConfigurator"
-import type { Mutation } from "@code0-tech/crater-graphql-types"
+import type { Mutation, MutationCheckoutCalculateTaxArgs } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 
 export const runtime = "nodejs"
 
 type CheckoutCalculateTaxData = Pick<Mutation, "checkoutCalculateTax">
 
-const CHECKOUT_CALCULATE_TAX: TypedDocumentNode<CheckoutCalculateTaxData, CheckoutCalculateTaxVariables> = gql`
+const CHECKOUT_CALCULATE_TAX: TypedDocumentNode<CheckoutCalculateTaxData, MutationCheckoutCalculateTaxArgs> = gql`
     mutation CheckoutCalculateTax($input: CheckoutCalculateTaxInput!) {
         checkoutCalculateTax(input: $input) {
             taxQuote {
@@ -63,7 +63,7 @@ export async function POST(request: Request) {
         }
 
         const { selection } = resolvedSelection
-        const input: CheckoutCalculateTaxVariables["input"] = {
+        const input: MutationCheckoutCalculateTaxArgs["input"] = {
             plan: selection.plan,
             paymentPeriod: toCraterPaymentPeriod(selection.paymentPeriod),
             ...(selection.plan === "custom"

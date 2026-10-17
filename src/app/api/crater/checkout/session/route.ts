@@ -1,10 +1,10 @@
 import { createApolloClient } from "@/lib/apolloClient"
 import { craterJson, craterMutationErrorResponse, craterTransportErrorResponse, optionalString, readJsonObject, requireCraterSession, type JsonObject } from "@/lib/checkout/craterApi"
-import { parseCraterPaymentPeriod, toCraterPaymentPeriod, type CheckoutCreateSessionVariables } from "@/lib/checkout/craterCheckoutSchema"
+import { DEFAULT_CRATER_PAYMENT_PERIOD, parseCraterPaymentPeriod, toCraterPaymentPeriod } from "@/lib/checkout/craterCheckout"
 import { resolveSubscriptionSelection, type SubscriptionSelection } from "@/lib/subscriptionConfigurator"
 import { resolveSiteUrl } from "@/lib/siteConfig"
 import { DEFAULT_LOCALE, isSupportedLocale } from "@/lib/i18n"
-import type { Mutation, Scalars } from "@code0-tech/crater-graphql-types"
+import type { Mutation, MutationCheckoutCreateSessionArgs, Scalars } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 
 export const runtime = "nodejs"
@@ -15,7 +15,7 @@ function isCustomCheckoutConfigurationId(value: string): value is Scalars["Custo
     return /^gid:\/\/crater\/CustomCheckoutConfiguration\/\d+$/.test(value)
 }
 
-const CHECKOUT_CREATE_SESSION: TypedDocumentNode<CheckoutCreateSessionData, CheckoutCreateSessionVariables> = gql`
+const CHECKOUT_CREATE_SESSION: TypedDocumentNode<CheckoutCreateSessionData, MutationCheckoutCreateSessionArgs> = gql`
     mutation CheckoutCreateSession($input: CheckoutCreateSessionInput!) {
         checkoutCreateSession(input: $input) {
             session {
@@ -125,9 +125,9 @@ export async function POST(request: Request) {
             return craterJson({ error: "paymentPeriod must be weekly, monthly, quarterly, or yearly." }, 400)
         }
 
-        const input: CheckoutCreateSessionVariables["input"] = {
+        const input: MutationCheckoutCreateSessionArgs["input"] = {
             returnUrl: `${new URL(`/${locale}/checkout/success`, siteUrl).toString()}?session_id={CHECKOUT_SESSION_ID}`,
-            paymentPeriod: normalizedSelection ? toCraterPaymentPeriod(normalizedSelection.paymentPeriod) : (customConfigurationPaymentPeriod ?? "MONTHLY"),
+            paymentPeriod: normalizedSelection ? toCraterPaymentPeriod(normalizedSelection.paymentPeriod) : (customConfigurationPaymentPeriod ?? DEFAULT_CRATER_PAYMENT_PERIOD),
             ...(craterCustomCheckoutConfigurationId
                 ? { customCheckoutConfigurationId: craterCustomCheckoutConfigurationId }
                 : {
