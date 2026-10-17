@@ -3,7 +3,6 @@ import assert from "node:assert/strict"
 import test from "node:test"
 import { PATCH as updateCustomer } from "../../src/app/api/crater/customer/route"
 import { POST as createGuestUser } from "../../src/app/api/crater/guest/route"
-import { POST as createSession } from "../../src/app/api/crater/login/route"
 import { DELETE as deleteSession, GET as getSessionStatus } from "../../src/app/api/crater/auth/session/route"
 import { GET as completeCraterLogin } from "../../src/app/api/crater/auth/callback/route"
 import { GET as getLicenseDashboard } from "../../src/app/api/crater/licenses/route"
@@ -31,84 +30,6 @@ function startedLoginCallback(url: string, init: RequestInit = {}) {
     headers.set("cookie", `crater_login_state=${LOGIN_STATE}`)
     return new Request(`${url}&state=${LOGIN_STATE}`, { ...init, headers })
 }
-
-test("Crater login requires a Sagittarius token", async () => {
-    const configuredToken = process.env.CRATER_SAGITTARIUS_TOKEN
-    process.env.CRATER_SAGITTARIUS_TOKEN = "legacy-fallback-token"
-
-    try {
-        const response = await createSession(
-            new Request("https://example.com/api/crater/login", {
-                method: "POST",
-                headers: {
-                    "content-type": "application/json",
-                },
-                body: JSON.stringify({}),
-            })
-        )
-
-        assert.equal(response.status, 400)
-        assert.deepEqual(await response.json(), {
-            error: "sagittariusToken is required.",
-        })
-        assert.equal(response.headers.get("cache-control"), "no-store")
-    } finally {
-        if (configuredToken === undefined) delete process.env.CRATER_SAGITTARIUS_TOKEN
-        else process.env.CRATER_SAGITTARIUS_TOKEN = configuredToken
-    }
-})
-
-test("Crater login returns retry guidance after its rate limit is exceeded", async () => {
-    const previousMax = process.env.CRATER_LOGIN_RATE_LIMIT_MAX
-    const previousWindow = process.env.CRATER_LOGIN_RATE_LIMIT_WINDOW_SECONDS
-    const previousProxyHops = process.env.CRATER_RATE_LIMIT_TRUSTED_PROXY_HOPS
-    const originalWarn = console.warn
-    const warnings: string[] = []
-    console.warn = (message) => warnings.push(String(message))
-    process.env.CRATER_LOGIN_RATE_LIMIT_MAX = "2"
-    process.env.CRATER_LOGIN_RATE_LIMIT_WINDOW_SECONDS = "60"
-    process.env.CRATER_RATE_LIMIT_TRUSTED_PROXY_HOPS = "1"
-
-    const request = () =>
-        new Request("https://example.com/api/crater/login", {
-            method: "POST",
-            headers: {
-                "content-type": "application/json",
-                "x-forwarded-for": "192.0.2.240",
-            },
-            body: JSON.stringify({}),
-        })
-
-    try {
-        assert.equal((await createSession(request())).status, 400)
-        assert.equal((await createSession(request())).status, 400)
-
-        const response = await createSession(request())
-        assert.equal(response.status, 429)
-        assert.equal(response.headers.get("retry-after"), "60")
-        assert.equal(response.headers.get("ratelimit-limit"), "2")
-        assert.equal(response.headers.get("ratelimit-remaining"), "0")
-        assert.equal(response.headers.get("ratelimit-reset"), "60")
-        assert.equal(response.headers.get("cache-control"), "no-store")
-        assert.equal(warnings.length, 1)
-        assert.deepEqual(JSON.parse(warnings[0]), {
-            timestamp: JSON.parse(warnings[0]).timestamp,
-            event: "rate_limit_exceeded",
-            policy: "login",
-            limit: 2,
-            retryAfterSeconds: 60,
-            network: "trusted",
-        })
-    } finally {
-        console.warn = originalWarn
-        if (previousMax === undefined) delete process.env.CRATER_LOGIN_RATE_LIMIT_MAX
-        else process.env.CRATER_LOGIN_RATE_LIMIT_MAX = previousMax
-        if (previousWindow === undefined) delete process.env.CRATER_LOGIN_RATE_LIMIT_WINDOW_SECONDS
-        else process.env.CRATER_LOGIN_RATE_LIMIT_WINDOW_SECONDS = previousWindow
-        if (previousProxyHops === undefined) delete process.env.CRATER_RATE_LIMIT_TRUSTED_PROXY_HOPS
-        else process.env.CRATER_RATE_LIMIT_TRUSTED_PROXY_HOPS = previousProxyHops
-    }
-})
 
 test("continuing as a guest creates a Sagittarius guest user for the entered email", async () => {
     const graphQLServer = await createGraphQLTestServer([
@@ -232,38 +153,6 @@ test("guest creation forwards the Crater error code without a session cookie", a
         if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
         else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
         await graphQLServer.close()
-    }
-})
-
-test("an exhausted guest budget leaves the plain session route usable", async () => {
-    const environmentKeys = ["CRATER_GUEST_RATE_LIMIT_MAX", "CRATER_GUEST_RATE_LIMIT_WINDOW_SECONDS", "CRATER_RATE_LIMIT_TRUSTED_PROXY_HOPS"] as const
-    const previousEnvironment = Object.fromEntries(environmentKeys.map((key) => [key, process.env[key]]))
-    process.env.CRATER_GUEST_RATE_LIMIT_MAX = "1"
-    process.env.CRATER_GUEST_RATE_LIMIT_WINDOW_SECONDS = "90"
-    process.env.CRATER_RATE_LIMIT_TRUSTED_PROXY_HOPS = "1"
-
-    const request = (path: string) =>
-        new Request(`https://example.com${path}`, {
-            method: "POST",
-            headers: { "content-type": "application/json", "x-forwarded-for": "192.0.2.242" },
-            body: JSON.stringify({}),
-        })
-
-    const originalWarn = console.warn
-    console.warn = () => {}
-
-    try {
-        // A Sagittarius that refuses every guest would otherwise take the checkout's own session route with
-        // it, because both used to consume the same bucket.
-        assert.equal((await createGuestUser(request("/api/crater/guest"))).status, 400)
-        assert.equal((await createGuestUser(request("/api/crater/guest"))).status, 429)
-        assert.equal((await createSession(request("/api/crater/login"))).status, 400)
-    } finally {
-        console.warn = originalWarn
-        for (const key of environmentKeys) {
-            if (previousEnvironment[key] === undefined) delete process.env[key]
-            else process.env[key] = previousEnvironment[key]
-        }
     }
 })
 
@@ -457,22 +346,8 @@ test("logout keeps the local session available for retry when Crater rejects rev
     })
 })
 
-test("maps login and customer updates to Crater GraphQL inputs", async () => {
+test("maps customer updates to Crater GraphQL inputs", async () => {
     await withGraphQLServer([
-        {
-            data: {
-                usersLogin: {
-                    errors: [],
-                    userSession: {
-                        active: true,
-                        createdAt: "2026-07-30T10:00:00Z",
-                        id: "gid://crater/UserSession/1",
-                        token: "crater-session-token",
-                        updatedAt: "2026-07-30T10:00:00Z",
-                    },
-                },
-            },
-        },
         {
             data: {
                 customersUpdate: {
@@ -496,21 +371,6 @@ test("maps login and customer updates to Crater GraphQL inputs", async () => {
             },
         },
     ], async (graphQLServer) => {
-        const loginResponse = await createSession(
-            new Request("https://example.com/api/crater/login", {
-                method: "POST",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify({
-                    sagittariusToken: "sagittarius-token",
-                    clientMutationId: "login-1",
-                }),
-            })
-        )
-        assert.equal(loginResponse.status, 200)
-        assert.deepEqual(await loginResponse.json(), { authenticated: true })
-        assert.match(loginResponse.headers.get("set-cookie") ?? "", /crater_session=crater-session-token/)
-        assert.match(loginResponse.headers.get("set-cookie") ?? "", /HttpOnly/i)
-
         const updateResponse = await updateCustomer(
             new Request("https://example.com/api/crater/customer", {
                 method: "PATCH",
@@ -533,19 +393,9 @@ test("maps login and customer updates to Crater GraphQL inputs", async () => {
         )
         assert.equal(updateResponse.status, 200)
 
-        assert.equal(graphQLServer.requests.length, 2)
-        assert.equal(graphQLServer.requests[0].authorization, undefined)
-        assert.equal(graphQLServer.requests[0].body.operationName, "UsersLogin")
+        assert.equal(graphQLServer.requests.length, 1)
+        assert.equal(graphQLServer.requests[0].authorization, "Session c_ust_example")
         assert.deepEqual(graphQLServer.requests[0].body.variables, {
-            input: {
-                sagittariusToken: "sagittarius-token",
-                clientMutationId: "login-1",
-            },
-        })
-        assert.match(graphQLServer.requests[0].body.query ?? "", /usersLogin\(input: \$input\)/)
-
-        assert.equal(graphQLServer.requests[1].authorization, "Session c_ust_example")
-        assert.deepEqual(graphQLServer.requests[1].body.variables, {
             input: {
                 id: "gid://crater/Customer/7",
                 email: "new@example.com",

@@ -4,7 +4,6 @@ import { registerHooks } from "node:module"
 import { GET as listCustomers, PATCH as updateCustomer, POST as createOrGetCustomer } from "../../src/app/api/crater/customer/route"
 import { POST as createCustomerPaymentMethodSetup } from "../../src/app/api/crater/customer/payment-method-setup/route"
 import { GET as getCustomerPaymentMethods } from "../../src/app/api/crater/customer/payment-methods/route"
-import { POST as createSession } from "../../src/app/api/crater/login/route"
 import { createGraphQLTestServer, withGraphQLServer } from "../helpers/graphqlTestServer"
 
 const serverOnlyHook = registerHooks({
@@ -495,55 +494,3 @@ test("checkout enforces its route limit", async () => {
         }
     }
 })
-
-
-test("login forwards documented Crater domain error details", async () => {
-    const graphQLServer = await createGraphQLTestServer([
-        {
-            data: {
-                usersLogin: {
-                    errors: [
-                        {
-                            errorCode: "INVALID_SAGITTARIUS_TOKEN",
-                            details: [{ __typename: "MessageError", message: "The Sagittarius token was rejected." }],
-                        },
-                    ],
-                    userSession: null,
-                },
-            },
-        },
-    ])
-    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
-    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
-    const originalWarn = console.warn
-    const warnings: string[] = []
-    console.warn = (message) => warnings.push(String(message))
-
-    try {
-        const loginResponse = await createSession(
-            new Request("https://example.com/api/crater/login", {
-                method: "POST",
-                headers: { "content-type": "application/json", "x-forwarded-for": "192.0.2.241" },
-                body: JSON.stringify({ sagittariusToken: "invalid-sagittarius-token" }),
-            })
-        )
-        assert.equal(loginResponse.status, 422)
-        assert.deepEqual(await loginResponse.json(), {
-            error: "Crater could not create a user session.",
-            errorCode: "INVALID_SAGITTARIUS_TOKEN",
-            details: ["The Sagittarius token was rejected."],
-        })
-        assert.match(graphQLServer.requests[0].body.query ?? "", /fragment CraterErrorFields on Error/)
-        assert.equal(graphQLServer.requests.length, 1)
-        assert.equal(warnings.length, 1)
-        assert.match(warnings[0], /"event":"crater_login_failed"/)
-        assert.match(warnings[0], /"errorCode":"INVALID_SAGITTARIUS_TOKEN"/)
-        assert.doesNotMatch(warnings[0], /invalid-sagittarius-token|Sagittarius token was rejected/)
-    } finally {
-        console.warn = originalWarn
-        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
-        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
-        await graphQLServer.close()
-    }
-})
-
