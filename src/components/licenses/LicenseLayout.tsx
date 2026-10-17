@@ -11,6 +11,7 @@ interface LicenseLayoutProps {
     children: ReactNode
     content: LicenseContent
     locale: AppLocale
+    modal?: ReactNode
 }
 
 function LicenseLayoutContent({ children, content, locale }: LicenseLayoutProps) {
@@ -40,6 +41,7 @@ export function LicenseLayout(props: LicenseLayoutProps) {
     return (
         <LicenseDataProvider redirectUrl={props.content.redirectUrl}>
             <LicenseLayoutContent {...props} />
+            {props.modal}
         </LicenseDataProvider>
     )
 }
