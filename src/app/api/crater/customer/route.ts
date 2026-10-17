@@ -29,6 +29,7 @@ const CUSTOMER_FIELDS = gql`
         id
         name
         phone
+        status
         updatedAt
     }
 `
@@ -126,11 +127,23 @@ export async function POST(request: Request) {
     const phone = optionalString(body?.phone)
     const taxIdType = optionalString(body?.taxIdType)
     const taxIdValue = optionalString(body?.taxIdValue)
+    const checkoutKey = optionalString(body?.checkoutKey)
+    const draft = body?.draft
     const reuseExisting = body?.reuseExisting
     const address = readOptionalAddress(body?.address)
 
-    if (!body || (customerType !== "business" && customerType !== "personal") || address === null || (reuseExisting !== undefined && typeof reuseExisting !== "boolean")) {
-        return craterJson({ error: "customerType is required; address and reuseExisting must be valid when provided." }, 400)
+    if (
+        !body ||
+        (customerType !== "business" && customerType !== "personal") ||
+        address === null ||
+        (draft !== undefined && typeof draft !== "boolean") ||
+        (reuseExisting !== undefined && typeof reuseExisting !== "boolean")
+    ) {
+        return craterJson({ error: "customerType is required; address, draft, and reuseExisting must be valid when provided." }, 400)
+    }
+
+    if ((draft === true && !checkoutKey) || (draft !== true && Boolean(checkoutKey))) {
+        return craterJson({ error: "checkoutKey is required for draft customers and is only allowed with draft: true." }, 400)
     }
 
     if (Boolean(taxIdType) !== Boolean(taxIdValue)) {
@@ -144,6 +157,8 @@ export async function POST(request: Request) {
                 input: {
                     customerType,
                     ...(address && Object.keys(address).length > 0 ? { address } : {}),
+                    ...(checkoutKey ? { checkoutKey } : {}),
+                    ...(typeof draft === "boolean" ? { draft } : {}),
                     ...(email ? { email } : {}),
                     ...(name ? { name } : {}),
                     ...(phone ? { phone } : {}),

@@ -99,7 +99,11 @@ function CheckoutFormContent() {
                     <CheckoutCustomerSelectSkeleton />
                 ) : hasExistingCustomers && selectedCustomerId && customers.length > 0 ? (
                     <div className="[&_.input__label]:leading-none [&_.input-wrapper]:mt-1">
-                        <SelectInput title={content.customerSelectLabel} value={selectedCustomerId} onValueChange={(value) => void selectCheckoutCustomer(value === NEW_CUSTOMER_VALUE ? null : value)}>
+                        <SelectInput
+                            title={content.customerSelectLabel}
+                            value={selectedCustomer ? selectedCustomerId : NEW_CUSTOMER_VALUE}
+                            onValueChange={(value) => void selectCheckoutCustomer(value === NEW_CUSTOMER_VALUE ? null : value)}
+                        >
                             <SelectTrigger className="flex h-9! w-full! items-center gap-2 text-left! text-sm! outline-none! ring-0! focus:outline-none! focus:ring-0! focus-visible:outline-none! focus-visible:ring-0!">
                                 <SelectValue>{selectedCustomer?.name || selectedCustomer?.email || content.newCustomerLabel}</SelectValue>
                                 <IconChevronDown aria-hidden="true" className="ml-auto shrink-0 mr-2" size={16} />

@@ -315,11 +315,13 @@ Almost all mutations optionally accept `clientMutationId` and return it so the c
 
 | Mutation          | Key arguments                                                  | Result             |
 | ----------------- | -------------------------------------------------------------- | ------------------ |
-| `customersCreate` | `customerType!`, optional contact details, address, and tax ID | Created `Customer` |
+| `customersCreate` | `customerType!`, optional contact details, address, tax ID, and draft checkout fields | Created `Customer` |
 | `customersUpdate` | `id!`, optional contact details and address                    | Updated `Customer` |
 | `customersDelete` | `id!`                                                          | Deleted `Customer` |
 
-For `customersCreate`, only `customerType` is mandatory in the GraphQL schema. Other fields that are required by the domain are checked through model validations.
+For a regular `customersCreate`, only `customerType` is mandatory in the GraphQL schema. Other fields that are required by the domain are checked through model validations.
+
+Checkout clients create provisional customers with `draft: true` and a random, non-sensitive `checkoutKey`. The key is required for drafts and must not be sent for regular customers. Repeating the mutation with the same key returns the same draft, making page reloads and duplicate preparation requests idempotent. Draft customers stay out of `currentUser.customers` and become active only after the related Stripe checkout completes.
 
 #### Checkout
 

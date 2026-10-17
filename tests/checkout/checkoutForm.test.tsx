@@ -341,7 +341,10 @@ test("creates the customer and checkout session on mount before collecting Strip
     assert.equal(new Headers(requests[0].init?.headers).get("authorization"), null)
     assert.equal(requests[0].init?.credentials, "same-origin")
     assert.equal(requests[2].init?.credentials, "same-origin")
-    assert.deepEqual(JSON.parse(String(requests[1].init?.body)), { customerType: "personal", reuseExisting: false })
+    const customerCreationBody = JSON.parse(String(requests[1].init?.body)) as Record<string, unknown>
+    assert.equal(customerCreationBody.customerType, "personal")
+    assert.equal(customerCreationBody.draft, true)
+    assert.match(String(customerCreationBody.checkoutKey), /^[0-9a-f-]{36}$/i)
     assert.deepEqual(JSON.parse(String(requests[2].init?.body)), {
         customerId: "gid://crater/Customer/1",
         customerType: "b2c",
@@ -458,7 +461,7 @@ test("recreates the checkout session for a selected or newly created customer", 
 
     act(() => customerSelectOnValueChange?.("new"))
     await waitFor(() => assert.equal(checkoutProviderOptions?.clientSecret, "cs_customer_3"))
-    assert.equal(screen.getAllByText(content.newCustomerLabel).length, 2)
+    assert.equal(screen.getAllByText(content.newCustomerLabel).length, 1)
 
     const sessionBodies = requests.filter((request) => request.url === "/api/crater/checkout/session").map((request) => JSON.parse(String(request.init?.body)) as { customerId: string })
     assert.deepEqual(
@@ -467,7 +470,10 @@ test("recreates the checkout session for a selected or newly created customer", 
     )
     const customerCreationRequests = requests.filter((request) => request.url === "/api/crater/customer" && request.init?.method === "POST")
     assert.equal(customerCreationRequests.length, 1)
-    assert.deepEqual(JSON.parse(String(customerCreationRequests[0].init?.body)), { customerType: "personal", reuseExisting: false })
+    const customerCreationBody = JSON.parse(String(customerCreationRequests[0].init?.body)) as Record<string, unknown>
+    assert.equal(customerCreationBody.customerType, "personal")
+    assert.equal(customerCreationBody.draft, true)
+    assert.match(String(customerCreationBody.checkoutKey), /^[0-9a-f-]{36}$/i)
 })
 
 test("replaces a checkout session shortly before it expires", async () => {

@@ -207,6 +207,61 @@ test("customer creation forwards the explicit reuseExisting choice", async () =>
     }
 })
 
+test("draft customer creation forwards its idempotent checkout key", async () => {
+    const graphQLServer = await createGraphQLTestServer([
+        {
+            data: {
+                customersCreate: {
+                    errors: [],
+                    customer: {
+                        id: "gid://crater/Customer/3",
+                        customerType: "personal",
+                        email: null,
+                        name: null,
+                        status: "draft",
+                    },
+                },
+            },
+        },
+    ])
+    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
+    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
+
+    try {
+        const response = await createOrGetCustomer(
+            new Request("https://example.com/api/crater/customer", {
+                method: "POST",
+                headers: sessionHeaders,
+                body: JSON.stringify({ checkoutKey: "3f456ad7-c94b-4a63-aea2-17bd9dcf65be", customerType: "personal", draft: true }),
+            })
+        )
+
+        assert.equal(response.status, 201)
+        assert.deepEqual(graphQLServer.requests[0].body.variables, {
+            input: { checkoutKey: "3f456ad7-c94b-4a63-aea2-17bd9dcf65be", customerType: "personal", draft: true },
+        })
+    } finally {
+        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
+        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
+        await graphQLServer.close()
+    }
+})
+
+test("draft customer creation requires a checkout key", async () => {
+    const response = await createOrGetCustomer(
+        new Request("https://example.com/api/crater/customer", {
+            method: "POST",
+            headers: sessionHeaders,
+            body: JSON.stringify({ customerType: "personal", draft: true }),
+        })
+    )
+
+    assert.equal(response.status, 400)
+    assert.deepEqual(await response.json(), {
+        error: "checkoutKey is required for draft customers and is only allowed with draft: true.",
+    })
+})
+
 test("customer creation rejects an existing customer with a different type", async () => {
     const graphQLServer = await createGraphQLTestServer([
         {

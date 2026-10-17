@@ -4,6 +4,7 @@ import { useCraterSession } from "@/components/checkout/CraterSessionProvider"
 import { useCheckoutStage } from "@/components/checkout/CheckoutStepper"
 import type { CheckoutData } from "@/lib/cms"
 import { resolveCraterCustomerType } from "@/lib/checkout/craterCustomer"
+import { getOrCreateCheckoutDraftKey } from "@/lib/checkout/checkoutDraft"
 import {
     calculateCheckoutTax,
     CheckoutSubmissionError,
@@ -135,10 +136,9 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, locale: AppLoc
                 if (requestId !== sessionRefreshRequestRef.current) return
                 const matchingCustomers = availableCustomers.filter((candidate) => candidate.customerType === customerType)
                 setHasExistingCustomers(matchingCustomers.length > 0)
-                const customer = matchingCustomers[0] ?? (await createCheckoutCustomer({ customerType, reuseExisting: false }))
+                const customer = matchingCustomers[0] ?? (await createCheckoutCustomer({ checkoutKey: getOrCreateCheckoutDraftKey(customerType), customerType }))
                 if (requestId !== sessionRefreshRequestRef.current) return
-                const preparedCustomers = matchingCustomers.some((candidate) => candidate.id === customer.id) ? matchingCustomers : [...matchingCustomers, customer]
-                setCustomers(preparedCustomers)
+                setCustomers(matchingCustomers)
                 setSelectedCustomerId(customer.id)
 
                 const session = await createCheckoutSession({ customerId: customer.id, locale, searchParams: checkoutSearchParams })
@@ -182,12 +182,11 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, locale: AppLoc
             setStage("billingAddress")
 
             try {
-                const customer = customerId ? customers.find((candidate) => candidate.id === customerId) : await createCheckoutCustomer({ customerType, reuseExisting: false })
+                const customer = customerId
+                    ? customers.find((candidate) => candidate.id === customerId)
+                    : await createCheckoutCustomer({ checkoutKey: getOrCreateCheckoutDraftKey(customerType), customerType })
                 if (!customer) throw new CheckoutSubmissionError("customer", "INVALID_CHECKOUT_CUSTOMER", "The selected customer is unavailable.")
 
-                if (!customers.some((candidate) => candidate.id === customer.id)) {
-                    setCustomers((currentCustomers) => [...currentCustomers, customer])
-                }
                 setSelectedCustomerId(customer.id)
 
                 const session = await createCheckoutSession({ customerId: customer.id, locale, searchParams: checkoutSearchParams })
