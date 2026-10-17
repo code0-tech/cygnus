@@ -42,16 +42,13 @@ test("clamps custom checkout usage to the configured minimum and maximum", () =>
         subscriptionConfig
     )
 
-    assert.deepEqual(
-        normalizedSelection,
-        {
-            aiTokens: "100000",
-            customerType: "b2c",
-            paymentPeriod: "monthly",
-            plan: "custom",
-            workflowExecutions: "10",
-        }
-    )
+    assert.deepEqual(normalizedSelection, {
+        aiTokens: "100000",
+        customerType: "b2c",
+        paymentPeriod: "monthly",
+        plan: "custom",
+        workflowExecutions: "10",
+    })
     assert.deepEqual(validateCheckoutSelection(normalizedSelection, subscriptionConfig), { valid: true })
 })
 
