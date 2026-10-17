@@ -472,6 +472,13 @@ export interface LicenseContent {
         customerDescription: string
         contactHeading: string
         billingAddressHeading: string
+        paymentMethodHeading: string
+        paymentMethodDescription: string
+        changePaymentMethodLabel: string
+        loadingPaymentMethodLabel: string
+        savePaymentMethodLabel: string
+        savingPaymentMethodLabel: string
+        paymentMethodSuccess: string
         licenseTitle: string
         licenseDescription: string
         nameLabel: string
@@ -487,6 +494,7 @@ export interface LicenseContent {
         cancelLabel: string
         closeLabel: string
         customerError: string
+        paymentMethodSetupError: string
         licenseError: string
         selfHostedDescription: string
     }

@@ -296,6 +296,31 @@ export const Licenses: GlobalConfig = {
                 },
                 { name: "contactHeading", type: "text", required: true, localized: true, defaultValue: localizedDefault("Contact information", "Kontaktinformationen") },
                 { name: "billingAddressHeading", type: "text", required: true, localized: true, defaultValue: localizedDefault("Billing address", "Rechnungsadresse") },
+                { name: "paymentMethodHeading", type: "text", required: true, localized: true, defaultValue: localizedDefault("Default payment method", "Standard-Zahlungsmethode") },
+                {
+                    name: "paymentMethodDescription",
+                    type: "textarea",
+                    required: true,
+                    localized: true,
+                    defaultValue: localizedDefault(
+                        "Manage the payment method used for future invoices securely through Stripe.",
+                        "Verwalte die Zahlungsmethode für zukünftige Rechnungen sicher über Stripe."
+                    ),
+                },
+                { name: "changePaymentMethodLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Change payment method", "Zahlungsmethode ändern") },
+                { name: "loadingPaymentMethodLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Loading payment form…", "Zahlungsformular wird geladen …") },
+                { name: "savePaymentMethodLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Save payment method", "Zahlungsmethode speichern") },
+                { name: "savingPaymentMethodLabel", type: "text", required: true, localized: true, defaultValue: localizedDefault("Saving payment method…", "Zahlungsmethode wird gespeichert …") },
+                {
+                    name: "paymentMethodSuccess",
+                    type: "text",
+                    required: true,
+                    localized: true,
+                    defaultValue: localizedDefault(
+                        "The payment method was accepted and will become the default shortly.",
+                        "Die Zahlungsmethode wurde akzeptiert und wird in Kürze als Standard verwendet."
+                    ),
+                },
                 { name: "licenseTitle", type: "text", required: true, localized: true, defaultValue: localizedDefault("Edit license", "Lizenz bearbeiten") },
                 {
                     name: "licenseDescription",
@@ -322,6 +347,13 @@ export const Licenses: GlobalConfig = {
                     required: true,
                     localized: true,
                     defaultValue: localizedDefault("The customer could not be updated.", "Der Kunde konnte nicht aktualisiert werden."),
+                },
+                {
+                    name: "paymentMethodSetupError",
+                    type: "text",
+                    required: true,
+                    localized: true,
+                    defaultValue: localizedDefault("The payment method could not be updated.", "Die Zahlungsmethode konnte nicht aktualisiert werden."),
                 },
                 {
                     name: "licenseError",

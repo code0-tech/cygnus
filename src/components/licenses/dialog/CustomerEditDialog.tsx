@@ -1,10 +1,28 @@
 "use client"
 
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
+import { PaymentMethodSetupDialog } from "@/components/licenses/dialog/PaymentMethodSetupDialog"
 import type { LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { decodeLicenseRouteId } from "@/lib/licenses/licenseRoute"
-import { Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogOverlay, DialogPortal, DialogTitle, EmailInput, Text, TextInput } from "@code0-tech/pictor"
+import {
+    Button,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogOverlay,
+    DialogPortal,
+    DialogTitle,
+    EmailInput,
+    ScrollArea,
+    ScrollAreaScrollbar,
+    ScrollAreaThumb,
+    ScrollAreaViewport,
+    Text,
+    TextInput,
+} from "@code0-tech/pictor"
 import { IconX } from "@tabler/icons-react"
 import { useRouter } from "next/navigation"
 import { type SyntheticEvent, useEffect, useState } from "react"
@@ -17,7 +35,7 @@ interface CustomerEditDialogProps {
 
 export function CustomerEditDialog({ content, customerId, locale }: CustomerEditDialogProps) {
     const router = useRouter()
-    const { customers, updateCustomer } = useLicenseData()
+    const { customers, reload, updateCustomer } = useLicenseData()
     const resolvedCustomerId = decodeLicenseRouteId(customerId)
     const customer = customers.find((candidate) => candidate.id === resolvedCustomerId)
     const [name, setName] = useState("")
@@ -99,7 +117,7 @@ export function CustomerEditDialog({ content, customerId, locale }: CustomerEdit
         <Dialog open onOpenChange={(open) => !open && close()}>
             <DialogPortal>
                 <DialogOverlay className="backdrop-blur-sm" />
-                <DialogContent className="max-h-[calc(100dvh-2rem)]! w-[calc(100vw-2rem)]! max-w-2xl! overflow-y-auto border border-white/5 bg-primary! p-4! sm:p-6!">
+                <DialogContent className="flex! h-[calc(100dvh-2rem)]! min-h-0! w-[calc(100vw-2rem)]! max-w-2xl! flex-col! overflow-hidden! border border-white/5 bg-primary! p-4! sm:h-[min(48rem,calc(100dvh-2rem))]! sm:p-6!">
                     <DialogHeader className="pr-10 text-left!">
                         <DialogTitle className="font-normal! text-white!">{content.editor.customerTitle}</DialogTitle>
                         <DialogDescription className="text-sm! text-secondary!">{content.editor.customerDescription}</DialogDescription>
@@ -109,107 +127,135 @@ export function CustomerEditDialog({ content, customerId, locale }: CustomerEdit
                             <IconX size={18} />
                         </Button>
                     </div>
-                    <form onSubmit={save} className="space-y-6 pt-6">
-                        <fieldset className="space-y-4">
-                            <legend>
-                                <Text size="sm" fw={500} hierarchy="secondary">
-                                    {content.editor.contactHeading}
-                                </Text>
-                            </legend>
-                            <div className="grid gap-4 sm:grid-cols-2">
-                                <TextInput title={content.editor.nameLabel} name="name" autoComplete="name" value={name} onChange={(event) => setName(event.currentTarget.value)} className="w-full!" />
-                                <EmailInput
-                                    title={content.dashboard.emailLabel}
-                                    name="email"
-                                    autoComplete="email"
-                                    value={email}
-                                    onChange={(event) => setEmail(event.currentTarget.value)}
-                                    className="w-full!"
-                                />
-                                <TextInput
-                                    title={content.editor.phoneLabel}
-                                    name="phone"
-                                    autoComplete="tel"
-                                    value={phone}
-                                    onChange={(event) => setPhone(event.currentTarget.value)}
-                                    className="w-full! sm:col-span-2"
-                                />
-                            </div>
-                        </fieldset>
+                    <ScrollArea h="100%" type="always" className="min-h-0 w-full flex-1">
+                        <ScrollAreaViewport className="h-full w-full pr-3">
+                            <div className="space-y-6 pt-6 pb-1">
+                                <form id="customer-details-form" onSubmit={save} className="space-y-6">
+                                    <fieldset className="space-y-4">
+                                        <legend>
+                                            <Text size="sm" fw={500} hierarchy="secondary">
+                                                {content.editor.contactHeading}
+                                            </Text>
+                                        </legend>
+                                        <div className="grid gap-4 sm:grid-cols-2">
+                                            <TextInput
+                                                title={content.editor.nameLabel}
+                                                name="name"
+                                                autoComplete="name"
+                                                value={name}
+                                                onChange={(event) => setName(event.currentTarget.value)}
+                                                className="w-full!"
+                                            />
+                                            <EmailInput
+                                                title={content.dashboard.emailLabel}
+                                                name="email"
+                                                autoComplete="email"
+                                                value={email}
+                                                onChange={(event) => setEmail(event.currentTarget.value)}
+                                                className="w-full!"
+                                            />
+                                            <TextInput
+                                                title={content.editor.phoneLabel}
+                                                name="phone"
+                                                autoComplete="tel"
+                                                value={phone}
+                                                onChange={(event) => setPhone(event.currentTarget.value)}
+                                                className="w-full! sm:col-span-2"
+                                            />
+                                        </div>
+                                    </fieldset>
 
-                        <fieldset className="space-y-4">
-                            <legend>
-                                <Text size="sm" fw={500} hierarchy="secondary">
-                                    {content.editor.billingAddressHeading}
-                                </Text>
-                            </legend>
-                            <div className="grid gap-4 sm:grid-cols-2">
-                                <TextInput
-                                    title={content.editor.addressLine1Label}
-                                    name="address-line1"
-                                    autoComplete="address-line1"
-                                    value={line1}
-                                    onChange={(event) => setLine1(event.currentTarget.value)}
-                                    className="w-full! sm:col-span-2"
-                                />
-                                <TextInput
-                                    title={content.editor.addressLine2Label}
-                                    name="address-line2"
-                                    autoComplete="address-line2"
-                                    value={line2}
-                                    onChange={(event) => setLine2(event.currentTarget.value)}
-                                    className="w-full! sm:col-span-2"
-                                />
-                                <TextInput
-                                    title={content.editor.postalCodeLabel}
-                                    name="postal-code"
-                                    autoComplete="postal-code"
-                                    value={postalCode}
-                                    onChange={(event) => setPostalCode(event.currentTarget.value)}
-                                    className="w-full!"
-                                />
-                                <TextInput
-                                    title={content.editor.cityLabel}
-                                    name="address-level2"
-                                    autoComplete="address-level2"
-                                    value={city}
-                                    onChange={(event) => setCity(event.currentTarget.value)}
-                                    className="w-full!"
-                                />
-                                <TextInput
-                                    title={content.editor.stateLabel}
-                                    name="address-level1"
-                                    autoComplete="address-level1"
-                                    value={state}
-                                    onChange={(event) => setState(event.currentTarget.value)}
-                                    className="w-full!"
-                                />
-                                <TextInput
-                                    title={content.editor.countryLabel}
-                                    name="country"
-                                    autoComplete="country"
-                                    maxLength={2}
-                                    pattern="[A-Za-z]{2}"
-                                    value={country}
-                                    onChange={(event) => setCountry(event.currentTarget.value)}
-                                    className="w-full! uppercase"
-                                />
+                                    <fieldset className="space-y-4">
+                                        <legend>
+                                            <Text size="sm" fw={500} hierarchy="secondary">
+                                                {content.editor.billingAddressHeading}
+                                            </Text>
+                                        </legend>
+                                        <div className="grid gap-4 sm:grid-cols-2">
+                                            <TextInput
+                                                title={content.editor.addressLine1Label}
+                                                name="address-line1"
+                                                autoComplete="address-line1"
+                                                value={line1}
+                                                onChange={(event) => setLine1(event.currentTarget.value)}
+                                                className="w-full! sm:col-span-2"
+                                            />
+                                            <TextInput
+                                                title={content.editor.addressLine2Label}
+                                                name="address-line2"
+                                                autoComplete="address-line2"
+                                                value={line2}
+                                                onChange={(event) => setLine2(event.currentTarget.value)}
+                                                className="w-full! sm:col-span-2"
+                                            />
+                                            <TextInput
+                                                title={content.editor.postalCodeLabel}
+                                                name="postal-code"
+                                                autoComplete="postal-code"
+                                                value={postalCode}
+                                                onChange={(event) => setPostalCode(event.currentTarget.value)}
+                                                className="w-full!"
+                                            />
+                                            <TextInput
+                                                title={content.editor.cityLabel}
+                                                name="address-level2"
+                                                autoComplete="address-level2"
+                                                value={city}
+                                                onChange={(event) => setCity(event.currentTarget.value)}
+                                                className="w-full!"
+                                            />
+                                            <TextInput
+                                                title={content.editor.stateLabel}
+                                                name="address-level1"
+                                                autoComplete="address-level1"
+                                                value={state}
+                                                onChange={(event) => setState(event.currentTarget.value)}
+                                                className="w-full!"
+                                            />
+                                            <TextInput
+                                                title={content.editor.countryLabel}
+                                                name="country"
+                                                autoComplete="country"
+                                                maxLength={2}
+                                                pattern="[A-Za-z]{2}"
+                                                value={country}
+                                                onChange={(event) => setCountry(event.currentTarget.value)}
+                                                className="w-full! uppercase"
+                                            />
+                                        </div>
+                                    </fieldset>
+                                </form>
+
+                                <fieldset className="space-y-3">
+                                    <legend>
+                                        <Text size="sm" fw={500} hierarchy="secondary">
+                                            {content.editor.paymentMethodHeading}
+                                        </Text>
+                                    </legend>
+                                    <Text size="sm" hierarchy="tertiary">
+                                        {content.editor.paymentMethodDescription}
+                                    </Text>
+                                    {customer ? <PaymentMethodSetupDialog content={content} customerId={customer.id} disabled={isSaving} locale={locale} onSuccess={reload} /> : null}
+                                </fieldset>
+                                {error && (
+                                    <p role="alert" className="text-sm text-error">
+                                        {error}
+                                    </p>
+                                )}
+                                <DialogFooter className="gap-3! pt-2!">
+                                    <Button type="button" variant="none" onClick={close}>
+                                        {content.editor.cancelLabel}
+                                    </Button>
+                                    <Button form="customer-details-form" type="submit" variant="filled" disabled={!customer || isSaving}>
+                                        {content.editor.saveLabel}
+                                    </Button>
+                                </DialogFooter>
                             </div>
-                        </fieldset>
-                        {error && (
-                            <p role="alert" className="text-sm text-error">
-                                {error}
-                            </p>
-                        )}
-                        <DialogFooter className="gap-3! pt-2!">
-                            <Button type="button" variant="none" onClick={close}>
-                                {content.editor.cancelLabel}
-                            </Button>
-                            <Button type="submit" variant="filled" disabled={!customer || isSaving}>
-                                {content.editor.saveLabel}
-                            </Button>
-                        </DialogFooter>
-                    </form>
+                        </ScrollAreaViewport>
+                        <ScrollAreaScrollbar orientation="vertical" className="w-1.5!">
+                            <ScrollAreaThumb className="bg-white/15! hover:bg-white/25!" />
+                        </ScrollAreaScrollbar>
+                    </ScrollArea>
                 </DialogContent>
             </DialogPortal>
         </Dialog>

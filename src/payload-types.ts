@@ -3347,6 +3347,13 @@ export interface License {
     customerDescription: string;
     contactHeading: string;
     billingAddressHeading: string;
+    paymentMethodHeading: string;
+    paymentMethodDescription: string;
+    changePaymentMethodLabel: string;
+    loadingPaymentMethodLabel: string;
+    savePaymentMethodLabel: string;
+    savingPaymentMethodLabel: string;
+    paymentMethodSuccess: string;
     licenseTitle: string;
     licenseDescription: string;
     nameLabel: string;
@@ -3362,6 +3369,7 @@ export interface License {
     cancelLabel: string;
     closeLabel: string;
     customerError: string;
+    paymentMethodSetupError: string;
     licenseError: string;
     selfHostedDescription: string;
   };
@@ -4066,6 +4074,13 @@ export interface LicensesSelect<T extends boolean = true> {
         customerDescription?: T;
         contactHeading?: T;
         billingAddressHeading?: T;
+        paymentMethodHeading?: T;
+        paymentMethodDescription?: T;
+        changePaymentMethodLabel?: T;
+        loadingPaymentMethodLabel?: T;
+        savePaymentMethodLabel?: T;
+        savingPaymentMethodLabel?: T;
+        paymentMethodSuccess?: T;
         licenseTitle?: T;
         licenseDescription?: T;
         nameLabel?: T;
@@ -4081,6 +4096,7 @@ export interface LicensesSelect<T extends boolean = true> {
         cancelLabel?: T;
         closeLabel?: T;
         customerError?: T;
+        paymentMethodSetupError?: T;
         licenseError?: T;
         selfHostedDescription?: T;
       };

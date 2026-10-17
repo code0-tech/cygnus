@@ -60,6 +60,14 @@ export function LicenseDataProvider({ children, loadError, locale, redirectUrl }
         const currentUrl = new URL(window.location.href)
         const sessionToken = sessionTokenRef.current ?? readCraterSessionToken(currentUrl)
 
+        if (currentUrl.searchParams.has("setup_intent") || currentUrl.searchParams.has("setup_intent_client_secret") || currentUrl.searchParams.has("redirect_status")) {
+            const sanitizedUrl = new URL(currentUrl)
+            sanitizedUrl.searchParams.delete("setup_intent")
+            sanitizedUrl.searchParams.delete("setup_intent_client_secret")
+            sanitizedUrl.searchParams.delete("redirect_status")
+            window.history.replaceState(window.history.state, "", sanitizedUrl.toString())
+        }
+
         if (!sessionToken) {
             const accessUrl = new URL("/api/crater/licenses/access", currentUrl.origin)
             const returnUrl = removeCraterSessionToken(currentUrl)

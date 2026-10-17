@@ -1,6 +1,7 @@
 import assert from "node:assert/strict"
 import test from "node:test"
 import { GET as listCustomers, PATCH as updateCustomer, POST as createOrGetCustomer } from "../../src/app/api/crater/customer/route"
+import { POST as createCustomerPaymentMethodSetup } from "../../src/app/api/crater/customer/payment-method-setup/route"
 import { POST as validateDiscount } from "../../src/app/api/crater/checkout/discount/route"
 import { POST as calculateTax } from "../../src/app/api/crater/checkout/tax/route"
 import { POST as createSession } from "../../src/app/api/crater/login/route"
@@ -60,6 +61,90 @@ test("customer creation requires a Crater session", async () => {
     )
 
     assert.equal(response.status, 403)
+})
+
+test("payment method setup requires a Crater session", async () => {
+    const response = await createCustomerPaymentMethodSetup(
+        new Request("https://example.com/api/crater/customer/payment-method-setup", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ customerId: "gid://crater/Customer/1" }),
+        })
+    )
+
+    assert.equal(response.status, 403)
+})
+
+test("creates a Stripe payment method SetupIntent for the selected customer", async () => {
+    const graphQLServer = await createGraphQLTestServer([
+        {
+            data: {
+                customerPaymentMethodSetupCreate: {
+                    errors: [],
+                    session: { clientSecret: "seti_test_secret_test" },
+                },
+            },
+        },
+    ])
+    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
+    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
+
+    try {
+        const response = await createCustomerPaymentMethodSetup(
+            new Request("https://example.com/api/crater/customer/payment-method-setup", {
+                method: "POST",
+                headers: sessionHeaders,
+                body: JSON.stringify({ customerId: "gid://crater/Customer/1" }),
+            })
+        )
+
+        assert.equal(response.status, 201)
+        assert.deepEqual(await response.json(), { clientSecret: "seti_test_secret_test" })
+        assert.equal(graphQLServer.requests[0].body.operationName, "CustomerPaymentMethodSetupCreate")
+        assert.deepEqual(graphQLServer.requests[0].body.variables, {
+            input: { customerId: "gid://crater/Customer/1" },
+        })
+    } finally {
+        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
+        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
+        await graphQLServer.close()
+    }
+})
+
+test("surfaces Crater payment method setup domain errors", async () => {
+    const graphQLServer = await createGraphQLTestServer([
+        {
+            data: {
+                customerPaymentMethodSetupCreate: {
+                    errors: [{ errorCode: "INVALID_PAYMENT_METHOD_SETUP_CUSTOMER", details: [] }],
+                    session: null,
+                },
+            },
+        },
+    ])
+    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
+    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
+
+    try {
+        const response = await createCustomerPaymentMethodSetup(
+            new Request("https://example.com/api/crater/customer/payment-method-setup", {
+                method: "POST",
+                headers: sessionHeaders,
+                body: JSON.stringify({ customerId: "gid://crater/Customer/1" }),
+            })
+        )
+
+        assert.equal(response.status, 422)
+        assert.deepEqual(await response.json(), {
+            error: "Crater could not create the payment method setup session.",
+            errorCode: "INVALID_PAYMENT_METHOD_SETUP_CUSTOMER",
+            details: [],
+        })
+    } finally {
+        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
+        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
+        await graphQLServer.close()
+    }
 })
 
 test("checkout license status requires a Crater session", async () => {
