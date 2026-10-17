@@ -179,6 +179,9 @@ export const Checkout: GlobalConfig = {
                 { name: "backToBillingLabel", type: "text", required: true, localized: true, defaultValue: "Back to Billing" },
                 { name: "payNowLabel", type: "text", required: true, localized: true, defaultValue: "Pay now" },
                 { name: "processingLabel", type: "text", required: true, localized: true, defaultValue: "Processing..." },
+                { name: "customerSelectLabel", type: "text", required: true, localized: true, defaultValue: "Billing customer" },
+                { name: "newCustomerLabel", type: "text", required: true, localized: true, defaultValue: "Create new customer" },
+                { name: "customerFallbackLabel", type: "text", required: true, localized: true, defaultValue: "Customer" },
                 { name: "paymentErrorFallback", type: "text", required: true, localized: true, defaultValue: "An unexpected error occurred." },
                 {
                     name: "errors",
@@ -187,6 +190,7 @@ export const Checkout: GlobalConfig = {
                         { name: "sessionUnavailable", type: "text", required: true, localized: true, defaultValue: "Your checkout session could not be authenticated. Please try again." },
                         { name: "customerCreation", type: "text", required: true, localized: true, defaultValue: "Your billing customer could not be prepared. Please try again." },
                         { name: "customerTypeMismatch", type: "text", required: true, localized: true, defaultValue: "Your existing customer type does not match this checkout configuration." },
+                        { name: "checkoutCustomer", type: "text", required: true, localized: true, defaultValue: "The selected billing customer cannot be used for this checkout." },
                         { name: "checkoutSession", type: "text", required: true, localized: true, defaultValue: "The checkout session could not be created. Please try again." },
                         { name: "checkoutSessionExpired", type: "text", required: true, localized: true, defaultValue: "The checkout session expired. A new session is being created." },
                         { name: "billingAddressUpdate", type: "text", required: true, localized: true, defaultValue: "The billing address could not be saved. Please check your details." },

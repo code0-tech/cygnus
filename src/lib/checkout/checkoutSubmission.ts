@@ -20,6 +20,12 @@ export interface CheckoutSessionData {
     expiresAt: number | null
     id: string | null
 }
+export interface CheckoutCustomerData {
+    customerType: CraterCustomerType
+    email: string | null
+    id: string
+    name: string | null
+}
 
 export interface CheckoutTaxQuoteData {
     amountTotal: number
@@ -44,7 +50,28 @@ async function createCheckoutSubmissionError(response: Response, fallback: strin
     return new CheckoutSubmissionError(kind, error.errorCode, error.message)
 }
 
-async function createCheckoutCustomer({
+function parseCheckoutCustomer(value: unknown): CheckoutCustomerData | null {
+    if (!value || typeof value !== "object" || !("id" in value) || typeof value.id !== "string" || !("customerType" in value)) return null
+    if (value.customerType !== "business" && value.customerType !== "personal") return null
+
+    return {
+        customerType: value.customerType,
+        email: "email" in value && typeof value.email === "string" ? value.email : null,
+        id: value.id,
+        name: "name" in value && typeof value.name === "string" ? value.name : null,
+    }
+}
+
+export async function getCheckoutCustomers() {
+    const response = await fetch("/api/crater/customer", { credentials: "same-origin" })
+    if (!response.ok) throw await createCheckoutSubmissionError(response, "Failed to load billing customers.", "customer")
+    const body: unknown = await response.json()
+    const values = body && typeof body === "object" && "customers" in body && Array.isArray(body.customers) ? body.customers : null
+    if (!values) throw new CheckoutSubmissionError("customer", null, "Crater returned no customer list.")
+    return values.map(parseCheckoutCustomer).filter((customer): customer is CheckoutCustomerData => customer !== null)
+}
+
+export async function createCheckoutCustomer({
     customerType,
 }: {
     customerType: CraterCustomerType
@@ -56,13 +83,16 @@ async function createCheckoutCustomer({
         credentials: "same-origin",
     })
     if (!customerResponse.ok) throw await createCheckoutSubmissionError(customerResponse, "Failed to create the billing customer.", "customer")
+    const customer = parseCheckoutCustomer(await customerResponse.json())
+    if (!customer) throw new CheckoutSubmissionError("customer", null, "Crater returned an invalid customer.")
+    return customer
 }
 
-export async function createCheckoutSession({ locale, searchParams }: { locale: AppLocale; searchParams: URLSearchParams }) {
+export async function createCheckoutSession({ customerId, locale, searchParams }: { customerId: string; locale: AppLocale; searchParams: URLSearchParams }) {
     const checkoutResponse = await fetch("/api/crater/checkout/session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...Object.fromEntries(searchParams.entries()), locale }),
+        body: JSON.stringify({ ...Object.fromEntries(searchParams.entries()), customerId, locale }),
         credentials: "same-origin",
     })
     if (!checkoutResponse.ok) throw await createCheckoutSubmissionError(checkoutResponse, "Failed to create a Crater checkout session.", "session")
@@ -106,17 +136,4 @@ export async function calculateCheckoutTax({ searchParams }: { searchParams: URL
         currency: taxQuote.currency,
         taxAmountExclusive: taxQuote.taxAmountExclusive,
     } satisfies CheckoutTaxQuoteData
-}
-
-export async function prepareCheckoutSession({
-    customerType,
-    locale,
-    searchParams,
-}: {
-    customerType: CraterCustomerType
-    locale: AppLocale
-    searchParams: URLSearchParams
-}) {
-    await createCheckoutCustomer({ customerType })
-    return createCheckoutSession({ locale, searchParams })
 }

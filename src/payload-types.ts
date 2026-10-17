@@ -3200,11 +3200,15 @@ export interface Checkout {
     backToBillingLabel: string;
     payNowLabel: string;
     processingLabel: string;
+    customerSelectLabel: string;
+    newCustomerLabel: string;
+    customerFallbackLabel: string;
     paymentErrorFallback: string;
     errors: {
       sessionUnavailable: string;
       customerCreation: string;
       customerTypeMismatch: string;
+      checkoutCustomer: string;
       checkoutSession: string;
       checkoutSessionExpired: string;
       billingAddressUpdate: string;
@@ -3823,6 +3827,9 @@ export interface CheckoutSelect<T extends boolean = true> {
         backToBillingLabel?: T;
         payNowLabel?: T;
         processingLabel?: T;
+        customerSelectLabel?: T;
+        newCustomerLabel?: T;
+        customerFallbackLabel?: T;
         paymentErrorFallback?: T;
         errors?:
           | T
@@ -3830,6 +3837,7 @@ export interface CheckoutSelect<T extends boolean = true> {
               sessionUnavailable?: T;
               customerCreation?: T;
               customerTypeMismatch?: T;
+              checkoutCustomer?: T;
               checkoutSession?: T;
               checkoutSessionExpired?: T;
               billingAddressUpdate?: T;

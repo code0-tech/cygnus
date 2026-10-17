@@ -175,6 +175,7 @@ test("forces the custom plan for b2b customers requesting pro or max, even sent 
                     "content-type": "application/json",
                 },
                 body: JSON.stringify({
+                    customerId: "gid://crater/Customer/1",
                     plan: "pro",
                     customerType: "b2b",
                     deploymentType: "self_hosted",
@@ -187,6 +188,7 @@ test("forces the custom plan for b2b customers requesting pro or max, even sent 
         assert.deepEqual(graphQLServer.requests[0].body.variables, {
             input: {
                 aiTokens: 200_000,
+                customerId: "gid://crater/Customer/1",
                 deploymentType: "self_hosted",
                 paymentPeriod: "MONTHLY",
                 plan: "custom",
@@ -256,6 +258,7 @@ test("creates regular and custom checkout sessions with the expected Crater inpu
                     "content-type": "application/json",
                 },
                 body: JSON.stringify({
+                    customerId: "gid://crater/Customer/1",
                     plan: "pro",
                     deploymentType: "self_hosted",
                     paymentPeriod: "monthly",
@@ -272,6 +275,7 @@ test("creates regular and custom checkout sessions with the expected Crater inpu
                     "content-type": "application/json",
                 },
                 body: JSON.stringify({
+                    customerId: "gid://crater/Customer/2",
                     customCheckoutConfigurationId: "gid://crater/CustomCheckoutConfiguration/4",
                 }),
             })
@@ -284,6 +288,7 @@ test("creates regular and custom checkout sessions with the expected Crater inpu
                     "content-type": "application/json",
                 },
                 body: JSON.stringify({
+                    customerId: "gid://crater/Customer/3",
                     plan: "custom",
                     customerType: "b2c",
                     deploymentType: "cloud",
@@ -307,6 +312,7 @@ test("creates regular and custom checkout sessions with the expected Crater inpu
         assert.equal(graphQLServer.requests[0].authorization, "Session regular-token")
         assert.deepEqual(graphQLServer.requests[0].body.variables, {
             input: {
+                customerId: "gid://crater/Customer/1",
                 deploymentType: "self_hosted",
                 paymentPeriod: "MONTHLY",
                 plan: "pro",
@@ -317,6 +323,7 @@ test("creates regular and custom checkout sessions with the expected Crater inpu
         assert.equal(graphQLServer.requests[1].authorization, "Session custom-token")
         assert.deepEqual(graphQLServer.requests[1].body.variables, {
             input: {
+                customerId: "gid://crater/Customer/2",
                 customCheckoutConfigurationId: "gid://crater/CustomCheckoutConfiguration/4",
                 paymentPeriod: "MONTHLY",
                 returnUrl: "https://code0.example/en/checkout/success?session_id={CHECKOUT_SESSION_ID}",
@@ -326,6 +333,7 @@ test("creates regular and custom checkout sessions with the expected Crater inpu
         assert.deepEqual(graphQLServer.requests[2].body.variables, {
             input: {
                 aiTokens: 30_000,
+                customerId: "gid://crater/Customer/3",
                 deploymentType: "cloud",
                 namespaceId: "namespace-7",
                 paymentPeriod: "QUARTERLY",

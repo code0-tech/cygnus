@@ -1,12 +1,13 @@
 import { createApolloClient } from "@/lib/apolloClient"
 import { craterJson, craterMutationErrorResponse, craterTransportErrorResponse, optionalString, readJsonObject, readOptionalAddress, requireCraterSession } from "@/lib/checkout/craterApi"
-import type { Mutation, MutationCustomersCreateArgs, MutationCustomersUpdateArgs, Scalars } from "@code0-tech/crater-graphql-types"
+import type { Mutation, MutationCustomersCreateArgs, MutationCustomersUpdateArgs, Query, Scalars } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 
 export const runtime = "nodejs"
 
 type CustomersCreateData = Pick<Mutation, "customersCreate">
 type CustomersUpdateData = Pick<Mutation, "customersUpdate">
+type CustomersQueryData = Pick<Query, "currentUser">
 
 function isCustomerId(value: string): value is Scalars["CustomerID"]["input"] {
     return /^gid:\/\/crater\/Customer\/\d+$/.test(value)
@@ -77,6 +78,42 @@ const CUSTOMERS_UPDATE: TypedDocumentNode<CustomersUpdateData, MutationCustomers
     ${CUSTOMER_FIELDS}
     ${ERROR_FIELDS}
 `
+
+const CUSTOMERS: TypedDocumentNode<CustomersQueryData, Record<string, never>> = gql`
+    query CheckoutCustomers {
+        currentUser {
+            customers(first: 100) {
+                nodes {
+                    ...CustomerFields
+                }
+            }
+        }
+    }
+    ${CUSTOMER_FIELDS}
+`
+
+export async function GET(request: Request) {
+    const session = requireCraterSession(request)
+    if (session.response) return session.response
+
+    try {
+        const result = await createApolloClient(session.token).query({
+            query: CUSTOMERS,
+            fetchPolicy: "no-cache",
+        })
+        const currentUser = result.data?.currentUser
+
+        if (!currentUser) return craterJson({ error: "The Crater session has no authenticated user." }, 401)
+
+        return craterJson({ customers: (currentUser.customers?.nodes ?? []).filter((customer) => Boolean(customer?.id)) })
+    } catch (error) {
+        const transportResponse = craterTransportErrorResponse(error)
+        if (transportResponse) return transportResponse
+
+        console.error("Crater customer list error:", error)
+        return craterJson({ error: "Could not load Crater customers." }, 502)
+    }
+}
 
 export async function POST(request: Request) {
     const session = requireCraterSession(request)

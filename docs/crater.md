@@ -141,7 +141,7 @@ Crater defines three transactional invoice emails:
 
 They are addressed to the customer's email address. Subjects use the invoice number and fall back to the Stripe invoice ID when no invoice number exists. Both HTML and plain-text variants are present, with previews available through Rails mailer previews.
 
-The Rails mail bodies are currently placeholders. Invoice lifecycle webhooks and automatic delivery of these emails are also not implemented yet; the only handled Stripe event remains `checkout.session.completed`.
+The Rails mail bodies are currently placeholders, and automatic delivery of these emails is not implemented yet. The invoice lifecycle webhooks themselves are handled: `invoice.paid`, `invoice.payment_failed`, and `customer.subscription.deleted` drive the license lifecycle alongside `checkout.session.completed`.
 
 `License` describes the usage entitlement resulting from a subscription:
 
@@ -166,6 +166,32 @@ Self-hosted licenses can be exported as strings. Cloud licenses can be linked to
 - an optional processing timestamp
 
 This allows Crater to track Stripe webhook processing and handle events idempotently.
+
+#### Handled events
+
+Only these event types are requested from Stripe and accepted by the webhook endpoint; anything else is answered with `200 OK` and discarded without a ledger entry.
+
+| Event                           | Handler                                           | Effect                                                                                                                     |
+| ------------------------------- | ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `checkout.session.completed`    | `Webhooks::HandleCheckoutSessionCompletedService` | Upserts the subscription projection and syncs contact details, address, and tax ID back to the customer. Grants no access. |
+| `invoice.paid`                  | `Webhooks::HandleInvoicePaidService`              | Appends a `paid` license snapshot. This is the only event that grants paid access.                                         |
+| `invoice.payment_failed`        | `Webhooks::HandleInvoicePaymentFailedService`     | Appends a `payment_failed` snapshot that carries the previous `end_date` and grace period forward.                         |
+| `customer.subscription.deleted` | `Webhooks::HandleSubscriptionDeletedService`      | Sets the local Stripe status to `canceled` and appends a `canceled` snapshot.                                              |
+
+#### From checkout to license
+
+1. `checkout.session.completed` creates or updates the `Subscription` and the customer's contact and billing data. No `License` exists yet, so the customer has no paid access.
+2. Stripe issues an invoice for the subscription. `invoice.paid` is the point at which access is granted: `Licenses::UpsertService` appends a `paid` license whose `end_date` is the paid service period end plus `grace_period_days`.
+3. `invoice.payment_failed` appends a `payment_failed` snapshot. The `end_date` is deliberately not moved, so entitlements remain valid until the already granted period plus grace period lapses. A later successful payment appends a fresh `paid` snapshot and extends the end date again.
+4. `customer.subscription.deleted` sets the subscription's Stripe status to `canceled` and appends a `canceled` snapshot.
+
+Licenses are append-only: every transition adds a row that carries the previous snapshot's entitlements forward, so the history is never rewritten.
+
+The subscription an invoice belongs to is read from `parent.subscription_details.subscription`, since the invoice no longer carries a top level `subscription` field. The paid period comes from the line item periods rather than from `invoice.period_end`, which Stripe documents as the window in which items can be added to the invoice and not as the service period.
+
+#### Idempotency and failures
+
+`ProcessedWebhookEvent` is keyed by the unique Stripe event ID, so a redelivered event is never processed twice. An event is only marked as processed once handling completed. An event for a subscription Crater does not know is treated as irrelevant and marked processed, because retrying would never succeed; a failure inside `Licenses::UpsertService` is logged and leaves the event unprocessed. Logs carry the event type, service, and local record IDs only, never Stripe payload contents.
 
 ## GraphQL API
 
@@ -301,13 +327,17 @@ For `customersCreate`, only `customerType` is mandatory in the GraphQL schema. O
 | ------------------------------------ | --------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
 | `checkoutCalculateTax`               | `plan!`, `paymentPeriod!`, and optional custom quantities                                     | `CheckoutTaxQuote`                                        |
 | `checkoutValidateDiscount`           | `code: String!`                                                                               | `CheckoutDiscount`                                        |
-| `checkoutCreateSession`              | `paymentPeriod!`, `returnUrl!`, and either a plan or custom configuration                     | Embedded `CheckoutSession` with a frontend `clientSecret` |
+| `checkoutCreateSession`              | `customerId!`, `paymentPeriod!`, `returnUrl!`, and either a plan or custom configuration      | Embedded `CheckoutSession` with a frontend `clientSecret` |
 | `customCheckoutConfigurationsCreate` | `customerId!`, `deploymentType!`, `stripePriceId!`, optional entitlements and expiration time | `CustomCheckoutConfiguration`                             |
 
 For `checkoutCreateSession`:
 
 - The request must include `Authorization: Session <crater-session-token>`; the mutation is not anonymously accessible.
-- The authenticated user must be associated with a customer. Crater uses that user's first customer; if none exists, the mutation returns `INVALID_CHECKOUT_SESSION`. That customer does not need an email, name, or address yet.
+- The client must select the customer explicitly and pass its global `CustomerID` as the required `customerId` argument. Crater no longer falls back to the authenticated user's first customer, so a client has to create or choose a customer before calling `checkoutCreateSession`. The selected customer does not need an email, name, or address yet.
+- The selected customer must be linked to the authenticated user through `CustomerUser`, which is the same membership rule `CustomerPolicy` uses for `read_customer`. A customer that does not exist and one belonging to somebody else are both answered with `INVALID_CHECKOUT_CUSTOMER` and an identical message, so the response never reveals whether an id exists.
+- With a `customCheckoutConfigurationId`, the configuration already names its customer. `customerId` must be that customer; a different one is rejected with `INVALID_CHECKOUT_CUSTOMER` rather than silently switching the checkout to another customer.
+- For a `plan: custom` checkout the selected customer's type picks the B2B or B2C component prices. If the component is configured for the other customer type only, the request is rejected with `CUSTOMER_TYPE_MISMATCH` instead of a generic selection error.
+- The Stripe Checkout Session is created with the selected customer's `stripe_customer_id`, so the contact details, billing address, and tax ID that Stripe collects are synced back to exactly that customer. Its Crater customer ID is stored in the subscription metadata as `crater_customer_id`.
 - Crater never sends `customer_email`; the Stripe Customer is referenced by ID, and Stripe rejects both parameters together. An email already on the Stripe Customer is therefore never restated, and a missing one is collected by the client's `ContactDetailsElement`.
 - A regular checkout uses `plan`, `paymentPeriod`, and, where applicable, `deploymentType`, `namespaceId`, and `promotionCode`.
 - `plan: custom` accepts positive `aiTokens` and `workflowExecutions`; at least one quantity is required and the authenticated customer's stored type selects B2B or B2C Prices.
@@ -343,6 +373,8 @@ Documented error codes:
 
 | Code                                    | Meaning                                                                                 |
 | --------------------------------------- | --------------------------------------------------------------------------------------- |
+| `CUSTOMER_TYPE_MISMATCH`                | The selected customer's type does not match the selected checkout                       |
+| `INVALID_CHECKOUT_CUSTOMER`             | The selected customer does not exist or is not accessible to the current user           |
 | `INVALID_CHECKOUT_SESSION`              | The checkout session could not be created                                               |
 | `INVALID_CHECKOUT_SELECTION`            | The selected plan, payment period, quantity, or configured Price combination is invalid |
 | `INVALID_CUSTOMER`                      | The customer is invalid                                                                 |
@@ -383,35 +415,5 @@ Documented error codes:
 9. The frontend mounts Stripe's custom checkout UI. Stripe collects billing details and calculates tax automatically.
 10. The Stripe subscription receives metadata for the Crater customer ID, deployment type, customer type, and optional namespace ID.
 11. The verified `checkout.session.completed` webhook creates or updates Crater's subscription projection and syncs the email, name, phone, address, and tax ID from the session's `customer_details` back to the Crater customer. It does not grant paid access by itself.
-12. Invoice lifecycle webhook processing, paid-access activation, and automatic invoice-email delivery remain to be implemented.
+12. The verified `invoice.paid` webhook appends the first `paid` license, which is the moment paid access begins. A failed renewal appends a `payment_failed` snapshot without shortening the current entitlement, and `customer.subscription.deleted` cancels the subscription and appends a `canceled` snapshot. Automatic invoice-email delivery remains to be implemented.
 13. Once the relevant subscription and license data exists, a self-hosted license can be exported while a cloud license can be linked to a Sagittarius namespace.
-
-services:
-postgres:
-image: postgres:18.3
-environment:
-POSTGRES_USER: "crater"
-POSTGRES_PASSWORD: "crater"
-POSTGRES_DB: "postgres"
-restart: unless-stopped
-volumes: - database:/var/lib/postgresql/ - ./tooling/init-dev-db:/docker-entrypoint-initdb.d
-ports: - "5433:5432"
-healthcheck:
-test: ["CMD-SHELL", "pg_isready -U crater -d postgres"]
-interval: 2s
-timeout: 5s
-retries: 15
-crater:
-ports: - "3002:3000"
-build:
-context: .
-dockerfile: Dockerfile
-depends_on:
-postgres:
-condition: service_healthy
-environment:
-RAILS_ENV: development
-volumes: - ./config/crater.yml:/usr/src/app/config/crater.yml:ro
-
-volumes:
-database:
