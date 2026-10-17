@@ -23,7 +23,7 @@ export interface LicenseCustomerUpdate {
         postalCode?: string | null
         country?: string | null
     }
-    paymentMethods?: string[]
+    removePaymentMethodId?: string
 }
 
 function createLicenseDashboardUrl(pathname: string, origin: string, pagination?: LicenseDashboardRequest) {
@@ -82,8 +82,8 @@ export async function updateLicenseCustomer(request: LicenseCustomerUpdate, erro
     if (!response.ok) throw new Error(errorMessage)
 }
 
-export async function removeLicenseCustomerPaymentMethod(customerId: string, paymentMethodIds: string[]) {
-    const response = await updateLicenseCustomerRequest({ id: customerId, paymentMethods: paymentMethodIds })
+export async function removeLicenseCustomerPaymentMethod(customerId: string, paymentMethodId: string) {
+    const response = await updateLicenseCustomerRequest({ id: customerId, removePaymentMethodId: paymentMethodId })
     if (response.ok) return
 
     const result: unknown = await response.json().catch(() => null)

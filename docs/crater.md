@@ -495,6 +495,10 @@ Display details are read with `paymentMethod(paymentMethodId: String!)`, returni
 
 The removal diff is taken against a fresh, auto-paginated Stripe read, so it acts on currently attached methods rather than cached display data.
 
+Cygnus's `PATCH /api/crater/customer` accepts `removePaymentMethodId` for a single removal and rejects client-supplied `paymentMethods` lists. It reads the customer's current IDs through the authenticated Crater connection with `no-cache`, then constructs the keep list by excluding only that ID. This preserves methods added after a browser loaded its list. If the target is already absent, the update omits `paymentMethods` entirely.
+
+This adapter cannot make the read and mutation atomic: a method attached after Cygnus's read but before Crater's reconciliation can still be detached. Closing that race requires a Crater API change, preferably an explicit removal-ID operation that never detaches unrelated methods, or a precondition checked atomically with reconciliation. A lock in Cygnus cannot coordinate Stripe attachments, webhooks, or other Crater clients.
+
 A removal is refused with `PAYMENT_METHOD_IN_USE` while the payment method is charged for anything:
 
 - it is the customer's `invoice_settings.default_payment_method`, or

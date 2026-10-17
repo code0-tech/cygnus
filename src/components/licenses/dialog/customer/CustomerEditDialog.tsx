@@ -115,7 +115,7 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
         setRemovePaymentMethodError(null)
 
         try {
-            const errorCode = await removeLicenseCustomerPaymentMethod(customer.id, paymentMethods.filter((method) => method.id !== paymentMethodId).map((method) => method.id))
+            const errorCode = await removeLicenseCustomerPaymentMethod(customer.id, paymentMethodId)
             if (errorCode) throw new Error(errorCode === "PAYMENT_METHOD_IN_USE" ? errors.paymentMethodInUse : errors.paymentMethodRemove)
 
             removePaymentMethodLocally(paymentMethodId)

@@ -1,6 +1,7 @@
 import { readGuestCheckoutSession } from "@/lib/checkout/guestCheckoutSession"
 import { createApolloClient } from "@/lib/apolloClient"
 import { CRATER_ERROR_FIELDS, craterJson, runCraterMutation, withCraterSession } from "@/lib/crater/api.server"
+import { readCustomerPaymentMethodIds } from "@/lib/crater/customerPaymentMethods.server"
 import { isCustomerId, optionalString, readJsonObject, readOptionalAddress } from "@/lib/crater/request"
 import { normalizeCraterCustomerType, toCraterCustomerTypeEnum } from "@/lib/crater/values"
 import type { Customer, CustomerAddressCreateInput, CustomerAddressUpdateInput, Mutation, MutationCustomersCreateArgs, MutationCustomersUpdateArgs, Query } from "@code0-tech/crater-graphql-types"
@@ -202,17 +203,30 @@ export const PATCH = withCraterSession({ log: "Crater customer update error", er
     const name = nullableString(body?.name)
     const phone = nullableString(body?.phone)
     const address = readUpdateAddress(body?.address)
-    const paymentMethods = body?.paymentMethods
-    if (paymentMethods !== undefined && (!Array.isArray(paymentMethods) || !paymentMethods.every((id) => typeof id === "string" && id.trim().length > 0))) {
-        return craterJson({ error: "paymentMethods must be an array of non-empty payment method IDs." }, 400)
+    if (body && "paymentMethods" in body) {
+        return craterJson({ error: "Replacing paymentMethods is not supported. Provide removePaymentMethodId instead." }, 400)
+    }
+    const removePaymentMethodId = body?.removePaymentMethodId
+    if (removePaymentMethodId !== undefined && (typeof removePaymentMethodId !== "string" || !removePaymentMethodId.trim())) {
+        return craterJson({ error: "removePaymentMethodId must be a non-empty payment method ID." }, 400)
     }
 
     if (!body || !id || !isCustomerId(id) || email === INVALID_UPDATE_VALUE || name === INVALID_UPDATE_VALUE || phone === INVALID_UPDATE_VALUE || address === INVALID_UPDATE_VALUE) {
         return craterJson({ error: "A valid Crater customer id is required and address must be valid when provided." }, 400)
     }
 
-    if (email === undefined && name === undefined && phone === undefined && address === undefined && paymentMethods === undefined) {
+    if (email === undefined && name === undefined && phone === undefined && address === undefined && removePaymentMethodId === undefined) {
         return craterJson({ error: "Provide at least one customer field to update." }, 400)
+    }
+
+    let paymentMethods: string[] | undefined
+    if (typeof removePaymentMethodId === "string") {
+        const current = await readCustomerPaymentMethodIds(createApolloClient(token), id)
+        if (current.response) return current.response
+        const target = removePaymentMethodId.trim()
+        if (current.paymentMethodIds.includes(target)) {
+            paymentMethods = current.paymentMethodIds.filter((methodId) => methodId !== target)
+        }
     }
 
     const mutation = await runCraterMutation(
@@ -221,7 +235,7 @@ export const PATCH = withCraterSession({ log: "Crater customer update error", er
         {
             input: {
                 id,
-                ...(paymentMethods !== undefined ? { paymentMethods: paymentMethods as string[] } : {}),
+                ...(paymentMethods !== undefined ? { paymentMethods } : {}),
                 ...(address !== undefined ? { address } : {}),
                 ...(email !== undefined ? { email } : {}),
                 ...(name !== undefined ? { name } : {}),

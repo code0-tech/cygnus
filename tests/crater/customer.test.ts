@@ -504,3 +504,111 @@ test("checkout enforces its route limit", async () => {
         }
     }
 })
+
+
+function removalRequest(body: Record<string, unknown> = {}) {
+    return new Request("https://example.com/api/crater/customer", {
+        method: "PATCH",
+        headers: sessionHeaders,
+        body: JSON.stringify({ id: "gid://crater/Customer/1", removePaymentMethodId: "pm_remove", ...body }),
+    })
+}
+
+function paymentMethodsPage(paymentMethods: unknown) {
+    return { data: { currentUser: { customers: {
+        nodes: [{ id: "gid://crater/Customer/1", paymentMethods }],
+        pageInfo: { endCursor: null, hasNextPage: false },
+    } } } }
+}
+
+const updatedCustomerResponse = { data: { customersUpdate: { errors: [], customer: { id: "gid://crater/Customer/1", customerType: "PERSONAL" } } } }
+
+test("removal preserves cards added since the browser loaded its payment methods", async () => {
+    await withGraphQLServer([
+        paymentMethodsPage(["pm_remove", "pm_keep", "pm_added_in_other_tab"]),
+        updatedCustomerResponse,
+    ], async (server) => {
+        const response = await updateCustomer(removalRequest())
+        assert.equal(response.status, 200)
+        assert.deepEqual(server.requests.map(({ body }) => body.operationName), ["CustomerPaymentMethods", "CustomersUpdate"])
+        assert.deepEqual(server.requests[1].body.variables, {
+            input: { id: "gid://crater/Customer/1", paymentMethods: ["pm_keep", "pm_added_in_other_tab"] },
+        })
+        for (const request of server.requests) assert.equal(request.authorization, sessionHeaders.authorization)
+    })
+})
+
+test("rejects stale keep lists even when combined with other customer changes", async () => {
+    await withGraphQLServer([], async (server) => {
+        for (const paymentMethods of [[], ["pm_keep"], null, "invalid"]) {
+            const response = await updateCustomer(removalRequest({ paymentMethods, name: "Changed" }))
+            assert.equal(response.status, 400)
+        }
+        for (const removePaymentMethodId of [null, "", "  ", [], 12]) {
+            assert.equal((await updateCustomer(removalRequest({ removePaymentMethodId }))).status, 400)
+        }
+        assert.equal(server.requests.length, 0)
+    })
+})
+
+test("removal follows customer pagination before deriving the keep list", async () => {
+    await withGraphQLServer([
+        { data: { currentUser: { customers: { nodes: [], pageInfo: { endCursor: "next-customer", hasNextPage: true } } } } },
+        paymentMethodsPage(["pm_remove", "pm_added"]),
+        updatedCustomerResponse,
+    ], async (server) => {
+        assert.equal((await updateCustomer(removalRequest())).status, 200)
+        assert.deepEqual(server.requests[1].body.variables, { after: "next-customer" })
+        assert.deepEqual(server.requests[2].body.variables, { input: { id: "gid://crater/Customer/1", paymentMethods: ["pm_added"] } })
+    })
+})
+
+test("an already removed method omits reconciliation and preserves other customer changes", async () => {
+    await withGraphQLServer([paymentMethodsPage(["pm_added"]), updatedCustomerResponse], async (server) => {
+        assert.equal((await updateCustomer(removalRequest({ name: "Changed" }))).status, 200)
+        assert.deepEqual(server.requests[1].body.variables, { input: { id: "gid://crater/Customer/1", name: "Changed" } })
+    })
+})
+
+test("removing the last attached method sends an intentional empty keep list", async () => {
+    await withGraphQLServer([paymentMethodsPage(["pm_remove"]), updatedCustomerResponse], async (server) => {
+        assert.equal((await updateCustomer(removalRequest())).status, 200)
+        assert.deepEqual(server.requests[1].body.variables, { input: { id: "gid://crater/Customer/1", paymentMethods: [] } })
+    })
+})
+
+test("failed or incomplete fresh reads never reach the destructive mutation", async () => {
+    const scenarios = [
+        { result: { errors: [{ message: "Payment methods unavailable", extensions: { errorCode: "PAYMENT_METHOD_UNAVAILABLE" } }] }, status: 502 },
+        { result: paymentMethodsPage(null), status: 502 },
+        { result: paymentMethodsPage(["pm_remove", null]), status: 502 },
+        { result: { data: { currentUser: null } }, status: 401 },
+        { result: { data: { currentUser: { customers: { nodes: [], pageInfo: { hasNextPage: false, endCursor: null } } } } }, status: 404 },
+        { result: { data: { currentUser: { customers: { nodes: [], pageInfo: { hasNextPage: true, endCursor: null } } } } }, status: 502 },
+    ]
+    for (const { result, status } of scenarios) {
+        await withGraphQLServer([result], async (server) => {
+            assert.equal((await updateCustomer(removalRequest())).status, status)
+            assert.equal(server.requests.length, 1)
+        })
+    }
+})
+
+test("removal retains Crater's payment-method-in-use error", async () => {
+    await withGraphQLServer([
+        paymentMethodsPage(["pm_remove", "pm_keep"]),
+        { data: { customersUpdate: { customer: null, errors: [{ errorCode: "PAYMENT_METHOD_IN_USE" }] } } },
+    ], async () => {
+        const response = await updateCustomer(removalRequest())
+        assert.equal(response.status, 422)
+        assert.equal((await response.json()).errorCode, "PAYMENT_METHOD_IN_USE")
+    })
+})
+
+test("ordinary contact updates do not read or reconcile payment methods", async () => {
+    await withGraphQLServer([updatedCustomerResponse], async (server) => {
+        assert.equal((await updateCustomer(removalRequest({ removePaymentMethodId: undefined, name: "Changed" }))).status, 200)
+        assert.equal(server.requests.length, 1)
+        assert.deepEqual(server.requests[0].body.variables, { input: { id: "gid://crater/Customer/1", name: "Changed" } })
+    })
+})
