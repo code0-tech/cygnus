@@ -26,6 +26,27 @@ mock.module("@/components/checkout/CraterSessionProvider", {
         }),
     },
 })
+mock.module("@/components/checkout/CountryPicker", {
+    namedExports: {
+        CountryPicker: ({
+            errorMessage,
+            label,
+            onValueChange,
+            value,
+        }: {
+            errorMessage?: string | null
+            label: string
+            onValueChange: (value: string) => void
+            value: string
+        }) => (
+            <label>
+                <span>{label}</span>
+                <input aria-label={label} value={value} onChange={(event) => onValueChange(event.currentTarget.value.toUpperCase())} />
+                {errorMessage && <span>{errorMessage}</span>}
+            </label>
+        ),
+    },
+})
 mock.module("@code0-tech/pictor", {
     namedExports: {
         Button: ({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button {...props}>{children}</button>,
@@ -145,11 +166,19 @@ function useTestForm<T extends Record<string, unknown>>({
                 },
                 formValidation: {
                     error: errors[name],
+                    notValidMessage: errors[name],
+                    setValue: (value: T[keyof T]) => {
+                        setValues((currentValues) => ({
+                            ...currentValues,
+                            [name]: value,
+                        }))
+                    },
                     valid: !errors[name],
                 },
             }),
         },
         validate,
+        values,
     ] as const
 }
 
@@ -161,7 +190,7 @@ test("validates billing fields before creating a customer", async () => {
     }) as typeof fetch
     const user = userEvent.setup()
 
-    render(<CheckoutForm content={content} subscriptionConfig={subscriptionConfig} />)
+    render(<CheckoutForm content={content} locale="en" subscriptionConfig={subscriptionConfig} />)
     await user.click(screen.getByRole("button", { name: "Continue to payment" }))
 
     await waitFor(() => assert.ok(screen.getByText("Name is required")))
@@ -189,7 +218,7 @@ test("creates the customer, sends the checkout selection, and redirects to the r
     }) as typeof fetch
     const user = userEvent.setup()
 
-    render(<CheckoutForm content={content} subscriptionConfig={subscriptionConfig} />)
+    render(<CheckoutForm content={content} locale="en" subscriptionConfig={subscriptionConfig} />)
 
     await user.type(screen.getByRole("textbox", { name: "Name" }), "Ada Lovelace")
     await user.type(screen.getByRole("textbox", { name: "Email" }), "ada@example.com")
