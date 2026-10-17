@@ -10,14 +10,12 @@ import { logSecurityEvent } from "@/lib/security/securityLog"
 export const runtime = "nodejs"
 
 export async function POST(request: Request) {
-    // Its own budget: a Sagittarius that refuses every guest must not lock the browser out of the plain
-    // session route the checkout needs afterwards.
-    const rateLimitResponse = enforceRateLimit("guest", request)
-    if (rateLimitResponse) return rateLimitResponse
-
     const body = await readJsonObject(request)
     const email = optionalString(body?.email)
     const clientMutationId = optionalString(body?.clientMutationId)
+
+    const rateLimitResponse = enforceRateLimit("guest", request, email)
+    if (rateLimitResponse) return rateLimitResponse
 
     if (!email || !isValidEmail(email)) {
         return craterJson({ error: "A valid email is required to continue as a guest." }, 400)

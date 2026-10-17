@@ -15,8 +15,8 @@ type SecurityEvent =
           errorCode: string
       }
 
-export function logSecurityEvent(event: SecurityEvent) {
-    console.warn(
+export function logSecurityEvent(event: SecurityEvent, level: "warn" | "error" = "warn") {
+    console[level](
         JSON.stringify({
             timestamp: new Date().toISOString(),
             ...event,

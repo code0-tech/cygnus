@@ -37,3 +37,7 @@ export function createRateLimitKey(name: RateLimitPolicyName, request: Request, 
     const clientIp = getTrustedClientIp(request, environment)
     return clientIp ? `${name}:network:${digest(clientIp)}` : null
 }
+
+export function createRateLimitSubjectKey(name: RateLimitPolicyName, subject: string) {
+    return `${name}:subject:${digest(subject.trim().toLowerCase())}`
+}

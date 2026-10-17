@@ -1,4 +1,4 @@
-import { createRateLimitKey } from "@/lib/security/rateLimitKey"
+import { createRateLimitKey, createRateLimitSubjectKey } from "@/lib/security/rateLimitKey"
 import { getRateLimitPolicy, type RateLimitPolicy, type RateLimitPolicyName } from "@/lib/security/rateLimitPolicies"
 import { logSecurityEvent } from "@/lib/security/securityLog"
 
@@ -47,6 +47,11 @@ export class InMemoryRateLimiter {
         return { allowed: true, limit: policy.max, remaining: policy.max - current.count, resetSeconds, shouldLog: false }
     }
 
+    isExhausted(key: string, policy: RateLimitPolicy) {
+        const current = this.buckets.get(key)
+        return Boolean(current && current.resetAt > this.now() && current.count >= policy.max)
+    }
+
     private makeRoom(now: number) {
         if (this.buckets.size < this.maxBuckets) return
 
@@ -64,23 +69,41 @@ export class InMemoryRateLimiter {
 
 const limiter = new InMemoryRateLimiter()
 
-// Requests without a trusted client address share one bucket per policy. Its higher limit keeps a single
 // source from locking out every such user too quickly, while still capping abuse (e.g. guest e-mail spam)
 // when the deployment fails to surface a trusted IP.
 const UNTRUSTED_NETWORK_LIMIT_MULTIPLIER = 10
 const untrustedNetworkWarnings = new Set<RateLimitPolicyName>()
 
-export function enforceRateLimit(name: RateLimitPolicyName, request: Request) {
-    const clientKey = createRateLimitKey(name, request)
-    const policy = getRateLimitPolicy(name)
-    const key = clientKey ?? `${name}:network:untrusted`
-
-    if (!clientKey && !untrustedNetworkWarnings.has(name)) {
-        untrustedNetworkWarnings.add(name)
-        logSecurityEvent({ event: "rate_limit_untrusted_network", policy: name })
+function reportUntrustedNetwork(name: RateLimitPolicyName) {
+    if (process.env.NODE_ENV === "production") {
+        logSecurityEvent({ event: "rate_limit_untrusted_network", policy: name }, "error")
+        return
     }
 
-    const result = limiter.consume(key, clientKey ? policy : { ...policy, max: policy.max * UNTRUSTED_NETWORK_LIMIT_MULTIPLIER })
+    if (untrustedNetworkWarnings.has(name)) return
+    untrustedNetworkWarnings.add(name)
+    logSecurityEvent({ event: "rate_limit_untrusted_network", policy: name })
+}
+
+export function enforceRateLimit(name: RateLimitPolicyName, request: Request, subject?: string) {
+    const clientKey = createRateLimitKey(name, request)
+    const policy = getRateLimitPolicy(name)
+
+    if (clientKey) return rejectWhenExhausted(name, limiter.consume(clientKey, policy), "trusted")
+
+    reportUntrustedNetwork(name)
+
+    const sharedKey = `${name}:network:untrusted`
+    const sharedPolicy = { ...policy, max: policy.max * UNTRUSTED_NETWORK_LIMIT_MULTIPLIER }
+    if (subject && !limiter.isExhausted(sharedKey, sharedPolicy)) {
+        const rejected = rejectWhenExhausted(name, limiter.consume(createRateLimitSubjectKey(name, subject), policy), "untrusted")
+        if (rejected) return rejected
+    }
+
+    return rejectWhenExhausted(name, limiter.consume(sharedKey, sharedPolicy), "untrusted")
+}
+
+function rejectWhenExhausted(name: RateLimitPolicyName, result: RateLimitResult, network: "trusted" | "untrusted") {
     if (result.allowed) return null
 
     if (result.shouldLog) {
@@ -89,7 +112,7 @@ export function enforceRateLimit(name: RateLimitPolicyName, request: Request) {
             policy: name,
             limit: result.limit,
             retryAfterSeconds: result.resetSeconds,
-            network: clientKey ? "trusted" : "untrusted",
+            network,
         })
     }
 

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict"
 import test from "node:test"
-import { createRateLimitKey, getTrustedClientIp } from "../src/lib/security/rateLimitKey"
+import { createRateLimitKey, createRateLimitSubjectKey, getTrustedClientIp } from "../src/lib/security/rateLimitKey"
 
 test("selects the client address from the trusted side of a forwarded chain", () => {
     const request = new Request("https://code0.example/api/crater/login", {
@@ -60,4 +60,11 @@ test("keeps anonymous clients separated by their trusted address", () => {
     const second = new Request("https://code0.example/api/crater/login", { headers: { "x-forwarded-for": "203.0.113.11" } })
 
     assert.notEqual(createRateLimitKey("login", first), createRateLimitKey("login", second))
+})
+
+test("normalizes subjects and keeps them scoped and hashed", () => {
+    assert.equal(createRateLimitSubjectKey("guest", " Guest@Example.com "), createRateLimitSubjectKey("guest", "guest@example.com"))
+    assert.notEqual(createRateLimitSubjectKey("guest", "guest@example.com"), createRateLimitSubjectKey("login", "guest@example.com"))
+    assert.match(createRateLimitSubjectKey("guest", "guest@example.com"), /^guest:subject:[A-Za-z0-9_-]+$/)
+    assert.doesNotMatch(createRateLimitSubjectKey("guest", "guest@example.com"), /example/)
 })

@@ -156,6 +156,36 @@ test("guest creation forwards the Crater error code without a session cookie", a
     }
 })
 
+test("without a trusted address, guest creation is limited per e-mail", async () => {
+    const environmentKeys = ["CRATER_GUEST_RATE_LIMIT_MAX", "CRATER_RATE_LIMIT_TRUSTED_PROXY_HOPS"] as const
+    const previousEnvironment = Object.fromEntries(environmentKeys.map((key) => [key, process.env[key]]))
+    // The shared untrusted bucket (3 × 10) leaves room for the guest requests the tests above already made.
+    process.env.CRATER_GUEST_RATE_LIMIT_MAX = "3"
+    process.env.CRATER_RATE_LIMIT_TRUSTED_PROXY_HOPS = "1"
+    const originalWarn = console.warn
+    console.warn = () => {}
+
+    // Malformed e-mails are refused before Crater, which keeps the test free of a GraphQL server.
+    const request = (email: string) =>
+        new Request("https://example.com/api/crater/guest", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ email }),
+        })
+
+    try {
+        for (let index = 0; index < 3; index += 1) assert.equal((await createGuestUser(request("hammered-guest"))).status, 400)
+        assert.equal((await createGuestUser(request("hammered-guest"))).status, 429)
+        assert.equal((await createGuestUser(request("other-guest"))).status, 400)
+    } finally {
+        console.warn = originalWarn
+        for (const key of environmentKeys) {
+            if (previousEnvironment[key] === undefined) delete process.env[key]
+            else process.env[key] = previousEnvironment[key]
+        }
+    }
+})
+
 test("server-side login callback redirects from the container to the configured origin with an HttpOnly Crater cookie", async () => {
     await withGraphQLServer([
         {
