@@ -74,6 +74,7 @@ export async function GET(request: Request) {
         }
 
         // This callback is the second Sagittarius login in the product, so it marks the browser too.
+        resolvedReturn.returnUrl.searchParams.set("namespaceLinked", "true")
         return setCraterUserLoginCookie(setCraterSessionCookie(clearCraterLoginStateCookie(noStoreRedirect(resolvedReturn.returnUrl), request), sessionToken))
     } catch (error) {
         console.error("Crater license namespace callback error:", error instanceof Error ? error.name : "Unknown error")

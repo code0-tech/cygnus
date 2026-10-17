@@ -2,6 +2,7 @@ import assert from "node:assert/strict"
 import test, { afterEach, mock } from "node:test"
 import React, { type ReactNode } from "react"
 import { installDomTestEnvironment } from "../helpers/domTestEnvironment"
+import { licenseToastContent } from "../helpers/licenseToasts"
 import type { LicenseContent, SubscriptionConfigData } from "../../src/lib/cms"
 import type { LicenseDashboardLicense } from "../../src/lib/licenses/types"
 import type { Error as CraterError } from "@code0-tech/crater-graphql-types"
@@ -10,9 +11,10 @@ import { isNamespaceInUse } from "../../src/lib/crater/errors"
 const conflict = { errorCode: "INVALID_SUBSCRIPTION", details: [{ __typename: "MessageError", message: "Namespace is already linked to another subscription" }] } as CraterError
 
 installDomTestEnvironment()
-mock.module("next/navigation", { namedExports: { useRouter: () => ({}) } })
+mock.module("next/navigation", { namedExports: { usePathname: () => "/en/licenses", useRouter: () => ({}) } })
 mock.module("@code0-tech/pictor", {
     namedExports: {
+        toast: () => "test-toast",
         Button: ({ children }: { children: ReactNode }) => <button>{children}</button>,
         Badge: ({ children }: { children: ReactNode }) => <span>{children}</span>,
         Flex: ({ children }: { children: ReactNode }) => <div>{children}</div>,
@@ -36,6 +38,8 @@ mock.module("@/components/licenses/dialog/shared/LicenseTabLayout", {
 })
 const { cleanup, render, screen } = await import("@testing-library/react")
 const { LicenseGeneralTab } = await import("../../src/components/licenses/dialog/subscription/LicenseGeneralTab")
+const { LicenseToastsProvider } = await import("../../src/components/licenses/layout/LicenseNotifications")
+const wrapper = ({ children }: { children: ReactNode }) => <LicenseToastsProvider locale="en" toasts={licenseToastContent}>{children}</LicenseToastsProvider>
 afterEach(cleanup)
 
 test("the edit dialog displays a namespace name and an unavailable namespace fallback", () => {
@@ -45,7 +49,7 @@ test("the edit dialog displays a namespace name and an unavailable namespace fal
         billing: { currentPeriodEndDescription: "Renews on {date}.", currentPeriodEndPendingDescription: "Switches to {selection} on {date}." },
     } as LicenseContent
     const props = { content, license, errors: {} as import("../../src/lib/cms").ErrorsContent, locale: "en" as const, namespaceHref: "https://app.example/login", onClose: () => {}, subscriptionConfig: {} as SubscriptionConfigData, title: "Edit" }
-    const { rerender } = render(<LicenseGeneralTab {...props} />)
+    const { rerender } = render(<LicenseGeneralTab {...props} />, { wrapper })
     assert.ok(screen.getByText("Example Workspace"))
     assert.equal(screen.queryByText("opaque-id"), null)
     rerender(<LicenseGeneralTab {...props} license={{ ...license, namespaceId: null, namespaceName: null }} />)

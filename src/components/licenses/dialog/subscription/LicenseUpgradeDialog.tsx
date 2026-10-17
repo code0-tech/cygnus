@@ -1,5 +1,6 @@
 "use client"
 
+import { useLicenseToasts } from "@/components/licenses/layout/LicenseNotifications"
 import type { PaymentPeriod, SubscriptionPlan } from "@/lib/subscription/types"
 
 import { useLicenseData } from "@/components/licenses/data/LicenseDataProvider"
@@ -78,6 +79,7 @@ const PLAN_ORDER: Record<SubscriptionPlan, number> = { pro: 0, max: 1, custom: 2
 const PLANS: SubscriptionPlan[] = ["pro", "max", "custom"]
 
 export function LicenseUpgradeDialog({ checkoutPackages, content, customerId, errors, licenseId, locale, subscriptionConfig, subscriptionPrices }: LicenseUpgradeDialogProps) {
+    const toasts = useLicenseToasts()
     const router = useRouter()
     const { customers, licenses, updateLicense } = useLicenseData()
     const resolvedCustomerId = resolveCustomerRouteId(customerId)
@@ -146,9 +148,11 @@ export function LicenseUpgradeDialog({ checkoutPackages, content, customerId, er
                 ...(typeof subscription.workflowExecutions === "number" ? { workflowExecutions: subscription.workflowExecutions } : {}),
                 ...(subscription.updatedAt ? { updatedAt: subscription.updatedAt } : {}),
             })
+            toasts.success(subscription.pendingUpdate ? "changeScheduled" : "planUpdated", subscription.pendingUpdate?.effectiveAt)
             close()
         } catch (error) {
             setSaveError(error instanceof Error ? error.message : errors.planUpgrade)
+            toasts.error(error instanceof Error ? error.message : errors.planUpgrade)
         } finally {
             setIsSaving(false)
         }

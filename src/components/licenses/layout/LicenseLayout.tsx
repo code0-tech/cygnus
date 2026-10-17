@@ -3,8 +3,9 @@
 import { LicenseDataProvider, useLicenseData } from "@/components/licenses/data/LicenseDataProvider"
 import { LicensePrimarySidebar } from "@/components/licenses/layout/LicensePrimarySidebar"
 import { LicenseSidebar } from "@/components/licenses/layout/LicenseSidebar"
+import { LicenseNotifications } from "@/components/licenses/layout/LicenseNotifications"
 import { logoutLicenseSession } from "@/lib/licenses/client"
-import type { ErrorsContent, LicenseContent } from "@/lib/cms"
+import type { ErrorsContent, LicenseContent, LicenseToastsContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { AuroraBackground, FullScreen, ScrollArea, ScrollAreaScrollbar, ScrollAreaThumb, ScrollAreaViewport } from "@code0-tech/pictor"
 import { notFound } from "next/navigation"
@@ -17,6 +18,7 @@ interface LicenseLayoutProps {
     locale: AppLocale
     sculptorUrl: string
     modal?: ReactNode
+    toasts: LicenseToastsContent
 }
 
 function LicenseLayoutContent({ children, content, locale, sculptorUrl }: LicenseLayoutProps) {
@@ -86,8 +88,10 @@ function LicenseLayoutContent({ children, content, locale, sculptorUrl }: Licens
 export function LicenseLayout(props: LicenseLayoutProps) {
     return (
         <LicenseDataProvider loadError={props.errors.dashboardLoad} sessionError={props.errors.sessionUnavailable}>
-            <LicenseLayoutContent key="content" {...props} />
-            <Fragment key="modal">{props.modal}</Fragment>
+            <LicenseNotifications errors={props.errors} locale={props.locale} toasts={props.toasts}>
+                <LicenseLayoutContent key="content" {...props} />
+                <Fragment key="modal">{props.modal}</Fragment>
+            </LicenseNotifications>
         </LicenseDataProvider>
     )
 }

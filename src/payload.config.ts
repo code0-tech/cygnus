@@ -14,6 +14,7 @@ import { Errors } from "./globals/errors"
 import { Footer } from "./globals/footer"
 import { Jobs } from "./collections/jobs"
 import { LicenseDialogs } from "./globals/licenseDialogs"
+import { LicenseToasts } from "./globals/licenseToasts"
 import { Licenses } from "./globals/licenses"
 import { Media } from "./collections/media"
 import { Navigation } from "./globals/navigation"
@@ -76,7 +77,7 @@ export default buildConfig({
         defaultLocale: "en",
     },
     collections: [Users, Media, Pages, Actions, Jobs, Blog, TeamMembers],
-    globals: [Navigation, Footer, CookieBanner, SubscriptionCollection, Checkout, UpgradeBanner, Licenses, LicenseDialogs, Errors],
+    globals: [Navigation, Footer, CookieBanner, SubscriptionCollection, Checkout, UpgradeBanner, Licenses, LicenseDialogs, LicenseToasts, Errors],
     jobs: {
         autoRun: [
             {

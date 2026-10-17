@@ -1,5 +1,6 @@
 "use client"
 
+import { useLicenseToasts } from "@/components/licenses/layout/LicenseNotifications"
 import { useLicenseData } from "@/components/licenses/data/LicenseDataProvider"
 import { LicenseGeneralTab } from "@/components/licenses/dialog/subscription/LicenseGeneralTab"
 import { isLicenseStatusCanceled } from "@/components/licenses/shared/LicenseStatusDot"
@@ -31,6 +32,7 @@ interface LicenseEditDialogProps {
 }
 
 export function LicenseEditDialog({ checkoutPackages, content, customerId, errors, licenseId, locale, namespaceHref, subscriptionConfig, subscriptionPrices }: LicenseEditDialogProps) {
+    const toasts = useLicenseToasts()
     const router = useRouter()
     const pathname = usePathname()
     const searchParams = useSearchParams()
@@ -81,8 +83,10 @@ export function LicenseEditDialog({ checkoutPackages, content, customerId, error
 
             updateLicense(license.id, { paymentMethodId })
             refreshCustomerPaymentMethods()
+            toasts.success("paymentAssigned")
         } catch {
             setAssignPaymentMethodError(true)
+            toasts.error(errors.paymentMethodAssign)
         } finally {
             setAssigningPaymentMethodId(null)
         }
@@ -117,11 +121,6 @@ export function LicenseEditDialog({ checkoutPackages, content, customerId, error
             title={content.editor.licenseTitle}
             value={license?.subscriptionId ? section : "general"}
         >
-            {searchParams.get("namespaceError") ? (
-                <p role="alert" className="my-4 rounded-lg border border-error/30 p-4 text-sm text-error">
-                    {searchParams.get("namespaceError") === "occupied" ? errors.namespaceInUse : errors.licenseUpdate}
-                </p>
-            ) : null}
             <TabContent value="general">
                 <LicenseGeneralTab
                     content={content}

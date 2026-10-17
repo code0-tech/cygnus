@@ -1,5 +1,6 @@
 "use client"
 
+import { useLicenseToasts } from "@/components/licenses/layout/LicenseNotifications"
 import { useLicenseData } from "@/components/licenses/data/LicenseDataProvider"
 import { LicenseDialog } from "@/components/licenses/dialog/shared/LicenseDialog"
 import { CustomerPaymentMethodCard, CustomerPaymentMethodCardSkeleton } from "@/components/licenses/dialog/customer/CustomerPaymentMethodCard"
@@ -41,6 +42,7 @@ interface CustomerField {
 }
 
 export function CustomerEditDialog({ checkoutForm, content, customerId, errors, locale }: CustomerEditDialogProps) {
+    const toasts = useLicenseToasts()
     const router = useRouter()
     const pathname = usePathname()
     const searchParams = useSearchParams()
@@ -100,8 +102,10 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
             if (errorCode) throw new Error(errorCode === "PAYMENT_METHOD_IN_USE" ? errors.paymentMethodInUse : errors.paymentMethodRemove)
 
             removePaymentMethodLocally(paymentMethodId)
+            toasts.success("paymentRemoved")
         } catch (removeError) {
             setRemovePaymentMethodError(removeError instanceof Error ? removeError.message : errors.paymentMethodRemove)
+            toasts.error(removeError instanceof Error ? removeError.message : errors.paymentMethodRemove)
         } finally {
             setRemovingPaymentMethodId(null)
         }
@@ -145,9 +149,11 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
                 name: name.trim() || undefined,
                 phone: phone.trim() || undefined,
             })
+            toasts.success("customerSaved")
             close()
         } catch (saveError) {
             setError(saveError instanceof Error ? saveError.message : errors.customerUpdate)
+            toasts.error(saveError instanceof Error ? saveError.message : errors.customerUpdate)
         } finally {
             setIsSaving(false)
         }

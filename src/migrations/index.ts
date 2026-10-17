@@ -175,6 +175,7 @@ import * as migration_20261013_100000_download_license_label from './20261013_10
 import * as migration_20261013_120000_customer_overview_labels from './20261013_120000_customer_overview_labels';
 import * as migration_20261013_130000_recent_licenses_labels from './20261013_130000_recent_licenses_labels';
 import * as migration_20261013_140000_period_end_canceled_description from './20261013_140000_period_end_canceled_description';
+import * as migration_20261014_120000_license_toasts from './20261014_120000_license_toasts';
 
 export const migrations = [
   {
@@ -1046,5 +1047,10 @@ export const migrations = [
     up: migration_20261013_140000_period_end_canceled_description.up,
     down: migration_20261013_140000_period_end_canceled_description.down,
     name: '20261013_140000_period_end_canceled_description',
+  },
+  {
+    up: migration_20261014_120000_license_toasts.up,
+    down: migration_20261014_120000_license_toasts.down,
+    name: '20261014_120000_license_toasts',
   },
 ];
