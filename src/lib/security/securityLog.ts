@@ -7,7 +7,7 @@ type SecurityEvent =
           scope: "anonymous" | "authenticated"
       }
     | {
-          event: "crater_login_failed"
+          event: "crater_login_failed" | "crater_guest_user_failed"
           errorCode: string
       }
 

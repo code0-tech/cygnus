@@ -19,6 +19,7 @@ const CRATER_SESSION_COOKIE_NAME = "crater_session"
 const CRATER_SESSION_COOKIE_PATH = "/api/crater"
 // The marker is read by pages outside /api/crater, so it needs the whole site as its path.
 const CRATER_USER_LOGIN_COOKIE_PATH = "/"
+const CRATER_GUEST_CLAIM_COOKIE_NAME = "crater_guest_claim"
 
 function readCookie(request: Request, name: string) {
     const cookieHeader = request.headers.get("cookie")
@@ -89,6 +90,16 @@ export function setCraterUserLoginCookie(response: NextResponse) {
     return response
 }
 
+export function setCraterGuestClaimCookie(response: NextResponse, claimToken: string) {
+    response.cookies.set(CRATER_GUEST_CLAIM_COOKIE_NAME, claimToken, {
+        httpOnly: true,
+        path: CRATER_SESSION_COOKIE_PATH,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+    })
+    return response
+}
+
 export function clearCraterSessionCookie(response: NextResponse) {
     response.cookies.set(CRATER_SESSION_COOKIE_NAME, "", {
         httpOnly: true,
@@ -102,6 +113,13 @@ export function clearCraterSessionCookie(response: NextResponse) {
         httpOnly: false,
         maxAge: 0,
         path: CRATER_USER_LOGIN_COOKIE_PATH,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+    })
+    response.cookies.set(CRATER_GUEST_CLAIM_COOKIE_NAME, "", {
+        httpOnly: true,
+        maxAge: 0,
+        path: CRATER_SESSION_COOKIE_PATH,
         sameSite: "lax",
         secure: process.env.NODE_ENV === "production",
     })

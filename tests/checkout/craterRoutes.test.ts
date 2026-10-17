@@ -5,6 +5,7 @@ import { GET as getCustomerPaymentMethodSetupStatus, POST as createCustomerPayme
 import { GET as getCustomerPaymentMethods } from "../../src/app/api/crater/customer/payment-methods/route"
 import { POST as validateDiscount } from "../../src/app/api/crater/checkout/discount/route"
 import { POST as createCheckoutSession } from "../../src/app/api/crater/checkout/session/route"
+import { POST as createGuestUser } from "../../src/app/api/crater/guest/route"
 import { POST as createSession } from "../../src/app/api/crater/login/route"
 import { DELETE as deleteSession, GET as getSessionStatus } from "../../src/app/api/crater/auth/session/route"
 import { GET as completeCraterLogin } from "../../src/app/api/crater/auth/callback/route"
@@ -98,6 +99,147 @@ test("Crater login returns retry guidance after its rate limit is exceeded", asy
         else process.env.CRATER_LOGIN_RATE_LIMIT_WINDOW_SECONDS = previousWindow
         if (previousProxyHops === undefined) delete process.env.CRATER_RATE_LIMIT_TRUSTED_PROXY_HOPS
         else process.env.CRATER_RATE_LIMIT_TRUSTED_PROXY_HOPS = previousProxyHops
+    }
+})
+
+test("continuing as a guest creates a Sagittarius guest user for the entered email", async () => {
+    const graphQLServer = await createGraphQLTestServer([
+        {
+            data: {
+                usersCreateGuestUser: {
+                    claimToken: "guest-claim-token",
+                    errors: [],
+                    userSession: { id: "gid://crater/UserSession/9", token: "crater-guest-session" },
+                },
+            },
+        },
+    ])
+    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
+    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
+
+    try {
+        const response = await createGuestUser(
+            new Request("https://example.com/api/crater/guest", {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ email: " guest@example.com " }),
+            })
+        )
+
+        assert.equal(response.status, 200)
+        assert.deepEqual(await response.json(), { authenticated: true })
+        assert.equal(graphQLServer.requests[0].body.operationName, "UsersCreateGuestUser")
+        assert.deepEqual(graphQLServer.requests[0].body.variables, { input: { email: "guest@example.com" } })
+
+        const setCookies = response.headers.getSetCookie()
+        const sessionCookie = setCookies.find((cookie) => cookie.startsWith("crater_session=")) ?? ""
+        const claimCookie = setCookies.find((cookie) => cookie.startsWith("crater_guest_claim=")) ?? ""
+        assert.match(sessionCookie, /crater_session=crater-guest-session/)
+        assert.match(sessionCookie, /HttpOnly/i)
+        assert.match(claimCookie, /crater_guest_claim=guest-claim-token/)
+        assert.match(claimCookie, /HttpOnly/i)
+        assert.match(claimCookie, /Path=\/api\/crater/i)
+    } finally {
+        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
+        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
+        await graphQLServer.close()
+    }
+})
+
+test("guest creation refuses a blank email before reaching Crater", async () => {
+    const graphQLServer = await createGraphQLTestServer([])
+    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
+    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
+
+    try {
+        for (const email of [undefined, "", "   "]) {
+            const response = await createGuestUser(
+                new Request("https://example.com/api/crater/guest", {
+                    method: "POST",
+                    headers: { "content-type": "application/json" },
+                    body: JSON.stringify(email === undefined ? {} : { email }),
+                })
+            )
+
+            assert.equal(response.status, 400)
+            assert.deepEqual(await response.json(), { error: "A valid email is required to continue as a guest." })
+        }
+
+        assert.equal(graphQLServer.requests.length, 0)
+    } finally {
+        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
+        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
+        await graphQLServer.close()
+    }
+})
+
+test("guest creation forwards the Crater error code without a session cookie", async () => {
+    const graphQLServer = await createGraphQLTestServer([
+        {
+            data: {
+                usersCreateGuestUser: {
+                    claimToken: null,
+                    errors: [{ errorCode: "GUEST_USER_CREATION_FAILED", details: [] }],
+                    userSession: null,
+                },
+            },
+        },
+    ])
+    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
+    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
+    const originalWarn = console.warn
+    console.warn = () => {}
+
+    try {
+        const response = await createGuestUser(
+            new Request("https://example.com/api/crater/guest", {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ email: "guest@example.com" }),
+            })
+        )
+
+        assert.equal(response.status, 422)
+        assert.equal(((await response.json()) as { errorCode: string }).errorCode, "GUEST_USER_CREATION_FAILED")
+        assert.equal(response.headers.getSetCookie().length, 0)
+    } finally {
+        console.warn = originalWarn
+        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
+        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
+        await graphQLServer.close()
+    }
+})
+
+test("an exhausted guest budget leaves the plain session route usable", async () => {
+    const environmentKeys = ["CRATER_GUEST_RATE_LIMIT_MAX", "CRATER_GUEST_RATE_LIMIT_WINDOW_SECONDS", "CRATER_RATE_LIMIT_TRUSTED_PROXY_HOPS", "CRATER_SAGITTARIUS_TOKEN"] as const
+    const previousEnvironment = Object.fromEntries(environmentKeys.map((key) => [key, process.env[key]]))
+    process.env.CRATER_GUEST_RATE_LIMIT_MAX = "1"
+    process.env.CRATER_GUEST_RATE_LIMIT_WINDOW_SECONDS = "90"
+    process.env.CRATER_RATE_LIMIT_TRUSTED_PROXY_HOPS = "1"
+    delete process.env.CRATER_SAGITTARIUS_TOKEN
+
+    const request = (path: string) =>
+        new Request(`https://example.com${path}`, {
+            method: "POST",
+            headers: { "content-type": "application/json", "x-forwarded-for": "192.0.2.242" },
+            body: JSON.stringify({}),
+        })
+
+    const originalWarn = console.warn
+    console.warn = () => {}
+
+    try {
+        // A Sagittarius that refuses every guest would otherwise take the checkout's own session route with
+        // it, because both used to consume the same bucket.
+        assert.equal((await createGuestUser(request("/api/crater/guest"))).status, 400)
+        assert.equal((await createGuestUser(request("/api/crater/guest"))).status, 429)
+        assert.equal((await createSession(request("/api/crater/login"))).status, 400)
+    } finally {
+        console.warn = originalWarn
+        for (const key of environmentKeys) {
+            if (previousEnvironment[key] === undefined) delete process.env[key]
+            else process.env[key] = previousEnvironment[key]
+        }
     }
 })
 
@@ -205,7 +347,7 @@ test("customer creation requires a Crater session", async () => {
                 customerType: "personal",
                 email: "person@example.com",
                 name: "Example Person",
-                    address: { country: "DE" },
+                address: { country: "DE" },
             }),
         })
     )
@@ -580,9 +722,7 @@ test("checkout completion status remains available while optional pricing is not
     process.env.CRATER_GRAPHQL_URL = graphQLServer.url
 
     try {
-        const response = await getCheckoutLicenseStatus(
-            new Request("https://example.com/api/crater/checkout/status?sessionId=cs_test_checkout123", { headers: sessionHeaders })
-        )
+        const response = await getCheckoutLicenseStatus(new Request("https://example.com/api/crater/checkout/status?sessionId=cs_test_checkout123", { headers: sessionHeaders }))
 
         assert.equal(response.status, 200)
         assert.deepEqual(await response.json(), {
@@ -849,7 +989,15 @@ test("customer creation sends the CustomerType enum and nothing Crater no longer
                     cookie: "crater_session=c_ust_example",
                     "content-type": "application/json",
                 },
-                body: JSON.stringify({ checkoutKey: "3f456ad7-c94b-4a63-aea2-17bd9dcf65be", customerType: "business", name: "Example", email: "a@example.com", address: { country: "DE" }, draft: true, reuseExisting: false }),
+                body: JSON.stringify({
+                    checkoutKey: "3f456ad7-c94b-4a63-aea2-17bd9dcf65be",
+                    customerType: "business",
+                    name: "Example",
+                    email: "a@example.com",
+                    address: { country: "DE" },
+                    draft: true,
+                    reuseExisting: false,
+                }),
             })
         )
 
@@ -1086,10 +1234,7 @@ test("checkout and discount enforce independent route limits", async () => {
         assert.equal((await createCheckoutSession(request("/api/crater/checkout/session"))).status, 400)
         assert.equal((await validateDiscount(request("/api/crater/checkout/discount"))).status, 400)
 
-        const limitedResponses = await Promise.all([
-            createCheckoutSession(request("/api/crater/checkout/session")),
-            validateDiscount(request("/api/crater/checkout/discount")),
-        ])
+        const limitedResponses = await Promise.all([createCheckoutSession(request("/api/crater/checkout/session")), validateDiscount(request("/api/crater/checkout/discount"))])
 
         for (const response of limitedResponses) {
             assert.equal(response.status, 429)
@@ -1314,7 +1459,7 @@ test("maps login, customer creation, and customer updates to Crater GraphQL inpu
                 email: "billing@example.com",
                 name: "Example GmbH",
                 phone: "+49 123",
-                    address: { country: "DE" },
+                address: { country: "DE" },
                 taxIdType: "eu_vat",
                 taxIdValue: "DE123456789",
             },
@@ -2080,9 +2225,7 @@ test("links a cloud license through the authenticated namespace selection callba
 
 test("license namespace callback requires a namespace selected by Sagittarius", async () => {
     const returnPath = "/de/licenses/customer/gid%3A%2F%2Fcrater%2FCustomer%2F3/license/gid%3A%2F%2Fcrater%2FLicense%2F9/edit"
-    const response = await selectLicenseNamespace(
-        new Request(`https://code0.example/api/crater/licenses/namespace/callback?returnPath=${encodeURIComponent(returnPath)}&token=sagittarius-secret`)
-    )
+    const response = await selectLicenseNamespace(new Request(`https://code0.example/api/crater/licenses/namespace/callback?returnPath=${encodeURIComponent(returnPath)}&token=sagittarius-secret`))
 
     assert.equal(response.status, 307)
     assert.equal(response.headers.get("location"), `https://code0.example${returnPath}?namespaceError=selection`)
@@ -2102,9 +2245,7 @@ test("license namespace callback rejects return paths that are not exact license
 
 test("license namespace callback accepts an exact license detail return path", async () => {
     const returnPath = "/en/licenses/customer/gid%3A%2F%2Fcrater%2FCustomer%2F3/license/gid%3A%2F%2Fcrater%2FLicense%2F9"
-    const response = await selectLicenseNamespace(
-        new Request(`https://code0.example/api/crater/licenses/namespace/callback?returnPath=${encodeURIComponent(returnPath)}&token=sagittarius-secret`)
-    )
+    const response = await selectLicenseNamespace(new Request(`https://code0.example/api/crater/licenses/namespace/callback?returnPath=${encodeURIComponent(returnPath)}&token=sagittarius-secret`))
 
     assert.equal(response.status, 307)
     assert.equal(response.headers.get("location"), `https://code0.example${returnPath}?namespaceError=selection`)

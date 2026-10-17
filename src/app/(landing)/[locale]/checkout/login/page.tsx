@@ -1,6 +1,6 @@
 import { CheckoutLogin } from "@/components/checkout/CheckoutLogin"
 import { CheckoutLegalFooter } from "@/components/checkout/CheckoutLegalFooter"
-import { getCheckoutContent, getFooter } from "@/lib/cms"
+import { getCheckoutContent, getErrorsContent, getFooter } from "@/lib/cms"
 import { canSkipCheckoutLogin, createCheckoutQuery, createCraterLoginCallbackUrl, createMainAppLoginUrl, type CheckoutSearchParams } from "@/lib/checkout/checkoutLogin"
 import { CRATER_USER_LOGIN_COOKIE_NAME, CRATER_USER_LOGIN_COOKIE_VALUE } from "@/lib/checkout/craterUserLogin"
 import { isSupportedLocale } from "@/lib/i18n"
@@ -20,8 +20,8 @@ export default async function CheckoutLoginPage({ params, searchParams }: Checko
     const [{ locale }, resolvedSearchParams] = await Promise.all([params, searchParams])
     if (!isSupportedLocale(locale)) notFound()
 
-    const [content, footer] = await Promise.all([getCheckoutContent(locale), getFooter(locale)])
-    if (!content?.login) notFound()
+    const [content, errors, footer] = await Promise.all([getCheckoutContent(locale), getErrorsContent(locale), getFooter(locale)])
+    if (!content?.login || !content.form || !errors) notFound()
 
     const query = createCheckoutQuery(resolvedSearchParams)
     const guestHref = `/${locale}/checkout${query ? `?${query}` : ""}`
@@ -50,7 +50,7 @@ export default async function CheckoutLoginPage({ params, searchParams }: Checko
 
     return (
         <div className="flex min-h-full flex-col">
-            <CheckoutLogin content={content.login} guestHref={guestHref} loginHref={loginHref} />
+            <CheckoutLogin content={content.login} form={content.form} guestError={errors.sessionUnavailable} guestHref={guestHref} loginHref={loginHref} />
             <CheckoutLegalFooter className="shrink-0 justify-center pt-8" currentYear={new Date().getUTCFullYear()} footer={footer} locale={locale} />
         </div>
     )
