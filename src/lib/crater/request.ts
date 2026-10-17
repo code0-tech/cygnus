@@ -53,6 +53,10 @@ export function isLicenseId(value: string): value is Scalars["LicenseID"]["input
     return /^gid:\/\/crater\/License\/\d+$/.test(value)
 }
 
+export function isInvoiceId(value: string): value is Scalars["InvoiceID"]["input"] {
+    return /^gid:\/\/crater\/Invoice\/\d+$/.test(value)
+}
+
 export function isSubscriptionId(value: string): value is Scalars["SubscriptionID"]["input"] {
     return /^gid:\/\/crater\/Subscription\/\d+$/.test(value)
 }

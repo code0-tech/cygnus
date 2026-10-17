@@ -84,6 +84,61 @@ const SUBSCRIPTION_CUSTOMER: TypedDocumentNode<LookupData, SubscriptionCustomerV
     }
 `
 
+type InvoiceLookupVariables = { customerAfter?: string; subscriptionAfter?: string; invoiceAfter?: string }
+
+const INVOICE_SUBSCRIPTION_POSITION: TypedDocumentNode<LookupData, SubscriptionCustomerVariables> = gql`
+    query InvoiceSubscriptionPosition($customerAfter: String, $subscriptionAfter: String) {
+        currentUser {
+            customers(first: 1, after: $customerAfter) {
+                nodes {
+                    id
+                    subscriptions(first: 50, after: $subscriptionAfter) {
+                        edges {
+                            cursor
+                            node {
+                                id
+                            }
+                        }
+                        pageInfo {
+                            endCursor
+                            hasNextPage
+                        }
+                    }
+                }
+            }
+        }
+    }
+`
+
+const INVOICE_PDF_URL: TypedDocumentNode<LookupData, InvoiceLookupVariables> = gql`
+    query InvoicePdfUrl($customerAfter: String, $subscriptionAfter: String, $invoiceAfter: String) {
+        currentUser {
+            customers(first: 1, after: $customerAfter) {
+                nodes {
+                    id
+                    subscriptions(first: 1, after: $subscriptionAfter) {
+                        nodes {
+                            id
+                            currentLicense {
+                                invoices(first: 50, after: $invoiceAfter) {
+                                    nodes {
+                                        id
+                                        stripePdfUrl
+                                    }
+                                    pageInfo {
+                                        endCursor
+                                        hasNextPage
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+`
+
 function nextCursor(pageInfo: { endCursor?: string | null; hasNextPage?: boolean | null } | null | undefined, seen: Set<string>) {
     if (!pageInfo?.hasNextPage) return undefined
     if (!pageInfo.endCursor || seen.has(pageInfo.endCursor)) throw new Error("Crater returned an invalid snapshot lookup cursor.")
@@ -91,8 +146,9 @@ function nextCursor(pageInfo: { endCursor?: string | null; hasNextPage?: boolean
     return pageInfo.endCursor
 }
 
-export async function findSubscriptionForLicenseSnapshot(sessionToken: string, customerId: string, licenseId: string) {
-    const client = createApolloClient(sessionToken)
+type ApolloClient = ReturnType<typeof createApolloClient>
+
+async function locateCustomer(client: ApolloClient, customerId: string) {
     const customerCursors = new Set<string>()
     let customerAfter: string | undefined
     while (true) {
@@ -102,13 +158,20 @@ export async function findSubscriptionForLicenseSnapshot(sessionToken: string, c
         const edges = user.customers?.edges ?? []
         const index = edges.findIndex((edge) => edge?.node?.id === customerId)
         if (index >= 0) {
-            customerAfter = index === 0 ? customerAfter : (edges[index - 1]?.cursor ?? undefined)
-            if (index > 0 && !customerAfter) throw new Error("Crater returned an invalid customer selection cursor.")
-            break
+            const selectionCursor = index === 0 ? customerAfter : (edges[index - 1]?.cursor ?? undefined)
+            if (index > 0 && !selectionCursor) throw new Error("Crater returned an invalid customer selection cursor.")
+            return { status: "found" as const, customerAfter: selectionCursor }
         }
         customerAfter = nextCursor(user.customers?.pageInfo, customerCursors)
         if (!customerAfter) return { status: "missing" as const }
     }
+}
+
+export async function findSubscriptionForLicenseSnapshot(sessionToken: string, customerId: string, licenseId: string) {
+    const client = createApolloClient(sessionToken)
+    const located = await locateCustomer(client, customerId)
+    if (located.status !== "found") return located
+    const { customerAfter } = located
 
     const subscriptionCursors = new Set<string>()
     const snapshotCursors = new Set<string>()
@@ -172,5 +235,55 @@ export async function findCustomerForSubscription(sessionToken: string, subscrip
         if (!customerAfter) return { status: "missing" as const }
         selectedCustomerId = undefined
         subscriptionCursors.clear()
+    }
+}
+
+export async function findInvoicePdfUrl(sessionToken: string, customerId: string, subscriptionId: string, invoiceId: string) {
+    const client = createApolloClient(sessionToken)
+    const located = await locateCustomer(client, customerId)
+    if (located.status !== "found") return located
+    const { customerAfter } = located
+
+    const subscriptionCursors = new Set<string>()
+    let subscriptionPageAfter: string | undefined
+    let subscriptionAfter: string | undefined
+    while (true) {
+        const result = await client.query({
+            query: INVOICE_SUBSCRIPTION_POSITION,
+            variables: { ...(customerAfter ? { customerAfter } : {}), ...(subscriptionPageAfter ? { subscriptionAfter: subscriptionPageAfter } : {}) },
+            fetchPolicy: "no-cache",
+        })
+        if (!result.data?.currentUser) return { status: "unauthenticated" as const }
+        const customer = result.data.currentUser.customers?.nodes?.[0]
+        if (customer?.id !== customerId) throw new Error("Crater returned a different customer while locating an invoice.")
+        const edges = customer.subscriptions?.edges ?? []
+        const index = edges.findIndex((edge) => edge?.node?.id === subscriptionId)
+        if (index >= 0) {
+            subscriptionAfter = index === 0 ? subscriptionPageAfter : (edges[index - 1]?.cursor ?? undefined)
+            if (index > 0 && !subscriptionAfter) throw new Error("Crater returned an invalid subscription selection cursor.")
+            break
+        }
+        subscriptionPageAfter = nextCursor(customer.subscriptions?.pageInfo, subscriptionCursors)
+        if (!subscriptionPageAfter) return { status: "missing" as const }
+    }
+
+    const invoiceCursors = new Set<string>()
+    let invoiceAfter: string | undefined
+    while (true) {
+        const result = await client.query({
+            query: INVOICE_PDF_URL,
+            variables: { ...(customerAfter ? { customerAfter } : {}), ...(subscriptionAfter ? { subscriptionAfter } : {}), ...(invoiceAfter ? { invoiceAfter } : {}) },
+            fetchPolicy: "no-cache",
+        })
+        if (!result.data?.currentUser) return { status: "unauthenticated" as const }
+        const customer = result.data.currentUser.customers?.nodes?.[0]
+        if (customer?.id !== customerId) throw new Error("Crater returned a different customer while locating an invoice.")
+        const subscription = customer.subscriptions?.nodes?.[0]
+        if (subscription?.id !== subscriptionId) throw new Error("Crater returned a different subscription while locating an invoice.")
+        const invoices = subscription.currentLicense?.invoices
+        const invoice = invoices?.nodes?.find((candidate) => candidate?.id === invoiceId)
+        if (invoice) return invoice.stripePdfUrl ? { status: "found" as const, stripePdfUrl: invoice.stripePdfUrl } : { status: "missing" as const }
+        invoiceAfter = nextCursor(invoices?.pageInfo, invoiceCursors)
+        if (!invoiceAfter) return { status: "missing" as const }
     }
 }
