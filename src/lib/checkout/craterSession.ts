@@ -14,6 +14,7 @@ export type CraterSessionAuthorization =
 
 const CRATER_SESSION_AUTHORIZATION_PATTERN = /^Session ([^\s]+)$/
 const CRATER_SESSION_TOKEN_PATTERN = /^[^\s]+$/
+export const CRATER_SESSION_TOKEN_QUERY_PARAM = "token"
 export const CRATER_SESSION_COOKIE_NAME = "crater_session"
 export const CRATER_SESSION_COOKIE_PATH = "/api/crater"
 
@@ -34,13 +35,30 @@ function readCookie(request: Request, name: string) {
     return null
 }
 
-export function readCraterSessionAuthorization(request: Request): CraterSessionAuthorization {
+export function readCraterSessionToken(url: URL): string | undefined {
+    const token = url.searchParams.get(CRATER_SESSION_TOKEN_QUERY_PARAM)?.trim()
+    return token && CRATER_SESSION_TOKEN_PATTERN.test(token) ? token : undefined
+}
+
+export function removeCraterSessionToken(url: URL): URL {
+    const sanitizedUrl = new URL(url)
+    sanitizedUrl.searchParams.delete(CRATER_SESSION_TOKEN_QUERY_PARAM)
+    return sanitizedUrl
+}
+
+export function readCraterSessionAuthorization(request: Request, authorizationHeaderOnly = false): CraterSessionAuthorization {
+    const authorization = request.headers.get("authorization")
+
+    if (authorizationHeaderOnly) {
+        if (!authorization) return { status: "missing" }
+        const match = CRATER_SESSION_AUTHORIZATION_PATTERN.exec(authorization)
+        return match ? { status: "authenticated", token: match[1] } : { status: "invalid" }
+    }
+
     const cookieToken = readCookie(request, CRATER_SESSION_COOKIE_NAME)
     if (cookieToken !== null) {
         return CRATER_SESSION_TOKEN_PATTERN.test(cookieToken) ? { status: "authenticated", token: cookieToken } : { status: "invalid" }
     }
-
-    const authorization = request.headers.get("authorization")
 
     if (!authorization) {
         return { status: "missing" }

@@ -1,19 +1,16 @@
 "use client"
 
-import type { License } from "@/components/licenses/LicenseSidebar"
+import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
 import type { LicenseContent } from "@/lib/cms"
 import { AppLocale } from "@/lib/i18n"
 import { Card, DataTable, DataTableColumn, DataTableHeader, DataTableHeaderColumn, Flex, Spacing, Text } from "@code0-tech/pictor"
-import type { Customer } from "@code0-tech/crater-graphql-types"
 import { IconChevronRight, IconCreditCard, IconFileInvoice, IconKey, IconReceipt } from "@tabler/icons-react"
 import Link from "next/link"
 import type { ReactNode } from "react"
 
 interface LicenseDashboardPageProps {
     content: LicenseContent
-    customers?: Customer[]
     locale: AppLocale
-    licenses?: License[]
 }
 
 function Metric({ icon, label, value }: { icon: ReactNode; label: string; value: number }) {
@@ -32,7 +29,8 @@ function Metric({ icon, label, value }: { icon: ReactNode; label: string; value:
     )
 }
 
-export function LicenseDashboardPage({ content, customers = [], locale, licenses = [] }: LicenseDashboardPageProps) {
+export function LicenseDashboardPage({ content, locale }: LicenseDashboardPageProps) {
+    const { customers, licenses } = useLicenseData()
     const dateFormatter = new Intl.DateTimeFormat(locale, {
         dateStyle: "medium",
         timeZone: "UTC",
@@ -41,7 +39,7 @@ export function LicenseDashboardPage({ content, customers = [], locale, licenses
         .toSorted((left, right) => Date.parse(right.updatedAt ?? "") - Date.parse(left.updatedAt ?? ""))
         .slice(0, 5)
     const metrics = [
-        { icon: <IconKey aria-hidden="true" size={14} />, label: content.licenses, value: licenses.length },
+        { icon: <IconKey aria-hidden="true" size={14} />, label: content.licenses, value: customers.reduce((total, customer) => total + customer.licenseCount, 0) },
         { icon: <IconReceipt aria-hidden="true" size={14} />, label: content.dashboard.customers, value: customers.length },
         { icon: <IconCreditCard aria-hidden="true" size={14} />, label: content.dashboard.paymentProfiles, value: 0 },
         { icon: <IconFileInvoice aria-hidden="true" size={14} />, label: content.dashboard.invoices, value: 0 },
@@ -102,7 +100,7 @@ export function LicenseDashboardPage({ content, customers = [], locale, licenses
                                     )}
                                 </DataTableColumn>
                                 <DataTableColumn><Text size="sm" hierarchy="tertiary">{customer.email || "—"}</Text></DataTableColumn>
-                                <DataTableColumn>{customer.id ? licenses.filter((license) => license.customerId === customer.id).length : 0}</DataTableColumn>
+                                <DataTableColumn>{customer.licenseCount}</DataTableColumn>
                             </>
                         )}
                     </DataTable>

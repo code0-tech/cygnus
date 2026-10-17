@@ -8,19 +8,12 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { AppLocale } from "@/lib/i18n"
-
-export interface License {
-    customerId?: string
-    customerName?: string
-    id: string
-    name: string
-    updatedAt?: string
-}
+import type { LicenseDashboardLicense } from "@/lib/licenses/licenseTypes"
 
 interface LicenseSidebarProps {
     content: Pick<LicenseContent, "emptyLicenses" | "licenses" | "sidebar">
     locale: AppLocale
-    licenses: License[]
+    licenses: LicenseDashboardLicense[]
 }
 
 export function LicenseSidebar({ content, locale, licenses }: LicenseSidebarProps) {
@@ -61,7 +54,7 @@ export function LicenseSidebar({ content, locale, licenses }: LicenseSidebarProp
                             {licenses.map((license) => (
                                 <li key={license.id}>
                                     <Link
-                                        href={`/${locale}/licenses/customer/${encodeURIComponent(license.id)}`}
+                                        href={`/${locale}/licenses/customer/${encodeURIComponent(license.customerId)}/license/${encodeURIComponent(license.id)}`}
                                         className="group flex min-w-0 items-center gap-3 rounded-xl px-3 py-2.5 text-secondary outline-none transition-colors hover:bg-white/7 hover:text-white focus-visible:ring-2 focus-visible:ring-brand/50"
                                     >
                                         <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-brand/10 text-brand">

@@ -27,7 +27,7 @@ The ERD describes the following relationships:
 `Customer` represents a billing customer. The data model contains:
 
 - customer type
-- optional name, email, and phone number
+- name, email, and optional phone number
 - Stripe customer ID
 - Stripe tax ID
 
@@ -41,7 +41,9 @@ The GraphQL API additionally returns a global ID and creation and update timesta
 - `postalCode`
 - `country` as a country code
 
-Business customers can initially be created without a tax ID. When tax ID data is provided, `taxIdType` and `taxIdValue` must be supplied together.
+`taxIdType` and `taxIdValue` are optional, including for business customers, because Stripe Checkout can collect a tax ID through its `TaxIdElement`. When one of them is supplied, the other is required as well; a half-filled pair returns `INVALID_CUSTOMER`. A tax ID supplied up front is registered on the Stripe Customer immediately, and one collected during checkout is synced back from the completed session.
+
+Name, email, phone, and address are all optional. A customer can be created with nothing but a `customerType`, because the client collects contact and billing details during checkout through Stripe's `ContactDetailsElement` and `BillingAddressElement` and Crater syncs them back from the completed session. A supplied email must still be well formed. `email` and `name` are therefore nullable in both the database and the GraphQL `Customer` type.
 
 ### Users and sessions
 
@@ -88,7 +90,7 @@ Additional checkout features include:
 - a required, allowlisted return URL for payment methods that temporarily leave the page
 - required billing-address collection
 - automatic Stripe Tax
-- automatic synchronization of the customer's email, name, phone number, address, and tax ID from the completed Stripe Checkout Session
+- automatic synchronization of the customer's name and address back to Stripe
 - attaching the plan, payment period, custom quantities, Crater customer ID, deployment type, customer type, and optional namespace ID to the Stripe subscription metadata
 
 Stripe Price IDs are resolved exclusively on the server from `checkout.prices`. Pro and Max resolve one Price from the plan and payment period. Dynamic custom checkouts additionally use the authenticated customer's type to select B2B or B2C component Prices. This dynamic `plan: custom` flow is separate from `CustomCheckoutConfiguration`.
@@ -117,7 +119,7 @@ A configuration is no longer available after it has been consumed or has expired
 
 ### Subscriptions, invoices, and licenses
 
-`Subscription` stores the deployment type, Stripe status, unique Stripe subscription ID, and an optional Sagittarius namespace ID.
+`Subscription` stores the deployment type, Stripe status, unique Stripe subscription ID, optional Sagittarius namespace ID, plan, payment period, and optional AI Token and Workflow Execution quantities. The stored quantities are validated against the same `1` to `1000000000` range the checkout enforces.
 
 `Invoice` contains:
 
@@ -171,20 +173,87 @@ This allows Crater to track Stripe webhook processing and handle events idempote
 
 All queries start at the root `Query` type. The currently documented query fields are:
 
-| Query                | Argument           | Return type         | Purpose                                                                |
-| -------------------- | ------------------ | ------------------- | ---------------------------------------------------------------------- |
-| `echo`               | `message: String!` | `String!`           | Verifies read access to the API and returns the supplied message.      |
-| `subscriptionPrices` | none               | `[CheckoutPrice!]!` | Returns active recurring Stripe prices and can be queried anonymously. |
+| Query                | Argument           | Return type         | Purpose                                                                                                |
+| -------------------- | ------------------ | ------------------- | ------------------------------------------------------------------------------------------------------ |
+| `currentUser`        | none               | `User`              | Returns the user authenticated by the current Crater session, or `null` when the request is anonymous. |
+| `echo`               | `message: String!` | `String!`           | Verifies read access to the API and returns the supplied message.                                      |
+| `subscriptionPrices` | none               | `[CheckoutPrice!]!` | Returns active recurring Stripe prices and can be queried anonymously.                                 |
+
+#### License dashboard
+
+`currentUser` is the entry point for the read-only dashboard. It exposes only data the authenticated user is a member of:
+
+- `User.customers` is a `CustomerConnection!` over the customers linked through `CustomerUser`. Customers of other users never appear.
+- `Customer.licenses` is a `LicenseConnection!` resolved through `customer.subscriptions.licenses`, ordered by `updated_at DESC` and then `id DESC` so equal timestamps still produce a stable order. A customer without licenses returns an empty connection rather than `null`.
+
+Both connections use the standard cursor pagination arguments (`first`, `after`, `last`, `before`) and expose `count`.
+
+```graphql
+query LicenseDashboard {
+    currentUser {
+        customers(first: 100) {
+            count
+            nodes {
+                id
+                customerType
+                name
+                email
+                updatedAt
+                licenses(first: 5) {
+                    count
+                    nodes {
+                        id
+                        status
+                        plan
+                        deploymentType
+                        namespaceId
+                        updatedAt
+                    }
+                }
+            }
+        }
+    }
+}
+```
+
+Authorization uses the existing policies. `UserPolicy` grants `read_user` only for the user themselves, `CustomerPolicy` grants `read_customer` to members through `CustomerUser`, and `LicensePolicy` derives `read_license` from `read_customer` on the owning subscription's customer, so membership is defined in exactly one place. As with the other resource policies, being an admin grants no extra read access. An anonymous request returns `currentUser: null`; an invalid or inactive session token is still answered with HTTP `401 Unauthorized` before the query runs.
 
 `CheckoutPrice` contains:
 
 - Stripe price ID
-- currency and unit amount in the smallest currency unit
-- recurring interval, such as `month` or `year`
+- currency
+- `unitAmount` in the smallest currency unit, which is `null` when the price needs sub-minor-unit precision
+- `unitAmountDecimal`, the exact amount in the smallest currency unit as a decimal string
+- recurring `interval`, such as `month` or `year`
+- `intervalCount`, the number of intervals between billings; a quarterly price is `interval: month` with `intervalCount: 3`
 - optional stable `lookupKey`
 - expanded Stripe product name
 
+`unitAmountDecimal` is a string on purpose. AI Token prices are far below one cent, and Stripe's Ruby client parses the field into a `BigDecimal`; it is formatted explicitly rather than converted through a `Float`, so no precision is lost. Clients that need to compute totals should use this field rather than `unitAmount`.
+
+The query auto-paginates and returns every active recurring price, not just Stripe's default first page of ten. The result is sorted deterministically by `lookupKey` and then by price ID, with prices that have no lookup key last.
+
 Prices and products are managed in Stripe. The listing query fetches active recurring prices directly instead of mirroring a product catalog locally. Checkout creation still resolves its `plan` argument through the configured `checkout.prices` mapping. Stripe retrieval failures surface as a GraphQL execution error based on `UNABLE_TO_LIST_PRICES`.
+
+#### Lookup keys
+
+`lookupKey` is the stable technical identifier for matching a price. Product names must not be used for that: they are freely editable in Stripe and are currently spelled inconsistently. Every checkout price carries a unique lookup key following this scheme:
+
+```text
+pro_weekly                        max_weekly
+pro_monthly                       max_monthly
+pro_yearly                        max_yearly
+
+ai_token_b2b_monthly              workflow_execution_b2b_monthly
+ai_token_b2b_quarterly            workflow_execution_b2b_quarterly
+ai_token_b2b_yearly               workflow_execution_b2b_yearly
+
+ai_token_b2c_monthly              workflow_execution_b2c_monthly
+ai_token_b2c_quarterly            workflow_execution_b2c_quarterly
+ai_token_b2c_yearly               workflow_execution_b2c_yearly
+```
+
+The keys are assigned on the Price objects in Stripe; Crater reads them but never writes them.
 
 ### HTTP authentication
 
@@ -204,10 +273,6 @@ Authentication behavior:
 - An unknown authentication scheme or an invalid or inactive session token returns HTTP `401 Unauthorized`.
 - The session token is returned by `usersLogin` only when the new `UserSession` is created.
 - The Sagittarius login token and the resulting Crater session token are distinct credentials with different header schemes.
-
-### Browser session persistence
-
-The checkout exchanges the short-lived Sagittarius token through its server-side `/api/crater/login` route. That route stores the resulting Crater session token in an `HttpOnly`, `SameSite=Lax` cookie scoped to `/api/crater`; it does not expose the Crater token to client-side JavaScript. Browser requests use the cookie automatically, while the server forwards `Authorization: Session <crater-session-token>` to Crater. On reload, `/api/crater/auth/session` validates the persisted session with Crater. Invalid or expired session responses clear the cookie.
 
 ### Mutations
 
@@ -234,23 +299,25 @@ For `customersCreate`, only `customerType` is mandatory in the GraphQL schema. O
 
 | Mutation                             | Key arguments                                                                                 | Result                                                    |
 | ------------------------------------ | --------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
-| `checkoutCalculateTax`               | `plan!`, `paymentPeriod!`, and optional custom quantities                                      | `CheckoutTaxQuote`                                        |
+| `checkoutCalculateTax`               | `plan!`, `paymentPeriod!`, and optional custom quantities                                     | `CheckoutTaxQuote`                                        |
 | `checkoutValidateDiscount`           | `code: String!`                                                                               | `CheckoutDiscount`                                        |
-| `checkoutCreateSession`              | `paymentPeriod!`, `returnUrl!`, and either a plan or custom configuration                      | Embedded `CheckoutSession` with a frontend `clientSecret` |
+| `checkoutCreateSession`              | `paymentPeriod!`, `returnUrl!`, and either a plan or custom configuration                     | Embedded `CheckoutSession` with a frontend `clientSecret` |
 | `customCheckoutConfigurationsCreate` | `customerId!`, `deploymentType!`, `stripePriceId!`, optional entitlements and expiration time | `CustomCheckoutConfiguration`                             |
 
 For `checkoutCreateSession`:
 
 - The request must include `Authorization: Session <crater-session-token>`; the mutation is not anonymously accessible.
-- The authenticated user must be associated with a customer. Crater uses that user's first customer; if none exists, the mutation returns `INVALID_CHECKOUT_SESSION`.
+- The authenticated user must be associated with a customer. Crater uses that user's first customer; if none exists, the mutation returns `INVALID_CHECKOUT_SESSION`. That customer does not need an email, name, or address yet.
+- Crater never sends `customer_email`; the Stripe Customer is referenced by ID, and Stripe rejects both parameters together. An email already on the Stripe Customer is therefore never restated, and a missing one is collected by the client's `ContactDetailsElement`.
 - A regular checkout uses `plan`, `paymentPeriod`, and, where applicable, `deploymentType`, `namespaceId`, and `promotionCode`.
 - `plan: custom` accepts positive `aiTokens` and `workflowExecutions`; at least one quantity is required and the authenticated customer's stored type selects B2B or B2C Prices.
-- Each custom quantity must be a positive integer of at most `10000000`.
+- Each custom quantity must be a positive integer of at most `1000000000`, which stays inside the signed 32-bit range of the GraphQL `Int` scalar and of the `integer` database columns. Anything outside that range, including zero, negative, decimal, and non-integer values, is rejected with `INVALID_CHECKOUT_SELECTION` before Stripe is called. The same bound applies to `checkoutCalculateTax`. Stripe documents no maximum for a line item's initial `quantity`; its `999999` cap applies to `adjustable_quantity.maximum`, which Crater does not use.
 - A custom checkout uses `customCheckoutConfigurationId`; `plan` and `deploymentType` are then ignored.
 - `namespaceId` is only relevant to cloud deployments.
 - `returnUrl` must have an origin listed in `checkout.allowed_return_origins`.
 - Stripe receives `ui_mode: elements`; the frontend initializes the custom checkout UI with the returned `clientSecret`.
 - Stripe collects the billing address, updates the customer's address and name, and calculates tax automatically.
+- The session enables `tax_id_collection`, so a business customer without a stored tax ID can supply one through Stripe's `TaxIdElement`. The collected tax ID is resolved back to its Stripe `TaxId` object and stored on the Crater customer by the `checkout.session.completed` webhook.
 - The resulting Stripe subscription metadata also contains `plan`, `payment_period`, and dynamic custom quantities when applicable.
 
 #### Licenses
@@ -274,22 +341,22 @@ A GraphQL error object consists of:
 
 Documented error codes:
 
-| Code                                    | Meaning                                                             |
-| --------------------------------------- | ------------------------------------------------------------------- |
-| `INVALID_CHECKOUT_SELECTION`            | The selected plan, payment period, quantity, or Price is invalid    |
-| `INVALID_CHECKOUT_SESSION`              | The checkout session could not be created                           |
-| `INVALID_CUSTOMER`                      | The customer is invalid                                             |
-| `INVALID_CUSTOM_CHECKOUT_CONFIGURATION` | The custom checkout configuration is invalid                        |
-| `INVALID_DISCOUNT_CODE`                 | The discount code is invalid or inactive                            |
-| `INVALID_INVOICE`                       | The invoice is invalid                                              |
-| `INVALID_LICENSE`                       | The license is invalid                                              |
-| `INVALID_SAGITTARIUS_TOKEN`             | The Sagittarius token cannot be used to log in                      |
-| `INVALID_SUBSCRIPTION`                  | The subscription is invalid                                         |
-| `INVALID_TAX_CALCULATION`               | Stripe rejected the tax calculation                                 |
-| `INVALID_USER`                          | The local user derived from Sagittarius is invalid                  |
-| `MISSING_PERMISSION`                    | The user does not have the required permission                      |
-| `SAGITTARIUS_UNAVAILABLE`               | Sagittarius could not be reached or returned an unexpected response |
-| `UNABLE_TO_LIST_PRICES`                 | Active recurring Stripe prices could not be retrieved               |
+| Code                                    | Meaning                                                                                 |
+| --------------------------------------- | --------------------------------------------------------------------------------------- |
+| `INVALID_CHECKOUT_SESSION`              | The checkout session could not be created                                               |
+| `INVALID_CHECKOUT_SELECTION`            | The selected plan, payment period, quantity, or configured Price combination is invalid |
+| `INVALID_CUSTOMER`                      | The customer is invalid                                                                 |
+| `INVALID_CUSTOM_CHECKOUT_CONFIGURATION` | The custom checkout configuration is invalid                                            |
+| `INVALID_DISCOUNT_CODE`                 | The discount code is invalid or inactive                                                |
+| `INVALID_INVOICE`                       | The invoice is invalid                                                                  |
+| `INVALID_LICENSE`                       | The license is invalid                                                                  |
+| `INVALID_SAGITTARIUS_TOKEN`             | The Sagittarius token cannot be used to log in                                          |
+| `INVALID_SUBSCRIPTION`                  | The subscription is invalid                                                             |
+| `INVALID_TAX_CALCULATION`               | Stripe rejected the tax calculation                                                     |
+| `INVALID_USER`                          | The local user derived from Sagittarius is invalid                                      |
+| `MISSING_PERMISSION`                    | The user does not have the required permission                                          |
+| `SAGITTARIUS_UNAVAILABLE`               | Sagittarius could not be reached or returned an unexpected response                     |
+| `UNABLE_TO_LIST_PRICES`                 | Active recurring Stripe prices could not be retrieved                                   |
 
 ## Types and conventions
 
@@ -310,11 +377,41 @@ Documented error codes:
 3. The client passes that token to Crater's anonymous `usersLogin` mutation.
 4. Crater verifies the token with Sagittarius, maps the returned Sagittarius user ID to a local user, creates a `UserSession`, and returns its token.
 5. The client sends the Crater token on subsequent mutations as `Authorization: Session <token>`; no authentication cookie is required.
-6. The authenticated user must have an associated customer. It can initially be created with only its customer type; Stripe Elements subsequently collects contact and billing details.
+6. The authenticated user must have an associated customer, which is created or updated with contact, address, and, where applicable, tax details.
 7. The frontend can preview tax and validate a promotion code.
 8. Crater creates an embedded Stripe Checkout Session for a plan or an individually negotiated offer and returns its `clientSecret`.
-9. The frontend mounts Stripe's custom checkout UI. Contact details and the billing address are collected together before payment, and Stripe calculates tax automatically.
+9. The frontend mounts Stripe's custom checkout UI. Stripe collects billing details and calculates tax automatically.
 10. The Stripe subscription receives metadata for the Crater customer ID, deployment type, customer type, and optional namespace ID.
-11. The verified `checkout.session.completed` webhook creates or updates Crater's subscription projection, but does not grant paid access by itself.
+11. The verified `checkout.session.completed` webhook creates or updates Crater's subscription projection and syncs the email, name, phone, address, and tax ID from the session's `customer_details` back to the Crater customer. It does not grant paid access by itself.
 12. Invoice lifecycle webhook processing, paid-access activation, and automatic invoice-email delivery remain to be implemented.
 13. Once the relevant subscription and license data exists, a self-hosted license can be exported while a cloud license can be linked to a Sagittarius namespace.
+
+services:
+postgres:
+image: postgres:18.3
+environment:
+POSTGRES_USER: "crater"
+POSTGRES_PASSWORD: "crater"
+POSTGRES_DB: "postgres"
+restart: unless-stopped
+volumes: - database:/var/lib/postgresql/ - ./tooling/init-dev-db:/docker-entrypoint-initdb.d
+ports: - "5433:5432"
+healthcheck:
+test: ["CMD-SHELL", "pg_isready -U crater -d postgres"]
+interval: 2s
+timeout: 5s
+retries: 15
+crater:
+ports: - "3002:3000"
+build:
+context: .
+dockerfile: Dockerfile
+depends_on:
+postgres:
+condition: service_healthy
+environment:
+RAILS_ENV: development
+volumes: - ./config/crater.yml:/usr/src/app/config/crater.yml:ro
+
+volumes:
+database:
