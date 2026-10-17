@@ -2,7 +2,7 @@ import { LicenseDetailPage } from "@/components/licenses/pages/LicenseDetailPage
 import { getCheckoutContent, getLicenseContent, getSubscriptionConfig, getUpgradeBannerContent } from "@/lib/cms"
 import { createMainAppLoginUrl } from "@/lib/checkout/checkoutLogin"
 import { isSupportedLocale } from "@/lib/i18n"
-import { createLicenseNamespaceCallbackUrl, createLicenseNamespaceReturnPath } from "@/lib/licenses/licenseNamespaceSelection"
+import { createLicenseNamespaceCallbackUrl, createLicenseNamespaceReturnPath } from "@/lib/licenses/licenseRoute"
 import { resolveSiteUrl } from "@/lib/siteConfig"
 import { notFound } from "next/navigation"
 

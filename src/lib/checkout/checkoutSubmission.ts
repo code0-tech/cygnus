@@ -1,4 +1,4 @@
-import { checkoutFetch } from "@/lib/checkout/checkoutFetch"
+import { checkoutFetch } from "@/lib/checkout/checkoutClient"
 import type { StripeCheckoutContact } from "@stripe/stripe-js"
 import type { CraterCustomerType } from "@/lib/checkout/craterCustomer"
 import type { AppLocale } from "@/lib/i18n"

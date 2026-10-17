@@ -1,6 +1,6 @@
 import { LicenseUpgradeDialog } from "@/components/licenses/dialog/LicenseUpgradeDialog"
 import { getErrorsContent, getLicenseContent, getSubscriptionConfig } from "@/lib/cms"
-import { getCraterSubscriptionPrices } from "@/lib/craterSubscriptionPrices"
+import { getCraterSubscriptionPrices } from "@/lib/subscription/prices.server"
 import { isSupportedLocale } from "@/lib/i18n"
 import { notFound } from "next/navigation"
 

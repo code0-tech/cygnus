@@ -3,7 +3,7 @@ import { CRATER_ERROR_FIELDS, describeCraterError } from "@/lib/checkout/craterA
 import { createCraterUserSession } from "@/lib/checkout/craterLogin"
 import { setCraterSessionCookie, setCraterUserLoginCookie } from "@/lib/checkout/craterSession"
 import { isSupportedLocale } from "@/lib/i18n"
-import { isLicenseId } from "@/lib/licenses/craterLicenseRequest"
+import { isLicenseId } from "@/lib/licenses/craterRequest"
 import type { Mutation, MutationLicensesLinkNamespaceArgs } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 import { NextResponse } from "next/server"

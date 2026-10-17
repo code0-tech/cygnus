@@ -287,8 +287,9 @@ test("server-side login callback exchanges Sagittarius for an HttpOnly Crater co
         const loginMarker = setCookies.find((cookie) => cookie.startsWith("crater_user_login=")) ?? ""
         assert.match(sessionCookie, /crater_session=crater-callback-session/)
         assert.match(sessionCookie, /HttpOnly/i)
-        // The marker says "this browser completed the Sagittarius login" so the checkout can skip the login
-        // step. It holds no token, is readable by the checkout, and covers the whole site.
+        // The marker says "this browser completed the Sagittarius login" so an expired account session
+        // returns to the login choice instead of silently falling back to the shared checkout session.
+        // It holds no token, is readable by the checkout, and covers the whole site.
         assert.match(loginMarker, /crater_user_login=1/)
         assert.doesNotMatch(loginMarker, /HttpOnly/i)
         assert.match(loginMarker, /Path=\//i)
@@ -1563,8 +1564,8 @@ test("clears a malformed Crater session cookie", async () => {
 
     assert.equal(response.status, 401)
     const setCookies = response.headers.getSetCookie()
-    // A session that is gone must take the login marker with it, or the checkout keeps skipping its login
-    // step for a browser Crater no longer knows.
+    // A session that is gone must take the login marker with it, or a later checkout treats this browser
+    // as though its account session had only just expired.
     for (const name of ["crater_session", "crater_user_login"]) {
         const cleared = setCookies.find((cookie) => cookie.startsWith(`${name}=`)) ?? ""
         assert.match(cleared, new RegExp(`${name}=;`))

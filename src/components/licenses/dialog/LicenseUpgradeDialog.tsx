@@ -7,30 +7,22 @@ import { SummaryBadge } from "@/components/checkout/CheckoutSummaryBadge"
 import { Slider } from "@/components/ui/Slider"
 import { ButtonLoader } from "@/components/ui/Loader"
 import { getIcon } from "@/components/ui/IconRenderer"
+import { useSubscriptionUpdatePreview } from "@/hooks/useSubscriptionUpdatePreview"
 import type { ErrorsContent, LicenseContent, SubscriptionConfigData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { formatMinorCurrency } from "@/lib/formatters"
 import { decodeLicenseRouteId } from "@/lib/licenses/licenseRoute"
 import { resolveSubscriptionCustomerType } from "@/lib/licenses/licenseSubscription"
-import { calculateSubscriptionQuote, type PaymentPeriod } from "@/lib/subscriptionCalculator"
-import { getSubscriptionCatalog } from "@/lib/subscriptionCatalog"
-import { getPaymentPeriodForCustomerType } from "@/lib/subscriptionConfigurator"
-import type { SubscriptionPriceCatalog } from "@/lib/subscriptionPrices"
+import { updateSubscription } from "@/lib/subscription/client"
+import { calculateSubscriptionQuote, type PaymentPeriod } from "@/lib/subscription/calculator"
+import { getSubscriptionCatalog } from "@/lib/subscription/catalog"
+import { getPaymentPeriodForCustomerType, type SubscriptionPlan } from "@/lib/subscription/configurator"
+import type { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
 import { Button, DialogFooter } from "@code0-tech/pictor"
 import { IconCheck } from "@tabler/icons-react"
 import { useRouter } from "next/navigation"
-import { useEffect, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import { cn } from "@/lib/utils"
-
-type SubscriptionPlan = "pro" | "max" | "custom"
-
-interface SubscriptionUpdatePreview {
-    currency: string
-    effectiveAt: string | null
-    immediate: boolean
-    prorationAmount: number
-    total: number
-}
 
 interface LicenseUpgradeDialogProps {
     content: LicenseContent
@@ -85,9 +77,6 @@ export function LicenseUpgradeDialog({ content, customerId, errors, licenseId, l
         [catalog, customerType, paymentPeriod, plan, resolvedAiTokens, resolvedWorkflowExecutions]
     )
 
-    const [preview, setPreview] = useState<SubscriptionUpdatePreview | null>(null)
-    const [previewError, setPreviewError] = useState<string | null>(null)
-    const [isLoadingPreview, setIsLoadingPreview] = useState(false)
     const [saveError, setSaveError] = useState<string | null>(null)
     const [isSaving, setIsSaving] = useState(false)
     const [acceptedTerms, setAcceptedTerms] = useState(false)
@@ -96,45 +85,7 @@ export function LicenseUpgradeDialog({ content, customerId, errors, licenseId, l
         plan,
         ...(plan === "custom" ? { aiTokens: resolvedAiTokens, workflowExecutions: resolvedWorkflowExecutions } : {}),
     }
-
-    useEffect(() => {
-        if (!license?.subscriptionId) {
-            setPreview(null)
-            setPreviewError(null)
-            return
-        }
-
-        let active = true
-        setIsLoadingPreview(true)
-        setPreviewError(null)
-
-        const debounceTimer = window.setTimeout(() => {
-            void fetch("/api/crater/subscriptions/preview", {
-                method: "POST",
-                credentials: "same-origin",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify({ id: license.subscriptionId, ...changeFields }),
-            })
-                .then(async (response) => {
-                    if (!response.ok) throw new Error(errors.subscriptionPreview)
-                    return (await response.json()) as SubscriptionUpdatePreview
-                })
-                .then((nextPreview) => {
-                    if (active) setPreview(nextPreview)
-                })
-                .catch(() => {
-                    if (active) setPreviewError(errors.subscriptionPreview)
-                })
-                .finally(() => {
-                    if (active) setIsLoadingPreview(false)
-                })
-        }, 400)
-
-        return () => {
-            active = false
-            window.clearTimeout(debounceTimer)
-        }
-    }, [errors.subscriptionPreview, license?.subscriptionId, plan, resolvedAiTokens, resolvedWorkflowExecutions])
+    const { isLoadingPreview, preview, previewError } = useSubscriptionUpdatePreview(license?.subscriptionId, changeFields, errors.subscriptionPreview, 400)
 
     const save = async () => {
         if (!license?.subscriptionId || !hasChange || isSaving) return
@@ -142,23 +93,7 @@ export function LicenseUpgradeDialog({ content, customerId, errors, licenseId, l
         setSaveError(null)
 
         try {
-            const response = await fetch("/api/crater/subscriptions", {
-                method: "PATCH",
-                credentials: "same-origin",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify({ id: license.subscriptionId, ...changeFields }),
-            })
-            if (!response.ok) throw new Error(errors.planUpgrade)
-            const updated: unknown = await response.json()
-            if (!updated || typeof updated !== "object") throw new Error(errors.planUpgrade)
-
-            const subscription = updated as {
-                aiTokens?: number
-                paymentPeriod?: string
-                plan?: string
-                updatedAt?: string
-                workflowExecutions?: number
-            }
+            const subscription = await updateSubscription({ id: license.subscriptionId, ...changeFields }, errors.planUpgrade)
             updateLicense(license.id, {
                 ...(subscription.plan ? { plan: subscription.plan } : {}),
                 ...(typeof subscription.aiTokens === "number" ? { aiTokens: subscription.aiTokens } : {}),

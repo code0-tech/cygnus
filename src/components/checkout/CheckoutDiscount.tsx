@@ -1,17 +1,20 @@
 "use client"
 
-import { checkoutFetch } from "@/lib/checkout/checkoutFetch"
+import { checkoutFetch } from "@/lib/checkout/checkoutClient"
 import { Button, TextInput } from "@code0-tech/pictor"
 import { useCraterSession } from "@/components/checkout/CraterSessionProvider"
 import { ButtonLoader } from "@/components/ui/Loader"
 import { Dialog } from "@base-ui/react/dialog"
-import type { CheckoutDiscountData } from "@/lib/checkout/checkoutDiscount"
+import type { CheckoutDiscount } from "@code0-tech/crater-graphql-types"
 import { IconX } from "@tabler/icons-react"
 import { usePathname, useSearchParams } from "next/navigation"
 import { createPortal } from "react-dom"
 import { useCallback, useEffect, useRef, useState } from "react"
 
-export type CheckoutDiscountValue = CheckoutDiscountData
+export type CheckoutDiscountValue = Required<Omit<CheckoutDiscount, "__typename" | "code" | "duration">> & {
+    code: NonNullable<CheckoutDiscount["code"]>
+    duration: NonNullable<CheckoutDiscount["duration"]>
+}
 
 interface CheckoutDiscountProps {
     authenticated?: boolean

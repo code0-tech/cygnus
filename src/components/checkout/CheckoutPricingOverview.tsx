@@ -5,7 +5,7 @@ import { getIcon } from "@/components/ui/IconRenderer"
 import type { CheckoutData, SubscriptionConfigData } from "@/lib/cms"
 import { formatCompactNumber, formatCurrency } from "@/lib/formatters"
 import type { AppLocale } from "@/lib/i18n"
-import { formatDiscountBadge } from "@/lib/subscriptionCalculator"
+import { formatDiscountBadge } from "@/lib/subscription/calculator"
 import { Card } from "@code0-tech/pictor"
 import NumberFlow from "@number-flow/react"
 

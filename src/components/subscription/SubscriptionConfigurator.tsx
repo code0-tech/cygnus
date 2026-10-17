@@ -8,9 +8,9 @@ import { Slider } from "@/components/ui/Slider"
 import type { SubscriptionConfiguratorContent } from "@/lib/cms"
 import { formatEuroCurrency } from "@/lib/formatters"
 import { localizeHref, type AppLocale } from "@/lib/i18n"
-import { getSubscriptionCatalog } from "@/lib/subscriptionCatalog"
-import { calculateSubscriptionQuote, formatDiscountBadge, getPaymentPeriodSuffix, getSubscriptionDisplayPrices, getSubscriptionQuoteDiscountRate } from "@/lib/subscriptionCalculator"
-import type { SubscriptionPriceCatalog } from "@/lib/subscriptionPrices"
+import { calculateSubscriptionQuote, formatDiscountBadge, getPaymentPeriodSuffix, getSubscriptionDisplayPrices, getSubscriptionQuoteDiscountRate } from "@/lib/subscription/calculator"
+import { getSubscriptionCatalog } from "@/lib/subscription/catalog"
+import type { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
 import { cn } from "@/lib/utils"
 import {
     buildSubscriptionSelectionSearchParams,
@@ -19,7 +19,7 @@ import {
     reduceSubscriptionSelection,
     type SubscriptionSelectionAction,
     type SubscriptionSelection,
-} from "@/lib/subscriptionConfigurator"
+} from "@/lib/subscription/configurator"
 import NumberFlow from "@number-flow/react"
 import { IconCalendarMonth } from "@tabler/icons-react"
 import { usePathname, useSearchParams } from "next/navigation"

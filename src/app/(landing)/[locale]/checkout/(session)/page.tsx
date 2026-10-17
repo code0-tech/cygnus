@@ -1,6 +1,6 @@
 import { CheckoutPageContent } from "@/components/checkout/CheckoutPageContent"
 import { getCheckoutContent, getErrorsContent, getFooter, getSubscriptionConfig } from "@/lib/cms"
-import { getCraterSubscriptionPrices } from "@/lib/craterSubscriptionPrices"
+import { getCraterSubscriptionPrices } from "@/lib/subscription/prices.server"
 import { isSupportedLocale } from "@/lib/i18n"
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"

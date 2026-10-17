@@ -1,6 +1,6 @@
 "use client"
 
-import { checkoutFetch } from "@/lib/checkout/checkoutFetch"
+import { checkoutFetch } from "@/lib/checkout/checkoutClient"
 import { clearCraterUserLoginMarker, hasCraterUserLoginMarker } from "@/lib/checkout/craterUserLogin"
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react"
 

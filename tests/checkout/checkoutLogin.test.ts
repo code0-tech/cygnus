@@ -4,7 +4,7 @@ import { createCheckoutQuery, createCraterLoginCallbackUrl, createMainAppLoginUr
 import {
     createLicenseNamespaceCallbackUrl,
     createLicenseNamespaceReturnPath,
-} from "../../src/lib/licenses/licenseNamespaceSelection"
+} from "../../src/lib/licenses/licenseRoute"
 
 test("preserves the subscription configuration for guest checkout", () => {
     const query = createCheckoutQuery({ plan: "custom", tag: ["one", "two"], token: "secret", authError: "session", guestCheckout: "previous-purchase", empty: undefined })

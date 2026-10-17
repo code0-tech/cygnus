@@ -19,6 +19,17 @@ export interface CheckoutContactDraft {
     stage: CheckoutContactDraftStage
 }
 
+interface SaveCheckoutContactDraftInput {
+    billingAddress: StripeCheckoutContact | null
+    billingAddressComplete?: boolean
+    customerId: string | null
+    email: string | null
+    emailComplete?: boolean
+    emailSyncedToStripe?: boolean
+    searchParams: URLSearchParams
+    stage: CheckoutContactDraftStage
+}
+
 function draftStorage(searchParams: URLSearchParams) {
     return searchParams.has("guestCheckout") ? window.sessionStorage : window.localStorage
 }
@@ -67,16 +78,7 @@ export function saveCheckoutContactDraft({
     emailSyncedToStripe = false,
     searchParams,
     stage,
-}: {
-    billingAddress: StripeCheckoutContact | null
-    billingAddressComplete?: boolean
-    customerId: string | null
-    email: string | null
-    emailComplete?: boolean
-    emailSyncedToStripe?: boolean
-    searchParams: URLSearchParams
-    stage: CheckoutContactDraftStage
-}) {
+}: SaveCheckoutContactDraftInput) {
     const draft: CheckoutContactDraft = {
         billingAddress,
         billingAddressComplete,

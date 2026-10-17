@@ -1,10 +1,9 @@
 "use client"
 
 import type { SubscriptionConfigData, UpgradeBannerData } from "@/lib/cms"
+import type { SubscriptionPlan } from "@/lib/subscription/configurator"
 import { Card } from "../ui/Card"
 import { Button } from "@code0-tech/pictor"
-
-type SubscriptionPlan = "pro" | "max" | "custom"
 
 interface UpgradePlanBannerProps {
     content?: UpgradeBannerData | null

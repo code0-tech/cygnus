@@ -7,7 +7,7 @@ import { PaymentMethodSetupDialog } from "@/components/licenses/dialog/PaymentMe
 import { ButtonLoader } from "@/components/ui/Loader"
 import type { CheckoutData, ErrorsContent, LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
-import { type CustomerPaymentMethodSummary, fetchCustomerPaymentMethods } from "@/lib/licenses/customerPaymentMethods"
+import { type CustomerPaymentMethodSummary, fetchCustomerPaymentMethods } from "@/lib/licenses/licenseClient"
 import { decodeLicenseRouteId } from "@/lib/licenses/licenseRoute"
 import { cn } from "@/lib/utils"
 import { Button, DialogFooter, EmailInput, ScrollArea, ScrollAreaScrollbar, ScrollAreaThumb, ScrollAreaViewport, Text, TextInput } from "@code0-tech/pictor"

@@ -1,7 +1,7 @@
 import { guestCheckoutId, readGuestCheckoutSession } from "@/lib/checkout/guestCheckoutSession"
 import { createApolloClient } from "@/lib/apolloClient"
 import { CRATER_ERROR_FIELDS, craterJson, craterMutationErrorResponse, craterTransportErrorResponse, optionalString, readJsonObject, requireCraterSession } from "@/lib/checkout/craterApi"
-import { isLicenseId } from "@/lib/licenses/craterLicenseRequest"
+import { isLicenseId } from "@/lib/licenses/craterRequest"
 import type { Mutation, MutationLicensesExportArgs } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 
