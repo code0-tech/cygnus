@@ -3276,6 +3276,9 @@ export interface License {
     customerLabel: string;
     emailLabel: string;
     lastEditedLabel: string;
+    editLabel: string;
+    statusLabel: string;
+    deploymentLabel: string;
   };
   updatedAt?: string | null;
   createdAt?: string | null;
@@ -3887,6 +3890,9 @@ export interface LicensesSelect<T extends boolean = true> {
         customerLabel?: T;
         emailLabel?: T;
         lastEditedLabel?: T;
+        editLabel?: T;
+        statusLabel?: T;
+        deploymentLabel?: T;
       };
   updatedAt?: T;
   createdAt?: T;

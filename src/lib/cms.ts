@@ -428,6 +428,9 @@ export interface LicenseContent {
         customerLabel: string
         emailLabel: string
         lastEditedLabel: string
+        editLabel: string
+        statusLabel: string
+        deploymentLabel: string
     }
 }
 
