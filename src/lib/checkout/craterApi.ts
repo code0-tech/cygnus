@@ -1,4 +1,4 @@
-import { readCraterSessionAuthorization } from "@/lib/craterSession"
+import { readCraterSessionAuthorization } from "@/lib/checkout/craterSession"
 import type { Error } from "@code0-tech/crater-graphql-types"
 import { ServerError } from "@apollo/client/errors"
 import { NextResponse } from "next/server"

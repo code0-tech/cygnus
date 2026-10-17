@@ -3,8 +3,8 @@
 import { useCraterSession } from "@/components/checkout/CraterSessionProvider"
 import { Card } from "@/components/ui/Card"
 import type { CheckoutData, SubscriptionConfigData } from "@/lib/cms"
-import { normalizeCountryCode, resolveCraterCustomerType } from "@/lib/craterCustomer"
-import { normalizeCheckoutSelection } from "@/lib/checkoutValidation"
+import { normalizeCountryCode, resolveCraterCustomerType } from "@/lib/checkout/craterCustomer"
+import { normalizeCheckoutSelection } from "@/lib/checkout/checkoutValidation"
 import { Button, EmailInput, emailValidation, TextInput, useForm } from "@code0-tech/pictor"
 import { useSearchParams } from "next/navigation"
 import { useMemo, useState } from "react"
@@ -45,13 +45,7 @@ async function readCheckoutError(response: Response, fallback: string) {
     }
 }
 
-export function CheckoutForm({
-    content,
-    subscriptionConfig,
-}: {
-    content?: CheckoutFormContent | null
-    subscriptionConfig?: SubscriptionConfigData | null
-}) {
+export function CheckoutForm({ content, subscriptionConfig }: { content?: CheckoutFormContent | null; subscriptionConfig?: SubscriptionConfigData | null }) {
     const searchParams = useSearchParams()
     const [isLoading, setIsLoading] = useState(false)
     const [errorMessage, setErrorMessage] = useState<string | null>(null)

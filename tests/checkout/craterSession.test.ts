@@ -1,6 +1,6 @@
 import assert from "node:assert/strict"
 import test from "node:test"
-import { readCraterSessionAuthorization } from "@/lib/craterSession"
+import { readCraterSessionAuthorization } from "@/lib/checkout/craterSession"
 
 test("reads a Crater session token from the Session authorization scheme", () => {
     const request = new Request("https://example.com", {

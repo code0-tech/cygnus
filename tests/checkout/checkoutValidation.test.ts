@@ -1,7 +1,7 @@
 import assert from "node:assert/strict"
 import test from "node:test"
 import type { SubscriptionConfigData } from "@/lib/cms"
-import { normalizeCheckoutSelection, validateCheckoutSelection } from "@/lib/checkoutValidation"
+import { normalizeCheckoutSelection, validateCheckoutSelection } from "@/lib/checkout/checkoutValidation"
 
 const subscriptionConfig = {
     aiTokens: {

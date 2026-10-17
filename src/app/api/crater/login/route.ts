@@ -1,5 +1,5 @@
 import { createApolloClient } from "@/lib/apolloClient"
-import { craterJson, craterMutationErrorResponse, optionalString, readJsonObject } from "@/lib/craterApi"
+import { craterJson, craterMutationErrorResponse, optionalString, readJsonObject } from "@/lib/checkout/craterApi"
 import type { Mutation, MutationUsersLoginArgs } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 

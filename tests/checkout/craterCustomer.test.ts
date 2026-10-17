@@ -1,6 +1,6 @@
 import assert from "node:assert/strict"
 import test from "node:test"
-import { normalizeCountryCode, resolveCraterCustomerType } from "@/lib/craterCustomer"
+import { normalizeCountryCode, resolveCraterCustomerType } from "@/lib/checkout/craterCustomer"
 
 test("maps checkout customer types to Crater customer types", () => {
     assert.equal(resolveCraterCustomerType("b2b"), "business")
