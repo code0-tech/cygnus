@@ -17,9 +17,9 @@ const CHECKOUT_CREATE_SESSION: TypedDocumentNode<CheckoutCreateSessionData, Muta
     mutation CheckoutCreateSession($input: CheckoutCreateSessionInput!) {
         checkoutCreateSession(input: $input) {
             session {
+                clientSecret
                 expiresAt
                 id
-                url
             }
             errors {
                 errorCode
@@ -110,8 +110,7 @@ export async function POST(request: Request) {
 
         const siteUrl = resolveSiteUrl()
         const input: MutationCheckoutCreateSessionArgs["input"] = {
-            successUrl: new URL("/checkout/success", siteUrl).toString(),
-            cancelUrl: new URL("/checkout", siteUrl).toString(),
+            returnUrl: `${new URL("/checkout/success", siteUrl).toString()}?session_id={CHECKOUT_SESSION_ID}`,
             ...(craterCustomCheckoutConfigurationId
                 ? { customCheckoutConfigurationId: craterCustomCheckoutConfigurationId }
                 : {
@@ -135,14 +134,14 @@ export async function POST(request: Request) {
         const errorResponse = craterMutationErrorResponse(payload.errors, "Crater could not create the checkout session.")
         if (errorResponse) return errorResponse
 
-        if (!payload.session?.url) {
-            throw new Error("Crater returned no checkout redirect URL.")
+        if (!payload.session?.clientSecret) {
+            throw new Error("Crater returned no checkout client secret.")
         }
 
         return craterJson({
+            clientSecret: payload.session.clientSecret,
             expiresAt: payload.session.expiresAt,
             id: payload.session.id,
-            url: payload.session.url,
         })
     } catch (error) {
         const transportResponse = craterTransportErrorResponse(error)
