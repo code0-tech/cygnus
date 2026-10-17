@@ -74,7 +74,7 @@ test("subscription update rejects an unknown payment period", async () => {
     )
 
     assert.equal(response.status, 400)
-    assert.deepEqual(await response.json(), { error: "paymentPeriod must be weekly, monthly, quarterly, or yearly." })
+    assert.deepEqual(await response.json(), { error: "paymentPeriod must be monthly, quarterly, or yearly." })
 })
 
 test("upgrades a subscription to a higher plan", async () => {

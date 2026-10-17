@@ -1,5 +1,5 @@
 import { createApolloClient } from "@/lib/apolloClient"
-import { normalizeSubscriptionPrices } from "@/lib/subscriptionPrices"
+import { normalizeSubscriptionPrices, SUBSCRIPTION_PRICE_LOOKUP_KEYS } from "@/lib/subscriptionPrices"
 import type { CheckoutPrice } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 import { unstable_cache } from "next/cache"
@@ -28,6 +28,6 @@ async function fetchCraterSubscriptionPrices() {
     return normalizeSubscriptionPrices(data?.subscriptionPrices)
 }
 
-export const getCraterSubscriptionPrices = unstable_cache(fetchCraterSubscriptionPrices, ["crater-subscription-prices"], {
+export const getCraterSubscriptionPrices = unstable_cache(fetchCraterSubscriptionPrices, ["crater-subscription-prices", ...SUBSCRIPTION_PRICE_LOOKUP_KEYS], {
     revalidate: 60,
 })

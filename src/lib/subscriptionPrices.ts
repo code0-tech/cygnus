@@ -4,26 +4,26 @@ export const SUBSCRIPTION_PRICE_LOOKUP_KEYS = [
     "pro_b2b_monthly",
     "pro_b2b_quarterly",
     "pro_b2b_yearly",
-    "pro_b2c_weekly",
     "pro_b2c_monthly",
+    "pro_b2c_quarterly",
     "pro_b2c_yearly",
     "max_b2b_monthly",
     "max_b2b_quarterly",
     "max_b2b_yearly",
-    "max_b2c_weekly",
     "max_b2c_monthly",
+    "max_b2c_quarterly",
     "max_b2c_yearly",
     "ai_token_b2b_monthly",
     "ai_token_b2b_quarterly",
     "ai_token_b2b_yearly",
-    "ai_token_b2c_weekly",
     "ai_token_b2c_monthly",
+    "ai_token_b2c_quarterly",
     "ai_token_b2c_yearly",
     "workflow_execution_b2b_monthly",
     "workflow_execution_b2b_quarterly",
     "workflow_execution_b2b_yearly",
-    "workflow_execution_b2c_weekly",
     "workflow_execution_b2c_monthly",
+    "workflow_execution_b2c_quarterly",
     "workflow_execution_b2c_yearly",
 ] as const
 
@@ -46,7 +46,6 @@ export type SubscriptionPriceCatalog = Record<SubscriptionPriceLookupKey, Subscr
 const subscriptionPriceLookupKeys = new Set<string>(SUBSCRIPTION_PRICE_LOOKUP_KEYS)
 
 function getExpectedRecurringPeriod(lookupKey: SubscriptionPriceLookupKey) {
-    if (lookupKey.endsWith("_weekly")) return { interval: "week", intervalCount: 1 }
     if (lookupKey.endsWith("_quarterly")) return { interval: "month", intervalCount: 3 }
     if (lookupKey.endsWith("_yearly")) return { interval: "year", intervalCount: 1 }
     return { interval: "month", intervalCount: 1 }

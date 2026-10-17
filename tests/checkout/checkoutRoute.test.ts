@@ -208,7 +208,7 @@ test("checkout forwards documented Crater domain error details", async () => {
     }
 })
 
-test("prices a b2b fixed plan in the periods b2b is billed in, even sent directly to the API", async () => {
+test("accepts quarterly and rejects removed weekly periods even when sent directly to the API", async () => {
     const graphQLServer = await createGraphQLTestServer([
         {
             data: {
@@ -218,18 +218,6 @@ test("prices a b2b fixed plan in the periods b2b is billed in, even sent directl
                         clientSecret: "cs_b2b_quarterly_secret_test",
                         expiresAt: 1_800_000_000,
                         id: "cs_b2b_quarterly",
-                    },
-                },
-            },
-        },
-        {
-            data: {
-                checkoutCreateSession: {
-                    errors: [],
-                    session: {
-                        clientSecret: "cs_b2b_weekly_secret_test",
-                        expiresAt: 1_800_000_001,
-                        id: "cs_b2b_weekly",
                     },
                 },
             },
@@ -257,7 +245,7 @@ test("prices a b2b fixed plan in the periods b2b is billed in, even sent directl
                 }),
             })
         )
-        const weeklyResponse = await POST(
+        const removedWeeklyResponse = await POST(
             new Request("https://example.com/api/crater/checkout/session", {
                 method: "POST",
                 headers: {
@@ -275,7 +263,7 @@ test("prices a b2b fixed plan in the periods b2b is billed in, even sent directl
         )
 
         assert.equal(response.status, 200)
-        assert.equal(weeklyResponse.status, 200)
+        assert.equal(removedWeeklyResponse.status, 400)
         assert.deepEqual(graphQLServer.requests[0].body.variables, {
             input: {
                 customerId: "gid://crater/Customer/1",
@@ -285,15 +273,7 @@ test("prices a b2b fixed plan in the periods b2b is billed in, even sent directl
                 returnUrl: "https://code0.example/en/checkout/success?plan=pro&customerType=b2b&deploymentType=self_hosted&paymentPeriod=quarterly&session_id={CHECKOUT_SESSION_ID}",
             },
         })
-        assert.deepEqual(graphQLServer.requests[1].body.variables, {
-            input: {
-                customerId: "gid://crater/Customer/1",
-                deploymentType: "self_hosted",
-                paymentPeriod: "MONTHLY",
-                plan: "max",
-                returnUrl: "https://code0.example/en/checkout/success?plan=max&customerType=b2b&deploymentType=self_hosted&paymentPeriod=monthly&session_id={CHECKOUT_SESSION_ID}",
-            },
-        })
+        assert.equal(graphQLServer.requests.length, 1)
     } finally {
         if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
         else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
@@ -391,7 +371,7 @@ test("creates regular and custom checkout sessions with the expected Crater inpu
                     customerType: "b2c",
                     deploymentType: "cloud",
                     namespace: "gid://sagittarius/Namespace/1",
-                    paymentPeriod: "weekly",
+                    paymentPeriod: "quarterly",
                     aiTokens: "30000",
                     workflowExecutions: "200",
                     additionalFeatures: ["priority-support"],
@@ -435,10 +415,10 @@ test("creates regular and custom checkout sessions with the expected Crater inpu
                 customerId: "gid://crater/Customer/3",
                 deploymentType: "cloud",
                 namespaceId: "gid://sagittarius/Namespace/1",
-                paymentPeriod: "WEEKLY",
+                paymentPeriod: "QUARTERLY",
                 plan: "custom",
                 returnUrl:
-                    "https://code0.example/en/checkout/success?plan=custom&customerType=b2c&deploymentType=cloud&paymentPeriod=weekly&aiTokens=30000&workflowExecutions=200&session_id={CHECKOUT_SESSION_ID}",
+                    "https://code0.example/en/checkout/success?plan=custom&customerType=b2c&deploymentType=cloud&paymentPeriod=quarterly&aiTokens=30000&workflowExecutions=200&session_id={CHECKOUT_SESSION_ID}",
                 workflowExecutions: 200,
             },
         })

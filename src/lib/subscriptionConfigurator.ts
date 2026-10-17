@@ -33,23 +33,19 @@ export type SubscriptionSelectionAction =
 const PLANS = new Set<SubscriptionConfiguratorPlan>(["pro", "max", "custom"])
 const DEPLOYMENTS = new Set<SubscriptionDeploymentMode>(["self_hosted", "cloud"])
 const CUSTOMER_TYPES = new Set<SubscriptionCustomerType>(["b2b", "b2c"])
-const PAYMENT_PERIODS = new Set<PaymentPeriod>(["weekly", "monthly", "quarterly", "yearly"])
-// Which periods exist is a property of the customer type, not of the plan: B2B is never billed weekly, B2C never quarterly.
-const PAYMENT_PERIOD_OPTIONS: Record<SubscriptionCustomerType, readonly PaymentPeriod[]> = {
-    b2b: ["monthly", "quarterly", "yearly"],
-    b2c: ["weekly", "monthly", "yearly"],
-}
+const PAYMENT_PERIOD_OPTIONS: readonly PaymentPeriod[] = ["monthly", "quarterly", "yearly"]
+const PAYMENT_PERIODS = new Set<PaymentPeriod>(PAYMENT_PERIOD_OPTIONS)
 
 function rawValue(raw: RawSubscriptionSelection | URLSearchParams, key: keyof RawSubscriptionSelection) {
     return raw instanceof URLSearchParams ? raw.get(key) : raw[key]
 }
 
-export function getPaymentPeriodOptions(customerType: SubscriptionCustomerType) {
-    return PAYMENT_PERIOD_OPTIONS[customerType]
+export function getPaymentPeriodOptions(_customerType: SubscriptionCustomerType) {
+    return PAYMENT_PERIOD_OPTIONS
 }
 
-export function getPaymentPeriodForCustomerType(customerType: SubscriptionCustomerType, period: PaymentPeriod): PaymentPeriod {
-    return PAYMENT_PERIOD_OPTIONS[customerType].includes(period) ? period : "monthly"
+export function getPaymentPeriodForCustomerType(_customerType: SubscriptionCustomerType, period: PaymentPeriod): PaymentPeriod {
+    return PAYMENT_PERIODS.has(period) ? period : "monthly"
 }
 
 function normalizeUsageValue(value: number, range: UsageRange) {
@@ -86,7 +82,7 @@ export function resolveSubscriptionSelection(raw: RawSubscriptionSelection | URL
 
     const rawPeriod = rawValue(raw, "paymentPeriod")
     const requestedPeriod = PAYMENT_PERIODS.has(rawPeriod as PaymentPeriod) ? (rawPeriod as PaymentPeriod) : (config.defaults?.paymentPeriod?.[customerType] ?? "monthly")
-    if (rawPeriod && rawPeriod !== requestedPeriod) issues.push({ field: "paymentPeriod", message: "paymentPeriod must be weekly, monthly, quarterly, or yearly." })
+    if (rawPeriod && rawPeriod !== requestedPeriod) issues.push({ field: "paymentPeriod", message: "paymentPeriod must be monthly, quarterly, or yearly." })
     const paymentPeriod = getPaymentPeriodForCustomerType(customerType, requestedPeriod)
 
     const usageIssues = plan === "custom" && (!rawCustomerType || CUSTOMER_TYPES.has(rawCustomerType as SubscriptionCustomerType)) ? issues : []

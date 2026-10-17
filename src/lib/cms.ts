@@ -98,7 +98,7 @@ export interface SubscriptionConfigData {
         customerType: "b2b" | "b2c"
         paymentPeriod: {
             b2b: "monthly" | "quarterly" | "yearly"
-            b2c: "weekly" | "monthly" | "yearly"
+            b2c: "monthly" | "quarterly" | "yearly"
         }
     }
     deployment: {
@@ -182,18 +182,14 @@ export interface SubscriptionConfigData {
     paymentPeriod: {
         label: string
         description?: string | null
-        weeklyText: string
         monthlyText: string
         quarterlyText: string
         yearlyText: string
-        weeklyPeriodSuffix: string
         monthlyPeriodSuffix: string
         quarterlyPeriodSuffix: string
         yearlyPeriodSuffix: string
-        weeklyPaidLabel: string
         quarterlyPaidLabel: string
         yearlyPaidLabel: string
-        weeklyColor: IconColor
         monthlyColor: IconColor
         quarterlyColor: IconColor
         yearlyColor: IconColor
@@ -390,7 +386,7 @@ export interface LicenseContent {
     values: {
         customerTypes: { personal: string; business: string }
         deploymentTypes: { cloud: string; selfHosted: string }
-        paymentPeriods: { weekly: string; monthly: string; quarterly: string; yearly: string }
+        paymentPeriods: { monthly: string; quarterly: string; yearly: string }
         statuses: { active: string; paid: string; paymentFailed: string; canceled: string; expired: string }
         invoiceStatuses: { draft: string; open: string; uncollectible: string; void: string }
         plans: { pro: string; max: string; custom: string }

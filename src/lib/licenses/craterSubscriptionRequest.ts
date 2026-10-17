@@ -25,7 +25,7 @@ export function parseSubscriptionChangeFields(body: JsonObject | null): { error:
     const plan = optionalString(body?.plan)
     const paymentPeriodParam = optionalString(body?.paymentPeriod)
     const paymentPeriod = paymentPeriodParam ? (parseCraterPaymentPeriod(paymentPeriodParam) ?? undefined) : undefined
-    if (paymentPeriodParam && !paymentPeriod) return { error: "paymentPeriod must be weekly, monthly, quarterly, or yearly." }
+    if (paymentPeriodParam && !paymentPeriod) return { error: "paymentPeriod must be monthly, quarterly, or yearly." }
 
     const aiTokens = parseOptionalPositiveInt(body?.aiTokens)
     const workflowExecutions = parseOptionalPositiveInt(body?.workflowExecutions)

@@ -17,14 +17,14 @@ const stripeAmounts: Partial<Record<SubscriptionPriceLookupKey, string>> = {
     pro_b2b_monthly: "1500",
     pro_b2b_quarterly: "4050",
     pro_b2b_yearly: "15000",
-    pro_b2c_weekly: "500",
     pro_b2c_monthly: "1500",
+    pro_b2c_quarterly: "4050",
     pro_b2c_yearly: "15000",
     max_b2b_monthly: "3000",
     max_b2b_quarterly: "8100",
     max_b2b_yearly: "30000",
-    max_b2c_weekly: "1000",
     max_b2c_monthly: "3000",
+    max_b2c_quarterly: "8100",
     max_b2c_yearly: "30000",
 }
 
@@ -38,7 +38,7 @@ function createSubscriptionPrices(overrides: Partial<Record<SubscriptionPriceLoo
                 {
                     currency: "eur",
                     id: `price_${lookupKey}`,
-                    interval: period === "weekly" ? "week" : period === "yearly" ? "year" : "month",
+                    interval: period === "yearly" ? "year" : "month",
                     intervalCount: period === "quarterly" ? 3 : 1,
                     lookupKey,
                     productName: lookupKey,
@@ -55,10 +55,6 @@ const paymentPeriod = {
     description: "Choose how often to pay.",
     label: "Payment period",
     title: "Payment period",
-    weeklyColor: "lime",
-    weeklyPaidLabel: "paid weekly",
-    weeklyPeriodSuffix: "per week",
-    weeklyText: "Weekly",
     monthlyColor: "brand",
     monthlyDiscount: 0.05,
     monthlyPeriodSuffix: "per month",
@@ -76,19 +72,16 @@ const paymentPeriod = {
 } as const
 
 test("resolves payment period discounts and suffixes", () => {
-    assert.equal(getPaymentPeriodSuffix("weekly", paymentPeriod), "per week")
     assert.equal(getPaymentPeriodSuffix("monthly", paymentPeriod), "per month")
     assert.equal(getPaymentPeriodSuffix("quarterly", paymentPeriod), "per quarter")
     assert.equal(getPaymentPeriodSuffix("yearly", paymentPeriod), "per year")
 
-    assert.equal(getPaymentPeriodMonths("weekly"), 1)
     assert.equal(getPaymentPeriodMonths("monthly"), 1)
     assert.equal(getPaymentPeriodMonths("quarterly"), 3)
     assert.equal(getPaymentPeriodMonths("yearly"), 12)
 })
 
 test("normalizes subscription amounts to a comparable monthly amount", () => {
-    assert.equal(getMonthlyEquivalentAmount(1_000, "weekly"), 4_350)
     assert.equal(getMonthlyEquivalentAmount(3_000, "monthly"), 3_000)
     assert.equal(getMonthlyEquivalentAmount(8_100, "quarterly"), 2_700)
     assert.equal(getMonthlyEquivalentAmount(28_800, "yearly"), 2_400)
@@ -239,7 +232,7 @@ test("prices a fixed plan from the b2b prices for a b2b customer", () => {
     assert.equal(quarterly.workflowExecutions, 0)
 })
 
-test("normalizes payment periods the customer type is not billed in for the checkout price display", () => {
+test("supports the same payment periods for both customer types in the checkout price display", () => {
     const config = {
         aiTokenPriceFactor: 0.001,
         aiTokens: {
@@ -261,7 +254,7 @@ test("normalizes payment periods the customer type is not billed in for the chec
         },
     } as never
 
-    const b2bWeekly = resolveCheckoutPricing({
+    const invalidWeekly = resolveCheckoutPricing({
         aiTokensParam: null,
         customerTypeParam: "b2b",
         fallbackPeriodSuffix: "/mo",
@@ -281,20 +274,8 @@ test("normalizes payment periods the customer type is not billed in for the chec
         subscriptionPrices,
         workflowExecutionsParam: null,
     })
-    const b2cWeekly = resolveCheckoutPricing({
-        aiTokensParam: null,
-        customerTypeParam: "b2c",
-        fallbackPeriodSuffix: "/mo",
-        paymentPeriodParam: "weekly",
-        planParam: "custom",
-        subscriptionConfig: config,
-        subscriptionPrices,
-        workflowExecutionsParam: null,
-    })
-
-    assert.equal(b2bWeekly.paymentPeriod, "monthly")
-    assert.equal(b2cQuarterly.paymentPeriod, "monthly")
-    assert.equal(b2cWeekly.paymentPeriod, "weekly")
+    assert.equal(invalidWeekly.paymentPeriod, "monthly")
+    assert.equal(b2cQuarterly.paymentPeriod, "quarterly")
 })
 
 test("clamps manipulated custom-plan usage parameters before calculating the price", () => {

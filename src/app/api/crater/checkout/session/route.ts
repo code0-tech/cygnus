@@ -155,7 +155,7 @@ export async function POST(request: Request) {
         }
         const customConfigurationPaymentPeriod = parseCraterPaymentPeriod(paymentPeriod)
         if (customCheckoutConfigurationId && paymentPeriod && !customConfigurationPaymentPeriod) {
-            return craterJson({ error: "paymentPeriod must be weekly, monthly, quarterly, or yearly." }, 400)
+            return craterJson({ error: "paymentPeriod must be monthly, quarterly, or yearly." }, 400)
         }
 
         const input: MutationCheckoutCreateSessionArgs["input"] = {

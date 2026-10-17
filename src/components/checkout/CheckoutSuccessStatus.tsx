@@ -53,7 +53,7 @@ interface CheckoutSuccessStatusProps {
 const REQUEST_TIMEOUT_MS = 10_000
 const VALID_STATES = new Set<string>(["CHECKOUT_PENDING", "PAYMENT_PENDING", "FULFILLMENT_PENDING", "READY", "FAILED"])
 const SETTLED_STATES = new Set<string>(["FULFILLMENT_PENDING", "READY"])
-const PAYMENT_PERIODS = new Set<string>(["WEEKLY", "MONTHLY", "QUARTERLY", "YEARLY"])
+const PAYMENT_PERIODS = new Set<string>(["MONTHLY", "QUARTERLY", "YEARLY"])
 
 function isNullablePositiveInteger(value: unknown) {
     return value === null || (Number.isInteger(value) && Number(value) > 0)
@@ -198,7 +198,7 @@ export function CheckoutSuccessStatus({ checkoutSearchParams, content, errorMess
     const licenseAccessUrl = licenseReturnPath ? `/api/crater/licenses/access?locale=${encodeURIComponent(locale)}&returnPath=${encodeURIComponent(licenseReturnPath)}` : null
     const confirmedConfiguration = fulfillmentConfirmed ? completion?.configuration : null
     const confirmedPricing = fulfillmentConfirmed ? completion?.pricing : null
-    const paymentPeriod = confirmedConfiguration?.paymentPeriod?.toLowerCase() as "weekly" | "monthly" | "quarterly" | "yearly" | undefined
+    const paymentPeriod = confirmedConfiguration?.paymentPeriod?.toLowerCase() as "monthly" | "quarterly" | "yearly" | undefined
     const planKey = confirmedConfiguration?.plan?.toLowerCase()
     const planTitle = planKey === "pro" || planKey === "max" || planKey === "custom" ? subscriptionConfig.packages[planKey].title : subscriptionConfig.packages.custom.title
     const currencyDivisor = confirmedPricing
