@@ -168,6 +168,45 @@ test("business customer creation allows omitted contact and tax fields", async (
     }
 })
 
+test("customer creation forwards the explicit reuseExisting choice", async () => {
+    const graphQLServer = await createGraphQLTestServer([
+        {
+            data: {
+                customersCreate: {
+                    errors: [],
+                    customer: {
+                        id: "gid://crater/Customer/2",
+                        customerType: "personal",
+                        email: null,
+                        name: null,
+                    },
+                },
+            },
+        },
+    ])
+    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
+    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
+
+    try {
+        const response = await createOrGetCustomer(
+            new Request("https://example.com/api/crater/customer", {
+                method: "POST",
+                headers: sessionHeaders,
+                body: JSON.stringify({ customerType: "personal", reuseExisting: false }),
+            })
+        )
+
+        assert.equal(response.status, 201)
+        assert.deepEqual(graphQLServer.requests[0].body.variables, {
+            input: { customerType: "personal", reuseExisting: false },
+        })
+    } finally {
+        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
+        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
+        await graphQLServer.close()
+    }
+})
+
 test("customer creation rejects an existing customer with a different type", async () => {
     const graphQLServer = await createGraphQLTestServer([
         {
