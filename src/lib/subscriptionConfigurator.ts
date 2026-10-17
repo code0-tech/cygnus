@@ -2,7 +2,7 @@ import type { SubscriptionConfiguratorContent } from "@/lib/cms"
 import type { PaymentPeriod, UsageRange } from "@/lib/subscriptionCalculator"
 import type { SubscriptionSelectionCatalog } from "@/lib/subscriptionCatalog"
 
-export type SubscriptionConfiguratorPlan = "pro" | "max" | "custom"
+type SubscriptionConfiguratorPlan = "pro" | "max" | "custom"
 type SubscriptionDeploymentMode = "self_hosted" | "cloud"
 export type SubscriptionCustomerType = "b2b" | "b2c"
 
@@ -34,20 +34,22 @@ const PLANS = new Set<SubscriptionConfiguratorPlan>(["pro", "max", "custom"])
 const DEPLOYMENTS = new Set<SubscriptionDeploymentMode>(["self_hosted", "cloud"])
 const CUSTOMER_TYPES = new Set<SubscriptionCustomerType>(["b2b", "b2c"])
 const PAYMENT_PERIODS = new Set<PaymentPeriod>(["weekly", "monthly", "quarterly", "yearly"])
-export const STANDARD_PAYMENT_PERIOD_OPTIONS = ["weekly", "monthly", "yearly"] as const
-export const CUSTOM_PAYMENT_PERIOD_OPTIONS = ["monthly", "quarterly", "yearly"] as const
+// Which periods exist is a property of the customer type, not of the plan: B2B is never billed weekly, B2C never quarterly.
+const PAYMENT_PERIOD_OPTIONS: Record<SubscriptionCustomerType, readonly PaymentPeriod[]> = {
+    b2b: ["monthly", "quarterly", "yearly"],
+    b2c: ["weekly", "monthly", "yearly"],
+}
 
 function rawValue(raw: RawSubscriptionSelection | URLSearchParams, key: keyof RawSubscriptionSelection) {
     return raw instanceof URLSearchParams ? raw.get(key) : raw[key]
 }
 
-export function getPlanForCustomerType(customerType: SubscriptionCustomerType, plan: SubscriptionConfiguratorPlan) {
-    return customerType === "b2b" ? "custom" : plan
+export function getPaymentPeriodOptions(customerType: SubscriptionCustomerType) {
+    return PAYMENT_PERIOD_OPTIONS[customerType]
 }
 
-export function getPaymentPeriodForPlan(plan: SubscriptionConfiguratorPlan, period: PaymentPeriod): PaymentPeriod {
-    if ((plan === "custom" && period === "weekly") || (plan !== "custom" && period === "quarterly")) return "monthly"
-    return period
+export function getPaymentPeriodForCustomerType(customerType: SubscriptionCustomerType, period: PaymentPeriod): PaymentPeriod {
+    return PAYMENT_PERIOD_OPTIONS[customerType].includes(period) ? period : "monthly"
 }
 
 function normalizeUsageValue(value: number, range: UsageRange) {
@@ -75,9 +77,8 @@ export function resolveSubscriptionSelection(raw: RawSubscriptionSelection | URL
     if (rawCustomerType && rawCustomerType !== customerType) issues.push({ field: "customerType", message: "customerType must be b2b or b2c." })
 
     const rawPlan = rawValue(raw, "plan")
-    const requestedPlan = PLANS.has(rawPlan as SubscriptionConfiguratorPlan) ? (rawPlan as SubscriptionConfiguratorPlan) : "custom"
-    if (rawPlan && rawPlan !== requestedPlan) issues.push({ field: "plan", message: "plan must be pro, max, or custom." })
-    const plan = getPlanForCustomerType(customerType, requestedPlan)
+    const plan = PLANS.has(rawPlan as SubscriptionConfiguratorPlan) ? (rawPlan as SubscriptionConfiguratorPlan) : "custom"
+    if (rawPlan && rawPlan !== plan) issues.push({ field: "plan", message: "plan must be pro, max, or custom." })
 
     const rawDeployment = rawValue(raw, "deploymentType") ?? rawValue(raw, "deployment")
     const deployment = DEPLOYMENTS.has(rawDeployment as SubscriptionDeploymentMode) ? (rawDeployment as SubscriptionDeploymentMode) : config.defaults?.deployment === "cloud" ? "cloud" : "self_hosted"
@@ -86,7 +87,7 @@ export function resolveSubscriptionSelection(raw: RawSubscriptionSelection | URL
     const rawPeriod = rawValue(raw, "paymentPeriod")
     const requestedPeriod = PAYMENT_PERIODS.has(rawPeriod as PaymentPeriod) ? (rawPeriod as PaymentPeriod) : (config.defaults?.paymentPeriod?.[customerType] ?? "monthly")
     if (rawPeriod && rawPeriod !== requestedPeriod) issues.push({ field: "paymentPeriod", message: "paymentPeriod must be weekly, monthly, quarterly, or yearly." })
-    const paymentPeriod = getPaymentPeriodForPlan(plan, requestedPeriod)
+    const paymentPeriod = getPaymentPeriodForCustomerType(customerType, requestedPeriod)
 
     const usageIssues = plan === "custom" && (!rawCustomerType || CUSTOMER_TYPES.has(rawCustomerType as SubscriptionCustomerType)) ? issues : []
     const workflowExecutions = plan === "custom" ? parseUsage(rawValue(raw, "workflowExecutions"), config.workflowExecutions[customerType], "workflowExecutions", usageIssues) : 0
@@ -99,15 +100,12 @@ export function reduceSubscriptionSelection(selection: SubscriptionSelection, ac
     const next = { ...selection }
     if (action.type === "customerTypeChanged") {
         next.customerType = action.value
-        next.plan = getPlanForCustomerType(action.value, next.plan)
-        next.paymentPeriod = getPaymentPeriodForPlan(next.plan, next.paymentPeriod)
+        next.paymentPeriod = getPaymentPeriodForCustomerType(action.value, next.paymentPeriod)
         next.workflowExecutions = normalizeUsageValue(config.workflowExecutions[action.value].default, config.workflowExecutions[action.value])
         next.aiTokens = normalizeUsageValue(config.aiTokens[action.value].default, config.aiTokens[action.value])
-    } else if (action.type === "planChanged") {
-        next.plan = getPlanForCustomerType(next.customerType, action.value)
-        next.paymentPeriod = getPaymentPeriodForPlan(next.plan, next.paymentPeriod)
-    } else if (action.type === "deploymentChanged") next.deployment = action.value
-    else if (action.type === "paymentPeriodChanged") next.paymentPeriod = getPaymentPeriodForPlan(next.plan, action.value)
+    } else if (action.type === "planChanged") next.plan = action.value
+    else if (action.type === "deploymentChanged") next.deployment = action.value
+    else if (action.type === "paymentPeriodChanged") next.paymentPeriod = getPaymentPeriodForCustomerType(next.customerType, action.value)
     else if (action.type === "workflowExecutionsChanged") next.workflowExecutions = normalizeUsageValue(action.value, config.workflowExecutions[next.customerType])
     else if (action.type === "aiTokensChanged") next.aiTokens = normalizeUsageValue(action.value, config.aiTokens[next.customerType])
     return next

@@ -252,8 +252,8 @@ A `CheckoutSession` returns:
 Additional checkout features include:
 
 - previewing the tax Stripe would calculate for a plan
-- selecting weekly, monthly, or yearly billing for Pro and Max
-- selecting monthly, quarterly, or yearly billing for dynamic custom checkouts
+- selecting the billing period of the customer's type: monthly, quarterly, or yearly for business customers, weekly, monthly, or yearly for personal ones
+- the same period rule for Pro, Max, and dynamic custom checkouts alike
 - quantity-based AI Token and Workflow Execution line items for dynamic custom checkouts
 - validating Stripe promotion codes
 - supporting the `self_hosted` and `cloud` deployment types
@@ -264,7 +264,20 @@ Additional checkout features include:
 - automatic synchronization of the customer's name and address back to Stripe
 - attaching the plan, payment period, custom quantities, Crater customer ID, deployment type, customer type, and optional namespace ID to the Stripe subscription metadata
 
-Stripe Price IDs are resolved exclusively on the server from `checkout.prices`. Pro and Max resolve one Price from the plan and payment period. Dynamic custom checkouts additionally use the authenticated customer's type to select B2B or B2C component Prices. This dynamic `plan: custom` flow is separate from `CustomCheckoutConfiguration`.
+Stripe Price IDs are resolved exclusively on the server from `checkout.prices`. Every plan is priced per customer type: Pro, Max, and each dynamic custom component resolve their Price from the plan or component, the customer's type, and the payment period. The customer type is always the stored `customerType` of the selected customer, never something the client sends, so a B2C client cannot check out at a B2B price. This dynamic `plan: custom` flow is separate from `CustomCheckoutConfiguration`, which names its own Price.
+
+#### The payment periods of a customer type
+
+Which periods exist is a property of the **customer type**, not of the plan. It is the same split everywhere -- for Pro, for Max, and for the custom components:
+
+| Customer type    | Payment periods                  |
+| ---------------- | -------------------------------- |
+| `business` (B2B) | `monthly`, `quarterly`, `yearly` |
+| `personal` (B2C) | `weekly`, `monthly`, `yearly`    |
+
+`CheckoutPaymentPeriod` still offers all four values, because both sets together need them. A period the selected customer's type is not billed in -- weekly for a business customer, quarterly for a personal one -- is rejected with `INVALID_CHECKOUT_SELECTION` before any Price is looked up, in `checkoutCreateSession` and in `checkoutCalculateTax` alike. `Subscription` validates the stored period against its customer's type with the same rule, so a projection can never hold a combination the checkout would refuse.
+
+A plan or component that is configured for the other customer type only is rejected with `CUSTOMER_TYPE_MISMATCH` rather than falling back to that type's Price; one configured for neither type is a plain `INVALID_CHECKOUT_SELECTION`.
 
 Monetary amounts are transferred as integers in the smallest currency unit.
 
@@ -327,7 +340,7 @@ The query needs an active `UserSession`; an anonymous request is refused. Beyond
 - `subscription.metadata.crater_customer_id` is present, numeric, and names an existing Crater customer.
 - That customer's `stripe_customer_id` is the session's Stripe customer.
 - That customer is linked to the authenticated user through `CustomerUser`, checked with the same `CustomerPolicy` used everywhere else. Being an admin grants nothing extra.
-- The remaining metadata Crater wrote is internally consistent and agrees with what Crater knows: `customer_type` matches the resolved customer, `deployment_type` is a known one, a `namespace_id` only appears for cloud, `plan` and `payment_period` appear together and form an available combination, custom quantities appear only for the custom plan, and a negotiated `CustomCheckoutConfiguration` carries no plan at all. Where the local `Subscription` already exists, its deployment type, plan, and payment period must equal the metadata's.
+- The remaining metadata Crater wrote is internally consistent and agrees with what Crater knows: `customer_type` matches the resolved customer, `deployment_type` is a known one, a `namespace_id` only appears for cloud, `plan` and `payment_period` appear together and the period is one the resolved customer's type is billed in, custom quantities appear only for the custom plan, and a negotiated `CustomCheckoutConfiguration` carries no plan at all. Where the local `Subscription` already exists, its deployment type, plan, and payment period must equal the metadata's.
 
 Because a session that does not exist, one belonging to somebody else, and one that contradicts itself are answered identically, the response never reveals which of the three it was.
 
@@ -457,7 +470,7 @@ The checkout is the only flow whose return URL passes through Crater. `Crater::R
 
 ### Subscriptions, invoices, and licenses
 
-`Subscription` stores the deployment type, Stripe status, unique Stripe subscription ID, optional Sagittarius namespace ID, plan, payment period, and optional AI Token and Workflow Execution quantities. The stored quantities are validated against the same `1` to `1000000000` range the checkout enforces.
+`Subscription` stores the deployment type, Stripe status, unique Stripe subscription ID, optional Sagittarius namespace ID, plan, payment period, and optional AI Token and Workflow Execution quantities. The stored quantities are validated against the same `1` to `1000000000` range the checkout enforces, and the stored payment period against the periods its customer's type is billed in.
 
 `Invoice` contains:
 
@@ -668,25 +681,31 @@ The invoices of a subscription are batched with a GraphQL dataloader source (`So
 
 The query auto-paginates and returns every active recurring price, not just Stripe's default first page of ten. The result is sorted deterministically by `lookupKey` and then by price ID, with prices that have no lookup key last.
 
-Prices and products are managed in Stripe. The listing query fetches active recurring prices directly instead of mirroring a product catalog locally. Checkout creation still resolves its `plan` argument through the configured `checkout.prices` mapping. Stripe retrieval failures surface as a GraphQL execution error based on `UNABLE_TO_LIST_PRICES`.
+Prices and products are managed in Stripe. The listing query fetches active recurring prices directly instead of mirroring a product catalog locally. Checkout creation still resolves its `plan` argument through the configured `checkout.prices` mapping, which is keyed by plan, customer type, and payment period. Stripe retrieval failures surface as a GraphQL execution error based on `UNABLE_TO_LIST_PRICES`.
 
 #### Lookup keys
 
 `lookupKey` is the stable technical identifier for matching a price. Product names must not be used for that: they are freely editable in Stripe and are currently spelled inconsistently. Every checkout price carries a unique lookup key following this scheme:
 
 ```text
-pro_weekly                        max_weekly
-pro_monthly                       max_monthly
-pro_yearly                        max_yearly
+pro_b2b_monthly                   max_b2b_monthly
+pro_b2b_quarterly                 max_b2b_quarterly
+pro_b2b_yearly                    max_b2b_yearly
+
+pro_b2c_weekly                    max_b2c_weekly
+pro_b2c_monthly                   max_b2c_monthly
+pro_b2c_yearly                    max_b2c_yearly
 
 ai_token_b2b_monthly              workflow_execution_b2b_monthly
 ai_token_b2b_quarterly            workflow_execution_b2b_quarterly
 ai_token_b2b_yearly               workflow_execution_b2b_yearly
 
+ai_token_b2c_weekly               workflow_execution_b2c_weekly
 ai_token_b2c_monthly              workflow_execution_b2c_monthly
-ai_token_b2c_quarterly            workflow_execution_b2c_quarterly
 ai_token_b2c_yearly               workflow_execution_b2c_yearly
 ```
+
+Every key is `<plan or component>_<b2b|b2c>_<period>`, and the periods are exactly the ones that customer type is billed in: no `pro_b2b_weekly` and no `ai_token_b2c_quarterly` exists.
 
 The keys are assigned on the Price objects in Stripe; Crater reads them but never writes them.
 
@@ -770,7 +789,7 @@ For `checkoutCreateSession`:
 - The selected customer must be linked to the authenticated user through `CustomerUser`, which is the same membership rule `CustomerPolicy` uses for `read_customer`. A customer that does not exist and one belonging to somebody else are both answered with `INVALID_CHECKOUT_CUSTOMER` and an identical message, so the response never reveals whether an id exists. This applies to a draft of another user as well.
 - The selected customer may be a draft or an active customer; the customer type check, the custom configuration checks, and every other validation are identical for both. A repeated `checkoutCreateSession` for the same customer creates a new Stripe session but no additional customer.
 - With a `customCheckoutConfigurationId`, the configuration already names its customer. `customerId` must be that customer; a different one is rejected with `INVALID_CHECKOUT_CUSTOMER` rather than silently switching the checkout to another customer.
-- For a `plan: custom` checkout the selected customer's type picks the B2B or B2C component prices. If the component is configured for the other customer type only, the request is rejected with `CUSTOMER_TYPE_MISMATCH` instead of a generic selection error.
+- The selected customer's type picks the B2B or B2C Prices, for `plan: pro` and `plan: max` as well as for the `plan: custom` components, and decides which payment periods exist at all. `paymentPeriod` outside that set -- `WEEKLY` for a business customer, `QUARTERLY` for a personal one -- is rejected with `INVALID_CHECKOUT_SELECTION` before Stripe is called. If the Price itself is configured for the other customer type only, the request is rejected with `CUSTOMER_TYPE_MISMATCH` instead of a generic selection error.
 - The Stripe Checkout Session is created with the selected customer's `stripe_customer_id`, so the contact details, billing address, and tax ID that Stripe collects are synced back to exactly that customer. Its Crater customer ID is stored in the subscription metadata as `crater_customer_id`.
 - Crater never sends `customer_email`; the Stripe Customer is referenced by ID, and Stripe rejects both parameters together. An email already on the Stripe Customer is therefore never restated, and a missing one is collected by the client's `ContactDetailsElement`.
 - A regular checkout uses `plan`, `paymentPeriod`, and, where applicable, `deploymentType`, `namespaceId`, and `promotionCode`.
