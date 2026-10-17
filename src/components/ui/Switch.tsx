@@ -1,9 +1,10 @@
 "use client"
 
+import { StableBadge } from "@/components/ui/StableBadge"
 import { cn } from "@/lib/utils"
 import { useLayoutEffect, useRef, useState } from "react"
 
-export interface SwitchOption<TValue extends string> {
+interface SwitchOption<TValue extends string> {
     value: TValue
     label: string
     badge?: string | null
@@ -17,9 +18,10 @@ interface SwitchProps<TValue extends string> {
     onChange: (value: TValue) => void
     className?: string
     fitContent?: boolean
+    variant?: "default" | "pictor"
 }
 
-export function Switch<TValue extends string>({ label, description, value, options, onChange, className, fitContent = false }: SwitchProps<TValue>) {
+export function Switch<TValue extends string>({ label, description, value, options, onChange, className, fitContent = false, variant = "default" }: SwitchProps<TValue>) {
     const trackRef = useRef<HTMLDivElement>(null)
     const buttonRefs = useRef<Array<HTMLButtonElement | null>>([])
     const [fitIndicator, setFitIndicator] = useState({ left: 4, width: 0 })
@@ -56,13 +58,13 @@ export function Switch<TValue extends string>({ label, description, value, optio
         <div className={cn("space-y-3", className)}>
             {(label || description) && (
                 <div>
-                    {label && <p className="text-base text-secondary">{label}</p>}
-                    {description && <p className="mt-1 text-sm text-tertiary">{description}</p>}
+                    {label && <p className="text-white">{label}</p>}
+                    {description && <p className="text-sm text-secondary">{description}</p>}
                 </div>
             )}
             <div
                 ref={trackRef}
-                className="relative grid overflow-hidden rounded-2xl border border-white/10 bg-white/3 p-1"
+                className={cn("relative grid overflow-hidden rounded-2xl p-1", variant === "pictor" ? "border-0 bg-[#191825] shadow-[inset_0_1px_1px_#bfbfbf1a]" : "border border-white/10 bg-white/3")}
                 style={{ gridTemplateColumns: fitContent ? `repeat(${columnCount}, max-content)` : `repeat(${columnCount}, minmax(0, 1fr))` }}
             >
                 {fitContent ? (
@@ -99,12 +101,16 @@ export function Switch<TValue extends string>({ label, description, value, optio
                                 active ? "text-white" : "text-secondary hover:text-white"
                             )}
                         >
-                            <span className={cn("min-w-0", fitContent ? "whitespace-nowrap" : "max-w-[calc(100%-2.25rem)] truncate")}>{option.label}</span>
-                            {option.badge && (
-                                <span className="absolute left-1/2 top-1/2 ml-6 sm:ml-8 translate-y-[-85%] rounded-full bg-brand/10 border border-brand/10 px-1 py-0.5 text-[10px] leading-none tracking-wider text-brand">
-                                    {option.badge}
-                                </span>
-                            )}
+                            <span className="flex min-w-0 max-w-full items-center justify-center gap-2">
+                                <span className={cn("min-w-0", fitContent ? "whitespace-nowrap" : "truncate")}>{option.label}</span>
+                                {option.badge && variant === "pictor" ? (
+                                    <StableBadge color="info" border className="shrink-0">
+                                        {option.badge}
+                                    </StableBadge>
+                                ) : option.badge ? (
+                                    <span className="shrink-0 rounded-full border border-brand/10 bg-brand/10 px-1 py-0.5 text-[10px] leading-none tracking-wider text-brand">{option.badge}</span>
+                                ) : null}
+                            </span>
                         </button>
                     )
                 })}

@@ -1,0 +1,489 @@
+"use client"
+
+import { useCraterSession } from "@/components/checkout/session/CraterSessionProvider"
+import { useCheckoutStage } from "@/components/checkout/state/CheckoutStageProvider"
+import type { CheckoutData, ErrorsContent } from "@/lib/cms"
+import { resolveCraterCustomerType } from "@/lib/crater/values"
+import { clearCheckoutContactDraft, readCheckoutContactDraft, saveCheckoutContactDraft } from "@/lib/checkout/checkoutDraft"
+import {
+    CheckoutSubmissionError,
+    replaceCheckoutPage,
+    createCheckoutCustomer,
+    createCheckoutSession,
+    getCheckoutCustomers,
+    type CheckoutCustomerData,
+    type CheckoutSessionData,
+    type CheckoutStripePricingData,
+    type CheckoutTaxQuoteData,
+} from "@/lib/checkout/client"
+import type { AppLocale } from "@/lib/i18n"
+import { getStripePricingFromSession, getTaxQuoteFromSession, type CheckoutPromotionCodeSdk } from "@/lib/checkout/stripeCheckout"
+import type { StripeCheckoutContact, StripeCheckoutSession } from "@stripe/stripe-js"
+import { useSearchParams } from "next/navigation"
+import { useCallback, useEffect, useRef, useState } from "react"
+
+type CheckoutFormContent = CheckoutData["form"]
+const CHECKOUT_SESSION_REFRESH_LEAD_MS = 60_000
+const MAX_BROWSER_TIMEOUT_MS = 2_147_000_000
+const CHECKOUT_LOAD_RECOVERY_KEY = "code0.checkout.sessionLoadRecovery"
+const CHECKOUT_LOAD_RECOVERY_TTL_MS = 60_000
+
+function getPreparationErrorMessage(error: unknown, errors: ErrorsContent) {
+    if (!(error instanceof CheckoutSubmissionError)) return errors.paymentFallback
+    if (error.status === 429) {
+        return error.retryAfterSeconds ? `${error.message} (${error.retryAfterSeconds}s)` : error.message
+    }
+    if (error.errorCode === "CUSTOMER_TYPE_MISMATCH") return errors.customerTypeMismatch
+    if (error.errorCode === "INVALID_CHECKOUT_CUSTOMER") return errors.checkoutCustomer
+    if (error.kind === "session") return error.message
+    return error.kind === "customer" ? errors.customerCreation : errors.checkoutSession
+}
+
+export function useCheckoutForm(content: CheckoutFormContent, errors: ErrorsContent, locale: AppLocale) {
+    const searchParams = useSearchParams()
+    const { stage, setStage, setHasError } = useCheckoutStage()
+    const [isLoading, setIsLoading] = useState(false)
+    const [errorMessage, setErrorMessage] = useState<string | null>(null)
+    const [checkoutSession, setCheckoutSession] = useState<CheckoutSessionData | null>(null)
+    const [customers, setCustomers] = useState<CheckoutCustomerData[]>([])
+    const [hasExistingCustomers, setHasExistingCustomers] = useState<boolean | null>(null)
+    const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null)
+    const [taxQuote, setTaxQuote] = useState<CheckoutTaxQuoteData | null>(null)
+    const [stripePricing, setStripePricing] = useState<CheckoutStripePricingData | null>(null)
+    const [stripeCheckoutReady, setStripeCheckoutReady] = useState(false)
+    const [isRefreshingSession, setIsRefreshingSession] = useState(false)
+    const [isConfirmingPayment, setIsConfirmingPayment] = useState(false)
+    const [stripeBillingAddress, setStripeBillingAddressState] = useState<StripeCheckoutContact | null>(null)
+    const [stripeBillingAddressComplete, setStripeBillingAddressComplete] = useState(false)
+    const [stripeEmail, setStripeEmailState] = useState<string | null>(null)
+    const [stripeEmailComplete, setStripeEmailComplete] = useState(false)
+    const [stripeEmailSynced, setStripeEmailSyncedState] = useState(false)
+    const [stripeSessionError, setStripeSessionError] = useState<string | null>(null)
+    const [preparationAttempt, setPreparationAttempt] = useState(0)
+    const preparedSessionKeyRef = useRef<string | null>(null)
+    const sessionRefreshRequestRef = useRef(0)
+    const checkoutRefreshPromiseRef = useRef<Promise<boolean> | null>(null)
+    const stripeCheckoutRef = useRef<CheckoutPromotionCodeSdk | null>(null)
+    const selectedCustomerIdRef = useRef<string | null>(null)
+    const stageRef = useRef(stage)
+    const stripeBillingAddressRef = useRef<StripeCheckoutContact | null>(null)
+    const stripeBillingAddressCompleteRef = useRef(false)
+    const stripeEmailRef = useRef<string | null>(null)
+    const stripeEmailCompleteRef = useRef(false)
+    const stripeEmailSyncedRef = useRef(false)
+    const formDraftReadyRef = useRef(false)
+    const customerCreationPendingRef = useRef(false)
+    const expiredRefreshAttemptsRef = useRef(0)
+    selectedCustomerIdRef.current = selectedCustomerId
+    stageRef.current = stage
+    stripeBillingAddressRef.current = stripeBillingAddress
+    stripeBillingAddressCompleteRef.current = stripeBillingAddressComplete
+    stripeEmailRef.current = stripeEmail
+    stripeEmailCompleteRef.current = stripeEmailComplete
+    stripeEmailSyncedRef.current = stripeEmailSynced
+    const { authenticated, guestEmail, error: sessionError, isLoading: isSessionLoading } = useCraterSession()
+    const customerType = resolveCraterCustomerType(searchParams.get("customerType"))
+    const searchParamsString = searchParams.toString()
+    const resolvedError = errorMessage ?? sessionError ?? stripeSessionError
+
+    const setStripeBillingAddress = useCallback((address: StripeCheckoutContact | null, complete: boolean) => {
+        stripeBillingAddressRef.current = address
+        stripeBillingAddressCompleteRef.current = complete
+        setStripeBillingAddressState(address)
+        setStripeBillingAddressComplete(complete)
+    }, [])
+
+    const setStripeEmail = useCallback(
+        (email: string | null, complete: boolean) => {
+            const resolvedEmail = guestEmail ?? email
+            const resolvedComplete = guestEmail ? true : complete
+            stripeEmailRef.current = resolvedEmail
+            stripeEmailCompleteRef.current = resolvedComplete
+            setStripeEmailState(resolvedEmail)
+            setStripeEmailComplete(resolvedComplete)
+        },
+        [guestEmail]
+    )
+
+    const setStripeEmailSynced = useCallback((synced: boolean) => {
+        stripeEmailSyncedRef.current = synced
+        setStripeEmailSyncedState(synced)
+    }, [])
+
+    useEffect(() => {
+        setHasError(Boolean(resolvedError))
+    }, [resolvedError, setHasError])
+
+    useEffect(() => () => setHasError(false), [setHasError])
+
+    const startCheckoutSessionRefresh = useCallback(
+        (checkoutSearchParams: URLSearchParams) => {
+            const customerId = selectedCustomerIdRef.current
+            if (!customerId) return Promise.resolve(false)
+            const requestId = ++sessionRefreshRequestRef.current
+            setCheckoutSession(null)
+            setTaxQuote(null)
+            setStripePricing(null)
+            setIsRefreshingSession(true)
+            setErrorMessage(null)
+            setStripeSessionError(null)
+
+            let request: Promise<boolean>
+            request = createCheckoutSession({ customerId, locale, searchParams: checkoutSearchParams })
+                .then((session) => {
+                    if (requestId !== sessionRefreshRequestRef.current) return false
+                    setCheckoutSession(session)
+                    return true
+                })
+                .catch((error) => {
+                    if (requestId !== sessionRefreshRequestRef.current) return false
+                    console.error("Failed to refresh the Crater checkout session:", error)
+                    setErrorMessage(getPreparationErrorMessage(error, errors))
+                    return false
+                })
+                .finally(() => {
+                    if (checkoutRefreshPromiseRef.current === request) checkoutRefreshPromiseRef.current = null
+                    if (requestId === sessionRefreshRequestRef.current) setIsRefreshingSession(false)
+                })
+
+            checkoutRefreshPromiseRef.current = request
+            return request
+        },
+        [errors, locale]
+    )
+
+    const refreshCheckoutSession = useCallback(() => {
+        if (checkoutRefreshPromiseRef.current) return checkoutRefreshPromiseRef.current
+
+        const checkoutSearchParams = new URLSearchParams(searchParamsString)
+        return startCheckoutSessionRefresh(checkoutSearchParams)
+    }, [searchParamsString, startCheckoutSessionRefresh])
+
+    const setStripeCheckout = useCallback((checkout: CheckoutPromotionCodeSdk | null) => {
+        stripeCheckoutRef.current = checkout
+        setStripeCheckoutReady(Boolean(checkout))
+    }, [])
+
+    const syncStripeCheckoutSession = useCallback((session: StripeCheckoutSession) => {
+        setTaxQuote(getTaxQuoteFromSession(session))
+        setStripePricing(getStripePricingFromSession(session))
+    }, [])
+
+    const refreshExpiredCheckoutSession = useCallback(() => {
+        if (expiredRefreshAttemptsRef.current >= 1) return Promise.resolve(false)
+        expiredRefreshAttemptsRef.current += 1
+        return refreshCheckoutSession()
+    }, [refreshCheckoutSession])
+
+    const recoverCheckoutSessionLoad = useCallback(() => {
+        const checkoutSearchParams = new URLSearchParams(searchParamsString)
+        const recoveryId = checkoutSearchParams.toString()
+
+        try {
+            const stored: unknown = JSON.parse(window.sessionStorage.getItem(CHECKOUT_LOAD_RECOVERY_KEY) ?? "null")
+            if (
+                stored &&
+                typeof stored === "object" &&
+                "recoveryId" in stored &&
+                "expiresAt" in stored &&
+                stored.recoveryId === recoveryId &&
+                typeof stored.expiresAt === "number" &&
+                stored.expiresAt > Date.now()
+            ) {
+                return Promise.resolve(false)
+            }
+
+            window.sessionStorage.setItem(CHECKOUT_LOAD_RECOVERY_KEY, JSON.stringify({ recoveryId, expiresAt: Date.now() + CHECKOUT_LOAD_RECOVERY_TTL_MS }))
+        } catch {
+            // A reload still has a chance to recover Stripe when session storage is unavailable.
+        }
+
+        if (selectedCustomerIdRef.current) {
+            saveCheckoutContactDraft({
+                billingAddress: stripeBillingAddressRef.current,
+                billingAddressComplete: stripeBillingAddressCompleteRef.current,
+                customerId: selectedCustomerIdRef.current,
+                email: stripeEmailRef.current,
+                emailComplete: stripeEmailCompleteRef.current,
+                emailSyncedToStripe: stripeEmailSyncedRef.current,
+                searchParams: checkoutSearchParams,
+                stage: stageRef.current,
+            })
+        }
+        replaceCheckoutPage(window.location.href)
+        return Promise.resolve(true)
+    }, [searchParamsString])
+
+    const markCheckoutSessionReady = useCallback(() => {
+        expiredRefreshAttemptsRef.current = 0
+        try {
+            window.sessionStorage.removeItem(CHECKOUT_LOAD_RECOVERY_KEY)
+        } catch {
+            // Session recovery already succeeded; storage cleanup is best-effort.
+        }
+    }, [])
+
+    useEffect(() => {
+        if (!authenticated) return
+
+        const preparationSearchParams = new URLSearchParams(searchParamsString)
+        preparationSearchParams.delete("promotionCode")
+        const preparationKey = `${preparationSearchParams.toString()}:${preparationAttempt}`
+        if (preparedSessionKeyRef.current === preparationKey) return
+        preparedSessionKeyRef.current = preparationKey
+        const requestId = ++sessionRefreshRequestRef.current
+        const checkoutSearchParams = new URLSearchParams(searchParamsString)
+        const restoredContactDraft = readCheckoutContactDraft(checkoutSearchParams)
+        const initialEmail = guestEmail ?? restoredContactDraft?.email ?? null
+        const initialEmailComplete = guestEmail ? true : (restoredContactDraft?.emailComplete ?? false)
+        formDraftReadyRef.current = false
+
+        setIsLoading(true)
+        setErrorMessage(null)
+        setCheckoutSession(null)
+        setHasExistingCustomers(null)
+        setTaxQuote(null)
+        setStripePricing(null)
+        setStripeBillingAddress(restoredContactDraft?.billingAddress ?? null, restoredContactDraft?.billingAddressComplete ?? false)
+        setStripeEmail(initialEmail, initialEmailComplete)
+        setStripeEmailSynced(restoredContactDraft?.emailSyncedToStripe ?? false)
+        setStripeSessionError(null)
+        setStage(restoredContactDraft?.stage ?? "billingAddress")
+
+        void (async () => {
+            try {
+                const availableCustomers = await getCheckoutCustomers()
+                if (requestId !== sessionRefreshRequestRef.current) return
+                const matchingCustomers = availableCustomers.filter((candidate) => candidate.customerType === customerType)
+                const restoredCustomerId = restoredContactDraft?.customerId ?? null
+                setHasExistingCustomers(matchingCustomers.length > 0)
+                const restoredCustomer = restoredCustomerId ? matchingCustomers.find((candidate) => candidate.id === restoredCustomerId) : undefined
+                if (restoredCustomerId && !restoredCustomer) {
+                    clearCheckoutContactDraft()
+                    throw new CheckoutSubmissionError("customer", "INVALID_CHECKOUT_CUSTOMER", "The selected customer is unavailable.")
+                }
+                const customer = restoredCustomer ?? (restoredContactDraft?.customerId === null ? undefined : matchingCustomers[0])
+                if (requestId !== sessionRefreshRequestRef.current) return
+                setCustomers(matchingCustomers)
+                selectedCustomerIdRef.current = customer?.id ?? null
+                setSelectedCustomerId(customer?.id ?? null)
+
+                saveCheckoutContactDraft({
+                    billingAddress: restoredContactDraft?.billingAddress ?? null,
+                    billingAddressComplete: restoredContactDraft?.billingAddressComplete ?? false,
+                    customerId: customer?.id ?? null,
+                    email: initialEmail,
+                    emailComplete: initialEmailComplete,
+                    emailSyncedToStripe: restoredContactDraft?.emailSyncedToStripe ?? false,
+                    searchParams: checkoutSearchParams,
+                    stage: restoredContactDraft?.stage ?? "billingAddress",
+                })
+                formDraftReadyRef.current = true
+
+                if (!customer) {
+                    setStage("billingAddress")
+                    return
+                }
+                const session = await createCheckoutSession({ customerId: customer.id, locale, searchParams: checkoutSearchParams })
+                if (requestId !== sessionRefreshRequestRef.current) return
+                setCheckoutSession(session)
+                expiredRefreshAttemptsRef.current = 0
+            } catch (error) {
+                if (requestId !== sessionRefreshRequestRef.current) return
+                console.error("Failed to start Crater checkout:", error)
+                setErrorMessage(getPreparationErrorMessage(error, errors))
+            } finally {
+                if (requestId === sessionRefreshRequestRef.current) setIsLoading(false)
+            }
+        })()
+    }, [authenticated, content, customerType, errors, guestEmail, locale, preparationAttempt, searchParamsString, setStage])
+
+    // Restore/reset the configuration above before persisting any form changes.
+    useEffect(() => {
+        if (!formDraftReadyRef.current) return
+
+        saveCheckoutContactDraft({
+            billingAddress: stripeBillingAddress,
+            billingAddressComplete: stripeBillingAddressComplete,
+            customerId: selectedCustomerId,
+            email: stripeEmail,
+            emailComplete: stripeEmailComplete,
+            emailSyncedToStripe: stripeEmailSynced,
+            searchParams: new URLSearchParams(searchParamsString),
+            stage,
+        })
+    }, [searchParamsString, selectedCustomerId, stage, stripeBillingAddress, stripeBillingAddressComplete, stripeEmail, stripeEmailComplete, stripeEmailSynced])
+
+    const continueNewCustomer = useCallback(async () => {
+        if (customerCreationPendingRef.current || isLoading || isRefreshingSession || !stripeBillingAddress || !stripeBillingAddressComplete || !stripeEmail || !stripeEmailComplete) return
+        customerCreationPendingRef.current = true
+        const requestId = ++sessionRefreshRequestRef.current
+        setIsLoading(true)
+        setErrorMessage(null)
+        try {
+            let customerId = selectedCustomerIdRef.current
+            if (!customerId) {
+                const customer = await createCheckoutCustomer({ customerType, email: stripeEmail, billingAddress: stripeBillingAddress })
+                if (requestId !== sessionRefreshRequestRef.current) return
+                customerId = customer.id
+                setCustomers((current) => [...current.filter((candidate) => candidate.id !== customer.id), customer])
+                setHasExistingCustomers(true)
+            }
+            selectedCustomerIdRef.current = customerId
+            setSelectedCustomerId(customerId)
+            // Persist the created ID before session creation so a failed session can be retried without creating another customer.
+            saveCheckoutContactDraft({
+                billingAddress: stripeBillingAddress,
+                billingAddressComplete: true,
+                customerId,
+                email: stripeEmail,
+                emailComplete: true,
+                emailSyncedToStripe: true,
+                searchParams: new URLSearchParams(searchParamsString),
+                stage: "payment",
+            })
+            setStripeEmailSynced(true)
+            const session = await createCheckoutSession({ customerId, locale, searchParams: new URLSearchParams(searchParamsString) })
+            if (requestId !== sessionRefreshRequestRef.current) return
+            setCheckoutSession(session)
+            setStage("payment")
+        } catch (error) {
+            if (requestId === sessionRefreshRequestRef.current) setErrorMessage(getPreparationErrorMessage(error, errors))
+        } finally {
+            customerCreationPendingRef.current = false
+            if (requestId === sessionRefreshRequestRef.current) setIsLoading(false)
+        }
+    }, [
+        customerType,
+        errors,
+        isLoading,
+        isRefreshingSession,
+        locale,
+        searchParamsString,
+        setStage,
+        setStripeEmailSynced,
+        stripeBillingAddress,
+        stripeBillingAddressComplete,
+        stripeEmail,
+        stripeEmailComplete,
+    ])
+
+    const selectCheckoutCustomer = useCallback(
+        async (customerId: string | null) => {
+            if (isLoading || isRefreshingSession) return
+
+            const requestId = ++sessionRefreshRequestRef.current
+            const checkoutSearchParams = new URLSearchParams(searchParamsString)
+            formDraftReadyRef.current = false
+            setCheckoutSession(null)
+            setTaxQuote(null)
+            setStripePricing(null)
+            setStripeBillingAddress(null, false)
+            setStripeEmail(null, false)
+            setStripeEmailSynced(false)
+            setIsRefreshingSession(true)
+            setErrorMessage(null)
+            setStripeSessionError(null)
+            setStage("billingAddress")
+
+            try {
+                const customer = customerId ? customers.find((candidate) => candidate.id === customerId) : undefined
+                if (customerId && !customer) throw new CheckoutSubmissionError("customer", "INVALID_CHECKOUT_CUSTOMER", "The selected customer is unavailable.")
+
+                selectedCustomerIdRef.current = customer?.id ?? null
+                setSelectedCustomerId(customer?.id ?? null)
+
+                saveCheckoutContactDraft({
+                    billingAddress: null,
+                    billingAddressComplete: false,
+                    customerId: customer?.id ?? null,
+                    email: null,
+                    emailComplete: false,
+                    emailSyncedToStripe: false,
+                    searchParams: checkoutSearchParams,
+                    stage: "billingAddress",
+                })
+                formDraftReadyRef.current = true
+
+                if (!customer) {
+                    setStage("billingAddress")
+                    return
+                }
+                const session = await createCheckoutSession({ customerId: customer.id, locale, searchParams: checkoutSearchParams })
+                if (requestId !== sessionRefreshRequestRef.current) return
+                setCheckoutSession(session)
+                expiredRefreshAttemptsRef.current = 0
+            } catch (error) {
+                if (requestId !== sessionRefreshRequestRef.current) return
+                console.error("Failed to select the Crater checkout customer:", error)
+                setErrorMessage(getPreparationErrorMessage(error, errors))
+            } finally {
+                if (requestId === sessionRefreshRequestRef.current) setIsRefreshingSession(false)
+            }
+        },
+        [customers, errors, isLoading, isRefreshingSession, locale, searchParamsString, setStage]
+    )
+
+    useEffect(() => {
+        if (!checkoutSession?.expiresAt || isConfirmingPayment) return
+
+        const refreshDelay = Math.min(MAX_BROWSER_TIMEOUT_MS, Math.max(0, checkoutSession.expiresAt * 1_000 - Date.now() - CHECKOUT_SESSION_REFRESH_LEAD_MS))
+        const timer = window.setTimeout(() => void refreshCheckoutSession(), refreshDelay)
+        return () => window.clearTimeout(timer)
+    }, [checkoutSession, isConfirmingPayment, refreshCheckoutSession])
+
+    const retryCheckout = useCallback(() => {
+        if (sessionError) {
+            replaceCheckoutPage(window.location.href)
+            return
+        }
+
+        preparedSessionKeyRef.current = null
+        setErrorMessage(null)
+        setStripeSessionError(null)
+        setPreparationAttempt((attempt) => attempt + 1)
+    }, [sessionError])
+
+    return {
+        checkoutSession,
+        continueNewCustomer,
+        content,
+        customers,
+        customerType,
+        errorMessage,
+        errors,
+        hasExistingCustomers,
+        guestEmail,
+        isLoading,
+        isConfirmingPayment,
+        isRefreshingSession,
+        isSessionLoading,
+        retryCheckout,
+        markCheckoutSessionReady,
+        stripeCheckoutReady,
+        refreshExpiredCheckoutSession,
+        recoverCheckoutSessionLoad,
+        resolvedError,
+        selectedCustomerId,
+        selectCheckoutCustomer,
+        sessionError,
+        setStripeBillingAddress,
+        setStripeEmail,
+        setStripeEmailSynced,
+        setStripeSessionError,
+        setStripePricing,
+        setStripeCheckout,
+        stripeCheckoutRef,
+        syncStripeCheckoutSession,
+        setTaxQuote,
+        setIsConfirmingPayment,
+        stripeBillingAddress,
+        stripeBillingAddressComplete,
+        stripeEmail,
+        stripeEmailComplete,
+        stripeEmailSynced,
+        stripeSessionError,
+        stripePricing,
+        taxQuote,
+    }
+}
