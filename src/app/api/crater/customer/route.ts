@@ -154,7 +154,7 @@ export const GET = withCraterSession({ log: "Crater customer list error", error:
     })
 })
 
-export const POST = withCraterSession({ log: "Crater customer creation error", error: "Could not create Crater customer." }, async (request, token) => {
+export const POST = withCraterSession({ log: "Crater customer creation error", error: "Could not create Crater customer.", rateLimit: "customer" }, async (request, token) => {
     const body = await readJsonObject(request)
     const customerType = normalizeCraterCustomerType(optionalString(body?.customerType))
     const email = readGuestCheckoutSession(request)?.email ?? optionalString(body?.email)
@@ -195,7 +195,7 @@ export const POST = withCraterSession({ log: "Crater customer creation error", e
     return craterJson(normalizeCustomer(mutation.payload.customer), 201)
 })
 
-export const PATCH = withCraterSession({ log: "Crater customer update error", error: "Could not update Crater customer." }, async (request, token) => {
+export const PATCH = withCraterSession({ log: "Crater customer update error", error: "Could not update Crater customer.", rateLimit: "customer" }, async (request, token) => {
     const body = await readJsonObject(request)
     const id = optionalString(body?.id)
     const email = nullableString(body?.email)

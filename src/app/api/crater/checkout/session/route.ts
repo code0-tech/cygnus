@@ -7,7 +7,6 @@ import { getSubscriptionSelectionCatalog } from "@/lib/subscription/catalog"
 import { getCraterCheckoutPackages } from "@/lib/subscription/checkoutPackages.server"
 import { resolveSiteUrl } from "@/lib/siteConfig"
 import { DEFAULT_LOCALE, isSupportedLocale } from "@/lib/i18n"
-import { enforceRateLimit } from "@/lib/security/rateLimiter"
 import type { DeploymentType, Mutation, MutationCheckoutCreateSessionArgs } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 
@@ -43,10 +42,7 @@ const CHECKOUT_CREATE_SESSION: TypedDocumentNode<CheckoutCreateSessionData, Chec
     }
 `
 
-export const POST = withCraterSession({ log: "Crater checkout session error", error: "Could not create checkout session." }, async (request, token) => {
-    const rateLimitResponse = enforceRateLimit("checkout", request)
-    if (rateLimitResponse) return rateLimitResponse
-
+export const POST = withCraterSession({ log: "Crater checkout session error", error: "Could not create checkout session.", rateLimit: "checkout" }, async (request, token) => {
     const body = await readJsonObject(request)
 
     if (!body) {

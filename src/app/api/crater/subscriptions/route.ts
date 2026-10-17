@@ -48,7 +48,7 @@ function normalizeSubscriptionEnums(subscription: NonNullable<NonNullable<Subscr
     }
 }
 
-export const PATCH = withCraterSession({ log: "Crater subscription update error", error: "Could not update the Crater subscription." }, async (request, token) => {
+export const PATCH = withCraterSession({ log: "Crater subscription update error", error: "Could not update the Crater subscription.", rateLimit: "subscription" }, async (request, token) => {
     const body = await readJsonObject(request)
     const id = optionalString(body?.id)
     if (!id || !isSubscriptionId(id)) {

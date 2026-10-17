@@ -30,7 +30,7 @@ const SUBSCRIPTIONS_PREVIEW_UPDATE: TypedDocumentNode<SubscriptionsPreviewUpdate
     }
 `
 
-export const POST = withCraterSession({ log: "Crater subscription preview error", error: "Could not preview the Crater subscription change." }, async (request, token) => {
+export const POST = withCraterSession({ log: "Crater subscription preview error", error: "Could not preview the Crater subscription change.", rateLimit: "subscriptionPreview" }, async (request, token) => {
     const body = await readJsonObject(request)
     const id = optionalString(body?.id)
     if (!id || !isSubscriptionId(id)) {

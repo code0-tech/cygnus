@@ -1,4 +1,5 @@
 import { craterJson, requireCraterSession } from "@/lib/crater/api.server"
+import { enforceSessionRateLimit } from "@/lib/security/rateLimiter"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
@@ -21,6 +22,9 @@ function parseStripeInvoicePdfUrl(value: string | null) {
 export async function GET(request: Request) {
     const session = requireCraterSession(request)
     if (session.response) return session.response
+
+    const rateLimitResponse = enforceSessionRateLimit("invoicePreview", request, session.token)
+    if (rateLimitResponse) return rateLimitResponse
 
     const invoiceUrl = parseStripeInvoicePdfUrl(new URL(request.url).searchParams.get("url"))
     if (!invoiceUrl) return craterJson({ error: "A valid Stripe invoice PDF URL is required." }, 400)

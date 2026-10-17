@@ -28,7 +28,7 @@ const SUBSCRIPTIONS_RESUME: TypedDocumentNode<SubscriptionsResumeData, MutationS
     }
 `
 
-export const POST = withCraterSession({ log: "Crater subscription resume error", error: "Could not resume the Crater subscription." }, async (request, token) => {
+export const POST = withCraterSession({ log: "Crater subscription resume error", error: "Could not resume the Crater subscription.", rateLimit: "subscription" }, async (request, token) => {
     const body = await readJsonObject(request)
     const id = optionalString(body?.id)
     if (!id || !isSubscriptionId(id)) {

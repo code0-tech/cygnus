@@ -28,7 +28,7 @@ const SUBSCRIPTIONS_CANCEL: TypedDocumentNode<SubscriptionsCancelData, MutationS
     }
 `
 
-export const POST = withCraterSession({ log: "Crater subscription cancellation error", error: "Could not cancel the Crater subscription." }, async (request, token) => {
+export const POST = withCraterSession({ log: "Crater subscription cancellation error", error: "Could not cancel the Crater subscription.", rateLimit: "subscription" }, async (request, token) => {
     const body = await readJsonObject(request)
     const id = optionalString(body?.id)
     if (!id || !isSubscriptionId(id)) {

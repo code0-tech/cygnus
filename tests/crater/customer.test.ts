@@ -18,6 +18,16 @@ serverOnlyHook.deregister()
 const FULL_ADDRESS = { city: "Berlin", country: "DE", line1: "HauptstraÃŸe 1", postalCode: "10115" }
 const FORWARDED_ADDRESS = { ...FULL_ADDRESS, line2: "", state: "" }
 
+// Every test here reuses one session; the customer route limit itself is covered in routeRateLimits.test.ts.
+const previousCustomerRateLimit = process.env.CRATER_CUSTOMER_RATE_LIMIT_MAX
+test.before(() => {
+    process.env.CRATER_CUSTOMER_RATE_LIMIT_MAX = "1000"
+})
+test.after(() => {
+    if (previousCustomerRateLimit === undefined) delete process.env.CRATER_CUSTOMER_RATE_LIMIT_MAX
+    else process.env.CRATER_CUSTOMER_RATE_LIMIT_MAX = previousCustomerRateLimit
+})
+
 const sessionHeaders = {
     authorization: "Session c_ust_example",
     "content-type": "application/json",

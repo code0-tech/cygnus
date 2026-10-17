@@ -21,7 +21,7 @@ const CUSTOMER_PAYMENT_METHOD_SETUP_CREATE: TypedDocumentNode<CustomerPaymentMet
     }
 `
 
-export const POST = withCraterSession({ log: "Crater payment method setup error", error: "Could not create the payment method setup session." }, async (request, token) => {
+export const POST = withCraterSession({ log: "Crater payment method setup error", error: "Could not create the payment method setup session.", rateLimit: "paymentMethodSetup" }, async (request, token) => {
     const body = await readJsonObject(request)
     const customerId = optionalString(body?.customerId)
 

@@ -1,6 +1,8 @@
 import { createApolloClient } from "@/lib/apolloClient"
 import { describeCraterError } from "@/lib/crater/errors"
 import { clearCraterSessionCookie, readCraterSessionAuthorization } from "@/lib/crater/session.server"
+import { enforceSessionRateLimit } from "@/lib/security/rateLimiter"
+import type { RateLimitPolicyName } from "@/lib/security/rateLimitPolicies"
 import type { Error } from "@code0-tech/crater-graphql-types"
 import { gql, type OperationVariables, type TypedDocumentNode } from "@apollo/client"
 import { ServerError } from "@apollo/client/errors"
@@ -56,15 +58,21 @@ export function noStoreRedirect(url: URL, { noReferrer = false }: { noReferrer?:
     return response
 }
 
-type CraterRouteFailure = {
+type CraterRouteOptions = {
     log: string
     error: string
+    rateLimit?: RateLimitPolicyName
 }
 
-export function withCraterSession(failure: CraterRouteFailure, handler: (request: Request, token: string) => Promise<Response>) {
+export function withCraterSession(options: CraterRouteOptions, handler: (request: Request, token: string) => Promise<Response>) {
     return async (request: Request): Promise<Response> => {
         const session = requireCraterSession(request)
         if (session.response) return session.response
+
+        if (options.rateLimit) {
+            const rateLimitResponse = enforceSessionRateLimit(options.rateLimit, request, session.token)
+            if (rateLimitResponse) return rateLimitResponse
+        }
 
         try {
             return await handler(request, session.token)
@@ -72,8 +80,8 @@ export function withCraterSession(failure: CraterRouteFailure, handler: (request
             const transportResponse = craterTransportErrorResponse(error, request)
             if (transportResponse) return transportResponse
 
-            console.error(`${failure.log}:`, error instanceof Error ? `${error.name}: ${error.message}` : "Unknown error")
-            return craterJson({ error: failure.error }, 502)
+            console.error(`${options.log}:`, error instanceof Error ? `${error.name}: ${error.message}` : "Unknown error")
+            return craterJson({ error: options.error }, 502)
         }
     }
 }

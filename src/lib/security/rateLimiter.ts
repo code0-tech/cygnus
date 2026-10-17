@@ -103,6 +103,13 @@ export function enforceRateLimit(name: RateLimitPolicyName, request: Request, su
     return rejectWhenExhausted(name, limiter.consume(sharedKey, sharedPolicy), "untrusted")
 }
 
+export function enforceSessionRateLimit(name: RateLimitPolicyName, request: Request, sessionToken: string) {
+    const rejected = enforceRateLimit(name, request, sessionToken)
+    if (rejected || !createRateLimitKey(name, request)) return rejected
+
+    return rejectWhenExhausted(name, limiter.consume(createRateLimitSubjectKey(name, sessionToken), getRateLimitPolicy(name)), "trusted")
+}
+
 function rejectWhenExhausted(name: RateLimitPolicyName, result: RateLimitResult, network: "trusted" | "untrusted") {
     if (result.allowed) return null
 
