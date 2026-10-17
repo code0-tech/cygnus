@@ -1,19 +1,15 @@
 import { createApolloClient } from "@/lib/apolloClient"
 import { CRATER_ERROR_FIELDS, craterJson, craterMutationErrorResponse, craterTransportErrorResponse, optionalString, readJsonObject, requireCraterSession } from "@/lib/checkout/craterApi"
 import { isSubscriptionId } from "@/lib/licenses/craterSubscriptionRequest"
-import type { Error as CraterError, Query, QuerySubscriptionPaymentMethodArgs, Scalars } from "@code0-tech/crater-graphql-types"
+import type { Mutation, MutationSubscriptionsUpdateArgs, Query, QuerySubscriptionPaymentMethodArgs } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 
 export const runtime = "nodejs"
 
 type SubscriptionPaymentMethodData = Pick<Query, "subscriptionPaymentMethod">
 
-// The published Crater types still describe the retired subscriptionsSetPaymentMethod mutation and
-// know neither the paymentMethodId argument of subscriptionsUpdate nor the field on Subscription.
-type SubscriptionsSetPaymentMethodData = {
-    subscriptionsUpdate: { errors: CraterError[]; subscription: { id: string; paymentMethodId: string | null } | null } | null
-}
-type SubscriptionsSetPaymentMethodVariables = { input: { id: Scalars["SubscriptionID"]["input"]; paymentMethodId: string } }
+type SubscriptionsSetPaymentMethodData = Pick<Mutation, "subscriptionsUpdate">
+type SubscriptionsSetPaymentMethodVariables = MutationSubscriptionsUpdateArgs
 
 const SUBSCRIPTION_PAYMENT_METHOD: TypedDocumentNode<SubscriptionPaymentMethodData, QuerySubscriptionPaymentMethodArgs> = gql`
     query SubscriptionPaymentMethod($subscriptionId: SubscriptionID!) {

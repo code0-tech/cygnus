@@ -6,10 +6,7 @@ import { gql, type TypedDocumentNode } from "@apollo/client"
 
 export const runtime = "nodejs"
 
-// The published package still names the signed file licenseFile.
-type LicensesExportData = {
-    licensesExport?: { license?: string | null; errors: NonNullable<NonNullable<Mutation["licensesExport"]>["errors"]> } | null
-}
+type LicensesExportData = Pick<Mutation, "licensesExport">
 
 const LICENSES_EXPORT: TypedDocumentNode<LicensesExportData, MutationLicensesExportArgs> = gql`
     ${CRATER_ERROR_FIELDS}

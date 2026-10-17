@@ -1,28 +1,15 @@
 import { createApolloClient } from "@/lib/apolloClient"
 import { craterJson, craterMutationErrorResponse, craterTransportErrorResponse, optionalString, readJsonObject, readOptionalAddress, requireCraterSession } from "@/lib/checkout/craterApi"
 import { normalizeCraterCustomerType, toCraterCustomerTypeEnum } from "@/lib/checkout/craterCustomer"
-import type { Customer, CustomerAddressInput, Mutation, MutationCustomersUpdateArgs, Query, Scalars } from "@code0-tech/crater-graphql-types"
+import type { Customer, CustomerAddressInput, Mutation, MutationCustomersCreateArgs, MutationCustomersUpdateArgs, Query, Scalars } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 
 export const runtime = "nodejs"
 
 type CustomersCreateData = Pick<Mutation, "customersCreate">
 
-// The published Crater types still describe the retired checkout draft lifecycle.
-// Keep the required contact fields aligned with Crater's current CustomersCreate mutation.
-type CustomersCreateVariables = {
-    input: {
-        address: CustomerAddressInput
-        customerType: ReturnType<typeof toCraterCustomerTypeEnum>
-        email: string
-        name: string
-        phone?: string
-        taxIdType?: string
-        taxIdValue?: string
-    }
-}
-
-type CustomersUpdateVariables = { input: MutationCustomersUpdateArgs["input"] & { paymentMethods?: string[] } }
+type CustomersCreateVariables = MutationCustomersCreateArgs
+type CustomersUpdateVariables = MutationCustomersUpdateArgs
 
 type CustomersUpdateData = Pick<Mutation, "customersUpdate">
 type CustomersQueryData = Pick<Query, "currentUser">

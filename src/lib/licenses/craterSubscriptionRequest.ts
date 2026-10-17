@@ -1,6 +1,6 @@
 import { optionalString, type JsonObject } from "@/lib/checkout/craterApi"
-import { parseCraterPaymentPeriod } from "@/lib/checkout/craterCheckout"
-import type { CheckoutPaymentPeriod, Scalars } from "@code0-tech/crater-graphql-types"
+import { parseCraterPaymentPeriod, parseCraterPlan } from "@/lib/checkout/craterCheckout"
+import type { CheckoutPaymentPeriod, CheckoutPlan, Scalars } from "@code0-tech/crater-graphql-types"
 
 export function isSubscriptionId(value: string): value is Scalars["SubscriptionID"]["input"] {
     return /^gid:\/\/crater\/Subscription\/\d+$/.test(value)
@@ -13,7 +13,7 @@ function parseOptionalPositiveInt(value: unknown): number | null | undefined {
 }
 
 export type SubscriptionChangeFields = {
-    plan?: string
+    plan?: CheckoutPlan
     paymentPeriod?: CheckoutPaymentPeriod
     aiTokens?: number
     workflowExecutions?: number
@@ -22,7 +22,9 @@ export type SubscriptionChangeFields = {
 // subscriptionsUpdate and subscriptionsPreviewUpdate take the same arguments and resolve them the same way, so both
 // the billing dialog (paymentPeriod only) and the upgrade dialog (plan and/or quantities) go through this parser.
 export function parseSubscriptionChangeFields(body: JsonObject | null): { error: string } | SubscriptionChangeFields {
-    const plan = optionalString(body?.plan)
+    const planParam = optionalString(body?.plan)
+    const plan = planParam ? parseCraterPlan(planParam) : undefined
+    if (planParam && !plan) return { error: "plan must be pro, max, or custom." }
     const paymentPeriodParam = optionalString(body?.paymentPeriod)
     const paymentPeriod = paymentPeriodParam ? (parseCraterPaymentPeriod(paymentPeriodParam) ?? undefined) : undefined
     if (paymentPeriodParam && !paymentPeriod) return { error: "paymentPeriod must be monthly, quarterly, or yearly." }

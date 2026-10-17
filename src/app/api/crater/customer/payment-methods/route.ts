@@ -1,18 +1,11 @@
 import { createApolloClient } from "@/lib/apolloClient"
 import { craterJson, craterTransportErrorResponse, requireCraterSession } from "@/lib/checkout/craterApi"
-import type { Scalars } from "@code0-tech/crater-graphql-types"
+import type { Query, Scalars } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 
 export const runtime = "nodejs"
 
-type CustomerPaymentMethodsData = {
-    currentUser: {
-        customers: {
-            nodes: Array<{ id: string; paymentMethods: string[] } | null>
-            pageInfo: { endCursor: string | null; hasNextPage: boolean }
-        }
-    } | null
-}
+type CustomerPaymentMethodsData = Pick<Query, "currentUser">
 type CustomerPaymentMethodsVariables = { after?: string }
 
 function isCustomerId(value: string): value is Scalars["CustomerID"]["input"] {
@@ -49,6 +42,7 @@ export async function GET(request: Request) {
             })
             const user = result.data?.currentUser
             if (!user) return craterJson({ error: "The Crater session has no authenticated user." }, 401)
+            if (!user.customers?.nodes || !user.customers.pageInfo) throw new Error("Crater returned an incomplete customer connection.")
             const customer = user.customers.nodes.find((candidate) => candidate?.id === customerId)
             if (customer) {
                 if (!Array.isArray(customer.paymentMethods) || !customer.paymentMethods.every((id) => typeof id === "string" && id.length > 0)) {
