@@ -5,6 +5,7 @@ import { useCheckoutStage } from "@/components/checkout/CheckoutStage"
 import type { CheckoutData, ErrorsContent } from "@/lib/cms"
 import { resolveCraterCustomerType } from "@/lib/checkout/craterCustomer"
 import { getCheckoutContactDraftCustomerId, getOrCreateCheckoutDraftKey, saveCheckoutContactDraft, takeCheckoutContactDraft } from "@/lib/checkout/checkoutDraft"
+import { replaceCheckoutPage } from "@/lib/checkout/checkoutNavigation"
 import {
     calculateCheckoutTax,
     CheckoutSubmissionError,
@@ -13,6 +14,7 @@ import {
     getCheckoutCustomers,
     type CheckoutCustomerData,
     type CheckoutSessionData,
+    type CheckoutStripePricingData,
     type CheckoutTaxQuoteData,
 } from "@/lib/checkout/checkoutSubmission"
 import type { AppLocale } from "@/lib/i18n"
@@ -21,13 +23,23 @@ import { useSearchParams } from "next/navigation"
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react"
 
 type CheckoutFormContent = CheckoutData["form"]
+type CheckoutPromotionCodeActions = {
+    apply: (code: string) => Promise<void>
+    remove: () => Promise<void>
+}
 const CHECKOUT_SESSION_REFRESH_LEAD_MS = 60_000
 const MAX_BROWSER_TIMEOUT_MS = 2_147_000_000
+const CHECKOUT_LOAD_RECOVERY_KEY = "code0.checkout.sessionLoadRecovery"
+const CHECKOUT_LOAD_RECOVERY_TTL_MS = 60_000
 
 function getPreparationErrorMessage(error: unknown, errors: ErrorsContent) {
     if (!(error instanceof CheckoutSubmissionError)) return errors.paymentFallback
+    if (error.status === 429) {
+        return error.retryAfterSeconds ? `${error.message} (${error.retryAfterSeconds}s)` : error.message
+    }
     if (error.errorCode === "CUSTOMER_TYPE_MISMATCH") return errors.customerTypeMismatch
     if (error.errorCode === "INVALID_CHECKOUT_CUSTOMER") return errors.checkoutCustomer
+    if (error.kind === "session") return error.message
     return error.kind === "customer" ? errors.customerCreation : errors.checkoutSession
 }
 
@@ -41,7 +53,9 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, errors: Errors
     const [hasExistingCustomers, setHasExistingCustomers] = useState<boolean | null>(null)
     const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null)
     const [taxQuote, setTaxQuote] = useState<CheckoutTaxQuoteData | null>(null)
+    const [stripePricing, setStripePricing] = useState<CheckoutStripePricingData | null>(null)
     const [checkoutSessionPromotionCode, setCheckoutSessionPromotionCode] = useState<string | null | undefined>(undefined)
+    const [promotionCodeActionsReady, setPromotionCodeActionsReady] = useState(false)
     const [isRefreshingSession, setIsRefreshingSession] = useState(false)
     const [isConfirmingPayment, setIsConfirmingPayment] = useState(false)
     const [stripeBillingAddress, setStripeBillingAddress] = useState<StripeCheckoutContact | null>(null)
@@ -51,13 +65,19 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, errors: Errors
     const preparedSessionKeyRef = useRef<string | null>(null)
     const sessionRefreshRequestRef = useRef(0)
     const checkoutRefreshPromiseRef = useRef<Promise<boolean> | null>(null)
+    const promotionCodeActionsRef = useRef<CheckoutPromotionCodeActions | null>(null)
     const selectedCustomerIdRef = useRef<string | null>(null)
+    const stageRef = useRef(stage)
+    const stripeBillingAddressRef = useRef<StripeCheckoutContact | null>(null)
+    const stripeEmailRef = useRef<string | null>(null)
     const expiredRefreshAttemptsRef = useRef(0)
     selectedCustomerIdRef.current = selectedCustomerId
+    stageRef.current = stage
+    stripeBillingAddressRef.current = stripeBillingAddress
+    stripeEmailRef.current = stripeEmail
     const { authenticated, error: sessionError, isLoading: isSessionLoading } = useCraterSession()
     const customerType = resolveCraterCustomerType(searchParams.get("customerType"))
     const searchParamsString = searchParams.toString()
-    const promotionCode = searchParams.get("promotionCode")?.trim() || null
     const resolvedError = errorMessage ?? sessionError ?? stripeSessionError
 
     useEffect(() => {
@@ -66,12 +86,13 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, errors: Errors
 
     useEffect(() => () => setHasError(false), [setHasError])
 
-    const startCheckoutSessionRefresh = useCallback((checkoutSearchParams: URLSearchParams, nextPromotionCode: string | null) => {
+    const startCheckoutSessionRefresh = useCallback((checkoutSearchParams: URLSearchParams) => {
         const customerId = selectedCustomerIdRef.current
         if (!customerId) return Promise.resolve(false)
         const requestId = ++sessionRefreshRequestRef.current
         setCheckoutSession(null)
         setTaxQuote(null)
+        setStripePricing(null)
         setIsRefreshingSession(true)
         setErrorMessage(null)
         setStripeSessionError(null)
@@ -81,7 +102,7 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, errors: Errors
             .then((session) => {
                 if (requestId !== sessionRefreshRequestRef.current) return false
                 setCheckoutSession(session)
-                setCheckoutSessionPromotionCode(nextPromotionCode)
+                setCheckoutSessionPromotionCode(null)
                 void calculateCheckoutTax({ searchParams: checkoutSearchParams })
                     .then((quote) => {
                         if (requestId === sessionRefreshRequestRef.current) setTaxQuote(quote)
@@ -95,7 +116,7 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, errors: Errors
                 if (requestId !== sessionRefreshRequestRef.current) return false
                 console.error("Failed to refresh the Crater checkout session:", error)
                 setCheckoutSessionPromotionCode(undefined)
-                setErrorMessage(errors.checkoutSession)
+                setErrorMessage(getPreparationErrorMessage(error, errors))
                 return false
             })
             .finally(() => {
@@ -105,47 +126,79 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, errors: Errors
 
         checkoutRefreshPromiseRef.current = request
         return request
-    }, [errors.checkoutSession, locale])
+    }, [errors, locale])
 
     const refreshCheckoutSession = useCallback(() => {
         if (checkoutRefreshPromiseRef.current) return checkoutRefreshPromiseRef.current.then(() => undefined)
 
         const checkoutSearchParams = new URLSearchParams(searchParamsString)
-        return startCheckoutSessionRefresh(checkoutSearchParams, promotionCode).then(() => undefined)
-    }, [promotionCode, searchParamsString, startCheckoutSessionRefresh])
+        return startCheckoutSessionRefresh(checkoutSearchParams).then(() => undefined)
+    }, [searchParamsString, startCheckoutSessionRefresh])
 
     const updateCheckoutPromotionCode = useCallback(
         async (nextPromotionCode: string | null) => {
             if (!selectedCustomerIdRef.current) throw new Error(errors.checkoutSession)
             if (checkoutSession && checkoutSessionPromotionCode === nextPromotionCode) return "updated" as const
+            const actions = promotionCodeActionsRef.current
+            if (!actions) throw new Error(errors.discountSessionRequired)
 
-            const checkoutSearchParams = new URLSearchParams(searchParamsString)
-            if (nextPromotionCode) checkoutSearchParams.set("promotionCode", nextPromotionCode)
-            else checkoutSearchParams.delete("promotionCode")
-
-            const query = checkoutSearchParams.toString()
-            saveCheckoutContactDraft({
-                billingAddress: stripeBillingAddress,
-                customerId: selectedCustomerIdRef.current,
-                email: stripeEmail,
-                searchParams: checkoutSearchParams,
-                stage,
-            })
-            window.history.replaceState(window.history.state, "", query ? `${window.location.pathname}?${query}` : window.location.pathname)
-            window.location.reload()
-            return "navigating" as const
+            if (nextPromotionCode) await actions.apply(nextPromotionCode)
+            else await actions.remove()
+            setCheckoutSessionPromotionCode(nextPromotionCode)
+            return "updated" as const
         },
-        [checkoutSession, checkoutSessionPromotionCode, errors.checkoutSession, searchParamsString, stage, stripeBillingAddress, stripeEmail]
+        [checkoutSession, checkoutSessionPromotionCode, errors.checkoutSession, errors.discountSessionRequired]
     )
 
+    const setPromotionCodeActions = useCallback((actions: CheckoutPromotionCodeActions | null) => {
+        promotionCodeActionsRef.current = actions
+        setPromotionCodeActionsReady(Boolean(actions))
+    }, [])
+
     const refreshExpiredCheckoutSession = useCallback(() => {
-        if (expiredRefreshAttemptsRef.current >= 1) return Promise.resolve()
+        if (expiredRefreshAttemptsRef.current >= 1) return Promise.resolve(false)
         expiredRefreshAttemptsRef.current += 1
-        return refreshCheckoutSession()
+        return refreshCheckoutSession().then(() => true)
     }, [refreshCheckoutSession])
+
+    const recoverCheckoutSessionLoad = useCallback(() => {
+        const checkoutSearchParams = new URLSearchParams(searchParamsString)
+        const recoveryId = checkoutSearchParams.toString()
+
+        try {
+            const stored: unknown = JSON.parse(window.sessionStorage.getItem(CHECKOUT_LOAD_RECOVERY_KEY) ?? "null")
+            if (stored && typeof stored === "object" && "recoveryId" in stored && "expiresAt" in stored && stored.recoveryId === recoveryId && typeof stored.expiresAt === "number" && stored.expiresAt > Date.now()) {
+                return Promise.resolve(false)
+            }
+
+            window.sessionStorage.setItem(
+                CHECKOUT_LOAD_RECOVERY_KEY,
+                JSON.stringify({ recoveryId, expiresAt: Date.now() + CHECKOUT_LOAD_RECOVERY_TTL_MS })
+            )
+        } catch {
+            // A reload still has a chance to recover Stripe when session storage is unavailable.
+        }
+
+        if (selectedCustomerIdRef.current) {
+            saveCheckoutContactDraft({
+                billingAddress: stripeBillingAddressRef.current,
+                customerId: selectedCustomerIdRef.current,
+                email: stripeEmailRef.current,
+                searchParams: checkoutSearchParams,
+                stage: stageRef.current,
+            })
+        }
+        replaceCheckoutPage(window.location.href)
+        return Promise.resolve(true)
+    }, [searchParamsString])
 
     const markCheckoutSessionReady = useCallback(() => {
         expiredRefreshAttemptsRef.current = 0
+        try {
+            window.sessionStorage.removeItem(CHECKOUT_LOAD_RECOVERY_KEY)
+        } catch {
+            // Session recovery already succeeded; storage cleanup is best-effort.
+        }
     }, [])
 
     useEffect(() => {
@@ -164,6 +217,7 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, errors: Errors
         setCheckoutSession(null)
         setHasExistingCustomers(null)
         setTaxQuote(null)
+        setStripePricing(null)
         setStripeBillingAddress(null)
         setStripeEmail(null)
         setStripeSessionError(null)
@@ -197,7 +251,7 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, errors: Errors
                 }
                 setCheckoutSession(session)
                 expiredRefreshAttemptsRef.current = 0
-                setCheckoutSessionPromotionCode(checkoutSearchParams.get("promotionCode")?.trim() || null)
+                setCheckoutSessionPromotionCode(null)
                 void calculateCheckoutTax({ searchParams: checkoutSearchParams })
                     .then((quote) => {
                         if (requestId === sessionRefreshRequestRef.current) setTaxQuote(quote)
@@ -225,6 +279,7 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, errors: Errors
             const checkoutSearchParams = new URLSearchParams(searchParamsString)
             setCheckoutSession(null)
             setTaxQuote(null)
+            setStripePricing(null)
             setStripeBillingAddress(null)
             setStripeEmail(null)
             setIsRefreshingSession(true)
@@ -245,7 +300,7 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, errors: Errors
                 if (requestId !== sessionRefreshRequestRef.current) return
                 setCheckoutSession(session)
                 expiredRefreshAttemptsRef.current = 0
-                setCheckoutSessionPromotionCode(promotionCode)
+                setCheckoutSessionPromotionCode(null)
                 void calculateCheckoutTax({ searchParams: checkoutSearchParams })
                     .then((quote) => {
                         if (requestId === sessionRefreshRequestRef.current) setTaxQuote(quote)
@@ -261,7 +316,7 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, errors: Errors
                 if (requestId === sessionRefreshRequestRef.current) setIsRefreshingSession(false)
             }
         },
-        [content, customerType, customers, errors, isLoading, isRefreshingSession, locale, promotionCode, searchParamsString, setStage]
+        [content, customerType, customers, errors, isLoading, isRefreshingSession, locale, searchParamsString, setStage]
     )
 
     useEffect(() => {
@@ -291,7 +346,9 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, errors: Errors
         isSessionLoading,
         retryPreparation,
         markCheckoutSessionReady,
+        promotionCodeActionsReady,
         refreshExpiredCheckoutSession,
+        recoverCheckoutSessionLoad,
         resolvedError,
         selectedCustomerId,
         selectCheckoutCustomer,
@@ -299,11 +356,14 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, errors: Errors
         setStripeBillingAddress,
         setStripeEmail,
         setStripeSessionError,
+        setStripePricing,
+        setPromotionCodeActions,
         setTaxQuote,
         setIsConfirmingPayment,
         stripeBillingAddress,
         stripeEmail,
         stripeSessionError,
+        stripePricing,
         taxQuote,
         updateCheckoutPromotionCode,
     }

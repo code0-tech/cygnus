@@ -27,6 +27,13 @@ export function formatEuroCurrency(value: number, locale: string) {
     return euroCurrencyFormatters[getFormatterLocale(locale)].format(value)
 }
 
+export function formatCurrency(value: number, currency: string, locale: string) {
+    return new Intl.NumberFormat(locale === "de" ? "de-DE" : "en-US", {
+        style: "currency",
+        currency: currency.toUpperCase(),
+    }).format(value)
+}
+
 export function formatMinorCurrency(value: number, currency: string, locale: string) {
     const formatter = new Intl.NumberFormat(locale === "de" ? "de-DE" : "en-US", {
         style: "currency",

@@ -1,12 +1,11 @@
 "use client"
 
-import { CheckoutPricingOverview } from "@/components/checkout/CheckoutPricingOverview"
 import { LinkButton } from "@/components/ui/LinkButton"
 import { ButtonLoader } from "@/components/ui/Loader"
 import { clearCheckoutDraftKeys } from "@/lib/checkout/checkoutDraft"
 import { getCheckoutStatusPollDelay, hasCheckoutStatusPollingExpired } from "@/lib/checkout/checkoutStatusPolling"
 import type { CheckoutSuccessSummary } from "@/lib/checkout/checkoutSuccessSummary"
-import type { CheckoutData, SubscriptionConfigData } from "@/lib/cms"
+import type { CheckoutData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { downloadLicenseFile } from "@/lib/licenses/downloadLicenseFile"
 import type { CheckoutCompletionState } from "@code0-tech/crater-graphql-types"
@@ -29,11 +28,9 @@ interface CheckoutSuccessStatusProps {
     content: SuccessContent
     errorMessage: string
     locale: AppLocale
-    pricingContent?: CheckoutData["summary"] | null
     sculptorUrl?: string | null
     sessionId: string
     summary?: CheckoutSuccessSummary | null
-    subscriptionConfig?: SubscriptionConfigData | null
 }
 
 const REQUEST_TIMEOUT_MS = 10_000
@@ -50,7 +47,7 @@ function parseStatusResponse(value: unknown): StatusResponse | null {
     return response as StatusResponse
 }
 
-export function CheckoutSuccessStatus({ checkoutSearchParams, content, errorMessage, locale, pricingContent, sculptorUrl, sessionId, summary, subscriptionConfig }: CheckoutSuccessStatusProps) {
+export function CheckoutSuccessStatus({ checkoutSearchParams, content, errorMessage, locale, sculptorUrl, sessionId, summary }: CheckoutSuccessStatusProps) {
     const router = useRouter()
     const [status, setStatus] = useState<CheckoutStatus>("LOADING")
     const [completion, setCompletion] = useState<StatusResponse | null>(null)
@@ -180,11 +177,6 @@ export function CheckoutSuccessStatus({ checkoutSearchParams, content, errorMess
             ) : null}
             {heading && <h1 className="text-3xl font-semibold text-white">{heading}</h1>}
             {description && <p className="text-secondary max-w-lg">{description}</p>}
-            {fulfillmentConfirmed && summary?.overview && pricingContent && subscriptionConfig && (
-                <div className="my-4 w-full max-w-lg text-left">
-                    <CheckoutPricingOverview {...summary.overview} content={pricingContent} locale={locale} subscriptionConfig={subscriptionConfig} />
-                </div>
-            )}
             {fulfillmentConfirmed && <p className="text-sm text-tertiary mb-4">{content.receiptHint}</p>}
             {status === "ERROR" && <p className="text-secondary">{errorMessage}</p>}
             {status === "READY" && licenseAccessUrl ? (

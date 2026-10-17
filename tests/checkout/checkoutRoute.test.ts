@@ -416,7 +416,6 @@ test("creates regular and custom checkout sessions with the expected Crater inpu
                 deploymentType: "self_hosted",
                 paymentPeriod: "MONTHLY",
                 plan: "pro",
-                promotionCode: "SAVE10",
                 returnUrl: "https://code0.example/de/checkout/success?plan=pro&customerType=b2c&deploymentType=self_hosted&paymentPeriod=monthly&session_id={CHECKOUT_SESSION_ID}",
             },
         })

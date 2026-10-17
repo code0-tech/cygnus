@@ -32,12 +32,15 @@ function CheckoutFormContent() {
         isRefreshingSession,
         isSessionLoading,
         markCheckoutSessionReady,
+        setPromotionCodeActions,
+        recoverCheckoutSessionLoad,
         refreshExpiredCheckoutSession,
         resolvedError,
         selectedCustomerId,
         selectCheckoutCustomer,
         setStripeBillingAddress,
         setStripeEmail,
+        setStripePricing,
         setStripeSessionError,
         setTaxQuote,
         setIsConfirmingPayment,
@@ -97,7 +100,10 @@ function CheckoutFormContent() {
             onEmailChange={setStripeEmail}
             onTaxQuoteChange={setTaxQuote}
             onPaymentConfirmationChange={setIsConfirmingPayment}
+            onPricingChange={setStripePricing}
+            onPromotionCodeActionsChange={setPromotionCodeActions}
             onSessionExpired={refreshExpiredCheckoutSession}
+            onSessionLoadError={recoverCheckoutSessionLoad}
             onSessionLoadErrorChange={setStripeSessionError}
             onSessionReady={markCheckoutSessionReady}
             session={checkoutSession}

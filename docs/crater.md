@@ -287,6 +287,17 @@ Monetary amounts are transferred as integers in the smallest currency unit.
 
 `CheckoutDiscount` contains the code and duration, plus either a fixed discount amount with an optional currency or a percentage discount.
 
+#### Discounts in a checkout
+
+A discount is validated by Crater and applied by the client, and the two steps are deliberately separate.
+
+- `checkoutValidateDiscount` resolves a code against Stripe and answers with the `CheckoutDiscount` behind it, or with `INVALID_DISCOUNT_CODE`. It is a read; it touches no session and changes nothing. The client uses it to name the discount -- "10% off" -- while the user is still typing.
+- Applying it happens in the browser. Every Checkout Session Crater creates carries `allow_promotion_codes: true`, so the client calls Stripe's `checkout.applyPromotionCode()` on the session it already holds, and `checkout.removePromotionCode()` to take it back. Stripe recalculates the totals in place.
+
+That is why `checkoutCreateSession` has no `promotionCode` argument. A discount entered, removed, and entered again is the same session throughout -- the user does not lose the address, tax ID, or payment details already filled in, and Crater does not create a Stripe session per attempt. Crater consequently never sends `discounts` when creating a session; Stripe rejects `discounts` and `allow_promotion_codes` together, and the client-side flow is the one that survives a change of mind.
+
+`checkoutValidateDiscount` stays available and unchanged. Validating a code is not the same as applying it: a code the client shows as valid is still applied through Stripe, and a code that Stripe refuses at that point leaves the session untouched.
+
 ### Custom checkout configuration
 
 `CustomCheckoutConfiguration` is an administrator-created checkout override for individually negotiated deals. It contains:
@@ -951,13 +962,14 @@ For `checkoutCreateSession`:
 - The selected customer's type picks the B2B or B2C Prices, for `plan: pro` and `plan: max` as well as for the `plan: custom` components, and decides which payment periods exist at all. `paymentPeriod` outside that set -- `WEEKLY` for a business customer, `QUARTERLY` for a personal one -- is rejected with `INVALID_CHECKOUT_SELECTION` before Stripe is called. If the Price itself is configured for the other customer type only, the request is rejected with `CUSTOMER_TYPE_MISMATCH` instead of a generic selection error.
 - The Stripe Checkout Session is created with the selected customer's `stripe_customer_id`, so the contact details, billing address, and tax ID that Stripe collects are synced back to exactly that customer. Its Crater customer ID is stored in the subscription metadata as `crater_customer_id`.
 - Crater never sends `customer_email`; the Stripe Customer is referenced by ID, and Stripe rejects both parameters together. An email already on the Stripe Customer is therefore never restated, and a missing one is collected by the client's `ContactDetailsElement`.
-- A regular checkout uses `plan`, `paymentPeriod`, and, where applicable, `deploymentType`, `namespaceId`, and `promotionCode`.
+- A regular checkout uses `plan`, `paymentPeriod`, and, where applicable, `deploymentType` and `namespaceId`. There is no `promotionCode` argument; see [discounts](#discounts-in-a-checkout).
 - `plan: custom` accepts positive `aiTokens` and `workflowExecutions`; at least one quantity is required and the authenticated customer's stored type selects B2B or B2C Prices.
 - Each custom quantity must be a positive integer of at most `1000000000`, which stays inside the signed 32-bit range of the GraphQL `Int` scalar and of the `integer` database columns. Anything outside that range, including zero, negative, decimal, and non-integer values, is rejected with `INVALID_CHECKOUT_SELECTION` before Stripe is called. The same bound applies to `checkoutCalculateTax`. Stripe documents no maximum for a line item's initial `quantity`; its `999999` cap applies to `adjustable_quantity.maximum`, which Crater does not use.
 - A custom checkout uses `customCheckoutConfigurationId`; `plan` and `deploymentType` are then ignored.
 - `namespaceId` is only relevant to cloud deployments.
 - `returnUrl` must have an origin listed in `checkout.allowed_return_origins`.
 - Stripe receives `ui_mode: elements`; the frontend initializes the custom checkout UI with the returned `clientSecret`.
+- Every session is created with `allow_promotion_codes: true`, for a regular and a negotiated checkout alike, so the client can apply and remove a discount inside the session it already has. Crater sends no `discounts`; see [discounts in a checkout](#discounts-in-a-checkout).
 - Stripe collects the billing address, updates the customer's address and name, and calculates tax automatically.
 - The session enables `tax_id_collection`, so a business customer without a stored tax ID can supply one through Stripe's `TaxIdElement`. The collected tax ID is resolved back to its Stripe `TaxId` object and stored on the Crater customer by the `checkout.session.completed` webhook.
 - The resulting Stripe subscription metadata also contains `plan`, `payment_period`, and dynamic custom quantities when applicable.

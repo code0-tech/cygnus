@@ -65,7 +65,6 @@ export async function POST(request: Request) {
         const customCheckoutConfigurationId = optionalString(requestData.customCheckoutConfigurationId)
         const deploymentType = optionalString(requestData.deploymentType)
         const namespaceId = optionalString(requestData.namespaceId) ?? optionalString(requestData.namespace)
-        const promotionCode = optionalString(requestData.promotionCode)
         const requestedLocale = optionalString(requestData.locale)
         const customerType = optionalString(requestData.customerType)
         const paymentPeriod = optionalString(requestData.paymentPeriod)
@@ -176,7 +175,6 @@ export async function POST(request: Request) {
                             }
                           : {}),
                   }),
-            ...(promotionCode ? { promotionCode } : {}),
         }
         const apolloClient = createApolloClient(authorization.token)
         const result = await apolloClient.mutate({

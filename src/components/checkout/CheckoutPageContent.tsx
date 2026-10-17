@@ -25,9 +25,9 @@ interface CheckoutPageContentProps {
     summary?: CheckoutData["summary"] | null
 }
 
-function CheckoutSummaryWithTax(props: Omit<ComponentProps<typeof CheckoutSummary>, "taxQuote">) {
-    const { taxQuote } = useCheckoutFormState()
-    return <CheckoutSummary {...props} taxQuote={taxQuote} />
+function CheckoutSummaryWithTax(props: Omit<ComponentProps<typeof CheckoutSummary>, "stripePricing" | "taxQuote">) {
+    const { stripePricing, taxQuote } = useCheckoutFormState()
+    return <CheckoutSummary {...props} stripePricing={stripePricing} taxQuote={taxQuote} />
 }
 
 export function CheckoutPageContent({ currentYear, errors, footer, form, locale, nextSteps, subscriptionConfig, subscriptionPrices, summary }: CheckoutPageContentProps) {

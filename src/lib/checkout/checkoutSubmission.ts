@@ -8,7 +8,9 @@ export class CheckoutSubmissionError extends Error {
     constructor(
         readonly kind: CheckoutSubmissionErrorKind,
         readonly errorCode: string | null,
-        message: string
+        message: string,
+        readonly status: number | null = null,
+        readonly retryAfterSeconds: number | null = null
     ) {
         super(message)
         this.name = "CheckoutSubmissionError"
@@ -33,6 +35,14 @@ export interface CheckoutTaxQuoteData {
     taxAmountExclusive: number
 }
 
+export interface CheckoutStripePricingData {
+    currency: string
+    discountAmount: number
+    subtotalPrice: number
+    taxAmount: number
+    totalPrice: number
+}
+
 async function readCheckoutError(response: Response, fallback: string) {
     try {
         const body = (await response.json()) as CheckoutErrorBody
@@ -47,7 +57,9 @@ async function readCheckoutError(response: Response, fallback: string) {
 
 async function createCheckoutSubmissionError(response: Response, fallback: string, kind: CheckoutSubmissionErrorKind) {
     const error = await readCheckoutError(response, fallback)
-    return new CheckoutSubmissionError(kind, error.errorCode, error.message)
+    const retryAfterHeader = response.headers.get("Retry-After")
+    const retryAfterSeconds = retryAfterHeader && /^\d+$/.test(retryAfterHeader) ? Number.parseInt(retryAfterHeader, 10) : null
+    return new CheckoutSubmissionError(kind, error.errorCode, error.message, response.status, retryAfterSeconds)
 }
 
 function parseCheckoutCustomer(value: unknown): CheckoutCustomerData | null {
