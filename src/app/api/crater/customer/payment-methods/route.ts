@@ -1,12 +1,17 @@
 import { createApolloClient } from "@/lib/apolloClient"
 import { craterJson, craterTransportErrorResponse, requireCraterSession } from "@/lib/checkout/craterApi"
-import type { Query, Scalars } from "@code0-tech/crater-graphql-types"
+import type { CustomerPaymentMethodSummary } from "@/lib/licenses/customerPaymentMethods"
+import type { Query, QueryCustomerPaymentMethodArgs, Scalars, SubscriptionPaymentMethodSummary } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 
 export const runtime = "nodejs"
 
 type CustomerPaymentMethodsData = Pick<Query, "currentUser">
 type CustomerPaymentMethodsVariables = { after?: string }
+
+// customerPaymentMethod takes a Stripe PaymentMethod id, a plain String in Crater's schema rather than a
+// global id, and answers with the same summary type as subscriptionPaymentMethod.
+type CustomerPaymentMethodData = Pick<Query, "customerPaymentMethod">
 
 function isCustomerId(value: string): value is Scalars["CustomerID"]["input"] {
     return /^gid:\/\/crater\/Customer\/\d+$/.test(value)
@@ -22,6 +27,52 @@ const CUSTOMER_PAYMENT_METHODS: TypedDocumentNode<CustomerPaymentMethodsData, Cu
         }
     }
 `
+
+const CUSTOMER_PAYMENT_METHOD: TypedDocumentNode<CustomerPaymentMethodData, QueryCustomerPaymentMethodArgs> = gql`
+    query CustomerPaymentMethod($paymentMethodId: String!) {
+        customerPaymentMethod(paymentMethodId: $paymentMethodId) {
+            brand
+            expiresMonth
+            expiresYear
+            last4
+            type
+        }
+    }
+`
+
+function paymentMethodSummary(id: string, method: SubscriptionPaymentMethodSummary | null | undefined): CustomerPaymentMethodSummary {
+    return {
+        id,
+        brand: method?.brand ?? null,
+        expiresMonth: typeof method?.expiresMonth === "number" ? method.expiresMonth : null,
+        expiresYear: typeof method?.expiresYear === "number" ? method.expiresYear : null,
+        last4: method?.last4 ?? null,
+        type: method?.type ?? null,
+    }
+}
+
+// Customer.paymentMethods carries nothing but the ids; brand, last four digits, and expiry come from
+// customerPaymentMethod, one request per id. A method Crater cannot describe right now keeps its place in
+// the list with empty details, because the client sends the list back to customersUpdate and a dropped id
+// would detach the payment method in Stripe.
+async function resolvePaymentMethods(client: ReturnType<typeof createApolloClient>, paymentMethodIds: string[]) {
+    return Promise.all(
+        paymentMethodIds.map(async (paymentMethodId) => {
+            try {
+                const result = await client.query({
+                    query: CUSTOMER_PAYMENT_METHOD,
+                    variables: { paymentMethodId },
+                    fetchPolicy: "no-cache",
+                })
+
+                return paymentMethodSummary(paymentMethodId, result.data?.customerPaymentMethod)
+            } catch (error) {
+                console.error("Crater customer payment method summary error:", error instanceof Error ? error.name : "UnknownError")
+                return paymentMethodSummary(paymentMethodId, null)
+            }
+        })
+    )
+}
 
 export async function GET(request: Request) {
     const session = requireCraterSession(request)
@@ -48,7 +99,7 @@ export async function GET(request: Request) {
                 if (!Array.isArray(customer.paymentMethods) || !customer.paymentMethods.every((id) => typeof id === "string" && id.length > 0)) {
                     throw new Error("Crater returned an invalid payment method list.")
                 }
-                return craterJson({ paymentMethods: customer.paymentMethods })
+                return craterJson({ paymentMethods: await resolvePaymentMethods(client, customer.paymentMethods) })
             }
             const pageInfo = user.customers.pageInfo
             if (!pageInfo.hasNextPage) break

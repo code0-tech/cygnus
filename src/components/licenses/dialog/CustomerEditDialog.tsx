@@ -7,6 +7,7 @@ import { PaymentMethodSetupDialog } from "@/components/licenses/dialog/PaymentMe
 import { ButtonLoader } from "@/components/ui/Loader"
 import type { CheckoutData, ErrorsContent, LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
+import { type CustomerPaymentMethodSummary, fetchCustomerPaymentMethods } from "@/lib/licenses/customerPaymentMethods"
 import { decodeLicenseRouteId } from "@/lib/licenses/licenseRoute"
 import { cn } from "@/lib/utils"
 import { Button, DialogFooter, EmailInput, ScrollArea, ScrollAreaScrollbar, ScrollAreaThumb, ScrollAreaViewport, Text, TextInput } from "@code0-tech/pictor"
@@ -41,7 +42,7 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
     const [error, setError] = useState<string | null>(null)
     const [isSaving, setIsSaving] = useState(false)
     const [section, setSection] = useState<CustomerEditSection>("general")
-    const [paymentMethods, setPaymentMethods] = useState<string[] | null>(null)
+    const [paymentMethods, setPaymentMethods] = useState<CustomerPaymentMethodSummary[] | null>(null)
     const [paymentMethodsError, setPaymentMethodsError] = useState(false)
     const [isLoadingPaymentMethods, setIsLoadingPaymentMethods] = useState(false)
     const [paymentMethodsRefreshKey, setPaymentMethodsRefreshKey] = useState(0)
@@ -70,18 +71,11 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
         if (section !== "paymentMethods" || !customer) return
 
         const controller = new AbortController()
-        const url = new URL("/api/crater/customer/payment-methods", window.location.origin)
-        url.searchParams.set("customerId", customer.id)
         setIsLoadingPaymentMethods(true)
         setPaymentMethodsError(false)
         setRemovePaymentMethodError(null)
 
-        void fetch(url, { cache: "no-store", credentials: "same-origin", signal: controller.signal })
-            .then(async (response) => {
-                const result: unknown = await response.json()
-                if (!response.ok || !result || typeof result !== "object" || !("paymentMethods" in result)) throw new Error("Invalid payment methods response.")
-                return result.paymentMethods as string[]
-            })
+        void fetchCustomerPaymentMethods(customer.id, controller.signal)
             .then(setPaymentMethods)
             .catch((loadError) => {
                 if (!(loadError instanceof DOMException && loadError.name === "AbortError")) setPaymentMethodsError(true)
@@ -107,7 +101,7 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
                 method: "PATCH",
                 credentials: "same-origin",
                 headers: { "content-type": "application/json" },
-                body: JSON.stringify({ id: customer.id, paymentMethods: paymentMethods.filter((id) => id !== paymentMethodId) }),
+                body: JSON.stringify({ id: customer.id, paymentMethods: paymentMethods.filter((method) => method.id !== paymentMethodId).map((method) => method.id) }),
             })
             if (!response.ok) {
                 const result: unknown = await response.json().catch(() => null)
@@ -115,7 +109,7 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
                 throw new Error(errorCode === "PAYMENT_METHOD_IN_USE" ? errors.paymentMethodInUse : errors.paymentMethodRemove)
             }
 
-            setPaymentMethods((current) => current?.filter((method) => method !== paymentMethodId) ?? null)
+            setPaymentMethods((current) => current?.filter((method) => method.id !== paymentMethodId) ?? null)
         } catch (removeError) {
             setRemovePaymentMethodError(removeError instanceof Error ? removeError.message : errors.paymentMethodRemove)
         } finally {
@@ -334,18 +328,18 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
                                 ) : paymentMethods && paymentMethods.length > 0 ? (
                                     paymentMethods.map((method) => (
                                         <CustomerPaymentMethodCard
-                                            key={method}
-                                                        method={method}
+                                            key={method.id}
+                                            method={method}
                                             action={
                                                 <Button
                                                     type="button"
                                                     variant="none"
                                                     paddingSize="xs"
-                                                    disabled={removingPaymentMethodId === method}
-                                                    onClick={() => void removePaymentMethod(method)}
+                                                    disabled={removingPaymentMethodId === method.id}
+                                                    onClick={() => void removePaymentMethod(method.id)}
                                                     aria-label={content.editor.removePaymentMethodLabel}
                                                 >
-                                                    {removingPaymentMethodId === method ? (
+                                                    {removingPaymentMethodId === method.id ? (
                                                         <ButtonLoader label={content.editor.removingPaymentMethodLabel} />
                                                     ) : (
                                                         <IconTrash aria-hidden="true" size={16} />

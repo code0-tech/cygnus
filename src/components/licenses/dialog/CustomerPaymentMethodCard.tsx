@@ -1,36 +1,21 @@
 "use client"
 
+import type { PaymentMethodDisplayDetails } from "@/lib/licenses/customerPaymentMethods"
+import { cn } from "@/lib/utils"
 import { Badge, Card, Text } from "@code0-tech/pictor"
 import { IconCreditCard } from "@tabler/icons-react"
 import type { ReactNode } from "react"
 
-interface CustomerPaymentMethodSummary {
-    brand: string | null
-    expiresMonth: number | null
-    expiresYear: number | null
-    id: string
-    isDefault: boolean
-    last4: string | null
-    type: string
-}
-
 interface CustomerPaymentMethodCardProps {
     action?: ReactNode
     defaultLabel?: string
-    method: string | Pick<CustomerPaymentMethodSummary, "brand" | "expiresMonth" | "expiresYear" | "last4" | "type"> & Partial<Pick<CustomerPaymentMethodSummary, "id" | "isDefault">>
+    method: PaymentMethodDisplayDetails & { id?: string; isDefault?: boolean }
 }
 
 export function CustomerPaymentMethodCard({ action, defaultLabel, method }: CustomerPaymentMethodCardProps) {
-    if (typeof method === "string") {
-        return (
-            <Card className="flex items-center gap-4 bg-light!">
-                <IconCreditCard aria-hidden="true" size={20} className="shrink-0 text-brand" />
-                <Text size="sm" className="min-w-0 flex-1 break-all">{method}</Text>
-                {action}
-            </Card>
-        )
-    }
-    const title = method.brand?.trim() || method.type.replaceAll("_", " ")
+    // Crater resolves the details from Stripe on every read, so they can be missing while Stripe is not
+    // answering. The payment method id is then the only thing left to show.
+    const title = method.brand?.trim() || method.type?.replaceAll("_", " ") || null
     const expiry = method.expiresMonth && method.expiresYear ? `${String(method.expiresMonth).padStart(2, "0")}/${method.expiresYear}` : null
 
     return (
@@ -40,8 +25,8 @@ export function CustomerPaymentMethodCard({ action, defaultLabel, method }: Cust
             </div>
             <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
-                    <Text size="sm" fw={500} className="capitalize">
-                        {[title, method.last4 ? `•••• ${method.last4}` : null].filter(Boolean).join(" · ")}
+                    <Text size="sm" fw={500} className={cn("min-w-0", title ? "capitalize" : "break-all")}>
+                        {title ? [title, method.last4 ? `•••• ${method.last4}` : null].filter(Boolean).join(" · ") : method.id}
                     </Text>
                     {method.isDefault && defaultLabel ? <Badge color="success">{defaultLabel}</Badge> : null}
                 </div>
