@@ -1,6 +1,12 @@
 "use client"
 
-import { EMPTY_LICENSE_DASHBOARD_DATA, type LicenseDashboardCustomerAddress, type LicenseDashboardData, type LicenseDashboardLicense } from "@/lib/licenses/licenseTypes"
+import {
+    EMPTY_LICENSE_DASHBOARD_DATA,
+    type LicenseDashboardCustomerAddress,
+    type LicenseDashboardData,
+    type LicenseDashboardLicense,
+    type LicenseDashboardPendingUpdate,
+} from "@/lib/licenses/licenseTypes"
 import { decodeLicenseRouteId } from "@/lib/licenses/licenseRoute"
 import { usePathname } from "next/navigation"
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useRef, useState } from "react"
@@ -17,7 +23,21 @@ interface LicenseDataContextValue extends LicenseDashboardData {
     reload: () => void
     sidebarLicenses: LicenseDashboardLicense[]
     updateCustomer: (id: string, values: { address?: LicenseDashboardCustomerAddress; email?: string; name?: string; phone?: string }) => void
-    updateLicense: (id: string, values: { namespaceId?: string; updatedAt?: string }) => void
+    updateLicense: (
+        id: string,
+        values: {
+            aiTokens?: number
+            cancelAt?: string | null
+            canceledAt?: string | null
+            namespaceId?: string
+            paymentPeriod?: string
+            pendingUpdate?: LicenseDashboardPendingUpdate | null
+            plan?: string
+            subscriptionStatus?: string
+            updatedAt?: string
+            workflowExecutions?: number
+        }
+    ) => void
 }
 
 const LicenseDataContext = createContext<LicenseDataContextValue | null>(null)
@@ -94,10 +114,20 @@ export function LicenseDataProvider({ children, loadError, redirectUrl }: { chil
     }
 
     const updateLicense: LicenseDataContextValue["updateLicense"] = (id, values) => {
+        // cancelAt/canceledAt/pendingUpdate use null to mean "clear this field", distinct from omitting the key
+        // (leave it untouched). LicenseDashboardLicense itself treats absence as undefined everywhere, so the
+        // explicit-null case is normalized to undefined right before merging.
+        const { cancelAt, canceledAt, pendingUpdate, ...rest } = values
+        const patch: Partial<LicenseDashboardLicense> = {
+            ...rest,
+            ...("cancelAt" in values ? { cancelAt: cancelAt ?? undefined } : {}),
+            ...("canceledAt" in values ? { canceledAt: canceledAt ?? undefined } : {}),
+            ...("pendingUpdate" in values ? { pendingUpdate: pendingUpdate ?? undefined } : {}),
+        }
         setData((current) => ({
             ...current,
-            licenses: current.licenses.map((license) => (license.id === id ? { ...license, ...values } : license)),
-            navigationLicenses: current.navigationLicenses?.map((license) => (license.id === id ? { ...license, ...values } : license)),
+            licenses: current.licenses.map((license) => (license.id === id ? { ...license, ...patch } : license)),
+            navigationLicenses: current.navigationLicenses?.map((license) => (license.id === id ? { ...license, ...patch } : license)),
         }))
     }
 

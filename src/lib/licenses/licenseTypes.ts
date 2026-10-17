@@ -29,8 +29,19 @@ export interface LicenseDashboardInvoice {
     total?: number
 }
 
+export interface LicenseDashboardPendingUpdate {
+    plan?: string
+    paymentPeriod?: string
+    aiTokens?: number
+    workflowExecutions?: number
+    effectiveAt?: string
+}
+
 export interface LicenseDashboardLicense {
     aiTokens?: number
+    cancelAt?: string
+    canceledAt?: string
+    currentPeriodEnd?: string
     customerId: string
     customerName: string
     customerType?: string
@@ -40,8 +51,11 @@ export interface LicenseDashboardLicense {
     name: string
     namespaceId?: string
     paymentPeriod?: string
+    pendingUpdate?: LicenseDashboardPendingUpdate
     plan?: string
     status?: string
+    subscriptionId?: string
+    subscriptionStatus?: string
     updatedAt?: string
     workflowExecutions?: number
 }
