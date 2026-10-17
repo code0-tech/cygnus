@@ -8,15 +8,14 @@ import { StableBadge } from "@/components/ui/StableBadge"
 import { Switch } from "@/components/ui/Switch"
 import type { PricingLayoutBlock, SubscriptionConfigData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
+import { formatDiscountBadge, resolveCheckoutPricing } from "@/lib/subscriptionCalculator"
+import type { PricingPeriod, SubscriptionPriceCatalog } from "@/lib/subscriptionPrices"
 import { cn } from "@/lib/utils"
 import NumberFlow from "@number-flow/react"
 import { IconCheck, IconX } from "@tabler/icons-react"
 import { BorderBeam } from "border-beam"
 import { AnimatePresence, m as motion } from "motion/react"
 import { useState } from "react"
-
-type PricingPeriod = "monthly" | "quarterly" | "yearly"
-type PackageContent = NonNullable<PricingLayoutBlock["pro"]>
 
 const popularPillColorClasses = {
     brand: "border-brand/10! bg-brand/10! text-brand!",
@@ -41,59 +40,88 @@ const highlightedCardColors = {
 interface PricingSectionProps {
     content?: PricingLayoutBlock | null
     locale: AppLocale
-    packages: SubscriptionConfigData["packages"]
-    paymentPeriod: SubscriptionConfigData["paymentPeriod"]
+    subscriptionConfig: SubscriptionConfigData
+    subscriptionPrices: SubscriptionPriceCatalog
 }
 
-export function PricingSection({ content, locale, packages, paymentPeriod }: PricingSectionProps) {
+export function PricingSection({ content, locale, subscriptionConfig, subscriptionPrices }: PricingSectionProps) {
     const [selectedPeriod, setSelectedPeriod] = useState<PricingPeriod>("monthly")
-    if (!content) return null
+    if (!content || !subscriptionConfig || !subscriptionPrices) return null
+    const paymentPeriod = subscriptionConfig.paymentPeriod
 
-    const quarterlyDiscount = Math.round((paymentPeriod.quarterlyDiscount ?? 0) * 100)
-    const yearlyDiscount = Math.round((paymentPeriod.yearlyDiscount ?? 0) * 100)
+    const getPricingForPeriod = (plan: "pro" | "max", period: PricingPeriod) =>
+        resolveCheckoutPricing({
+            aiTokensParam: null,
+            customerTypeParam: "b2c",
+            fallbackPeriodSuffix: subscriptionConfig.paymentPeriod.monthlyPeriodSuffix,
+            paymentPeriodParam: period,
+            planParam: plan,
+            subscriptionConfig,
+            subscriptionPrices,
+            workflowExecutionsParam: null,
+        })
+
+    const getPeriodDiscount = (period: PricingPeriod) => {
+        const { pricing } = getPricingForPeriod("pro", period)
+
+        if (pricing.totalBeforeDiscount <= 0) return 0
+
+        return Math.max(0, (pricing.totalBeforeDiscount - pricing.totalPrice) / pricing.totalBeforeDiscount)
+    }
+
     const periodOptions = [
-        { value: "monthly", label: paymentPeriod.monthlyText },
-        { value: "quarterly", label: paymentPeriod.quarterlyText, badge: quarterlyDiscount > 0 ? `-${quarterlyDiscount}%` : null },
-        { value: "yearly", label: paymentPeriod.yearlyText, badge: yearlyDiscount > 0 ? `-${yearlyDiscount}%` : null },
+        {
+            value: "monthly",
+            label: subscriptionConfig.paymentPeriod.monthlyText,
+            badge: getPeriodDiscount("monthly") > 0 ? `-${formatDiscountBadge(getPeriodDiscount("monthly"), locale)}` : null,
+        },
+        {
+            value: "quarterly",
+            label: subscriptionConfig.paymentPeriod.quarterlyText,
+            badge: getPeriodDiscount("quarterly") > 0 ? `-${formatDiscountBadge(getPeriodDiscount("quarterly"), locale)}` : null,
+        },
+        {
+            value: "yearly",
+            label: subscriptionConfig.paymentPeriod.yearlyText,
+            badge: getPeriodDiscount("yearly") > 0 ? `-${formatDiscountBadge(getPeriodDiscount("yearly"), locale)}` : null,
+        },
     ] as const
+
     const periodSuffix = {
         monthly: paymentPeriod.monthlyPeriodSuffix,
         quarterly: paymentPeriod.quarterlyPeriodSuffix,
         yearly: paymentPeriod.yearlyPeriodSuffix,
     }[selectedPeriod]
+
+    const proPricing = getPricingForPeriod("pro", selectedPeriod)
+    const maxPricing = getPricingForPeriod("max", selectedPeriod)
+
     const pricingPackages = [
         {
             key: "pro",
-            title: packages.pro.title || "Pro",
-            description: packages.pro.description,
-            price: packages.pro.prices[selectedPeriod],
-            monthlyPrice: packages.pro.prices.monthly,
+            title: subscriptionConfig.packages.pro.title || "Pro",
+            description: subscriptionConfig.packages.pro.description,
+            price: proPricing.pricing.totalPrice,
+            pricing: proPricing.pricing,
             content: content.pro,
         },
         {
             key: "max",
-            title: packages.max.title || "Max",
-            description: packages.max.description,
-            price: packages.max.prices[selectedPeriod],
-            monthlyPrice: packages.max.prices.monthly,
+            title: subscriptionConfig.packages.max.title || "Max",
+            description: subscriptionConfig.packages.max.description,
+            price: maxPricing.pricing.totalPrice,
+            pricing: maxPricing.pricing,
             content: content.max,
         },
         {
             key: "custom",
-            title: packages.custom.title || "Custom",
-            description: packages.custom.description,
+            title: subscriptionConfig.packages.custom.title || "Custom",
+            description: subscriptionConfig.packages.custom.description,
             price: null,
-            monthlyPrice: null,
+            pricing: null,
             content: content.custom,
         },
-    ] satisfies {
-        key: "pro" | "max" | "custom"
-        title: string
-        description: string
-        price: number | null
-        monthlyPrice: number | null
-        content?: PackageContent
-    }[]
+    ]
 
     return (
         <Section
@@ -117,14 +145,9 @@ export function PricingSection({ content, locale, packages, paymentPeriod }: Pri
                     const highlighted = pricingPackage.key === "max"
                     const popularPillColor = content.popularPill?.color ?? "brand"
                     const highlightedCardColor = content.highlightedCardColor ? highlightedCardColors[content.highlightedCardColor] : null
-                    const periodMonths = selectedPeriod === "quarterly" ? 3 : selectedPeriod === "yearly" ? 12 : 1
-                    const configuredDiscount = selectedPeriod === "quarterly" ? paymentPeriod.quarterlyDiscount : selectedPeriod === "yearly" ? paymentPeriod.yearlyDiscount : 0
-                    const priceWithoutPeriodDiscount = pricingPackage.price !== null && configuredDiscount > 0 && configuredDiscount < 1 ? pricingPackage.price / (1 - configuredDiscount) : null
-                    const priceBasedOnMonthlyRate =
-                        selectedPeriod !== "monthly" && pricingPackage.monthlyPrice !== null && pricingPackage.monthlyPrice > 0 ? pricingPackage.monthlyPrice * periodMonths : null
-                    const regularPrice =
-                        priceBasedOnMonthlyRate !== null && pricingPackage.price !== null && priceBasedOnMonthlyRate > pricingPackage.price ? priceBasedOnMonthlyRate : priceWithoutPeriodDiscount
+                    const regularPrice = pricingPackage.pricing?.totalBeforeDiscount ?? null
                     const hasDiscount = regularPrice !== null && pricingPackage.price !== null && pricingPackage.price < regularPrice
+                    const discount = regularPrice !== null && regularPrice > 0 && pricingPackage.price !== null ? Math.max(0, (regularPrice - pricingPackage.price) / regularPrice) : 0
 
                     const card = (
                         <StaggerItem
@@ -189,6 +212,11 @@ export function PricingSection({ content, locale, packages, paymentPeriod }: Pri
                                             className="text-4xl font-semibold text-white"
                                         />
                                         <span className="mt-2 text-base text-tertiary">{periodSuffix}</span>
+                                        {discount > 0 && (
+                                            <StableBadge border className="border! border-brand/10! bg-brand/10! px-3 py-1 text-sm font-medium text-brand!">
+                                                -{formatDiscountBadge(discount, locale)}
+                                            </StableBadge>
+                                        )}
                                     </div>
                                 </div>
                             )}
