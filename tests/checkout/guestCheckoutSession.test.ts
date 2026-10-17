@@ -1,7 +1,7 @@
 import assert from "node:assert/strict"
 import test from "node:test"
 import { NextResponse } from "next/server"
-import { createGuestCheckoutSession, readGuestCheckoutSession, completeGuestCheckoutSession, GUEST_CHECKOUT_TTL_MS } from "../../src/lib/checkout/guestCheckoutSession"
+import { createGuestCheckoutSession, readGuestCheckoutSession, completeGuestCheckoutSession, pruneGuestCheckoutSessions, GUEST_CHECKOUT_TTL_MS, MAX_GUEST_CHECKOUT_SESSIONS } from "../../src/lib/checkout/guestCheckoutSession"
 import { readCraterSessionAuthorization, clearCraterSessionCookie } from "../../src/lib/crater/session.server"
 import { POST as exportLicense } from "../../src/app/api/crater/licenses/export/route"
 import { GET as checkoutStatus } from "../../src/app/api/crater/checkout/status/route"
@@ -138,4 +138,43 @@ test("guest purchase isolation, expiry and completion", async (t) => {
         if (previous === undefined) delete process.env.PAYLOAD_SECRET
         else process.env.PAYLOAD_SECRET = previous
     }
+})
+
+test("starting a guest purchase drops expired, unreadable, and the oldest surplus guest cookies", () => {
+    const previous = process.env.PAYLOAD_SECRET
+    process.env.PAYLOAD_SECRET = "test-only-guest-checkout-secret"
+    const now = Date.now
+    try {
+        const purchaseIds = Array.from({ length: MAX_GUEST_CHECKOUT_SESSIONS + 1 }, (_, index) => index.toString(16).repeat(32))
+        const startedAt = 1_000_000_000_000
+        const purchases = purchaseIds.map((purchaseId, index) => {
+            Date.now = () => startedAt + index * 60_000
+            return cookie(createGuestCheckoutSession(NextResponse.json({}), purchaseId, `token-${index}`))
+        })
+        Date.now = () => startedAt + GUEST_CHECKOUT_TTL_MS + 30_000
+        // The oldest purchase has expired by now; one more cookie cannot be decrypted.
+        const unreadable = `crater_checkout_${"f".repeat(32)}=tampered`
+        const header = [...purchases, unreadable, "crater_session=account-token"].join("; ")
+
+        const response = pruneGuestCheckoutSessions(NextResponse.json({}), new Request("https://example.com/api/crater/guest", { method: "POST", headers: { cookie: header } }))
+
+        const expired = response.headers
+            .getSetCookie()
+            .filter((value) => /Max-Age=0/.test(value))
+            .map((value) => value.split("=")[0])
+            .sort()
+        // Purchase 0 has expired; of the five valid ones the four newest stay, so the new one makes five again.
+        assert.deepEqual(expired, [`crater_checkout_${purchaseIds[0]}`, `crater_checkout_${purchaseIds[1]}`, `crater_checkout_${"f".repeat(32)}`].sort())
+        assert.equal(response.headers.getSetCookie().length, 3)
+    } finally {
+        Date.now = now
+        if (previous === undefined) delete process.env.PAYLOAD_SECRET
+        else process.env.PAYLOAD_SECRET = previous
+    }
+})
+
+test("a guest purchase started without stale cookies leaves the account cookie alone", () => {
+    const response = pruneGuestCheckoutSessions(NextResponse.json({}), new Request("https://example.com/api/crater/guest", { method: "POST", headers: { cookie: "crater_session=account-token" } }))
+
+    assert.equal(response.headers.getSetCookie().length, 0)
 })

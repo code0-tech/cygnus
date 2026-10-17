@@ -2,7 +2,7 @@ import { craterJson, craterMutationErrorResponse } from "@/lib/crater/api.server
 import { isValidEmail, optionalString, readJsonObject } from "@/lib/crater/request"
 import { describeCraterError } from "@/lib/crater/errors"
 import { createCraterGuestUser } from "@/lib/crater/login.server"
-import { createGuestCheckoutSession } from "@/lib/checkout/guestCheckoutSession"
+import { createGuestCheckoutSession, pruneGuestCheckoutSessions } from "@/lib/checkout/guestCheckoutSession"
 import { randomBytes } from "node:crypto"
 import { enforceRateLimit } from "@/lib/security/rateLimiter"
 import { logSecurityEvent } from "@/lib/security/securityLog"
@@ -39,7 +39,8 @@ export async function POST(request: Request) {
         }
 
         const checkoutId = randomBytes(16).toString("hex")
-        return createGuestCheckoutSession(craterJson({ authenticated: true, checkoutId }), checkoutId, payload.userSession.token, payload.claimToken, email)
+        const response = pruneGuestCheckoutSessions(craterJson({ authenticated: true, checkoutId }), request)
+        return createGuestCheckoutSession(response, checkoutId, payload.userSession.token, payload.claimToken, email)
     } catch (error) {
         console.error("Crater guest user error:", error instanceof Error ? error.name : "UnknownError")
         return craterJson({ error: "Could not create a Crater guest user." }, 502)

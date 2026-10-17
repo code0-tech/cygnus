@@ -4,10 +4,13 @@ import type { NextResponse } from "next/server"
 export const GUEST_CHECKOUT_TTL_MS = 24 * 60 * 60 * 1000
 const RECEIPT_TTL_MS = 30 * 60 * 1000
 const ID_PATTERN = /^[a-f0-9]{32}$/
+const COOKIE_PATTERN = /^crater_checkout_([a-f0-9]{32})$/
+export const MAX_GUEST_CHECKOUT_SESSIONS = 5
 
 interface GuestCheckoutSession {
     token: string
     expiresAt: number
+    startedAt?: number
     email?: string
     claimToken?: string
     receipt?: { sessionId: string; licenseId: string }
@@ -44,19 +47,28 @@ function writeSession(response: NextResponse, id: string, session: GuestCheckout
 }
 
 export function createGuestCheckoutSession(response: NextResponse, id: string, token: string, claimToken?: string | null, email?: string) {
-    return writeSession(response, id, { token, email, expiresAt: Date.now() + GUEST_CHECKOUT_TTL_MS, ...(claimToken ? { claimToken } : {}) })
+    const now = Date.now()
+    return writeSession(response, id, { token, email, startedAt: now, expiresAt: now + GUEST_CHECKOUT_TTL_MS, ...(claimToken ? { claimToken } : {}) })
+}
+
+function readCookies(request: Request) {
+    return (request.headers.get("cookie") ?? "")
+        .split(";")
+        .map((part) => part.trim())
+        .flatMap((part) => {
+            const separatorIndex = part.indexOf("=")
+            return separatorIndex > 0 ? [{ name: part.slice(0, separatorIndex), value: part.slice(separatorIndex + 1) }] : []
+        })
 }
 
 export function readGuestCheckoutSession(request: Request): GuestCheckoutSession | null {
     const id = guestCheckoutId(request)
     if (!id || !ID_PATTERN.test(id)) return null
-    const value = request.headers
-        .get("cookie")
-        ?.split(";")
-        .map((part) => part.trim())
-        .find((part) => part.startsWith(`${cookieName(id)}=`))
-        ?.slice(cookieName(id).length + 1)
-    if (!value) return null
+    const value = readCookies(request).find((cookie) => cookie.name === cookieName(id))?.value
+    return value ? decryptSession(id, value) : null
+}
+
+function decryptSession(id: string, value: string): GuestCheckoutSession | null {
     try {
         const data = Buffer.from(decodeURIComponent(value), "base64url")
         const decipher = createDecipheriv("aes-256-gcm", key(), data.subarray(0, 12))
@@ -69,9 +81,29 @@ export function readGuestCheckoutSession(request: Request): GuestCheckoutSession
     }
 }
 
+function expireCookie(response: NextResponse, id: string) {
+    response.cookies.set(cookieName(id), "", { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/api/crater", maxAge: 0 })
+}
+
 export function clearGuestCheckoutSession(response: NextResponse, request: Request) {
     const id = guestCheckoutId(request)
-    if (id && ID_PATTERN.test(id)) response.cookies.set(cookieName(id), "", { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/api/crater", maxAge: 0 })
+    if (id && ID_PATTERN.test(id)) expireCookie(response, id)
+    return response
+}
+
+export function pruneGuestCheckoutSessions(response: NextResponse, request: Request) {
+    const sessions = readCookies(request).flatMap(({ name, value }) => {
+        const id = COOKIE_PATTERN.exec(name)?.[1]
+        return id ? [{ id, session: decryptSession(id, value) }] : []
+    })
+
+    const valid = sessions.flatMap(({ id, session }) => (session ? [{ id, startedAt: session.startedAt ?? session.expiresAt - GUEST_CHECKOUT_TTL_MS }] : []))
+    valid.sort((first, second) => second.startedAt - first.startedAt)
+    const kept = new Set(valid.slice(0, MAX_GUEST_CHECKOUT_SESSIONS - 1).map(({ id }) => id))
+
+    for (const { id } of sessions) {
+        if (!kept.has(id)) expireCookie(response, id)
+    }
     return response
 }
 
@@ -79,8 +111,12 @@ export function completeGuestCheckoutSession(response: NextResponse, request: Re
     const session = readGuestCheckoutSession(request)
     const id = guestCheckoutId(request)
     if (!session || !id || session.receipt) return response
-    // Drop the claim and checkout access. Only confirmation and this license's download remain.
-    return writeSession(response, id, { token: session.token, expiresAt: Math.min(session.expiresAt, Date.now() + RECEIPT_TTL_MS), receipt: { sessionId, licenseId } })
+    return writeSession(response, id, {
+        token: session.token,
+        ...(session.startedAt ? { startedAt: session.startedAt } : {}),
+        expiresAt: Math.min(session.expiresAt, Date.now() + RECEIPT_TTL_MS),
+        receipt: { sessionId, licenseId },
+    })
 }
 
 export function guestCheckoutRequestAllowed(request: Request, session: GuestCheckoutSession) {
