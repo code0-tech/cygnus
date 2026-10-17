@@ -11,14 +11,16 @@ import {
     LicenseDataTableHeaderColumn as DataTableHeaderColumn,
 } from "@/components/licenses/LicenseDataTable"
 import { UpgradePlanBanner } from "@/components/checkout/UpgradePlanBanner"
+import { ButtonLoader } from "@/components/ui/Loader"
 import type { CheckoutData, LicenseContent, SubscriptionConfigData } from "@/lib/cms"
 import { formatCompactNumber, formatMinorCurrency } from "@/lib/formatters"
 import type { AppLocale } from "@/lib/i18n"
 import { decodeLicenseRouteId, getNamespaceDisplayId } from "@/lib/licenses/licenseRoute"
 import { formatLicenseDisplayValue } from "@/lib/licenses/licenseDisplayValues"
 import { Button, Card, Flex, Spacing, Text } from "@code0-tech/pictor"
+import { IconDownload } from "@tabler/icons-react"
 import { useRouter } from "next/navigation"
-import { Fragment } from "react"
+import { Fragment, useState } from "react"
 import { LicenseLoadMoreButton } from "@/components/licenses/LicenseLoadMoreButton"
 
 interface LicenseDetailPageProps {
@@ -37,6 +39,8 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, subs
     const resolvedLicenseId = decodeLicenseRouteId(licenseId)
     const license = licenses.find((candidate) => candidate.id === resolvedLicenseId && candidate.customerId === resolvedCustomerId)
     const customer = customers.find((candidate) => candidate.id === resolvedCustomerId)
+    const [isDownloadingLicense, setIsDownloadingLicense] = useState(false)
+    const [licenseDownloadError, setLicenseDownloadError] = useState(false)
     const dateFormatter = new Intl.DateTimeFormat(locale, {
         dateStyle: "medium",
         timeZone: "UTC",
@@ -95,6 +99,38 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, subs
             .join(" – ")
     }
 
+    const downloadLicenseFile = async () => {
+        if (!license || license.deploymentType !== "self_hosted" || isDownloadingLicense) return
+
+        setIsDownloadingLicense(true)
+        setLicenseDownloadError(false)
+
+        try {
+            const response = await fetch("/api/crater/licenses/export", {
+                method: "POST",
+                credentials: "same-origin",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ id: license.id }),
+            })
+            if (!response.ok) throw new Error("License export failed.")
+
+            const file = await response.blob()
+            const fileName = response.headers.get("x-license-filename")?.trim() || "code0-license.lic"
+            const fileUrl = URL.createObjectURL(file)
+            const download = document.createElement("a")
+            download.href = fileUrl
+            download.download = fileName
+            document.body.append(download)
+            download.click()
+            download.remove()
+            window.setTimeout(() => URL.revokeObjectURL(fileUrl), 1_000)
+        } catch {
+            setLicenseDownloadError(true)
+        } finally {
+            setIsDownloadingLicense(false)
+        }
+    }
+
     return (
         <div>
             <section aria-labelledby="license-heading">
@@ -104,6 +140,12 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, subs
                     </Text>
                     {isLoading || license ? (
                         <Flex align="center" style={{ gap: "0.5rem" }} className="flex-wrap justify-end">
+                            {license?.deploymentType === "self_hosted" ? (
+                                <Button type="button" variant="normal" paddingSize="xs" disabled={isDownloadingLicense} onClick={() => void downloadLicenseFile()} className="shrink-0 text-sm!">
+                                    {isDownloadingLicense ? <ButtonLoader label={content.invoices.downloadLabel} /> : <IconDownload aria-hidden="true" size={16} />}
+                                    {!isDownloadingLicense ? content.invoices.downloadLabel : null}
+                                </Button>
+                            ) : null}
                             <Button
                                 type="button"
                                 variant="normal"
@@ -120,6 +162,14 @@ export function LicenseDetailPage({ content, customerId, licenseId, locale, subs
                         </Flex>
                     ) : null}
                 </Flex>
+                {licenseDownloadError ? (
+                    <>
+                        <Spacing spacing="xs" />
+                        <Text role="alert" size="sm" hierarchy="tertiary" className="text-error!">
+                            {content.invoices.unavailableLabel}
+                        </Text>
+                    </>
+                ) : null}
                 <Spacing spacing="md" />
                 <Card color="secondary">
                     {license ? (

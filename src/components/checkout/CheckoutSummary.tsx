@@ -98,7 +98,7 @@ export function CheckoutSummary({ content, errors, nextSteps, subscriptionConfig
 
                     {subscriptionConfig && (
                         <Switch
-                            className="mt-4 mb-2"
+                            className="mt-4 mb-2 text-sm"
                             label={subscriptionConfig.paymentPeriod.title}
                             value={paymentPeriod}
                             options={periodOptions.map((period) => {
