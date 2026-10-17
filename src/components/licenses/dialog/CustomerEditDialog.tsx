@@ -2,7 +2,6 @@
 
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
 import { LicenseDialog } from "@/components/licenses/dialog/LicenseDialog"
-import { PaymentMethodSetupDialog } from "@/components/licenses/dialog/PaymentMethodSetupDialog"
 import { ButtonLoader } from "@/components/ui/Loader"
 import type { CheckoutData, ErrorsContent, LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
@@ -21,7 +20,7 @@ interface CustomerEditDialogProps {
 
 export function CustomerEditDialog({ checkoutForm, content, customerId, errors, locale }: CustomerEditDialogProps) {
     const router = useRouter()
-    const { customers, reload, updateCustomer } = useLicenseData()
+    const { customers, updateCustomer } = useLicenseData()
     const resolvedCustomerId = decodeLicenseRouteId(customerId)
     const customer = customers.find((candidate) => candidate.id === resolvedCustomerId)
     const [name, setName] = useState("")
@@ -183,18 +182,6 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
                         </div>
                     </fieldset>
                 </form>
-
-                <fieldset className="space-y-3">
-                    <legend>
-                        <Text size="sm" fw={500} hierarchy="secondary">
-                            {content.editor.paymentMethodHeading}
-                        </Text>
-                    </legend>
-                    <Text size="sm" hierarchy="tertiary">
-                        {content.editor.paymentMethodDescription}
-                    </Text>
-                    {customer ? <PaymentMethodSetupDialog content={content} customerId={customer.id} disabled={isSaving} errors={errors} locale={locale} onSuccess={reload} /> : null}
-                </fieldset>
                 {error && (
                     <p role="alert" className="text-sm text-error">
                         {error}
