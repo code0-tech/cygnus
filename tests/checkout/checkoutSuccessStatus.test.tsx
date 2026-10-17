@@ -10,7 +10,11 @@ mock.module("@code0-tech/pictor", {
     namedExports: {
         Badge: ({ children, className }: { children: React.ReactNode; className?: string }) => <span className={className}>{children}</span>,
         Button: ({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button {...props}>{children}</button>,
+        Card: ({ children, className }: { children: React.ReactNode; className?: string }) => <div className={className}>{children}</div>,
     },
+})
+mock.module("@number-flow/react", {
+    defaultExport: ({ value }: { value: number }) => <span>{value}</span>,
 })
 mock.module("next/link", {
     defaultExport: ({ children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => <a {...props}>{children}</a>,
@@ -65,10 +69,52 @@ const content: CheckoutData["success"] = {
 
 const errorMessage = "Could not confirm the license."
 const checkoutSearchParams = new URLSearchParams({ session_id: "cs_test", plan: "pro", customerType: "b2b", paymentPeriod: "monthly" })
+const pricingContent = {
+    deploymentIcons: { cloud: "cloud", selfHosted: "server" },
+    deploymentIconColor: "aqua",
+    customerTypeIcons: { b2b: "building", b2c: "user" },
+    customerTypeIconColor: "yellow",
+    pricing: {
+        planLabel: "Plan",
+        baseLabel: "AI Tokens",
+        workflowExecutionsLabel: "Workflow Executions",
+        discountInputPlaceholder: "Discount code",
+        taxLabel: "Tax",
+        totalLabel: "Total",
+    },
+} as CheckoutData["summary"]
+const subscriptionConfig = {
+    packages: { pro: { title: "Pro" }, max: { title: "Max" }, custom: { title: "Custom" } },
+    plan: {
+        pro: { title: "Pro", icon: "pro", color: "lime" },
+        max: { title: "Max", icon: "max", color: "magenta" },
+        custom: { title: "Custom", icon: "custom", color: "yellow" },
+    },
+    paymentPeriod: { weeklyPeriodSuffix: "/ week", monthlyPeriodSuffix: "/ month", quarterlyPeriodSuffix: "/ quarter", yearlyPeriodSuffix: "/ year" },
+} as never
+const completedConfiguration = {
+    aiTokens: null,
+    customerType: "business",
+    deploymentType: "self_hosted",
+    paymentPeriod: "MONTHLY",
+    plan: "pro",
+    workflowExecutions: null,
+}
+const completedPricing = { currency: "eur", discount: 1_000, subtotal: 10_000, tax: 1_710, total: 10_710 }
+const sharedProps = { pricingContent, subscriptionConfig }
 
 function respondWith(body: unknown, status = 200) {
-    globalThis.fetch = (async () => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } })) as typeof fetch
+    const responseBody =
+        body && typeof body === "object" && "state" in body
+            ? {
+                  configuration: COMPLETED_TEST_STATES.has(String(body.state)) ? completedConfiguration : null,
+                  pricing: COMPLETED_TEST_STATES.has(String(body.state)) ? completedPricing : null,
+                  ...body,
+              }
+            : body
+    globalThis.fetch = (async () => new Response(JSON.stringify(responseBody), { status, headers: { "content-type": "application/json" } })) as typeof fetch
 }
+const COMPLETED_TEST_STATES = new Set(["PAYMENT_PENDING", "FULFILLMENT_PENDING", "READY"])
 
 afterEach(() => {
     cleanup()
@@ -90,12 +136,14 @@ test("stops checkout success polling after the configured time limit", async () 
                 state: "FULFILLMENT_PENDING",
                 customerId: "gid://crater/Customer/1",
                 licenseId: null,
+                configuration: completedConfiguration,
+                pricing: completedPricing,
             }),
             { status: 200, headers: { "content-type": "application/json" } }
         )
     }) as typeof fetch
 
-    render(<CheckoutSuccessStatus checkoutSearchParams={checkoutSearchParams} content={content} errorMessage={errorMessage} locale="en" sessionId="cs_test" />)
+    render(<CheckoutSuccessStatus {...sharedProps} checkoutSearchParams={checkoutSearchParams} content={content} errorMessage={errorMessage} locale="en" sessionId="cs_test" />)
 
     assert.ok(await screen.findByRole("button", { name: content.licenseStatusRetryLabel }))
     assert.equal(requests, 1)
@@ -106,7 +154,7 @@ test("stops checkout success polling after the configured time limit", async () 
 test("explains a declined payment and redirects back into checkout with the failure flagged", async () => {
     respondWith({ state: "FAILED", customerId: "gid://crater/Customer/1", licenseId: null })
 
-    render(<CheckoutSuccessStatus checkoutSearchParams={checkoutSearchParams} content={content} errorMessage={errorMessage} locale="en" sessionId="cs_test" />)
+    render(<CheckoutSuccessStatus {...sharedProps} checkoutSearchParams={checkoutSearchParams} content={content} errorMessage={errorMessage} locale="en" sessionId="cs_test" />)
 
     assert.ok(await screen.findByText(content.failedHeading))
     assert.ok(screen.getByText(content.failedDescription))
@@ -121,7 +169,7 @@ test("explains a declined payment and redirects back into checkout with the fail
 test("explains a checkout session that cannot be verified", async () => {
     respondWith({ error: "The checkout session could not be verified.", errorCode: "INVALID_CHECKOUT_STATUS_SESSION" }, 404)
 
-    render(<CheckoutSuccessStatus checkoutSearchParams={checkoutSearchParams} content={content} errorMessage={errorMessage} locale="de" sessionId="cs_test" />)
+    render(<CheckoutSuccessStatus {...sharedProps} checkoutSearchParams={checkoutSearchParams} content={content} errorMessage={errorMessage} locale="de" sessionId="cs_test" />)
 
     assert.ok(await screen.findByText(content.invalidHeading))
     assert.ok(screen.getByText(content.invalidDescription))
@@ -129,37 +177,61 @@ test("explains a checkout session that cannot be verified", async () => {
     assert.deepEqual(routerReplaceCalls, [])
 })
 
-test("shows the receipt hint without reconstructing a price once payment is confirmed", async () => {
+test("shows Crater's confirmed Stripe pricing once payment is confirmed", async () => {
     respondWith({ state: "FULFILLMENT_PENDING", customerId: "gid://crater/Customer/1", licenseId: null })
 
     render(
         <CheckoutSuccessStatus
+            {...sharedProps}
             checkoutSearchParams={checkoutSearchParams}
             content={content}
             errorMessage={errorMessage}
             locale="en"
             sessionId="cs_test"
-            summary={{ deployment: "self_hosted" }}
         />
     )
 
     assert.ok(await screen.findByText(content.heading))
-    assert.equal(screen.queryByText(/Pricing overview:/), null)
+    assert.ok(screen.getByText("€100.00"))
+    assert.ok(screen.getByText("-€10.00"))
+    assert.ok(screen.getByText("€17.10"))
+    assert.ok(screen.getByText("107.1"))
     assert.ok(screen.getByText(content.receiptHint))
 })
 
+test("keeps polling the license when Crater has not exposed the optional pricing yet", async () => {
+    respondWith({
+        state: "FULFILLMENT_PENDING",
+        customerId: "gid://crater/Customer/1",
+        licenseId: null,
+        configuration: null,
+        pricing: null,
+    })
+
+    render(<CheckoutSuccessStatus {...sharedProps} checkoutSearchParams={checkoutSearchParams} content={content} errorMessage={errorMessage} locale="en" sessionId="cs_test" />)
+
+    assert.ok(await screen.findByText(content.heading))
+    assert.ok(screen.getByRole("button", { name: content.licensePendingLabel }))
+    assert.equal(screen.queryByText(errorMessage), null)
+})
+
 test("offers Sculptor next to the license dashboard for a cloud license", async () => {
-    respondWith({ state: "READY", customerId: "gid://crater/Customer/1", licenseId: "gid://crater/License/2" })
+    respondWith({
+        state: "READY",
+        customerId: "gid://crater/Customer/1",
+        licenseId: "gid://crater/License/2",
+        configuration: { ...completedConfiguration, deploymentType: "cloud" },
+    })
 
     render(
         <CheckoutSuccessStatus
+            {...sharedProps}
             checkoutSearchParams={checkoutSearchParams}
             content={content}
             errorMessage={errorMessage}
             locale="en"
             sculptorUrl="https://sculptor.example/cloud"
             sessionId="cs_test"
-            summary={{ deployment: "cloud" }}
         />
     )
 
@@ -173,13 +245,13 @@ test("downloads the Crater license next to the dashboard for self-hosted", async
 
     render(
         <CheckoutSuccessStatus
+            {...sharedProps}
             checkoutSearchParams={checkoutSearchParams}
             content={content}
             errorMessage={errorMessage}
             locale="en"
             sculptorUrl="https://sculptor.example/cloud"
             sessionId="cs_test"
-            summary={{ deployment: "self_hosted" }}
         />
     )
 

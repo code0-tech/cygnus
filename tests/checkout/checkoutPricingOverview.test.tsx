@@ -49,10 +49,11 @@ const content = {
 } as CheckoutData["summary"]
 
 const subscriptionConfig = {
+    packages: { pro: { title: "Pro" }, max: { title: "Max" }, custom: { title: "Custom" } },
     plan: {
-        pro: { color: "yellow", icon: "pro" },
-        max: { color: "aqua", icon: "max" },
-        custom: { color: "magenta", icon: "custom" },
+        pro: { title: "Pro", color: "yellow", icon: "pro" },
+        max: { title: "Max", color: "aqua", icon: "max" },
+        custom: { title: "Custom", color: "magenta", icon: "custom" },
     },
 } as SubscriptionConfigData
 

@@ -15,11 +15,41 @@ const CHECKOUT_COMPLETION_STATUS: TypedDocumentNode<CheckoutCompletionStatusData
             state
             customerId
             licenseId
+            configuration {
+                aiTokens
+                customerType
+                deploymentType
+                paymentPeriod
+                plan
+                workflowExecutions
+            }
+            pricing {
+                currency
+                discount
+                subtotal
+                tax
+                total
+            }
         }
     }
 `
 
 const COMPLETION_STATES = new Set<string>(["CHECKOUT_PENDING", "PAYMENT_PENDING", "FULFILLMENT_PENDING", "READY", "FAILED"])
+const PAYMENT_PERIODS = new Set<string>(["WEEKLY", "MONTHLY", "QUARTERLY", "YEARLY"])
+
+function validConfiguration(configuration: NonNullable<CheckoutCompletionStatusData["checkoutCompletionStatus"]>["configuration"]) {
+    if (!configuration || typeof configuration.customerType !== "string" || typeof configuration.deploymentType !== "string") return false
+    if (configuration.paymentPeriod !== null && configuration.paymentPeriod !== undefined && !PAYMENT_PERIODS.has(configuration.paymentPeriod)) return false
+    if (configuration.plan !== null && configuration.plan !== undefined && typeof configuration.plan !== "string") return false
+    if (configuration.aiTokens !== null && configuration.aiTokens !== undefined && (!Number.isInteger(configuration.aiTokens) || configuration.aiTokens < 1)) return false
+    if (configuration.workflowExecutions !== null && configuration.workflowExecutions !== undefined && (!Number.isInteger(configuration.workflowExecutions) || configuration.workflowExecutions < 1)) return false
+    return true
+}
+
+function validPricing(pricing: NonNullable<CheckoutCompletionStatusData["checkoutCompletionStatus"]>["pricing"]) {
+    if (!pricing || typeof pricing.currency !== "string" || !pricing.currency.trim()) return false
+    return [pricing.discount, pricing.subtotal, pricing.tax, pricing.total].every((amount) => Number.isInteger(amount) && Number(amount) >= 0)
+}
 
 function graphQLErrorCode(error: unknown) {
     if (!CombinedGraphQLErrors.is(error)) return undefined
@@ -45,7 +75,14 @@ export async function GET(request: Request) {
         const status = result.data?.checkoutCompletionStatus
         const state = status?.state
 
-        if (!state || !COMPLETION_STATES.has(state) || !status.customerId || (state === "READY" ? !status.licenseId : Boolean(status.licenseId))) {
+        if (
+            !state ||
+            !COMPLETION_STATES.has(state) ||
+            !status.customerId ||
+            (state === "READY" ? !status.licenseId : Boolean(status.licenseId)) ||
+            (status.configuration ? !validConfiguration(status.configuration) : false) ||
+            (status.pricing ? !validPricing(status.pricing) : false)
+        ) {
             console.error("Crater returned an invalid checkout completion status.")
             return craterJson({ error: "Could not check the checkout completion status." }, 502)
         }
@@ -54,6 +91,8 @@ export async function GET(request: Request) {
             state,
             customerId: status.customerId,
             licenseId: status.licenseId ?? null,
+            configuration: status.configuration ?? null,
+            pricing: status.pricing ?? null,
         })
     } catch (error) {
         const transportResponse = craterTransportErrorResponse(error)

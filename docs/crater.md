@@ -338,7 +338,8 @@ Only the Stripe Checkout Session ID. There is no `customerId` argument, no times
 
 - `customerId` in the response is what Crater resolved server-side, never what the caller claimed.
 - `licenseId` is set in `READY` only, and is `null` in every other state.
-- No Stripe customer, subscription, or invoice IDs are returned.
+- `configuration` and `pricing` are read back from what Crater verified, never from what the client sent; see [the pricing overview](#the-pricing-overview).
+- No Stripe customer, subscription, invoice, or payment method IDs are returned.
 - GraphQL responses carry `Cache-Control: no-store`, so no proxy or browser holds a stale answer.
 
 #### What is verified before an answer is given
@@ -370,6 +371,38 @@ Licenses stay append-only, and the query writes nothing. Polling it repeatedly i
 
 Stripe outages are distinguished from domain errors: an unreachable Stripe surfaces as `CHECKOUT_STATUS_UNAVAILABLE`, which a client may retry, while everything above is `INVALID_CHECKOUT_STATUS_SESSION`, which it must not. Both are GraphQL execution errors carrying the code in `extensions.errorCode`. Logging is limited to the Stripe session ID and the error class.
 
+#### The pricing overview
+
+A success page has to say what the user just bought and what it cost, and it must not arrive at those figures itself. `pricing` and `configuration` are the authoritative answer, so no client re-derives a total from a price list, a discount percentage, and a tax rate.
+
+`pricing` is Stripe's own arithmetic, copied verbatim from the verified session:
+
+| Field      | Source on the Checkout Session  |
+| ---------- | ------------------------------- |
+| `currency` | `currency`                      |
+| `subtotal` | `amount_subtotal`               |
+| `discount` | `total_details.amount_discount` |
+| `tax`      | `total_details.amount_tax`      |
+| `total`    | `amount_total`                  |
+
+Every amount is an integer in the smallest currency unit, the same convention the rest of the API uses. Crater computes none of them and reconciles none of them against each other: it never checks that `subtotal - discount + tax` is `total`, because Stripe's number is the number that was charged. The discount and Stripe Tax are therefore already inside `total`, and a hundred-percent discount is `total: 0` -- a real zero, never `null` and never a dropped block. `discount` and `tax` are `0` when Stripe reports none, so a client can add them to a receipt unconditionally.
+
+`configuration` is the checkout selection Crater wrote into the subscription metadata when it created the session, read back after the verification above has re-checked it. It is never taken from client arguments:
+
+| Field                            | Meaning                                                          |
+| -------------------------------- | ---------------------------------------------------------------- |
+| `customerType`                   | `business` or `personal`, from the resolved Crater customer      |
+| `deploymentType`                 | `self_hosted` or `cloud`                                         |
+| `plan`                           | `pro`, `max`, `custom`, or `null` for a negotiated configuration |
+| `paymentPeriod`                  | The billed period, or `null` for a negotiated configuration      |
+| `aiTokens`, `workflowExecutions` | Quantities, set only for `plan: custom`                          |
+
+The metadata is used rather than the `Subscription` projection because it is already there in `FULFILLMENT_PENDING`, where no projection exists yet, and the two agree wherever both exist -- `local_subscription_matches?` refuses the session otherwise. A client polling from `FULFILLMENT_PENDING` to `READY` therefore sees the figures stand still while only the state moves, and the overview does not appear halfway through.
+
+Both blocks are nullable and follow one rule: **they are set exactly when the session is `complete`**, which is `PAYMENT_PENDING`, `FULFILLMENT_PENDING`, and `READY`. They are `null` in `CHECKOUT_PENDING` and `FAILED`, where the amounts are not final and no verified selection exists. A session that carries no `currency`, `amount_subtotal`, or `amount_total` reports `pricing: null` rather than a guess.
+
+Nothing here is stored. There is no pricing column, no new projection, and no second copy of a total that could drift from Stripe's; the block is assembled per request from the session that was already fetched, in the same single `retrieve` call. Adding the fields breaks no existing client, because a query that does not select them is answered exactly as before.
+
 #### The client flow
 
 ```graphql
@@ -378,6 +411,21 @@ query CheckoutCompletionStatus($sessionId: String!) {
         state
         customerId
         licenseId
+        configuration {
+            customerType
+            deploymentType
+            plan
+            paymentPeriod
+            aiTokens
+            workflowExecutions
+        }
+        pricing {
+            currency
+            subtotal
+            discount
+            tax
+            total
+        }
     }
 }
 ```
