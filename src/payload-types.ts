@@ -3324,6 +3324,14 @@ export interface License {
     savePaymentMethodLabel: string;
     savingPaymentMethodLabel: string;
     paymentMethodSuccess: string;
+    noPaymentMethodsLabel: string;
+    addPaymentMethodLabel: string;
+    removePaymentMethodLabel: string;
+    removingPaymentMethodLabel: string;
+    defaultPaymentMethodLabel: string;
+    otherPaymentMethodsHeading: string;
+    usePaymentMethodLabel: string;
+    settingPaymentMethodLabel: string;
     licenseTitle: string;
     licenseDescription: string;
     namespaceLabel: string;
@@ -3383,6 +3391,8 @@ export interface Error {
   retry: string;
   customerUpdate: string;
   paymentMethodUpdate: string;
+  paymentMethodRemove: string;
+  paymentMethodAssign: string;
   licenseUpdate: string;
   subscriptionPreview: string;
   billingUpdate: string;
@@ -4085,6 +4095,14 @@ export interface LicensesSelect<T extends boolean = true> {
         savePaymentMethodLabel?: T;
         savingPaymentMethodLabel?: T;
         paymentMethodSuccess?: T;
+        noPaymentMethodsLabel?: T;
+        addPaymentMethodLabel?: T;
+        removePaymentMethodLabel?: T;
+        removingPaymentMethodLabel?: T;
+        defaultPaymentMethodLabel?: T;
+        otherPaymentMethodsHeading?: T;
+        usePaymentMethodLabel?: T;
+        settingPaymentMethodLabel?: T;
         licenseTitle?: T;
         licenseDescription?: T;
         namespaceLabel?: T;
@@ -4145,6 +4163,8 @@ export interface ErrorsSelect<T extends boolean = true> {
   retry?: T;
   customerUpdate?: T;
   paymentMethodUpdate?: T;
+  paymentMethodRemove?: T;
+  paymentMethodAssign?: T;
   licenseUpdate?: T;
   subscriptionPreview?: T;
   billingUpdate?: T;

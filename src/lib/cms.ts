@@ -421,6 +421,14 @@ export interface LicenseContent {
         savePaymentMethodLabel: string
         savingPaymentMethodLabel: string
         paymentMethodSuccess: string
+        noPaymentMethodsLabel: string
+        addPaymentMethodLabel: string
+        removePaymentMethodLabel: string
+        removingPaymentMethodLabel: string
+        defaultPaymentMethodLabel: string
+        otherPaymentMethodsHeading: string
+        usePaymentMethodLabel: string
+        settingPaymentMethodLabel: string
         licenseTitle: string
         licenseDescription: string
         namespaceLabel: string
@@ -465,6 +473,8 @@ export interface ErrorsContent {
     retry: string
     customerUpdate: string
     paymentMethodUpdate: string
+    paymentMethodRemove: string
+    paymentMethodAssign: string
     licenseUpdate: string
     subscriptionPreview: string
     billingUpdate: string

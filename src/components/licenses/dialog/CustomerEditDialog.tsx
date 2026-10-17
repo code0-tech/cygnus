@@ -2,13 +2,16 @@
 
 import { useLicenseData } from "@/components/licenses/LicenseDataProvider"
 import { LicenseDialog } from "@/components/licenses/dialog/LicenseDialog"
+import { PaymentMethodSetupDialog } from "@/components/licenses/dialog/PaymentMethodSetupDialog"
 import { ButtonLoader } from "@/components/ui/Loader"
 import type { CheckoutData, ErrorsContent, LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { decodeLicenseRouteId } from "@/lib/licenses/licenseRoute"
-import { Button, DialogFooter, EmailInput, Text, TextInput } from "@code0-tech/pictor"
+import { cn } from "@/lib/utils"
+import { Badge, Button, DialogFooter, EmailInput, ScrollArea, ScrollAreaScrollbar, ScrollAreaThumb, ScrollAreaViewport, Text, TextInput } from "@code0-tech/pictor"
+import { IconCreditCard, IconTrash } from "@tabler/icons-react"
 import { useRouter } from "next/navigation"
-import { type SyntheticEvent, useEffect, useState } from "react"
+import { type SyntheticEvent, useCallback, useEffect, useState } from "react"
 
 interface CustomerEditDialogProps {
     checkoutForm: CheckoutData["form"]
@@ -16,6 +19,18 @@ interface CustomerEditDialogProps {
     customerId: string
     errors: ErrorsContent
     locale: AppLocale
+}
+
+type CustomerEditSection = "general" | "paymentMethods"
+
+interface CustomerPaymentMethodSummary {
+    brand: string | null
+    expiresMonth: number | null
+    expiresYear: number | null
+    id: string
+    isDefault: boolean
+    last4: string | null
+    type: string
 }
 
 export function CustomerEditDialog({ checkoutForm, content, customerId, errors, locale }: CustomerEditDialogProps) {
@@ -34,6 +49,12 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
     const [country, setCountry] = useState("")
     const [error, setError] = useState<string | null>(null)
     const [isSaving, setIsSaving] = useState(false)
+    const [section, setSection] = useState<CustomerEditSection>("general")
+    const [paymentMethods, setPaymentMethods] = useState<CustomerPaymentMethodSummary[] | null>(null)
+    const [paymentMethodsError, setPaymentMethodsError] = useState(false)
+    const [isLoadingPaymentMethods, setIsLoadingPaymentMethods] = useState(false)
+    const [paymentMethodsRefreshKey, setPaymentMethodsRefreshKey] = useState(0)
+    const [removingPaymentMethodId, setRemovingPaymentMethodId] = useState<string | null>(null)
     const close = () => router.replace(`/${locale}/licenses/customer/${encodeURIComponent(resolvedCustomerId)}`)
 
     useEffect(() => {
@@ -48,6 +69,62 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
         setPostalCode(customer.address?.postalCode ?? "")
         setCountry(customer.address?.country ?? "")
     }, [customer])
+
+    useEffect(() => {
+        if (new URL(window.location.href).searchParams.has("setup_intent")) setSection("paymentMethods")
+    }, [])
+
+    useEffect(() => {
+        if (section !== "paymentMethods" || !customer) return
+
+        const controller = new AbortController()
+        const url = new URL("/api/crater/customer/payment-methods", window.location.origin)
+        url.searchParams.set("customerId", customer.id)
+        setIsLoadingPaymentMethods(true)
+        setPaymentMethodsError(false)
+
+        void fetch(url, { cache: "no-store", credentials: "same-origin", signal: controller.signal })
+            .then(async (response) => {
+                const result: unknown = await response.json()
+                if (!response.ok || !result || typeof result !== "object" || !("paymentMethods" in result)) throw new Error("Invalid payment methods response.")
+                return result.paymentMethods as CustomerPaymentMethodSummary[]
+            })
+            .then(setPaymentMethods)
+            .catch((loadError) => {
+                if (!(loadError instanceof DOMException && loadError.name === "AbortError")) setPaymentMethodsError(true)
+            })
+            .finally(() => {
+                if (!controller.signal.aborted) setIsLoadingPaymentMethods(false)
+            })
+
+        return () => controller.abort()
+    }, [customer, paymentMethodsRefreshKey, section])
+
+    const paymentMethodAdded = useCallback(() => {
+        setPaymentMethodsRefreshKey((value) => value + 1)
+    }, [])
+
+    const removePaymentMethod = async (paymentMethodId: string) => {
+        if (!customer || removingPaymentMethodId) return
+        setRemovingPaymentMethodId(paymentMethodId)
+        setPaymentMethodsError(false)
+
+        try {
+            const response = await fetch("/api/crater/customer/payment-methods/detach", {
+                method: "POST",
+                credentials: "same-origin",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ customerId: customer.id, paymentMethodId }),
+            })
+            if (!response.ok) throw new Error(errors.paymentMethodRemove)
+
+            setPaymentMethods((current) => current?.filter((method) => method.id !== paymentMethodId) ?? null)
+        } catch {
+            setPaymentMethodsError(true)
+        } finally {
+            setRemovingPaymentMethodId(null)
+        }
+    }
 
     const save = async (event: SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
         event.preventDefault()
@@ -98,104 +175,229 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
         }
     }
 
-    return (
-        <LicenseDialog backLabel={content.editor.cancelLabel} description={content.editor.customerDescription} onClose={close} title={content.editor.customerTitle}>
-            <div className="space-y-6">
-                <form id="customer-details-form" onSubmit={save} className="space-y-6">
-                    <fieldset className="space-y-4">
-                        <legend>
-                            <Text size="sm" fw={500} hierarchy="secondary">
-                                {content.editor.contactHeading}
-                            </Text>
-                        </legend>
-                        <div className="grid gap-4 sm:grid-cols-2">
-                            <TextInput title={checkoutForm.nameLabel} name="name" autoComplete="name" value={name} onChange={(event) => setName(event.currentTarget.value)} className="w-full!" />
-                            <EmailInput title={checkoutForm.emailLabel} name="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.currentTarget.value)} className="w-full!" />
-                            <TextInput
-                                title={checkoutForm.phoneLabel}
-                                name="phone"
-                                autoComplete="tel"
-                                value={phone}
-                                onChange={(event) => setPhone(event.currentTarget.value)}
-                                className="w-full! sm:col-span-2"
-                            />
-                        </div>
-                    </fieldset>
+    const sidebar = (
+        <div role="tablist" aria-label={content.editor.customerTitle} className="flex flex-col gap-2">
+            {(["general", "paymentMethods"] as const).map((option) => {
+                const selected = section === option
+                const label = option === "general" ? content.editor.customerTitle : content.editor.paymentMethodHeading
 
-                    <fieldset className="space-y-4">
-                        <legend>
-                            <Text size="sm" fw={500} hierarchy="secondary">
-                                {checkoutForm.billingHeading}
-                            </Text>
-                        </legend>
-                        <div className="grid gap-4 sm:grid-cols-2">
-                            <TextInput
-                                title={checkoutForm.line1Label}
-                                name="address-line1"
-                                autoComplete="address-line1"
-                                value={line1}
-                                onChange={(event) => setLine1(event.currentTarget.value)}
-                                className="w-full! sm:col-span-2"
-                            />
-                            <TextInput
-                                title={checkoutForm.line2Label}
-                                name="address-line2"
-                                autoComplete="address-line2"
-                                value={line2}
-                                onChange={(event) => setLine2(event.currentTarget.value)}
-                                className="w-full! sm:col-span-2"
-                            />
-                            <TextInput
-                                title={checkoutForm.postalCodeLabel}
-                                name="postal-code"
-                                autoComplete="postal-code"
-                                value={postalCode}
-                                onChange={(event) => setPostalCode(event.currentTarget.value)}
-                                className="w-full!"
-                            />
-                            <TextInput
-                                title={checkoutForm.cityLabel}
-                                name="address-level2"
-                                autoComplete="address-level2"
-                                value={city}
-                                onChange={(event) => setCity(event.currentTarget.value)}
-                                className="w-full!"
-                            />
-                            <TextInput
-                                title={checkoutForm.stateLabel}
-                                name="address-level1"
-                                autoComplete="address-level1"
-                                value={state}
-                                onChange={(event) => setState(event.currentTarget.value)}
-                                className="w-full!"
-                            />
-                            <TextInput
-                                title={checkoutForm.countryLabel}
-                                name="country"
-                                autoComplete="country"
-                                maxLength={2}
-                                pattern="[A-Za-z]{2}"
-                                value={country}
-                                onChange={(event) => setCountry(event.currentTarget.value)}
-                                className="w-full! uppercase"
-                            />
-                        </div>
-                    </fieldset>
-                </form>
-                {error && (
-                    <p role="alert" className="text-sm text-error">
-                        {error}
-                    </p>
-                )}
-                <DialogFooter className="gap-3! pt-2!">
-                    <Button type="button" variant="none" onClick={close}>
-                        {content.editor.cancelLabel}
+                return (
+                    <Button
+                        key={option}
+                        type="button"
+                        role="tab"
+                        aria-selected={selected}
+                        active={selected}
+                        variant={selected ? "normal" : "none"}
+                        paddingSize="xxs"
+                        w="100%"
+                        justify="start"
+                        className={cn("text-base!", selected && "bg-white/5! shadow-[inset_0_1px_1px_#bfbfbf1a]!")}
+                        onClick={() => setSection(option)}
+                    >
+                        {label}
                     </Button>
-                    <Button form="customer-details-form" type="submit" variant="filled" disabled={!customer || isSaving}>
-                        {isSaving ? <ButtonLoader label={content.editor.saveLabel} /> : content.editor.saveLabel}
-                    </Button>
-                </DialogFooter>
-            </div>
+                )
+            })}
+        </div>
+    )
+
+    return (
+        <LicenseDialog
+            backLabel={content.editor.cancelLabel}
+            description={section === "general" ? content.editor.customerDescription : content.editor.paymentMethodDescription}
+            onClose={close}
+            sidebar={sidebar}
+            title={content.editor.customerTitle}
+        >
+            {section === "general" ? (
+                <div className="space-y-6" role="tabpanel">
+                    <form id="customer-details-form" onSubmit={save} className="space-y-6">
+                        <fieldset className="space-y-4">
+                            <legend>
+                                <Text size="sm" fw={500} hierarchy="secondary">
+                                    {content.editor.contactHeading}
+                                </Text>
+                            </legend>
+                            <div className="grid gap-4 sm:grid-cols-2">
+                                <TextInput title={checkoutForm.nameLabel} name="name" autoComplete="name" value={name} onChange={(event) => setName(event.currentTarget.value)} className="w-full!" />
+                                <EmailInput
+                                    title={checkoutForm.emailLabel}
+                                    name="email"
+                                    autoComplete="email"
+                                    value={email}
+                                    onChange={(event) => setEmail(event.currentTarget.value)}
+                                    className="w-full!"
+                                />
+                                <TextInput
+                                    title={checkoutForm.phoneLabel}
+                                    name="phone"
+                                    autoComplete="tel"
+                                    value={phone}
+                                    onChange={(event) => setPhone(event.currentTarget.value)}
+                                    className="w-full! sm:col-span-2"
+                                />
+                            </div>
+                        </fieldset>
+
+                        <fieldset className="space-y-4">
+                            <legend>
+                                <Text size="sm" fw={500} hierarchy="secondary">
+                                    {checkoutForm.billingHeading}
+                                </Text>
+                            </legend>
+                            <div className="grid gap-4 sm:grid-cols-2">
+                                <TextInput
+                                    title={checkoutForm.line1Label}
+                                    name="address-line1"
+                                    autoComplete="address-line1"
+                                    value={line1}
+                                    onChange={(event) => setLine1(event.currentTarget.value)}
+                                    className="w-full! sm:col-span-2"
+                                />
+                                <TextInput
+                                    title={checkoutForm.line2Label}
+                                    name="address-line2"
+                                    autoComplete="address-line2"
+                                    value={line2}
+                                    onChange={(event) => setLine2(event.currentTarget.value)}
+                                    className="w-full! sm:col-span-2"
+                                />
+                                <TextInput
+                                    title={checkoutForm.postalCodeLabel}
+                                    name="postal-code"
+                                    autoComplete="postal-code"
+                                    value={postalCode}
+                                    onChange={(event) => setPostalCode(event.currentTarget.value)}
+                                    className="w-full!"
+                                />
+                                <TextInput
+                                    title={checkoutForm.cityLabel}
+                                    name="address-level2"
+                                    autoComplete="address-level2"
+                                    value={city}
+                                    onChange={(event) => setCity(event.currentTarget.value)}
+                                    className="w-full!"
+                                />
+                                <TextInput
+                                    title={checkoutForm.stateLabel}
+                                    name="address-level1"
+                                    autoComplete="address-level1"
+                                    value={state}
+                                    onChange={(event) => setState(event.currentTarget.value)}
+                                    className="w-full!"
+                                />
+                                <TextInput
+                                    title={checkoutForm.countryLabel}
+                                    name="country"
+                                    autoComplete="country"
+                                    maxLength={2}
+                                    pattern="[A-Za-z]{2}"
+                                    value={country}
+                                    onChange={(event) => setCountry(event.currentTarget.value)}
+                                    className="w-full! uppercase"
+                                />
+                            </div>
+                        </fieldset>
+                    </form>
+                    {error && (
+                        <p role="alert" className="text-sm text-error">
+                            {error}
+                        </p>
+                    )}
+                    <DialogFooter className="gap-3! pt-2!">
+                        <Button type="button" variant="none" onClick={close}>
+                            {content.editor.cancelLabel}
+                        </Button>
+                        <Button form="customer-details-form" type="submit" variant="filled" disabled={!customer || isSaving}>
+                            {isSaving ? <ButtonLoader label={content.editor.saveLabel} /> : content.editor.saveLabel}
+                        </Button>
+                    </DialogFooter>
+                </div>
+            ) : (
+                <div className="space-y-6" role="tabpanel">
+                    <ScrollArea h="22rem" type="scroll" className="rounded-2xl">
+                        <ScrollAreaViewport className="h-full! w-full!">
+                            <div className="space-y-3 pr-3">
+                                {isLoadingPaymentMethods ? (
+                                    <div role="status" className="space-y-3 animate-pulse motion-reduce:animate-none">
+                                        <span className="sr-only">{content.editor.loadingPaymentMethodLabel}</span>
+                                        <div aria-hidden="true" className="h-14 rounded-2xl bg-white/8" />
+                                        <div aria-hidden="true" className="h-14 rounded-2xl bg-white/8" />
+                                    </div>
+                                ) : paymentMethodsError ? (
+                                    <div className="space-y-3">
+                                        <Text role="alert" size="sm" className="text-error!">
+                                            {errors.paymentMethodRemove}
+                                        </Text>
+                                        <Button type="button" variant="normal" paddingSize="xs" onClick={() => setPaymentMethodsRefreshKey((value) => value + 1)}>
+                                            {errors.retry}
+                                        </Button>
+                                    </div>
+                                ) : paymentMethods && paymentMethods.length > 0 ? (
+                                    paymentMethods.map((method) => {
+                                        const title = method.brand?.trim() || method.type.replaceAll("_", " ")
+                                        const expiry = method.expiresMonth && method.expiresYear ? `${String(method.expiresMonth).padStart(2, "0")}/${method.expiresYear}` : null
+
+                                        return (
+                                            <div key={method.id} className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/3 p-4">
+                                                <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-white/7 text-brand">
+                                                    <IconCreditCard aria-hidden="true" size={20} />
+                                                </div>
+                                                <div className="min-w-0 flex-1">
+                                                    <div className="flex flex-wrap items-center gap-2">
+                                                        <Text size="sm" fw={500} className="capitalize">
+                                                            {[title, method.last4 ? `•••• ${method.last4}` : null].filter(Boolean).join(" · ")}
+                                                        </Text>
+                                                        {method.isDefault && <Badge color="success">{content.editor.defaultPaymentMethodLabel}</Badge>}
+                                                    </div>
+                                                    {expiry ? (
+                                                        <Text size="sm" hierarchy="tertiary">
+                                                            {expiry}
+                                                        </Text>
+                                                    ) : null}
+                                                </div>
+                                                <Button
+                                                    type="button"
+                                                    variant="none"
+                                                    paddingSize="xs"
+                                                    disabled={removingPaymentMethodId === method.id}
+                                                    onClick={() => void removePaymentMethod(method.id)}
+                                                    aria-label={content.editor.removePaymentMethodLabel}
+                                                >
+                                                    {removingPaymentMethodId === method.id ? (
+                                                        <ButtonLoader label={content.editor.removingPaymentMethodLabel} />
+                                                    ) : (
+                                                        <IconTrash aria-hidden="true" size={16} />
+                                                    )}
+                                                </Button>
+                                            </div>
+                                        )
+                                    })
+                                ) : (
+                                    <Text size="sm" hierarchy="tertiary">
+                                        {content.editor.noPaymentMethodsLabel}
+                                    </Text>
+                                )}
+                            </div>
+                        </ScrollAreaViewport>
+                        <ScrollAreaScrollbar orientation="vertical" className="w-1.5!">
+                            <ScrollAreaThumb className="bg-white/15! hover:bg-white/25!" />
+                        </ScrollAreaScrollbar>
+                    </ScrollArea>
+
+                    {customer && (
+                        <PaymentMethodSetupDialog
+                            content={content}
+                            errors={errors}
+                            onSuccess={paymentMethodAdded}
+                            owner={{ customerId: customer.id, type: "customer" }}
+                            returnPath={`/${locale}/licenses/customer/${encodeURIComponent(customer.id)}/edit`}
+                            triggerLabel={content.editor.addPaymentMethodLabel}
+                        />
+                    )}
+                </div>
+            )}
         </LicenseDialog>
     )
 }

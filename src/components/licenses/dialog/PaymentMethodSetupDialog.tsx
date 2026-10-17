@@ -1,24 +1,22 @@
 "use client"
 
-import { PaymentMethodSetupElement, PaymentMethodSetupPendingStatus } from "@/components/licenses/dialog/PaymentMethodSetupElement"
+import { PaymentMethodSetupElement, PaymentMethodSetupPendingStatus, type PaymentMethodSetupOwner } from "@/components/licenses/dialog/PaymentMethodSetupElement"
 import { LicenseDialog } from "@/components/licenses/dialog/LicenseDialog"
 import type { ErrorsContent, LicenseContent } from "@/lib/cms"
-import type { AppLocale } from "@/lib/i18n"
 import { Button, Text } from "@code0-tech/pictor"
 import { useEffect, useRef, useState } from "react"
 
 interface PaymentMethodSetupDialogProps {
     content: LicenseContent
-    customerId: string
     disabled?: boolean
     errors: ErrorsContent
-    locale: AppLocale
-    licenseId: string
     onSuccess: () => void
-    subscriptionId: string
+    owner: PaymentMethodSetupOwner
+    returnPath: string
+    triggerLabel: string
 }
 
-export function PaymentMethodSetupDialog({ content, customerId, disabled = false, errors, licenseId, locale, onSuccess, subscriptionId }: PaymentMethodSetupDialogProps) {
+export function PaymentMethodSetupDialog({ content, disabled = false, errors, onSuccess, owner, returnPath, triggerLabel }: PaymentMethodSetupDialogProps) {
     const requestStartedRef = useRef(false)
     const [open, setOpen] = useState(false)
     const [clientSecret, setClientSecret] = useState<string | null>(null)
@@ -52,11 +50,14 @@ export function PaymentMethodSetupDialog({ content, customerId, disabled = false
         setError(null)
         let active = true
 
-        void fetch("/api/crater/subscriptions/payment-method-setup", {
+        const createUrl = owner.type === "customer" ? "/api/crater/customer/payment-method-setup" : "/api/crater/subscriptions/payment-method-setup"
+        const createBody = owner.type === "customer" ? { customerId: owner.customerId } : { subscriptionId: owner.subscriptionId }
+
+        void fetch(createUrl, {
             method: "POST",
             credentials: "same-origin",
             headers: { "content-type": "application/json" },
-            body: JSON.stringify({ subscriptionId }),
+            body: JSON.stringify(createBody),
         })
             .then(async (response) => {
                 const result: unknown = await response.json()
@@ -78,12 +79,12 @@ export function PaymentMethodSetupDialog({ content, customerId, disabled = false
         return () => {
             active = false
         }
-    }, [errors.paymentMethodUpdate, open, pendingSetupIntentId, subscriptionId])
+    }, [errors.paymentMethodUpdate, open, owner, pendingSetupIntentId])
 
     return (
         <>
             <Button type="button" variant="normal" disabled={disabled} onClick={() => setOpen(true)}>
-                {content.editor.changePaymentMethodLabel}
+                {triggerLabel}
             </Button>
 
             <LicenseDialog backLabel={content.editor.cancelLabel} description={content.editor.paymentMethodDescription} onClose={close} open={open} title={content.editor.paymentMethodHeading}>
@@ -105,9 +106,9 @@ export function PaymentMethodSetupDialog({ content, customerId, disabled = false
                             errorMessage={errors.paymentMethodUpdate}
                             onCancel={close}
                             onSuccess={onSuccess}
+                            owner={owner}
                             retryLabel={errors.retry}
                             setupIntentId={pendingSetupIntentId}
-                            subscriptionId={subscriptionId}
                         />
                     ) : clientSecret ? (
                         <PaymentMethodSetupElement
@@ -116,9 +117,9 @@ export function PaymentMethodSetupDialog({ content, customerId, disabled = false
                             errorMessage={errors.paymentMethodUpdate}
                             onCancel={close}
                             onSuccess={onSuccess}
+                            owner={owner}
                             retryLabel={errors.retry}
-                            returnPath={`/${locale}/licenses/customer/${encodeURIComponent(customerId)}/license/${encodeURIComponent(licenseId)}/edit`}
-                            subscriptionId={subscriptionId}
+                            returnPath={returnPath}
                         />
                     ) : null}
                 </div>
