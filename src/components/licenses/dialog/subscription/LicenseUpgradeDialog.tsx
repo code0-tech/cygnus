@@ -19,7 +19,7 @@ import { calculateSubscriptionQuote } from "@/lib/subscription/calculator"
 import { getSubscriptionCatalog } from "@/lib/subscription/catalog"
 import { normalizePaymentPeriod } from "@/lib/subscription/configurator"
 import type { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
-import { getDefaultUsagePackage, normalizeUsagePackages, snapToUsagePackage } from "@/lib/subscription/usagePackages"
+import { normalizeUsagePackages, snapToUsagePackage } from "@/lib/subscription/usagePackages"
 import { Button, Flex, Spacing, Text } from "@code0-tech/pictor"
 import { IconCheck } from "@tabler/icons-react"
 import { useRouter } from "next/navigation"
@@ -56,16 +56,14 @@ export function LicenseUpgradeDialog({ content, customerId, errors, licenseId, l
     const wasCustom = currentPlan === "custom"
 
     const checkoutLimits = customers.find((candidate) => candidate.id === license?.customerId)?.checkoutLimits
-    const aiTokenPackages = checkoutLimits?.aiTokens.length ? checkoutLimits.aiTokens : normalizeUsagePackages(subscriptionConfig.aiTokens[customerType].packages)
-    const workflowExecutionPackages = checkoutLimits?.workflowExecutions.length
-        ? checkoutLimits.workflowExecutions
-        : normalizeUsagePackages(subscriptionConfig.workflowExecutions[customerType].packages)
+    const aiTokenPackages = checkoutLimits?.aiTokens.length ? normalizeUsagePackages(checkoutLimits.aiTokens) : []
+    const workflowExecutionPackages = checkoutLimits?.workflowExecutions.length ? normalizeUsagePackages(checkoutLimits.workflowExecutions) : []
     const aiTokensDefault = snapToUsagePackage(
-        wasCustom && typeof license?.aiTokens === "number" ? license.aiTokens : getDefaultUsagePackage(subscriptionConfig.aiTokens[customerType]),
+        wasCustom && typeof license?.aiTokens === "number" ? license.aiTokens : (aiTokenPackages[0] ?? 0),
         aiTokenPackages
     )
     const workflowExecutionsDefault = snapToUsagePackage(
-        wasCustom && typeof license?.workflowExecutions === "number" ? license.workflowExecutions : getDefaultUsagePackage(subscriptionConfig.workflowExecutions[customerType]),
+        wasCustom && typeof license?.workflowExecutions === "number" ? license.workflowExecutions : (workflowExecutionPackages[0] ?? 0),
         workflowExecutionPackages
     )
 

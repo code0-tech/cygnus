@@ -3000,29 +3000,9 @@ export interface SubscriptionConfig {
     quarterlyColor?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
     yearlyColor?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
   };
-  workflowExecutions: {
+  workflowExecutions?: {
     title?: string | null;
     description?: string | null;
-    b2b: {
-      /**
-       * Selectable quantities in ascending order. Must match Crater's checkout.quantity_steps for this customer type.
-       */
-      packages: number[];
-      /**
-       * Must be one of the packages; otherwise the smallest package is preselected.
-       */
-      default?: number | null;
-    };
-    b2c: {
-      /**
-       * Selectable quantities in ascending order. Must match Crater's checkout.quantity_steps for this customer type.
-       */
-      packages: number[];
-      /**
-       * Must be one of the packages; otherwise the smallest package is preselected.
-       */
-      default?: number | null;
-    };
     suffix?: string | null;
   };
   workflowCalculator?: {
@@ -3049,29 +3029,9 @@ export interface SubscriptionConfig {
         }[]
       | null;
   };
-  aiTokens: {
+  aiTokens?: {
     title?: string | null;
     description?: string | null;
-    b2b: {
-      /**
-       * Selectable quantities in ascending order. Must match Crater's checkout.quantity_steps for this customer type.
-       */
-      packages: number[];
-      /**
-       * Must be one of the packages; otherwise the smallest package is preselected.
-       */
-      default?: number | null;
-    };
-    b2c: {
-      /**
-       * Selectable quantities in ascending order. Must match Crater's checkout.quantity_steps for this customer type.
-       */
-      packages: number[];
-      /**
-       * Must be one of the packages; otherwise the smallest package is preselected.
-       */
-      default?: number | null;
-    };
     suffix?: string | null;
   };
   contactSales?: {
@@ -3815,18 +3775,6 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
     | {
         title?: T;
         description?: T;
-        b2b?:
-          | T
-          | {
-              packages?: T;
-              default?: T;
-            };
-        b2c?:
-          | T
-          | {
-              packages?: T;
-              default?: T;
-            };
         suffix?: T;
       };
   workflowCalculator?:
@@ -3860,18 +3808,6 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
     | {
         title?: T;
         description?: T;
-        b2b?:
-          | T
-          | {
-              packages?: T;
-              default?: T;
-            };
-        b2c?:
-          | T
-          | {
-              packages?: T;
-              default?: T;
-            };
         suffix?: T;
       };
   contactSales?:

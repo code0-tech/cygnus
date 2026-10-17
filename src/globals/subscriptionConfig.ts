@@ -1,5 +1,4 @@
 import { iconField as payloadIconField } from "@mvriu5/payload-icon-picker"
-import { DEFAULT_USAGE_PACKAGES } from "@/lib/subscription/usagePackages"
 import type { Field, GlobalConfig } from "payload"
 
 type LocalizedFeature = { de: string; en: string }
@@ -40,27 +39,6 @@ const optionImageField = (): Field => ({
     relationTo: "media",
     required: false,
 })
-
-const usagePackageFields = (defaults: { default: number; packages: readonly number[] }): Field[] => [
-    {
-        name: "packages",
-        label: "Packages",
-        type: "number",
-        hasMany: true,
-        required: true,
-        minRows: 1,
-        defaultValue: [...defaults.packages],
-        admin: { description: "Selectable quantities in ascending order. Must match Crater's checkout.quantity_steps for this customer type." },
-    },
-    {
-        name: "default",
-        label: "Default (preselected package)",
-        type: "number",
-        required: false,
-        defaultValue: defaults.default,
-        admin: { description: "Must be one of the packages; otherwise the smallest package is preselected." },
-    },
-]
 
 const planFeaturesField = (features: LocalizedFeature[]): Field => ({
     name: "features",
@@ -424,18 +402,6 @@ export const SubscriptionCollection: GlobalConfig = {
                     defaultValue: "How many workflow executions do you expect per month?",
                 },
                 { name: "description", type: "textarea", required: false, localized: true },
-                {
-                    name: "b2b",
-                    label: "B2B",
-                    type: "group",
-                    fields: usagePackageFields(DEFAULT_USAGE_PACKAGES.workflowExecutions.b2b),
-                },
-                {
-                    name: "b2c",
-                    label: "B2C",
-                    type: "group",
-                    fields: usagePackageFields(DEFAULT_USAGE_PACKAGES.workflowExecutions.b2c),
-                },
                 { name: "suffix", type: "text", required: false, localized: true, defaultValue: "exec" },
             ],
         },
@@ -500,18 +466,6 @@ export const SubscriptionCollection: GlobalConfig = {
             fields: [
                 { name: "title", type: "text", required: false, localized: true, defaultValue: "How many AI tokens do you expect to consume per month?" },
                 { name: "description", type: "textarea", required: false, localized: true },
-                {
-                    name: "b2b",
-                    label: "B2B",
-                    type: "group",
-                    fields: usagePackageFields(DEFAULT_USAGE_PACKAGES.aiTokens.b2b),
-                },
-                {
-                    name: "b2c",
-                    label: "B2C",
-                    type: "group",
-                    fields: usagePackageFields(DEFAULT_USAGE_PACKAGES.aiTokens.b2c),
-                },
                 { name: "suffix", type: "text", required: false, localized: true, defaultValue: "tokens" },
             ],
         },

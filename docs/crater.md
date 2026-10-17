@@ -734,10 +734,37 @@ All queries start at the root `Query` type. The currently documented query field
 | `currentUser`              | none                       | `User`                      | Returns the user authenticated by the current Crater session, or `null` when the request is anonymous.          |
 | `echo`                     | `message: String!`         | `String!`                   | Verifies read access to the API and returns the supplied message.                                               |
 | `subscriptionPrices`       | none                       | `[CheckoutPrice!]!`         | Returns active recurring Stripe prices and can be queried anonymously.                                          |
+| `checkoutPackages`         | none                       | `CheckoutPackages!`         | Returns configured custom quantity steps for both customer types and fixed Pro/Max quantities; anonymous.       |
 | `checkoutCompletionStatus` | `sessionId: String!`       | `CheckoutCompletionStatus!` | Reports how far one Stripe Checkout Session has progressed towards licensed access. Requires an active session. |
 | `paymentMethod`            | `paymentMethodId: String!` | `PaymentMethodSummary`      | Reads authorized cached payment method display details, fetching Stripe on a cache miss.                        |
 
-There are no root `license`, `customer`, `subscription`, or `checkoutLimits` lookup fields. Resource reads start from `currentUser` and its customer/subscription connections.
+There are no root `license`, `customer`, `subscription`, or `checkoutLimits` lookup fields. `checkoutPackages` is the customer-independent catalogue query; resource reads start from `currentUser` and its customer/subscription connections.
+
+#### Checkout packages
+
+`checkoutPackages` reads the configured checkout catalogue directly and requires neither a customer nor an authenticated session. It returns:
+
+- `quantitySteps`: one entry for each customer type (`BUSINESS` and `PERSONAL`), with ascending `aiTokens` and `workflowExecutions` choices for Custom plans. The last value in each list is its maximum.
+- `planQuantities`: the fixed included `aiTokens` and `workflowExecutions` for the standard `PRO` and `MAX` plans.
+
+This lets a frontend show package choices and plan inclusions before creating a customer. `Customer.checkoutLimits` remains available for customer-scoped checkout flows and returns the quantity steps for that customer's type only.
+
+```graphql
+query CheckoutPackages {
+    checkoutPackages {
+        quantitySteps {
+            customerType
+            aiTokens
+            workflowExecutions
+        }
+        planQuantities {
+            plan
+            aiTokens
+            workflowExecutions
+        }
+    }
+}
+```
 
 #### License dashboard
 
@@ -1124,13 +1151,13 @@ Documented error codes:
 
 ## Typical end-to-end flow
 
-1. The frontend anonymously queries `subscriptionPrices` to display active recurring Stripe products and prices.
+1. The frontend anonymously queries `subscriptionPrices` and `checkoutPackages` to display active recurring Stripe prices, Custom quantity choices for both customer types, and the fixed Pro/Max plan quantities before a customer exists.
 2. An authenticated Sagittarius client calls `usersCreateCraterToken` and receives a dedicated Crater login token.
 3. The client passes that token to Crater's anonymous `usersLogin` mutation.
 4. Crater verifies the token with Sagittarius, maps the returned Sagittarius user ID to a local user, creates a `UserSession`, and returns its token.
 5. The client sends the Crater token on subsequent mutations as `Authorization: Session <token>`; no authentication cookie is required.
 6. The authenticated user selects one of their customers, or creates one with `customersCreate`, which requires the customer type, name, email, and address.
-7. For a Custom plan, the frontend reads `Customer.checkoutLimits` and selects both quantities from the offered packages. Standard plans have configured fixed quantities.
+7. For a Custom plan, the frontend selects both quantities from the matching customer type's `checkoutPackages.quantitySteps` (or reads `Customer.checkoutLimits` after the customer exists). Standard plans use the configured fixed quantities from `checkoutPackages.planQuantities`.
 8. Crater creates an embedded Stripe Checkout Session for the selected plan and required `customerId`, returning its `clientSecret`.
 9. The frontend mounts Stripe's custom checkout UI, which collects billing details and calculates tax. Promotion codes are applied and validated through `checkout.applyPromotionCode()` and removed through `checkout.removePromotionCode()`.
 10. Subscription metadata includes the Crater customer ID, deployment type, customer type, plan, payment period, resolved quantities, optional namespace ID, and optional referral.

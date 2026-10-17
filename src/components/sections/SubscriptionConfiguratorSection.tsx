@@ -5,6 +5,7 @@ import { SubscriptionContent } from "@/components/subscription/SubscriptionConte
 import type { SubscriptionConfiguratorContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import type { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
+import type { CheckoutPackages } from "@/lib/subscription/usagePackages"
 import { useSearchParams } from "next/navigation"
 import { useState } from "react"
 
@@ -15,11 +16,13 @@ export function SubscriptionConfiguratorSection({
     content,
     icons,
     subscriptionPrices,
+    checkoutPackages,
 }: {
     locale: AppLocale
     content: SubscriptionConfiguratorContent
     icons: SubscriptionIcons
     subscriptionPrices: SubscriptionPriceCatalog
+    checkoutPackages: CheckoutPackages
 }) {
     const searchParams = useSearchParams()
     const [activeImageKey, setActiveImageKey] = useState<SubscriptionOptionImageKey>(() => {
@@ -30,7 +33,7 @@ export function SubscriptionConfiguratorSection({
     return (
         <div className="grid gap-16 lg:grid-cols-5">
             <SubscriptionContent activeImageKey={activeImageKey} content={content} />
-            <SubscriptionConfigurator locale={locale} content={content} icons={icons} subscriptionPrices={subscriptionPrices} onActiveImageChangeAction={setActiveImageKey} />
+            <SubscriptionConfigurator locale={locale} content={content} icons={icons} subscriptionPrices={subscriptionPrices} checkoutPackages={checkoutPackages} onActiveImageChangeAction={setActiveImageKey} />
         </div>
     )
 }

@@ -161,6 +161,7 @@ import * as migration_20261003_081159_namespace_in_use_error from './20261003_08
 
 import * as migration_20261003_084939_cancellation_period_texts from './20261003_084939_cancellation_period_texts';
 import * as migration_20261009_090000_payment_method_dialog_copy from './20261009_090000_payment_method_dialog_copy';
+import * as migration_20261009_194500_remove_subscription_cms_package_sizes from './20261009_194500_remove_subscription_cms_package_sizes';
 
 export const migrations = [
   {
@@ -972,5 +973,10 @@ export const migrations = [
     up: migration_20261009_090000_payment_method_dialog_copy.up,
     down: migration_20261009_090000_payment_method_dialog_copy.down,
     name: '20261009_090000_payment_method_dialog_copy',
+  },
+  {
+    up: migration_20261009_194500_remove_subscription_cms_package_sizes.up,
+    down: migration_20261009_194500_remove_subscription_cms_package_sizes.down,
+    name: '20261009_194500_remove_subscription_cms_package_sizes',
   },
 ];

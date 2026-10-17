@@ -1,7 +1,7 @@
 import { PAYMENT_PERIOD_OPTIONS, type SubscriptionSelection } from "@/lib/subscription/types"
 import assert from "node:assert/strict"
 import test from "node:test"
-import type { SubscriptionConfiguratorContent } from "../../src/lib/cms"
+import type { SubscriptionSelectionCatalog } from "../../src/lib/subscription/catalog"
 import {
     buildSubscriptionSelectionSearchParams,
     normalizePaymentPeriod,
@@ -17,23 +17,23 @@ const content = {
         paymentPeriod: { b2b: "monthly", b2c: "monthly" },
     },
     workflowExecutions: {
-        b2b: { default: 1_000_000, packages: [100_000, 1_000_000, 5_000_000, 10_000_000] },
-        b2c: { default: 100_000, packages: [10_000, 100_000, 500_000, 1_000_000] },
+        b2b: { packages: [100_000, 1_000_000, 5_000_000, 10_000_000] },
+        b2c: { packages: [10_000, 100_000, 500_000, 1_000_000] },
     },
     aiTokens: {
-        b2b: { default: 100_000_000, packages: [10_000_000, 100_000_000, 500_000_000, 1_000_000_000] },
-        b2c: { default: 10_000_000, packages: [1_000_000, 10_000_000, 50_000_000, 100_000_000] },
+        b2b: { packages: [10_000_000, 100_000_000, 500_000_000, 1_000_000_000] },
+        b2c: { packages: [1_000_000, 10_000_000, 50_000_000, 100_000_000] },
     },
-} as SubscriptionConfiguratorContent
+} as SubscriptionSelectionCatalog
 
-test("falls back to content defaults when the URL has no selection", () => {
+test("starts at the smallest Crater package when the URL has no selection", () => {
     assert.deepEqual(parseSubscriptionSelectionFromSearchParams(new URLSearchParams(), content), {
         plan: "custom",
         deployment: "self_hosted",
         customerType: "b2c",
         paymentPeriod: "monthly",
-        workflowExecutions: 100_000,
-        aiTokens: 10_000_000,
+        workflowExecutions: 10_000,
+        aiTokens: 1_000_000,
     })
 })
 
@@ -41,8 +41,8 @@ test("writes the resolved usage defaults back into the search params on a fresh 
     const selection = parseSubscriptionSelectionFromSearchParams(new URLSearchParams(), content)
     const params = buildSubscriptionSelectionSearchParams(selection)
 
-    assert.equal(params.get("workflowExecutions"), "100000")
-    assert.equal(params.get("aiTokens"), "10000000")
+    assert.equal(params.get("workflowExecutions"), "10000")
+    assert.equal(params.get("aiTokens"), "1000000")
 })
 
 test("restores a full selection from the URL", () => {
@@ -87,8 +87,8 @@ test("ignores malformed or unknown URL values", () => {
         deployment: "self_hosted",
         customerType: "b2c",
         paymentPeriod: "monthly",
-        workflowExecutions: 100_000,
-        aiTokens: 10_000_000,
+        workflowExecutions: 10_000,
+        aiTokens: 1_000_000,
     })
 })
 
@@ -141,12 +141,12 @@ test("snaps manipulated usage onto the next package and reports it", () => {
     assert.equal(result.issues.length, 2)
 })
 
-test("falls back to the smallest package when the configured default is not a package", () => {
-    const misconfigured = {
+test("normalizes Crater quantity steps and defaults to the smallest package", () => {
+    const craterPackages = {
         ...content,
-        aiTokens: { ...content.aiTokens, b2c: { default: 12_345, packages: [50_000_000, 1_000_000, 10_000_000] } },
-    } as SubscriptionConfiguratorContent
-    assert.equal(parseSubscriptionSelectionFromSearchParams(new URLSearchParams({ customerType: "b2c" }), misconfigured).aiTokens, 1_000_000)
+        aiTokens: { ...content.aiTokens, b2c: { packages: [50_000_000, 1_000_000, 10_000_000] } },
+    } as SubscriptionSelectionCatalog
+    assert.equal(parseSubscriptionSelectionFromSearchParams(new URLSearchParams({ customerType: "b2c" }), craterPackages).aiTokens, 1_000_000)
 })
 
 test("applies dependent customer-type rules through the reducer", () => {
@@ -154,8 +154,8 @@ test("applies dependent customer-type rules through the reducer", () => {
     const next = reduceSubscriptionSelection(initial, { type: "customerTypeChanged", value: "b2b" }, content)
     assert.equal(next.plan, "pro")
     assert.equal(next.paymentPeriod, "quarterly")
-    assert.equal(next.workflowExecutions, 1_000_000)
-    assert.equal(next.aiTokens, 100_000_000)
+    assert.equal(next.workflowExecutions, 100_000)
+    assert.equal(next.aiTokens, 10_000_000)
 
     const backToB2c = reduceSubscriptionSelection({ ...next, paymentPeriod: "quarterly" }, { type: "customerTypeChanged", value: "b2c" }, content)
     assert.equal(backToB2c.paymentPeriod, "quarterly")
