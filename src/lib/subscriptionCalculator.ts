@@ -1,6 +1,7 @@
 import type { SubscriptionConfigData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
-import type { SubscriptionCatalog } from "@/lib/subscriptionCatalog"
+import { getSubscriptionCatalog, type SubscriptionCatalog } from "@/lib/subscriptionCatalog"
+import { getSubscriptionPriceAmount, type SubscriptionPriceCatalog, type SubscriptionPriceLookupKey } from "@/lib/subscriptionPrices"
 import { resolveSubscriptionSelection, type SubscriptionCustomerType, type SubscriptionSelection } from "@/lib/subscriptionConfigurator"
 
 export type PaymentPeriod = "weekly" | "monthly" | "quarterly" | "yearly"
@@ -63,6 +64,7 @@ export function getPaymentPeriodMonths(period: PaymentPeriod) {
 }
 
 export function getMonthlyEquivalentAmount(amount: number, period: PaymentPeriod) {
+    if (period === "weekly") return Math.round(amount * AVERAGE_WEEKS_PER_MONTH)
     return Math.round(amount / getPaymentPeriodMonths(period))
 }
 
@@ -78,7 +80,6 @@ export function getPaymentPeriodSuffix(period: PaymentPeriod, paymentPeriod: Sub
     return paymentPeriod.monthlyPeriodSuffix
 }
 
-const toCents = (amount: number) => Math.round(amount * 100)
 const fromCents = (amount: number) => amount / 100
 
 export type SubscriptionQuote = {
@@ -89,16 +90,27 @@ export type SubscriptionQuote = {
     total: number
 }
 
+function getRegularPriceKey(plan: "pro" | "max", period: PaymentPeriod) {
+    return `${plan}_${period}` as SubscriptionPriceLookupKey
+}
+
+function getCustomPriceKey(component: "ai_token" | "workflow_execution", customerType: SubscriptionCustomerType, period: PaymentPeriod) {
+    return `${component}_${customerType}_${period}` as SubscriptionPriceLookupKey
+}
+
 export function calculateSubscriptionQuote(selection: SubscriptionSelection, config: SubscriptionCatalog): SubscriptionQuote {
     const months = getPaymentPeriodMonths(selection.paymentPeriod)
 
     if (selection.plan !== "custom") {
-        const total = toCents(config.packages[selection.plan].prices[selection.paymentPeriod])
-        const regularTotal = toCents(config.packages[selection.plan].prices.monthly * months)
+        const total = getSubscriptionPriceAmount(config.subscriptionPrices[getRegularPriceKey(selection.plan, selection.paymentPeriod)])
+        const regularTotal =
+            selection.paymentPeriod === "yearly"
+                ? getSubscriptionPriceAmount(config.subscriptionPrices[getRegularPriceKey(selection.plan, "monthly")]) * months
+                : total
         const subtotal = Math.max(total, regularTotal)
         return {
             currency: "EUR",
-            items: [{ id: selection.plan, type: "plan", amount: subtotal }],
+            items: [{ id: selection.plan, type: "plan", amount: total }],
             subtotal,
             periodDiscount: subtotal - total,
             total,
@@ -106,25 +118,43 @@ export function calculateSubscriptionQuote(selection: SubscriptionSelection, con
     }
 
     const isWeekly = selection.paymentPeriod === "weekly"
+    const aiTokenAmount = getSubscriptionPriceAmount(
+        config.subscriptionPrices[getCustomPriceKey("ai_token", selection.customerType, selection.paymentPeriod)],
+        selection.aiTokens
+    )
+    const workflowExecutionAmount = getSubscriptionPriceAmount(
+        config.subscriptionPrices[getCustomPriceKey("workflow_execution", selection.customerType, selection.paymentPeriod)],
+        selection.workflowExecutions
+    )
     const items: SubscriptionQuote["items"] = [
         {
             id: "aiTokens",
             type: "aiTokens",
-            amount: toCents(isWeekly ? config.aiTokenWeeklyPriceFactor * selection.aiTokens : config.aiTokenPriceFactor * selection.aiTokens * months),
+            amount: aiTokenAmount,
         },
         {
             id: "workflowExecutions",
             type: "workflowExecutions",
-            amount: toCents(isWeekly ? config.workflowExecutionWeeklyPriceFactor * selection.workflowExecutions : config.workflowExecutionPriceFactor * selection.workflowExecutions * months),
+            amount: workflowExecutionAmount,
         },
         ...(config.additionalFeatures ?? [])
             .filter((feature) => Boolean(feature.id && selection.additionalFeatureIds.includes(feature.id)))
-            .map((feature) => ({ id: feature.id!, type: "additionalFeature" as const, amount: toCents(isWeekly ? feature.weeklyPrice : feature.price * months) })),
+            .map((feature) => ({ id: feature.id!, type: "additionalFeature" as const, amount: Math.round((isWeekly ? feature.weeklyPrice : feature.price * months) * 100) })),
     ]
-    const subtotal = items.reduce((sum, item) => sum + item.amount, 0)
-    const discountRate = getPaymentPeriodDiscount(selection.paymentPeriod, config.paymentPeriod, selection.customerType)
-    const periodDiscount = Math.round(subtotal * discountRate)
-    return { currency: "EUR", items, subtotal, periodDiscount, total: subtotal - periodDiscount }
+    const total = items.reduce((sum, item) => sum + item.amount, 0)
+    const monthlyBaseline =
+        selection.paymentPeriod === "quarterly" || selection.paymentPeriod === "yearly"
+            ? getSubscriptionPriceAmount(config.subscriptionPrices[getCustomPriceKey("ai_token", selection.customerType, "monthly")], selection.aiTokens) * months +
+              getSubscriptionPriceAmount(config.subscriptionPrices[getCustomPriceKey("workflow_execution", selection.customerType, "monthly")], selection.workflowExecutions) * months
+            : aiTokenAmount + workflowExecutionAmount
+    const additionalFeaturesAmount = items.filter((item) => item.type === "additionalFeature").reduce((sum, item) => sum + item.amount, 0)
+    const subtotal = Math.max(total, monthlyBaseline + additionalFeaturesAmount)
+    return { currency: "EUR", items, subtotal, periodDiscount: subtotal - total, total }
+}
+
+export function getSubscriptionQuoteDiscountRate(selection: SubscriptionSelection, config: SubscriptionCatalog) {
+    const quote = calculateSubscriptionQuote(selection, config)
+    return quote.subtotal > 0 ? quote.periodDiscount / quote.subtotal : 0
 }
 
 function parseNumber(value: string | null, fallback: number) {
@@ -142,6 +172,7 @@ export function resolveCheckoutPricing({
     paymentPeriodParam,
     planParam,
     subscriptionConfig,
+    subscriptionPrices,
     workflowExecutionsParam,
 }: {
     additionalFeatureIds: string[]
@@ -151,9 +182,10 @@ export function resolveCheckoutPricing({
     paymentPeriodParam: string | null
     planParam: string | null
     subscriptionConfig?: SubscriptionConfigData | null
+    subscriptionPrices?: SubscriptionPriceCatalog | null
     workflowExecutionsParam: string | null
 }) {
-    if (!subscriptionConfig) {
+    if (!subscriptionConfig || !subscriptionPrices) {
         const plan: SubscriptionPlan = planParam === "pro" || planParam === "max" ? planParam : "custom"
         const paymentPeriod: PaymentPeriod = PAYMENT_PERIODS.has(paymentPeriodParam as PaymentPeriod) ? (paymentPeriodParam as PaymentPeriod) : "monthly"
         return {
@@ -171,6 +203,7 @@ export function resolveCheckoutPricing({
         }
     }
 
+    const catalog = getSubscriptionCatalog(subscriptionConfig, subscriptionPrices)
     const { selection } = resolveSubscriptionSelection(
         {
             additionalFeatures: additionalFeatureIds.join(","),
@@ -180,9 +213,9 @@ export function resolveCheckoutPricing({
             plan: planParam,
             workflowExecutions: workflowExecutionsParam,
         },
-        subscriptionConfig
+        catalog
     )
-    const quote = calculateSubscriptionQuote(selection, subscriptionConfig)
+    const quote = calculateSubscriptionQuote(selection, catalog)
     const itemAmount = (type: SubscriptionQuote["items"][number]["type"]) => fromCents(quote.items.find((item) => item.type === type)?.amount ?? 0)
     const selectedAdditionalFeatures = (subscriptionConfig.additionalFeatures ?? []).filter((feature) => Boolean(feature.id && selection.additionalFeatureIds.includes(feature.id)))
     const additionalFeaturesPrice = fromCents(quote.items.filter((item) => item.type === "additionalFeature").reduce((sum, item) => sum + item.amount, 0))

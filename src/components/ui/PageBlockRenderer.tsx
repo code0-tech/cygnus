@@ -32,7 +32,8 @@ import { SmallPricingSection } from "../sections/SmallPricingSection"
 import { ContactSection } from "../sections/ContactSection"
 import { CompareApplicationSection } from "../sections/CompareApplicationSection"
 import { getIcon } from "@/components/ui/IconRenderer"
-import type { ActionItem, PaginatedActionsResult, SubscriptionConfigData, SubscriptionConfiguratorBlockData } from "@/lib/cms"
+import type { ActionItem, SubscriptionConfigData, SubscriptionConfiguratorBlockData } from "@/lib/cms"
+import type { SubscriptionPriceCatalog } from "@/lib/subscriptionPrices"
 
 type PageBlock = NonNullable<Page["layout"]>[number]
 
@@ -47,11 +48,12 @@ interface PageBlocksRendererProps {
     actionModuleJson?: unknown
     actionReferences?: ActionItem[]
     subscriptionConfig?: SubscriptionConfigData | null
+    subscriptionPrices?: SubscriptionPriceCatalog | null
 }
 
 type PageBlockRenderOptions = Pick<
     PageBlocksRendererProps,
-    "actions" | "paginatedActions" | "cardRowChildren" | "ctaFloating" | "locale" | "action" | "actionModuleJson" | "actionReferences" | "subscriptionConfig"
+    "actions" | "cardRowChildren" | "ctaFloating" | "locale" | "action" | "actionModuleJson" | "actionReferences" | "subscriptionConfig" | "subscriptionPrices"
 >
 type BlockRenderer = (block: PageBlock, options: PageBlockRenderOptions) => ReactNode
 
@@ -133,7 +135,8 @@ const pageBlockRenderers: Partial<Record<PageBlock["blockType"], BlockRenderer>>
     ),
     subscriptionConfigurator: (block, options) => {
         const config = options.subscriptionConfig
-        if (!config) return null
+        const subscriptionPrices = options.subscriptionPrices
+        if (!config || !subscriptionPrices) return null
 
         const content = block as Extract<PageBlock, { blockType: "subscriptionConfigurator" }>
         const blockContent: SubscriptionConfiguratorBlockData = {
@@ -162,7 +165,7 @@ const pageBlockRenderers: Partial<Record<PageBlock["blockType"], BlockRenderer>>
             additionalFeatures: (config.additionalFeatures ?? []).map((feature, index) => getIcon(feature.icon?.trim() || "tabler:IconCube", 20, feature.id ?? `additional-feature-${index}`)),
         }
 
-        return <SubscriptionConfiguratorSection locale={options.locale ?? "en"} content={{ ...config, ...blockContent }} icons={icons} />
+        return <SubscriptionConfiguratorSection locale={options.locale ?? "en"} content={{ ...config, ...blockContent }} icons={icons} subscriptionPrices={subscriptionPrices} />
     },
     pricing: (block, options) => {
         const config = options.subscriptionConfig
@@ -187,10 +190,21 @@ function renderPageBlock(block: PageBlock, options: PageBlockRenderOptions) {
     return renderer ? renderer(block, options) : null
 }
 
-export function PageBlocks({ blocks, actions, paginatedActions, cardRowChildren, ctaFloating = false, locale, action, actionModuleJson, actionReferences, subscriptionConfig }: PageBlocksRendererProps) {
+export function PageBlocks({
+    blocks,
+    actions,
+    cardRowChildren,
+    ctaFloating = false,
+    locale,
+    action,
+    actionModuleJson,
+    actionReferences,
+    subscriptionConfig,
+    subscriptionPrices,
+}: PageBlocksRendererProps) {
     const renderableBlocks =
         blocks?.flatMap((block) => {
-            const element = renderPageBlock(block, { actions, paginatedActions, cardRowChildren, ctaFloating, locale, action, actionModuleJson, actionReferences, subscriptionConfig })
+            const element = renderPageBlock(block, { actions, cardRowChildren, ctaFloating, locale, action, actionModuleJson, actionReferences, subscriptionConfig, subscriptionPrices })
             return element ? [{ block, element }] : []
         }) ?? []
 

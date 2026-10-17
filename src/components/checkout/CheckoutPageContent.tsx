@@ -8,6 +8,7 @@ import { useCraterSession } from "@/components/checkout/CraterSessionProvider"
 import { Drawer, DrawerBackdrop, DrawerContent, DrawerHandle, DrawerPopup, DrawerPortal, DrawerTrigger, DrawerViewport } from "@/components/ui/Drawer"
 import type { CheckoutData, SubscriptionConfigData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
+import type { SubscriptionPriceCatalog } from "@/lib/subscriptionPrices"
 import type { Footer } from "@/payload-types"
 import { IconArrowRight } from "@tabler/icons-react"
 import { useEffect, useState } from "react"
@@ -18,10 +19,11 @@ interface CheckoutPageContentProps {
     form?: CheckoutData["form"] | null
     locale: AppLocale
     subscriptionConfig?: SubscriptionConfigData | null
+    subscriptionPrices: SubscriptionPriceCatalog
     summary?: CheckoutData["summary"] | null
 }
 
-export function CheckoutPageContent({ currentYear, footer, form, locale, subscriptionConfig, summary }: CheckoutPageContentProps) {
+export function CheckoutPageContent({ currentYear, footer, form, locale, subscriptionConfig, subscriptionPrices, summary }: CheckoutPageContentProps) {
     const { token: sessionToken } = useCraterSession()
     const [mobileCheckoutOpen, setMobileCheckoutOpen] = useState(false)
 
@@ -44,7 +46,7 @@ export function CheckoutPageContent({ currentYear, footer, form, locale, subscri
     return (
         <div className="flex flex-1 flex-col">
             <div className="flex w-full flex-col gap-8 lg:flex-row lg:gap-16">
-                <CheckoutSummary content={summary} sessionToken={sessionToken} subscriptionConfig={subscriptionConfig} />
+                <CheckoutSummary content={summary} sessionToken={sessionToken} subscriptionConfig={subscriptionConfig} subscriptionPrices={subscriptionPrices} />
 
                 {form && (
                     <CheckoutFormProvider content={form} locale={locale}>
