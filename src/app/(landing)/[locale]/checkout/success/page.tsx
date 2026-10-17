@@ -8,6 +8,7 @@ import { parseCheckoutSessionId } from "@/lib/checkout/checkoutReturn"
 import type { Metadata } from "next"
 import { CheckoutDraftCleanup } from "@/components/checkout/CheckoutDraftCleanup"
 import { CheckoutSuccessStatus } from "@/components/checkout/CheckoutSuccessStatus"
+import { retrieveCheckoutSessionValidationStatus } from "@/lib/checkout/stripeCheckoutStatus"
 
 export const metadata: Metadata = { title: "Success" }
 
@@ -19,7 +20,9 @@ interface CheckoutSuccessPageProps {
 export default async function CheckoutSuccessPage({ params, searchParams }: CheckoutSuccessPageProps) {
     const [{ locale }, query] = await Promise.all([params, searchParams])
     if (!isSupportedLocale(locale)) notFound()
-    if (!parseCheckoutSessionId(query.session_id)) notFound()
+    const checkoutSessionId = parseCheckoutSessionId(query.session_id)
+    if (!checkoutSessionId) notFound()
+    if ((await retrieveCheckoutSessionValidationStatus(checkoutSessionId)) !== "complete") notFound()
 
     const [checkoutContent, footer] = await Promise.all([getCheckoutContent(locale), getFooter(locale)])
     const currentYear = new Date().getUTCFullYear()
