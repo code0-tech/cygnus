@@ -1,37 +1,19 @@
 import { createApolloClient } from "@/lib/apolloClient"
 import { normalizeCheckoutSelection, validateCheckoutSelection } from "@/lib/checkoutValidation"
-import { craterJson, craterMutationErrorResponse, craterTransportErrorResponse, optionalString, readJsonObject, requireCraterSession, type CraterMutationError, type JsonObject } from "@/lib/craterApi"
+import { craterJson, craterMutationErrorResponse, craterTransportErrorResponse, optionalString, readJsonObject, requireCraterSession, type JsonObject } from "@/lib/craterApi"
 import { resolveSiteUrl } from "@/lib/siteConfig"
+import type { Mutation, MutationCheckoutCreateSessionArgs, Scalars } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 
 export const runtime = "nodejs"
 
-type CheckoutCreateSessionInput = {
-    cancelUrl: string
-    customCheckoutConfigurationId?: string
-    deploymentType?: "cloud" | "self_hosted"
-    namespaceId?: string
-    plan?: string
-    promotionCode?: string
-    successUrl: string
+type CheckoutCreateSessionData = Pick<Mutation, "checkoutCreateSession">
+
+function isCustomCheckoutConfigurationId(value: string): value is Scalars["CustomCheckoutConfigurationID"]["input"] {
+    return /^gid:\/\/crater\/CustomCheckoutConfiguration\/\d+$/.test(value)
 }
 
-type CheckoutCreateSessionData = {
-    checkoutCreateSession: {
-        errors: CraterMutationError[]
-        session: {
-            expiresAt: number | null
-            id: string
-            url: string | null
-        } | null
-    }
-}
-
-type CheckoutCreateSessionVariables = {
-    input: CheckoutCreateSessionInput
-}
-
-const CHECKOUT_CREATE_SESSION: TypedDocumentNode<CheckoutCreateSessionData, CheckoutCreateSessionVariables> = gql`
+const CHECKOUT_CREATE_SESSION: TypedDocumentNode<CheckoutCreateSessionData, MutationCheckoutCreateSessionArgs> = gql`
     mutation CheckoutCreateSession($input: CheckoutCreateSessionInput!) {
         checkoutCreateSession(input: $input) {
             session {
@@ -67,9 +49,18 @@ export async function POST(request: Request) {
         const paymentPeriod = optionalString(requestData.paymentPeriod)
         const workflowExecutions = optionalString(requestData.workflowExecutions)
         const aiTokens = optionalString(requestData.aiTokens)
+        let craterCustomCheckoutConfigurationId: Scalars["CustomCheckoutConfigurationID"]["input"] | undefined
 
         if (Boolean(plan) === Boolean(customCheckoutConfigurationId)) {
             return craterJson({ error: "Provide either plan or customCheckoutConfigurationId." }, 400)
+        }
+
+        if (customCheckoutConfigurationId) {
+            if (!isCustomCheckoutConfigurationId(customCheckoutConfigurationId)) {
+                return craterJson({ error: "customCheckoutConfigurationId must be a valid Crater global ID." }, 400)
+            }
+
+            craterCustomCheckoutConfigurationId = customCheckoutConfigurationId
         }
 
         if (!customCheckoutConfigurationId && deploymentType !== "cloud" && deploymentType !== "self_hosted") {
@@ -112,14 +103,14 @@ export async function POST(request: Request) {
         }
 
         const siteUrl = resolveSiteUrl()
-        const input: CheckoutCreateSessionInput = {
+        const input: MutationCheckoutCreateSessionArgs["input"] = {
             successUrl: new URL("/checkout/success", siteUrl).toString(),
             cancelUrl: new URL("/checkout", siteUrl).toString(),
-            ...(customCheckoutConfigurationId
-                ? { customCheckoutConfigurationId }
+            ...(craterCustomCheckoutConfigurationId
+                ? { customCheckoutConfigurationId: craterCustomCheckoutConfigurationId }
                 : {
                       plan,
-                      deploymentType: deploymentType as "cloud" | "self_hosted",
+                      deploymentType,
                       ...(namespaceId ? { namespaceId } : {}),
                   }),
             ...(promotionCode ? { promotionCode } : {}),

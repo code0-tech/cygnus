@@ -1,6 +1,6 @@
 import assert from "node:assert/strict"
 import test from "node:test"
-import { POST as createOrGetCustomer } from "../src/app/api/crater/customer/route"
+import { PATCH as updateCustomer, POST as createOrGetCustomer } from "../src/app/api/crater/customer/route"
 import { POST as validateDiscount } from "../src/app/api/crater/checkout/discount/route"
 import { POST as calculateTax } from "../src/app/api/crater/checkout/tax/route"
 import { POST as createSession } from "../src/app/api/crater/login/route"
@@ -73,6 +73,24 @@ test("business customer creation requires tax ID fields", async () => {
     assert.equal(response.status, 400)
     assert.deepEqual(await response.json(), {
         error: "taxIdType and taxIdValue are required for business customers.",
+    })
+})
+
+test("customer updates require a valid Crater customer id", async () => {
+    const response = await updateCustomer(
+        new Request("https://example.com/api/crater/customer", {
+            method: "PATCH",
+            headers: sessionHeaders,
+            body: JSON.stringify({
+                id: "123",
+                name: "Updated name",
+            }),
+        })
+    )
+
+    assert.equal(response.status, 400)
+    assert.deepEqual(await response.json(), {
+        error: "A valid Crater customer id is required and address must be valid when provided.",
     })
 })
 

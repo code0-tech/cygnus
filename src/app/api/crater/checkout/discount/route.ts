@@ -1,29 +1,13 @@
 import { createApolloClient } from "@/lib/apolloClient"
-import { craterJson, craterMutationErrorResponse, craterTransportErrorResponse, optionalString, readJsonObject, requireCraterSession, type CraterMutationError } from "@/lib/craterApi"
+import { craterJson, craterMutationErrorResponse, craterTransportErrorResponse, optionalString, readJsonObject, requireCraterSession } from "@/lib/craterApi"
+import type { Mutation, MutationCheckoutValidateDiscountArgs } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 
 export const runtime = "nodejs"
 
-type CheckoutValidateDiscountData = {
-    checkoutValidateDiscount: {
-        discount: {
-            amountOff: number | null
-            code: string
-            currency: string | null
-            duration: string
-            percentOff: number | null
-        } | null
-        errors: CraterMutationError[]
-    }
-}
+type CheckoutValidateDiscountData = Pick<Mutation, "checkoutValidateDiscount">
 
-type CheckoutValidateDiscountVariables = {
-    input: {
-        code: string
-    }
-}
-
-const CHECKOUT_VALIDATE_DISCOUNT: TypedDocumentNode<CheckoutValidateDiscountData, CheckoutValidateDiscountVariables> = gql`
+const CHECKOUT_VALIDATE_DISCOUNT: TypedDocumentNode<CheckoutValidateDiscountData, MutationCheckoutValidateDiscountArgs> = gql`
     mutation CheckoutValidateDiscount($input: CheckoutValidateDiscountInput!) {
         checkoutValidateDiscount(input: $input) {
             discount {
@@ -62,7 +46,7 @@ export async function POST(request: Request) {
 
         const errorResponse = craterMutationErrorResponse(payload.errors, "Crater could not validate the discount.")
         if (errorResponse) return errorResponse
-        if (!payload.discount) throw new Error("Crater returned no discount.")
+        if (!payload.discount?.code || !payload.discount.duration) throw new Error("Crater returned an incomplete discount.")
 
         return craterJson(payload.discount)
     } catch (error) {

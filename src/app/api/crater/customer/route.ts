@@ -1,71 +1,15 @@
 import { createApolloClient } from "@/lib/apolloClient"
-import {
-    craterJson,
-    craterMutationErrorResponse,
-    craterTransportErrorResponse,
-    optionalString,
-    readJsonObject,
-    readOptionalAddress,
-    requireCraterSession,
-    type CraterMutationError,
-} from "@/lib/craterApi"
+import { craterJson, craterMutationErrorResponse, craterTransportErrorResponse, optionalString, readJsonObject, readOptionalAddress, requireCraterSession } from "@/lib/craterApi"
+import type { Mutation, MutationCustomersCreateArgs, MutationCustomersUpdateArgs, Scalars } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 
 export const runtime = "nodejs"
 
-type CustomerAddressInput = {
-    city?: string
-    country?: string
-    line1?: string
-    line2?: string
-    postalCode?: string
-    state?: string
-}
+type CustomersCreateData = Pick<Mutation, "customersCreate">
+type CustomersUpdateData = Pick<Mutation, "customersUpdate">
 
-type Customer = {
-    address: CustomerAddressInput | null
-    createdAt: string
-    customerType: string
-    email: string
-    id: string
-    name: string
-    phone: string | null
-    updatedAt: string
-}
-
-type CustomerMutationPayload = {
-    customer: Customer | null
-    errors: CraterMutationError[]
-}
-
-type CustomersCreateData = {
-    customersCreate: CustomerMutationPayload
-}
-
-type CustomersCreateVariables = {
-    input: {
-        address?: CustomerAddressInput
-        customerType: "business" | "personal"
-        email: string
-        name: string
-        phone?: string
-        taxIdType?: string
-        taxIdValue?: string
-    }
-}
-
-type CustomersUpdateData = {
-    customersUpdate: CustomerMutationPayload
-}
-
-type CustomersUpdateVariables = {
-    input: {
-        address?: CustomerAddressInput
-        email?: string
-        id: string
-        name?: string
-        phone?: string
-    }
+function isCustomerId(value: string): value is Scalars["CustomerID"]["input"] {
+    return /^gid:\/\/crater\/Customer\/\d+$/.test(value)
 }
 
 const CUSTOMER_FIELDS = gql`
@@ -88,7 +32,7 @@ const CUSTOMER_FIELDS = gql`
     }
 `
 
-const CUSTOMERS_CREATE: TypedDocumentNode<CustomersCreateData, CustomersCreateVariables> = gql`
+const CUSTOMERS_CREATE: TypedDocumentNode<CustomersCreateData, MutationCustomersCreateArgs> = gql`
     mutation CustomersCreate($input: CustomersCreateInput!) {
         customersCreate(input: $input) {
             customer {
@@ -102,7 +46,7 @@ const CUSTOMERS_CREATE: TypedDocumentNode<CustomersCreateData, CustomersCreateVa
     ${CUSTOMER_FIELDS}
 `
 
-const CUSTOMERS_UPDATE: TypedDocumentNode<CustomersUpdateData, CustomersUpdateVariables> = gql`
+const CUSTOMERS_UPDATE: TypedDocumentNode<CustomersUpdateData, MutationCustomersUpdateArgs> = gql`
     mutation CustomersUpdate($input: CustomersUpdateInput!) {
         customersUpdate(input: $input) {
             customer {
@@ -181,8 +125,8 @@ export async function PATCH(request: Request) {
     const phone = optionalString(body?.phone)
     const address = readOptionalAddress(body?.address)
 
-    if (!body || !id || address === null) {
-        return craterJson({ error: "id is required and address must be valid when provided." }, 400)
+    if (!body || !id || !isCustomerId(id) || address === null) {
+        return craterJson({ error: "A valid Crater customer id is required and address must be valid when provided." }, 400)
     }
 
     if (!email && !name && !phone && !address) {
