@@ -8,9 +8,11 @@ import sharp from "sharp"
 import { fileURLToPath } from "url"
 import { Actions } from "./collections/actions"
 import { Blog } from "./collections/blog"
+import { Checkout } from "./globals/checkout"
 import { CookieBanner } from "./globals/cookieBanner"
 import { Footer } from "./globals/footer"
 import { Jobs } from "./collections/jobs"
+import { Licenses } from "./globals/licenses"
 import { Media } from "./collections/media"
 import { Navigation } from "./globals/navigation"
 import { Pages } from "./collections/pages"
@@ -71,7 +73,7 @@ export default buildConfig({
         defaultLocale: "en",
     },
     collections: [Users, Media, Pages, Actions, Jobs, Blog, TeamMembers],
-    globals: [Navigation, Footer, CookieBanner, SubscriptionCollection],
+    globals: [Navigation, Footer, CookieBanner, SubscriptionCollection, Checkout, Licenses],
     jobs: {
         autoRun: [
             {

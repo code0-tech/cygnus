@@ -90,7 +90,7 @@ export function WorkflowCalculatorDialog({ locale, content, businessTypeIcons, v
                 <Button
                     type="button"
                     variant="none"
-                    className="group/link relative h-auto! min-w-0 shrink-0 rounded-none! border-0! bg-transparent! px-0! py-0! text-sm! tracking-normal text-tertiary shadow-none! transition-colors hover:border-transparent! hover:bg-transparent! hover:text-brand! hover:shadow-none! focus:border-transparent! focus:bg-transparent! focus:shadow-none! [&_*]:transition-colors hover:[&_*]:text-brand! after:pointer-events-none after:absolute after:bottom-0 after:left-0 after:h-px after:w-0 after:bg-current after:transition-[width] after:duration-300 after:ease-out hover:after:w-full"
+                    className="group/link relative h-auto! min-w-0 shrink-0 rounded-none! border-0! bg-transparent! px-0! py-0! text-sm! tracking-normal text-tertiary shadow-none! transition-colors hover:border-transparent! hover:bg-transparent! hover:text-brand! hover:shadow-none! focus:border-transparent! focus:bg-transparent! focus:shadow-none! **:transition-colors hover:**:text-brand! after:pointer-events-none after:absolute after:bottom-0 after:left-0 after:h-px after:w-0 after:bg-current after:transition-[width] after:duration-300 after:ease-out hover:after:w-full"
                     aria-label={content.title}
                 >
                     <span className="flex min-w-0 items-center gap-1 truncate">{content.triggerLabel}</span>
