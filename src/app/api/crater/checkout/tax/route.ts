@@ -31,16 +31,6 @@ const CHECKOUT_CALCULATE_TAX: TypedDocumentNode<CheckoutCalculateTaxData, Checko
             }
             errors {
                 errorCode
-                details {
-                    __typename
-                    ... on ActiveModelError {
-                        attribute
-                        type
-                    }
-                    ... on MessageError {
-                        message
-                    }
-                }
             }
         }
     }

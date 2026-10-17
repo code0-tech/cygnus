@@ -55,15 +55,11 @@ A `UserSession` contains:
 - timestamps
 - a session token, which is only returned when the session is created
 
-Login uses a token issued by Sagittarius. Session lists follow the GraphQL connection model with `nodes`, `edges`, cursors, a total count, and `pageInfo`.
+The API design expects login to use a token issued by Sagittarius. On this branch, however, Sagittarius token validation is not implemented yet. As a temporary development fallback, any non-blank `sagittariusToken` logs in the same fixed user (`User.first_or_create!`) and creates a new Crater session. A blank token returns `INVALID_SAGITTARIUS_TOKEN`.
 
-Except for `usersLogin`, mutations require an active Crater session. Send its token using the exact authorization scheme:
+This fallback must not be treated as production authentication: Crater currently has no Sagittarius client, redirect flow, or implemented source from which a real Sagittarius token can be obtained.
 
-```http
-Authorization: Session <user-session-token>
-```
-
-Crater does not use cookies for GraphQL authentication. A missing authorization header causes a protected mutation to return HTTP `403 Forbidden`. An invalid, inactive, or expired session causes HTTP `401 Unauthorized`.
+Session lists follow the GraphQL connection model with `nodes`, `edges`, cursors, a total count, and `pageInfo`.
 
 ### Checkout and Stripe
 
@@ -82,6 +78,7 @@ Additional checkout features include:
 - supporting the `self_hosted` and `cloud` deployment types
 - optionally linking a cloud checkout to a Sagittarius namespace ID
 - configurable success and cancellation URLs
+- attaching the Crater customer ID, deployment type, customer type, and optional namespace ID to the Stripe subscription metadata
 
 Monetary amounts are transferred as integers in the smallest currency unit.
 
@@ -155,16 +152,36 @@ All queries start at the root `Query` type. The currently documented query field
 | ------ | ------------------ | ----------- | ----------------------------------------------------------------- |
 | `echo` | `message: String!` | `String!`   | Verifies read access to the API and returns the supplied message. |
 
+### HTTP authentication
+
+GraphQL requests are sent to `POST /graphql`. Crater uses header-based session authentication and does not use an authentication cookie:
+
+```http
+Authorization: Session <crater-session-token>
+Content-Type: application/json
+```
+
+Authentication behavior:
+
+- Queries can be executed anonymously.
+- `usersLogin` is the only mutation that can be executed anonymously, and it must be the only top-level selection in that GraphQL operation.
+- All other mutations, including `checkoutCreateSession`, require an active Crater `UserSession`.
+- A protected mutation without an `Authorization` header returns HTTP `403 Forbidden`.
+- An unknown authentication scheme or an invalid or inactive session token returns HTTP `401 Unauthorized`.
+- The session token is returned by `usersLogin` only when the new `UserSession` is created.
+
+On this branch, the value passed as `sagittariusToken` is only checked for presence. Any non-blank placeholder value creates a session for the first user in the database. This is explicitly temporary until real Sagittarius token verification is implemented.
+
 ### Mutations
 
 Almost all mutations optionally accept `clientMutationId` and return it so the client can correlate the response with its request. Mutation payloads also contain a non-null `errors: [Error!]!` field.
 
 #### Authentication and access
 
-| Mutation     | Key arguments               | Result                                                           |
-| ------------ | --------------------------- | ---------------------------------------------------------------- |
-| `usersLogin` | `sagittariusToken: String!` | Created `UserSession`                                            |
-| `echo`       | Optional message            | Returned message; verifies mutation access without changing data |
+| Mutation     | Key arguments                                                                        | Result                                                           |
+| ------------ | ------------------------------------------------------------------------------------ | ---------------------------------------------------------------- |
+| `usersLogin` | Non-blank `sagittariusToken: String!`; temporarily not validated against Sagittarius | Newly created `UserSession` and its Crater session token         |
+| `echo`       | Optional message                                                                     | Returned message; verifies mutation access without changing data |
 
 #### Customers
 
@@ -187,10 +204,12 @@ For `customersCreate`, only `customerType` is mandatory in the GraphQL schema. O
 
 For `checkoutCreateSession`:
 
+- The request must include `Authorization: Session <crater-session-token>`; the mutation is not anonymously accessible.
+- The authenticated user must be associated with a customer. Crater uses that user's first customer; if none exists, the mutation returns `INVALID_CHECKOUT_SESSION`.
 - A regular checkout uses `plan` and, where applicable, `deploymentType`, `namespaceId`, and `promotionCode`.
 - A custom checkout uses `customCheckoutConfigurationId`; `plan` and `deploymentType` are then ignored.
 - `namespaceId` is only relevant to cloud deployments.
-- The authenticated user must already be associated with a customer. Otherwise the mutation returns `INVALID_CHECKOUT_SESSION` with the message `Customer must be created first`.
+- The resulting Stripe subscription metadata contains `crater_customer_id`, `deployment_type`, `customer_type`, and, when supplied, `namespace_id`.
 
 #### Licenses
 
@@ -240,10 +259,15 @@ Documented error codes:
 
 ## Typical end-to-end flow
 
-1. A user logs in with a Sagittarius token and receives a session.
-2. A customer is created or updated with contact, address, and, where applicable, tax details.
-3. The frontend can preview tax and validate a promotion code.
-4. Crater creates a Stripe Checkout Session for a plan or an individually negotiated offer.
-5. Stripe events are processed as webhooks and protected against duplicate processing.
-6. The subscription, invoice, and license are created or updated as a result.
-7. A self-hosted license is exported, while a cloud license is linked to a Sagittarius namespace.
+1. The client calls the anonymous `usersLogin` mutation. On this branch, any non-blank placeholder `sagittariusToken` is accepted; real Sagittarius verification is still pending.
+2. `usersLogin` creates a Crater `UserSession` and returns its token.
+3. The client sends that token on subsequent mutations as `Authorization: Session <token>`; no authentication cookie is required.
+4. The authenticated user must have an associated customer, which is created or updated with contact, address, and, where applicable, tax details.
+5. The frontend can preview tax and validate a promotion code.
+6. Crater creates a Stripe Checkout Session for a plan or an individually negotiated offer.
+7. The Stripe subscription receives metadata for the Crater customer ID, deployment type, customer type, and optional namespace ID.
+8. Stripe events are processed as webhooks and protected against duplicate processing.
+9. The subscription, invoice, and license are created or updated as a result.
+10. A self-hosted license is exported, while a cloud license is linked to a Sagittarius namespace.
+
+The first step is a temporary branch-specific workaround. It must be replaced with actual Sagittarius token acquisition and verification before production use.

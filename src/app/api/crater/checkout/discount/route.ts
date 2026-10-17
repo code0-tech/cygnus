@@ -35,16 +35,6 @@ const CHECKOUT_VALIDATE_DISCOUNT: TypedDocumentNode<CheckoutValidateDiscountData
             }
             errors {
                 errorCode
-                details {
-                    __typename
-                    ... on ActiveModelError {
-                        attribute
-                        type
-                    }
-                    ... on MessageError {
-                        message
-                    }
-                }
             }
         }
     }

@@ -40,16 +40,6 @@ const CHECKOUT_CREATE_SESSION: TypedDocumentNode<CheckoutCreateSessionData, Chec
             }
             errors {
                 errorCode
-                details {
-                    __typename
-                    ... on ActiveModelError {
-                        attribute
-                        type
-                    }
-                    ... on MessageError {
-                        message
-                    }
-                }
             }
         }
     }

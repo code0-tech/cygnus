@@ -96,16 +96,6 @@ const CUSTOMERS_CREATE: TypedDocumentNode<CustomersCreateData, CustomersCreateVa
             }
             errors {
                 errorCode
-                details {
-                    __typename
-                    ... on ActiveModelError {
-                        attribute
-                        type
-                    }
-                    ... on MessageError {
-                        message
-                    }
-                }
             }
         }
     }
@@ -120,16 +110,6 @@ const CUSTOMERS_UPDATE: TypedDocumentNode<CustomersUpdateData, CustomersUpdateVa
             }
             errors {
                 errorCode
-                details {
-                    __typename
-                    ... on ActiveModelError {
-                        attribute
-                        type
-                    }
-                    ... on MessageError {
-                        message
-                    }
-                }
             }
         }
     }

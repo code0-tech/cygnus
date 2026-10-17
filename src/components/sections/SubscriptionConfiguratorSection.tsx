@@ -17,7 +17,7 @@ import { useState } from "react"
 import { LinkButton } from "../ui/LinkButton"
 import { Card } from "../ui/Card"
 
-type DeploymentMode = "self-hosted" | "cloud"
+type DeploymentMode = "self_hosted" | "cloud"
 type CustomerType = "b2b" | "b2c"
 type OptionAccent = "aqua" | "yellow" | "pink" | "blue" | "brand" | "lime" | "magenta"
 type SubscriptionSelection = {
@@ -183,13 +183,14 @@ export function SubscriptionConfiguratorSection({ locale, content, icons }: { lo
     const workflowExecutions = content.workflowExecutions
     const aiTokens = content.aiTokens
     const defaultSelection = content.defaults
+    const defaultDeployment: DeploymentMode = defaultSelection.deployment === "cloud" ? "cloud" : "self_hosted"
     const defaultWorkflowExecutionRange = workflowExecutions[defaultSelection.customerType]
     const defaultAiTokenRange = aiTokens[defaultSelection.customerType]
     const defaultWorkflowExecutions = defaultSelection.workflowExecutions[defaultSelection.customerType]
     const defaultAiTokens = defaultSelection.aiTokens[defaultSelection.customerType]
 
     const [selection, setSelection] = useState<SubscriptionSelection>({
-        deployment: defaultSelection.deployment,
+        deployment: defaultDeployment,
         customerType: defaultSelection.customerType,
         paymentPeriod: defaultSelection.paymentPeriod,
         workflowExecutions: clampToRange(defaultWorkflowExecutions, defaultWorkflowExecutionRange),
@@ -224,7 +225,7 @@ export function SubscriptionConfiguratorSection({ locale, content, icons }: { lo
     const subscribeHref = (() => {
         const searchParams = new URLSearchParams({
             plan: "custom",
-            deployment: selection.deployment,
+            deploymentType: selection.deployment,
             customerType: selection.customerType,
             paymentPeriod: selection.paymentPeriod,
             workflowExecutions: String(selection.workflowExecutions),
@@ -297,8 +298,8 @@ export function SubscriptionConfiguratorSection({ locale, content, icons }: { lo
                                     description={content.deployment.selfHosted.description}
                                     icon={icons.deployment.selfHosted}
                                     accent={content.deployment.selfHosted.color}
-                                    active={selection.deployment === "self-hosted"}
-                                    onClick={() => setSelection((current) => ({ ...current, deployment: "self-hosted" }))}
+                                    active={selection.deployment === "self_hosted"}
+                                    onClick={() => setSelection((current) => ({ ...current, deployment: "self_hosted" }))}
                                 />
                                 <OptionCard
                                     title={content.deployment.cloud.title}
