@@ -1,7 +1,7 @@
 import assert from "node:assert/strict"
 import test from "node:test"
 import type { LicenseContent } from "../../src/lib/cms"
-import { formatLicenseDisplayValue } from "../../src/lib/licenses/licenseDisplayValues"
+import { formatLicenseDisplayValue } from "../../src/lib/licenses/displayValues"
 
 const labels = {
     customerTypes: { personal: "Privat", business: "Geschäftlich" },

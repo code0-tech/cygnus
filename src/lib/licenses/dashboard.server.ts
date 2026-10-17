@@ -1,8 +1,8 @@
 import { createApolloClient } from "@/lib/apolloClient"
 import { isSubscriptionId } from "@/lib/crater/request"
-import { byMostRecentlyUpdated, mapCustomer, mapPageInfo, mapSubscription, mapUserData } from "@/lib/licenses/licenseDashboardMapper"
-import { CUSTOMER_LICENSE_PAGE, CUSTOMER_NAVIGATION_PAGE, LICENSE_CUSTOMER_DETAIL, LICENSE_DASHBOARD, LICENSE_NAVIGATION_PAGE } from "@/lib/licenses/licenseDashboardQueries.server"
-import type { LicenseDashboardData, LicenseDashboardLicense } from "@/lib/licenses/licenseTypes"
+import { byMostRecentlyUpdated, mapCustomer, mapPageInfo, mapSubscription, mapUserData } from "@/lib/licenses/dashboardMapper"
+import { CUSTOMER_LICENSE_PAGE, CUSTOMER_NAVIGATION_PAGE, LICENSE_CUSTOMER_DETAIL, LICENSE_DASHBOARD, LICENSE_NAVIGATION_PAGE } from "@/lib/licenses/dashboardQueries.server"
+import type { LicenseDashboardData, LicenseDashboardLicense } from "@/lib/licenses/types"
 import type { Customer, Scalars } from "@code0-tech/crater-graphql-types"
 
 export type LicenseDashboardLoadResult = { data: LicenseDashboardData; status: 200 } | { error: string; status: 400 | 401 | 404 | 502 }
@@ -25,8 +25,6 @@ function appendNavigationLicenses(target: LicenseDashboardLicense[], customer: C
     }
 }
 
-// Walks one customer's license connection to the end, so a customer holding more licenses than fit in a
-// single page still contributes all of them to the sidebar.
 async function appendRemainingLicenses(client: ReturnType<typeof createApolloClient>, target: LicenseDashboardLicense[], customer: Customer, customerAfter: string | null) {
     const seenCursors = new Set<string>()
     let pageInfo = mapPageInfo(customer.subscriptions?.pageInfo)
@@ -48,10 +46,6 @@ async function appendRemainingLicenses(client: ReturnType<typeof createApolloCli
     }
 }
 
-// The sidebar shows the same list of licenses no matter which page is open, so it is always built from every
-// license of every customer -- never from whatever subset the current view happened to fetch. Walking the
-// customer connection to the end also yields the cursor that selects each customer, which the customer and
-// license views need to address their own customer without a second walk.
 async function collectNavigationLicenses(client: ReturnType<typeof createApolloClient>) {
     const seenCursors = new Set<string>()
     const navigationLicenses: LicenseDashboardLicense[] = []
@@ -73,7 +67,6 @@ async function collectNavigationLicenses(client: ReturnType<typeof createApolloC
             const customer = edges[index]?.node
             if (!customer?.id) continue
 
-            // The cursor of the preceding edge is what makes this customer the first node of a `first: 1` page.
             const cursorBeforeCustomer = index > 0 ? (edges[index - 1]?.cursor ?? null) : customerAfter
             customerCursors.set(customer.id, cursorBeforeCustomer)
             appendNavigationLicenses(navigationLicenses, customer)
@@ -133,7 +126,6 @@ export async function loadLicenseDashboardData(requestUrl: URL, sessionToken: st
         return { error: "view must be dashboard, customer, or license.", status: 400 }
     }
     if (view !== "dashboard" && !isCustomerId(customerId)) return { error: "A valid Crater customer id is required.", status: 400 }
-    // The license view addresses a subscription: its id stays stable while the current license snapshot changes.
     if (view === "license" && !isSubscriptionId(licenseId)) return { error: "A valid Crater subscription id is required.", status: 400 }
     if (customerAfter === undefined || customerContext === undefined || licenseAfter === undefined || invoiceAfter === undefined) {
         return { error: "The pagination cursor is invalid.", status: 400 }

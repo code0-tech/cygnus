@@ -1,7 +1,7 @@
 import assert from "node:assert/strict"
 import test from "node:test"
 import type { SubscriptionStatus, CheckoutPlan, CheckoutPaymentPeriod, Customer, Subscription } from "@code0-tech/crater-graphql-types"
-import { deriveLicenseStatus, mapCustomer, mapSubscription } from "../../src/lib/licenses/licenseDashboardMapper"
+import { deriveLicenseStatus, mapCustomer, mapSubscription } from "../../src/lib/licenses/dashboardMapper"
 
 const customer: Customer = { id: "gid://crater/Customer/1", name: "Customer", subscriptions: { count: 3 } }
 const subscription: Subscription = {

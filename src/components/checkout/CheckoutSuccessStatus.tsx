@@ -1,5 +1,6 @@
 "use client"
 
+import type { PaymentPeriod } from "@/lib/subscription/types"
 import { checkoutFetch, getCheckoutStatusPollDelay, hasCheckoutStatusPollingExpired } from "@/lib/checkout/client"
 import { LinkButton } from "@/components/ui/LinkButton"
 import { ButtonLoader } from "@/components/ui/Loader"
@@ -7,8 +8,8 @@ import { CheckoutPricingOverview } from "@/components/checkout/CheckoutPricingOv
 import { clearCheckoutContactDraft } from "@/lib/checkout/checkoutDraft"
 import type { CheckoutData, SubscriptionConfigData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
-import { downloadLicenseFile } from "@/lib/licenses/licenseClient"
-import { getPaymentPeriodSuffix, type PaymentPeriod } from "@/lib/subscription/calculator"
+import { downloadLicenseFile } from "@/lib/licenses/client"
+import { getPaymentPeriodSuffix } from "@/lib/subscription/calculator"
 import type { CheckoutCompletionState } from "@code0-tech/crater-graphql-types"
 import { Button } from "@code0-tech/pictor"
 import { IconCheck, IconCloud, IconDownload, IconX } from "@tabler/icons-react"

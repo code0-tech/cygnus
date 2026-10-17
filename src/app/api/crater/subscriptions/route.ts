@@ -2,7 +2,7 @@ import { createApolloClient } from "@/lib/apolloClient"
 import { CRATER_ERROR_FIELDS, craterJson, craterMutationErrorResponse, craterTransportErrorResponse, requireCraterSession } from "@/lib/crater/api.server"
 import { optionalString, readJsonObject, isSubscriptionId, parseSubscriptionChangeFields } from "@/lib/crater/request"
 import { normalizeCraterPaymentPeriod, normalizeCraterPlan } from "@/lib/crater/values"
-import { mapSubscriptionPendingUpdate } from "@/lib/licenses/licenseDashboardMapper"
+import { mapSubscriptionPendingUpdate } from "@/lib/licenses/dashboardMapper"
 import type { Mutation, MutationSubscriptionsUpdateArgs } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 

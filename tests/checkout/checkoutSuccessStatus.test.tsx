@@ -36,7 +36,7 @@ mock.module("@/components/ui/IconRenderer", {
     },
 })
 let downloadedLicenseIds: string[] = []
-mock.module("@/lib/licenses/licenseClient", {
+mock.module("@/lib/licenses/client", {
     namedExports: {
         downloadLicenseFile: async (licenseId: string) => {
             downloadedLicenseIds.push(licenseId)

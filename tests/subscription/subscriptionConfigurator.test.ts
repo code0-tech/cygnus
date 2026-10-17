@@ -1,14 +1,13 @@
+import { PAYMENT_PERIOD_OPTIONS, type SubscriptionSelection } from "@/lib/subscription/types"
 import assert from "node:assert/strict"
 import test from "node:test"
 import type { SubscriptionConfiguratorContent } from "../../src/lib/cms"
 import {
     buildSubscriptionSelectionSearchParams,
-    getPaymentPeriodForCustomerType,
-    getPaymentPeriodOptions,
+    normalizePaymentPeriod,
     parseSubscriptionSelectionFromSearchParams,
     reduceSubscriptionSelection,
     resolveSubscriptionSelection,
-    type SubscriptionSelection,
 } from "../../src/lib/subscription/configurator"
 
 const content = {
@@ -103,11 +102,11 @@ test("offers the same payment periods for both customer types", () => {
     const b2bQuarterlySearchParams = new URLSearchParams({ customerType: "b2b", plan: "pro", paymentPeriod: "quarterly" })
     assert.equal(parseSubscriptionSelectionFromSearchParams(b2bQuarterlySearchParams, content).paymentPeriod, "quarterly")
 
-    assert.equal(getPaymentPeriodForCustomerType("b2b", "quarterly"), "quarterly")
-    assert.equal(getPaymentPeriodForCustomerType("b2c", "quarterly"), "quarterly")
+    assert.equal(normalizePaymentPeriod("quarterly"), "quarterly")
+    assert.equal(normalizePaymentPeriod("weekly"), "monthly")
+    assert.equal(normalizePaymentPeriod(null), "monthly")
 
-    assert.deepEqual([...getPaymentPeriodOptions("b2b")], ["monthly", "quarterly", "yearly"])
-    assert.deepEqual([...getPaymentPeriodOptions("b2c")], ["monthly", "quarterly", "yearly"])
+    assert.deepEqual([...PAYMENT_PERIOD_OPTIONS], ["monthly", "quarterly", "yearly"])
 })
 
 test("builds checkout search params with usage only for the custom plan", () => {

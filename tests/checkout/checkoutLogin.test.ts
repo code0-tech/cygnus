@@ -1,7 +1,7 @@
 import assert from "node:assert/strict"
 import test from "node:test"
 import { createCheckoutQuery, createCraterLoginCallbackUrl, createMainAppLoginUrl } from "../../src/lib/checkout/checkoutLogin"
-import { createLicenseNamespaceCallbackUrl, createLicenseNamespaceReturnPath } from "../../src/lib/licenses/licenseRoute"
+import { createLicenseNamespaceCallbackUrl, createLicenseNamespaceReturnPath } from "../../src/lib/licenses/routes"
 
 test("preserves the subscription configuration for guest checkout", () => {
     const query = createCheckoutQuery({ plan: "custom", tag: ["one", "two"], token: "secret", authError: "session", guestCheckout: "previous-purchase", empty: undefined })

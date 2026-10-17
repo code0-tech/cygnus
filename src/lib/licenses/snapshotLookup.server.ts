@@ -64,8 +64,6 @@ function nextCursor(pageInfo: { endCursor?: string | null; hasNextPage?: boolean
     return pageInfo.endCursor
 }
 
-// Checkout returns a paid snapshot id; dashboard routes address its stable subscription.
-// Search only the authenticated customer's snapshots, including history after a renewal.
 export async function findSubscriptionForLicenseSnapshot(sessionToken: string, customerId: string, licenseId: string) {
     const client = createApolloClient(sessionToken)
     const customerCursors = new Set<string>()

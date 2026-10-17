@@ -1,5 +1,4 @@
-import type { PaymentPeriod } from "@/lib/subscription/calculator"
-import type { SubscriptionCustomerType } from "@/lib/subscription/configurator"
+import type { PaymentPeriod, SubscriptionCustomerType } from "@/lib/subscription/types"
 import type { CheckoutPaymentPeriod, CheckoutPlan, CustomerType } from "@code0-tech/crater-graphql-types"
 
 const CHECKOUT_SESSION_ID_PATTERN = /^cs_(?:test_|live_)?[A-Za-z0-9]{6,}$/

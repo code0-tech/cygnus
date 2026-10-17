@@ -1,6 +1,7 @@
 "use client"
 
-import { fetchCustomerPaymentMethods, type CustomerPaymentMethodSummary } from "@/lib/licenses/licenseClient"
+import { fetchCustomerPaymentMethods } from "@/lib/licenses/client"
+import type { CustomerPaymentMethodSummary } from "@/lib/licenses/types"
 import { useCallback, useEffect, useState } from "react"
 
 function isAbortError(error: unknown) {

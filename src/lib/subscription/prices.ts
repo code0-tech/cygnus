@@ -29,8 +29,6 @@ export const SUBSCRIPTION_PRICE_LOOKUP_KEYS = [
 
 export type SubscriptionPriceLookupKey = (typeof SUBSCRIPTION_PRICE_LOOKUP_KEYS)[number]
 
-export type PricingPeriod = "monthly" | "quarterly" | "yearly"
-
 export type SubscriptionPrice = {
     currency: string
     id: string

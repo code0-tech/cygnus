@@ -1,12 +1,9 @@
+import type { PaymentPeriod, SubscriptionCustomerType, SubscriptionPlan, SubscriptionSelection } from "@/lib/subscription/types"
 import type { SubscriptionConfigData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { getSubscriptionCatalog, type SubscriptionCatalog } from "@/lib/subscription/catalog"
-import { resolveSubscriptionSelection, type SubscriptionCustomerType, type SubscriptionPlan, type SubscriptionSelection } from "@/lib/subscription/configurator"
+import { normalizePaymentPeriod, resolveSubscriptionSelection } from "@/lib/subscription/configurator"
 import { getSubscriptionPriceAmount, type SubscriptionPriceCatalog, type SubscriptionPriceLookupKey } from "@/lib/subscription/prices"
-
-export type PaymentPeriod = "monthly" | "quarterly" | "yearly"
-
-const PAYMENT_PERIODS = new Set<PaymentPeriod>(["monthly", "quarterly", "yearly"])
 
 export function formatDiscountBadge(discount: number, locale: AppLocale) {
     return new Intl.NumberFormat(locale === "de" ? "de-DE" : "en-US", {
@@ -80,10 +77,7 @@ export function calculateSubscriptionQuote(selection: SubscriptionSelection, con
     }
 
     const aiTokenAmount = getSubscriptionPriceAmount(getPrice(config, getPriceKey("ai_token", selection.customerType, selection.paymentPeriod)), selection.aiTokens)
-    const workflowExecutionAmount = getSubscriptionPriceAmount(
-        getPrice(config, getPriceKey("workflow_execution", selection.customerType, selection.paymentPeriod)),
-        selection.workflowExecutions
-    )
+    const workflowExecutionAmount = getSubscriptionPriceAmount(getPrice(config, getPriceKey("workflow_execution", selection.customerType, selection.paymentPeriod)), selection.workflowExecutions)
     const items: SubscriptionQuote["items"] = [
         {
             id: "aiTokens",
@@ -139,7 +133,7 @@ export function resolveCheckoutPricing({
 }) {
     if (!subscriptionConfig || !subscriptionPrices) {
         const plan: SubscriptionPlan = planParam === "pro" || planParam === "max" ? planParam : "custom"
-        const paymentPeriod: PaymentPeriod = PAYMENT_PERIODS.has(paymentPeriodParam as PaymentPeriod) ? (paymentPeriodParam as PaymentPeriod) : "monthly"
+        const paymentPeriod: PaymentPeriod = normalizePaymentPeriod(paymentPeriodParam)
         return {
             aiTokens: parseNumber(aiTokensParam, 0),
             isCustomPlan: plan === "custom",

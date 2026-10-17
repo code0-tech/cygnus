@@ -1,5 +1,6 @@
 "use client"
 
+import type { PaymentPeriod } from "@/lib/subscription/types"
 import { StaggerContainer, StaggerItem } from "@/components/animations/Stagger"
 import { HapticButtonLink } from "@/components/ui/HapticButtonLink"
 import { getIcon } from "@/components/ui/IconRenderer"
@@ -9,7 +10,7 @@ import { Switch } from "@/components/ui/Switch"
 import type { PricingLayoutBlock, SubscriptionConfigData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { formatDiscountBadge, resolveCheckoutPricing } from "@/lib/subscription/calculator"
-import type { PricingPeriod, SubscriptionPriceCatalog } from "@/lib/subscription/prices"
+import type { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
 import { cn } from "@/lib/utils"
 import NumberFlow from "@number-flow/react"
 import { IconCheck, IconX } from "@tabler/icons-react"
@@ -45,11 +46,11 @@ interface PricingSectionProps {
 }
 
 export function PricingSection({ content, locale, subscriptionConfig, subscriptionPrices }: PricingSectionProps) {
-    const [selectedPeriod, setSelectedPeriod] = useState<PricingPeriod>("monthly")
+    const [selectedPeriod, setSelectedPeriod] = useState<PaymentPeriod>("monthly")
     if (!content || !subscriptionConfig || !subscriptionPrices) return null
     const paymentPeriod = subscriptionConfig.paymentPeriod
 
-    const getPricingForPeriod = (plan: "pro" | "max", period: PricingPeriod) =>
+    const getPricingForPeriod = (plan: "pro" | "max", period: PaymentPeriod) =>
         resolveCheckoutPricing({
             aiTokensParam: null,
             customerTypeParam: "b2c",
@@ -61,7 +62,7 @@ export function PricingSection({ content, locale, subscriptionConfig, subscripti
             workflowExecutionsParam: null,
         })
 
-    const getPeriodDiscount = (period: PricingPeriod) => {
+    const getPeriodDiscount = (period: PaymentPeriod) => {
         const { pricing } = getPricingForPeriod("pro", period)
 
         if (pricing.totalBeforeDiscount <= 0) return 0

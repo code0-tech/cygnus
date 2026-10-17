@@ -1,6 +1,6 @@
 import { craterJson, craterTransportErrorResponse, requireCraterSession } from "@/lib/crater/api.server"
 import { setCraterSessionCookie } from "@/lib/crater/session.server"
-import { loadLicenseDashboardData } from "@/lib/licenses/licenseDashboardService.server"
+import { loadLicenseDashboardData } from "@/lib/licenses/dashboard.server"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"

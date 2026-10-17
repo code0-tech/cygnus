@@ -44,7 +44,6 @@ export interface SubscriptionPendingUpdate {
     effectiveAt?: string
 }
 
-// One entry per Crater subscription: id is the subscription id, licenseId the export id of its current license snapshot.
 export interface LicenseDashboardLicense {
     aiTokens?: number
     canceledAt?: string
@@ -95,4 +94,16 @@ export interface LicenseDashboardData {
 export const EMPTY_LICENSE_DASHBOARD_DATA: LicenseDashboardData = {
     customers: [],
     licenses: [],
+}
+
+export interface PaymentMethodDisplayDetails {
+    brand: string | null
+    expiresMonth: number | null
+    expiresYear: number | null
+    last4: string | null
+    type: string | null
+}
+
+export interface CustomerPaymentMethodSummary extends PaymentMethodDisplayDetails {
+    id: string
 }

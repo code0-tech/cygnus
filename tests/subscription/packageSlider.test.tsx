@@ -8,17 +8,29 @@ const { act, cleanup, fireEvent, render, screen } = await import("@testing-libra
 const { PackageSlider } = await import("../../src/components/ui/PackageSlider")
 const frames = new Map<number, FrameRequestCallback>()
 let frameId = 0
-window.requestAnimationFrame = (callback) => { frames.set(++frameId, callback); return frameId }
-window.cancelAnimationFrame = (id) => { frames.delete(id) }
-afterEach(() => { cleanup(); frames.clear() })
+window.requestAnimationFrame = (callback) => {
+    frames.set(++frameId, callback)
+    return frameId
+}
+window.cancelAnimationFrame = (id) => {
+    frames.delete(id)
+}
+afterEach(() => {
+    cleanup()
+    frames.clear()
+})
 
 function prepareTrack() {
     const track = screen.getByRole("slider")
     let captured = false
     Object.assign(track, {
-        setPointerCapture: () => { captured = true },
+        setPointerCapture: () => {
+            captured = true
+        },
         hasPointerCapture: () => captured,
-        releasePointerCapture: () => { captured = false },
+        releasePointerCapture: () => {
+            captured = false
+        },
         getBoundingClientRect: () => ({ left: 0, right: 300, width: 300 }),
     })
     return track
@@ -44,7 +56,18 @@ test("tracks the pointer continuously and settles on a valid package after relea
     const commits: number[] = []
     function Controlled() {
         const [value, setValue] = useState(10)
-        return <PackageSlider packages={[10, 100, 500, 1000]} value={value} lines={31} onChange={(next) => { changes.push(next); setValue(next) }} onValueCommit={(next) => commits.push(next)} />
+        return (
+            <PackageSlider
+                packages={[10, 100, 500, 1000]}
+                value={value}
+                lines={31}
+                onChange={(next) => {
+                    changes.push(next)
+                    setValue(next)
+                }}
+                onValueCommit={(next) => commits.push(next)}
+            />
+        )
     }
     render(<Controlled />)
     const track = prepareTrack()
