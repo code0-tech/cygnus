@@ -13,6 +13,7 @@ const checkoutSearchParams = new URLSearchParams({
 })
 let checkoutProviderOptions: { clientSecret?: string; defaultValues?: unknown; elementsOptions?: { appearance?: { theme?: string; variables?: Record<string, string> } } } | null = null
 let billingAddressOnChange: ((event: { complete: boolean }) => void) | null = null
+let contactDetailsOnChange: ((event: { complete: boolean }) => void) | null = null
 let billingAddressOptions: unknown = null
 let checkoutStages: string[] = []
 let checkoutStage = "billingAddress"
@@ -88,6 +89,10 @@ mock.module("@stripe/react-stripe-js/checkout", {
             checkoutProviderOptions = options
             return <>{children}</>
         },
+        ContactDetailsElement: ({ onChange }: { onChange: (event: { complete: boolean }) => void }) => {
+            contactDetailsOnChange = onChange
+            return <div data-testid="stripe-contact-details">Contact details</div>
+        },
         PaymentElement: () => <div data-testid="stripe-payment">Payment details</div>,
         useCheckoutElements: () => ({
             type: "success",
@@ -103,10 +108,9 @@ mock.module("@stripe/react-stripe-js/checkout", {
     },
 })
 
-const { act, cleanup, render, screen, waitFor, within } = await import("@testing-library/react")
+const { act, cleanup, render, screen, waitFor } = await import("@testing-library/react")
 const userEvent = (await import("@testing-library/user-event")).default
 const { CheckoutForm } = await import("../../src/components/checkout/CheckoutForm")
-const { CheckoutFormProvider } = await import("../../src/components/checkout/CheckoutFormProvider")
 
 const originalFetch = globalThis.fetch
 afterEach(() => {
@@ -116,6 +120,7 @@ afterEach(() => {
     checkoutSearchParams.delete("promotionCode")
     checkoutProviderOptions = null
     billingAddressOnChange = null
+    contactDetailsOnChange = null
     billingAddressOptions = null
     checkoutStages = []
     checkoutStage = "billingAddress"
@@ -229,73 +234,7 @@ function useTestForm<T extends Record<string, unknown>>({
     ] as const
 }
 
-test("disables checkout until all required billing fields are valid", async () => {
-    const requests: string[] = []
-    globalThis.fetch = (async (input) => {
-        requests.push(String(input))
-        return new Response()
-    }) as typeof fetch
-
-    render(<CheckoutForm content={content} locale="en" />)
-
-    assert.equal((screen.getByRole("button", { name: "Continue to payment" }) as HTMLButtonElement).disabled, true)
-    assert.equal(requests.length, 0)
-})
-
-test("shares entered billing details between responsive checkout forms", async () => {
-    const user = userEvent.setup()
-
-    render(
-        <CheckoutFormProvider content={content} locale="en">
-            <div data-testid="desktop-checkout">
-                <CheckoutForm />
-            </div>
-            <div data-testid="mobile-checkout">
-                <CheckoutForm mobileSteps />
-            </div>
-        </CheckoutFormProvider>
-    )
-
-    const desktopCheckout = within(screen.getByTestId("desktop-checkout"))
-    const mobileCheckout = within(screen.getByTestId("mobile-checkout"))
-    await user.type(desktopCheckout.getByRole("textbox", { name: "Name" }), "Ada Lovelace")
-    await user.type(desktopCheckout.getByRole("textbox", { name: "Email" }), "ada@example.com")
-
-    assert.equal((mobileCheckout.getByRole("textbox", { name: "Name" }) as HTMLInputElement).value, "Ada Lovelace")
-    assert.equal((mobileCheckout.getByRole("textbox", { name: "Email" }) as HTMLInputElement).value, "ada@example.com")
-})
-
-test("shows contact details as the personal mobile billing step", async () => {
-    const user = userEvent.setup()
-
-    render(<CheckoutForm content={content} locale="en" mobileSteps />)
-
-    const contactStep = screen.getByRole("button", { name: /Contact details/ })
-    assert.equal(contactStep.getAttribute("aria-expanded"), "true")
-    assert.equal(screen.queryByRole("button", { name: /Address/ }), null)
-    assert.equal(screen.queryByRole("button", { name: /Tax details/ }), null)
-
-    await user.type(screen.getByRole("textbox", { name: "Name" }), "Ada Lovelace")
-    await user.type(screen.getByRole("textbox", { name: "Email" }), "ada@example.com")
-    assert.equal((screen.getByRole("button", { name: "Continue to payment" }) as HTMLButtonElement).disabled, false)
-})
-
-test("shows tax fields as the final mobile step for business customers", async () => {
-    checkoutSearchParams.set("customerType", "b2b")
-    const user = userEvent.setup()
-
-    render(<CheckoutForm content={content} locale="en" mobileSteps />)
-
-    await user.type(screen.getByRole("textbox", { name: "Name" }), "Code0 GmbH")
-    await user.type(screen.getByRole("textbox", { name: "Email" }), "billing@code0.tech")
-    await user.click(screen.getByRole("button", { name: "Continue" }))
-
-    assert.equal(screen.getByRole("button", { name: /Tax details/ }).getAttribute("aria-expanded"), "true")
-    assert.ok(screen.getByRole("textbox", { name: "Tax ID type" }))
-    assert.ok(screen.getByRole("textbox", { name: "Tax ID" }))
-})
-
-test("creates the customer without an address and mounts Stripe checkout elements", async () => {
+test("creates the customer and checkout session on mount before collecting Stripe billing details", async () => {
     const requests: Array<{ init?: RequestInit; url: string }> = []
     globalThis.fetch = (async (input, init) => {
         requests.push({ init, url: String(input) })
@@ -313,12 +252,7 @@ test("creates the customer without an address and mounts Stripe checkout element
         })
     }) as typeof fetch
     const user = userEvent.setup()
-
     render(<CheckoutForm content={content} locale="en" />)
-
-    await user.type(screen.getByRole("textbox", { name: "Name" }), "Ada Lovelace")
-    await user.type(screen.getByRole("textbox", { name: "Email" }), "ada@example.com")
-    await user.click(screen.getByRole("button", { name: "Continue to payment" }))
 
     await waitFor(() => assert.equal(requests.length, 2))
     assert.deepEqual(
@@ -326,12 +260,7 @@ test("creates the customer without an address and mounts Stripe checkout element
         ["/api/crater/customer", "/api/crater/checkout/session"]
     )
     assert.equal(new Headers(requests[0].init?.headers).get("authorization"), "Session crater-session-token")
-    assert.deepEqual(JSON.parse(String(requests[0].init?.body)), {
-        customerType: "personal",
-        name: "Ada Lovelace",
-        email: "ada@example.com",
-        phone: "",
-    })
+    assert.deepEqual(JSON.parse(String(requests[0].init?.body)), { customerType: "personal" })
     assert.deepEqual(JSON.parse(String(requests[1].init?.body)), {
         customerType: "b2c",
         deploymentType: "self_hosted",
@@ -343,23 +272,28 @@ test("creates the customer without an address and mounts Stripe checkout element
     assert.equal(checkoutProviderOptions?.defaultValues, undefined)
     assert.equal(checkoutProviderOptions?.elementsOptions?.appearance?.theme, "night")
     assert.equal(checkoutProviderOptions?.elementsOptions?.appearance?.variables?.colorPrimary, "#72f896")
-    assert.equal(billingAddressOptions, undefined)
+    assert.deepEqual(billingAddressOptions, { display: { name: "full" } })
+    assert.ok(screen.getByTestId("stripe-contact-details"))
     assert.ok(screen.getByTestId("stripe-billing-address"))
     assert.equal(screen.queryByTestId("stripe-payment"), null)
     assert.equal(checkoutStages.includes("payment"), false)
+    assert.equal((screen.getByRole("button", { name: "Continue to payment" }) as HTMLButtonElement).disabled, true)
 
     act(() => billingAddressOnChange?.({ complete: true }))
-
+    assert.equal((screen.getByRole("button", { name: "Continue to payment" }) as HTMLButtonElement).disabled, true)
+    act(() => contactDetailsOnChange?.({ complete: true }))
     assert.equal(screen.queryByTestId("stripe-payment"), null)
     assert.equal(checkoutStages.includes("payment"), false)
     await user.click(screen.getByRole("button", { name: "Continue to payment" }))
 
     assert.ok(screen.getByTestId("stripe-payment"))
+    assert.equal(screen.queryByTestId("stripe-contact-details"), null)
     assert.equal(screen.queryByTestId("stripe-billing-address"), null)
     assert.equal(checkoutStages.at(-1), "payment")
 
     await user.click(screen.getByRole("button", { name: content.backToBillingLabel }))
     assert.ok(screen.getByTestId("stripe-billing-address"))
+    assert.ok(screen.getByTestId("stripe-contact-details"))
     assert.equal(screen.queryByTestId("stripe-payment"), null)
     assert.equal(checkoutStages.at(-1), "billingAddress")
 
@@ -381,7 +315,7 @@ test("creates the customer without an address and mounts Stripe checkout element
     assert.deepEqual(stripeConfirmOptions, [{ redirect: "always" }, { redirect: "always" }])
 })
 
-test("submits B2B tax details before creating the checkout session", async () => {
+test("creates a business customer without contact or tax fields", async () => {
     checkoutSearchParams.set("customerType", "b2b")
     const requests: Array<{ init?: RequestInit; url: string }> = []
     globalThis.fetch = (async (input, init) => {
@@ -395,62 +329,30 @@ test("submits B2B tax details before creating the checkout session", async () =>
             { status: String(input) === "/api/crater/customer" ? 201 : 200, headers: { "content-type": "application/json" } }
         )
     }) as typeof fetch
-    const user = userEvent.setup()
-
     render(<CheckoutForm content={content} locale="en" />)
-    await user.type(screen.getByRole("textbox", { name: "Name" }), "Code0 GmbH")
-    await user.type(screen.getByRole("textbox", { name: "Email" }), "billing@code0.tech")
-    await user.type(screen.getByRole("textbox", { name: "Tax ID type" }), "eu_vat")
-    await user.type(screen.getByRole("textbox", { name: "Tax ID" }), "DE123456789")
-    await user.click(screen.getByRole("button", { name: "Continue to payment" }))
 
     await waitFor(() => assert.equal(requests.length, 2))
-    assert.deepEqual(JSON.parse(String(requests[0].init?.body)), {
-        customerType: "business",
-        email: "billing@code0.tech",
-        name: "Code0 GmbH",
-        phone: "",
-        taxIdType: "eu_vat",
-        taxIdValue: "DE123456789",
-    })
+    assert.deepEqual(JSON.parse(String(requests[0].init?.body)), { customerType: "business" })
+    assert.ok(screen.getByTestId("stripe-contact-details"))
+    assert.ok(screen.getByTestId("stripe-billing-address"))
 })
 
-test("shows customer creation failures and keeps the contact form available", async () => {
-    globalThis.fetch = (async () =>
-        new Response(JSON.stringify({ error: "Crater rejected the customer." }), {
+test("shows automatic customer creation failures and allows retrying", async () => {
+    let requestCount = 0
+    globalThis.fetch = (async () => {
+        requestCount += 1
+        return new Response(JSON.stringify({ error: "Crater rejected the customer." }), {
             status: 422,
             headers: { "content-type": "application/json" },
-        })) as typeof fetch
+        })
+    }) as typeof fetch
     const user = userEvent.setup()
 
     render(<CheckoutForm content={content} locale="en" />)
-    await user.type(screen.getByRole("textbox", { name: "Name" }), "Ada Lovelace")
-    await user.type(screen.getByRole("textbox", { name: "Email" }), "ada@example.com")
-    await user.click(screen.getByRole("button", { name: "Continue to payment" }))
-
     assert.ok(await screen.findByText("Crater rejected the customer."))
-    assert.ok(screen.getByRole("textbox", { name: "Email" }))
-})
-
-test("starts from contact details again after the checkout form remounts", async () => {
-    const user = userEvent.setup()
-    globalThis.fetch = (async (input) =>
-        new Response(JSON.stringify(String(input) === "/api/crater/customer" ? { id: "gid://crater/Customer/1" } : { clientSecret: "cs_test_reload_secret", id: "cs_test_reload" }), {
-            status: String(input) === "/api/crater/customer" ? 201 : 200,
-            headers: { "content-type": "application/json" },
-        })) as typeof fetch
-    const firstRender = render(<CheckoutForm content={content} locale="en" />)
-
-    await user.type(screen.getByRole("textbox", { name: "Name" }), "Ada Lovelace")
-    await user.type(screen.getByRole("textbox", { name: "Email" }), "ada@example.com")
+    assert.equal(requestCount, 1)
     await user.click(screen.getByRole("button", { name: "Continue to payment" }))
-    assert.ok(await screen.findByTestId("stripe-billing-address"))
-
-    firstRender.unmount()
-    render(<CheckoutForm content={content} locale="en" />)
-
-    assert.ok(screen.getByRole("textbox", { name: "Email" }))
-    assert.equal(screen.queryByTestId("stripe-billing-address"), null)
+    await waitFor(() => assert.equal(requestCount, 2))
 })
 
 test("recreates only the checkout session when the promotion code changes or is removed", async () => {
@@ -473,12 +375,7 @@ test("recreates only the checkout session when the promotion code changes or is 
             headers: { "content-type": "application/json" },
         })
     }) as typeof fetch
-    const user = userEvent.setup()
     const view = render(<CheckoutForm content={content} locale="en" />)
-
-    await user.type(screen.getByRole("textbox", { name: "Name" }), "Ada Lovelace")
-    await user.type(screen.getByRole("textbox", { name: "Email" }), "ada@example.com")
-    await user.click(screen.getByRole("button", { name: "Continue to payment" }))
     await waitFor(() => assert.equal(requests.length, 2))
 
     checkoutSearchParams.set("promotionCode", "SAVE10")

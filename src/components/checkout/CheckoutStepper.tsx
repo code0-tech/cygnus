@@ -34,14 +34,13 @@ const STEP_BUTTON_CLASS_NAME = "-mx-2 -my-1 flex items-center gap-1.5 rounded-fu
 export function CheckoutStepper({ content }: { content?: CheckoutStepperContent | null }) {
     const pathname = usePathname()
     const searchParams = useSearchParams()
-    const { stage } = useCheckoutStage()
+    const { stage, setStage } = useCheckoutStage()
     const isSuccessPage = Boolean(pathname?.endsWith("/checkout/success"))
     const currentStep: CheckoutStep = isSuccessPage ? "success" : stage
     const currentIndex = CHECKOUT_STEPS.indexOf(currentStep)
     const configurationUrl = searchParams.get("configurationUrl")
     const stepHref: Partial<Record<CheckoutStep, string>> = {
         configuration: configurationUrl ?? undefined,
-        billingAddress: isSuccessPage ? undefined : `${pathname}?${searchParams.toString()}`,
     }
     const labels: Record<CheckoutStep, string> = {
         configuration: content?.configurationLabel || "Configuration",
@@ -56,6 +55,7 @@ export function CheckoutStepper({ content }: { content?: CheckoutStepperContent 
                 const isCompleted = index < currentIndex || currentStep === "success"
                 const isCurrent = index === currentIndex && !isCompleted
                 const href = isCompleted ? stepHref[step] : undefined
+                const returnsToBilling = step === "billingAddress" && currentStep === "payment"
                 const stepIndicator = (
                     <>
                         <div
@@ -73,7 +73,11 @@ export function CheckoutStepper({ content }: { content?: CheckoutStepperContent 
                 return (
                     <li key={step} className="flex items-center">
                         {index > 0 && <span aria-hidden="true" className={cn("mx-2 h-px lg:w-7 xl:w-15", isCompleted ? "bg-white/60" : "bg-white/10")} />}
-                        {href ? (
+                        {returnsToBilling ? (
+                            <button type="button" onClick={() => setStage("billingAddress")} className={cn(STEP_BUTTON_CLASS_NAME, "cursor-pointer hover:bg-white/10")}>
+                                {stepIndicator}
+                            </button>
+                        ) : href ? (
                             <Link href={href} className={cn(STEP_BUTTON_CLASS_NAME, "hover:bg-white/10")}>
                                 {stepIndicator}
                             </Link>

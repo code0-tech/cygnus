@@ -27,7 +27,7 @@ The ERD describes the following relationships:
 `Customer` represents a billing customer. The data model contains:
 
 - customer type
-- name, email, and optional phone number
+- optional name, email, and phone number
 - Stripe customer ID
 - Stripe tax ID
 
@@ -41,7 +41,7 @@ The GraphQL API additionally returns a global ID and creation and update timesta
 - `postalCode`
 - `country` as a country code
 
-When creating a business customer, `taxIdType` and `taxIdValue` are also expected.
+Business customers can initially be created without a tax ID. When tax ID data is provided, `taxIdType` and `taxIdValue` must be supplied together.
 
 ### Users and sessions
 
@@ -88,7 +88,7 @@ Additional checkout features include:
 - a required, allowlisted return URL for payment methods that temporarily leave the page
 - required billing-address collection
 - automatic Stripe Tax
-- automatic synchronization of the customer's name and address back to Stripe
+- automatic synchronization of the customer's email, name, phone number, address, and tax ID from the completed Stripe Checkout Session
 - attaching the plan, payment period, custom quantities, Crater customer ID, deployment type, customer type, and optional namespace ID to the Stripe subscription metadata
 
 Stripe Price IDs are resolved exclusively on the server from `checkout.prices`. Pro and Max resolve one Price from the plan and payment period. Dynamic custom checkouts additionally use the authenticated customer's type to select B2B or B2C component Prices. This dynamic `plan: custom` flow is separate from `CustomCheckoutConfiguration`.
@@ -306,10 +306,10 @@ Documented error codes:
 3. The client passes that token to Crater's anonymous `usersLogin` mutation.
 4. Crater verifies the token with Sagittarius, maps the returned Sagittarius user ID to a local user, creates a `UserSession`, and returns its token.
 5. The client sends the Crater token on subsequent mutations as `Authorization: Session <token>`; no authentication cookie is required.
-6. The authenticated user must have an associated customer, which is created or updated with contact, address, and, where applicable, tax details.
+6. The authenticated user must have an associated customer. It can initially be created with only its customer type; Stripe Elements subsequently collects contact and billing details.
 7. The frontend can preview tax and validate a promotion code.
 8. Crater creates an embedded Stripe Checkout Session for a plan or an individually negotiated offer and returns its `clientSecret`.
-9. The frontend mounts Stripe's custom checkout UI. Stripe collects billing details and calculates tax automatically.
+9. The frontend mounts Stripe's custom checkout UI. Contact details and the billing address are collected together before payment, and Stripe calculates tax automatically.
 10. The Stripe subscription receives metadata for the Crater customer ID, deployment type, customer type, and optional namespace ID.
 11. The verified `checkout.session.completed` webhook creates or updates Crater's subscription projection, but does not grant paid access by itself.
 12. Invoice lifecycle webhook processing, paid-access activation, and automatic invoice-email delivery remain to be implemented.

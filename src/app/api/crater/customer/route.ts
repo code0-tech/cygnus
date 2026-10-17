@@ -91,12 +91,12 @@ export async function POST(request: Request) {
     const taxIdValue = optionalString(body?.taxIdValue)
     const address = readOptionalAddress(body?.address)
 
-    if (!body || (customerType !== "business" && customerType !== "personal") || !email || !name || address === null) {
-        return craterJson({ error: "customerType, name, and email are required; address must be valid when provided." }, 400)
+    if (!body || (customerType !== "business" && customerType !== "personal") || address === null) {
+        return craterJson({ error: "customerType is required; address must be valid when provided." }, 400)
     }
 
-    if (customerType === "business" && (!taxIdType || !taxIdValue)) {
-        return craterJson({ error: "taxIdType and taxIdValue are required for business customers." }, 400)
+    if (Boolean(taxIdType) !== Boolean(taxIdValue)) {
+        return craterJson({ error: "taxIdType and taxIdValue must be provided together." }, 400)
     }
 
     try {
@@ -105,9 +105,9 @@ export async function POST(request: Request) {
             variables: {
                 input: {
                     customerType,
-                    email,
-                    name,
                     ...(address && Object.keys(address).length > 0 ? { address } : {}),
+                    ...(email ? { email } : {}),
+                    ...(name ? { name } : {}),
                     ...(phone ? { phone } : {}),
                     ...(taxIdType ? { taxIdType } : {}),
                     ...(taxIdValue ? { taxIdValue } : {}),

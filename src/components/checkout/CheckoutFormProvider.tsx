@@ -3,13 +3,11 @@
 import { useCraterSession } from "@/components/checkout/CraterSessionProvider"
 import { useCheckoutStage } from "@/components/checkout/CheckoutStepper"
 import type { CheckoutData } from "@/lib/cms"
-import { createBillingDetailsValidation, createEmptyBillingDetails, type BillingDetails } from "@/lib/checkout/billingDetails"
 import { resolveCraterCustomerType } from "@/lib/checkout/craterCustomer"
 import { createCheckoutSession, prepareCheckoutSession, type CheckoutSessionData } from "@/lib/checkout/checkoutSubmission"
 import type { AppLocale } from "@/lib/i18n"
-import { useForm } from "@code0-tech/pictor"
 import { useSearchParams } from "next/navigation"
-import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react"
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react"
 
 type CheckoutFormContent = CheckoutData["form"]
 
@@ -21,48 +19,47 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, locale: AppLoc
     const [checkoutSession, setCheckoutSession] = useState<CheckoutSessionData | null>(null)
     const [checkoutSessionPromotionCode, setCheckoutSessionPromotionCode] = useState<string | null | undefined>(undefined)
     const [isRefreshingSession, setIsRefreshingSession] = useState(false)
-    const [mobileStep, setMobileStep] = useState(0)
     const [isStripeAddressComplete, setIsStripeAddressComplete] = useState(false)
+    const [isStripeContactComplete, setIsStripeContactComplete] = useState(false)
+    const [preparationAttempt, setPreparationAttempt] = useState(0)
+    const preparedSessionKeyRef = useRef<string | null>(null)
     const sessionRefreshRequestRef = useRef(0)
     const { error: sessionError, isLoading: isSessionLoading, token: sessionToken } = useCraterSession()
     const customerType = resolveCraterCustomerType(searchParams.get("customerType"))
-    const initialValues = useMemo(createEmptyBillingDetails, [])
-    const validation = useMemo(() => createBillingDetailsValidation(customerType, false), [customerType])
     const searchParamsString = searchParams.toString()
     const promotionCode = searchParams.get("promotionCode")?.trim() || null
 
-    const [inputs, validate, values] = useForm({
-        useInitialValidation: false,
-        initialValues,
-        validate: validation,
-        onSubmit: (values: BillingDetails) => {
-            if (isLoading) return
+    useEffect(() => {
+        if (!sessionToken) return
 
-            setIsLoading(true)
-            setErrorMessage(null)
+        const preparationKey = `${sessionToken}:${preparationAttempt}`
+        if (preparedSessionKeyRef.current === preparationKey) return
+        preparedSessionKeyRef.current = preparationKey
+        const requestId = ++sessionRefreshRequestRef.current
+        const checkoutSearchParams = new URLSearchParams(searchParamsString)
 
-            void (async () => {
-                try {
-                    if (!sessionToken) {
-                        throw new Error(sessionError ?? "A Crater session is required.")
-                    }
+        setIsLoading(true)
+        setErrorMessage(null)
+        setCheckoutSession(null)
+        setIsStripeAddressComplete(false)
+        setIsStripeContactComplete(false)
+        setStage("billingAddress")
 
-                    const checkoutSearchParams = new URLSearchParams(searchParamsString)
-                    const session = await prepareCheckoutSession({ values, customerType, locale, searchParams: checkoutSearchParams, sessionToken })
-                    setCheckoutSession(session)
-                    setCheckoutSessionPromotionCode(checkoutSearchParams.get("promotionCode")?.trim() || null)
-                    setIsStripeAddressComplete(false)
-                    setStage("billingAddress")
-                    setIsLoading(false)
-                } catch (error) {
-                    console.error("Failed to start Crater checkout:", error)
-                    setErrorMessage(error instanceof Error ? error.message : content.paymentErrorFallback || "Checkout failed.")
-                    setIsLoading(false)
-                    setStage("billingAddress")
-                }
-            })()
-        },
-    })
+        void prepareCheckoutSession({ customerType, locale, searchParams: checkoutSearchParams, sessionToken })
+            .then((session) => {
+                if (requestId !== sessionRefreshRequestRef.current) return
+                setCheckoutSession(session)
+                setCheckoutSessionPromotionCode(checkoutSearchParams.get("promotionCode")?.trim() || null)
+            })
+            .catch((error) => {
+                if (requestId !== sessionRefreshRequestRef.current) return
+                console.error("Failed to start Crater checkout:", error)
+                setErrorMessage(error instanceof Error ? error.message : content.paymentErrorFallback || "Checkout failed.")
+            })
+            .finally(() => {
+                if (requestId === sessionRefreshRequestRef.current) setIsLoading(false)
+            })
+    }, [content.paymentErrorFallback, customerType, locale, preparationAttempt, searchParamsString, sessionToken, setStage])
 
     useEffect(() => {
         if (checkoutSessionPromotionCode === undefined || checkoutSessionPromotionCode === promotionCode || !sessionToken) return
@@ -73,6 +70,7 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, locale: AppLoc
         setIsRefreshingSession(true)
         setErrorMessage(null)
         setIsStripeAddressComplete(false)
+        setIsStripeContactComplete(false)
         setStage("billingAddress")
 
         void createCheckoutSession({ locale, searchParams: checkoutSearchParams, sessionToken })
@@ -92,33 +90,24 @@ function useCreateCheckoutFormState(content: CheckoutFormContent, locale: AppLoc
             })
     }, [checkoutSessionPromotionCode, content.paymentErrorFallback, locale, promotionCode, searchParamsString, sessionToken, setStage])
 
-    const resetCheckout = () => {
-        sessionRefreshRequestRef.current += 1
-        setCheckoutSession(null)
-        setCheckoutSessionPromotionCode(undefined)
-        setIsRefreshingSession(false)
-        setIsStripeAddressComplete(false)
-        setStage("billingAddress")
-    }
+    const retryPreparation = useCallback(() => {
+        preparedSessionKeyRef.current = null
+        setPreparationAttempt((attempt) => attempt + 1)
+    }, [])
 
     return {
         checkoutSession,
         content,
-        customerType,
         errorMessage,
-        inputs,
         isLoading,
         isRefreshingSession,
         isSessionLoading,
         isStripeAddressComplete,
-        mobileStep,
-        resetCheckout,
+        isStripeContactComplete,
+        retryPreparation,
         sessionError,
-        sessionToken,
         setIsStripeAddressComplete,
-        setMobileStep,
-        validate,
-        values,
+        setIsStripeContactComplete,
     }
 }
 
