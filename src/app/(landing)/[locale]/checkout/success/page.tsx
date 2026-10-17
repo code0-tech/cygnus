@@ -20,10 +20,6 @@ export default async function CheckoutSuccessPage({ params, searchParams }: Chec
     if (!parseCheckoutSessionId(query.session_id)) notFound()
 
     const [checkoutContent, footer] = await Promise.all([getCheckoutContent(locale), getFooter(locale)])
-
-    const heading = checkoutContent?.success.heading ?? "Payment submitted"
-    const description = checkoutContent?.success.description ?? "Stripe has received your payment confirmation. You can close this page or return to the site."
-    const backToHomepageLabel = checkoutContent?.success.backToHomepageLabel ?? "Return to homepage"
     const currentYear = new Date().getUTCFullYear()
 
     return (
@@ -31,11 +27,12 @@ export default async function CheckoutSuccessPage({ params, searchParams }: Chec
             <div className="flex flex-1 items-center justify-center">
                 <Card variant={"light"} className="mx-auto max-w-2xl rounded-3xl p-8! text-center">
                     <div className="relative z-10 space-y-4">
-                        <h1 className="text-3xl font-semibold text-white">{heading}</h1>
-                        <p className="text-secondary">{description}</p>
-                        <div className="flex justify-center">
+                        <h1 className="text-3xl font-semibold text-white">{checkoutContent?.success.heading}</h1>
+                        <p className="text-secondary">{checkoutContent?.success.description}</p>
+                        <div className="flex flex-wrap justify-center gap-5">
+                            <LinkButton href={`/api/crater/licenses/access?locale=${locale}`}>{checkoutContent?.success.licenseDashboardLabel}</LinkButton>
                             <LinkButton href={`/${locale}`} showArrow={false} className="border-b-0">
-                                {backToHomepageLabel}
+                                {checkoutContent?.success.backToHomepageLabel}
                             </LinkButton>
                         </div>
                     </div>

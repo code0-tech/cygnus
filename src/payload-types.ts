@@ -3243,6 +3243,7 @@ export interface Checkout {
   success: {
     heading: string;
     description: string;
+    licenseDashboardLabel: string;
     backToHomepageLabel: string;
   };
   updatedAt?: string | null;
@@ -3852,6 +3853,7 @@ export interface CheckoutSelect<T extends boolean = true> {
     | {
         heading?: T;
         description?: T;
+        licenseDashboardLabel?: T;
         backToHomepageLabel?: T;
       };
   updatedAt?: T;

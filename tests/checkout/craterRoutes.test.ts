@@ -6,6 +6,7 @@ import { POST as calculateTax } from "../../src/app/api/crater/checkout/tax/rout
 import { POST as createSession } from "../../src/app/api/crater/login/route"
 import { DELETE as deleteSession, GET as getSessionStatus } from "../../src/app/api/crater/auth/session/route"
 import { GET as getLicenseDashboard } from "../../src/app/api/crater/licenses/route"
+import { GET as accessLicenseDashboard } from "../../src/app/api/crater/licenses/access/route"
 import { createGraphQLTestServer } from "./graphqlTestServer"
 
 const sessionHeaders = {
@@ -403,9 +404,8 @@ test("validates a persisted Crater session cookie", async () => {
     const graphQLServer = await createGraphQLTestServer([
         {
             data: {
-                echo: {
-                    errors: [],
-                    message: "session-status",
+                currentUser: {
+                    id: "gid://crater/User/1",
                 },
             },
         },
@@ -424,6 +424,29 @@ test("validates a persisted Crater session cookie", async () => {
         assert.deepEqual(await response.json(), { authenticated: true })
         assert.equal(graphQLServer.requests[0].authorization, "Session persisted-token")
         assert.equal(graphQLServer.requests[0].body.operationName, "CraterSessionStatus")
+        assert.match(graphQLServer.requests[0].body.query ?? "", /currentUser/)
+    } finally {
+        if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
+        else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
+        await graphQLServer.close()
+    }
+})
+
+test("clears a Crater session that has no authenticated user", async () => {
+    const graphQLServer = await createGraphQLTestServer([{ data: { currentUser: null } }])
+    const previousGraphQLUrl = process.env.CRATER_GRAPHQL_URL
+    process.env.CRATER_GRAPHQL_URL = graphQLServer.url
+
+    try {
+        const response = await getSessionStatus(
+            new Request("https://example.com/api/crater/auth/session", {
+                headers: { cookie: "crater_session=orphaned-token" },
+            })
+        )
+
+        assert.equal(response.status, 401)
+        assert.match(response.headers.get("set-cookie") ?? "", /crater_session=;/)
+        assert.match(response.headers.get("set-cookie") ?? "", /Max-Age=0/i)
     } finally {
         if (previousGraphQLUrl === undefined) delete process.env.CRATER_GRAPHQL_URL
         else process.env.CRATER_GRAPHQL_URL = previousGraphQLUrl
@@ -447,6 +470,18 @@ test("license dashboard requires a Crater session", async () => {
     const response = await getLicenseDashboard(new Request("https://example.com/api/crater/licenses"))
 
     assert.equal(response.status, 403)
+    assert.equal(response.headers.get("cache-control"), "no-store")
+})
+
+test("license dashboard access forwards the persisted session through the entry URL", async () => {
+    const response = await accessLicenseDashboard(
+        new Request("https://code0.example/api/crater/licenses/access?locale=de", {
+            headers: { cookie: "crater_session=persisted-token" },
+        })
+    )
+
+    assert.equal(response.status, 307)
+    assert.equal(response.headers.get("location"), "https://code0.example/de/licenses?token=persisted-token")
     assert.equal(response.headers.get("cache-control"), "no-store")
 })
 
