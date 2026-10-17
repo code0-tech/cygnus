@@ -30,20 +30,25 @@ export function LicenseCancelDialog({ content, customerId, errors, licenseId, lo
 
     const [error, setError] = useState<string | null>(null)
     const [isSubmitting, setIsSubmitting] = useState(false)
-    const isPending = Boolean(license?.cancelAt)
+    const subscriptionStatus = license?.subscriptionStatus?.toLowerCase()
+    const isTerminal = subscriptionStatus === "canceled" || subscriptionStatus === "incomplete_expired"
+    const isPending = !isTerminal && Boolean(license?.cancelAt)
+    const canCancelImmediately = !isTerminal && license?.immediateCancellationAvailable === true
 
-    const cancel = async () => {
-        if (!license?.subscriptionId || isSubmitting) return
+    const cancel = async (immediately = false) => {
+        if (!license?.subscriptionId || isTerminal || isSubmitting || (immediately && !canCancelImmediately)) return
         setIsSubmitting(true)
         setError(null)
 
         try {
-            const subscription = await cancelLicenseSubscription(license.subscriptionId, errors.subscriptionCancel)
+            const subscription = await cancelLicenseSubscription(license.subscriptionId, errors.subscriptionCancel, immediately)
 
             updateLicense(license.id, {
                 cancelAt: subscription.cancelAt ?? null,
                 canceledAt: subscription.canceledAt ?? null,
                 pendingUpdate: null,
+                immediateCancellationAvailable: subscription.immediateCancellationAvailable === true,
+                ...(subscription.immediateCancellationUntil ? { immediateCancellationUntil: subscription.immediateCancellationUntil } : {}),
                 ...(subscription.status ? { subscriptionStatus: subscription.status } : {}),
                 ...(subscription.updatedAt ? { updatedAt: subscription.updatedAt } : {}),
             })
@@ -56,7 +61,7 @@ export function LicenseCancelDialog({ content, customerId, errors, licenseId, lo
     }
 
     const resume = async () => {
-        if (!license?.subscriptionId || isSubmitting) return
+        if (!license?.subscriptionId || !isPending || isSubmitting) return
         setIsSubmitting(true)
         setError(null)
 
@@ -66,6 +71,8 @@ export function LicenseCancelDialog({ content, customerId, errors, licenseId, lo
             updateLicense(license.id, {
                 cancelAt: null,
                 canceledAt: null,
+                immediateCancellationAvailable: subscription.immediateCancellationAvailable === true,
+                ...(subscription.immediateCancellationUntil ? { immediateCancellationUntil: subscription.immediateCancellationUntil } : {}),
                 ...(subscription.status ? { subscriptionStatus: subscription.status } : {}),
                 ...(subscription.updatedAt ? { updatedAt: subscription.updatedAt } : {}),
             })
@@ -82,12 +89,19 @@ export function LicenseCancelDialog({ content, customerId, errors, licenseId, lo
     return (
         <LicenseDialog
             backLabel={content.editor.closeLabel}
-            description={isPending ? content.cancel.pendingDescription : content.cancel.description}
+            description={isTerminal ? undefined : isPending ? content.cancel.pendingDescription : content.cancel.description}
             onClose={close}
-            title={isPending ? content.cancel.pendingHeading : content.cancel.confirmLabel}
+            title={isTerminal ? subscriptionStatus === "canceled" ? content.values.statuses.canceled : content.values.statuses.incompleteExpired : isPending ? content.cancel.pendingHeading : content.cancel.confirmLabel}
         >
             <div className="space-y-4">
-                {isPending && license?.cancelAt && (
+                {canCancelImmediately && license?.immediateCancellationUntil && (
+                    <div className="rounded-xl border border-white/10 bg-white/3 p-3 text-sm">
+                        <p className="text-secondary">{content.cancel.immediateDescription}</p>
+                        <p className="mt-3 text-tertiary">{content.cancel.immediateUntilLabel}</p>
+                        <p className="mt-1 text-white">{dateFormatter.format(new Date(license.immediateCancellationUntil))}</p>
+                    </div>
+                )}
+                {(isPending || isTerminal) && license?.cancelAt && (
                     <div className="rounded-xl border border-white/10 bg-white/3 p-3 text-sm">
                         <p className="text-tertiary">{content.cancel.cancelAtLabel}</p>
                         <p className="mt-1 text-white">{dateFormatter.format(new Date(license.cancelAt))}</p>
@@ -104,7 +118,12 @@ export function LicenseCancelDialog({ content, customerId, errors, licenseId, lo
                     <Button type="button" variant="none" onClick={close}>
                         {content.editor.closeLabel}
                     </Button>
-                    {isPending ? (
+                    {canCancelImmediately && (
+                        <Button type="button" variant="normal" disabled={!license?.subscriptionId || isSubmitting} onClick={() => void cancel(true)}>
+                            {isSubmitting ? <ButtonLoader label={content.cancel.immediateConfirmLabel} /> : content.cancel.immediateConfirmLabel}
+                        </Button>
+                    )}
+                    {isTerminal ? null : isPending ? (
                         <Button type="button" variant="filled" disabled={!license || isSubmitting} onClick={() => void resume()}>
                             {isSubmitting ? <ButtonLoader label={content.cancel.resumeLabel} /> : content.cancel.resumeLabel}
                         </Button>

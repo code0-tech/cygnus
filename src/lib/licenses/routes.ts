@@ -61,13 +61,6 @@ export function canonicalizeLicensePathname(pathname: string) {
     return changed ? segments.join("/") : pathname
 }
 
-export function getNamespaceDisplayId(value?: string) {
-    if (!value) return undefined
-
-    const normalizedValue = value.trim().replace(/\/+$/, "")
-    return normalizedValue.split("/").at(-1) || normalizedValue
-}
-
 export function createLicenseNamespaceReturnPath(locale: AppLocale, customerId: string, licenseId: string, destination: "detail" | "edit" = "edit") {
     const licensePath = createLicensePath(locale, customerId, licenseId)
     return destination === "edit" ? `${licensePath}/edit` : licensePath

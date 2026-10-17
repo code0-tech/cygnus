@@ -3384,6 +3384,9 @@ export interface LicenseDialog {
   cancel: {
     description: string;
     confirmLabel: string;
+    immediateConfirmLabel: string;
+    immediateDescription: string;
+    immediateUntilLabel: string;
     pendingHeading: string;
     pendingDescription: string;
     cancelAtLabel: string;
@@ -4169,6 +4172,9 @@ export interface LicenseDialogsSelect<T extends boolean = true> {
     | {
         description?: T;
         confirmLabel?: T;
+        immediateConfirmLabel?: T;
+        immediateDescription?: T;
+        immediateUntilLabel?: T;
         pendingHeading?: T;
         pendingDescription?: T;
         cancelAtLabel?: T;

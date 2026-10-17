@@ -1,19 +1,19 @@
-import { readGuestCheckoutSession } from "../../src/lib/checkout/guestCheckoutSession"
 import assert from "node:assert/strict"
 import test from "node:test"
+import { registerHooks } from "node:module"
 import { GET as listCustomers, PATCH as updateCustomer, POST as createOrGetCustomer } from "../../src/app/api/crater/customer/route"
 import { POST as createCustomerPaymentMethodSetup } from "../../src/app/api/crater/customer/payment-method-setup/route"
 import { GET as getCustomerPaymentMethods } from "../../src/app/api/crater/customer/payment-methods/route"
-import { POST as createCheckoutSession } from "../../src/app/api/crater/checkout/session/route"
-import { POST as createGuestUser } from "../../src/app/api/crater/guest/route"
 import { POST as createSession } from "../../src/app/api/crater/login/route"
-import { DELETE as deleteSession, GET as getSessionStatus } from "../../src/app/api/crater/auth/session/route"
-import { GET as completeCraterLogin } from "../../src/app/api/crater/auth/callback/route"
-import { GET as getLicenseDashboard } from "../../src/app/api/crater/licenses/route"
-import { GET as accessLicenseDashboard } from "../../src/app/api/crater/licenses/access/route"
-import { GET as selectLicenseNamespace } from "../../src/app/api/crater/licenses/namespace/callback/route"
-import { GET as getCheckoutLicenseStatus } from "../../src/app/api/crater/checkout/status/route"
 import { createGraphQLTestServer } from "../helpers/graphqlTestServer"
+
+const serverOnlyHook = registerHooks({
+    resolve(specifier, context, nextResolve) {
+        return nextResolve(specifier === "server-only" ? "next/dist/compiled/server-only/empty.js" : specifier, context)
+    },
+})
+const { POST: createCheckoutSession } = await import("../../src/app/api/crater/checkout/session/route")
+serverOnlyHook.deregister()
 
 // CustomerAddressCreateInput declares all six fields non-null; the optional line2 and state are forwarded as empty strings.
 const FULL_ADDRESS = { city: "Berlin", country: "DE", line1: "HauptstraÃŸe 1", postalCode: "10115" }

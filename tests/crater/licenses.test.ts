@@ -163,7 +163,7 @@ test("license dashboard loads from the HttpOnly Crater session cookie", async ()
                                                     currentLicense: { id: "gid://crater/License/1" },
                                                     plan: "PRO",
                                                     deploymentType: "CLOUD",
-                                                    namespaceId: "namespace-1",
+                                                    namespace: { id: "namespace-1", parent: { __typename: "NamespaceOrganization", name: "Example Workspace" } },
                                                     updatedAt: "2026-08-10T10:00:00Z",
                                                 },
                                             },
@@ -175,7 +175,7 @@ test("license dashboard loads from the HttpOnly Crater session cookie", async ()
                                                     currentLicense: { id: "gid://crater/License/2" },
                                                     plan: "CUSTOM",
                                                     deploymentType: "SELF_HOSTED",
-                                                    namespaceId: null,
+                                                    namespace: null,
                                                     updatedAt: "2026-08-12T10:00:00Z",
                                                 },
                                             },
@@ -211,7 +211,7 @@ test("license dashboard loads from the HttpOnly Crater session cookie", async ()
                                             currentLicense: { id: "gid://crater/License/1" },
                                             plan: "PRO",
                                             deploymentType: "CLOUD",
-                                            namespaceId: "namespace-1",
+                                            namespace: { id: "namespace-1", parent: { __typename: "NamespaceOrganization", name: "Example Workspace" } },
                                             paymentPeriod: "YEARLY",
                                             updatedAt: "2026-08-10T10:00:00Z",
                                             workflowExecutions: 250000,
@@ -223,7 +223,7 @@ test("license dashboard loads from the HttpOnly Crater session cookie", async ()
                                             currentLicense: { id: "gid://crater/License/2" },
                                             plan: "CUSTOM",
                                             deploymentType: "SELF_HOSTED",
-                                            namespaceId: null,
+                                            namespace: null,
                                             paymentPeriod: "MONTHLY",
                                             updatedAt: "2026-08-12T10:00:00Z",
                                             workflowExecutions: 100000,
@@ -254,6 +254,12 @@ test("license dashboard loads from the HttpOnly Crater session cookie", async ()
         assert.equal(graphQLServer.requests[1].body.operationName, "LicenseDashboard")
         assert.match(graphQLServer.requests[1].body.query ?? "", /customers\(after: \$customerAfter, first: 25\)/)
         assert.match(graphQLServer.requests[1].body.query ?? "", /subscriptions\(first: 5\)/)
+        assert.match(graphQLServer.requests[0].body.query ?? "", /fragment LicenseDashboardNamespaceFields on Namespace/)
+        assert.match(graphQLServer.requests[0].body.query ?? "", /on NamespaceOrganization/)
+        assert.match(graphQLServer.requests[0].body.query ?? "", /on NamespaceUser/)
+        assert.doesNotMatch(graphQLServer.requests[0].body.query ?? "", /\bnamespaceId\b/)
+        assert.match(graphQLServer.requests[1].body.query ?? "", /immediateCancellationAvailable/)
+        assert.match(graphQLServer.requests[1].body.query ?? "", /immediateCancellationUntil/)
         assert.deepEqual(await response.json(), {
             customers: [
                 {
@@ -277,7 +283,7 @@ test("license dashboard loads from the HttpOnly Crater session cookie", async ()
                     subscriptionId: "gid://crater/Subscription/2",
                     subscriptionStatus: "ACTIVE",
                     name: "Custom",
-                    deploymentType: "self_hosted",
+                    deploymentType: "self_hosted", namespaceId: null, namespaceName: null,
                     paymentPeriod: "monthly",
                     plan: "custom",
                     status: "ACTIVE",
@@ -296,7 +302,7 @@ test("license dashboard loads from the HttpOnly Crater session cookie", async ()
                     subscriptionStatus: "ACTIVE",
                     name: "Pro",
                     deploymentType: "cloud",
-                    namespaceId: "namespace-1",
+                    namespaceId: "namespace-1", namespaceName: "Example Workspace",
                     paymentPeriod: "yearly",
                     plan: "pro",
                     status: "ACTIVE",
@@ -315,7 +321,7 @@ test("license dashboard loads from the HttpOnly Crater session cookie", async ()
                     subscriptionId: "gid://crater/Subscription/2",
                     subscriptionStatus: "ACTIVE",
                     name: "Custom",
-                    deploymentType: "self_hosted",
+                    deploymentType: "self_hosted", namespaceId: null, namespaceName: null,
                     plan: "custom",
                     status: "ACTIVE",
                     updatedAt: "2026-08-12T10:00:00Z",
@@ -331,7 +337,7 @@ test("license dashboard loads from the HttpOnly Crater session cookie", async ()
                     subscriptionStatus: "ACTIVE",
                     name: "Pro",
                     deploymentType: "cloud",
-                    namespaceId: "namespace-1",
+                    namespaceId: "namespace-1", namespaceName: "Example Workspace",
                     plan: "pro",
                     status: "ACTIVE",
                     updatedAt: "2026-08-10T10:00:00Z",
@@ -790,4 +796,3 @@ test("license namespace callback rejects return paths that are not exact license
         assert.doesNotMatch(response.headers.get("location") ?? "", /token|namespace/)
     }
 })
-

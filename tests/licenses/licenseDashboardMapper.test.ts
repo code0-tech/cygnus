@@ -12,6 +12,30 @@ const subscription: Subscription = {
     currentLicense: { id: "gid://crater/License/3" },
 }
 
+test("maps organization and user namespace names and clears an unavailable projection", () => {
+    const organization = mapSubscription({ ...subscription, namespace: { id: "gid://crater/Namespace/1", parent: { __typename: "NamespaceOrganization", name: " CodeZero " } } }, customer)!
+    assert.equal(organization.namespaceId, "gid://crater/Namespace/1")
+    assert.equal(organization.namespaceName, "CodeZero")
+    const user = mapSubscription({ ...subscription, namespace: { id: "gid://crater/Namespace/2", parent: { __typename: "NamespaceUser", username: "marius", firstname: "Marius", lastname: "Example" } } }, customer)!
+    assert.equal(user.namespaceName, "marius")
+    const unavailable = mapSubscription({ ...subscription, namespace: null }, customer)!
+    assert.equal(unavailable.namespaceId, null)
+    assert.equal(unavailable.namespaceName, null)
+})
+
+test("uses Crater cancellation availability and deadline regardless of license or local creation dates", () => {
+    const mapped = mapSubscription({
+        ...subscription,
+        createdAt: "2026-01-01T00:00:00Z",
+        currentLicense: { id: "gid://crater/License/3", startDate: "2026-11-01T00:00:00Z" },
+        immediateCancellationAvailable: false,
+        immediateCancellationUntil: "2026-10-15T12:00:00Z",
+    }, customer)!
+    assert.equal(mapped.immediateCancellationAvailable, false)
+    assert.equal(mapped.immediateCancellationUntil, "2026-10-15T12:00:00Z")
+    assert.equal(mapSubscription({ ...subscription, immediateCancellationAvailable: true }, customer)?.immediateCancellationAvailable, true)
+})
+
 test("preserves every subscription status and marks absent snapshots pending", () => {
     for (const status of ["ACTIVE", "CANCELED", "INCOMPLETE", "INCOMPLETE_EXPIRED", "PAST_DUE", "PAUSED", "TRIALING", "UNPAID"]) {
         assert.equal(deriveLicenseStatus(status, true), status)

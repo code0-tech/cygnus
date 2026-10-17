@@ -25,7 +25,10 @@ interface LicenseDataContextValue extends LicenseDashboardData {
             aiTokens?: number
             canceledAt?: string | null
             cancelAt?: string | null
-            namespaceId?: string
+            namespaceId?: string | null
+            namespaceName?: string | null
+            immediateCancellationAvailable?: boolean
+            immediateCancellationUntil?: string
             paymentMethodId?: string
             paymentPeriod?: string
             plan?: string

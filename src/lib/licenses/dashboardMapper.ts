@@ -105,6 +105,10 @@ export function mapSubscription(subscription: Subscription, customer: Customer):
     const plan = normalizeCraterPlan(subscription.plan)
     const license = subscription.currentLicense
     const status = deriveLicenseStatus(subscription.status, Boolean(license?.id))
+    const namespaceParent = subscription.namespace?.parent
+    const namespaceName = namespaceParent?.__typename === "NamespaceOrganization"
+        ? namespaceParent.name
+        : namespaceParent?.__typename === "NamespaceUser" ? namespaceParent.username : null
 
     return {
         ...(typeof subscription.aiTokens === "number" ? { aiTokens: subscription.aiTokens } : {}),
@@ -119,7 +123,10 @@ export function mapSubscription(subscription: Subscription, customer: Customer):
         name: licenseName(plan, subscription.id),
         ...(deploymentType ? { deploymentType } : {}),
         ...(license?.endDate ? { endDate: license.endDate } : {}),
-        ...(subscription.namespaceId ? { namespaceId: subscription.namespaceId } : {}),
+        namespaceId: subscription.namespace?.id ?? null,
+        namespaceName: namespaceName?.trim() || null,
+        ...(typeof subscription.immediateCancellationAvailable === "boolean" ? { immediateCancellationAvailable: subscription.immediateCancellationAvailable } : {}),
+        ...(subscription.immediateCancellationUntil ? { immediateCancellationUntil: subscription.immediateCancellationUntil } : {}),
         ...(paymentPeriod ? { paymentPeriod } : {}),
         pendingUpdate: mapSubscriptionPendingUpdate(subscription.pendingUpdate),
         ...(plan ? { plan } : {}),

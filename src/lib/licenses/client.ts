@@ -91,12 +91,12 @@ export async function removeLicenseCustomerPaymentMethod(customerId: string, pay
     return typeof errorCode === "string" ? errorCode : "UNKNOWN"
 }
 
-async function updateLicenseSubscription(path: "/api/crater/subscriptions/cancel" | "/api/crater/subscriptions/resume", id: string, errorMessage: string) {
+async function updateLicenseSubscription(path: "/api/crater/subscriptions/cancel" | "/api/crater/subscriptions/resume", id: string, errorMessage: string, immediately = false) {
     const response = await fetch(path, {
         method: "POST",
         credentials: "same-origin",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ id }),
+        body: JSON.stringify({ id, ...(immediately ? { immediately: true } : {}) }),
     })
     if (!response.ok) throw new Error(errorMessage)
 
@@ -104,8 +104,8 @@ async function updateLicenseSubscription(path: "/api/crater/subscriptions/cancel
     return result && typeof result === "object" ? (result as SubscriptionUpdateResult) : {}
 }
 
-export function cancelLicenseSubscription(id: string, errorMessage: string) {
-    return updateLicenseSubscription("/api/crater/subscriptions/cancel", id, errorMessage)
+export function cancelLicenseSubscription(id: string, errorMessage: string, immediately = false) {
+    return updateLicenseSubscription("/api/crater/subscriptions/cancel", id, errorMessage, immediately)
 }
 
 export function resumeLicenseSubscription(id: string, errorMessage: string) {
