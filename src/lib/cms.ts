@@ -353,6 +353,9 @@ export interface CheckoutData {
         payNowLabel: string
         processingLabel: string
         paymentErrorFallback: string
+        mobileContactLabel: string
+        mobileNextLabel: string
+        mobileTaxLabel: string
         nameLabel: string
         namePlaceholder: string
         emailLabel: string

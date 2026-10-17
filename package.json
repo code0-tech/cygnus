@@ -42,6 +42,8 @@
         "@payloadcms/next": "3.90.2",
         "@payloadcms/plugin-seo": "3.90.2",
         "@payloadcms/richtext-lexical": "3.90.2",
+        "@stripe/react-stripe-js": "^6.8.0",
+        "@stripe/stripe-js": "^9.13.0",
         "@tabler/icons-react": "3.41.1",
         "border-beam": "^1.4.1",
         "class-variance-authority": "^0.7.1",
