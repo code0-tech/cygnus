@@ -3,7 +3,7 @@ import test from "node:test"
 import { POST as createOrGetCustomer } from "../src/app/api/crater/customer/route"
 import { POST as validateDiscount } from "../src/app/api/crater/checkout/discount/route"
 import { POST as calculateTax } from "../src/app/api/crater/checkout/tax/route"
-import { POST as createSession } from "../src/app/api/crater/session/route"
+import { POST as createSession } from "../src/app/api/crater/login/route"
 
 const sessionHeaders = {
     authorization: "Session c_ust_example",
@@ -12,7 +12,7 @@ const sessionHeaders = {
 
 test("Crater login requires a Sagittarius token", async () => {
     const response = await createSession(
-        new Request("https://example.com/api/crater/session", {
+        new Request("https://example.com/api/crater/login", {
             method: "POST",
             headers: {
                 "content-type": "application/json",
