@@ -181,6 +181,8 @@ import * as migration_20261016_150000_invoice_number_pending_label from './20261
 import * as migration_20261016_200000_remove_unused_globals from './20261016_200000_remove_unused_globals';
 import * as migration_20261016_210000_merge_pricing_packages_into_plans from './20261016_210000_merge_pricing_packages_into_plans';
 
+import * as migration_20261018_120000_checkout_delayed_status_copy from './20261018_120000_checkout_delayed_status_copy';
+
 export const migrations = [
   {
     up: migration_20260317_192332_initial_schema.up,
@@ -1081,5 +1083,10 @@ export const migrations = [
     up: migration_20261016_210000_merge_pricing_packages_into_plans.up,
     down: migration_20261016_210000_merge_pricing_packages_into_plans.down,
     name: '20261016_210000_merge_pricing_packages_into_plans',
+  },
+  {
+    up: migration_20261018_120000_checkout_delayed_status_copy.up,
+    down: migration_20261018_120000_checkout_delayed_status_copy.down,
+    name: '20261018_120000_checkout_delayed_status_copy',
   },
 ];

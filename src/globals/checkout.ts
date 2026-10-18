@@ -186,6 +186,19 @@ export const Checkout: GlobalConfig = {
                 localizedText("licenseDownloadError", "The license could not be downloaded.", "Die Lizenz konnte nicht heruntergeladen werden."),
                 { name: "licensePendingLabel", type: "text", required: true, localized: true, defaultValue: "Your license is being prepared…" },
                 { name: "licenseStatusRetryLabel", type: "text", required: true, localized: true, defaultValue: "Try again" },
+                localizedText("delayedHeading", "Processing is taking longer", "Die Verarbeitung dauert länger"),
+                localizedText(
+                    "delayedConfirmedDescription",
+                    "Your payment is confirmed. Preparing your license is taking longer than expected. Please check the status again later. You do not need to pay again.",
+                    "Deine Zahlung ist bestätigt. Die Bereitstellung deiner Lizenz dauert länger als erwartet. Bitte prüfe den Status später erneut. Du musst nicht erneut bezahlen.",
+                    { type: "textarea", description: "Shown when polling pauses after payment has been confirmed, while the license is still being prepared." }
+                ),
+                localizedText(
+                    "delayedPendingDescription",
+                    "Your checkout is still being processed. Please check the status again later before starting another checkout.",
+                    "Dein Checkout wird noch verarbeitet. Bitte prüfe den Status später erneut, bevor du einen neuen Checkout startest.",
+                    { type: "textarea", description: "Shown when polling pauses before payment has been confirmed." }
+                ),
                 {
                     name: "receiptHint",
                     type: "text",

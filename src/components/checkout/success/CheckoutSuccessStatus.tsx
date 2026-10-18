@@ -19,7 +19,7 @@ import { useRouter } from "next/navigation"
 import { useCallback, useEffect, useRef, useState } from "react"
 
 type SuccessContent = CheckoutData["success"]
-type CheckoutStatus = CheckoutCompletionStatus["state"] | "LOADING" | "ERROR" | "INVALID"
+type CheckoutStatus = CheckoutCompletionStatus["state"] | "LOADING" | "DELAYED" | "ERROR" | "INVALID"
 
 interface CheckoutSuccessStatusProps {
     checkoutSearchParams: string
@@ -79,7 +79,7 @@ export function CheckoutSuccessStatus({ checkoutSearchParams, content, errorMess
 
             if (nextCompletion.state === "CHECKOUT_PENDING" || nextCompletion.state === "PAYMENT_PENDING" || nextCompletion.state === "FULFILLMENT_PENDING") {
                 if (hasCheckoutStatusPollingExpired(pollingStartedAtRef.current, Date.now())) {
-                    setStatus("ERROR")
+                    setStatus("DELAYED")
                     return
                 }
 
@@ -177,10 +177,10 @@ function CheckoutSuccessStatusView({
         hidden: { opacity: 0, y: reducedMotion ? 0 : 12, filter: reducedMotion ? "none" : "blur(4px)" },
         show: { opacity: 1, y: 0, filter: "none", transition: { duration: reducedMotion ? 0.15 : 0.5, ease: [0.22, 1, 0.36, 1] } },
     }
-    const fulfillmentConfirmed = status === "FULFILLMENT_PENDING" || status === "READY"
+    const fulfillmentConfirmed = status === "FULFILLMENT_PENDING" || status === "READY" || (status === "DELAYED" && completion?.state === "FULFILLMENT_PENDING")
     const statusFailed = status === "FAILED" || status === "INVALID"
-    const heading = status === "FAILED" ? content.failedHeading : status === "INVALID" ? content.invalidHeading : fulfillmentConfirmed ? content.heading : null
-    const description = status === "FAILED" ? content.failedDescription : status === "INVALID" ? content.invalidDescription : fulfillmentConfirmed ? content.description : null
+    const heading = status === "DELAYED" ? content.delayedHeading : status === "FAILED" ? content.failedHeading : status === "INVALID" ? content.invalidHeading : fulfillmentConfirmed ? content.heading : null
+    const description = status === "DELAYED" ? (fulfillmentConfirmed ? content.delayedConfirmedDescription : content.delayedPendingDescription) : status === "FAILED" ? content.failedDescription : status === "INVALID" ? content.invalidDescription : fulfillmentConfirmed ? content.description : null
     const licenseAccessUrl =
         status === "READY" && completion?.licenseId ? `/api/crater/licenses/access?${new URLSearchParams({ locale, customerId: completion.customerId, licenseId: completion.licenseId })}` : null
     const confirmedConfiguration = fulfillmentConfirmed ? completion?.configuration : null
@@ -224,7 +224,7 @@ function CheckoutSuccessStatusView({
                         </motion.h1>
                     )}
                     {description && (
-                        <motion.p variants={reveal} className="text-secondary max-w-lg">
+                        <motion.p variants={reveal} role={status === "DELAYED" ? "status" : undefined} className="text-secondary max-w-lg">
                             {description}
                         </motion.p>
                     )}
@@ -306,7 +306,7 @@ function CheckoutSuccessStatusView({
                                         </p>
                                     ) : null}
                                 </motion.div>
-                            ) : status === "ERROR" ? (
+                            ) : status === "ERROR" || status === "DELAYED" ? (
                                 <motion.div key="retry" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                                     <Button type="button" variant="normal" onClick={onRetry}>
                                         {content.licenseStatusRetryLabel}

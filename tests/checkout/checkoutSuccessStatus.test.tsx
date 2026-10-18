@@ -59,6 +59,9 @@ const content: CheckoutData["success"] = {
     licenseDownloadError: "Could not download license.",
     licensePendingLabel: "Preparing license",
     licenseStatusRetryLabel: "Try again",
+    delayedHeading: "CMS delay heading",
+    delayedConfirmedDescription: "CMS message for confirmed payments awaiting a license.",
+    delayedPendingDescription: "CMS message for checkouts awaiting payment confirmation.",
     receiptHint: "Stripe sends the receipt to your email address.",
     guestAccountHint: "You will receive an email with a link to create your account. Complete your account setup using that link to continue.",
     failedHeading: "Payment failed",
@@ -152,7 +155,7 @@ afterEach(() => {
     downloadedLicenseIds = []
 })
 
-test("stops checkout success polling after the configured time limit", async () => {
+test("pauses slow fulfillment without showing a payment error and can resume to READY", async () => {
     let now = 1_000_000
     let requests = 0
     Date.now = () => now
@@ -176,7 +179,50 @@ test("stops checkout success polling after the configured time limit", async () 
     assert.ok(await screen.findByRole("button", { name: content.licenseStatusRetryLabel }))
     assert.equal(requests, 1)
     assert.equal(screen.queryByText(content.licensePendingLabel), null)
-    assert.ok(screen.getByText(errorMessage))
+    assert.equal(screen.queryByText(errorMessage), null)
+    assert.ok(screen.getByRole("heading", { name: content.delayedHeading }))
+    assert.equal(screen.getByRole("status").textContent, content.delayedConfirmedDescription)
+    assert.ok(screen.getByText("Pro"))
+    assert.ok(screen.getByText("107.1"))
+    assert.equal(screen.queryByRole("link", { name: content.licenseDashboardLabel }), null)
+    assert.equal(screen.queryByRole("button", { name: content.licenseDownloadLabel }), null)
+    assert.deepEqual(routerReplaceCalls, [])
+
+    // A manual retry starts a new polling window and still waits for verified access.
+    respondWith({ state: "FULFILLMENT_PENDING", customerId: "gid://crater/Customer/1", licenseId: null })
+    await userEvent.setup().click(screen.getByRole("button", { name: content.licenseStatusRetryLabel }))
+    await screen.findByRole("button", { name: content.licensePendingLabel })
+    assert.equal(screen.queryByText(content.delayedHeading), null)
+    respondWith({ state: "READY", customerId: "gid://crater/Customer/1", licenseId: "gid://crater/License/2" })
+    await screen.findByRole("link", { name: content.licenseDashboardLabel }, { timeout: 3000 })
+    assert.ok(screen.getByRole("button", { name: content.licenseDownloadLabel }))
+})
+
+for (const state of ["CHECKOUT_PENDING", "PAYMENT_PENDING"]) {
+    test(`delayed ${state} does not claim the payment is confirmed`, async () => {
+        let now = 1_000_000
+        Date.now = () => now
+        globalThis.fetch = (async () => {
+            now += 5 * 60_000
+            return Response.json({ state, customerId: "gid://crater/Customer/1", licenseId: null, configuration: null, pricing: null })
+        }) as typeof fetch
+        render(<CheckoutSuccessStatus {...sharedProps} checkoutSearchParams={checkoutSearchParams} content={content} errorMessage={errorMessage} locale="de" sessionId="cs_test" />)
+        await screen.findByRole("heading", { name: content.delayedHeading })
+        assert.equal(screen.getByRole("status").textContent, content.delayedPendingDescription)
+        assert.equal(screen.queryByText(errorMessage), null)
+        assert.equal(screen.queryByText(content.receiptHint), null)
+        assert.equal(screen.queryByRole("link", { name: content.licenseDashboardLabel }), null)
+        assert.ok(await screen.findByRole("button", { name: content.licenseStatusRetryLabel }))
+        assert.deepEqual(routerReplaceCalls, [])
+    })
+}
+
+test("transport failures still offer an error and a status retry", async () => {
+    respondWith({ error: "Temporarily unavailable" }, 502)
+    render(<CheckoutSuccessStatus {...sharedProps} checkoutSearchParams={checkoutSearchParams} content={content} errorMessage={errorMessage} locale="en" sessionId="cs_test" />)
+    await screen.findByText(errorMessage)
+    assert.ok(screen.getByRole("button", { name: content.licenseStatusRetryLabel }))
+    assert.equal(screen.queryByText(content.delayedHeading), null)
 })
 
 test("explains a declined payment and redirects back into checkout with the failure flagged", async () => {

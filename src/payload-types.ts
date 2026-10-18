@@ -3116,6 +3116,15 @@ export interface Checkout {
     licenseDownloadError: string;
     licensePendingLabel: string;
     licenseStatusRetryLabel: string;
+    delayedHeading: string;
+    /**
+     * Shown when polling pauses after payment has been confirmed, while the license is still being prepared.
+     */
+    delayedConfirmedDescription: string;
+    /**
+     * Shown when polling pauses before payment has been confirmed.
+     */
+    delayedPendingDescription: string;
     /**
      * Shown once the payment is confirmed. The exact amount is on the Stripe receipt, not on this page.
      */
@@ -3906,6 +3915,9 @@ export interface CheckoutSelect<T extends boolean = true> {
         licenseDownloadError?: T;
         licensePendingLabel?: T;
         licenseStatusRetryLabel?: T;
+        delayedHeading?: T;
+        delayedConfirmedDescription?: T;
+        delayedPendingDescription?: T;
         receiptHint?: T;
         guestAccountHint?: T;
         failedHeading?: T;
