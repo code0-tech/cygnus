@@ -110,6 +110,25 @@ export function craterMutationErrorResponse(errors: Error[] | null | undefined, 
     return craterJson({ error: message, ...described }, 422)
 }
 
+export async function runCraterResourceMutation<TData, TVariables extends OperationVariables, TPayload extends CraterMutationPayload, TResource>(
+    token: string,
+    mutation: TypedDocumentNode<TData, TVariables>,
+    variables: TVariables,
+    selectPayload: (data: TData) => TPayload | null | undefined,
+    options: {
+        rejectionMessage: string
+        selectResource: (payload: TPayload) => TResource | null | undefined
+        missingResourceMessage: string
+        respond?: (resource: NonNullable<TResource>) => Response
+    }
+): Promise<Response> {
+    const result = await runCraterMutation(token, mutation, variables, selectPayload, options.rejectionMessage)
+    if (result.response) return result.response
+    const resource = options.selectResource(result.payload)
+    if (!resource) throw new Error(options.missingResourceMessage)
+    return options.respond ? options.respond(resource) : craterJson(resource)
+}
+
 export function craterTransportErrorResponse(error: unknown, request?: Request) {
     if (!ServerError.is(error) || (error.statusCode !== 401 && error.statusCode !== 403)) {
         return null

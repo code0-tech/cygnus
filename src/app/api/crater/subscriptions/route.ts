@@ -1,5 +1,7 @@
-import { CRATER_ERROR_FIELDS, craterJson, runCraterMutation, withCraterSession } from "@/lib/crater/api.server"
-import { optionalString, readJsonObject, isSubscriptionId, parseSubscriptionChangeFields } from "@/lib/crater/request"
+import { SUBSCRIPTION_PENDING_UPDATE_FIELDS } from "@/lib/crater/subscriptionFragments"
+import { CRATER_ERROR_FIELDS, craterJson, runCraterResourceMutation, withCraterSession } from "@/lib/crater/api.server"
+import { parseSubscriptionChangeFields } from "@/lib/crater/request"
+import { readSubscriptionRequest } from "@/lib/crater/subscriptionRequests.server"
 import { normalizeCraterPaymentPeriod, normalizeCraterPlan } from "@/lib/crater/values"
 import { mapSubscriptionPendingUpdate } from "@/lib/licenses/dashboardMapper"
 import type { Mutation, MutationSubscriptionsUpdateArgs } from "@code0-tech/crater-graphql-types"
@@ -11,6 +13,7 @@ type SubscriptionsUpdateData = Pick<Mutation, "subscriptionsUpdate">
 
 const SUBSCRIPTIONS_UPDATE: TypedDocumentNode<SubscriptionsUpdateData, MutationSubscriptionsUpdateArgs> = gql`
     ${CRATER_ERROR_FIELDS}
+    ${SUBSCRIPTION_PENDING_UPDATE_FIELDS}
     mutation SubscriptionsUpdate($input: SubscriptionsUpdateInput!) {
         subscriptionsUpdate(input: $input) {
             subscription {
@@ -24,7 +27,9 @@ const SUBSCRIPTIONS_UPDATE: TypedDocumentNode<SubscriptionsUpdateData, MutationS
                 plan
                 status
                 updatedAt
-                pendingUpdate { plan paymentPeriod aiTokens workflowExecutions effectiveAt }
+                pendingUpdate {
+                    ...SubscriptionPendingUpdateFields
+                }
                 workflowExecutions
             }
             errors {
@@ -49,18 +54,17 @@ function normalizeSubscriptionEnums(subscription: NonNullable<NonNullable<Subscr
 }
 
 export const PATCH = withCraterSession({ log: "Crater subscription update error", error: "Could not update the Crater subscription.", rateLimit: "subscription" }, async (request, token) => {
-    const body = await readJsonObject(request)
-    const id = optionalString(body?.id)
-    if (!id || !isSubscriptionId(id)) {
-        return craterJson({ error: "A valid Crater subscription id is required." }, 400)
-    }
+    const input = await readSubscriptionRequest(request)
+    if (input.response) return input.response
+    const { id, body } = input.data
 
     const fields = parseSubscriptionChangeFields(body, true)
     if ("error" in fields) return craterJson({ error: fields.error }, 400)
 
-    const mutation = await runCraterMutation(token, SUBSCRIPTIONS_UPDATE, { input: { id, ...fields } }, (data) => data.subscriptionsUpdate, "Crater could not update the subscription.")
-    if (mutation.response) return mutation.response
-    if (!mutation.payload.subscription) throw new Error("Crater returned no updated subscription.")
-
-    return craterJson(normalizeSubscriptionEnums(mutation.payload.subscription))
+    return runCraterResourceMutation(token, SUBSCRIPTIONS_UPDATE, { input: { id, ...fields } }, (data) => data.subscriptionsUpdate, {
+        rejectionMessage: "Crater could not update the subscription.",
+        selectResource: (payload) => payload.subscription,
+        missingResourceMessage: "Crater returned no updated subscription.",
+        respond: (subscription) => craterJson(normalizeSubscriptionEnums(subscription)),
+    })
 })

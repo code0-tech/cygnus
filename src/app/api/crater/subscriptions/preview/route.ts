@@ -1,5 +1,6 @@
-import { CRATER_ERROR_FIELDS, craterJson, runCraterMutation, withCraterSession } from "@/lib/crater/api.server"
-import { optionalString, readJsonObject, isSubscriptionId, parseSubscriptionChangeFields } from "@/lib/crater/request"
+import { CRATER_ERROR_FIELDS, craterJson, runCraterResourceMutation, withCraterSession } from "@/lib/crater/api.server"
+import { parseSubscriptionChangeFields } from "@/lib/crater/request"
+import { readSubscriptionRequest } from "@/lib/crater/subscriptionRequests.server"
 import { normalizeCraterPaymentPeriod, normalizeCraterPlan } from "@/lib/crater/values"
 import type { Mutation, MutationSubscriptionsPreviewUpdateArgs } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
@@ -30,30 +31,26 @@ const SUBSCRIPTIONS_PREVIEW_UPDATE: TypedDocumentNode<SubscriptionsPreviewUpdate
     }
 `
 
-export const POST = withCraterSession({ log: "Crater subscription preview error", error: "Could not preview the Crater subscription change.", rateLimit: "subscriptionPreview" }, async (request, token) => {
-    const body = await readJsonObject(request)
-    const id = optionalString(body?.id)
-    if (!id || !isSubscriptionId(id)) {
-        return craterJson({ error: "A valid Crater subscription id is required." }, 400)
+export const POST = withCraterSession(
+    { log: "Crater subscription preview error", error: "Could not preview the Crater subscription change.", rateLimit: "subscriptionPreview" },
+    async (request, token) => {
+        const input = await readSubscriptionRequest(request)
+        if (input.response) return input.response
+        const { id, body } = input.data
+
+        const fields = parseSubscriptionChangeFields(body)
+        if ("error" in fields) return craterJson({ error: fields.error }, 400)
+
+        return runCraterResourceMutation(token, SUBSCRIPTIONS_PREVIEW_UPDATE, { input: { id, ...fields } }, (data) => data.subscriptionsPreviewUpdate, {
+            rejectionMessage: "Crater could not preview the subscription change.",
+            selectResource: (payload) => payload.preview,
+            missingResourceMessage: "Crater returned no subscription update preview.",
+            respond: (preview) =>
+                craterJson({
+                    ...preview,
+                    plan: normalizeCraterPlan(preview.plan) ?? null,
+                    paymentPeriod: normalizeCraterPaymentPeriod(preview.paymentPeriod) ?? null,
+                }),
+        })
     }
-
-    const fields = parseSubscriptionChangeFields(body)
-    if ("error" in fields) return craterJson({ error: fields.error }, 400)
-
-    const mutation = await runCraterMutation(
-        token,
-        SUBSCRIPTIONS_PREVIEW_UPDATE,
-        { input: { id, ...fields } },
-        (data) => data.subscriptionsPreviewUpdate,
-        "Crater could not preview the subscription change."
-    )
-    if (mutation.response) return mutation.response
-    const { preview } = mutation.payload
-    if (!preview) throw new Error("Crater returned no subscription update preview.")
-
-    return craterJson({
-        ...preview,
-        plan: normalizeCraterPlan(preview.plan) ?? null,
-        paymentPeriod: normalizeCraterPaymentPeriod(preview.paymentPeriod) ?? null,
-    })
-})
+)

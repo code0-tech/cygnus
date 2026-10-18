@@ -1,68 +1,25 @@
-import { readGuestCheckoutSession } from "@/lib/checkout/guestCheckoutSession"
 import { createApolloClient } from "@/lib/apolloClient"
-import { CRATER_ERROR_FIELDS, craterJson, runCraterMutation, withCraterSession } from "@/lib/crater/api.server"
-import { readCustomerPaymentMethodIds } from "@/lib/crater/customerPaymentMethods.server"
-import { isCustomerId, isValidEmail, optionalString, readJsonObject, readOptionalAddress } from "@/lib/crater/request"
-import { normalizeCraterCustomerType, toCraterCustomerTypeEnum } from "@/lib/crater/values"
-import type { Customer, CustomerAddressCreateInput, CustomerAddressUpdateInput, Mutation, MutationCustomersCreateArgs, MutationCustomersUpdateArgs, Query } from "@code0-tech/crater-graphql-types"
+import { CRATER_ERROR_FIELDS, craterJson, runCraterResourceMutation, withCraterSession } from "@/lib/crater/api.server"
+import { prepareCustomerPaymentMethodRemoval } from "@/lib/crater/customerPaymentMethods.server"
+import { readCustomerCreateRequest, readCustomerUpdateRequest } from "@/lib/crater/customer/requests.server"
+import { normalizeCraterCustomerType } from "@/lib/crater/values"
+import type { Customer, Mutation, MutationCustomersCreateArgs, MutationCustomersUpdateArgs, Query } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 
 export const runtime = "nodejs"
 
 type CustomersCreateData = Pick<Mutation, "customersCreate">
-
 type CustomersCreateVariables = MutationCustomersCreateArgs
-type CustomersUpdateVariables = MutationCustomersUpdateArgs
-
 type CustomersUpdateData = Pick<Mutation, "customersUpdate">
+type CustomersUpdateVariables = MutationCustomersUpdateArgs
 type CustomersQueryData = Pick<Query, "currentUser">
 type CustomersQueryVariables = { after?: string | null }
 
 const CUSTOMER_PAGE_SIZE = 50
 
-// Crater answers with the CustomerType enum; every consumer of these routes reads the lowercase value.
 function normalizeCustomer<T extends Pick<Customer, "customerType">>(customer: T): T {
     const customerType = normalizeCraterCustomerType(customer.customerType)
     return customerType ? { ...customer, customerType } : customer
-}
-
-const INVALID_UPDATE_VALUE = Symbol("invalid-update-value")
-
-function nullableString(value: unknown) {
-    if (value === undefined) return undefined
-    if (value === null) return null
-    if (typeof value !== "string") return INVALID_UPDATE_VALUE
-    return value.trim() || null
-}
-
-function readCreateAddress(value: unknown): CustomerAddressCreateInput | null {
-    const address = readOptionalAddress(value)
-    if (!address?.line1 || !address.city || !address.postalCode || !address.country) return null
-
-    return {
-        city: address.city,
-        country: address.country,
-        line1: address.line1,
-        line2: address.line2 ?? "",
-        postalCode: address.postalCode,
-        state: address.state ?? "",
-    }
-}
-
-function readUpdateAddress(value: unknown): CustomerAddressUpdateInput | undefined | typeof INVALID_UPDATE_VALUE {
-    if (value === undefined) return undefined
-    if (!value || typeof value !== "object" || Array.isArray(value)) return INVALID_UPDATE_VALUE
-
-    const source = value as Record<string, unknown>
-    const address: CustomerAddressUpdateInput = {}
-
-    for (const field of ["city", "country", "line1", "line2", "postalCode", "state"] as const) {
-        const nextValue = nullableString(source[field])
-        if (nextValue === INVALID_UPDATE_VALUE) return INVALID_UPDATE_VALUE
-        if (nextValue !== undefined) address[field] = nextValue
-    }
-
-    return address
 }
 
 const CUSTOMER_FIELDS = gql`
@@ -156,97 +113,29 @@ export const GET = withCraterSession({ log: "Crater customer list error", error:
 })
 
 export const POST = withCraterSession({ log: "Crater customer creation error", error: "Could not create Crater customer.", rateLimit: "customer" }, async (request, token) => {
-    const body = await readJsonObject(request)
-    const customerType = normalizeCraterCustomerType(optionalString(body?.customerType))
-    const email = readGuestCheckoutSession(request)?.email ?? optionalString(body?.email)
-    const name = optionalString(body?.name)
-    const phone = optionalString(body?.phone)
-    const taxIdType = optionalString(body?.taxIdType)
-    const taxIdValue = optionalString(body?.taxIdValue)
-    const address = readCreateAddress(body?.address)
-
-    if (!body || !customerType || !name || !email || !isValidEmail(email) || !address) {
-        return craterJson({ error: "customerType, name, a valid email, and an address with line1, city, postalCode, and country are required." }, 400)
-    }
-
-    if (Boolean(taxIdType) !== Boolean(taxIdValue)) {
-        return craterJson({ error: "taxIdType and taxIdValue must be provided together." }, 400)
-    }
-
-    const mutation = await runCraterMutation(
-        token,
-        CUSTOMERS_CREATE,
-        {
-            input: {
-                customerType: toCraterCustomerTypeEnum(customerType),
-                address,
-                email,
-                name,
-                ...(phone ? { phone } : {}),
-                ...(taxIdType ? { taxIdType } : {}),
-                ...(taxIdValue ? { taxIdValue } : {}),
-            },
-        },
-        (data) => data.customersCreate,
-        "Crater could not create the customer."
-    )
-    if (mutation.response) return mutation.response
-    if (!mutation.payload.customer) throw new Error("Crater returned no customer.")
-
-    return craterJson(normalizeCustomer(mutation.payload.customer), 201)
+    const parsed = await readCustomerCreateRequest(request)
+    if (parsed.response) return parsed.response
+    return runCraterResourceMutation(token, CUSTOMERS_CREATE, { input: parsed.data }, (data) => data.customersCreate, {
+        rejectionMessage: "Crater could not create the customer.",
+        selectResource: (payload) => payload.customer,
+        missingResourceMessage: "Crater returned no customer.",
+        respond: (customer) => craterJson(normalizeCustomer(customer), 201),
+    })
 })
 
 export const PATCH = withCraterSession({ log: "Crater customer update error", error: "Could not update Crater customer.", rateLimit: "customer" }, async (request, token) => {
-    const body = await readJsonObject(request)
-    const id = optionalString(body?.id)
-    const email = nullableString(body?.email)
-    const name = nullableString(body?.name)
-    const phone = nullableString(body?.phone)
-    const address = readUpdateAddress(body?.address)
-    if (body && "paymentMethods" in body) {
-        return craterJson({ error: "Replacing paymentMethods is not supported. Provide removePaymentMethodId instead." }, 400)
+    const parsed = await readCustomerUpdateRequest(request)
+    if (parsed.response) return parsed.response
+    const { input, removePaymentMethodId } = parsed.data
+    if (removePaymentMethodId !== undefined) {
+        const removal = await prepareCustomerPaymentMethodRemoval(token, input.id, removePaymentMethodId)
+        if (removal.response) return removal.response
+        Object.assign(input, removal.input)
     }
-    const removePaymentMethodId = body?.removePaymentMethodId
-    if (removePaymentMethodId !== undefined && (typeof removePaymentMethodId !== "string" || !removePaymentMethodId.trim())) {
-        return craterJson({ error: "removePaymentMethodId must be a non-empty payment method ID." }, 400)
-    }
-
-    if (!body || !id || !isCustomerId(id) || email === INVALID_UPDATE_VALUE || name === INVALID_UPDATE_VALUE || phone === INVALID_UPDATE_VALUE || address === INVALID_UPDATE_VALUE) {
-        return craterJson({ error: "A valid Crater customer id is required and address must be valid when provided." }, 400)
-    }
-
-    if (email === undefined && name === undefined && phone === undefined && address === undefined && removePaymentMethodId === undefined) {
-        return craterJson({ error: "Provide at least one customer field to update." }, 400)
-    }
-
-    let paymentMethods: string[] | undefined
-    if (typeof removePaymentMethodId === "string") {
-        const current = await readCustomerPaymentMethodIds(createApolloClient(token), id)
-        if (current.response) return current.response
-        const target = removePaymentMethodId.trim()
-        if (current.paymentMethodIds.includes(target)) {
-            paymentMethods = current.paymentMethodIds.filter((methodId) => methodId !== target)
-        }
-    }
-
-    const mutation = await runCraterMutation(
-        token,
-        CUSTOMERS_UPDATE,
-        {
-            input: {
-                id,
-                ...(paymentMethods !== undefined ? { paymentMethods } : {}),
-                ...(address !== undefined ? { address } : {}),
-                ...(email !== undefined ? { email } : {}),
-                ...(name !== undefined ? { name } : {}),
-                ...(phone !== undefined ? { phone } : {}),
-            },
-        },
-        (data) => data.customersUpdate,
-        "Crater could not update the customer."
-    )
-    if (mutation.response) return mutation.response
-    if (!mutation.payload.customer) throw new Error("Crater returned no updated customer.")
-
-    return craterJson(normalizeCustomer(mutation.payload.customer))
+    return runCraterResourceMutation(token, CUSTOMERS_UPDATE, { input }, (data) => data.customersUpdate, {
+        rejectionMessage: "Crater could not update the customer.",
+        selectResource: (payload) => payload.customer,
+        missingResourceMessage: "Crater returned no updated customer.",
+        respond: (customer) => craterJson(normalizeCustomer(customer)),
+    })
 })

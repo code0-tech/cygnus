@@ -1,5 +1,5 @@
 import { guestCheckoutId } from "@/lib/checkout/guestCheckoutSession"
-import { CRATER_ERROR_FIELDS, craterJson, runCraterMutation, withCraterSession } from "@/lib/crater/api.server"
+import { CRATER_ERROR_FIELDS, craterJson, runCraterResourceMutation, withCraterSession } from "@/lib/crater/api.server"
 import { isCustomerId, optionalString, readJsonObject, type JsonObject } from "@/lib/crater/request"
 import { toCraterPaymentPeriod, toCraterPlan } from "@/lib/crater/values"
 import { resolveSubscriptionSelection } from "@/lib/subscription/configurator"
@@ -143,17 +143,15 @@ export const POST = withCraterSession({ log: "Crater checkout session error", er
         ...(namespaceId ? { namespaceId } : {}),
         ...(plan === "custom" ? { aiTokens, workflowExecutions } : {}),
     }
-    const mutation = await runCraterMutation(token, CHECKOUT_CREATE_SESSION, { input }, (data) => data.checkoutCreateSession, "Crater could not create the checkout session.")
-    if (mutation.response) return mutation.response
-
-    const { session } = mutation.payload
-    if (!session?.clientSecret) {
-        throw new Error("Crater returned no checkout client secret.")
-    }
-
-    return craterJson({
-        clientSecret: session.clientSecret,
-        expiresAt: session.expiresAt,
-        id: session.id,
+    return runCraterResourceMutation(token, CHECKOUT_CREATE_SESSION, { input }, (data) => data.checkoutCreateSession, {
+        rejectionMessage: "Crater could not create the checkout session.",
+        selectResource: (payload) => (payload.session?.clientSecret ? payload.session : null),
+        missingResourceMessage: "Crater returned no checkout client secret.",
+        respond: (session) =>
+            craterJson({
+                clientSecret: session.clientSecret,
+                expiresAt: session.expiresAt,
+                id: session.id,
+            }),
     })
 })

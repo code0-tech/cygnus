@@ -12,6 +12,49 @@ const sessionHeaders = {
 }
 const subscriptionId = "gid://crater/Subscription/42"
 
+const subscriptionRoutes = [
+    { handler: updateSubscription, method: "PATCH", mutation: "subscriptionsUpdate", resource: "subscription", fields: { plan: "max" } },
+    { handler: previewSubscriptionUpdate, method: "POST", mutation: "subscriptionsPreviewUpdate", resource: "preview", fields: { plan: "max" } },
+    { handler: cancelSubscription, method: "POST", mutation: "subscriptionsCancel", resource: "subscription", fields: {} },
+    { handler: resumeSubscription, method: "POST", mutation: "subscriptionsResume", resource: "subscription", fields: {} },
+]
+
+test("shared subscription request parsing rejects malformed bodies without contacting Crater", async () => {
+    await withGraphQLServer([], async (server) => {
+        for (const { handler, method, mutation } of subscriptionRoutes) {
+            for (const body of ["{", "null", "[]", JSON.stringify({ id: 42 }), JSON.stringify({ id: "gid://crater/Customer/42" })]) {
+                const response = await handler(new Request("https://example.com/api/crater/subscriptions", {
+                    method, headers: { ...sessionHeaders, authorization: `Session parse_${mutation}` }, body,
+                }))
+                assert.equal(response.status, 400)
+                assert.equal(response.headers.get("cache-control"), "no-store")
+                assert.deepEqual(await response.json(), { error: "A valid Crater subscription id is required." })
+            }
+        }
+        assert.equal(server.requests.length, 0)
+    })
+})
+
+test("resource mutations reject incomplete success payloads and preserve domain errors", async () => {
+    for (const { handler, method, mutation, resource, fields } of subscriptionRoutes) {
+        const request = () => new Request("https://example.com/api/crater/subscriptions", {
+            method, headers: { ...sessionHeaders, authorization: `Session resource_${mutation}` }, body: JSON.stringify({ id: subscriptionId, ...fields }),
+        })
+        await withGraphQLServer([
+            { data: { [mutation]: { errors: [], [resource]: null } } },
+            { data: { [mutation]: null } },
+            { data: { [mutation]: { errors: [{ errorCode: "INVALID_SUBSCRIPTION" }], [resource]: { id: subscriptionId } } } },
+        ], async (server) => {
+            assert.equal((await handler(request())).status, 502)
+            assert.equal((await handler(request())).status, 502)
+            const rejected = await handler(request())
+            assert.equal(rejected.status, 422)
+            assert.equal((await rejected.json()).errorCode, "INVALID_SUBSCRIPTION")
+            assert.equal(server.requests.length, 3)
+        })
+    }
+})
+
 test("subscription routes reject invalid requests before calling Crater", async () => {
     const cases = [
         { name: "update without session", handler: updateSubscription, method: "PATCH", headers: { "content-type": "application/json" }, body: { id: subscriptionId, plan: "max" }, status: 403 },

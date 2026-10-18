@@ -1,14 +1,20 @@
 import { createApolloClient } from "@/lib/apolloClient"
 import { craterJson } from "@/lib/crater/api.server"
-import type { Query } from "@code0-tech/crater-graphql-types"
+import type { CustomersUpdateInput, Query } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 
 const CUSTOMER_PAYMENT_METHODS: TypedDocumentNode<Pick<Query, "currentUser">, { after?: string }> = gql`
     query CustomerPaymentMethods($after: String) {
         currentUser {
             customers(first: 50, after: $after) {
-                nodes { id paymentMethods }
-                pageInfo { endCursor hasNextPage }
+                nodes {
+                    id
+                    paymentMethods
+                }
+                pageInfo {
+                    endCursor
+                    hasNextPage
+                }
             }
         }
     }
@@ -43,4 +49,14 @@ export async function readCustomerPaymentMethodIds(
         cursors.add(after)
     } while (after)
     return { response: craterJson({ error: "The customer was not found." }, 404) }
+}
+
+export async function prepareCustomerPaymentMethodRemoval(
+    token: string,
+    customerId: string,
+    target: string
+): Promise<{ input: Pick<CustomersUpdateInput, "paymentMethods">; response?: never } | { input?: never; response: Response }> {
+    const current = await readCustomerPaymentMethodIds(createApolloClient(token), customerId)
+    if (current.response) return { response: current.response }
+    return { input: current.paymentMethodIds.includes(target) ? { paymentMethods: current.paymentMethodIds.filter((methodId) => methodId !== target) } : {} }
 }
