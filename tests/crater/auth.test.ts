@@ -349,7 +349,7 @@ test("logout revokes the Crater session before clearing its persisted cookie", a
     })
 })
 
-test("logout keeps the local session available for retry when Crater rejects revocation", async () => {
+test("logout clears local cookies even when Crater rejects revocation", async () => {
     await withGraphQLServer([
         {
             data: {
@@ -371,9 +371,39 @@ test("logout keeps the local session available for retry when Crater rejects rev
             error: "Crater could not revoke the user session.",
             errorCode: "MISSING_PERMISSION",
             details: ["Logout denied"],
+            authenticated: false,
         })
-        assert.equal(response.headers.get("set-cookie"), null)
+        assertLogoutCookiesCleared(response)
     })
+})
+
+function assertLogoutCookiesCleared(response: Response) {
+    for (const name of ["crater_session", "crater_user_login", "crater_guest_claim"]) {
+        const cookie = response.headers.getSetCookie().find((value) => value.startsWith(`${name}=`))
+        assert.ok(cookie, `Missing deletion cookie for ${name}`)
+        assert.match(cookie, /Max-Age=0/i)
+    }
+}
+
+test("logout clears cookies when the Crater request fails", async () => {
+    await withGraphQLServer([{ errors: [{ message: "Unavailable" }] }], async () => {
+        const response = await deleteSession(new Request("https://example.com/api/crater/auth/session", {
+            method: "DELETE", headers: { cookie: "crater_session=c_ust_example" },
+        }))
+        assert.equal(response.status, 502)
+        assert.equal((await response.json()).authenticated, false)
+        assertLogoutCookiesCleared(response)
+    })
+})
+
+test("logout clears cookies even without a usable local session", async () => {
+    for (const cookie of ["", "crater_session="]) {
+        const response = await deleteSession(new Request("https://example.com/api/crater/auth/session", {
+            method: "DELETE", headers: { cookie },
+        }))
+        assert.equal((await response.json()).authenticated, false)
+        assertLogoutCookiesCleared(response)
+    }
 })
 
 test("maps customer updates to Crater GraphQL inputs", async () => {

@@ -65,7 +65,12 @@ export async function fetchLicenseDashboard(pathname: string, options: { origin:
 
 export async function logoutLicenseSession() {
     const response = await fetch("/api/crater/auth/session", { method: "DELETE", credentials: "same-origin" })
-    if (!response.ok) throw new Error("Could not log out.")
+    if (!response.ok) {
+        const result: unknown = await response.json().catch(() => null)
+        if (!result || typeof result !== "object" || !("authenticated" in result) || result.authenticated !== false) {
+            throw new Error("Could not log out.")
+        }
+    }
 }
 
 async function updateLicenseCustomerRequest(request: LicenseCustomerUpdate) {

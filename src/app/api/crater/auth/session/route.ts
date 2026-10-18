@@ -42,9 +42,14 @@ export const GET = withCraterSession({ log: "Crater session status error", error
     return craterJson({ authenticated: true, ...(guestEmail ? { guestEmail } : {}) })
 })
 
-export const DELETE = withCraterSession({ log: "Crater session logout error", error: "Could not revoke Crater session." }, async (_request, token) => {
+const revokeSession = withCraterSession({ log: "Crater session logout error", error: "Could not revoke Crater session." }, async (_request, token) => {
     const mutation = await runCraterMutation(token, SESSION_LOGOUT, { input: {} }, (data) => data.usersLogout, "Crater could not revoke the user session.")
     if (mutation.response) return mutation.response
 
-    return clearCraterSessionCookie(craterJson({ authenticated: false }))
+    return craterJson({ authenticated: false })
 })
+
+export async function DELETE(request: Request) {
+    const response = await revokeSession(request)
+    return clearCraterSessionCookie(craterJson({ ...(await response.json()), authenticated: false }, response.status), request)
+}
