@@ -1,6 +1,7 @@
 import type { SubscriptionUpdateResult } from "@/lib/subscription/types"
 import { resolveCustomerRouteId, resolveSubscriptionRouteId } from "@/lib/licenses/routes"
 import type { CustomerPaymentMethodSummary, LicenseDashboardData } from "@/lib/licenses/types"
+import { clearCheckoutContactDraft } from "@/lib/checkout/checkoutDraft"
 
 type PaginatedLicenseResource = "customers" | "invoices" | "licenses"
 
@@ -64,6 +65,7 @@ export async function fetchLicenseDashboard(pathname: string, options: { origin:
 }
 
 export async function logoutLicenseSession() {
+    clearCheckoutContactDraft()
     const response = await fetch("/api/crater/auth/session", { method: "DELETE", credentials: "same-origin" })
     if (!response.ok) {
         const result: unknown = await response.json().catch(() => null)
