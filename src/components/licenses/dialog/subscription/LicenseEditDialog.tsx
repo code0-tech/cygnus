@@ -51,7 +51,7 @@ export function LicenseEditDialog({ checkoutPackages, content, customerId, error
         paymentMethods: customerPaymentMethods,
         paymentMethodsError: customerPaymentMethodsError,
         refreshPaymentMethods: refreshCustomerPaymentMethods,
-    } = useCustomerPaymentMethods(license?.customerId, section === "general")
+    } = useCustomerPaymentMethods(license?.customerId, section === "general", license?.paymentMethodId)
     const [assigningPaymentMethodId, setAssigningPaymentMethodId] = useState<string | null>(null)
     const close = () => router.replace(createLicensePath(locale, resolvedCustomerId, resolvedSubscriptionId))
 

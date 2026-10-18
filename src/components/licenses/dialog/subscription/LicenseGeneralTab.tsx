@@ -27,9 +27,9 @@ function splitTemplate(text: string) {
 }
 
 // The payment tab shows the full card; inside the billing rows the method is one line of text, like the other row descriptions.
-function formatPaymentMethodSummary(method: PaymentMethodDisplayDetails) {
+function formatPaymentMethodSummary(method: PaymentMethodDisplayDetails, fallback: string) {
     const label = method.brand?.trim() || method.type?.replaceAll("_", " ") || null
-    return [label, method.last4 ? `•••• ${method.last4}` : null].filter(Boolean).join(" · ")
+    return [label, method.last4 ? `•••• ${method.last4}` : null].filter(Boolean).join(" · ") || fallback
 }
 
 interface LicenseGeneralTabProps {
@@ -272,7 +272,7 @@ export function LicenseGeneralTab({
                                                                     <>
                                                                         <SelectValue placeholder={content.invoices.unavailableLabel}>
                                                                             <span className="capitalize">
-                                                                                {selectedPaymentMethod ? formatPaymentMethodSummary(selectedPaymentMethod) : content.invoices.unavailableLabel}
+                                                                            {selectedPaymentMethod ? formatPaymentMethodSummary(selectedPaymentMethod, content.invoices.unavailableLabel) : content.invoices.unavailableLabel}
                                                                             </span>
                                                                         </SelectValue>
                                                                         <IconChevronDown aria-hidden="true" size={13} />
@@ -286,7 +286,7 @@ export function LicenseGeneralTab({
                                                                     {paymentMethods.map((method) => (
                                                                         <SelectItem key={method.id} value={method.id}>
                                                                             <SelectItemText>
-                                                                                <span className="capitalize">{formatPaymentMethodSummary(method)}</span>
+                                                                                <span className="capitalize">{formatPaymentMethodSummary(method, content.invoices.unavailableLabel)}</span>
                                                                             </SelectItemText>
                                                                         </SelectItem>
                                                                     ))}
