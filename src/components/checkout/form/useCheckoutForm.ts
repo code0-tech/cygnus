@@ -30,12 +30,9 @@ const CHECKOUT_LOAD_RECOVERY_TTL_MS = 60_000
 
 function getPreparationErrorMessage(error: unknown, errors: ErrorsContent) {
     if (!(error instanceof CheckoutSubmissionError)) return errors.paymentFallback
-    if (error.status === 429) {
-        return error.retryAfterSeconds ? `${error.message} (${error.retryAfterSeconds}s)` : error.message
-    }
+    if (error.status === 429) return errors.checkoutRateLimit
     if (error.errorCode === "CUSTOMER_TYPE_MISMATCH") return errors.customerTypeMismatch
     if (error.errorCode === "INVALID_CHECKOUT_CUSTOMER") return errors.checkoutCustomer
-    if (error.kind === "session") return error.message
     return error.kind === "customer" ? errors.customerCreation : errors.checkoutSession
 }
 

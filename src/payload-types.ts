@@ -3448,6 +3448,7 @@ export interface Error {
   customerTypeMismatch: string;
   checkoutCustomer: string;
   checkoutSession: string;
+  checkoutRateLimit: string;
   checkoutSessionExpired: string;
   billingAddressUpdate: string;
   emailUpdate: string;
@@ -4269,6 +4270,7 @@ export interface ErrorsSelect<T extends boolean = true> {
   customerTypeMismatch?: T;
   checkoutCustomer?: T;
   checkoutSession?: T;
+  checkoutRateLimit?: T;
   checkoutSessionExpired?: T;
   billingAddressUpdate?: T;
   emailUpdate?: T;

@@ -183,6 +183,8 @@ import * as migration_20261016_210000_merge_pricing_packages_into_plans from './
 
 import * as migration_20261018_120000_checkout_delayed_status_copy from './20261018_120000_checkout_delayed_status_copy';
 
+import * as migration_20261018_130000_checkout_rate_limit_error from './20261018_130000_checkout_rate_limit_error';
+
 export const migrations = [
   {
     up: migration_20260317_192332_initial_schema.up,
@@ -1088,5 +1090,10 @@ export const migrations = [
     up: migration_20261018_120000_checkout_delayed_status_copy.up,
     down: migration_20261018_120000_checkout_delayed_status_copy.down,
     name: '20261018_120000_checkout_delayed_status_copy',
+  },
+  {
+    up: migration_20261018_130000_checkout_rate_limit_error.up,
+    down: migration_20261018_130000_checkout_rate_limit_error.down,
+    name: '20261018_130000_checkout_rate_limit_error',
   },
 ];

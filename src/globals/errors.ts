@@ -47,6 +47,7 @@ export const Errors: GlobalConfig = {
         ),
         localizedText("checkoutCustomer", "The selected billing customer cannot be used for this checkout.", "Der ausgewählte Rechnungskunde kann für diesen Checkout nicht verwendet werden."),
         localizedText("checkoutSession", "The checkout session could not be created. Please try again.", "Die Checkout-Sitzung konnte nicht erstellt werden. Bitte versuche es erneut."),
+        localizedText("checkoutRateLimit", "Too many requests. Please try again later.", "Zu viele Anfragen. Bitte versuche es später erneut."),
         localizedText("checkoutSessionExpired", "The checkout session expired. A new session is being created.", "Die Checkout-Sitzung ist abgelaufen. Eine neue Sitzung wird erstellt."),
         localizedText(
             "billingAddressUpdate",

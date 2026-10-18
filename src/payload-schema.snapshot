@@ -2792,6 +2792,7 @@ export const errors_locales = pgTable('errors_locales', {
   customerTypeMismatch: varchar('customer_type_mismatch').notNull(),
   checkoutCustomer: varchar('checkout_customer').notNull(),
   checkoutSession: varchar('checkout_session').notNull(),
+  checkoutRateLimit: varchar('checkout_rate_limit').notNull(),
   checkoutSessionExpired: varchar('checkout_session_expired').notNull(),
   billingAddressUpdate: varchar('billing_address_update').notNull(),
   emailUpdate: varchar('email_update').notNull(),

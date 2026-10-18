@@ -321,6 +321,7 @@ const errors = {
     customerTypeMismatch: "Customer type mismatch",
     checkoutCustomer: "Invalid checkout customer",
     checkoutSession: "Checkout session failed",
+    checkoutRateLimit: "CMS: Please wait before trying again",
     checkoutSessionExpired: "Checkout session expired",
     billingAddressUpdate: "Billing address update failed",
     emailUpdate: "Email update failed",
@@ -720,6 +721,25 @@ test("shows only the configured error when Stripe cannot load the checkout sessi
     assert.ok(screen.getByRole("button", { name: errors.retry }))
 })
 
+for (const [errorCode, expectedMessage] of [
+    ["INVALID_CHECKOUT_SESSION", errors.checkoutSession],
+    ["UNKNOWN_FUTURE_CODE", errors.checkoutSession],
+    ["CUSTOMER_TYPE_MISMATCH", errors.customerTypeMismatch],
+    ["INVALID_CHECKOUT_CUSTOMER", errors.checkoutCustomer],
+]) {
+    test(`maps ${errorCode} to CMS copy without displaying backend diagnostics`, async () => {
+        globalThis.fetch = (async (input) => Response.json(String(input) === "/api/crater/customer"
+            ? { customers: [{ customerType: "personal", email: "ada@example.com", id: "gid://crater/Customer/1", name: "Ada Lovelace" }] }
+            : { error: "Internal backend message", errorCode, details: ["stripe_price_id: missing"] },
+            { status: String(input) === "/api/crater/customer" ? 200 : 422 }
+        )) as typeof fetch
+
+        render(<CheckoutForm content={content} errors={errors} locale="en" />)
+        assert.ok(await screen.findByText(expectedMessage))
+        assert.equal(screen.queryByText(/Internal backend message|stripe_price_id|UNKNOWN_FUTURE_CODE|INVALID_CHECKOUT_SESSION/), null)
+    })
+}
+
 test("shows the checkout rate limit instead of disguising it as a session creation error", async () => {
     globalThis.fetch = (async (input) => {
         const url = String(input)
@@ -730,7 +750,7 @@ test("shows the checkout rate limit instead of disguising it as a session creati
             })
         }
 
-        return new Response(JSON.stringify({ error: "Too many requests. Please try again later." }), {
+        return new Response(JSON.stringify({ error: "Too many requests. Please try again later.", errorCode: "RATE_LIMITED", details: ["Internal limiter details"] }), {
             status: 429,
             headers: { "content-type": "application/json", "Retry-After": "42" },
         })
@@ -738,8 +758,10 @@ test("shows the checkout rate limit instead of disguising it as a session creati
 
     render(<CheckoutForm content={content} errors={errors} locale="en" />)
 
-    assert.ok(await screen.findByText("Too many requests. Please try again later. (42s)"))
+    assert.ok(await screen.findByText(errors.checkoutRateLimit))
+    assert.equal(screen.queryByText("Too many requests. Please try again later. (42s)"), null)
     assert.equal(screen.queryByText(errors.checkoutSession), null)
+    assert.equal(screen.queryByText(/RATE_LIMITED|Internal limiter details/), null)
 })
 
 test("renders Stripe's Tax ID Element for a business customer", async () => {

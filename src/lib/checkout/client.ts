@@ -109,7 +109,8 @@ export class CheckoutSubmissionError extends Error {
         readonly errorCode: string | null,
         message: string,
         readonly status: number | null = null,
-        readonly retryAfterSeconds: number | null = null
+        readonly retryAfterSeconds: number | null = null,
+        readonly details: string[] = []
     ) {
         super(message)
         this.name = "CheckoutSubmissionError"
@@ -148,9 +149,9 @@ async function readCheckoutError(response: Response, fallback: string) {
         const error = typeof body.error === "string" ? body.error : fallback
         const errorCode = typeof body.errorCode === "string" ? body.errorCode : null
         const details = Array.isArray(body.details) ? body.details.filter((detail): detail is string => typeof detail === "string") : []
-        return { errorCode, message: [error, ...(errorCode ? [`(${errorCode})`] : []), ...details].join(" ") }
+        return { errorCode, message: error, details }
     } catch {
-        return { errorCode: null, message: fallback }
+        return { errorCode: null, message: fallback, details: [] }
     }
 }
 
@@ -158,7 +159,7 @@ async function createCheckoutSubmissionError(response: Response, fallback: strin
     const error = await readCheckoutError(response, fallback)
     const retryAfterHeader = response.headers.get("Retry-After")
     const retryAfterSeconds = retryAfterHeader && /^\d+$/.test(retryAfterHeader) ? Number.parseInt(retryAfterHeader, 10) : null
-    return new CheckoutSubmissionError(kind, error.errorCode, error.message, response.status, retryAfterSeconds)
+    return new CheckoutSubmissionError(kind, error.errorCode, error.message, response.status, retryAfterSeconds, error.details)
 }
 
 function parseCheckoutCustomer(value: unknown): CheckoutCustomerData | null {
