@@ -1,10 +1,7 @@
 import { guestCheckoutId } from "@/lib/checkout/guestCheckoutSession"
 import { CRATER_ERROR_FIELDS, craterJson, runCraterResourceMutation, withCraterSession } from "@/lib/crater/api.server"
 import { isCustomerId, optionalString, readJsonObject, type JsonObject } from "@/lib/crater/request"
-import { toCraterPaymentPeriod, toCraterPlan } from "@/lib/crater/values"
-import { resolveSubscriptionSelection } from "@/lib/subscription/configurator"
-import { getSubscriptionSelectionCatalog } from "@/lib/subscription/catalog"
-import { getCraterCheckoutPackages } from "@/lib/subscription/checkoutPackages.server"
+import { parseCraterPaymentPeriod, parseCraterPlan } from "@/lib/crater/values"
 import { resolveSiteUrl } from "@/lib/siteConfig"
 import { DEFAULT_LOCALE, isSupportedLocale } from "@/lib/i18n"
 import type { DeploymentType, Mutation, MutationCheckoutCreateSessionArgs } from "@code0-tech/crater-graphql-types"
@@ -76,36 +73,6 @@ export const POST = withCraterSession({ log: "Crater checkout session error", er
         return craterJson({ error: "namespaceId is only allowed for cloud deployments." }, 400)
     }
 
-    const { getGlobal } = await import("@/lib/cms")
-    const subscriptionConfig = await getGlobal("subscriptionConfig")
-    const checkoutPackages = await getCraterCheckoutPackages()
-
-    if (!subscriptionConfig) {
-        return craterJson({ error: "Subscription configuration is unavailable." }, 503)
-    }
-
-    const resolvedSelection = resolveSubscriptionSelection(
-        {
-            plan,
-            deploymentType,
-            customerType,
-            paymentPeriod,
-        },
-        getSubscriptionSelectionCatalog(subscriptionConfig, checkoutPackages)
-    )
-
-    if (resolvedSelection.issues.length) {
-        return craterJson(
-            {
-                error: "The checkout configuration is invalid.",
-                details: resolvedSelection.issues.map((issue) => issue.message),
-            },
-            400
-        )
-    }
-
-    const normalizedSelection = resolvedSelection.selection
-
     if (!customerId || !isCustomerId(customerId)) {
         return craterJson({ error: "customerId is required and must be a valid Crater global ID." }, 400)
     }
@@ -114,34 +81,35 @@ export const POST = withCraterSession({ log: "Crater checkout session error", er
         return craterJson({ error: "namespaceId must be at most 500 bytes." }, 400)
     }
 
-    if (plan === "custom" && (aiTokens === undefined || workflowExecutions === undefined || Number.isNaN(aiTokens) || Number.isNaN(workflowExecutions))) {
-        return craterJson({ error: "Custom checkout requires both aiTokens and workflowExecutions as positive GraphQL integers." }, 400)
+    const craterPlan = parseCraterPlan(plan)
+    const craterPaymentPeriod = parseCraterPaymentPeriod(paymentPeriod)
+    if (!craterPlan) return craterJson({ error: "plan must be pro, max, or custom." }, 400)
+    if (!paymentPeriod || !craterPaymentPeriod) return craterJson({ error: "paymentPeriod must be monthly, quarterly, or yearly." }, 400)
+    if (Number.isNaN(aiTokens) || Number.isNaN(workflowExecutions)) {
+        return craterJson({ error: "aiTokens and workflowExecutions must be positive GraphQL integers when provided." }, 400)
     }
 
     const siteUrl = resolveSiteUrl()
     const returnUrl = new URL(`/${locale}/checkout/success`, siteUrl)
-    // The success page renders what was bought from these parameters. Stripe substitutes the session id placeholder,
-    // which must stay unencoded, so it is appended after everything the URL builder escapes.
-    if (normalizedSelection) {
-        returnUrl.searchParams.set("plan", normalizedSelection.plan)
-        returnUrl.searchParams.set("customerType", normalizedSelection.customerType)
-        returnUrl.searchParams.set("deploymentType", normalizedSelection.deployment)
-        returnUrl.searchParams.set("paymentPeriod", normalizedSelection.paymentPeriod)
-        if (normalizedSelection.plan === "custom") {
-            if (aiTokens !== undefined) returnUrl.searchParams.set("aiTokens", String(aiTokens))
-            if (workflowExecutions !== undefined) returnUrl.searchParams.set("workflowExecutions", String(workflowExecutions))
-        }
+    returnUrl.searchParams.set("plan", plan)
+    if (customerType === "b2b" || customerType === "b2c") returnUrl.searchParams.set("customerType", customerType)
+    returnUrl.searchParams.set("deploymentType", deploymentType)
+    returnUrl.searchParams.set("paymentPeriod", paymentPeriod)
+    if (plan === "custom") {
+        if (aiTokens !== undefined) returnUrl.searchParams.set("aiTokens", String(aiTokens))
+        if (workflowExecutions !== undefined) returnUrl.searchParams.set("workflowExecutions", String(workflowExecutions))
     }
     const guestId = guestCheckoutId(request)
     if (guestId) returnUrl.searchParams.set("guestCheckout", guestId)
     const input: CheckoutCreateSessionVariables["input"] = {
         customerId,
         returnUrl: `${returnUrl.toString()}${returnUrl.search ? "&" : "?"}session_id={CHECKOUT_SESSION_ID}`,
-        paymentPeriod: toCraterPaymentPeriod(normalizedSelection.paymentPeriod),
-        plan: toCraterPlan(normalizedSelection.plan),
+        paymentPeriod: craterPaymentPeriod,
+        plan: craterPlan,
         deploymentType: (deploymentType === "cloud" ? "CLOUD" : "SELF_HOSTED") as DeploymentType,
         ...(namespaceId ? { namespaceId } : {}),
-        ...(plan === "custom" ? { aiTokens, workflowExecutions } : {}),
+        ...(aiTokens !== undefined ? { aiTokens } : {}),
+        ...(workflowExecutions !== undefined ? { workflowExecutions } : {}),
     }
     return runCraterResourceMutation(token, CHECKOUT_CREATE_SESSION, { input }, (data) => data.checkoutCreateSession, {
         rejectionMessage: "Crater could not create the checkout session.",
