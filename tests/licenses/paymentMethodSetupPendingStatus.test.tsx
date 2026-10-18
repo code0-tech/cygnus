@@ -37,7 +37,7 @@ mock.module("@stripe/stripe-js/pure", {
     },
 })
 
-const { cleanup, render, screen } = await import("@testing-library/react")
+const { cleanup, render, screen, waitFor, fireEvent } = await import("@testing-library/react")
 const { PaymentMethodSetupPendingStatus } = await import("../../src/components/licenses/dialog/customer/PaymentMethodSetupElement")
 const { StripeProvider } = await import("../../src/components/providers/StripeProvider")
 const { LicenseToastsProvider } = await import("../../src/components/licenses/layout/LicenseNotifications")
@@ -93,12 +93,23 @@ for (const status of ["succeeded", "canceled"] as const) {
             </React.StrictMode>,
             { wrapper }
         )
-        await screen.findByText(status === "succeeded" ? content.paymentMethodSuccess : errorMessage)
+        await waitFor(() => assert.equal(notifications.length, 1))
+        if (status === "succeeded") assert.ok(screen.getByText(content.paymentMethodSuccess))
+        else {
+            assert.equal(screen.queryByText(errorMessage), null)
+            assert.equal(screen.queryByRole("alert"), null)
+            assert.ok(screen.getByRole("button", { name: "Try again" }))
+        }
         assert.equal(successCalls, status === "succeeded" ? 1 : 0)
         assert.deepEqual(notifications, [{
             title: status === "succeeded" ? licenseToastContent.paymentConfirmed.title : licenseToastContent.errorTitle,
             color: status === "succeeded" ? "success" : "error",
             children: status === "succeeded" ? licenseToastContent.paymentConfirmed.description : errorMessage,
         }])
+        if (status === "canceled") {
+            setupStatus = "succeeded"
+            fireEvent.click(screen.getByRole("button", { name: "Try again" }))
+            await waitFor(() => assert.equal(successCalls, 1))
+        }
     })
 }

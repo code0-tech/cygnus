@@ -4,7 +4,7 @@ import { useLicenseToasts } from "@/components/licenses/layout/LicenseNotificati
 import { useLicenseData } from "@/components/licenses/data/LicenseDataProvider"
 import { LicenseDialog } from "@/components/licenses/dialog/shared/LicenseDialog"
 import { CustomerPaymentMethodCard, CustomerPaymentMethodCardSkeleton } from "@/components/licenses/dialog/customer/CustomerPaymentMethodCard"
-import { LicenseTabAlert, LicenseTabHeader, LicenseTabRow, LicenseTabSaveButton, LicenseTabSection } from "@/components/licenses/dialog/shared/LicenseTabLayout"
+import { LicenseTabHeader, LicenseTabRow, LicenseTabSaveButton, LicenseTabSection } from "@/components/licenses/dialog/shared/LicenseTabLayout"
 import { PaymentMethodSetupDialog } from "@/components/licenses/dialog/customer/PaymentMethodSetupDialog"
 import { ButtonLoader } from "@/components/ui/Loader"
 import { useCustomerPaymentMethods } from "@/hooks/usePaymentMethods"
@@ -59,14 +59,12 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
     const { customers, updateCustomer } = useLicenseData()
     const resolvedCustomerId = resolveCustomerRouteId(customerId)
     const customer = customers.find((candidate) => candidate.id === resolvedCustomerId)
-    const [error, setError] = useState<string | null>(null)
     const [isSaving, setIsSaving] = useState(false)
     const requestedTab = searchParams.get("tab")
     const section: CustomerEditSection = requestedTab === "paymentMethods" || (requestedTab !== "general" && searchParams.has("setup_intent")) ? "paymentMethods" : "general"
     const sectionLabels = getCustomerEditSectionLabels(content.editor)
     const { isLoadingPaymentMethods, paymentMethods, paymentMethodsError, refreshPaymentMethods, removePaymentMethodLocally } = useCustomerPaymentMethods(customer?.id, section === "paymentMethods")
     const [removingPaymentMethodId, setRemovingPaymentMethodId] = useState<string | null>(null)
-    const [removePaymentMethodError, setRemovePaymentMethodError] = useState<string | null>(null)
     const close = () => router.replace(createLicenseCustomerPath(locale, resolvedCustomerId))
 
     const initialValues = useMemo<CustomerFormValues>(() => ({
@@ -105,14 +103,12 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
     }
 
     const paymentMethodAdded = () => {
-        setRemovePaymentMethodError(null)
         refreshPaymentMethods()
     }
 
     const removePaymentMethod = async (paymentMethodId: string) => {
         if (!customer || !paymentMethods || removingPaymentMethodId) return
         setRemovingPaymentMethodId(paymentMethodId)
-        setRemovePaymentMethodError(null)
 
         try {
             const errorCode = await removeLicenseCustomerPaymentMethod(customer.id, paymentMethodId)
@@ -121,7 +117,6 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
             removePaymentMethodLocally(paymentMethodId)
             toasts.success("paymentRemoved")
         } catch (removeError) {
-            setRemovePaymentMethodError(removeError instanceof Error ? removeError.message : errors.paymentMethodRemove)
             toasts.error(removeError instanceof Error ? removeError.message : errors.paymentMethodRemove)
         } finally {
             setRemovingPaymentMethodId(null)
@@ -131,7 +126,6 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
     const save = async ({ name, email, phone, line1, line2, city, state, postalCode, country }: CustomerFormValues) => {
         if (!customer || isSaving) return
         setIsSaving(true)
-        setError(null)
 
         try {
             await updateLicenseCustomer(
@@ -168,7 +162,6 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
             toasts.success("customerSaved")
             close()
         } catch (saveError) {
-            setError(saveError instanceof Error ? saveError.message : errors.customerUpdate)
             toasts.error(saveError instanceof Error ? saveError.message : errors.customerUpdate)
         } finally {
             setIsSaving(false)
@@ -238,7 +231,6 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
                 </LicenseTabSaveButton>
             }
         />
-        {error ? <LicenseTabAlert>{error}</LicenseTabAlert> : null}
         <form id="customer-details-form" noValidate onSubmit={(event) => { event.preventDefault(); validate() }}>
             <Spacing spacing="xl" />
             <Text size="md" hierarchy="secondary">
@@ -273,7 +265,6 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
                 ) : null
             }
         />
-        {removePaymentMethodError ? <LicenseTabAlert>{removePaymentMethodError}</LicenseTabAlert> : null}
 
         <LicenseTabSection>
             {isLoadingPaymentMethods ? (

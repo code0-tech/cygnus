@@ -36,7 +36,6 @@ interface LicenseGeneralTabProps {
     content: LicenseContent
     errors: ErrorsContent
     assigningPaymentMethodId?: string | null
-    assignPaymentMethodError?: boolean
     isLoadingPaymentMethod?: boolean
     license?: LicenseDashboardLicense
     locale: AppLocale
@@ -52,7 +51,6 @@ interface LicenseGeneralTabProps {
 
 export function LicenseGeneralTab({
     assigningPaymentMethodId,
-    assignPaymentMethodError,
     content,
     errors,
     isLoadingPaymentMethod,
@@ -78,13 +76,11 @@ export function LicenseGeneralTab({
     const pendingPeriod = (license?.pendingUpdate?.paymentPeriod as PaymentPeriod | undefined) ?? null
     const hasChange = Boolean(subscriptionId) && period !== currentPeriod && period !== pendingPeriod
     const { isLoadingPreview, preview, previewError } = useSubscriptionUpdatePreview(hasChange ? subscriptionId : undefined, { paymentPeriod: period }, errors.subscriptionPreview)
-    const [saveError, setSaveError] = useState<string | null>(null)
     const [isSaving, setIsSaving] = useState(false)
 
     const save = async () => {
         if (!license || !subscriptionId || !hasChange || isSaving) return
         setIsSaving(true)
-        setSaveError(null)
 
         try {
             const subscription = await updateSubscription({ id: subscriptionId, paymentPeriod: period }, errors.billingUpdate)
@@ -97,7 +93,6 @@ export function LicenseGeneralTab({
             toasts.success(subscription.pendingUpdate ? "changeScheduled" : "periodUpdated", subscription.pendingUpdate?.effectiveAt)
             onClose()
         } catch (error) {
-            setSaveError(error instanceof Error ? error.message : errors.billingUpdate)
             toasts.error(error instanceof Error ? error.message : errors.billingUpdate)
         } finally {
             setIsSaving(false)
@@ -135,7 +130,6 @@ export function LicenseGeneralTab({
           )
         : null
     // The cancellation rows below replace the former cancel dialog: both the period end and the immediate variant confirm in place, inside the cancellation card.
-    const [cancelError, setCancelError] = useState<string | null>(null)
     const [isCanceling, setIsCanceling] = useState(false)
     const [confirming, setConfirming] = useState<"immediate" | "periodEnd" | null>(null)
     const isCancelPending = !isCanceled && Boolean(license?.cancelAt)
@@ -146,7 +140,6 @@ export function LicenseGeneralTab({
     const cancel = async (immediately = false) => {
         if (!license?.subscriptionId || isCanceled || isCanceling) return
         setIsCanceling(true)
-        setCancelError(null)
 
         try {
             const subscription = await cancelLicenseSubscription(license.subscriptionId, errors.subscriptionCancel, immediately)
@@ -163,7 +156,6 @@ export function LicenseGeneralTab({
             setConfirming(null)
             toasts.success(subscription.status === "CANCELED" ? "canceled" : "cancellationScheduled", subscription.cancelAt)
         } catch (error) {
-            setCancelError(error instanceof Error ? error.message : errors.subscriptionCancel)
             toasts.error(error instanceof Error ? error.message : errors.subscriptionCancel)
         } finally {
             setIsCanceling(false)
@@ -173,7 +165,6 @@ export function LicenseGeneralTab({
     const resume = async () => {
         if (!license?.subscriptionId || !isCancelPending || isCanceling) return
         setIsCanceling(true)
-        setCancelError(null)
 
         try {
             const subscription = await resumeLicenseSubscription(license.subscriptionId, errors.subscriptionResume)
@@ -189,7 +180,6 @@ export function LicenseGeneralTab({
             setConfirming(null)
             toasts.success("resumed")
         } catch (error) {
-            setCancelError(error instanceof Error ? error.message : errors.subscriptionResume)
             toasts.error(error instanceof Error ? error.message : errors.subscriptionResume)
         } finally {
             setIsCanceling(false)
@@ -310,11 +300,6 @@ export function LicenseGeneralTab({
                                             )
                                         }
                                     >
-                                        {assignPaymentMethodError ? (
-                                            <Text role="alert" size="sm" className="text-error!">
-                                                {errors.paymentMethodAssign}
-                                            </Text>
-                                        ) : null}
                                     </LicenseTabRow>
                                 )}
                                 <LicenseTabRow
@@ -381,11 +366,6 @@ export function LicenseGeneralTab({
                                                 <Button type="button" variant="normal" color="success" paddingSize="xxs" w="100%" justify="center" disabled={isSaving} onClick={() => void save()}>
                                                     {isSaving ? <ButtonLoader label={content.billing.changePeriodLabel} /> : content.billing.changePeriodLabel}
                                                 </Button>
-                                                {saveError ? (
-                                                    <Text role="alert" size="sm" className="text-error! mt-2!">
-                                                        {saveError}
-                                                    </Text>
-                                                ) : null}
                                             </LicenseTabRow>
                                             {preview.prorationAmount > 0 ? (
                                                 <LicenseTabRow
@@ -479,14 +459,6 @@ export function LicenseGeneralTab({
                                                 </Button>
                                             </div>
                                         ) : null}
-                                    </LicenseTabRow>
-                                ) : null}
-
-                                {cancelError ? (
-                                    <LicenseTabRow>
-                                        <Text role="alert" size="sm" className="text-error!">
-                                            {cancelError}
-                                        </Text>
                                     </LicenseTabRow>
                                 ) : null}
                             </LicenseTabSection>

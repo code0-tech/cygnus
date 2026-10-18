@@ -53,7 +53,6 @@ export function LicenseEditDialog({ checkoutPackages, content, customerId, error
         refreshPaymentMethods: refreshCustomerPaymentMethods,
     } = useCustomerPaymentMethods(license?.customerId, section === "general")
     const [assigningPaymentMethodId, setAssigningPaymentMethodId] = useState<string | null>(null)
-    const [assignPaymentMethodError, setAssignPaymentMethodError] = useState(false)
     const close = () => router.replace(createLicensePath(locale, resolvedCustomerId, resolvedSubscriptionId))
 
     const setSection = (nextSection: LicenseEditSection) => {
@@ -74,7 +73,6 @@ export function LicenseEditDialog({ checkoutPackages, content, customerId, error
     const assignPaymentMethod = async (paymentMethodId: string) => {
         if (!license?.subscriptionId || assigningPaymentMethodId) return
         setAssigningPaymentMethodId(paymentMethodId)
-        setAssignPaymentMethodError(false)
 
         try {
             const subscription = await updateSubscription({ id: license.subscriptionId, paymentMethodId }, errors.paymentMethodAssign)
@@ -84,7 +82,6 @@ export function LicenseEditDialog({ checkoutPackages, content, customerId, error
             refreshCustomerPaymentMethods()
             toasts.success("paymentAssigned")
         } catch {
-            setAssignPaymentMethodError(true)
             toasts.error(errors.paymentMethodAssign)
         } finally {
             setAssigningPaymentMethodId(null)
@@ -99,7 +96,6 @@ export function LicenseEditDialog({ checkoutPackages, content, customerId, error
                 content={content}
                 errors={errors}
                 assigningPaymentMethodId={assigningPaymentMethodId}
-                assignPaymentMethodError={assignPaymentMethodError}
                 isLoadingPaymentMethod={isLoadingCustomerPaymentMethods}
                 license={license}
                 locale={locale}

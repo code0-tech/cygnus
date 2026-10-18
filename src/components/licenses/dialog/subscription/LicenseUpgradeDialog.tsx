@@ -124,7 +124,6 @@ export function LicenseUpgradeDialog({ checkoutPackages, content, customerId, er
         [catalog, customerType, deployment, paymentPeriod, plan, resolvedAiTokens, resolvedWorkflowExecutions]
     )
 
-    const [saveError, setSaveError] = useState<string | null>(null)
     const [isSaving, setIsSaving] = useState(false)
     const [acceptedTerms, setAcceptedTerms] = useState(false)
 
@@ -137,7 +136,6 @@ export function LicenseUpgradeDialog({ checkoutPackages, content, customerId, er
     const save = async () => {
         if (!license?.subscriptionId || !hasChange || isSaving) return
         setIsSaving(true)
-        setSaveError(null)
 
         try {
             const subscription = await updateSubscription({ id: license.subscriptionId, ...changeFields }, errors.planUpgrade)
@@ -152,7 +150,6 @@ export function LicenseUpgradeDialog({ checkoutPackages, content, customerId, er
             toasts.success(subscription.pendingUpdate ? "changeScheduled" : "planUpdated", subscription.pendingUpdate?.effectiveAt)
             close()
         } catch (error) {
-            setSaveError(error instanceof Error ? error.message : errors.planUpgrade)
             toasts.error(error instanceof Error ? error.message : errors.planUpgrade)
         } finally {
             setIsSaving(false)
@@ -384,11 +381,6 @@ export function LicenseUpgradeDialog({ checkoutPackages, content, customerId, er
                     >
                         {isSaving ? <ButtonLoader label={content.upgrade.submitLabel} /> : content.upgrade.submitLabel}
                     </Button>
-                    {saveError ? (
-                        <Text role="alert" size="sm" className="text-error! mt-2!">
-                            {saveError}
-                        </Text>
-                    ) : null}
                 </LicenseTabRow>
             </LicenseTabSection>
 

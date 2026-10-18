@@ -250,12 +250,14 @@ test("resuming a pending cancellation clears its dates", async () => {
     assert.equal(notifications[0].title, "Cancellation withdrawn")
 })
 
-test("keeps cancellation failures visible without updating local state", async () => {
+test("reports cancellation failures only through a toast without updating local state", async () => {
     globalThis.fetch = (async () => new Response("{}", { status: 422 })) as typeof fetch
     show(true)
     fireEvent.click(screen.getByRole("button", { name: "Cancel immediately" }))
     fireEvent.click(screen.getByRole("button", { name: "Yes, cancel immediately" }))
-    await waitFor(() => assert.equal(screen.getByRole("alert").textContent, "Cancellation failed"))
+    await waitFor(() => assert.equal(notifications.length, 1))
+    assert.equal(screen.queryByRole("alert"), null)
+    assert.equal(screen.queryByText("Cancellation failed"), null)
     assert.equal(updates.length, 0)
     assert.equal(closes.length, 0)
     assert.deepEqual(notifications, [{ title: licenseToastContent.errorTitle, color: "error", children: "Cancellation failed" }])

@@ -3,12 +3,12 @@
 import { useLicenseToasts } from "@/components/licenses/layout/LicenseNotifications"
 import { PaymentMethodSetupElement, PaymentMethodSetupPendingStatus, type PaymentMethodSetupOwner } from "@/components/licenses/dialog/customer/PaymentMethodSetupElement"
 import { LicenseDialog } from "@/components/licenses/dialog/shared/LicenseDialog"
-import { LicenseTabAlert, LicenseTabHeader } from "@/components/licenses/dialog/shared/LicenseTabLayout"
+import { LicenseTabHeader } from "@/components/licenses/dialog/shared/LicenseTabLayout"
 import { createPaymentMethodSetup } from "@/lib/licenses/client"
 import type { ErrorsContent, LicenseContent } from "@/lib/cms"
 import { Button, Spacing } from "@code0-tech/pictor"
 import { IconCreditCard } from "@tabler/icons-react"
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 
 interface PaymentMethodSetupDialogProps {
     content: LicenseContent
@@ -26,17 +26,23 @@ export function PaymentMethodSetupDialog({ content, disabled = false, errors, on
     const [open, setOpen] = useState(false)
     const [clientSecret, setClientSecret] = useState<string | null>(null)
     const [pendingSetupIntentClientSecret, setPendingSetupIntentClientSecret] = useState<string | null>(null)
-    const [error, setError] = useState<string | null>(null)
+    const [hasError, setHasError] = useState(false)
+    const [retryKey, setRetryKey] = useState(0)
     const [isLoading, setIsLoading] = useState(false)
 
-    const close = () => {
+    const close = useCallback(() => {
         setOpen(false)
         setClientSecret(null)
         setPendingSetupIntentClientSecret(null)
-        setError(null)
+        setHasError(false)
         setIsLoading(false)
         requestStartedRef.current = false
-    }
+    }, [])
+
+    const complete = useCallback(() => {
+        close()
+        onSuccess()
+    }, [close, onSuccess])
 
     useEffect(() => {
         const currentUrl = new URL(window.location.href)
@@ -57,7 +63,7 @@ export function PaymentMethodSetupDialog({ content, disabled = false, errors, on
 
         requestStartedRef.current = true
         setIsLoading(true)
-        setError(null)
+        setHasError(false)
         let active = true
 
         void createPaymentMethodSetup(owner.customerId, errors.paymentMethodUpdate)
@@ -66,7 +72,7 @@ export function PaymentMethodSetupDialog({ content, disabled = false, errors, on
             })
             .catch(() => {
                 if (active) {
-                    setError(errors.paymentMethodUpdate)
+                    setHasError(true)
                     toasts.error(errors.paymentMethodUpdate)
                 }
             })
@@ -77,7 +83,7 @@ export function PaymentMethodSetupDialog({ content, disabled = false, errors, on
         return () => {
             active = false
         }
-    }, [errors.paymentMethodUpdate, open, owner, pendingSetupIntentClientSecret])
+    }, [errors.paymentMethodUpdate, open, owner, pendingSetupIntentClientSecret, retryKey])
 
     return (
         <>
@@ -107,16 +113,28 @@ export function PaymentMethodSetupDialog({ content, disabled = false, errors, on
                                             <div aria-hidden="true" className="h-14 rounded-2xl bg-white/8" />
                                         </div>
                                     </>
-                                ) : error ? (
-                                    <>
-                                        <LicenseTabHeader title={content.editor.addPaymentMethodLabel} description={content.editor.paymentMethodDescription} />
-                                        <LicenseTabAlert>{error}</LicenseTabAlert>
-                                    </>
+                                ) : hasError ? (
+                                    <LicenseTabHeader
+                                        title={content.editor.addPaymentMethodLabel}
+                                        description={content.editor.paymentMethodDescription}
+                                        action={
+                                            <Button
+                                                type="button"
+                                                variant="normal"
+                                                onClick={() => {
+                                                    requestStartedRef.current = false
+                                                    setRetryKey((current) => current + 1)
+                                                }}
+                                            >
+                                                {errors.retry}
+                                            </Button>
+                                        }
+                                    />
                                 ) : pendingSetupIntentClientSecret ? (
                                     <PaymentMethodSetupPendingStatus
                                         content={content.editor}
                                         errorMessage={errors.paymentMethodUpdate}
-                                        onSuccess={onSuccess}
+                                        onSuccess={complete}
                                         retryLabel={errors.retry}
                                         clientSecret={pendingSetupIntentClientSecret}
                                     />
@@ -125,7 +143,7 @@ export function PaymentMethodSetupDialog({ content, disabled = false, errors, on
                                         clientSecret={clientSecret}
                                         content={content.editor}
                                         errorMessage={errors.paymentMethodUpdate}
-                                        onSuccess={onSuccess}
+                                        onSuccess={complete}
                                         retryLabel={errors.retry}
                                         returnPath={returnPath}
                                     />

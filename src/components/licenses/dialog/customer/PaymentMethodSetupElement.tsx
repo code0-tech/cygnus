@@ -1,7 +1,7 @@
 "use client"
 
 import { useLicenseToasts } from "@/components/licenses/layout/LicenseNotifications"
-import { LicenseTabAlert, LicenseTabHeader, LicenseTabSaveButton } from "@/components/licenses/dialog/shared/LicenseTabLayout"
+import { LicenseTabHeader, LicenseTabSaveButton } from "@/components/licenses/dialog/shared/LicenseTabLayout"
 import { ButtonLoader } from "@/components/ui/Loader"
 import { useStripePromise } from "@/components/providers/StripeProvider"
 import type { LicenseContent } from "@/lib/cms"
@@ -34,7 +34,7 @@ export function PaymentMethodSetupPendingStatus({ content, errorMessage, onSucce
     const toasts = useLicenseToasts()
     const stripePromise = useStripePromise()
     const [isComplete, setIsComplete] = useState(false)
-    const [error, setError] = useState<string | null>(null)
+    const [hasError, setHasError] = useState(false)
     const [retryKey, setRetryKey] = useState(0)
     const successHandledRef = useRef(false)
 
@@ -60,7 +60,7 @@ export function PaymentMethodSetupPendingStatus({ content, errorMessage, onSucce
                     return
                 }
                 if (result.setupIntent.status === "canceled" || result.setupIntent.status === "requires_payment_method") {
-                    setError(errorMessage)
+                    setHasError(true)
                     toasts.error(errorMessage)
                     return
                 }
@@ -68,7 +68,7 @@ export function PaymentMethodSetupPendingStatus({ content, errorMessage, onSucce
             } catch (statusError) {
                 if (!active) return
                 if (statusError instanceof DOMException && statusError.name === "AbortError") return
-                setError(errorMessage)
+                setHasError(true)
                 toasts.error(errorMessage)
             }
         }
@@ -86,13 +86,13 @@ export function PaymentMethodSetupPendingStatus({ content, errorMessage, onSucce
                 title={content.addPaymentMethodLabel}
                 description={content.paymentMethodDescription}
                 action={
-                    error ? (
+                    hasError ? (
                         <Button
                             type="button"
                             variant="normal"
                             paddingSize="xxs"
                             onClick={() => {
-                                setError(null)
+                                setHasError(false)
                                 setRetryKey((current) => current + 1)
                             }}
                         >
@@ -106,11 +106,7 @@ export function PaymentMethodSetupPendingStatus({ content, errorMessage, onSucce
                 <Text role="status" size="sm" className="text-brand!">
                     {content.paymentMethodSuccess}
                 </Text>
-            ) : error ? (
-                <Text role="alert" size="sm" className="text-error!">
-                    {error}
-                </Text>
-            ) : (
+            ) : hasError ? null : (
                 <div role="status">
                     <ButtonLoader label={content.savingPaymentMethodLabel} />
                 </div>
@@ -125,13 +121,11 @@ function PaymentMethodSetupForm({ clientSecret, content, errorMessage, onSuccess
     const elements = useElements()
     const [isReady, setIsReady] = useState(false)
     const [isConfirming, setIsConfirming] = useState(false)
-    const [error, setError] = useState<string | null>(null)
     const [setupIntentClientSecret, setSetupIntentClientSecret] = useState<string | null>(null)
 
     const confirm = async () => {
         if (!stripe || !elements || !isReady || isConfirming) return
         setIsConfirming(true)
-        setError(null)
 
         try {
             const result = await stripe.confirmSetup({
@@ -140,9 +134,13 @@ function PaymentMethodSetupForm({ clientSecret, content, errorMessage, onSuccess
                 redirect: "if_required",
             })
             if (result.error || !result.setupIntent?.id) throw new Error(errorMessage)
+            if (result.setupIntent.status === "succeeded") {
+                toasts.success("paymentConfirmed")
+                onSuccess()
+                return
+            }
             setSetupIntentClientSecret(clientSecret)
         } catch {
-            setError(errorMessage)
             toasts.error(errorMessage)
         } finally {
             setIsConfirming(false)
@@ -163,7 +161,6 @@ function PaymentMethodSetupForm({ clientSecret, content, errorMessage, onSuccess
                     </LicenseTabSaveButton>
                 }
             />
-            {error ? <LicenseTabAlert>{error}</LicenseTabAlert> : null}
             <Spacing spacing="md" />
             <PaymentElement onLoaderStart={() => setIsReady(false)} onReady={() => setIsReady(true)} />
         </>
