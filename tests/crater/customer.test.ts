@@ -357,6 +357,9 @@ test("customer creation requires the customer type Crater cannot infer", async (
         { customerType: "personal", name: "Ada", email: "ada@example.com", address: {} },
         { customerType: "personal", name: " ", email: "ada@example.com", address: FULL_ADDRESS },
         { customerType: "personal", name: "Ada", email: "invalid", address: FULL_ADDRESS },
+        { customerType: "personal", name: "Ada", email: `${"a".repeat(65)}@example.com`, address: FULL_ADDRESS },
+        { customerType: "personal", name: "Ada", email: `a@${"b".repeat(249)}.com`, address: FULL_ADDRESS },
+        { customerType: "personal", name: "Ada", email: "ada\u0000@example.com", address: FULL_ADDRESS },
         { customerType: "personal", name: "Ada", email: "ada@example.com", address: { country: "DE" } },
         { address: "1 Main Street", customerType: "business" },
     ]

@@ -2,7 +2,7 @@ import { readGuestCheckoutSession } from "@/lib/checkout/guestCheckoutSession"
 import { createApolloClient } from "@/lib/apolloClient"
 import { CRATER_ERROR_FIELDS, craterJson, runCraterMutation, withCraterSession } from "@/lib/crater/api.server"
 import { readCustomerPaymentMethodIds } from "@/lib/crater/customerPaymentMethods.server"
-import { isCustomerId, optionalString, readJsonObject, readOptionalAddress } from "@/lib/crater/request"
+import { isCustomerId, isValidEmail, optionalString, readJsonObject, readOptionalAddress } from "@/lib/crater/request"
 import { normalizeCraterCustomerType, toCraterCustomerTypeEnum } from "@/lib/crater/values"
 import type { Customer, CustomerAddressCreateInput, CustomerAddressUpdateInput, Mutation, MutationCustomersCreateArgs, MutationCustomersUpdateArgs, Query } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
@@ -165,7 +165,7 @@ export const POST = withCraterSession({ log: "Crater customer creation error", e
     const taxIdValue = optionalString(body?.taxIdValue)
     const address = readCreateAddress(body?.address)
 
-    if (!body || !customerType || !name || !email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !address) {
+    if (!body || !customerType || !name || !email || !isValidEmail(email) || !address) {
         return craterJson({ error: "customerType, name, a valid email, and an address with line1, city, postalCode, and country are required." }, 400)
     }
 
