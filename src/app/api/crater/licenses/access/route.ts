@@ -1,13 +1,9 @@
 import { craterJson, craterTransportErrorResponse, noStoreRedirect as craterNoStoreRedirect } from "@/lib/crater/api.server"
-import { describeCraterError } from "@/lib/crater/errors"
-import { createCraterUserSession } from "@/lib/crater/login.server"
 import { isCustomerId, isLicenseId, isSubscriptionId } from "@/lib/crater/request"
 import { findCustomerForSubscription, findSubscriptionForLicenseSnapshot } from "@/lib/licenses/snapshotLookup.server"
 import { createLicenseActionPath, createLicenseDashboardLoginPath, createLicensePath, isLicenseDashboardAction, resolveSubscriptionRouteId } from "@/lib/licenses/routes"
-import { clearCraterSessionCookie, readCraterSessionAuthorization, setCraterSessionCookie, setCraterUserLoginCookie } from "@/lib/crater/session.server"
+import { clearCraterSessionCookie, readCraterSessionAuthorization } from "@/lib/crater/session.server"
 import { isSupportedLocale, type AppLocale } from "@/lib/i18n"
-import { enforceRateLimit } from "@/lib/security/rateLimiter"
-import { logSecurityEvent } from "@/lib/security/securityLog"
 import { resolveSiteUrl } from "@/lib/siteConfig"
 import { ServerError } from "@apollo/client/errors"
 import { NextResponse } from "next/server"
@@ -27,23 +23,6 @@ function resolveLicenseReturnUrl(requestUrl: URL, locale: string, siteOrigin: st
 
     returnUrl.searchParams.delete("token")
     return returnUrl
-}
-
-async function exchangeSagittariusToken(request: Request, sagittariusToken: string) {
-    if (enforceRateLimit("login", request)) return null
-
-    try {
-        const payload = await createCraterUserSession(sagittariusToken)
-        if (payload.errors?.length || !payload.userSession?.token) {
-            const failure = describeCraterError(payload.errors)
-            logSecurityEvent({ event: "crater_login_failed", errorCode: failure?.errorCode ?? "UNKNOWN" })
-            return null
-        }
-        return payload.userSession.token
-    } catch (error) {
-        console.error("Crater license link login error:", error instanceof Error ? error.name : "Unknown error")
-        return null
-    }
 }
 
 async function resolveDestination(requestUrl: URL, locale: AppLocale, siteOrigin: string, sessionToken: string) {
@@ -82,7 +61,6 @@ export async function GET(request: Request) {
     }
 
     const session = readCraterSessionAuthorization(request)
-    const sagittariusToken = requestUrl.searchParams.get("token")?.trim()
     const isSculptorLink = requestUrl.searchParams.has("subscriptionId")
 
     const startLogin = (clearSession: boolean) => {
@@ -92,15 +70,10 @@ export async function GET(request: Request) {
         return clearSession ? clearCraterSessionCookie(response) : response
     }
 
-    let sessionToken = session.status === "authenticated" ? session.token : null
-    let exchangedToken: string | null = null
-    if (!sessionToken && sagittariusToken) {
-        exchangedToken = await exchangeSagittariusToken(request, sagittariusToken)
-        sessionToken = exchangedToken
-    }
+    // This route only uses existing sessions. Tokens in links must never log a browser in;
+    // session creation belongs to the callback protected by the state issued at /auth/start.
+    const sessionToken = session.status === "authenticated" ? session.token : null
     if (!sessionToken) return startLogin(session.status === "invalid")
-
-    const withExchangedSession = (response: NextResponse) => (exchangedToken ? setCraterUserLoginCookie(setCraterSessionCookie(response, exchangedToken)) : response)
 
     const resolveWith = async (token: string) => {
         try {
@@ -112,19 +85,14 @@ export async function GET(request: Request) {
     }
 
     try {
-        let destination = await resolveWith(sessionToken)
-        if (destination.status !== "found" && destination.status !== "invalid" && !exchangedToken && sagittariusToken) {
-            exchangedToken = await exchangeSagittariusToken(request, sagittariusToken)
-            if (exchangedToken) destination = await resolveWith(exchangedToken)
-        }
-
-        if (destination.status === "found") return withExchangedSession(noStoreRedirect(destination.url))
+        const destination = await resolveWith(sessionToken)
+        if (destination.status === "found") return noStoreRedirect(destination.url)
         if (destination.status === "invalid") return craterJson({ error: "A valid Crater customer and license snapshot id are required." }, 400)
         if (destination.status === "unauthenticated") {
-            if (exchangedToken || isSculptorLink) return startLogin(!exchangedToken)
+            if (isSculptorLink) return startLogin(true)
             return clearCraterSessionCookie(craterJson({ error: "The Crater session has no authenticated user." }, 401))
         }
-        if (isSculptorLink) return withExchangedSession(noStoreRedirect(new URL(`/${locale}/licenses`, siteOrigin)))
+        if (isSculptorLink) return noStoreRedirect(new URL(`/${locale}/licenses`, siteOrigin))
         return craterJson({ error: "The requested license was not found." }, 404)
     } catch (error) {
         const transportResponse = craterTransportErrorResponse(error, request)

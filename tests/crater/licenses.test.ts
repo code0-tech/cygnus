@@ -104,6 +104,62 @@ test("license access without a session starts the Sculptor login and returns to 
     )
 })
 
+test("license access never exchanges tokens from links, even with a login-state cookie", async () => {
+    await withGraphQLServer([], async (server) => {
+        for (const cookie of ["", "crater_session=", `crater_login_state=${LOGIN_STATE}`, "crater_session=victim-session"]) {
+            const response = await accessLicenseDashboard(new Request(
+                `https://code0.example/api/crater/licenses/access?locale=en&token=attacker-token&state=${LOGIN_STATE}`,
+                { headers: { cookie } }
+            ))
+            assert.equal(response.status, 307)
+            const location = new URL(response.headers.get("location")!)
+            assert.doesNotMatch(location.toString(), /attacker-token/)
+            const cookies = response.headers.getSetCookie()
+            assert.ok(cookies.every((value) => /Max-Age=0/i.test(value)), "Must not set an authenticated session")
+            if (cookie === "crater_session=victim-session") {
+                assert.equal(location.pathname, "/en/licenses")
+                assert.equal(cookies.length, 0)
+            } else {
+                assert.equal(location.pathname, "/api/crater/auth/start")
+                assert.equal(location.searchParams.get("flow"), "licenses")
+            }
+        }
+        assert.equal(server.requests.length, 0)
+    })
+})
+
+test("a missing subscription never replaces the existing session with a token from a link", async () => {
+    await withGraphQLServer([{ data: { currentUser: { customers: { nodes: [], pageInfo: { hasNextPage: false } } } } }], async (server) => {
+        const response = await accessLicenseDashboard(new Request(
+            "https://code0.example/api/crater/licenses/access?locale=en&subscriptionId=666&token=attacker-token",
+            { headers: { cookie: "crater_session=victim-session" } }
+        ))
+        assert.equal(response.status, 307)
+        assert.equal(response.headers.get("location"), "https://code0.example/en/licenses")
+        assert.equal(response.headers.get("set-cookie"), null)
+        assert.equal(server.requests.length, 1)
+        assert.equal(server.requests[0].authorization, "Session victim-session")
+        assert.equal(server.requests[0].body.operationName, "LicenseSubscriptionCustomer")
+    })
+})
+
+test("an expired session starts a fresh login without exchanging the link token", async () => {
+    await withGraphQLServer([{ data: { currentUser: null } }], async (server) => {
+        const response = await accessLicenseDashboard(new Request(
+            "https://code0.example/api/crater/licenses/access?locale=en&subscriptionId=666&action=upgrade&token=attacker-token",
+            { headers: { cookie: "crater_session=expired-session" } }
+        ))
+        assert.equal(response.status, 307)
+        const location = new URL(response.headers.get("location")!)
+        assert.equal(location.pathname, "/api/crater/auth/start")
+        assert.equal(location.searchParams.get("returnPath"), "/api/crater/licenses/access?locale=en&subscriptionId=666&action=upgrade")
+        assert.doesNotMatch(location.toString(), /attacker-token/)
+        assert.ok(response.headers.getSetCookie().every((value) => /Max-Age=0/i.test(value)))
+        assert.equal(server.requests.length, 1)
+        assert.equal(server.requests[0].authorization, "Session expired-session")
+    })
+})
+
 test("license dashboard loads from the HttpOnly Crater session cookie", async () => {
     await withGraphQLServer([
         {
