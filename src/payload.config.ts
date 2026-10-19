@@ -6,6 +6,7 @@ import path from "path"
 import { buildConfig } from "payload"
 import sharp from "sharp"
 import { fileURLToPath } from "url"
+import nodemailer from "nodemailer"
 import { Actions } from "./collections/actions"
 import { Blog } from "./collections/blog"
 import { Checkout } from "./globals/checkout"
@@ -40,6 +41,15 @@ const isDevelopment = process.env.NODE_ENV === "development"
 const payloadServerURL = (process.env.SERVER_URL?.trim() || (isDevelopment ? "http://localhost:3000" : "https://codezero.build")).replace(/\/$/, "")
 const allowedOrigins = Array.from(new Set([payloadServerURL, "http://localhost:3000", "https://localhost:3000", "https://codezero.build"]))
 const shouldSkipEmailVerify = isDevelopment || isBuildPhase || process.env.PAYLOAD_SKIP_EMAIL_VERIFY === "true" || !smtpHost
+const smtpTransport = nodemailer.createTransport({
+    host: smtpHost,
+    port: Number(process.env.SMTP_PORT),
+    secure: Number(process.env.SMTP_PORT) === 465,
+    auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+    },
+})
 
 export default buildConfig({
     serverURL: payloadServerURL,
@@ -98,15 +108,7 @@ export default buildConfig({
         defaultFromAddress: process.env.CONTACT_FROM_EMAIL!,
         defaultFromName: "Payload Mail",
         skipVerify: shouldSkipEmailVerify,
-        transportOptions: {
-            host: smtpHost,
-            port: Number(process.env.SMTP_PORT),
-            secure: Number(process.env.SMTP_PORT) === 465,
-            auth: {
-                user: process.env.SMTP_USER,
-                pass: process.env.SMTP_PASS,
-            },
-        },
+        transport: smtpTransport,
     }),
     secret: process.env.PAYLOAD_SECRET || "",
     typescript: {
