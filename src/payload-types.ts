@@ -1152,7 +1152,7 @@ export interface Page {
                     id?: string | null;
                   }[]
                 | null;
-              missingFeatures?:
+              missing?:
                 | {
                     text: string;
                     id?: string | null;
@@ -1171,7 +1171,7 @@ export interface Page {
                     id?: string | null;
                   }[]
                 | null;
-              missingFeatures?:
+              missing?:
                 | {
                     text: string;
                     id?: string | null;
@@ -1190,7 +1190,7 @@ export interface Page {
                     id?: string | null;
                   }[]
                 | null;
-              missingFeatures?:
+              missing?:
                 | {
                     text: string;
                     id?: string | null;
@@ -1224,7 +1224,7 @@ export interface Page {
                     id?: string | null;
                   }[]
                 | null;
-              missingFeatures?:
+              missing?:
                 | {
                     text: string;
                     id?: string | null;
@@ -1243,7 +1243,7 @@ export interface Page {
                     id?: string | null;
                   }[]
                 | null;
-              missingFeatures?:
+              missing?:
                 | {
                     text: string;
                     id?: string | null;
@@ -1262,7 +1262,7 @@ export interface Page {
                     id?: string | null;
                   }[]
                 | null;
-              missingFeatures?:
+              missing?:
                 | {
                     text: string;
                     id?: string | null;
@@ -2411,7 +2411,7 @@ export interface PagesSelect<T extends boolean = true> {
                           text?: T;
                           id?: T;
                         };
-                    missingFeatures?:
+                    missing?:
                       | T
                       | {
                           text?: T;
@@ -2434,7 +2434,7 @@ export interface PagesSelect<T extends boolean = true> {
                           text?: T;
                           id?: T;
                         };
-                    missingFeatures?:
+                    missing?:
                       | T
                       | {
                           text?: T;
@@ -2457,7 +2457,7 @@ export interface PagesSelect<T extends boolean = true> {
                           text?: T;
                           id?: T;
                         };
-                    missingFeatures?:
+                    missing?:
                       | T
                       | {
                           text?: T;
@@ -2498,7 +2498,7 @@ export interface PagesSelect<T extends boolean = true> {
                           text?: T;
                           id?: T;
                         };
-                    missingFeatures?:
+                    missing?:
                       | T
                       | {
                           text?: T;
@@ -2521,7 +2521,7 @@ export interface PagesSelect<T extends boolean = true> {
                           text?: T;
                           id?: T;
                         };
-                    missingFeatures?:
+                    missing?:
                       | T
                       | {
                           text?: T;
@@ -2544,7 +2544,7 @@ export interface PagesSelect<T extends boolean = true> {
                           text?: T;
                           id?: T;
                         };
-                    missingFeatures?:
+                    missing?:
                       | T
                       | {
                           text?: T;
@@ -3015,7 +3015,7 @@ export interface SubscriptionConfig {
     estimateLabel: string;
     cancelLabel: string;
     applyLabel: string;
-    businessTypes: {
+    types: {
       name: string;
       conversion_unit: string;
       icon: string;
@@ -3803,7 +3803,7 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
         estimateLabel?: T;
         cancelLabel?: T;
         applyLabel?: T;
-        businessTypes?:
+        types?:
           | T
           | {
               name?: T;

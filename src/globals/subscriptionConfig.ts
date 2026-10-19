@@ -352,7 +352,7 @@ export const SubscriptionCollection: GlobalConfig = {
                                 localizedText("cancelLabel", "Cancel", "Abbrechen"),
                                 localizedText("applyLabel", "Apply value", "Wert übernehmen"),
                                 {
-                                    name: "businessTypes",
+                                    name: "types",
                                     label: "Business Types",
                                     type: "array",
                                     required: true,

@@ -41,7 +41,7 @@ interface WorkflowCalculatorContent {
     estimateLabel: string
     cancelLabel: string
     applyLabel: string
-    businessTypes: {
+    types: {
         name: string
         conversion_rate: number
         conversion_unit: string
@@ -66,7 +66,7 @@ export function WorkflowCalculatorDialog({ locale, content, businessTypeIcons, v
     const [selectedBusinessTypeIndex, setSelectedBusinessTypeIndex] = useState(0)
     const [runsPerDay, setRunsPerDay] = useState(value)
     const [runsPerDayPreview, setRunsPerDayPreview] = useState(value)
-    const selectedBusinessType = content.businessTypes[selectedBusinessTypeIndex] ?? content.businessTypes[0]
+    const selectedBusinessType = content.types[selectedBusinessTypeIndex] ?? content.types[0]
     const rawEstimate = runsPerDay * (selectedBusinessType?.conversion_rate ?? 1)
     const estimatedExecutions = Math.max(0, Math.round(rawEstimate))
     const applicableExecutions = snapToUsagePackage(estimatedExecutions, packages)
@@ -130,7 +130,7 @@ export function WorkflowCalculatorDialog({ locale, content, businessTypeIcons, v
                                         <CommandList className="max-h-64">
                                             <CommandEmpty>{content.noBusinessTypesFoundLabel}</CommandEmpty>
                                             <CommandGroup>
-                                                {content.businessTypes.map((businessType, index) => (
+                                                {content.types.map((businessType, index) => (
                                                     <CommandItem
                                                         key={businessType.id ?? `${businessType.name}-${index}`}
                                                         value={`${businessType.name} ${businessType.conversion_unit}`}

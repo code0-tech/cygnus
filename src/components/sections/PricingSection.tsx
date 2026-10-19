@@ -140,7 +140,7 @@ export function PricingSection({ content, locale, subscriptionConfig, subscripti
             <StaggerContainer className="grid w-full grid-cols-1 items-stretch gap-6 md:grid-cols-2 lg:grid-cols-3" delayChildren={0.04} staggerChildren={0.08}>
                 {pricingPackages.map((pricingPackage) => {
                     const features = pricingPackage.content?.features?.filter((feature) => Boolean(feature.text)) ?? []
-                    const missingFeatures = pricingPackage.content?.missingFeatures?.filter((feature) => Boolean(feature.text)) ?? []
+                    const missingFeatures = pricingPackage.content?.missing?.filter((feature) => Boolean(feature.text)) ?? []
                     const buttonLabel = pricingPackage.content?.button?.label?.trim()
                     const buttonUrl = pricingPackage.content?.button?.url?.trim()
                     const highlighted = pricingPackage.key === "max"

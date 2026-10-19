@@ -161,7 +161,7 @@ const pageBlockRenderers: Partial<Record<PageBlock["blockType"], BlockRenderer>>
                 b2b: getIcon(config.customerType.b2b.icon?.trim() || "tabler:IconBriefcase2", 20),
                 b2c: getIcon(config.customerType.b2c.icon?.trim() || "tabler:IconBuildingStore", 20),
             },
-            workflowBusinessTypes: (config.workflowCalculator.businessTypes.length ? config.workflowCalculator.businessTypes : [{ icon: "tabler:IconBuilding" }]).map((businessType, index) =>
+            workflowBusinessTypes: (config.workflowCalculator.types.length ? config.workflowCalculator.types : [{ icon: "tabler:IconBuilding" }]).map((businessType, index) =>
                 getIcon(businessType.icon?.trim() || "tabler:IconBuilding", 18, `workflow-business-type-${index}-${businessType.icon}`)
             ),
         }

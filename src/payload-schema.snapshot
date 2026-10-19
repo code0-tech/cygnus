@@ -1296,17 +1296,17 @@ export const pages_blocks_pricing_pro_features = pgTable('pages_blocks_pricing_p
 )
 
 
-export const pages_blocks_pricing_pro_missing_features = pgTable('pages_blocks_pricing_pro_missing_features', {
+export const pages_blocks_pricing_pro_missing = pgTable('pages_blocks_pricing_pro_missing', {
   _order: integer('_order').notNull(),
   _parentID: varchar('_parent_id').notNull(),
   _locale: enum__locales('_locale').notNull(),
   id: varchar('id').primaryKey(),
   text: varchar('text').notNull(),
 }, (columns) => [
-    index('pages_blocks_pricing_pro_missing_features_order_idx').on(columns._order), index('pages_blocks_pricing_pro_missing_features_parent_id_idx').on(columns._parentID), index('pages_blocks_pricing_pro_missing_features_locale_idx').on(columns._locale), foreignKey({
+    index('pages_blocks_pricing_pro_missing_order_idx').on(columns._order), index('pages_blocks_pricing_pro_missing_parent_id_idx').on(columns._parentID), index('pages_blocks_pricing_pro_missing_locale_idx').on(columns._locale), foreignKey({
       columns: [columns['_parentID']],
       foreignColumns: [pages_blocks_pricing.id],
-      name: 'pages_blocks_pricing_pro_missing_features_parent_id_fk'
+      name: 'pages_blocks_pricing_pro_missing_parent_id_fk'
     }).onDelete('cascade'),
 ]
 )
@@ -1328,17 +1328,17 @@ export const pages_blocks_pricing_max_features = pgTable('pages_blocks_pricing_m
 )
 
 
-export const pages_blocks_pricing_max_missing_features = pgTable('pages_blocks_pricing_max_missing_features', {
+export const pages_blocks_pricing_max_missing = pgTable('pages_blocks_pricing_max_missing', {
   _order: integer('_order').notNull(),
   _parentID: varchar('_parent_id').notNull(),
   _locale: enum__locales('_locale').notNull(),
   id: varchar('id').primaryKey(),
   text: varchar('text').notNull(),
 }, (columns) => [
-    index('pages_blocks_pricing_max_missing_features_order_idx').on(columns._order), index('pages_blocks_pricing_max_missing_features_parent_id_idx').on(columns._parentID), index('pages_blocks_pricing_max_missing_features_locale_idx').on(columns._locale), foreignKey({
+    index('pages_blocks_pricing_max_missing_order_idx').on(columns._order), index('pages_blocks_pricing_max_missing_parent_id_idx').on(columns._parentID), index('pages_blocks_pricing_max_missing_locale_idx').on(columns._locale), foreignKey({
       columns: [columns['_parentID']],
       foreignColumns: [pages_blocks_pricing.id],
-      name: 'pages_blocks_pricing_max_missing_features_parent_id_fk'
+      name: 'pages_blocks_pricing_max_missing_parent_id_fk'
     }).onDelete('cascade'),
 ]
 )
@@ -1360,17 +1360,17 @@ export const pages_blocks_pricing_custom_features = pgTable('pages_blocks_pricin
 )
 
 
-export const pages_blocks_pricing_custom_missing_features = pgTable('pages_blocks_pricing_custom_missing_features', {
+export const pages_blocks_pricing_custom_missing = pgTable('pages_blocks_pricing_custom_missing', {
   _order: integer('_order').notNull(),
   _parentID: varchar('_parent_id').notNull(),
   _locale: enum__locales('_locale').notNull(),
   id: varchar('id').primaryKey(),
   text: varchar('text').notNull(),
 }, (columns) => [
-    index('pages_blocks_pricing_custom_missing_features_order_idx').on(columns._order), index('pages_blocks_pricing_custom_missing_features_parent_id_idx').on(columns._parentID), index('pages_blocks_pricing_custom_missing_features_locale_idx').on(columns._locale), foreignKey({
+    index('pages_blocks_pricing_custom_missing_order_idx').on(columns._order), index('pages_blocks_pricing_custom_missing_parent_id_idx').on(columns._parentID), index('pages_blocks_pricing_custom_missing_locale_idx').on(columns._locale), foreignKey({
       columns: [columns['_parentID']],
       foreignColumns: [pages_blocks_pricing.id],
-      name: 'pages_blocks_pricing_custom_missing_features_parent_id_fk'
+      name: 'pages_blocks_pricing_custom_missing_parent_id_fk'
     }).onDelete('cascade'),
 ]
 )
@@ -1429,17 +1429,17 @@ export const pages_blocks_small_pricing_pro_features = pgTable('pages_blocks_sma
 )
 
 
-export const pages_blocks_small_pricing_pro_missing_features = pgTable('pages_blocks_small_pricing_pro_missing_features', {
+export const pages_blocks_small_pricing_pro_missing = pgTable('pages_blocks_small_pricing_pro_missing', {
   _order: integer('_order').notNull(),
   _parentID: varchar('_parent_id').notNull(),
   _locale: enum__locales('_locale').notNull(),
   id: varchar('id').primaryKey(),
   text: varchar('text').notNull(),
 }, (columns) => [
-    index('pages_blocks_small_pricing_pro_missing_features_order_idx').on(columns._order), index('pages_blocks_small_pricing_pro_missing_features_parent_id_idx').on(columns._parentID), index('pages_blocks_small_pricing_pro_missing_features_locale_idx').on(columns._locale), foreignKey({
+    index('pages_blocks_small_pricing_pro_missing_order_idx').on(columns._order), index('pages_blocks_small_pricing_pro_missing_parent_id_idx').on(columns._parentID), index('pages_blocks_small_pricing_pro_missing_locale_idx').on(columns._locale), foreignKey({
       columns: [columns['_parentID']],
       foreignColumns: [pages_blocks_small_pricing.id],
-      name: 'pages_blocks_small_pricing_pro_missing_features_parent_id_fk'
+      name: 'pages_blocks_small_pricing_pro_missing_parent_id_fk'
     }).onDelete('cascade'),
 ]
 )
@@ -1461,17 +1461,17 @@ export const pages_blocks_small_pricing_max_features = pgTable('pages_blocks_sma
 )
 
 
-export const pages_blocks_small_pricing_max_missing_features = pgTable('pages_blocks_small_pricing_max_missing_features', {
+export const pages_blocks_small_pricing_max_missing = pgTable('pages_blocks_small_pricing_max_missing', {
   _order: integer('_order').notNull(),
   _parentID: varchar('_parent_id').notNull(),
   _locale: enum__locales('_locale').notNull(),
   id: varchar('id').primaryKey(),
   text: varchar('text').notNull(),
 }, (columns) => [
-    index('pages_blocks_small_pricing_max_missing_features_order_idx').on(columns._order), index('pages_blocks_small_pricing_max_missing_features_parent_id_idx').on(columns._parentID), index('pages_blocks_small_pricing_max_missing_features_locale_idx').on(columns._locale), foreignKey({
+    index('pages_blocks_small_pricing_max_missing_order_idx').on(columns._order), index('pages_blocks_small_pricing_max_missing_parent_id_idx').on(columns._parentID), index('pages_blocks_small_pricing_max_missing_locale_idx').on(columns._locale), foreignKey({
       columns: [columns['_parentID']],
       foreignColumns: [pages_blocks_small_pricing.id],
-      name: 'pages_blocks_small_pricing_max_missing_features_parent_id_fk'
+      name: 'pages_blocks_small_pricing_max_missing_parent_id_fk'
     }).onDelete('cascade'),
 ]
 )
@@ -1493,17 +1493,17 @@ export const pages_blocks_small_pricing_custom_features = pgTable('pages_blocks_
 )
 
 
-export const pages_blocks_small_pricing_custom_missing_features = pgTable('pages_blocks_small_pricing_custom_missing_features', {
+export const pages_blocks_small_pricing_custom_missing = pgTable('pages_blocks_small_pricing_custom_missing', {
   _order: integer('_order').notNull(),
   _parentID: varchar('_parent_id').notNull(),
   _locale: enum__locales('_locale').notNull(),
   id: varchar('id').primaryKey(),
   text: varchar('text').notNull(),
 }, (columns) => [
-    index('pages_blocks_small_pricing_custom_missing_features_order_idx').on(columns._order), index('pages_blocks_small_pricing_custom_missing_features_parent_id_idx').on(columns._parentID), index('pages_blocks_small_pricing_custom_missing_features_locale_idx').on(columns._locale), foreignKey({
+    index('pages_blocks_small_pricing_custom_missing_order_idx').on(columns._order), index('pages_blocks_small_pricing_custom_missing_parent_id_idx').on(columns._parentID), index('pages_blocks_small_pricing_custom_missing_locale_idx').on(columns._locale), foreignKey({
       columns: [columns['_parentID']],
       foreignColumns: [pages_blocks_small_pricing.id],
-      name: 'pages_blocks_small_pricing_custom_missing_features_parent_id_fk'
+      name: 'pages_blocks_small_pricing_custom_missing_parent_id_fk'
     }).onDelete('cascade'),
 ]
 )
@@ -2284,33 +2284,33 @@ export const subscription_config_plan_custom_features = pgTable('subscription_co
 )
 
 
-export const subscription_config_workflow_calculator_business_types = pgTable('subscription_config_workflow_calculator_business_types', {
+export const subscription_config_workflow_calculator_types = pgTable('subscription_config_workflow_calculator_types', {
   _order: integer('_order').notNull(),
   _parentID: integer('_parent_id').notNull(),
   id: varchar('id').primaryKey(),
   icon: varchar('icon').notNull().default("building"),
   conversion_rate: numeric('conversion_rate', {mode: 'number'}).notNull().default(1),
 }, (columns) => [
-    index('subscription_config_workflow_calculator_business_types_order_idx').on(columns._order), index('subscription_config_workflow_calculator_business_types_parent_id_idx').on(columns._parentID), foreignKey({
+    index('subscription_config_workflow_calculator_types_order_idx').on(columns._order), index('subscription_config_workflow_calculator_types_parent_id_idx').on(columns._parentID), foreignKey({
       columns: [columns['_parentID']],
       foreignColumns: [subscription_config.id],
-      name: 'subscription_config_workflow_calculator_business_types_parent_id_fk'
+      name: 'subscription_config_workflow_calculator_types_parent_id_fk'
     }).onDelete('cascade'),
 ]
 )
 
 
-export const subscription_config_workflow_calculator_business_types_locales = pgTable('subscription_config_workflow_calculator_business_types_locales', {
+export const subscription_config_workflow_calculator_types_locales = pgTable('subscription_config_workflow_calculator_types_locales', {
   name: varchar('name').notNull(),
   conversion_unit: varchar('conversion_unit').notNull(),
   id: serial('id').primaryKey(),
   _locale: enum__locales('_locale').notNull(),
   _parentID: varchar('_parent_id').notNull(),
 }, (columns) => [
-    uniqueIndex('subscription_config_workflow_calculator_business_types_local').on(columns._locale, columns._parentID), foreignKey({
+    uniqueIndex('subscription_config_workflow_calculator_types_locales_locale').on(columns._locale, columns._parentID), foreignKey({
       columns: [columns['_parentID']],
-      foreignColumns: [subscription_config_workflow_calculator_business_types.id],
-      name: 'subscription_config_workflow_calculator_business_types_lo_fk'
+      foreignColumns: [subscription_config_workflow_calculator_types.id],
+      name: 'subscription_config_workflow_calculator_types_locales_par_fk'
     }).onDelete('cascade'),
 ]
 )
@@ -3374,12 +3374,12 @@ export const relations_pages_blocks_pricing_pro_features = relations(pages_block
     relationName: 'pro_features',
     }),
       }))
-export const relations_pages_blocks_pricing_pro_missing_features = relations(pages_blocks_pricing_pro_missing_features, ({ one }) => ({
+export const relations_pages_blocks_pricing_pro_missing = relations(pages_blocks_pricing_pro_missing, ({ one }) => ({
   _parentID: one(pages_blocks_pricing, {
     
-    fields: [pages_blocks_pricing_pro_missing_features._parentID],
+    fields: [pages_blocks_pricing_pro_missing._parentID],
     references: [pages_blocks_pricing.id],
-    relationName: 'pro_missingFeatures',
+    relationName: 'pro_missing',
     }),
       }))
 export const relations_pages_blocks_pricing_max_features = relations(pages_blocks_pricing_max_features, ({ one }) => ({
@@ -3390,12 +3390,12 @@ export const relations_pages_blocks_pricing_max_features = relations(pages_block
     relationName: 'max_features',
     }),
       }))
-export const relations_pages_blocks_pricing_max_missing_features = relations(pages_blocks_pricing_max_missing_features, ({ one }) => ({
+export const relations_pages_blocks_pricing_max_missing = relations(pages_blocks_pricing_max_missing, ({ one }) => ({
   _parentID: one(pages_blocks_pricing, {
     
-    fields: [pages_blocks_pricing_max_missing_features._parentID],
+    fields: [pages_blocks_pricing_max_missing._parentID],
     references: [pages_blocks_pricing.id],
-    relationName: 'max_missingFeatures',
+    relationName: 'max_missing',
     }),
       }))
 export const relations_pages_blocks_pricing_custom_features = relations(pages_blocks_pricing_custom_features, ({ one }) => ({
@@ -3406,12 +3406,12 @@ export const relations_pages_blocks_pricing_custom_features = relations(pages_bl
     relationName: 'custom_features',
     }),
       }))
-export const relations_pages_blocks_pricing_custom_missing_features = relations(pages_blocks_pricing_custom_missing_features, ({ one }) => ({
+export const relations_pages_blocks_pricing_custom_missing = relations(pages_blocks_pricing_custom_missing, ({ one }) => ({
   _parentID: one(pages_blocks_pricing, {
     
-    fields: [pages_blocks_pricing_custom_missing_features._parentID],
+    fields: [pages_blocks_pricing_custom_missing._parentID],
     references: [pages_blocks_pricing.id],
-    relationName: 'custom_missingFeatures',
+    relationName: 'custom_missing',
     }),
       }))
 export const relations_pages_blocks_pricing = relations(pages_blocks_pricing, ({ one, many }) => ({
@@ -3424,20 +3424,20 @@ export const relations_pages_blocks_pricing = relations(pages_blocks_pricing, ({
     pro_features: many(pages_blocks_pricing_pro_features, {
             relationName: 'pro_features',
     }),
-    pro_missingFeatures: many(pages_blocks_pricing_pro_missing_features, {
-            relationName: 'pro_missingFeatures',
+    pro_missing: many(pages_blocks_pricing_pro_missing, {
+            relationName: 'pro_missing',
     }),
     max_features: many(pages_blocks_pricing_max_features, {
             relationName: 'max_features',
     }),
-    max_missingFeatures: many(pages_blocks_pricing_max_missing_features, {
-            relationName: 'max_missingFeatures',
+    max_missing: many(pages_blocks_pricing_max_missing, {
+            relationName: 'max_missing',
     }),
     custom_features: many(pages_blocks_pricing_custom_features, {
             relationName: 'custom_features',
     }),
-    custom_missingFeatures: many(pages_blocks_pricing_custom_missing_features, {
-            relationName: 'custom_missingFeatures',
+    custom_missing: many(pages_blocks_pricing_custom_missing, {
+            relationName: 'custom_missing',
     }),
       }))
 export const relations_pages_blocks_small_pricing_pro_features = relations(pages_blocks_small_pricing_pro_features, ({ one }) => ({
@@ -3448,12 +3448,12 @@ export const relations_pages_blocks_small_pricing_pro_features = relations(pages
     relationName: 'pro_features',
     }),
       }))
-export const relations_pages_blocks_small_pricing_pro_missing_features = relations(pages_blocks_small_pricing_pro_missing_features, ({ one }) => ({
+export const relations_pages_blocks_small_pricing_pro_missing = relations(pages_blocks_small_pricing_pro_missing, ({ one }) => ({
   _parentID: one(pages_blocks_small_pricing, {
     
-    fields: [pages_blocks_small_pricing_pro_missing_features._parentID],
+    fields: [pages_blocks_small_pricing_pro_missing._parentID],
     references: [pages_blocks_small_pricing.id],
-    relationName: 'pro_missingFeatures',
+    relationName: 'pro_missing',
     }),
       }))
 export const relations_pages_blocks_small_pricing_max_features = relations(pages_blocks_small_pricing_max_features, ({ one }) => ({
@@ -3464,12 +3464,12 @@ export const relations_pages_blocks_small_pricing_max_features = relations(pages
     relationName: 'max_features',
     }),
       }))
-export const relations_pages_blocks_small_pricing_max_missing_features = relations(pages_blocks_small_pricing_max_missing_features, ({ one }) => ({
+export const relations_pages_blocks_small_pricing_max_missing = relations(pages_blocks_small_pricing_max_missing, ({ one }) => ({
   _parentID: one(pages_blocks_small_pricing, {
     
-    fields: [pages_blocks_small_pricing_max_missing_features._parentID],
+    fields: [pages_blocks_small_pricing_max_missing._parentID],
     references: [pages_blocks_small_pricing.id],
-    relationName: 'max_missingFeatures',
+    relationName: 'max_missing',
     }),
       }))
 export const relations_pages_blocks_small_pricing_custom_features = relations(pages_blocks_small_pricing_custom_features, ({ one }) => ({
@@ -3480,12 +3480,12 @@ export const relations_pages_blocks_small_pricing_custom_features = relations(pa
     relationName: 'custom_features',
     }),
       }))
-export const relations_pages_blocks_small_pricing_custom_missing_features = relations(pages_blocks_small_pricing_custom_missing_features, ({ one }) => ({
+export const relations_pages_blocks_small_pricing_custom_missing = relations(pages_blocks_small_pricing_custom_missing, ({ one }) => ({
   _parentID: one(pages_blocks_small_pricing, {
     
-    fields: [pages_blocks_small_pricing_custom_missing_features._parentID],
+    fields: [pages_blocks_small_pricing_custom_missing._parentID],
     references: [pages_blocks_small_pricing.id],
-    relationName: 'custom_missingFeatures',
+    relationName: 'custom_missing',
     }),
       }))
 export const relations_pages_blocks_small_pricing = relations(pages_blocks_small_pricing, ({ one, many }) => ({
@@ -3498,20 +3498,20 @@ export const relations_pages_blocks_small_pricing = relations(pages_blocks_small
     pro_features: many(pages_blocks_small_pricing_pro_features, {
             relationName: 'pro_features',
     }),
-    pro_missingFeatures: many(pages_blocks_small_pricing_pro_missing_features, {
-            relationName: 'pro_missingFeatures',
+    pro_missing: many(pages_blocks_small_pricing_pro_missing, {
+            relationName: 'pro_missing',
     }),
     max_features: many(pages_blocks_small_pricing_max_features, {
             relationName: 'max_features',
     }),
-    max_missingFeatures: many(pages_blocks_small_pricing_max_missing_features, {
-            relationName: 'max_missingFeatures',
+    max_missing: many(pages_blocks_small_pricing_max_missing, {
+            relationName: 'max_missing',
     }),
     custom_features: many(pages_blocks_small_pricing_custom_features, {
             relationName: 'custom_features',
     }),
-    custom_missingFeatures: many(pages_blocks_small_pricing_custom_missing_features, {
-            relationName: 'custom_missingFeatures',
+    custom_missing: many(pages_blocks_small_pricing_custom_missing, {
+            relationName: 'custom_missing',
     }),
       }))
 export const relations_pages_blocks_compare_application_apps_features = relations(pages_blocks_compare_application_apps_features, ({ one }) => ({
@@ -4063,22 +4063,22 @@ export const relations_subscription_config_plan_custom_features = relations(subs
     relationName: 'plan_custom_features',
     }),
       }))
-export const relations_subscription_config_workflow_calculator_business_types_locales = relations(subscription_config_workflow_calculator_business_types_locales, ({ one }) => ({
-  _parentID: one(subscription_config_workflow_calculator_business_types, {
+export const relations_subscription_config_workflow_calculator_types_locales = relations(subscription_config_workflow_calculator_types_locales, ({ one }) => ({
+  _parentID: one(subscription_config_workflow_calculator_types, {
     
-    fields: [subscription_config_workflow_calculator_business_types_locales._parentID],
-    references: [subscription_config_workflow_calculator_business_types.id],
+    fields: [subscription_config_workflow_calculator_types_locales._parentID],
+    references: [subscription_config_workflow_calculator_types.id],
     relationName: '_locales',
     }),
       }))
-export const relations_subscription_config_workflow_calculator_business_types = relations(subscription_config_workflow_calculator_business_types, ({ one, many }) => ({
+export const relations_subscription_config_workflow_calculator_types = relations(subscription_config_workflow_calculator_types, ({ one, many }) => ({
   _parentID: one(subscription_config, {
     
-    fields: [subscription_config_workflow_calculator_business_types._parentID],
+    fields: [subscription_config_workflow_calculator_types._parentID],
     references: [subscription_config.id],
-    relationName: 'workflowCalculator_businessTypes',
+    relationName: 'workflowCalculator_types',
     }),
-    _locales: many(subscription_config_workflow_calculator_business_types_locales, {
+    _locales: many(subscription_config_workflow_calculator_types_locales, {
             relationName: '_locales',
     }),
       }))
@@ -4142,8 +4142,8 @@ export const relations_subscription_config = relations(subscription_config, ({ o
     references: [media.id],
     relationName: 'plan_custom_image',
     }),
-    workflowCalculator_businessTypes: many(subscription_config_workflow_calculator_business_types, {
-            relationName: 'workflowCalculator_businessTypes',
+    workflowCalculator_types: many(subscription_config_workflow_calculator_types, {
+            relationName: 'workflowCalculator_types',
     }),
     _locales: many(subscription_config_locales, {
             relationName: '_locales',
@@ -4351,18 +4351,18 @@ type DatabaseSchema = {
   pages_blocks_flow_example: typeof pages_blocks_flow_example
   pages_blocks_subscription_configurator: typeof pages_blocks_subscription_configurator
   pages_blocks_pricing_pro_features: typeof pages_blocks_pricing_pro_features
-  pages_blocks_pricing_pro_missing_features: typeof pages_blocks_pricing_pro_missing_features
+  pages_blocks_pricing_pro_missing: typeof pages_blocks_pricing_pro_missing
   pages_blocks_pricing_max_features: typeof pages_blocks_pricing_max_features
-  pages_blocks_pricing_max_missing_features: typeof pages_blocks_pricing_max_missing_features
+  pages_blocks_pricing_max_missing: typeof pages_blocks_pricing_max_missing
   pages_blocks_pricing_custom_features: typeof pages_blocks_pricing_custom_features
-  pages_blocks_pricing_custom_missing_features: typeof pages_blocks_pricing_custom_missing_features
+  pages_blocks_pricing_custom_missing: typeof pages_blocks_pricing_custom_missing
   pages_blocks_pricing: typeof pages_blocks_pricing
   pages_blocks_small_pricing_pro_features: typeof pages_blocks_small_pricing_pro_features
-  pages_blocks_small_pricing_pro_missing_features: typeof pages_blocks_small_pricing_pro_missing_features
+  pages_blocks_small_pricing_pro_missing: typeof pages_blocks_small_pricing_pro_missing
   pages_blocks_small_pricing_max_features: typeof pages_blocks_small_pricing_max_features
-  pages_blocks_small_pricing_max_missing_features: typeof pages_blocks_small_pricing_max_missing_features
+  pages_blocks_small_pricing_max_missing: typeof pages_blocks_small_pricing_max_missing
   pages_blocks_small_pricing_custom_features: typeof pages_blocks_small_pricing_custom_features
-  pages_blocks_small_pricing_custom_missing_features: typeof pages_blocks_small_pricing_custom_missing_features
+  pages_blocks_small_pricing_custom_missing: typeof pages_blocks_small_pricing_custom_missing
   pages_blocks_small_pricing: typeof pages_blocks_small_pricing
   pages_blocks_compare_application_apps_features: typeof pages_blocks_compare_application_apps_features
   pages_blocks_compare_application_apps: typeof pages_blocks_compare_application_apps
@@ -4406,8 +4406,8 @@ type DatabaseSchema = {
   subscription_config_plan_pro_features: typeof subscription_config_plan_pro_features
   subscription_config_plan_max_features: typeof subscription_config_plan_max_features
   subscription_config_plan_custom_features: typeof subscription_config_plan_custom_features
-  subscription_config_workflow_calculator_business_types: typeof subscription_config_workflow_calculator_business_types
-  subscription_config_workflow_calculator_business_types_locales: typeof subscription_config_workflow_calculator_business_types_locales
+  subscription_config_workflow_calculator_types: typeof subscription_config_workflow_calculator_types
+  subscription_config_workflow_calculator_types_locales: typeof subscription_config_workflow_calculator_types_locales
   subscription_config: typeof subscription_config
   subscription_config_locales: typeof subscription_config_locales
   checkout: typeof checkout
@@ -4474,18 +4474,18 @@ type DatabaseSchema = {
   relations_pages_blocks_flow_example: typeof relations_pages_blocks_flow_example
   relations_pages_blocks_subscription_configurator: typeof relations_pages_blocks_subscription_configurator
   relations_pages_blocks_pricing_pro_features: typeof relations_pages_blocks_pricing_pro_features
-  relations_pages_blocks_pricing_pro_missing_features: typeof relations_pages_blocks_pricing_pro_missing_features
+  relations_pages_blocks_pricing_pro_missing: typeof relations_pages_blocks_pricing_pro_missing
   relations_pages_blocks_pricing_max_features: typeof relations_pages_blocks_pricing_max_features
-  relations_pages_blocks_pricing_max_missing_features: typeof relations_pages_blocks_pricing_max_missing_features
+  relations_pages_blocks_pricing_max_missing: typeof relations_pages_blocks_pricing_max_missing
   relations_pages_blocks_pricing_custom_features: typeof relations_pages_blocks_pricing_custom_features
-  relations_pages_blocks_pricing_custom_missing_features: typeof relations_pages_blocks_pricing_custom_missing_features
+  relations_pages_blocks_pricing_custom_missing: typeof relations_pages_blocks_pricing_custom_missing
   relations_pages_blocks_pricing: typeof relations_pages_blocks_pricing
   relations_pages_blocks_small_pricing_pro_features: typeof relations_pages_blocks_small_pricing_pro_features
-  relations_pages_blocks_small_pricing_pro_missing_features: typeof relations_pages_blocks_small_pricing_pro_missing_features
+  relations_pages_blocks_small_pricing_pro_missing: typeof relations_pages_blocks_small_pricing_pro_missing
   relations_pages_blocks_small_pricing_max_features: typeof relations_pages_blocks_small_pricing_max_features
-  relations_pages_blocks_small_pricing_max_missing_features: typeof relations_pages_blocks_small_pricing_max_missing_features
+  relations_pages_blocks_small_pricing_max_missing: typeof relations_pages_blocks_small_pricing_max_missing
   relations_pages_blocks_small_pricing_custom_features: typeof relations_pages_blocks_small_pricing_custom_features
-  relations_pages_blocks_small_pricing_custom_missing_features: typeof relations_pages_blocks_small_pricing_custom_missing_features
+  relations_pages_blocks_small_pricing_custom_missing: typeof relations_pages_blocks_small_pricing_custom_missing
   relations_pages_blocks_small_pricing: typeof relations_pages_blocks_small_pricing
   relations_pages_blocks_compare_application_apps_features: typeof relations_pages_blocks_compare_application_apps_features
   relations_pages_blocks_compare_application_apps: typeof relations_pages_blocks_compare_application_apps
@@ -4529,8 +4529,8 @@ type DatabaseSchema = {
   relations_subscription_config_plan_pro_features: typeof relations_subscription_config_plan_pro_features
   relations_subscription_config_plan_max_features: typeof relations_subscription_config_plan_max_features
   relations_subscription_config_plan_custom_features: typeof relations_subscription_config_plan_custom_features
-  relations_subscription_config_workflow_calculator_business_types_locales: typeof relations_subscription_config_workflow_calculator_business_types_locales
-  relations_subscription_config_workflow_calculator_business_types: typeof relations_subscription_config_workflow_calculator_business_types
+  relations_subscription_config_workflow_calculator_types_locales: typeof relations_subscription_config_workflow_calculator_types_locales
+  relations_subscription_config_workflow_calculator_types: typeof relations_subscription_config_workflow_calculator_types
   relations_subscription_config_locales: typeof relations_subscription_config_locales
   relations_subscription_config: typeof relations_subscription_config
   relations_checkout_locales: typeof relations_checkout_locales
