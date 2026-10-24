@@ -66,12 +66,12 @@ export function SiteDialogContent({
                 className={cn(
                     SITE_DIALOG_FRAME_CLASS_NAME,
                     fitContent &&
-                        "h-fit! max-h-[calc(100dvh-1rem)]! [--site-dialog-content-max-height:calc(100dvh-5rem)] sm:h-fit! sm:max-h-[75dvh]! sm:[--site-dialog-content-max-height:calc(75dvh-0.5rem)]",
+                        "h-fit! max-h-[calc(100dvh-1rem)]! [--site-dialog-content-max-height:calc(100dvh-5rem)] sm:h-fit! sm:max-h-[75dvh]! sm:[--site-dialog-content-max-height:calc(75dvh-4rem)]",
                     className
                 )}
             >
                 <div className={cn("relative flex min-h-0 w-full flex-col", !fitContent && "h-full")}>
-                    <div className="flex justify-end p-2 sm:hidden!">
+                    <div className="flex shrink-0 justify-end p-2">
                         <DialogClose asChild>
                             <Button type="button" paddingSize="xxs" variant="none" aria-label={closeLabel}>
                                 <IconX aria-hidden="true" size={16} />
