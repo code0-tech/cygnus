@@ -142,6 +142,7 @@ mock.module("@/components/checkout/shared/SendOfferDialog", {
 mock.module("@/components/checkout/summary/CheckoutPricingOverview", { namedExports: { CheckoutPricingOverview: () => null } })
 mock.module("@code0-tech/pictor", {
     namedExports: {
+        Alert: ({ children, color, ...props }: React.HTMLAttributes<HTMLDivElement> & { color?: string }) => <div role={color === "error" ? "alert" : "status"} aria-live={color === "error" ? "assertive" : "polite"} {...props}>{children}</div>,
         AutoScrollArea: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
         Card: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
         ScrollArea: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,

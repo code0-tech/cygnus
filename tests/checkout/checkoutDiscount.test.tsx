@@ -40,6 +40,7 @@ mock.module("next/navigation", {
 })
 mock.module("@code0-tech/pictor", {
     namedExports: {
+        Alert: ({ children, color, ...props }: React.HTMLAttributes<HTMLDivElement> & { color?: string }) => <div role={color === "error" ? "alert" : "status"} aria-live={color === "error" ? "assertive" : "polite"} {...props}>{children}</div>,
         AutoScrollArea: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
         Card: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
         ScrollArea: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
@@ -161,6 +162,7 @@ for (const [failure, message] of [[new Error("This promotion code has expired.")
         await user.type(screen.getByPlaceholderText(props.inputPlaceholder), "INVALID")
         await user.click(screen.getByRole("button", { name: "Apply" }))
         assert.ok(await screen.findByText(message))
+        assert.equal(screen.getByRole("alert").textContent, message)
         assert.equal(window.location.search, "")
     })
 }

@@ -23,6 +23,7 @@ const close = mock.fn()
 const Wrap = ({ children }: { children?: ReactNode }) => <div>{children}</div>
 const Input = ({ title, name, value, required, formValidation }: { title: string; name: string; value: string; required?: boolean; formValidation: { setValue: (value: string) => void; notValidMessage?: string } }) => <label>{title}<input aria-label={title} name={name} value={value} required={required} onChange={event => formValidation.setValue(event.target.value)} />{formValidation.notValidMessage && <span role="alert">{formValidation.notValidMessage}</span>}</label>
 mock.module("@code0-tech/pictor", { namedExports: {
+        Alert: ({ children, color, ...props }: React.HTMLAttributes<HTMLDivElement> & { color?: string }) => <div role={color === "error" ? "alert" : "status"} aria-live={color === "error" ? "assertive" : "polite"} {...props}>{children}</div>,
     useForm, TextInput: Input, EmailInput: Input, Text: Wrap, Spacing: () => null,
     Button: ({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button {...props}>{children}</button>,
 } })

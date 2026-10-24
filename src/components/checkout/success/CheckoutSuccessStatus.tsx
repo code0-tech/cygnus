@@ -12,7 +12,7 @@ import type { AppLocale } from "@/lib/i18n"
 import { downloadLicenseFile } from "@/lib/licenses/client"
 import { getPaymentPeriodSuffix } from "@/lib/subscription/calculator"
 import type { SubscriptionPlan } from "@/lib/subscription/types"
-import { Button } from "@code0-tech/pictor"
+import { Alert, Button } from "@code0-tech/pictor"
 import { IconCheck, IconCloud, IconDownload, IconX } from "@tabler/icons-react"
 import { AnimatePresence, m as motion, useReducedMotion, type Variants } from "motion/react"
 import { useRouter } from "next/navigation"
@@ -179,8 +179,20 @@ function CheckoutSuccessStatusView({
     }
     const fulfillmentConfirmed = status === "FULFILLMENT_PENDING" || status === "READY" || (status === "DELAYED" && completion?.state === "FULFILLMENT_PENDING")
     const statusFailed = status === "FAILED" || status === "INVALID"
-    const heading = status === "DELAYED" ? content.delayedHeading : status === "FAILED" ? content.failedHeading : status === "INVALID" ? content.invalidHeading : fulfillmentConfirmed ? content.heading : null
-    const description = status === "DELAYED" ? (fulfillmentConfirmed ? content.delayedConfirmedDescription : content.delayedPendingDescription) : status === "FAILED" ? content.failedDescription : status === "INVALID" ? content.invalidDescription : fulfillmentConfirmed ? content.description : null
+    const heading =
+        status === "DELAYED" ? content.delayedHeading : status === "FAILED" ? content.failedHeading : status === "INVALID" ? content.invalidHeading : fulfillmentConfirmed ? content.heading : null
+    const description =
+        status === "DELAYED"
+            ? fulfillmentConfirmed
+                ? content.delayedConfirmedDescription
+                : content.delayedPendingDescription
+            : status === "FAILED"
+              ? content.failedDescription
+              : status === "INVALID"
+                ? content.invalidDescription
+                : fulfillmentConfirmed
+                  ? content.description
+                  : null
     const licenseAccessUrl =
         status === "READY" && completion?.licenseId ? `/api/crater/licenses/access?${new URLSearchParams({ locale, customerId: completion.customerId, licenseId: completion.licenseId })}` : null
     const confirmedConfiguration = fulfillmentConfirmed ? completion?.configuration : null
@@ -224,14 +236,20 @@ function CheckoutSuccessStatusView({
                         </motion.h1>
                     )}
                     {description && (
-                        <motion.p variants={reveal} role={status === "DELAYED" ? "status" : undefined} className="text-secondary max-w-lg">
-                            {description}
-                        </motion.p>
+                        <motion.div variants={reveal} className="max-w-lg">
+                            {status === "DELAYED" ? (
+                                <Alert color="info">{description}</Alert>
+                            ) : statusFailed ? (
+                                <Alert color="error">{description}</Alert>
+                            ) : (
+                                <p className="text-secondary">{description}</p>
+                            )}
+                        </motion.div>
                     )}
                     {fulfillmentConfirmed && isGuestCheckout && (
-                        <motion.p variants={reveal} role="status" className="my-2 max-w-lg rounded-2xl border border-brand/10 bg-brand/5 p-4 text-sm text-brand">
-                            {content.guestAccountHint}
-                        </motion.p>
+                        <motion.div variants={reveal} className="my-2 max-w-lg">
+                            <Alert color="info">{content.guestAccountHint}</Alert>
+                        </motion.div>
                     )}
                     {confirmedConfiguration && confirmedPricing ? (
                         <motion.div variants={reveal} className="my-2 w-full text-left">
@@ -261,9 +279,9 @@ function CheckoutSuccessStatusView({
                         </motion.p>
                     )}
                     {status === "ERROR" && (
-                        <motion.p variants={reveal} className="text-secondary">
-                            {errorMessage}
-                        </motion.p>
+                        <motion.div variants={reveal}>
+                            <Alert color="error">{errorMessage}</Alert>
+                        </motion.div>
                     )}
                     <motion.div variants={reveal}>
                         <AnimatePresence mode="wait" initial={false}>
@@ -300,11 +318,7 @@ function CheckoutSuccessStatusView({
                                             </Button>
                                         ) : null}
                                     </div>
-                                    {licenseDownloadError ? (
-                                        <p role="alert" className="text-sm text-error">
-                                            {content.licenseDownloadError}
-                                        </p>
-                                    ) : null}
+                                    {licenseDownloadError ? <Alert color="error">{content.licenseDownloadError}</Alert> : null}
                                 </motion.div>
                             ) : status === "ERROR" || status === "DELAYED" ? (
                                 <motion.div key="retry" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>

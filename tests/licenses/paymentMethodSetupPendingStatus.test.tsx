@@ -12,6 +12,7 @@ const notifications: Array<{ title: string; color: string; children?: string }> 
 
 mock.module("@code0-tech/pictor", {
     namedExports: {
+        Alert: ({ children, color, ...props }: React.HTMLAttributes<HTMLDivElement> & { color?: string }) => <div role={color === "error" ? "alert" : "status"} aria-live={color === "error" ? "assertive" : "polite"} {...props}>{children}</div>,
         toast: (value: typeof notifications[number]) => { notifications.push(value); return "test-toast" },
         Button: ({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button {...props}>{children}</button>,
         Card: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,

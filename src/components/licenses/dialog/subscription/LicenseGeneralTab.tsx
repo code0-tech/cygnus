@@ -17,7 +17,7 @@ import { formatPendingUpdateSelection, parseLicenseDate, resolvePendingUpdateDat
 import type { CustomerPaymentMethodSummary, LicenseDashboardLicense, PaymentMethodDisplayDetails } from "@/lib/licenses/types"
 import { cancelLicenseSubscription, resumeLicenseSubscription } from "@/lib/licenses/client"
 import { updateSubscription } from "@/lib/subscription/client"
-import { Badge, Button, SelectContent, SelectInput, SelectItem, SelectItemText, SelectPortal, SelectTrigger, SelectValue, SelectViewport, Text } from "@code0-tech/pictor"
+import { Alert, Badge, Button, SelectContent, SelectInput, SelectItem, SelectItemText, SelectPortal, SelectTrigger, SelectValue, SelectViewport, Text } from "@code0-tech/pictor"
 import { IconChevronDown } from "@tabler/icons-react"
 import { useState } from "react"
 
@@ -247,15 +247,14 @@ export function LicenseGeneralTab({
                                 {isLoadingPaymentMethod ? (
                                     <CustomerPaymentMethodCardSkeleton label={content.editor.loadingPaymentMethodLabel} />
                                 ) : paymentMethodError ? (
-                                    <LicenseTabRow
-                                        title={content.editor.paymentMethodTabLabel}
-                                        description={<span className="text-error">{errors.paymentMethodLoad}</span>}
-                                        action={
+                                    <LicenseTabRow title={content.editor.paymentMethodTabLabel}>
+                                        <Alert color="error">
+                                            <span className="min-w-0 flex-1">{errors.paymentMethodLoad}</span>
                                             <Button type="button" variant="normal" paddingSize="xxs" onClick={onRetryPaymentMethod}>
                                                 {errors.retry}
                                             </Button>
-                                        }
-                                    />
+                                        </Alert>
+                                    </LicenseTabRow>
                                 ) : (
                                     <LicenseTabRow
                                         title={content.editor.paymentMethodTabLabel}
@@ -342,9 +341,9 @@ export function LicenseGeneralTab({
                                         <LicenseTabRow title={content.subscriptionPreview.totalLabel} description={content.subscriptionPreview.loadingLabel} />
                                     ) : previewError ? (
                                         <LicenseTabRow>
-                                            <Text role="alert" size="sm" className="text-error!">
+                                            <Alert color="error">
                                                 {previewError}
-                                            </Text>
+                                            </Alert>
                                         </LicenseTabRow>
                                     ) : preview ? (
                                         <>

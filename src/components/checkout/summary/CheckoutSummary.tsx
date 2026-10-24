@@ -15,7 +15,7 @@ import { formatCurrency } from "@/lib/formatters"
 import { calculateExclusiveTaxRate, formatDiscountBadge, resolveCheckoutPricing } from "@/lib/subscription/calculator"
 import type { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
 import type { CheckoutPackages } from "@/lib/subscription/usagePackages"
-import { Button, Dialog, DialogTrigger, SegmentedControl, SegmentedControlItem, TextInput } from "@code0-tech/pictor"
+import { Alert, Button, Dialog, DialogTrigger, SegmentedControl, SegmentedControlItem, TextInput } from "@code0-tech/pictor"
 import type { StripeCheckoutSession } from "@stripe/stripe-js"
 import { m as motion } from "motion/react"
 import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation"
@@ -412,7 +412,7 @@ export function CheckoutDiscount({
 
     if (appliedCode) {
         const appliedDiscount = (
-            <div className="flex min-w-0 items-center justify-between gap-4 text-sm">
+            <div className="flex min-w-0 flex-wrap items-center justify-between gap-4 text-sm">
                 <div className="flex min-w-0 items-center gap-1">
                     <span className="min-w-0 truncate text-secondary">{appliedCode}</span>
                     <button
@@ -426,9 +426,9 @@ export function CheckoutDiscount({
                 </div>
                 {appliedAmount && <span className="shrink-0 tabular-nums text-white">-{appliedAmount}</span>}
                 {errorMessage && (
-                    <p role="alert" className="text-error">
+                    <Alert color="error" className="w-full">
                         {errorMessage}
-                    </p>
+                    </Alert>
                 )}
             </div>
         )
@@ -462,9 +462,9 @@ export function CheckoutDiscount({
                 </Button>
             </div>
             {errorMessage && (
-                <p className="text-error text-xs" role="alert">
+                <Alert color="error">
                     {errorMessage}
-                </p>
+                </Alert>
             )}
         </form>
     )

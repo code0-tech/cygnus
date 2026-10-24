@@ -52,6 +52,7 @@ mock.module("@/components/licenses/dialog/shared/LicenseTabLayout", {
 })
 mock.module("@code0-tech/pictor", {
     namedExports: {
+        Alert: ({ children, color, ...props }: React.HTMLAttributes<HTMLDivElement> & { color?: string }) => <div role={color === "error" ? "alert" : "status"} aria-live={color === "error" ? "assertive" : "polite"} {...props}>{children}</div>,
         Button: ({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button {...props}>{children}</button>,
         Spacing: () => null,
         Text: ({ children }: { children: ReactNode }) => <p>{children}</p>,

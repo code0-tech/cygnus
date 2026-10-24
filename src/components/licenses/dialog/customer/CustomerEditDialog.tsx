@@ -13,7 +13,7 @@ import type { AppLocale } from "@/lib/i18n"
 import { type CustomerEditSection, getCustomerEditSectionLabels } from "@/lib/licenses/editSections"
 import { removeLicenseCustomerPaymentMethod, updateLicenseCustomer } from "@/lib/licenses/client"
 import { createLicenseCustomerPath, resolveCustomerRouteId } from "@/lib/licenses/routes"
-import { Button, EmailInput, Spacing, Text, TextInput, useForm } from "@code0-tech/pictor"
+import { Alert, Button, EmailInput, Spacing, Text, TextInput, useForm } from "@code0-tech/pictor"
 import { IconCreditCard, IconMail, IconPhone, IconTrash, IconUser } from "@tabler/icons-react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { Fragment, type ReactNode, useMemo, useState } from "react"
@@ -273,14 +273,14 @@ export function CustomerEditDialog({ checkoutForm, content, customerId, errors, 
                     <CustomerPaymentMethodCardSkeleton />
                 </>
             ) : paymentMethodsError ? (
-                <LicenseTabRow
-                    description={<span className="text-error">{errors.paymentMethodLoad}</span>}
-                    action={
+                <LicenseTabRow>
+                    <Alert color="error">
+                        <span className="min-w-0 flex-1">{errors.paymentMethodLoad}</span>
                         <Button type="button" variant="normal" paddingSize="xxs" onClick={refreshPaymentMethods}>
                             {errors.retry}
                         </Button>
-                    }
-                />
+                    </Alert>
+                </LicenseTabRow>
             ) : paymentMethods && paymentMethods.length > 0 ? (
                 paymentMethods.map((method) => (
                     <CustomerPaymentMethodCard

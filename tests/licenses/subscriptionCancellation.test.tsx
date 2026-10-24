@@ -14,6 +14,7 @@ const closes: string[] = []
 const passthrough = ({ children }: { children?: ReactNode }) => <div>{children}</div>
 mock.module("@code0-tech/pictor", {
     namedExports: {
+        Alert: ({ children, color, ...props }: React.HTMLAttributes<HTMLDivElement> & { color?: string }) => <div role={color === "error" ? "alert" : "status"} aria-live={color === "error" ? "assertive" : "polite"} {...props}>{children}</div>,
         toast: (value: typeof notifications[number]) => { notifications.push(value); return "test-toast" },
         Button: ({ children, variant, paddingSize, color, ...props }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: string; paddingSize?: string; color?: string }) => <button data-variant={variant} data-padding={paddingSize} data-color={color} {...props}>{children}</button>,
         Badge: ({ children }: { children: ReactNode }) => <span>{children}</span>,

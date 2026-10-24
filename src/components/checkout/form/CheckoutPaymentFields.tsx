@@ -5,8 +5,7 @@ import { AcceptTermsCheckbox } from "@/components/forms/AcceptTermsCheckbox"
 import { useCheckoutStage } from "@/components/checkout/state/CheckoutStageProvider"
 import { ButtonLoader } from "@/components/ui/Loader"
 import { SendOfferDialog } from "@/components/checkout/shared/SendOfferDialog"
-import { Button, EmailInput } from "@code0-tech/pictor"
-import { IconAlertTriangle } from "@tabler/icons-react"
+import { Alert, Button, EmailInput } from "@code0-tech/pictor"
 import { BillingAddressElement, ContactDetailsElement, PaymentElement, TaxIdElement, useCheckoutElements } from "@stripe/react-stripe-js/checkout"
 import { useParams } from "next/navigation"
 import { useCallback, useEffect, useId, useRef, useState } from "react"
@@ -14,21 +13,14 @@ import type { CheckoutPaymentFormProps } from "./checkoutPayment.types"
 
 export function CheckoutErrorState({ message, onRetry, retryLabel }: { message: string; onRetry?: () => void; retryLabel?: string }) {
     return (
-        <div
-            role="alert"
-            aria-live="assertive"
-            className="flex w-full items-center gap-2 rounded-2xl border border-error/30 bg-error/10 p-4 text-error shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_12px_32px_rgba(0,0,0,0.18)]"
-        >
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-error/15 ring-1 ring-error/20">
-                <IconAlertTriangle aria-hidden="true" size={21} stroke={1.8} />
-            </span>
-            <p className="min-w-0 flex-1 text-base font-medium leading-6 text-error">{message}</p>
+        <Alert color="error" className="w-full">
+            <p className="min-w-0 flex-1">{message}</p>
             {onRetry && retryLabel ? (
                 <Button type="button" variant="normal" onClick={onRetry} className="shrink-0 text-sm!">
                     {retryLabel}
                 </Button>
             ) : null}
-        </div>
+        </Alert>
     )
 }
 
@@ -322,9 +314,9 @@ export function CheckoutPaymentFields({
                     </section>
 
                     {errorMessage && (
-                        <p className="rounded-xl border border-error/20 bg-error/10 px-4 py-3 text-sm text-error" role="alert">
+                        <Alert color="error">
                             {errorMessage}
-                        </p>
+                        </Alert>
                     )}
 
                     <div className="space-y-3">
@@ -357,9 +349,9 @@ export function CheckoutPaymentFields({
                     <AcceptTermsCheckbox locale={locale} initialValue={false} formValidation={{ setValue: setAcceptedTerms, valid: true }} />
 
                     {errorMessage && (
-                        <p className="rounded-xl border border-error/20 bg-error/10 px-4 py-3 text-sm text-error" role="alert">
+                        <Alert color="error">
                             {errorMessage}
-                        </p>
+                        </Alert>
                     )}
 
                     <div className="space-y-3">

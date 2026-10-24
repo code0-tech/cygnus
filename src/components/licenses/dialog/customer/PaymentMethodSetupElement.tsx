@@ -6,7 +6,7 @@ import { ButtonLoader } from "@/components/ui/Loader"
 import { useStripePromise } from "@/components/providers/StripeProvider"
 import type { LicenseContent } from "@/lib/cms"
 import { stripeAppearance } from "@/lib/stripeAppearance"
-import { Button, Spacing, Text } from "@code0-tech/pictor"
+import { Alert, Button, Spacing } from "@code0-tech/pictor"
 import { Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js"
 import type { StripeElementsOptions } from "@stripe/stripe-js"
 import { useEffect, useMemo, useRef, useState } from "react"
@@ -103,9 +103,9 @@ export function PaymentMethodSetupPendingStatus({ content, errorMessage, onSucce
             />
             <Spacing spacing="md" />
             {isComplete ? (
-                <Text role="status" size="sm" className="text-brand!">
+                <Alert color="success">
                     {content.paymentMethodSuccess}
-                </Text>
+                </Alert>
             ) : hasError ? null : (
                 <div role="status">
                     <ButtonLoader label={content.savingPaymentMethodLabel} />
@@ -173,9 +173,9 @@ export function PaymentMethodSetupElement({ clientSecret, content, errorMessage,
 
     if (!stripePromise) {
         return (
-            <p role="alert" className="text-sm text-error">
+            <Alert color="error">
                 {errorMessage}
-            </p>
+            </Alert>
         )
     }
 

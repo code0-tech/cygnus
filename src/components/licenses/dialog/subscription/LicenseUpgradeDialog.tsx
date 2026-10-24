@@ -24,7 +24,7 @@ import type { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
 import { normalizeUsagePackages, snapToUsagePackage, type CheckoutPackages } from "@/lib/subscription/usagePackages"
 import { getLicenseBenefitGridCellClassName } from "@/components/licenses/shared/licenseDetailGrid"
 import { cn } from "@/lib/utils"
-import { Badge, Button, Card, SegmentedControl, SegmentedControlItem, Spacing, Text } from "@code0-tech/pictor"
+import { Alert, Badge, Button, Card, SegmentedControl, SegmentedControlItem, Spacing, Text } from "@code0-tech/pictor"
 import { IconArrowRight, IconTrendingUp } from "@tabler/icons-react"
 import BorderBeam, { type BorderBeamColorVariant } from "border-beam"
 import { useRouter } from "next/navigation"
@@ -301,9 +301,9 @@ export function LicenseUpgradeDialog({ checkoutPackages, content, customerId, er
                     contentSpacing="md"
                 >
                     {previewError ? (
-                        <Text role="alert" size="sm" className="text-error!">
+                        <Alert color="error">
                             {previewError}
-                        </Text>
+                        </Alert>
                     ) : null}
                 </LicenseTabRow>
                 {benefitCells.length > 0 ? (

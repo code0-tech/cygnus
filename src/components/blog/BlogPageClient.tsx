@@ -3,7 +3,7 @@
 import { BlogCard } from "@/components/cards/BlogCard"
 import { FirstBlogCard } from "@/components/cards/FirstBlogCard"
 import type { BlogPostItem } from "@/lib/cms"
-import { Button } from "@code0-tech/pictor"
+import { Alert, Button } from "@code0-tech/pictor"
 import { useRef, useState, useTransition } from "react"
 import { Card } from "../ui/Card"
 
@@ -107,7 +107,7 @@ export function BlogPageClient({ heading, initialPosts, initialHasNextPage, init
                     </Button>
                 </div>
             )}
-            {error && <p className="text-center text-sm text-red-300">{error}</p>}
+            {error && <Alert color="error">{error}</Alert>}
         </div>
     )
 }

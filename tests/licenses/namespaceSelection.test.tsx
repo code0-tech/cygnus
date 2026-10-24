@@ -14,6 +14,7 @@ installDomTestEnvironment()
 mock.module("next/navigation", { namedExports: { usePathname: () => "/en/licenses", useRouter: () => ({}) } })
 mock.module("@code0-tech/pictor", {
     namedExports: {
+        Alert: ({ children, color, ...props }: React.HTMLAttributes<HTMLDivElement> & { color?: string }) => <div role={color === "error" ? "alert" : "status"} aria-live={color === "error" ? "assertive" : "polite"} {...props}>{children}</div>,
         toast: () => "test-toast",
         Button: ({ children }: { children: ReactNode }) => <button>{children}</button>,
         Badge: ({ children }: { children: ReactNode }) => <span>{children}</span>,

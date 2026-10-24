@@ -10,7 +10,7 @@ import { downloadLicenseFile } from "@/lib/licenses/client"
 import { createLicenseCustomerPath, createLicensePath, resolveCustomerRouteId } from "@/lib/licenses/routes"
 import type { LicenseDashboardLicense } from "@/lib/licenses/types"
 import { formatLicenseDisplayValue } from "@/lib/licenses/displayValues"
-import { Avatar, Button, Flex, hashToColor, Menu, MenuContent, MenuItem, MenuLabel, MenuPortal, MenuSeparator, MenuTrigger, Spacing, Text } from "@code0-tech/pictor"
+import { Alert, Avatar, Button, Flex, hashToColor, Menu, MenuContent, MenuItem, MenuLabel, MenuPortal, MenuSeparator, MenuTrigger, Spacing, Text } from "@code0-tech/pictor"
 import { IconArrowAutofitLeftFilled, IconArrowLeft, IconChevronDown, IconCloud, IconCreditCard, IconDownload, IconKey, IconMenu2, IconServer, IconTrendingUp, IconUser } from "@tabler/icons-react"
 import BorderBeam from "border-beam"
 import Image from "next/image"
@@ -136,9 +136,9 @@ function LicenseDownloadButton({ content, license }: { content: LicenseSidebarPr
                 )}
             </Button>
             {hasFailed ? (
-                <Text role="alert" size="sm" hierarchy="tertiary" display="block" className="mt-1! px-2 text-xs! text-error!">
+                <Alert color="error" className="mt-1!">
                     {content.invoices.unavailableLabel}
-                </Text>
+                </Alert>
             ) : null}
         </div>
     )

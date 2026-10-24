@@ -2,7 +2,7 @@
 
 import { ButtonLoader } from "@/components/ui/Loader"
 import { createGuestCheckout } from "@/lib/checkout/client"
-import { Button, EmailInput, emailValidation } from "@code0-tech/pictor"
+import { Alert, Button, EmailInput, emailValidation } from "@code0-tech/pictor"
 import { useRouter } from "next/navigation"
 import { type SyntheticEvent, useState } from "react"
 
@@ -57,9 +57,9 @@ export function CheckoutGuestForm({ emailLabel, emailPlaceholder, errorMessage, 
                 {isSubmitting ? <ButtonLoader label={submitLabel} /> : submitLabel}
             </Button>
             {error && (
-                <p role="alert" className="text-sm text-error text-center">
+                <Alert color="error">
                     {error}
-                </p>
+                </Alert>
             )}
         </form>
     )

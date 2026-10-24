@@ -8,6 +8,7 @@ installDomTestEnvironment("https://code0.example/en/checkout/success?session_id=
 
 mock.module("@code0-tech/pictor", {
     namedExports: {
+        Alert: ({ children, color, ...props }: React.HTMLAttributes<HTMLDivElement> & { color?: string }) => <div role={color === "error" ? "alert" : "status"} aria-live={color === "error" ? "assertive" : "polite"} {...props}>{children}</div>,
         Badge: ({ children, className }: { children: React.ReactNode; className?: string }) => <span className={className}>{children}</span>,
         Button: ({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button {...props}>{children}</button>,
         Card: ({ children, className }: { children: React.ReactNode; className?: string }) => <div className={className}>{children}</div>,
@@ -221,6 +222,7 @@ test("transport failures still offer an error and a status retry", async () => {
     respondWith({ error: "Temporarily unavailable" }, 502)
     render(<CheckoutSuccessStatus {...sharedProps} checkoutSearchParams={checkoutSearchParams} content={content} errorMessage={errorMessage} locale="en" sessionId="cs_test" />)
     await screen.findByText(errorMessage)
+    assert.equal(screen.getByRole("alert").textContent, errorMessage)
     assert.ok(screen.getByRole("button", { name: content.licenseStatusRetryLabel }))
     assert.equal(screen.queryByText(content.delayedHeading), null)
 })
