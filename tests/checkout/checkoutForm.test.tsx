@@ -47,6 +47,7 @@ const checkoutSearchParams = new URLSearchParams({
     plan: "pro",
 })
 let guestEmail: string | null = null
+let isSessionLoading = false
 let checkoutProviderOptions: {
     clientSecret?: string
     defaultValues?: unknown
@@ -102,7 +103,7 @@ mock.module("@/components/checkout/session/CraterSessionProvider", {
             authenticated: true,
             guestEmail,
             error: null,
-            isLoading: false,
+            isLoading: isSessionLoading,
         }),
     },
 })
@@ -306,6 +307,7 @@ const originalFetch = globalThis.fetch
 afterEach(() => {
     cleanup()
     guestEmail = null
+    isSessionLoading = false
     checkoutSearchParams.delete("guestCheckout")
     clearCheckoutContactDraft()
     globalThis.fetch = originalFetch
@@ -679,6 +681,37 @@ test("replaces a checkout session shortly before it expires", async () => {
     await waitFor(() => assert.equal(requests.filter((url) => url === "/api/crater/checkout/session").length, 2))
     await waitFor(() => assert.equal(checkoutProviderOptions?.clientSecret, "cs_expiry_2"))
     assert.equal(requests.filter((url) => url === "/api/crater/customer").length, 1)
+})
+
+test("renews an expired checkout after the returning tab has revalidated its Crater session", async () => {
+    const originalNow = Date.now
+    let now = originalNow()
+    Date.now = () => now
+    let sessionRequests = 0
+    globalThis.fetch = (async (input) => String(input) === "/api/crater/customer"
+        ? Response.json({ customers: [{ customerType: "personal", email: "ada@example.com", id: "gid://crater/Customer/1", name: "Ada" }] })
+        : Response.json({ clientSecret: `cs_resume_${++sessionRequests}`, expiresAt: Math.floor(now / 1_000) + 120, id: `cs_resume_${sessionRequests}` })
+    ) as typeof fetch
+    try {
+        const view = render(<CheckoutForm content={content} errors={errors} locale="en" />)
+        await waitFor(() => assert.equal(checkoutProviderOptions?.clientSecret, "cs_resume_1"))
+        act(() => billingAddressOnChange?.({ complete: true, value: stripeBillingAddress }))
+        const draftBeforeReturn = readCheckoutContactDraft(checkoutSearchParams)
+
+        // A hidden tab may miss its timer; no replacement should start before authentication is checked.
+        now += 180_000
+        isSessionLoading = true
+        view.rerender(<CheckoutForm content={content} errors={errors} locale="en" />)
+        assert.equal(sessionRequests, 1)
+        isSessionLoading = false
+        view.rerender(<CheckoutForm content={content} errors={errors} locale="en" />)
+        await waitFor(() => assert.equal(checkoutProviderOptions?.clientSecret, "cs_resume_2"))
+        assert.equal(sessionRequests, 2)
+        assert.deepEqual(readCheckoutContactDraft(checkoutSearchParams)?.billingAddress, draftBeforeReturn?.billingAddress)
+        assert.equal(screen.queryByRole("alert"), null)
+    } finally {
+        Date.now = originalNow
+    }
 })
 
 test("replaces an inactive Stripe checkout session only once", async () => {

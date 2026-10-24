@@ -5,10 +5,11 @@ import { installDomTestEnvironment } from "../helpers/domTestEnvironment"
 
 installDomTestEnvironment()
 
-const { cleanup, render, screen, waitFor } = await import("@testing-library/react")
+const { act, cleanup, render, screen, waitFor } = await import("@testing-library/react")
 const { CraterSessionProvider, useCraterSession } = await import("../../src/components/checkout/session/CraterSessionProvider")
 const originalFetch = globalThis.fetch
 const originalConsoleError = console.error
+const originalDateNow = Date.now
 
 function SessionState() {
     const session = useCraterSession()
@@ -19,7 +20,80 @@ afterEach(() => {
     cleanup()
     globalThis.fetch = originalFetch
     console.error = originalConsoleError
+    Date.now = originalDateNow
     window.history.replaceState({}, "", "/en/checkout")
+})
+
+test("rechecks an inactive tab once and sends an expired account session back to login", async () => {
+    let now = originalDateNow()
+    Date.now = () => now
+    window.history.replaceState({}, "", "/en/checkout?plan=pro")
+    let requests = 0
+    globalThis.fetch = (async () => Response.json({}, { status: ++requests === 1 ? 200 : 401 })) as typeof fetch
+    render(<React.StrictMode><CraterSessionProvider><SessionState /></CraterSessionProvider></React.StrictMode>)
+    await screen.findByText("authenticated")
+    assert.equal(requests, 1)
+
+    now += 61_000
+    act(() => {
+        window.dispatchEvent(new Event("focus"))
+        document.dispatchEvent(new Event("visibilitychange"))
+    })
+    await waitFor(() => assert.equal(window.location.pathname, "/en/checkout/login"))
+    assert.equal(window.location.search, "?plan=pro")
+    assert.equal(requests, 2)
+})
+
+test("keeps a valid session after returning and throttles repeated focus events", async () => {
+    let now = originalDateNow()
+    Date.now = () => now
+    let requests = 0
+    let finishRecheck: (() => void) | undefined
+    globalThis.fetch = (async () => {
+        requests += 1
+        if (requests === 2) await new Promise<void>((resolve) => { finishRecheck = resolve })
+        return Response.json({ authenticated: true })
+    }) as typeof fetch
+    const view = render(<CraterSessionProvider><SessionState /></CraterSessionProvider>)
+    await screen.findByText("authenticated")
+    act(() => window.dispatchEvent(new Event("focus")))
+    assert.equal(requests, 1)
+
+    now += 61_000
+    act(() => {
+        window.dispatchEvent(new Event("focus"))
+        document.dispatchEvent(new Event("visibilitychange"))
+    })
+    assert.ok(screen.getByText("loading"))
+    assert.equal(requests, 2)
+    await act(async () => finishRecheck?.())
+    await screen.findByText("authenticated")
+    act(() => window.dispatchEvent(new Event("focus")))
+    assert.equal(requests, 2)
+
+    view.unmount()
+    now += 61_000
+    window.dispatchEvent(new Event("focus"))
+    document.dispatchEvent(new Event("visibilitychange"))
+    assert.equal(requests, 2)
+})
+
+test("an expired guest checkout returns to login without using the account session", async () => {
+    let now = originalDateNow()
+    Date.now = () => now
+    window.history.replaceState({}, "", "/en/checkout?plan=pro&guestCheckout=purchase-one")
+    let requests = 0
+    globalThis.fetch = (async (_input, init) => {
+        assert.equal(new Headers(init?.headers).get("x-guest-checkout"), "purchase-one")
+        return Response.json({ guestEmail: "guest@example.com" }, { status: ++requests === 1 ? 200 : 401 })
+    }) as typeof fetch
+    render(<CraterSessionProvider><SessionState /></CraterSessionProvider>)
+    await screen.findByText("authenticated")
+    now += 61_000
+    act(() => document.dispatchEvent(new Event("visibilitychange")))
+    await waitFor(() => assert.equal(window.location.pathname, "/en/checkout/login"))
+    assert.equal(window.location.search, "?plan=pro")
+    assert.equal(requests, 2)
 })
 
 test("restores a Crater session from its HttpOnly cookie after reload", async () => {

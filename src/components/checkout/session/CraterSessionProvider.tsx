@@ -12,6 +12,8 @@ interface CraterSessionContextValue {
     isLoading: boolean
 }
 
+const SESSION_RECHECK_INTERVAL_MS = 60_000
+
 const CraterSessionContext = createContext<CraterSessionContextValue>({
     authenticated: false,
     error: null,
@@ -28,6 +30,8 @@ export function CraterSessionProvider({ children, errorMessage = "An unexpected 
 
     useEffect(() => {
         let active = true
+        let checking = false
+        let lastCheckedAt = 0
 
         const currentUrl = new URL(window.location.href)
         if (currentUrl.searchParams.get("authError") === "session") {
@@ -40,6 +44,7 @@ export function CraterSessionProvider({ children, errorMessage = "An unexpected 
         }
 
         const restoreOrCreateSession = async () => {
+            const currentUrl = new URL(window.location.href)
             const restoredSession = await restoreCraterSession()
             if (restoredSession) return { guestEmail: currentUrl.searchParams.has("guestCheckout") ? restoredSession.guestEmail : null }
 
@@ -67,7 +72,13 @@ export function CraterSessionProvider({ children, errorMessage = "An unexpected 
             throw new Error("The Crater checkout session is missing or has expired.")
         }
 
-        const login = async () => {
+        const login = async (recheck = false) => {
+            if (checking) return
+            checking = true
+            if (recheck) {
+                sessionRequestRef.current = null
+                setSession((current) => ({ ...current, error: null, isLoading: true }))
+            }
             try {
                 sessionRequestRef.current ??= restoreOrCreateSession()
 
@@ -85,12 +96,24 @@ export function CraterSessionProvider({ children, errorMessage = "An unexpected 
                     error: errorMessage,
                     isLoading: false,
                 })
+            } finally {
+                checking = false
+                lastCheckedAt = Date.now()
             }
         }
 
-        login()
+        const recheckOnReturn = () => {
+            if (document.visibilityState === "hidden" || Date.now() - lastCheckedAt < SESSION_RECHECK_INTERVAL_MS) return
+            void login(true)
+        }
+
+        void login()
+        window.addEventListener("focus", recheckOnReturn)
+        document.addEventListener("visibilitychange", recheckOnReturn)
         return () => {
             active = false
+            window.removeEventListener("focus", recheckOnReturn)
+            document.removeEventListener("visibilitychange", recheckOnReturn)
         }
     }, [errorMessage])
 

@@ -240,7 +240,7 @@ export function useCheckoutForm(content: CheckoutFormContent, errors: ErrorsCont
     }, [])
 
     useEffect(() => {
-        if (!authenticated) return
+        if (!authenticated || isSessionLoading) return
 
         const preparationSearchParams = new URLSearchParams(searchParamsString)
         preparationSearchParams.delete("promotionCode")
@@ -312,7 +312,7 @@ export function useCheckoutForm(content: CheckoutFormContent, errors: ErrorsCont
                 if (requestId === sessionRefreshRequestRef.current) setIsLoading(false)
             }
         })()
-    }, [authenticated, content, customerType, guestEmail, handlePreparationError, locale, preparationAttempt, searchParamsString, setStage])
+    }, [authenticated, content, customerType, guestEmail, handlePreparationError, isSessionLoading, locale, preparationAttempt, searchParamsString, setStage])
 
     // Restore/reset the configuration above before persisting any form changes.
     useEffect(() => {
@@ -441,12 +441,12 @@ export function useCheckoutForm(content: CheckoutFormContent, errors: ErrorsCont
     )
 
     useEffect(() => {
-        if (!checkoutSession?.expiresAt || isConfirmingPayment) return
+        if (!authenticated || isSessionLoading || !checkoutSession?.expiresAt || isConfirmingPayment) return
 
         const refreshDelay = Math.min(MAX_BROWSER_TIMEOUT_MS, Math.max(0, checkoutSession.expiresAt * 1_000 - Date.now() - CHECKOUT_SESSION_REFRESH_LEAD_MS))
         const timer = window.setTimeout(() => void refreshCheckoutSession(), refreshDelay)
         return () => window.clearTimeout(timer)
-    }, [checkoutSession, isConfirmingPayment, refreshCheckoutSession])
+    }, [authenticated, checkoutSession, isConfirmingPayment, isSessionLoading, refreshCheckoutSession])
 
     const retryCheckout = useCallback(() => {
         if (sessionError) {
