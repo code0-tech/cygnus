@@ -40,10 +40,17 @@ mock.module("next/navigation", {
 })
 mock.module("@code0-tech/pictor", {
     namedExports: {
+        AutoScrollArea: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+        Card: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+        ScrollArea: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+        ScrollAreaViewport: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+        ScrollAreaScrollbar: () => null,
+        ScrollAreaThumb: () => null,
         Button: ({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button {...props}>{children}</button>,
         Dialog: TestDialog,
         DialogClose: TestDialogClose,
         DialogContent: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => <div role="dialog" {...props}>{children}</div>,
+        DialogDescription: ({ children }: { children: React.ReactNode }) => <p>{children}</p>,
         DialogHeader: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
         DialogOverlay: () => null,
         DialogPortal: TestDialogPortal,

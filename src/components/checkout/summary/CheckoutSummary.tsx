@@ -5,6 +5,7 @@ import { useOptionalCheckoutFormState } from "@/components/checkout/form/Checkou
 import { useCraterSession } from "@/components/checkout/session/CraterSessionProvider"
 import { CheckoutPricingOverview } from "@/components/checkout/summary/CheckoutPricingOverview"
 import { useCheckoutStage } from "@/components/checkout/state/CheckoutStageProvider"
+import { SiteDialogContent } from "@/components/ui/SiteDialog"
 import { ButtonLoader } from "@/components/ui/Loader"
 import { Switch } from "@/components/ui/Switch"
 import type { CheckoutStripePricingData, CheckoutTaxQuoteData } from "@/lib/checkout/client"
@@ -14,9 +15,8 @@ import { formatCurrency } from "@/lib/formatters"
 import { calculateExclusiveTaxRate, formatDiscountBadge, resolveCheckoutPricing } from "@/lib/subscription/calculator"
 import type { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
 import type { CheckoutPackages } from "@/lib/subscription/usagePackages"
-import { Button, Dialog, DialogClose, DialogContent, DialogHeader, DialogOverlay, DialogPortal, DialogTitle, DialogTrigger, TextInput } from "@code0-tech/pictor"
+import { Button, Dialog, DialogTrigger, TextInput } from "@code0-tech/pictor"
 import type { StripeCheckoutSession } from "@stripe/stripe-js"
-import { IconX } from "@tabler/icons-react"
 import { m as motion } from "motion/react"
 import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation"
 import { createPortal } from "react-dom"
@@ -470,26 +470,9 @@ export function CheckoutDiscount({
                         {promptLabel}
                     </button>
                 </DialogTrigger>
-                <DialogPortal>
-                    <DialogOverlay className="backdrop-blur-sm lg:hidden" />
-                    <DialogContent className="w-[calc(100vw-2rem)]! max-w-sm! border border-white/10 bg-primary! p-5! text-white lg:hidden">
-                        <div className="mb-5 flex items-center justify-between gap-4">
-                            <DialogHeader>
-                                <DialogTitle className="text-lg font-medium text-white">{promptLabel}</DialogTitle>
-                            </DialogHeader>
-                            <DialogClose asChild>
-                                <button
-                                    type="button"
-                                    aria-label="Close"
-                                    className="inline-flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-xl text-secondary outline-none transition-colors hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-white/30"
-                                >
-                                    <IconX aria-hidden="true" size={18} />
-                                </button>
-                            </DialogClose>
-                        </div>
-                        {discountForm}
-                    </DialogContent>
-                </DialogPortal>
+                <SiteDialogContent fitContent title={promptLabel} className="lg:hidden">
+                    {discountForm}
+                </SiteDialogContent>
             </Dialog>
 
             <div className="hidden w-full flex-col items-start space-y-2 pt-2 lg:flex">

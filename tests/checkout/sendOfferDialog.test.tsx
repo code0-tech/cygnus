@@ -8,8 +8,15 @@ installDomTestEnvironment()
 const passthrough = ({ children }: { children: React.ReactNode }) => <>{children}</>
 mock.module("@code0-tech/pictor", {
     namedExports: {
+        AutoScrollArea: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+        Card: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+        ScrollArea: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+        ScrollAreaViewport: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+        ScrollAreaScrollbar: () => null,
+        ScrollAreaThumb: () => null,
         Button: ({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button {...props}>{children}</button>,
         Dialog: passthrough,
+        DialogClose: passthrough,
         DialogContent: passthrough,
         DialogDescription: passthrough,
         DialogFooter: passthrough,
