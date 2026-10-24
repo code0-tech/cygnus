@@ -95,7 +95,7 @@ export function CheckoutPageContent({ checkoutPackages, currentYear, errors, foo
                                 aria-label={form.continueLabel}
                                 className={cn(
                                     "pointer-events-auto relative flex max-h-[92dvh] w-full min-h-0 flex-col overflow-hidden rounded-t-2xl border-t border-white/10 bg-primary text-white shadow-2xl transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none",
-                                    "lg:max-h-none lg:flex-1 lg:translate-y-0 lg:rounded-none lg:border-0 lg:bg-transparent lg:shadow-none",
+                                    "lg:max-h-none lg:flex-1 lg:translate-y-0 lg:overflow-visible lg:rounded-none lg:border-0 lg:bg-transparent lg:shadow-none",
                                     mobileCheckoutOpen ? "translate-y-0" : "translate-y-full"
                                 )}
                             >

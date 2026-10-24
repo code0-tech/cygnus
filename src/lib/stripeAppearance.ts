@@ -1,7 +1,7 @@
 import type { Appearance } from "@stripe/stripe-js"
 
 // Bump when the appearance changes: Stripe's checkout elements only read it on mount, so the version is part of their key.
-export const STRIPE_APPEARANCE_VERSION = "pictor-7"
+export const STRIPE_APPEARANCE_VERSION = "pictor-10"
 
 const SURFACE = "#191825"
 const SURFACE_RAISED = "#201e2c"
@@ -55,9 +55,9 @@ export const stripeAppearance = {
         ".Input:focus": { backgroundColor: HOVER_OVERLAY, border: "none", boxShadow: "none", outline: "none" },
         ".Input--invalid": { backgroundColor: "#1c0516", border: "none", boxShadow: "inset 0 1px 1px rgba(217, 4, 41, 0.1)" },
         ".Dropdown": { backgroundColor: SURFACE, border: "none", borderRadius: "16px", boxShadow: `${INSET_HIGHLIGHT}, 0 12px 32px rgba(0, 0, 0, 0.35)` },
-        ".DropdownItem": { backgroundColor: "transparent", borderRadius: "10px", color: "rgba(255, 255, 255, 0.75)", fontSize: "13px", margin: "4px", padding: "10px 12px" },
-        ".DropdownItem--highlight": { backgroundColor: SURFACE_RAISED, color: "#ffffff" },
-        ".DropdownItem:active": { backgroundColor: "rgba(191, 191, 191, 0.2)", color: "#ffffff" },
+        ".DropdownItem": { backgroundColor: SURFACE, borderRadius: "10px", color: "rgba(255, 255, 255, 0.75)", fontSize: "13px", margin: "4px", padding: "10px 12px" },
+        ".DropdownItem.DropdownItem--highlight": { backgroundColor: SURFACE_RAISED, color: "#ffffff", borderLeftWidth: "0px", borderLeftColor: "transparent", paddingLeft: "12px" },
+        ".DropdownItem:active": { backgroundColor: SURFACE_SELECTED, color: "#ffffff" },
         ".DropdownItem:focus": { backgroundColor: SURFACE_RAISED, color: "#ffffff", outline: "none" },
         ".Label": { color: "rgba(255, 255, 255, 0.5)", fontSize: "11px", fontWeight: "400", letterSpacing: "-0.5px", textTransform: "uppercase" },
         ".Block": pickerItem,
