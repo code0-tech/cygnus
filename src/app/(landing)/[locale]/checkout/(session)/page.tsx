@@ -1,5 +1,6 @@
 import { CheckoutPageContent } from "@/components/checkout/CheckoutPageContent"
 import { createCheckoutQuery, hasCheckoutConfiguration, type CheckoutSearchParams } from "@/lib/checkout/checkoutLogin"
+import { assertCheckoutParameters } from "@/lib/checkout/checkoutParameters"
 import { getFooter, getGlobal } from "@/lib/cms"
 import { getCraterCheckoutPackages } from "@/lib/subscription/checkoutPackages.server"
 import { getCraterSubscriptionPrices } from "@/lib/subscription/prices.server"
@@ -17,7 +18,9 @@ interface CheckoutPageProps {
 export default async function CheckoutPage({ params, searchParams }: CheckoutPageProps) {
     const [{ locale }, query] = await Promise.all([params, searchParams])
     if (!isSupportedLocale(locale)) notFound()
-    if (!hasCheckoutConfiguration(new URLSearchParams(createCheckoutQuery(query)))) redirect(`/${locale}/subscription`)
+    const checkoutParameters = new URLSearchParams(createCheckoutQuery(query))
+    if (!hasCheckoutConfiguration(checkoutParameters)) redirect(`/${locale}/subscription`)
+    assertCheckoutParameters(checkoutParameters)
 
     const [checkoutContent, subscriptionConfig, subscriptionPrices, checkoutPackages, footer, errors] = await Promise.all([
         getGlobal("checkout", locale),

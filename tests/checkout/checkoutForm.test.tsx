@@ -311,6 +311,8 @@ afterEach(() => {
     globalThis.fetch = originalFetch
     checkoutSearchParams.set("customerType", "b2c")
     checkoutSearchParams.set("plan", "pro")
+    checkoutSearchParams.set("deploymentType", "self_hosted")
+    checkoutSearchParams.set("paymentPeriod", "monthly")
     checkoutSearchParams.delete("promotionCode")
     checkoutProviderOptions = null
     billingAddressOnChange = null
@@ -781,6 +783,18 @@ for (const [errorCode, expectedMessage] of [
         render(<CheckoutForm content={content} errors={errors} locale="en" />)
         assert.ok(await screen.findByText(expectedMessage))
         assert.equal(screen.queryByText(/Internal backend message|stripe_price_id|UNKNOWN_FUTURE_CODE|INVALID_CHECKOUT_SESSION/), null)
+    })
+}
+
+for (const [field, value] of [["plan", "invalid"], ["customerType", "invalid"], ["deploymentType", "invalid"], ["paymentPeriod", "weekly"]]) {
+    test(`opens the error page for invalid URL ${field} before loading customers or creating a session`, async () => {
+        checkoutSearchParams.set(field, value)
+        const requests = mock.fn(async () => Response.json({ customers: [] }))
+        globalThis.fetch = requests as typeof fetch
+        render(<CheckoutErrorBoundary><CheckoutForm content={content} errors={errors} locale="en" /></CheckoutErrorBoundary>)
+        assert.ok(screen.getByTestId("checkout-error-page"))
+        assert.equal(screen.queryByRole("alert"), null)
+        assert.equal(requests.mock.callCount(), 0)
     })
 }
 

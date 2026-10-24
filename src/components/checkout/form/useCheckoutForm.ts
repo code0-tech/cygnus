@@ -5,6 +5,7 @@ import { useCheckoutStage } from "@/components/checkout/state/CheckoutStageProvi
 import type { CheckoutData, ErrorsContent } from "@/lib/cms"
 import { resolveCraterCustomerType } from "@/lib/crater/values"
 import { clearCheckoutContactDraft, readCheckoutContactDraft, saveCheckoutContactDraft } from "@/lib/checkout/checkoutDraft"
+import { assertCheckoutParameters } from "@/lib/checkout/checkoutParameters"
 import {
     CheckoutSubmissionError,
     replaceCheckoutPage,
@@ -38,6 +39,7 @@ function getPreparationErrorMessage(error: unknown, errors: ErrorsContent) {
 
 export function useCheckoutForm(content: CheckoutFormContent, errors: ErrorsContent, locale: AppLocale) {
     const searchParams = useSearchParams()
+    assertCheckoutParameters(new URLSearchParams(searchParams.toString()))
     const { stage, setStage, setHasError } = useCheckoutStage()
     const [isLoading, setIsLoading] = useState(false)
     const [errorMessage, setErrorMessage] = useState<string | null>(null)

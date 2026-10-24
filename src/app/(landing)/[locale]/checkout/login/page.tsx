@@ -4,6 +4,7 @@ import { CheckoutLegalFooter } from "@/components/checkout/shared/CheckoutLegalF
 import { HapticButtonLink } from "@/components/ui/HapticButtonLink"
 import { getFooter, getGlobal } from "@/lib/cms"
 import { createCheckoutLoginStartPath, createCheckoutQuery, resolveCheckoutSessionHref, type CheckoutSearchParams } from "@/lib/checkout/checkoutLogin"
+import { assertCheckoutParameters } from "@/lib/checkout/checkoutParameters"
 import { CRATER_USER_LOGIN_COOKIE_NAME, CRATER_USER_LOGIN_COOKIE_VALUE } from "@/lib/crater/sessionCookies"
 import { isSupportedLocale } from "@/lib/i18n"
 import { resolveSiteUrl } from "@/lib/siteConfig"
@@ -24,10 +25,12 @@ export default async function CheckoutLoginPage({ params, searchParams }: Checko
     const [{ locale }, resolvedSearchParams] = await Promise.all([params, searchParams])
     if (!isSupportedLocale(locale)) notFound()
 
+    const query = createCheckoutQuery(resolvedSearchParams)
+    assertCheckoutParameters(new URLSearchParams(query))
+
     const [content, errors, footer] = await Promise.all([getGlobal("checkout", locale), getGlobal("errors", locale), getFooter(locale)])
     if (!content?.login || !content.form || !errors) notFound()
 
-    const query = createCheckoutQuery(resolvedSearchParams)
     const guestHref = `/${locale}/checkout${query ? `?${query}` : ""}`
     const siteUrl = resolveSiteUrl()
     const configurationUrlParam = resolvedSearchParams.configurationUrl
