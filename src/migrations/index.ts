@@ -186,6 +186,7 @@ import * as migration_20261018_120000_checkout_delayed_status_copy from './20261
 import * as migration_20261018_130000_checkout_rate_limit_error from './20261018_130000_checkout_rate_limit_error';
 
 import * as migration_20261019_120000_shorten_array_database_names from './20261019_120000_shorten_array_database_names';
+import * as migration_20261024_120000_checkout_tax_labels from './20261024_120000_checkout_tax_labels';
 
 export const migrations = [
   {
@@ -1102,5 +1103,10 @@ export const migrations = [
     up: migration_20261019_120000_shorten_array_database_names.up,
     down: migration_20261019_120000_shorten_array_database_names.down,
     name: '20261019_120000_shorten_array_database_names',
+  },
+  {
+    up: migration_20261024_120000_checkout_tax_labels.up,
+    down: migration_20261024_120000_checkout_tax_labels.down,
+    name: '20261024_120000_checkout_tax_labels',
   },
 ];

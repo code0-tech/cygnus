@@ -85,7 +85,10 @@ export function CheckoutSummary({ checkoutPackages, content, errors, nextSteps, 
     const currency = stripePricing?.currency ?? "EUR"
     const promotionDiscountAmount = stripePricing?.discountAmount ?? 0
     const taxAmount = stripePricing?.taxAmount ?? previewTaxAmount
-    const taxPercentage = stripePricing ? calculateExclusiveTaxRate(stripePricing.totalPrice, stripePricing.taxAmount) : taxQuote ? previewTaxPercentage : null
+    const taxAmountInclusive = stripePricing?.taxAmountInclusive ?? 0
+    const hasMixedTax = taxAmount > 0 && taxAmountInclusive > 0
+    const taxPercentage = hasMixedTax ? null : stripePricing ? calculateExclusiveTaxRate(stripePricing.totalPrice, stripePricing.taxAmount) : taxQuote ? previewTaxPercentage : null
+    const taxPercentageInclusive = stripePricing && !hasMixedTax ? calculateExclusiveTaxRate(stripePricing.totalPrice, taxAmountInclusive) : null
     const totalPrice = stripePricing?.totalPrice ?? previewDiscountedPrice + previewTaxAmount
     const formattedDiscountAmount = formatCurrency(promotionDiscountAmount, currency, locale)
 
@@ -178,7 +181,9 @@ export function CheckoutSummary({ checkoutPackages, content, errors, nextSteps, 
                 planTitle={planTitle}
                 subscriptionConfig={subscriptionConfig}
                 taxAmount={taxAmount}
+                taxAmountInclusive={taxAmountInclusive}
                 taxPercentage={taxPercentage}
+                taxPercentageInclusive={taxPercentageInclusive}
                 totalPrice={totalPrice}
                 workflowExecutionPrice={pricing.workflowExecutionPrice}
                 workflowExecutions={workflowExecutions}

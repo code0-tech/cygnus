@@ -140,6 +140,7 @@ export interface CheckoutStripePricingData {
     discountAmount: number
     subtotalPrice: number
     taxAmount: number
+    taxAmountInclusive: number
     totalPrice: number
 }
 

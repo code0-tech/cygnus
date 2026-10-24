@@ -28,7 +28,9 @@ interface CheckoutPricingOverviewData {
     planPrice: number | null
     planTitle: string
     taxAmount: number
+    taxAmountInclusive?: number
     taxPercentage: number | null
+    taxPercentageInclusive?: number | null
     totalPrice: number
     workflowExecutionPrice: number
     workflowExecutions: number
@@ -106,7 +108,9 @@ export function CheckoutPricingOverview(props: CheckoutPricingOverviewProps) {
         planPrice,
         planTitle,
         taxAmount,
+        taxAmountInclusive = 0,
         taxPercentage,
+        taxPercentageInclusive = null,
         totalPrice,
         workflowExecutionPrice,
         workflowExecutions,
@@ -183,10 +187,20 @@ export function CheckoutPricingOverview(props: CheckoutPricingOverviewProps) {
 
                 <div id="checkout-applied-discount" className="empty:hidden" aria-live="polite" />
 
-                {(confirmedPricing || taxPercentage !== null) && (
+                {taxAmountInclusive > 0 && (
                     <div className="flex items-center justify-between gap-4 text-sm">
                         <span className="flex items-center gap-1 text-secondary">
-                            {content.pricing.taxLabel}
+                            {content.pricing.taxInclusiveLabel}
+                            {taxPercentageInclusive !== null && <span className="text-tertiary"> ({formatDiscountBadge(taxPercentageInclusive, locale)})</span>}
+                        </span>
+                        <span className="tabular-nums text-white">{formatCurrency(taxAmountInclusive, currency, locale)}</span>
+                    </div>
+                )}
+
+                {(confirmedPricing || taxAmount > 0 || taxPercentage !== null) && (taxAmount > 0 || taxAmountInclusive === 0) && (
+                    <div className="flex items-center justify-between gap-4 text-sm">
+                        <span className="flex items-center gap-1 text-secondary">
+                            {confirmedPricing || taxAmount === 0 ? content.pricing.taxLabel : content.pricing.taxExclusiveLabel}
                             {!confirmedPricing && taxPercentage !== null && <span className="text-tertiary"> ({formatDiscountBadge(taxPercentage, locale)})</span>}
                         </span>
                         <span className="tabular-nums text-white">{formatCurrency(taxAmount, currency, locale)}</span>

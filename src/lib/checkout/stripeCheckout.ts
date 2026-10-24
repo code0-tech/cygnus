@@ -22,6 +22,7 @@ export function getStripePricingFromSession(session: StripeCheckoutSession): Che
         discountAmount: session.total.discount.minorUnitsAmount / divisor,
         subtotalPrice: session.total.subtotal.minorUnitsAmount / divisor,
         taxAmount: session.total.taxExclusive.minorUnitsAmount / divisor,
+        taxAmountInclusive: session.total.taxInclusive.minorUnitsAmount / divisor,
         totalPrice: session.total.total.minorUnitsAmount / divisor,
     }
 }

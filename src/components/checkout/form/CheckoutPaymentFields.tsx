@@ -156,7 +156,7 @@ export function CheckoutPaymentFields({
 
     useEffect(() => {
         onPricingChange(liveStripePricing)
-    }, [liveStripePricing?.currency, liveStripePricing?.discountAmount, liveStripePricing?.subtotalPrice, liveStripePricing?.taxAmount, liveStripePricing?.totalPrice, onPricingChange])
+    }, [liveStripePricing?.currency, liveStripePricing?.discountAmount, liveStripePricing?.subtotalPrice, liveStripePricing?.taxAmount, liveStripePricing?.taxAmountInclusive, liveStripePricing?.totalPrice, onPricingChange])
 
     useEffect(() => {
         onStripeCheckoutChange(checkoutState.type === "success" ? checkoutState.checkout : null)

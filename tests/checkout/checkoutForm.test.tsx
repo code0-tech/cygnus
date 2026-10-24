@@ -381,6 +381,7 @@ test("maps Stripe's exact discount, tax, and total from minor currency units", (
             discount: { amount: "€10.00", minorUnitsAmount: 1_000 },
             subtotal: { amount: "€100.00", minorUnitsAmount: 10_000 },
             taxExclusive: { amount: "€17.10", minorUnitsAmount: 1_710 },
+            taxInclusive: { amount: "€0.00", minorUnitsAmount: 0 },
             total: { amount: "€107.10", minorUnitsAmount: 10_710 },
         },
     } as never)
@@ -390,8 +391,30 @@ test("maps Stripe's exact discount, tax, and total from minor currency units", (
         discountAmount: 10,
         subtotalPrice: 100,
         taxAmount: 17.1,
+        taxAmountInclusive: 0,
         totalPrice: 107.1,
     })
+})
+
+test("keeps included and additional tax separate without adding included tax to the total", () => {
+    for (const [inclusive, exclusive, total] of [[1_900, 0, 11_900], [1_900, 1_000, 12_900], [0, 0, 10_000]]) {
+        const pricing = getStripePricingFromSession({
+            currency: "eur",
+            minorUnitsAmountDivisor: 100,
+            tax: { status: "ready" },
+            total: {
+                discount: { minorUnitsAmount: 0 },
+                subtotal: { minorUnitsAmount: 11_900 },
+                taxExclusive: { minorUnitsAmount: exclusive },
+                taxInclusive: { minorUnitsAmount: inclusive },
+                total: { minorUnitsAmount: total },
+            },
+        } as never)
+
+        assert.equal(pricing?.taxAmountInclusive, inclusive / 100)
+        assert.equal(pricing?.taxAmount, exclusive / 100)
+        assert.equal(pricing?.totalPrice, total / 100)
+    }
 })
 
 test("does not treat Stripe totals as final while tax is still pending", () => {

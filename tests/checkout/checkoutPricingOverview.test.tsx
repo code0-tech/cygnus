@@ -43,6 +43,8 @@ const content = {
         discountPromptLabel: "Add discount",
         discountRemoveLabel: "Remove",
         taxLabel: "Tax",
+        taxInclusiveLabel: "Included tax",
+        taxExclusiveLabel: "Additional tax",
         totalLabel: "Total",
         perMonthSuffix: "/ month",
     },
@@ -57,6 +59,55 @@ const subscriptionConfig = {
 } as SubscriptionConfigData
 
 afterEach(cleanup)
+
+const taxPreviewProps = {
+    aiTokenPrice: 0,
+    aiTokens: 0,
+    content,
+    customerType: "b2c",
+    deployment: "cloud",
+    isCustomPlan: false,
+    locale: "en" as const,
+    monthlyPeriodSuffix: "/ month",
+    paymentPeriodDiscountAmount: 0,
+    paymentPeriodDiscountLabel: null,
+    paymentPeriodDiscountPercentage: 0,
+    periodSuffix: "/ month",
+    planPrice: 119,
+    planTitle: "Pro",
+    subscriptionConfig,
+    workflowExecutionPrice: 0,
+    workflowExecutions: 0,
+}
+
+test("shows included tax without a misleading zero additional-tax row", () => {
+    const { container } = render(
+        <CheckoutPricingOverview {...taxPreviewProps} taxAmount={0} taxPercentage={0} taxAmountInclusive={19} taxPercentageInclusive={0.19} totalPrice={119} />
+    )
+
+    assert.match(container.textContent ?? "", /Included tax \(19%\)€19\.00/)
+    assert.doesNotMatch(container.textContent ?? "", /Additional tax|Tax \(0%\)/)
+    assert.equal(container.querySelector('[data-testid="total-price"]')?.textContent, "119")
+})
+
+test("shows both included and additional tax for mixed prices", () => {
+    const { container } = render(
+        <CheckoutPricingOverview {...taxPreviewProps} taxAmount={10} taxPercentage={null} taxAmountInclusive={19} taxPercentageInclusive={null} totalPrice={129} />
+    )
+
+    assert.match(container.textContent ?? "", /Included tax€19\.00/)
+    assert.match(container.textContent ?? "", /Additional tax€10\.00/)
+    assert.equal(container.querySelector('[data-testid="total-price"]')?.textContent, "129")
+})
+
+test("keeps a confirmed zero tax amount visible", () => {
+    const { container } = render(
+        <CheckoutPricingOverview {...taxPreviewProps} taxAmount={0} taxPercentage={0} taxAmountInclusive={0} taxPercentageInclusive={0} totalPrice={119} />
+    )
+
+    assert.match(container.textContent ?? "", /Tax \(0%\)€0\.00/)
+    assert.doesNotMatch(container.textContent ?? "", /Included tax|Additional tax/)
+})
 
 test("renders the checkout configuration and all applicable price rows", () => {
     const { container } = render(
@@ -87,7 +138,7 @@ test("renders the checkout configuration and all applicable price rows", () => {
     assert.match(container.textContent ?? "", /500M \/ month/)
     assert.match(container.textContent ?? "", /250K \/ month/)
     assert.match(container.textContent ?? "", /Quarterly discount \(-10%\)/)
-    assert.match(container.textContent ?? "", /Tax \(19%\)/)
+    assert.match(container.textContent ?? "", /Additional tax \(19%\)/)
     assert.equal(container.querySelector('[data-testid="total-price"]')?.textContent, "297.5")
     assert.ok(container.querySelector("#checkout-applied-discount"))
 })
