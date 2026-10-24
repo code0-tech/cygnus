@@ -290,6 +290,18 @@ const { getStripePricingFromSession } = await import("../../src/lib/checkout/str
 const { CheckoutFormProvider, useCheckoutFormState } = await import("../../src/components/checkout/form/CheckoutFormProvider")
 const { clearCheckoutContactDraft, readCheckoutContactDraft, saveCheckoutContactDraft } = await import("../../src/lib/checkout/checkoutDraft")
 
+class CheckoutErrorBoundary extends React.Component<{ children: React.ReactNode }, { failed: boolean }> {
+    state = { failed: false }
+
+    static getDerivedStateFromError() {
+        return { failed: true }
+    }
+
+    render() {
+        return this.state.failed ? <div data-testid="checkout-error-page">Error page</div> : this.props.children
+    }
+}
+
 const originalFetch = globalThis.fetch
 afterEach(() => {
     cleanup()
@@ -757,7 +769,6 @@ test("shows only the configured error when Stripe cannot load the checkout sessi
 for (const [errorCode, expectedMessage] of [
     ["INVALID_CHECKOUT_SESSION", errors.checkoutSession],
     ["UNKNOWN_FUTURE_CODE", errors.checkoutSession],
-    ["CUSTOMER_TYPE_MISMATCH", errors.customerTypeMismatch],
     ["INVALID_CHECKOUT_CUSTOMER", errors.checkoutCustomer],
 ]) {
     test(`maps ${errorCode} to CMS copy without displaying backend diagnostics`, async () => {
@@ -770,6 +781,70 @@ for (const [errorCode, expectedMessage] of [
         render(<CheckoutForm content={content} errors={errors} locale="en" />)
         assert.ok(await screen.findByText(expectedMessage))
         assert.equal(screen.queryByText(/Internal backend message|stripe_price_id|UNKNOWN_FUTURE_CODE|INVALID_CHECKOUT_SESSION/), null)
+    })
+}
+
+for (const [status, errorCode] of [[400, null], [422, "INVALID_CHECKOUT_SELECTION"], [422, "CUSTOMER_TYPE_MISMATCH"]] as const) {
+    test(`opens the error page for invalid checkout parameters (${status}, ${errorCode})`, async () => {
+        globalThis.fetch = (async (input) => String(input) === "/api/crater/customer"
+            ? Response.json({ customers: [{ customerType: "personal", email: "ada@example.com", id: "gid://crater/Customer/1", name: "Ada" }] })
+            : Response.json({ error: "Internal backend message", errorCode, details: ["stripe_price_id: missing"] }, { status })
+        ) as typeof fetch
+
+        render(<CheckoutErrorBoundary><CheckoutForm content={content} errors={errors} locale="en" /></CheckoutErrorBoundary>)
+        await screen.findByTestId("checkout-error-page")
+        assert.equal(screen.queryByRole("alert"), null)
+        assert.equal(screen.queryByRole("button", { name: errors.retry }), null)
+        assert.equal(screen.queryByText(/Internal backend message|stripe_price_id/), null)
+    })
+}
+
+for (const trigger of ["new customer", "customer selection", "session refresh"] as const) {
+    test(`opens the error page for invalid checkout parameters during ${trigger}`, async () => {
+        let sessionRequests = 0
+        globalThis.fetch = (async (input, init) => {
+            if (String(input) === "/api/crater/customer") {
+                const customer = { customerType: "personal", email: "ada@example.com", id: "gid://crater/Customer/1", name: "Ada" }
+                return Response.json(init?.method === "POST" ? customer : { customers: trigger === "new customer" ? [] : [customer, { ...customer, id: "gid://crater/Customer/2" }] })
+            }
+            sessionRequests += 1
+            return trigger !== "new customer" && sessionRequests === 1
+                ? Response.json({ clientSecret: "cs_initial_secret", expiresAt: 1_800_000_000, id: "cs_initial" })
+                : Response.json({ error: "Invalid selection", errorCode: "INVALID_CHECKOUT_SELECTION" }, { status: 422 })
+        }) as typeof fetch
+
+        function RefreshTrigger() {
+            const { refreshExpiredCheckoutSession } = useCheckoutFormState()
+            return <button onClick={() => void refreshExpiredCheckoutSession()}>Refresh session</button>
+        }
+
+        render(
+            <CheckoutErrorBoundary>
+                <CheckoutFormProvider content={content} errors={errors} locale="en">
+                    <CheckoutForm />
+                    <RefreshTrigger />
+                </CheckoutFormProvider>
+            </CheckoutErrorBoundary>
+        )
+        const user = userEvent.setup()
+        if (trigger === "new customer") {
+            await screen.findByTestId("standalone-address")
+            await user.type(screen.getByRole("textbox", { name: content.emailLabel }), "ada@example.com")
+            act(() => billingAddressOnChange?.({ complete: true, value: stripeBillingAddress }))
+            await user.click(screen.getByRole("button", { name: content.continueLabel }))
+        } else {
+            await waitFor(() => assert.equal(checkoutProviderOptions?.clientSecret, "cs_initial_secret"))
+            if (trigger === "customer selection") {
+                act(() => { contactDetailsOnReady?.(); billingAddressOnReady?.() })
+                await waitFor(() => assert.ok(customerSelectOnValueChange))
+                act(() => customerSelectOnValueChange?.("gid://crater/Customer/2"))
+            } else {
+                await user.click(screen.getByRole("button", { name: "Refresh session" }))
+            }
+        }
+        await screen.findByTestId("checkout-error-page")
+        assert.equal(screen.queryByRole("alert"), null)
+        assert.equal(sessionRequests, trigger === "new customer" ? 1 : 2)
     })
 }
 

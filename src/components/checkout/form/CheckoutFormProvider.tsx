@@ -19,6 +19,7 @@ interface CheckoutFormProviderProps {
 
 export function CheckoutFormProvider({ children, content, errors, locale }: CheckoutFormProviderProps) {
     const state = useCheckoutForm(content, errors, locale)
+    if (state.fatalError) throw state.fatalError
     return <CheckoutFormContext.Provider value={state}>{children}</CheckoutFormContext.Provider>
 }
 

@@ -41,6 +41,7 @@ export function useCheckoutForm(content: CheckoutFormContent, errors: ErrorsCont
     const { stage, setStage, setHasError } = useCheckoutStage()
     const [isLoading, setIsLoading] = useState(false)
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
+    const [fatalError, setFatalError] = useState<Error | null>(null)
     const [checkoutSession, setCheckoutSession] = useState<CheckoutSessionData | null>(null)
     const [customers, setCustomers] = useState<CheckoutCustomerData[]>([])
     const [hasExistingCustomers, setHasExistingCustomers] = useState<boolean | null>(null)
@@ -82,6 +83,22 @@ export function useCheckoutForm(content: CheckoutFormContent, errors: ErrorsCont
     const customerType = resolveCraterCustomerType(searchParams.get("customerType"))
     const searchParamsString = searchParams.toString()
     const resolvedError = errorMessage ?? sessionError ?? stripeSessionError
+
+    const handlePreparationError = useCallback(
+        (error: unknown) => {
+            const message = getPreparationErrorMessage(error, errors)
+            if (
+                error instanceof CheckoutSubmissionError &&
+                error.kind === "session" &&
+                (error.status === 400 || error.errorCode === "INVALID_CHECKOUT_SELECTION" || error.errorCode === "CUSTOMER_TYPE_MISMATCH")
+            ) {
+                setFatalError(new Error(message))
+                return
+            }
+            setErrorMessage(message)
+        },
+        [errors]
+    )
 
     const setStripeBillingAddress = useCallback((address: StripeCheckoutContact | null, complete: boolean) => {
         stripeBillingAddressRef.current = address
@@ -135,7 +152,7 @@ export function useCheckoutForm(content: CheckoutFormContent, errors: ErrorsCont
                 .catch((error) => {
                     if (requestId !== sessionRefreshRequestRef.current) return false
                     console.error("Failed to refresh the Crater checkout session:", error)
-                    setErrorMessage(getPreparationErrorMessage(error, errors))
+                    handlePreparationError(error)
                     return false
                 })
                 .finally(() => {
@@ -146,7 +163,7 @@ export function useCheckoutForm(content: CheckoutFormContent, errors: ErrorsCont
             checkoutRefreshPromiseRef.current = request
             return request
         },
-        [errors, locale]
+        [handlePreparationError, locale]
     )
 
     const refreshCheckoutSession = useCallback(() => {
@@ -288,12 +305,12 @@ export function useCheckoutForm(content: CheckoutFormContent, errors: ErrorsCont
             } catch (error) {
                 if (requestId !== sessionRefreshRequestRef.current) return
                 console.error("Failed to start Crater checkout:", error)
-                setErrorMessage(getPreparationErrorMessage(error, errors))
+                handlePreparationError(error)
             } finally {
                 if (requestId === sessionRefreshRequestRef.current) setIsLoading(false)
             }
         })()
-    }, [authenticated, content, customerType, errors, guestEmail, locale, preparationAttempt, searchParamsString, setStage])
+    }, [authenticated, content, customerType, guestEmail, handlePreparationError, locale, preparationAttempt, searchParamsString, setStage])
 
     // Restore/reset the configuration above before persisting any form changes.
     useEffect(() => {
@@ -345,14 +362,14 @@ export function useCheckoutForm(content: CheckoutFormContent, errors: ErrorsCont
             setCheckoutSession(session)
             setStage("payment")
         } catch (error) {
-            if (requestId === sessionRefreshRequestRef.current) setErrorMessage(getPreparationErrorMessage(error, errors))
+            if (requestId === sessionRefreshRequestRef.current) handlePreparationError(error)
         } finally {
             customerCreationPendingRef.current = false
             if (requestId === sessionRefreshRequestRef.current) setIsLoading(false)
         }
     }, [
         customerType,
-        errors,
+        handlePreparationError,
         isLoading,
         isRefreshingSession,
         locale,
@@ -413,12 +430,12 @@ export function useCheckoutForm(content: CheckoutFormContent, errors: ErrorsCont
             } catch (error) {
                 if (requestId !== sessionRefreshRequestRef.current) return
                 console.error("Failed to select the Crater checkout customer:", error)
-                setErrorMessage(getPreparationErrorMessage(error, errors))
+                handlePreparationError(error)
             } finally {
                 if (requestId === sessionRefreshRequestRef.current) setIsRefreshingSession(false)
             }
         },
-        [customers, errors, isLoading, isRefreshingSession, locale, searchParamsString, setStage]
+        [customers, handlePreparationError, isLoading, isRefreshingSession, locale, searchParamsString, setStage]
     )
 
     useEffect(() => {
@@ -449,6 +466,7 @@ export function useCheckoutForm(content: CheckoutFormContent, errors: ErrorsCont
         customerType,
         errorMessage,
         errors,
+        fatalError,
         hasExistingCustomers,
         guestEmail,
         isLoading,
