@@ -425,8 +425,8 @@ export function CheckoutDiscount({
 
     const discountForm = (
         <form onSubmit={handleSubmit} className="w-full space-y-2">
-            <div className="flex items-start gap-2">
-                <div className="min-w-0 flex-1">
+            <div className="flex flex-col items-stretch gap-4 lg:flex-row lg:items-start lg:gap-2">
+                <div className="min-w-0 w-full lg:flex-1">
                     <TextInput
                         aria-label={inputPlaceholder}
                         autoComplete="off"
@@ -443,7 +443,7 @@ export function CheckoutDiscount({
                     type="submit"
                     variant="normal"
                     disabled={!sessionReady || isApplying || code.trim() === (appliedCode ?? "")}
-                    className="h-10! shrink-0 px-5! whitespace-nowrap bg-white/80! hover:bg-white! ring-1! ring-white/20! text-sm! text-primary!"
+                    className="h-10! w-full! shrink-0 px-5! whitespace-nowrap bg-white/80! hover:bg-white! ring-1! ring-white/20! text-sm! text-primary! lg:w-auto!"
                 >
                     {isApplying ? <ButtonLoader label={buttonLabel} /> : buttonLabel}
                 </Button>

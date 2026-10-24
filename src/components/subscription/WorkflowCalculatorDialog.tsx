@@ -153,7 +153,7 @@ export function WorkflowCalculatorDialog({ locale, content, businessTypeIcons, v
                     </div>
                 </div>
 
-                <DialogFooter className="grid! grid-cols-[minmax(0,1fr)_auto]! items-end! gap-4! pt-4!">
+                <DialogFooter className="grid! grid-cols-1! gap-4! pt-4!">
                     <div className="min-w-0 text-left">
                         <p className="text-sm font-medium text-tertiary">{content.estimateLabel}</p>
                         <p className="mt-1 text-2xl font-semibold tabular-nums text-white">
@@ -165,7 +165,7 @@ export function WorkflowCalculatorDialog({ locale, content, businessTypeIcons, v
                             type="button"
                             variant="filled"
                             onClick={() => onApply(applicableExecutions)}
-                            className="justify-self-end bg-white/80! text-sm! text-primary! hover:bg-white! transition-colors"
+                            className="w-full! bg-white/80! text-sm! text-primary! hover:bg-white! transition-colors"
                         >
                             {content.applyLabel}
                         </Button>

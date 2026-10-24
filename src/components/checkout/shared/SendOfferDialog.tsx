@@ -50,7 +50,7 @@ export function SendOfferDialog({ content, initialEmail, onSend }: SendOfferDial
                         className="w-full!"
                     />
                     <DialogFooter>
-                        <Button type="submit" variant="filled" disabled={!validEmail}>
+                        <Button type="submit" variant="filled" disabled={!validEmail} className="w-full!">
                             {content.sendOfferLabel}
                         </Button>
                     </DialogFooter>
