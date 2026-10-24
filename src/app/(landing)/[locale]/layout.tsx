@@ -1,8 +1,6 @@
 import ConsentManager from "@/components/providers/ConsentManager"
-import { Navigation } from "@/components/navigation/Navigation"
-import { FooterSection } from "@/components/sections/FooterSection"
-import { getFooter } from "@/lib/cms"
-import { getNavigation } from "@/lib/cms"
+import { StripeProvider } from "@/components/providers/StripeProvider"
+import { getClientConfig } from "@/lib/clientConfig.server"
 import { isSupportedLocale } from "@/lib/i18n"
 import type { ReactNode } from "react"
 import { notFound } from "next/navigation"
@@ -13,29 +11,24 @@ interface LocaleLayoutProps {
 }
 
 export const revalidate = 300
+export const dynamic = "force-dynamic"
 
 export default async function LocaleLayout({ children, params }: LocaleLayoutProps) {
     const { locale } = await params
     if (!isSupportedLocale(locale)) {
         notFound()
     }
-
-    const [navigation, footer] = await Promise.all([getNavigation(locale), getFooter(locale)])
-    const items = navigation?.items?.items ?? []
-    const buttons = navigation?.buttons?.buttons ?? []
-    const currentYear = new Date().getUTCFullYear()
+    const { stripePublicKey } = getClientConfig()
 
     return (
         <ConsentManager locale={locale}>
-            <div className="group/site relative bg-primary overflow-x-hidden">
-                <Navigation locale={locale} items={items} buttons={buttons} logo={navigation?.logo} />
-                <main id="main-content" className="bg-primary">
-                    {children}
-                </main>
-                <div className="group-has-data-status-page/site:hidden">
-                    <FooterSection locale={locale} footer={footer} currentYear={currentYear} />
+            <StripeProvider key={stripePublicKey} publicKey={stripePublicKey}>
+                <div className="relative bg-primary overflow-x-hidden">
+                    <main id="main-content" className="bg-primary">
+                        {children}
+                    </main>
                 </div>
-            </div>
+            </StripeProvider>
         </ConsentManager>
     )
 }

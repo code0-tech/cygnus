@@ -9,7 +9,7 @@ import {
 import { NextResponse } from "next/server"
 
 const checkRateLimit = createRateLimitChecker(
-    getRateLimitConfig("JOBS_RATE_LIMIT_MAX", "JOBS_RATE_LIMIT_WINDOW_SECONDS")
+    getRateLimitConfig(process.env.JOBS_RATE_LIMIT_MAX, process.env.JOBS_RATE_LIMIT_WINDOW_SECONDS)
 )
 
 export async function POST(req: Request, { params }: { params: Promise<{ slug: string }> }) {

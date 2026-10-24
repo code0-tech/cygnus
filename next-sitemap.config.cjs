@@ -5,47 +5,26 @@ module.exports = {
     siteUrl,
     generateRobotsTxt: true,
     generateIndexSitemap: false,
-    exclude: [
-        "/admin/*",
-        "/api/*",
-        "/en/checkout",
-        "/de/checkout",
-    ],
+    exclude: ["/admin/*", "/api/*", "/*/checkout", "/*/checkout/*", "/*/licenses", "/*/licenses/*"],
     alternateRefs: [
         { href: `${siteUrl}/en`, hreflang: "en" },
         { href: `${siteUrl}/de`, hreflang: "de" },
     ],
     robotsTxtOptions: {
-        additionalSitemaps: [
-            `${siteUrl}/server-sitemap.xml`,
-        ],
+        additionalSitemaps: [`${siteUrl}/server-sitemap.xml`],
     },
     additionalPaths: async () => {
         const locales = ["en", "de"]
 
-        const staticPaths = [
-            "",
-            "about-us",
-            "actions",
-            "blog",
-            "community-edition",
-            "contact",
-            "enterprise-edition",
-            "features",
-            "jobs",
-            "legal-notice",
-            "privacy",
-            "subscription",
-            "terms",
-        ]
+        const staticPaths = ["", "about-us", "actions", "blog", "community-edition", "contact", "enterprise-edition", "features", "jobs", "legal-notice", "privacy", "subscription", "terms"]
 
         return locales.flatMap((locale) =>
             staticPaths.map((path) => ({
                 loc: path ? `/${locale}/${path}` : `/${locale}`,
                 changefreq: "weekly",
                 priority: path ? 0.7 : 1,
-                lastmod: new Date().toISOString()
+                lastmod: new Date().toISOString(),
             }))
         )
-    }
+    },
 }

@@ -21,7 +21,7 @@ export function pricingPackageFields(name: "pro" | "max" | "custom", label: stri
                 ],
             },
             {
-                name: "missingFeatures",
+                name: "missing",
                 label: "Missing Features",
                 type: "array",
                 required: false,

@@ -1,0 +1,244 @@
+"use client"
+
+import { DataTableControls } from "@/components/licenses/table/DataTableControls"
+import { getLicenseDetailGridCellClassName } from "@/components/licenses/shared/licenseDetailGrid"
+import { useLicenseData } from "@/components/licenses/data/LicenseDataProvider"
+import { LicenseLoadMoreButton } from "@/components/licenses/table/LicenseLoadMoreButton"
+import { LicenseDataTableSkeleton } from "@/components/licenses/table/LicenseDataTableSkeleton"
+import { LICENSE_DATA_TABLE_PAGE_SIZE, LicenseDataTablePagination } from "@/components/licenses/table/LicenseDataTablePagination"
+import { getLicenseStatusBadgeColor } from "@/components/licenses/shared/LicenseStatusDot"
+import { PICTOR_BADGE_CLASS_NAME, StableBadge } from "@/components/ui/StableBadge"
+import type { LicenseContent } from "@/lib/cms"
+import type { AppLocale } from "@/lib/i18n"
+import { formatLicenseDisplayValue, formatLicenseEdition } from "@/lib/licenses/displayValues"
+import { createLicensePath, resolveCustomerRouteId } from "@/lib/licenses/routes"
+import { AutoScrollArea, Badge, Card, DataTable, DataTableColumn, DataTableHeader, DataTableHeaderColumn, Flex, Spacing, Text, type DataTableFilterProps } from "@code0-tech/pictor"
+import { useRouter } from "next/navigation"
+import { Fragment, useLayoutEffect, useRef, useState } from "react"
+
+function CustomerEmail({ email }: { email: string }) {
+    const containerRef = useRef<HTMLDivElement>(null)
+    const textRef = useRef<HTMLSpanElement>(null)
+
+    useLayoutEffect(() => {
+        const container = containerRef.current
+        const text = textRef.current
+        if (!container || !text) return
+        let disposed = false
+
+        const fit = () => {
+            if (disposed || container.clientWidth <= 0) return
+            text.style.fontSize = "1.25rem"
+            if (text.getBoundingClientRect().width <= container.clientWidth) return
+
+            let lower = 0
+            let upper = Number.parseFloat(getComputedStyle(text).fontSize)
+            for (let step = 0; step < 12; step++) {
+                const size = (lower + upper) / 2
+                text.style.fontSize = `${size}px`
+                if (text.getBoundingClientRect().width <= container.clientWidth) lower = size
+                else upper = size
+            }
+            text.style.fontSize = `${lower}px`
+        }
+
+        fit()
+        const observer = new ResizeObserver(fit)
+        observer.observe(container)
+        void document.fonts.ready.then(fit)
+        document.fonts.addEventListener("loadingdone", fit)
+        return () => {
+            disposed = true
+            observer.disconnect()
+            document.fonts.removeEventListener("loadingdone", fit)
+        }
+    }, [email])
+
+    return (
+        <div ref={containerRef} className="mt-3 w-full min-w-0 overflow-hidden leading-tight text-white">
+            <span ref={textRef} title={email} className="inline-block whitespace-nowrap font-normal" style={{ fontSize: "1.25rem" }}>
+                {email}
+            </span>
+        </div>
+    )
+}
+
+interface LicenseCustomerPageProps {
+    content: LicenseContent
+    customerId: string
+    locale: AppLocale
+}
+
+export function LicenseCustomerPage({ content, customerId, locale }: LicenseCustomerPageProps) {
+    const router = useRouter()
+    const { customers, isLoading, licenses, loadMore, loadingMore, pagination } = useLicenseData()
+    const resolvedCustomerId = resolveCustomerRouteId(customerId)
+    const customer = customers.find((candidate) => candidate.id === resolvedCustomerId)
+    const customerLicenses = licenses.filter((license) => license.customerId === resolvedCustomerId)
+    const [statusFilters, setStatusFilters] = useState<string[]>([])
+    const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc")
+    const licenseRows = customerLicenses.map((license) => ({ ...license, tableStatus: license.status?.trim().toLowerCase().replaceAll("-", "_") }))
+    const tableFilter: DataTableFilterProps | undefined = statusFilters.length ? { tableStatus: { operator: "isOneOf", value: statusFilters } } : undefined
+    const dateFormatter = new Intl.DateTimeFormat(locale, {
+        dateStyle: "medium",
+        timeZone: "UTC",
+    })
+    const customerDetails = customer
+        ? [
+              { label: content.dashboard.nameLabel, value: customer.name || "—" },
+              { label: content.dashboard.emailLabel, value: customer.email || "—", fitEmail: true },
+              {
+                  label: content.dashboard.customerLabel,
+                  value: formatLicenseDisplayValue(customer.customerType, "customerType", content.values),
+              },
+          ]
+        : []
+
+    const licenseTableHeader = (
+        <DataTableHeader>
+            <DataTableHeaderColumn className="text-xs font-normal text-tertiary">{content.licenses}</DataTableHeaderColumn>
+            <DataTableHeaderColumn className="text-xs font-normal text-tertiary">{content.dashboard.statusLabel}</DataTableHeaderColumn>
+            <DataTableHeaderColumn className="text-xs font-normal text-tertiary">{content.dashboard.editionLabel}</DataTableHeaderColumn>
+            <DataTableHeaderColumn className="text-xs font-normal text-tertiary">{content.dashboard.lastEditedLabel}</DataTableHeaderColumn>
+        </DataTableHeader>
+    )
+
+    return (
+        <div>
+            <section aria-label={content.dashboard.customerLabel}>
+
+                <Card color="secondary" className="overflow-hidden p-0!">
+                    {customer ? (
+                        <div className="grid sm:grid-cols-2 xl:grid-cols-3">
+                            {customerDetails.map((detail, index) => (
+                                <div key={detail.label} className={getLicenseDetailGridCellClassName(index, index === 2 ? "sm:col-span-2 xl:col-span-1" : undefined)}>
+                                    <Text size="sm" hierarchy="tertiary" className="truncate">
+                                        {detail.label}
+                                    </Text>
+                                    {detail.fitEmail ? (
+                                        <CustomerEmail email={detail.value} />
+                                    ) : (
+                                        <Text fw={400} title={detail.value} className="mt-3! truncate text-xl! leading-tight! text-white!">
+                                            {detail.value}
+                                        </Text>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    ) : isLoading ? (
+                        <div aria-hidden="true" className="grid sm:grid-cols-2 xl:grid-cols-3">
+                            {Array.from({ length: 3 }, (_, index) => (
+                                <div key={index} className={getLicenseDetailGridCellClassName(index, `animate-pulse motion-reduce:animate-none ${index === 2 ? "sm:col-span-2 xl:col-span-1" : ""}`)}>
+                                    <div className={index % 2 === 0 ? "h-3 w-16 rounded-full bg-white/10" : "h-3 w-20 rounded-full bg-white/10"} />
+                                    <div className={index === 1 ? "mt-4 h-8 w-32 rounded-lg bg-white/10" : "mt-4 h-8 w-20 rounded-lg bg-white/10"} />
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <Text size="sm" hierarchy="tertiary">
+                            {content.dashboard.emptyCustomers}
+                        </Text>
+                    )}
+                </Card>
+            </section>
+
+            <Spacing spacing="xl" />
+
+            <section aria-labelledby="customer-licenses-heading">
+                <Flex align="center" justify="space-between" style={{ gap: "0.5rem" }}>
+                    <Flex align="center" style={{ gap: "0.5rem" }}>
+                        <Text id="customer-licenses-heading" hierarchy="secondary" size="lg">
+                            {content.licenses}
+                        </Text>
+                        {isLoading ? (
+                            <span aria-hidden="true" className="h-5 w-6 animate-pulse rounded-full bg-white/10 motion-reduce:animate-none" />
+                        ) : (
+                            <StableBadge color="secondary" className={PICTOR_BADGE_CLASS_NAME}>
+                                {customer?.subscriptionCount ?? customerLicenses.length}
+                            </StableBadge>
+                        )}
+                    </Flex>
+                    <DataTableControls
+                        disabled={isLoading}
+                        filterLabel={content.dashboard.statusLabel}
+                        filterOptions={[
+                            { value: "active", label: content.values.statuses.active },
+                            { value: "pending", label: content.values.statuses.pending },
+                            { value: "incomplete", label: content.values.statuses.incomplete },
+                            { value: "incomplete_expired", label: content.values.statuses.incompleteExpired },
+                            { value: "past_due", label: content.values.statuses.pastDue },
+                            { value: "paused", label: content.values.statuses.paused },
+                            { value: "trialing", label: content.values.statuses.trialing },
+                            { value: "unpaid", label: content.values.statuses.unpaid },
+                            { value: "canceled", label: content.values.statuses.canceled },
+                        ]}
+                        selectedFilters={statusFilters}
+                        onFilterChange={setStatusFilters}
+                        sortDirection={sortDirection}
+                        sortLabel={content.dashboard.lastEditedLabel}
+                        onSortDirectionChange={setSortDirection}
+                    />
+                </Flex>
+                <Spacing spacing="xs" />
+                <Text size="md" hierarchy="tertiary" maw="50%">
+                    {content.licenseDescription}
+                </Text>
+                <Spacing spacing="md" />
+
+                <Card color="secondary" className="pt-2!">
+                    <AutoScrollArea mah="28rem" type="scroll">
+                        {isLoading ? (
+                            <LicenseDataTableSkeleton header={licenseTableHeader} widths={["w-12", "w-14", "w-24", "w-20"]} />
+                        ) : (
+                            <DataTable
+                                data={licenseRows}
+                                filter={tableFilter}
+                                limit={LICENSE_DATA_TABLE_PAGE_SIZE}
+                                pagination
+                                sort={{ updatedAt: sortDirection }}
+                                onSelect={(license) => {
+                                    if (license) router.push(createLicensePath(locale, resolvedCustomerId, license.id))
+                                }}
+                                emptyComponent={
+                                    <DataTableColumn colSpan={4}>
+                                        <Text size="sm" hierarchy="tertiary">
+                                            {content.emptyLicenses}
+                                        </Text>
+                                    </DataTableColumn>
+                                }
+                            >
+                                {licenseTableHeader}
+                                {(license) => (
+                                    <Fragment key={license.id}>
+                                        <DataTableColumn>
+                                            <Flex align="center" style={{ gap: "0.6rem" }}>
+                                                <Text size="sm" fw={500}>
+                                                    {formatLicenseDisplayValue(license.plan, "plan", content.values)}
+                                                </Text>
+                                            </Flex>
+                                        </DataTableColumn>
+                                        <DataTableColumn>
+                                            <Badge color={getLicenseStatusBadgeColor(license.status)}>{formatLicenseDisplayValue(license.status, "status", content.values)}</Badge>
+                                        </DataTableColumn>
+                                        <DataTableColumn>
+                                            <Text size="sm" hierarchy="tertiary">
+                                                {formatLicenseEdition(license.deploymentType, content.values.editions)}
+                                            </Text>
+                                        </DataTableColumn>
+                                        <DataTableColumn>
+                                            <Text size="sm" hierarchy="tertiary">
+                                                {license.updatedAt ? dateFormatter.format(new Date(license.updatedAt)) : "—"}
+                                            </Text>
+                                        </DataTableColumn>
+                                    </Fragment>
+                                )}
+                                {licenseRows.length > LICENSE_DATA_TABLE_PAGE_SIZE ? <LicenseDataTablePagination labels={content.pagination} /> : null}
+                            </DataTable>
+                        )}
+                    </AutoScrollArea>
+                </Card>
+                {pagination?.licenses?.hasNextPage ? <LicenseLoadMoreButton loading={loadingMore === "licenses"} labels={content.pagination} onClick={() => void loadMore("licenses")} /> : null}
+            </section>
+        </div>
+    )
+}

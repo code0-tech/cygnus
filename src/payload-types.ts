@@ -104,12 +104,22 @@ export interface Config {
     footer: Footer;
     'cookie-banner': CookieBanner;
     subscriptionConfig: SubscriptionConfig;
+    checkout: Checkout;
+    licenses: License;
+    'license-dialogs': LicenseDialog;
+    'license-toasts': LicenseToast;
+    errors: Error;
   };
   globalsSelect: {
     navigation: NavigationSelect<false> | NavigationSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
     'cookie-banner': CookieBannerSelect<false> | CookieBannerSelect<true>;
     subscriptionConfig: SubscriptionConfigSelect<false> | SubscriptionConfigSelect<true>;
+    checkout: CheckoutSelect<false> | CheckoutSelect<true>;
+    licenses: LicensesSelect<false> | LicensesSelect<true>;
+    'license-dialogs': LicenseDialogsSelect<false> | LicenseDialogsSelect<true>;
+    'license-toasts': LicenseToastsSelect<false> | LicenseToastsSelect<true>;
+    errors: ErrorsSelect<false> | ErrorsSelect<true>;
   };
   locale: 'en' | 'de';
   widgets: {
@@ -1109,22 +1119,6 @@ export interface Page {
               heading?: string | null;
               description?: string | null;
             };
-            featureOverview?:
-              | {
-                  title?: string | null;
-                  description?: string | null;
-                  icon: string;
-                  id?: string | null;
-                }[]
-              | null;
-            buttons?:
-              | {
-                  label: string;
-                  url: string;
-                  variant?: ('none' | 'normal' | 'outlined' | 'filled') | null;
-                  id?: string | null;
-                }[]
-              | null;
             id?: string | null;
             blockName?: string | null;
             blockType: 'subscriptionConfigurator';
@@ -1158,7 +1152,7 @@ export interface Page {
                     id?: string | null;
                   }[]
                 | null;
-              missingFeatures?:
+              missing?:
                 | {
                     text: string;
                     id?: string | null;
@@ -1177,7 +1171,7 @@ export interface Page {
                     id?: string | null;
                   }[]
                 | null;
-              missingFeatures?:
+              missing?:
                 | {
                     text: string;
                     id?: string | null;
@@ -1196,7 +1190,7 @@ export interface Page {
                     id?: string | null;
                   }[]
                 | null;
-              missingFeatures?:
+              missing?:
                 | {
                     text: string;
                     id?: string | null;
@@ -1230,7 +1224,7 @@ export interface Page {
                     id?: string | null;
                   }[]
                 | null;
-              missingFeatures?:
+              missing?:
                 | {
                     text: string;
                     id?: string | null;
@@ -1249,7 +1243,7 @@ export interface Page {
                     id?: string | null;
                   }[]
                 | null;
-              missingFeatures?:
+              missing?:
                 | {
                     text: string;
                     id?: string | null;
@@ -1268,7 +1262,7 @@ export interface Page {
                     id?: string | null;
                   }[]
                 | null;
-              missingFeatures?:
+              missing?:
                 | {
                     text: string;
                     id?: string | null;
@@ -2383,22 +2377,6 @@ export interface PagesSelect<T extends boolean = true> {
                     heading?: T;
                     description?: T;
                   };
-              featureOverview?:
-                | T
-                | {
-                    title?: T;
-                    description?: T;
-                    icon?: T;
-                    id?: T;
-                  };
-              buttons?:
-                | T
-                | {
-                    label?: T;
-                    url?: T;
-                    variant?: T;
-                    id?: T;
-                  };
               id?: T;
               blockName?: T;
             };
@@ -2433,7 +2411,7 @@ export interface PagesSelect<T extends boolean = true> {
                           text?: T;
                           id?: T;
                         };
-                    missingFeatures?:
+                    missing?:
                       | T
                       | {
                           text?: T;
@@ -2456,7 +2434,7 @@ export interface PagesSelect<T extends boolean = true> {
                           text?: T;
                           id?: T;
                         };
-                    missingFeatures?:
+                    missing?:
                       | T
                       | {
                           text?: T;
@@ -2479,7 +2457,7 @@ export interface PagesSelect<T extends boolean = true> {
                           text?: T;
                           id?: T;
                         };
-                    missingFeatures?:
+                    missing?:
                       | T
                       | {
                           text?: T;
@@ -2520,7 +2498,7 @@ export interface PagesSelect<T extends boolean = true> {
                           text?: T;
                           id?: T;
                         };
-                    missingFeatures?:
+                    missing?:
                       | T
                       | {
                           text?: T;
@@ -2543,7 +2521,7 @@ export interface PagesSelect<T extends boolean = true> {
                           text?: T;
                           id?: T;
                         };
-                    missingFeatures?:
+                    missing?:
                       | T
                       | {
                           text?: T;
@@ -2566,7 +2544,7 @@ export interface PagesSelect<T extends boolean = true> {
                           text?: T;
                           id?: T;
                         };
-                    missingFeatures?:
+                    missing?:
                       | T
                       | {
                           text?: T;
@@ -2829,6 +2807,10 @@ export interface Footer {
       label: string;
       url: string;
     };
+    terms: {
+      label: string;
+      url: string;
+    };
   };
   socialLinks?:
     | {
@@ -2902,190 +2884,580 @@ export interface CookieBanner {
  */
 export interface SubscriptionConfig {
   id: number;
-  title?: string | null;
-  optionsPanelHeading?: string | null;
-  defaults?: {
-    deployment?: ('self-hosted' | 'cloud') | null;
-    customerType?: ('b2b' | 'b2c') | null;
-    paymentPeriod?: ('monthly' | 'quarterly' | 'yearly') | null;
-    workflowExecutions?: {
-      b2b?: number | null;
-      b2c?: number | null;
-    };
-    aiTokens?: {
-      b2b?: number | null;
-      b2c?: number | null;
+  defaults: {
+    deployment: 'self_hosted' | 'cloud';
+    customerType: 'b2b' | 'b2c';
+    paymentPeriod: {
+      b2b: 'monthly' | 'quarterly' | 'yearly';
+      b2c: 'monthly' | 'quarterly' | 'yearly';
     };
   };
+  subscribe: {
+    label: string;
+    baseUrl: string;
+  };
+  contactSales: {
+    prompt: string;
+    label: string;
+    href: string;
+  };
   deployment: {
-    label?: string | null;
+    label: string;
+    description?: string | null;
     selfHosted: {
-      title?: string | null;
-      description?: string | null;
+      title: string;
+      description: string;
       icon: string;
-      color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
+      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
+      image?: (number | null) | Media;
     };
     cloud: {
-      title?: string | null;
-      description?: string | null;
+      title: string;
+      description: string;
       icon: string;
-      color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
+      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
+      image?: (number | null) | Media;
     };
   };
   customerType: {
-    label?: string | null;
+    label: string;
+    description?: string | null;
     b2b: {
-      title?: string | null;
-      description?: string | null;
+      title: string;
+      description: string;
       icon: string;
-      color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
+      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
+      image?: (number | null) | Media;
     };
     b2c: {
-      title?: string | null;
-      description?: string | null;
+      title: string;
+      description: string;
       icon: string;
-      color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
+      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
+      image?: (number | null) | Media;
     };
   };
-  subscriptionTier: {
-    label?: string | null;
+  paymentPeriod: {
+    label: string;
+    description?: string | null;
+    monthlyText: string;
+    /**
+     * Text before the monthly savings amount in payment period badges, for example Save €2.50.
+     */
+    savingsLabel: string;
+    quarterlyText: string;
+    yearlyText: string;
+    monthlyPeriodSuffix: string;
+    quarterlyPeriodSuffix: string;
+    yearlyPeriodSuffix: string;
+    monthlyColor: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
+    quarterlyColor: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
+    yearlyColor: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
+  };
+  plan: {
+    title: string;
+    description?: string | null;
     pro: {
-      title?: string | null;
-      description?: string | null;
-      icon: string;
-      color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
-    };
-    team: {
-      title?: string | null;
-      description?: string | null;
-      icon: string;
-      color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
-    };
-  };
-  packages?: {
-    pro?: {
-      title?: string | null;
-      description?: string | null;
-      prices?: {
-        monthly?: number | null;
-        quarterly?: number | null;
-        yearly?: number | null;
-      };
-    };
-    max?: {
-      title?: string | null;
-      description?: string | null;
-      prices?: {
-        monthly?: number | null;
-        quarterly?: number | null;
-        yearly?: number | null;
-      };
-    };
-    custom?: {
-      title?: string | null;
-      description?: string | null;
-    };
-  };
-  paymentPeriod?: {
-    label?: string | null;
-    description?: string | null;
-    monthlyText?: string | null;
-    quarterlyText?: string | null;
-    yearlyText?: string | null;
-    monthlyPeriodSuffix?: string | null;
-    quarterlyPeriodSuffix?: string | null;
-    yearlyPeriodSuffix?: string | null;
-    quarterlyDiscount?: number | null;
-    yearlyDiscount?: number | null;
-  };
-  workflowExecutions?: {
-    title?: string | null;
-    description?: string | null;
-    b2b?: {
-      step?: number | null;
-      min?: number | null;
-      max?: number | null;
-    };
-    b2c?: {
-      step?: number | null;
-      min?: number | null;
-      max?: number | null;
-    };
-    suffix?: string | null;
-  };
-  workflowCalculator?: {
-    triggerLabel?: string | null;
-    title?: string | null;
-    description?: string | null;
-    closeLabel?: string | null;
-    businessTypeLabel?: string | null;
-    businessTypeSearchPlaceholder?: string | null;
-    noBusinessTypesFoundLabel?: string | null;
-    activeWorkflowsLabel?: string | null;
-    runsPerDayLabel?: string | null;
-    daysPerMonthLabel?: string | null;
-    estimateLabel?: string | null;
-    cancelLabel?: string | null;
-    applyLabel?: string | null;
-    businessTypes?:
-      | {
-          name?: string | null;
-          conversion_unit?: string | null;
-          icon: string;
-          conversion_rate?: number | null;
-          id?: string | null;
-        }[]
-      | null;
-  };
-  workflowExecutionPriceFactor?: number | null;
-  aiTokens?: {
-    title?: string | null;
-    description?: string | null;
-    b2b?: {
-      step?: number | null;
-      min?: number | null;
-      max?: number | null;
-    };
-    b2c?: {
-      step?: number | null;
-      min?: number | null;
-      max?: number | null;
-    };
-    suffix?: string | null;
-  };
-  aiTokenPriceFactor?: number | null;
-  contactSales?: {
-    prompt?: string | null;
-    label?: string | null;
-    href?: string | null;
-  };
-  subscribe?: {
-    label?: string | null;
-    baseUrl?: string | null;
-  };
-  price?: {
-    heading?: string | null;
-    caption?: string | null;
-  };
-  /**
-   * Optional section heading shown above the additional features list.
-   */
-  additionalFeaturesLabel?: string | null;
-  /**
-   * Leave empty to hide the section entirely.
-   */
-  additionalFeatures?:
-    | {
-        title?: string | null;
-        description?: string | null;
-        icon: string;
-        /**
-         * Monthly price in EUR.
-         */
-        price?: number | null;
+      title: string;
+      description: string;
+      features: {
+        text: string;
         id?: string | null;
-      }[]
-    | null;
+      }[];
+      icon: string;
+      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
+      image?: (number | null) | Media;
+    };
+    max: {
+      title: string;
+      description: string;
+      features: {
+        text: string;
+        id?: string | null;
+      }[];
+      icon: string;
+      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
+      image?: (number | null) | Media;
+    };
+    custom: {
+      title: string;
+      description: string;
+      features: {
+        text: string;
+        id?: string | null;
+      }[];
+      icon: string;
+      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
+      image?: (number | null) | Media;
+    };
+  };
+  workflowExecutions: {
+    title: string;
+    description?: string | null;
+    suffix: string;
+  };
+  aiTokens: {
+    title: string;
+    description?: string | null;
+    suffix: string;
+  };
+  workflowCalculator: {
+    triggerLabel: string;
+    title: string;
+    description: string;
+    closeLabel: string;
+    businessTypeLabel: string;
+    businessTypeSearchPlaceholder: string;
+    noBusinessTypesFoundLabel: string;
+    activeWorkflowsLabel: string;
+    runsPerDayLabel: string;
+    daysPerMonthLabel: string;
+    estimateLabel: string;
+    cancelLabel: string;
+    applyLabel: string;
+    types: {
+      name: string;
+      conversion_unit: string;
+      icon: string;
+      conversion_rate: number;
+      id?: string | null;
+    }[];
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "checkout".
+ */
+export interface Checkout {
+  id: number;
+  login: {
+    heading: string;
+    description: string;
+    loginLabel: string;
+    guestHeading: string;
+    guestDescription: string;
+    guestLabel: string;
+  };
+  summary: {
+    eyebrow: string;
+    heading: string;
+    description: string;
+    deploymentIcons: {
+      cloud: string;
+      selfHosted: string;
+    };
+    deploymentIconColor: 'neutral' | 'brand' | 'aqua' | 'blue' | 'pink' | 'yellow' | 'lime' | 'magenta';
+    customerTypeIcons: {
+      b2b: string;
+      b2c: string;
+    };
+    customerTypeIconColor: 'neutral' | 'brand' | 'aqua' | 'blue' | 'pink' | 'yellow' | 'lime' | 'magenta';
+    pricing: {
+      planLabel: string;
+      baseLabel: string;
+      workflowExecutionsLabel: string;
+      quarterlyDiscountLabel: string;
+      yearlyDiscountLabel: string;
+      discountInputPlaceholder: string;
+      discountButtonLabel: string;
+      discountPromptLabel: string;
+      discountRemoveLabel: string;
+      taxLabel: string;
+      taxInclusiveLabel: string;
+      taxExclusiveLabel: string;
+      totalLabel: string;
+      perMonthSuffix: string;
+    };
+  };
+  form: {
+    billingHeading: string;
+    continueLabel: string;
+    backToBillingLabel: string;
+    payNowLabel: string;
+    sendOfferPrompt: string;
+    /**
+     * Shown below the primary billing button for business customers only.
+     */
+    sendOfferLabel: string;
+    sendOfferTitle: string;
+    sendOfferDescription: string;
+    processingLabel: string;
+    customerSelectLabel: string;
+    newCustomerLabel: string;
+    nameLabel: string;
+    emailLabel: string;
+    emailPlaceholder: string;
+    phoneLabel: string;
+    line1Label: string;
+    line2Label: string;
+    cityLabel: string;
+    stateLabel: string;
+    postalCodeLabel: string;
+    countryLabel: string;
+  };
+  /**
+   * Vertical 3-step 'what happens after you pay' stepper shown in the summary once the payment step is reached, replacing the order summary heading and payment period switcher.
+   */
+  nextSteps: {
+    heading: string;
+    step1Title: string;
+    step1Description: string;
+    step2Title: string;
+    step2Description: string;
+    step3Title: string;
+    step3Description: string;
+  };
+  success: {
+    heading: string;
+    description: string;
+    licenseDashboardLabel: string;
+    sculptorLabel: string;
+    licenseDownloadLabel: string;
+    licenseDownloadError: string;
+    licensePendingLabel: string;
+    licenseStatusRetryLabel: string;
+    delayedHeading: string;
+    /**
+     * Shown when polling pauses after payment has been confirmed, while the license is still being prepared.
+     */
+    delayedConfirmedDescription: string;
+    /**
+     * Shown when polling pauses before payment has been confirmed.
+     */
+    delayedPendingDescription: string;
+    /**
+     * Shown once the payment is confirmed. The exact amount is on the Stripe receipt, not on this page.
+     */
+    receiptHint: string;
+    /**
+     * Shown after payment confirmation for guest checkouts only.
+     */
+    guestAccountHint: string;
+    failedHeading: string;
+    failedDescription: string;
+    invalidHeading: string;
+    invalidDescription: string;
+    checkoutRetryLabel: string;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "licenses".
+ */
+export interface License {
+  id: number;
+  licenses: string;
+  license: string;
+  licenseDescription: string;
+  emptyLicenses: string;
+  sidebar: {
+    logout: string;
+    loggingOut: string;
+    backToCustomerLabel: string;
+    backToCustomersLabel: string;
+    downloadLicenseLabel: string;
+    homeLabel: string;
+    applicationSettingsLabel: string;
+    userMenuLabel: string;
+    profileLabel: string;
+    settingsLabel: string;
+    workspacesLabel: string;
+  };
+  dashboard: {
+    customersLabel: string;
+    customersDescription: string;
+    emptyCustomers: string;
+    recentLicensesLabel: string;
+    recentLicensesDescription: string;
+    typeLabel: string;
+    customerLabel: string;
+    nameLabel: string;
+    emailLabel: string;
+    lastEditedLabel: string;
+    statusLabel: string;
+    paymentPeriodLabel: string;
+    workflowExecutionsLabel: string;
+    aiTokensLabel: string;
+    editionLabel: string;
+    nextBillingDateLabel: string;
+  };
+  values: {
+    customerTypes: {
+      personal: string;
+      business: string;
+    };
+    deploymentTypes: {
+      cloud: string;
+      selfHosted: string;
+    };
+    paymentPeriods: {
+      monthly: string;
+      quarterly: string;
+      yearly: string;
+    };
+    statuses: {
+      active: string;
+      pending: string;
+      incomplete: string;
+      paused: string;
+      trialing: string;
+      unpaid: string;
+      pastDue: string;
+      canceled: string;
+      incompleteExpired: string;
+    };
+    invoiceStatuses: {
+      paid: string;
+      draft: string;
+      open: string;
+      uncollectible: string;
+      void: string;
+    };
+    plans: {
+      pro: string;
+      max: string;
+      custom: string;
+    };
+    editions: {
+      cloud: string;
+      selfHosted: string;
+    };
+    unknown: string;
+  };
+  invoices: {
+    title: string;
+    description: string;
+    empty: string;
+    taxLabel: string;
+    numberLabel: string;
+    numberPendingLabel: string;
+    billingDateLabel: string;
+    amountLabel: string;
+    statusLabel: string;
+    downloadLabel: string;
+    viewLabel: string;
+    unavailableLabel: string;
+  };
+  pagination: {
+    loadMoreLabel: string;
+    loadingLabel: string;
+    previousPageLabel: string;
+    nextPageLabel: string;
+  };
+  /**
+   * Notice shown on the license detail page while the customer's statutory 14-day right of withdrawal is still running. Only shown for personal (B2C) customers.
+   */
+  withdrawal: {
+    /**
+     * Use {date} as a placeholder for the withdrawal deadline.
+     */
+    text: string;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "license-dialogs".
+ */
+export interface LicenseDialog {
+  id: number;
+  editor: {
+    customerTitle: string;
+    customerDescription: string;
+    contactHeading: string;
+    /**
+     * Descriptions shown below the inputs of the customer edit dialog.
+     */
+    fieldDescriptions: {
+      name: string;
+      email: string;
+      phone: string;
+      line1: string;
+      line2: string;
+      postalCode: string;
+      city: string;
+      state: string;
+      country: string;
+    };
+    paymentMethodDescription: string;
+    loadingPaymentMethodLabel: string;
+    savePaymentMethodLabel: string;
+    savingPaymentMethodLabel: string;
+    paymentMethodSuccess: string;
+    noPaymentMethodsLabel: string;
+    addPaymentMethodLabel: string;
+    removePaymentMethodLabel: string;
+    removingPaymentMethodLabel: string;
+    settingPaymentMethodLabel: string;
+    licenseTitle: string;
+    licenseEditDescription: string;
+    licenseDescription: string;
+    noNamespaceLabel: string;
+    changeNamespaceLabel: string;
+    cancellationHeading: string;
+    saveLabel: string;
+    closeLabel: string;
+    generalTabLabel: string;
+    paymentMethodsTabLabel: string;
+    paymentMethodTabLabel: string;
+  };
+  billing: {
+    heading: string;
+    title: string;
+    description: string;
+    statusDescription: string;
+    periodLabel: string;
+    currentPeriodEndLabel: string;
+    /**
+     * Use {date} as a placeholder for the end of the current period.
+     */
+    currentPeriodEndDescription: string;
+    /**
+     * Replaces the renewal text while a change is scheduled. Use {selection} for the new plan and {date} for the day it applies.
+     */
+    currentPeriodEndPendingDescription: string;
+    /**
+     * Replaces the renewal text once the subscription is canceled. Use {date} for the day access ends.
+     */
+    currentPeriodEndCanceledDescription: string;
+    /**
+     * Shown below the next billing date on the license page. Use {selection} as a placeholder for the scheduled change.
+     */
+    pendingChangeNote: string;
+    currentPeriodEndUnknownDescription: string;
+    changePeriodLabel: string;
+  };
+  upgrade: {
+    title: string;
+    description: string;
+    planHeading: string;
+    previewHeading: string;
+    submitLabel: string;
+  };
+  subscriptionPreview: {
+    totalLabel: string;
+    totalDescription: string;
+    prorationLabel: string;
+    prorationDescription: string;
+    immediateNote: string;
+    scheduledNote: string;
+    loadingLabel: string;
+  };
+  cancel: {
+    description: string;
+    confirmLabel: string;
+    immediateConfirmLabel: string;
+    immediateDescription: string;
+    immediateUntilLabel: string;
+    immediateConfirmDescription: string;
+    immediateConfirmSubmitLabel: string;
+    immediateConfirmBackLabel: string;
+    pendingHeading: string;
+    pendingDescription: string;
+    resumeLabel: string;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * Use {date} in a description to insert the date the change takes effect.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "license-toasts".
+ */
+export interface LicenseToast {
+  id: number;
+  /**
+   * Title of every error toast; the specific error message from the Errors global is shown below it.
+   */
+  errorTitle: string;
+  customerSaved: {
+    title: string;
+    description: string;
+  };
+  planUpdated: {
+    title: string;
+    description: string;
+  };
+  changeScheduled: {
+    title: string;
+    description: string;
+  };
+  periodUpdated: {
+    title: string;
+    description: string;
+  };
+  canceled: {
+    title: string;
+    description: string;
+  };
+  cancellationScheduled: {
+    title: string;
+    description: string;
+  };
+  resumed: {
+    title: string;
+    description: string;
+  };
+  paymentAssigned: {
+    title: string;
+    description: string;
+  };
+  paymentRemoved: {
+    title: string;
+    description: string;
+  };
+  paymentConfirmed: {
+    title: string;
+    description: string;
+  };
+  namespaceLinked: {
+    title: string;
+    description: string;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "errors".
+ */
+export interface Error {
+  id: number;
+  dashboardLoad: string;
+  retry: string;
+  customerUpdate: string;
+  paymentMethodLoad: string;
+  paymentMethodUpdate: string;
+  paymentMethodRemove: string;
+  paymentMethodInUse: string;
+  paymentMethodAssign: string;
+  namespaceInUse: string;
+  licenseUpdate: string;
+  subscriptionPreview: string;
+  billingUpdate: string;
+  subscriptionCancel: string;
+  subscriptionResume: string;
+  planUpgrade: string;
+  paymentFallback: string;
+  sessionUnavailable: string;
+  customerCreation: string;
+  customerTypeMismatch: string;
+  checkoutCustomer: string;
+  checkoutSession: string;
+  checkoutRateLimit: string;
+  checkoutSessionExpired: string;
+  billingAddressUpdate: string;
+  emailUpdate: string;
+  paymentConfirmation: string;
+  discountSessionRequired: string;
+  discountValidation: string;
+  checkoutLicenseStatus: string;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -3155,6 +3527,12 @@ export interface FooterSelect<T extends boolean = true> {
               url?: T;
             };
         legalNotice?:
+          | T
+          | {
+              label?: T;
+              url?: T;
+            };
+        terms?:
           | T
           | {
               label?: T;
@@ -3257,31 +3635,36 @@ export interface CookieBannerSelect<T extends boolean = true> {
  * via the `definition` "subscriptionConfig_select".
  */
 export interface SubscriptionConfigSelect<T extends boolean = true> {
-  title?: T;
-  optionsPanelHeading?: T;
   defaults?:
     | T
     | {
         deployment?: T;
         customerType?: T;
-        paymentPeriod?: T;
-        workflowExecutions?:
-          | T
-          | {
-              b2b?: T;
-              b2c?: T;
-            };
-        aiTokens?:
+        paymentPeriod?:
           | T
           | {
               b2b?: T;
               b2c?: T;
             };
       };
+  subscribe?:
+    | T
+    | {
+        label?: T;
+        baseUrl?: T;
+      };
+  contactSales?:
+    | T
+    | {
+        prompt?: T;
+        label?: T;
+        href?: T;
+      };
   deployment?:
     | T
     | {
         label?: T;
+        description?: T;
         selfHosted?:
           | T
           | {
@@ -3289,6 +3672,7 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
               description?: T;
               icon?: T;
               color?: T;
+              image?: T;
             };
         cloud?:
           | T
@@ -3297,12 +3681,14 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
               description?: T;
               icon?: T;
               color?: T;
+              image?: T;
             };
       };
   customerType?:
     | T
     | {
         label?: T;
+        description?: T;
         b2b?:
           | T
           | {
@@ -3310,6 +3696,7 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
               description?: T;
               icon?: T;
               color?: T;
+              image?: T;
             };
         b2c?:
           | T
@@ -3318,63 +3705,7 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
               description?: T;
               icon?: T;
               color?: T;
-            };
-      };
-  subscriptionTier?:
-    | T
-    | {
-        label?: T;
-        pro?:
-          | T
-          | {
-              title?: T;
-              description?: T;
-              icon?: T;
-              color?: T;
-            };
-        team?:
-          | T
-          | {
-              title?: T;
-              description?: T;
-              icon?: T;
-              color?: T;
-            };
-      };
-  packages?:
-    | T
-    | {
-        pro?:
-          | T
-          | {
-              title?: T;
-              description?: T;
-              prices?:
-                | T
-                | {
-                    monthly?: T;
-                    quarterly?: T;
-                    yearly?: T;
-                  };
-            };
-        max?:
-          | T
-          | {
-              title?: T;
-              description?: T;
-              prices?:
-                | T
-                | {
-                    monthly?: T;
-                    quarterly?: T;
-                    yearly?: T;
-                  };
-            };
-        custom?:
-          | T
-          | {
-              title?: T;
-              description?: T;
+              image?: T;
             };
       };
   paymentPeriod?:
@@ -3383,33 +3714,79 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
         label?: T;
         description?: T;
         monthlyText?: T;
+        savingsLabel?: T;
         quarterlyText?: T;
         yearlyText?: T;
         monthlyPeriodSuffix?: T;
         quarterlyPeriodSuffix?: T;
         yearlyPeriodSuffix?: T;
-        quarterlyDiscount?: T;
-        yearlyDiscount?: T;
+        monthlyColor?: T;
+        quarterlyColor?: T;
+        yearlyColor?: T;
+      };
+  plan?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        pro?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              features?:
+                | T
+                | {
+                    text?: T;
+                    id?: T;
+                  };
+              icon?: T;
+              color?: T;
+              image?: T;
+            };
+        max?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              features?:
+                | T
+                | {
+                    text?: T;
+                    id?: T;
+                  };
+              icon?: T;
+              color?: T;
+              image?: T;
+            };
+        custom?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              features?:
+                | T
+                | {
+                    text?: T;
+                    id?: T;
+                  };
+              icon?: T;
+              color?: T;
+              image?: T;
+            };
       };
   workflowExecutions?:
     | T
     | {
         title?: T;
         description?: T;
-        b2b?:
-          | T
-          | {
-              step?: T;
-              min?: T;
-              max?: T;
-            };
-        b2c?:
-          | T
-          | {
-              step?: T;
-              min?: T;
-              max?: T;
-            };
+        suffix?: T;
+      };
+  aiTokens?:
+    | T
+    | {
+        title?: T;
+        description?: T;
         suffix?: T;
       };
   workflowCalculator?:
@@ -3428,7 +3805,7 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
         estimateLabel?: T;
         cancelLabel?: T;
         applyLabel?: T;
-        businessTypes?:
+        types?:
           | T
           | {
               name?: T;
@@ -3438,58 +3815,473 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
               id?: T;
             };
       };
-  workflowExecutionPriceFactor?: T;
-  aiTokens?:
-    | T
-    | {
-        title?: T;
-        description?: T;
-        b2b?:
-          | T
-          | {
-              step?: T;
-              min?: T;
-              max?: T;
-            };
-        b2c?:
-          | T
-          | {
-              step?: T;
-              min?: T;
-              max?: T;
-            };
-        suffix?: T;
-      };
-  aiTokenPriceFactor?: T;
-  contactSales?:
-    | T
-    | {
-        prompt?: T;
-        label?: T;
-        href?: T;
-      };
-  subscribe?:
-    | T
-    | {
-        label?: T;
-        baseUrl?: T;
-      };
-  price?:
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "checkout_select".
+ */
+export interface CheckoutSelect<T extends boolean = true> {
+  login?:
     | T
     | {
         heading?: T;
-        caption?: T;
+        description?: T;
+        loginLabel?: T;
+        guestHeading?: T;
+        guestDescription?: T;
+        guestLabel?: T;
       };
-  additionalFeaturesLabel?: T;
-  additionalFeatures?:
+  summary?:
+    | T
+    | {
+        eyebrow?: T;
+        heading?: T;
+        description?: T;
+        deploymentIcons?:
+          | T
+          | {
+              cloud?: T;
+              selfHosted?: T;
+            };
+        deploymentIconColor?: T;
+        customerTypeIcons?:
+          | T
+          | {
+              b2b?: T;
+              b2c?: T;
+            };
+        customerTypeIconColor?: T;
+        pricing?:
+          | T
+          | {
+              planLabel?: T;
+              baseLabel?: T;
+              workflowExecutionsLabel?: T;
+              quarterlyDiscountLabel?: T;
+              yearlyDiscountLabel?: T;
+              discountInputPlaceholder?: T;
+              discountButtonLabel?: T;
+              discountPromptLabel?: T;
+              discountRemoveLabel?: T;
+              taxLabel?: T;
+              taxInclusiveLabel?: T;
+              taxExclusiveLabel?: T;
+              totalLabel?: T;
+              perMonthSuffix?: T;
+            };
+      };
+  form?:
+    | T
+    | {
+        billingHeading?: T;
+        continueLabel?: T;
+        backToBillingLabel?: T;
+        payNowLabel?: T;
+        sendOfferPrompt?: T;
+        sendOfferLabel?: T;
+        sendOfferTitle?: T;
+        sendOfferDescription?: T;
+        processingLabel?: T;
+        customerSelectLabel?: T;
+        newCustomerLabel?: T;
+        nameLabel?: T;
+        emailLabel?: T;
+        emailPlaceholder?: T;
+        phoneLabel?: T;
+        line1Label?: T;
+        line2Label?: T;
+        cityLabel?: T;
+        stateLabel?: T;
+        postalCodeLabel?: T;
+        countryLabel?: T;
+      };
+  nextSteps?:
+    | T
+    | {
+        heading?: T;
+        step1Title?: T;
+        step1Description?: T;
+        step2Title?: T;
+        step2Description?: T;
+        step3Title?: T;
+        step3Description?: T;
+      };
+  success?:
+    | T
+    | {
+        heading?: T;
+        description?: T;
+        licenseDashboardLabel?: T;
+        sculptorLabel?: T;
+        licenseDownloadLabel?: T;
+        licenseDownloadError?: T;
+        licensePendingLabel?: T;
+        licenseStatusRetryLabel?: T;
+        delayedHeading?: T;
+        delayedConfirmedDescription?: T;
+        delayedPendingDescription?: T;
+        receiptHint?: T;
+        guestAccountHint?: T;
+        failedHeading?: T;
+        failedDescription?: T;
+        invalidHeading?: T;
+        invalidDescription?: T;
+        checkoutRetryLabel?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "licenses_select".
+ */
+export interface LicensesSelect<T extends boolean = true> {
+  licenses?: T;
+  license?: T;
+  licenseDescription?: T;
+  emptyLicenses?: T;
+  sidebar?:
+    | T
+    | {
+        logout?: T;
+        loggingOut?: T;
+        backToCustomerLabel?: T;
+        backToCustomersLabel?: T;
+        downloadLicenseLabel?: T;
+        homeLabel?: T;
+        applicationSettingsLabel?: T;
+        userMenuLabel?: T;
+        profileLabel?: T;
+        settingsLabel?: T;
+        workspacesLabel?: T;
+      };
+  dashboard?:
+    | T
+    | {
+        customersLabel?: T;
+        customersDescription?: T;
+        emptyCustomers?: T;
+        recentLicensesLabel?: T;
+        recentLicensesDescription?: T;
+        typeLabel?: T;
+        customerLabel?: T;
+        nameLabel?: T;
+        emailLabel?: T;
+        lastEditedLabel?: T;
+        statusLabel?: T;
+        paymentPeriodLabel?: T;
+        workflowExecutionsLabel?: T;
+        aiTokensLabel?: T;
+        editionLabel?: T;
+        nextBillingDateLabel?: T;
+      };
+  values?:
+    | T
+    | {
+        customerTypes?:
+          | T
+          | {
+              personal?: T;
+              business?: T;
+            };
+        deploymentTypes?:
+          | T
+          | {
+              cloud?: T;
+              selfHosted?: T;
+            };
+        paymentPeriods?:
+          | T
+          | {
+              monthly?: T;
+              quarterly?: T;
+              yearly?: T;
+            };
+        statuses?:
+          | T
+          | {
+              active?: T;
+              pending?: T;
+              incomplete?: T;
+              paused?: T;
+              trialing?: T;
+              unpaid?: T;
+              pastDue?: T;
+              canceled?: T;
+              incompleteExpired?: T;
+            };
+        invoiceStatuses?:
+          | T
+          | {
+              paid?: T;
+              draft?: T;
+              open?: T;
+              uncollectible?: T;
+              void?: T;
+            };
+        plans?:
+          | T
+          | {
+              pro?: T;
+              max?: T;
+              custom?: T;
+            };
+        editions?:
+          | T
+          | {
+              cloud?: T;
+              selfHosted?: T;
+            };
+        unknown?: T;
+      };
+  invoices?:
     | T
     | {
         title?: T;
         description?: T;
-        icon?: T;
-        price?: T;
-        id?: T;
+        empty?: T;
+        taxLabel?: T;
+        numberLabel?: T;
+        numberPendingLabel?: T;
+        billingDateLabel?: T;
+        amountLabel?: T;
+        statusLabel?: T;
+        downloadLabel?: T;
+        viewLabel?: T;
+        unavailableLabel?: T;
       };
+  pagination?:
+    | T
+    | {
+        loadMoreLabel?: T;
+        loadingLabel?: T;
+        previousPageLabel?: T;
+        nextPageLabel?: T;
+      };
+  withdrawal?:
+    | T
+    | {
+        text?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "license-dialogs_select".
+ */
+export interface LicenseDialogsSelect<T extends boolean = true> {
+  editor?:
+    | T
+    | {
+        customerTitle?: T;
+        customerDescription?: T;
+        contactHeading?: T;
+        fieldDescriptions?:
+          | T
+          | {
+              name?: T;
+              email?: T;
+              phone?: T;
+              line1?: T;
+              line2?: T;
+              postalCode?: T;
+              city?: T;
+              state?: T;
+              country?: T;
+            };
+        paymentMethodDescription?: T;
+        loadingPaymentMethodLabel?: T;
+        savePaymentMethodLabel?: T;
+        savingPaymentMethodLabel?: T;
+        paymentMethodSuccess?: T;
+        noPaymentMethodsLabel?: T;
+        addPaymentMethodLabel?: T;
+        removePaymentMethodLabel?: T;
+        removingPaymentMethodLabel?: T;
+        settingPaymentMethodLabel?: T;
+        licenseTitle?: T;
+        licenseEditDescription?: T;
+        licenseDescription?: T;
+        noNamespaceLabel?: T;
+        changeNamespaceLabel?: T;
+        cancellationHeading?: T;
+        saveLabel?: T;
+        closeLabel?: T;
+        generalTabLabel?: T;
+        paymentMethodsTabLabel?: T;
+        paymentMethodTabLabel?: T;
+      };
+  billing?:
+    | T
+    | {
+        heading?: T;
+        title?: T;
+        description?: T;
+        statusDescription?: T;
+        periodLabel?: T;
+        currentPeriodEndLabel?: T;
+        currentPeriodEndDescription?: T;
+        currentPeriodEndPendingDescription?: T;
+        currentPeriodEndCanceledDescription?: T;
+        pendingChangeNote?: T;
+        currentPeriodEndUnknownDescription?: T;
+        changePeriodLabel?: T;
+      };
+  upgrade?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        planHeading?: T;
+        previewHeading?: T;
+        submitLabel?: T;
+      };
+  subscriptionPreview?:
+    | T
+    | {
+        totalLabel?: T;
+        totalDescription?: T;
+        prorationLabel?: T;
+        prorationDescription?: T;
+        immediateNote?: T;
+        scheduledNote?: T;
+        loadingLabel?: T;
+      };
+  cancel?:
+    | T
+    | {
+        description?: T;
+        confirmLabel?: T;
+        immediateConfirmLabel?: T;
+        immediateDescription?: T;
+        immediateUntilLabel?: T;
+        immediateConfirmDescription?: T;
+        immediateConfirmSubmitLabel?: T;
+        immediateConfirmBackLabel?: T;
+        pendingHeading?: T;
+        pendingDescription?: T;
+        resumeLabel?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "license-toasts_select".
+ */
+export interface LicenseToastsSelect<T extends boolean = true> {
+  errorTitle?: T;
+  customerSaved?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  planUpdated?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  changeScheduled?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  periodUpdated?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  canceled?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  cancellationScheduled?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  resumed?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  paymentAssigned?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  paymentRemoved?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  paymentConfirmed?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  namespaceLinked?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "errors_select".
+ */
+export interface ErrorsSelect<T extends boolean = true> {
+  dashboardLoad?: T;
+  retry?: T;
+  customerUpdate?: T;
+  paymentMethodLoad?: T;
+  paymentMethodUpdate?: T;
+  paymentMethodRemove?: T;
+  paymentMethodInUse?: T;
+  paymentMethodAssign?: T;
+  namespaceInUse?: T;
+  licenseUpdate?: T;
+  subscriptionPreview?: T;
+  billingUpdate?: T;
+  subscriptionCancel?: T;
+  subscriptionResume?: T;
+  planUpgrade?: T;
+  paymentFallback?: T;
+  sessionUnavailable?: T;
+  customerCreation?: T;
+  customerTypeMismatch?: T;
+  checkoutCustomer?: T;
+  checkoutSession?: T;
+  checkoutRateLimit?: T;
+  checkoutSessionExpired?: T;
+  billingAddressUpdate?: T;
+  emailUpdate?: T;
+  paymentConfirmation?: T;
+  discountSessionRequired?: T;
+  discountValidation?: T;
+  checkoutLicenseStatus?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
