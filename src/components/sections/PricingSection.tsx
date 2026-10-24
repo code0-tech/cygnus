@@ -6,7 +6,7 @@ import { HapticButtonLink } from "@/components/ui/HapticButtonLink"
 import { getIcon } from "@/components/ui/IconRenderer"
 import { Section } from "@/components/ui/Section"
 import { StableBadge } from "@/components/ui/StableBadge"
-import { Switch } from "@/components/ui/Switch"
+import { SegmentedControl, SegmentedControlItem } from "@code0-tech/pictor"
 import type { PricingLayoutBlock, SubscriptionConfigData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { formatDiscountBadge, resolveCheckoutPricing } from "@/lib/subscription/calculator"
@@ -134,7 +134,30 @@ export function PricingSection({ content, locale, subscriptionConfig, subscripti
             className="overflow-visible!"
         >
             <div className="flex w-full justify-center">
-                <Switch variant="pictor" value={selectedPeriod} options={periodOptions} onChange={setSelectedPeriod} className="[&>div>button]:min-w-34 sm:[&>div>button]:min-w-40" fitContent />
+                <SegmentedControl
+                    type="single"
+                    color="secondary"
+                    aria-label={paymentPeriod.label}
+                    value={selectedPeriod}
+                    onValueChange={(value) => {
+                        const option = periodOptions.find((option) => option.value === value)
+                        if (option) setSelectedPeriod(option.value)
+                    }}
+                    className="grid! w-full max-w-full grid-cols-3! sm:w-auto [&>span]:min-w-0"
+                >
+                    {periodOptions.map((option) => (
+                        <SegmentedControlItem key={option.value} value={option.value} className="w-full! min-w-0! px-3! py-2! text-xs! sm:min-w-40! sm:text-sm!">
+                            <span className="flex min-w-0 items-center justify-center gap-2">
+                                <span className="truncate">{option.label}</span>
+                                {option.badge && (
+                                    <StableBadge color="info" border className="shrink-0">
+                                        {option.badge}
+                                    </StableBadge>
+                                )}
+                            </span>
+                        </SegmentedControlItem>
+                    ))}
+                </SegmentedControl>
             </div>
 
             <StaggerContainer className="grid w-full grid-cols-1 items-stretch gap-6 md:grid-cols-2 lg:grid-cols-3" delayChildren={0.04} staggerChildren={0.08}>

@@ -7,7 +7,7 @@ import { CheckoutPricingOverview } from "@/components/checkout/summary/CheckoutP
 import { useCheckoutStage } from "@/components/checkout/state/CheckoutStageProvider"
 import { SiteDialogContent } from "@/components/ui/SiteDialog"
 import { ButtonLoader } from "@/components/ui/Loader"
-import { Switch } from "@/components/ui/Switch"
+import { StableBadge } from "@/components/ui/StableBadge"
 import type { CheckoutStripePricingData, CheckoutTaxQuoteData } from "@/lib/checkout/client"
 import type { CheckoutData, ErrorsContent, SubscriptionConfigData } from "@/lib/cms"
 import type { CheckoutPromotionCodeSdk } from "@/lib/checkout/stripeCheckout"
@@ -15,7 +15,7 @@ import { formatCurrency } from "@/lib/formatters"
 import { calculateExclusiveTaxRate, formatDiscountBadge, resolveCheckoutPricing } from "@/lib/subscription/calculator"
 import type { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
 import type { CheckoutPackages } from "@/lib/subscription/usagePackages"
-import { Button, Dialog, DialogTrigger, TextInput } from "@code0-tech/pictor"
+import { Button, Dialog, DialogTrigger, SegmentedControl, SegmentedControlItem, TextInput } from "@code0-tech/pictor"
 import type { StripeCheckoutSession } from "@stripe/stripe-js"
 import { m as motion } from "motion/react"
 import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation"
@@ -129,11 +129,18 @@ export function CheckoutSummary({ checkoutPackages, content, errors, nextSteps, 
                     </div>
 
                     {subscriptionConfig && (
-                        <Switch
-                            variant="pictor"
-                            className="mt-4 mb-2 text-sm"
+                        <SegmentedControl
+                            type="single"
+                            color="secondary"
+                            aria-label={subscriptionConfig.paymentPeriod.label}
+                            className="mt-4 mb-2 grid! w-full grid-cols-3! [&>span]:min-w-0"
                             value={paymentPeriod}
-                            options={periodOptions.map((period) => {
+                            onValueChange={(value) => {
+                                const period = periodOptions.find((period) => period === value)
+                                if (period) handlePeriodChange(period)
+                            }}
+                        >
+                            {periodOptions.map((period) => {
                                 const { pricing: periodPricing } = resolveCheckoutPricing({
                                     aiTokensParam,
                                     checkoutPackages,
@@ -151,14 +158,20 @@ export function CheckoutSummary({ checkoutPackages, content, errors, nextSteps, 
 
                                 const discountPercentage = periodPricing.totalBeforeDiscount > 0 ? discountAmount / periodPricing.totalBeforeDiscount : 0
 
-                                return {
-                                    value: period,
-                                    label: subscriptionConfig.paymentPeriod[`${period}Text`],
-                                    badge: discountPercentage > 0 ? `-${formatDiscountBadge(discountPercentage, locale)}` : null,
-                                }
+                                return (
+                                    <SegmentedControlItem key={period} value={period} className="w-full! min-w-0! px-2! py-2! text-xs! sm:text-sm!">
+                                        <span className="flex min-w-0 items-center justify-center gap-2">
+                                            <span className="truncate">{subscriptionConfig.paymentPeriod[`${period}Text`]}</span>
+                                            {discountPercentage > 0 && (
+                                                <StableBadge color="info" border className="shrink-0">
+                                                    -{formatDiscountBadge(discountPercentage, locale)}
+                                                </StableBadge>
+                                            )}
+                                        </span>
+                                    </SegmentedControlItem>
+                                )
                             })}
-                            onChange={handlePeriodChange}
-                        />
+                        </SegmentedControl>
                     )}
                 </>
             )}

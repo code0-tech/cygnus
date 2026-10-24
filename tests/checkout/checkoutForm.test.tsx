@@ -139,7 +139,6 @@ mock.module("@/components/checkout/shared/SendOfferDialog", {
         SendOfferDialog: ({ content }: { content: CheckoutData["form"] }) => <button type="button">{content.sendOfferLabel}</button>,
     },
 })
-mock.module("@/components/ui/Switch", { namedExports: { Switch: () => null } })
 mock.module("@/components/checkout/summary/CheckoutPricingOverview", { namedExports: { CheckoutPricingOverview: () => null } })
 mock.module("@code0-tech/pictor", {
     namedExports: {
@@ -150,6 +149,9 @@ mock.module("@code0-tech/pictor", {
         ScrollAreaScrollbar: () => null,
         ScrollAreaThumb: () => null,
         Button: ({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button {...props}>{children}</button>,
+        Badge: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
+        SegmentedControl: () => null,
+        SegmentedControlItem: ({ children }: { children: React.ReactNode }) => <>{children}</>,
         Dialog: TestDialog,
         DialogClose: TestDialogClose,
         DialogContent: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => (

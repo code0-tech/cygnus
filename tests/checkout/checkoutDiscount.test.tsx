@@ -47,6 +47,9 @@ mock.module("@code0-tech/pictor", {
         ScrollAreaScrollbar: () => null,
         ScrollAreaThumb: () => null,
         Button: ({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button {...props}>{children}</button>,
+        Badge: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
+        SegmentedControl: () => null,
+        SegmentedControlItem: ({ children }: { children: React.ReactNode }) => <>{children}</>,
         Dialog: TestDialog,
         DialogClose: TestDialogClose,
         DialogContent: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => <div role="dialog" {...props}>{children}</div>,
@@ -59,7 +62,6 @@ mock.module("@code0-tech/pictor", {
         TextInput: (props: React.InputHTMLAttributes<HTMLInputElement>) => <div className="input"><input {...props} /></div>,
     },
 })
-mock.module("@/components/ui/Switch", { namedExports: { Switch: () => null } })
 mock.module("@/components/checkout/summary/CheckoutPricingOverview", { namedExports: { CheckoutPricingOverview: () => null } })
 const { cleanup, render, screen, waitFor } = await import("@testing-library/react")
 const userEvent = (await import("@testing-library/user-event")).default
