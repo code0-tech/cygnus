@@ -2,7 +2,7 @@
 
 import { LandingContainer } from "@/components/ui/LandingContainer"
 import { CraterSessionProvider } from "@/components/checkout/session/CraterSessionProvider"
-import { Container } from "@code0-tech/pictor"
+import { Container, ScrollArea, ScrollAreaScrollbar, ScrollAreaThumb, ScrollAreaViewport } from "@code0-tech/pictor"
 import Image from "next/image"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
@@ -18,7 +18,7 @@ export function CheckoutSessionLayoutClient({ children, errors }: CheckoutSessio
     const guestCheckout = useSearchParams().get("guestCheckout")
     return (
         <>
-            <div className="border-b border-white/10 bg-primary/50 py-3 backdrop-blur-sm">
+            <div className="shrink-0 border-b border-white/10 bg-primary/50 py-3 backdrop-blur-sm">
                 <Container className="flex items-center">
                     <Link href="/" className="inline-flex shrink-0">
                         <Image src="/code0_text_logo_white.png" alt="code0" width={100} height={100} className="h-8 w-32" loading="eager" />
@@ -26,7 +26,14 @@ export function CheckoutSessionLayoutClient({ children, errors }: CheckoutSessio
                 </Container>
             </div>
             <CraterSessionProvider key={guestCheckout ?? "account"} errorMessage={errors?.sessionUnavailable ?? errors?.paymentFallback}>
-                <LandingContainer className="min-h-0 flex-1 overflow-y-auto my-8">{children}</LandingContainer>
+                <ScrollArea type="auto" className="min-h-0 flex-1">
+                    <ScrollAreaViewport className="h-full! w-full! [&>div]:flex! [&>div]:min-h-full [&>div]:flex-col">
+                        <LandingContainer className="min-h-0 flex-1 py-4">{children}</LandingContainer>
+                    </ScrollAreaViewport>
+                    <ScrollAreaScrollbar orientation="vertical" className="w-1.5!">
+                        <ScrollAreaThumb className="bg-white/15! hover:bg-white/25!" />
+                    </ScrollAreaScrollbar>
+                </ScrollArea>
             </CraterSessionProvider>
         </>
     )

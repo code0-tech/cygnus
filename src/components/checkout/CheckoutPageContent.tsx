@@ -111,7 +111,7 @@ export function CheckoutPageContent({ checkoutPackages, currentYear, errors, foo
                 )}
             </div>
 
-            <CheckoutLegalFooter className="mt-auto justify-center pt-8" currentYear={currentYear} footer={footer ?? null} locale={locale} />
+            <CheckoutLegalFooter className="mt-auto justify-center pt-6 lg:pt-4" currentYear={currentYear} footer={footer ?? null} locale={locale} />
         </div>
     )
 }
